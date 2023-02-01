@@ -192,7 +192,7 @@ void AnnualTable::setupGathering(EnergyPlusData &state)
     for (fldStIt = m_annualFields.begin(); fldStIt != m_annualFields.end(); ++fldStIt) {
         keyCount = fldStIt->getVariableKeyCountandTypeFromFldSt(state, typeVar, avgSumVar, stepTypeVar, unitsVar);
         fldStIt->getVariableKeysFromFldSt(state, typeVar, keyCount, fldStIt->m_namesOfKeys, fldStIt->m_indexesForKeyVar);
-        for (std::string nm : fldStIt->m_namesOfKeys) {
+        for (const std::string& nm : fldStIt->m_namesOfKeys) {
             std::string nmUpper = nm;
             std::transform(nmUpper.begin(), nmUpper.end(), nmUpper.begin(), ::toupper);
             if (!useFilter || nmUpper.find(filterFieldUpper) != std::string::npos) {

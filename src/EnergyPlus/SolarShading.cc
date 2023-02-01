@@ -5265,7 +5265,7 @@ void DetermineShadowingCombinations(EnergyPlusData &state)
                         state.dataSolarShading->penumbra->addSurface(rSurf);
                     }
                 } else {
-                    for (auto v : state.dataSurface->Surface(GRSNR).Vertex) {
+                    for (const auto& v : state.dataSurface->Surface(GRSNR).Vertex) {
                         poly.push_back(v.x);
                         poly.push_back(v.y);
                         poly.push_back(v.z);
@@ -5284,13 +5284,13 @@ void DetermineShadowingCombinations(EnergyPlusData &state)
                         if (state.dataSurface->Surface(subSurface).Reveal > 0.0) {
                             Real64 R = state.dataSurface->Surface(subSurface).Reveal;
                             auto &norm = state.dataSurface->Surface(subSurface).NewellSurfaceNormalVector;
-                            for (auto v : state.dataSurface->Surface(subSurface).Vertex) {
+                            for (const auto& v : state.dataSurface->Surface(subSurface).Vertex) {
                                 subPoly.push_back(v.x + norm.x * R);
                                 subPoly.push_back(v.y + norm.y * R);
                                 subPoly.push_back(v.z + norm.z * R);
                             }
                         } else {
-                            for (auto v : state.dataSurface->Surface(subSurface).Vertex) {
+                            for (const auto& v : state.dataSurface->Surface(subSurface).Vertex) {
                                 subPoly.push_back(v.x);
                                 subPoly.push_back(v.y);
                                 subPoly.push_back(v.z);

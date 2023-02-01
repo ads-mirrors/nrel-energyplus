@@ -943,7 +943,7 @@ TEST_F(SQLiteFixture, DesignDay_EnthalphyAtMaxDB)
 
     std::string columnName;
     std::string expectedValue;
-    for (auto v : results_strings) {
+    for (const auto& v : results_strings) {
 
         columnName = std::get<0>(v);
         expectedValue = std::get<1>(v);
@@ -1054,7 +1054,7 @@ TEST_F(EnergyPlusFixture, IRHoriz_InterpretWeatherZeroIRHoriz)
     bool ErrorFound;
     std::string ErrOut;
 
-    for (auto WeatherDataLine : Lines) {
+    for (const auto& WeatherDataLine : Lines) {
         WeatherManager::InterpretWeatherDataLine(*state,
                                                  WeatherDataLine,
                                                  ErrorFound,

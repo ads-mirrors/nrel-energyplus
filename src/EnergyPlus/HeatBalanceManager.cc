@@ -2841,7 +2841,7 @@ namespace HeatBalanceManager {
                 auto const &extensionSchemaProps = objectSchemaProps["tags"]["items"]["properties"];
                 if (extensibles != objectFields.end()) {
                     auto extensiblesArray = extensibles.value();
-                    for (auto extensibleInstance : extensiblesArray) {
+                    for (const auto& extensibleInstance : extensiblesArray) {
                         thisSpace.tags.emplace_back(ip->getAlphaFieldValue(extensibleInstance, extensionSchemaProps, "tag"));
                     }
                 }
@@ -2885,7 +2885,7 @@ namespace HeatBalanceManager {
                 auto const &extensionSchemaProps = objectSchemaProps["spaces"]["items"]["properties"];
                 if (extensibles != objectFields.end()) {
                     auto extensiblesArray = extensibles.value();
-                    for (auto extensibleInstance : extensiblesArray) {
+                    for (const auto& extensibleInstance : extensiblesArray) {
                         std::string thisSpaceName = ip->getAlphaFieldValue(extensibleInstance, extensionSchemaProps, "space_name");
                         int thisSpaceNum = UtilityRoutines::FindItemInList(thisSpaceName, state.dataHeatBal->space);
                         if (thisSpaceNum > 0) {

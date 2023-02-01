@@ -284,21 +284,27 @@ namespace UnitarySystems {
                     int numSpeedInputs = flowRatioArray.size();
                     if (numSpeedInputs >= maxSpeeds) {
                         int speedNum = -1;
-                        for (auto flowRatio : flowRatioArray) {
+                        for (const auto &flowRatio : flowRatioArray) {
                             speedNum += 1;
                             auto m_CoolingSpeedRatioObject = flowRatio.at("cooling_speed_supply_air_flow_ratio");
                             if (m_CoolingSpeedRatioObject == "Autosize") {
-                                if (speedNum < (maxSpeeds + 1)) thisDesignSpec.coolingVolFlowRatio[speedNum] = -99999;
+                                if (speedNum < (maxSpeeds + 1)) {
+                                    thisDesignSpec.coolingVolFlowRatio[speedNum] = -99999;
+                                }
                             } else {
-                                if (speedNum < (maxSpeeds + 1))
+                                if (speedNum < (maxSpeeds + 1)) {
                                     thisDesignSpec.coolingVolFlowRatio[speedNum] = m_CoolingSpeedRatioObject.get<Real64>();
+                                }
                             }
                             auto m_HeatingSpeedRatioObject = flowRatio.at("heating_speed_supply_air_flow_ratio");
                             if (m_HeatingSpeedRatioObject == "Autosize") {
-                                if (speedNum < (maxSpeeds + 1)) thisDesignSpec.heatingVolFlowRatio[speedNum] = -99999;
+                                if (speedNum < (maxSpeeds + 1)) {
+                                    thisDesignSpec.heatingVolFlowRatio[speedNum] = -99999;
+                                }
                             } else {
-                                if (speedNum < (maxSpeeds + 1))
+                                if (speedNum < (maxSpeeds + 1)) {
                                     thisDesignSpec.heatingVolFlowRatio[speedNum] = m_HeatingSpeedRatioObject.get<Real64>();
+                                }
                             }
                         }
                     } else if (numSpeedInputs < maxSpeeds) {

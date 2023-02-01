@@ -2396,7 +2396,7 @@ void GetOARequirements(EnergyPlusData &state)
                 auto const &extensionSchemaProps = objectSchemaProps["space_specs"]["items"]["properties"];
                 if (extensibles != objectFields.end()) {
                     auto extensiblesArray = extensibles.value();
-                    for (auto extensibleInstance : extensiblesArray) {
+                    for (const auto& extensibleInstance : extensiblesArray) {
                         // Zones and spaces are not created yet, validate space names in ZoneEquipmentManager::SetupZoneSizingArrays
                         std::string thisSpaceName = ip->getAlphaFieldValue(extensibleInstance, extensionSchemaProps, "space_name");
                         thisOAReq.dsoaSpaceNames.emplace_back(thisSpaceName);

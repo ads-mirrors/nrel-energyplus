@@ -10482,7 +10482,7 @@ void MapShadeDeploymentOrderToLoopNumber(EnergyPlusData &state, int const enclNu
             if (thisDaylightCtrl.ShadeDeployOrderExtWins.size() > 0) {
                 int count = 0;
                 bool showOnce = true;
-                for (auto listOfExtWin : thisDaylightCtrl.ShadeDeployOrderExtWins) {
+                for (const auto& listOfExtWin : thisDaylightCtrl.ShadeDeployOrderExtWins) {
                     for (auto IWinShdOrd : listOfExtWin) {
                         ++count;
                         if (count > thisEnclDaylight.NumOfDayltgExtWins) {

@@ -2293,7 +2293,7 @@ namespace Curve {
                 std::vector<Btwxt::GridAxis> gridAxes;
 
                 // Loop through independent variables in list and add them to the grid
-                for (auto indVar : fields.at("independent_variables")) {
+                for (const auto& indVar : fields.at("independent_variables")) {
                     std::string indVarName = UtilityRoutines::MakeUPPERCase(indVar.at("independent_variable_name").get<std::string>());
                     std::string contextString = format("Table:IndependentVariable \"{}\"", indVarName);
                     std::pair<EnergyPlusData *, std::string> callbackPair{&state, contextString};
@@ -2538,7 +2538,7 @@ namespace Curve {
                                        lookupValues.end());
 
                 } else if (fields.count("values")) {
-                    for (auto value : fields.at("values")) {
+                    for (const auto& value : fields.at("values")) {
                         lookupValues.push_back(value.at("output_value").get<Real64>() / normalizationDivisor);
                     }
                 } else {

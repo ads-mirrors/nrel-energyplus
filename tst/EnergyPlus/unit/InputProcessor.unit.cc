@@ -4679,7 +4679,7 @@ TEST_F(InputProcessorFixture, epJSONgetFieldValue_extensiblesFromIDF)
                 heatSeqNums.resize(numExtensibles);
 
                 int counter = 0;
-                for (auto extensibleInstance : extensiblesArray) {
+                for (const auto& extensibleInstance : extensiblesArray) {
                     equipmentNames[counter] = ip->getAlphaFieldValue(extensibleInstance, extensionSchemaProps, "zone_equipment_name");
                     equipmentTypes[counter] = ip->getAlphaFieldValue(extensibleInstance, extensionSchemaProps, "zone_equipment_object_type");
                     coolFracSchedNames[counter] =

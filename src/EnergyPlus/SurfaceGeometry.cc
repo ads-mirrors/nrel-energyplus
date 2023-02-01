@@ -8569,7 +8569,7 @@ namespace SurfaceGeometry {
                 if (groundSurfaces != fields.end()) {
                     auto groundSurfacesArray = groundSurfaces.value();
                     thisGndSurfsObj.NumGndSurfs = groundSurfacesArray.size();
-                    for (auto groundSurface : groundSurfacesArray) {
+                    for (const auto& groundSurface : groundSurfacesArray) {
                         GroundSurfacesData thisGndSurf;
                         auto GndSurfName = groundSurface.find("ground_surface_name");
                         if (GndSurfName != groundSurface.end()) {
@@ -12986,7 +12986,7 @@ namespace SurfaceGeometry {
         // if they are then the ceiling and floor are (almost certainly) the same x and y coordinates.
         bool areFlrAndClgSame = true;
         if (floorCeilingXY.size() > 0) {
-            for (auto curFloorCeiling : floorCeilingXY) {
+            for (const auto& curFloorCeiling : floorCeilingXY) {
                 if (curFloorCeiling.count % 2 != 0) {
                     areFlrAndClgSame = false;
                     break;

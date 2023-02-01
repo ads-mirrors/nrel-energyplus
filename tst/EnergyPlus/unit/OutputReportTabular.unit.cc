@@ -399,9 +399,9 @@ TEST_F(EnergyPlusFixture, OutputReportTabularTest_GetUnitConversion)
         "[person/m2]",
     };
 
-    for (auto u : units) {
-        LookupSItoIP(*state, u, indexUnitConv, curUnits);
-        EXPECT_NE(indexUnitConv, 0);
+    for (const auto& u : units) {
+      LookupSItoIP(*state, u, indexUnitConv, curUnits);
+      EXPECT_NE(indexUnitConv, 0);
     }
 }
 
@@ -6409,7 +6409,7 @@ TEST_F(SQLiteFixture, WriteVeriSumTable_TestNotPartOfTotal)
     std::string rowName;
     std::string columnName;
 
-    for (auto v : results_strings) {
+    for (const auto& v : results_strings) {
 
         rowName = std::get<0>(v);
         columnName = std::get<1>(v);
@@ -6503,7 +6503,7 @@ TEST_F(SQLiteFixture, WriteVeriSumTable_TestNotPartOfTotal)
     });
 
     // Would have used bind_text in sqlite3 with a single prepared statement, but m_db is protected in SQLiteProcedures
-    for (auto v : results) {
+    for (const auto& v : results) {
 
         rowName = std::get<0>(v);
         columnName = std::get<1>(v);
@@ -7238,7 +7238,7 @@ TEST_F(SQLiteFixture, OutputReportTabular_WriteLoadComponentSummaryTables_AirLoo
     std::string tableName;
     std::string reportName;
 
-    for (auto v : results_strings) {
+    for (const auto& v : results_strings) {
 
         tableName = std::get<0>(v);
         reportName = std::get<1>(v);
@@ -9511,7 +9511,7 @@ TEST_F(SQLiteFixture, WriteVeriSumTable_TestNotPartOfTotal_DualUnits)
     std::string rowName;
     std::string columnName;
 
-    for (auto v : results_strings) {
+    for (const auto& v : results_strings) {
 
         rowName = std::get<0>(v);
         columnName = std::get<1>(v);
@@ -9604,7 +9604,7 @@ TEST_F(SQLiteFixture, WriteVeriSumTable_TestNotPartOfTotal_DualUnits)
     });
 
     // Would have used bind_text in sqlite3 with a single prepared statement, but m_db is protected in SQLiteProcedures
-    for (auto v : results) {
+    for (const auto& v : results) {
 
         rowName = std::get<0>(v);
         columnName = std::get<1>(v);

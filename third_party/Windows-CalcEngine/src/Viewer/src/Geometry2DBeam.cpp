@@ -68,8 +68,7 @@ namespace Viewer
       std::shared_ptr<const CDirect2DBeam> const & t_Beam) const
     {
         std::shared_ptr<const CViewSegment2D> aSegment = nullptr;
-        for(auto thisSegment : *m_Segments)
-        {
+        for (const auto& thisSegment : *m_Segments) {
             if(t_Beam->isSegmentIn(thisSegment))
             {
                 if(aSegment == nullptr)
@@ -98,8 +97,7 @@ namespace Viewer
     bool CDirect2DBeam::isSegmentIn(std::shared_ptr<const CViewSegment2D> const & t_Segment) const
     {
         auto isIn = false;
-        for(auto thisSegment : *m_Segments)
-        {
+        for (const auto& thisSegment : *m_Segments) {
             if(thisSegment == t_Segment)
             {
                 isIn = true;
@@ -290,8 +288,7 @@ namespace Viewer
     void CDirect2DRays::findRayBoundaries(double const t_ProfileAngle)
     {
         std::shared_ptr<CViewSegment2D> entryRay = nullptr;
-        for(auto aGeometry : m_Geometries2D)
-        {
+        for (const auto& aGeometry : m_Geometries2D) {
             // TODO: Geometry depends on entry or exit points
             std::shared_ptr<const CPoint2D> aPoint = nullptr;
             switch(m_Side)
@@ -333,15 +330,13 @@ namespace Viewer
         std::vector<std::shared_ptr<const CPoint2D>> inBetweenPoints;
 
         // m_Beams.push_back( m_UpperRay );
-        for(auto aEnclosure : m_Geometries2D)
-        {
+        for (const auto& aEnclosure : m_Geometries2D) {
             auto aSegments = aEnclosure->segments();
             if(isInRay(*(*aSegments)[0]->startPoint()))
             {
                 inBetweenPoints.push_back((*aSegments)[0]->startPoint());
             }
-            for(auto aSegment : *aSegments)
-            {
+            for (const auto& aSegment : *aSegments) {
                 auto endPoint = aSegment->endPoint();
                 // Ray is alway going from left to right. For point to be in between beam, it must
                 // be visible for upper ray and invisible for lower ray
@@ -361,8 +356,7 @@ namespace Viewer
         // Creating incoming rays
         auto firstBeam = m_UpperRay;
         std::shared_ptr<CViewSegment2D> secondBeam = nullptr;
-        for(auto aPoint : inBetweenPoints)
-        {
+        for (const auto& aPoint : inBetweenPoints) {
             secondBeam = createSubBeam(*aPoint, t_ProfileAngle);
             auto aRay = std::make_shared<CDirect2DRay>(firstBeam, secondBeam);
 
@@ -381,13 +375,10 @@ namespace Viewer
     {
         // First check all segments and calculte total ray height
         auto totalHeight = 0.0;
-        for(auto beamRay : m_Rays)
-        {
+        for (const auto& beamRay : m_Rays) {
             totalHeight += beamRay->rayNormalHeight();
-            for(auto aEnclosure : m_Geometries2D)
-            {
-                for(auto aSegment : (*aEnclosure->segments()))
-                {
+            for (const auto& aEnclosure : m_Geometries2D) {
+                for (const auto& aSegment : (*aEnclosure->segments())) {
                     beamRay->checkSegment(aSegment);
                 }
             }
@@ -400,8 +391,7 @@ namespace Viewer
         auto sPoint = std::make_shared<CPoint2D>(0, 0);
         auto ePoint = std::make_shared<CPoint2D>(1, 0);
         auto aNormalBeamDirection = std::make_shared<CViewSegment2D>(sPoint, ePoint);
-        for(auto beamRay : m_Rays)
-        {
+        for (const auto& beamRay : m_Rays) {
             auto currentHeight = beamRay->rayNormalHeight();
             auto projectedBeamHeight = beamRay->cosAngle(aNormalBeamDirection);
             auto viewFactor = 0.0;

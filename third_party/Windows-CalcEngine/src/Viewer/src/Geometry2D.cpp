@@ -23,9 +23,8 @@ namespace Viewer
 
     void CGeometry2D::appendGeometry2D(std::shared_ptr<CGeometry2D> const & t_Geometry2D)
     {
-        for(auto aSegment : (*t_Geometry2D->m_Segments))
-        {
-            m_Segments->push_back(aSegment);
+        for (const auto& aSegment : (*t_Geometry2D->m_Segments)) {
+          m_Segments->push_back(aSegment);
         }
         m_ViewFactorsCalculated = false;
     }
@@ -40,12 +39,10 @@ namespace Viewer
     std::shared_ptr<CGeometry2D> CGeometry2D::Translate(double const t_x, double const t_y) const
     {
         auto aEnclosure = std::make_shared<CGeometry2D>();
-        for(auto aSegment : *m_Segments)
-        {
-            std::shared_ptr<CSegment2D> newSegment = aSegment->translate(t_x, t_y);
-            auto newEnSegment =
-              std::make_shared<CViewSegment2D>(newSegment->startPoint(), newSegment->endPoint());
-            aEnclosure->appendSegment(newEnSegment);
+        for (const auto& aSegment : *m_Segments) {
+          std::shared_ptr<CSegment2D> newSegment = aSegment->translate(t_x, t_y);
+          auto newEnSegment = std::make_shared<CViewSegment2D>(newSegment->startPoint(), newSegment->endPoint());
+          aEnclosure->appendSegment(newEnSegment);
         }
 
         return aEnclosure;
@@ -151,8 +148,7 @@ namespace Viewer
         // it will not be considered to be part of blocking surface. Otherwise, program would search
         // for blocking surfaces and perform double integration over the both surfaces.
         auto inSide = true;
-        for(auto aSegment : aPolygon)
-        {
+        for (const auto& aSegment : aPolygon) {
             inSide = inSide && (aSegment.position(t_Point) == PointPosition::Visible);
             if(!inSide)
             {
@@ -181,10 +177,8 @@ namespace Viewer
             intSegments.push_back(r22);
         }
 
-        for(auto aSegment : *m_Segments)
-        {
-            for(auto iSegment : intSegments)
-            {
+        for (const auto& aSegment : *m_Segments) {
+            for (const auto& iSegment : intSegments) {
                 if(*aSegment != t_Segment1 && *aSegment != t_Segment2)
                 {
                     intersection = intersection || iSegment->intersectionWithSegment(aSegment);
@@ -214,8 +208,7 @@ namespace Viewer
         auto centerLine =
           std::make_shared<CViewSegment2D>(t_Segment1->centerPoint(), t_Segment2->centerPoint());
 
-        for(auto aSegment : *m_Segments)
-        {
+        for (const auto& aSegment : *m_Segments) {
             if(aSegment != t_Segment1 && aSegment != t_Segment2)
             {
                 intersection = intersection || centerLine->intersectionWithSegment(aSegment);

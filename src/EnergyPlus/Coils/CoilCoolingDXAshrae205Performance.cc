@@ -296,6 +296,7 @@ void CoilCoolingDX205Performance::calculate(EnergyPlus::EnergyPlusData &state,
         // Calculate simple capacity (powerUse, RTF) at operating conditions
         calculate_cycling_capcacity(state, inletNode, outletNode, gross_power, ratio, fanOpMode);
     } else {
+        RTF = 1.0; // if we are on greater than 1 speed, RTF *must* be 1
         if (is_continuous) {
             // compressor_sequence_number = speed - 1 + ratio
             // For example, a speed number of 2 with a ratio between (0,1) indicates that the compressor is modulating between speeds 1 and 2 with the
@@ -345,12 +346,10 @@ void CoilCoolingDX205Performance::calculate(EnergyPlus::EnergyPlusData &state,
                     inletNode.MassFlowRate;
                 outletNode.Temp = Psychrometrics::PsyTdbFnHW(outletNode.Enthalpy, outletNode.HumRat);
 
-                RTF = 1.0; // if we are on greater than 1 speed, RTF *must* be 1 // TODO?
-                powerUse += (1.0 - RTF) * power_lower_speed;
+                powerUse = ratio * gross_power + (1.0 - ratio) * power_lower_speed;
             } else {
                 set_output_node_conditions(state, inletNode, outletNode, gross_total_capacity, gross_sensible_capacity, air_mass_flow_rate);
-                RTF = 1.0; // if we are on greater than 1 speed, RTF *must* be 1 // TODO?
-                powerUse += (1.0 - RTF) * gross_power;
+                powerUse = gross_power;
             }
         }
     }
@@ -363,10 +362,10 @@ void CoilCoolingDX205Performance::calculate_cycling_capcacity(EnergyPlus::Energy
                                                               Real64 const ratio,
                                                               HVAC::FanOp const fanOpMode)
 {
-    powerUse = gross_power;
     auto cd = representation->performance.cycling_degradation_coefficient;
     auto part_load_factor = (1.0 - cd) + (cd * ratio);
     RTF = ratio / part_load_factor;
+    powerUse = gross_power * RTF;
     if (fanOpMode == HVAC::FanOp::Continuous) {
         // Fan on, compressor cycling
         outletNode.HumRat = outletNode.HumRat * ratio + (1.0 - ratio) * inletNode.HumRat;

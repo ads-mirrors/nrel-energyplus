@@ -2035,9 +2035,13 @@
     ,                        !- Electric Power Per Unit Flow Rate Per Unit Pressure {W/((m3/s)-Pa)}
     0.7;                     !- Fan Total Efficiency
 
+  Output:Variable,Heating Coil Air Inlet Node,System Node Mass Flow Rate, hourly;
+
   Output:Variable,*,Unitary System Fan Part Load Ratio,hourly;
 
   Output:Variable,*,Unitary System Compressor Part Load Ratio,hourly;
+
+  Output:Variable,*,Coil System Compressor Speed Number,hourly;
 
   Output:Variable,*,Zone Air System Sensible Heating Energy,hourly;
 
@@ -2050,6 +2054,8 @@
   Output:Variable,*,Zone Air Humidity Ratio,hourly;
 
   Output:Variable,*,Fan Electricity Rate,hourly;
+
+  Output:Variable,*,Fan Electricity Energy,hourly;
 
   Output:Variable,*,Cooling Coil Total Cooling Rate,hourly;
 
@@ -2073,6 +2079,8 @@
 
   Output:Variable,*,Cooling Coil Air Outlet Temperature,hourly;
 
+  Output:Variable,*,Cooling Coil Upper Speed Level,hourly;
+
   Output:Variable,*,Heating Coil Heating Rate,hourly;
 
   Output:Variable,*,Heating Coil Heating Energy,hourly;
@@ -2087,6 +2095,8 @@
 
   Output:Variable,*,Heating Coil Defrost Electricity Energy,hourly;
 
+  Output:Meter,Cooling:Electricity,hourly; !- [J]
+  
   Output:Meter:MeterFileOnly,Electricity:Facility,monthly;
 
   Output:Meter:MeterFileOnly,Electricity:Building,monthly;

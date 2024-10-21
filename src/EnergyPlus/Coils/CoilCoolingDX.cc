@@ -636,8 +636,8 @@ void CoilCoolingDX::getDataAfterSizing(EnergyPlusData &state,
     _normalModeFlowRates.clear();
     _normalModeRatedCapacities.clear();
     for (auto speed = 0; speed < this->performance->numSpeeds(); speed++) {
-        _normalModeFlowRates.push_back(performance->evapAirFlowRateAtSpeed(state, speed));
-        _normalModeRatedCapacities.push_back(performance->ratedTotalCapacityAtSpeed(state, speed));
+        _normalModeFlowRates.push_back(performance->evapAirFlowRateAtSpeedIndex(state, speed));
+        _normalModeRatedCapacities.push_back(performance->ratedTotalCapacityAtSpeedIndex(state, speed));
     }
     _normalModeRatedCapacity = this->performance->ratedGrossTotalCap();
 }
@@ -721,7 +721,7 @@ void CoilCoolingDX::simulate(EnergyPlusData &state,
         if (speedNum > 0) {
             Real64 condInletTemp =
                 state.dataEnvrn->OutWetBulbTemp + (state.dataEnvrn->OutDryBulbTemp - state.dataEnvrn->OutWetBulbTemp) *
-                                                      (1.0 - this->performance->evapCondenserEffectivenessAtSpeed(state, speedNum - 1));
+                                                      (1.0 - this->performance->evapCondenserEffectivenessAtSpeedIndex(state, speedNum - 1));
             Real64 condInletHumRat =
                 Psychrometrics::PsyWFnTdbTwbPb(state, condInletTemp, state.dataEnvrn->OutWetBulbTemp, state.dataEnvrn->OutBaroPress, RoutineName);
             Real64 outdoorHumRat = state.dataEnvrn->OutHumRat;
@@ -731,7 +731,7 @@ void CoilCoolingDX::simulate(EnergyPlusData &state,
             this->evaporativeCondSupplyTankVolumeFlow = (condInletHumRat - outdoorHumRat) * condAirMassFlow / waterDensity;
             this->evaporativeCondSupplyTankConsump = this->evaporativeCondSupplyTankVolumeFlow * reportingConstant;
             if (coilMode == HVAC::CoilMode::Normal) {
-                this->evapCondPumpElecPower = this->performance->currentEvapCondPumpPowerAtSpeed(state, speedNum - 1);
+                this->evapCondPumpElecPower = this->performance->currentEvapCondPumpPowerAtSpeed(state, speedNum);
             }
             state.dataWaterData->WaterStorage(this->evaporativeCondSupplyTankIndex).VdotRequestDemand(this->evaporativeCondSupplyTankARRID) =
                 this->evaporativeCondSupplyTankVolumeFlow;
@@ -769,7 +769,7 @@ void CoilCoolingDX::simulate(EnergyPlusData &state,
 
     this->partLoadRatioReport = speedNum > 1 ? 1.0 : speedRatio;
     this->speedNumReport = speedNum;
-    this->speedRatioReport = speedRatio;
+    this->speedRatioReport = speedNum <= 1 ? 0.0 : speedRatio;
 
     if (coilMode == HVAC::CoilMode::SubcoolReheat) {
         this->recoveredHeatEnergyRate = this->performance->recoveredEnergyRate;

@@ -2565,7 +2565,7 @@ namespace UnitarySystems {
                 newCoil.size(state);
                 if (MSHPIndex == -1) {
                     for (Iter = 1; Iter <= this->m_NumOfSpeedCooling; ++Iter) {
-                        this->m_CoolVolumeFlowRate[Iter] = newCoil.performance->evapAirFlowRateAtSpeed(state, Iter - 1);
+                        this->m_CoolVolumeFlowRate[Iter] = newCoil.performance->evapAirFlowRateAtSpeedIndex(state, Iter - 1);
                         this->m_CoolMassFlowRate[Iter] = this->m_CoolVolumeFlowRate[Iter] * state.dataEnvrn->StdRhoAir;
                         // it seems the ratio should reference the actual flow rates, not the fan flow ???
                         if (this->m_DesignFanVolFlowRate > 0.0 && this->m_FanExists) {
@@ -2638,7 +2638,7 @@ namespace UnitarySystems {
             if (MSHPIndex == -1) {
                 // Gotta loop backwards since we may try to access the last element when there are no fans
                 for (Iter = this->m_NumOfSpeedCooling; Iter >= 1; --Iter) {
-                    this->m_CoolVolumeFlowRate[Iter] = newCoil.performance->evapAirFlowRateAtSpeed(state, Iter - 1);
+                    this->m_CoolVolumeFlowRate[Iter] = newCoil.performance->evapAirFlowRateAtSpeedIndex(state, Iter - 1);
                     this->m_CoolMassFlowRate[Iter] = this->m_CoolVolumeFlowRate[Iter] * state.dataEnvrn->StdRhoAir;
                     // it seems the ratio should reference the actual flow rates, not the fan flow ???
                     if (this->m_DesignFanVolFlowRate > 0.0 && this->m_FanExists) {

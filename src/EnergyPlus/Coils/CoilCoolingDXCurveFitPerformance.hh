@@ -218,14 +218,14 @@ struct CoilCoolingDXCurveFitPerformance : public CoilCoolingDXPerformanceBase
         }
     }
 
-    Real64 evapAirFlowRateAtSpeed(EnergyPlusData &, int speed) override
+    Real64 evapAirFlowRateAtSpeedIndex(EnergyPlusData &, int index) override
     {
-        return normalMode.speeds[speed].evap_air_flow_rate;
+        return normalMode.speeds[index].evap_air_flow_rate;
     }
 
-    Real64 ratedTotalCapacityAtSpeed(EnergyPlusData &, int speed) override
+    Real64 ratedTotalCapacityAtSpeedIndex(EnergyPlusData &, int index) override
     {
-        return normalMode.speeds[speed].rated_total_capacity;
+        return normalMode.speeds[index].rated_total_capacity;
     }
 
     Real64 currentEvapCondPumpPowerAtSpeed(EnergyPlusData &, int speed) override
@@ -233,9 +233,9 @@ struct CoilCoolingDXCurveFitPerformance : public CoilCoolingDXPerformanceBase
         return normalMode.getCurrentEvapCondPumpPower(speed);
     }
 
-    Real64 evapCondenserEffectivenessAtSpeed(EnergyPlusData &, int speed) override
+    Real64 evapCondenserEffectivenessAtSpeedIndex(EnergyPlusData &, int index) override
     {
-        return normalMode.speeds[speed].evap_condenser_effectiveness;
+        return normalMode.speeds[index].evap_condenser_effectiveness;
     }
 
     Real64 evapAirFlowFraction(EnergyPlusData &) override

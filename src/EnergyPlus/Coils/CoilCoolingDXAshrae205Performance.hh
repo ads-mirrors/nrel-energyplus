@@ -86,16 +86,16 @@ struct CoilCoolingDX205Performance : public CoilCoolingDXPerformanceBase
 
     Real64 grossRatedSHR(EnergyPlusData &state) override;
 
-    Real64 evapAirFlowRateAtSpeed(EnergyPlusData &state, int speed) override
+    Real64 evapAirFlowRateAtSpeedIndex(EnergyPlusData &state, int index) override
     {
-        return speeds[speed].evaporator_air_mass_flow;
+        return speeds[index].evaporator_air_mass_flow;
     }
 
-    Real64 ratedTotalCapacityAtSpeed(EnergyPlusData &, int) override;
+    Real64 ratedTotalCapacityAtSpeedIndex(EnergyPlusData &, int) override;
 
-    Real64 ratedEvapAirMassFlowRate(EnergyPlusData &state) override // TODO: what speed?
+    Real64 ratedEvapAirMassFlowRate(EnergyPlusData &state) override
     {
-        return evapAirFlowRateAtSpeed(state, nominal_speed);
+        return evapAirFlowRateAtSpeedIndex(state, nominal_speed_index);
     }
 
     Real64 ratedEvapAirFlowRate(EnergyPlusData &state) override; // TODO: what speed?
@@ -130,9 +130,9 @@ struct CoilCoolingDX205Performance : public CoilCoolingDXPerformanceBase
                    DataLoopNode::NodeData &);
 
 private:
-    tk205::rs0004_ns::LookupVariablesCoolingStruct calculate_rated_capacities(EnergyPlus::EnergyPlusData &state, int speed) const;
+    tk205::rs0004_ns::LookupVariablesCoolingStruct calculate_rated_capacities(EnergyPlus::EnergyPlusData &state, int speed_index) const;
 
-    Real64 calculate_air_mass_flow(EnergyPlusData &state, int speed) const;
+    Real64 calculate_air_mass_flow(EnergyPlusData &state, int speed_index) const;
 
     void calculate_cycling_capcacity(EnergyPlusData &state,
                                      const DataLoopNode::NodeData &inletNode,
@@ -158,7 +158,7 @@ private:
     double rating_indoor_coil_entering_relative_humidity{0.0};
     double rating_rho_air{0.0};
 
-    const int nominal_speed{0};
+    int nominal_speed_index{0};
 
     struct CoilSpeedParameters
     {

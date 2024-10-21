@@ -142,9 +142,9 @@ struct CoilCoolingDXPerformanceBase
 
     virtual int numSpeeds() = 0;
 
-    virtual Real64 evapAirFlowRateAtSpeed(EnergyPlusData &state, int) = 0;
+    virtual Real64 evapAirFlowRateAtSpeedIndex(EnergyPlusData &state, int) = 0;
 
-    virtual Real64 ratedTotalCapacityAtSpeed(EnergyPlusData &, int) = 0;
+    virtual Real64 ratedTotalCapacityAtSpeedIndex(EnergyPlusData &, int) = 0;
 
     virtual Real64 grossRatedCoolingCOPAtMaxSpeed(EnergyPlusData &state)
     {
@@ -198,7 +198,7 @@ struct CoilCoolingDXPerformanceBase
         return 0.0;
     }
 
-    virtual Real64 evapCondenserEffectivenessAtSpeed(EnergyPlusData &state, int)
+    virtual Real64 evapCondenserEffectivenessAtSpeedIndex(EnergyPlusData &state, int)
     {
         ShowFatalError(state, "Evaporator Condenser Effectiveness is not an available parameter for this coil type.");
         return 0.0;

@@ -131,30 +131,15 @@
     No,                      !- Do HVAC Sizing Simulation for Sizing Periods
     1;                       !- Maximum Number of HVAC Sizing Simulation Passes
 
-  RunPeriod,
-    Jan14,                   !- Name
-    1,                       !- Begin Month
-    14,                      !- Begin Day of Month
-    ,                        !- Begin Year
-    1,                       !- End Month
-    14,                      !- End Day of Month
-    ,                        !- End Year
-    Tuesday,                 !- Day of Week for Start Day
-    Yes,                     !- Use Weather File Holidays and Special Days
-    Yes,                     !- Use Weather File Daylight Saving Period
-    No,                      !- Apply Weekend Holiday Rule
-    Yes,                     !- Use Weather File Rain Indicators
-    Yes;                     !- Use Weather File Snow Indicators
-
-  RunPeriod,
-    July7,                   !- Name
-    7,                       !- Begin Month
-    7,                       !- Begin Day of Month
-    ,                        !- Begin Year
-    7,                       !- End Month
-    7,                       !- End Day of Month
-    ,                        !- End Year
-    Tuesday,                 !- Day of Week for Start Day
+  RunPeriod,  ! July Simulation
+    July Simulation,  !- Name
+    7,  !- Begin Month
+    1,   !- Begin Day of Month
+    ,    !- Begin Year
+    7,   !- End Month
+    31,  !- End Day of Month
+    ,    !- End Year
+    ,                 !- Day of Week for Start Day
     Yes,                     !- Use Weather File Holidays and Special Days
     Yes,                     !- Use Weather File Daylight Saving Period
     No,                      !- Apply Weekend Holiday Rule
@@ -2035,67 +2020,71 @@
     ,                        !- Electric Power Per Unit Flow Rate Per Unit Pressure {W/((m3/s)-Pa)}
     0.7;                     !- Fan Total Efficiency
 
-  Output:Variable,Heating Coil Air Inlet Node,System Node Mass Flow Rate, hourly;
+  Output:Variable,Heating Coil Air Inlet Node,System Node Mass Flow Rate, timestep;
 
-  Output:Variable,*,Unitary System Fan Part Load Ratio,hourly;
+  Output:Variable,*,Unitary System Fan Part Load Ratio,timestep;
 
-  Output:Variable,*,Unitary System Compressor Part Load Ratio,hourly;
+  Output:Variable,*,Unitary System Compressor Part Load Ratio,timestep;
 
-  Output:Variable,*,Coil System Compressor Speed Number,hourly;
+  Output:Variable,*,Coil System Compressor Speed Number,timestep;
 
-  Output:Variable,*,Zone Air System Sensible Heating Energy,hourly;
+  Output:Variable,*,Zone Air System Sensible Heating Energy,timestep;
 
-  Output:Variable,*,Zone Air System Sensible Cooling Energy,hourly;
+  Output:Variable,*,Zone Air System Sensible Cooling Energy,timestep;
 
-  Output:Variable,*,Zone Air Temperature,hourly;
+  Output:Variable,*,Zone Air Temperature,timestep;
 
-  Output:Variable,*,Zone Air Relative Humidity,hourly;
+  Output:Variable,*,Zone Air Relative Humidity,timestep;
 
-  Output:Variable,*,Zone Air Humidity Ratio,hourly;
+  Output:Variable,*,Zone Air Humidity Ratio,timestep;
 
-  Output:Variable,*,Fan Electricity Rate,hourly;
+  Output:Variable,*,Fan Electricity Rate,timestep;
 
-  Output:Variable,*,Fan Electricity Energy,hourly;
+  Output:Variable,*,Fan Electricity Energy,timestep;
 
-  Output:Variable,*,Cooling Coil Total Cooling Rate,hourly;
+  Output:Variable,*,Cooling Coil Total Cooling Rate,timestep;
 
-  Output:Variable,*,Cooling Coil Total Cooling Energy,hourly;
+  Output:Variable,*,Cooling Coil Total Cooling Energy,timestep;
 
-  Output:Variable,*,Cooling Coil Air Mass Flow Rate,hourly;
+  Output:Variable,*,Cooling Coil Air Mass Flow Rate,timestep;
 
-  Output:Variable,*,Cooling Coil Sensible Cooling Rate,hourly;
+  Output:Variable,*,Cooling Coil Sensible Cooling Rate,timestep;
 
-  Output:Variable,*,Cooling Coil Sensible Cooling Energy,hourly;
+  Output:Variable,*,Cooling Coil Sensible Cooling Energy,timestep;
 
-  Output:Variable,*,Cooling Coil Latent Cooling Rate,hourly;
+  Output:Variable,*,Cooling Coil Latent Cooling Rate,timestep;
 
-  Output:Variable,*,Cooling Coil Latent Cooling Energy,hourly;
+  Output:Variable,*,Cooling Coil Latent Cooling Energy,timestep;
 
-  Output:Variable,*,Cooling Coil Electricity Rate,hourly;
+  Output:Variable,*,Cooling Coil Electricity Rate,timestep;
 
-  Output:Variable,*,Cooling Coil Electricity Energy,hourly;
+  Output:Variable,*,Cooling Coil Electricity Energy,timestep;
 
-  Output:Variable,*,Cooling Coil Runtime Fraction,hourly;
+  Output:Variable,*,Cooling Coil Runtime Fraction,timestep;
 
-  Output:Variable,*,Cooling Coil Air Outlet Temperature,hourly;
+  Output:Variable,*,Cooling Coil Air Outlet Temperature,timestep;
 
-  Output:Variable,*,Cooling Coil Upper Speed Level,hourly;
+  Output:Variable,*,Cooling Coil Upper Speed Level,detailed;
 
-  Output:Variable,*,Heating Coil Heating Rate,hourly;
+  Output:Variable,*,Cooling Coil Neighboring Speed Levels Ratio,detailed;
 
-  Output:Variable,*,Heating Coil Heating Energy,hourly;
+  Output:Variable,*,Cooling Coil Part Load Ratio,detailed;
 
-  Output:Variable,*,Heating Coil Electricity Rate,hourly;
+  Output:Variable,*,Heating Coil Heating Rate,timestep;
 
-  Output:Variable,*,Heating Coil Defrost Electricity Rate,hourly;
+  Output:Variable,*,Heating Coil Heating Energy,timestep;
 
-  Output:Variable,*,Heating Coil Heating Rate,hourly;
+  Output:Variable,*,Heating Coil Electricity Rate,timestep;
 
-  Output:Variable,*,Heating Coil NaturalGas Rate,hourly;
+  Output:Variable,*,Heating Coil Defrost Electricity Rate,timestep;
 
-  Output:Variable,*,Heating Coil Defrost Electricity Energy,hourly;
+  Output:Variable,*,Heating Coil Heating Rate,timestep;
 
-  Output:Meter,Cooling:Electricity,hourly; !- [J]
+  Output:Variable,*,Heating Coil NaturalGas Rate,timestep;
+
+  Output:Variable,*,Heating Coil Defrost Electricity Energy,timestep;
+
+  Output:Meter,Cooling:Electricity,timestep; !- [J]
   
   Output:Meter:MeterFileOnly,Electricity:Facility,monthly;
 

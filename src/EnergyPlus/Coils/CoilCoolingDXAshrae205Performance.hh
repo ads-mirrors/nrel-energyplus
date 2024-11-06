@@ -86,7 +86,7 @@ struct CoilCoolingDX205Performance : public CoilCoolingDXPerformanceBase
 
     Real64 grossRatedSHR(EnergyPlusData &state) override;
 
-    Real64 evapAirFlowRateAtSpeedIndex(EnergyPlusData &state, int index) override // Volumetric 
+    Real64 evapAirFlowRateAtSpeedIndex(EnergyPlusData &state, int index) override // Volumetric
     {
         return speeds[index].evaporator_air_volumetric_flow;
     }

@@ -183,7 +183,7 @@ namespace PipeHeatTransfer {
         Real64 ZoneHeatGainRate; // Lagged energy summation for zone heat gain {W}
         PlantLocation plantLoc;
         bool CheckEquipName;
-        std::shared_ptr<BaseGroundTempsModel> groundTempModel;
+        BaseGroundTempsModel *groundTempModel; // non-owning pointer
 
         // Report data
         Real64 FluidInletTemp;          // inlet temperature [C]

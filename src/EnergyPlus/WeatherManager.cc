@@ -6707,19 +6707,19 @@ namespace Weather {
 
         // Initialize Site:GroundTemperature:BuildingSurface object
         state.dataWeather->siteBuildingSurfaceGroundTempsPtr = GroundTemperatureManager::GetGroundTempModelAndInit(
-            state, GroundTemperatureManager::groundTempModelNamesUC[(int)GroundTempObjType::SiteBuildingSurfaceGroundTemp], "");
+            state, groundTempModelNamesUC[(int)GroundTempObjType::SiteBuildingSurfaceGroundTemp], "");
 
         // Initialize Site:GroundTemperature:FCFactorMethod object
         state.dataWeather->siteFCFactorMethodGroundTempsPtr = GroundTemperatureManager::GetGroundTempModelAndInit(
-            state, GroundTemperatureManager::groundTempModelNamesUC[static_cast<int>(GroundTempObjType::SiteFCFactorMethodGroundTemp)], "");
+            state, groundTempModelNamesUC[static_cast<int>(GroundTempObjType::SiteFCFactorMethodGroundTemp)], "");
 
         // Initialize Site:GroundTemperature:Shallow object
         state.dataWeather->siteShallowGroundTempsPtr = GroundTemperatureManager::GetGroundTempModelAndInit(
-            state, GroundTemperatureManager::groundTempModelNamesUC[static_cast<int>(GroundTempObjType::SiteShallowGroundTemp)], "");
+            state, groundTempModelNamesUC[static_cast<int>(GroundTempObjType::SiteShallowGroundTemp)], "");
 
         // Initialize Site:GroundTemperature:Deep object
         state.dataWeather->siteDeepGroundTempsPtr = GroundTemperatureManager::GetGroundTempModelAndInit(
-            state, GroundTemperatureManager::groundTempModelNamesUC[static_cast<int>(GroundTempObjType::SiteDeepGroundTemp)], "");
+            state, groundTempModelNamesUC[static_cast<int>(GroundTempObjType::SiteDeepGroundTemp)], "");
     }
 
     void GetGroundReflectances(EnergyPlusData &state, bool &ErrorsFound)

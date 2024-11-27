@@ -118,9 +118,9 @@ void InitializeRuntimeLanguage(EnergyPlusData &state)
     // value(7)   Seconds (0-59)
     // value(8)   Milliseconds (0-999)
 
-    std::string datestring; // supposedly returns blank when no date available.
-
     if (state.dataRuntimeLangProcessor->InitializeOnce) {
+
+        std::string datestring; // supposedly returns blank when no date available.
 
         state.dataRuntimeLang->emsVarBuiltInStart = state.dataRuntimeLang->NumErlVariables + 1;
 

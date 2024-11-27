@@ -50,8 +50,6 @@
 
 // C++ Headers
 #include <memory>
-#include <string>
-#include <unordered_map>
 
 // EnergyPlus Headers
 #include <EnergyPlus/Data/BaseData.hh>

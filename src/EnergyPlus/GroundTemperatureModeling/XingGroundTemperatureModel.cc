@@ -51,9 +51,7 @@
 // EnergyPlus headers
 #include <EnergyPlus/Data/EnergyPlusData.hh>
 #include <EnergyPlus/DataGlobalConstants.hh>
-#include <EnergyPlus/DataGlobals.hh>
 #include <EnergyPlus/DataIPShortCuts.hh>
-#include <EnergyPlus/GroundTemperatureModeling/GroundTemperatureModelManager.hh>
 #include <EnergyPlus/GroundTemperatureModeling/XingGroundTemperatureModel.hh>
 #include <EnergyPlus/InputProcessing/InputProcessor.hh>
 #include <EnergyPlus/UtilityRoutines.hh>
@@ -64,7 +62,7 @@ namespace EnergyPlus {
 //******************************************************************************
 
 // Xing model factory
-std::shared_ptr<XingGroundTempsModel> XingGroundTempsModel::XingGTMFactory(EnergyPlusData &state, std::string objectName)
+XingGroundTempsModel *XingGroundTempsModel::XingGTMFactory(EnergyPlusData &state, const std::string &objectName)
 {
     // SUBROUTINE INFORMATION:
     //       AUTHOR         Matt Mitchell
@@ -80,12 +78,12 @@ std::shared_ptr<XingGroundTempsModel> XingGroundTempsModel::XingGTMFactory(Energ
     int IOStat;
 
     // New shared pointer for this model object
-    std::shared_ptr<XingGroundTempsModel> thisModel(new XingGroundTempsModel());
+    auto *thisModel = new XingGroundTempsModel();
 
-    GroundTempObjType objType = GroundTempObjType::XingGroundTemp;
+    auto objType = GroundTempObjType::XingGroundTemp;
 
-    std::string_view const cCurrentModuleObject = GroundTemperatureManager::groundTempModelNamesUC[static_cast<int>(objType)];
-    int numCurrModels = state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, cCurrentModuleObject);
+    std::string_view const cCurrentModuleObject = groundTempModelNamesUC[static_cast<int>(objType)];
+    const int numCurrModels = state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, cCurrentModuleObject);
 
     for (int modelNum = 1; modelNum <= numCurrModels; ++modelNum) {
 
@@ -97,7 +95,7 @@ std::shared_ptr<XingGroundTempsModel> XingGroundTempsModel::XingGTMFactory(Energ
 
             thisModel->objectName = state.dataIPShortCut->cAlphaArgs(1);
             thisModel->objectType = objType;
-            thisModel->groundThermalDiffisivity = state.dataIPShortCut->rNumericArgs(1) /
+            thisModel->groundThermalDiffusivity = state.dataIPShortCut->rNumericArgs(1) /
                                                   (state.dataIPShortCut->rNumericArgs(2) * state.dataIPShortCut->rNumericArgs(3)) *
                                                   Constant::SecsInDay;
             thisModel->aveGroundTemp = state.dataIPShortCut->rNumericArgs(4);
@@ -114,12 +112,10 @@ std::shared_ptr<XingGroundTempsModel> XingGroundTempsModel::XingGTMFactory(Energ
     if (found) {
         state.dataGrndTempModelMgr->groundTempModels.push_back(thisModel);
         return thisModel;
-    } else {
-        ShowFatalError(state,
-                       fmt::format("{}--Errors getting input for ground temperature model",
-                                   GroundTemperatureManager::groundTempModelNames[static_cast<int>(objType)]));
-        return nullptr;
     }
+
+    ShowFatalError(state, fmt::format("{}--Errors getting input for ground temperature model", groundTempModelNames[static_cast<int>(objType)]));
+    return nullptr;
 }
 
 //******************************************************************************
@@ -134,32 +130,32 @@ Real64 XingGroundTempsModel::getGroundTemp(EnergyPlusData &state)
     // Returns the ground temperature for the Site:GroundTemperature:Undisturbed:Xing
 
     // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-    Real64 tp = state.dataWeather->NumDaysInYear; // Period of soil temperature cycle
+    const Real64 tp = state.dataWeather->NumDaysInYear; // Period of soil temperature cycle
 
     // Inits
-    Real64 Ts_1 = surfTempAmplitude_1; // Amplitude of surface temperature
-    Real64 PL_1 = phaseShift_1;        // Phase shift of surface temperature
-    Real64 Ts_2 = surfTempAmplitude_2; // Amplitude of surface temperature
-    Real64 PL_2 = phaseShift_2;        // Phase shift of surface temperature
+    const Real64 Ts_1 = surfTempAmplitude_1; // Amplitude of surface temperature
+    const Real64 PL_1 = phaseShift_1;        // Phase shift of surface temperature
+    const Real64 Ts_2 = surfTempAmplitude_2; // Amplitude of surface temperature
+    const Real64 PL_2 = phaseShift_2;        // Phase shift of surface temperature
 
-    int n = 1;
-    Real64 gamma1 = std::sqrt((n * Constant::Pi) / (groundThermalDiffisivity * tp));
-    Real64 exp1 = -depth * gamma1;
-    Real64 cos1 = (2 * Constant::Pi * n) / tp * (simTimeInDays - PL_1) - depth * gamma1;
+    constexpr int n1 = 1;
+    const Real64 gamma1 = std::sqrt((n1 * Constant::Pi) / (groundThermalDiffusivity * tp));
+    const Real64 exp1 = -depth * gamma1;
+    const Real64 cos1 = 2 * Constant::Pi * n1 / tp * (simTimeInDays - PL_1) - depth * gamma1;
 
-    n = 2;
-    Real64 gamma2 = std::sqrt((n * Constant::Pi) / (groundThermalDiffisivity * tp));
-    Real64 exp2 = -depth * gamma2;
-    Real64 cos2 = (2 * Constant::Pi * n) / tp * (simTimeInDays - PL_2) - depth * gamma2;
+    constexpr int n2 = 2;
+    const Real64 gamma2 = std::sqrt((n2 * Constant::Pi) / (groundThermalDiffusivity * tp));
+    const Real64 exp2 = -depth * gamma2;
+    const Real64 cos2 = 2 * Constant::Pi * n2 / tp * (simTimeInDays - PL_2) - depth * gamma2;
 
-    Real64 summation = std::exp(exp1) * Ts_1 * std::cos(cos1) + std::exp(exp2) * Ts_2 * std::cos(cos2);
+    const Real64 summation = std::exp(exp1) * Ts_1 * std::cos(cos1) + std::exp(exp2) * Ts_2 * std::cos(cos2);
 
     return aveGroundTemp - summation;
 }
 
 //******************************************************************************
 
-Real64 XingGroundTempsModel::getGroundTempAtTimeInMonths(EnergyPlusData &state, Real64 _depth, int _month)
+Real64 XingGroundTempsModel::getGroundTempAtTimeInMonths(EnergyPlusData &state, const Real64 _depth, const int _month)
 {
     // SUBROUTINE INFORMATION:
     //       AUTHOR         Matt Mitchell
@@ -169,16 +165,17 @@ Real64 XingGroundTempsModel::getGroundTempAtTimeInMonths(EnergyPlusData &state, 
     // Returns ground temperature when input time is in months
 
     // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
+    // TODO: Fixing this to be floating point 12.0 causes diffs and failed tests
     Real64 const aveDaysInMonth = state.dataWeather->NumDaysInYear / 12;
 
     depth = _depth;
 
     // Set month
     if (_month >= 1 && _month <= 12) {
-        simTimeInDays = aveDaysInMonth * ((_month - 1) + 0.5);
+        simTimeInDays = aveDaysInMonth * (_month - 1 + 0.5);
     } else {
-        int monthIndex = remainder(_month, 12);
-        simTimeInDays = aveDaysInMonth * ((monthIndex - 1) + 0.5);
+        const int monthIndex = _month % 12;
+        simTimeInDays = aveDaysInMonth * (monthIndex - 1 + 0.5);
     }
 
     // Get and return ground temp
@@ -187,7 +184,7 @@ Real64 XingGroundTempsModel::getGroundTempAtTimeInMonths(EnergyPlusData &state, 
 
 //******************************************************************************
 
-Real64 XingGroundTempsModel::getGroundTempAtTimeInSeconds(EnergyPlusData &state, Real64 _depth, Real64 seconds)
+Real64 XingGroundTempsModel::getGroundTempAtTimeInSeconds(EnergyPlusData &state, const Real64 _depth, const Real64 seconds)
 {
     // SUBROUTINE INFORMATION:
     //       AUTHOR         Matt Mitchell

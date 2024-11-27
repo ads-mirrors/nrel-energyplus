@@ -907,10 +907,10 @@ struct WeatherManagerData : BaseGlobalStruct
     EPVector<Weather::SpecialDayData> SpecialDays;               // NOLINT(cert-err58-cpp)
     EPVector<Weather::DataPeriodData> DataPeriods;               // NOLINT(cert-err58-cpp)
 
-    std::shared_ptr<BaseGroundTempsModel> siteShallowGroundTempsPtr;
-    std::shared_ptr<BaseGroundTempsModel> siteBuildingSurfaceGroundTempsPtr;
-    std::shared_ptr<BaseGroundTempsModel> siteFCFactorMethodGroundTempsPtr;
-    std::shared_ptr<BaseGroundTempsModel> siteDeepGroundTempsPtr;
+    BaseGroundTempsModel *siteShallowGroundTempsPtr;         // non-owning pointer
+    BaseGroundTempsModel *siteBuildingSurfaceGroundTempsPtr; // non-owning pointer
+    BaseGroundTempsModel *siteFCFactorMethodGroundTempsPtr;  // non-owning pointer
+    BaseGroundTempsModel *siteDeepGroundTempsPtr;            // non-owning pointer
 
     std::vector<Weather::UnderwaterBoundary> underwaterBoundaries;
     Weather::AnnualMonthlyDryBulbWeatherData OADryBulbAverage; // processes outside air drybulb temperature
@@ -937,11 +937,6 @@ struct WeatherManagerData : BaseGlobalStruct
 
     void clear_state() override
     {
-        this->siteShallowGroundTempsPtr.reset();
-        this->siteBuildingSurfaceGroundTempsPtr.reset();
-        this->siteFCFactorMethodGroundTempsPtr.reset();
-        this->siteDeepGroundTempsPtr.reset();
-
         new (this) WeatherManagerData();
     }
 };

@@ -49,13 +49,9 @@
 #define SiteFCFactorMethodTemperatures_hh_INCLUDED
 
 // C++ Headers
-#include <memory>
-
-// ObjexxFCL Headers
-#include <ObjexxFCL/Array1D.hh>
+#include <array>
 
 // EnergyPlus Headers
-#include <EnergyPlus/Data/BaseData.hh>
 #include <EnergyPlus/EnergyPlus.hh>
 #include <EnergyPlus/GroundTemperatureModeling/BaseGroundTemperatureModel.hh>
 
@@ -65,24 +61,18 @@ namespace EnergyPlus {
 struct EnergyPlusData;
 
 // Derived class for Site:GroundTemperature:FCFactorMethod
-class SiteFCFactorMethodGroundTemps : public BaseGroundTempsModel
+struct SiteFCFactorMethodGroundTemps final : BaseGroundTempsModel
 {
-public:
-    int timeOfSimInMonths;
-    Array1D<Real64> fcFactorGroundTemps;
+    int timeOfSimInMonths = 0;
+    std::array<Real64, 12> fcFactorGroundTemps = {13.0};
 
-    // Default Constructor
-    SiteFCFactorMethodGroundTemps() : timeOfSimInMonths(0), fcFactorGroundTemps(12, 13.0)
-    {
-    }
-
-    static std::shared_ptr<SiteFCFactorMethodGroundTemps> FCFactorGTMFactory(EnergyPlusData &state, std::string objectName);
+    static SiteFCFactorMethodGroundTemps *FCFactorGTMFactory(EnergyPlusData &state, const std::string &objectName);
 
     Real64 getGroundTemp([[maybe_unused]] EnergyPlusData &state) override;
 
-    Real64 getGroundTempAtTimeInSeconds(EnergyPlusData &state, Real64 const depth, Real64 const timeInSecondsOfSim) override;
+    Real64 getGroundTempAtTimeInSeconds(EnergyPlusData &state, Real64 depth, Real64 timeInSecondsOfSim) override;
 
-    Real64 getGroundTempAtTimeInMonths(EnergyPlusData &state, Real64 const depth, int const monthOfSim) override;
+    Real64 getGroundTempAtTimeInMonths(EnergyPlusData &state, Real64 depth, int monthOfSim) override;
 };
 
 } // namespace EnergyPlus

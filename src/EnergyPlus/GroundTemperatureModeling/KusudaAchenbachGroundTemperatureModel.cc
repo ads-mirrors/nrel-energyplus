@@ -45,16 +45,11 @@
 // OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-// C++ Headers
-#include <memory>
-
-// ObjexxFCL Headers
-
 // EnergyPlus Headers
 #include <EnergyPlus/Data/EnergyPlusData.hh>
 #include <EnergyPlus/DataIPShortCuts.hh>
-#include <EnergyPlus/GroundTemperatureModeling/GroundTemperatureModelManager.hh>
 #include <EnergyPlus/GroundTemperatureModeling/KusudaAchenbachGroundTemperatureModel.hh>
+#include <EnergyPlus/GroundTemperatureModeling/SiteShallowGroundTemperatures.hh>
 #include <EnergyPlus/InputProcessing/InputProcessor.hh>
 #include <EnergyPlus/UtilityRoutines.hh>
 #include <EnergyPlus/WeatherManager.hh>
@@ -64,7 +59,7 @@ namespace EnergyPlus {
 //******************************************************************************
 
 // Kusuda model factory
-std::shared_ptr<KusudaGroundTempsModel> KusudaGroundTempsModel::KusudaGTMFactory(EnergyPlusData &state, std::string objectName)
+KusudaGroundTempsModel *KusudaGroundTempsModel::KusudaGTMFactory(EnergyPlusData &state, const std::string &objectName)
 {
     // SUBROUTINE INFORMATION:
     //       AUTHOR         Matt Mitchell
@@ -81,28 +76,36 @@ std::shared_ptr<KusudaGroundTempsModel> KusudaGroundTempsModel::KusudaGTMFactory
     int IOStat;
 
     // New shared pointer for this model object
-    std::shared_ptr<KusudaGroundTempsModel> thisModel(new KusudaGroundTempsModel());
+    auto *thisModel = new KusudaGroundTempsModel();
 
-    GroundTempObjType objType = GroundTempObjType::KusudaGroundTemp;
+    // There was some **spooky** behavior here.  One of the calling sites for this factory was passing in a reference
+    //  to a dataIPShortCuts item as the objectName argument.  Inside here, we make a second call to getObjectItem
+    //  which then overwrites the value.  So objectName gets overwritten.  I made a copy of the string here to ensure
+    //  it persists.
+    const std::string lookingForName = objectName; // NOLINT(*-unnecessary-copy-initialization)
 
-    std::string_view const cCurrentModuleObject = GroundTemperatureManager::groundTempModelNamesUC[static_cast<int>(objType)];
-    int numCurrModels = state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, cCurrentModuleObject);
+    auto objType = GroundTempObjType::KusudaGroundTemp;
+
+    std::string_view const cCurrentModuleObject = groundTempModelNamesUC[static_cast<int>(objType)];
+    const int numCurrModels = state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, cCurrentModuleObject);
 
     for (int modelNum = 1; modelNum <= numCurrModels; ++modelNum) {
 
         state.dataInputProcessing->inputProcessor->getObjectItem(
             state, cCurrentModuleObject, modelNum, state.dataIPShortCut->cAlphaArgs, NumAlphas, state.dataIPShortCut->rNumericArgs, NumNums, IOStat);
 
-        if (objectName == state.dataIPShortCut->cAlphaArgs(1)) {
+        if (lookingForName == state.dataIPShortCut->cAlphaArgs(1)) {
 
             // Read input into object here
             thisModel->objectName = state.dataIPShortCut->cAlphaArgs(1);
             thisModel->objectType = objType;
-            thisModel->groundThermalDiffisivity =
+            thisModel->groundThermalDiffusivity =
                 state.dataIPShortCut->rNumericArgs(1) / (state.dataIPShortCut->rNumericArgs(2) * state.dataIPShortCut->rNumericArgs(3));
 
-            bool useGroundTempDataForKusuda =
-                state.dataIPShortCut->rNumericArgs(4) || state.dataIPShortCut->rNumericArgs(5) || state.dataIPShortCut->rNumericArgs(6);
+            std::array<Real64, 3> flags = {
+                state.dataIPShortCut->rNumericArgs(4), state.dataIPShortCut->rNumericArgs(5), state.dataIPShortCut->rNumericArgs(6)};
+            const bool useGroundTempDataForKusuda =
+                std::any_of(flags.begin(), flags.end(), [](Real64 const flag) { return static_cast<bool>(flag); });
 
             if (useGroundTempDataForKusuda) {
                 // Use Kusuda Parameters
@@ -112,23 +115,20 @@ std::shared_ptr<KusudaGroundTempsModel> KusudaGroundTempsModel::KusudaGTMFactory
             } else {
                 // Use data from Site:GroundTemperature:Shallow to generate parameters
 
-                int monthsInYear(12);
-                int avgDaysInMonth(30);
+                constexpr int monthsInYear(12);
+                constexpr int avgDaysInMonth(30);
                 int monthOfMinSurfTemp(0);
                 Real64 averageGroundTemp(0);
                 Real64 amplitudeOfGroundTemp(0);
                 Real64 phaseShiftOfMinGroundTempDays(0);
-                Real64 minSurfTemp(100);  // Set high month 1 temp will be lower and actually get updated
+                Real64 minSurfTemp(100);  // Set high; month 1 temp will be lower than that and actually get updated
                 Real64 maxSurfTemp(-100); // Set low initially but will get updated
 
-                std::shared_ptr<BaseGroundTempsModel> shallowObj = GroundTemperatureManager::GetGroundTempModelAndInit(
-                    state,
-                    static_cast<std::string>(
-                        GroundTemperatureManager::groundTempModelNamesUC[static_cast<int>(GroundTempObjType::SiteShallowGroundTemp)]),
-                    "");
+                // get a non-owning pointer to the shallow ground temperature object, whether user-input or defaults
+                BaseGroundTempsModel *shallowObj = SiteShallowGroundTemps::ShallowGTMFactory(state, "");
 
                 for (int monthIndex = 1; monthIndex <= 12; ++monthIndex) {
-                    Real64 currMonthTemp = shallowObj->getGroundTempAtTimeInMonths(state, 0.0, monthIndex);
+                    const Real64 currMonthTemp = shallowObj->getGroundTempAtTimeInMonths(state, 0.0, monthIndex);
 
                     // Calculate Average Ground Temperature for all 12 months of the year:
                     averageGroundTemp += currMonthTemp;
@@ -164,12 +164,10 @@ std::shared_ptr<KusudaGroundTempsModel> KusudaGroundTempsModel::KusudaGTMFactory
     if (found) {
         state.dataGrndTempModelMgr->groundTempModels.push_back(thisModel);
         return thisModel;
-    } else {
-        ShowFatalError(state,
-                       fmt::format("{}--Errors getting input for ground temperature model",
-                                   GroundTemperatureManager::groundTempModelNames[static_cast<int>(objType)]));
-        return nullptr;
     }
+
+    ShowFatalError(state, fmt::format("{}--Errors getting input for ground temperature model", groundTempModelNames[static_cast<int>(objType)]));
+    return nullptr;
 }
 
 //******************************************************************************
@@ -187,9 +185,9 @@ Real64 KusudaGroundTempsModel::getGroundTemp(EnergyPlusData &state)
 
     Real64 const secsInYear = Constant::SecsInDay * state.dataWeather->NumDaysInYear;
 
-    Real64 term1 = -depth * std::sqrt(Constant::Pi / (secsInYear * groundThermalDiffisivity));
-    Real64 term2 = (2 * Constant::Pi / secsInYear) *
-                   (simTimeInSeconds - phaseShiftInSecs - (depth / 2) * std::sqrt(secsInYear / (Constant::Pi * groundThermalDiffisivity)));
+    const Real64 term1 = -depth * std::sqrt(Constant::Pi / (secsInYear * groundThermalDiffusivity));
+    const Real64 term2 = (2 * Constant::Pi / secsInYear) *
+                         (simTimeInSeconds - phaseShiftInSecs - (depth / 2) * std::sqrt(secsInYear / (Constant::Pi * groundThermalDiffusivity)));
 
     return aveGroundTemp - aveGroundTempAmplitude * std::exp(term1) * std::cos(term2);
 }
@@ -232,12 +230,13 @@ Real64 KusudaGroundTempsModel::getGroundTempAtTimeInMonths(EnergyPlusData &state
     // Returns the ground temperature when input time is in months
 
     // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-    Real64 const aveSecondsInMonth = (state.dataWeather->NumDaysInYear / 12) * Constant::SecsInDay;
+    // TODO: Taking out the int static cast causes diffs and failed tests
+    Real64 const aveSecondsInMonth = static_cast<int>(state.dataWeather->NumDaysInYear / 12.0) * Constant::SecsInDay;
     Real64 const secondsPerYear = state.dataWeather->NumDaysInYear * Constant::SecsInDay;
 
     depth = _depth;
 
-    simTimeInSeconds = aveSecondsInMonth * ((_month - 1) + 0.5);
+    simTimeInSeconds = aveSecondsInMonth * (_month - 1 + 0.5);
 
     if (simTimeInSeconds > secondsPerYear) {
         simTimeInSeconds = remainder(simTimeInSeconds, secondsPerYear);

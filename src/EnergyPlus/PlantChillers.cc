@@ -1468,7 +1468,13 @@ namespace PlantChillers {
             PlantUtilities::SetComponentFlowRate(state, this->CondMassFlowRate, this->CondInletNodeNum, this->CondOutletNodeNum, this->CDPlantLoc);
             PlantUtilities::PullCompInterconnectTrigger(
                 state, this->CWPlantLoc, this->CondMassFlowIndex, this->CDPlantLoc, DataPlant::CriteriaType::MassFlowRate, this->CondMassFlowRate);
-            if (this->CondMassFlowRate < DataBranchAirLoopPlant::MassFlowTolerance) return;
+            if (this->CondMassFlowRate < DataBranchAirLoopPlant::MassFlowTolerance) {
+                MyLoad = 0.0;
+                this->EvapMassFlowRate = 0.0;
+                PlantUtilities::SetComponentFlowRate(
+                    state, this->EvapMassFlowRate, this->EvapInletNodeNum, this->EvapOutletNodeNum, this->CWPlantLoc);
+                return;
+            }
         }
 
         //  LOAD LOCAL VARIABLES FROM DATA STRUCTURE (for code readability)
@@ -3593,7 +3599,13 @@ namespace PlantChillers {
             PlantUtilities::SetComponentFlowRate(state, this->CondMassFlowRate, this->CondInletNodeNum, this->CondOutletNodeNum, this->CDPlantLoc);
             PlantUtilities::PullCompInterconnectTrigger(
                 state, this->CWPlantLoc, this->CondMassFlowIndex, this->CDPlantLoc, DataPlant::CriteriaType::MassFlowRate, this->CondMassFlowRate);
-            if (this->CondMassFlowRate < DataBranchAirLoopPlant::MassFlowTolerance) return;
+            if (this->CondMassFlowRate < DataBranchAirLoopPlant::MassFlowTolerance) {
+                MyLoad = 0.0;
+                this->EvapMassFlowRate = 0.0;
+                PlantUtilities::SetComponentFlowRate(
+                    state, this->EvapMassFlowRate, this->EvapInletNodeNum, this->EvapOutletNodeNum, this->CWPlantLoc);
+                return;
+            }
         }
 
         //  LOAD LOCAL VARIABLES FROM DATA STRUCTURE (for code readability)
@@ -5605,7 +5617,13 @@ namespace PlantChillers {
             PlantUtilities::PullCompInterconnectTrigger(
                 state, this->CWPlantLoc, this->CondMassFlowIndex, this->CDPlantLoc, DataPlant::CriteriaType::MassFlowRate, this->CondMassFlowRate);
 
-            if (this->CondMassFlowRate < DataBranchAirLoopPlant::MassFlowTolerance) return;
+            if (this->CondMassFlowRate < DataBranchAirLoopPlant::MassFlowTolerance) {
+                MyLoad = 0.0;
+                this->EvapMassFlowRate = 0.0;
+                PlantUtilities::SetComponentFlowRate(
+                    state, this->EvapMassFlowRate, this->EvapInletNodeNum, this->EvapOutletNodeNum, this->CWPlantLoc);
+                return;
+            }
         }
 
         //  LOAD LOCAL VARIABLES FROM DATA STRUCTURE (for code readability)
@@ -7313,7 +7331,13 @@ namespace PlantChillers {
             PlantUtilities::PullCompInterconnectTrigger(
                 state, this->CWPlantLoc, this->CondMassFlowIndex, this->CDPlantLoc, DataPlant::CriteriaType::MassFlowRate, this->CondMassFlowRate);
 
-            if (this->CondMassFlowRate < DataBranchAirLoopPlant::MassFlowTolerance) return;
+            if (this->CondMassFlowRate < DataBranchAirLoopPlant::MassFlowTolerance) {
+                MyLoad = 0.0;
+                this->EvapMassFlowRate = 0.0;
+                PlantUtilities::SetComponentFlowRate(
+                    state, this->EvapMassFlowRate, this->EvapInletNodeNum, this->EvapOutletNodeNum, this->CWPlantLoc);
+                return;
+            }
         }
 
         // If FlowLock is True, the new resolved mdot is used to update Power, QEvap, Qcond, and

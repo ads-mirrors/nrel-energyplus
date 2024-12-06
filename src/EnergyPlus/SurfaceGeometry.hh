@@ -260,7 +260,7 @@ namespace SurfaceGeometry {
         Real64 Xmin = 0;
     };
 
-    void GetGeoSummaryRoof(EnergyPlusData &state, GeoSummary &geoSumRoof);
+    void GetGeoSummaryRoof(EnergyPlusData const &state, GeoSummary &geoSumRoof);
 
     class ExposedFoundationPerimeter
     {

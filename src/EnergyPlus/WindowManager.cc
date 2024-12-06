@@ -178,8 +178,6 @@ namespace Window {
         // Using/Aliasing
         using namespace Vectors;
 
-        using WindowEquivalentLayer::InitEquivalentLayerWindowCalculations;
-
         int TotLay;                     // Total solid and gas layers in a window construction
         int ConstrNumSh;                // Shaded construction number
         int ShadeLayNum;                // Layer number for shade or blind, if present
@@ -1911,7 +1909,7 @@ namespace Window {
         }
     } // SystemPropertiesAtLambdaAndPhi()
 
-    Real64 solarSpectrumAverage(EnergyPlusData &state, gsl::span<Real64 const> p)
+    Real64 solarSpectrumAverage(EnergyPlusData const &state, gsl::span<Real64 const> p)
     {
         Real64 num = 0.0;
         Real64 denom = 0.0;
@@ -1925,7 +1923,7 @@ namespace Window {
         return num / denom; // dangerous, doesn't check for zero denominator
     }
 
-    Real64 visibleSpectrumAverage(EnergyPlusData &state, gsl::span<Real64 const> p)
+    Real64 visibleSpectrumAverage(EnergyPlusData const &state, gsl::span<Real64 const> p)
     {
         //       AUTHOR         Adapted by F.Winkelmann from WINDOW 5
         //                      subroutine w4vis
@@ -2061,12 +2059,6 @@ namespace Window {
 
         // Using/Aliasing
         using namespace DataBSDFWindow;
-        using Psychrometrics::PsyCpAirFnW;
-        using Psychrometrics::PsyTdpFnWPb;
-        // unused0909  USE DataEnvironment, ONLY: CurMnDyHr
-        using ScheduleManager::GetCurrentScheduleValue;
-        using WindowComplexManager::CalcComplexWindowThermal;
-        using WindowEquivalentLayer::EQLWindowSurfaceHeatBalance;
 
         // SUBROUTINE ARGUMENT DEFINITIONS:
         // (temperature of innermost face) [C]
@@ -2115,7 +2107,7 @@ namespace Window {
             int temp = 0;
 
             // Simon: Complex fenestration state works only with tarcog
-            CalcComplexWindowThermal(
+            WindowComplexManager::CalcComplexWindowThermal(
                 state, SurfNum, temp, HextConvCoeff, SurfInsideTemp, SurfOutsideTemp, SurfOutsideEmiss, DataBSDFWindow::Condition::Invalid);
 
             auto const &constr = state.dataConstruction->Construct(ConstrNum);
@@ -2149,7 +2141,7 @@ namespace Window {
 
         } else if (s_surf->SurfWinWindowModelType(SurfNum) == WindowModel::EQL) {
 
-            EQLWindowSurfaceHeatBalance(
+            WindowEquivalentLayer::EQLWindowSurfaceHeatBalance(
                 state, SurfNum, HextConvCoeff, SurfInsideTemp, SurfOutsideTemp, SurfOutsideEmiss, DataBSDFWindow::Condition::Invalid);
             wm->hcout = HextConvCoeff;
             // Required for report variables calculations.
@@ -2494,7 +2486,7 @@ namespace Window {
         if (!state.dataConstruction->Construct(surf.Construction).WindowTypeEQL) {
             InsideGlassTemp = wm->thetas[2 * wm->ngllayer - 1] - Constant::Kelvin;
             RoomHumRat = thisZoneHB.airHumRat;
-            RoomDewPoint = PsyTdpFnWPb(state, RoomHumRat, state.dataEnvrn->OutBaroPress);
+            RoomDewPoint = Psychrometrics::PsyTdpFnWPb(state, RoomHumRat, state.dataEnvrn->OutBaroPress);
             s_surf->SurfWinInsideGlassCondensationFlag(SurfNum) = 0;
             if (InsideGlassTemp < RoomDewPoint) s_surf->SurfWinInsideGlassCondensationFlag(SurfNum) = 1;
             // If airflow window, is there condensation on either glass face of the airflow gap?
@@ -2560,8 +2552,6 @@ namespace Window {
         // SUBROUTINE INFORMATION:
         //       AUTHOR         F. Winkelmann
         //       DATE WRITTEN   February 2000
-        //       MODIFIED       na
-        //       RE-ENGINEERED  na
 
         // PURPOSE OF THIS SUBROUTINE:
         // Evaluates heat balance functions at each glass face.
@@ -3288,13 +3278,6 @@ namespace Window {
         // heat balance at the glass and shade/blind faces. The system of linear equations is solved
         // by LU decomposition.
 
-        // Using/Aliasing
-        using Convect::CalcISO15099WindowIntConvCoeff;
-        using Psychrometrics::PsyCpAirFnW;
-        using Psychrometrics::PsyHFnTdbW;
-        using Psychrometrics::PsyRhoAirFnPbTdbW;
-        using Psychrometrics::PsyTdbFnHW;
-
         constexpr int MaxIterations(100); // Maximum allowed number of iterations (increased 9/01 from 15 to 50,
         //   increased 11/02 from 50 to 100)
         constexpr Real64 errtemptol(0.02); // Tolerance on errtemp for convergence (increased from 0.01, 3/4/03)
@@ -3413,7 +3396,8 @@ namespace Window {
                 } else {
                     InsideFaceIndex = wm->nglface;
                 }
-                CalcISO15099WindowIntConvCoeff(state, SurfNum, wm->thetas[InsideFaceIndex - 1] - Constant::Kelvin, wm->tin - Constant::Kelvin);
+                Convect::CalcISO15099WindowIntConvCoeff(
+                    state, SurfNum, wm->thetas[InsideFaceIndex - 1] - Constant::Kelvin, wm->tin - Constant::Kelvin);
                 wm->hcin = state.dataHeatBalSurf->SurfHConvInt(SurfNum);
             }
 
@@ -3572,8 +3556,8 @@ namespace Window {
                         InletAirHumRat = state.dataEnvrn->OutHumRat;
                     }
                     Real64 ZoneTemp = thisZoneHB.MAT; // this should be Tin (account for different reference temps)
-                    CpAirOutlet = PsyCpAirFnW(InletAirHumRat);
-                    CpAirZone = PsyCpAirFnW(thisZoneHB.airHumRat);
+                    CpAirOutlet = Psychrometrics::PsyCpAirFnW(InletAirHumRat);
+                    CpAirZone = Psychrometrics::PsyCpAirFnW(thisZoneHB.airHumRat);
                     s_surf->SurfWinRetHeatGainToZoneAir(SurfNum) = TotAirflowGap * (CpAirOutlet * (TAirflowGapOutletC)-CpAirZone * ZoneTemp);
                     if (s_surf->SurfWinAirflowDestination(SurfNum) == WindowAirFlowDestination::Indoor) {
                         s_surf->SurfWinHeatGain(SurfNum) += s_surf->SurfWinRetHeatGainToZoneAir(SurfNum);
@@ -4081,9 +4065,6 @@ namespace Window {
         // Based on ISO/DIS 15099, "Thermal Performance of Windows, Doors and Shading Devices --
         // Detailed Calculations"
 
-        // Using/Aliasing
-        using ScheduleManager::GetCurrentScheduleValue;
-
         // Locals
         // SUBROUTINE ARGUMENT DEFINITIONS:
         //   air flow or bottom for downward air flow (K)
@@ -4534,7 +4515,6 @@ namespace Window {
                 fcon[i - 1] = wmgas.con.c0 + wmgas.con.c1 * tmean + wmgas.con.c2 * tmean_2;
                 fvis[i - 1] = wmgas.vis.c0 + wmgas.vis.c1 * tmean + wmgas.vis.c2 * tmean_2;
                 fcp[i - 1] = wmgas.cp.c0 + wmgas.cp.c1 * tmean + wmgas.cp.c2 * tmean_2;
-                fdens[i - 1] = pres * wmgas.wght / (gaslaw * tmean);
                 molmix += frct[i - 1] * wmgas.wght;                       // eq. 56
                 cpmixm += frct[i - 1] * fcp[i - 1] * wmgas.wght;          // eq. 58-59
                 kprime[i - 1] = 3.75 * gaslaw / wmgas.wght * fvis[i - 1]; // eq. 67
@@ -4591,7 +4571,7 @@ namespace Window {
 
     //******************************************************************************
 
-    void WindowGasPropertiesAtTemp(EnergyPlusData &state,
+    void WindowGasPropertiesAtTemp(EnergyPlusData const &state,
                                    Real64 const tmean, // Temperature of gas in gap (K)
                                    int const IGap,     // Gap number
                                    Real64 &dens,       // Gap gas density at tmean (kg/m3)
@@ -5984,9 +5964,6 @@ namespace Window {
         // rather than at the outer face of the layer.  The resistances changed by one half the glazing layer, or 0.5/scon(n).
         // (CR 7682 also changed WindowTempsForNominalCond to include absorbed solar, a bigger change)
 
-        // Using/Aliasing
-        using General::POLYF;
-
         // Locals
         // SUBROUTINE ARGUMENT DEFINITIONS:
         //   normal incidence beam solar radiation
@@ -6151,11 +6128,11 @@ namespace Window {
             return;
         }
 
-        TSolNorm = POLYF(1.0, state.dataConstruction->Construct(ConstrNum).TransSolBeamCoef);
-        TVisNorm = POLYF(1.0, state.dataConstruction->Construct(ConstrNum).TransVisBeamCoef);
+        TSolNorm = General::POLYF(1.0, state.dataConstruction->Construct(ConstrNum).TransSolBeamCoef);
+        TVisNorm = General::POLYF(1.0, state.dataConstruction->Construct(ConstrNum).TransVisBeamCoef);
         AbsBeamShadeNorm = 0.0;
         if (ShadeFlag == WinShadingType::IntShade || ShadeFlag == WinShadingType::ExtShade) { // Exterior or interior shade on
-            AbsBeamShadeNorm = POLYF(1.0, state.dataConstruction->Construct(ConstrNum).AbsBeamShadeCoef);
+            AbsBeamShadeNorm = General::POLYF(1.0, state.dataConstruction->Construct(ConstrNum).AbsBeamShadeCoef);
             // Exterior blind or screen or interior blind on
         } else if (ShadeFlag == WinShadingType::IntBlind || ShadeFlag == WinShadingType::ExtBlind || ShadeFlag == WinShadingType::ExtScreen) {
             // Find unshaded construction that goes with this construction w/blind or screen
@@ -6186,8 +6163,8 @@ namespace Window {
             }
 
             auto const &constructBare = state.dataConstruction->Construct(ConstrNumBare);
-            TBmBm = POLYF(1.0, constructBare.TransSolBeamCoef);
-            TBmBmVis = POLYF(1.0, constructBare.TransVisBeamCoef);
+            TBmBm = General::POLYF(1.0, constructBare.TransSolBeamCoef);
+            TBmBmVis = General::POLYF(1.0, constructBare.TransVisBeamCoef);
 
             if (ShadeFlag == WinShadingType::ExtScreen) {
                 //   Don't need to call subroutine, use normal incident properties (SUBROUTINE CalcNominalWindowCond)
@@ -6205,8 +6182,8 @@ namespace Window {
                 RScBackVis = matScreen->ShadeRefVis;
                 RScDifBack = matScreen->DfRef;
                 RScDifBackVis = matScreen->DfRefVis;
-                RGlFront = POLYF(1.0, constructBare.ReflSolBeamFrontCoef);
-                RGlFrontVis = POLYF(1.0, constructBare.ReflSolBeamFrontCoef);
+                RGlFront = General::POLYF(1.0, constructBare.ReflSolBeamFrontCoef);
+                RGlFrontVis = General::POLYF(1.0, constructBare.ReflSolBeamFrontCoef);
                 RGlDiffFront = constructBare.ReflectSolDiffFront;
                 RGlDiffFrontVis = constructBare.ReflectVisDiffFront;
                 TSolNorm = TScBmBm * (TBmBm + TDif * RGlFront * RScBack / (1 - RGlDiffFront * RScDifBack)) +
@@ -6258,8 +6235,8 @@ namespace Window {
                                (TBlBmBm + TBlBmDifVis + TBlDifDifVis * RhoBlFrontVis * RGlDiffBackVis / (1.0 - RhoBlDiffFrontVis * RGlDiffBackVis));
 
                 } else if (ShadeFlag == WinShadingType::ExtBlind) {
-                    RGlFront = POLYF(1.0, constructBare.ReflSolBeamFrontCoef);
-                    RGlFrontVis = POLYF(1.0, constructBare.ReflSolBeamFrontCoef);
+                    RGlFront = General::POLYF(1.0, constructBare.ReflSolBeamFrontCoef);
+                    RGlFrontVis = General::POLYF(1.0, constructBare.ReflSolBeamFrontCoef);
                     AbsBlFront = blindTAR.Sol.Ft.Bm[profIdxLo].Abs;
                     AbsBlBack = blindTAR.Sol.Bk.Bm[profIdxLo].Abs;
                     AbsBlDiffBack = blindTAR.Sol.Bk.Df.Abs;
@@ -6313,20 +6290,20 @@ namespace Window {
                 wm->emis[2 * IGlass - 1] = matGlass->AbsorpThermalBack;
                 wm->tir[2 * IGlass - 2] = matGlass->TransThermal;
                 wm->tir[2 * IGlass - 1] = matGlass->TransThermal;
-                AbsBeamNorm(IGlass) = POLYF(1.0, state.dataConstruction->Construct(ConstrNum).AbsBeamCoef(IGlass));
+                AbsBeamNorm(IGlass) = General::POLYF(1.0, state.dataConstruction->Construct(ConstrNum).AbsBeamCoef(IGlass));
                 if (ShadeFlag == WinShadingType::IntBlind) { // Interior blind on
                     auto const &constructBare = state.dataConstruction->Construct(ConstrNumBare);
-                    AbsBeamNorm(IGlass) = POLYF(1.0, constructBare.AbsBeamCoef(IGlass));
+                    AbsBeamNorm(IGlass) = General::POLYF(1.0, constructBare.AbsBeamCoef(IGlass));
                     AGlDiffBack = constructBare.AbsDiffBack(IGlass);
                     AbsBeamNorm(IGlass) += TBmBm * AGlDiffBack * RhoBlFront / (1.0 - RhoBlFront * RGlDiffBack);
                 } else if (ShadeFlag == WinShadingType::ExtBlind) { // Exterior blind on
                     auto const &constructBare = state.dataConstruction->Construct(ConstrNumBare);
-                    AbsBeamNorm(IGlass) = POLYF(1.0, constructBare.AbsBeamCoef(IGlass));
+                    AbsBeamNorm(IGlass) = General::POLYF(1.0, constructBare.AbsBeamCoef(IGlass));
                     AbsBeamNorm(IGlass) = TBlBmBm * AbsBeamNorm(IGlass) + (TBlBmBm * RGlFront * RhoBlBack + TBlBmDif) *
                                                                               constructBare.AbsDiff(IGlass) / (1.0 - RGlDiffFront * RhoBlDiffBack);
                 } else if (ShadeFlag == WinShadingType::ExtScreen) { // Exterior screen on
                     auto const &constructBare = state.dataConstruction->Construct(ConstrNumBare);
-                    AbsBeamNorm(IGlass) = POLYF(1.0, constructBare.AbsBeamCoef(IGlass));
+                    AbsBeamNorm(IGlass) = General::POLYF(1.0, constructBare.AbsBeamCoef(IGlass));
                     AbsBeamNorm(IGlass) = TScBmBm * AbsBeamNorm(IGlass) + (TScBmBm * RGlFront * RScBack + TScBmDif) * constructBare.AbsDiff(IGlass) /
                                                                               (1.0 - RGlDiffFront * RScDifBack);
                 }
@@ -6552,8 +6529,6 @@ namespace Window {
         // heat balance at the glass faces. The system of linear equations is solved
         // by LU decomposition.
 
-        using Psychrometrics::PsyRhoAirFnPbTdbW;
-
         // Argument array dimensioning
         hgap.dim(5);
 
@@ -6618,7 +6593,7 @@ namespace Window {
             TmeanFilmKelvin = wm->tin + 0.25 * (wm->thetas[wm->nglface - 1] - wm->tin); // eq. 133 in ISO 15099
             TmeanFilm = TmeanFilmKelvin - 273.15;
             // the following properties are constants or linear relations for "standard" type reporting
-            rho = PsyRhoAirFnPbTdbW(state, 101325.0, TmeanFilm, 0.0, RoutineName); // dry air assumption
+            rho = Psychrometrics::PsyRhoAirFnPbTdbW(state, 101325.0, TmeanFilm, 0.0, RoutineName); // dry air assumption
             g = 9.81;
             Height = 1.0; // standard window rating practice is to use 1 meter (rather than actual)
 
@@ -6673,20 +6648,18 @@ namespace Window {
         // SUBROUTINE INFORMATION:
         //       AUTHOR         F. Winkelmann
         //       DATE WRITTEN   September 2000
-        //       MODIFIED       na
-        //       RE-ENGINEERED  na
 
         // PURPOSE OF THIS SUBROUTINE:
         // Initializes face temperature distribution prior to iteration.
         // This is a shortened form of StartingWindowTemps for use in calculating
         // the nominal center-of-glass U-value.
 
-        Real64 constexpr hrad(5.3);           // Typical radiative conductance (W/m2-K)
-        Real64 constexpr hcinStartValue(3.2); // Starting value for inside air film convective
+        Real64 constexpr hrad = 5.3;           // Typical radiative conductance (W/m2-K)
+        Real64 constexpr hcinStartValue = 3.2; // Starting value for inside air film convective
         //   conductance (estimated for typical double glazing
         //   using 1.31(dT**0.333), where dT =
         //   room air temp - inside surface temp = 14.2K)
-        Real64 constexpr resgap(0.21); // Typical gap resistance (m2-K/W)
+        Real64 constexpr resgap = 0.21; // Typical gap resistance (m2-K/W)
 
         Array1D<Real64> rguess(11); // Combined radiative/convective resistance (m2-K/W) of
         // inside or outside air film, or gap
@@ -6728,21 +6701,13 @@ namespace Window {
         // SUBROUTINE INFORMATION:
         //       AUTHOR         Linda K. Lawrie
         //       DATE WRITTEN   March 2000
-        //       MODIFIED       na
-        //       RE-ENGINEERED  na
 
         // PURPOSE OF THIS SUBROUTINE:
         // This routine gives a detailed report to the user about
         // the calculation parameters for windows and their associated
         // materials.
 
-        using General::POLYF;
-
-        using General::ScanForReports;
-        using WindowComplexManager::CalcComplexWindowThermal;
-        using WindowComplexManager::UpdateComplexWindows;
-
-        Real64 TempVar(0.0); // just temporary usage for complex fenestration
+        Real64 TempVar = 0.0; // just temporary usage for complex fenestration
 
         Real64 NominalConductanceWinter; // Nominal center-of-glass conductance of a window construction
         // for ASHRAE winter conditions (W/m2-K):
@@ -6765,7 +6730,7 @@ namespace Window {
 
         auto &wm = state.dataWindowManager;
 
-        ScanForReports(state, "Constructions", wm->DoReport, "Constructions");
+        General::ScanForReports(state, "Constructions", wm->DoReport, "Constructions");
 
         if (std::any_of(state.dataConstruction->Construct.begin(),
                         state.dataConstruction->Construct.end(),
@@ -6881,8 +6846,10 @@ namespace Window {
                 if (construct.WindowTypeBSDF) {
 
                     int i = ThisNum;
-                    CalcComplexWindowThermal(state, 0, i, TempVar, TempVar, TempVar, TempVar, DataBSDFWindow::Condition::Winter);
-                    CalcComplexWindowThermal(state, 0, i, TempVar, TempVar, TempVar, TempVar, DataBSDFWindow::Condition::Summer);
+                    WindowComplexManager::CalcComplexWindowThermal(
+                        state, 0, i, TempVar, TempVar, TempVar, TempVar, DataBSDFWindow::Condition::Winter);
+                    WindowComplexManager::CalcComplexWindowThermal(
+                        state, 0, i, TempVar, TempVar, TempVar, TempVar, DataBSDFWindow::Condition::Summer);
 
                     static constexpr std::string_view Format_800(" WindowConstruction:Complex,{},{},{},{:.3R},{:.3R}\n");
                     print(state.files.eio,
@@ -7241,7 +7208,6 @@ namespace Window {
         //       DATE WRITTEN   July-Aug 1995
         //       MODIFIED       Aug 2001 (FCW): adapt to EnergyPlus
         //                      Dec 2001 (FCW): add variable slat angle
-        //       RE-ENGINEERED  na
 
         // PURPOSE OF THIS SUBROUTINE:
         // Calculates solar-optical properties of a window blind
@@ -7439,8 +7405,6 @@ namespace Window {
         // SUBROUTINE INFORMATION:
         //       AUTHOR         Richard Raustad
         //       DATE WRITTEN   April 2006
-        //       MODIFIED       na
-        //       RE-ENGINEERED  na
 
         // PURPOSE OF THIS SUBROUTINE:
         // Initialize static properties of window screens.
@@ -7451,10 +7415,9 @@ namespace Window {
 
         // Locals
         // SUBROUTINE PARAMETER DEFINITIONS:
-        int constexpr M(18);
-        int constexpr N(18);
+        int constexpr M = 18;
+        int constexpr N = 18;
 
-        int ScreenNum;        // Index to each screen used on exterior of window
         int ConstrNumSh;      // Index to shaded construction
         int MatNum;           // Index to material number
         Real64 SumTrans;      // Integration variable for transmittance
@@ -7463,9 +7426,6 @@ namespace Window {
         Real64 SumReflectVis; // Integration variable for visible reflectance
         Real64 SumArea;       // Integration variable for area of quarter hemisphere
         // is used on multiple surfaces
-        bool PrintTransMap; // Flag used to print transmittance map
-
-        ScreenNum = 0;
 
         // Pre-calculate these constants
         std::vector<Real64> sunAzimuth;
@@ -7507,7 +7467,7 @@ namespace Window {
             }
         }
 
-        PrintTransMap = false;
+        bool PrintTransMap = false; // Flag used to print transmittance map
 
         for (int SurfNum = 1; SurfNum <= s_surf->TotSurfaces; ++SurfNum) {
             auto const &surf = s_surf->Surface(SurfNum);
@@ -7700,14 +7660,10 @@ namespace Window {
         //                      This change was made to resolve discrepancies between EnergyPlus results
         //                      and blind transmittance measurements made at Oklahoma State Univ.
         //                      Feb 2004 (FCW): modify slat edge correction calc to avoid possible divide by zero
-        //       RE-ENGINEERED  na
 
         // PURPOSE OF THIS SUBROUTINE:
         // From the slat properties, calculates the diffuse solar, diffuse visible and IR
         // transmission and reflection properties of a window blind.
-
-        // METHODOLOGY EMPLOYED:
-        // na
 
         // REFERENCES:
         // "Solar-Thermal Window Blind Model for DOE-2," H. Simmler, U. Fischer and
@@ -7717,17 +7673,9 @@ namespace Window {
         c.dim(15);
         p.dim(16);
 
-        Real64 ri; // Front and back IR slat reflectance
-        Real64 rib;
-        Real64 phib;                     // Elevation of slat normal vector (radians)
-        Real64 phis;                     // Source elevation (radians)
-        Real64 delphis;                  // Angle increment for integration over source distribution (radians)
         Array1D<Real64> fEdgeSource(10); // Slat edge correction factor vs source elevation
         Array1D<Real64> fEdgeA(2);       // Average slat edge correction factor for upper and lower quadrants
         //  seen by window blind
-        Real64 gamma; // phib - phis
-        Real64 fEdge; // Slat edge correction factor
-        Real64 fEdge1;
         Array1D<Real64> j(6);       // Slat section radiosity vector
         Array1D<Real64> G(6);       // Slat section irradiance vector
         Array1D<Real64> Q(6);       // Slat section radiance vector
@@ -7735,8 +7683,6 @@ namespace Window {
         Array2D<Real64> X(4, 4);    // Exchange matrix
         Array2D<Real64> Xinv(4, 4); // Inverse of exchange matrix
         Array1D_int indx(4);        // LU decomposition indices
-        Real64 BlindIRreflFront;    // Blind front IR reflectance
-        Real64 BlindIRreflBack;     // Blind back IR reflectance
 
         // The slat input properties are:
         // c(1)    0. (unused)
@@ -7830,15 +7776,15 @@ namespace Window {
         }
 
         //     Slat edge correction factor
-        phib = b_el;
-        delphis = Constant::PiOvr2 / 10.0;
+        Real64 const phib = b_el;                           // Elevation of slat normal vector (radians)
+        Real64 constexpr delphis = Constant::PiOvr2 / 10.0; // Angle increment for integration over source distribution (radians)
         for (int IUpDown = 1; IUpDown <= 2; ++IUpDown) {
             for (int Iphis = 1; Iphis <= 10; ++Iphis) {
-                phis = -(Iphis - 0.5) * delphis;
+                Real64 phis = -(Iphis - 0.5) * delphis; // Source elevation (radians)
                 if (IUpDown == 2) phis = (Iphis - 0.5) * delphis;
                 fEdgeSource(Iphis) = 0.0;
-                fEdge1 = 0.0;
-                gamma = phib - phis;
+                Real64 fEdge1 = 0.0;
+                Real64 gamma = phib - phis;
                 if (std::abs(std::sin(gamma)) > 0.01) {
                     if ((phib > 0.0 && phib <= Constant::PiOvr2 && phis <= phib) ||
                         (phib > Constant::PiOvr2 && phib <= Constant::Pi && phis > -(Constant::Pi - phib))) {
@@ -7850,7 +7796,7 @@ namespace Window {
             }
             fEdgeA(IUpDown) = DiffuseAverage(fEdgeSource);
         }
-        fEdge = 0.5 * (fEdgeA(1) + fEdgeA(2));
+        Real64 fEdge = 0.5 * (fEdgeA(1) + fEdgeA(2)); // Slat edge correction factor
 
         //     Front diffuse-diffuse transmittance (transmittance of slat edge assumed zero)
         p(9) = G(2) * (1.0 - fEdge);
@@ -7901,8 +7847,8 @@ namespace Window {
             //           (use same set of view factors as for diffuse short-wave properties)
 
             //     Front and back slat IR reflectances
-            ri = 1 - c(13) - c(14);
-            rib = 1 - c(13) - c(15);
+            Real64 ri = 1 - c(13) - c(14); // Front and back IR slat reflectance
+            Real64 rib = 1 - c(13) - c(15);
 
             //     Set up exchange matrix X for diffuse properties
 
@@ -7954,7 +7900,7 @@ namespace Window {
 
             //     Front diffuse-diffuse IR reflectance (edge of slat is assumed to have same IR
             //     reflectance as front side of slat, ri)
-            BlindIRreflFront = G(1) * (1.0 - fEdge) + fEdge * ri;
+            Real64 BlindIRreflFront = G(1) * (1.0 - fEdge) + fEdge * ri; // Blind front IR reflectance
 
             //     Front IR emissivity
             p(14) = max(0.0001, 1.0 - p(13) - BlindIRreflFront);
@@ -7990,7 +7936,7 @@ namespace Window {
             }
 
             //     Back diffuse-diffuse IR reflectance
-            BlindIRreflBack = G(2) * (1.0 - fEdge) + fEdge * ri;
+            Real64 BlindIRreflBack = G(2) * (1.0 - fEdge) + fEdge * ri; // Blind back IR reflectance
 
             //     Back IR emissivity
             p(15) = max(0.0001, 1.0 - p(13) - BlindIRreflBack);
@@ -8019,7 +7965,6 @@ namespace Window {
         //                       G(i) = Sum over j of J(j)*F(i,j), which is wrong.
         //                      This change was made to resolve discrepancies between EnergyPlus results
         //                      and blind transmittance measurements made at Oklahoma State Univ.
-        //       RE-ENGINEERED  na
 
         // PURPOSE OF THIS SUBROUTINE:
         //     Calculates the beam radiation properties of a
@@ -8249,7 +8194,6 @@ namespace Window {
         //       DATE WRITTEN   July-Aug 1995
         //       MODIFIED       Aug 2001 (FCW): adapt to EnergyPlus
         //                      Apr 2002 (FCW): prevent sqrt of small negative argument
-        //       RE-ENGINEERED  na
 
         // PURPOSE OF THIS SUBROUTINE:
         //     Calculates the view factors between sections of adjacent slats,
@@ -8270,39 +8214,24 @@ namespace Window {
         F.dim(6, 6);
 
         Array1D<Real64> L(6); // Length of slat sections: L1 = L2 = h; L3, L5 = length
-        Real64 L3;
-        Real64 L5;
-        //  of upper slat sections; L4, L6 = length of lower slat
-        //  slat sections (m)
-        Real64 d1; // Slat geometry variables (m)
-        Real64 d2;
-        Real64 d3;
-        Real64 d4;
-        Real64 d5;
-        Real64 d6;
-        Real64 h2; // h**2
-        Real64 ht; // 2*h
-        Real64 w;  // Slat geometry variable (m)
-        Real64 a;  // Intermediate variable (m)
-        Real64 co; // Cosine of source profile angle
 
-        h2 = pow_2(h);
-        ht = 2.0 * h;
-        co = std::cos(phis);
+        Real64 h2 = pow_2(h);
+        Real64 ht = 2.0 * h;
+        Real64 co = std::cos(phis); // Cosine of source profile angle
         if (std::abs(co) < 0.001) co = 0.0;
-        w = ht;
+        Real64 w = ht; // Slat geometry variable (m)
         if (co != 0.0) w = s * std::cos(phib - phis) / co;
-        L3 = s * h / std::abs(w);
+        Real64 L3 = s * h / std::abs(w);
         if (L3 > s) L3 = s;
-        L5 = s - L3;
-        a = ht * std::cos(phib);
+        Real64 L5 = s - L3;
+        Real64 a = ht * std::cos(phib); // Intermediate variable (m)
         // MAX(0.,...) in the following prevents small negative argument for sqrt
-        d1 = std::sqrt(max(0.0, s * s + h2 + a * s));
-        d2 = std::sqrt(max(0.0, s * s + h2 - a * s));
-        d3 = std::sqrt(max(0.0, L3 * L3 + h2 + a * L3));
-        d4 = std::sqrt(max(0.0, L3 * L3 + h2 - a * L3));
-        d5 = std::sqrt(max(0.0, L5 * L5 + h2 - a * L5));
-        d6 = std::sqrt(max(0.0, L5 * L5 + h2 + a * L5));
+        Real64 d1 = std::sqrt(max(0.0, s * s + h2 + a * s)); // Slat geometry variables (m)
+        Real64 d2 = std::sqrt(max(0.0, s * s + h2 - a * s));
+        Real64 d3 = std::sqrt(max(0.0, L3 * L3 + h2 + a * L3));
+        Real64 d4 = std::sqrt(max(0.0, L3 * L3 + h2 - a * L3));
+        Real64 d5 = std::sqrt(max(0.0, L5 * L5 + h2 - a * L5));
+        Real64 d6 = std::sqrt(max(0.0, L5 * L5 + h2 + a * L5));
         for (int i = 1; i <= 6; ++i) {
             F(i, i) = 0.0;
         }
@@ -8326,7 +8255,7 @@ namespace Window {
         L(1) = h;
         L(2) = h;
         L(3) = L3;
-        L(4) = L3;
+        L(4) = L3; // L4, L6 = length of lower slat
         L(5) = L5;
         L(6) = L5;
         for (int i = 2; i <= 6; ++i) {
@@ -8350,7 +8279,6 @@ namespace Window {
         //       AUTHOR         Hans Simmler
         //       DATE WRITTEN   July-Aug 1995
         //       MODIFIED       Aug 2001 (FCW): adapt to EnergyPlus
-        //       RE-ENGINEERED  na
 
         // PURPOSE OF THIS SUBROUTINE:
         //     Inverts a matrix.
@@ -8387,8 +8315,6 @@ namespace Window {
         // SUBROUTINE INFORMATION:
         //       AUTHOR         T. Hong
         //       DATE WRITTEN   August 2013
-        //       MODIFIED
-        //       RE-ENGINEERED  na
 
         // PURPOSE OF THIS SUBROUTINE:
         // Check, read, and assign the custom solar or visible spectrum to:
@@ -8409,16 +8335,13 @@ namespace Window {
         Array1D_string cAlphaArgs;    // Alpha input items for object
         Array1D<Real64> rNumericArgs; // Numeric input items for object
 
-        std::string cCurrentModuleObject;
-        int NumSiteSpectrum(0);
-
         auto const &wm = state.dataWindowManager;
 
         if (wm->RunMeOnceFlag) return;
 
         // Step 1 - check whether there is custom solar or visible spectrum
-        cCurrentModuleObject = "Site:SolarAndVisibleSpectrum";
-        NumSiteSpectrum = state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, cCurrentModuleObject);
+        std::string cCurrentModuleObject = "Site:SolarAndVisibleSpectrum";
+        int NumSiteSpectrum = state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, cCurrentModuleObject);
 
         // no custom spectrum data, done!
         if (NumSiteSpectrum == 0) {

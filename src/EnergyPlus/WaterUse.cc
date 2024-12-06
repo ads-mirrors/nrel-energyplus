@@ -278,7 +278,6 @@ namespace WaterUse {
         int IOStatus;            // Used in GetObjectItem
         int NumAlphas;           // Number of Alphas for each GetObjectItem call
         int NumNumbers;          // Number of Numbers for each GetObjectItem call
-        int AlphaNum;
 
         constexpr std::array<std::string_view, static_cast<int>(HeatRecovHX::Num)> HeatRecoverHXNamesUC{"IDEAL", "COUNTERFLOW", "CROSSFLOW"};
 
@@ -525,7 +524,7 @@ namespace WaterUse {
 
                 waterConnection.myWaterEquipArr.allocate(NumAlphas - 9);
 
-                for (AlphaNum = 10; AlphaNum <= NumAlphas; ++AlphaNum) {
+                for (int AlphaNum = 10; AlphaNum <= NumAlphas; ++AlphaNum) {
                     int WaterEquipNum = Util::FindItemInList(state.dataIPShortCut->cAlphaArgs(AlphaNum), state.dataWaterUse->WaterEquipment);
 
                     if (WaterEquipNum == 0) {
@@ -1658,7 +1657,7 @@ namespace WaterUse {
         // PURPOSE OF THIS SUBROUTINE:
         // Calculates the zone internal gains due to water use sensible and latent loads.
 
-        bool MyEnvrnFlagLocal(true);
+        static bool MyEnvrnFlagLocal = true;
 
         if (state.dataWaterUse->numWaterEquipment == 0) return;
 

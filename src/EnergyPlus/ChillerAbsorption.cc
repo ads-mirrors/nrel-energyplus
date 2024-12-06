@@ -1728,6 +1728,9 @@ void BLASTAbsorberSpecs::calculate(EnergyPlusData &state, Real64 &MyLoad, bool R
         this->CondOutletTemp = state.dataLoopNodes->Node(this->CondInletNodeNum).Temp;
         this->CondMassFlowRate = 0.0;
         this->QCondenser = 0.0;
+        MyLoad = 0.0;
+        this->EvapMassFlowRate = 0.0;
+        PlantUtilities::SetComponentFlowRate(state, this->EvapMassFlowRate, this->EvapInletNodeNum, this->EvapOutletNodeNum, this->CWPlantLoc);
         return;
         // V7 plant upgrade, no longer fatal here anymore, set some things and return
     }

@@ -3885,7 +3885,8 @@ void GatherBEPSResultsForTimestep(EnergyPlusData &state, OutputProcessor::TimeSt
     //          Water
     //          Steam
     //          DistrictCooling
-    //          DistrictHeating
+    //          DistrictHeatingWater
+    //          DistrictHeatingSteam
 
     using DataStringGlobals::CharComma;
     using DataStringGlobals::CharSpace;

@@ -102,8 +102,6 @@ namespace Util {
         // FUNCTION INFORMATION:
         //       AUTHOR         Linda K. Lawrie
         //       DATE WRITTEN   September 1997
-        //       MODIFIED       na
-        //       RE-ENGINEERED  na
 
         // PURPOSE OF THIS FUNCTION:
         // This function processes a string that should be numeric and
@@ -184,8 +182,6 @@ namespace Util {
         // FUNCTION INFORMATION:
         //       AUTHOR         Linda K. Lawrie
         //       DATE WRITTEN   September 1997
-        //       MODIFIED       na
-        //       RE-ENGINEERED  na
 
         // PURPOSE OF THIS FUNCTION:
         // This function looks up a string in a similar list of
@@ -206,8 +202,6 @@ namespace Util {
         // FUNCTION INFORMATION:
         //       AUTHOR         Linda K. Lawrie
         //       DATE WRITTEN   September 1997
-        //       MODIFIED       na
-        //       RE-ENGINEERED  na
 
         // PURPOSE OF THIS FUNCTION:
         // This function looks up a string in a similar list of
@@ -228,8 +222,6 @@ namespace Util {
         // FUNCTION INFORMATION:
         //       AUTHOR         Linda K. Lawrie
         //       DATE WRITTEN   September 1997
-        //       MODIFIED       na
-        //       RE-ENGINEERED  na
 
         // PURPOSE OF THIS FUNCTION:
         // This function looks up a string in a similar list of
@@ -237,11 +229,10 @@ namespace Util {
         // found.  This routine is case insensitive.
 
         // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-
-        int Probe(0);
-        int LBnd(0);
-        int UBnd(NumItems + 1);
-        bool Found(false);
+        int Probe = 0;
+        int LBnd = 0;
+        int UBnd = NumItems + 1;
+        bool Found = false;
         while ((!Found) || (Probe != 0)) {
             Probe = (UBnd - LBnd) / 2;
             if (Probe == 0) break;
@@ -264,15 +255,11 @@ namespace Util {
         // FUNCTION INFORMATION:
         //       AUTHOR         Linda K. Lawrie
         //       DATE WRITTEN   April 1999
-        //       MODIFIED       na
-        //       RE-ENGINEERED  na
 
         // PURPOSE OF THIS FUNCTION:
         // This function looks up a string in a similar list of
         // items and returns the index of the item in the list, if
         // found.  This routine is case insensitive.
-
-        // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
 
         int FindItem = Util::FindItemInList(String, ListOfItems, NumItems);
         if (FindItem != 0) return FindItem;
@@ -289,8 +276,6 @@ namespace Util {
         // FUNCTION INFORMATION:
         //       AUTHOR         Linda K. Lawrie
         //       DATE WRITTEN   April 1999
-        //       MODIFIED       na
-        //       RE-ENGINEERED  na
 
         // PURPOSE OF THIS FUNCTION:
         // This function looks up a string in a similar list of
@@ -320,20 +305,15 @@ namespace Util {
         // SUBROUTINE INFORMATION:
         //       AUTHOR         Linda Lawrie
         //       DATE WRITTEN   February 2000
-        //       MODIFIED       na
-        //       RE-ENGINEERED  na
 
         // PURPOSE OF THIS SUBROUTINE:
         // This subroutine verifys that a new name can be added to the
         // list of names for this item (i.e., that there isn't one of that
         // name already and that this name is not blank).
 
-        // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-        int Found;
-
         ErrorFound = false;
         if (NumOfNames > 0) {
-            Found = FindItem(NameToVerify, NamesList, NumOfNames);
+            int Found = FindItem(NameToVerify, NamesList, NumOfNames);
             if (Found != 0) {
                 ShowSevereError(state, format("{}, duplicate name={}", StringToDisplay, NameToVerify));
                 ErrorFound = true;
@@ -361,8 +341,6 @@ namespace Util {
         // SUBROUTINE INFORMATION:
         //       AUTHOR         Linda Lawrie
         //       DATE WRITTEN   February 2000
-        //       MODIFIED       na
-        //       RE-ENGINEERED  na
 
         // PURPOSE OF THIS SUBROUTINE:
         // This subroutine verifys that a new name can be added to the
@@ -460,45 +438,20 @@ int AbortEnergyPlus(EnergyPlusData &state)
     // SUBROUTINE INFORMATION:
     //       AUTHOR         Linda K. Lawrie
     //       DATE WRITTEN   December 1997
-    //       MODIFIED       na
-    //       RE-ENGINEERED  na
 
     // PURPOSE OF THIS SUBROUTINE:
     // This subroutine causes the program to halt due to a fatal error.
 
     // METHODOLOGY EMPLOYED:
-    // Puts a message on output files.
-    // Closes files.
-    // Stops the program.
-
-    // Using/Aliasing
-    using namespace DataSystemVariables;
-    using namespace DataErrorTracking;
-    using BranchInputManager::TestBranchIntegrity;
-    using BranchNodeConnections::CheckNodeConnections;
-    using BranchNodeConnections::TestCompSetInletOutletNodes;
-    using ExternalInterface::CloseSocket;
-
-    using NodeInputManager::CheckMarkedNodes;
-    using NodeInputManager::SetupNodeVarsForReporting;
-    using PlantManager::CheckPlantOnAbort;
-    using SimulationManager::ReportLoopConnections;
-    using SolarShading::ReportSurfaceErrors;
-    using SystemReports::ReportAirLoopConnections;
-
-    // Locals
-    // SUBROUTINE ARGUMENT DEFINITIONS:
+    // Puts a message on output files. Closes files. Stops the program.
 
     // SUBROUTINE PARAMETER DEFINITIONS:
-
     std::string NumWarnings;
     std::string NumSevere;
     std::string NumWarningsDuringWarmup;
     std::string NumSevereDuringWarmup;
     std::string NumWarningsDuringSizing;
     std::string NumSevereDuringSizing;
-    bool ErrFound;
-    bool TerminalError;
 
     if (state.dataSQLiteProcedures->sqlite) {
         state.dataSQLiteProcedures->sqlite->updateSQLiteSimulationRecord(true, false);
@@ -509,24 +462,24 @@ int AbortEnergyPlus(EnergyPlusData &state)
         state.dataErrTracking->AskForConnectionsReport = false; // Set false here in case any further fatal errors in below processing...
 
         ShowMessage(state, "Fatal error -- final processing.  More error messages may appear.");
-        SetupNodeVarsForReporting(state);
+        NodeInputManager::SetupNodeVarsForReporting(state);
 
-        ErrFound = false;
-        TerminalError = false;
-        TestBranchIntegrity(state, ErrFound);
+        bool ErrFound = false;
+        bool TerminalError = false;
+        BranchInputManager::TestBranchIntegrity(state, ErrFound);
         if (ErrFound) TerminalError = true;
         TestAirPathIntegrity(state, ErrFound);
         if (ErrFound) TerminalError = true;
-        CheckMarkedNodes(state, ErrFound);
+        NodeInputManager::CheckMarkedNodes(state, ErrFound);
         if (ErrFound) TerminalError = true;
-        CheckNodeConnections(state, ErrFound);
+        BranchNodeConnections::CheckNodeConnections(state, ErrFound);
         if (ErrFound) TerminalError = true;
-        TestCompSetInletOutletNodes(state, ErrFound);
+        BranchNodeConnections::TestCompSetInletOutletNodes(state, ErrFound);
         if (ErrFound) TerminalError = true;
 
         if (!TerminalError) {
-            ReportAirLoopConnections(state);
-            ReportLoopConnections(state);
+            SystemReports::ReportAirLoopConnections(state);
+            SimulationManager::ReportLoopConnections(state);
         }
 
     } else if (!state.dataErrTracking->ExitDuringSimulations) {
@@ -538,8 +491,8 @@ int AbortEnergyPlus(EnergyPlusData &state)
         ReportSurfaces(state);
     }
 
-    ReportSurfaceErrors(state);
-    CheckPlantOnAbort(state);
+    SolarShading::ReportSurfaceErrors(state);
+    PlantManager::CheckPlantOnAbort(state);
     ShowRecurringErrors(state);
     SummarizeErrors(state);
     CloseMiscOpenFiles(state);
@@ -585,7 +538,7 @@ int AbortEnergyPlus(EnergyPlusData &state)
               << "EnergyPlus Terminated--Error(s) Detected." << std::endl;
     // Close the socket used by ExternalInterface. This call also sends the flag "-1" to the ExternalInterface,
     // indicating that E+ terminated with an error.
-    if (state.dataExternalInterface->NumExternalInterfaces > 0) CloseSocket(state, -1);
+    if (state.dataExternalInterface->NumExternalInterfaces > 0) ExternalInterface::CloseSocket(state, -1);
 
     if (state.dataGlobal->eplusRunningViaAPI) {
         state.files.flushAll();
@@ -604,8 +557,6 @@ void CloseMiscOpenFiles(EnergyPlusData &state)
     // SUBROUTINE INFORMATION:
     //       AUTHOR         Linda K. Lawrie
     //       DATE WRITTEN   December 1997
-    //       MODIFIED       na
-    //       RE-ENGINEERED  na
 
     // PURPOSE OF THIS SUBROUTINE:
     // This subroutine scans potential unit numbers and closes
@@ -614,12 +565,8 @@ void CloseMiscOpenFiles(EnergyPlusData &state)
     // METHODOLOGY EMPLOYED:
     // Use INQUIRE to determine if file is open.
 
-    // Using/Aliasing
-    using Dayltg::CloseDFSFile;
-    using Dayltg::CloseReportIllumMaps;
-
-    CloseReportIllumMaps(state);
-    CloseDFSFile(state);
+    Dayltg::CloseReportIllumMaps(state);
+    Dayltg::CloseDFSFile(state);
 
     if (state.dataReportFlag->DebugOutput || (state.files.debug.good() && state.files.debug.position() > 0)) {
         state.files.debug.close();
@@ -634,22 +581,12 @@ int EndEnergyPlus(EnergyPlusData &state)
     // SUBROUTINE INFORMATION:
     //       AUTHOR         Linda K. Lawrie
     //       DATE WRITTEN   December 1997
-    //       MODIFIED       na
-    //       RE-ENGINEERED  na
 
     // PURPOSE OF THIS SUBROUTINE:
     // This subroutine causes the program to terminate when complete (no errors).
 
     // METHODOLOGY EMPLOYED:
-    // Puts a message on output files.
-    // Closes files.
-    // Stops the program.
-
-    using namespace DataSystemVariables;
-    using namespace DataErrorTracking;
-    using ExternalInterface::CloseSocket;
-
-    using SolarShading::ReportSurfaceErrors;
+    // Puts a message on output files. Closes files. Stops the program.
 
     std::string NumWarnings;
     std::string NumSevere;
@@ -662,7 +599,7 @@ int EndEnergyPlus(EnergyPlusData &state)
         state.dataSQLiteProcedures->sqlite->updateSQLiteSimulationRecord(true, true);
     }
 
-    ReportSurfaceErrors(state);
+    SolarShading::ReportSurfaceErrors(state);
     ShowRecurringErrors(state);
     SummarizeErrors(state);
     CloseMiscOpenFiles(state);
@@ -716,7 +653,8 @@ int EndEnergyPlus(EnergyPlusData &state)
     if (state.dataGlobal->printConsoleOutput) std::cerr << "EnergyPlus Completed Successfully." << std::endl;
     // Close the ExternalInterface socket. This call also sends the flag "1" to the ExternalInterface,
     // indicating that E+ finished its simulation
-    if ((state.dataExternalInterface->NumExternalInterfaces > 0) && state.dataExternalInterface->haveExternalInterfaceBCVTB) CloseSocket(state, 1);
+    if ((state.dataExternalInterface->NumExternalInterfaces > 0) && state.dataExternalInterface->haveExternalInterfaceBCVTB)
+        ExternalInterface::CloseSocket(state, 1);
 
     if (state.dataGlobal->fProgressPtr) {
         state.dataGlobal->fProgressPtr(100);
@@ -744,8 +682,6 @@ void ConvertCaseToUpper(std::string_view InputString, // Input string
     // SUBROUTINE INFORMATION:
     //       AUTHOR         Linda K. Lawrie
     //       DATE WRITTEN   September 1997
-    //       MODIFIED       na
-    //       RE-ENGINEERED  na
 
     // PURPOSE OF THIS SUBROUTINE:
     // Convert a string to upper case
@@ -778,8 +714,6 @@ void ConvertCaseToLower(std::string_view InputString, // Input string
     // SUBROUTINE INFORMATION:
     //       AUTHOR         Linda K. Lawrie
     //       DATE WRITTEN   September 1997
-    //       MODIFIED       na
-    //       RE-ENGINEERED  na
 
     // PURPOSE OF THIS SUBROUTINE:
     // Convert a string to lower case
@@ -810,8 +744,6 @@ std::string::size_type FindNonSpace(std::string const &String) // String to be s
     // FUNCTION INFORMATION:
     //       AUTHOR         Linda K. Lawrie
     //       DATE WRITTEN   September 1997
-    //       MODIFIED       na
-    //       RE-ENGINEERED  na
 
     // PURPOSE OF THIS FUNCTION:
     // This function finds the first non-space character in the passed string
@@ -819,28 +751,6 @@ std::string::size_type FindNonSpace(std::string const &String) // String to be s
 
     // METHODOLOGY EMPLOYED:
     // Scan string for character not equal to blank.
-
-    // REFERENCES:
-    // na
-
-    // USE STATEMENTS:
-    // na
-
-    // Return value
-
-    // Locals
-    // FUNCTION ARGUMENT DEFINITIONS:
-
-    // FUNCTION PARAMETER DEFINITIONS:
-    // na
-
-    // INTERFACE BLOCK SPECIFICATIONS
-    // na
-
-    // DERIVED TYPE DEFINITIONS
-    // na
-
-    // FUNCTION LOCAL VARIABLE DECLARATIONS:
 
     return String.find_first_not_of(' ');
 }
@@ -851,8 +761,6 @@ bool env_var_on(std::string const &env_var_str)
     // FUNCTION INFORMATION:
     //       AUTHOR         Stuart G. Mentzer
     //       DATE WRITTEN   April 2014
-    //       MODIFIED       na
-    //       RE-ENGINEERED  na
 
     // PURPOSE OF THIS FUNCTION:
     // Test if a boolean environment variable value is "on" (has value starting with Y or T)
@@ -920,10 +828,7 @@ void ShowFatalError(EnergyPlusData &state, std::string const &ErrorMessage, Opti
     // SUBROUTINE INFORMATION:
     //       AUTHOR         Linda K. Lawrie
     //       DATE WRITTEN   September 1997
-    //       MODIFIED       Kyle Benne
-    //                      August 2010
-    //                      Added sqlite output
-    //       RE-ENGINEERED  na
+    //       MODIFIED       Kyle Benne August 2010 Added sqlite output
 
     // PURPOSE OF THIS SUBROUTINE:
     // This subroutine puts ErrorMessage with a Fatal designation on
@@ -957,8 +862,6 @@ void ShowSevereError(EnergyPlusData &state, std::string const &ErrorMessage, Opt
     // SUBROUTINE INFORMATION:
     //       AUTHOR         Linda K. Lawrie
     //       DATE WRITTEN   September 1997
-    //       MODIFIED       na
-    //       RE-ENGINEERED  na
 
     // PURPOSE OF THIS SUBROUTINE:
     // This subroutine puts ErrorMessage with a Severe designation on
@@ -967,12 +870,8 @@ void ShowSevereError(EnergyPlusData &state, std::string const &ErrorMessage, Opt
     // METHODOLOGY EMPLOYED:
     // Calls ShowErrorMessage utility routine.
 
-    using namespace DataStringGlobals;
-    using namespace DataErrorTracking;
-    int Loop;
-
-    for (Loop = 1; Loop <= SearchCounts; ++Loop) {
-        if (has(ErrorMessage, MessageSearch[Loop])) ++state.dataErrTracking->MatchCounts(Loop);
+    for (int Loop = 1; Loop <= DataErrorTracking::SearchCounts; ++Loop) {
+        if (has(ErrorMessage, DataErrorTracking::MessageSearch[Loop])) ++state.dataErrTracking->MatchCounts(Loop);
     }
 
     ++state.dataErrTracking->TotalSevereErrors;
@@ -999,25 +898,16 @@ void ShowSevereMessage(EnergyPlusData &state, std::string const &ErrorMessage, O
     // SUBROUTINE INFORMATION:
     //       AUTHOR         Linda K. Lawrie
     //       DATE WRITTEN   September 2009
-    //       MODIFIED       na
-    //       RE-ENGINEERED  na
 
     // PURPOSE OF THIS SUBROUTINE:
-    // This subroutine puts ErrorMessage with a Severe designation on
-    // designated output files.
-    // But does not bump the error count so can be used in conjunction with recurring
-    // error calls.
+    // This subroutine puts ErrorMessage with a Severe designation on designated output files.
+    // But does not bump the error count so can be used in conjunction with recurring error calls.
 
     // METHODOLOGY EMPLOYED:
     // Calls ShowErrorMessage utility routine.
 
-    using namespace DataStringGlobals;
-    using namespace DataErrorTracking;
-
-    int Loop;
-
-    for (Loop = 1; Loop <= SearchCounts; ++Loop) {
-        if (has(ErrorMessage, MessageSearch[Loop])) ++state.dataErrTracking->MatchCounts(Loop);
+    for (int Loop = 1; Loop <= DataErrorTracking::SearchCounts; ++Loop) {
+        if (has(ErrorMessage, DataErrorTracking::MessageSearch[Loop])) ++state.dataErrTracking->MatchCounts(Loop);
     }
 
     ShowErrorMessage(state, format(" ** Severe  ** {}", ErrorMessage), OutUnit1, OutUnit2);
@@ -1039,8 +929,6 @@ void ShowContinueError(EnergyPlusData &state, std::string const &Message, Option
     // SUBROUTINE INFORMATION:
     //       AUTHOR         Linda K. Lawrie
     //       DATE WRITTEN   October 2001
-    //       MODIFIED       na
-    //       RE-ENGINEERED  na
 
     // PURPOSE OF THIS SUBROUTINE:
     // This subroutine displays a 'continued error' message on designated output files.
@@ -1063,17 +951,12 @@ void ShowContinueErrorTimeStamp(EnergyPlusData &state, std::string const &Messag
     // SUBROUTINE INFORMATION:
     //       AUTHOR         Linda K. Lawrie
     //       DATE WRITTEN   February 2004
-    //       MODIFIED       na
-    //       RE-ENGINEERED  na
 
     // PURPOSE OF THIS SUBROUTINE:
     // This subroutine displays a 'continued error' timestamp message on designated output files.
 
     // METHODOLOGY EMPLOYED:
     // Calls ShowErrorMessage utility routine.
-
-    // Using/Aliasing
-    using General::CreateSysTimeIntervalString;
 
     std::string cEnvHeader;
 
@@ -1097,7 +980,7 @@ void ShowContinueErrorTimeStamp(EnergyPlusData &state, std::string const &Messag
                                      cEnvHeader,
                                      state.dataEnvrn->EnvironmentName,
                                      state.dataEnvrn->CurMnDy,
-                                     CreateSysTimeIntervalString(state));
+                                     General::CreateSysTimeIntervalString(state));
 
         ShowErrorMessage(state, format(" **   ~~~   ** {}", m), OutUnit1, OutUnit2);
         if (state.dataSQLiteProcedures->sqlite) {
@@ -1111,7 +994,7 @@ void ShowContinueErrorTimeStamp(EnergyPlusData &state, std::string const &Messag
                                            cEnvHeader,
                                            state.dataEnvrn->EnvironmentName,
                                            state.dataEnvrn->CurMnDy,
-                                           CreateSysTimeIntervalString(state));
+                                           General::CreateSysTimeIntervalString(state));
         ShowErrorMessage(state, format(" **   ~~~   ** {}", Message));
         ShowErrorMessage(state, format(" **   ~~~   ** {}", postfix), OutUnit1, OutUnit2);
         if (state.dataSQLiteProcedures->sqlite) {
@@ -1130,8 +1013,6 @@ void ShowMessage(EnergyPlusData &state, std::string const &Message, OptionalOutp
     // SUBROUTINE INFORMATION:
     //       AUTHOR         Linda K. Lawrie
     //       DATE WRITTEN   September 1997
-    //       MODIFIED       na
-    //       RE-ENGINEERED  na
 
     // PURPOSE OF THIS SUBROUTINE:
     // This subroutine displays a simple message on designated output files.
@@ -1158,8 +1039,6 @@ void ShowWarningError(EnergyPlusData &state, std::string const &ErrorMessage, Op
     // SUBROUTINE INFORMATION:
     //       AUTHOR         Linda K. Lawrie
     //       DATE WRITTEN   September 1997
-    //       MODIFIED       na
-    //       RE-ENGINEERED  na
 
     // PURPOSE OF THIS SUBROUTINE:
     // This subroutine puts ErrorMessage with a Warning designation on
@@ -1168,12 +1047,8 @@ void ShowWarningError(EnergyPlusData &state, std::string const &ErrorMessage, Op
     // METHODOLOGY EMPLOYED:
     // Calls ShowErrorMessage utility routine.
 
-    using namespace DataStringGlobals;
-    using namespace DataErrorTracking;
-    int Loop;
-
-    for (Loop = 1; Loop <= SearchCounts; ++Loop) {
-        if (has(ErrorMessage, MessageSearch[Loop])) ++state.dataErrTracking->MatchCounts(Loop);
+    for (int Loop = 1; Loop <= DataErrorTracking::SearchCounts; ++Loop) {
+        if (has(ErrorMessage, DataErrorTracking::MessageSearch[Loop])) ++state.dataErrTracking->MatchCounts(Loop);
     }
 
     ++state.dataErrTracking->TotalWarningErrors;
@@ -1207,12 +1082,8 @@ void ShowWarningMessage(EnergyPlusData &state, std::string const &ErrorMessage, 
     // METHODOLOGY EMPLOYED:
     // Calls ShowErrorMessage utility routine.
 
-    // Using/Aliasing
-    using namespace DataStringGlobals;
-    using namespace DataErrorTracking;
-
-    for (int Loop = 1; Loop <= SearchCounts; ++Loop) {
-        if (has(ErrorMessage, MessageSearch[Loop])) ++state.dataErrTracking->MatchCounts(Loop);
+    for (int Loop = 1; Loop <= DataErrorTracking::SearchCounts; ++Loop) {
+        if (has(ErrorMessage, DataErrorTracking::MessageSearch[Loop])) ++state.dataErrTracking->MatchCounts(Loop);
     }
 
     ShowErrorMessage(state, format(" ** Warning ** {}", ErrorMessage), OutUnit1, OutUnit2);
@@ -1248,16 +1119,12 @@ void ShowRecurringSevereErrorAtEnd(EnergyPlusData &state,
     // METHODOLOGY EMPLOYED:
     // Calls StoreRecurringErrorMessage utility routine.
 
-    // Using/Aliasing
-    using namespace DataStringGlobals;
-    using namespace DataErrorTracking;
-
     // INTERFACE BLOCK SPECIFICATIONS
     //  Use for recurring "severe" error messages shown once at end of simulation
     //  with count of occurrences and optional max, min, sum
 
-    for (int Loop = 1; Loop <= SearchCounts; ++Loop) {
-        if (has(Message, MessageSearch[Loop])) {
+    for (int Loop = 1; Loop <= DataErrorTracking::SearchCounts; ++Loop) {
+        if (has(Message, DataErrorTracking::MessageSearch[Loop])) {
             ++state.dataErrTracking->MatchCounts(Loop);
             break;
         }
@@ -1299,16 +1166,12 @@ void ShowRecurringSevereErrorAtEnd(EnergyPlusData &state,
     // METHODOLOGY EMPLOYED:
     // Calls StoreRecurringErrorMessage utility routine.
 
-    // Using/Aliasing
-    using namespace DataStringGlobals;
-    using namespace DataErrorTracking;
-
     // INTERFACE BLOCK SPECIFICATIONS
     //  Use for recurring "severe" error messages shown once at end of simulation
     //  with count of occurrences and optional max, min, sum
 
-    for (int Loop = 1; Loop <= SearchCounts; ++Loop) {
-        if (has(Message, MessageSearch[Loop])) {
+    for (int Loop = 1; Loop <= DataErrorTracking::SearchCounts; ++Loop) {
+        if (has(Message, DataErrorTracking::MessageSearch[Loop])) {
             ++state.dataErrTracking->MatchCounts(Loop);
             break;
         }
@@ -1353,16 +1216,12 @@ void ShowRecurringWarningErrorAtEnd(EnergyPlusData &state,
     // METHODOLOGY EMPLOYED:
     // Calls StoreRecurringErrorMessage utility routine.
 
-    // Using/Aliasing
-    using namespace DataStringGlobals;
-    using namespace DataErrorTracking;
-
     // INTERFACE BLOCK SPECIFICATIONS
     //  Use for recurring "warning" error messages shown once at end of simulation
     //  with count of occurrences and optional max, min, sum
 
-    for (int Loop = 1; Loop <= SearchCounts; ++Loop) {
-        if (has(Message, MessageSearch[Loop])) {
+    for (int Loop = 1; Loop <= DataErrorTracking::SearchCounts; ++Loop) {
+        if (has(Message, DataErrorTracking::MessageSearch[Loop])) {
             ++state.dataErrTracking->MatchCounts(Loop);
             break;
         }
@@ -1404,16 +1263,12 @@ void ShowRecurringWarningErrorAtEnd(EnergyPlusData &state,
     // METHODOLOGY EMPLOYED:
     // Calls StoreRecurringErrorMessage utility routine.
 
-    // Using/Aliasing
-    using namespace DataStringGlobals;
-    using namespace DataErrorTracking;
-
     // INTERFACE BLOCK SPECIFICATIONS
     //  Use for recurring "warning" error messages shown once at end of simulation
     //  with count of occurrences and optional max, min, sum
 
-    for (int Loop = 1; Loop <= SearchCounts; ++Loop) {
-        if (has(Message, MessageSearch[Loop])) {
+    for (int Loop = 1; Loop <= DataErrorTracking::SearchCounts; ++Loop) {
+        if (has(Message, DataErrorTracking::MessageSearch[Loop])) {
             ++state.dataErrTracking->MatchCounts(Loop);
             break;
         }
@@ -1458,16 +1313,12 @@ void ShowRecurringContinueErrorAtEnd(EnergyPlusData &state,
     // METHODOLOGY EMPLOYED:
     // Calls StoreRecurringErrorMessage utility routine.
 
-    // Using/Aliasing
-    using namespace DataStringGlobals;
-    using namespace DataErrorTracking;
-
     // INTERFACE BLOCK SPECIFICATIONS
     //  Use for recurring "continue" error messages shown once at end of simulation
     //  with count of occurrences and optional max, min, sum
 
-    for (int Loop = 1; Loop <= SearchCounts; ++Loop) {
-        if (has(Message, MessageSearch[Loop])) {
+    for (int Loop = 1; Loop <= DataErrorTracking::SearchCounts; ++Loop) {
+        if (has(Message, DataErrorTracking::MessageSearch[Loop])) {
             ++state.dataErrTracking->MatchCounts(Loop);
             break;
         }
@@ -1510,9 +1361,6 @@ void StoreRecurringErrorMessage(EnergyPlusData &state,
     // for output at the end of the simulation with automatic tracking of number
     // of occurrences and optional tracking of associated min, max, and sum values
 
-    // Using/Aliasing
-    using namespace DataStringGlobals;
-    using namespace DataErrorTracking;
     // If Index is zero, then assign next available index and reallocate array
     if (ErrorMsgIndex == 0) {
         state.dataErrTracking->RecurringErrors.redimension(++state.dataErrTracking->NumRecurringErrors);
@@ -1577,13 +1425,10 @@ void ShowErrorMessage(EnergyPlusData &state, std::string const &ErrorMessage, Op
     // SUBROUTINE INFORMATION:
     //       AUTHOR         Linda K. Lawrie
     //       DATE WRITTEN   December 1997
-    //       MODIFIED       na
-    //       RE-ENGINEERED  na
 
     // PURPOSE OF THIS SUBROUTINE:
     // This subroutine displays the error messages on the indicated
-    // file unit numbers, in addition to the "standard error output"
-    // unit.
+    // file unit numbers, in addition to the "standard error output" unit.
 
     // METHODOLOGY EMPLOYED:
     // If arguments OutUnit1 and/or OutUnit2 are present the
@@ -1620,14 +1465,10 @@ void SummarizeErrors(EnergyPlusData &state)
     // SUBROUTINE INFORMATION:
     //       AUTHOR         Linda K. Lawrie
     //       DATE WRITTEN   March 2003
-    //       MODIFIED       na
-    //       RE-ENGINEERED  na
 
     // PURPOSE OF THIS SUBROUTINE:
     // This subroutine provides a summary of certain errors that might
     // otherwise get lost in the shuffle of many similar messages.
-
-    using namespace DataErrorTracking;
 
     std::string::size_type StartC;
     std::string::size_type EndC;
@@ -1636,10 +1477,10 @@ void SummarizeErrors(EnergyPlusData &state)
         ShowMessage(state, "");
         ShowMessage(state, "===== Final Error Summary =====");
         ShowMessage(state, "The following error categories occurred.  Consider correcting or noting.");
-        for (int Loop = 1; Loop <= SearchCounts; ++Loop) {
+        for (int Loop = 1; Loop <= DataErrorTracking::SearchCounts; ++Loop) {
             if (state.dataErrTracking->MatchCounts(Loop) > 0) {
-                ShowMessage(state, Summaries[Loop]);
-                std::string thisMoreDetails = MoreDetails[Loop];
+                ShowMessage(state, DataErrorTracking::Summaries[Loop]);
+                std::string thisMoreDetails = DataErrorTracking::MoreDetails[Loop];
                 if (!thisMoreDetails.empty()) {
                     StartC = 0;
                     EndC = len(thisMoreDetails) - 1;
@@ -1663,29 +1504,18 @@ void ShowRecurringErrors(EnergyPlusData &state)
     // SUBROUTINE INFORMATION:
     //       AUTHOR         Linda K. Lawrie
     //       DATE WRITTEN   March 2003
-    //       MODIFIED       na
-    //       RE-ENGINEERED  na
 
     // PURPOSE OF THIS SUBROUTINE:
     // This subroutine provides a summary of certain errors that might
     // otherwise get lost in the shuffle of many similar messages.
 
-    // Using/Aliasing
-    using namespace DataErrorTracking;
-
     static constexpr std::string_view StatMessageStart(" **   ~~~   ** ");
-
-    int Loop;
-    std::string StatMessage;
-    std::string MaxOut;
-    std::string MinOut;
-    std::string SumOut;
 
     if (state.dataErrTracking->NumRecurringErrors > 0) {
         ShowMessage(state, "");
         ShowMessage(state, "===== Recurring Error Summary =====");
         ShowMessage(state, "The following recurring error messages occurred.");
-        for (Loop = 1; Loop <= state.dataErrTracking->NumRecurringErrors; ++Loop) {
+        for (int Loop = 1; Loop <= state.dataErrTracking->NumRecurringErrors; ++Loop) {
             auto const &error = state.dataErrTracking->RecurringErrors(Loop);
             // Suppress reporting the count if it is a continue error
             if (has_prefix(error.Message, " **   ~~~   ** ")) {
@@ -1721,19 +1551,19 @@ void ShowRecurringErrors(EnergyPlusData &state)
                     state.dataGlobal->errorCallback(Error::Continue, "");
                 }
             }
-            StatMessage = "";
+            std::string StatMessage = "";
             if (error.ReportMax) {
-                MaxOut = format("{:.6f}", error.MaxValue);
+                std::string MaxOut = format("{:.6f}", error.MaxValue);
                 StatMessage += "  Max=" + MaxOut;
                 if (!error.MaxUnits.empty()) StatMessage += ' ' + error.MaxUnits;
             }
             if (error.ReportMin) {
-                MinOut = format("{:.6f}", error.MinValue);
+                std::string MinOut = format("{:.6f}", error.MinValue);
                 StatMessage += "  Min=" + MinOut;
                 if (!error.MinUnits.empty()) StatMessage += ' ' + error.MinUnits;
             }
             if (error.ReportSum) {
-                SumOut = format("{:.6f}", error.SumValue);
+                std::string SumOut = format("{:.6f}", error.SumValue);
                 StatMessage += "  Sum=" + SumOut;
                 if (!error.SumUnits.empty()) StatMessage += ' ' + error.SumUnits;
             }

@@ -2983,12 +2983,14 @@ namespace UnitarySystems {
         if (this->m_CoolCoilExists && this->m_MaxCoolAirVolFlow < 0.0) {
             if (!state.dataSize->SysSizingRunDone) {
                 int BranchNum = BranchInputManager::GetAirBranchIndex(state, "AirloopHVAC:UnitarySystem", this->Name);
-                std::string FanType = "";
-                std::string m_FanName = ""; // the notation m_ implies member variables, and this is a local
                 BranchFanFlow = 0.0;
-                if (BranchNum > 0.0) BranchInputManager::GetBranchFanTypeName(state, BranchNum, FanType, m_FanName, ErrFound);
-                if (!ErrFound && BranchNum > 0) {
-                    BranchFanFlow = state.dataFans->fans(this->m_FanIndex)->maxAirFlowRate;
+                if (BranchNum > 0.0) {
+                    std::string FanType = "";
+                    std::string FanName = "";
+                    BranchInputManager::GetBranchFanTypeName(state, BranchNum, FanType, FanName, ErrFound);
+                    if (!ErrFound) {
+                        BranchFanFlow = state.dataFans->fans(this->m_FanIndex)->maxAirFlowRate;
+                    }
                 }
                 if (BranchFanFlow > 0.0) {
                     this->m_MaxCoolAirVolFlow = BranchFanFlow;
@@ -6618,10 +6620,7 @@ namespace UnitarySystems {
                         this->m_MSHeatingSpeedRatio[i] = 1.0;
                     }
                     if (this->m_HeatingCoilType_Num == HVAC::Coil_HeatingWaterToAirHPVSEquationFit) {
-                        std::string MultispeedType = "UnitarySystemPerformance:Multispeed";
-                        if (this->m_DesignSpecMSHPIndex == -1) {
-                            std::string MultispeedType = "Fan:SystemModel";
-                        }
+                        std::string MultispeedType = (this->m_DesignSpecMSHPIndex == -1) ? "Fan:SystemModel" : "UnitarySystemPerformance:Multispeed";
                         int NumOfSpeed = VariableSpeedCoils::GetVSCoilNumOfSpeeds(state, this->m_HeatingCoilName, errorsFound);
                         if (errorsFound) {
                             ShowSevereError(state,
@@ -6664,10 +6663,7 @@ namespace UnitarySystems {
                         this->m_MSCoolingSpeedRatio[i] = 1.0;
                     }
                     if (this->m_CoolingCoilType_Num == HVAC::Coil_CoolingWaterToAirHPVSEquationFit) {
-                        std::string MultispeedType = "UnitarySystemPerformance:Multispeed";
-                        if (this->m_DesignSpecMSHPIndex == -1) {
-                            std::string MultispeedType = "Fan:SystemModel";
-                        }
+                        std::string MultispeedType = (this->m_DesignSpecMSHPIndex == -1) ? "Fan:SystemModel" : "UnitarySystemPerformance:Multispeed";
                         int NumOfSpeed = VariableSpeedCoils::GetVSCoilNumOfSpeeds(state, this->m_CoolingCoilName, errorsFound);
                         if (errorsFound) {
                             ShowSevereError(state,

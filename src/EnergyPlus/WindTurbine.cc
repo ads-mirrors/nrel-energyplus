@@ -80,8 +80,6 @@ namespace WindTurbine {
     // MODULE INFORMATION:
     //       AUTHOR         Daeho Kang
     //       DATE WRITTEN   October 2009
-    //       MODIFIED       na
-    //       RE-ENGINEERED  na
 
     // PURPOSE OF THIS MODULE:
     // This module is to calculate the electrical power output that wind turbine systems produce.
@@ -117,8 +115,6 @@ namespace WindTurbine {
         // SUBROUTINE INFORMATION:
         //       AUTHOR         Daeho Kang
         //       DATE WRITTEN   October 2009
-        //       MODIFIED       na
-        //       RE-ENGINEERED  na
 
         // PURPOSE OF THIS SUBROUTINE:
         // This subroutine manages the simulation of wind turbine component.
@@ -180,7 +176,6 @@ namespace WindTurbine {
         //       AUTHOR         B. Griffith
         //       DATE WRITTEN   Aug. 2008
         //       MODIFIED       D Kang, October 2009 for Wind Turbine
-        //       RE-ENGINEERED  na
 
         // PURPOSE OF THIS SUBROUTINE:
         // This subroutine provides a "get" method to collect results for individual electric load centers.
@@ -199,8 +194,6 @@ namespace WindTurbine {
         // SUBROUTINE INFORMATION:
         //       AUTHOR         Daeho Kang
         //       DATE WRITTEN   October 2009
-        //       MODIFIED       na
-        //       RE-ENGINEERED  na
 
         // PURPOSE OF THIS SUBROUTINE:
         // This subroutine gets input data for wind turbine components
@@ -766,7 +759,6 @@ namespace WindTurbine {
         //       AUTHOR         Daeho Kang
         //       DATE WRITTEN   Oct 2009
         //       MODIFIED       Linda K. Lawrie, December 2009 for reading stat file
-        //       RE-ENGINEERED  na
 
         // PURPOSE OF THIS SUBROUTINE:
         // This subroutine reads monthly average wind speed from stat file and then
@@ -779,18 +771,14 @@ namespace WindTurbine {
 
         static char const TabChr('\t'); // Tab character
 
-        int mon;           // loop counter
-        bool wsStatFound;  // logical noting that wind stats were found
-        bool warningShown; // true if the <365 warning has already been shown
         Array1D<Real64> MonthWS(12);
-        Real64 LocalTMYWS; // Annual average wind speed at the rotor height
 
         // Estimate average annual wind speed once
         if (state.dataWindTurbine->MyOneTimeFlag) {
-            wsStatFound = false;
             Real64 AnnualTMYWS = 0.0;
             if (FileSystem::fileExists(state.files.inStatFilePath.filePath)) {
                 auto statFile = state.files.inStatFilePath.open(state, "InitWindTurbine");
+                bool wsStatFound = false; // logical noting that wind stats were found
                 while (statFile.good()) { // end of file
                     auto lineIn = statFile.readLine();
                     // reconcile line with different versions of stat file
@@ -805,8 +793,8 @@ namespace WindTurbine {
                         lineIn.data.erase(0, lnPtr + 10);
                         MonthWS = 0.0;
                         wsStatFound = true;
-                        warningShown = false;
-                        for (mon = 1; mon <= 12; ++mon) {
+                        bool warningShown = false; // true if the <365 warning has already been shown
+                        for (int mon = 1; mon <= 12; ++mon) {
                             lnPtr = index(lineIn.data, TabChr);
                             if (lnPtr != 1) {
                                 if ((lnPtr == std::string::npos) || (!stripped(lineIn.data.substr(0, lnPtr)).empty())) {
@@ -868,8 +856,8 @@ namespace WindTurbine {
         // Factor differences between TMY wind data and local wind data once
         if (windTurbine.AnnualTMYWS > 0.0 && windTurbine.WSFactor == 0.0 && windTurbine.LocalAnnualAvgWS > 0) {
             // Convert the annual wind speed to the local wind speed at the height of the local station, then factor
-            LocalTMYWS = windTurbine.AnnualTMYWS * state.dataEnvrn->WeatherFileWindModCoeff *
-                         std::pow(windTurbine.HeightForLocalWS / state.dataEnvrn->SiteWindBLHeight, state.dataEnvrn->SiteWindExp);
+            Real64 LocalTMYWS = windTurbine.AnnualTMYWS * state.dataEnvrn->WeatherFileWindModCoeff *
+                                std::pow(windTurbine.HeightForLocalWS / state.dataEnvrn->SiteWindBLHeight, state.dataEnvrn->SiteWindExp);
             windTurbine.WSFactor = LocalTMYWS / windTurbine.LocalAnnualAvgWS;
         }
         // Assign factor of 1.0 if no stat file or no input of local average wind speed
@@ -898,8 +886,6 @@ namespace WindTurbine {
         // SUBROUTINE INFORMATION:
         //       AUTHOR         Daeho Kang
         //       DATE WRITTEN   October 2009
-        //       MODIFIED       na
-        //       RE-ENGINEERED  na
 
         // REFERENCES:
         // Sathyajith Mathew. 2006. Wind Energy: Fundamental, Resource Analysis and Economics. Springer,
@@ -1127,8 +1113,6 @@ namespace WindTurbine {
         // SUBROUTINE INFORMATION:
         //       AUTHOR         Daeho Kang
         //       DATE WRITTEN   October 2009
-        //       MODIFIED       na
-        //       RE-ENGINEERED  na
 
         // PURPOSE OF THIS SUBROUTINE:
         // This subroutine fills remaining report variables.

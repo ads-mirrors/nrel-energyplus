@@ -563,13 +563,46 @@ TEST_F(EnergyPlusFixture, ChillerElectricEIR_WaterCooledChillerVariableSpeedCond
     Real64 ActualCondFlow = 3.0 * std::abs(MyLoad) / (Cp * 10.0);
     EXPECT_NEAR(thisChiller.CondMassFlowRate, ActualCondFlow, 0.00001);
 
-    thisChiller.CondenserFlowControl = DataPlant::CondenserFlowControl::ConstantFlow;
-    thisChiller.calculate(*state, MyLoad, RunFlag);
-    EXPECT_NEAR(thisChiller.CondMassFlowRate, thisChiller.CondMassFlowRateMax, 0.00001);
-
     // Test the minimum condenser flow rate
     MyLoad = -500;
     thisChiller.CondenserFlowControl = DataPlant::CondenserFlowControl::ModulatedChillerPLR;
     thisChiller.calculate(*state, MyLoad, RunFlag);
     EXPECT_NEAR(thisChiller.CondMassFlowRate, thisChiller.CondMassFlowRateMax * 0.35, 0.00001);
+
+    // Test constant flow condenser
+    thisChiller.CondenserFlowControl = DataPlant::CondenserFlowControl::ConstantFlow;
+    MyLoad = -10000;
+    Real64 savedMyLoad = MyLoad;
+
+    // test with condenser flow available
+    thisChiller.initialize(*state, RunFlag, MyLoad);
+    thisChiller.calculate(*state, MyLoad, RunFlag);
+    thisChiller.update(*state, MyLoad, RunFlag);
+    Real64 chWOutletTemp = thisChiller.EvapInletTemp + savedMyLoad / (Cp * thisChiller.EvapMassFlowRate);
+    Real64 condOutletTemp = thisChiller.CondInletTemp + thisChiller.QCondenser / (Cp * thisChiller.CondMassFlowRate);
+    EXPECT_EQ(MyLoad, savedMyLoad);
+    EXPECT_NEAR(thisChiller.CondMassFlowRate, thisChiller.CondMassFlowRateMax, 0.00001);
+    EXPECT_NEAR(thisChiller.EvapMassFlowRate, thisChiller.EvapMassFlowRateMax, 0.00001);
+    EXPECT_NEAR(thisChiller.EvapOutletTemp, chWOutletTemp, 0.1);
+    EXPECT_NEAR(thisChiller.CondOutletTemp, condOutletTemp, 0.1);
+    EXPECT_NEAR(thisChiller.QEvaporator, -savedMyLoad, 1.0);
+    EXPECT_NEAR(thisChiller.QCondenser, (-savedMyLoad + thisChiller.Power), 1.0);
+    EXPECT_NEAR(thisChiller.Power, 20987, 1.0);
+
+    // test with no condenser flow available - chiller should be off
+    state->dataLoopNodes->Node(thisChiller.CondInletNodeNum).MassFlowRate = 0.0;
+    state->dataLoopNodes->Node(thisChiller.CondInletNodeNum).MassFlowRateMaxAvail = 0.0;
+    thisChiller.initialize(*state, RunFlag, MyLoad);
+    thisChiller.calculate(*state, MyLoad, RunFlag);
+    thisChiller.update(*state, MyLoad, RunFlag);
+    EXPECT_EQ(MyLoad, 0.0);
+    EXPECT_EQ(thisChiller.CondMassFlowRate, 0.0);
+    EXPECT_EQ(thisChiller.EvapMassFlowRate, 0.0);
+    EXPECT_EQ(thisChiller.EvapOutletTemp, thisChiller.EvapInletTemp);
+    EXPECT_EQ(thisChiller.CondOutletTemp, thisChiller.CondInletTemp);
+    EXPECT_EQ(thisChiller.QEvaporator, 0.0);
+    EXPECT_EQ(thisChiller.QCondenser, 0.0);
+    EXPECT_EQ(thisChiller.Power, 0.0);
+
+    // Test
 }

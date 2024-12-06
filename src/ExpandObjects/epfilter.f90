@@ -26459,7 +26459,7 @@ DO iBoiler = 1, numCompactBoiler
     END IF
   ELSE
     !PURCHASED:HOT WATER ~ line 33
-    CALL CreateNewObj('DistrictHeating')
+    CALL CreateNewObj('DistrictHeating:Water')
     CALL AddToObjFld('Name', base + blrNameOff,'')
     CALL AddToObjFld('Plant_Loop_Inlet_Node', base + blrNameOff,' HW Inlet')
     CALL AddToObjFld('Plant_Loop_Outlet_Node', base + blrNameOff,' HW Outlet')
@@ -26479,7 +26479,7 @@ DO iBoiler = 1, numCompactBoiler
     ENDIF
     CALL AddToObjStr('Pressure Drop Curve Name','')
     IF (.NOT. isPumpBranch) THEN
-      CALL AddToObjStr('Component Object Type','DistrictHeating')
+      CALL AddToObjStr('Component Object Type','DistrictHeating:Water')
       CALL AddToObjFld('Component Name', base + blrNameOff,'')
       CALL AddToObjFld('Component Inlet Node Name', base + blrNameOff,' HW Inlet')
       CALL AddToObjFld('Component Outlet Node Name', base + blrNameOff,' HW Outlet',.TRUE.)
@@ -26492,7 +26492,7 @@ DO iBoiler = 1, numCompactBoiler
       CALL AddToObjFld('Component Name', base + blrNameOff,' Branch Pump')
       CALL AddToObjFld('Component Inlet Node Name', base + blrNameOff,' HW Pump Inlet')
       CALL AddToObjFld('Component Outlet Node Name', base + blrNameOff,' HW Inlet')
-      CALL AddToObjStr('Component Object Type','DistrictHeating')
+      CALL AddToObjStr('Component Object Type','DistrictHeating:Water')
       CALL AddToObjFld('Component Name', base + blrNameOff,'')
       CALL AddToObjFld('Component Inlet Node Name', base + blrNameOff,' HW Inlet')
       CALL AddToObjFld('Component Outlet Node Name', base + blrNameOff,' HW Outlet',.TRUE.)
@@ -26906,7 +26906,7 @@ IF (isHwpHWOperTypeDefault) THEN
       !If blrTypeOff="Hot Water Boiler" then this field is "BOILER:SIMPLE"
       !If blrTypeOff="Purchased Hot Water" then this field is "PURCHASED:HOT WATER"
       IF (SameString(FldVal(boilerBase + blrTypeOff),'DistrictHotWater')) THEN
-        CALL AddToObjStr('Equipment Object Type', 'DistrictHeating')
+        CALL AddToObjStr('Equipment Object Type', 'DistrictHeating:Water')
       ELSE
         CALL AddToObjStr('Equipment Object Type', 'Boiler:HotWater')
       END IF
@@ -30896,7 +30896,7 @@ IF (isMwpOperTypeDefault) THEN
         !If blrTypeOff="Hot Water Boiler" then this field is "BOILER:SIMPLE"
         !If blrTypeOff="Purchased Hot Water" then this field is "PURCHASED:HOT WATER"
         IF (SameString(FldVal(boilerBase + blrTypeOff),'DistrictHotWater')) THEN
-          CALL AddToObjStr('Equipment Object Type', 'DistrictHeating')
+          CALL AddToObjStr('Equipment Object Type', 'DistrictHeating:Water')
         ELSE
           CALL AddToObjStr('Equipment Object Type', 'Boiler:HotWater')
         END IF

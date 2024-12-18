@@ -898,6 +898,7 @@ namespace UnitVentilator {
         for (int UnitVentNum = 1; UnitVentNum <= state.dataUnitVentilators->NumOfUnitVents; ++UnitVentNum) {
 
             auto &unitVent = state.dataUnitVentilators->UnitVent(UnitVentNum);
+            auto &coilReportObj = state.dataRptCoilSelection->coilSelectionReportObj;
 
             SetupOutputVariable(state,
                                 "Zone Unit Ventilator Heating Rate",
@@ -972,12 +973,6 @@ namespace UnitVentilator {
                                     OutputProcessor::StoreType::Average,
                                     unitVent.Name);
             }
-        }
-
-        for (int UnitVentNum = 1; UnitVentNum <= state.dataUnitVentilators->NumOfUnitVents; ++UnitVentNum) {
-
-            auto &unitVent = state.dataUnitVentilators->UnitVent(UnitVentNum);
-            auto &coilReportObj = state.dataRptCoilSelection->coilSelectionReportObj;
 
             if (unitVent.HCoilPresent) {
                 coilReportObj->setCoilSupplyFanInfo(
@@ -1279,7 +1274,6 @@ namespace UnitVentilator {
         static constexpr std::string_view RoutineName("SizeUnitVentilator");
 
         // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-        int PltSizCoolNum = 0; // index of plant sizing object for 1st cooling loop
         Real64 DesCoolingLoad = 0.0;
         Real64 DesHeatingLoad = 0.0;
         Real64 TempSteamIn = 0.0;
@@ -1288,7 +1282,6 @@ namespace UnitVentilator {
         Real64 LatentHeatSteam = 0.0;
         Real64 SteamDensity = 0.0;
         int CoilWaterOutletNode = 0;
-        int CoilSteamOutletNode = 0;
         std::string CoolingCoilName;
         std::string CoolingCoilType;
         Real64 rho = 0.0;
@@ -1298,8 +1291,6 @@ namespace UnitVentilator {
         int SizingMethod; // Integer representation of sizing method name (e.g., CoolingAirflowSizing, HeatingAirflowSizing, CoolingCapacitySizing,
                           // HeatingCapacitySizing, etc.)
         bool PrintFlag;   // TRUE when sizing information is reported in the eio file
-        int SAFMethod(0); // supply air flow rate sizing method (SupplyAirFlowRate, FlowPerFloorArea, FractionOfAutosizedCoolingAirflow,
-                          // FractionOfAutosizedHeatingAirflow ...)
         int CapSizingMethod(0);    // capacity sizing methods (HeatingDesignCapacity, CapacityPerFloorArea, FractionOfAutosizedCoolingCapacity, and
                                    // FractionOfAutosizedHeatingCapacity )
         Real64 WaterCoilSizDeltaT; // water coil deltaT for design water flow rate autosizing
@@ -1336,7 +1327,7 @@ namespace UnitVentilator {
 
         if (state.dataSize->CurZoneEqNum > 0) {
             if (unitVent.HVACSizingIndex > 0) {
-                auto &zoneHVACSizing = state.dataSize->ZoneHVACSizing(unitVent.HVACSizingIndex);
+                auto const &zoneHVACSizing = state.dataSize->ZoneHVACSizing(unitVent.HVACSizingIndex);
 
                 // initialize OA flow for sizing other inputs (e.g., inlet temp, capacity, etc.)
                 if (unitVent.OutAirVolFlow == DataSizing::AutoSize) {
@@ -1354,7 +1345,7 @@ namespace UnitVentilator {
 
                 if (zoneHVACSizing.CoolingSAFMethod > 0 && state.dataSize->ZoneCoolingOnlyFan && !state.dataSize->ZoneHeatingOnlyFan) {
 
-                    SAFMethod = zoneHVACSizing.CoolingSAFMethod;
+                    int SAFMethod = zoneHVACSizing.CoolingSAFMethod;
                     SizingMethod = HVAC::CoolingAirflowSizing;
                     ZoneEqSizing.SizingMethod(SizingMethod) = SAFMethod;
                     switch (SAFMethod) {
@@ -1421,7 +1412,7 @@ namespace UnitVentilator {
 
                 } else if (zoneHVACSizing.HeatingSAFMethod > 0 && state.dataSize->ZoneHeatingOnlyFan && !state.dataSize->ZoneCoolingOnlyFan) {
                     SizingMethod = HVAC::HeatingAirflowSizing;
-                    SAFMethod = zoneHVACSizing.HeatingSAFMethod;
+                    int SAFMethod = zoneHVACSizing.HeatingSAFMethod;
                     ZoneEqSizing.SizingMethod(SizingMethod) = SAFMethod;
                     switch (SAFMethod) {
                     case DataSizing::None:
@@ -1461,7 +1452,6 @@ namespace UnitVentilator {
                         HeatingAirVolFlowScalable = sizingHeatingAirFlow.size(state, TempSize, errorsFound);
                     } break;
                     case DataSizing::FlowPerHeatingCapacity: {
-                        SizingMethod = HVAC::HeatingCapacitySizing;
                         TempSize = DataSizing::AutoSize;
                         PrintFlag = false;
                         state.dataSize->DataScalableSizingON = true;
@@ -1471,7 +1461,6 @@ namespace UnitVentilator {
                         sizerHeatingCapacity.initializeWithinEP(state, CompType, CompName, PrintFlag, RoutineName);
                         state.dataSize->DataAutosizedHeatingCapacity = sizerHeatingCapacity.size(state, TempSize, errorsFound);
                         state.dataSize->DataFlowPerHeatingCapacity = zoneHVACSizing.MaxHeatAirVolFlow;
-                        SizingMethod = HVAC::HeatingAirflowSizing;
                         PrintFlag = true;
                         TempSize = DataSizing::AutoSize;
                         errorsFound = false;
@@ -1490,7 +1479,7 @@ namespace UnitVentilator {
 
                     if (unitVent.CoilOption != CoilsUsed::None) {
                         if (zoneHVACSizing.CoolingSAFMethod > 0) {
-                            SAFMethod = zoneHVACSizing.CoolingSAFMethod;
+                            int SAFMethod = zoneHVACSizing.CoolingSAFMethod;
                             SizingMethod = HVAC::CoolingAirflowSizing;
                             ZoneEqSizing.SizingMethod(SizingMethod) = SAFMethod;
                             switch (SAFMethod) {
@@ -1555,7 +1544,7 @@ namespace UnitVentilator {
                             }
                         } else if (zoneHVACSizing.HeatingSAFMethod > 0) {
                             SizingMethod = HVAC::HeatingAirflowSizing;
-                            SAFMethod = zoneHVACSizing.HeatingSAFMethod;
+                            int SAFMethod = zoneHVACSizing.HeatingSAFMethod;
                             ZoneEqSizing.SizingMethod(SizingMethod) = SAFMethod;
                             switch (SAFMethod) {
                             case DataSizing::None:
@@ -1595,7 +1584,6 @@ namespace UnitVentilator {
                                 HeatingAirVolFlowScalable = sizingHeatingAirFlow.size(state, TempSize, errorsFound);
                             } break;
                             case DataSizing::FlowPerHeatingCapacity: {
-                                SizingMethod = HVAC::HeatingCapacitySizing;
                                 TempSize = DataSizing::AutoSize;
                                 PrintFlag = false;
                                 state.dataSize->DataScalableSizingON = true;
@@ -1605,7 +1593,6 @@ namespace UnitVentilator {
                                 sizerHeatingCapacity.initializeWithinEP(state, CompType, CompName, PrintFlag, RoutineName);
                                 state.dataSize->DataAutosizedHeatingCapacity = sizerHeatingCapacity.size(state, TempSize, errorsFound);
                                 state.dataSize->DataFlowPerHeatingCapacity = zoneHVACSizing.MaxHeatAirVolFlow;
-                                SizingMethod = HVAC::HeatingAirflowSizing;
                                 PrintFlag = true;
                                 TempSize = DataSizing::AutoSize;
                                 errorsFound = false;
@@ -1827,7 +1814,7 @@ namespace UnitVentilator {
                             if (state.dataSize->FinalZoneSizing(state.dataSize->CurZoneEqNum).DesHeatMassFlow >= HVAC::SmallAirVolFlow) {
                                 SizingMethod = HVAC::HeatingCapacitySizing;
                                 if (unitVent.HVACSizingIndex > 0) {
-                                    auto &zoneHVACSizing = state.dataSize->ZoneHVACSizing(unitVent.HVACSizingIndex);
+                                    auto const &zoneHVACSizing = state.dataSize->ZoneHVACSizing(unitVent.HVACSizingIndex);
                                     CapSizingMethod = zoneHVACSizing.HeatingCapMethod;
                                     ZoneEqSizing.SizingMethod(SizingMethod) = CapSizingMethod;
                                     switch (CapSizingMethod) {
@@ -1897,8 +1884,6 @@ namespace UnitVentilator {
                                 MaxVolHotWaterFlowDes = 0.0;
                             }
                         }
-                    }
-                    if (IsAutoSize) {
                         unitVent.MaxVolHotWaterFlow = MaxVolHotWaterFlowDes;
                         BaseSizer::reportSizerOutput(state,
                                                      state.dataUnitVentilators->cMO_UnitVentilator,
@@ -1955,7 +1940,7 @@ namespace UnitVentilator {
                 } else {
                     CheckZoneSizing(state, state.dataUnitVentilators->cMO_UnitVentilator, unitVent.Name);
 
-                    CoilSteamOutletNode = SteamCoils::GetCoilSteamOutletNode(state, "Coil:Heating:Steam", unitVent.HCoilName, ErrorsFound);
+                    int CoilSteamOutletNode = SteamCoils::GetCoilSteamOutletNode(state, "Coil:Heating:Steam", unitVent.HCoilName, ErrorsFound);
                     if (IsAutoSize) {
                         PltSizHeatNum = PlantUtilities::MyPlantSizingIndex(
                             state, "Coil:Heating:Steam", unitVent.HCoilName, unitVent.HotControlNode, CoilSteamOutletNode, ErrorsFound);
@@ -1963,7 +1948,7 @@ namespace UnitVentilator {
                             if (state.dataSize->FinalZoneSizing(state.dataSize->CurZoneEqNum).DesHeatMassFlow >= HVAC::SmallAirVolFlow) {
                                 SizingMethod = HVAC::HeatingCapacitySizing;
                                 if (unitVent.HVACSizingIndex > 0) {
-                                    auto &zoneHVACSizing = state.dataSize->ZoneHVACSizing(unitVent.HVACSizingIndex);
+                                    auto const &zoneHVACSizing = state.dataSize->ZoneHVACSizing(unitVent.HVACSizingIndex);
                                     CapSizingMethod = zoneHVACSizing.HeatingCapMethod;
                                     ZoneEqSizing.SizingMethod(SizingMethod) = CapSizingMethod;
                                     switch (CapSizingMethod) {
@@ -2034,8 +2019,6 @@ namespace UnitVentilator {
                             ShowContinueError(state, format("Occurs in {} = \"{}\"", state.dataUnitVentilators->cMO_UnitVentilator, unitVent.Name));
                             ErrorsFound = true;
                         }
-                    }
-                    if (IsAutoSize) {
                         unitVent.MaxVolHotSteamFlow = MaxVolHotSteamFlowDes;
                         BaseSizer::reportSizerOutput(state,
                                                      state.dataUnitVentilators->cMO_UnitVentilator,
@@ -2102,7 +2085,7 @@ namespace UnitVentilator {
                     }
                     CoilWaterOutletNode = WaterCoils::GetCoilWaterOutletNode(state, CoolingCoilType, CoolingCoilName, ErrorsFound);
                     if (IsAutoSize) {
-                        PltSizCoolNum = PlantUtilities::MyPlantSizingIndex(
+                        int PltSizCoolNum = PlantUtilities::MyPlantSizingIndex(
                             state, CoolingCoilType, CoolingCoilName, unitVent.ColdControlNode, CoilWaterOutletNode, ErrorsFound);
                         if (state.dataWaterCoils->WaterCoil(unitVent.CCoil_Index).UseDesignWaterDeltaTemp) {
                             WaterCoilSizDeltaT = state.dataWaterCoils->WaterCoil(unitVent.CCoil_Index).DesignWaterDeltaTemp;
@@ -2124,7 +2107,7 @@ namespace UnitVentilator {
                             if (state.dataSize->FinalZoneSizing(state.dataSize->CurZoneEqNum).DesCoolMassFlow >= HVAC::SmallAirVolFlow) {
                                 SizingMethod = HVAC::CoolingCapacitySizing;
                                 if (unitVent.HVACSizingIndex > 0) {
-                                    auto &zoneHVACSizing = state.dataSize->ZoneHVACSizing(unitVent.HVACSizingIndex);
+                                    auto const &zoneHVACSizing = state.dataSize->ZoneHVACSizing(unitVent.HVACSizingIndex);
                                     CapSizingMethod = zoneHVACSizing.CoolingCapMethod;
                                     ZoneEqSizing.SizingMethod(SizingMethod) = CapSizingMethod;
                                     switch (CapSizingMethod) {
@@ -2199,8 +2182,6 @@ namespace UnitVentilator {
                                 MaxVolColdWaterFlowDes = 0.0;
                             }
                         }
-                    }
-                    if (IsAutoSize) {
                         unitVent.MaxVolColdWaterFlow = MaxVolColdWaterFlowDes;
                         BaseSizer::reportSizerOutput(state,
                                                      state.dataUnitVentilators->cMO_UnitVentilator,
@@ -2379,20 +2360,18 @@ namespace UnitVentilator {
         }
 
         // initialize local variables
-        int ControlNode = 0;
         Real64 QUnitOut = 0.0;
         Real64 ControlOffset = 0.0;
         Real64 MaxWaterFlow = 0.0;
         Real64 MinWaterFlow = 0.0;
         Real64 NoOutput = 0.0;
         Real64 FullOutput = 0.0;
-        int SolFlag = 0; // # of iterations IF positive, -1 means failed to converge, -2 means bounds are incorrect
         HVAC::FanOp fanOp = unitVent.fanOp;
         Real64 PartLoadFrac = 0.0;
 
-        auto &inletNode(state.dataLoopNodes->Node(unitVent.AirInNode));
-        auto &outletNode(state.dataLoopNodes->Node(unitVent.AirOutNode));
-        auto &outsideAirNode(state.dataLoopNodes->Node(unitVent.OutsideAirNode));
+        auto const &inletNode = state.dataLoopNodes->Node(unitVent.AirInNode);
+        auto const &outletNode = state.dataLoopNodes->Node(unitVent.AirOutNode);
+        auto const &outsideAirNode = state.dataLoopNodes->Node(unitVent.OutsideAirNode);
 
         if ((std::abs(state.dataUnitVentilators->QZnReq) < HVAC::SmallLoad) || (state.dataZoneEnergyDemand->CurDeadBandOrSetback(ZoneNum)) ||
             (ScheduleManager::GetCurrentScheduleValue(state, unitVent.SchedPtr) <= 0) ||
@@ -2421,11 +2400,12 @@ namespace UnitVentilator {
                 CalcUnitVentilatorComponents(state, UnitVentNum, FirstHVACIteration, QUnitOut);
             }
         } else { // Unit is on-->this section is intended to control the outside air and the main
-            //              result is to set the outside air flow rate variable OAMassFlowRate
+            // result is to set the outside air flow rate variable OAMassFlowRate
+            int SolFlag = 0; // # of iterations IF positive, -1 means failed to converge, -2 means bounds are incorrect
             unitVent.FanPartLoadRatio = 1.0;
             if (state.dataUnitVentilators->QZnReq > HVAC::SmallLoad) { // HEATING MODE
 
-                ControlNode = unitVent.HotControlNode;
+                int ControlNode = unitVent.HotControlNode;
                 ControlOffset = unitVent.HotControlOffset;
                 MaxWaterFlow = unitVent.MaxHotWaterFlow;
                 MinWaterFlow = unitVent.MinHotWaterFlow;
@@ -2684,7 +2664,7 @@ namespace UnitVentilator {
 
             } else { // COOLING MODE
 
-                ControlNode = unitVent.ColdControlNode;
+                int ControlNode = unitVent.ColdControlNode;
                 ControlOffset = unitVent.ColdControlOffset;
                 MaxWaterFlow = unitVent.MaxColdWaterFlow;
                 MinWaterFlow = unitVent.MinColdWaterFlow;
@@ -3201,7 +3181,7 @@ namespace UnitVentilator {
 
         auto &unitVent = state.dataUnitVentilators->UnitVent(UnitVentNum);
         auto &airRelNode = state.dataLoopNodes->Node(unitVent.AirReliefNode);
-        auto &inletNode = state.dataLoopNodes->Node(unitVent.AirInNode);
+        auto const &inletNode = state.dataLoopNodes->Node(unitVent.AirInNode);
         auto &OAMixOutNode = state.dataLoopNodes->Node(unitVent.OAMixerOutNode);
         auto &outsideAirNode = state.dataLoopNodes->Node(unitVent.OutsideAirNode);
         Real64 OutAirMassFlowRate = state.dataUnitVentilators->OAMassFlowRate;
@@ -3390,7 +3370,7 @@ namespace UnitVentilator {
     )
     {
 
-        Real64 ActualOAMassFlowRate(0.0); // Result or return value
+        Real64 ActualOAMassFlowRate = 0.0; // Result or return value
 
         if (Tinlet <= Toutdoor) {
 

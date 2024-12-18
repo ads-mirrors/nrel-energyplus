@@ -1604,7 +1604,7 @@ void IndirectAbsorberSpecs::sizeChiller(EnergyPlusData &state)
     }
 }
 
-void IndirectAbsorberSpecs::calculate(EnergyPlusData &state, Real64 const MyLoad, bool const RunFlag)
+void IndirectAbsorberSpecs::calculate(EnergyPlusData &state, Real64 MyLoad, bool const RunFlag)
 {
     // SUBROUTINE INFORMATION:
     //       AUTHOR         R. Raustad (FSEC)
@@ -1768,7 +1768,7 @@ void IndirectAbsorberSpecs::calculate(EnergyPlusData &state, Real64 const MyLoad
         this->PossibleSubcooling = false;
         this->QEvaporator = std::abs(MyLoad);
 
-        // Either set the flow to the Constant value or caluclate the flow for the variable volume
+        // Either set the flow to the Constant value or calculate the flow for the variable volume
         if ((this->FlowMode == DataPlant::FlowMode::Constant) || (this->FlowMode == DataPlant::FlowMode::NotModulated)) {
             this->EvapMassFlowRate = state.dataLoopNodes->Node(this->EvapInletNodeNum).MassFlowRate;
 
@@ -1999,6 +1999,9 @@ void IndirectAbsorberSpecs::calculate(EnergyPlusData &state, Real64 const MyLoad
         this->CondOutletTemp = CondInletTemp;
         this->CondMassFlowRate = 0.0;
         this->QCondenser = 0.0;
+        MyLoad = 0.0;
+        this->EvapMassFlowRate = 0.0;
+        PlantUtilities::SetComponentFlowRate(state, this->EvapMassFlowRate, this->EvapInletNodeNum, this->EvapOutletNodeNum, this->CWPlantLoc);
         return;
         // V7 plant upgrade, no longer fatal here anymore... set some things and return
     }

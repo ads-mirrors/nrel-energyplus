@@ -110,8 +110,7 @@ Real64 AreaPolygon(int const n, Array1D<Vector> &p)
 {
 
     // PURPOSE OF THIS SUBROUTINE:
-    // This subroutine calculates the area of a polygon defined by the
-    // input vectors.
+    // This subroutine calculates the area of a polygon defined by the input vectors.
 
     // REFERENCE:
     // Graphic Gems.
@@ -189,8 +188,7 @@ Vector VecNormalize(Vector const &vec)
 {
 
     // PURPOSE OF THIS SUBROUTINE:
-    // This subroutine normalizes the input vector and returns the normalized
-    // vector
+    // This subroutine normalizes the input vector and returns the normalized vector
 
     // REFERENCE:
     // Graphic Gems.
@@ -295,8 +293,7 @@ void PlaneEquation(Array1D<Vector> &verts, // Structure of the surface
 {
 
     // PURPOSE OF THIS SUBROUTINE:
-    // This subroutine calculates the plane equation for a given
-    // surface (which should be planar).
+    // This subroutine calculates the plane equation for a given surface (which should be planar).
 
     // REFERENCE:
     // Graphic Gems
@@ -336,9 +333,7 @@ Real64 Pt2Plane(Vector const &pt,   // Point for determining the distance
 {
 
     // PURPOSE OF THIS SUBROUTINE:
-    // This subroutine calculates the distance from a point
-    // to the plane (of a surface).  Used to determine the reveal
-    // of a heat transfer subsurface.
+    // This subroutine calculates the distance from a point to the plane (of a surface).  Used to determine the reveal of a heat transfer subsurface.
 
     // REFERENCE:
     // Graphic Gems
@@ -358,8 +353,7 @@ void CreateNewellAreaVector(Array1D<Vector> const &VList, int const NSides, Vect
     //       DATE WRITTEN   May 2004
 
     // PURPOSE OF THIS SUBROUTINE:
-    // This subroutine creates a "Newell" vector from the vector list for a surface
-    // face.  Also the Newell Area vector.
+    // This subroutine creates a "Newell" vector from the vector list for a surface face.  Also the Newell Area vector.
 
     // REFERENCES:
     // Collaboration with Bill Carroll, LBNL.
@@ -384,8 +378,7 @@ void CreateNewellSurfaceNormalVector(Array1D<Vector> const &VList, int const NSi
     //       DATE WRITTEN   Jan 2011
 
     // PURPOSE OF THIS SUBROUTINE:
-    // This subroutine creates a "Newell" surface normal vector from the vector list
-    // for a surface face.
+    // This subroutine creates a "Newell" surface normal vector from the vector list for a surface face.
 
     // REFERENCES:
     // September 2010: from OpenGL.org
@@ -401,14 +394,10 @@ void CreateNewellSurfaceNormalVector(Array1D<Vector> const &VList, int const NSi
     //    Returning Normalize(Normal)
     // End Function
 
-    Real64 xvalue;
-    Real64 yvalue;
-    Real64 zvalue;
-
     OutNewellSurfaceNormalVector = 0.0;
-    xvalue = 0.0;
-    yvalue = 0.0;
-    zvalue = 0.0;
+    Real64 xvalue = 0.0;
+    Real64 yvalue = 0.0;
+    Real64 zvalue = 0.0;
 
     //     IF (NSides > 3) THEN
     for (int Side = 1; Side <= NSides; ++Side) {
@@ -438,8 +427,7 @@ void CompareTwoVectors(Vector const &vector1, // standard vector
     //       DATE WRITTEN   February 2012
 
     // PURPOSE OF THIS SUBROUTINE:
-    // This routine will provide the ability to compare two vectors (e.g. surface normals)
-    // to be the same within a specified tolerance.
+    // This routine will provide the ability to compare two vectors (e.g. surface normals) to be the same within a specified tolerance.
 
     // METHODOLOGY EMPLOYED:
     // compare each element (x,y,z)
@@ -458,8 +446,7 @@ void CalcCoPlanarNess(Array1D<Vector> &Surf, int const NSides, bool &IsCoPlanar,
     //       DATE WRITTEN   June 2004
 
     // PURPOSE OF THIS SUBROUTINE:
-    // This subroutine provides the calculation to determine if the
-    // surface is planar or not.
+    // This subroutine provides the calculation to determine if the surface is planar or not.
 
     // REFERENCES:
     // Eric W. Weisstein. "Coplanar." From MathWorld--A Wolfram Web Resource.
@@ -489,7 +476,8 @@ void CalcCoPlanarNess(Array1D<Vector> &Surf, int const NSides, bool &IsCoPlanar,
     if (std::abs(MaxDist) > Constant::SmallDistance) IsCoPlanar = false;
 }
 
-std::vector<int> PointsInPlane(Array1D<Vector> &BaseSurf, int const BaseSides, Array1D<Vector> &QuerySurf, int const QuerySides, bool &ErrorFound)
+std::vector<int>
+PointsInPlane(Array1D<Vector> &BaseSurf, int const BaseSides, Array1D<Vector> const &QuerySurf, int const QuerySides, bool &ErrorFound)
 {
     std::vector<int> pointIndices;
 
@@ -505,7 +493,7 @@ std::vector<int> PointsInPlane(Array1D<Vector> &BaseSurf, int const BaseSides, A
     return pointIndices;
 }
 
-Real64 CalcPolyhedronVolume(EnergyPlusData &state, Polyhedron const &Poly)
+Real64 CalcPolyhedronVolume(EnergyPlusData const &state, Polyhedron const &Poly)
 {
 
     // SUBROUTINE INFORMATION:
@@ -513,14 +501,10 @@ Real64 CalcPolyhedronVolume(EnergyPlusData &state, Polyhedron const &Poly)
     //       DATE WRITTEN   June 2004
 
     // PURPOSE OF THIS SUBROUTINE:
-    // This subroutine provides the volume calculation for a polyhedron
-    // (i.e. Zone).
+    // This subroutine provides the volume calculation for a polyhedron (i.e. Zone).
 
     // REFERENCES:
     // Conversations with Bill Carroll, LBNL.
-
-    // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-    Real64 PyramidVolume;
 
     // Object Data
     Vector p3FaceOrigin;
@@ -529,7 +513,7 @@ Real64 CalcPolyhedronVolume(EnergyPlusData &state, Polyhedron const &Poly)
 
     for (int NFace = 1; NFace <= Poly.NumSurfaceFaces; ++NFace) {
         p3FaceOrigin = Poly.SurfaceFace(NFace).FacePoints(2);
-        PyramidVolume = dot(Poly.SurfaceFace(NFace).NewellAreaVector, (p3FaceOrigin - state.dataVectors->p0));
+        Real64 PyramidVolume = dot(Poly.SurfaceFace(NFace).NewellAreaVector, (p3FaceOrigin - state.dataVectors->p0));
         Volume += PyramidVolume / 3.0;
     }
     return Volume;

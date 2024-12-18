@@ -564,7 +564,7 @@ namespace Weather {
 
     void AllocateWeatherData(EnergyPlusData &state);
 
-    void CalculateDailySolarCoeffs(EnergyPlusData &state,
+    void CalculateDailySolarCoeffs(EnergyPlusData const &state,
                                    int DayOfYear,                 // Day of year (1 - 366)
                                    Real64 &A,                     // ASHRAE "A" - Apparent solar irradiation at air mass = 0 [W/M**2]
                                    Real64 &B,                     // ASHRAE "B" - Atmospheric extinction coefficient
@@ -575,7 +575,7 @@ namespace Weather {
                                    Real64 &CosineSolarDeclination // Cosine of Solar Declination
     );
 
-    void CalculateSunDirectionCosines(EnergyPlusData &state,
+    void CalculateSunDirectionCosines(EnergyPlusData const &state,
                                       Real64 TimeValue,    // Current Time of Day
                                       Real64 EqOfTime,     // Equation of Time
                                       Real64 SinSolDeclin, // Sine of Solar Declination
@@ -642,7 +642,7 @@ namespace Weather {
 
     void CalcWaterMainsTemp(EnergyPlusData &state);
 
-    Real64 WaterMainsTempFromCorrelation(EnergyPlusData &state,
+    Real64 WaterMainsTempFromCorrelation(EnergyPlusData const &state,
                                          Real64 AnnualOAAvgDryBulbTemp,        // annual average OA drybulb temperature
                                          Real64 MonthlyOAAvgDryBulbTempMaxDiff // monthly daily average OA drybulb temperature maximum difference
     );
@@ -763,7 +763,7 @@ namespace Weather {
     };
 
     // Here's a fun little function
-    void ForAllHrTs(EnergyPlusData &state, std::function<void(int, int)> f);
+    void ForAllHrTs(EnergyPlusData const &state, std::function<void(int, int)> f);
 } // namespace Weather
 
 struct WeatherManagerData : BaseGlobalStruct
@@ -907,10 +907,10 @@ struct WeatherManagerData : BaseGlobalStruct
     EPVector<Weather::SpecialDayData> SpecialDays;               // NOLINT(cert-err58-cpp)
     EPVector<Weather::DataPeriodData> DataPeriods;               // NOLINT(cert-err58-cpp)
 
-    std::shared_ptr<BaseGroundTempsModel> siteShallowGroundTempsPtr;
-    std::shared_ptr<BaseGroundTempsModel> siteBuildingSurfaceGroundTempsPtr;
-    std::shared_ptr<BaseGroundTempsModel> siteFCFactorMethodGroundTempsPtr;
-    std::shared_ptr<BaseGroundTempsModel> siteDeepGroundTempsPtr;
+    BaseGroundTempsModel *siteShallowGroundTempsPtr;         // non-owning pointer
+    BaseGroundTempsModel *siteBuildingSurfaceGroundTempsPtr; // non-owning pointer
+    BaseGroundTempsModel *siteFCFactorMethodGroundTempsPtr;  // non-owning pointer
+    BaseGroundTempsModel *siteDeepGroundTempsPtr;            // non-owning pointer
 
     std::vector<Weather::UnderwaterBoundary> underwaterBoundaries;
     Weather::AnnualMonthlyDryBulbWeatherData OADryBulbAverage; // processes outside air drybulb temperature
@@ -937,11 +937,6 @@ struct WeatherManagerData : BaseGlobalStruct
 
     void clear_state() override
     {
-        this->siteShallowGroundTempsPtr.reset();
-        this->siteBuildingSurfaceGroundTempsPtr.reset();
-        this->siteFCFactorMethodGroundTempsPtr.reset();
-        this->siteDeepGroundTempsPtr.reset();
-
         new (this) WeatherManagerData();
     }
 };

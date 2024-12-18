@@ -144,9 +144,9 @@ namespace Weather {
 
         InitializeWeather(state, state.dataWeather->PrintEnvrnStamp);
 
-        bool anyEMSRan = false;
         // Cannot call this during sizing, because EMS will not initialize properly until after simulation kickoff
         if (!state.dataGlobal->DoingSizing && !state.dataGlobal->KickOffSimulation) {
+            bool anyEMSRan = false;
             EMSManager::ManageEMS(state,
                                   EMSManager::EMSCallFrom::BeginZoneTimestepBeforeSetCurrentWeather,
                                   anyEMSRan,
@@ -341,12 +341,6 @@ namespace Weather {
         static constexpr std::string_view EnvDSTYFormat("Environment:Daylight Saving,Yes,{},{},{}\n");
         static constexpr std::string_view DateFormat("{:02}/{:02}");
         static constexpr std::string_view DateFormatWithYear("{:02}/{:02}/{:04}");
-        std::string StDate;
-        std::string EnDate;
-        int DSTActStMon;
-        int DSTActStDay;
-        int DSTActEnMon;
-        int DSTActEnDay;
 
         if (state.dataGlobal->BeginSimFlag && state.dataWeather->GetEnvironmentFirstCall) {
 
@@ -833,8 +827,14 @@ namespace Weather {
                         state.dataWeather->PrntEnvHeaders = false;
                     }
 
+                    std::string StDate;
+                    std::string EnDate;
                     if ((state.dataGlobal->KindOfSim == Constant::KindOfSim::RunPeriodWeather) ||
                         (state.dataGlobal->KindOfSim == Constant::KindOfSim::RunPeriodDesign)) {
+                        int DSTActStMon = 0;
+                        int DSTActStDay = 0;
+                        int DSTActEnMon = 0;
+                        int DSTActEnDay = 0;
                         std::string kindOfRunPeriod = envCurr.cKindOfEnvrn;
                         state.dataEnvrn->RunPeriodEnvironment = state.dataGlobal->KindOfSim == Constant::KindOfSim::RunPeriodWeather;
                         state.dataEnvrn->CurrentYearIsLeapYear = state.dataWeather->Environment(state.dataWeather->Envrn).IsLeapYear;
@@ -868,7 +868,7 @@ namespace Weather {
 
                         if (envCurr.ActualWeather) {
                             // Actual weather
-                            for (auto &dataperiod : state.dataWeather->DataPeriods) {
+                            for (auto const &dataperiod : state.dataWeather->DataPeriods) {
                                 int runStartJulian = dataperiod.DataStJDay;
                                 int runEndJulian = dataperiod.DataEnJDay;
                                 if (!dataperiod.HasYearData) {
@@ -1094,8 +1094,8 @@ namespace Weather {
                             } else if (state.dataGlobal->DoOutputReporting) {
                                 print(state.files.eio, EnvDSTNFormat, Source);
                             }
-                            for (int i = 1; i <= state.dataWeather->NumSpecialDays; ++i) {
-                                auto &specialDay = state.dataWeather->SpecialDays(i);
+                            for (int k = 1; k <= state.dataWeather->NumSpecialDays; ++k) {
+                                auto &specialDay = state.dataWeather->SpecialDays(k);
                                 static constexpr std::string_view EnvSpDyFormat("Environment:Special Days,{},{},{},{},{:3}\n");
                                 if (specialDay.WthrFile && state.dataWeather->UseSpecialDays && state.dataReportFlag->DoWeatherInitReporting) {
                                     StDate = format(DateFormat, specialDay.ActStMon, specialDay.ActStDay);
@@ -1226,7 +1226,7 @@ namespace Weather {
                     CurWeekDay -= 7;
                 }
                 WeekDays(i) = CurWeekDay;
-            } else if ((i >= 4) && (i <= 12)) {
+            } else {
                 CurWeekDay += state.dataWeather->EndDayOfMonth(i - 1);
                 while (CurWeekDay > 7) {
                     CurWeekDay -= 7;
@@ -1324,7 +1324,7 @@ namespace Weather {
                         CurWeekDay -= 7;
                     }
                     WeekDays(i) = CurWeekDay;
-                } else if ((i >= 4) && (i <= 12)) {
+                } else {
                     CurWeekDay += state.dataWeather->EndDayOfMonth(i - 1);
                     while (CurWeekDay > 7) {
                         CurWeekDay -= 7;
@@ -1419,7 +1419,7 @@ namespace Weather {
                             CurWeekDay -= 7;
                         }
                         WeekDays(i) = CurWeekDay;
-                    } else if ((i >= 4) && (i <= 12)) {
+                    } else {
                         CurWeekDay += state.dataWeather->EndDayOfMonth(i - 1);
                         while (CurWeekDay > 7) {
                             CurWeekDay -= 7;
@@ -2067,9 +2067,9 @@ namespace Weather {
 
             auto const &envCurr = state.dataWeather->Environment(state.dataWeather->Envrn);
             int const envrnDayNum = envCurr.DesignDayNum;
-            auto &desDayInput = state.dataWeather->DesDayInput(envrnDayNum);
+            auto const &desDayInput = state.dataWeather->DesDayInput(envrnDayNum);
             auto &spSiteSchedule = state.dataWeather->spSiteSchedules(envrnDayNum);
-            auto &desDayMod = state.dataWeather->desDayMods(envrnDayNum)(state.dataGlobal->TimeStep, state.dataGlobal->HourOfDay);
+            auto const &desDayMod = state.dataWeather->desDayMods(envrnDayNum)(state.dataGlobal->TimeStep, state.dataGlobal->HourOfDay);
 
             if (desDayInput.dryBulbRangeType != DesDayDryBulbRangeType::Default) {
                 spSiteSchedule.OutDryBulbTemp = desDayMod.OutDryBulbTemp;
@@ -2406,13 +2406,13 @@ namespace Weather {
                         ErrorsFound = true;
                     }
 
-                    if (DirectRad < 9999.0 && DirectRad < 0.0) {
+                    if (DirectRad < 0.0) {
                         ShowSevereError(state, format("{}: {}", routineName, state.dataEnvrn->WeatherFileLocationTitle));
                         ShowContinueError(state, format("Direct Radiation ({:.2R}) is out of range [0.0, -]", DirectRad));
                         ErrorsFound = true;
                     }
 
-                    if (DiffuseRad < 9999.0 && DiffuseRad < 0.0) {
+                    if (DiffuseRad < 0.0) {
                         ShowSevereError(state, format("{}: {}", routineName, state.dataEnvrn->WeatherFileLocationTitle));
                         ShowContinueError(state, format("Diffuse Radiation ({:.2R}) is out of range [0.0, -]", DiffuseRad));
                         ErrorsFound = true;
@@ -3605,7 +3605,7 @@ namespace Weather {
             WBRange = desDayInput.DailyWBRange;
         }
 
-        auto const &desDayModsEnvrn = state.dataWeather->desDayMods(EnvrnNum);
+        auto &desDayModsEnvrn = state.dataWeather->desDayMods(EnvrnNum);
         for (int hour = 1; hour <= Constant::HoursInDay; ++hour) {
             for (int ts = 1; ts <= state.dataGlobal->NumOfTimeStepInHour; ++ts) {
                 auto const &desDayModsTS = desDayModsEnvrn(ts, hour);
@@ -3789,7 +3789,6 @@ namespace Weather {
             case SkyTempModel::ScheduleValue: {
                 Array2D<Real64> tmp = Array2D<Real64>(state.dataGlobal->NumOfTimeStepInHour, Constant::HoursInDay);
                 ScheduleManager::GetSingleDayScheduleValues(state, state.dataWeather->WPSkyTemperature(envCurr.WP_Type1).SchedulePtr, tmp);
-                auto &desDayModsEnvrn = state.dataWeather->desDayMods(EnvrnNum);
                 ForAllHrTs(state, [&state, &tmp, &desDayModsEnvrn](int iHr, int iTS) {
                     state.dataWeather->wvarsHrTsTomorrow(iTS, iHr).SkyTemp = desDayModsEnvrn(iTS, iHr).SkyTemp = tmp(iTS, iHr);
                 });
@@ -3797,7 +3796,6 @@ namespace Weather {
             case SkyTempModel::DryBulbDelta: {
                 Array2D<Real64> tmp = Array2D<Real64>(state.dataGlobal->NumOfTimeStepInHour, Constant::HoursInDay);
                 ScheduleManager::GetSingleDayScheduleValues(state, state.dataWeather->WPSkyTemperature(envCurr.WP_Type1).SchedulePtr, tmp);
-                auto &desDayModsEnvrn = state.dataWeather->desDayMods(EnvrnNum);
                 ForAllHrTs(state, [&state, &tmp, &desDayModsEnvrn](int iHr, int iTS) {
                     auto &tomorrowTS = state.dataWeather->wvarsHrTsTomorrow(iTS, iHr);
                     desDayModsEnvrn(iTS, iHr).SkyTemp = tmp(iTS, iHr);
@@ -3807,7 +3805,6 @@ namespace Weather {
             case SkyTempModel::DewPointDelta: {
                 Array2D<Real64> tmp = Array2D<Real64>(state.dataGlobal->NumOfTimeStepInHour, Constant::HoursInDay);
                 ScheduleManager::GetSingleDayScheduleValues(state, state.dataWeather->WPSkyTemperature(envCurr.WP_Type1).SchedulePtr, tmp);
-                auto &desDayModsEnvrn = state.dataWeather->desDayMods(EnvrnNum);
                 ForAllHrTs(state, [&state, &tmp, &desDayModsEnvrn](int iHr, int iTS) {
                     auto &tomorrowTS = state.dataWeather->wvarsHrTsTomorrow(iTS, iHr);
                     desDayModsEnvrn(iTS, iHr).SkyTemp = tmp(iTS, iHr);
@@ -3925,7 +3922,7 @@ namespace Weather {
         state.dataWeather->wvarsHrTsTomorrow.allocate(state.dataGlobal->NumOfTimeStepInHour, Constant::HoursInDay);
     }
 
-    void CalculateDailySolarCoeffs(EnergyPlusData &state,
+    void CalculateDailySolarCoeffs(EnergyPlusData const &state,
                                    int const DayOfYear,           // Day of year (1 - 366)
                                    Real64 &A,                     // ASHRAE "A" - Apparent solar irradiation at air mass = 0 [W/M**2]
                                    Real64 &B,                     // ASHRAE "B" - Atmospheric extinction coefficient
@@ -4033,7 +4030,7 @@ namespace Weather {
             ASHRAE_C_Coef[8] * (pow_2(pow_2(CosX) - pow_2(SinX)) - pow_2(SinX * CosX * 2.0));
     }
 
-    void CalculateSunDirectionCosines(EnergyPlusData &state,
+    void CalculateSunDirectionCosines(EnergyPlusData const &state,
                                       Real64 const TimeValue,    // Current Time of Day
                                       Real64 const EqOfTime,     // Equation of Time
                                       Real64 const SinSolDeclin, // Sine of Solar Declination
@@ -5570,7 +5567,7 @@ namespace Weather {
                 specialDay.WeekDay = PWeekDay;
                 specialDay.CompDate = 0;
                 specialDay.WthrFile = false;
-            } else if (dateType == DateType::Invalid) {
+            } else {
                 ShowSevereInvalidKey(state, eoh, ipsc->cAlphaFieldNames(2), AlphArray(2));
                 ErrorsFound = true;
             }
@@ -5782,7 +5779,6 @@ namespace Weather {
         static constexpr std::string_view routineName = "GetDesignDayData";
 
         // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-        std::string units;
         Constant::Units unitType;
 
         state.dataWeather->DesDayInput.allocate(TotDesDays); // Allocate the array to the # of DD's
@@ -5920,14 +5916,15 @@ namespace Weather {
                 desDayInput.dryBulbRangeType = DesDayDryBulbRangeType::Default;
             }
 
+            // std::string units; // not used
             if (desDayInput.dryBulbRangeType == DesDayDryBulbRangeType::Multiplier) {
-                units = "[]";
+                // units = "[]";
                 unitType = Constant::Units::None;
             } else if (desDayInput.dryBulbRangeType == DesDayDryBulbRangeType::Difference) {
-                units = "[deltaC]";
+                // units = "[deltaC]";
                 unitType = Constant::Units::deltaC;
             } else if (desDayInput.dryBulbRangeType == DesDayDryBulbRangeType::Profile) {
-                units = "[C]";
+                // units = "[C]";
                 unitType = Constant::Units::C;
             }
 
@@ -6110,12 +6107,12 @@ namespace Weather {
             } break;
 
             case DesDayHumIndType::RelHumSch: {
-                units = "[%]";
+                // units = "[%]";
                 unitType = Constant::Units::Perc;
             } break;
 
             case DesDayHumIndType::WBProfMul: {
-                units = "[]";
+                // units = "[]";
                 unitType = Constant::Units::None;
                 if (ipsc->lNumericFieldBlanks(5)) {
                     ShowSevereEmptyField(state, eoh, ipsc->cNumericFieldNames(5), ipsc->cAlphaFieldNames(5), ipsc->cAlphaArgs(5));
@@ -6126,7 +6123,7 @@ namespace Weather {
             } break;
 
             case DesDayHumIndType::WBProfDif: {
-                units = "[]";
+                // units = "[]";
                 unitType = Constant::Units::None;
                 if (ipsc->lNumericFieldBlanks(5)) {
                     ShowSevereEmptyField(state, eoh, ipsc->cNumericFieldNames(5), ipsc->cAlphaFieldNames(5), ipsc->cAlphaArgs(5));
@@ -6282,7 +6279,7 @@ namespace Weather {
                             desDayModsEnvrn(iTS, iHr).BeamSolarRad = tmp(iTS, iHr);
 
                     unitType = Constant::Units::W_m2;
-                    units = "[W/m2]";
+                    // units = "[W/m2]";
                     if (std::find(state.dataWeather->spSiteSchedNums.begin(),
                                   state.dataWeather->spSiteSchedNums.end(),
                                   desDayInput.BeamSolarSchPtr) == state.dataWeather->spSiteSchedNums.end()) {
@@ -6320,7 +6317,7 @@ namespace Weather {
                         for (int iTS = 1; iTS <= state.dataGlobal->NumOfTimeStepInHour; ++iTS)
                             desDayModsEnvrn(iTS, iHr).DifSolarRad = tmp(iTS, iHr);
 
-                    units = "[W/m2]";
+                    // units = "[W/m2]";
                     unitType = Constant::Units::W_m2;
                     if (std::find(state.dataWeather->spSiteSchedNums.begin(),
                                   state.dataWeather->spSiteSchedNums.end(),
@@ -6607,20 +6604,20 @@ namespace Weather {
             wpSkyTemp.Name = !ipsc->lAlphaFieldBlanks(1) ? ipsc->cAlphaArgs(1) : "All RunPeriods";
 
             // Validate Calculation Type.
-            std::string units;
+            // std::string units;
             Constant::Units unitType;
             wpSkyTemp.skyTempModel = static_cast<SkyTempModel>(getEnumValue(Weather::SkyTempModelNamesUC, ipsc->cAlphaArgs(2)));
 
             switch (wpSkyTemp.skyTempModel) {
             case SkyTempModel::ScheduleValue: {
                 wpSkyTemp.IsSchedule = true;
-                units = "[C]";
+                // units = "[C]";
                 unitType = Constant::Units::C;
             } break;
             case SkyTempModel::DryBulbDelta:
             case SkyTempModel::DewPointDelta: {
                 wpSkyTemp.IsSchedule = true;
-                units = "[deltaC]";
+                // units = "[deltaC]";
                 unitType = Constant::Units::deltaC;
             } break;
             case SkyTempModel::Brunt:
@@ -6707,19 +6704,19 @@ namespace Weather {
 
         // Initialize Site:GroundTemperature:BuildingSurface object
         state.dataWeather->siteBuildingSurfaceGroundTempsPtr = GroundTemperatureManager::GetGroundTempModelAndInit(
-            state, GroundTemperatureManager::groundTempModelNamesUC[(int)GroundTempObjType::SiteBuildingSurfaceGroundTemp], "");
+            state, groundTempModelNamesUC[(int)GroundTempObjType::SiteBuildingSurfaceGroundTemp], "");
 
         // Initialize Site:GroundTemperature:FCFactorMethod object
         state.dataWeather->siteFCFactorMethodGroundTempsPtr = GroundTemperatureManager::GetGroundTempModelAndInit(
-            state, GroundTemperatureManager::groundTempModelNamesUC[static_cast<int>(GroundTempObjType::SiteFCFactorMethodGroundTemp)], "");
+            state, groundTempModelNamesUC[static_cast<int>(GroundTempObjType::SiteFCFactorMethodGroundTemp)], "");
 
         // Initialize Site:GroundTemperature:Shallow object
         state.dataWeather->siteShallowGroundTempsPtr = GroundTemperatureManager::GetGroundTempModelAndInit(
-            state, GroundTemperatureManager::groundTempModelNamesUC[static_cast<int>(GroundTempObjType::SiteShallowGroundTemp)], "");
+            state, groundTempModelNamesUC[static_cast<int>(GroundTempObjType::SiteShallowGroundTemp)], "");
 
         // Initialize Site:GroundTemperature:Deep object
         state.dataWeather->siteDeepGroundTempsPtr = GroundTemperatureManager::GetGroundTempModelAndInit(
-            state, GroundTemperatureManager::groundTempModelNamesUC[static_cast<int>(GroundTempObjType::SiteDeepGroundTemp)], "");
+            state, groundTempModelNamesUC[static_cast<int>(GroundTempObjType::SiteDeepGroundTemp)], "");
     }
 
     void GetGroundReflectances(EnergyPlusData &state, bool &ErrorsFound)
@@ -6957,7 +6954,8 @@ namespace Weather {
         }
     }
 
-    Real64 WaterMainsTempFromCorrelation(EnergyPlusData &state, Real64 const AnnualOAAvgDryBulbTemp, Real64 const MonthlyOAAvgDryBulbTempMaxDiff)
+    Real64
+    WaterMainsTempFromCorrelation(EnergyPlusData const &state, Real64 const AnnualOAAvgDryBulbTemp, Real64 const MonthlyOAAvgDryBulbTempMaxDiff)
     {
 
         // SUBROUTINE INFORMATION:
@@ -7155,10 +7153,10 @@ namespace Weather {
         state.dataEnvrn->SkyClearness =
             ((state.dataEnvrn->DifSolarRad + state.dataEnvrn->BeamSolarRad) / (state.dataEnvrn->DifSolarRad + 0.0001) + Zeta) / (1.0 + Zeta);
         // Relative optical air mass
-        Real64 const AirMass = (1.0 - 0.1 * state.dataEnvrn->Elevation / 1000.0) /
-                               (SinSunAltitude + 0.15 / std::pow(SunAltitude / Constant::DegToRadians + 3.885, 1.253));
+        Real64 const relAirMass = (1.0 - 0.1 * state.dataEnvrn->Elevation / 1000.0) /
+                                  (SinSunAltitude + 0.15 / std::pow(SunAltitude / Constant::DegToRadians + 3.885, 1.253));
         // In the following, 93.73 is the extraterrestrial luminous efficacy
-        state.dataEnvrn->SkyBrightness = (state.dataEnvrn->DifSolarRad * 93.73) * AirMass / ExtraDirNormIll[state.dataEnvrn->Month - 1];
+        state.dataEnvrn->SkyBrightness = (state.dataEnvrn->DifSolarRad * 93.73) * relAirMass / ExtraDirNormIll[state.dataEnvrn->Month - 1];
         int ISkyClearness; // Sky clearness bin
         if (state.dataEnvrn->SkyClearness <= 1.065) {
             ISkyClearness = 0;
@@ -7233,7 +7231,6 @@ namespace Weather {
         Real64 tz; // resultant tz meridian
         for (int i = -12; i <= 12; ++i) {
             if (temp > longl(i) && temp <= longh(i)) {
-                tz = i;
                 tz = mod(i, 24.0);
                 GetSTM = tz;
                 break;
@@ -7739,7 +7736,7 @@ namespace Weather {
                                 specialDay.Duration = 1;
                                 specialDay.DayType = 1;
                                 specialDay.WthrFile = true;
-                            } else if (dateType == DateType::Invalid) {
+                            } else {
                                 ShowSevereError(state, format("Invalid SpecialDay Date Field(WeatherFile)={}", Line.substr(0, Pos)));
                                 ErrorsFound = true;
                             }
@@ -8077,8 +8074,6 @@ namespace Weather {
         // Create arrays (InterpolationValues, SolarInterpolationValues) dependent on
         // Number of Time Steps in Hour.  This will be used in the "SetCurrentWeather" procedure.
 
-        int halfpoint = 0;
-
         state.dataWeather->Interpolation.allocate(state.dataGlobal->NumOfTimeStepInHour);
         state.dataWeather->SolarInterpolation.allocate(state.dataGlobal->NumOfTimeStepInHour);
         state.dataWeather->Interpolation = 0.0;
@@ -8091,7 +8086,7 @@ namespace Weather {
 
         if (mod(state.dataGlobal->NumOfTimeStepInHour, 2) == 0) {
             // even number of time steps.
-            halfpoint = state.dataGlobal->NumOfTimeStepInHour / 2;
+            int halfpoint = state.dataGlobal->NumOfTimeStepInHour / 2;
             state.dataWeather->SolarInterpolation(halfpoint) = 1.0;
             Real64 tweight = 1.0 / double(state.dataGlobal->NumOfTimeStepInHour);
             for (int tloop = halfpoint + 1, hpoint = 1; tloop <= state.dataGlobal->NumOfTimeStepInHour; ++tloop, ++hpoint) {
@@ -8109,7 +8104,7 @@ namespace Weather {
                 state.dataWeather->SolarInterpolation(3) = 0.5;
             } else {
                 Real64 tweight = 1.0 / double(state.dataGlobal->NumOfTimeStepInHour);
-                halfpoint = state.dataGlobal->NumOfTimeStepInHour / 2;
+                int halfpoint = state.dataGlobal->NumOfTimeStepInHour / 2;
                 Real64 tweight1 = 1.0 - tweight / 2.0;
                 state.dataWeather->SolarInterpolation(halfpoint) = tweight1;
                 state.dataWeather->SolarInterpolation(halfpoint + 1) = tweight1;
@@ -8504,12 +8499,10 @@ namespace Weather {
                     // increase number of days for february by one day if weather data has leap year
                     EndDayOfMonthLocal(2) = EndDayOfMonthLocal(2) + 1;
                 }
-                int DayNum;
-                int DaysCountOfMonth;
                 for (int i = 1; i <= 12; ++i) {
                     Real64 MonthlyDailyDryBulbAvg = 0.0;
-                    DaysCountOfMonth = EndDayOfMonthLocal(i);
-                    for (DayNum = 1; DayNum <= DaysCountOfMonth; ++DayNum) {
+                    int DaysCountOfMonth = EndDayOfMonthLocal(i);
+                    for (int DayNum = 1; DayNum <= DaysCountOfMonth; ++DayNum) {
                         Real64 DailyAverageDryBulbTemp = 0.0;
                         std::string::size_type pos;
                         for (int j = 1; j <= 24; ++j) {
@@ -8657,7 +8650,7 @@ namespace Weather {
         }
     }
 
-    void ForAllHrTs(EnergyPlusData &state, std::function<void(int, int)> f)
+    void ForAllHrTs(EnergyPlusData const &state, std::function<void(int, int)> f)
     {
         for (int iHr = 1; iHr <= Constant::HoursInDay; ++iHr)
             for (int iTS = 1; iTS <= state.dataGlobal->NumOfTimeStepInHour; ++iTS)

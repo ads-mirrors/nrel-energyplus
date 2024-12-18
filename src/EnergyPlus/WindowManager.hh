@@ -115,9 +115,9 @@ namespace Window {
                                         Array1A<Real64> aft // System absorptance of each glass layer
     );
 
-    Real64 solarSpectrumAverage(EnergyPlusData &state, gsl::span<Real64 const> p);
+    Real64 solarSpectrumAverage(EnergyPlusData const &state, gsl::span<Real64 const> p);
 
-    Real64 visibleSpectrumAverage(EnergyPlusData &state, gsl::span<Real64 const> p);
+    Real64 visibleSpectrumAverage(EnergyPlusData const &state, gsl::span<Real64 const> p);
 
     Real64 Interpolate(gsl::span<Real64 const> x, // Array of data points for independent variable
                        gsl::span<Real64 const> y, // Array of data points for dependent variable
@@ -238,7 +238,7 @@ namespace Window {
                               Real64 &gr     // Gap gas Grashof number
     );
 
-    void WindowGasPropertiesAtTemp(EnergyPlusData &state,
+    void WindowGasPropertiesAtTemp(EnergyPlusData const &state,
                                    Real64 tmean, // Temperature of gas in gap (K)
                                    int IGap,     // Gap number
                                    Real64 &dens, // Gap gas density at tmean (kg/m3)

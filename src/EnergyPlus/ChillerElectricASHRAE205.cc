@@ -1337,7 +1337,14 @@ void ASHRAE205ChillerSpecs::calculate(EnergyPlusData &state, Real64 &MyLoad, boo
         PlantUtilities::PullCompInterconnectTrigger(
             state, this->CWPlantLoc, this->CondMassFlowIndex, this->CDPlantLoc, DataPlant::CriteriaType::MassFlowRate, this->CondMassFlowRate);
 
-        if (this->CondMassFlowRate < DataBranchAirLoopPlant::MassFlowTolerance) return;
+        if (this->CondMassFlowRate < DataBranchAirLoopPlant::MassFlowTolerance) {
+            MyLoad = 0.0;
+            this->Power = standbyPower;
+            this->AmbientZoneGain = standbyPower;
+            this->EvapMassFlowRate = 0.0;
+            PlantUtilities::SetComponentFlowRate(state, this->EvapMassFlowRate, this->EvapInletNodeNum, this->EvapOutletNodeNum, this->CWPlantLoc);
+            return;
+        }
     }
     Real64 EvapOutletTempSetPoint(0.0); // Evaporator outlet temperature setpoint [C]
     switch (state.dataPlnt->PlantLoop(PlantLoopNum).LoopDemandCalcScheme) {

@@ -196,8 +196,8 @@ namespace Pollution {
         PollFuel::OtherFuel1,  // OtherFuel1
         PollFuel::OtherFuel2,  // OtherFuel2
         PollFuel::Electricity, // DistrictCooling
-        PollFuel::NaturalGas,  // DistrictHeating
-        PollFuel::NaturalGas,  // Steam
+        PollFuel::NaturalGas,  // DistrictHeatingWater
+        PollFuel::NaturalGas,  // DistrictHeatingSteam
     };
 
     constexpr std::array<Constant::eFuel, (int)PollFuel::Num> pollFuel2fuel = {

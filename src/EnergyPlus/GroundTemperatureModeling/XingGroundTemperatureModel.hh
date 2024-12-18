@@ -48,11 +48,7 @@
 #ifndef XingGroundTemperatureManager_hh_INCLUDED
 #define XingGroundTemperatureManager_hh_INCLUDED
 
-// C++ Headers
-#include <memory>
-
 // EnergyPlus Headers
-#include <EnergyPlus/Data/BaseData.hh>
 #include <EnergyPlus/EnergyPlus.hh>
 #include <EnergyPlus/GroundTemperatureModeling/BaseGroundTemperatureModel.hh>
 
@@ -61,11 +57,10 @@ namespace EnergyPlus {
 // Forward declarations
 struct EnergyPlusData;
 
-class XingGroundTempsModel : public BaseGroundTempsModel
+struct XingGroundTempsModel final : BaseGroundTempsModel
 {
-public:
     Real64 depth = 0.0;
-    Real64 groundThermalDiffisivity = 0.0;
+    Real64 groundThermalDiffusivity = 0.0;
     Real64 simTimeInDays = 0.0;
     Real64 aveGroundTemp = 0.0;
     Real64 surfTempAmplitude_1 = 0.0;
@@ -73,13 +68,13 @@ public:
     Real64 surfTempAmplitude_2 = 0.0;
     Real64 phaseShift_2 = 0.0;
 
-    static std::shared_ptr<XingGroundTempsModel> XingGTMFactory(EnergyPlusData &state, std::string objectName);
+    static XingGroundTempsModel *XingGTMFactory(EnergyPlusData &state, const std::string &objectName);
 
     Real64 getGroundTemp(EnergyPlusData &state) override;
 
-    Real64 getGroundTempAtTimeInSeconds(EnergyPlusData &state, Real64 const depth, Real64 const timeInSecondsOfSim) override;
+    Real64 getGroundTempAtTimeInSeconds(EnergyPlusData &state, Real64 depth, Real64 timeInSecondsOfSim) override;
 
-    Real64 getGroundTempAtTimeInMonths(EnergyPlusData &state, Real64 const depth, int const monthOfSim) override;
+    Real64 getGroundTempAtTimeInMonths(EnergyPlusData &state, Real64 depth, int monthOfSim) override;
 };
 
 } // namespace EnergyPlus

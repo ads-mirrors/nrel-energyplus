@@ -774,7 +774,7 @@ namespace PlantPipingSystemsManager {
         BaseThermalPropertySet HorizInsProperties;
         BaseThermalPropertySet VertInsProperties;
         SimulationControl SimControls;
-        std::shared_ptr<BaseGroundTempsModel> groundTempModel;
+        BaseGroundTempsModel *groundTempModel; // non-owning pointer
         BasementZoneInfo BasementZone;
         MoistureInfo Moisture;
         // "Internal" data structure variables

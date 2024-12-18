@@ -114,7 +114,6 @@ namespace UserDefinedComponents {
 
     void UserPlantComponentStruct::onInitLoopEquip(EnergyPlusData &state, const PlantLocation &calledFromLocation)
     {
-        bool anyEMSRan;
         Real64 myLoad = 0.0;
         int thisLoop = 0;
 
@@ -128,6 +127,7 @@ namespace UserDefinedComponents {
 
         if (thisLoop > 0) {
             if (this->Loop(thisLoop).ErlInitProgramMngr > 0) {
+                bool anyEMSRan;
                 EMSManager::ManageEMS(state, EMSManager::EMSCallFrom::UserDefinedComponentModel, anyEMSRan, this->Loop(thisLoop).ErlInitProgramMngr);
             } else if (this->Loop(thisLoop).initPluginLocation > -1) {
                 state.dataPluginManager->pluginManager->runSingleUserDefinedPlugin(state, this->Loop(thisLoop).initPluginLocation);

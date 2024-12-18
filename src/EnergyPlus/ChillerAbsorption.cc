@@ -1222,7 +1222,7 @@ void BLASTAbsorberSpecs::sizeChiller(EnergyPlusData &state)
                             BaseSizer::reportSizerOutput(state,
                                                          moduleObjectType,
                                                          this->Name,
-                                                         "Iniital Design Size Design Generator Fluid Flow Rate [m3/s]",
+                                                         "Initial Design Size Design Generator Fluid Flow Rate [m3/s]",
                                                          tmpGeneratorVolFlowRate);
                         }
                     } else {
@@ -1512,7 +1512,7 @@ void BLASTAbsorberSpecs::calculate(EnergyPlusData &state, Real64 &MyLoad, bool R
         // limit by max capacity
         this->QEvaporator = min(this->QEvaporator, (this->MaxPartLoadRat * this->NomCap));
 
-        // Either set the flow to the Constant value or caluclate the flow for the variable volume
+        // Either set the flow to the Constant value or calculate the flow for the variable volume
         if ((this->FlowMode == DataPlant::FlowMode::Constant) || (this->FlowMode == DataPlant::FlowMode::NotModulated)) {
             this->EvapMassFlowRate = state.dataLoopNodes->Node(this->EvapInletNodeNum).MassFlowRate;
 
@@ -1728,6 +1728,9 @@ void BLASTAbsorberSpecs::calculate(EnergyPlusData &state, Real64 &MyLoad, bool R
         this->CondOutletTemp = state.dataLoopNodes->Node(this->CondInletNodeNum).Temp;
         this->CondMassFlowRate = 0.0;
         this->QCondenser = 0.0;
+        MyLoad = 0.0;
+        this->EvapMassFlowRate = 0.0;
+        PlantUtilities::SetComponentFlowRate(state, this->EvapMassFlowRate, this->EvapInletNodeNum, this->EvapOutletNodeNum, this->CWPlantLoc);
         return;
         // V7 plant upgrade, no longer fatal here anymore, set some things and return
     }
@@ -1746,7 +1749,7 @@ void BLASTAbsorberSpecs::calculate(EnergyPlusData &state, Real64 &MyLoad, bool R
                 if ((this->FlowMode == DataPlant::FlowMode::Constant) || (this->FlowMode == DataPlant::FlowMode::NotModulated)) {
                     GenMassFlowRate = this->GenMassFlowRateMax;
                 } else { // LeavingSetpointModulated
-                    // since the .FlowMode applies to the chiller evaporator, the generater mass flow rate will be proportional to the evaporator
+                    // since the .FlowMode applies to the chiller evaporator, the generator mass flow rate will be proportional to the evaporator
                     // mass flow rate
                     Real64 GenFlowRatio = this->EvapMassFlowRate / this->EvapMassFlowRateMax;
                     GenMassFlowRate = min(this->GenMassFlowRateMax, GenFlowRatio * this->GenMassFlowRateMax);

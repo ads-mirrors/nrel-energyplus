@@ -48,12 +48,8 @@
 #ifndef KusudaAchenbachGroundTemperatureModel_hh_INCLUDED
 #define KusudaAchenbachGroundTemperatureModel_hh_INCLUDED
 
-// C++ Headers
-#include <memory>
-
 // EnergyPlus Headers
 #include <EnergyPlus/Data/BaseData.hh>
-#include <EnergyPlus/DataGlobals.hh>
 #include <EnergyPlus/EnergyPlus.hh>
 #include <EnergyPlus/GroundTemperatureModeling/BaseGroundTemperatureModel.hh>
 
@@ -63,24 +59,22 @@ namespace EnergyPlus {
 struct EnergyPlusData;
 
 // Derived class for Kusuda-Achenbach model
-class KusudaGroundTempsModel : public BaseGroundTempsModel
+struct KusudaGroundTempsModel final : BaseGroundTempsModel
 {
-public:
-    // Public Members
-    Real64 depth;
-    Real64 groundThermalDiffisivity;
-    Real64 simTimeInSeconds;
-    Real64 aveGroundTemp;
-    Real64 aveGroundTempAmplitude;
-    Real64 phaseShiftInSecs;
+    Real64 depth = 0.0;
+    Real64 groundThermalDiffusivity = 0.0;
+    Real64 simTimeInSeconds = 0.0;
+    Real64 aveGroundTemp = 0.0;
+    Real64 aveGroundTempAmplitude = 0.0;
+    Real64 phaseShiftInSecs = 0.0;
 
-    static std::shared_ptr<KusudaGroundTempsModel> KusudaGTMFactory(EnergyPlusData &state, std::string objectName);
+    static KusudaGroundTempsModel *KusudaGTMFactory(EnergyPlusData &state, const std::string &objectName);
 
     Real64 getGroundTemp(EnergyPlusData &state) override;
 
-    Real64 getGroundTempAtTimeInSeconds(EnergyPlusData &state, Real64 const depth, Real64 const timeInSecondsOfSim) override;
+    Real64 getGroundTempAtTimeInSeconds(EnergyPlusData &state, Real64 depth, Real64 timeInSecondsOfSim) override;
 
-    Real64 getGroundTempAtTimeInMonths(EnergyPlusData &state, Real64 const depth, int const monthOfSim) override;
+    Real64 getGroundTempAtTimeInMonths(EnergyPlusData &state, Real64 depth, int monthOfSim) override;
 };
 
 } // namespace EnergyPlus

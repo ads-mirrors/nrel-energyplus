@@ -46,14 +46,12 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 // C++ Headers
-#include <memory>
 
 // EnergyPlus Headers
 #include <EnergyPlus/Data/EnergyPlusData.hh>
 #include <EnergyPlus/DataEnvironment.hh>
 #include <EnergyPlus/DataGlobals.hh>
 #include <EnergyPlus/DataIPShortCuts.hh>
-#include <EnergyPlus/GroundTemperatureModeling/GroundTemperatureModelManager.hh>
 #include <EnergyPlus/GroundTemperatureModeling/SiteShallowGroundTemperatures.hh>
 #include <EnergyPlus/InputProcessing/InputProcessor.hh>
 #include <EnergyPlus/UtilityRoutines.hh>
@@ -64,7 +62,7 @@ namespace EnergyPlus {
 //******************************************************************************
 
 // Site:GroundTemperature:Shallow factory
-std::shared_ptr<SiteShallowGroundTemps> SiteShallowGroundTemps::ShallowGTMFactory(EnergyPlusData &state, std::string objectName)
+SiteShallowGroundTemps *SiteShallowGroundTemps::ShallowGTMFactory(EnergyPlusData &state, const std::string &objectName)
 {
     // SUBROUTINE INFORMATION:
     //       AUTHOR         Matt Mitchell
@@ -77,12 +75,12 @@ std::shared_ptr<SiteShallowGroundTemps> SiteShallowGroundTemps::ShallowGTMFactor
     bool errorsFound = false;
 
     // New shared pointer for this model object
-    std::shared_ptr<SiteShallowGroundTemps> thisModel(new SiteShallowGroundTemps());
+    auto *thisModel = new SiteShallowGroundTemps();
 
-    GroundTempObjType objType = GroundTempObjType::SiteShallowGroundTemp;
+    auto objType = GroundTempObjType::SiteShallowGroundTemp;
 
-    std::string_view const cCurrentModuleObject = GroundTemperatureManager::groundTempModelNamesUC[static_cast<int>(objType)];
-    int numCurrObjects = state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, cCurrentModuleObject);
+    std::string_view const cCurrentModuleObject = groundTempModelNamesUC[static_cast<int>(objType)];
+    const int numCurrObjects = state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, cCurrentModuleObject);
 
     thisModel->objectType = objType;
     thisModel->objectName = objectName;
@@ -98,25 +96,22 @@ std::shared_ptr<SiteShallowGroundTemps> SiteShallowGroundTemps::ShallowGTMFactor
             state, cCurrentModuleObject, 1, state.dataIPShortCut->cAlphaArgs, NumAlphas, state.dataIPShortCut->rNumericArgs, NumNums, IOStat);
 
         if (NumNums < 12) {
-            ShowSevereError(
-                state, fmt::format("{}: Less than 12 values entered.", GroundTemperatureManager::groundTempModelNames[static_cast<int>(objType)]));
+            ShowSevereError(state, fmt::format("{}: Less than 12 values entered.", groundTempModelNames[static_cast<int>(objType)]));
             errorsFound = true;
         }
 
         // Assign the ground temps to the variable
         for (int i = 1; i <= 12; ++i) {
-            thisModel->surfaceGroundTemps(i) = state.dataIPShortCut->rNumericArgs(i);
+            thisModel->surfaceGroundTemps[i - 1] = state.dataIPShortCut->rNumericArgs(i);
         }
 
-        state.dataEnvrn->GroundTempInputs[(int)DataEnvironment::GroundTempType::Shallow] = true;
+        state.dataEnvrn->GroundTempInputs[static_cast<int>(DataEnvironment::GroundTempType::Shallow)] = true;
 
     } else if (numCurrObjects > 1) {
-        ShowSevereError(state,
-                        fmt::format("{}: Too many objects entered. Only one allowed.",
-                                    GroundTemperatureManager::groundTempModelNames[static_cast<int>(objType)]));
+        ShowSevereError(state, fmt::format("{}: Too many objects entered. Only one allowed.", groundTempModelNames[static_cast<int>(objType)]));
         errorsFound = true;
     } else {
-        thisModel->surfaceGroundTemps = 13.0;
+        std::fill(thisModel->surfaceGroundTemps.begin(), thisModel->surfaceGroundTemps.end(), 13.0);
     }
 
     // Write Final Ground Temp Information to the initialization output file
@@ -125,12 +120,10 @@ std::shared_ptr<SiteShallowGroundTemps> SiteShallowGroundTemps::ShallowGTMFactor
     if (!errorsFound) {
         state.dataGrndTempModelMgr->groundTempModels.push_back(thisModel);
         return thisModel;
-    } else {
-        ShowFatalError(state,
-                       fmt::format("{}--Errors getting input for ground temperature model",
-                                   GroundTemperatureManager::groundTempModelNames[static_cast<int>(objType)]));
-        return nullptr;
     }
+
+    ShowFatalError(state, fmt::format("{}--Errors getting input for ground temperature model", groundTempModelNames[static_cast<int>(objType)]));
+    return nullptr;
 }
 
 //******************************************************************************
@@ -144,7 +137,7 @@ Real64 SiteShallowGroundTemps::getGroundTemp([[maybe_unused]] EnergyPlusData &st
     // PURPOSE OF THIS SUBROUTINE:
     // Return the ground temperature from Site:GroundTemperature:Shallow
 
-    return surfaceGroundTemps(timeOfSimInMonths);
+    return surfaceGroundTemps[timeOfSimInMonths - 1];
 }
 
 //******************************************************************************
@@ -168,7 +161,7 @@ Real64 SiteShallowGroundTemps::getGroundTempAtTimeInSeconds(EnergyPlusData &stat
     if (month >= 1 && month <= 12) {
         timeOfSimInMonths = month;
     } else {
-        timeOfSimInMonths = remainder(month, 12);
+        timeOfSimInMonths = month % 12;
     }
 
     // Get and return ground temp
@@ -190,7 +183,7 @@ Real64 SiteShallowGroundTemps::getGroundTempAtTimeInMonths(EnergyPlusData &state
     if (_month >= 1 && _month <= 12) {
         timeOfSimInMonths = _month;
     } else {
-        timeOfSimInMonths = remainder(_month, 12);
+        timeOfSimInMonths = _month % 12;
     }
 
     // Get and return ground temp

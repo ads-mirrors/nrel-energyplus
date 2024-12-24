@@ -5223,7 +5223,7 @@ TEST_F(EnergyPlusFixture, SolarShadingTest_CalcBeamSolarOnWinRevealSurface)
     construct1.LayerPoint(1) = 1;
     construct1.Name = "Construction1";
     construct1.TotGlassLayers = 1;
-    construct1.TransSolBeamCoef(1) = 0.9;
+    construct1.TransSolBeamCoef[0] = 0.9;
 
     auto &s_mat = state->dataMaterial;
 
@@ -5250,7 +5250,7 @@ TEST_F(EnergyPlusFixture, SolarShadingTest_CalcBeamSolarOnWinRevealSurface)
     state->dataHeatBal->SurfSunlitFracWithoutReveal(state->dataGlobal->HourOfDay, state->dataGlobal->TimeStep, 2) = 1.0;
 
     Window::W5InitGlassParameters(*state);
-    construct1.TransSolBeamCoef(1) = 0.9;
+    construct1.TransSolBeamCoef[0] = 0.9;
     state->dataSurface->SurfWinTanProfileAngVert(1) = 10.0;
     state->dataSurface->SurfWinTanProfileAngVert(2) = 10.0;
     state->dataSurface->SurfWinTanProfileAngHor(1) = 10.0;

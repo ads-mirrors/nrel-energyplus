@@ -83,6 +83,13 @@ namespace General {
                    Real64 X_1); // 2nd bound of interval that contains the solution
 
     constexpr Real64 POLYF(Real64 const X,          // Cosine of angle of incidence
+                           std::array<Real64, 6> const &A // Polynomial coefficients
+    )
+    {
+        return (X < 0.0 || X > 1.0) ? 0.0 : (X * (A[0] + X * (A[1] + X * (A[2] + X * (A[3] + X * (A[4] + X * A[5]))))));
+    }
+
+    constexpr Real64 POLYF(Real64 const X,          // Cosine of angle of incidence
                            Array1D<Real64> const &A // Polynomial coefficients
     )
     {
@@ -92,7 +99,7 @@ namespace General {
             return X * (A(1) + X * (A(2) + X * (A(3) + X * (A(4) + X * (A(5) + X * A(6))))));
         }
     }
-
+        
     void MovingAvg(Array1D<Real64> &DataIn, int NumItemsInAvg);
 
     void ProcessDateString(EnergyPlusData &state,

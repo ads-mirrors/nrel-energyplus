@@ -3643,8 +3643,6 @@ namespace HeatBalanceManager {
         Array1D<Real64> RbvisTemp(Window::numPhis+1);          // Back visible reflectance vs inc. angle
         std::array<Real64, Window::numPhis> Rbvis;
         
-        // std::array<Real64, Window::numPhis> CosPhiIndepVar; // Cosine of incidence angle from 0 to 90 deg in 10 deg increments
-        // std::array<Real64, Window::numPhis> CosPhi;         // Cosine of incidence angle
         std::array<Real64, Window::numPhis> tsolFit;        // Fitted solar transmittance vs incidence angle
         std::array<Real64, Window::numPhis> tvisFit;        // Fitted visible transmittance vs incidence angle
         std::array<Real64, Window::numPhis> rfsolFit;       // Fitted solar front reflectance vs incidence angle
@@ -4139,18 +4137,6 @@ namespace HeatBalanceManager {
             NextLine = W5DataFile.readLine();
             if (NextLine.eof) goto Label1000;
             ++FileLineCount;
-
-            // Pre-calculate constants
-            // for (int iPhi = 0; iPhi < 10; ++iPhi) {
-            //                CosPhiIndepVar[iPhi] = std::cos(iPhi * 10.0 * Constant::DegToRad);
-            // }
-
-            // Pre-calculate constants // Why do we need both of these?
-            // for (int iPhi = 0; iPhi < Window::numPhis; ++iPhi) {
-            //    Real64 Phi = double(iPhi) * 10.0;
-            //    CosPhi[iPhi] = std::cos(Phi * Constant::DegToRad);
-            //    if (std::abs(CosPhi[iPhi]) < 0.0001) CosPhi[iPhi] = 0.0;
-            // }
 
             for (IGlSys = 1; IGlSys <= NGlSys; ++IGlSys) {
                 ConstrNum = state.dataHeatBal->TotConstructs - NGlSys + IGlSys;

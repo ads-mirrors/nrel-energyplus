@@ -145,10 +145,6 @@ namespace Window {
                                                Real64 &SurfOutsideTemp // Outside surface temperature (C)
     );
 
-#ifdef GET_OUT
-    void WindowHeatBalanceEquations(EnergyPlusData &state, int SurfNum); // Surface number
-#endif                                                                   // GET_OUT
-
     void GetHeatBalanceEqCoefMatrixSimple(EnergyPlusData &state,
                                           int nglasslayer,           // Number of glass layers
                                           Array1D<Real64> const &hr, // Radiative conductance (W/m2-K)
@@ -288,23 +284,7 @@ namespace Window {
                   std::array<Real64, DataSurfaces::MaxPolyCoeff> &coeffs // Polynomial coeffients from fit
     );
 
-#ifdef GET_OUT        
-    void W5LsqFit2(Array1A<Real64> IndepVar, // Independent variables
-                   Array1A<Real64> DepVar,   // Dependent variables
-                   int N,                    // Order of polynomial
-                   int N1,                   // First and last data points used
-                   int N2,
-                   Array1A<Real64> CoeffsCurve // Polynomial coeffients from fit
-    );
-
-    Real64 DiffuseAverage(Array1S<Real64> PropertyValue); // Property value at angles of incidence
-#endif // GET_OUT
-
     Real64 DiffuseAverage(std::array<Real64, numPhis> const &props); // Property value at angles of incidence
-
-    Real64 DiffuseAverageProfAngGnd(Array1S<Real64> Property); // Property value vs. profile angle
-
-    Real64 DiffuseAverageProfAngSky(Array1S<Real64> Property); // Property value vs. profile angle
 
     void CalcWinFrameAndDividerTemps(EnergyPlusData &state,
                                      int SurfNum,     // Surface number
@@ -487,9 +467,6 @@ struct WindowManagerData : BaseGlobalStruct
         0.0};                                                         // Solar radiation and IR radiation from internal gains absorbed by glass face
     std::array<Real64, 2 *Window::maxGlassLayers> thetas = {0.0};     // Glass surface temperatures (K)
     std::array<Real64, 2 *Window::maxGlassLayers> thetasPrev = {0.0}; // Previous-iteration glass surface temperatures (K)
-#ifdef GET_OUT
-    std::array<Real64, 2 *Window::maxGlassLayers> fvec = {0.0}; // Glass face heat balance function
-#endif                                                          // GET_OUT
 
     std::array<Real64, Window::maxGlassLayers> hrgap = {0.0}; // Radiative gap conductance
 
@@ -560,9 +537,6 @@ struct WindowManagerData : BaseGlobalStruct
         this->AbsRadGlassFace = {0.0};
         this->thetas = {0.0};
         this->thetasPrev = {0.0};
-#ifdef GET_OUT
-        this->fvec = {0.0};
-#endif // GET_OUT
         this->hrgap = {0.0};
         this->A23P = 0.0;
         this->A32P = 0.0;

@@ -245,7 +245,6 @@ namespace Window {
         std::array<Real64, numPhis> tvisPhi;        // Glazing system visible transmittance for each angle of incidence
         std::array<Real64, numPhis> rfvisPhi;       // Glazing system visible front reflectance for each angle of incidence
         std::array<Real64, numPhis> rbvisPhi;       // Glazing system visible back reflectance for each angle of incidence
-        // std::array<Real64, numPhis> CosPhiIndepVar; // Cos of incidence angles at 10-deg increments for curve fits
 
         Real64 ab1; // = abBareSolPhi(,1)(,2)
         Real64 ab2;
@@ -280,8 +279,6 @@ namespace Window {
         Real64 RhoGlIR;  // IR reflectance of inside face of inside glass
         int NGlass;      // Number of glass layers in a construction
         int LayPtr;      // Material number corresponding to LayNum
-        // Real64 Phi;      // Incidence angle (deg)
-        // Real64 CosPhi;   // Cosine of incidence angle
         Real64 tsolDiff; // Glazing system diffuse solar transmittance
         Real64 tvisDiff; // Glazing system diffuse visible transmittance
         int IGlassBack;  // Glass layer number counted from back of window
@@ -364,9 +361,6 @@ namespace Window {
             // handling of optical properties
 
             constexpr int TotalIPhi = 10;
-            // for (int iPhi = 0; iPhi < TotalIPhi; ++iPhi) {
-            //     CosPhiIndepVar[iPhi] = std::cos(iPhi * 10.0 * Constant::DegToRad);
-            // }
 
             TotLay = thisConstruct.TotLayers;
 
@@ -658,11 +652,6 @@ namespace Window {
             // effect of inter-reflection among glass layers) at each incidence angle.
 
             for (int iPhi = 0; iPhi < TotalIPhi; ++iPhi) {
-                // 10 degree increment for incident angle is only value for a construction without a layer = SpectralAndAngle
-                // Real64 Phi = double(iPhi) * 10.0;
-                // Real64 CosPhi = std::cos(Phi * Constant::DegToRadians);
-                // if (std::abs(CosPhi) < 0.0001) CosPhi = 0.0;
-
                 // For each wavelength, get glass layer properties at this angle of incidence
                 // from properties at normal incidence
                 for (int IGlass = 1; IGlass <= NGlass; ++IGlass) {
@@ -686,9 +675,9 @@ namespace Window {
                         for (int ILam = 1; ILam <= (int)wm->wle.size(); ++ILam) {
                             Real64 lam = wm->wle[ILam - 1];
                             wlt[IGlass - 1][ILam - 1] = lam;
-                            tPhi[IGlass - 1][ILam - 1] = Curve::CurveValue(state, matGlass->GlassSpecAngTransDataPtr, iPhi * 10.0, lam);
-                            rfPhi[IGlass - 1][ILam - 1] = Curve::CurveValue(state, matGlass->GlassSpecAngFRefleDataPtr, iPhi * 10.0, lam);
-                            rbPhi[IGlass - 1][ILam - 1] = Curve::CurveValue(state, matGlass->GlassSpecAngBRefleDataPtr, iPhi * 10.0, lam);
+                            tPhi[IGlass - 1][ILam - 1] = Curve::CurveValue(state, matGlass->GlassSpecAngTransDataPtr, iPhi * dPhiDeg, lam);
+                            rfPhi[IGlass - 1][ILam - 1] = Curve::CurveValue(state, matGlass->GlassSpecAngFRefleDataPtr, iPhi * dPhiDeg, lam);
+                            rbPhi[IGlass - 1][ILam - 1] = Curve::CurveValue(state, matGlass->GlassSpecAngBRefleDataPtr, iPhi * dPhiDeg, lam);
                         }
                     }
                     // For use with between-glass shade/blind, save angular properties of isolated glass
@@ -859,10 +848,6 @@ namespace Window {
             // but exclude the effect of a shade or blind if present in the construction.
             // When a construction has a layer = SpectralAndAngle, the 10 degree increment will be overridden.
             for (int iPhi = 0; iPhi < TotalIPhi; ++iPhi) {
-                // Real64 Phi = double(iPhi) * 10.0;
-                // Real64 CosPhi = std::cos(Phi * Constant::DegToRad);
-                // if (std::abs(CosPhi) < 0.0001) CosPhi = 0.0;
-
                 // For each wavelength, get glass layer properties at this angle of incidence
                 // from properties at normal incidence
                 for (int IGlass = 1; IGlass <= NGlass; ++IGlass) {
@@ -1458,10 +1443,6 @@ namespace Window {
                     tsolPhiFit[iPhi] = 0.0;
                     tvisPhiFit[iPhi] = 0.0;
 
-                    // Real64 Phi = double(iPhi) * 10.0;
-                    // Real64 CosPhi = std::cos(Phi * Constant::DegToRad);
-                    // if (std::abs(CosPhi) < 0.0001) CosPhi = 0.0;
-                    
                     for (int CoefNum = 0; CoefNum < DataSurfaces::MaxPolyCoeff; ++CoefNum) {
                         tsolPhiFit[iPhi] += thisConstruct.TransSolBeamCoef[CoefNum] * cosPhis[iPhi];
                         tvisPhiFit[iPhi] += thisConstruct.TransVisBeamCoef[CoefNum] * cosPhis[iPhi];
@@ -2426,9 +2407,6 @@ namespace Window {
 
             wm->thetas = {0.0};
             wm->thetasPrev = {0.0};
-#ifdef GET_OUT
-            wm->fvec = {0.0};
-#endif // GET_OUT
 
             // Calculate window face temperatures
 
@@ -2539,121 +2517,6 @@ namespace Window {
 
     //****************************************************************************
 
-#ifdef GET_OUT
-    void WindowHeatBalanceEquations(EnergyPlusData &state, int const SurfNum) // Surface number
-    {
-
-        // SUBROUTINE INFORMATION:
-        //       AUTHOR         F. Winkelmann
-        //       DATE WRITTEN   February 2000
-
-        // PURPOSE OF THIS SUBROUTINE:
-        // Evaluates heat balance functions at each glass face.
-        // Also evaluates Jacobian.
-        // Currently limited to three glass layers.
-
-        Array1D<Real64> hgap(maxGlassLayers); // Gap gas conductance
-        Real64 gr;                            // Gap gas Grashof number
-        Real64 con;                           // Gap gas conductivity
-        Real64 pr;                            // Gap gas Prandtl number
-        Real64 nu;                            // Gap gas Nusselt number
-        Real64 thetas_2_3_4;
-        Real64 thetas_4_5_4;
-        Real64 thetas_6_7_4;
-
-        auto &wm = state.dataWindowManager;
-        auto &s_surf = state.dataSurface;
-
-        auto const &surfWin = s_surf->SurfaceWindow(SurfNum);
-
-        // Have to zero fvec each time since LUdecompostion and LUsolution may
-        // add values to this array in unexpected places
-
-        wm->fvec = {0.0};
-
-        switch (wm->ngllayer) {
-
-        case 1: { // single pane
-            wm->fvec[0] = wm->Outir * wm->emis[0] - wm->emis[0] * Constant::StefanBoltzmann * pow_4(wm->thetas[0]) +
-                          wm->scon[0] * (wm->thetas[1] - wm->thetas[0]) + wm->hcout * (wm->tout - wm->thetas[0]) + wm->AbsRadGlassFace[0];
-            wm->fvec[1] = wm->Rmir * wm->emis[1] - wm->emis[1] * Constant::StefanBoltzmann * pow_4(wm->thetas[1]) +
-                          wm->scon[0] * (wm->thetas[0] - wm->thetas[1]) + wm->hcin * (wm->tin - wm->thetas[1]) + wm->AbsRadGlassFace[1];
-        } break;
-        case 2: { // double pane
-            WindowGasConductance(state, wm->thetas[1], wm->thetas[2], 1, con, pr, gr);
-            NusseltNumber(state, SurfNum, wm->thetas[1], wm->thetas[2], 1, gr, pr, nu);
-            hgap(1) = (con / wm->gaps[0].width * nu) * surfWin.edgeGlassCorrFac;
-
-            wm->fvec[0] = wm->Outir * wm->emis[0] - wm->emis[0] * Constant::StefanBoltzmann * pow_4(wm->thetas[0]) +
-                          wm->scon[0] * (wm->thetas[1] - wm->thetas[0]) + wm->hcout * (wm->tout - wm->thetas[0]) + wm->AbsRadGlassFace[0];
-            thetas_2_3_4 = pow_4(wm->thetas[1]) - pow_4(wm->thetas[2]);
-            wm->fvec[1] = wm->scon[0] * (wm->thetas[0] - wm->thetas[1]) + hgap(1) * (wm->thetas[2] - wm->thetas[1]) + wm->A23 * thetas_2_3_4 +
-                          wm->AbsRadGlassFace[1];
-            wm->fvec[2] = hgap(1) * (wm->thetas[1] - wm->thetas[2]) + wm->scon[1] * (wm->thetas[3] - wm->thetas[2]) - wm->A23 * thetas_2_3_4 +
-                          wm->AbsRadGlassFace[2];
-            wm->fvec[3] = wm->Rmir * wm->emis[3] - wm->emis[3] * Constant::StefanBoltzmann * pow_4(wm->thetas[3]) +
-                          wm->scon[1] * (wm->thetas[2] - wm->thetas[3]) + wm->hcin * (wm->tin - wm->thetas[3]) + wm->AbsRadGlassFace[3];
-        } break;
-        case 3: { // Triple Pane
-            WindowGasConductance(state, wm->thetas[1], wm->thetas[2], 1, con, pr, gr);
-            NusseltNumber(state, SurfNum, wm->thetas[1], wm->thetas[2], 1, gr, pr, nu);
-            hgap(1) = con / wm->gaps[0].width * nu * surfWin.edgeGlassCorrFac;
-
-            WindowGasConductance(state, wm->thetas[3], wm->thetas[4], 2, con, pr, gr);
-            NusseltNumber(state, SurfNum, wm->thetas[3], wm->thetas[4], 2, gr, pr, nu);
-            hgap(2) = con / wm->gaps[1].width * nu * surfWin.edgeGlassCorrFac;
-
-            thetas_2_3_4 = pow_4(wm->thetas[1]) - pow_4(wm->thetas[2]);
-            thetas_4_5_4 = pow_4(wm->thetas[3]) - pow_4(wm->thetas[4]);
-            wm->fvec[0] = wm->Outir * wm->emis[0] - wm->emis[0] * Constant::StefanBoltzmann * pow_4(wm->thetas[0]) +
-                          wm->scon[0] * (wm->thetas[1] - wm->thetas[0]) + wm->hcout * (wm->tout - wm->thetas[0]) + wm->AbsRadGlassFace[0];
-            wm->fvec[1] = wm->scon[0] * (wm->thetas[0] - wm->thetas[1]) + hgap(1) * (wm->thetas[2] - wm->thetas[1]) + wm->A23 * thetas_2_3_4 +
-                          wm->AbsRadGlassFace[1];
-            wm->fvec[2] = hgap(1) * (wm->thetas[1] - wm->thetas[2]) + wm->scon[1] * (wm->thetas[3] - wm->thetas[2]) - wm->A23 * thetas_2_3_4 +
-                          wm->AbsRadGlassFace[2];
-            wm->fvec[3] = wm->scon[1] * (wm->thetas[2] - wm->thetas[3]) + hgap(2) * (wm->thetas[4] - wm->thetas[3]) + wm->A45 * thetas_4_5_4 +
-                          wm->AbsRadGlassFace[3];
-            wm->fvec[4] = hgap(2) * (wm->thetas[3] - wm->thetas[4]) + wm->scon[2] * (wm->thetas[5] - wm->thetas[4]) - wm->A45 * thetas_4_5_4 +
-                          wm->AbsRadGlassFace[4];
-            wm->fvec[5] = wm->Rmir * wm->emis[5] - wm->emis[5] * Constant::StefanBoltzmann * pow_4(wm->thetas[5]) +
-                          wm->scon[2] * (wm->thetas[4] - wm->thetas[5]) + wm->hcin * (wm->tin - wm->thetas[5]) + wm->AbsRadGlassFace[5];
-        } break;
-        case 4: { // Quad Pane
-            WindowGasConductance(state, wm->thetas[1], wm->thetas[2], 1, con, pr, gr);
-            NusseltNumber(state, SurfNum, wm->thetas[1], wm->thetas[2], 1, gr, pr, nu);
-            hgap(1) = con / wm->gaps[0].width * nu * surfWin.edgeGlassCorrFac;
-
-            WindowGasConductance(state, wm->thetas[3], wm->thetas[4], 2, con, pr, gr);
-            NusseltNumber(state, SurfNum, wm->thetas[3], wm->thetas[4], 2, gr, pr, nu);
-            hgap(2) = con / wm->gaps[1].width * nu * surfWin.edgeGlassCorrFac;
-
-            WindowGasConductance(state, wm->thetas[5], wm->thetas[6], 3, con, pr, gr);
-            NusseltNumber(state, SurfNum, wm->thetas[5], wm->thetas[6], 3, gr, pr, nu);
-            hgap(3) = con / wm->gaps[2].width * nu * surfWin.edgeGlassCorrFac;
-
-            thetas_2_3_4 = pow_4(wm->thetas[1]) - pow_4(wm->thetas[2]);
-            thetas_4_5_4 = pow_4(wm->thetas[3]) - pow_4(wm->thetas[4]);
-            thetas_6_7_4 = pow_4(wm->thetas[5]) - pow_4(wm->thetas[6]);
-            wm->fvec[0] = wm->Outir * wm->emis[0] - wm->emis[0] * Constant::StefanBoltzmann * pow_4(wm->thetas[0]) +
-                          wm->scon[0] * (wm->thetas[1] - wm->thetas[0]) + wm->hcout * (wm->tout - wm->thetas[0]) + wm->AbsRadGlassFace[0];
-            wm->fvec[1] = wm->scon[0] * (wm->thetas[0] - wm->thetas[1]) + hgap(1) * (wm->thetas[2] - wm->thetas[1]) + wm->A23 * thetas_2_3_4 +
-                          wm->AbsRadGlassFace[1];
-            wm->fvec[2] = hgap(1) * (wm->thetas[1] - wm->thetas[2]) + wm->scon[1] * (wm->thetas[3] - wm->thetas[2]) - wm->A23 * thetas_2_3_4 +
-                          wm->AbsRadGlassFace[2];
-            wm->fvec[3] = wm->scon[1] * (wm->thetas[2] - wm->thetas[3]) + hgap(2) * (wm->thetas[4] - wm->thetas[3]) + wm->A45 * thetas_4_5_4 +
-                          wm->AbsRadGlassFace[3];
-            wm->fvec[4] = hgap(2) * (wm->thetas[3] - wm->thetas[4]) + wm->scon[2] * (wm->thetas[5] - wm->thetas[4]) - wm->A45 * thetas_4_5_4 +
-                          wm->AbsRadGlassFace[4];
-            wm->fvec[5] = wm->scon[2] * (wm->thetas[4] - wm->thetas[5]) + hgap(3) * (wm->thetas[6] - wm->thetas[5]) + wm->A67 * thetas_6_7_4 +
-                          wm->AbsRadGlassFace[5];
-            wm->fvec[6] = hgap(3) * (wm->thetas[5] - wm->thetas[6]) + wm->scon[3] * (wm->thetas[7] - wm->thetas[6]) - wm->A67 * thetas_6_7_4 +
-                          wm->AbsRadGlassFace[6];
-            wm->fvec[7] = wm->Rmir * wm->emis[7] - wm->emis[7] * Constant::StefanBoltzmann * pow_4(wm->thetas[7]) +
-                          wm->scon[3] * (wm->thetas[6] - wm->thetas[7]) + wm->hcin * (wm->tin - wm->thetas[7]) + wm->AbsRadGlassFace[7];
-        } break;
-        } // switch
-    }     // WindowHeatBalanceEquations()
-#endif    // GET_OUT
 
     //****************************************************************************
 
@@ -5446,94 +5309,6 @@ namespace Window {
     } // InterpolateBetweenFourValues()
 
     //**************************************************************************
-#ifdef GET_OUT
-    void W5LsqFit(Array1S<Real64> const IndepVar, // Independent variables
-                  Array1S<Real64> const DepVar,   // Dependent variables
-                  int const N,                    // Order of polynomial
-                  int const N1,                   // First and last data points used
-                  int const N2,
-                  Array1S<Real64> CoeffsCurve // Polynomial coefficients from fit
-    )
-    {
-
-        // SUBROUTINE INFORMATION:
-        //       AUTHOR         George Walton
-        //       DATE WRITTEN   April 1976
-        //       MODIFIED       November 1999 F.Winkelmann
-        //       RE-ENGINEERED  na
-
-        // PURPOSE OF THIS SUBROUTINE:
-        // Does least squares fit for coefficients of a polynomial
-        // that gives a window property, such as transmittance, as a function of
-        // the cosine of the angle of incidence. The polynomial is of the
-        // form C1*X + C2*X**2 + C3*X**3 + ... +CN*X**N, where N <= 6.
-        // Adapted from BLAST subroutine LSQFIT.
-
-        Array2D<Real64> A(6, 6);  // Least squares derivative matrix
-        Array1D<Real64> B(6);     // Least squares derivative vector
-        Array2D<Real64> D(6, 16); // Powers of independent variable
-        Real64 ACON;              // Intermediate variables
-        Real64 SUM;
-        int LP1;
-        int NM1;
-
-        // Set up least squares matrix
-        for (int M = N1; M <= N2; ++M) {
-            D(1, M) = IndepVar(M);
-        }
-
-        for (int i = 2; i <= N; ++i) {
-            for (int M = N1; M <= N2; ++M) {
-                D(i, M) = D(i - 1, M) * IndepVar(M);
-            }
-        }
-
-        for (int i = 1; i <= N; ++i) {
-            SUM = 0.0;
-            for (int M = N1; M <= N2; ++M) {
-                SUM += DepVar(M) * D(i, M);
-            }
-            B(i) = SUM;
-            for (int j = 1; j <= N; ++j) {
-                SUM = 0.0;
-                for (int M = N1; M <= N2; ++M) {
-                    SUM += D(i, M) * D(j, M);
-                }
-                A(j, i) = SUM;
-                A(i, j) = SUM;
-            }
-        }
-
-        // Solve the simultaneous equations using Gauss elimination
-        NM1 = N - 1;
-        for (int K = 1; K <= NM1; ++K) {
-            int KP1 = K + 1;
-            for (int i = KP1; i <= N; ++i) {
-                ACON = A(K, i) / A(K, K);
-                B(i) -= B(K) * ACON;
-                for (int j = K; j <= N; ++j) {
-                    A(j, i) -= A(j, K) * ACON;
-                }
-            }
-        }
-
-        // Perform back substitution
-        CoeffsCurve(N) = B(N) / A(N, N);
-        LP1 = N;
-        int L = N - 1;
-
-        while (L > 0) {
-            SUM = 0.0;
-            for (int j = LP1; j <= N; ++j) {
-                SUM += A(j, L) * CoeffsCurve(j);
-            }
-            CoeffsCurve(L) = (B(L) - SUM) / A(L, L);
-            LP1 = L;
-            --L;
-        }
-    } // W5LsqFit()
-#endif // GET_OUT
-        
     void W5LsqFit(std::array<Real64, numPhis> const &ivars, // Independent variables
                   std::array<Real64, numPhis> const &dvars,   // Dependent variables
                   std::array<Real64, DataSurfaces::MaxPolyCoeff> &coeffs // Polynomial coefficients from fit
@@ -5708,43 +5483,6 @@ namespace Window {
     } // W5LsqFit2()
 
     //***********************************************************************
-#ifdef GET_OUT
-    Real64 DiffuseAverage(Array1S<Real64> const PropertyValue) // Property value at angles of incidence
-    {
-
-        // FUNCTION INFORMATION:
-        //       AUTHOR         Fred Winkelmann
-        //       DATE WRITTEN   November 1999
-        //       MODIFIED       na
-        //       RE-ENGINEERED  na
-
-        // PURPOSE OF THIS FUNCTION:
-        // Calculate value of property, such as transmittance, for hemispherical
-        // diffuse radiation from property values at angles of incidence from
-        // 0 to 90 degrees in 10 degree increments.
-
-        // METHODOLOGY EMPLOYED:
-        // By Simpson's rule, evaluates the integral from 0 to 90 deg of
-        // 2*PropertyValue(phi)*cos(phi)*sin(phi)*dphi (which is same as
-        // PropertyValue(phi)*sin(2*phi)*dphi)
-
-        // Return value
-        Real64 DiffuseAverage;
-
-        // Locals
-        // SUBROUTINE ARGUMENT DEFINITIONS:
-        // 0,10,20,...,80,90 degrees
-
-        DiffuseAverage = 0.0;
-        for (int IPhi = 1; IPhi <= 9; ++IPhi) {
-            DiffuseAverage +=
-                0.5 * DPhiR * (PropertyValue(IPhi) * std::sin(2.0 * (IPhi - 1) * dPhiRad) + PropertyValue(IPhi + 1) * std::sin(2.0 * IPhi * dPhiRad));
-        }
-        if (DiffuseAverage < 0.0) DiffuseAverage = 0.0;
-
-        return DiffuseAverage;
-    } // DiffuseAverage()
-#endif // GET_OUT
         
     Real64 DiffuseAverage(std::array<Real64, numPhis> const &props) // Property value at angles of incidence
     {

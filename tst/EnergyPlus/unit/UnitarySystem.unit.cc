@@ -15485,6 +15485,7 @@ TEST_F(EnergyPlusFixture, Test_UnitarySystemModel_SubcoolReheatCoil)
     0,                       !- Crankcase Heater Capacity {W}
     ,                        !- Crankcase Heater Capacity Function of Temperature Curve Name
     ,                        !- Minimum Outdoor Dry-Bulb Temperature for Compressor Operation {C}
+    ,                        !- Maximum Outdoor Dry-Bulb Temperature for Compressor Operation {C}
     10,                      !- Maximum Outdoor Dry-Bulb Temperature for Crankcase Heater Operation {C}
     ,                        !- Unit Internal Static Air Pressure {Pa}
     ,                        !- Capacity Control Method
@@ -17120,6 +17121,7 @@ TEST_F(ZoneUnitarySysTest, UnitarySystemModel_MultiSpeedDXCoilsNoLoadFlowRateSiz
       0.0,                     !- Crankcase Heater Capacity {W}
       ,                        !- Crankcase Heater Capacity Function of Temperature Curve Name
       ,                        !- Minimum Outdoor Dry-Bulb Temperature for Compressor Operation {C}
+      ,                        !- Maximum Outdoor Dry-Bulb Temperature for Compressor Operation {C}
       10.0,                    !- Maximum Outdoor Dry-Bulb Temperature for Crankcase Heater Operation {C}
       ,                        !- Unit Internal Static Air Pressure {Pa}
       Discrete,                !- Capacity Control Method
@@ -17428,6 +17430,7 @@ TEST_F(ZoneUnitarySysTest, UnitarySystemModel_MultiSpeedDXCoilsDirectSolutionTes
       0.0,                     !- Crankcase Heater Capacity {W}
       ,                        !- Crankcase Heater Capacity Function of Temperature Curve Name
       ,                        !- Minimum Outdoor Dry-Bulb Temperature for Compressor Operation {C}
+      ,                        !- Maximum Outdoor Dry-Bulb Temperature for Compressor Operation {C}
       10.0,                    !- Maximum Outdoor Dry-Bulb Temperature for Crankcase Heater Operation {C}
       ,                        !- Unit Internal Static Air Pressure {Pa}
       Discrete,                !- Capacity Control Method
@@ -20453,6 +20456,7 @@ TEST_F(ZoneUnitarySysTest, UnitarySystemModel_LowerSpeedFlowSizingTest)
     0,                               !- Crankcase Heater Capacity {W}
     ,                                !- Crankcase Heater Capacity Function of Temperature Curve Name
     ,                                !- Minimum Outdoor Dry-Bulb Temperature for Compressor Operation {C}
+    ,                                !- Maximum Outdoor Dry-Bulb Temperature for Compressor Operation {C}
     10,                              !- Maximum Outdoor Dry-Bulb Temperature for Crankcase Heater Operation {C}
     ,                                !- Unit Internal Static Air Pressure {Pa}
     ,                                !- Capacity Control Method
@@ -24028,6 +24032,7 @@ TEST_F(ZoneUnitarySysTest, ZeroCoolingSpeedTest)
     0.0,                     !- Crankcase Heater Capacity {W}
     ,                        !- Crankcase Heater Capacity Function of Temperature Curve Name
     ,                        !- Minimum Outdoor Dry-Bulb Temperature for Compressor Operation {C}
+    ,                        !- Maximum Outdoor Dry-Bulb Temperature for Compressor Operation {C}
     10.0,                    !- Maximum Outdoor Dry-Bulb Temperature for Crankcase Heater Operation {C}
     ,                        !- Unit Internal Static Air Pressure {Pa}
     Discrete,                !- Capacity Control Method

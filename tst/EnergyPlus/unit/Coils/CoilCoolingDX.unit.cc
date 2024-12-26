@@ -88,7 +88,7 @@ TEST_F(CoilCoolingDXTest, CoilCoolingDXAlternateModePerformance)
                                                 "    ,;",
 
                                                 "  Coil:Cooling:DX:CurveFit:Performance,",
-                                                "    Coil Performance,,,,,,,,,,Electricity,Coil Mode 1,Coil Mode 2;",
+                                                "    Coil Performance,,,,,,,,,,,Electricity,Coil Mode 1,Coil Mode 2;",
 
                                                 "  Coil:Cooling:DX:CurveFit:OperatingMode,",
                                                 "    Coil Mode 1,",
@@ -224,7 +224,7 @@ TEST_F(CoilCoolingDXTest, CoilCoolingDXAlternateModePerformanceHitsSaturation)
                                                 "    ,;",
 
                                                 "  Coil:Cooling:DX:CurveFit:Performance,",
-                                                "    Coil Performance,,,,,,,,,,Electricity,Coil Mode 1,Coil Mode 2;",
+                                                "    Coil Performance,,,,,,,,,,,Electricity,Coil Mode 1,Coil Mode 2;",
 
                                                 "  Coil:Cooling:DX:CurveFit:OperatingMode,",
                                                 "    Coil Mode 1,",
@@ -637,7 +637,7 @@ TEST_F(EnergyPlusFixture, DISABLED_CoilDXCoolingVsMultiSpeed_CycFanCycCoil)
         "    ,;",
 
         "  Coil:Cooling:DX:CurveFit:Performance,",
-        "    Coil Performance,,,,,,,,,Electricity,Coil Mode 1;",
+        "    Coil Performance,,,,,,,,,,Electricity,Coil Mode 1;",
 
         "  Coil:Cooling:DX:CurveFit:OperatingMode,",
         "    Coil Mode 1,",
@@ -1054,7 +1054,7 @@ TEST_F(EnergyPlusFixture, DISABLED_CoilDXCoolingVsMultiSpeed_ContFanCycCoil)
         "    ,;",
 
         "  Coil:Cooling:DX:CurveFit:Performance,",
-        "    Coil Performance,,,,,,,,,Electricity,Coil Mode 1;",
+        "    Coil Performance,,,,,,,,,,Electricity,Coil Mode 1;",
 
         "  Coil:Cooling:DX:CurveFit:OperatingMode,",
         "    Coil Mode 1,",
@@ -1680,6 +1680,7 @@ TEST_F(CoilCoolingDXTest, CoilCoolingDX_LowerSpeedFlowSizingTest)
         "    0,                       !- Crankcase Heater Capacity {W}",
         "    ,                        !- Crankcase Heater Capacity Function of Temperature Curve Name",
         "    ,                        !- Minimum Outdoor Dry-Bulb Temperature for Compressor Operation {C}",
+        "    ,                        !- Maximum Outdoor Dry-Bulb Temperature for Compressor Operation {C}",
         "    10,                      !- Maximum Outdoor Dry-Bulb Temperature for Crankcase Heater Operation {C}",
         "    ,                        !- Unit Internal Static Air Pressure {Pa}",
         "    ,                        !- Capacity Control Method",

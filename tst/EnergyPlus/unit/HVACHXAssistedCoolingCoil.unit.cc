@@ -901,6 +901,7 @@ TEST_F(EnergyPlusFixture, HXAssistCCUnitarySystem_NewDXCoil_Processing_Test)
         "     0.0,                     !- Crankcase Heater Capacity {W}",
         "     ,                        !- Crankcase Heater Capacity Function of Temperature Curve Name",
         "     ,                        !- Minimum Outdoor Dry-Bulb Temperature for Compressor Operation {C}",
+        "     ,                        !- Maximum Outdoor Dry-Bulb Temperature for Compressor Operation {C}",
         "     10.0,                    !- Maximum Outdoor Dry-Bulb Temperature for Crankcase Heater Operation {C}",
         "     ,                        !- Unit Internal Static Air Pressure {Pa}",
         "     Continuous,              !- Capacity Control Method",

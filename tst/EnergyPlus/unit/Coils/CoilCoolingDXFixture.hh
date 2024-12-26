@@ -169,6 +169,7 @@ protected:
             " 100,                                 ", // crankcase heater capacity
             " ,                                    ", // Crankcase Heater Capacity Function of Temperature Curve Name
             " 0,                                   ", // min OAT for compressor
+            " 50,                                  ", // max OAT for compressor
             " 1,                                   ", // max OAT for basin heater
             " 100,                                 ", // static pressure
             " Continuous,                          ", // capacity control method

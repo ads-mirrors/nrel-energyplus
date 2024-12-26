@@ -2757,6 +2757,7 @@
     0.0,                     !- Crankcase Heater Capacity
     ,                        !- Crankcase Heater Capacity Function of Temperature Curve Name
     ,                        !- Minimum Outdoor Dry-Bulb Temperature for Compressor Operation
+    ,                        !- Maximum Outdoor Dry-Bulb Temperature for Compressor Operation {C}
     10.0,                    !- Maximum Outdoor Dry-Bulb Temperature for Crankcase Heater Operation
     ,                        !- Unit Internal Static Air Pressure
     Discrete,                !- Capacity Control Method

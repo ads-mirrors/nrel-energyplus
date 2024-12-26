@@ -2465,7 +2465,7 @@ namespace StandardRatings {
 
             // Calculate the rated cooling capacity for the speed using Gross Total Cooling Capacity
             // and Gross Total Cooling Capacity Fraction of the speed.
-            MSRatedTotCap.push_back(speed.rated_total_capacity); // get the capcity at each speed bymultiplying this fraCTION WITH the gross.
+            MSRatedTotCap.push_back(speed.rated_total_capacity); // get the capacity at each speed bymultiplying this fraCTION WITH the gross.
             MSCCapAirFFlow.push_back(speed.indexCapFFF);
             MSRatedEvaporatorFanPowerPerVolumeFlowRate2023.push_back(speed.rated_evap_fan_power_per_volume_flow_rate_2023);
             // Calculate the rated evap air flow rate for the speed using Rated Evaporator Air flow Rate
@@ -2517,7 +2517,7 @@ namespace StandardRatings {
             MSCCapFTemp.push_back(speed.indexCapFT);
             // Calculate the rated cooling capacity for the speed using Gross Total Cooling Capacity
             // and Gross Total Cooling Capacity Fraction of the speed.
-            MSRatedTotCap.push_back(speed.rated_total_capacity); // get the capcity at each speed bymultiplying this fraCTION WITH the gross.
+            MSRatedTotCap.push_back(speed.rated_total_capacity); // get the capacity at each speed by multiplying this fraCTION WITH the gross.
             MSCCapAirFFlow.push_back(speed.indexCapFFF);
             MSRatedEvaporatorFanPowerPerVolumeFlowRate2023.push_back(speed.rated_evap_fan_power_per_volume_flow_rate_2023);
             // Calculate the rated evap air flow rate for the speed using Rated Evaporator Air flow Rate
@@ -4256,7 +4256,7 @@ namespace StandardRatings {
 
     // q_int - Intermediate Steady State Capacity SEER2
     // p_int - Intermediate Steady State Power SEER2
-    std::tuple<Real64, Real64> IntermediateSteadyStateCpacityAndPowerSEER2(Real64 q_E_int, Real64 M_Cq, Real64 p_E_int, Real64 M_CE, Real64 t)
+    std::tuple<Real64, Real64> IntermediateSteadyStateCapacityAndPowerSEER2(Real64 q_E_int, Real64 M_Cq, Real64 p_E_int, Real64 M_CE, Real64 t)
     {
         // Equation 11.94 (AHRI-2023)
         Real64 q_int = q_E_int + M_Cq * (t - 30.55);
@@ -4478,7 +4478,7 @@ namespace StandardRatings {
                     Real64 p_E_int = P_E_Int(spnum);
                     std::tie(N_CE, M_CE) = EnergyAdjustmentFactorsInCoolingModeSEER2(p_F_low, p_B_low, BN, p_B_full, p_A_full, p_E_int);
 
-                    std::tie(q_int, p_int) = IntermediateSteadyStateCpacityAndPowerSEER2(q_E_int, M_Cq, p_E_int, M_CE, t);
+                    std::tie(q_int, p_int) = IntermediateSteadyStateCapacityAndPowerSEER2(q_E_int, M_Cq, p_E_int, M_CE, t);
 
                     // Section 11.2.1.3.1 CASE 1 - Building load is no greater than unit capacity at low speed.
                     if (BuildingCoolingLoad_2023 <= q_low) {
@@ -4534,7 +4534,7 @@ namespace StandardRatings {
 
                     std::tie(N_CE, M_CE) = EnergyAdjustmentFactorsInCoolingModeSEER2(p_F_low, p_B_low, BN, p_B_full, p_A_full, p_E_int);
 
-                    std::tie(q_int, p_int) = IntermediateSteadyStateCpacityAndPowerSEER2(q_E_int, M_Cq, p_E_int, M_CE, t);
+                    std::tie(q_int, p_int) = IntermediateSteadyStateCapacityAndPowerSEER2(q_E_int, M_Cq, p_E_int, M_CE, t);
 
                     // Section 11.2.1.3.1 CASE 1 - Building load is no greater than unit capacity at low speed.
                     if (bl <= q_low) {
@@ -4576,7 +4576,7 @@ namespace StandardRatings {
                     Real64 p_E_int = P_E_Int(spnum);
                     std::tie(N_CE, M_CE) = EnergyAdjustmentFactorsInCoolingModeSEER2(p_F_low, p_B_low, BN, p_B_full, p_A_full, p_E_int);
 
-                    std::tie(q_int, p_int) = IntermediateSteadyStateCpacityAndPowerSEER2(q_E_int, M_Cq, p_E_int, M_CE, t);
+                    std::tie(q_int, p_int) = IntermediateSteadyStateCapacityAndPowerSEER2(q_E_int, M_Cq, p_E_int, M_CE, t);
 
                     // Section 11.2.1.3.1 CASE 1 - Building load is no greater than unit capacity at low speed.
                     if (bl <= q_low) {
@@ -4617,7 +4617,7 @@ namespace StandardRatings {
                     Real64 p_E_int = P_E_Int(1);
                     std::tie(N_CE, M_CE) = EnergyAdjustmentFactorsInCoolingModeSEER2(p_F_low, p_B_low, BN, p_B_full, p_A_full, p_E_int);
 
-                    std::tie(q_int, p_int) = IntermediateSteadyStateCpacityAndPowerSEER2(q_E_int, M_Cq, p_E_int, M_CE, t);
+                    std::tie(q_int, p_int) = IntermediateSteadyStateCapacityAndPowerSEER2(q_E_int, M_Cq, p_E_int, M_CE, t);
 
                     // Section 11.2.1.3.1 CASE 1 - Building load is no greater than unit capacity at low speed.
                     if (bl <= q_low) {
@@ -4659,7 +4659,7 @@ namespace StandardRatings {
                 Real64 p_E_int = P_E_Int(1);
                 std::tie(N_CE, M_CE) = EnergyAdjustmentFactorsInCoolingModeSEER2(p_F_low, p_B_low, BN, p_B_full, p_A_full, p_E_int);
 
-                std::tie(q_int, p_int) = IntermediateSteadyStateCpacityAndPowerSEER2(q_E_int, M_Cq, p_E_int, M_CE, t);
+                std::tie(q_int, p_int) = IntermediateSteadyStateCapacityAndPowerSEER2(q_E_int, M_Cq, p_E_int, M_CE, t);
 
                 // Section 11.2.1.3.1 CASE 1 - Building load is no greater than unit capacity at low speed.
                 if (BuildingCoolingLoad_2023 <= q_low) {
@@ -5256,7 +5256,7 @@ namespace StandardRatings {
 
                 std::tie(N_CE, M_CE) = EnergyAdjustmentFactorsInCoolingModeSEER2(p_F_low, p_B_low, BN, p_B_full, p_A_full, p_E_int);
 
-                std::tie(q_int, p_int) = IntermediateSteadyStateCpacityAndPowerSEER2(q_E_int, M_Cq, p_E_int, M_CE, t);
+                std::tie(q_int, p_int) = IntermediateSteadyStateCapacityAndPowerSEER2(q_E_int, M_Cq, p_E_int, M_CE, t);
 
                 // Section 11.2.1.3.1 CASE 1 - Building load is no greater than unit capacity at low speed.
                 if (bl <= q_low) {

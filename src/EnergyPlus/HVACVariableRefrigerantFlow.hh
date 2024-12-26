@@ -354,7 +354,7 @@ namespace HVACVariableRefrigerantFlow {
         Real64 OUCondTempLow;            // VRV system outdoor unit condensing temperature, lower bound [C]
         Real64 OUCondTempHigh;           // VRV system outdoor unit condensing temperature, higher bound [C]
         Real64 OUAirFlowRate;            // Max condenser air flow rate [m3/s]
-        Real64 OUAirFlowRatePerCapcity;  // Max condenser air flow rate per Evaporative Capacity [m3/s]
+        Real64 OUAirFlowRatePerCapacity; // Max condenser air flow rate per Evaporative Capacity [m3/s]
         Real64 OUCondHeatRate;           // Outdoor Unit Condenser Heat Release Rate, excluding piping loss [W]
         Real64 OUEvapHeatRate;           // Outdoor Unit Evaporator Heat Extract Rate, excluding piping loss  [W]
         Real64 OUFanPower;               // Outdoor unit fan power at real conditions[W]
@@ -363,9 +363,9 @@ namespace HVACVariableRefrigerantFlow {
         Real64 RatedEvapCapacity;         // Rated Evaporative Capacity [W]
         Real64 RatedHeatCapacity;         // Rated Heating Capacity [W]
         Real64 RatedCompPower;            // Rated Compressor Power [W]
-        Real64 RatedCompPowerPerCapcity;  // Rated Compressor Power per Evaporative Capacity [W]
+        Real64 RatedCompPowerPerCapacity; // Rated Compressor Power per Evaporative Capacity [W]
         Real64 RatedOUFanPower;           // Outdoor unit fan power at rated conditions [W]
-        Real64 RatedOUFanPowerPerCapcity; // Rated outdoor unit fan power per Evaporative Capacity [W]
+        Real64 RatedOUFanPowerPerCapacity;// Rated outdoor unit fan power per Evaporative Capacity [W]
         Real64 RateBFOUEvap;              // Outdoor Unit Evaporator Rated Bypass Factor
         Real64 RateBFOUCond;              // Outdoor Unit Condenser Rated Bypass Factor
         Real64 RefPipDiaSuc;              // diameter of refrigerant pipe (suction gas) that links the outdoor unit to the indoor units [m]
@@ -422,8 +422,8 @@ namespace HVACVariableRefrigerantFlow {
               EffCompInverter(0.95), EvaporatingTemp(6.0), EvapTempFixed(0.0), HROUHexRatio(0.0), IUEvaporatingTemp(6.0), IUCondensingTemp(44.0),
               IUEvapTempLow(4.0), IUEvapTempHigh(15.0), IUCondTempLow(42.0), IUCondTempHigh(46.0), IUCondHeatRate(0.0), IUEvapHeatRate(0.0),
               Ncomp(0.0), NcompCooling(0.0), NcompHeating(0.0), OUEvapTempLow(-30.0), OUEvapTempHigh(20.0), OUCondTempLow(30.0), OUCondTempHigh(96.0),
-              OUAirFlowRate(0.0), OUAirFlowRatePerCapcity(0.0), OUCondHeatRate(0.0), OUEvapHeatRate(0.0), OUFanPower(0.0), RatedEvapCapacity(40000.0),
-              RatedHeatCapacity(0.0), RatedCompPower(14000.0), RatedCompPowerPerCapcity(0.35), RatedOUFanPower(0.0), RatedOUFanPowerPerCapcity(0.0),
+              OUAirFlowRate(0.0), OUAirFlowRatePerCapacity(0.0), OUCondHeatRate(0.0), OUEvapHeatRate(0.0), OUFanPower(0.0), RatedEvapCapacity(40000.0),
+              RatedHeatCapacity(0.0), RatedCompPower(14000.0), RatedCompPowerPerCapacity(0.35), RatedOUFanPower(0.0), RatedOUFanPowerPerCapacity(0.0),
               RateBFOUEvap(0.45581), RateBFOUCond(0.21900), RefPipDiaSuc(0.0), RefPipDiaDis(0.0), RefPipLen(0.0), RefPipEquLen(0.0), RefPipHei(0.0),
               RefPipInsThi(0.0), RefPipInsCon(0.0), SH(0.0), SC(0.0), SCHE(0.0), SHLow(0.0), SCLow(0.0), SHHigh(0.0), SCHigh(0.0),
               VRFOperationSimPath(0.0), checkPlantCondTypeOneTime(true), CondenserCapErrIdx(0), adjustedTe(false)

@@ -310,6 +310,7 @@ namespace UnitarySystems {
         bool m_CoolingCoilUpstream = true;
         Real64 m_MaxOATSuppHeat = 0.0;
         Real64 m_MinOATCompressorCooling = 0.0;
+        Real64 m_MaxOATCompressorCooling = 0.0;
         Real64 m_MinOATCompressorHeating = 0.0;
         Real64 m_AncillaryOnPower = 0.0;
         Real64 m_AncillaryOffPower = 0.0;

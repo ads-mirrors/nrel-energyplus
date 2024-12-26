@@ -71,6 +71,7 @@ void CoilCoolingDXCurveFitPerformance::instantiateFromInputSpec(EnergyPlus::Ener
     this->original_input_specs = input_data;
     this->name = input_data.name;
     this->minOutdoorDrybulb = input_data.minimum_outdoor_dry_bulb_temperature_for_compressor_operation;
+    this->maxOutdoorDrybulb = input_data.maximum_outdoor_dry_bulb_temperature_for_compressor_operation;
     this->maxOutdoorDrybulbForBasin = input_data.maximum_outdoor_dry_bulb_temperature_for_crankcase_heater_operation;
     this->crankcaseHeaterCap = input_data.crankcase_heater_capacity;
     this->normalMode = CoilCoolingDXCurveFitOperatingMode(state, input_data.base_operating_mode_name);

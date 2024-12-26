@@ -454,7 +454,7 @@ TEST_F(EnergyPlusFixture, DISABLED_CoilDXCoolingVsMultiSpeed_CycFanCycCoil)
     constantcurve2->outputLimits.max = 1.0;
     // set coil parameter
     Coil.MSRatedTotCap(1) = 10710.0; // 60 % of full capacity
-    Coil.MSRatedTotCap(2) = 17850.0; // 5 ton capcity
+    Coil.MSRatedTotCap(2) = 17850.0; // 5 ton capacity
     Coil.MSRatedAirMassFlowRate(1) = state->dataHVACGlobal->MSHPMassFlowRateLow;
     Coil.MSRatedAirMassFlowRate(2) = state->dataHVACGlobal->MSHPMassFlowRateHigh;
     // Match RatedCBF from new coil
@@ -870,7 +870,7 @@ TEST_F(EnergyPlusFixture, DISABLED_CoilDXCoolingVsMultiSpeed_ContFanCycCoil)
     constantcurve2->outputLimits.max = 1.0;
     // set coil parameter
     Coil.MSRatedTotCap(1) = 10710.0; // 60 % of full capacity
-    Coil.MSRatedTotCap(2) = 17850.0; // 5 ton capcity
+    Coil.MSRatedTotCap(2) = 17850.0; // 5 ton capacity
     Coil.MSRatedAirMassFlowRate(1) = state->dataHVACGlobal->MSHPMassFlowRateLow;
     Coil.MSRatedAirMassFlowRate(2) = state->dataHVACGlobal->MSHPMassFlowRateHigh;
     // Match RatedCBF from new coil
@@ -1286,7 +1286,7 @@ TEST_F(EnergyPlusFixture, DISABLED_CoilDXMultiSpeed_SpeedCheck_CycFanCycCoil)
     constantcurve2->outputLimits.max = 1.0;
     // set coil parameter
     Coil.MSRatedTotCap(1) = 10710.0; // 60 % of full capacity
-    Coil.MSRatedTotCap(2) = 17850.0; // 5 ton capcity
+    Coil.MSRatedTotCap(2) = 17850.0; // 5 ton capacity
     Coil.MSRatedAirMassFlowRate(1) = 0.6;
     Coil.MSRatedAirMassFlowRate(2) = 1.0;
     // Match RatedCBF from new coil
@@ -1517,7 +1517,7 @@ TEST_F(EnergyPlusFixture, DISABLED_CoilDXMultiSpeed_SpeedCheck_ContFanCycCoil)
     constantcurve2->outputLimits.max = 1.0;
     // set coil parameter
     Coil.MSRatedTotCap(1) = 10710.0; // 60 % of full capacity
-    Coil.MSRatedTotCap(2) = 17850.0; // 5 ton capcity
+    Coil.MSRatedTotCap(2) = 17850.0; // 5 ton capacity
     Coil.MSRatedAirMassFlowRate(1) = 0.6;
     Coil.MSRatedAirMassFlowRate(2) = 1.0;
     // Match RatedCBF from new coil

@@ -4575,6 +4575,7 @@ namespace UnitarySystems {
                         this->m_CondenserNodeNum = newCoil.condInletNodeIndex;
                         this->m_NumOfSpeedCooling = (int)newCoil.performance.normalMode.speeds.size();
                         this->m_MinOATCompressorCooling = newCoil.performance.minOutdoorDrybulb;
+                        this->m_MaxOATCompressorCooling = newCoil.performance.maxOutdoorDrybulb;
                         newCoil.supplyFanName = this->m_FanName;
                         newCoil.supplyFanIndex = this->m_FanIndex;
                         newCoil.supplyFanType = this->m_FanType;
@@ -6467,18 +6468,24 @@ namespace UnitarySystems {
         errFlag = false;
         if (this->m_CoolingCoilType_Num == HVAC::CoilDX_CoolingSingleSpeed) {
             this->m_MinOATCompressorCooling = DXCoils::GetMinOATCompressor(state, this->m_CoolingCoilIndex, errFlag);
+            this->m_MaxOATCompressorCooling = 1000.0;
         } else if (this->m_CoolingCoilType_Num == HVAC::CoilDX_CoolingTwoSpeed) {
             this->m_MinOATCompressorCooling = DXCoils::GetMinOATCompressor(state, this->m_CoolingCoilIndex, errFlag);
+            this->m_MaxOATCompressorCooling = 1000.0;
         } else if (this->m_CoolingCoilType_Num == HVAC::CoilDX_MultiSpeedCooling) {
             this->m_MinOATCompressorCooling = DXCoils::GetMinOATCompressor(state, this->m_CoolingCoilIndex, errFlag);
+            this->m_MaxOATCompressorCooling = 1000.0;
         } else if (this->m_CoolingCoilType_Num == HVAC::CoilDX_CoolingTwoStageWHumControl) {
             this->m_MinOATCompressorCooling = DXCoils::GetMinOATCompressor(state, this->m_CoolingCoilIndex, errFlag);
+            this->m_MaxOATCompressorCooling = 1000.0;
         } else if (this->m_CoolingCoilType_Num == HVAC::Coil_CoolingAirToAirVariableSpeed) {
             this->m_MinOATCompressorCooling = VariableSpeedCoils::GetVSCoilMinOATCompressor(state, this->m_CoolingCoilIndex, errFlag);
+            this->m_MaxOATCompressorCooling = 1000.0;
         } else if (this->m_CoolingCoilType_Num == HVAC::CoilDX_Cooling) {
             // already found in getInput
         } else {
             this->m_MinOATCompressorCooling = -1000.0;
+            this->m_MaxOATCompressorCooling = 1000.0;
         }
         if (errFlag) {
             ShowContinueError(state, format("Occurs in {} = {}", cCurrentModuleObject, thisObjectName));
@@ -11619,7 +11626,7 @@ namespace UnitarySystems {
             }
         } break;
         case HVAC::CoilDX_MultiSpeedCooling: { // Coil:Cooling:DX:Multispeed
-            if (OutsideDryBulbTemp > this->m_MinOATCompressorCooling) {
+            if (OutsideDryBulbTemp > this->m_MinOATCompressorCooling && OutsideDryBulbTemp < this->m_MinOATCompressorCooling) {
                 DXCoils::SimDXCoilMultiSpeed(state,
                                              CompName,
                                              this->m_CoolingSpeedRatio,
@@ -12227,8 +12234,8 @@ namespace UnitarySystems {
             // disable latent dehumidification if there is no sensible load and latent only is not allowed
             if (this->m_RunOnLatentOnlyWithSensible && !SensibleLoad) LatentLoad = false;
 
-            // disable compressor if OAT is below minimum outdoor temperature
-            if (OutdoorDryBulb < this->m_MinOATCompressorCooling) {
+            // disable compressor if OAT is below minimum outdoor temperature or above maximum outdoor temperature
+            if (OutdoorDryBulb < this->m_MinOATCompressorCooling || OutdoorDryBulb < this->m_MaxOATCompressorCooling) {
                 SensibleLoad = false;
                 LatentLoad = false;
             }

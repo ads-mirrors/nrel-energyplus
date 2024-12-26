@@ -2057,7 +2057,7 @@ namespace WaterToAirHeatPumpSimple {
                             // based on cooling design day which is used to decide if the
                             // coil needs to be sized of the heating coil size
                             //
-                            // no capcity adjustment based on system flow because the capacity could change
+                            // no capacity adjustment based on system flow because the capacity could change
                             // once the heating coil has been sized
                             state.dataSize->DXCoolCap = RatedCapCoolTotalDes;
                         } else if (companionHeatingCoil.WAHPPlantType != DataPlant::PlantEquipmentType::CoilWAHPHeatingEquationFit) {

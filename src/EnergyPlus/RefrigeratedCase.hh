@@ -875,7 +875,7 @@ namespace RefrigeratedCase {
         int InletAirNodeNum = 0;                                          // Inlet air node number, can be outside or in a zone
         int InletAirZoneNum = 0;                                          // Inlet air zone number, if located in a zone
         FanSpeedCtrlType FanSpeedControlType = FanSpeedCtrlType::Invalid; // fixed, two-speed, or variable
-        int CapCurvePtr = 0;                                              // capcity curve pointer for air-cooled condensers
+        int CapCurvePtr = 0;                                              // capacity curve pointer for air-cooled condensers
         int CascadeSysID = 0;                                             // System ID number for system rejecting heat to cascade condenser
         CascadeCndsrTempCtrlType CascadeTempControl =
             CascadeCndsrTempCtrlType::Invalid; // Determines whether cascade condenser evaporating temperature set by

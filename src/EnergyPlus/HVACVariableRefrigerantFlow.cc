@@ -2480,15 +2480,15 @@ void GetVRFInputData(EnergyPlusData &state, bool &ErrorsFound)
         }
 
         thisVrfFluidCtrl.RatedEvapCapacity = rNumericArgs(1);
-        thisVrfFluidCtrl.RatedCompPowerPerCapcity = rNumericArgs(2);
-        thisVrfFluidCtrl.RatedCompPower = thisVrfFluidCtrl.RatedCompPowerPerCapcity * thisVrfFluidCtrl.RatedEvapCapacity;
+        thisVrfFluidCtrl.RatedCompPowerPerCapacity = rNumericArgs(2);
+        thisVrfFluidCtrl.RatedCompPower = thisVrfFluidCtrl.RatedCompPowerPerCapacity * thisVrfFluidCtrl.RatedEvapCapacity;
         thisVrfFluidCtrl.CoolingCapacity = thisVrfFluidCtrl.RatedEvapCapacity;
-        thisVrfFluidCtrl.RatedHeatCapacity = thisVrfFluidCtrl.RatedEvapCapacity * (1 + thisVrfFluidCtrl.RatedCompPowerPerCapcity);
+        thisVrfFluidCtrl.RatedHeatCapacity = thisVrfFluidCtrl.RatedEvapCapacity * (1 + thisVrfFluidCtrl.RatedCompPowerPerCapacity);
         thisVrfFluidCtrl.HeatingCapacity = thisVrfFluidCtrl.RatedHeatCapacity;
 
         // Reference system COP
-        thisVrfFluidCtrl.CoolingCOP = 1 / thisVrfFluidCtrl.RatedCompPowerPerCapcity;
-        thisVrfFluidCtrl.HeatingCOP = 1 / thisVrfFluidCtrl.RatedCompPowerPerCapcity + 1;
+        thisVrfFluidCtrl.CoolingCOP = 1 / thisVrfFluidCtrl.RatedCompPowerPerCapacity;
+        thisVrfFluidCtrl.HeatingCOP = 1 / thisVrfFluidCtrl.RatedCompPowerPerCapacity + 1;
 
         // OA temperature range for VRF-HP operations
         thisVrfFluidCtrl.MinOATCooling = rNumericArgs(3);
@@ -2555,10 +2555,10 @@ void GetVRFInputData(EnergyPlusData &state, bool &ErrorsFound)
         }
 
         // Get OU fan data
-        thisVrfFluidCtrl.RatedOUFanPowerPerCapcity = rNumericArgs(15);
-        thisVrfFluidCtrl.OUAirFlowRatePerCapcity = rNumericArgs(16);
-        thisVrfFluidCtrl.RatedOUFanPower = thisVrfFluidCtrl.RatedOUFanPowerPerCapcity * thisVrfFluidCtrl.RatedEvapCapacity;
-        thisVrfFluidCtrl.OUAirFlowRate = thisVrfFluidCtrl.OUAirFlowRatePerCapcity * thisVrfFluidCtrl.RatedEvapCapacity;
+        thisVrfFluidCtrl.RatedOUFanPowerPerCapacity = rNumericArgs(15);
+        thisVrfFluidCtrl.OUAirFlowRatePerCapacity = rNumericArgs(16);
+        thisVrfFluidCtrl.RatedOUFanPower = thisVrfFluidCtrl.RatedOUFanPowerPerCapacity * thisVrfFluidCtrl.RatedEvapCapacity;
+        thisVrfFluidCtrl.OUAirFlowRate = thisVrfFluidCtrl.OUAirFlowRatePerCapacity * thisVrfFluidCtrl.RatedEvapCapacity;
 
         // OUEvapTempCurve
         int indexOUEvapTempCurve = GetCurveIndex(state, cAlphaArgs(6)); // convert curve name to index number
@@ -2877,15 +2877,15 @@ void GetVRFInputData(EnergyPlusData &state, bool &ErrorsFound)
         }
 
         thisVrfFluidCtrlHR.RatedEvapCapacity = rNumericArgs(1);
-        thisVrfFluidCtrlHR.RatedCompPowerPerCapcity = rNumericArgs(2);
-        thisVrfFluidCtrlHR.RatedCompPower = thisVrfFluidCtrlHR.RatedCompPowerPerCapcity * thisVrfFluidCtrlHR.RatedEvapCapacity;
+        thisVrfFluidCtrlHR.RatedCompPowerPerCapacity = rNumericArgs(2);
+        thisVrfFluidCtrlHR.RatedCompPower = thisVrfFluidCtrlHR.RatedCompPowerPerCapacity * thisVrfFluidCtrlHR.RatedEvapCapacity;
         thisVrfFluidCtrlHR.CoolingCapacity = thisVrfFluidCtrlHR.RatedEvapCapacity;
-        thisVrfFluidCtrlHR.HeatingCapacity = thisVrfFluidCtrlHR.RatedEvapCapacity * (1 + thisVrfFluidCtrlHR.RatedCompPowerPerCapcity);
+        thisVrfFluidCtrlHR.HeatingCapacity = thisVrfFluidCtrlHR.RatedEvapCapacity * (1 + thisVrfFluidCtrlHR.RatedCompPowerPerCapacity);
         thisVrfFluidCtrlHR.RatedHeatCapacity = thisVrfFluidCtrlHR.HeatingCapacity;
 
         // Reference system COP
-        thisVrfFluidCtrlHR.CoolingCOP = 1 / thisVrfFluidCtrlHR.RatedCompPowerPerCapcity;
-        thisVrfFluidCtrlHR.HeatingCOP = 1 / thisVrfFluidCtrlHR.RatedCompPowerPerCapcity + 1;
+        thisVrfFluidCtrlHR.CoolingCOP = 1 / thisVrfFluidCtrlHR.RatedCompPowerPerCapacity;
+        thisVrfFluidCtrlHR.HeatingCOP = 1 / thisVrfFluidCtrlHR.RatedCompPowerPerCapacity + 1;
 
         // OA temperature range for VRF-HP operations
         thisVrfFluidCtrlHR.MinOATCooling = rNumericArgs(3);
@@ -3010,10 +3010,10 @@ void GetVRFInputData(EnergyPlusData &state, bool &ErrorsFound)
         thisVrfFluidCtrlHR.HROUHexRatio = rNumericArgs(20);
 
         // Get OU fan data
-        thisVrfFluidCtrlHR.RatedOUFanPowerPerCapcity = rNumericArgs(21);
-        thisVrfFluidCtrlHR.OUAirFlowRatePerCapcity = rNumericArgs(22);
-        thisVrfFluidCtrlHR.RatedOUFanPower = thisVrfFluidCtrlHR.RatedOUFanPowerPerCapcity * thisVrfFluidCtrlHR.RatedEvapCapacity;
-        thisVrfFluidCtrlHR.OUAirFlowRate = thisVrfFluidCtrlHR.OUAirFlowRatePerCapcity * thisVrfFluidCtrlHR.RatedEvapCapacity;
+        thisVrfFluidCtrlHR.RatedOUFanPowerPerCapacity = rNumericArgs(21);
+        thisVrfFluidCtrlHR.OUAirFlowRatePerCapacity = rNumericArgs(22);
+        thisVrfFluidCtrlHR.RatedOUFanPower = thisVrfFluidCtrlHR.RatedOUFanPowerPerCapacity * thisVrfFluidCtrlHR.RatedEvapCapacity;
+        thisVrfFluidCtrlHR.OUAirFlowRate = thisVrfFluidCtrlHR.OUAirFlowRatePerCapacity * thisVrfFluidCtrlHR.RatedEvapCapacity;
 
         // OUEvapTempCurve
         int indexOUEvapTempCurve = GetCurveIndex(state, cAlphaArgs(6)); // convert curve name to index number
@@ -8608,19 +8608,19 @@ void SizeVRF(EnergyPlusData &state, int const VRFTUNum)
             if (IsAutoSize) {
                 // RatedEvapCapacity
                 state.dataHVACVarRefFlow->VRF(VRFCond).RatedEvapCapacity =
-                    max(CoolingCapacityDes, HeatingCapacityDes / (1 + state.dataHVACVarRefFlow->VRF(VRFCond).RatedCompPowerPerCapcity));
+                    max(CoolingCapacityDes, HeatingCapacityDes / (1 + state.dataHVACVarRefFlow->VRF(VRFCond).RatedCompPowerPerCapacity));
 
                 // Other parameters dependent on RatedEvapCapacity
                 state.dataHVACVarRefFlow->VRF(VRFCond).RatedCompPower =
-                    state.dataHVACVarRefFlow->VRF(VRFCond).RatedCompPowerPerCapcity * state.dataHVACVarRefFlow->VRF(VRFCond).RatedEvapCapacity;
+                    state.dataHVACVarRefFlow->VRF(VRFCond).RatedCompPowerPerCapacity * state.dataHVACVarRefFlow->VRF(VRFCond).RatedEvapCapacity;
                 state.dataHVACVarRefFlow->VRF(VRFCond).RatedOUFanPower =
-                    state.dataHVACVarRefFlow->VRF(VRFCond).RatedOUFanPowerPerCapcity * state.dataHVACVarRefFlow->VRF(VRFCond).RatedEvapCapacity;
+                    state.dataHVACVarRefFlow->VRF(VRFCond).RatedOUFanPowerPerCapacity * state.dataHVACVarRefFlow->VRF(VRFCond).RatedEvapCapacity;
                 state.dataHVACVarRefFlow->VRF(VRFCond).OUAirFlowRate =
-                    state.dataHVACVarRefFlow->VRF(VRFCond).OUAirFlowRatePerCapcity * state.dataHVACVarRefFlow->VRF(VRFCond).RatedEvapCapacity;
+                    state.dataHVACVarRefFlow->VRF(VRFCond).OUAirFlowRatePerCapacity * state.dataHVACVarRefFlow->VRF(VRFCond).RatedEvapCapacity;
 
                 state.dataHVACVarRefFlow->VRF(VRFCond).CoolingCapacity = state.dataHVACVarRefFlow->VRF(VRFCond).RatedEvapCapacity;
                 state.dataHVACVarRefFlow->VRF(VRFCond).HeatingCapacity =
-                    state.dataHVACVarRefFlow->VRF(VRFCond).RatedEvapCapacity * (1 + state.dataHVACVarRefFlow->VRF(VRFCond).RatedCompPowerPerCapcity);
+                    state.dataHVACVarRefFlow->VRF(VRFCond).RatedEvapCapacity * (1 + state.dataHVACVarRefFlow->VRF(VRFCond).RatedCompPowerPerCapacity);
 
                 BaseSizer::reportSizerOutput(state,
                                              std::string(cVRFTypes(state.dataHVACVarRefFlow->VRF(VRFCond).VRFSystemTypeNum)),

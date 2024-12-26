@@ -605,7 +605,8 @@ void CoilCoolingDX::getFixedData(int &_evapInletNodeIndex,
                                  int &_condInletNodeIndex,
                                  int &_normalModeNumSpeeds,
                                  CoilCoolingDXCurveFitPerformance::CapControlMethod &_capacityControlMethod,
-                                 Real64 &_minOutdoorDryBulb)
+                                 Real64 &_minOutdoorDryBulb,
+                                 Real64 &_maxOutdoorDryBulb)
 {
     _evapInletNodeIndex = this->evapInletNodeIndex;
     _evapOutletNodeIndex = this->evapOutletNodeIndex;
@@ -613,6 +614,7 @@ void CoilCoolingDX::getFixedData(int &_evapInletNodeIndex,
     _normalModeNumSpeeds = (int)this->performance.normalMode.speeds.size();
     _capacityControlMethod = this->performance.capControlMethod;
     _minOutdoorDryBulb = this->performance.minOutdoorDrybulb;
+    _maxOutdoorDryBulb = this->performance.maxOutdoorDrybulb;
 }
 
 void CoilCoolingDX::getDataAfterSizing(Real64 &_normalModeRatedEvapAirFlowRate,

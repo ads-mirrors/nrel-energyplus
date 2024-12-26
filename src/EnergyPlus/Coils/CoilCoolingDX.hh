@@ -98,7 +98,8 @@ struct CoilCoolingDX
                       int &condInletNodeIndex,
                       int &normalModeNumSpeeds,
                       CoilCoolingDXCurveFitPerformance::CapControlMethod &capacityControlMethod,
-                      Real64 &minOutdoorDryBulb);
+                      Real64 &minOutdoorDryBulb,
+                      Real64 &maxOutdoorDryBulb);
     void getDataAfterSizing(Real64 &normalModeRatedEvapAirFlowRate,
                             Real64 &normalModeRatedCapacity,
                             std::vector<Real64> &normalModeFlowRates,

@@ -1317,16 +1317,16 @@ TEST_F(EnergyPlusFixture, ZoneEquipmentManager_DistributeUniformPLR)
     thisZEqList.HeatingCapacity(1) = 2000.0;
     thisZEqList.HeatingCapacity(2) = 1000.0;
     thisZEqList.HeatingCapacity(3) = 500.0;
-    Real64 totHeatingCapcity = thisZEqList.HeatingCapacity(1) + thisZEqList.HeatingCapacity(2) + thisZEqList.HeatingCapacity(3);
+    Real64 totHeatingCapacity = thisZEqList.HeatingCapacity(1) + thisZEqList.HeatingCapacity(2) + thisZEqList.HeatingCapacity(3);
     // For zone equipment list, cooling capacity is negative
     thisZEqList.CoolingCapacity(1) = -1200.0;
     thisZEqList.CoolingCapacity(2) = -800.0;
     thisZEqList.CoolingCapacity(3) = -500.0;
-    Real64 totCoolingCapcity = thisZEqList.CoolingCapacity(1) + thisZEqList.CoolingCapacity(2); // only include the first two equipment for cooling
+    Real64 totCoolingCapacity = thisZEqList.CoolingCapacity(1) + thisZEqList.CoolingCapacity(2); // only include the first two equipment for cooling
 
     // UniformPLR Test 1 - Heating, FirstHVACIteration = true
     energy.TotalOutputRequired = 1000.0;
-    Real64 plr = energy.TotalOutputRequired / totHeatingCapcity;
+    Real64 plr = energy.TotalOutputRequired / totHeatingCapacity;
     energy.OutputRequiredToHeatingSP = 1000.0;
     energy.OutputRequiredToCoolingSP = 2000.0;
     bool firstHVACIteration = true;
@@ -1384,7 +1384,7 @@ TEST_F(EnergyPlusFixture, ZoneEquipmentManager_DistributeUniformPLR)
 
     // UniformPLR Test 3 - Cooling, FirstHVACIteration = true, 2 pieces of equipment are active for cooling
     energy.TotalOutputRequired = -1000.0;
-    plr = energy.TotalOutputRequired / totCoolingCapcity;
+    plr = energy.TotalOutputRequired / totCoolingCapacity;
     energy.OutputRequiredToHeatingSP = -1000.0;
     energy.OutputRequiredToCoolingSP = -2000.0;
     firstHVACIteration = true;
@@ -1539,16 +1539,16 @@ TEST_F(EnergyPlusFixture, ZoneEquipmentManager_DistributeSequentialUniformPLR)
     thisZEqList.HeatingCapacity(1) = 2000.0;
     thisZEqList.HeatingCapacity(2) = 1000.0;
     thisZEqList.HeatingCapacity(3) = 500.0;
-    Real64 totHeatingCapcity = thisZEqList.HeatingCapacity(1) + thisZEqList.HeatingCapacity(2) + thisZEqList.HeatingCapacity(3);
+    Real64 totHeatingCapacity = thisZEqList.HeatingCapacity(1) + thisZEqList.HeatingCapacity(2) + thisZEqList.HeatingCapacity(3);
     // For zone equipment list, cooling capacity is negative
     thisZEqList.CoolingCapacity(1) = -1200.0;
     thisZEqList.CoolingCapacity(2) = -800.0;
     thisZEqList.CoolingCapacity(3) = -500.0;
-    Real64 totCoolingCapcity = thisZEqList.CoolingCapacity(1) + thisZEqList.CoolingCapacity(2); // only include the first two equipment for cooling
+    Real64 totCoolingCapacity = thisZEqList.CoolingCapacity(1) + thisZEqList.CoolingCapacity(2); // only include the first two equipment for cooling
 
     // SequentialUniformPLR Test 1 - Heating, FirstHVACIteration = true
     energy.TotalOutputRequired = 1000.0;
-    Real64 plr = energy.TotalOutputRequired / totHeatingCapcity;
+    Real64 plr = energy.TotalOutputRequired / totHeatingCapacity;
     energy.OutputRequiredToHeatingSP = 1000.0;
     energy.OutputRequiredToCoolingSP = 2000.0;
     bool firstHVACIteration = true;
@@ -1654,7 +1654,7 @@ TEST_F(EnergyPlusFixture, ZoneEquipmentManager_DistributeSequentialUniformPLR)
 
     // SequentialUniformPLR Test 3 - Cooling, FirstHVACIteration = true
     energy.TotalOutputRequired = -1000.0;
-    plr = energy.TotalOutputRequired / totCoolingCapcity;
+    plr = energy.TotalOutputRequired / totCoolingCapacity;
     energy.OutputRequiredToHeatingSP = -1000.0;
     energy.OutputRequiredToCoolingSP = -2000.0;
     firstHVACIteration = true;

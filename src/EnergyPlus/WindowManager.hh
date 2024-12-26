@@ -56,7 +56,7 @@
 // EnergyPlus Headers
 #include <EnergyPlus/Data/BaseData.hh>
 #include <EnergyPlus/DataGlobals.hh>
-#include <EnergyPlus/DataHeatBalance.hh>
+#include <EnergyPlus/DataSurfaces.hh>
 #include <EnergyPlus/EnergyPlus.hh>
 #include <EnergyPlus/WindowEquivalentLayer.hh>
 #include <EnergyPlus/WindowManagerExteriorData.hh>
@@ -84,6 +84,8 @@ namespace Window {
         {1.0, 0.98480775301220802, 0.93969262078590842, 0.86602540378443871, 0.76604444311897812,
          0.64278760968653936, 0.50000000000000011, 0.34202014332566882, 0.17364817766693041, 6.123233995736766E-17};
         
+    constexpr int maxPolyCoef = 6;
+
     class CWindowModel;
     class CWindowOpticalModel;
     class CWindowConstructionsSimplified;
@@ -231,6 +233,24 @@ namespace Window {
                     Array1D<Real64> &b       // Matrix and vector in a.x = b;
     );
 
+    constexpr Real64 POLYF(Real64 const X,          // Cosine of angle of incidence
+                           std::array<Real64, 6> const &A // Polynomial coefficients
+    )
+    {
+        return (X < 0.0 || X > 1.0) ? 0.0 : (X * (A[0] + X * (A[1] + X * (A[2] + X * (A[3] + X * (A[4] + X * A[5]))))));
+    }
+
+    constexpr Real64 POLYF(Real64 const X,          // Cosine of angle of incidence
+                           Array1D<Real64> const &A // Polynomial coefficients
+    )
+    {
+        if (X < 0.0 || X > 1.0) {
+            return 0.0;
+        } else {
+            return X * (A(1) + X * (A(2) + X * (A(3) + X * (A(4) + X * (A(5) + X * A(6))))));
+        }
+    }
+        
     void WindowGasConductance(EnergyPlusData &state,
                               Real64 tleft,  // Temperature of gap surface closest to outside (K)
                               Real64 tright, // Temperature of gap surface closest to zone (K)
@@ -281,7 +301,7 @@ namespace Window {
 
     void W5LsqFit(std::array<Real64, numPhis> const &ivars, // Independent variables
                   std::array<Real64, numPhis> const &dvars,   // Dependent variables
-                  std::array<Real64, DataSurfaces::MaxPolyCoeff> &coeffs // Polynomial coeffients from fit
+                  std::array<Real64, Window::maxPolyCoef> &coeffs // Polynomial coeffients from fit
     );
 
     Real64 DiffuseAverage(std::array<Real64, numPhis> const &props); // Property value at angles of incidence

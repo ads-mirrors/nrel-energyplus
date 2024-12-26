@@ -55,6 +55,7 @@
 #include <EnergyPlus/DataWindowEquivalentLayer.hh>
 #include <EnergyPlus/EnergyPlus.hh>
 #include <EnergyPlus/Material.hh>
+#include <EnergyPlus/WindowManager.hh>
 
 namespace EnergyPlus {
 
@@ -216,10 +217,10 @@ namespace Construction {
         Real64 AbsDiffShade = 0.0;            // Diffuse solar absorptance for shade
         Real64 AbsDiffBackShade = 0.0;        // Diffuse back solar absorptance for shade
         Real64 ShadeAbsorpThermal = 0.0;      // Diffuse back thermal absorptance of shade
-        Array1D<std::array<Real64, DataSurfaces::MaxPolyCoeff>> AbsBeamCoef; // Coefficients of incidence-angle polynomial for solar
+        Array1D<std::array<Real64, Window::maxPolyCoef>> AbsBeamCoef; // Coefficients of incidence-angle polynomial for solar
         // absorptance for each solid glazing layer
-        Array1D<std::array<Real64, DataSurfaces::MaxPolyCoeff>> AbsBeamBackCoef; // As for AbsBeamCoef but for back-incident solar
-        std::array<Real64, DataSurfaces::MaxPolyCoeff> AbsBeamShadeCoef;         // Coefficients of incidence-angle polynomial for solar
+        Array1D<std::array<Real64, Window::maxPolyCoef>> AbsBeamBackCoef; // As for AbsBeamCoef but for back-incident solar
+        std::array<Real64, Window::maxPolyCoef> AbsBeamShadeCoef;         // Coefficients of incidence-angle polynomial for solar
         // absorptance of shade
         Real64 TransDiff = 0.0;           // Diffuse solar transmittance, bare glass or shade on
         Real64 TransDiffVis;              // Diffuse visible transmittance, bare glass or shade on
@@ -227,21 +228,21 @@ namespace Construction {
         Real64 ReflectSolDiffFront = 0.0; // Diffuse front solar reflectance, bare glass or shade on
         Real64 ReflectVisDiffBack = 0.0;  // Diffuse back visible reflectance, bare glass or shade on
         Real64 ReflectVisDiffFront = 0.0; // Diffuse front visible reflectance, bare glass or shade on
-        std::array<Real64, DataSurfaces::MaxPolyCoeff> TransSolBeamCoef; // Coeffs of incidence-angle polynomial for beam sol trans,
+        std::array<Real64, Window::maxPolyCoef> TransSolBeamCoef; // Coeffs of incidence-angle polynomial for beam sol trans,
         // bare glass or shade on
-        std::array<Real64, DataSurfaces::MaxPolyCoeff> TransVisBeamCoef; // Coeffs of incidence-angle polynomial for beam vis trans,
+        std::array<Real64, Window::maxPolyCoef> TransVisBeamCoef; // Coeffs of incidence-angle polynomial for beam vis trans,
         // bare glass or shade on
-        std::array<Real64, DataSurfaces::MaxPolyCoeff> ReflSolBeamFrontCoef; // Coeffs of incidence-angle polynomial for beam sol front refl,
+        std::array<Real64, Window::maxPolyCoef> ReflSolBeamFrontCoef; // Coeffs of incidence-angle polynomial for beam sol front refl,
         // bare glass or shade on
-        std::array<Real64, DataSurfaces::MaxPolyCoeff> ReflSolBeamBackCoef;    // Like ReflSolBeamFrontCoef, but for back-incident beam solar
-        Array1D<std::array<Real64, DataSurfaces::MaxPolyCoeff>> tBareSolCoef;  // Isolated glass solar transmittance coeffs of inc. angle polynomial
-        Array1D<std::array<Real64, DataSurfaces::MaxPolyCoeff>> tBareVisCoef;  // Isolated glass visible transmittance coeffs of inc. angle polynomial
-        Array1D<std::array<Real64, DataSurfaces::MaxPolyCoeff>> rfBareSolCoef; // Isolated glass front solar reflectance coeffs of inc. angle polynomial
-        Array1D<std::array<Real64, DataSurfaces::MaxPolyCoeff>> rfBareVisCoef; // Isolated glass front visible reflectance coeffs of inc. angle polynomial
-        Array1D<std::array<Real64, DataSurfaces::MaxPolyCoeff>> rbBareSolCoef; // Isolated glass back solar reflectance coeffs of inc. angle polynomial
-        Array1D<std::array<Real64, DataSurfaces::MaxPolyCoeff>> rbBareVisCoef; // Isolated glass back visible reflectance coeffs of inc. angle polynomial
-        Array1D<std::array<Real64, DataSurfaces::MaxPolyCoeff>> afBareSolCoef; // Isolated glass front solar absorptance coeffs of inc. angle polynomial
-        Array1D<std::array<Real64, DataSurfaces::MaxPolyCoeff>> abBareSolCoef; // Isolated glass back solar absorptance coeffs of inc. angle polynomial
+        std::array<Real64, Window::maxPolyCoef> ReflSolBeamBackCoef;    // Like ReflSolBeamFrontCoef, but for back-incident beam solar
+        Array1D<std::array<Real64, Window::maxPolyCoef>> tBareSolCoef;  // Isolated glass solar transmittance coeffs of inc. angle polynomial
+        Array1D<std::array<Real64, Window::maxPolyCoef>> tBareVisCoef;  // Isolated glass visible transmittance coeffs of inc. angle polynomial
+        Array1D<std::array<Real64, Window::maxPolyCoef>> rfBareSolCoef; // Isolated glass front solar reflectance coeffs of inc. angle polynomial
+        Array1D<std::array<Real64, Window::maxPolyCoef>> rfBareVisCoef; // Isolated glass front visible reflectance coeffs of inc. angle polynomial
+        Array1D<std::array<Real64, Window::maxPolyCoef>> rbBareSolCoef; // Isolated glass back solar reflectance coeffs of inc. angle polynomial
+        Array1D<std::array<Real64, Window::maxPolyCoef>> rbBareVisCoef; // Isolated glass back visible reflectance coeffs of inc. angle polynomial
+        Array1D<std::array<Real64, Window::maxPolyCoef>> afBareSolCoef; // Isolated glass front solar absorptance coeffs of inc. angle polynomial
+        Array1D<std::array<Real64, Window::maxPolyCoef>> abBareSolCoef; // Isolated glass back solar absorptance coeffs of inc. angle polynomial
         Array1D<Real64> tBareSolDiff;           // Isolated glass diffuse solar transmittance
         Array1D<Real64> tBareVisDiff;           // Isolated glass diffuse visible transmittance
         Array1D<Real64> rfBareSolDiff;          // Isolated glass diffuse solar front reflectance

@@ -54,7 +54,6 @@
 
 // ObjexxFCL Headers
 #include <ObjexxFCL/Array.functions.hh>
-#include <ObjexxFCL/Fmath.hh>
 
 // EnergyPlus Headers
 #include <EnergyPlus/Construction.hh>
@@ -66,16 +65,10 @@
 #include <EnergyPlus/DataHeatBalSurface.hh>
 #include <EnergyPlus/DataHeatBalance.hh>
 #include <EnergyPlus/DataIPShortCuts.hh>
-#include <EnergyPlus/DataLoopNode.hh>
-#include <EnergyPlus/DataSurfaces.hh>
 #include <EnergyPlus/DataWindowEquivalentLayer.hh>
-#include <EnergyPlus/DataZoneEquipment.hh>
-#include <EnergyPlus/General.hh>
-#include <EnergyPlus/HeatBalanceSurfaceManager.hh>
 #include <EnergyPlus/InputProcessing/InputProcessor.hh>
 #include <EnergyPlus/Material.hh>
 #include <EnergyPlus/Psychrometrics.hh>
-#include <EnergyPlus/ScheduleManager.hh>
 #include <EnergyPlus/UtilityRoutines.hh>
 #include <EnergyPlus/WindowComplexManager.hh>
 #include <EnergyPlus/WindowEquivalentLayer.hh>
@@ -1443,7 +1436,7 @@ namespace Window {
                     tsolPhiFit[iPhi] = 0.0;
                     tvisPhiFit[iPhi] = 0.0;
 
-                    for (int CoefNum = 0; CoefNum < DataSurfaces::MaxPolyCoeff; ++CoefNum) {
+                    for (int CoefNum = 0; CoefNum < maxPolyCoef; ++CoefNum) {
                         tsolPhiFit[iPhi] += thisConstruct.TransSolBeamCoef[CoefNum] * cosPhis[iPhi];
                         tvisPhiFit[iPhi] += thisConstruct.TransVisBeamCoef[CoefNum] * cosPhis[iPhi];
                     }
@@ -1598,7 +1591,7 @@ namespace Window {
             constr.AbsDiff = 0.0;
             constr.AbsDiffBack = 0.0;
             for (int Layer = 1; Layer <= state.dataHeatBal->MaxSolidWinLayers; ++Layer) {
-                for (int index = 0; index < DataSurfaces::MaxPolyCoeff; ++index) {
+                for (int index = 0; index < maxPolyCoef; ++index) {
                     state.dataConstruction->Construct(state.dataHeatBal->TotConstructs).AbsBeamCoef(Layer)[index] = 0.0;
                     state.dataConstruction->Construct(state.dataHeatBal->TotConstructs).AbsBeamBackCoef(Layer)[index] = 0.0;
                 }
@@ -5311,7 +5304,7 @@ namespace Window {
     //**************************************************************************
     void W5LsqFit(std::array<Real64, numPhis> const &ivars, // Independent variables
                   std::array<Real64, numPhis> const &dvars,   // Dependent variables
-                  std::array<Real64, DataSurfaces::MaxPolyCoeff> &coeffs // Polynomial coefficients from fit
+                  std::array<Real64, maxPolyCoef> &coeffs // Polynomial coefficients from fit
     )
     {
 
@@ -5328,28 +5321,28 @@ namespace Window {
         // form C1*X + C2*X**2 + C3*X**3 + ... +CN*X**N, where N <= 6.
         // Adapted from BLAST subroutine LSQFIT.
 
-        std::array<std::array<Real64, DataSurfaces::MaxPolyCoeff>, DataSurfaces::MaxPolyCoeff> A;  // Least squares derivative matrix
-        std::array<Real64, DataSurfaces::MaxPolyCoeff> B;     // Least squares derivative vector
-        std::array<std::array<Real64, 16>, DataSurfaces::MaxPolyCoeff> D; // Powers of independent variable
+        std::array<std::array<Real64, maxPolyCoef>, maxPolyCoef> A;  // Least squares derivative matrix
+        std::array<Real64, maxPolyCoef> B;     // Least squares derivative vector
+        std::array<std::array<Real64, 16>, maxPolyCoef> D; // Powers of independent variable
 
         // Set up least squares matrix
         for (int M = 0; M < numPhis; ++M) {
             D[0][M] = ivars[M];
         }
 
-        for (int i = 1; i < DataSurfaces::MaxPolyCoeff; ++i) {
+        for (int i = 1; i < maxPolyCoef; ++i) {
             for (int M = 0; M < numPhis; ++M) {
                 D[i][M] = D[i - 1][M] * ivars[M];
             }
         }
 
-        for (int i = 0; i < DataSurfaces::MaxPolyCoeff; ++i) {
+        for (int i = 0; i < maxPolyCoef; ++i) {
             Real64 SUM = 0.0;
             for (int M = 0; M < numPhis; ++M) {
                 SUM += dvars[M] * D[i][M];
             }
             B[i] = SUM;
-            for (int j = 0; j < DataSurfaces::MaxPolyCoeff; ++j) {
+            for (int j = 0; j < maxPolyCoef; ++j) {
                 Real64 SUM2 = 0.0;
                 for (int M = 0; M < numPhis; ++M) {
                     SUM2 += D[i][M] * D[j][M];
@@ -5360,26 +5353,26 @@ namespace Window {
         }
 
         // Solve the simultaneous equations using Gauss elimination
-        int order1 = DataSurfaces::MaxPolyCoeff - 1;
+        int order1 = maxPolyCoef - 1;
         for (int K = 0; K < order1; ++K) {
             int KP1 = K + 1;
-            for (int i = KP1; i < DataSurfaces::MaxPolyCoeff; ++i) {
+            for (int i = KP1; i < maxPolyCoef; ++i) {
                 Real64 ACON = A[K][i] / A[K][K];
                 B[i] -= B[K] * ACON;
-                for (int j = K; j < DataSurfaces::MaxPolyCoeff; ++j) {
+                for (int j = K; j < maxPolyCoef; ++j) {
                     A[j][i] -= A[j][K] * ACON;
                 }
             }
         }
 
         // Perform back substitution
-        coeffs[DataSurfaces::MaxPolyCoeff-1] = B[DataSurfaces::MaxPolyCoeff-1] / A[DataSurfaces::MaxPolyCoeff-1][DataSurfaces::MaxPolyCoeff-1];
-        int LP1 = DataSurfaces::MaxPolyCoeff - 1;
-        int L = DataSurfaces::MaxPolyCoeff - 2;
+        coeffs[maxPolyCoef-1] = B[maxPolyCoef-1] / A[maxPolyCoef-1][maxPolyCoef-1];
+        int LP1 = maxPolyCoef - 1;
+        int L = maxPolyCoef - 2;
 
         while (L >= 0) {
             Real64 SUM = 0.0;
-            for (int j = LP1; j < DataSurfaces::MaxPolyCoeff; ++j) {
+            for (int j = LP1; j < maxPolyCoef; ++j) {
                 SUM += A[j][L] * coeffs[j];
             }
             coeffs[L] = (B[L] - SUM) / A[L][L];
@@ -5972,11 +5965,11 @@ namespace Window {
             return;
         }
 
-        TSolNorm = General::POLYF(1.0, state.dataConstruction->Construct(ConstrNum).TransSolBeamCoef);
-        TVisNorm = General::POLYF(1.0, state.dataConstruction->Construct(ConstrNum).TransVisBeamCoef);
+        TSolNorm = POLYF(1.0, state.dataConstruction->Construct(ConstrNum).TransSolBeamCoef);
+        TVisNorm = POLYF(1.0, state.dataConstruction->Construct(ConstrNum).TransVisBeamCoef);
         AbsBeamShadeNorm = 0.0;
         if (ShadeFlag == WinShadingType::IntShade || ShadeFlag == WinShadingType::ExtShade) { // Exterior or interior shade on
-            AbsBeamShadeNorm = General::POLYF(1.0, state.dataConstruction->Construct(ConstrNum).AbsBeamShadeCoef);
+            AbsBeamShadeNorm = POLYF(1.0, state.dataConstruction->Construct(ConstrNum).AbsBeamShadeCoef);
             // Exterior blind or screen or interior blind on
         } else if (ShadeFlag == WinShadingType::IntBlind || ShadeFlag == WinShadingType::ExtBlind || ShadeFlag == WinShadingType::ExtScreen) {
             // Find unshaded construction that goes with this construction w/blind or screen
@@ -6007,8 +6000,8 @@ namespace Window {
             }
 
             auto const &constructBare = state.dataConstruction->Construct(ConstrNumBare);
-            TBmBm = General::POLYF(1.0, constructBare.TransSolBeamCoef);
-            TBmBmVis = General::POLYF(1.0, constructBare.TransVisBeamCoef);
+            TBmBm = POLYF(1.0, constructBare.TransSolBeamCoef);
+            TBmBmVis = POLYF(1.0, constructBare.TransVisBeamCoef);
 
             if (ShadeFlag == WinShadingType::ExtScreen) {
                 //   Don't need to call subroutine, use normal incident properties (SUBROUTINE CalcNominalWindowCond)
@@ -6026,8 +6019,8 @@ namespace Window {
                 RScBackVis = matScreen->ShadeRefVis;
                 RScDifBack = matScreen->DfRef;
                 RScDifBackVis = matScreen->DfRefVis;
-                RGlFront = General::POLYF(1.0, constructBare.ReflSolBeamFrontCoef);
-                RGlFrontVis = General::POLYF(1.0, constructBare.ReflSolBeamFrontCoef);
+                RGlFront = POLYF(1.0, constructBare.ReflSolBeamFrontCoef);
+                RGlFrontVis = POLYF(1.0, constructBare.ReflSolBeamFrontCoef);
                 RGlDiffFront = constructBare.ReflectSolDiffFront;
                 RGlDiffFrontVis = constructBare.ReflectVisDiffFront;
                 TSolNorm = TScBmBm * (TBmBm + TDif * RGlFront * RScBack / (1 - RGlDiffFront * RScDifBack)) +
@@ -6079,8 +6072,8 @@ namespace Window {
                                (TBlBmBm + TBlBmDifVis + TBlDifDifVis * RhoBlFrontVis * RGlDiffBackVis / (1.0 - RhoBlDiffFrontVis * RGlDiffBackVis));
 
                 } else if (ShadeFlag == WinShadingType::ExtBlind) {
-                    RGlFront = General::POLYF(1.0, constructBare.ReflSolBeamFrontCoef);
-                    RGlFrontVis = General::POLYF(1.0, constructBare.ReflSolBeamFrontCoef);
+                    RGlFront = POLYF(1.0, constructBare.ReflSolBeamFrontCoef);
+                    RGlFrontVis = POLYF(1.0, constructBare.ReflSolBeamFrontCoef);
                     AbsBlFront = blindTAR.Sol.Ft.Bm[profIdxLo].Abs;
                     AbsBlBack = blindTAR.Sol.Bk.Bm[profIdxLo].Abs;
                     AbsBlDiffBack = blindTAR.Sol.Bk.Df.Abs;
@@ -6134,20 +6127,20 @@ namespace Window {
                 wm->emis[2 * IGlass - 1] = matGlass->AbsorpThermalBack;
                 wm->tir[2 * IGlass - 2] = matGlass->TransThermal;
                 wm->tir[2 * IGlass - 1] = matGlass->TransThermal;
-                AbsBeamNorm(IGlass) = General::POLYF(1.0, state.dataConstruction->Construct(ConstrNum).AbsBeamCoef(IGlass));
+                AbsBeamNorm(IGlass) = POLYF(1.0, state.dataConstruction->Construct(ConstrNum).AbsBeamCoef(IGlass));
                 if (ShadeFlag == WinShadingType::IntBlind) { // Interior blind on
                     auto const &constructBare = state.dataConstruction->Construct(ConstrNumBare);
-                    AbsBeamNorm(IGlass) = General::POLYF(1.0, constructBare.AbsBeamCoef(IGlass));
+                    AbsBeamNorm(IGlass) = POLYF(1.0, constructBare.AbsBeamCoef(IGlass));
                     AGlDiffBack = constructBare.AbsDiffBack(IGlass);
                     AbsBeamNorm(IGlass) += TBmBm * AGlDiffBack * RhoBlFront / (1.0 - RhoBlFront * RGlDiffBack);
                 } else if (ShadeFlag == WinShadingType::ExtBlind) { // Exterior blind on
                     auto const &constructBare = state.dataConstruction->Construct(ConstrNumBare);
-                    AbsBeamNorm(IGlass) = General::POLYF(1.0, constructBare.AbsBeamCoef(IGlass));
+                    AbsBeamNorm(IGlass) = POLYF(1.0, constructBare.AbsBeamCoef(IGlass));
                     AbsBeamNorm(IGlass) = TBlBmBm * AbsBeamNorm(IGlass) + (TBlBmBm * RGlFront * RhoBlBack + TBlBmDif) *
                                                                               constructBare.AbsDiff(IGlass) / (1.0 - RGlDiffFront * RhoBlDiffBack);
                 } else if (ShadeFlag == WinShadingType::ExtScreen) { // Exterior screen on
                     auto const &constructBare = state.dataConstruction->Construct(ConstrNumBare);
-                    AbsBeamNorm(IGlass) = General::POLYF(1.0, constructBare.AbsBeamCoef(IGlass));
+                    AbsBeamNorm(IGlass) = POLYF(1.0, constructBare.AbsBeamCoef(IGlass));
                     AbsBeamNorm(IGlass) = TScBmBm * AbsBeamNorm(IGlass) + (TScBmBm * RGlFront * RScBack + TScBmDif) * constructBare.AbsDiff(IGlass) /
                                                                               (1.0 - RGlDiffFront * RScDifBack);
                 }

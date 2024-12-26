@@ -79,7 +79,6 @@
 #include <EnergyPlus/EMSManager.hh>
 #include <EnergyPlus/EconomicTariff.hh>
 #include <EnergyPlus/FileSystem.hh>
-#include <EnergyPlus/General.hh>
 #include <EnergyPlus/GlobalNames.hh>
 #include <EnergyPlus/HVACSizingSimulationManager.hh>
 #include <EnergyPlus/HVACSystemRootFindingAlgorithm.hh>
@@ -3592,7 +3591,6 @@ namespace HeatBalanceManager {
         // Using/Aliasing
         using namespace DataStringGlobals;
         using DataSystemVariables::CheckForActualFilePath;
-        using General::POLYF; // POLYF       ! Polynomial in cosine of angle of incidence
 
         // SUBROUTINE PARAMETER DEFINITIONS:
         Array1D_string const NumName(5, {"1", "2", "3", "4", "5"});
@@ -4353,11 +4351,11 @@ namespace HeatBalanceManager {
 
                 // For comparing fitted vs. input distribution in incidence angle
                 for (int iPhi = 0; iPhi < Window::numPhis; ++iPhi) {
-                    tsolFit[iPhi] = POLYF(Window::cosPhis[iPhi], thisConstruct.TransSolBeamCoef);
-                    tvisFit[iPhi] = POLYF(Window::cosPhis[iPhi], thisConstruct.TransVisBeamCoef);
-                    rfsolFit[iPhi] = POLYF(Window::cosPhis[iPhi], thisConstruct.ReflSolBeamFrontCoef);
+                    tsolFit[iPhi] = Window::POLYF(Window::cosPhis[iPhi], thisConstruct.TransSolBeamCoef);
+                    tvisFit[iPhi] = Window::POLYF(Window::cosPhis[iPhi], thisConstruct.TransVisBeamCoef);
+                    rfsolFit[iPhi] = Window::POLYF(Window::cosPhis[iPhi], thisConstruct.ReflSolBeamFrontCoef);
                     for (IGlass = 1; IGlass <= NGlass(IGlSys); ++IGlass) {
-                            solabsFit(IGlass)[iPhi] = POLYF(Window::cosPhis[iPhi], thisConstruct.AbsBeamCoef(IGlass));
+                            solabsFit(IGlass)[iPhi] = Window::POLYF(Window::cosPhis[iPhi], thisConstruct.AbsBeamCoef(IGlass));
                     }
                 }
                 // end

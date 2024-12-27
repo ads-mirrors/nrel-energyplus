@@ -360,29 +360,29 @@ namespace HVACVariableRefrigerantFlow {
         Real64 OUFanPower;               // Outdoor unit fan power at real conditions[W]
         std::string refrigName;          // Name of refrigerant, must match name in FluidName (see fluidpropertiesrefdata.idf)
         FluidProperties::RefrigProps *refrig;
-        Real64 RatedEvapCapacity;         // Rated Evaporative Capacity [W]
-        Real64 RatedHeatCapacity;         // Rated Heating Capacity [W]
-        Real64 RatedCompPower;            // Rated Compressor Power [W]
-        Real64 RatedCompPowerPerCapacity; // Rated Compressor Power per Evaporative Capacity [W]
-        Real64 RatedOUFanPower;           // Outdoor unit fan power at rated conditions [W]
-        Real64 RatedOUFanPowerPerCapacity;// Rated outdoor unit fan power per Evaporative Capacity [W]
-        Real64 RateBFOUEvap;              // Outdoor Unit Evaporator Rated Bypass Factor
-        Real64 RateBFOUCond;              // Outdoor Unit Condenser Rated Bypass Factor
-        Real64 RefPipDiaSuc;              // diameter of refrigerant pipe (suction gas) that links the outdoor unit to the indoor units [m]
-        Real64 RefPipDiaDis;              // diameter of refrigerant pipe (discharge gas) that links the outdoor unit to the indoor units [m]
-        Real64 RefPipLen;                 // length of refrigerant pipe that links the outdoor unit to the indoor units [m]
-        Real64 RefPipEquLen;              // Equivalent length of refrigerant pipe for pressure drop calculations [m]
-        Real64 RefPipHei;                 // height of refrigerant pipe that links the outdoor unit to the indoor units [m]
-        Real64 RefPipInsThi;              // thickness of refrigerant pipe insulation [m]
-        Real64 RefPipInsCon;              // thermal conductivity of refrigerant pipe insulation [W/mk]
-        Real64 SH;                        // VRF outdoor unit superheating degrees [C]
-        Real64 SC;                        // VRF outdoor unit subcooling degrees [C]
-        Real64 SCHE;                      // Simultaneous Cooling and Heating Efficiency [Btu/h/W]
-        Real64 SHLow;                     // VRF outdoor unit superheating degrees lower limit [C]
-        Real64 SCLow;                     // VRF outdoor unit subcooling degrees lower limit [C]
-        Real64 SHHigh;                    // VRF outdoor unit superheating degrees uppler limit [C]
-        Real64 SCHigh;                    // VRF outdoor unit subcooling degrees uppler limit [C]
-        Real64 VRFOperationSimPath;       // simulation path indicating the VRF operation mode [--]
+        Real64 RatedEvapCapacity;          // Rated Evaporative Capacity [W]
+        Real64 RatedHeatCapacity;          // Rated Heating Capacity [W]
+        Real64 RatedCompPower;             // Rated Compressor Power [W]
+        Real64 RatedCompPowerPerCapacity;  // Rated Compressor Power per Evaporative Capacity [W]
+        Real64 RatedOUFanPower;            // Outdoor unit fan power at rated conditions [W]
+        Real64 RatedOUFanPowerPerCapacity; // Rated outdoor unit fan power per Evaporative Capacity [W]
+        Real64 RateBFOUEvap;               // Outdoor Unit Evaporator Rated Bypass Factor
+        Real64 RateBFOUCond;               // Outdoor Unit Condenser Rated Bypass Factor
+        Real64 RefPipDiaSuc;               // diameter of refrigerant pipe (suction gas) that links the outdoor unit to the indoor units [m]
+        Real64 RefPipDiaDis;               // diameter of refrigerant pipe (discharge gas) that links the outdoor unit to the indoor units [m]
+        Real64 RefPipLen;                  // length of refrigerant pipe that links the outdoor unit to the indoor units [m]
+        Real64 RefPipEquLen;               // Equivalent length of refrigerant pipe for pressure drop calculations [m]
+        Real64 RefPipHei;                  // height of refrigerant pipe that links the outdoor unit to the indoor units [m]
+        Real64 RefPipInsThi;               // thickness of refrigerant pipe insulation [m]
+        Real64 RefPipInsCon;               // thermal conductivity of refrigerant pipe insulation [W/mk]
+        Real64 SH;                         // VRF outdoor unit superheating degrees [C]
+        Real64 SC;                         // VRF outdoor unit subcooling degrees [C]
+        Real64 SCHE;                       // Simultaneous Cooling and Heating Efficiency [Btu/h/W]
+        Real64 SHLow;                      // VRF outdoor unit superheating degrees lower limit [C]
+        Real64 SCLow;                      // VRF outdoor unit subcooling degrees lower limit [C]
+        Real64 SHHigh;                     // VRF outdoor unit superheating degrees uppler limit [C]
+        Real64 SCHigh;                     // VRF outdoor unit subcooling degrees uppler limit [C]
+        Real64 VRFOperationSimPath;        // simulation path indicating the VRF operation mode [--]
         bool checkPlantCondTypeOneTime;
         int CondenserCapErrIdx; // recurring condenser capacity error index
         bool adjustedTe;
@@ -422,11 +422,11 @@ namespace HVACVariableRefrigerantFlow {
               EffCompInverter(0.95), EvaporatingTemp(6.0), EvapTempFixed(0.0), HROUHexRatio(0.0), IUEvaporatingTemp(6.0), IUCondensingTemp(44.0),
               IUEvapTempLow(4.0), IUEvapTempHigh(15.0), IUCondTempLow(42.0), IUCondTempHigh(46.0), IUCondHeatRate(0.0), IUEvapHeatRate(0.0),
               Ncomp(0.0), NcompCooling(0.0), NcompHeating(0.0), OUEvapTempLow(-30.0), OUEvapTempHigh(20.0), OUCondTempLow(30.0), OUCondTempHigh(96.0),
-              OUAirFlowRate(0.0), OUAirFlowRatePerCapacity(0.0), OUCondHeatRate(0.0), OUEvapHeatRate(0.0), OUFanPower(0.0), RatedEvapCapacity(40000.0),
-              RatedHeatCapacity(0.0), RatedCompPower(14000.0), RatedCompPowerPerCapacity(0.35), RatedOUFanPower(0.0), RatedOUFanPowerPerCapacity(0.0),
-              RateBFOUEvap(0.45581), RateBFOUCond(0.21900), RefPipDiaSuc(0.0), RefPipDiaDis(0.0), RefPipLen(0.0), RefPipEquLen(0.0), RefPipHei(0.0),
-              RefPipInsThi(0.0), RefPipInsCon(0.0), SH(0.0), SC(0.0), SCHE(0.0), SHLow(0.0), SCLow(0.0), SHHigh(0.0), SCHigh(0.0),
-              VRFOperationSimPath(0.0), checkPlantCondTypeOneTime(true), CondenserCapErrIdx(0), adjustedTe(false)
+              OUAirFlowRate(0.0), OUAirFlowRatePerCapacity(0.0), OUCondHeatRate(0.0), OUEvapHeatRate(0.0), OUFanPower(0.0),
+              RatedEvapCapacity(40000.0), RatedHeatCapacity(0.0), RatedCompPower(14000.0), RatedCompPowerPerCapacity(0.35), RatedOUFanPower(0.0),
+              RatedOUFanPowerPerCapacity(0.0), RateBFOUEvap(0.45581), RateBFOUCond(0.21900), RefPipDiaSuc(0.0), RefPipDiaDis(0.0), RefPipLen(0.0),
+              RefPipEquLen(0.0), RefPipHei(0.0), RefPipInsThi(0.0), RefPipInsCon(0.0), SH(0.0), SC(0.0), SCHE(0.0), SHLow(0.0), SCLow(0.0),
+              SHHigh(0.0), SCHigh(0.0), VRFOperationSimPath(0.0), checkPlantCondTypeOneTime(true), CondenserCapErrIdx(0), adjustedTe(false)
         {
         }
 

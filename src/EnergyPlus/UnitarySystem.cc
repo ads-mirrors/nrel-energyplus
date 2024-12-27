@@ -11626,7 +11626,7 @@ namespace UnitarySystems {
             }
         } break;
         case HVAC::CoilDX_MultiSpeedCooling: { // Coil:Cooling:DX:Multispeed
-            if (OutsideDryBulbTemp > this->m_MinOATCompressorCooling && OutsideDryBulbTemp < this->m_MinOATCompressorCooling) {
+            if (OutsideDryBulbTemp > this->m_MinOATCompressorCooling && OutsideDryBulbTemp < this->m_MaxOATCompressorCooling) {
                 DXCoils::SimDXCoilMultiSpeed(state,
                                              CompName,
                                              this->m_CoolingSpeedRatio,
@@ -12235,7 +12235,7 @@ namespace UnitarySystems {
             if (this->m_RunOnLatentOnlyWithSensible && !SensibleLoad) LatentLoad = false;
 
             // disable compressor if OAT is below minimum outdoor temperature or above maximum outdoor temperature
-            if (OutdoorDryBulb < this->m_MinOATCompressorCooling || OutdoorDryBulb < this->m_MaxOATCompressorCooling) {
+            if (OutdoorDryBulb < this->m_MinOATCompressorCooling || OutdoorDryBulb > this->m_MaxOATCompressorCooling) {
                 SensibleLoad = false;
                 LatentLoad = false;
             }

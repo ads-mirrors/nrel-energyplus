@@ -384,6 +384,13 @@ SUBROUTINE CreateNewIDFUsingRules(EndOfFile,DiffOnly,InLfn,AskForInput,InputFile
               ! If your original object starts with A, insert the rules here
 
               ! If your original object starts with C, insert the rules here
+              CASE('COIL:COOLING:DX:CURVEFIT:PERFORMANCE')
+                CALL GetNewObjectDefInIDD(ObjectName,NwNumArgs,NwAorN,NwReqFld,NwObjMinFlds,NwFldNames,NwFldDefaults,NwFldUnits)
+                nodiff=.false.
+                OutArgs(1:3)=InArgs(1:3)
+                OutArgs(4) = ''  ! new Maximum Outdoor Dry-Bulb Temperature for Compressor Operation field
+                OutArgs(5:CurArgs+1)=InArgs(4:CurArgs)
+                CurArgs = CurArgs + 1
 
               ! If your original object starts with D, insert the rules here
 

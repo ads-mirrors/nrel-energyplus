@@ -66,7 +66,7 @@ using namespace EnergyPlus;
 void CoilCoolingDXCurveFitPerformance::instantiateFromInputSpec(EnergyPlus::EnergyPlusData &state,
                                                                 const CoilCoolingDXCurveFitPerformanceInputSpecification &input_data)
 {
-    static constexpr std::string_view routineName("CoilCoolingDXCurveFitOperatingMode::instantiateFromInputSpec: ");
+    static constexpr std::string_view routineName("CoilCoolingDXCurveFitPerformance::instantiateFromInputSpec: ");
     bool errorsFound(false);
     this->original_input_specs = input_data;
     this->name = input_data.name;
@@ -171,18 +171,19 @@ CoilCoolingDXCurveFitPerformance::CoilCoolingDXCurveFitPerformance(EnergyPlus::E
         input_specs.name = state.dataIPShortCut->cAlphaArgs(1);
         input_specs.crankcase_heater_capacity = state.dataIPShortCut->rNumericArgs(1);
         input_specs.minimum_outdoor_dry_bulb_temperature_for_compressor_operation = state.dataIPShortCut->rNumericArgs(2);
-        input_specs.maximum_outdoor_dry_bulb_temperature_for_crankcase_heater_operation = state.dataIPShortCut->rNumericArgs(3);
+        input_specs.maximum_outdoor_dry_bulb_temperature_for_compressor_operation = state.dataIPShortCut->rNumericArgs(3);
+        input_specs.maximum_outdoor_dry_bulb_temperature_for_crankcase_heater_operation = state.dataIPShortCut->rNumericArgs(4);
         if (state.dataIPShortCut->lNumericFieldBlanks(4)) {
             input_specs.unit_internal_static_air_pressure = 0.0;
         } else {
-            input_specs.unit_internal_static_air_pressure = state.dataIPShortCut->rNumericArgs(4);
+            input_specs.unit_internal_static_air_pressure = state.dataIPShortCut->rNumericArgs(5);
         }
         if (!state.dataIPShortCut->lAlphaFieldBlanks(2)) {
             input_specs.outdoor_temperature_dependent_crankcase_heater_capacity_curve_name = state.dataIPShortCut->cAlphaArgs(2);
         }
         input_specs.capacity_control = state.dataIPShortCut->cAlphaArgs(3);
-        input_specs.basin_heater_capacity = state.dataIPShortCut->rNumericArgs(5);
-        input_specs.basin_heater_setpoint_temperature = state.dataIPShortCut->rNumericArgs(6);
+        input_specs.basin_heater_capacity = state.dataIPShortCut->rNumericArgs(6);
+        input_specs.basin_heater_setpoint_temperature = state.dataIPShortCut->rNumericArgs(7);
         input_specs.basin_heater_operating_schedule_name = state.dataIPShortCut->cAlphaArgs(4);
         input_specs.compressor_fuel_type = state.dataIPShortCut->cAlphaArgs(5);
         input_specs.base_operating_mode_name = state.dataIPShortCut->cAlphaArgs(6);

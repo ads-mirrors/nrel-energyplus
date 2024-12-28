@@ -353,8 +353,6 @@ namespace Window {
             if (thisConstruct.WindowTypeEQL) continue;  // skip Equivalent Layer Fenestration
             // handling of optical properties
 
-            constexpr int TotalIPhi = 10;
-
             TotLay = thisConstruct.TotLayers;
 
             auto const *mat = s_mat->materials(thisConstruct.LayerPoint(1));
@@ -629,22 +627,17 @@ namespace Window {
                 }
             } // End of loop over glass layers in the construction for front calculation
 
-            if (TotalIPhi > numPhis) {
-                ShowSevereError(state,
-                                format("WindowManage::InitGlassOpticalCalculations = {}, Invalid maximum value of common incident angles = {}.",
-                                       thisConstruct.Name,
-                                       TotalIPhi));
-                ShowContinueError(
-                    state,
-                    format("The maximum number of incident angles for each construct is {}. Please rearrange the dataset.", numPhis));
-                ShowFatalError(state, "Errors found getting inputs. Previous error(s) cause program termination.");
-            }
-
             // Loop over incidence angle from 0 to 90 deg in 10 deg increments.
             // Get glass layer properties, then glazing system properties (which include the
             // effect of inter-reflection among glass layers) at each incidence angle.
 
-            for (int iPhi = 0; iPhi < TotalIPhi; ++iPhi) {
+	    // Apparently, using pre-calcaulated and hard-coded cosPhis (e.g., Window::cosPhis) causes a bunch of
+	    // diffs, including some big ones
+	    std::array<Real64, numPhis> cosPhisLocal;
+	    
+            for (int iPhi = 0; iPhi < numPhis; ++iPhi) cosPhisLocal[iPhi] = std::cos((double)iPhi * dPhiDeg * Constant::DegToRad);
+	    
+            for (int iPhi = 0; iPhi < numPhis; ++iPhi) {
                 // For each wavelength, get glass layer properties at this angle of incidence
                 // from properties at normal incidence
                 for (int IGlass = 1; IGlass <= NGlass; ++IGlass) {
@@ -653,7 +646,7 @@ namespace Window {
                     assert(matGlass != nullptr);
                     if (matGlass->windowOpticalData != Window::OpticalDataModel::SpectralAndAngle) {
                         for (int ILam = 1; ILam <= numpt[IGlass - 1]; ++ILam) {
-                            TransAndReflAtPhi(cosPhis[iPhi],
+                            TransAndReflAtPhi(cosPhisLocal[iPhi],
                                               t[IGlass - 1][ILam - 1],
                                               rff[IGlass - 1][ILam - 1],
                                               rbb[IGlass - 1][ILam - 1],
@@ -731,14 +724,14 @@ namespace Window {
             //  only used by between-glass shades or blinds
             if (AllGlassIsSpectralAverage) {
                 for (int IGlass = 1; IGlass <= NGlass; ++IGlass) {
-                    W5LsqFit(cosPhis, tBareSolPhi(IGlass), thisConstruct.tBareSolCoef(IGlass));
-                    W5LsqFit(cosPhis, tBareVisPhi(IGlass), thisConstruct.tBareVisCoef(IGlass));
-                    W5LsqFit(cosPhis, rfBareSolPhi(IGlass), thisConstruct.rfBareSolCoef(IGlass));
-                    W5LsqFit(cosPhis, rfBareVisPhi(IGlass), thisConstruct.rfBareVisCoef(IGlass));
-                    W5LsqFit(cosPhis, rbBareSolPhi(IGlass), thisConstruct.rbBareSolCoef(IGlass));
-                    W5LsqFit(cosPhis, rbBareVisPhi(IGlass), thisConstruct.rbBareVisCoef(IGlass));
-                    W5LsqFit(cosPhis, afBareSolPhi(IGlass), thisConstruct.afBareSolCoef(IGlass));
-                    W5LsqFit(cosPhis, abBareSolPhi(IGlass), thisConstruct.abBareSolCoef(IGlass));
+                    W5LsqFit(cosPhisLocal, tBareSolPhi(IGlass), thisConstruct.tBareSolCoef(IGlass));
+                    W5LsqFit(cosPhisLocal, tBareVisPhi(IGlass), thisConstruct.tBareVisCoef(IGlass));
+                    W5LsqFit(cosPhisLocal, rfBareSolPhi(IGlass), thisConstruct.rfBareSolCoef(IGlass));
+                    W5LsqFit(cosPhisLocal, rfBareVisPhi(IGlass), thisConstruct.rfBareVisCoef(IGlass));
+                    W5LsqFit(cosPhisLocal, rbBareSolPhi(IGlass), thisConstruct.rbBareSolCoef(IGlass));
+                    W5LsqFit(cosPhisLocal, rbBareVisPhi(IGlass), thisConstruct.rbBareVisCoef(IGlass));
+                    W5LsqFit(cosPhisLocal, afBareSolPhi(IGlass), thisConstruct.afBareSolCoef(IGlass));
+                    W5LsqFit(cosPhisLocal, abBareSolPhi(IGlass), thisConstruct.abBareSolCoef(IGlass));
                 }
             }
 
@@ -840,7 +833,7 @@ namespace Window {
             // The glazing system properties include the effect of inter-reflection among glass layers,
             // but exclude the effect of a shade or blind if present in the construction.
             // When a construction has a layer = SpectralAndAngle, the 10 degree increment will be overridden.
-            for (int iPhi = 0; iPhi < TotalIPhi; ++iPhi) {
+            for (int iPhi = 0; iPhi < numPhis; ++iPhi) {
                 // For each wavelength, get glass layer properties at this angle of incidence
                 // from properties at normal incidence
                 for (int IGlass = 1; IGlass <= NGlass; ++IGlass) {
@@ -850,7 +843,7 @@ namespace Window {
                     if (matGlass->windowOpticalData != Window::OpticalDataModel::SpectralAndAngle) {
                         for (int ILam = 1; ILam <= numpt[IGlass - 1]; ++ILam) {
 
-                            TransAndReflAtPhi(cosPhis[iPhi],
+                            TransAndReflAtPhi(cosPhisLocal[iPhi],
                                               t[IGlass - 1][ILam - 1],
                                               rff[IGlass - 1][ILam - 1],
                                               rbb[IGlass - 1][ILam - 1],
@@ -935,7 +928,7 @@ namespace Window {
                 ShadeReflFacVis = 1.0 / (1.0 - ShadeReflVis * constr.ReflectVisDiffBack);
 
                 // Front incident solar, beam, interior shade
-                for (int iPhi = 0; iPhi < TotalIPhi; ++iPhi) {
+                for (int iPhi = 0; iPhi < numPhis; ++iPhi) {
                     for (int IGlass = 1; IGlass <= NGlass; ++IGlass) {
                         solabsPhi(IGlass)[iPhi] += tsolPhi[iPhi] * ShadeRefl * ShadeReflFac * constr.AbsDiffBack(IGlass);
                     }
@@ -984,7 +977,7 @@ namespace Window {
                 ShadeReflFac = 1.0 / (1.0 - ShadeRefl * constr.ReflectSolDiffFront);
                 ShadeReflFacVis = 1.0 / (1.0 - ShadeReflVis * constr.ReflectVisDiffFront);
 
-                for (int iPhi = 0; iPhi < TotalIPhi; ++iPhi) {
+                for (int iPhi = 0; iPhi < numPhis; ++iPhi) {
                     for (int IGlass = 1; IGlass <= NGlass; ++IGlass) {
                         solabsPhi(IGlass)[iPhi] = ShadeTrans * solabsDiff(IGlass) * ShadeReflFac;
                     }
@@ -1052,7 +1045,7 @@ namespace Window {
 
                     // Front incident solar, beam, between-glass shade, NGlass = 2
 
-                    for (int iPhi = 0; iPhi < TotalIPhi; ++iPhi) {
+                    for (int iPhi = 0; iPhi < numPhis; ++iPhi) {
                         t1 = tBareSolPhi(1)[iPhi];
                         t1v = tBareVisPhi(1)[iPhi];
                         af1 = afBareSolPhi(1)[iPhi];
@@ -1095,7 +1088,7 @@ namespace Window {
 
                     // Front incident solar, beam, between-glass shade, NGlass = 3
 
-                    for (int iPhi = 0; iPhi < TotalIPhi; ++iPhi) {
+                    for (int iPhi = 0; iPhi < numPhis; ++iPhi) {
                         t1 = tBareSolPhi(1)[iPhi];
                         t1v = tBareVisPhi(1)[iPhi];
                         t2 = tBareSolPhi(2)[iPhi];
@@ -1416,34 +1409,34 @@ namespace Window {
             // visible transmittance as polynomials in cosine of incidence angle
 
             if (!BlindOn && !ScreenOn) { // Bare glass or shade on
-                W5LsqFit(cosPhis, tsolPhi, thisConstruct.TransSolBeamCoef);
-                W5LsqFit(cosPhis, rfsolPhi, thisConstruct.ReflSolBeamFrontCoef);
-                W5LsqFit(cosPhis, rbsolPhi, thisConstruct.ReflSolBeamBackCoef);
-                W5LsqFit(cosPhis, tvisPhi, thisConstruct.TransVisBeamCoef);
+                W5LsqFit(cosPhisLocal, tsolPhi, thisConstruct.TransSolBeamCoef);
+                W5LsqFit(cosPhisLocal, rfsolPhi, thisConstruct.ReflSolBeamFrontCoef);
+                W5LsqFit(cosPhisLocal, rbsolPhi, thisConstruct.ReflSolBeamBackCoef);
+                W5LsqFit(cosPhisLocal, tvisPhi, thisConstruct.TransVisBeamCoef);
 
                 for (int IGlass = 1; IGlass <= NGlass; ++IGlass) {
                     // Front absorptance coefficients for glass layers
-                    W5LsqFit(cosPhis, solabsPhi(IGlass), thisConstruct.AbsBeamCoef(IGlass));
+                    W5LsqFit(cosPhisLocal, solabsPhi(IGlass), thisConstruct.AbsBeamCoef(IGlass));
 
                     // Back absorptance coefficients for glass layers
                     IGlassBack = NGlass - IGlass + 1;
-                    W5LsqFit(cosPhis, solabsBackPhi(IGlassBack), thisConstruct.AbsBeamBackCoef(IGlass));
+                    W5LsqFit(cosPhisLocal, solabsBackPhi(IGlassBack), thisConstruct.AbsBeamBackCoef(IGlass));
                 }
 
                 // To check goodness of fit //Tuned
 
-                for (int iPhi = 0; iPhi < TotalIPhi; ++iPhi) {
+                for (int iPhi = 0; iPhi < numPhis; ++iPhi) {
                     tsolPhiFit[iPhi] = 0.0;
                     tvisPhiFit[iPhi] = 0.0;
 
                     for (int CoefNum = 0; CoefNum < maxPolyCoef; ++CoefNum) {
-                        tsolPhiFit[iPhi] += thisConstruct.TransSolBeamCoef[CoefNum] * cosPhis[iPhi];
-                        tvisPhiFit[iPhi] += thisConstruct.TransVisBeamCoef[CoefNum] * cosPhis[iPhi];
+                        tsolPhiFit[iPhi] += thisConstruct.TransSolBeamCoef[CoefNum] * cosPhisLocal[iPhi];
+                        tvisPhiFit[iPhi] += thisConstruct.TransVisBeamCoef[CoefNum] * cosPhisLocal[iPhi];
                     }
                 }
             }
 
-            if (ShadeOn) W5LsqFit(cosPhis, solabsShadePhi, thisConstruct.AbsBeamShadeCoef);
+            if (ShadeOn) W5LsqFit(cosPhisLocal, solabsShadePhi, thisConstruct.AbsBeamShadeCoef);
 
         } // End of loop over constructions
 

@@ -220,21 +220,17 @@ namespace Construction {
         Array1D<std::array<Real64, Window::maxPolyCoef>> AbsBeamCoef; // Coefficients of incidence-angle polynomial for solar
         // absorptance for each solid glazing layer
         Array1D<std::array<Real64, Window::maxPolyCoef>> AbsBeamBackCoef; // As for AbsBeamCoef but for back-incident solar
-        std::array<Real64, Window::maxPolyCoef> AbsBeamShadeCoef;         // Coefficients of incidence-angle polynomial for solar
-        // absorptance of shade
+        std::array<Real64, Window::maxPolyCoef> AbsBeamShadeCoef  = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}; // Shade abs inc-angle coefs
         Real64 TransDiff = 0.0;           // Diffuse solar transmittance, bare glass or shade on
         Real64 TransDiffVis;              // Diffuse visible transmittance, bare glass or shade on
         Real64 ReflectSolDiffBack = 0.0;  // Diffuse back solar reflectance, bare glass or shade on
         Real64 ReflectSolDiffFront = 0.0; // Diffuse front solar reflectance, bare glass or shade on
         Real64 ReflectVisDiffBack = 0.0;  // Diffuse back visible reflectance, bare glass or shade on
         Real64 ReflectVisDiffFront = 0.0; // Diffuse front visible reflectance, bare glass or shade on
-        std::array<Real64, Window::maxPolyCoef> TransSolBeamCoef; // Coeffs of incidence-angle polynomial for beam sol trans,
-        // bare glass or shade on
-        std::array<Real64, Window::maxPolyCoef> TransVisBeamCoef; // Coeffs of incidence-angle polynomial for beam vis trans,
-        // bare glass or shade on
-        std::array<Real64, Window::maxPolyCoef> ReflSolBeamFrontCoef; // Coeffs of incidence-angle polynomial for beam sol front refl,
-        // bare glass or shade on
-        std::array<Real64, Window::maxPolyCoef> ReflSolBeamBackCoef;    // Like ReflSolBeamFrontCoef, but for back-incident beam solar
+        std::array<Real64, Window::maxPolyCoef> TransSolBeamCoef = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}; // beam sol trans inc-angle coefs
+        std::array<Real64, Window::maxPolyCoef> TransVisBeamCoef = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}; // beam vis trans inc-angle coefs
+        std::array<Real64, Window::maxPolyCoef> ReflSolBeamFrontCoef = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}; // beam sol ref front inc-angle coefs
+        std::array<Real64, Window::maxPolyCoef> ReflSolBeamBackCoef = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}; // beam sol ref back inc-angle coefs
         Array1D<std::array<Real64, Window::maxPolyCoef>> tBareSolCoef;  // Isolated glass solar transmittance coeffs of inc. angle polynomial
         Array1D<std::array<Real64, Window::maxPolyCoef>> tBareVisCoef;  // Isolated glass visible transmittance coeffs of inc. angle polynomial
         Array1D<std::array<Real64, Window::maxPolyCoef>> rfBareSolCoef; // Isolated glass front solar reflectance coeffs of inc. angle polynomial

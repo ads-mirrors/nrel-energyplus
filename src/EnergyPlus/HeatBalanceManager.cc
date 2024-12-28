@@ -4342,6 +4342,7 @@ namespace HeatBalanceManager {
                 thisConstruct.ReflectVisDiffFront = RfvisTemp(11);
                 thisConstruct.ReflectVisDiffBack = RbvisTemp(11);
 
+		// Using pre-calculated/hard-coded cosPhis in this module is okay.  Shrug.
                 Window::W5LsqFit(Window::cosPhis, Tsol, thisConstruct.TransSolBeamCoef);
                 Window::W5LsqFit(Window::cosPhis, Tvis, thisConstruct.TransVisBeamCoef);
                 Window::W5LsqFit(Window::cosPhis, Rfsol, thisConstruct.ReflSolBeamFrontCoef);

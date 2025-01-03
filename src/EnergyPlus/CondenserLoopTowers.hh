@@ -195,7 +195,6 @@ namespace CondenserLoopTowers {
         int WaterOutletNodeNum = 0;                    // Node number on the water outlet side of the tower
         int OutdoorAirInletNodeNum = 0;                // Node number of outdoor air inlet for the tower
         ModelType TowerModelType = ModelType::Invalid; // Type of empirical model (1=CoolTools)
-        int VSTower = 0;                               // Index to a variable speed tower (otherwise = 0)
         int FanPowerfAirFlowCurve = 0;                 // Index to fan power correlation curve for VS Towers
         int BlowDownSchedulePtr = 0;                   // Pointer to blow down schedule
         int BasinHeaterSchedulePtr = 0;                // Pointer to basin heater schedule

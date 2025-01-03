@@ -4386,4 +4386,92 @@ TEST_F(EnergyPlusFixture, CondenserLoopTowers_checkMassFlowAndLoadTest)
     EXPECT_NEAR(expectedPower, tower.BasinHeaterPower, allowedTolerance);
 }
 
+TEST_F(EnergyPlusFixture, CondenserLoopTowers_checkTowerIndices)
+{
+    std::string const idf_objects = delimited_string({
+        "  CoolingTower:VariableSpeed,",
+        "    CoolingTower-plant_loops-170,  !- Name",
+        "    Node 40,                 !- Water Inlet Node Name",
+        "    Node 41,                 !- Water Outlet Node Name",
+        "    YorkCalc,                !- Model Type",
+        "    ,                        !- Model Coefficient Name",
+        "    25,                      !- Design Inlet Air Wet-Bulb Temperature {C}",
+        "    4.44,                    !- Design Approach Temperature {deltaC}",
+        "    5.56,                    !- Design Range Temperature {deltaC}",
+        "    autosize,                !- Design Water Flow Rate {m3/s}",
+        "    Autosize,                !- Design Air Flow Rate {m3/s}",
+        "    3544.15691546004,        !- Design Fan Power {W}",
+        "    Variable Speed Cooling Tower Fan Power Ratio Function of Air Flow Rate,  !- Fan Power Ratio Function of Air Flow Rate Ratio Curve Name",
+        "    0.25,                    !- Minimum Air Flow Rate Ratio",
+        "    0.125,                   !- Fraction of Tower Capacity in Free Convection Regime",
+        "    0,                       !- Basin Heater Capacity {W/K}",
+        "    2,                       !- Basin Heater Setpoint Temperature {C}",
+        "    ,                        !- Basin Heater Operating Schedule Name",
+        "    LossFactor,              !- Evaporation Loss Mode",
+        "    0.2,                     !- Evaporation Loss Factor {percent/K}",
+        "    0.008,                   !- Drift Loss Percent {percent}",
+        "    ConcentrationRatio,      !- Blowdown Calculation Mode",
+        "    3,                       !- Blowdown Concentration Ratio",
+        "    ,                        !- Blowdown Makeup Water Usage Schedule Name",
+        "    ,                        !- Supply Water Storage Tank Name",
+        "    ,                        !- Outdoor Air Inlet Node Name",
+        "    2,                       !- Number of Cells",
+        "    MaximalCell,             !- Cell Control",
+        "    0.25,                    !- Cell Minimum  Water Flow Rate Fraction",
+        "    2.5,                     !- Cell Maximum Water Flow Rate Fraction",
+        "    1,                       !- Sizing Factor",
+        "    General;                 !- End-Use Subcategory",
+        "  CoolingTower:TwoSpeed,",
+        "    TowerWaterSys CoolTower1,!- Name",
+        "    TowerWaterSys Pump-TowerWaterSys CoolTowerNode,  !- Water Inlet Node Name",
+        "    TowerWaterSys Supply Equipment Outlet Node,  !- Water Outlet Node Name",
+        "    ,                        !- Design Water Flow Rate {m3/s}",
+        "    AUTOSIZE,                !- High Fan Speed Air Flow Rate {m3/s}",
+        "    AUTOSIZE,                !- High Fan Speed Fan Power {W}",
+        "    ,                        !- High Fan Speed U-Factor Times Area Value {W/K}",
+        "    autocalculate,           !- Low Fan Speed Air Flow Rate {m3/s}",
+        "    ,                        !- Low Fan Speed Air Flow Rate Sizing Factor",
+        "    AUTOSIZE,                !- Low Fan Speed Fan Power {W}",
+        "    ,                        !- Low Fan Speed Fan Power Sizing Factor",
+        "    AUTOSIZE,                !- Low Fan Speed U-Factor Times Area Value {W/K}",
+        "    ,                        !- Low Fan Speed U-Factor Times Area Sizing Factor",
+        "    0.9,                     !- Free Convection Regime Air Flow Rate {m3/s}",
+        "    ,                        !- Free Convection Regime Air Flow Rate Sizing Factor",
+        "    autocalculate,           !- Free Convection Regime U-Factor Times Area Value {W/K}",
+        "    ,                        !- Free Convection U-Factor Times Area Value Sizing Factor",
+        "    NominalCapacity,         !- Performance Input Method",
+        "    ,                        !- Heat Rejection Capacity and Nominal Capacity Sizing Ratio",
+        "    1E+5,                    !- High Speed Nominal Capacity {W}",
+        "    1E+4,                    !- Low Speed Nominal Capacity {W}",
+        "    ,                        !- Low Speed Nominal Capacity Sizing Factor",
+        "    5E+3,                    !- Free Convection Nominal Capacity {W}",
+        "    ,                        !- Free Convection Nominal Capacity Sizing Factor",
+        "    35.0,					  !- Design Inlet Air Dry-Bulb Temperature",
+        "    25.6,					  !- Design Inlet Air Wet-Bulb Temperature",
+        "    3.9,                     !- Design Approach Temperature",
+        "    5.5,                     !- Design Range Temperature",
+        "    ,                        !- Basin Heater Capacity {W/K}",
+        "    ,                        !- Basin Heater Setpoint Temperature {C}",
+        "    ,                        !- Basin Heater Operating Schedule Name",
+        "    ,                        !- Evaporation Loss Mode",
+        "    ,                        !- Evaporation Loss Factor {percent/K}",
+        "    ,                        !- Drift Loss Percent {percent}",
+        "    ,                        !- Blowdown Calculation Mode",
+        "    ,                        !- Blowdown Concentration Ratio",
+        "    ,                        !- Blowdown Makeup Water Usage Schedule Name",
+        "    ,                        !- Supply Water Storage Tank Name",
+        "    ;                        !- Outdoor Air Inlet Node Name",
+    });
+
+    ASSERT_TRUE(process_idf(idf_objects));
+    // cooling tower get input
+    CondenserLoopTowers::GetTowerInput(*state);
+    int index;
+    index = Util::FindItemInList("COOLINGTOWER-PLANT_LOOPS-170", state->dataCondenserLoopTowers->towers);
+    EXPECT_TRUE(index == 2);
+
+    index = Util::FindItemInList("TOWERWATERSYS COOLTOWER1", state->dataCondenserLoopTowers->towers);
+    EXPECT_TRUE(index == 1);
+}
+
 } // namespace EnergyPlus

@@ -70,6 +70,8 @@ namespace HeatPumpWaterToWaterCOOLING {
         // Members
         std::string Name; // user identifier
         DataPlant::PlantEquipmentType WWHPPlantTypeOfNum;
+
+        Fluid::RefrigProps *refrig = nullptr;
         bool Available;                  // need an array of logicals--load identifiers of available equipment
         bool ON;                         // simulate the machine at it's operating part load ratio
         Real64 COP;                      // Coefficient of Performance of the machine
@@ -170,7 +172,6 @@ struct HeatPumpWaterToWaterCOOLINGData : BaseGlobalStruct
 {
 
     int NumGSHPs = 0;
-    int GSHPRefrigIndex = 0;
     bool GetWWHPCoolingInput = true;
     Array1D<HeatPumpWaterToWaterCOOLING::GshpPeCoolingSpecs> GSHP;
 
@@ -181,7 +182,6 @@ struct HeatPumpWaterToWaterCOOLINGData : BaseGlobalStruct
     void clear_state() override
     {
         this->NumGSHPs = 0;
-        this->GSHPRefrigIndex = 0;
         this->GetWWHPCoolingInput = true;
         this->GSHP.deallocate();
     }

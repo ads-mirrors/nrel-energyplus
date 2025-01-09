@@ -172,7 +172,7 @@ void GetInputLifeCycleCostParameters(EnergyPlusData &state)
     AlphaArray.allocate(NumAlphas);
     NumObj = state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, CurrentModuleObject);
 
-    auto &elcc(state.dataEconLifeCycleCost);
+    auto const &elcc = state.dataEconLifeCycleCost;
 
     if (NumObj == 0) {
         elcc->LCCparamPresent = false;

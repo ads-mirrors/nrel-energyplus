@@ -93,16 +93,10 @@ Real64 HeatingWaterflowSizer::size(EnergyPlusData &state, Real64 _originalValue,
                     if (DesCoilLoad >= HVAC::SmallLoad) {
                         if (this->dataWaterLoopNum > 0 && this->dataWaterLoopNum <= (int)state.dataPlnt->PlantLoop.size() &&
                             this->dataWaterCoilSizHeatDeltaT > 0.0) {
-                            Real64 Cp = FluidProperties::GetSpecificHeatGlycol(state,
-                                                                               state.dataPlnt->PlantLoop(this->dataWaterLoopNum).FluidName,
-                                                                               Constant::HWInitConvTemp,
-                                                                               state.dataPlnt->PlantLoop(this->dataWaterLoopNum).FluidIndex,
-                                                                               this->callingRoutine);
-                            Real64 rho = FluidProperties::GetDensityGlycol(state,
-                                                                           state.dataPlnt->PlantLoop(this->dataWaterLoopNum).FluidName,
-                                                                           Constant::HWInitConvTemp,
-                                                                           state.dataPlnt->PlantLoop(this->dataWaterLoopNum).FluidIndex,
-                                                                           this->callingRoutine);
+                            Real64 Cp = state.dataPlnt->PlantLoop(this->dataWaterLoopNum)
+                                            .glycol->getSpecificHeat(state, Constant::HWInitConvTemp, this->callingRoutine);
+                            Real64 rho = state.dataPlnt->PlantLoop(this->dataWaterLoopNum)
+                                             .glycol->getDensity(state, Constant::HWInitConvTemp, this->callingRoutine);
                             this->autoSizedValue = DesCoilLoad / (this->dataWaterCoilSizHeatDeltaT * Cp * rho);
                         } else {
                             std::string msg = "Developer Error: For autosizing of " + this->compType + ' ' + this->compName +
@@ -123,16 +117,10 @@ Real64 HeatingWaterflowSizer::size(EnergyPlusData &state, Real64 _originalValue,
                 if (this->dataCapacityUsedForSizing >= HVAC::SmallLoad) {
                     if (this->dataWaterLoopNum > 0 && this->dataWaterLoopNum <= (int)state.dataPlnt->PlantLoop.size() &&
                         this->dataWaterCoilSizHeatDeltaT > 0.0) {
-                        Real64 Cp = FluidProperties::GetSpecificHeatGlycol(state,
-                                                                           state.dataPlnt->PlantLoop(this->dataWaterLoopNum).FluidName,
-                                                                           Constant::HWInitConvTemp,
-                                                                           state.dataPlnt->PlantLoop(this->dataWaterLoopNum).FluidIndex,
-                                                                           this->callingRoutine);
-                        Real64 rho = FluidProperties::GetDensityGlycol(state,
-                                                                       state.dataPlnt->PlantLoop(this->dataWaterLoopNum).FluidName,
-                                                                       Constant::HWInitConvTemp,
-                                                                       state.dataPlnt->PlantLoop(this->dataWaterLoopNum).FluidIndex,
-                                                                       this->callingRoutine);
+                        Real64 Cp = state.dataPlnt->PlantLoop(this->dataWaterLoopNum)
+                                        .glycol->getSpecificHeat(state, Constant::HWInitConvTemp, this->callingRoutine);
+                        Real64 rho = state.dataPlnt->PlantLoop(this->dataWaterLoopNum)
+                                         .glycol->getDensity(state, Constant::HWInitConvTemp, this->callingRoutine);
                         this->autoSizedValue = this->dataCapacityUsedForSizing / (this->dataWaterCoilSizHeatDeltaT * Cp * rho);
                     } else {
                         this->autoSizedValue = 0.0;

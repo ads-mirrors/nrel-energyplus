@@ -4954,11 +4954,11 @@ void ReportZoneMeanAirTemp(EnergyPlusData &state)
         state.dataHeatBalAirMgr->CalcExtraReportVarMyOneTimeFlag = false;
     }
     for (int ZoneLoop = 1; ZoneLoop <= state.dataGlobal->NumOfZones; ++ZoneLoop) {
-        auto &thisZoneHB = state.dataZoneTempPredictorCorrector->zoneHeatBalance(ZoneLoop);
+        auto const &thisZoneHB = state.dataZoneTempPredictorCorrector->zoneHeatBalance(ZoneLoop);
         calcMeanAirTemps(state, thisZoneHB.ZTAV, thisZoneHB.airHumRatAvg, thisZoneHB.MRT, state.dataHeatBal->ZnAirRpt(ZoneLoop), ZoneLoop);
         if (state.dataHeatBal->doSpaceHeatBalanceSimulation) {
             for (int spaceNum : state.dataHeatBal->Zone(ZoneLoop).spaceIndexes) {
-                auto &thisSpaceHB = state.dataZoneTempPredictorCorrector->spaceHeatBalance(spaceNum);
+                auto const &thisSpaceHB = state.dataZoneTempPredictorCorrector->spaceHeatBalance(spaceNum);
                 calcMeanAirTemps(
                     state, thisSpaceHB.ZTAV, thisSpaceHB.airHumRatAvg, thisSpaceHB.MRT, state.dataHeatBal->spaceAirRpt(spaceNum), ZoneLoop);
             }

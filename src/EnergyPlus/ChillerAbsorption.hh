@@ -56,6 +56,7 @@
 #include <EnergyPlus/DataBranchAirLoopPlant.hh>
 #include <EnergyPlus/DataGlobals.hh>
 #include <EnergyPlus/EnergyPlus.hh>
+#include <EnergyPlus/FluidProperties.hh>
 #include <EnergyPlus/Plant/DataPlant.hh>
 #include <EnergyPlus/PlantComponent.hh>
 
@@ -128,7 +129,7 @@ namespace ChillerAbsorption {
         Real64 GeneratorVolFlowRate = 0.0;                                                  // m3/s - hot water volumetric flow rate through generator
         bool GeneratorVolFlowRateWasAutoSized = false;                                      // true if hot water flow was autosize on input
         Real64 GeneratorSubcool = 0.0;                                                      // amount of subcooling in steam generator
-        int SteamFluidIndex = 0;                                                            // index to generator fluid type
+        Fluid::RefrigProps *steam = nullptr;                                                // STEAM fluid properties
         Real64 GeneratorDeltaTemp = -99999.0;                                               // C - generator fluid temperature difference (water only)
         bool GeneratorDeltaTempWasAutoSized = true;                                         // true if generator delta T was autosize on input
         PlantLocation CWPlantLoc;                                                           // chilled water plant loop index number
@@ -158,6 +159,8 @@ namespace ChillerAbsorption {
         bool GenInputOutputNodesUsed = false;
         ReportVars Report;
         DataBranchAirLoopPlant::ControlType EquipFlowCtrl = DataBranchAirLoopPlant::ControlType::Invalid;
+
+        Fluid::GlycolProps *water = nullptr;
 
         static BLASTAbsorberSpecs *factory(EnergyPlusData &state, std::string const &objectName);
 

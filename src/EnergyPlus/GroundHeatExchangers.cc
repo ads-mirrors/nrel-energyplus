@@ -1020,7 +1020,7 @@ void GLHEVert::setupTimeVectors()
 
     this->myRespFactors->LNTTS = tempLNTTS;
     this->myRespFactors->time = tempLNTTS;
-    std::transform(this->myRespFactors->time.begin(), this->myRespFactors->time.end(), this->myRespFactors->time.begin(), [&t_s](auto &c) {
+    std::transform(this->myRespFactors->time.begin(), this->myRespFactors->time.end(), this->myRespFactors->time.begin(), [&t_s](auto const &c) {
         return exp(c) * t_s;
     });
     this->myRespFactors->GFNC = std::vector<Real64>(tempLNTTS.size(), 0.0);
@@ -1125,16 +1125,8 @@ void GLHEVert::calcShortTimestepGFunctions(EnergyPlusData &state)
     Real64 bh_equivalent_resistance_convection = bhResistance - bh_equivalent_resistance_tube_grout;
 
     Real64 initial_temperature = this->inletTemp;
-    Real64 cpFluid_init = FluidProperties::GetSpecificHeatGlycol(state,
-                                                                 state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidName,
-                                                                 initial_temperature,
-                                                                 state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidIndex,
-                                                                 RoutineName);
-    Real64 fluidDensity_init = FluidProperties::GetDensityGlycol(state,
-                                                                 state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidName,
-                                                                 initial_temperature,
-                                                                 state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidIndex,
-                                                                 RoutineName);
+    Real64 cpFluid_init = state.dataPlnt->PlantLoop(this->plantLoc.loopNum).glycol->getSpecificHeat(state, initial_temperature, RoutineName);
+    Real64 fluidDensity_init = state.dataPlnt->PlantLoop(this->plantLoc.loopNum).glycol->getDensity(state, initial_temperature, RoutineName);
 
     // initialize the fluid cells
     for (int i = 0; i < num_fluid_cells; ++i) {
@@ -1323,7 +1315,7 @@ void GLHEVert::calcShortTimestepGFunctions(EnergyPlusData &state)
 
 //******************************************************************************
 
-std::vector<Real64> TDMA(std::vector<Real64> a, std::vector<Real64> b, std::vector<Real64> c, std::vector<Real64> d)
+std::vector<Real64> TDMA(std::vector<Real64> const &a, std::vector<Real64> const &b, std::vector<Real64> &c, std::vector<Real64> &d)
 {
     // from: https://en.wikibooks.org/wiki/Algorithm_Implementation/Linear_Algebra/Tridiagonal_matrix_algorithm#C.2B.2B
 
@@ -1369,7 +1361,7 @@ void GLHEVert::combineShortAndLongTimestepGFunctions()
     }
 
     this->myRespFactors->time = LNTTS_combined;
-    std::transform(this->myRespFactors->time.begin(), this->myRespFactors->time.end(), this->myRespFactors->time.begin(), [&t_s](auto &c) {
+    std::transform(this->myRespFactors->time.begin(), this->myRespFactors->time.end(), this->myRespFactors->time.begin(), [&t_s](auto const &c) {
         return exp(c) * t_s;
     });
 
@@ -1971,11 +1963,7 @@ void GLHEBase::calcGroundHeatExchanger(EnergyPlusData &state)
 
     this->inletTemp = state.dataLoopNodes->Node(this->inletNodeNum).Temp;
 
-    Real64 cpFluid = FluidProperties::GetSpecificHeatGlycol(state,
-                                                            state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidName,
-                                                            this->inletTemp,
-                                                            state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidIndex,
-                                                            RoutineName);
+    Real64 cpFluid = state.dataPlnt->PlantLoop(this->plantLoc.loopNum).glycol->getSpecificHeat(state, this->inletTemp, RoutineName);
 
     Real64 kGroundFactor = 2.0 * Constant::Pi * this->soil.k;
 
@@ -2242,20 +2230,12 @@ void GLHEBase::updateGHX(EnergyPlusData &state)
 
     state.dataLoopNodes->Node(this->outletNodeNum).Temp = this->outletTemp;
     state.dataLoopNodes->Node(this->outletNodeNum).Enthalpy =
-        this->outletTemp * FluidProperties::GetSpecificHeatGlycol(state,
-                                                                  state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidName,
-                                                                  this->outletTemp,
-                                                                  state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidIndex,
-                                                                  RoutineName);
+        this->outletTemp * state.dataPlnt->PlantLoop(this->plantLoc.loopNum).glycol->getSpecificHeat(state, this->outletTemp, RoutineName);
 
     Real64 GLHEdeltaTemp = std::abs(this->outletTemp - this->inletTemp);
 
     if (GLHEdeltaTemp > deltaTempLimit && this->numErrorCalls < state.dataGroundHeatExchanger->numVerticalGLHEs && !state.dataGlobal->WarmupFlag) {
-        Real64 fluidDensity = FluidProperties::GetDensityGlycol(state,
-                                                                state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidName,
-                                                                this->inletTemp,
-                                                                state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidIndex,
-                                                                RoutineName);
+        Real64 fluidDensity = state.dataPlnt->PlantLoop(this->plantLoc.loopNum).glycol->getDensity(state, this->inletTemp, RoutineName);
         this->designMassFlow = this->designFlow * fluidDensity;
         ShowWarningError(state, "Check GLHE design inputs & g-functions for consistency");
         ShowContinueError(state, format("For GroundHeatExchanger: {}GLHE delta Temp > 100C.", this->name));
@@ -2603,11 +2583,7 @@ Real64 GLHEVert::calcHXResistance(EnergyPlusData &state)
     } else {
         std::string_view const RoutineName = "calcBHResistance";
 
-        Real64 const cpFluid = FluidProperties::GetSpecificHeatGlycol(state,
-                                                                      state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidName,
-                                                                      this->inletTemp,
-                                                                      state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidIndex,
-                                                                      RoutineName);
+        Real64 const cpFluid = state.dataPlnt->PlantLoop(this->plantLoc.loopNum).glycol->getSpecificHeat(state, this->inletTemp, RoutineName);
         return calcBHAverageResistance(state) +
                1 / (3 * calcBHTotalInternalResistance(state)) * pow_2(this->bhLength / (this->massFlowRate * cpFluid));
     }
@@ -2638,21 +2614,9 @@ Real64 GLHEVert::calcPipeConvectionResistance(EnergyPlusData &state)
     // Get fluid props
     this->inletTemp = state.dataLoopNodes->Node(this->inletNodeNum).Temp;
 
-    Real64 const cpFluid = FluidProperties::GetSpecificHeatGlycol(state,
-                                                                  state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidName,
-                                                                  this->inletTemp,
-                                                                  state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidIndex,
-                                                                  RoutineName);
-    Real64 const kFluid = FluidProperties::GetConductivityGlycol(state,
-                                                                 state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidName,
-                                                                 this->inletTemp,
-                                                                 state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidIndex,
-                                                                 RoutineName);
-    Real64 const fluidViscosity = FluidProperties::GetViscosityGlycol(state,
-                                                                      state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidName,
-                                                                      this->inletTemp,
-                                                                      state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidIndex,
-                                                                      RoutineName);
+    Real64 const cpFluid = state.dataPlnt->PlantLoop(this->plantLoc.loopNum).glycol->getSpecificHeat(state, this->inletTemp, RoutineName);
+    Real64 const kFluid = state.dataPlnt->PlantLoop(this->plantLoc.loopNum).glycol->getConductivity(state, this->inletTemp, RoutineName);
+    Real64 const fluidViscosity = state.dataPlnt->PlantLoop(this->plantLoc.loopNum).glycol->getViscosity(state, this->inletTemp, RoutineName);
 
     // Smoothing fit limits
     constexpr Real64 lower_limit = 2000;
@@ -2742,26 +2706,10 @@ Real64 GLHESlinky::calcHXResistance(EnergyPlusData &state)
     constexpr Real64 B = 350;
     constexpr Real64 laminarNusseltNo = 4.364;
 
-    Real64 cpFluid = FluidProperties::GetSpecificHeatGlycol(state,
-                                                            state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidName,
-                                                            this->inletTemp,
-                                                            state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidIndex,
-                                                            RoutineName);
-    Real64 kFluid = FluidProperties::GetConductivityGlycol(state,
-                                                           state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidName,
-                                                           this->inletTemp,
-                                                           state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidIndex,
-                                                           RoutineName);
-    Real64 fluidDensity = FluidProperties::GetDensityGlycol(state,
-                                                            state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidName,
-                                                            this->inletTemp,
-                                                            state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidIndex,
-                                                            RoutineName);
-    Real64 fluidViscosity = FluidProperties::GetViscosityGlycol(state,
-                                                                state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidName,
-                                                                this->inletTemp,
-                                                                state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidIndex,
-                                                                RoutineName);
+    Real64 cpFluid = state.dataPlnt->PlantLoop(this->plantLoc.loopNum).glycol->getSpecificHeat(state, this->inletTemp, RoutineName);
+    Real64 kFluid = state.dataPlnt->PlantLoop(this->plantLoc.loopNum).glycol->getConductivity(state, this->inletTemp, RoutineName);
+    Real64 fluidDensity = state.dataPlnt->PlantLoop(this->plantLoc.loopNum).glycol->getDensity(state, this->inletTemp, RoutineName);
+    Real64 fluidViscosity = state.dataPlnt->PlantLoop(this->plantLoc.loopNum).glycol->getViscosity(state, this->inletTemp, RoutineName);
 
     // calculate mass flow rate
     Real64 singleSlinkyMassFlowRate = this->massFlowRate / this->numTrenches;
@@ -2918,11 +2866,7 @@ void GLHEVert::initEnvironment(EnergyPlusData &state, [[maybe_unused]] Real64 co
     std::string_view const RoutineName = "initEnvironment";
     this->myEnvrnFlag = false;
 
-    Real64 fluidDensity = FluidProperties::GetDensityGlycol(state,
-                                                            state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidName,
-                                                            20.0,
-                                                            state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidIndex,
-                                                            RoutineName);
+    Real64 fluidDensity = state.dataPlnt->PlantLoop(this->plantLoc.loopNum).glycol->getDensity(state, 20.0, RoutineName);
     this->designMassFlow = this->designFlow * fluidDensity;
     PlantUtilities::InitComponentNodes(state, 0.0, this->designMassFlow, this->inletNodeNum, this->outletNodeNum);
 
@@ -2993,11 +2937,7 @@ void GLHESlinky::initEnvironment(EnergyPlusData &state, Real64 const CurTime)
     std::string_view const RoutineName = "initEnvironment";
     this->myEnvrnFlag = false;
 
-    Real64 fluidDensity = FluidProperties::GetDensityGlycol(state,
-                                                            state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidName,
-                                                            20.0,
-                                                            state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidIndex,
-                                                            RoutineName);
+    Real64 fluidDensity = state.dataPlnt->PlantLoop(this->plantLoc.loopNum).glycol->getDensity(state, 20.0, RoutineName);
     this->designMassFlow = this->designFlow * fluidDensity;
     PlantUtilities::InitComponentNodes(state, 0.0, this->designMassFlow, this->inletNodeNum, this->outletNodeNum);
 

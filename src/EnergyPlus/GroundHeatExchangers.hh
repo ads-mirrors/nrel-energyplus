@@ -497,7 +497,7 @@ namespace GroundHeatExchangers {
 
     std::shared_ptr<GLHEVertArray> GetVertArray(EnergyPlusData &state, std::string const &objectName);
 
-    std::vector<Real64> TDMA(std::vector<Real64> a, std::vector<Real64> b, std::vector<Real64> c, std::vector<Real64> d);
+    std::vector<Real64> TDMA(std::vector<Real64> const &a, std::vector<Real64> const &b, std::vector<Real64> &c, std::vector<Real64> &d);
 
 } // namespace GroundHeatExchangers
 

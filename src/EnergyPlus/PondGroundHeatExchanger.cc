@@ -114,7 +114,6 @@ namespace EnergyPlus::PondGroundHeatExchanger {
 //   ASHRAE Transactions.  106(2):107-121.
 
 Real64 constexpr StefBoltzmann(5.6697e-08); // Stefan-Boltzmann constant
-constexpr std::string_view fluidNameWater = "WATER";
 
 void PondGroundHeatExchangerData::simulate(EnergyPlusData &state,
                                            [[maybe_unused]] const PlantLocation &calledFromLocation,
@@ -207,7 +206,10 @@ void GetPondGroundHeatExchanger(EnergyPlusData &state)
                                                                  state.dataIPShortCut->cAlphaFieldNames,
                                                                  state.dataIPShortCut->cNumericFieldNames);
 
-        state.dataPondGHE->PondGHE(Item).WaterIndex = FluidProperties::GetGlycolNum(state, fluidNameWater);
+        if ((state.dataPondGHE->PondGHE(Item).water = Fluid::GetWater(state)) == nullptr) {
+            ShowSevereError(state, "Fluid Properties for WATER not found");
+            ErrorsFound = true;
+        }
 
         // General user input data
         state.dataPondGHE->PondGHE(Item).Name = state.dataIPShortCut->cAlphaArgs(1);
@@ -469,12 +471,8 @@ void PondGroundHeatExchangerData::CalcPondGroundHeatExchanger(EnergyPlusData &st
 
     static constexpr std::string_view RoutineName("CalcPondGroundHeatExchanger");
 
-    Real64 PondMass = this->Depth * this->Area *
-                      FluidProperties::GetDensityGlycol(
-                          state, fluidNameWater, max(this->PondTemp, DataPrecisionGlobals::constant_zero), this->WaterIndex, RoutineName);
-
-    Real64 SpecificHeat = FluidProperties::GetSpecificHeatGlycol(
-        state, fluidNameWater, max(this->PondTemp, DataPrecisionGlobals::constant_zero), this->WaterIndex, RoutineName);
+    Real64 PondMass = this->Depth * this->Area * this->water->getDensity(state, max(this->PondTemp, 0.0), RoutineName);
+    Real64 SpecificHeat = this->water->getSpecificHeat(state, max(this->PondTemp, 0.0), RoutineName);
 
     Real64 Flux = this->CalcTotalFLux(state, this->PondTemp);
     Real64 PondTempStar =
@@ -571,11 +569,7 @@ Real64 PondGroundHeatExchangerData::CalcTotalFLux(EnergyPlusData &state, Real64 
     Real64 FluxSolAbsorbed = CalcSolarFlux(state);
 
     // specific heat from fluid prop routines
-    Real64 SpecHeat = FluidProperties::GetSpecificHeatGlycol(state,
-                                                             state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidName,
-                                                             max(this->InletTemp, 0.0),
-                                                             state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidIndex,
-                                                             RoutineName);
+    Real64 SpecHeat = state.dataPlnt->PlantLoop(this->plantLoc.loopNum).glycol->getSpecificHeat(state, max(this->InletTemp, 0.0), RoutineName);
     // heat transfer with fluid - heat exchanger analogy.
 
     // convective flux
@@ -713,21 +707,9 @@ Real64 PondGroundHeatExchangerData::CalcEffectiveness(EnergyPlusData &state,
 
     // evaluate properties at pipe fluid temperature for given pipe fluid
 
-    Real64 SpecificHeat = FluidProperties::GetSpecificHeatGlycol(state,
-                                                                 state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidName,
-                                                                 InsideTemperature,
-                                                                 state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidIndex,
-                                                                 CalledFrom);
-    Real64 Conductivity = FluidProperties::GetConductivityGlycol(state,
-                                                                 state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidName,
-                                                                 InsideTemperature,
-                                                                 state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidIndex,
-                                                                 CalledFrom);
-    Real64 Viscosity = FluidProperties::GetViscosityGlycol(state,
-                                                           state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidName,
-                                                           InsideTemperature,
-                                                           state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidIndex,
-                                                           CalledFrom);
+    Real64 SpecificHeat = state.dataPlnt->PlantLoop(this->plantLoc.loopNum).glycol->getSpecificHeat(state, InsideTemperature, CalledFrom);
+    Real64 Conductivity = state.dataPlnt->PlantLoop(this->plantLoc.loopNum).glycol->getConductivity(state, InsideTemperature, CalledFrom);
+    Real64 Viscosity = state.dataPlnt->PlantLoop(this->plantLoc.loopNum).glycol->getViscosity(state, InsideTemperature, CalledFrom);
 
     // Calculate the Reynold's number from RE=(4*Mdot)/(Pi*Mu*Diameter)
     Real64 ReynoldsNum = 4.0 * massFlowRate / (Constant::Pi * Viscosity * this->TubeInDiameter * this->NumCircuits);
@@ -747,20 +729,19 @@ Real64 PondGroundHeatExchangerData::CalcEffectiveness(EnergyPlusData &state,
     Real64 ConvCoefIn = Conductivity * NusseltNum / this->TubeInDiameter;
 
     // now find properties of pond water - always assume pond fluid is water
-    Real64 WaterSpecHeat = FluidProperties::GetSpecificHeatGlycol(state, fluidNameWater, max(PondTemperature, 0.0), this->WaterIndex, CalledFrom);
-    Real64 WaterConductivity = FluidProperties::GetConductivityGlycol(state, fluidNameWater, max(PondTemperature, 0.0), this->WaterIndex, CalledFrom);
-    Real64 WaterViscosity = FluidProperties::GetViscosityGlycol(state, fluidNameWater, max(PondTemperature, 0.0), this->WaterIndex, CalledFrom);
-    Real64 WaterDensity = FluidProperties::GetDensityGlycol(state, fluidNameWater, max(PondTemperature, 0.0), this->WaterIndex, CalledFrom);
+    Real64 WaterSpecHeat = this->water->getSpecificHeat(state, max(PondTemperature, 0.0), CalledFrom);
+    Real64 WaterConductivity = this->water->getConductivity(state, max(PondTemperature, 0.0), CalledFrom);
+    Real64 WaterViscosity = this->water->getViscosity(state, max(PondTemperature, 0.0), CalledFrom);
+    Real64 WaterDensity = this->water->getDensity(state, max(PondTemperature, 0.0), CalledFrom);
 
     // derived properties for natural convection coefficient
     // expansion coef (Beta) = -1/Rho. dRho/dT
     // The following code includes some slight modifications from Simon's original code.
     // It guarantees that the delta T is 10C and also avoids the problems associated with
     // water hitting a maximum density at around 4C. (RKS)
-    Real64 ExpansionCoef =
-        -(FluidProperties::GetDensityGlycol(state, fluidNameWater, max(PondTemperature, 10.0) + 5.0, this->WaterIndex, CalledFrom) -
-          FluidProperties::GetDensityGlycol(state, fluidNameWater, max(PondTemperature, 10.0) - 5.0, this->WaterIndex, CalledFrom)) /
-        (10.0 * WaterDensity);
+    Real64 ExpansionCoef = -(this->water->getDensity(state, max(PondTemperature, 10.0) + 5.0, CalledFrom) -
+                             this->water->getDensity(state, max(PondTemperature, 10.0) - 5.0, CalledFrom)) /
+                           (10.0 * WaterDensity);
 
     Real64 ThermDiff = WaterConductivity / (WaterDensity * WaterSpecHeat);
     PrantlNum = WaterViscosity * WaterSpecHeat / WaterConductivity;
@@ -842,11 +823,7 @@ void PondGroundHeatExchangerData::UpdatePondGroundHeatExchanger(EnergyPlusData &
 
     // Calculate the water side outlet conditions and set the
     // appropriate conditions on the correct HVAC node.
-    Real64 CpFluid = FluidProperties::GetSpecificHeatGlycol(state,
-                                                            state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidName,
-                                                            this->InletTemp,
-                                                            state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidIndex,
-                                                            RoutineName);
+    Real64 CpFluid = state.dataPlnt->PlantLoop(this->plantLoc.loopNum).glycol->getSpecificHeat(state, this->InletTemp, RoutineName);
 
     PlantUtilities::SafeCopyPlantNode(state, InletNodeNum, OutletNodeNum);
 
@@ -898,16 +875,8 @@ void PondGroundHeatExchangerData::oneTimeInit(EnergyPlusData &state)
         if (errFlag) {
             ShowFatalError(state, "InitPondGroundHeatExchanger: Program terminated due to previous condition(s).");
         }
-        Real64 rho = FluidProperties::GetDensityGlycol(state,
-                                                       state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidName,
-                                                       DataPrecisionGlobals::constant_zero,
-                                                       state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidIndex,
-                                                       RoutineName);
-        Real64 Cp = FluidProperties::GetSpecificHeatGlycol(state,
-                                                           state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidName,
-                                                           DataPrecisionGlobals::constant_zero,
-                                                           state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidIndex,
-                                                           RoutineName);
+        Real64 rho = state.dataPlnt->PlantLoop(this->plantLoc.loopNum).glycol->getDensity(state, 0.0, RoutineName);
+        Real64 Cp = state.dataPlnt->PlantLoop(this->plantLoc.loopNum).glycol->getSpecificHeat(state, 0.0, RoutineName);
         this->DesignMassFlowRate = Constant::Pi / 4.0 * pow_2(this->TubeInDiameter) * DesignVelocity * rho * this->NumCircuits;
         this->DesignCapacity = this->DesignMassFlowRate * Cp * 10.0; // assume 10C delta T?
         PlantUtilities::InitComponentNodes(state, 0.0, this->DesignMassFlowRate, this->InletNodeNum, this->OutletNodeNum);

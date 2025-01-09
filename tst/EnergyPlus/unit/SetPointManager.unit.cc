@@ -87,11 +87,12 @@ using namespace EnergyPlus;
 
 TEST_F(EnergyPlusFixture, SetPointManager_DefineReturnWaterChWSetPointManager)
 {
+    state->dataFluid->init_state(*state);
 
     // Set up the required plant loop data
     state->dataPlnt->TotNumLoops = 1;
     state->dataPlnt->PlantLoop.allocate(1);
-    state->dataPlnt->PlantLoop(1).FluidIndex = 1;
+    state->dataPlnt->PlantLoop(1).glycol = Fluid::GetWater(*state);
 
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Supply).NodeNumIn = 1;  // Supply inlet, return
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Supply).NodeNumOut = 2; // Supply outlet, supply
@@ -189,15 +190,15 @@ TEST_F(EnergyPlusFixture, SetPointManager_DefineReturnWaterChWSetPointManager_Fl
 
     ASSERT_TRUE(process_idf(idf_objects));
 
-    EXPECT_EQ(2, state->dataFluidProps->glycols.isize());
-    const auto *glycol = state->dataFluidProps->glycols(2);
+    EXPECT_EQ(2, state->dataFluid->glycols.isize());
+    const auto *glycol = state->dataFluid->glycols(2);
     EXPECT_EQ("ETHYLENEGLYCOL40PERCENT", glycol->Name);
     EXPECT_EQ("ETHYLENEGLYCOL", glycol->GlycolName);
 
     // Set up the required plant loop data
     state->dataPlnt->TotNumLoops = 1;
     state->dataPlnt->PlantLoop.allocate(1);
-    state->dataPlnt->PlantLoop(1).FluidIndex = 2;
+    state->dataPlnt->PlantLoop(1).glycol = Fluid::GetGlycol(*state, "ETHYLENEGLYCOL40PERCENT");
 
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Supply).NodeNumIn = 1;  // Supply inlet, return
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Supply).NodeNumOut = 2; // Supply outlet, supply
@@ -253,10 +254,11 @@ TEST_F(EnergyPlusFixture, SetPointManager_DefineReturnWaterChWSetPointManager_Fl
 
 TEST_F(EnergyPlusFixture, SetPointManager_DefineReturnWaterHWSetPointManager)
 {
+    state->dataFluid->init_state(*state);
     // Set up the required plant loop data
     state->dataPlnt->TotNumLoops = 1;
     state->dataPlnt->PlantLoop.allocate(1);
-    state->dataPlnt->PlantLoop(1).FluidIndex = 1;
+    state->dataPlnt->PlantLoop(1).glycol = Fluid::GetWater(*state);
 
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Supply).NodeNumIn = 1;  // Supply inlet, return
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Supply).NodeNumOut = 2; // Supply outlet, supply

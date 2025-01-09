@@ -110,8 +110,6 @@ namespace UnitHeater {
     // Rick Strand's unit heater module which was based upon Fred Buhl's fan coil
     // module (FanCoilUnits.cc)
 
-    static constexpr std::string_view fluidNameSteam("STEAM");
-
     void SimUnitHeater(EnergyPlusData &state,
                        std::string_view CompName,     // name of the fan coil unit
                        int const ZoneNum,             // number of zone being served
@@ -393,6 +391,7 @@ namespace UnitHeater {
                         } else { // its a steam coil
                             unitHeat.HCoil_Index = SteamCoils::GetSteamCoilIndex(state, "COIL:HEATING:STEAM", unitHeat.HCoilName, errFlag);
                             unitHeat.HotControlNode = SteamCoils::GetCoilSteamInletNode(state, unitHeat.HCoil_Index, unitHeat.HCoilName, errFlag);
+                            unitHeat.HCoil_fluid = Fluid::GetSteam(state);
                         }
                         // Other error checks should trap before it gets to this point in the code, but including just in case.
                         if (errFlag) {
@@ -703,12 +702,8 @@ namespace UnitHeater {
             state.dataLoopNodes->Node(InNode).MassFlowRateMin = 0.0;
 
             if (state.dataUnitHeaters->UnitHeat(UnitHeatNum).Type == HCoilType::WaterHeatingCoil) {
-                rho = FluidProperties::GetDensityGlycol(
-                    state,
-                    state.dataPlnt->PlantLoop(state.dataUnitHeaters->UnitHeat(UnitHeatNum).HWplantLoc.loopNum).FluidName,
-                    Constant::HWInitConvTemp,
-                    state.dataPlnt->PlantLoop(state.dataUnitHeaters->UnitHeat(UnitHeatNum).HWplantLoc.loopNum).FluidIndex,
-                    RoutineName);
+                rho = state.dataPlnt->PlantLoop(state.dataUnitHeaters->UnitHeat(UnitHeatNum).HWplantLoc.loopNum)
+                          .glycol->getDensity(state, Constant::HWInitConvTemp, RoutineName);
 
                 state.dataUnitHeaters->UnitHeat(UnitHeatNum).MaxHotWaterFlow = rho * state.dataUnitHeaters->UnitHeat(UnitHeatNum).MaxVolHotWaterFlow;
                 state.dataUnitHeaters->UnitHeat(UnitHeatNum).MinHotWaterFlow = rho * state.dataUnitHeaters->UnitHeat(UnitHeatNum).MinVolHotWaterFlow;
@@ -720,8 +715,7 @@ namespace UnitHeater {
             }
             if (state.dataUnitHeaters->UnitHeat(UnitHeatNum).Type == HCoilType::SteamCoil) {
                 TempSteamIn = 100.00;
-                SteamDensity = FluidProperties::GetSatDensityRefrig(
-                    state, fluidNameSteam, TempSteamIn, 1.0, state.dataUnitHeaters->UnitHeat(UnitHeatNum).HCoil_FluidIndex, RoutineName);
+                SteamDensity = state.dataUnitHeaters->UnitHeat(UnitHeatNum).HCoil_fluid->getSatDensity(state, TempSteamIn, 1.0, RoutineName);
                 state.dataUnitHeaters->UnitHeat(UnitHeatNum).MaxHotSteamFlow =
                     SteamDensity * state.dataUnitHeaters->UnitHeat(UnitHeatNum).MaxVolHotSteamFlow;
                 state.dataUnitHeaters->UnitHeat(UnitHeatNum).MinHotSteamFlow =
@@ -1038,18 +1032,10 @@ namespace UnitHeater {
                             }
 
                             if (DesCoilLoad >= HVAC::SmallLoad) {
-                                rho = FluidProperties::GetDensityGlycol(
-                                    state,
-                                    state.dataPlnt->PlantLoop(state.dataUnitHeaters->UnitHeat(UnitHeatNum).HWplantLoc.loopNum).FluidName,
-                                    Constant::HWInitConvTemp,
-                                    state.dataPlnt->PlantLoop(state.dataUnitHeaters->UnitHeat(UnitHeatNum).HWplantLoc.loopNum).FluidIndex,
-                                    RoutineName);
-                                Cp = FluidProperties::GetSpecificHeatGlycol(
-                                    state,
-                                    state.dataPlnt->PlantLoop(state.dataUnitHeaters->UnitHeat(UnitHeatNum).HWplantLoc.loopNum).FluidName,
-                                    Constant::HWInitConvTemp,
-                                    state.dataPlnt->PlantLoop(state.dataUnitHeaters->UnitHeat(UnitHeatNum).HWplantLoc.loopNum).FluidIndex,
-                                    RoutineName);
+                                rho = state.dataPlnt->PlantLoop(state.dataUnitHeaters->UnitHeat(UnitHeatNum).HWplantLoc.loopNum)
+                                          .glycol->getDensity(state, Constant::HWInitConvTemp, RoutineName);
+                                Cp = state.dataPlnt->PlantLoop(state.dataUnitHeaters->UnitHeat(UnitHeatNum).HWplantLoc.loopNum)
+                                         .glycol->getSpecificHeat(state, Constant::HWInitConvTemp, RoutineName);
                                 MaxVolHotWaterFlowDes = DesCoilLoad / (WaterCoilSizDeltaT * Cp * rho);
                             } else {
                                 MaxVolHotWaterFlowDes = 0.0;
@@ -1164,13 +1150,11 @@ namespace UnitHeater {
                             }
                             if (DesCoilLoad >= HVAC::SmallLoad) {
                                 TempSteamIn = 100.00;
-                                EnthSteamInDry = FluidProperties::GetSatEnthalpyRefrig(
-                                    state, fluidNameSteam, TempSteamIn, 1.0, state.dataUnitHeaters->RefrigIndex, RoutineName);
-                                EnthSteamOutWet = FluidProperties::GetSatEnthalpyRefrig(
-                                    state, fluidNameSteam, TempSteamIn, 0.0, state.dataUnitHeaters->RefrigIndex, RoutineName);
+                                auto *steam = Fluid::GetSteam(state);
+                                EnthSteamInDry = steam->getSatEnthalpy(state, TempSteamIn, 1.0, RoutineName);
+                                EnthSteamOutWet = steam->getSatEnthalpy(state, TempSteamIn, 0.0, RoutineName);
                                 LatentHeatSteam = EnthSteamInDry - EnthSteamOutWet;
-                                SteamDensity = FluidProperties::GetSatDensityRefrig(
-                                    state, fluidNameSteam, TempSteamIn, 1.0, state.dataUnitHeaters->RefrigIndex, RoutineName);
+                                SteamDensity = steam->getSatDensity(state, TempSteamIn, 1.0, RoutineName);
                                 MaxVolHotSteamFlowDes =
                                     DesCoilLoad / (SteamDensity * (LatentHeatSteam +
                                                                    state.dataSize->PlantSizData(PltSizHeatNum).DeltaT *

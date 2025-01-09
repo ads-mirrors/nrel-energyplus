@@ -85,7 +85,7 @@ namespace IndoorGreen {
         // PURPOSE OF THIS SUBROUTINE:
         // This subroutine simulates the thermal performance of indoor living walls including the grow lights.
         // This subroutine interacts with inside surface heat balance, zone air heat balance and zone air moisture balance in EnergyPlus.
-        auto &lw = state.dataIndoorGreen;
+        auto const &lw = state.dataIndoorGreen;
         if (lw->getInputFlag) {
             bool ErrorsFound(false);
             const char *RoutineName("IndoorLivingWall: "); // include trailing blank space
@@ -459,7 +459,7 @@ namespace IndoorGreen {
         }
     }
 
-    void InitIndoorGreen(EnergyPlusData &state)
+    void InitIndoorGreen(EnergyPlusData const &state)
     {
         // Set the reporting variables to zero at each timestep.
         for (auto &ig : state.dataIndoorGreen->indoorGreens) {

@@ -117,7 +117,7 @@ EnergyPlusData::EnergyPlusData()
     this->dataFans = std::make_unique<FansData>();
     this->dataFaultsMgr = std::make_unique<FaultsManagerData>();
     this->dataFluidCoolers = std::make_unique<FluidCoolersData>();
-    this->dataFluidProps = std::make_unique<FluidData>();
+    this->dataFluid = std::make_unique<FluidData>();
     this->dataFourPipeBeam = std::make_unique<FourPipeBeamData>();
     this->dataFuelCellElectGen = std::make_unique<FuelCellElectricGeneratorData>();
     this->dataFurnaces = std::make_unique<FurnacesData>();
@@ -373,7 +373,7 @@ void EnergyPlusData::clear_state()
     this->dataFans->clear_state();
     this->dataFaultsMgr->clear_state();
     this->dataFluidCoolers->clear_state();
-    this->dataFluidProps->clear_state();
+    this->dataFluid->clear_state();
     this->dataFourPipeBeam->clear_state();
     this->dataFuelCellElectGen->clear_state();
     this->dataFurnaces->clear_state();
@@ -579,7 +579,7 @@ void EnergyPlusData::init_state(EnergyPlusData &state)
     // objects that do not reference any other objects, like fluids,
     // schedules, curves, etc.
     this->dataSimulationManager->init_state(state); // GetProjectData
-    this->dataFluidProps->init_state(state);        // GetFluidPropertiesData
+    this->dataFluid->init_state(state);             // GetFluidPropertiesData
     this->dataPsychrometrics->init_state(state);    // InitializePsychRoutines
 
     this->dataAirLoop->init_state(state);

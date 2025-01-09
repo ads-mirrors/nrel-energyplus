@@ -760,6 +760,8 @@ TEST_F(EnergyPlusFixture, HeaderedVariableSpeedPumpEMSPressureTest)
     DataPlant::LoopSideLocation thisLoopSideNum = DataPlant::LoopSideLocation::Supply;
     PlantLocation plantLoc{thisLoopNum, thisLoopSideNum, thisBranchNum, thisCompNum};
     state->dataPlnt->PlantLoop.allocate(1);
+    state->dataPlnt->PlantLoop(1).FluidName = "WATER";
+    state->dataPlnt->PlantLoop(1).glycol = Fluid::GetWater(*state);
     state->dataPlnt->PlantLoop(1).LoopSide(thisLoopSideNum).Branch.allocate(1);
     state->dataPlnt->PlantLoop(1).LoopSide(thisLoopSideNum).Branch(thisBranchNum).Comp.allocate(1);
     state->dataLoopNodes->Node(1).MassFlowRate = massflowrate;

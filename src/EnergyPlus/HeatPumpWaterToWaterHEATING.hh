@@ -70,29 +70,31 @@ namespace HeatPumpWaterToWaterHEATING {
         // Members
         std::string Name;                            // user identifier
         DataPlant::PlantEquipmentType WWHPPlantType; // equipment type num
-        bool Available;                              // need an array of logicals--load identifiers of available equipment
-        bool ON;                                     // simulate the machine at it's operating part load ratio
-        Real64 COP;                                  // Coefficient of Performance of the machine
-        Real64 NomCap;                               // Nominal Capacity of the HeatPump
-        Real64 MinPartLoadRat;                       // Minimum operating Part Load Ratio
-        Real64 MaxPartLoadRat;                       // Maximum operating Part Load Ratio
-        Real64 OptPartLoadRat;                       // Optimal operating Part Load Ratio
-        Real64 LoadSideVolFlowRate;                  // Design Flow Rate on the Load side m3/sec
-        Real64 LoadSideDesignMassFlow;               // Design flow rate (kg/s)
-        Real64 SourceSideVolFlowRate;                // Design Flow Rate on th Source Side m3/sec
-        Real64 SourceSideDesignMassFlow;             // Design flow rate (kg/s)
-        int SourceSideInletNodeNum;                  // Node number on the inlet side of the plant
-        int SourceSideOutletNodeNum;                 // Node number on the outlet side of the plant
-        int LoadSideInletNodeNum;                    // Node number on the inlet side of the Load Side
-        int LoadSideOutletNodeNum;                   // Node number on the outlet side of the Load Side
-        Real64 SourceSideUACoeff;                    // Source Side heat transfer coeff W/K
-        Real64 LoadSideUACoeff;                      // Load Side heat transfer coeff  W/K
-        Real64 CompPistonDisp;                       // compressor piston displacement m3
-        Real64 CompClearanceFactor;                  // compressor clearance factor
-        Real64 CompSucPressDrop;                     // deltap ,  compressor suction and discharge pressure drop Pascals
-        Real64 SuperheatTemp;                        // deltatsh , super heating  °C
-        Real64 PowerLosses;                          // constant part of electro mechanical power losses  watts Joules/sec
-        Real64 LossFactor;                           // loss factor used ot define the electro mechanical
+
+        Fluid::RefrigProps *refrig = nullptr;
+        bool Available;                  // need an array of logicals--load identifiers of available equipment
+        bool ON;                         // simulate the machine at it's operating part load ratio
+        Real64 COP;                      // Coefficient of Performance of the machine
+        Real64 NomCap;                   // Nominal Capacity of the HeatPump
+        Real64 MinPartLoadRat;           // Minimum operating Part Load Ratio
+        Real64 MaxPartLoadRat;           // Maximum operating Part Load Ratio
+        Real64 OptPartLoadRat;           // Optimal operating Part Load Ratio
+        Real64 LoadSideVolFlowRate;      // Design Flow Rate on the Load side m3/sec
+        Real64 LoadSideDesignMassFlow;   // Design flow rate (kg/s)
+        Real64 SourceSideVolFlowRate;    // Design Flow Rate on th Source Side m3/sec
+        Real64 SourceSideDesignMassFlow; // Design flow rate (kg/s)
+        int SourceSideInletNodeNum;      // Node number on the inlet side of the plant
+        int SourceSideOutletNodeNum;     // Node number on the outlet side of the plant
+        int LoadSideInletNodeNum;        // Node number on the inlet side of the Load Side
+        int LoadSideOutletNodeNum;       // Node number on the outlet side of the Load Side
+        Real64 SourceSideUACoeff;        // Source Side heat transfer coeff W/K
+        Real64 LoadSideUACoeff;          // Load Side heat transfer coeff  W/K
+        Real64 CompPistonDisp;           // compressor piston displacement m3
+        Real64 CompClearanceFactor;      // compressor clearance factor
+        Real64 CompSucPressDrop;         // deltap ,  compressor suction and discharge pressure drop Pascals
+        Real64 SuperheatTemp;            // deltatsh , super heating  °C
+        Real64 PowerLosses;              // constant part of electro mechanical power losses  watts Joules/sec
+        Real64 LossFactor;               // loss factor used ot define the electro mechanical
         // loss that is supposed to be proportional to the theoretical power
         Real64 HighPressCutoff; // Maximum Design Pressure on the Load Side Pascals
         Real64 LowPressCutoff;  // Minimum Design Pressure on the Source Side Pascals
@@ -166,7 +168,6 @@ namespace HeatPumpWaterToWaterHEATING {
 struct HeatPumpWaterToWaterHEATINGData : BaseGlobalStruct
 {
 
-    int GSHPRefrigIndex = 0;
     int NumGSHPs = 0;
     bool GetWWHPHeatingInput = true;
     Array1D<HeatPumpWaterToWaterHEATING::GshpPeHeatingSpecs> GSHP;
@@ -177,7 +178,6 @@ struct HeatPumpWaterToWaterHEATINGData : BaseGlobalStruct
 
     void clear_state() override
     {
-        this->GSHPRefrigIndex = 0;
         this->NumGSHPs = 0;
         this->GetWWHPHeatingInput = true;
         this->GSHP.deallocate();

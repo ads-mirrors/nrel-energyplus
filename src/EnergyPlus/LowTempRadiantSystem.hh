@@ -55,6 +55,7 @@
 #include <EnergyPlus/Data/BaseData.hh>
 #include <EnergyPlus/DataGlobals.hh>
 #include <EnergyPlus/EnergyPlus.hh>
+#include <EnergyPlus/FluidProperties.hh>
 #include <EnergyPlus/Plant/Enums.hh>
 #include <EnergyPlus/Plant/PlantLocation.hh>
 
@@ -216,7 +217,8 @@ namespace LowTempRadiantSystem {
         int ColdWaterInNode = 0;    // cold water inlet node
         int ColdWaterOutNode = 0;   // cold water outlet node
         PlantLocation CWPlantLoc{};
-        int GlycolIndex = 0;             // Index to Glycol (Water) Properties
+        Fluid::GlycolProps *water = nullptr; // Water properties
+
         int CondErrIndex = 0;            // Error index for recurring warning messages
         Real64 CondCausedTimeOff = 0.0;  // Amount of time condensation did or could have turned system off
         bool CondCausedShutDown = false; // .TRUE. when condensation predicted at surface

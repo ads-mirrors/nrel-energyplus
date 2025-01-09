@@ -1011,7 +1011,7 @@ namespace HybridEvapCoolingModel {
         Real64 MassFlowDependentDenominator = 0;
         Real64 value = 0;
 
-        for (auto &thisOperatingSettings : CurrentOperatingSettings) {
+        for (auto const &thisOperatingSettings : CurrentOperatingSettings) {
             switch (val) {
             case SYSTEMOUTPUTS::VENTILATION_AIR_V:
                 value = thisOperatingSettings.ScaledSupply_Air_Ventilation_Volume;

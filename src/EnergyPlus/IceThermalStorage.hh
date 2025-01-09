@@ -279,7 +279,7 @@ namespace IceThermalStorage {
 
     Real64 TempIPtoSI(Real64 Temp);
 
-    void UpdateIceFractions(EnergyPlusData &state);
+    void UpdateIceFractions(EnergyPlusData const &state);
 
 } // namespace IceThermalStorage
 

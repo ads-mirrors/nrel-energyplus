@@ -118,7 +118,7 @@ namespace PlantManager {
 
     void ReInitPlantLoopsAtFirstHVACIteration(EnergyPlusData &state);
 
-    void UpdateNodeThermalHistory(EnergyPlusData &state);
+    void UpdateNodeThermalHistory(EnergyPlusData const &state);
 
     void CheckPlantOnAbort(EnergyPlusData &state);
 

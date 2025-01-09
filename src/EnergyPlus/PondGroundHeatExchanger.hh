@@ -55,6 +55,7 @@
 #include <EnergyPlus/Data/BaseData.hh>
 #include <EnergyPlus/DataGlobals.hh>
 #include <EnergyPlus/EnergyPlus.hh>
+#include <EnergyPlus/FluidProperties.hh>
 #include <EnergyPlus/Plant/PlantLocation.hh>
 #include <EnergyPlus/PlantComponent.hh>
 
@@ -102,7 +103,7 @@ namespace PondGroundHeatExchanger {
         bool MyFlag;
         bool setupOutputVarsFlag;
 
-        int WaterIndex;
+        Fluid::GlycolProps *water = nullptr;
 
         bool firstTimeThrough;
 
@@ -111,8 +112,7 @@ namespace PondGroundHeatExchanger {
             : DesignMassFlowRate(0.0), DesignCapacity(0.0), Depth(0.0), Area(0.0), TubeInDiameter(0.0), TubeOutDiameter(0.0), TubeConductivity(0.0),
               GrndConductivity(0.0), CircuitLength(0.0), BulkTemperature(0.0), PastBulkTemperature(0.0), NumCircuits(0), InletNodeNum(0),
               OutletNodeNum(0), FrozenErrIndex(0), ConsecutiveFrozen(0), plantLoc{}, InletTemp(0.0), OutletTemp(0.0), MassFlowRate(0.0),
-              PondTemp(0.0), HeatTransferRate(0.0), Energy(0.0), OneTimeFlag(true), MyFlag(true), setupOutputVarsFlag(true), WaterIndex(0),
-              firstTimeThrough(true)
+              PondTemp(0.0), HeatTransferRate(0.0), Energy(0.0), OneTimeFlag(true), MyFlag(true), setupOutputVarsFlag(true), firstTimeThrough(true)
         {
         }
 

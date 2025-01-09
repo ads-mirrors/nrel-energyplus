@@ -4594,7 +4594,7 @@ void ReportAirLoopConnections(EnergyPlusData &state)
         "! <Outdoor Air Connections>,<OA Inlet Node #>,<OA Return Air Inlet Node Name>,<OA Outlet Node #>,<OA Mixed "
         "Air Outlet Node Name>,<AirLoopHVAC Name>");
 
-    auto &NodeID = state.dataLoopNodes->NodeID;
+    auto const &NodeID = state.dataLoopNodes->NodeID;
 
     print(state.files.bnd, "{}\n", "! ===============================================================");
     print(state.files.bnd, "{}\n", Format_706);

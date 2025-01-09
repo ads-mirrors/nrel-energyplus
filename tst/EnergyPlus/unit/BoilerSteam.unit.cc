@@ -220,10 +220,9 @@ TEST_F(EnergyPlusFixture, BoilerSteam_BoilerEfficiency)
     auto &thisBoiler = state->dataBoilerSteam->Boiler((int)state->dataBoilerSteam->Boiler.size());
 
     state->dataPlnt->PlantLoop(1).Name = "SteamLoop";
-    state->dataPlnt->PlantLoop(1).FluidName = "Steam";
-    state->dataPlnt->PlantLoop(1).FluidIndex = 1;
     state->dataPlnt->PlantLoop(1).PlantSizNum = 1;
     state->dataPlnt->PlantLoop(1).FluidName = "STEAM";
+    state->dataPlnt->PlantLoop(1).steam = Fluid::GetSteam(*state);
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Name = thisBoiler.Name;
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Type = DataPlant::PlantEquipmentType::Boiler_Steam;
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).NodeNumIn = thisBoiler.BoilerInletNodeNum;

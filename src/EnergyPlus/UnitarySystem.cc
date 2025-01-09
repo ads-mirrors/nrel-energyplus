@@ -111,7 +111,6 @@ namespace UnitarySystems {
     int constexpr HeatingCoil = 1;
     int constexpr SuppHeatCoil = 2;
 
-    static constexpr std::string_view fluidNameSteam("STEAM");
     static constexpr std::string_view blankString("");
     static const std::string blankStdString("");
 
@@ -590,11 +589,8 @@ namespace UnitarySystems {
                     state, CoolingCoilType, CoolingCoilName, state.dataUnitarySystems->initUnitarySystemsErrorsFound);
 
                 if (this->MaxCoolCoilFluidFlow > 0.0) {
-                    Real64 rho = FluidProperties::GetDensityGlycol(state,
-                                                                   state.dataPlnt->PlantLoop(this->CoolCoilPlantLoc.loopNum).FluidName,
-                                                                   Constant::CWInitConvTemp,
-                                                                   state.dataPlnt->PlantLoop(this->CoolCoilPlantLoc.loopNum).FluidIndex,
-                                                                   routineName);
+                    Real64 rho =
+                        state.dataPlnt->PlantLoop(this->CoolCoilPlantLoc.loopNum).glycol->getDensity(state, Constant::CWInitConvTemp, routineName);
                     this->MaxCoolCoilFluidFlow *= rho;
                 }
                 // fill outlet node for coil
@@ -637,11 +633,8 @@ namespace UnitarySystems {
                         state, HeatingCoilType, this->m_HeatingCoilName, state.dataUnitarySystems->initUnitarySystemsErrorsFound);
 
                     if (this->MaxHeatCoilFluidFlow > 0.0) {
-                        Real64 rho = FluidProperties::GetDensityGlycol(state,
-                                                                       state.dataPlnt->PlantLoop(this->HeatCoilPlantLoc.loopNum).FluidName,
-                                                                       Constant::HWInitConvTemp,
-                                                                       state.dataPlnt->PlantLoop(this->HeatCoilPlantLoc.loopNum).FluidIndex,
-                                                                       routineName);
+                        Real64 rho = state.dataPlnt->PlantLoop(this->HeatCoilPlantLoc.loopNum)
+                                         .glycol->getDensity(state, Constant::HWInitConvTemp, routineName);
                         this->MaxHeatCoilFluidFlow =
                             WaterCoils::GetCoilMaxWaterFlowRate(
                                 state, HeatingCoilType, this->m_HeatingCoilName, state.dataUnitarySystems->initUnitarySystemsErrorsFound) *
@@ -651,9 +644,8 @@ namespace UnitarySystems {
                     this->MaxHeatCoilFluidFlow =
                         SteamCoils::GetCoilMaxSteamFlowRate(state, this->m_HeatingCoilIndex, state.dataUnitarySystems->initUnitarySystemsErrorsFound);
                     if (this->MaxHeatCoilFluidFlow > 0.0) {
-                        int SteamIndex = 0; // Function GetSatDensityRefrig will look up steam index if 0 is passed
                         Real64 TempSteamIn = 100.0;
-                        Real64 SteamDensity = FluidProperties::GetSatDensityRefrig(state, fluidNameSteam, TempSteamIn, 1.0, SteamIndex, routineName);
+                        Real64 SteamDensity = Fluid::GetSteam(state)->getSatDensity(state, TempSteamIn, 1.0, routineName);
                         this->MaxHeatCoilFluidFlow *= SteamDensity;
                     }
                 }
@@ -693,11 +685,8 @@ namespace UnitarySystems {
                     state, "Coil:Heating:Water", this->m_SuppHeatCoilName, state.dataUnitarySystems->initUnitarySystemsErrorsFound);
 
                 if (this->m_MaxSuppCoilFluidFlow > 0.0) {
-                    Real64 rho = FluidProperties::GetDensityGlycol(state,
-                                                                   state.dataPlnt->PlantLoop(this->m_SuppCoilPlantLoc.loopNum).FluidName,
-                                                                   Constant::CWInitConvTemp,
-                                                                   state.dataPlnt->PlantLoop(this->m_SuppCoilPlantLoc.loopNum).FluidIndex,
-                                                                   routineName);
+                    Real64 rho =
+                        state.dataPlnt->PlantLoop(this->m_SuppCoilPlantLoc.loopNum).glycol->getDensity(state, Constant::CWInitConvTemp, routineName);
                     this->m_MaxSuppCoilFluidFlow =
                         WaterCoils::GetCoilMaxWaterFlowRate(
                             state, "Coil:Heating:Water", this->m_SuppHeatCoilName, state.dataUnitarySystems->initUnitarySystemsErrorsFound) *
@@ -724,9 +713,8 @@ namespace UnitarySystems {
                 this->m_MaxSuppCoilFluidFlow =
                     SteamCoils::GetCoilMaxSteamFlowRate(state, this->m_SuppHeatCoilIndex, state.dataUnitarySystems->initUnitarySystemsErrorsFound);
                 if (this->m_MaxSuppCoilFluidFlow > 0.0) {
-                    int SteamIndex = 0; // Function GetSatDensityRefrig will look up steam index if 0 is passed
                     Real64 TempSteamIn = 100.0;
-                    Real64 SteamDensity = FluidProperties::GetSatDensityRefrig(state, fluidNameSteam, TempSteamIn, 1.0, SteamIndex, routineName);
+                    Real64 SteamDensity = Fluid::GetSteam(state)->getSatDensity(state, TempSteamIn, 1.0, routineName);
                     this->m_MaxSuppCoilFluidFlow *= SteamDensity;
                 }
 
@@ -765,11 +753,7 @@ namespace UnitarySystems {
 
             if ((this->m_HeatRecActive) && (!this->m_MyPlantScanFlag)) {
 
-                Real64 rho = FluidProperties::GetDensityGlycol(state,
-                                                               state.dataPlnt->PlantLoop(this->m_HRPlantLoc.loopNum).FluidName,
-                                                               Constant::HWInitConvTemp,
-                                                               state.dataPlnt->PlantLoop(this->m_HRPlantLoc.loopNum).FluidIndex,
-                                                               routineName);
+                Real64 rho = state.dataPlnt->PlantLoop(this->m_HRPlantLoc.loopNum).glycol->getDensity(state, Constant::HWInitConvTemp, routineName);
 
                 this->m_DesignHeatRecMassFlowRate = this->m_DesignHRWaterVolumeFlow * rho;
 
@@ -791,11 +775,8 @@ namespace UnitarySystems {
                     Real64 CoilMaxVolFlowRate = WaterCoils::GetCoilMaxWaterFlowRate(
                         state, CoolingCoilType, this->m_CoolingCoilName, state.dataUnitarySystems->initUnitarySystemsErrorsFound);
                     if (CoilMaxVolFlowRate != DataSizing::AutoSize) {
-                        Real64 rho = FluidProperties::GetDensityGlycol(state,
-                                                                       state.dataPlnt->PlantLoop(this->CoolCoilPlantLoc.loopNum).FluidName,
-                                                                       Constant::CWInitConvTemp,
-                                                                       state.dataPlnt->PlantLoop(this->CoolCoilPlantLoc.loopNum).FluidIndex,
-                                                                       routineName);
+                        Real64 rho = state.dataPlnt->PlantLoop(this->CoolCoilPlantLoc.loopNum)
+                                         .glycol->getDensity(state, Constant::CWInitConvTemp, routineName);
                         this->MaxCoolCoilFluidFlow = CoilMaxVolFlowRate * rho;
                     }
                 }
@@ -812,11 +793,8 @@ namespace UnitarySystems {
                         Real64 CoilMaxVolFlowRate = WaterCoils::GetCoilMaxWaterFlowRate(
                             state, "Coil:Heating:Water", this->m_HeatingCoilName, state.dataUnitarySystems->initUnitarySystemsErrorsFound);
                         if (CoilMaxVolFlowRate != DataSizing::AutoSize) {
-                            Real64 rho = FluidProperties::GetDensityGlycol(state,
-                                                                           state.dataPlnt->PlantLoop(this->HeatCoilPlantLoc.loopNum).FluidName,
-                                                                           Constant::CWInitConvTemp,
-                                                                           state.dataPlnt->PlantLoop(this->HeatCoilPlantLoc.loopNum).FluidIndex,
-                                                                           routineName);
+                            Real64 rho = state.dataPlnt->PlantLoop(this->HeatCoilPlantLoc.loopNum)
+                                             .glycol->getDensity(state, Constant::CWInitConvTemp, routineName);
                             this->MaxHeatCoilFluidFlow = CoilMaxVolFlowRate * rho;
                         }
                     }
@@ -832,10 +810,8 @@ namespace UnitarySystems {
                         Real64 CoilMaxVolFlowRate = SteamCoils::GetCoilMaxSteamFlowRate(
                             state, this->m_HeatingCoilIndex, state.dataUnitarySystems->initUnitarySystemsErrorsFound);
                         if (CoilMaxVolFlowRate != DataSizing::AutoSize) {
-                            int SteamIndex = 0; // Function GetSatDensityRefrig will look up steam index if 0 is passed
                             Real64 TempSteamIn = 100.0;
-                            Real64 SteamDensity =
-                                FluidProperties::GetSatDensityRefrig(state, fluidNameSteam, TempSteamIn, 1.0, SteamIndex, routineName);
+                            Real64 SteamDensity = Fluid::GetSteam(state)->getSatDensity(state, TempSteamIn, 1.0, routineName);
                             this->MaxHeatCoilFluidFlow = CoilMaxVolFlowRate * SteamDensity;
                         }
                     }
@@ -852,11 +828,8 @@ namespace UnitarySystems {
                         Real64 CoilMaxVolFlowRate = WaterCoils::GetCoilMaxWaterFlowRate(
                             state, "Coil:Heating:Water", this->m_SuppHeatCoilName, state.dataUnitarySystems->initUnitarySystemsErrorsFound);
                         if (CoilMaxVolFlowRate != DataSizing::AutoSize) {
-                            Real64 rho = FluidProperties::GetDensityGlycol(state,
-                                                                           state.dataPlnt->PlantLoop(this->m_SuppCoilPlantLoc.loopNum).FluidName,
-                                                                           Constant::CWInitConvTemp,
-                                                                           state.dataPlnt->PlantLoop(this->m_SuppCoilPlantLoc.loopNum).FluidIndex,
-                                                                           routineName);
+                            Real64 rho = state.dataPlnt->PlantLoop(this->m_SuppCoilPlantLoc.loopNum)
+                                             .glycol->getDensity(state, Constant::CWInitConvTemp, routineName);
                             this->m_MaxSuppCoilFluidFlow = CoilMaxVolFlowRate * rho;
                         }
                     }
@@ -871,10 +844,8 @@ namespace UnitarySystems {
                         Real64 CoilMaxVolFlowRate = SteamCoils::GetCoilMaxSteamFlowRate(
                             state, this->m_SuppHeatCoilIndex, state.dataUnitarySystems->initUnitarySystemsErrorsFound);
                         if (CoilMaxVolFlowRate != DataSizing::AutoSize) {
-                            int SteamIndex = 0; // Function GetSatDensityRefrig will look up steam index if 0 is passed
                             Real64 TempSteamIn = 100.0;
-                            Real64 SteamDensity =
-                                FluidProperties::GetSatDensityRefrig(state, fluidNameSteam, TempSteamIn, 1.0, SteamIndex, routineName);
+                            Real64 SteamDensity = Fluid::GetSteam(state)->getSatDensity(state, TempSteamIn, 1.0, routineName);
                             this->m_MaxSuppCoilFluidFlow = CoilMaxVolFlowRate * SteamDensity;
                         }
                     }
@@ -4362,10 +4333,8 @@ namespace UnitarySystems {
                         this->m_DesignHeatingCapacity = DataSizing::AutoSize;
                     }
                     if (this->MaxHeatCoilFluidFlow > 0.0) {
-                        int SteamIndex = 0; // Function GetSatDensityRefrig will look up steam index if 0 is passed
                         Real64 TempSteamIn = 100.0;
-                        Real64 SteamDensity =
-                            FluidProperties::GetSatDensityRefrig(state, fluidNameSteam, TempSteamIn, 1.0, SteamIndex, "getUnitarySystemInputData");
+                        Real64 SteamDensity = Fluid::GetSteam(state)->getSatDensity(state, TempSteamIn, 1.0, "getUnitarySystemInputData");
                         this->MaxHeatCoilFluidFlow *= SteamDensity;
                         errFlag = false;
                     }
@@ -5383,10 +5352,8 @@ namespace UnitarySystems {
                             this->m_DesignSuppHeatingCapacity = DataSizing::AutoSize; // not sure if steam coil needs this
                         }
                         if (this->m_MaxSuppCoilFluidFlow > 0.0) {
-                            int SteamIndex = 0; // Function GetSatDensityRefrig will look up steam index if 0 is passed
                             Real64 TempSteamIn = 100.0;
-                            Real64 SteamDensity = FluidProperties::GetSatDensityRefrig(
-                                state, fluidNameSteam, TempSteamIn, 1.0, SteamIndex, "getUnitarySystemInputData");
+                            Real64 SteamDensity = Fluid::GetSteam(state)->getSatDensity(state, TempSteamIn, 1.0, "getUnitarySystemInputData");
                             this->m_MaxSuppCoilFluidFlow = this->m_MaxSuppCoilFluidFlow * SteamDensity;
                         }
                         SupHeatCoilInletNode = thisSuppCoil.AirInletNodeNum;
@@ -10002,11 +9969,8 @@ namespace UnitarySystems {
                         Real64 CoilMaxVolFlowRate =
                             WaterCoils::GetCoilMaxWaterFlowRate(state, "Coil:Heating:Water", this->m_HeatingCoilName, errorsFound);
                         if (CoilMaxVolFlowRate != DataSizing::AutoSize) {
-                            Real64 rho = FluidProperties::GetDensityGlycol(state,
-                                                                           state.dataPlnt->PlantLoop(this->HeatCoilPlantLoc.loopNum).FluidName,
-                                                                           Constant::CWInitConvTemp,
-                                                                           state.dataPlnt->PlantLoop(this->HeatCoilPlantLoc.loopNum).FluidIndex,
-                                                                           routineName);
+                            Real64 rho = state.dataPlnt->PlantLoop(this->HeatCoilPlantLoc.loopNum)
+                                             .glycol->getDensity(state, Constant::CWInitConvTemp, routineName);
                             this->MaxHeatCoilFluidFlow = CoilMaxVolFlowRate * rho;
                         }
                     }
@@ -10020,10 +9984,8 @@ namespace UnitarySystems {
                                                                 QActual); // QCoilReq, simulate any load > 0 to get max capacity
                         Real64 CoilMaxVolFlowRate = SteamCoils::GetCoilMaxSteamFlowRate(state, this->m_HeatingCoilIndex, errorsFound);
                         if (CoilMaxVolFlowRate != DataSizing::AutoSize) {
-                            int SteamIndex = 0; // Function GetSatDensityRefrig will look up steam index if 0 is passed
                             Real64 TempSteamIn = 100.0;
-                            Real64 SteamDensity =
-                                FluidProperties::GetSatDensityRefrig(state, fluidNameSteam, TempSteamIn, 1.0, SteamIndex, routineName);
+                            Real64 SteamDensity = Fluid::GetSteam(state)->getSatDensity(state, TempSteamIn, 1.0, routineName);
                             this->MaxHeatCoilFluidFlow = CoilMaxVolFlowRate * SteamDensity;
                         }
                     }
@@ -10040,11 +10002,8 @@ namespace UnitarySystems {
                         Real64 CoilMaxVolFlowRate =
                             WaterCoils::GetCoilMaxWaterFlowRate(state, "Coil:Heating:Water", this->m_SuppHeatCoilName, errorsFound);
                         if (CoilMaxVolFlowRate != DataSizing::AutoSize) {
-                            Real64 rho = FluidProperties::GetDensityGlycol(state,
-                                                                           state.dataPlnt->PlantLoop(this->m_SuppCoilPlantLoc.loopNum).FluidName,
-                                                                           Constant::CWInitConvTemp,
-                                                                           state.dataPlnt->PlantLoop(this->m_SuppCoilPlantLoc.loopNum).FluidIndex,
-                                                                           routineName);
+                            Real64 rho = state.dataPlnt->PlantLoop(this->m_SuppCoilPlantLoc.loopNum)
+                                             .glycol->getDensity(state, Constant::CWInitConvTemp, routineName);
                             this->m_MaxSuppCoilFluidFlow = CoilMaxVolFlowRate * rho;
                         }
                     }
@@ -10057,10 +10016,8 @@ namespace UnitarySystems {
                                                                 QActual); // QCoilReq, simulate any load > 0 to get max capacity
                         Real64 CoilMaxVolFlowRate = SteamCoils::GetCoilMaxSteamFlowRate(state, this->m_SuppHeatCoilIndex, errorsFound);
                         if (CoilMaxVolFlowRate != DataSizing::AutoSize) {
-                            int SteamIndex = 0; // Function GetSatDensityRefrig will look up steam index if 0 is passed
                             Real64 TempSteamIn = 100.0;
-                            Real64 SteamDensity =
-                                FluidProperties::GetSatDensityRefrig(state, fluidNameSteam, TempSteamIn, 1.0, SteamIndex, routineName);
+                            Real64 SteamDensity = Fluid::GetSteam(state)->getSatDensity(state, TempSteamIn, 1.0, routineName);
                             this->m_MaxSuppCoilFluidFlow = CoilMaxVolFlowRate * SteamDensity;
                         }
                     }
@@ -15736,11 +15693,7 @@ namespace UnitarySystems {
 
         if (HeatRecMassFlowRate > 0.0) {
 
-            Real64 CpHeatRec = FluidProperties::GetSpecificHeatGlycol(state,
-                                                                      state.dataPlnt->PlantLoop(this->m_HRPlantLoc.loopNum).FluidName,
-                                                                      HeatRecInletTemp,
-                                                                      state.dataPlnt->PlantLoop(this->m_HRPlantLoc.loopNum).FluidIndex,
-                                                                      routineName);
+            Real64 CpHeatRec = state.dataPlnt->PlantLoop(this->m_HRPlantLoc.loopNum).glycol->getSpecificHeat(state, HeatRecInletTemp, routineName);
 
             HeatRecOutletTemp = QHeatRec / (HeatRecMassFlowRate * CpHeatRec) + HeatRecInletTemp;
             // coil model should be handling max outlet water temp (via limit to heat transfer) since heat rejection needs to be accounted for by the

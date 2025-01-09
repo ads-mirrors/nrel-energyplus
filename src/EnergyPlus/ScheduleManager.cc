@@ -4464,7 +4464,7 @@ namespace ScheduleManager {
         return TotalHours;
     }
 
-    int GetNumberOfSchedules(EnergyPlusData &state)
+    int GetNumberOfSchedules(EnergyPlusData const &state)
     {
         return state.dataScheduleMgr->NumSchedules;
     }

@@ -71,7 +71,7 @@ using namespace EnergyPlus::Psychrometrics;
 
 TEST_F(EnergyPlusFixture, Boiler_HotWaterSizingTest)
 {
-    state->dataFluidProps->init_state(*state);
+    state->dataFluid->init_state(*state);
     // unit test for autosizing boiler nominal capacity in Boiler:HotWater
     state->dataBoilers->Boiler.allocate(1);
     // Hardsized Hot Water Boiler
@@ -86,8 +86,9 @@ TEST_F(EnergyPlusFixture, Boiler_HotWaterSizingTest)
     state->dataSize->PlantSizData.allocate(1);
     // Hot Water Loop
     state->dataPlnt->PlantLoop(1).PlantSizNum = 1;
-    state->dataPlnt->PlantLoop(1).FluidIndex = 1;
     state->dataPlnt->PlantLoop(1).FluidName = "WATER";
+    state->dataPlnt->PlantLoop(1).glycol = Fluid::GetWater(*state);
+
     state->dataSize->PlantSizData(1).DesVolFlowRate = 1.0;
     state->dataSize->PlantSizData(1).DeltaT = 10.0;
     state->dataPlnt->PlantFirstSizesOkayToFinalize = true;
@@ -116,7 +117,7 @@ TEST_F(EnergyPlusFixture, Boiler_HotWaterSizingTest)
 }
 TEST_F(EnergyPlusFixture, Boiler_HotWaterAutoSizeTempTest)
 {
-    state->dataFluidProps->init_state(*state);
+    state->dataFluid->init_state(*state);
     // unit test for checking hot water temperature for autosizing
     // boiler nominal capacity in Boiler:HotWater
     state->dataBoilers->Boiler.allocate(1);
@@ -132,23 +133,17 @@ TEST_F(EnergyPlusFixture, Boiler_HotWaterAutoSizeTempTest)
     state->dataSize->PlantSizData.allocate(1);
     // Hot Water Loop
     state->dataPlnt->PlantLoop(1).PlantSizNum = 1;
-    state->dataPlnt->PlantLoop(1).FluidIndex = 1;
     state->dataPlnt->PlantLoop(1).FluidName = "WATER";
+    state->dataPlnt->PlantLoop(1).glycol = Fluid::GetWater(*state);
     state->dataSize->PlantSizData(1).DesVolFlowRate = 1.0;
     state->dataSize->PlantSizData(1).DeltaT = 10.0;
     state->dataPlnt->PlantFirstSizesOkayToFinalize = true;
 
     // calculate nominal capacity at 60.0 C hot water temperature
-    Real64 rho = FluidProperties::GetDensityGlycol(*state,
-                                                   state->dataPlnt->PlantLoop(state->dataBoilers->Boiler(1).plantLoc.loopNum).FluidName,
-                                                   60.0,
-                                                   state->dataPlnt->PlantLoop(state->dataBoilers->Boiler(1).plantLoc.loopNum).FluidIndex,
-                                                   "Boiler_HotWaterAutoSizeTempTest");
-    Real64 Cp = FluidProperties::GetSpecificHeatGlycol(*state,
-                                                       state->dataPlnt->PlantLoop(state->dataBoilers->Boiler(1).plantLoc.loopNum).FluidName,
-                                                       60.0,
-                                                       state->dataPlnt->PlantLoop(state->dataBoilers->Boiler(1).plantLoc.loopNum).FluidIndex,
-                                                       "Boiler_HotWaterAutoSizeTempTest");
+    Real64 rho = state->dataPlnt->PlantLoop(state->dataBoilers->Boiler(1).plantLoc.loopNum)
+                     .glycol->getDensity(*state, 60.0, "Boiler_HotWaterAutoSizeTempTest");
+    Real64 Cp = state->dataPlnt->PlantLoop(state->dataBoilers->Boiler(1).plantLoc.loopNum)
+                    .glycol->getSpecificHeat(*state, 60.0, "Boiler_HotWaterAutoSizeTempTest");
 
     Real64 NomCapBoilerExpected =
         rho * state->dataSize->PlantSizData(1).DesVolFlowRate * Cp * state->dataSize->PlantSizData(1).DeltaT * state->dataBoilers->Boiler(1).SizFac;
@@ -254,10 +249,9 @@ TEST_F(EnergyPlusFixture, Boiler_HotWater_BoilerEfficiency)
     auto &thisBoiler = state->dataBoilers->Boiler(1);
 
     state->dataPlnt->PlantLoop(1).Name = "HotWaterLoop";
-    state->dataPlnt->PlantLoop(1).FluidName = "HotWater";
-    state->dataPlnt->PlantLoop(1).FluidIndex = 1;
     state->dataPlnt->PlantLoop(1).PlantSizNum = 1;
     state->dataPlnt->PlantLoop(1).FluidName = "WATER";
+    state->dataPlnt->PlantLoop(1).glycol = Fluid::GetWater(*state);
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Name = thisBoiler.Name;
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Type = DataPlant::PlantEquipmentType::Boiler_Simple;
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).NodeNumIn = thisBoiler.BoilerInletNodeNum;

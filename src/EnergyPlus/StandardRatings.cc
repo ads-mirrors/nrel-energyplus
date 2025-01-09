@@ -409,8 +409,6 @@ namespace StandardRatings {
         using namespace OutputReportPredefined;
         using Curve::CurveValue;
         using Curve::GetCurveName;
-        using FluidProperties::GetDensityGlycol;
-        using FluidProperties::GetSpecificHeatGlycol;
         using General::SolveRoot;
 
         Real64 constexpr Acc(0.0001);     // Accuracy of result
@@ -531,17 +529,9 @@ namespace StandardRatings {
 
                 } else if (ChillerType == DataPlant::PlantEquipmentType::Chiller_ElectricReformEIR) {
                     EnteringWaterTempReduced = CondenserInletTemp;
-                    Cp = GetSpecificHeatGlycol(state,
-                                               state.dataPlnt->PlantLoop(CondLoopNum).FluidName,
-                                               EnteringWaterTempReduced,
-                                               state.dataPlnt->PlantLoop(CondLoopNum).FluidIndex,
-                                               RoutineName);
+                    Cp = state.dataPlnt->PlantLoop(CondLoopNum).glycol->getSpecificHeat(state, EnteringWaterTempReduced, RoutineName);
 
-                    Rho = GetDensityGlycol(state,
-                                           state.dataPlnt->PlantLoop(CondLoopNum).FluidName,
-                                           EnteringWaterTempReduced,
-                                           state.dataPlnt->PlantLoop(CondLoopNum).FluidIndex,
-                                           RoutineName);
+                    Rho = state.dataPlnt->PlantLoop(CondLoopNum).glycol->getDensity(state, EnteringWaterTempReduced, RoutineName);
 
                     Real64 reducedPLR = ReducedPLR[RedCapNum];
                     CondenserOutletTemp0 = EnteringWaterTempReduced + 0.1;

@@ -1700,8 +1700,7 @@ namespace WaterUse {
         static constexpr std::string_view RoutineName{"calcH2ODensity"};
 
         if (state.dataWaterUse->calcRhoH2O) {
-            int DummyValue = 1;
-            state.dataWaterUse->rhoH2OStd = FluidProperties::GetDensityGlycol(state, "WATER", Constant::InitConvTemp, DummyValue, RoutineName);
+            state.dataWaterUse->rhoH2OStd = Fluid::GetWater(state)->getDensity(state, Constant::InitConvTemp, RoutineName);
             state.dataWaterUse->calcRhoH2O = false;
         }
         return state.dataWaterUse->rhoH2OStd;

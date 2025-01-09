@@ -3476,7 +3476,7 @@ void InitSolarHeatGains(EnergyPlusData &state)
                                     // Exterior shade, screen or blind
 
                                 } else if (ShadeFlag == DataSurfaces::WinShadingType::ExtBlind) { // Exterior blind
-                                    auto &surfShade = state.dataSurface->surfShades(SurfNum);
+                                    auto const &surfShade = state.dataSurface->surfShades(SurfNum);
 
                                     int profIdxLo = surfShade.blind.profAngIdxLo;
                                     int profIdxHi = surfShade.blind.profAngIdxHi;
@@ -4247,7 +4247,7 @@ void ComputeIntSWAbsorpFactors(EnergyPlusData &state)
                     // Window with shade, screen or blind
 
                     if (ConstrNumSh != 0) {
-                        auto &constrSh = state.dataConstruction->Construct(ConstrNumSh);
+                        auto const &constrSh = state.dataConstruction->Construct(ConstrNumSh);
                         if (ANY_SHADE_SCREEN(ShadeFlag)) {
                             TransDiffWin = constrSh.TransDiff;
                             DiffAbsShade = constrSh.AbsDiffBackShade;

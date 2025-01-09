@@ -107,10 +107,10 @@ namespace SwimmingPool {
         std::string PeopleHeatGainSchedName; // Name of people heat gain schedule
         int PeopleHeatGainSchedPtr;          // People heat gain schedule index
         Real64 PeopleHeatGain;               // Current heat gain from people
-        int GlycolIndex;                     // index in fluid property routines for water
-        Real64 WaterMass;                    // pool water mass
-        Real64 SatPressPoolWaterTemp;        // Saturation pressure at the pool water temperature
-        Real64 PartPressZoneAirTemp;         // Partial pressure of water vapor in the air
+        Fluid::GlycolProps *glycol = nullptr;
+        Real64 WaterMass;             // pool water mass
+        Real64 SatPressPoolWaterTemp; // Saturation pressure at the pool water temperature
+        Real64 PartPressZoneAirTemp;  // Partial pressure of water vapor in the air
         // Report data
         Real64 PoolWaterTemp;           // Average pool water temperature
         Real64 WaterInletTemp;          // water inlet temperature
@@ -146,7 +146,7 @@ namespace SwimmingPool {
               CurMakeupWaterTemp(0.0), CoverSchedPtr(0), CurCoverSchedVal(0.0), CoverEvapFactor(0.0), CoverConvFactor(0.0), CoverSWRadFactor(0.0),
               CoverLWRadFactor(0.0), CurCoverEvapFac(0.0), CurCoverConvFac(0.0), CurCoverSWRadFac(0.0), CurCoverLWRadFac(0.0),
               RadConvertToConvect(0.0), MiscPowerFactor(0.0), SetPtTempSchedPtr(0), CurSetPtTemp(23.0), MaxNumOfPeople(0.0), PeopleSchedPtr(0),
-              PeopleHeatGainSchedPtr(0), PeopleHeatGain(0.0), GlycolIndex(0), WaterMass(0.0), SatPressPoolWaterTemp(0.0), PartPressZoneAirTemp(0.0),
+              PeopleHeatGainSchedPtr(0), PeopleHeatGain(0.0), WaterMass(0.0), SatPressPoolWaterTemp(0.0), PartPressZoneAirTemp(0.0),
               PoolWaterTemp(23.0), WaterInletTemp(0.0), WaterOutletTemp(0.0), WaterMassFlowRate(0.0), MakeUpWaterMassFlowRate(0.0),
               MakeUpWaterMass(0.0), MakeUpWaterVolFlowRate(0.0), MakeUpWaterVol(0.0), HeatPower(0.0), HeatEnergy(0.0), MiscEquipPower(0.0),
               MiscEquipEnergy(0.0), RadConvertToConvectRep(0.0), EvapHeatLossRate(0.0), EvapEnergyLoss(0.0), MyOneTimeFlag(true),

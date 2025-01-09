@@ -1062,11 +1062,11 @@ namespace PlantPipingSystemsManager {
 
     void SimulateRadialInsulationCell(CartesianCell &ThisCell);
 
-    void SimulateRadialPipeCell(Circuit *thisCircuit, CartesianCell &ThisCell);
+    void SimulateRadialPipeCell(Circuit const *thisCircuit, CartesianCell &ThisCell);
 
-    void SimulateFluidCell(Circuit *thisCircuit, CartesianCell &ThisCell, Real64 FlowRate, Real64 EnteringFluidTemp);
+    void SimulateFluidCell(Circuit const *thisCircuit, CartesianCell &ThisCell, Real64 FlowRate, Real64 EnteringFluidTemp);
 
-    bool IsConverged_PipeCurrentToPrevIteration(Circuit *thisCircuit, CartesianCell const &CellToCheck);
+    bool IsConverged_PipeCurrentToPrevIteration(Circuit const *thisCircuit, CartesianCell const &CellToCheck);
 
 } // namespace PlantPipingSystemsManager
 

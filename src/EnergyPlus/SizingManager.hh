@@ -95,9 +95,9 @@ namespace SizingManager {
                                     std::string const &cCurrentModuleObject,
                                     int OAIndex,
                                     Array1D_string const &cAlphaArgs,
-                                    int &NumAlphas,
+                                    int const NumAlphas,
                                     Array1D<Real64> const &rNumericArgs,
-                                    int &NumNumbers,
+                                    int const NumNumbers,
                                     Array1D_bool const &lAlphaFieldBlanks,
                                     Array1D_string const &cAlphaFieldNames,
                                     bool &ErrorsFound // If errors found in input

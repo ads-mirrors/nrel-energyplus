@@ -830,11 +830,7 @@ void InitCoolingPanel(EnergyPlusData &state, int const CoolingPanelNum, int cons
 
             // set design mass flow rates
             if (thisCP.WaterInletNode > 0) {
-                rho = FluidProperties::GetDensityGlycol(state,
-                                                        state.dataPlnt->PlantLoop(thisCP.plantLoc.loopNum).FluidName,
-                                                        Constant::CWInitConvTemp,
-                                                        state.dataPlnt->PlantLoop(thisCP.plantLoc.loopNum).FluidIndex,
-                                                        RoutineName);
+                rho = state.dataPlnt->PlantLoop(thisCP.plantLoc.loopNum).glycol->getDensity(state, Constant::CWInitConvTemp, RoutineName);
                 thisCP.WaterMassFlowRateMax = rho * thisCP.WaterVolFlowRateMax;
                 PlantUtilities::InitComponentNodes(state, 0.0, thisCP.WaterMassFlowRateMax, thisCP.WaterInletNode, thisCP.WaterOutletNode);
             }
@@ -845,11 +841,7 @@ void InitCoolingPanel(EnergyPlusData &state, int const CoolingPanelNum, int cons
     if (state.dataGlobal->BeginEnvrnFlag && thisCP.MyEnvrnFlag) {
         // Initialize
 
-        rho = FluidProperties::GetDensityGlycol(state,
-                                                state.dataPlnt->PlantLoop(thisCP.plantLoc.loopNum).FluidName,
-                                                Constant::InitConvTemp,
-                                                state.dataPlnt->PlantLoop(thisCP.plantLoc.loopNum).FluidIndex,
-                                                RoutineName);
+        rho = state.dataPlnt->PlantLoop(thisCP.plantLoc.loopNum).glycol->getDensity(state, Constant::InitConvTemp, RoutineName);
 
         thisCP.WaterMassFlowRateMax = rho * thisCP.WaterVolFlowRateMax;
 
@@ -857,11 +849,7 @@ void InitCoolingPanel(EnergyPlusData &state, int const CoolingPanelNum, int cons
 
         ThisInNode.Temp = 7.0;
 
-        Cp = FluidProperties::GetSpecificHeatGlycol(state,
-                                                    state.dataPlnt->PlantLoop(thisCP.plantLoc.loopNum).FluidName,
-                                                    ThisInNode.Temp,
-                                                    state.dataPlnt->PlantLoop(thisCP.plantLoc.loopNum).FluidIndex,
-                                                    RoutineName);
+        Cp = state.dataPlnt->PlantLoop(thisCP.plantLoc.loopNum).glycol->getSpecificHeat(state, ThisInNode.Temp, RoutineName);
 
         ThisInNode.Enthalpy = Cp * ThisInNode.Temp;
         ThisInNode.Quality = 0.0;
@@ -1032,16 +1020,8 @@ void SizeCoolingPanel(EnergyPlusData &state, int const CoolingPanelNum)
                     PlantUtilities::MyPlantSizingIndex(state, CompType, thisCP.Name, thisCP.WaterInletNode, thisCP.WaterOutletNode, ErrorsFound);
                 if (PltSizCoolNum > 0) {
                     if (DesCoilLoad >= HVAC::SmallLoad) {
-                        rho = FluidProperties::GetDensityGlycol(state,
-                                                                state.dataPlnt->PlantLoop(thisCP.plantLoc.loopNum).FluidName,
-                                                                5.,
-                                                                state.dataPlnt->PlantLoop(thisCP.plantLoc.loopNum).FluidIndex,
-                                                                RoutineName);
-                        Cp = FluidProperties::GetSpecificHeatGlycol(state,
-                                                                    state.dataPlnt->PlantLoop(thisCP.plantLoc.loopNum).FluidName,
-                                                                    5.0,
-                                                                    state.dataPlnt->PlantLoop(thisCP.plantLoc.loopNum).FluidIndex,
-                                                                    RoutineName);
+                        rho = state.dataPlnt->PlantLoop(thisCP.plantLoc.loopNum).glycol->getDensity(state, 5., RoutineName);
+                        Cp = state.dataPlnt->PlantLoop(thisCP.plantLoc.loopNum).glycol->getSpecificHeat(state, 5.0, RoutineName);
                         WaterVolFlowMaxCoolDes = DesCoilLoad / (state.dataSize->PlantSizData(PltSizCoolNum).DeltaT * Cp * rho);
                     } else {
                         WaterVolFlowMaxCoolDes = 0.0;
@@ -1290,11 +1270,7 @@ void CoolingPanelParams::CalcCoolingPanel(EnergyPlusData &state, int const Cooli
 
         if (QZnReq < -HVAC::SmallLoad && !state.dataZoneEnergyDemand->CurDeadBandOrSetback(ZoneNum) && (CoolingPanelOn)) {
 
-            Cp = FluidProperties::GetSpecificHeatGlycol(state,
-                                                        state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidName,
-                                                        waterInletTemp,
-                                                        state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidIndex,
-                                                        RoutineName);
+            Cp = state.dataPlnt->PlantLoop(this->plantLoc.loopNum).glycol->getSpecificHeat(state, waterInletTemp, RoutineName);
 
             // Find the actual load: this parameter modifies what the response of the system should be.  For total load control, the system tries
             // to meet the QZnReq.  For convective load control, the convective output of the device equals QZnReq which means that the load on
@@ -1375,11 +1351,7 @@ void CoolingPanelParams::CalcCoolingPanel(EnergyPlusData &state, int const Cooli
 
     if (CoolingPanelOn) {
         // Now simulate the system...
-        Cp = FluidProperties::GetSpecificHeatGlycol(state,
-                                                    state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidName,
-                                                    waterInletTemp,
-                                                    state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidIndex,
-                                                    RoutineName);
+        Cp = state.dataPlnt->PlantLoop(this->plantLoc.loopNum).glycol->getSpecificHeat(state, waterInletTemp, RoutineName);
         Effectiveness = 1.0 - exp(-this->UA / (waterMassFlowRate * Cp));
         if (Effectiveness <= 0.0) {
             Effectiveness = 0.0;

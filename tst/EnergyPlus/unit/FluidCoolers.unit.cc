@@ -355,10 +355,13 @@ TEST_F(EnergyPlusFixture, SizeFunctionTestWhenPlantSizingIndexIsZero)
 
     auto &thisFluidCooler = state->dataFluidCoolers->SimpleFluidCooler(FluidCoolerNum);
 
-    state->dataPlnt->PlantLoop.allocate(FluidCoolerNum);
+    state->dataPlnt->PlantLoop.allocate(1);
+    state->dataPlnt->PlantLoop(1).FluidName = "WATER";
+    state->dataPlnt->PlantLoop(1).glycol = Fluid::GetWater(*state);
+
     state->dataFluidCoolers->SimpleFluidCooler.allocate(FluidCoolerNum);
     state->dataFluidCoolers->SimpleFluidCooler(FluidCoolerNum).plantLoc.loopNum = 1;
-    state->dataPlnt->PlantLoop(FluidCoolerNum).PlantSizNum = 0;
+    state->dataPlnt->PlantLoop(1).PlantSizNum = 0;
 
     EXPECT_FALSE(thisFluidCooler.HighSpeedFanPowerWasAutoSized);
     EXPECT_FALSE(thisFluidCooler.HighSpeedAirFlowRateWasAutoSized);
@@ -391,6 +394,8 @@ TEST_F(EnergyPlusFixture, ExerciseSingleSpeedFluidCooler)
 
     PlantLocation pl{1, EnergyPlus::DataPlant::LoopSideLocation::Demand, 1, 1};
     state->dataPlnt->PlantLoop.allocate(1);
+    state->dataPlnt->PlantLoop(1).FluidName = "WATER";
+    state->dataPlnt->PlantLoop(1).glycol = Fluid::GetWater(*state);
     state->dataPlnt->PlantLoop(1).LoopSide(EnergyPlus::DataPlant::LoopSideLocation::Demand).Branch.allocate(1);
     state->dataPlnt->PlantLoop(1).LoopSide(EnergyPlus::DataPlant::LoopSideLocation::Demand).Branch(1).Comp.allocate(1);
 
@@ -462,6 +467,8 @@ TEST_F(EnergyPlusFixture, ExerciseTwoSpeedFluidCooler)
 
     PlantLocation pl{1, EnergyPlus::DataPlant::LoopSideLocation::Demand, 1, 1};
     state->dataPlnt->PlantLoop.allocate(1);
+    state->dataPlnt->PlantLoop(1).FluidName = "WATER";
+    state->dataPlnt->PlantLoop(1).glycol = Fluid::GetWater(*state);
     state->dataPlnt->PlantLoop(1).LoopSide(EnergyPlus::DataPlant::LoopSideLocation::Demand).Branch.allocate(1);
     state->dataPlnt->PlantLoop(1).LoopSide(EnergyPlus::DataPlant::LoopSideLocation::Demand).Branch(1).Comp.allocate(1);
 

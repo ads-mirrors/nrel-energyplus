@@ -950,7 +950,7 @@ namespace HighTempRadiantSystem {
                     HeatBalanceSurfaceManager::CalcHeatBalanceInsideSurf(state, ZoneNum);
 
                     // Redetermine the current value of the controlling temperature
-                    auto &thisZoneHBMod = state.dataZoneTempPredictorCorrector->zoneHeatBalance(ZoneNum);
+                    auto const &thisZoneHBMod = state.dataZoneTempPredictorCorrector->zoneHeatBalance(ZoneNum);
                     switch (thisHTR.ControlType) {
                     case RadControlType::MATControl: {
                         ZoneTemp = thisZoneHBMod.MAT;

@@ -695,11 +695,7 @@ namespace PhotovoltaicThermalCollectors {
             switch (this->WorkingFluidType) {
             case WorkingFluidEnum::LIQUID: {
 
-                Real64 rho = FluidProperties::GetDensityGlycol(state,
-                                                               state.dataPlnt->PlantLoop(this->WPlantLoc.loopNum).FluidName,
-                                                               Constant::HWInitConvTemp,
-                                                               state.dataPlnt->PlantLoop(this->WPlantLoc.loopNum).FluidIndex,
-                                                               RoutineName);
+                Real64 rho = state.dataPlnt->PlantLoop(this->WPlantLoc.loopNum).glycol->getDensity(state, Constant::HWInitConvTemp, RoutineName);
 
                 this->MaxMassFlowRate = this->DesignVolFlowRate * rho;
 

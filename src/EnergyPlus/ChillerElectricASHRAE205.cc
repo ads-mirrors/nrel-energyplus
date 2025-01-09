@@ -597,41 +597,26 @@ void ASHRAE205ChillerSpecs::initialize(EnergyPlusData &state, bool const RunFlag
     this->EquipFlowCtrl = DataPlant::CompData::getPlantComponent(state, this->CWPlantLoc).FlowCtrl;
 
     if (this->MyEnvrnFlag && state.dataGlobal->BeginEnvrnFlag && (state.dataPlnt->PlantFirstSizesOkayToFinalize)) {
-        Real64 rho = FluidProperties::GetDensityGlycol(state,
-                                                       state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).FluidName,
-                                                       Constant::CWInitConvTemp,
-                                                       state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).FluidIndex,
-                                                       RoutineName);
+        Real64 rho = state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).glycol->getDensity(state, Constant::CWInitConvTemp, RoutineName);
 
         this->EvapMassFlowRateMax = rho * this->EvapVolFlowRate;
         PlantUtilities::InitComponentNodes(state, 0.0, this->EvapMassFlowRateMax, this->EvapInletNodeNum, this->EvapOutletNodeNum);
 
         if (this->CondenserType == DataPlant::CondenserType::WaterCooled) {
-            rho = FluidProperties::GetDensityGlycol(state,
-                                                    state.dataPlnt->PlantLoop(this->CDPlantLoc.loopNum).FluidName,
-                                                    this->TempRefCondIn,
-                                                    state.dataPlnt->PlantLoop(this->CDPlantLoc.loopNum).FluidIndex,
-                                                    RoutineName);
+            rho = state.dataPlnt->PlantLoop(this->CDPlantLoc.loopNum).glycol->getDensity(state, this->TempRefCondIn, RoutineName);
             this->CondMassFlowRateMax = rho * this->CondVolFlowRate;
             PlantUtilities::InitComponentNodes(state, 0.0, this->CondMassFlowRateMax, this->CondInletNodeNum, this->CondOutletNodeNum);
             state.dataLoopNodes->Node(this->CondInletNodeNum).Temp = this->TempRefCondIn;
         }
         // Set mass flow rates at Oil Cooler and Aux Equipment nodes
         if (this->OilCoolerInletNode) {
-            Real64 rho_oil_cooler = FluidProperties::GetDensityGlycol(state,
-                                                                      state.dataPlnt->PlantLoop(this->OCPlantLoc.loopNum).FluidName,
-                                                                      Constant::InitConvTemp,
-                                                                      state.dataPlnt->PlantLoop(this->OCPlantLoc.loopNum).FluidIndex,
-                                                                      RoutineName);
+            Real64 rho_oil_cooler =
+                state.dataPlnt->PlantLoop(this->OCPlantLoc.loopNum).glycol->getDensity(state, Constant::InitConvTemp, RoutineName);
             this->OilCoolerMassFlowRate = rho_oil_cooler * this->OilCoolerVolFlowRate;
             PlantUtilities::InitComponentNodes(state, 0.0, this->OilCoolerMassFlowRate, this->OilCoolerInletNode, this->OilCoolerOutletNode);
         }
         if (this->AuxiliaryHeatInletNode) {
-            Real64 rho_aux = FluidProperties::GetDensityGlycol(state,
-                                                               state.dataPlnt->PlantLoop(this->AHPlantLoc.loopNum).FluidName,
-                                                               Constant::InitConvTemp,
-                                                               state.dataPlnt->PlantLoop(this->AHPlantLoc.loopNum).FluidIndex,
-                                                               RoutineName);
+            Real64 rho_aux = state.dataPlnt->PlantLoop(this->AHPlantLoc.loopNum).glycol->getDensity(state, Constant::InitConvTemp, RoutineName);
             this->AuxiliaryMassFlowRate = rho_aux * this->AuxiliaryVolFlowRate;
             PlantUtilities::InitComponentNodes(state, 0.0, this->AuxiliaryMassFlowRate, this->AuxiliaryHeatInletNode, this->AuxiliaryHeatOutletNode);
         }
@@ -772,16 +757,8 @@ void ASHRAE205ChillerSpecs::size([[maybe_unused]] EnergyPlusData &state)
     if (PltSizCondNum > 0 && PltSizNum > 0) {
         if (state.dataSize->PlantSizData(PltSizNum).DesVolFlowRate >= HVAC::SmallWaterVolFlow && tmpNomCap > 0.0) {
 
-            Real64 rho = FluidProperties::GetDensityGlycol(state,
-                                                           state.dataPlnt->PlantLoop(this->CDPlantLoc.loopNum).FluidName,
-                                                           Constant::CWInitConvTemp,
-                                                           state.dataPlnt->PlantLoop(this->CDPlantLoc.loopNum).FluidIndex,
-                                                           RoutineName);
-            Real64 Cp = FluidProperties::GetSpecificHeatGlycol(state,
-                                                               state.dataPlnt->PlantLoop(this->CDPlantLoc.loopNum).FluidName,
-                                                               this->TempRefCondIn,
-                                                               state.dataPlnt->PlantLoop(this->CDPlantLoc.loopNum).FluidIndex,
-                                                               RoutineName);
+            Real64 rho = state.dataPlnt->PlantLoop(this->CDPlantLoc.loopNum).glycol->getDensity(state, Constant::CWInitConvTemp, RoutineName);
+            Real64 Cp = state.dataPlnt->PlantLoop(this->CDPlantLoc.loopNum).glycol->getSpecificHeat(state, this->TempRefCondIn, RoutineName);
             tmpCondVolFlowRate = tmpNomCap * (1.0 + (1.0 / this->RefCOP) * this->CompPowerToCondenserFrac) /
                                  (state.dataSize->PlantSizData(PltSizCondNum).DeltaT * Cp * rho);
 
@@ -879,17 +856,9 @@ void ASHRAE205ChillerSpecs::size([[maybe_unused]] EnergyPlusData &state)
 
     if (PltSizNum > 0) {
         if (state.dataSize->PlantSizData(PltSizNum).DesVolFlowRate >= HVAC::SmallWaterVolFlow) {
-            Real64 Cp = FluidProperties::GetSpecificHeatGlycol(state,
-                                                               state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).FluidName,
-                                                               Constant::CWInitConvTemp,
-                                                               state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).FluidIndex,
-                                                               RoutineName);
+            Real64 Cp = state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).glycol->getSpecificHeat(state, Constant::CWInitConvTemp, RoutineName);
 
-            Real64 rho = FluidProperties::GetDensityGlycol(state,
-                                                           state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).FluidName,
-                                                           Constant::CWInitConvTemp,
-                                                           state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).FluidIndex,
-                                                           RoutineName);
+            Real64 rho = state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).glycol->getDensity(state, Constant::CWInitConvTemp, RoutineName);
             tmpNomCap = Cp * rho * state.dataSize->PlantSizData(PltSizNum).DeltaT * tmpEvapVolFlowRate;
         } else {
             tmpNomCap = 0.0;
@@ -1257,11 +1226,7 @@ void ASHRAE205ChillerSpecs::findEvaporatorMassFlowRate(EnergyPlusData &state, Re
         }
     } // This is the end of the FlowLock Block
 
-    const Real64 rho = FluidProperties::GetDensityGlycol(state,
-                                                         state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).FluidName,
-                                                         Constant::CWInitConvTemp,
-                                                         state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).FluidIndex,
-                                                         RoutineName);
+    const Real64 rho = state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).glycol->getDensity(state, Constant::CWInitConvTemp, RoutineName);
 
     this->EvapVolFlowRate = this->EvapMassFlowRate / rho;
 }
@@ -1399,11 +1364,8 @@ void ASHRAE205ChillerSpecs::calculate(EnergyPlusData &state, Real64 &MyLoad, boo
         return;
     }
 
-    Real64 CpEvap = FluidProperties::GetSpecificHeatGlycol(state,
-                                                           state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).FluidName,
-                                                           state.dataLoopNodes->Node(this->EvapInletNodeNum).Temp,
-                                                           state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).FluidIndex,
-                                                           RoutineName);
+    Real64 CpEvap = state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum)
+                        .glycol->getSpecificHeat(state, state.dataLoopNodes->Node(this->EvapInletNodeNum).Temp, RoutineName);
 
     // Calculate mass flow rate based on MyLoad (TODO: then adjust it after determining if chiller can meet the load)
     this->findEvaporatorMassFlowRate(state, MyLoad, CpEvap);
@@ -1516,11 +1478,7 @@ void ASHRAE205ChillerSpecs::calculate(EnergyPlusData &state, Real64 &MyLoad, boo
     // Energy balance on the chiller system gives the amount of heat lost to the ambient zone
     this->AmbientZoneGain = this->QEvaporator + this->Power - (this->QCondenser + QExternallyCooled);
 
-    Real64 CpCond = FluidProperties::GetSpecificHeatGlycol(state,
-                                                           state.dataPlnt->PlantLoop(this->CDPlantLoc.loopNum).FluidName,
-                                                           condInletTemp,
-                                                           state.dataPlnt->PlantLoop(this->CDPlantLoc.loopNum).FluidIndex,
-                                                           RoutineName);
+    Real64 CpCond = state.dataPlnt->PlantLoop(this->CDPlantLoc.loopNum).glycol->getSpecificHeat(state, condInletTemp, RoutineName);
     this->CondOutletTemp = this->QCondenser / this->CondMassFlowRate / CpCond + condInletTemp;
 
     // Oil cooler and Auxiliary Heat delta-T calculations
@@ -1529,11 +1487,8 @@ void ASHRAE205ChillerSpecs::calculate(EnergyPlusData &state, Real64 &MyLoad, boo
         PlantUtilities::SetComponentFlowRate(
             state, this->OilCoolerMassFlowRate, this->OilCoolerInletNode, this->OilCoolerOutletNode, this->OCPlantLoc);
 
-        Real64 CpOilCooler = FluidProperties::GetSpecificHeatGlycol(state,
-                                                                    state.dataPlnt->PlantLoop(this->OCPlantLoc.loopNum).FluidName,
-                                                                    state.dataLoopNodes->Node(this->OilCoolerInletNode).Temp,
-                                                                    state.dataPlnt->PlantLoop(this->OCPlantLoc.loopNum).FluidIndex,
-                                                                    RoutineName);
+        Real64 CpOilCooler = state.dataPlnt->PlantLoop(this->OCPlantLoc.loopNum)
+                                 .glycol->getSpecificHeat(state, state.dataLoopNodes->Node(this->OilCoolerInletNode).Temp, RoutineName);
 
         if (this->OilCoolerMassFlowRate != 0.0) {
             oilCoolerDeltaTemp = this->QOilCooler / (this->OilCoolerMassFlowRate * CpOilCooler);
@@ -1547,11 +1502,8 @@ void ASHRAE205ChillerSpecs::calculate(EnergyPlusData &state, Real64 &MyLoad, boo
         PlantUtilities::SetComponentFlowRate(
             state, this->AuxiliaryMassFlowRate, this->AuxiliaryHeatInletNode, this->AuxiliaryHeatOutletNode, this->AHPlantLoc);
 
-        Real64 CpAux = FluidProperties::GetSpecificHeatGlycol(state,
-                                                              state.dataPlnt->PlantLoop(this->AHPlantLoc.loopNum).FluidName,
-                                                              state.dataLoopNodes->Node(this->AuxiliaryHeatInletNode).Temp,
-                                                              state.dataPlnt->PlantLoop(this->AHPlantLoc.loopNum).FluidIndex,
-                                                              RoutineName);
+        Real64 CpAux = state.dataPlnt->PlantLoop(this->AHPlantLoc.loopNum)
+                           .glycol->getSpecificHeat(state, state.dataLoopNodes->Node(this->AuxiliaryHeatInletNode).Temp, RoutineName);
 
         if (this->AuxiliaryMassFlowRate != 0.0) {
             auxiliaryDeltaTemp = this->QAuxiliary / (this->AuxiliaryMassFlowRate * CpAux);

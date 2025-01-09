@@ -78,7 +78,7 @@ TEST_F(EnergyPlusFixture, ExcessiveHeatStorage_Test)
     // Set Up PlantLoop Variables
     state->dataPlnt->PlantLoop(1).Mass = 50;
     state->dataPlnt->PlantLoop(1).FluidName = "Water";
-    state->dataPlnt->PlantLoop(1).FluidIndex = 1;
+    state->dataPlnt->PlantLoop(1).glycol = Fluid::GetWater(*state);
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Demand).NodeNumOut = 1;
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Demand).NodeNumIn = 1;
     // Note LastTempInterfaceTankOutlet ends up getting reset to zero on the first pass

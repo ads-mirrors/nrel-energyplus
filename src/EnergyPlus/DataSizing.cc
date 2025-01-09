@@ -774,7 +774,7 @@ Real64 OARequirementsData::calcOAFlowRate(EnergyPlusData &state,
     Real64 curNumOccupants = 0.0;
     Real64 maxOccupants = 0.0;
     if (spaceNum > 0) {
-        auto &thisSpace = state.dataHeatBal->space(spaceNum);
+        auto const &thisSpace = state.dataHeatBal->space(spaceNum);
         floorArea = thisSpace.FloorArea;
         volume = thisSpace.Volume;
         nomTotOccupants = thisSpace.TotOccupants;

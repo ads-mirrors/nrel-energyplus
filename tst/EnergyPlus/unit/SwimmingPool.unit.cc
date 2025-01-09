@@ -504,6 +504,7 @@ TEST_F(EnergyPlusFixture, SwimmingPool_reportTest)
     state->init_state(*state);
     // Test Data
     myPool.Name = "This Pool";
+    myPool.glycol = Fluid::GetWater(*state);
     myPool.SurfacePtr = 1;
     state->dataHeatBalSurf->SurfInsideTempHist.allocate(1);
     state->dataHeatBalSurf->SurfInsideTempHist(1).dimension(1, 0);

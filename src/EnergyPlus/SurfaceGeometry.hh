@@ -333,7 +333,7 @@ namespace SurfaceGeometry {
 
     bool isEnclosedVolume(DataVectorTypes::Polyhedron const &zonePoly, std::vector<EdgeOfSurf> &edgeNot2);
 
-    std::vector<EdgeOfSurf> edgesInBoth(std::vector<EdgeOfSurf> edges1, std::vector<EdgeOfSurf> edges2);
+    std::vector<EdgeOfSurf> edgesInBoth(std::vector<EdgeOfSurf> const &edges1, std::vector<EdgeOfSurf> const &edges2);
 
     bool edgesEqualOnSameSurface(EdgeOfSurf a, EdgeOfSurf b);
 
@@ -365,7 +365,7 @@ namespace SurfaceGeometry {
 
     bool isAlmostEqual2dPt(DataVectorTypes::Vector_2d v1, DataVectorTypes::Vector_2d v2);
 
-    int findIndexOfVertex(DataVectorTypes::Vector vertexToFind, std::vector<DataVectorTypes::Vector> listOfVertices);
+    int findIndexOfVertex(DataVectorTypes::Vector vertexToFind, std::vector<DataVectorTypes::Vector> const &listOfVertices);
 
     Real64 distance(DataVectorTypes::Vector v1, DataVectorTypes::Vector v2);
 

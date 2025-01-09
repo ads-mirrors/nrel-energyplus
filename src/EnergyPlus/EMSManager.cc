@@ -336,7 +336,7 @@ namespace EMSManager {
             }
 
             auto const &thisErlVar = state.dataRuntimeLang->ErlVariable(ErlVariableNum);
-            auto &thisActuatorAvail = state.dataRuntimeLang->EMSActuatorAvailable(EMSActuatorVariableNum);
+            auto const &thisActuatorAvail = state.dataRuntimeLang->EMSActuatorAvailable(EMSActuatorVariableNum);
 
             if (thisErlVar.Value.Type == DataRuntimeLanguage::Value::Null) {
                 *thisActuatorAvail.Actuated = false;

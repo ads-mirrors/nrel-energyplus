@@ -610,8 +610,8 @@ TEST_F(EnergyPlusFixture, OutdoorAirUnit_WaterCoolingCoilAutoSizeTest)
     state->dataWaterCoils->WaterCoil(1).WaterPlantLoc.compNum = 1;
 
     state->dataPlnt->PlantLoop(1).Name = "ChilledWaterLoop";
-    state->dataPlnt->PlantLoop(1).FluidIndex = 1;
     state->dataPlnt->PlantLoop(1).FluidName = "WATER";
+    state->dataPlnt->PlantLoop(1).glycol = Fluid::GetWater(*state);
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Name = state->dataWaterCoils->WaterCoil(1).Name;
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Type =
         DataPlant::PlantEquipmentType::CoilWaterCooling;
@@ -690,10 +690,8 @@ TEST_F(EnergyPlusFixture, OutdoorAirUnit_WaterCoolingCoilAutoSizeTest)
 
     Real64 DesWaterCoolingCoilLoad = DesAirMassFlow * (EnthalpyAirIn - EnthalpyAirOut) + FanCoolLoad;
     Real64 CoilDesWaterDeltaT = state->dataSize->PlantSizData(1).DeltaT;
-    Real64 Cp = FluidProperties::GetSpecificHeatGlycol(
-        *state, state->dataPlnt->PlantLoop(1).FluidName, Constant::CWInitConvTemp, state->dataPlnt->PlantLoop(1).FluidIndex, " ");
-    Real64 rho = FluidProperties::GetDensityGlycol(
-        *state, state->dataPlnt->PlantLoop(1).FluidName, Constant::CWInitConvTemp, state->dataPlnt->PlantLoop(1).FluidIndex, " ");
+    Real64 Cp = state->dataPlnt->PlantLoop(1).glycol->getSpecificHeat(*state, Constant::CWInitConvTemp, " ");
+    Real64 rho = state->dataPlnt->PlantLoop(1).glycol->getDensity(*state, Constant::CWInitConvTemp, " ");
     Real64 DesCoolingCoilWaterVolFlowRate = DesWaterCoolingCoilLoad / (CoilDesWaterDeltaT * Cp * rho);
     // check water coil water flow rate calc
     EXPECT_EQ(DesWaterCoolingCoilLoad, state->dataWaterCoils->WaterCoil(1).DesWaterCoolingCoilRate);
@@ -923,8 +921,9 @@ TEST_F(EnergyPlusFixture, OutdoorAirUnit_SteamHeatingCoilAutoSizeTest)
     state->dataSteamCoils->SteamCoil(1).plantLoc.compNum = 1;
 
     state->dataPlnt->PlantLoop(1).Name = "SteamLoop";
-    state->dataPlnt->PlantLoop(1).FluidIndex = 0;
     state->dataPlnt->PlantLoop(1).FluidName = "STEAM";
+    state->dataPlnt->PlantLoop(1).steam = Fluid::GetSteam(*state);
+    state->dataPlnt->PlantLoop(1).glycol = Fluid::GetWater(*state);
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Name = state->dataSteamCoils->SteamCoil(1).Name;
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Type =
         DataPlant::PlantEquipmentType::CoilSteamAirHeating;
@@ -996,14 +995,10 @@ TEST_F(EnergyPlusFixture, OutdoorAirUnit_SteamHeatingCoilAutoSizeTest)
     Real64 DesSteamCoilLoad = DesAirMassFlow * CpAirAvg * (DesCoilOutTemp - DesCoilInTemp);
 
     // do steam flow rate sizing calculation
-    Real64 EnthSteamIn =
-        FluidProperties::GetSatEnthalpyRefrig(*state, "STEAM", Constant::SteamInitConvTemp, 1.0, state->dataSteamCoils->SteamCoil(1).FluidIndex, "");
-    Real64 EnthSteamOut =
-        FluidProperties::GetSatEnthalpyRefrig(*state, "STEAM", Constant::SteamInitConvTemp, 0.0, state->dataSteamCoils->SteamCoil(1).FluidIndex, "");
-    Real64 SteamDensity =
-        FluidProperties::GetSatDensityRefrig(*state, "STEAM", Constant::SteamInitConvTemp, 1.0, state->dataSteamCoils->SteamCoil(1).FluidIndex, "");
-    Real64 CpOfCondensate = FluidProperties::GetSatSpecificHeatRefrig(
-        *state, "STEAM", Constant::SteamInitConvTemp, 0.0, state->dataSteamCoils->SteamCoil(1).FluidIndex, "");
+    Real64 EnthSteamIn = state->dataSteamCoils->SteamCoil(1).steam->getSatEnthalpy(*state, Constant::SteamInitConvTemp, 1.0, "");
+    Real64 EnthSteamOut = state->dataSteamCoils->SteamCoil(1).steam->getSatEnthalpy(*state, Constant::SteamInitConvTemp, 0.0, "");
+    Real64 SteamDensity = state->dataSteamCoils->SteamCoil(1).steam->getSatDensity(*state, Constant::SteamInitConvTemp, 1.0, "");
+    Real64 CpOfCondensate = state->dataSteamCoils->SteamCoil(1).steam->getSatSpecificHeat(*state, Constant::SteamInitConvTemp, 0.0, "");
     Real64 LatentHeatChange = EnthSteamIn - EnthSteamOut;
     Real64 DesMaxSteamVolFlowRate =
         DesSteamCoilLoad / (SteamDensity * (LatentHeatChange + state->dataSteamCoils->SteamCoil(1).DegOfSubcooling * CpOfCondensate));

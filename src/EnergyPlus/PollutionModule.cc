@@ -746,7 +746,7 @@ void GetFuelFactorInfo(EnergyPlusData &state,
     // PURPOSE OF THIS SUBROUTINE:
     // This routine allows access to data inside this module from other modules (specifically the
     // output tabular reports.
-    auto &pm = state.dataPollution;
+    auto const &pm = state.dataPollution;
 
     if (pm->GetInputFlagPollution) {
         GetPollutionFactorInput(state);

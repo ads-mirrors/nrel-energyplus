@@ -228,6 +228,9 @@ void GetSwimmingPool(EnergyPlusData &state)
 
         state.dataSwimmingPools->Pool(Item).SurfaceName = Alphas(2);
         state.dataSwimmingPools->Pool(Item).SurfacePtr = 0;
+
+        state.dataSwimmingPools->Pool(Item).glycol = Fluid::GetWater(state);
+
         for (int SurfNum = 1; SurfNum <= state.dataSurface->TotSurfaces; ++SurfNum) {
             if (Util::SameString(state.dataSurface->Surface(SurfNum).Name, state.dataSwimmingPools->Pool(Item).SurfaceName)) {
                 state.dataSwimmingPools->Pool(Item).SurfacePtr = SurfNum;
@@ -510,7 +513,7 @@ void SwimmingPoolData::initialize(EnergyPlusData &state, bool const FirstHVACIte
         this->WaterOutletTemp = 0.0;
         this->WaterMassFlowRate = 0.0;
         this->PeopleHeatGain = 0.0;
-        Real64 Density = FluidProperties::GetDensityGlycol(state, "WATER", this->PoolWaterTemp, this->GlycolIndex, RoutineName);
+        Real64 Density = this->glycol->getDensity(state, this->PoolWaterTemp, RoutineName);
         this->WaterMass = state.dataSurface->Surface(this->SurfacePtr).Area * this->AvgDepth * Density;
         this->WaterMassFlowRateMax = this->WaterVolFlowMax * Density;
         this->initSwimmingPoolPlantNodeFlow(state);
@@ -916,8 +919,7 @@ void SwimmingPoolData::calculate(EnergyPlusData &state)
         this->PeopleHeatGain / state.dataSurface->Surface(SurfNum).Area; // heat gain from people in pool (assumed to be all convective)
 
     // Get an estimate of the pool water specific heat
-    Real64 Cp =
-        FluidProperties::GetSpecificHeatGlycol(state, "WATER", this->PoolWaterTemp, this->GlycolIndex, RoutineName); // specific heat of pool water
+    Real64 Cp = this->glycol->getSpecificHeat(state, this->PoolWaterTemp, RoutineName); // specific heat of pool water
 
     Real64 TH22 = state.dataHeatBalSurf->SurfInsideTempHist(2)(
         SurfNum);                           // inside surface temperature at the previous time step equals the old pool water temperature
@@ -1050,13 +1052,11 @@ void SwimmingPoolData::report(EnergyPlusData &state)
     this->PoolWaterTemp = state.dataHeatBalSurf->SurfInsideTempHist(1)(SurfNum);
 
     // Next calculate the amount of heating done by the plant loop
-    Real64 Cp = FluidProperties::GetSpecificHeatGlycol(state, "WATER", this->PoolWaterTemp, this->GlycolIndex,
-                                                       RoutineName); // specific heat of water
+    Real64 Cp = this->glycol->getSpecificHeat(state, this->PoolWaterTemp, RoutineName); // specific heat of water
     this->HeatPower = this->WaterMassFlowRate * Cp * (this->WaterInletTemp - this->PoolWaterTemp);
 
     // Now the power consumption of miscellaneous equipment
-    Real64 Density = FluidProperties::GetDensityGlycol(state, "WATER", this->PoolWaterTemp, this->GlycolIndex,
-                                                       RoutineName); // density of water
+    Real64 Density = this->glycol->getDensity(state, this->PoolWaterTemp, RoutineName); // density of water
     if (Density > MinDensity) {
         this->MiscEquipPower = this->MiscPowerFactor * this->WaterMassFlowRate / Density;
     } else {
@@ -1104,7 +1104,7 @@ void UpdatePoolSourceValAvg(EnergyPlusData &state, bool &SwimmingPoolOn) // .TRU
     if (state.dataSwimmingPools->NumSwimmingPools == 0) return;
 
     for (int PoolNum = 1; PoolNum <= state.dataSwimmingPools->NumSwimmingPools; ++PoolNum) {
-        auto &thisPool = state.dataSwimmingPools->Pool(PoolNum);
+        auto const &thisPool = state.dataSwimmingPools->Pool(PoolNum);
         if (thisPool.QPoolSrcAvg != 0.0) SwimmingPoolOn = true;
         int SurfNum = thisPool.SurfacePtr; // surface number index
         state.dataHeatBalFanSys->QPoolSurfNumerator(SurfNum) = thisPool.QPoolSrcAvg;

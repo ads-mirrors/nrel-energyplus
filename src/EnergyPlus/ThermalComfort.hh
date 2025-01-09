@@ -207,7 +207,7 @@ namespace ThermalComfort {
                Array1D<Real64> &TempChange // Change of temperature
     );
 
-    void RKG(EnergyPlusData &state, int &NEQ, Real64 &H, Real64 &X, Array1D<Real64> &Y, Array1D<Real64> &DY, Array1D<Real64> &C);
+    void RKG(EnergyPlusData &state, int &NEQ, Real64 const H, Real64 &X, Array1D<Real64> &Y, Array1D<Real64> &DY, Array1D<Real64> &C);
 
     void GetAngleFactorList(EnergyPlusData &state);
 

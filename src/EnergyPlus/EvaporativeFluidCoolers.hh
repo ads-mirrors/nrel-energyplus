@@ -153,7 +153,7 @@ namespace EvaporativeFluidCoolers {
         Real64 LowSpeedUserSpecifiedDesignCapacity = 0.0;  // User specified design capacity for at low speed for
         // two speed fluid cooler[W]
         Real64 Concentration = 0.0;           // fluid/glycol concentration - percent
-        int FluidIndex = 0;                   // Index to Property arrays
+        Fluid::GlycolProps *glycol = nullptr; // Index to Property arrays
         Real64 SizFac = 0.0;                  // sizing factor
         int WaterInletNodeNum = 0;            // Node number on the water inlet side of the evaporative fluid cooler
         int WaterOutletNodeNum = 0;           // Node number on the water outlet side of the evaporative fluid cooler

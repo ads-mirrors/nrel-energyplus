@@ -102,7 +102,6 @@ namespace EnergyPlus::PlantCondLoopOperation {
 
 // Using/Aliasing
 using namespace DataPlant;
-using FluidProperties::GetSpecificHeatGlycol;
 using HVAC::SmallLoad;
 
 void ManagePlantLoadDistribution(EnergyPlusData &state,
@@ -3482,11 +3481,7 @@ void AdjustChangeInLoadByHowServed(EnergyPlusData &state,
         CurMassFlowRate = state.dataLoopNodes->Node(this_component.NodeNumIn).MassFlowRate;
         ToutLowLimit = this_component.MinOutletTemp;
         Tinlet = state.dataLoopNodes->Node(this_component.NodeNumIn).Temp;
-        CurSpecHeat = GetSpecificHeatGlycol(state,
-                                            state.dataPlnt->PlantLoop(plantLoc.loopNum).FluidName,
-                                            Tinlet,
-                                            state.dataPlnt->PlantLoop(plantLoc.loopNum).FluidIndex,
-                                            RoutineName);
+        CurSpecHeat = state.dataPlnt->PlantLoop(plantLoc.loopNum).glycol->getSpecificHeat(state, Tinlet, RoutineName);
         QdotTmp = CurMassFlowRate * CurSpecHeat * (Tinlet - ToutLowLimit);
 
         //        !- Don't correct if Q is zero, as this could indicate a component which this hasn't been implemented or not yet turned on
@@ -3570,11 +3565,7 @@ void AdjustChangeInLoadByHowServed(EnergyPlusData &state,
             CurMassFlowRate = state.dataLoopNodes->Node(this_component.NodeNumIn).MassFlowRate;
             ToutLowLimit = this_component.MinOutletTemp;
             Tinlet = state.dataLoopNodes->Node(this_component.NodeNumIn).Temp;
-            CurSpecHeat = GetSpecificHeatGlycol(state,
-                                                state.dataPlnt->PlantLoop(plantLoc.loopNum).FluidName,
-                                                Tinlet,
-                                                state.dataPlnt->PlantLoop(plantLoc.loopNum).FluidIndex,
-                                                RoutineName);
+            CurSpecHeat = state.dataPlnt->PlantLoop(plantLoc.loopNum).glycol->getSpecificHeat(state, Tinlet, RoutineName);
             QdotTmp = CurMassFlowRate * CurSpecHeat * (Tinlet - ToutLowLimit);
 
             //        !- Don't correct if Q is zero, as this could indicate a component which this hasn't been implemented or not yet turned
@@ -3591,11 +3582,7 @@ void AdjustChangeInLoadByHowServed(EnergyPlusData &state,
         CurMassFlowRate = state.dataLoopNodes->Node(this_component.NodeNumIn).MassFlowRate;
         ToutHiLimit = this_component.MaxOutletTemp;
         Tinlet = state.dataLoopNodes->Node(this_component.NodeNumIn).Temp;
-        CurSpecHeat = GetSpecificHeatGlycol(state,
-                                            state.dataPlnt->PlantLoop(plantLoc.loopNum).FluidName,
-                                            Tinlet,
-                                            state.dataPlnt->PlantLoop(plantLoc.loopNum).FluidIndex,
-                                            RoutineName);
+        CurSpecHeat = state.dataPlnt->PlantLoop(plantLoc.loopNum).glycol->getSpecificHeat(state, Tinlet, RoutineName);
         QdotTmp = CurMassFlowRate * CurSpecHeat * (ToutHiLimit - Tinlet);
 
         if (CurMassFlowRate > 0.0) {
@@ -3631,7 +3618,6 @@ void FindCompSPLoad(EnergyPlusData &state,
 
     // Using/Aliasing
     using DataLoopNode::SensedNodeFlagValue;
-    using FluidProperties::GetDensityGlycol;
 
     // Locals
     // SUBROUTINE ARGUMENT DEFINITIONS:
@@ -3678,14 +3664,12 @@ void FindCompSPLoad(EnergyPlusData &state,
     DemandNode = state.dataPlnt->PlantLoop(plantLoc.loopNum).OpScheme(OpSchemePtr).EquipList(ListPtr).Comp(CompPtr).DemandNodeNum;
     SetPtNode = state.dataPlnt->PlantLoop(plantLoc.loopNum).OpScheme(OpSchemePtr).EquipList(ListPtr).Comp(CompPtr).SetPointNodeNum;
     TempIn = state.dataLoopNodes->Node(DemandNode).Temp;
-    rho = GetDensityGlycol(
-        state, state.dataPlnt->PlantLoop(plantLoc.loopNum).FluidName, TempIn, state.dataPlnt->PlantLoop(plantLoc.loopNum).FluidIndex, RoutineName);
+    rho = state.dataPlnt->PlantLoop(plantLoc.loopNum).glycol->getDensity(state, TempIn, RoutineName);
 
     DemandMdot = state.dataPlnt->PlantLoop(plantLoc.loopNum).OpScheme(OpSchemePtr).EquipList(ListPtr).Comp(CompPtr).SetPointFlowRate * rho;
     // DemandMDot is a constant design flow rate, next based on actual current flow rate for accurate current demand?
     ActualMdot = state.dataLoopNodes->Node(DemandNode).MassFlowRate;
-    CurSpecHeat = GetSpecificHeatGlycol(
-        state, state.dataPlnt->PlantLoop(plantLoc.loopNum).FluidName, TempIn, state.dataPlnt->PlantLoop(plantLoc.loopNum).FluidIndex, RoutineName);
+    CurSpecHeat = state.dataPlnt->PlantLoop(plantLoc.loopNum).glycol->getSpecificHeat(state, TempIn, RoutineName);
     if ((ActualMdot > 0.0) && (ActualMdot != DemandMdot)) {
         DemandMdot = ActualMdot;
     }
@@ -4260,7 +4244,7 @@ void ActivateEMSControls(EnergyPlusData &state, PlantLocation const &plantLoc, b
                 CurMassFlowRate = state.dataLoopNodes->Node(this_comp.NodeNumIn).MassFlowRate;
                 ToutLowLimit = this_comp.MinOutletTemp;
                 Tinlet = state.dataLoopNodes->Node(this_comp.NodeNumIn).Temp;
-                CurSpecHeat = GetSpecificHeatGlycol(state, this_loop.FluidName, Tinlet, this_loop.FluidIndex, RoutineName);
+                CurSpecHeat = this_loop.glycol->getSpecificHeat(state, Tinlet, RoutineName);
                 QTemporary = CurMassFlowRate * CurSpecHeat * (Tinlet - ToutLowLimit);
 
                 //- Don't correct if Q is zero, as this could indicate a component which this hasn't been implemented

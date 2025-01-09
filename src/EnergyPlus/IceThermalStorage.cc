@@ -224,11 +224,7 @@ namespace IceThermalStorage {
         }
         Real64 DemandMdot = this->DesignMassFlowRate;
 
-        Real64 Cp = FluidProperties::GetSpecificHeatGlycol(state,
-                                                           state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidName,
-                                                           TempIn,
-                                                           state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidIndex,
-                                                           RoutineName);
+        Real64 Cp = state.dataPlnt->PlantLoop(this->plantLoc.loopNum).glycol->getSpecificHeat(state, TempIn, RoutineName);
 
         Real64 MyLoad2 = (DemandMdot * Cp * (TempIn - TempSetPt));
         MyLoad = MyLoad2;
@@ -361,11 +357,7 @@ namespace IceThermalStorage {
         }
 
         // Calculate the current load on the ice storage unit
-        Real64 Cp = FluidProperties::GetSpecificHeatGlycol(state,
-                                                           state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidName,
-                                                           TempIn,
-                                                           state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidIndex,
-                                                           RoutineName);
+        Real64 Cp = state.dataPlnt->PlantLoop(this->plantLoc.loopNum).glycol->getSpecificHeat(state, TempIn, RoutineName);
 
         // Estimated load on the ice storage unit [W]
         Real64 LocalLoad = this->MassFlowRate * Cp * (TempIn - TempSetPt);
@@ -1684,11 +1676,9 @@ namespace IceThermalStorage {
         //----------------------------
         int loopNum = this->plantLoc.loopNum;
 
-        Real64 CpFluid = FluidProperties::GetDensityGlycol(state,
-                                                           state.dataPlnt->PlantLoop(loopNum).FluidName,
-                                                           state.dataLoopNodes->Node(this->PltInletNodeNum).Temp,
-                                                           state.dataPlnt->PlantLoop(loopNum).FluidIndex,
-                                                           RoutineName);
+        // BUG? I think this is supposed to be getSpecificHeat, not getDensity
+        Real64 CpFluid =
+            state.dataPlnt->PlantLoop(loopNum).glycol->getDensity(state, state.dataLoopNodes->Node(this->PltInletNodeNum).Temp, RoutineName);
 
         // Calculate Umyload based on MyLoad from E+
         Real64 Umyload = -myLoad * TimeInterval / this->ITSNomCap;
@@ -1923,7 +1913,7 @@ namespace IceThermalStorage {
         }
     }
 
-    void UpdateIceFractions(EnergyPlusData &state)
+    void UpdateIceFractions(EnergyPlusData const &state)
     {
 
         // SUBROUTINE INFORMATION:

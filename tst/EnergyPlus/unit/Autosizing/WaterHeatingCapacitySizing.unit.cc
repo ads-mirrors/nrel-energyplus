@@ -58,7 +58,7 @@ namespace EnergyPlus {
 
 TEST_F(AutoSizingFixture, WaterHeatingCapacitySizingGauntlet)
 {
-    state->dataFluidProps->init_state(*state);
+    state->dataFluid->init_state(*state);
     // this global state is what would be set up by E+ currently
     state->dataEnvrn->StdRhoAir = 1.2;
     static constexpr std::string_view routineName("WaterHeatingCapacitySizingGauntlet");
@@ -133,6 +133,7 @@ TEST_F(AutoSizingFixture, WaterHeatingCapacitySizingGauntlet)
     state->dataSize->ZoneEqSizing(1).ATMixerHeatPriDryBulb = 28.0;
     state->dataSize->ZoneEqSizing(1).ATMixerHeatPriHumRat = 0.0045;
     state->dataPlnt->PlantLoop.allocate(1);
+    state->dataPlnt->PlantLoop(1).glycol = Fluid::GetWater(*state);
     state->dataSize->DataWaterLoopNum = 1;
     state->dataSize->DataWaterCoilSizHeatDeltaT = 5.0;
 

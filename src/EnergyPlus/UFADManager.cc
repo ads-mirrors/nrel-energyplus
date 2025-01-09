@@ -194,7 +194,7 @@ namespace RoomAir {
         for (int Ctd = state.dataRoomAir->PosZ_Window(ZoneNum).beg; Ctd <= state.dataRoomAir->PosZ_Window(ZoneNum).end; ++Ctd) {
             int SurfNum = state.dataRoomAir->APos_Window(Ctd);
             if (SurfNum == 0) continue;
-            auto &surf = state.dataSurface->Surface(SurfNum);
+            auto const &surf = state.dataSurface->Surface(SurfNum);
             if (surf.ExtBoundCond == ExternalEnvironment || surf.ExtBoundCond == OtherSideCoefNoCalcExt ||
                 surf.ExtBoundCond == OtherSideCoefCalcExt || surf.ExtBoundCond == OtherSideCondModeledExt) {
                 if (ANY_INTERIOR_SHADE_BLIND(state.dataSurface->SurfWinShadingFlag(SurfNum))) {
@@ -341,7 +341,7 @@ namespace RoomAir {
         }
     }
 
-    Real64 sumUFADConvGainPerPlume(EnergyPlusData &state, int const zoneNum, Real64 const numOccupants)
+    Real64 sumUFADConvGainPerPlume(EnergyPlusData const &state, int const zoneNum, Real64 const numOccupants)
     {
         Real64 zoneElecConv(0.0); // zone elec equip design convective gain [W]
         for (auto const &zoneElectric : state.dataHeatBal->ZoneElectric) {
@@ -606,7 +606,7 @@ namespace RoomAir {
             int SurfNum = state.dataRoomAir->APos_Internal(Ctd);
             if (SurfNum == 0) continue;
 
-            auto &surf = state.dataSurface->Surface(SurfNum);
+            auto const &surf = state.dataSurface->Surface(SurfNum);
             state.dataSurface->SurfTAirRef(SurfNum) = DataSurfaces::RefAirTemp::AdjacentAirTemp;
             state.dataSurface->SurfTAirRefRpt(SurfNum) = DataSurfaces::SurfTAirRefReportVals[state.dataSurface->SurfTAirRef(SurfNum)];
             Real64 ZSupSurf = state.dataUFADManager->HeightIntMass;
@@ -644,7 +644,7 @@ namespace RoomAir {
         for (int Ctd = state.dataRoomAir->PosZ_Ceiling(ZoneNum).beg; Ctd <= state.dataRoomAir->PosZ_Ceiling(ZoneNum).end; ++Ctd) {
             int SurfNum = state.dataRoomAir->APos_Ceiling(Ctd);
             if (SurfNum == 0) continue;
-            auto &surf = state.dataSurface->Surface(SurfNum);
+            auto const &surf = state.dataSurface->Surface(SurfNum);
 
             state.dataSurface->SurfTAirRef(SurfNum) = DataSurfaces::RefAirTemp::AdjacentAirTemp;
             state.dataSurface->SurfTAirRefRpt(SurfNum) = DataSurfaces::SurfTAirRefReportVals[state.dataSurface->SurfTAirRef(SurfNum)];
@@ -660,7 +660,7 @@ namespace RoomAir {
         for (int Ctd = state.dataRoomAir->PosZ_Floor(ZoneNum).beg; Ctd <= state.dataRoomAir->PosZ_Floor(ZoneNum).end; ++Ctd) {
             int SurfNum = state.dataRoomAir->APos_Floor(Ctd);
             if (SurfNum == 0) continue;
-            auto &surf = state.dataSurface->Surface(SurfNum);
+            auto const &surf = state.dataSurface->Surface(SurfNum);
 
             state.dataSurface->SurfTAirRef(SurfNum) = DataSurfaces::RefAirTemp::AdjacentAirTemp;
             state.dataSurface->SurfTAirRefRpt(SurfNum) = DataSurfaces::SurfTAirRefReportVals[state.dataSurface->SurfTAirRef(SurfNum)];

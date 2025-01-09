@@ -278,6 +278,8 @@ TEST_F(EnergyPlusFixture, MicroCHPTest_InitGeneratorDynamics)
     state->dataPlnt->TotNumLoops = 1;
     state->dataPlnt->PlantLoop.allocate(1);
 
+    state->dataPlnt->PlantLoop(1).glycol = Fluid::GetWater(*state);
+
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Demand).Branch.allocate(2);
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Demand).TotalBranches = 2;
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).TotalComponents = 1;

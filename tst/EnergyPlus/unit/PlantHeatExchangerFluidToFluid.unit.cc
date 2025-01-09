@@ -2323,7 +2323,6 @@ TEST_F(EnergyPlusFixture, PlantHXControlWithFirstHVACIteration)
     }
 
     state->dataPlnt->PlantLoop(1).Name = "HX supply side loop ";
-    state->dataPlnt->PlantLoop(1).FluidIndex = 1;
     state->dataPlnt->PlantLoop(1).FluidName = "WATER";
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Name =
         state->dataPlantHXFluidToFluid->FluidHX(1).Name;
@@ -2337,7 +2336,6 @@ TEST_F(EnergyPlusFixture, PlantHXControlWithFirstHVACIteration)
     state->dataPlantHXFluidToFluid->FluidHX(1).SupplySideLoop.compNum = 1;
 
     state->dataPlnt->PlantLoop(2).Name = "HX demand side loop ";
-    state->dataPlnt->PlantLoop(2).FluidIndex = 1;
     state->dataPlnt->PlantLoop(2).FluidName = "WATER";
     state->dataPlnt->PlantLoop(2).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Name =
         state->dataPlantHXFluidToFluid->FluidHX(1).Name;
@@ -2442,7 +2440,6 @@ TEST_F(EnergyPlusFixture, PlantHXControl_CoolingSetpointOnOffWithComponentOverri
     state->dataPlnt->PlantLoop(2).LoopSide(DataPlant::LoopSideLocation::Supply).Branch(1).Comp.allocate(1);
 
     state->dataPlnt->PlantLoop(1).Name = "HX supply side loop ";
-    state->dataPlnt->PlantLoop(1).FluidIndex = 1;
     state->dataPlnt->PlantLoop(1).FluidName = "WATER";
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Supply).Branch(1).Comp(1).Name =
         state->dataPlantHXFluidToFluid->FluidHX(1).Name;
@@ -2452,7 +2449,6 @@ TEST_F(EnergyPlusFixture, PlantHXControl_CoolingSetpointOnOffWithComponentOverri
         state->dataPlantHXFluidToFluid->FluidHX(1).SupplySideLoop.inletNodeNum;
 
     state->dataPlnt->PlantLoop(2).Name = "HX demand side loop ";
-    state->dataPlnt->PlantLoop(2).FluidIndex = 1;
     state->dataPlnt->PlantLoop(2).FluidName = "WATER";
     state->dataPlnt->PlantLoop(2).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Name =
         state->dataPlantHXFluidToFluid->FluidHX(1).Name;

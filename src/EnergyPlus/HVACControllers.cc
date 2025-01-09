@@ -1022,11 +1022,8 @@ void InitController(EnergyPlusData &state, int const ControlNum, bool &IsConverg
     // Do the Begin Environment initializations
     if (state.dataGlobal->BeginEnvrnFlag && MyEnvrnFlag(ControlNum)) {
 
-        Real64 rho = FluidProperties::GetDensityGlycol(state,
-                                                       state.dataPlnt->PlantLoop(thisController.ActuatedNodePlantLoc.loopNum).FluidName,
-                                                       Constant::CWInitConvTemp,
-                                                       state.dataPlnt->PlantLoop(thisController.ActuatedNodePlantLoc.loopNum).FluidIndex,
-                                                       RoutineName);
+        Real64 rho =
+            state.dataPlnt->PlantLoop(thisController.ActuatedNodePlantLoc.loopNum).glycol->getDensity(state, Constant::CWInitConvTemp, RoutineName);
 
         thisController.MinActuated = rho * thisController.MinVolFlowActuated;
         thisController.MaxActuated = rho * thisController.MaxVolFlowActuated;

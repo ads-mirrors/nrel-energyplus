@@ -3002,7 +3002,7 @@ namespace Curve {
                         std::string_view curveFieldText)
     {
         // Returns true if errors found
-        Curve *thisCurve = state.dataCurveManager->PerfCurve(CurveIndex);
+        Curve const *thisCurve = state.dataCurveManager->PerfCurve(CurveIndex);
         int curveDim = thisCurve->numDims;
         if (std::find(validDims.begin(), validDims.end(), curveDim) != validDims.end()) return false;
 

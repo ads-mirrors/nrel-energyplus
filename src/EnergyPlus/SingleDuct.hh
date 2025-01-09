@@ -59,6 +59,7 @@
 #include <EnergyPlus/DataGlobals.hh>
 #include <EnergyPlus/DataZoneEquipment.hh>
 #include <EnergyPlus/EnergyPlus.hh>
+#include <EnergyPlus/FluidProperties.hh>
 #include <EnergyPlus/Plant/Enums.hh>
 #include <EnergyPlus/Plant/PlantLocation.hh>
 
@@ -181,7 +182,6 @@ namespace SingleDuct {
         Action DamperHeatingAction;
         Real64 DamperPosition;
         int ADUNum;                           // index of corresponding air distribution unit
-        int FluidIndex;                       // Refrigerant index
         int ErrCount1;                        // iteration limit exceeded in Hot Water Flow Calc
         int ErrCount1c;                       // iteration limit exceeded in Hot Water Flow Calc - continue
         int ErrCount2;                        // bad iterations limits in hot water flow calc
@@ -231,7 +231,7 @@ namespace SingleDuct {
               ReheatAirOutletNode(0), MaxReheatWaterVolFlow(0.0), MaxReheatSteamVolFlow(0.0), MaxReheatWaterFlow(0.0), MaxReheatSteamFlow(0.0),
               MinReheatWaterVolFlow(0.0), MinReheatSteamVolFlow(0.0), MinReheatWaterFlow(0.0), MinReheatSteamFlow(0.0), ControllerOffset(0.0),
               MaxReheatTemp(0.0), MaxReheatTempSetByUser(false), DamperHeatingAction(Action::HeatingNotUsed), DamperPosition(0.0), ADUNum(0),
-              FluidIndex(0), ErrCount1(0), ErrCount1c(0), ErrCount2(0), ZoneFloorArea(0.0), CtrlZoneNum(0), CtrlZoneInNodeIndex(0),
+              ErrCount1(0), ErrCount1c(0), ErrCount2(0), ZoneFloorArea(0.0), CtrlZoneNum(0), CtrlZoneInNodeIndex(0),
               MaxAirVolFlowRateDuringReheat(0.0), MaxAirVolFractionDuringReheat(0.0), AirMassFlowDuringReheatMax(0.0), ZoneOutdoorAirMethod(0),
               OutdoorAirFlowRate(0.0), NoOAFlowInputFromUser(true), OARequirementsPtr(0), AirLoopNum(0), HWplantLoc{}, SecInNode(0),
               IterationLimit(0), IterationFailed(0), OAPerPersonMode(DataZoneEquipment::PerPersonVentRateMode::Invalid), EMSOverrideAirFlow(false),
@@ -388,7 +388,7 @@ struct SingleDuctData : BaseGlobalStruct
     int CoilWaterOutletNodeSS = 0;
     int CoilSteamInletNodeSS = 0;
     int CoilSteamOutletNodeSS = 0;
-    int DummyWaterIndexSS = 1;
+    Fluid::GlycolProps *water = nullptr;
     Real64 UserInputMaxHeatAirVolFlowRateSS = 0.0; // user input for MaxHeatAirVolFlowRate
     Real64 MinAirMassFlowRevActSVAV = 0.0;         // minimum air mass flow rate used in "reverse action" air mass flow rate calculation
     Real64 MaxAirMassFlowRevActSVAV = 0.0;         // maximum air mass flow rate used in "reverse action" air mass flow rate calculation

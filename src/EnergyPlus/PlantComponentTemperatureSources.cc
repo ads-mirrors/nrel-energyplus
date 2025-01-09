@@ -132,11 +132,7 @@ namespace PlantComponentTemperatureSources {
         // Initialize critical Demand Side Variables at the beginning of each environment
         if (this->MyEnvironFlag && state.dataGlobal->BeginEnvrnFlag && (state.dataPlnt->PlantFirstSizesOkayToFinalize)) {
 
-            Real64 rho = FluidProperties::GetDensityGlycol(state,
-                                                           state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidName,
-                                                           Constant::InitConvTemp,
-                                                           state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidIndex,
-                                                           RoutineName);
+            Real64 rho = state.dataPlnt->PlantLoop(this->plantLoc.loopNum).glycol->getDensity(state, Constant::InitConvTemp, RoutineName);
             this->MassFlowRateMax = this->DesVolFlowRate * rho;
             PlantUtilities::InitComponentNodes(state, 0.0, this->MassFlowRateMax, this->InletNodeNum, this->OutletNodeNum);
 
@@ -154,11 +150,7 @@ namespace PlantComponentTemperatureSources {
         }
 
         // Calculate specific heat
-        Real64 cp = FluidProperties::GetSpecificHeatGlycol(state,
-                                                           state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidName,
-                                                           this->BoundaryTemp,
-                                                           state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidIndex,
-                                                           RoutineName);
+        Real64 cp = state.dataPlnt->PlantLoop(this->plantLoc.loopNum).glycol->getSpecificHeat(state, this->BoundaryTemp, RoutineName);
 
         // Calculate deltaT
         Real64 delta_temp = this->BoundaryTemp - this->InletTemp;
@@ -364,11 +356,7 @@ namespace PlantComponentTemperatureSources {
 
         if (this->MassFlowRate > 0.0) {
             this->OutletTemp = this->BoundaryTemp;
-            Real64 Cp = FluidProperties::GetSpecificHeatGlycol(state,
-                                                               state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidName,
-                                                               this->BoundaryTemp,
-                                                               state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidIndex,
-                                                               RoutineName);
+            Real64 Cp = state.dataPlnt->PlantLoop(this->plantLoc.loopNum).glycol->getSpecificHeat(state, this->BoundaryTemp, RoutineName);
             this->HeatRate = this->MassFlowRate * Cp * (this->OutletTemp - this->InletTemp);
             this->HeatEnergy = this->HeatRate * state.dataHVACGlobal->TimeStepSysSec;
         } else {

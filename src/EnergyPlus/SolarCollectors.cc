@@ -92,8 +92,6 @@ namespace SolarCollectors {
     // must be connected to a WATER HEATER object on the supply side of the plant loop.  Water is assumed to be
     // the heat transfer fluid.
 
-    static constexpr std::string_view fluidNameWater("WATER");
-
     PlantComponent *CollectorData::factory(EnergyPlusData &state, std::string const &objectName)
     {
         // Process the input data
@@ -937,11 +935,7 @@ namespace SolarCollectors {
         if (state.dataGlobal->BeginEnvrnFlag && this->Init) {
             // Clear node initial conditions
             if (this->VolFlowRateMax > 0) {
-                Real64 rho = FluidProperties::GetDensityGlycol(state,
-                                                               state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidName,
-                                                               Constant::InitConvTemp,
-                                                               state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidIndex,
-                                                               RoutineName);
+                Real64 rho = state.dataPlnt->PlantLoop(this->plantLoc.loopNum).glycol->getDensity(state, Constant::InitConvTemp, RoutineName);
 
                 this->MassFlowRateMax = this->VolFlowRateMax * rho;
             } else {
@@ -1115,11 +1109,7 @@ namespace SolarCollectors {
         Real64 massFlowRate = this->MassFlowRate;
 
         // Specific heat of collector fluid (J/kg-K)
-        Real64 Cp = FluidProperties::GetSpecificHeatGlycol(state,
-                                                           state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidName,
-                                                           inletTemp,
-                                                           state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidIndex,
-                                                           RoutineName);
+        Real64 Cp = state.dataPlnt->PlantLoop(this->plantLoc.loopNum).glycol->getSpecificHeat(state, inletTemp, RoutineName);
 
         // Gross area of collector (m2)
         Real64 area = state.dataSurface->Surface(SurfNum).Area;
@@ -1405,18 +1395,10 @@ namespace SolarCollectors {
         Real64 massFlowRate = this->MassFlowRate;
 
         // Specific heat of collector fluid (J/kg-K)
-        Real64 Cpw = FluidProperties::GetSpecificHeatGlycol(state,
-                                                            state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidName,
-                                                            inletTemp,
-                                                            state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidIndex,
-                                                            RoutineName);
+        Real64 Cpw = state.dataPlnt->PlantLoop(this->plantLoc.loopNum).glycol->getSpecificHeat(state, inletTemp, RoutineName);
 
         // density of collector fluid (kg/m3)
-        Real64 Rhow = FluidProperties::GetDensityGlycol(state,
-                                                        state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidName,
-                                                        inletTemp,
-                                                        state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidIndex,
-                                                        RoutineName);
+        Real64 Rhow = state.dataPlnt->PlantLoop(this->plantLoc.loopNum).glycol->getDensity(state, inletTemp, RoutineName);
 
         // calculate heat transfer coefficients and covers temperature:
         this->CalcHeatTransCoeffAndCoverTemp(state);
@@ -2049,18 +2031,19 @@ namespace SolarCollectors {
         Real64 DeltaT = std::abs(TAbsorber - TWater);
         Real64 TReference = TAbsorber - 0.25 * (TAbsorber - TWater);
         // record fluid prop index for water
-        int WaterIndex = FluidProperties::GetGlycolNum(state, fluidNameWater);
+
+        auto *water = Fluid::GetWater(state);
         // find properties of water - always assume water
-        Real64 WaterSpecHeat = FluidProperties::GetSpecificHeatGlycol(state, fluidNameWater, max(TReference, 0.0), WaterIndex, CalledFrom);
-        Real64 CondOfWater = FluidProperties::GetConductivityGlycol(state, fluidNameWater, max(TReference, 0.0), WaterIndex, CalledFrom);
-        Real64 VisOfWater = FluidProperties::GetViscosityGlycol(state, fluidNameWater, max(TReference, 0.0), WaterIndex, CalledFrom);
-        Real64 DensOfWater = FluidProperties::GetDensityGlycol(state, fluidNameWater, max(TReference, 0.0), WaterIndex, CalledFrom);
+        Real64 WaterSpecHeat = water->getSpecificHeat(state, max(TReference, 0.0), CalledFrom);
+        Real64 CondOfWater = water->getConductivity(state, max(TReference, 0.0), CalledFrom);
+        Real64 VisOfWater = water->getViscosity(state, max(TReference, 0.0), CalledFrom);
+        Real64 DensOfWater = water->getDensity(state, max(TReference, 0.0), CalledFrom);
         Real64 PrOfWater = VisOfWater * WaterSpecHeat / CondOfWater;
         // Requires a different reference temperature for volumetric expansion coefficient
         TReference = TWater - 0.25 * (TWater - TAbsorber);
-        Real64 VolExpWater = -(FluidProperties::GetDensityGlycol(state, fluidNameWater, max(TReference, 10.0) + 5.0, WaterIndex, CalledFrom) -
-                               FluidProperties::GetDensityGlycol(state, fluidNameWater, max(TReference, 10.0) - 5.0, WaterIndex, CalledFrom)) /
-                             (10.0 * DensOfWater);
+        Real64 VolExpWater =
+            -(water->getDensity(state, max(TReference, 10.0) + 5.0, CalledFrom) - water->getDensity(state, max(TReference, 10.0) - 5.0, CalledFrom)) /
+            (10.0 * DensOfWater);
 
         // Grashof number
         Real64 GrNum = gravity * VolExpWater * DensOfWater * DensOfWater * PrOfWater * DeltaT * pow_3(Lc) / pow_2(VisOfWater);
@@ -2116,11 +2099,7 @@ namespace SolarCollectors {
         PlantUtilities::SafeCopyPlantNode(state, this->InletNode, this->OutletNode);
         // Set outlet node variables that are possibly changed
         state.dataLoopNodes->Node(this->OutletNode).Temp = this->OutletTemp;
-        Real64 Cp = FluidProperties::GetSpecificHeatGlycol(state,
-                                                           state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidName,
-                                                           this->OutletTemp,
-                                                           state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidIndex,
-                                                           RoutineName);
+        Real64 Cp = state.dataPlnt->PlantLoop(this->plantLoc.loopNum).glycol->getSpecificHeat(state, this->OutletTemp, RoutineName);
         state.dataLoopNodes->Node(this->OutletNode).Enthalpy = Cp * state.dataLoopNodes->Node(this->OutletNode).Temp;
     }
 

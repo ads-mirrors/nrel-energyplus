@@ -117,7 +117,7 @@ namespace IndoorGreen {
     void SimIndoorGreen(EnergyPlusData &state);
     void GetIndoorGreenInput(EnergyPlusData &state, bool &ErrorsFound);
     void SetIndoorGreenOutput(EnergyPlusData &state);
-    void InitIndoorGreen(EnergyPlusData &state);
+    void InitIndoorGreen(EnergyPlusData const &state);
     void ETModel(EnergyPlusData &state);
     Real64 ETBaseFunction(EnergyPlusData &state, Real64 ZonePreTemp, Real64 ZonePreHum, Real64 ZonePPFD, Real64 VPD, Real64 LAI, Real64 SwitchF);
 

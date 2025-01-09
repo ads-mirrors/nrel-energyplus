@@ -369,14 +369,11 @@ void BranchPressureDrop(EnergyPlusData &state,
     // Using/Aliasing
     using Curve::CurveValue;
     using Curve::PressureCurveValue;
-    using FluidProperties::GetDensityGlycol;
-    using FluidProperties::GetViscosityGlycol;
 
     // SUBROUTINE PARAMETER DEFINITIONS:
     static constexpr std::string_view RoutineName("CalcPlantPressureSystem");
 
     // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-    int FluidIndex;                                              // Plant loop level Fluid Index
     int InletNodeNum;                                            // Component inlet node number
     DataBranchAirLoopPlant::PressureCurveType pressureCurveType; // Type of curve used to evaluate pressure drop
     int PressureCurveIndex;                                      // Curve index for PerfCurve structure
@@ -394,7 +391,6 @@ void BranchPressureDrop(EnergyPlusData &state,
     }
 
     // Get data from data structure
-    FluidIndex = state.dataPlnt->PlantLoop(LoopNum).FluidIndex;
     InletNodeNum = state.dataPlnt->PlantLoop(LoopNum).LoopSide(LoopSideNum).Branch(BranchNum).NodeNumIn;
     pressureCurveType = state.dataPlnt->PlantLoop(LoopNum).LoopSide(LoopSideNum).Branch(BranchNum).PressureCurveType;
     PressureCurveIndex = state.dataPlnt->PlantLoop(LoopNum).LoopSide(LoopSideNum).Branch(BranchNum).PressureCurveIndex;
@@ -402,8 +398,8 @@ void BranchPressureDrop(EnergyPlusData &state,
     // Get nodal conditions
     NodeMassFlow = state.dataLoopNodes->Node(InletNodeNum).MassFlowRate;
     NodeTemperature = state.dataLoopNodes->Node(InletNodeNum).Temp;
-    NodeDensity = GetDensityGlycol(state, std::string(), NodeTemperature, FluidIndex, RoutineName);
-    NodeViscosity = GetViscosityGlycol(state, std::string(), NodeTemperature, FluidIndex, RoutineName);
+    NodeDensity = state.dataPlnt->PlantLoop(LoopNum).glycol->getDensity(state, NodeTemperature, RoutineName);
+    NodeViscosity = state.dataPlnt->PlantLoop(LoopNum).glycol->getViscosity(state, NodeTemperature, RoutineName);
 
     // Call the appropriate pressure calculation routine
     switch (pressureCurveType) {
@@ -829,8 +825,6 @@ Real64 ResolveLoopFlowVsPressure(EnergyPlusData &state,
 
     // Using/Aliasing
     using Curve::CurveValue;
-    using FluidProperties::GetDensityGlycol;
-    using FluidProperties::GetViscosityGlycol;
 
     // Return value
     Real64 ResolvedLoopMassFlowRate;
@@ -849,7 +843,6 @@ Real64 ResolveLoopFlowVsPressure(EnergyPlusData &state,
     Real64 PhiPump;
     Real64 PhiSystem;
     Real64 PsiPump;
-    int FluidIndex;
     int Iteration;
     Real64 LocalSystemMassFlow;
     Real64 LoopEffectiveK;
@@ -860,13 +853,12 @@ Real64 ResolveLoopFlowVsPressure(EnergyPlusData &state,
     Real64 DampingFactor;
 
     // Get loop level data
-    FluidIndex = state.dataPlnt->PlantLoop(LoopNum).FluidIndex;
     LoopEffectiveK = state.dataPlnt->PlantLoop(LoopNum).PressureEffectiveK;
     SystemPressureDrop = LoopEffectiveK * pow_2(SystemMassFlow);
 
     // Read data off the node data structure
     NodeTemperature = state.dataLoopNodes->Node(state.dataPlnt->PlantLoop(LoopNum).LoopSide(DataPlant::LoopSideLocation::Supply).NodeNumIn).Temp;
-    NodeDensity = GetDensityGlycol(state, std::string(), NodeTemperature, FluidIndex, RoutineName);
+    NodeDensity = state.dataPlnt->PlantLoop(LoopNum).glycol->getDensity(state, NodeTemperature, RoutineName);
 
     // Store the passed in (requested, design) flow to the local value for performing iterations
     LocalSystemMassFlow = SystemMassFlow;

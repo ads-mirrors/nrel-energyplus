@@ -647,7 +647,7 @@ TEST_F(EnergyPlusFixture, ExhAbsorption_calcHeater_Fix_Test)
     thisChillerHeater.HWPlantLoc.loopSideNum = DataPlant::LoopSideLocation::Demand;
     auto &hwPlantLoop = state->dataPlnt->PlantLoop(1);
     hwPlantLoop.FluidName = "WATER";
-    hwPlantLoop.FluidIndex = 1;
+    hwPlantLoop.glycol = Fluid::GetWater(*state);
     hwPlantLoop.LoopDemandCalcScheme = DataPlant::LoopDemandCalcScheme::SingleSetPoint;
     hwPlantLoop.LoopSide(DataPlant::LoopSideLocation::Demand).FlowLock = DataPlant::FlowLock::Locked;
 
@@ -685,7 +685,7 @@ TEST_F(EnergyPlusFixture, ExhAbsorption_calcHeater_Fix_Test)
     bool const runflaginput = true;
     thisChillerHeater.calcHeater(*state, loadinput, runflaginput);
 
-    const Real64 CpHW = FluidProperties::GetSpecificHeatGlycol(*state, hwPlantLoop.FluidName, hwReturnTemp, hwPlantLoop.FluidIndex, "UnitTest");
+    const Real64 CpHW = hwPlantLoop.glycol->getSpecificHeat(*state, hwReturnTemp, "UnitTest");
     EXPECT_EQ(4185.0, CpHW);
     const Real64 expectedHeatingLoad = (hwSupplySetpoint - hwReturnTemp) * hwMassFlow * CpHW;
 
@@ -1445,7 +1445,7 @@ TEST_F(EnergyPlusFixture, ExhAbsorption_calcChiller_Err_Msg_Test)
     thisChillerHeater.CWPlantLoc.loopSideNum = DataPlant::LoopSideLocation::Demand;
 
     state->dataPlnt->PlantLoop(1).FluidName = "WATER";
-    state->dataPlnt->PlantLoop(1).FluidIndex = 1;
+    state->dataPlnt->PlantLoop(1).glycol = Fluid::GetWater(*state);
     state->dataPlnt->PlantLoop(1).LoopDemandCalcScheme = DataPlant::LoopDemandCalcScheme::SingleSetPoint;
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Demand).FlowLock = DataPlant::FlowLock::Locked;
     state->dataLoopNodes->Node(3).Temp = 60.0;

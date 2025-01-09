@@ -60,7 +60,7 @@ namespace EnergyPlus {
 
 TEST_F(AutoSizingFixture, CoolingWaterDesAirOutletTempSizingGauntlet)
 {
-    state->dataFluidProps->init_state(*state);
+    state->dataFluid->init_state(*state);
     // this global state is what would be set up by E+ currently
     state->dataSize->ZoneEqSizing.allocate(1);
     state->dataEnvrn->StdRhoAir = 1.2;
@@ -119,6 +119,7 @@ TEST_F(AutoSizingFixture, CoolingWaterDesAirOutletTempSizingGauntlet)
     state->dataSize->FinalZoneSizing.allocate(1);
     state->dataSize->ZoneEqSizing.allocate(1);
     state->dataPlnt->PlantLoop.allocate(1);
+    state->dataPlnt->PlantLoop(1).glycol = Fluid::GetWater(*state);
     state->dataSize->PlantSizData.allocate(1);
     state->dataSize->PlantSizData(1).ExitTemp = 7.0;
     state->dataSize->DataPltSizCoolNum = 1;

@@ -910,8 +910,6 @@ void PipeHTData::InitPipesHeatTransfer(EnergyPlusData &state, bool const FirstHV
     // Using/Aliasing
     Real64 SysTimeElapsed = state.dataHVACGlobal->SysTimeElapsed;
     Real64 TimeStepSysSec = state.dataHVACGlobal->TimeStepSysSec;
-    using FluidProperties::GetDensityGlycol;
-    using FluidProperties::GetSpecificHeatGlycol;
     using ScheduleManager::GetCurrentScheduleValue;
 
     // SUBROUTINE PARAMETER DEFINITIONS:
@@ -1090,16 +1088,9 @@ void PipeHTData::InitPipesHeatTransfer(EnergyPlusData &state, bool const FirstHV
     // Even though the loop eventually has no flow rate, it appears it initializes to a value, then converges to OFF
     // Thus, this is called at the beginning of every time step once.
 
-    this->FluidSpecHeat = GetSpecificHeatGlycol(state,
-                                                state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidName,
-                                                state.dataPipeHT->nsvInletTemp,
-                                                state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidIndex,
-                                                RoutineName);
-    this->FluidDensity = GetDensityGlycol(state,
-                                          state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidName,
-                                          state.dataPipeHT->nsvInletTemp,
-                                          state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidIndex,
-                                          RoutineName);
+    this->FluidSpecHeat =
+        state.dataPlnt->PlantLoop(this->plantLoc.loopNum).glycol->getSpecificHeat(state, state.dataPipeHT->nsvInletTemp, RoutineName);
+    this->FluidDensity = state.dataPlnt->PlantLoop(this->plantLoc.loopNum).glycol->getDensity(state, state.dataPipeHT->nsvInletTemp, RoutineName);
 
     // At this point, for all Pipe:Interior objects we should zero out the energy and rate arrays
     this->FluidHeatLossRate = 0.0;
@@ -1676,10 +1667,6 @@ Real64 PipeHTData::CalcPipeHeatTransCoef(EnergyPlusData &state,
     // Heat exchanger information also from Incropera and DeWitt.
     // Code based loosely on code from IBLAST program (research version)
 
-    // Using/Aliasing
-    using FluidProperties::GetConductivityGlycol;
-    using FluidProperties::GetViscosityGlycol;
-
     // Return value
     Real64 CalcPipeHeatTransCoef;
 
@@ -1726,12 +1713,9 @@ Real64 PipeHTData::CalcPipeHeatTransCoef(EnergyPlusData &state,
     }
 
     // look up conductivity and viscosity
-    Kactual = GetConductivityGlycol(
-        state, state.dataPlnt->PlantLoop(LoopNum).FluidName, this->FluidTemp(0), state.dataPlnt->PlantLoop(LoopNum).FluidIndex, RoutineName); // W/m-K
-    MUactual =
-        GetViscosityGlycol(
-            state, state.dataPlnt->PlantLoop(LoopNum).FluidName, this->FluidTemp(0), state.dataPlnt->PlantLoop(LoopNum).FluidIndex, RoutineName) /
-        1000.0; // Note fluid properties routine returns mPa-s, we need Pa-s
+    Kactual = state.dataPlnt->PlantLoop(LoopNum).glycol->getConductivity(state, this->FluidTemp(0), RoutineName); // W/m-K
+    MUactual = state.dataPlnt->PlantLoop(LoopNum).glycol->getViscosity(state, this->FluidTemp(0), RoutineName) /
+               1000.0; // Note fluid properties routine returns mPa-s, we need Pa-s
 
     // Calculate the Reynold's number from RE=(4*Mdot)/(Pi*Mu*Diameter) - as RadiantSysLowTemp
     ReD = 4.0 * MassFlowRate / (Constant::Pi * MUactual * Diameter);

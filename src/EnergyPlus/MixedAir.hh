@@ -404,9 +404,9 @@ namespace MixedAir {
                                    std::string_view CurrentModuleObject,
                                    int OutAirNum,
                                    Array1D_string const &AlphArray,
-                                   int &NumAlphas,
+                                   int const NumAlphas,
                                    Array1D<Real64> const &NumArray,
-                                   int &NumNums,
+                                   int const NumNums,
                                    Array1D_bool const &lNumericBlanks, // Unused
                                    Array1D_bool const &lAlphaBlanks,
                                    Array1D_string const &cAlphaFields,

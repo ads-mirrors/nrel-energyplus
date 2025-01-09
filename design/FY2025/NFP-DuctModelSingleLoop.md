@@ -3,6 +3,8 @@ An Improved Duct Model for a Single AirLoop
 
 **Lixing Gu**
 
+ - 1/8/25
+ - First revision after Technicalities call on 1/8/25
  - 12/25/2024
  - New Feature Proposal
  
@@ -13,9 +15,23 @@ EnergyPlus is being used by many tools around the world and used as the calculat
 
 The task will improve duct modeling support to enable conduction heat losses for a single air loop, and also duct leakage for a single air loop. The duct modeling roadmap was developed previously and should be used as guidance for the scope of these features.
 
-## E-mail and  Conference Call Conclusions ##
+## E-mail and Conference Call Conclusions ##
 
-N/A
+The NFP was discussed in the Technicalities conference call on 1/8/25
+
+Here are comments and replies.
+
+Rich: How do you handle mass flow rates in supply and return leaks.
+
+Reply: The mass flow rates for supply and return leaks are obtained from Duct:Loss:Leakage. A supply leak is terminated into a zone or outdoors, while a return leak originates from a zone or outdoors. However, the duct mass flow rate is assumed to be equivalent to the fan flow rate, mirroring the calculation for the OA mixer mass flow rate. The energy conservation is ensured.
+
+Scott: Use exiting field of Heat Transmittance Coefficient (U-Factor) (Field N6) in AirflowNetwork:Distribution:Component:Duct
+
+Reply: I agree. Remove the change.
+
+Jason: May have comments via E-mail communications
+
+Reply: I am ready for further dicussion. 
 
 ## Overview ##
 
@@ -53,33 +69,6 @@ Assumptions:
 
 4. Any air movement between zones caused by duct leakage can be accomplished by make up air.
 
-### A minor change ###
-
-The current object of AirflowNetwork:Distribution:Component:Duct was proposed to reuse with a field change in the roadmap:
-
-Heat Transmittance Coefficient (U-Factor) (Field N6) was proposed in the roadmap to be replaced by Duct Wall Construction as Field A2.
-
-Current
-
-	 N6 , \field Heat Transmittance Coefficient (U-Factor) for Duct Wall Construction
-      \note conduction only
-      \type real
-      \units W/m2-K
-      \minimum> 0.0
-      \default 0.943
-      \note Default value of 0.943 is equivalent to 1.06 m2-K/W (R6) duct insulation.
-
-Proposed
-
-<span style="color:red">
- 
-   	A2,  \field Construction Name
-        \required-field
-        \type object-list
-        \object-list ConstructionNames
-</span>
-
-The modification will result in output variations in any input files utilizing the AFN model. I recommend implementing the change in the final task. This approach ensures that the differences caused by the field alteration will occur in the last task, allowing other changes to be verified independently of this adjustment.
 
 ## Testing/Validation/Data Sources ##
 
@@ -431,27 +420,26 @@ The AirflowNetwork:Distribution:Component:Duct object is used to calculate duct 
       \default 0.0
       \minimum 0.0
       \note Enter the coefficient used to calculate dynamic losses of fittings (e.g. elbows).
-<span style="color:red">
- 
-   	A2,  \field Construction Name
-        \required-field
-        \type object-list
-        \object-list ConstructionNames
-</span>
-
- 	N6 , \field Overall Moisture Transmittance Coefficient from Air to Air
+ 	N6 , \field Heat Transmittance Coefficient (U-Factor) for Duct Wall Construction
+      \note conduction only
+      \type real
+      \units W/m2-K
+      \minimum> 0.0
+      \default 0.943
+      \note Default value of 0.943 is equivalent to 1.06 m2-K/W (R6) duct insulation.
+ 	N7 , \field Overall Moisture Transmittance Coefficient from Air to Air
       \type real
       \units kg/m2
       \minimum> 0.0
       \default 0.001
       \note Enter the overall moisture transmittance coefficient
       \note including moisture film coefficients at both surfaces.
- 	N7 , \field Outside Convection Coefficient
+ 	N8 , \field Outside Convection Coefficient
       \note optional. convection coefficient calculated automatically, unless specified
       \type real
       \units W/m2-K
       \minimum> 0.0
- 	N8 ; \field Inside Convection Coefficient
+ 	N9 ; \field Inside Convection Coefficient
       \note optional. convection coefficient calculated automatically, unless specified
       \type real
       \units W/m2-K
@@ -459,11 +447,9 @@ The AirflowNetwork:Distribution:Component:Duct object is used to calculate duct 
 
 Note:
 
-1. Replace N6 by A2
+1. Keep N6
 
-Heat Transmittance Coefficient (U-Factor) for Duct Wall Construction field is replaced by construction name. Since inside and outside film coefficients are provided, there is no reason to requires U factor, if the construction object can be use.
-
-The change will be implemented in the last task to avoide big differetnces for existing input files.
+Although the change was proposed in the roadmap, Field N7 will be kept based on suggestion by Scott.
 
 2. Keep N6 Overall Moisture Transmittance Coefficient from Air to Air
 
@@ -506,7 +492,7 @@ An example of objects used to calculate duct condiuction loss in an IDF is:
       0.7854,                  !- Cross Section Area {m2}
       ,                        !- Surface Roughness {m}
       ,                        !- Coefficient for Local Dynamic Loss Due to Fitting {dimensionless}
-      0.1,                     !- Overall Moisture Transmittance Coefficient from Air to Air
+      0.1,                     !- Heat Transmittance Coefficient (U-Factor) for Duct Wall Construction
       0.0001,                  !- Overall Moisture Transmittance Coefficient from Air to Air {kg/m2}
       0.006500,                !- Outside Convection Coefficient {W/m2-K}
       0.032500;                !- Inside Convection Coefficient {W/m2-K}

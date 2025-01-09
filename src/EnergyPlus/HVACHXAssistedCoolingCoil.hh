@@ -209,11 +209,11 @@ namespace HVACHXAssistedCoolingCoil {
     );
 
     void GetHXCoilTypeAndName(EnergyPlusData &state,
-                              std::string const &CoilType,  // must match coil types in this module
+                              HVAC::CoilType coilType,  // must match coil types in this module
                               std::string const &CoilName,  // must match coil names for the coil type
                               bool &ErrorsFound,            // set to true if problem
-                              std::string &CoolingCoilType, // returned type of cooling coil
-                              std::string &CoolingCoilName  // returned name of cooling coil
+                              HVAC::CoilType &hxCoilType, // returned type of cooling coil
+                              std::string &hxCoilName  // returned name of cooling coil
     );
 
     Real64 GetCoilMaxWaterFlowRate(EnergyPlusData &state,

@@ -257,45 +257,14 @@ namespace HVAC {
         DXCurveFitSpeed,
         Num
     };
-    static constexpr std::array<std::string_view, static_cast<int>(CoilType::Num)> coilTypeNamesUC = {
-        "COIL:COOLING:DX:SINGLESPEED",
-        "COIL:HEATING:DX:SINGLESPEED",
-        "COIL:COOLING:DX:TWOSPEED",
-        "COILSYSTEM:COOLING:DX:HEATEXCHANGERASSISTED",
-        "COIL:COOLING:DX:TWOSTAGEWITHHUMIDITYCONTROLMODE",
-        "COIL:WATERHEATING:AIRTOWATERHEATPUMP:PUMPED",
-        "COIL:WATERHEATING:AIRTOWATERHEATPUMP:WRAPPED",
-        "COIL:COOLING:DX:MULTISPEED",
-        "COIL:HEATING:DX:MULTISPEED",
-        "COIL:HEATING:FUEL",
-        "COIL:HEATING:GAS:MULTISTAGE",
-        "COIL:HEATING:ELECTRIC",
-        "COIL:HEATING:ELECTRIC:MULTISTAGE",
-        "COIL:HEATING:DESUPERHEATER",
-        "COIL:COOLING:WATER",
-        "COIL:COOLING:WATER:DETAILEDGEOMETRY",
-        "COIL:HEATING:WATER",
-        "COIL:HEATING:STEAM",
-        "COILSYSTEM:COOLING:WATER:HEATEXCHANGERASSISTED",
-        "COIL:COOLING:WATERTOAIRHEATPUMP:PARAMETERESTIMATION",
-        "COIL:HEATING:WATERTOAIRHEATPUMP:PARAMETERESTIMATION",
-        "COIL:COOLING:WATERTOAIRHEATPUMP:EQUATIONFIT",
-        "COIL:HEATING:WATERTOAIRHEATPUMP:EQUATIONFIT",
-        "COIL:COOLING:DX:VARIABLEREFRIGERANTFLOW",
-        "COIL:HEATING:DX:VARIABLEREFRIGERANTFLOW",
-        "COIL:USERDEFINED",
-        "COIL:COOLING:DX:SINGLESPEED:THERMALSTORAGE",
-        "COIL:COOLING:WATERTOAIRHEATPUMP:VARIABLESPEEDEQUATIONFIT",
-        "COIL:HEATING:WATERTOAIRHEATPUMP:VARIABLESPEEDEQUATIONFIT",
-        "COIL:COOLING:DX:VARIABLESPEED",
-        "COIL:HEATING:DX:VARIABLESPEED",
-        "COIL:WATERHEATING:AIRTOWATERHEATPUMP:VARIABLESPEED",
-        "COIL:COOLING:DX:VARIABLEREFRIGERANTFLOW:FLUIDTEMPERATURECONTROL",
-        "COIL:HEATING:DX:VARIABLEREFRIGERANTFLOW:FLUIDTEMPERATURECONTROL",
-        "COIL:COOLING:DX",
-        "COIL:COOLING:DX:SUBCOOLREHEAT",
-        "COIL:COOLING:DX:CURVEFIT:SPEED"};
 
+    extern const std::array<std::string_view, (int)CoilType::Num> coilTypeNames;
+    extern const std::array<std::string_view, (int)CoilType::Num> coilTypeNamesUC;
+
+    extern const std::array<bool, (int)CoilType::Num> coilTypeIsHeating; 
+    extern const std::array<bool, (int)CoilType::Num> coilTypeIsCooling;
+  
+#ifdef GET_OUT
     // parameters describing coil types
     int constexpr NumAllCoilTypes(37);
     int constexpr CoilDX_CoolingSingleSpeed(1);
@@ -335,7 +304,8 @@ namespace HVAC {
     int constexpr CoilDX_Cooling(35);
     //    int constexpr CoilDX_SubcoolReheat(36);
     int constexpr CoilDX_CurveFit_Speed(37);
-
+#endif // GET_OUT
+  
     enum class CoilMode
     {
         Invalid = -1,
@@ -432,7 +402,10 @@ namespace HVAC {
 
     int constexpr MaxSpeedLevels = 10;
 
+#ifdef GET_OUT  
     extern Array1D_string const cAllCoilTypes;
+#endif // GET_OUT
+  
     extern Array1D_string const cCoolingCoilTypes;
     extern Array1D_string const cHeatingCoilTypes;
 

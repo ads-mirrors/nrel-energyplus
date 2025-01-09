@@ -149,7 +149,7 @@ Real64 CoolingWaterflowSizer::size(EnergyPlusData &state, Real64 _originalValue,
     }
     // override sizing string for detailed coil model
     if (this->overrideSizeString) {
-        if (this->coilType_Num == HVAC::Coil_CoolingWaterDetailed) {
+        if (this->coilType == HVAC::CoilType::CoolingWaterDetailed) {
             if (this->isEpJSON) {
                 this->sizingString = "maximum_water_flow_rate [m3/s]";
             } else {
@@ -162,17 +162,17 @@ Real64 CoolingWaterflowSizer::size(EnergyPlusData &state, Real64 _originalValue,
     this->selectSizerOutput(state, errorsFound);
     if (this->isCoilReportObject) {
         state.dataRptCoilSelection->coilSelectionReportObj->setCoilWaterFlowPltSizNum(
-            state, this->compName, this->compType, this->autoSizedValue, this->wasAutoSized, this->dataPltSizCoolNum, this->dataWaterLoopNum);
-        state.dataRptCoilSelection->coilSelectionReportObj->setCoilWaterDeltaT(state, this->compName, this->compType, CoilDesWaterDeltaT);
+            state, this->compName, this->coilType, this->autoSizedValue, this->wasAutoSized, this->dataPltSizCoolNum, this->dataWaterLoopNum);
+        state.dataRptCoilSelection->coilSelectionReportObj->setCoilWaterDeltaT(state, this->compName, this->coilType, CoilDesWaterDeltaT);
         if (this->dataDesInletWaterTemp > 0.0) {
             state.dataRptCoilSelection->coilSelectionReportObj->setCoilEntWaterTemp(
-                state, this->compName, this->compType, this->dataDesInletWaterTemp);
+                state, this->compName, this->coilType, this->dataDesInletWaterTemp);
             state.dataRptCoilSelection->coilSelectionReportObj->setCoilLvgWaterTemp(
-                state, this->compName, this->compType, this->dataDesInletWaterTemp + CoilDesWaterDeltaT);
+                state, this->compName, this->coilType, this->dataDesInletWaterTemp + CoilDesWaterDeltaT);
         } else {
-            state.dataRptCoilSelection->coilSelectionReportObj->setCoilEntWaterTemp(state, this->compName, this->compType, Constant::CWInitConvTemp);
+            state.dataRptCoilSelection->coilSelectionReportObj->setCoilEntWaterTemp(state, this->compName, this->coilType, Constant::CWInitConvTemp);
             state.dataRptCoilSelection->coilSelectionReportObj->setCoilLvgWaterTemp(
-                state, this->compName, this->compType, Constant::CWInitConvTemp + CoilDesWaterDeltaT);
+                state, this->compName, this->coilType, Constant::CWInitConvTemp + CoilDesWaterDeltaT);
         }
     }
     return this->autoSizedValue;

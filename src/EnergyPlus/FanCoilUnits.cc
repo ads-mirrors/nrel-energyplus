@@ -370,46 +370,47 @@ namespace FanCoilUnits {
             fanCoil.MinColdWaterVolFlow = Numbers(6);
             fanCoil.ColdControlOffset = Numbers(7);
             fanCoil.HCoilName = Alphas(14);
-            fanCoil.HCoilType = Alphas(13);
+            
+            fanCoil.heatCoilType = static_cast<HVAC::CoilType>(getEnumValue(HVAC::coilTypeNamesUC, Alphas(13)));
+            if (fanCoil.coolCoilType == HVAC::CoilType::Invalid) {
+                ShowSevereInvalidKey(state, eoh, cAlphaFields(13), Alphas(13));
+                ErrorsFound = true;
+            } 
+
             fanCoil.MaxHotWaterVolFlow = Numbers(8);
             fanCoil.MinHotWaterVolFlow = Numbers(9);
             fanCoil.HotControlOffset = Numbers(10);
 
-            if (Util::SameString(Alphas(11), "Coil:Cooling:Water") || Util::SameString(Alphas(11), "Coil:Cooling:Water:DetailedGeometry") ||
-                Util::SameString(Alphas(11), "CoilSystem:Cooling:Water:HeatExchangerAssisted")) {
-                fanCoil.CCoilType = Alphas(11);
-                if (Util::SameString(Alphas(11), "Coil:Cooling:Water")) {
-                    fanCoil.CCoilType_Num = CCoil::Water;
-                    fanCoil.CCoilPlantName = fanCoil.CCoilName;
+            fanCoil.coolCoilType = static_cast<HVAC::CoilType>(getEnumValue(HVAC::coilTypeNamesUC, Alphas(11)));
+            if (fanCoil.coolCoilType == HVAC::CoilType::Invalid) {
+                ShowSevereInvalidKey(state, eoh, cAlphaFields(11), Alphas(11));
+                ErrorsFound = true;
+            } else if (fanCoil.coolCoilType == HVAC::CoilType::CoolingWater) {
+                fanCoil.CCoilPlantName = fanCoil.CCoilName;
+                fanCoil.CCoilPlantType = DataPlant::PlantEquipmentType::CoilWaterCooling;
+            } else if (fanCoil.coolCoilType == HVAC::CoilType::CoolingWaterDetailed) { 
+                fanCoil.CCoilPlantName = fanCoil.CCoilName;
+                fanCoil.CCoilPlantType = DataPlant::PlantEquipmentType::CoilWaterDetailedFlatCooling;
+            } else if (fanCoil.coolCoilType == HVAC::CoilType::WaterCoolingHXAssisted) { 
+                HVAC::CoilType hxCoilType = HVAC::CoilType::Invalid; 
+                HVACHXAssistedCoolingCoil::GetHXCoilTypeAndName(
+                    state, fanCoil.coolCoilType, fanCoil.CCoilName, ErrorsFound, hxCoilType, fanCoil.CCoilPlantName);
+                if (hxCoilType == HVAC::CoilType::CoolingWater) {
                     fanCoil.CCoilPlantType = DataPlant::PlantEquipmentType::CoilWaterCooling;
-                }
-                if (Util::SameString(Alphas(11), "Coil:Cooling:Water:DetailedGeometry")) {
-                    fanCoil.CCoilType_Num = CCoil::Detailed;
-                    fanCoil.CCoilPlantName = fanCoil.CCoilName;
+                } else if (hxCoilType == HVAC::CoilType::CoolingWaterDetailed) {
                     fanCoil.CCoilPlantType = DataPlant::PlantEquipmentType::CoilWaterDetailedFlatCooling;
-                }
-                std::string CCoilType;
-                if (Util::SameString(Alphas(11), "CoilSystem:Cooling:Water:HeatExchangerAssisted")) {
-                    fanCoil.CCoilType_Num = CCoil::HXAssist;
-                    HVACHXAssistedCoolingCoil::GetHXCoilTypeAndName(
-                        state, fanCoil.CCoilType, fanCoil.CCoilName, ErrorsFound, CCoilType, fanCoil.CCoilPlantName);
-                    if (Util::SameString(CCoilType, "Coil:Cooling:Water")) {
-                        fanCoil.CCoilPlantType = DataPlant::PlantEquipmentType::CoilWaterCooling;
-                    } else if (Util::SameString(CCoilType, "Coil:Cooling:Water:DetailedGeometry")) {
-                        fanCoil.CCoilPlantType = DataPlant::PlantEquipmentType::CoilWaterDetailedFlatCooling;
-                    } else {
-                        ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, fanCoil.Name));
-                        ShowContinueError(state, format("For: {}=\"{}\".", cAlphaFields(11), Alphas(11)));
-                        ShowContinueError(state, format("Invalid Coil Type={}, Name={}", CCoilType, fanCoil.CCoilPlantName));
-                        ShowContinueError(state, "must be \"Coil:Cooling:Water\" or \"Coil:Cooling:Water:DetailedGeometry\"");
-                        ErrorsFound = true;
-                    }
-                }
-                IsNotOK = false;
-                ValidateComponent(state, fanCoil.CCoilType, fanCoil.CCoilName, IsNotOK, fanCoil.UnitType);
-                if (IsNotOK) {
-                    ShowContinueError(state, format("...specified in {}=\"{}\".", CurrentModuleObject, fanCoil.Name));
+                } else {
+                    ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, fanCoil.Name));
+                    ShowContinueError(state, format("For: {}=\"{}\".", cAlphaFields(11), Alphas(11)));
+                    ShowContinueError(state, format("Invalid Coil Type={}, Name={}", HVAC::coilTypeNames[(int)hxCoilType], fanCoil.CCoilPlantName));
+                    ShowContinueError(state, "must be \"Coil:Cooling:Water\" or \"Coil:Cooling:Water:DetailedGeometry\"");
                     ErrorsFound = true;
+                }
+            }
+
+            if (!ValidateComponent(state, HVAC::coilTypeNames[(int)fanCoil.coolCoilType], fanCoil.CCoilName, fanCoil.UnitType)) {
+                ShowContinueError(state, format("...specified in {}=\"{}\".", CurrentModuleObject, fanCoil.Name));
+                ErrorsFound = true;
                 } else {
                     if (fanCoil.CCoilType_Num != CCoil::HXAssist) {
                         // mine the cold water node from the coil object
@@ -437,11 +438,7 @@ namespace FanCoilUnits {
                         }
                     }
                 }
-            } else {
-                ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, fanCoil.Name));
-                ShowContinueError(state, format("illegal value: {}=\"{}\".", cAlphaFields(11), Alphas(11)));
-                ErrorsFound = true;
-            }
+            } 
 
             if (Util::SameString(Alphas(13), "Coil:Heating:Water")) {
                 fanCoil.HCoilType_Num = HCoil::Water;

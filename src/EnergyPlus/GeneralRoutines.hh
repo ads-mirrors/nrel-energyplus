@@ -160,6 +160,12 @@ void CheckThisZoneForSizing(EnergyPlusData &state,
                             int const ZoneNum, // zone index to be checked
                             bool &ZoneWasSized);
 
+bool ValidateComponent(EnergyPlusData &state,
+                       std::string_view CompType,   // Component Type (e.g. Chiller:Electric)
+                       std::string const &CompName, // Component Name (e.g. Big Chiller)
+                       std::string_view CallString  // Context of this pair -- for error message
+);
+  
 void ValidateComponent(EnergyPlusData &state,
                        std::string_view CompType,   // Component Type (e.g. Chiller:Electric)
                        std::string const &CompName, // Component Name (e.g. Big Chiller)
@@ -167,6 +173,13 @@ void ValidateComponent(EnergyPlusData &state,
                        std::string_view CallString  // Context of this pair -- for error message
 );
 
+bool ValidateComponent(EnergyPlusData &state,
+                       std::string_view CompType,      // Component Type (e.g. Chiller:Electric)
+                       std::string const &CompValType, // Component "name" field type
+                       std::string const &CompName,    // Component Name (e.g. Big Chiller)
+                       std::string_view CallString     // Context of this pair -- for error message
+);
+  
 void ValidateComponent(EnergyPlusData &state,
                        std::string_view CompType,      // Component Type (e.g. Chiller:Electric)
                        std::string const &CompValType, // Component "name" field type

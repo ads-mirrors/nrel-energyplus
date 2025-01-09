@@ -111,8 +111,7 @@ namespace DXCoils {
         //          Some variables in this type are arrays (dimension=MaxModes) to support coil type
         //          COIL:DX:MultiMode:CoolingEmpirical.  Other coil types only use the first element.
         std::string Name;       // Name of the DX Coil
-        std::string DXCoilType; // type of coil
-        int DXCoilType_Num;     // Integer equivalent to DXCoilType
+        HVAC::CoilType coilType = HVAC::CoilType::Invalid;     // Integer equivalent to DXCoilType
         std::string Schedule;   // WaterCoil Operation Schedule
         int SchedPtr;           // Pointer to the correct schedule
         //          RatedCoolCap, RatedSHR and RatedCOP do not include the thermal or electrical
@@ -281,9 +280,8 @@ namespace DXCoils {
         // always 1 for other coils
         int NumDehumidModes; // number of enhanced dehumidification modes, up to MaxDehumidModes for Multimode DX coil,
         // always 0 for other coils)
-        Array1D_string CoilPerformanceType;                            // Coil Performance object type
-        Array1D_int CoilPerformanceType_Num;                           // Coil Performance object type number
-        Array1D_string CoilPerformanceName;                            // Coil Performance object names
+        Array1D<HVAC::CoilType> coilPerformanceTypes;                           // Coil Performance object type number
+        Array1D_string coilPerformanceNames;                            // Coil Performance object names
         Real64 CoolingCoilStg2RuntimeFrac;                             // Run time fraction of stage 2
         HVAC::CoilMode DehumidificationMode = HVAC::CoilMode::Invalid; // Dehumidification mode for multimode coil,
         // 0=normal, 1+=enhanced dehumidification mode
@@ -455,7 +453,7 @@ namespace DXCoils {
 
         // Default Constructor
         DXCoilData()
-            : DXCoilType_Num(0), SchedPtr(0), RatedTotCap(MaxModes, 0.0), HeatSizeRatio(1.0), RatedTotCapEMSOverrideOn(MaxModes, false),
+            : SchedPtr(0), RatedTotCap(MaxModes, 0.0), HeatSizeRatio(1.0), RatedTotCapEMSOverrideOn(MaxModes, false),
               RatedTotCapEMSOverrideValue(MaxModes, 0.0), RatedSHR(MaxModes, 0.0), RatedSHREMSOverrideOn(MaxModes, false),
               RatedSHREMSOverrideValue(MaxModes, 0.0), RatedCOP(MaxModes, 0.0), RatedAirVolFlowRate(MaxModes, 0.0),
               RatedAirVolFlowRateEMSOverrideON(MaxModes, false), RatedAirVolFlowRateEMSOverrideValue(MaxModes, 0.0),
@@ -484,8 +482,8 @@ namespace DXCoils {
               ReportEvapCondVars(false), EvapCondEffect(MaxModes, 0.0), CondInletTemp(0.0), EvapCondAirFlow(MaxModes, 0.0),
               EvapCondPumpElecNomPower(MaxModes, 0.0), EvapCondPumpElecPower(0.0), EvapCondPumpElecConsumption(0.0), EvapWaterConsumpRate(0.0),
               EvapWaterConsump(0.0), EvapCondAirFlow2(0.0), EvapCondEffect2(0.0), EvapCondPumpElecNomPower2(0.0), BasinHeaterPower(0.0),
-              BasinHeaterConsumption(0.0), NumCapacityStages(1), NumDehumidModes(0), CoilPerformanceType(MaxModes),
-              CoilPerformanceType_Num(MaxModes, 0), CoilPerformanceName(MaxModes), CoolingCoilStg2RuntimeFrac(0.0), WaterInNode(0), WaterOutNode(0),
+              BasinHeaterConsumption(0.0), NumCapacityStages(1), NumDehumidModes(0), coilPerformanceTypes(MaxModes, HVAC::CoilType::Invalid),
+              coilPerformanceNames(MaxModes), CoolingCoilStg2RuntimeFrac(0.0), WaterInNode(0), WaterOutNode(0),
               HCOPFTemp(0), HCOPFTempErrorIndex(0), HCOPFAirFlow(0), HCOPFAirFlowErrorIndex(0), HCOPFWaterFlow(0), HCOPFWaterFlowErrorIndex(0),
               HCapFTemp(0), HCapFTempErrorIndex(0), HCapFAirFlow(0), HCapFAirFlowErrorIndex(0), HCapFWaterFlow(0), HCapFWaterFlowErrorIndex(0),
               RatedInletDBTemp(0.0), RatedInletWBTemp(0.0), RatedInletWaterTemp(0.0), HPWHCondPumpElecNomPower(0.0), HPWHCondPumpFracToWater(0.0),
@@ -626,7 +624,7 @@ namespace DXCoils {
     );
 
     Real64 CalcCBF(EnergyPlusData &state,
-                   std::string const &UnitType,
+                   HVAC::CoilType coilType, 
                    std::string const &UnitName,
                    Real64 const InletAirTemp,   // inlet air temperature [C]
                    Real64 const InletAirHumRat, // inlet air humidity ratio [kg water / kg dry air]
@@ -637,7 +635,7 @@ namespace DXCoils {
     );
 
     Real64 ValidateADP(EnergyPlusData &state,
-                       std::string const &UnitType,      // component name
+                       HVAC::CoilType coilType,      // component name
                        std::string const &UnitName,      // component type
                        Real64 const RatedInletAirTemp,   // coil inlet air temperature [C]
                        Real64 const RatedInletAirHumRat, // coil inlet air humidity ratio [kg/kg]
@@ -723,7 +721,7 @@ namespace DXCoils {
 
     Real64 GetCoilCapacityByIndexType(EnergyPlusData &state,
                                       int const CoilIndex,    // must match coil index for the coil type
-                                      int const CoilType_Num, // must match coil types in this module
+                                      HVAC::CoilType const coilType, // must match coil types in this module
                                       bool &ErrorsFound       // set to true if problem
     );
 
@@ -774,7 +772,7 @@ namespace DXCoils {
     );
 
     int GetHPCoolingCoilIndex(EnergyPlusData &state,
-                              std::string const &HeatingCoilType, // Type of DX heating coil used in HP
+                              HVAC::CoilType heatingCoilType, // Type of DX heating coil used in HP
                               std::string const &HeatingCoilName, // Name of DX heating coil used in HP
                               int const HeatingCoilIndex          // Index of DX heating coil used in HP
     );

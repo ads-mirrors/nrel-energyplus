@@ -1296,7 +1296,7 @@ struct SizingData : BaseGlobalStruct
     int DataFanIndex = -1;                                // Fan index used during sizing
     HVAC::FanPlace DataFanPlacement = HVAC::FanPlace::Invalid; // identifies location of fan wrt coil
     int DataDXSpeedNum = 0;
-    int DataCoolCoilType = -1;
+    HVAC::CoilType DataCoolCoilType = HVAC::CoilType::Invalid; // Why the 'Data' prefix?
     int DataCoolCoilIndex = -1;
     EPVector<DataSizing::OARequirementsData> OARequirements;
     EPVector<DataSizing::ZoneAirDistributionData> ZoneAirDistribution;

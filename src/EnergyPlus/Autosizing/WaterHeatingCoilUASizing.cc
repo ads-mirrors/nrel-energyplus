@@ -393,7 +393,7 @@ Real64 WaterHeatingCoilUASizer::size(EnergyPlusData &state, Real64 _originalValu
     if (this->isCoilReportObject && this->curSysNum <= state.dataHVACGlobal->NumPrimaryAirSys) {
         state.dataRptCoilSelection->coilSelectionReportObj->setCoilUA(state,
                                                                       this->compName,
-                                                                      this->compType,
+                                                                      this->coilType,
                                                                       this->autoSizedValue,
                                                                       this->dataCapacityUsedForSizing,
                                                                       this->wasAutoSized,

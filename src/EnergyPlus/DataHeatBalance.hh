@@ -60,6 +60,7 @@
 #include <EnergyPlus/Data/BaseData.hh>
 #include <EnergyPlus/DataGlobalConstants.hh>
 #include <EnergyPlus/DataGlobals.hh>
+#include <EnergyPlus/DataHVACGlobals.hh>
 #include <EnergyPlus/DataSurfaces.hh>
 #include <EnergyPlus/DataVectorTypes.hh>
 #include <EnergyPlus/DataWindowEquivalentLayer.hh>
@@ -1348,7 +1349,7 @@ namespace DataHeatBalance {
     {
         // Members
         std::string Name;                                         // Name of Coil
-        std::string SourceType;                                   // SourceType for Coil
+        HVAC::CoilType coilType = HVAC::CoilType::Invalid;                                   // SourceType for Coil
         Real64 AvailCapacity = 0.0;                               // Total available heat reclaim capacity
         Real64 ReclaimEfficiencyTotal = 0.0;                      // Total reclaimed portion
         Real64 WaterHeatingDesuperheaterReclaimedHeatTotal = 0.0; // total reclaimed heat by water heating desuperheater coils

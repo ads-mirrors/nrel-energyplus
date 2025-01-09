@@ -10521,10 +10521,10 @@ namespace AirflowNetwork {
                     } else {
                         // Replace the convenience function with in-place code
                         std::string mycoil = DisSysCompCoilData(i).name;
-                        auto it = std::find_if(m_state.dataCoilCooingDX->coilCoolingDXs.begin(),
-                                               m_state.dataCoilCooingDX->coilCoolingDXs.end(),
+                        auto it = std::find_if(m_state.dataCoilCoolingDX->coilCoolingDXs.begin(),
+                                               m_state.dataCoilCoolingDX->coilCoolingDXs.end(),
                                                [&mycoil](const CoilCoolingDX &coil) { return coil.name == mycoil; });
-                        if (it != m_state.dataCoilCooingDX->coilCoolingDXs.end()) {
+                        if (it != m_state.dataCoilCoolingDX->coilCoolingDXs.end()) {
                             // Set the airloop number on the CoilCoolingDX object, which is used to collect the runtime fraction
                             it->airLoopNum = DisSysCompCoilData(i).AirLoopNum;
                         } else {

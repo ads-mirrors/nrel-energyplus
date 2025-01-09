@@ -142,11 +142,10 @@ namespace FanCoilUnits {
         int FanIndex = 0;        // index for fan
         std::string CCoilName;   // name of cooling coil
         int CCoilName_Index = 0; // Index for this Cooling Coil in SimWaterComp
-        std::string CCoilType;   // type of cooling coil:
+        HVAC::CoilType coolCoilType = HVAC::CoilType::Invalid;   // type of cooling coil:
         // 'Coil:Cooling:Water' or
         // 'Coil:Cooling:Water:DetailedGeometry' or
         // 'CoilSystem:Cooling:Water:HeatExchangerAssisted'
-        CCoil CCoilType_Num = CCoil::Invalid; // Numeric equivalent for type of cooling coil
         std::string CCoilPlantName;           // name of cooling coil (child<=CoilSystem:Cooling:Water:HeatExchangerAssisted)
         DataPlant::PlantEquipmentType CCoilPlantType = DataPlant::PlantEquipmentType::Invalid;
         int ControlCompTypeNum = 0;
@@ -157,9 +156,9 @@ namespace FanCoilUnits {
         Real64 ColdControlOffset = 0.0;   // control tolerance
         std::string HCoilName;            // name of heating coil
         int HCoilName_Index = 0;
-        std::string HCoilType; // type of heating coil:
+
         // 'Coil:Heating:Water' or
-        HCoil HCoilType_Num = HCoil::Invalid; // Numeric equivalent for type of cooling coil
+        HVAC::CoilType heatCoilType = HVAC::CoilType::Invalid; // Numeric equivalent for type of cooling coil
         DataPlant::PlantEquipmentType HCoilPlantTypeOf = DataPlant::PlantEquipmentType::Invalid;
         Real64 MaxHotWaterVolFlow = 0.0;    // m3/s
         Real64 MinHotWaterVolFlow = 0.0;    // m3/s

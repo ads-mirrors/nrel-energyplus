@@ -1593,11 +1593,11 @@ namespace HVACHXAssistedCoolingCoil {
     }
 
     void GetHXCoilTypeAndName(EnergyPlusData &state,
-                              std::string const &CoilType,  // must match coil types in this module
+                              HVAC::CoilType coilType,  // must match coil types in this module
                               std::string const &CoilName,  // must match coil names for the coil type
                               bool &ErrorsFound,            // set to true if problem
-                              std::string &CoolingCoilType, // returned type of cooling coil
-                              std::string &CoolingCoilName  // returned name of cooling coil
+                              HVAC::CoilType &hxCoilType, // returned type of cooling coil
+                              std::string &hxCoilName  // returned name of cooling coil
     )
     {
 
@@ -1621,15 +1621,25 @@ namespace HVACHXAssistedCoolingCoil {
             WhichCoil = Util::FindItem(CoilName, state.dataHVACAssistedCC->HXAssistedCoil);
         }
 
-        if (WhichCoil != 0) {
-            CoolingCoilType = state.dataHVACAssistedCC->HXAssistedCoil(WhichCoil).CoolingCoilType;
-            CoolingCoilName = state.dataHVACAssistedCC->HXAssistedCoil(WhichCoil).CoolingCoilName;
-        } else {
+        if (WhichCoil == 0) {
             ShowSevereError(state, format("Could not find Coil, Type=\"{}\" Name=\"{}\"", CoilType, CoilName));
             ErrorsFound = true;
-            CoolingCoilType = "";
-            CoolingCoilName = "";
+            hxCoilType = HVAC::CoilType::Invalid;
+            hxCoilName = "";
+            return;
         }
+
+        auto &coil = state.dataHVACAssistedCC->HXAssistedCoil(WhichCoil);
+        if (coil.coilType != coilType) {
+            ShowSevereError(state, format("Coil \"{}\" has unexpected type {}.", CoilName, HVAC::coilTypeNames[(int)coil.coilType]));
+            ErrorsFound = true;
+            hxCoilType = HVAC::CoilType::Invalid;
+            hxCoilName = "";
+            return;
+        }
+        
+        hxCoilType = coil.CoolingCoilType;
+        hxCoilName = coil.CoolingCoilName;
     }
 
     Real64 GetCoilMaxWaterFlowRate(EnergyPlusData &state,

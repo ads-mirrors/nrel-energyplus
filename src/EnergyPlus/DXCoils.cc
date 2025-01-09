@@ -206,39 +206,46 @@ void SimDXCoil(EnergyPlusData &state,
     InitDXCoil(state, DXCoilNum);
 
     // Select the correct unit type
-    switch (state.dataDXCoils->DXCoil(DXCoilNum).DXCoilType_Num) { // Autodesk:OPTIONAL PartLoadRatio, MaxCap used in this block without PRESENT check
-    case HVAC::CoilDX_CoolingSingleSpeed: {
+    switch (state.dataDXCoils->DXCoil(DXCoilNum).coilType) { // Autodesk:OPTIONAL PartLoadRatio, MaxCap used in this block without PRESENT check
+    case HVAC::CoilType::DXCoolingSingleSpeed: {
         if (present(CoilCoolingHeatingPLRRatio)) {
             CalcDoe2DXCoil(state, DXCoilNum, compressorOp, FirstHVACIteration, PartLoadRatio, fanOp, _, AirFlowRatio, CoilCoolingHeatingPLRRatio);
         } else {
             CalcDoe2DXCoil(state, DXCoilNum, compressorOp, FirstHVACIteration, PartLoadRatio, fanOp, _, AirFlowRatio);
         }
     } break;
-    case HVAC::CoilDX_HeatingEmpirical: {
+      
+    case HVAC::CoilType::DXHeatingEmpirical: {
         CalcDXHeatingCoil(state, DXCoilNum, PartLoadRatio, fanOp, AirFlowRatio);
     } break;
-    case HVAC::CoilDX_HeatPumpWaterHeaterPumped:
-    case HVAC::CoilDX_HeatPumpWaterHeaterWrapped: {
+      
+    case HVAC::CoilType::DXHeatPumpWaterHeaterPumped:
+    case HVAC::CoilType::DXHeatPumpWaterHeaterWrapped: {
         //   call the HPWHDXCoil routine to calculate water side performance set up the DX coil info for air-side calcs
         CalcHPWHDXCoil(state, DXCoilNum, PartLoadRatio);
         //    CALL CalcDoe2DXCoil(state, DXCoilNum, compressorOp, FirstHVACIteration,PartLoadRatio), perform air-side calculations
         CalcDoe2DXCoil(state, DXCoilNum, HVAC::CompressorOp::On, FirstHVACIteration, PartLoadRatio, fanOp);
     } break;
-    case HVAC::CoilVRF_Cooling: {
+      
+    case HVAC::CoilType::VRFCooling: {
         CalcVRFCoolingCoil(state, DXCoilNum, HVAC::CompressorOp::On, FirstHVACIteration, PartLoadRatio, fanOp, CompCycRatio, _, AirFlowRatio, MaxCap);
     } break;
-    case HVAC::CoilVRF_Heating: {
+      
+    case HVAC::CoilType::VRFHeating: {
         CalcDXHeatingCoil(state, DXCoilNum, PartLoadRatio, fanOp, AirFlowRatio, MaxCap);
     } break;
-    case HVAC::CoilVRF_FluidTCtrl_Cooling: {
+      
+    case HVAC::CoilType::VRFFluidTCtrlCooling: {
         CalcVRFCoolingCoil_FluidTCtrl(state, DXCoilNum, HVAC::CompressorOp::On, FirstHVACIteration, PartLoadRatio, fanOp, CompCycRatio, _, _, MaxCap);
     } break;
-    case HVAC::CoilVRF_FluidTCtrl_Heating: {
+      
+    case HVAC::CoilType::VRFFluidTCtrlHeating: {
         CalcVRFHeatingCoil_FluidTCtrl(state, compressorOp, DXCoilNum, PartLoadRatio, fanOp, _, MaxCap);
     } break;
+      
     default: {
         ShowSevereError(state, format("Error detected in DX Coil={}", CompName));
-        ShowContinueError(state, format("Invalid DX Coil Type={}", state.dataDXCoils->DXCoil(DXCoilNum).DXCoilType));
+        ShowContinueError(state, format("Invalid DX Coil Type={}", HVAC::coilTypeNamesUC[(int)state.dataDXCoils->DXCoil(DXCoilNum).coilType]));
         ShowFatalError(state, "Preceding condition causes termination.");
     } break;
     }
@@ -327,11 +334,13 @@ void SimDXCoilMultiSpeed(EnergyPlusData &state,
     InitDXCoil(state, DXCoilNum);
 
     // Select the correct unit type
-    switch (state.dataDXCoils->DXCoil(DXCoilNum).DXCoilType_Num) {
-    case HVAC::CoilDX_CoolingTwoSpeed: {
+    switch (state.dataDXCoils->DXCoil(DXCoilNum).coilType) {
+
+    case HVAC::CoilType::DXCoolingTwoSpeed: {
         CalcMultiSpeedDXCoil(state, DXCoilNum, SpeedRatio, CycRatio);
     } break;
-    case HVAC::CoilDX_MultiSpeedCooling: {
+      
+    case HVAC::CoilType::DXMultiSpeedCooling: {
         if (present(SpeedNum))
             CalcMultiSpeedDXCoilCooling(state,
                                         DXCoilNum,
@@ -343,7 +352,8 @@ void SimDXCoilMultiSpeed(EnergyPlusData &state,
                                         SingleModeOper); // Autodesk:OPTIONAL fanOp, CompressorOp used without PRESENT check
 
     } break;
-    case HVAC::CoilDX_MultiSpeedHeating: {
+      
+    case HVAC::CoilType::DXMultiSpeedHeating: {
         if (present(SpeedNum))
             CalcMultiSpeedDXCoilHeating(state,
                                         DXCoilNum,
@@ -356,7 +366,7 @@ void SimDXCoilMultiSpeed(EnergyPlusData &state,
     } break;
     default: {
         ShowSevereError(state, format("Error detected in DX Coil={}", CompName));
-        ShowContinueError(state, format("Invalid DX Coil Type={}", state.dataDXCoils->DXCoil(DXCoilNum).DXCoilType));
+        ShowContinueError(state, format("Invalid DX Coil Type={}", HVAC::coilTypeNamesUC[(int)state.dataDXCoils->DXCoil(DXCoilNum).coilType]));
         ShowFatalError(state, "Preceding condition causes termination.");
     } break;
     }
@@ -473,7 +483,7 @@ void SimDXCoilMultiMode(EnergyPlusData &state,
 
     auto &thisDXCoil = state.dataDXCoils->DXCoil(DXCoilNum);
     // Select the correct unit type
-    if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_CoolingTwoStageWHumControl) {
+    if (thisDXCoil.coilType == HVAC::CoilType::DXCoolingTwoStageWHumControl) {
         // Initialize local variables
         S1RuntimeFraction = 0.0;
         S1OutletAirEnthalpy = thisDXCoil.InletAirEnthalpy;
@@ -502,7 +512,7 @@ void SimDXCoilMultiMode(EnergyPlusData &state,
         thisDXCoil.DehumidificationMode = DehumidMode;
         if ((int)DehumidMode > thisDXCoil.NumDehumidModes) {
             ShowFatalError(state,
-                           format("{} \"{}\" - Requested enhanced dehumidification mode not available.", thisDXCoil.DXCoilType, thisDXCoil.Name));
+                           format("{} \"{}\" - Requested enhanced dehumidification mode not available.", HVAC::coilTypeNamesUC[(int)thisDXCoil.coilType], thisDXCoil.Name));
         }
 
         // If a single-stage coil OR If part load is zero,
@@ -680,7 +690,7 @@ void SimDXCoilMultiMode(EnergyPlusData &state,
         CalcBasinHeaterPowerForMultiModeDXCoil(state, DXCoilNum, DehumidMode);
     } else {
         ShowSevereError(state, format("Error detected in DX Coil={}", CompName));
-        ShowContinueError(state, format("Invalid DX Coil Type={}", thisDXCoil.DXCoilType));
+        ShowContinueError(state, format("Invalid DX Coil Type={}", HVAC::coilTypeNamesUC[(int)thisDXCoil.coilType]));
         ShowFatalError(state, "Preceding condition causes termination.");
     }
 
@@ -780,19 +790,19 @@ void GetDXCoils(EnergyPlusData &state)
     state.dataDXCoils->NumDXMulModeCoils =
         state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, "Coil:Cooling:DX:TwoStageWithHumidityControlMode");
     state.dataDXCoils->NumDXHeatPumpWaterHeaterPumpedCoils =
-        state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, HVAC::cAllCoilTypes(HVAC::CoilDX_HeatPumpWaterHeaterPumped));
+      state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, HVAC::coilTypeNames[(int)HVAC::CoilType::DXHeatPumpWaterHeaterPumped]);
     state.dataDXCoils->NumDXHeatPumpWaterHeaterWrappedCoils =
-        state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, HVAC::cAllCoilTypes(HVAC::CoilDX_HeatPumpWaterHeaterWrapped));
+      state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, HVAC::coilTypeNames[(int)HVAC::CoilType::DXHeatPumpWaterHeaterWrapped]);
     state.dataDXCoils->NumDXMulSpeedCoolCoils = state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, "Coil:Cooling:DX:MultiSpeed");
     state.dataDXCoils->NumDXMulSpeedHeatCoils = state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, "Coil:Heating:DX:MultiSpeed");
     state.dataDXCoils->NumVRFCoolingCoils =
-        state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, HVAC::cAllCoilTypes(HVAC::CoilVRF_Cooling));
+      state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, HVAC::coilTypeNames[(int)HVAC::CoilType::VRFCooling]);
     state.dataDXCoils->NumVRFHeatingCoils =
-        state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, HVAC::cAllCoilTypes(HVAC::CoilVRF_Heating));
+      state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, HVAC::coilTypeNames[(int)HVAC::CoilType::VRFHeating]);
     state.dataDXCoils->NumVRFCoolingFluidTCtrlCoils =
-        state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, HVAC::cAllCoilTypes(HVAC::CoilVRF_FluidTCtrl_Cooling));
+      state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, HVAC::coilTypeNames[(int)HVAC::CoilType::VRFFluidTCtrlCooling]);
     state.dataDXCoils->NumVRFHeatingFluidTCtrlCoils =
-        state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, HVAC::cAllCoilTypes(HVAC::CoilVRF_FluidTCtrl_Heating));
+      state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, HVAC::coilTypeNames[(int)HVAC::CoilType::VRFFluidTCtrlHeating]);
 
     state.dataDXCoils->NumDXCoils = state.dataDXCoils->NumDoe2DXCoils + state.dataDXCoils->NumDXHeatingCoils + state.dataDXCoils->NumDXMulSpeedCoils +
                                     state.dataDXCoils->NumDXMulModeCoils + state.dataDXCoils->NumDXHeatPumpWaterHeaterPumpedCoils +
@@ -816,11 +826,11 @@ void GetDXCoils(EnergyPlusData &state)
     MaxNumbers = max(MaxNumbers, NumNumbers);
     MaxAlphas = max(MaxAlphas, NumAlphas);
     state.dataInputProcessing->inputProcessor->getObjectDefMaxArgs(
-        state, HVAC::cAllCoilTypes(HVAC::CoilDX_HeatPumpWaterHeaterPumped), TotalArgs, NumAlphas, NumNumbers);
+        state, HVAC::coilTypeNames[(int)HVAC::CoilType::DXHeatPumpWaterHeaterPumped], TotalArgs, NumAlphas, NumNumbers);
     MaxNumbers = max(MaxNumbers, NumNumbers);
     MaxAlphas = max(MaxAlphas, NumAlphas);
     state.dataInputProcessing->inputProcessor->getObjectDefMaxArgs(
-        state, HVAC::cAllCoilTypes(HVAC::CoilDX_HeatPumpWaterHeaterWrapped), TotalArgs, NumAlphas, NumNumbers);
+        state, HVAC::coilTypeNames[(int)HVAC::CoilType::DXHeatPumpWaterHeaterWrapped], TotalArgs, NumAlphas, NumNumbers);
     MaxNumbers = max(MaxNumbers, NumNumbers);
     MaxAlphas = max(MaxAlphas, NumAlphas);
     state.dataInputProcessing->inputProcessor->getObjectDefMaxArgs(state, "Coil:Cooling:DX:MultiSpeed", TotalArgs, NumAlphas, NumNumbers);
@@ -830,19 +840,19 @@ void GetDXCoils(EnergyPlusData &state)
     MaxNumbers = max(MaxNumbers, NumNumbers);
     MaxAlphas = max(MaxAlphas, NumAlphas);
     state.dataInputProcessing->inputProcessor->getObjectDefMaxArgs(
-        state, HVAC::cAllCoilTypes(HVAC::CoilVRF_Cooling), TotalArgs, NumAlphas, NumNumbers);
+        state, HVAC::coilTypeNames[(int)HVAC::CoilType::VRFCooling], TotalArgs, NumAlphas, NumNumbers);
     MaxNumbers = max(MaxNumbers, NumNumbers);
     MaxAlphas = max(MaxAlphas, NumAlphas);
     state.dataInputProcessing->inputProcessor->getObjectDefMaxArgs(
-        state, HVAC::cAllCoilTypes(HVAC::CoilVRF_Heating), TotalArgs, NumAlphas, NumNumbers);
+        state, HVAC::coilTypeNames[(int)HVAC::CoilType::VRFHeating], TotalArgs, NumAlphas, NumNumbers);
     MaxNumbers = max(MaxNumbers, NumNumbers);
     MaxAlphas = max(MaxAlphas, NumAlphas);
     state.dataInputProcessing->inputProcessor->getObjectDefMaxArgs(
-        state, HVAC::cAllCoilTypes(HVAC::CoilVRF_FluidTCtrl_Cooling), TotalArgs, NumAlphas, NumNumbers);
+        state, HVAC::coilTypeNames[(int)HVAC::CoilType::VRFFluidTCtrlCooling], TotalArgs, NumAlphas, NumNumbers);
     MaxNumbers = max(MaxNumbers, NumNumbers);
     MaxAlphas = max(MaxAlphas, NumAlphas);
     state.dataInputProcessing->inputProcessor->getObjectDefMaxArgs(
-        state, HVAC::cAllCoilTypes(HVAC::CoilVRF_FluidTCtrl_Heating), TotalArgs, NumAlphas, NumNumbers);
+        state, HVAC::coilTypeNames[(int)HVAC::CoilType::VRFFluidTCtrlHeating], TotalArgs, NumAlphas, NumNumbers);
     MaxNumbers = max(MaxNumbers, NumNumbers);
     MaxAlphas = max(MaxAlphas, NumAlphas);
     state.dataInputProcessing->inputProcessor->getObjectDefMaxArgs(state, "CoilPerformance:DX:Cooling", TotalArgs, NumAlphas, NumNumbers);
@@ -924,9 +934,8 @@ void GetDXCoils(EnergyPlusData &state)
         thisDXCoil.Name = Alphas(1);
         // Initialize DataHeatBalance heat reclaim variable name for use by heat reclaim coils
         state.dataHeatBal->HeatReclaimDXCoil(DXCoilNum).Name = thisDXCoil.Name;
-        state.dataHeatBal->HeatReclaimDXCoil(DXCoilNum).SourceType = CurrentModuleObject;
-        thisDXCoil.DXCoilType = CurrentModuleObject;
-        thisDXCoil.DXCoilType_Num = HVAC::CoilDX_CoolingSingleSpeed;
+        state.dataHeatBal->HeatReclaimDXCoil(DXCoilNum).coilType = HVAC::CoilType::DXCoolingSingleSpeed;
+        thisDXCoil.coilType = HVAC::CoilType::DXCoolingSingleSpeed;
         thisDXCoil.Schedule = Alphas(2);
         if (lAlphaBlanks(2)) {
             thisDXCoil.SchedPtr = ScheduleManager::ScheduleAlwaysOn;
@@ -1409,9 +1418,8 @@ void GetDXCoils(EnergyPlusData &state)
         thisDXCoil.Name = Alphas(1);
         // Initialize DataHeatBalance heat reclaim variable name for use by heat reclaim coils
         state.dataHeatBal->HeatReclaimDXCoil(DXCoilNum).Name = thisDXCoil.Name;
-        state.dataHeatBal->HeatReclaimDXCoil(DXCoilNum).SourceType = CurrentModuleObject;
-        thisDXCoil.DXCoilType = CurrentModuleObject;
-        thisDXCoil.DXCoilType_Num = HVAC::CoilDX_CoolingTwoStageWHumControl;
+        state.dataHeatBal->HeatReclaimDXCoil(DXCoilNum).coilType = HVAC::CoilType::DXCoolingTwoStageWHumControl;
+        thisDXCoil.coilType = HVAC::CoilType::DXCoolingTwoStageWHumControl;
         thisDXCoil.Schedule = Alphas(2);
         if (lAlphaBlanks(2)) {
             thisDXCoil.SchedPtr = ScheduleManager::ScheduleAlwaysOn;
@@ -1508,16 +1516,15 @@ void GetDXCoils(EnergyPlusData &state)
                     PerfObjectType = Alphas(AlphaIndex);
                     PerfObjectName = Alphas(AlphaIndex + 1);
                     PerfModeNum = DehumidModeNum * 2 + CapacityStageNum;
-                    thisDXCoil.CoilPerformanceType(PerfModeNum) = PerfObjectType;
                     if (Util::SameString(PerfObjectType, "CoilPerformance:DX:Cooling")) {
-                        thisDXCoil.CoilPerformanceType_Num(PerfModeNum) = HVAC::CoilPerfDX_CoolBypassEmpirical;
+                        thisDXCoil.coilPerformanceTypes(PerfModeNum) = HVAC::CoilType::DXCooling;
                     } else {
                         ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, thisDXCoil.Name));
                         ShowContinueError(state, format("...illegal {}=\"{}\".", cAlphaFields(AlphaIndex), PerfObjectType));
                         ShowContinueError(state, "Must be \"CoilPerformance:DX:Cooling\".");
                         ErrorsFound = true;
                     }
-                    thisDXCoil.CoilPerformanceName(PerfModeNum) = PerfObjectName;
+                    thisDXCoil.coilPerformanceNames(PerfModeNum) = PerfObjectName;
                     // Get for CoilPerformance object
                     PerfObjectNum = state.dataInputProcessing->inputProcessor->getObjectItemNum(state, PerfObjectType, PerfObjectName);
                     if (PerfObjectNum > 0) {
@@ -1971,8 +1978,7 @@ void GetDXCoils(EnergyPlusData &state)
 
         auto &thisDXCoil = state.dataDXCoils->DXCoil(DXCoilNum);
         thisDXCoil.Name = Alphas(1);
-        thisDXCoil.DXCoilType = CurrentModuleObject;
-        thisDXCoil.DXCoilType_Num = HVAC::CoilDX_HeatingEmpirical;
+        thisDXCoil.coilType = HVAC::CoilType::DXHeatingEmpirical;
         thisDXCoil.Schedule = Alphas(2);
         if (lAlphaBlanks(2)) {
             thisDXCoil.SchedPtr = ScheduleManager::ScheduleAlwaysOn;
@@ -2437,9 +2443,8 @@ void GetDXCoils(EnergyPlusData &state)
         thisDXCoil.Name = Alphas(1);
         // Initialize DataHeatBalance heat reclaim variable name for use by heat reclaim coils
         state.dataHeatBal->HeatReclaimDXCoil(DXCoilNum).Name = thisDXCoil.Name;
-        state.dataHeatBal->HeatReclaimDXCoil(DXCoilNum).SourceType = CurrentModuleObject;
-        thisDXCoil.DXCoilType = CurrentModuleObject;
-        thisDXCoil.DXCoilType_Num = HVAC::CoilDX_CoolingTwoSpeed;
+        state.dataHeatBal->HeatReclaimDXCoil(DXCoilNum).coilType = HVAC::CoilType::DXCoolingTwoSpeed; 
+        thisDXCoil.coilType = HVAC::CoilType::DXCoolingTwoSpeed;
         thisDXCoil.Schedule = Alphas(2);
         if (lAlphaBlanks(2)) {
             thisDXCoil.SchedPtr = ScheduleManager::ScheduleAlwaysOn;
@@ -2985,7 +2990,7 @@ void GetDXCoils(EnergyPlusData &state)
     }
 
     // Loop over the Pumped DX Water Heater Coils and get & load the data
-    CurrentModuleObject = HVAC::cAllCoilTypes(HVAC::CoilDX_HeatPumpWaterHeaterPumped);
+    CurrentModuleObject = HVAC::coilTypeNames[(int)HVAC::CoilType::DXHeatPumpWaterHeaterPumped];
     for (DXHPWaterHeaterCoilNum = 1; DXHPWaterHeaterCoilNum <= state.dataDXCoils->NumDXHeatPumpWaterHeaterPumpedCoils; ++DXHPWaterHeaterCoilNum) {
 
         state.dataInputProcessing->inputProcessor->getObjectItem(state,
@@ -3012,8 +3017,7 @@ void GetDXCoils(EnergyPlusData &state)
 
         auto &thisDXCoil = state.dataDXCoils->DXCoil(DXCoilNum);
         thisDXCoil.Name = Alphas(1);
-        thisDXCoil.DXCoilType = CurrentModuleObject;
-        thisDXCoil.DXCoilType_Num = HVAC::CoilDX_HeatPumpWaterHeaterPumped;
+        thisDXCoil.coilType = HVAC::CoilType::DXHeatPumpWaterHeaterPumped;
         thisDXCoil.SchedPtr = 0; // heat pump water heater DX coil has no schedule
 
         // Store the HPWH DX coil heating capacity in RatedTotCap2. After backing off pump and fan heat,
@@ -3478,7 +3482,7 @@ void GetDXCoils(EnergyPlusData &state)
                        format("{}Errors found in getting {} input. Preceding condition(s) causes termination.", RoutineName, CurrentModuleObject));
     }
     // Loop over the Wrapped DX Water Heater Coils and get & load the data
-    CurrentModuleObject = HVAC::cAllCoilTypes(HVAC::CoilDX_HeatPumpWaterHeaterWrapped);
+    CurrentModuleObject = HVAC::coilTypeNames[(int)HVAC::CoilType::DXHeatPumpWaterHeaterWrapped];
     for (DXHPWaterHeaterCoilNum = 1; DXHPWaterHeaterCoilNum <= state.dataDXCoils->NumDXHeatPumpWaterHeaterWrappedCoils; ++DXHPWaterHeaterCoilNum) {
 
         state.dataInputProcessing->inputProcessor->getObjectItem(state,
@@ -3505,8 +3509,7 @@ void GetDXCoils(EnergyPlusData &state)
 
         auto &thisDXCoil = state.dataDXCoils->DXCoil(DXCoilNum);
         thisDXCoil.Name = Alphas(1);
-        thisDXCoil.DXCoilType = CurrentModuleObject;
-        thisDXCoil.DXCoilType_Num = HVAC::CoilDX_HeatPumpWaterHeaterWrapped;
+        thisDXCoil.coilType = HVAC::CoilType::DXHeatPumpWaterHeaterWrapped;
         thisDXCoil.SchedPtr = 0; // heat pump water heater DX coil has no schedule
 
         // Store the HPWH DX coil heating capacity in RatedTotCap2. After backing off pump and fan heat,
@@ -3901,9 +3904,8 @@ void GetDXCoils(EnergyPlusData &state)
         thisDXCoil.Name = Alphas(1);
         // Initialize DataHeatBalance heat reclaim variable name for use by heat reclaim coils
         state.dataHeatBal->HeatReclaimDXCoil(DXCoilNum).Name = thisDXCoil.Name;
-        state.dataHeatBal->HeatReclaimDXCoil(DXCoilNum).SourceType = CurrentModuleObject;
-        thisDXCoil.DXCoilType = CurrentModuleObject;
-        thisDXCoil.DXCoilType_Num = HVAC::CoilDX_MultiSpeedCooling;
+        state.dataHeatBal->HeatReclaimDXCoil(DXCoilNum).coilType = HVAC::CoilType::DXMultiSpeedCooling;
+        thisDXCoil.coilType = HVAC::CoilType::DXMultiSpeedCooling;
         thisDXCoil.Schedule = Alphas(2);
         if (lAlphaBlanks(2)) {
             thisDXCoil.SchedPtr = ScheduleManager::ScheduleAlwaysOn;
@@ -4451,9 +4453,8 @@ void GetDXCoils(EnergyPlusData &state)
         thisDXCoil.Name = Alphas(1);
         // Initialize DataHeatBalance heat reclaim variable name for use by heat reclaim coils
         state.dataHeatBal->HeatReclaimDXCoil(DXCoilNum).Name = thisDXCoil.Name;
-        state.dataHeatBal->HeatReclaimDXCoil(DXCoilNum).SourceType = CurrentModuleObject;
-        thisDXCoil.DXCoilType = CurrentModuleObject;
-        thisDXCoil.DXCoilType_Num = HVAC::CoilDX_MultiSpeedHeating;
+        state.dataHeatBal->HeatReclaimDXCoil(DXCoilNum).coilType = HVAC::CoilType::DXMultiSpeedHeating; 
+        thisDXCoil.coilType = HVAC::CoilType::DXMultiSpeedHeating;
         thisDXCoil.Schedule = Alphas(2);
         if (lAlphaBlanks(2)) {
             thisDXCoil.SchedPtr = ScheduleManager::ScheduleAlwaysOn;
@@ -4915,7 +4916,7 @@ void GetDXCoils(EnergyPlusData &state)
     }
 
     // Loop over the VRF Cooling Coils and get & load the data
-    CurrentModuleObject = HVAC::cAllCoilTypes(HVAC::CoilVRF_Cooling);
+    CurrentModuleObject = HVAC::coilTypeNames[(int)HVAC::CoilType::VRFCooling];
     for (DXCoilIndex = 1; DXCoilIndex <= state.dataDXCoils->NumVRFCoolingCoils; ++DXCoilIndex) {
 
         state.dataInputProcessing->inputProcessor->getObjectItem(state,
@@ -4942,8 +4943,7 @@ void GetDXCoils(EnergyPlusData &state)
 
         auto &thisDXCoil = state.dataDXCoils->DXCoil(DXCoilNum);
         thisDXCoil.Name = Alphas(1);
-        thisDXCoil.DXCoilType = CurrentModuleObject;
-        thisDXCoil.DXCoilType_Num = HVAC::CoilVRF_Cooling;
+        thisDXCoil.coilType = HVAC::CoilType::VRFCooling;
         thisDXCoil.Schedule = Alphas(2);
         if (lAlphaBlanks(2)) {
             thisDXCoil.SchedPtr = ScheduleManager::ScheduleAlwaysOn;
@@ -5059,7 +5059,7 @@ void GetDXCoils(EnergyPlusData &state)
     }
 
     // Loop over the VRF Heating Coils and get & load the data
-    CurrentModuleObject = HVAC::cAllCoilTypes(HVAC::CoilVRF_Heating);
+    CurrentModuleObject = HVAC::coilTypeNames[(int)HVAC::CoilType::VRFHeating];
     for (DXCoilIndex = 1; DXCoilIndex <= state.dataDXCoils->NumVRFHeatingCoils; ++DXCoilIndex) {
 
         state.dataInputProcessing->inputProcessor->getObjectItem(state,
@@ -5086,8 +5086,7 @@ void GetDXCoils(EnergyPlusData &state)
 
         auto &thisDXCoil = state.dataDXCoils->DXCoil(DXCoilNum);
         thisDXCoil.Name = Alphas(1);
-        thisDXCoil.DXCoilType = CurrentModuleObject;
-        thisDXCoil.DXCoilType_Num = HVAC::CoilVRF_Heating;
+        thisDXCoil.coilType = HVAC::CoilType::VRFHeating;
         thisDXCoil.Schedule = Alphas(2);
         if (lAlphaBlanks(2)) {
             thisDXCoil.SchedPtr = ScheduleManager::ScheduleAlwaysOn;
@@ -5192,7 +5191,7 @@ void GetDXCoils(EnergyPlusData &state)
     }
 
     // Loop over the VRF Cooling Coils for VRF FluidTCtrl Model_zrp 2015
-    CurrentModuleObject = HVAC::cAllCoilTypes(HVAC::CoilVRF_FluidTCtrl_Cooling);
+    CurrentModuleObject = HVAC::coilTypeNames[(int)HVAC::CoilType::VRFFluidTCtrlCooling];
     for (DXCoilIndex = 1; DXCoilIndex <= state.dataDXCoils->NumVRFCoolingFluidTCtrlCoils; ++DXCoilIndex) {
 
         state.dataInputProcessing->inputProcessor->getObjectItem(state,
@@ -5219,8 +5218,7 @@ void GetDXCoils(EnergyPlusData &state)
 
         auto &thisDXCoil = state.dataDXCoils->DXCoil(DXCoilNum);
         thisDXCoil.Name = Alphas(1);
-        thisDXCoil.DXCoilType = CurrentModuleObject;
-        thisDXCoil.DXCoilType_Num = HVAC::CoilVRF_FluidTCtrl_Cooling;
+        thisDXCoil.coilType = HVAC::CoilType::VRFFluidTCtrlCooling;
         thisDXCoil.Schedule = Alphas(2);
         if (lAlphaBlanks(2)) {
             thisDXCoil.SchedPtr = ScheduleManager::ScheduleAlwaysOn;
@@ -5310,7 +5308,7 @@ void GetDXCoils(EnergyPlusData &state)
     }
 
     // Loop over the VRF Heating Coils for VRF FluidTCtrl Model_zrp 2015
-    CurrentModuleObject = HVAC::cAllCoilTypes(HVAC::CoilVRF_FluidTCtrl_Heating);
+    CurrentModuleObject = HVAC::coilTypeNames[(int)HVAC::CoilType::VRFFluidTCtrlHeating];
     for (DXCoilIndex = 1; DXCoilIndex <= state.dataDXCoils->NumVRFHeatingFluidTCtrlCoils; ++DXCoilIndex) {
 
         state.dataInputProcessing->inputProcessor->getObjectItem(state,
@@ -5337,8 +5335,7 @@ void GetDXCoils(EnergyPlusData &state)
 
         auto &thisDXCoil = state.dataDXCoils->DXCoil(DXCoilNum);
         thisDXCoil.Name = Alphas(1);
-        thisDXCoil.DXCoilType = CurrentModuleObject;
-        thisDXCoil.DXCoilType_Num = HVAC::CoilVRF_FluidTCtrl_Heating;
+        thisDXCoil.coilType = HVAC::CoilType::VRFFluidTCtrlHeating;
         thisDXCoil.Schedule = Alphas(2);
         if (lAlphaBlanks(2)) {
             thisDXCoil.SchedPtr = ScheduleManager::ScheduleAlwaysOn;
@@ -5415,7 +5412,8 @@ void GetDXCoils(EnergyPlusData &state)
 
         auto &thisDXCoil = state.dataDXCoils->DXCoil(DXCoilNum);
 
-        if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_CoolingSingleSpeed || thisDXCoil.DXCoilType_Num == HVAC::CoilDX_CoolingTwoStageWHumControl) {
+        if (thisDXCoil.coilType == HVAC::CoilType::DXCoolingSingleSpeed ||
+            thisDXCoil.coilType == HVAC::CoilType::DXCoolingTwoStageWHumControl) {
             // Setup Report Variables for Cooling Equipment
             // CurrentModuleObject='Coil:Cooling:DX:SingleSpeed/Coil:Cooling:DX:TwoStageWithHumidityControlMode'
             SetupOutputVariable(state,
@@ -5584,7 +5582,7 @@ void GetDXCoils(EnergyPlusData &state)
                 }
             }
 
-            if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_CoolingTwoStageWHumControl) {
+            if (thisDXCoil.coilType == HVAC::CoilType::DXCoolingTwoStageWHumControl) {
                 // Setup Report Variables for Cooling Equipment
                 // CurrentModuleObject='Cooling:DX:TwoStageWithHumidityControlMode'
                 SetupOutputVariable(state,
@@ -5605,7 +5603,7 @@ void GetDXCoils(EnergyPlusData &state)
 
         }
 
-        else if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_HeatingEmpirical) {
+        else if (thisDXCoil.coilType == HVAC::CoilType::DXHeatingEmpirical) {
             // Setup Report Variables for Heating Equipment
             // CurrentModuleObject='Coil:Heating:DX:SingleSpeed'
             SetupOutputVariable(state,
@@ -5722,7 +5720,7 @@ void GetDXCoils(EnergyPlusData &state)
             }
         }
 
-        else if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_CoolingTwoSpeed) {
+        else if (thisDXCoil.coilType == HVAC::CoilType::DXCoolingTwoSpeed) {
             // Setup Report Variables for Cooling Equipment
             // CurrentModuleObject='Coil:Cooling:DX:TwoSpeed'
             SetupOutputVariable(state,
@@ -5872,8 +5870,8 @@ void GetDXCoils(EnergyPlusData &state)
 
         }
 
-        else if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_HeatPumpWaterHeaterPumped ||
-                 thisDXCoil.DXCoilType_Num == HVAC::CoilDX_HeatPumpWaterHeaterWrapped) {
+        else if (thisDXCoil.coilType == HVAC::CoilType::DXHeatPumpWaterHeaterPumped ||
+                 thisDXCoil.coilType == HVAC::CoilType::DXHeatPumpWaterHeaterWrapped) {
             // Setup Report Variables for Cooling Equipment
             // CurrentModuleObject='Coil:WaterHeating:AirToWaterHeatPump:Pumped'
             // or 'Coil:WaterHeating:AirToWaterHeatPump:Wrapped'
@@ -5997,7 +5995,7 @@ void GetDXCoils(EnergyPlusData &state)
                                 OutputProcessor::EndUseCat::WaterSystem); // DHW
         }
 
-        else if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_MultiSpeedCooling) {
+        else if (thisDXCoil.coilType == HVAC::CoilType::DXMultiSpeedCooling) {
             // Setup Report Variables for Cooling Equipment:
             // CurrentModuleObject='Coil:Cooling:DX:MultiSpeed'
             SetupOutputVariable(state,
@@ -6169,7 +6167,7 @@ void GetDXCoils(EnergyPlusData &state)
 
         }
 
-        else if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_MultiSpeedHeating) {
+        else if (thisDXCoil.coilType == HVAC::CoilType::DXMultiSpeedHeating) {
             // Setup Report Variables for Heating Equipment:
             // CurrentModuleObject='Coil:Heating:DX:MultiSpeed'
             SetupOutputVariable(state,
@@ -6325,7 +6323,7 @@ void GetDXCoils(EnergyPlusData &state)
         }
 
         // VRF cooling coil report variables
-        else if (thisDXCoil.DXCoilType_Num == HVAC::CoilVRF_Cooling) {
+        else if (thisDXCoil.coilType == HVAC::CoilType::VRFCooling) {
             // Setup Report Variables for Cooling Equipment:
             // CurrentModuleObject='Coil:Cooling:DX:VariableRefrigerantFlow
             SetupOutputVariable(state,
@@ -6402,7 +6400,7 @@ void GetDXCoils(EnergyPlusData &state)
         }
 
         // VRF heating coil report variables
-        else if (thisDXCoil.DXCoilType_Num == HVAC::CoilVRF_Heating) {
+        else if (thisDXCoil.coilType == HVAC::CoilType::VRFHeating) {
             // Setup Report Variables for Heating Equipment:
             // CurrentModuleObject='Coil:Heating:DX:VariableRefrigerantFlow
             SetupOutputVariable(state,
@@ -6432,7 +6430,7 @@ void GetDXCoils(EnergyPlusData &state)
         }
 
         // VRF cooling coil for FluidTCtrl, report variables
-        else if (thisDXCoil.DXCoilType_Num == HVAC::CoilVRF_FluidTCtrl_Cooling) {
+        else if (thisDXCoil.coilType == HVAC::CoilType::VRFFluidTCtrlCooling) {
             // Setup Report Variables for Cooling Equipment:
             // CurrentModuleObject='Coil:Cooling:DX:VariableRefrigerantFlow:FluidTemperatureControl
             SetupOutputVariable(state,
@@ -6525,7 +6523,7 @@ void GetDXCoils(EnergyPlusData &state)
         }
 
         // VRF heating coil for FluidTCtrl, report variables
-        else if (thisDXCoil.DXCoilType_Num == HVAC::CoilVRF_FluidTCtrl_Heating) {
+        else if (thisDXCoil.coilType == HVAC::CoilType::VRFFluidTCtrlHeating) {
             // Setup Report Variables for Heating Equipment:
             // CurrentModuleObject='Coil:Heating:DX:VariableRefrigerantFlow:FluidTemperatureControl
             SetupOutputVariable(state,
@@ -6664,8 +6662,8 @@ void InitDXCoil(EnergyPlusData &state, int const DXCoilNum) // number of the cur
     // if "ISHundredPercentDOASDXCoil" =.TRUE., then set coil as 100% DOAS dx coil
     state.dataHVACGlobal->DXCT = (thisDXCoil.ISHundredPercentDOASDXCoil) ? HVAC::DXCoilType::DOAS : HVAC::DXCoilType::Regular;
 
-    if ((thisDXCoil.DXCoilType_Num == HVAC::CoilDX_HeatPumpWaterHeaterPumped ||
-         thisDXCoil.DXCoilType_Num == HVAC::CoilDX_HeatPumpWaterHeaterWrapped) &&
+    if ((thisDXCoil.coilType == HVAC::CoilType::DXHeatPumpWaterHeaterPumped ||
+         thisDXCoil.coilType == HVAC::CoilType::DXHeatPumpWaterHeaterWrapped) &&
         state.dataDXCoils->MyEnvrnFlag(DXCoilNum)) {
 
         SizeDXCoil(state, DXCoilNum);
@@ -6675,7 +6673,7 @@ void InitDXCoil(EnergyPlusData &state, int const DXCoilNum) // number of the cur
             ((RatedVolFlowPerRatedTotCap - HVAC::MaxHeatVolFlowPerRatedTotCap[(int)state.dataHVACGlobal->DXCT]) > SmallDifferenceTest)) {
             ShowWarningError(state,
                              format("{} \"{}\": Rated air volume flow rate per watt of rated total water heating capacity is out of range",
-                                    thisDXCoil.DXCoilType,
+                                    HVAC::coilTypeNames[(int)thisDXCoil.coilType],
                                     thisDXCoil.Name));
             ShowContinueError(state,
                               format("Min Rated Vol Flow Per Watt=[{:.3T}], Rated Vol Flow Per Watt=[{:.3T}], Max Rated Vol Flow Per "
@@ -6701,7 +6699,7 @@ void InitDXCoil(EnergyPlusData &state, int const DXCoilNum) // number of the cur
         }
 
         thisDXCoil.RatedCBF(1) = CalcCBF(state,
-                                         thisDXCoil.DXCoilType,
+                                         thisDXCoil.coilType,
                                          thisDXCoil.Name,
                                          thisDXCoil.RatedInletDBTemp,
                                          HPInletAirHumRat,
@@ -6712,7 +6710,8 @@ void InitDXCoil(EnergyPlusData &state, int const DXCoilNum) // number of the cur
         state.dataDXCoils->MyEnvrnFlag(DXCoilNum) = false;
     }
 
-    if ((thisDXCoil.DXCoilType_Num == HVAC::CoilDX_MultiSpeedCooling || thisDXCoil.DXCoilType_Num == HVAC::CoilDX_MultiSpeedHeating) &&
+    if ((thisDXCoil.coilType == HVAC::CoilType::DXMultiSpeedCooling ||
+         thisDXCoil.coilType == HVAC::CoilType::DXMultiSpeedHeating) &&
         state.dataDXCoils->MyEnvrnFlag(DXCoilNum)) {
         if (thisDXCoil.FuelType != Constant::eFuel::Electricity) {
             if (thisDXCoil.MSHPHeatRecActive) {
@@ -6732,8 +6731,8 @@ void InitDXCoil(EnergyPlusData &state, int const DXCoilNum) // number of the cur
 
     // Find the companion upstream coil (DX cooling coil) that is used with DX heating coils (HP AC units only)
     if (thisDXCoil.FindCompanionUpStreamCoil) {
-        if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_HeatingEmpirical || thisDXCoil.DXCoilType_Num == HVAC::CoilDX_MultiSpeedHeating) {
-            thisDXCoil.CompanionUpstreamDXCoil = GetHPCoolingCoilIndex(state, thisDXCoil.DXCoilType, thisDXCoil.Name, DXCoilNum);
+      if (thisDXCoil.coilType == HVAC::CoilType::DXHeatingEmpirical || thisDXCoil.coilType == HVAC::CoilType::DXMultiSpeedHeating) {
+            thisDXCoil.CompanionUpstreamDXCoil = GetHPCoolingCoilIndex(state, thisDXCoil.coilType, thisDXCoil.Name, DXCoilNum);
             if (thisDXCoil.CompanionUpstreamDXCoil > 0) {
                 state.dataDXCoils->DXCoil(thisDXCoil.CompanionUpstreamDXCoil).ReportCoolingCoilCrankcasePower = false;
                 thisDXCoil.FindCompanionUpStreamCoil = false;
@@ -6753,9 +6752,9 @@ void InitDXCoil(EnergyPlusData &state, int const DXCoilNum) // number of the cur
         if (state.dataAirLoop->AirLoopInputsFilled) {
             //     Set report variables for DX cooling coils that will have a crankcase heater (all DX coils not used in a HP AC unit)
             for (DXCoilNumTemp = 1; DXCoilNumTemp <= state.dataDXCoils->NumDXCoils; ++DXCoilNumTemp) {
-                if ((state.dataDXCoils->DXCoil(DXCoilNumTemp).DXCoilType_Num == HVAC::CoilDX_CoolingTwoStageWHumControl) ||
-                    (state.dataDXCoils->DXCoil(DXCoilNumTemp).DXCoilType_Num == HVAC::CoilDX_CoolingSingleSpeed) ||
-                    (state.dataDXCoils->DXCoil(DXCoilNumTemp).DXCoilType_Num == HVAC::CoilDX_MultiSpeedCooling)) {
+                if ((state.dataDXCoils->DXCoil(DXCoilNumTemp).coilType == HVAC::CoilType::DXCoolingTwoStageWHumControl) ||
+                    (state.dataDXCoils->DXCoil(DXCoilNumTemp).coilType == HVAC::CoilType::DXCoolingSingleSpeed) ||
+                    (state.dataDXCoils->DXCoil(DXCoilNumTemp).coilType == HVAC::CoilType::DXMultiSpeedCooling)) {
                     if (state.dataDXCoils->DXCoil(DXCoilNumTemp).ReportCoolingCoilCrankcasePower) {
                         SetupOutputVariable(state,
                                             "Cooling Coil Crankcase Heater Electricity Rate",
@@ -6787,17 +6786,19 @@ void InitDXCoil(EnergyPlusData &state, int const DXCoilNum) // number of the cur
         SizeDXCoil(state, DXCoilNum);
         state.dataDXCoils->MySizeFlag(DXCoilNum) = false;
 
-        if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_CoolingSingleSpeed || thisDXCoil.DXCoilType_Num == HVAC::CoilDX_CoolingTwoSpeed ||
-            thisDXCoil.DXCoilType_Num == HVAC::CoilVRF_Cooling || thisDXCoil.DXCoilType_Num == HVAC::CoilVRF_FluidTCtrl_Cooling) {
+        if (thisDXCoil.coilType == HVAC::CoilType::DXCoolingSingleSpeed ||
+            thisDXCoil.coilType == HVAC::CoilType::DXCoolingTwoSpeed ||
+            thisDXCoil.coilType == HVAC::CoilType::VRFCooling ||
+            thisDXCoil.coilType == HVAC::CoilType::VRFFluidTCtrlCooling) {
 
             Mode = 1;
             // Check for zero capacity or zero max flow rate
             if (thisDXCoil.RatedTotCap(Mode) <= 0.0) {
-                ShowSevereError(state, format("Sizing: {} {} has zero rated total capacity", thisDXCoil.DXCoilType, thisDXCoil.Name));
+                ShowSevereError(state, format("Sizing: {} {} has zero rated total capacity", HVAC::coilTypeNames[(int)thisDXCoil.coilType], thisDXCoil.Name));
                 ErrorsFound = true;
             }
             if (thisDXCoil.RatedAirVolFlowRate(Mode) <= 0.0) {
-                ShowSevereError(state, format("Sizing: {} {} has zero rated air flow rate", thisDXCoil.DXCoilType, thisDXCoil.Name));
+              ShowSevereError(state, format("Sizing: {} {} has zero rated air flow rate", HVAC::coilTypeNames[(int)thisDXCoil.coilType], thisDXCoil.Name));
                 ErrorsFound = true;
             }
             if (ErrorsFound) {
@@ -6805,14 +6806,14 @@ void InitDXCoil(EnergyPlusData &state, int const DXCoilNum) // number of the cur
             }
 
             // Check for valid range of (Rated Air Volume Flow Rate / Rated Total Capacity)
-            if (thisDXCoil.DXCoilType_Num !=
-                HVAC::CoilVRF_FluidTCtrl_Cooling) { // the VolFlowPerRatedTotCap check is not applicable for VRF-FluidTCtrl coil
+            // the VolFlowPerRatedTotCap check is not applicable for VRF-FluidTCtrl coil
+            if (thisDXCoil.coilType != HVAC::CoilType::VRFFluidTCtrlCooling) { 
                 RatedVolFlowPerRatedTotCap = thisDXCoil.RatedAirVolFlowRate(Mode) / thisDXCoil.RatedTotCap(Mode);
                 if (((HVAC::MinRatedVolFlowPerRatedTotCap[(int)state.dataHVACGlobal->DXCT] - RatedVolFlowPerRatedTotCap) > SmallDifferenceTest) ||
                     ((RatedVolFlowPerRatedTotCap - HVAC::MaxRatedVolFlowPerRatedTotCap[(int)state.dataHVACGlobal->DXCT]) > SmallDifferenceTest)) {
                     ShowWarningError(state,
                                      format("Sizing: {} \"{}\": Rated air volume flow rate per watt of rated total cooling capacity is out of range.",
-                                            thisDXCoil.DXCoilType,
+                                            HVAC::coilTypeNames[(int)thisDXCoil.coilType],
                                             thisDXCoil.Name));
                     ShowContinueError(state,
                                       format("Min Rated Vol Flow Per Watt=[{:.3T}], Rated Vol Flow Per Watt=[{:.3T}], Max Rated Vol Flow Per "
@@ -6828,7 +6829,7 @@ void InitDXCoil(EnergyPlusData &state, int const DXCoilNum) // number of the cur
                 PsyRhoAirFnPbTdbW(state, state.dataEnvrn->StdBaroPress, RatedInletAirTemp, RatedInletAirHumRat, RoutineName);
             // get high speed rated coil bypass factor
             thisDXCoil.RatedCBF(Mode) = CalcCBF(state,
-                                                thisDXCoil.DXCoilType,
+                                                thisDXCoil.coilType,
                                                 thisDXCoil.Name,
                                                 RatedInletAirTemp,
                                                 RatedInletAirHumRat,
@@ -6866,13 +6867,13 @@ void InitDXCoil(EnergyPlusData &state, int const DXCoilNum) // number of the cur
             }
 
             // calculate coil model at rating point
-            if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_CoolingSingleSpeed) {
+            if (thisDXCoil.coilType == HVAC::CoilType::DXCoolingSingleSpeed) {
                 CalcDoe2DXCoil(state, DXCoilNum, HVAC::CompressorOp::On, false, 1.0, HVAC::FanOp::Cycling, _, 1.0);
-            } else if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_CoolingTwoSpeed) {
+            } else if (thisDXCoil.coilType == HVAC::CoilType::DXCoolingTwoSpeed) {
                 CalcMultiSpeedDXCoil(state, DXCoilNum, 1.0, 1.0);
-            } else if (thisDXCoil.DXCoilType_Num == HVAC::CoilVRF_Cooling) {
+            } else if (thisDXCoil.coilType == HVAC::CoilType::VRFCooling) {
                 CalcVRFCoolingCoil(state, DXCoilNum, HVAC::CompressorOp::On, false, 1.0, HVAC::FanOp::Cycling, 1.0, _, _, _);
-            } else if (thisDXCoil.DXCoilType_Num == HVAC::CoilVRF_FluidTCtrl_Cooling) {
+            } else if (thisDXCoil.coilType == HVAC::CoilType::VRFFluidTCtrlCooling) {
                 CalcVRFCoolingCoil_FluidTCtrl(
                     state, DXCoilNum, HVAC::CompressorOp::On, false, 1.0, HVAC::FanOp::Cycling, 1.0, _, _, Constant::MaxCap);
             }
@@ -6885,7 +6886,7 @@ void InitDXCoil(EnergyPlusData &state, int const DXCoilNum) // number of the cur
             state.dataRptCoilSelection->coilSelectionReportObj->setRatedCoilConditions(
                 state,
                 thisDXCoil.Name,
-                thisDXCoil.DXCoilType,
+                thisDXCoil.coilType,
                 thisDXCoil.TotalCoolingEnergyRate, // this is the report variable
                 thisDXCoil.SensCoolingEnergyRate,  // this is the report variable
                 thisDXCoil.InletAirMassFlowRate,
@@ -6907,19 +6908,19 @@ void InitDXCoil(EnergyPlusData &state, int const DXCoilNum) // number of the cur
             state.dataEnvrn->OutBaroPress = holdOutBaroPress;
         }
 
-        if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_CoolingTwoStageWHumControl) {
+        if (thisDXCoil.coilType == HVAC::CoilType::DXCoolingTwoStageWHumControl) {
             for (DehumidModeNum = 0; DehumidModeNum <= thisDXCoil.NumDehumidModes; ++DehumidModeNum) {
                 for (CapacityStageNum = 1; CapacityStageNum <= thisDXCoil.NumCapacityStages; ++CapacityStageNum) {
                     Mode = DehumidModeNum * 2 + CapacityStageNum;
                     // Check for zero capacity or zero max flow rate
                     if (thisDXCoil.RatedTotCap(Mode) <= 0.0) {
-                        ShowSevereError(state, format("Sizing: {} {} has zero rated total capacity", thisDXCoil.DXCoilType, thisDXCoil.Name));
-                        ShowContinueError(state, format("for CoilPerformance:DX:Cooling mode: {}", thisDXCoil.CoilPerformanceName(Mode)));
+                      ShowSevereError(state, format("Sizing: {} {} has zero rated total capacity", HVAC::coilTypeNames[(int)thisDXCoil.coilType], thisDXCoil.Name));
+                        ShowContinueError(state, format("for CoilPerformance:DX:Cooling mode: {}", thisDXCoil.coilPerformanceNames(Mode)));
                         ErrorsFound = true;
                     }
                     if (thisDXCoil.RatedAirVolFlowRate(Mode) <= 0.0) {
-                        ShowSevereError(state, format("Sizing: {} {} has zero rated air flow rate", thisDXCoil.DXCoilType, thisDXCoil.Name));
-                        ShowContinueError(state, format("for CoilPerformance:DX:Cooling mode: {}", thisDXCoil.CoilPerformanceName(Mode)));
+                      ShowSevereError(state, format("Sizing: {} {} has zero rated air flow rate", HVAC::coilTypeNames[(int)thisDXCoil.coilType], thisDXCoil.Name));
+                        ShowContinueError(state, format("for CoilPerformance:DX:Cooling mode: {}", thisDXCoil.coilPerformanceNames(Mode)));
                         ErrorsFound = true;
                     }
                     if (ErrorsFound) {
@@ -6932,7 +6933,7 @@ void InitDXCoil(EnergyPlusData &state, int const DXCoilNum) // number of the cur
                         ShowWarningError(
                             state,
                             format("Sizing: {} \"{}\": Rated air volume flow rate per watt of rated total cooling capacity is out of range.",
-                                   thisDXCoil.DXCoilType,
+                                   HVAC::coilTypeNames[(int)thisDXCoil.coilType],
                                    thisDXCoil.Name));
                         ShowContinueError(state,
                                           format("Min Rated Vol Flow Per Watt=[{:.3T}], Rated Vol Flow Per Watt=[{:.3T}], Max Rated Vol Flow Per "
@@ -6940,15 +6941,15 @@ void InitDXCoil(EnergyPlusData &state, int const DXCoilNum) // number of the cur
                                                  HVAC::MinRatedVolFlowPerRatedTotCap[(int)state.dataHVACGlobal->DXCT],
                                                  RatedVolFlowPerRatedTotCap,
                                                  HVAC::MaxRatedVolFlowPerRatedTotCap[(int)state.dataHVACGlobal->DXCT]));
-                        ShowContinueError(state, format("for CoilPerformance:DX:Cooling mode: {}", thisDXCoil.CoilPerformanceName(Mode)));
+                        ShowContinueError(state, format("for CoilPerformance:DX:Cooling mode: {}", thisDXCoil.coilPerformanceNames(Mode)));
                     }
                     thisDXCoil.RatedAirMassFlowRate(Mode) =
                         thisDXCoil.RatedAirVolFlowRate(Mode) *
                         PsyRhoAirFnPbTdbW(state, state.dataEnvrn->StdBaroPress, RatedInletAirTemp, RatedInletAirHumRat, RoutineName);
                     // get rated coil bypass factor
                     thisDXCoil.RatedCBF(Mode) = CalcCBF(state,
-                                                        thisDXCoil.CoilPerformanceType(Mode),
-                                                        thisDXCoil.CoilPerformanceName(Mode),
+                                                        thisDXCoil.coilPerformanceTypes(Mode),
+                                                        thisDXCoil.coilPerformanceNames(Mode),
                                                         RatedInletAirTemp,
                                                         RatedInletAirHumRat,
                                                         thisDXCoil.RatedTotCap(Mode),
@@ -6958,16 +6959,17 @@ void InitDXCoil(EnergyPlusData &state, int const DXCoilNum) // number of the cur
             }     // End dehumidification modes loop
         }
 
-        if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_HeatingEmpirical || thisDXCoil.DXCoilType_Num == HVAC::CoilVRF_Heating ||
-            thisDXCoil.DXCoilType_Num == HVAC::CoilVRF_FluidTCtrl_Heating) {
+        if (thisDXCoil.coilType == HVAC::CoilType::DXHeatingEmpirical ||
+            thisDXCoil.coilType == HVAC::CoilType::VRFHeating ||
+            thisDXCoil.coilType == HVAC::CoilType::VRFFluidTCtrlHeating) {
 
             Mode = 1;
             if (thisDXCoil.RatedTotCap(Mode) <= 0.0) {
-                ShowSevereError(state, format("Sizing: {} {} has zero rated total capacity", thisDXCoil.DXCoilType, thisDXCoil.Name));
+              ShowSevereError(state, format("Sizing: {} {} has zero rated total capacity", HVAC::coilTypeNames[(int)thisDXCoil.coilType], thisDXCoil.Name));
                 ErrorsFound = true;
             }
             if (thisDXCoil.RatedAirVolFlowRate(Mode) <= 0.0) {
-                ShowSevereError(state, format("Sizing: {} {} has zero rated air flow rate", thisDXCoil.DXCoilType, thisDXCoil.Name));
+              ShowSevereError(state, format("Sizing: {} {} has zero rated air flow rate", HVAC::coilTypeNames[(int)thisDXCoil.coilType], thisDXCoil.Name));
                 ErrorsFound = true;
             }
             if (ErrorsFound) {
@@ -6980,14 +6982,14 @@ void InitDXCoil(EnergyPlusData &state, int const DXCoilNum) // number of the cur
                 PsyRhoAirFnPbTdbW(state, state.dataEnvrn->StdBaroPress, RatedHeatPumpIndoorAirTemp, RatedHeatPumpIndoorHumRat, RoutineName);
 
             // Check for valid range of (Rated Air Volume Flow Rate / Rated Total Capacity)
-            if (thisDXCoil.DXCoilType_Num !=
-                HVAC::CoilVRF_FluidTCtrl_Heating) { // the VolFlowPerRatedTotCap check is not applicable for VRF-FluidTCtrl coil
+            // the VolFlowPerRatedTotCap check is not applicable for VRF-FluidTCtrl coil
+            if (thisDXCoil.coilType != HVAC::CoilType::VRFFluidTCtrlHeating) { 
                 RatedVolFlowPerRatedTotCap = thisDXCoil.RatedAirVolFlowRate(Mode) / thisDXCoil.RatedTotCap(Mode);
                 if (((HVAC::MinRatedVolFlowPerRatedTotCap[(int)state.dataHVACGlobal->DXCT] - RatedVolFlowPerRatedTotCap) > SmallDifferenceTest) ||
                     ((RatedVolFlowPerRatedTotCap - HVAC::MaxRatedVolFlowPerRatedTotCap[(int)state.dataHVACGlobal->DXCT]) > SmallDifferenceTest)) {
                     ShowWarningError(state,
                                      format("Sizing: {} {}: Rated air volume flow rate per watt of rated total heating capacity is out of range.",
-                                            thisDXCoil.DXCoilType,
+                                            HVAC::coilTypeNames[(int)thisDXCoil.coilType],
                                             thisDXCoil.Name));
                     ShowContinueError(state,
                                       format("Min Rated Vol Flow Per Watt=[{:.3T}], Rated Vol Flow Per Watt=[{:.3T}], Max Rated Vol Flow Per "
@@ -7029,11 +7031,11 @@ void InitDXCoil(EnergyPlusData &state, int const DXCoilNum) // number of the cur
             }
 
             // calculate coil model at rating point
-            if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_HeatingEmpirical) {
+            if (thisDXCoil.coilType == HVAC::CoilType::DXHeatingEmpirical) {
                 CalcDXHeatingCoil(state, DXCoilNum, 1.0, HVAC::FanOp::Cycling, 1.0);
-            } else if (thisDXCoil.DXCoilType_Num == HVAC::CoilVRF_Heating) {
+            } else if (thisDXCoil.coilType == HVAC::CoilType::VRFHeating) {
                 CalcDXHeatingCoil(state, DXCoilNum, 1.0, HVAC::FanOp::Cycling, _, _);
-            } else if (thisDXCoil.DXCoilType_Num == HVAC::CoilVRF_FluidTCtrl_Heating) {
+            } else if (thisDXCoil.coilType == HVAC::CoilType::VRFFluidTCtrlHeating) {
                 CalcVRFHeatingCoil_FluidTCtrl(state, HVAC::CompressorOp::On, DXCoilNum, 1.0, HVAC::FanOp::Cycling, _, _);
             }
             // coil outlets
@@ -7044,7 +7046,7 @@ void InitDXCoil(EnergyPlusData &state, int const DXCoilNum) // number of the cur
             state.dataRptCoilSelection->coilSelectionReportObj->setRatedCoilConditions(
                 state,
                 thisDXCoil.Name,
-                thisDXCoil.DXCoilType,
+                thisDXCoil.coilType,
                 thisDXCoil.TotalHeatingEnergyRate, // this is the report variable
                 thisDXCoil.TotalHeatingEnergyRate, // this is the report variable
                 thisDXCoil.InletAirMassFlowRate,
@@ -7066,7 +7068,7 @@ void InitDXCoil(EnergyPlusData &state, int const DXCoilNum) // number of the cur
             state.dataEnvrn->OutBaroPress = holdOutBaroPress;
         }
 
-        if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_CoolingTwoSpeed) {
+        if (thisDXCoil.coilType == HVAC::CoilType::DXCoolingTwoSpeed) {
             // Check for valid range of (Rated Air Volume Flow Rate / Rated Total Capacity)
             RatedVolFlowPerRatedTotCap = thisDXCoil.RatedAirVolFlowRate2 / thisDXCoil.RatedTotCap2;
             if (((HVAC::MinRatedVolFlowPerRatedTotCap[(int)state.dataHVACGlobal->DXCT] - RatedVolFlowPerRatedTotCap) > SmallDifferenceTest) ||
@@ -7088,7 +7090,7 @@ void InitDXCoil(EnergyPlusData &state, int const DXCoilNum) // number of the cur
                 PsyRhoAirFnPbTdbW(state, state.dataEnvrn->StdBaroPress, RatedInletAirTemp, RatedInletAirHumRat, RoutineName);
             // get low speed rated coil bypass factor
             thisDXCoil.RatedCBF2 = CalcCBF(state,
-                                           thisDXCoil.DXCoilType,
+                                           thisDXCoil.coilType,
                                            thisDXCoil.Name,
                                            RatedInletAirTemp,
                                            RatedInletAirHumRat,
@@ -7103,17 +7105,17 @@ void InitDXCoil(EnergyPlusData &state, int const DXCoilNum) // number of the cur
         }
 
         // Multispeed Cooling
-        if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_MultiSpeedCooling) {
+        if (thisDXCoil.coilType == HVAC::CoilType::DXMultiSpeedCooling) {
             for (Mode = 1; Mode <= thisDXCoil.NumOfSpeeds; ++Mode) {
                 // Check for zero capacity or zero max flow rate
                 if (thisDXCoil.MSRatedTotCap(Mode) <= 0.0) {
                     ShowSevereError(state,
-                                    format("Sizing: {} {} has zero rated total capacity at speed {}", thisDXCoil.DXCoilType, thisDXCoil.Name, Mode));
+                                    format("Sizing: {} {} has zero rated total capacity at speed {}", HVAC::coilTypeNames[(int)thisDXCoil.coilType], thisDXCoil.Name, Mode));
                     ErrorsFound = true;
                 }
                 if (thisDXCoil.MSRatedAirVolFlowRate(Mode) <= 0.0) {
                     ShowSevereError(state,
-                                    format("Sizing: {} {} has zero rated air flow rate at speed {}", thisDXCoil.DXCoilType, thisDXCoil.Name, Mode));
+                                    format("Sizing: {} {} has zero rated air flow rate at speed {}", HVAC::coilTypeNames[(int)thisDXCoil.coilType], thisDXCoil.Name, Mode));
                     ErrorsFound = true;
                 }
                 if (ErrorsFound) {
@@ -7126,7 +7128,7 @@ void InitDXCoil(EnergyPlusData &state, int const DXCoilNum) // number of the cur
                     ShowWarningError(
                         state,
                         format("Sizing: {} \"{}\": Rated air volume flow rate per watt of rated total cooling capacity is out of range at speed {}",
-                               thisDXCoil.DXCoilType,
+                               HVAC::coilTypeNames[(int)thisDXCoil.coilType],
                                thisDXCoil.Name,
                                Mode));
                     ShowContinueError(state,
@@ -7141,7 +7143,7 @@ void InitDXCoil(EnergyPlusData &state, int const DXCoilNum) // number of the cur
                     PsyRhoAirFnPbTdbW(state, state.dataEnvrn->StdBaroPress, RatedInletAirTemp, RatedInletAirHumRat, RoutineName);
                 // get high speed rated coil bypass factor
                 thisDXCoil.MSRatedCBF(Mode) = CalcCBF(state,
-                                                      thisDXCoil.DXCoilType,
+                                                      thisDXCoil.coilType,
                                                       thisDXCoil.Name,
                                                       RatedInletAirTemp,
                                                       RatedInletAirHumRat,
@@ -7152,7 +7154,7 @@ void InitDXCoil(EnergyPlusData &state, int const DXCoilNum) // number of the cur
         }
 
         // Multispeed Heating
-        if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_MultiSpeedHeating) {
+        if (thisDXCoil.coilType == HVAC::CoilType::DXMultiSpeedHeating) {
             RatedHeatPumpIndoorAirTemp = 21.11;  // 21.11C or 70F
             RatedHeatPumpIndoorHumRat = 0.00881; // Humidity ratio corresponding to 70F dry bulb/60F wet bulb
             for (Mode = 1; Mode <= thisDXCoil.NumOfSpeeds; ++Mode) {
@@ -7181,7 +7183,7 @@ void InitDXCoil(EnergyPlusData &state, int const DXCoilNum) // number of the cur
 
         // store fan info for coil
         state.dataRptCoilSelection->coilSelectionReportObj->setCoilSupplyFanInfo(
-            state, thisDXCoil.Name, thisDXCoil.DXCoilType, thisDXCoil.SupplyFanName, thisDXCoil.supplyFanType, thisDXCoil.SupplyFanIndex);
+            state, thisDXCoil.Name, thisDXCoil.coilType, thisDXCoil.SupplyFanName, thisDXCoil.supplyFanType, thisDXCoil.SupplyFanIndex);
     }
 
     AirInletNode = thisDXCoil.AirInNode;
@@ -7197,7 +7199,8 @@ void InitDXCoil(EnergyPlusData &state, int const DXCoilNum) // number of the cur
     //  Eventually inlet air conditions will be used in DX Coil, these lines are commented out and marked with this comment line
     //  DXCoil(DXCoilNum)%InletAirPressure        = Node(AirInletNode)%Press
 
-    if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_HeatingEmpirical || thisDXCoil.DXCoilType_Num == HVAC::CoilDX_MultiSpeedHeating) {
+    if (thisDXCoil.coilType == HVAC::CoilType::DXHeatingEmpirical ||
+        thisDXCoil.coilType == HVAC::CoilType::DXMultiSpeedHeating) {
         if (thisDXCoil.IsSecondaryDXCoilInZone) {
             thisDXCoil.EvapInletWetBulb = PsyTwbFnTdbWPb(state,
                                                          state.dataZoneTempPredictorCorrector->zoneHeatBalance(thisDXCoil.SecZonePtr).ZT,
@@ -7207,7 +7210,8 @@ void InitDXCoil(EnergyPlusData &state, int const DXCoilNum) // number of the cur
         }
     }
 
-    if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_HeatPumpWaterHeaterPumped || thisDXCoil.DXCoilType_Num == HVAC::CoilDX_HeatPumpWaterHeaterWrapped) {
+    if (thisDXCoil.coilType == HVAC::CoilType::DXHeatPumpWaterHeaterPumped ||
+        thisDXCoil.coilType == HVAC::CoilType::DXHeatPumpWaterHeaterWrapped) {
         thisDXCoil.TotalHeatingEnergyRate = 0.0;
         thisDXCoil.ElecWaterHeatingPower = 0.0;
         //  Eventually inlet air conditions will be used in DX Coil, these lines are commented out and marked with this comment line
@@ -7339,13 +7343,13 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
     for (DehumidModeNum = 0; DehumidModeNum <= thisDXCoil.NumDehumidModes; ++DehumidModeNum) {
         for (CapacityStageNum = 1; CapacityStageNum <= thisDXCoil.NumCapacityStages; ++CapacityStageNum) {
             Mode = DehumidModeNum * 2 + CapacityStageNum;
-            if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_HeatPumpWaterHeaterPumped ||
-                thisDXCoil.DXCoilType_Num == HVAC::CoilDX_HeatPumpWaterHeaterWrapped) {
+            if (thisDXCoil.coilType == HVAC::CoilType::DXHeatPumpWaterHeaterPumped ||
+                thisDXCoil.coilType == HVAC::CoilType::DXHeatPumpWaterHeaterWrapped) {
                 if (thisDXCoil.RatedAirVolFlowRate(1) == Constant::AutoCalculate) {
                     // report autocalculated sizing
                     PrintFlag = true;
                     CompName = thisDXCoil.Name;
-                    CompType = thisDXCoil.DXCoilType;
+                    CompType = HVAC::coilTypeNames[(int)thisDXCoil.coilType];
                     // DXCoil( DXCoilNum ).RatedAirVolFlowRate( 1 ) = DXCoil( DXCoilNum ).RatedTotCap2 * 0.00005035
                     state.dataSize->DataConstantUsedForSizing = thisDXCoil.RatedTotCap2;
                     state.dataSize->DataFractionUsedForSizing = 0.00005035;
@@ -7363,7 +7367,7 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
                     // report autocalculated sizing
                     PrintFlag = true;
                     CompName = thisDXCoil.Name;
-                    CompType = thisDXCoil.DXCoilType;
+                    CompType = HVAC::coilTypeNames[(int)thisDXCoil.coilType];
                     // DXCoil( DXCoilNum ).RatedAirVolFlowRate( 1 ) = DXCoil( DXCoilNum ).RatedTotCap2 * 0.00000004487
                     state.dataSize->DataConstantUsedForSizing = thisDXCoil.RatedTotCap2;
                     state.dataSize->DataFractionUsedForSizing = 0.00000004487;
@@ -7379,11 +7383,11 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
             } else {
                 PrintFlag = true;
                 FieldNum = 0;
-                if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_CoolingTwoStageWHumControl) {
-                    CompName = thisDXCoil.Name + ":" + thisDXCoil.CoilPerformanceName(Mode);
+                if (thisDXCoil.coilType == HVAC::CoilType::DXCoolingTwoStageWHumControl) {
+                    CompName = thisDXCoil.Name + ":" + thisDXCoil.coilPerformanceNames(Mode);
                     FieldNum = 4;
                     state.dataSize->DataBypassFrac = thisDXCoil.BypassedFlowFrac(Mode);
-                } else if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_HeatingEmpirical) {
+                } else if (thisDXCoil.coilType == HVAC::CoilType::DXHeatingEmpirical) {
                     CompName = thisDXCoil.Name;
                     FieldNum = 3;
                     // doesn't look like this is needed for air flow sizing, only for heating capacity sizing
@@ -7394,21 +7398,21 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
                          DataHeatBalance::RefrigCondenserType::Air)) { // secondary DX coil in secondary zone is specified
                         SizeSecDXCoil = true;
                     }
-                } else if (thisDXCoil.DXCoilType_Num == HVAC::CoilVRF_Heating) {
+                } else if (thisDXCoil.coilType == HVAC::CoilType::VRFHeating) {
                     CompName = thisDXCoil.Name;
                     FieldNum = 2;
-                } else if (thisDXCoil.DXCoilType_Num == HVAC::CoilVRF_Cooling) {
+                } else if (thisDXCoil.coilType == HVAC::CoilType::VRFCooling) {
                     CompName = thisDXCoil.Name;
                     FieldNum = 3;
-                } else if (thisDXCoil.DXCoilType_Num == HVAC::CoilVRF_FluidTCtrl_Heating) {
+                } else if (thisDXCoil.coilType == HVAC::CoilType::VRFFluidTCtrlHeating) {
                     CompName = thisDXCoil.Name;
-                } else if (thisDXCoil.DXCoilType_Num == HVAC::CoilVRF_FluidTCtrl_Cooling) {
+                } else if (thisDXCoil.coilType == HVAC::CoilType::VRFFluidTCtrlCooling) {
                     CompName = thisDXCoil.Name;
-                } else if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_MultiSpeedCooling) {
+                } else if (thisDXCoil.coilType == HVAC::CoilType::DXMultiSpeedCooling) {
                     thisDXCoil.RatedAirVolFlowRate(Mode) = thisDXCoil.MSRatedAirVolFlowRate(thisDXCoil.NumOfSpeeds);
                     CompName = thisDXCoil.Name;
                     PrintFlag = false;
-                } else if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_MultiSpeedHeating) {
+                } else if (thisDXCoil.coilType == HVAC::CoilType::DXMultiSpeedHeating) {
                     thisDXCoil.RatedAirVolFlowRate(Mode) = thisDXCoil.MSRatedAirVolFlowRate(thisDXCoil.NumOfSpeeds);
                     CompName = thisDXCoil.Name;
                     PrintFlag = false;
@@ -7423,12 +7427,12 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
                 } else {
                     SizingString = "Rated Air Flow Rate [m3/s]";
                 }
-                CompType = thisDXCoil.DXCoilType;
+                CompType = HVAC::coilTypeNames[(int)thisDXCoil.coilType];
                 state.dataSize->DataIsDXCoil = true;
                 state.dataSize->DataEMSOverrideON = thisDXCoil.RatedAirVolFlowRateEMSOverrideON(Mode);
                 state.dataSize->DataEMSOverride = thisDXCoil.RatedAirVolFlowRateEMSOverrideValue(Mode);
-                if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_MultiSpeedHeating || thisDXCoil.DXCoilType_Num == HVAC::CoilVRF_FluidTCtrl_Heating ||
-                    thisDXCoil.DXCoilType_Num == HVAC::CoilVRF_Heating || thisDXCoil.DXCoilType_Num == HVAC::CoilDX_HeatingEmpirical) {
+                if (thisDXCoil.coilType == HVAC::CoilType::DXMultiSpeedHeating || thisDXCoil.coilType == HVAC::CoilType::VRFFluidTCtrlHeating ||
+                    thisDXCoil.coilType == HVAC::CoilType::VRFHeating || thisDXCoil.coilType == HVAC::CoilType::DXHeatingEmpirical) {
                     bool errorsFound = false;
                     HeatingAirFlowSizer sizingHeatingAirFlow;
                     sizingHeatingAirFlow.overrideSizingString(SizingString);
@@ -7455,16 +7459,16 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
             // suite was not run with this code included. *** The question here is if the autosized air flow rate or the user specified air flow
             // rate should be used to calculate capacity removing this for now until more is known
             //                if ( DXCoil( DXCoilNum ).RatedTotCap( Mode ) != AutoSize && ( ( SysSizingRunDone && CurSysNum > 0 ) ||
-            //(  ZoneSizingRunDone && CurZoneEqNum > 0 ) ) ) {                     if ( DXCoil( DXCoilNum ).DXCoilType_Num ==
-            // HVAC::CoilDX_CoolingTwoStageWHumControl ) {                         SizingMethod = CoolingAirflowSizing;
+            //(  ZoneSizingRunDone && CurZoneEqNum > 0 ) ) ) {                     if ( DXCoil( DXCoilNum ).coilType ==
+            // HVAC::CoilType::DX_CoolingTwoStageWHumControl ) {                         SizingMethod = CoolingAirflowSizing;
             //                        DataBypassFrac = DXCoil ( DXCoilNum ).BypassedFlowFrac ( Mode );
-            //                    } else if ( DXCoil( DXCoilNum ).DXCoilType_Num == HVAC::CoilDX_HeatingEmpirical ) {
+            //                    } else if ( DXCoil( DXCoilNum ).coilType == HVAC::CoilType::DX_HeatingEmpirical ) {
             //                        SizingMethod = HeatingAirflowSizing;
             ////                        DataCoolCoilCap = DXCoolCap; // pass global variable used only for heat pumps (i.e.,
             /// DX  cooling  and  heating coils)
-            //                    } else if ( DXCoil( DXCoilNum ).DXCoilType_Num == HVAC::CoilVRF_Heating ) {
+            //                    } else if ( DXCoil( DXCoilNum ).coilType == HVAC::CoilType::VRF_Heating ) {
             //                        SizingMethod = HeatingAirflowSizing;
-            //                    } else if ( DXCoil( DXCoilNum ).DXCoilType_Num == HVAC::CoilVRF_Cooling ) {
+            //                    } else if ( DXCoil( DXCoilNum ).coilType == HVAC::CoilType::VRF_Cooling ) {
             //                        SizingMethod = CoolingAirflowSizing;
             //                    } else {
             //                        SizingMethod = CoolingAirflowSizing;
@@ -7487,20 +7491,21 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
             //                }
             PrintFlag = true;
             state.dataSize->DataTotCapCurveIndex = thisDXCoil.CCapFTemp(Mode);
-            if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_CoolingTwoStageWHumControl) {
-                CompName = thisDXCoil.Name + ":" + thisDXCoil.CoilPerformanceName(Mode);
+            if (thisDXCoil.coilType == HVAC::CoilType::DXCoolingTwoStageWHumControl) {
+                CompName = thisDXCoil.Name + ":" + thisDXCoil.coilPerformanceNames(Mode);
                 FieldNum = 1;
                 TempSize = thisDXCoil.RatedTotCap(Mode);
                 SizingString = state.dataDXCoils->DXCoilNumericFields(DXCoilNum).PerfMode(Mode).FieldNames(FieldNum) + " [W]";
-            } else if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_HeatingEmpirical || thisDXCoil.DXCoilType_Num == HVAC::CoilVRF_Heating ||
-                       thisDXCoil.DXCoilType_Num == HVAC::CoilVRF_FluidTCtrl_Heating) {
+            } else if (thisDXCoil.coilType == HVAC::CoilType::DXHeatingEmpirical ||
+                       thisDXCoil.coilType == HVAC::CoilType::VRFHeating ||
+                       thisDXCoil.coilType == HVAC::CoilType::VRFFluidTCtrlHeating) {
                 CompName = thisDXCoil.Name;
                 FieldNum = 1;
                 TempSize = thisDXCoil.RatedTotCap(Mode);
                 SizingString = state.dataDXCoils->DXCoilNumericFields(DXCoilNum).PerfMode(Mode).FieldNames(FieldNum) + " [W]";
                 state.dataSize->DataCoolCoilCap = state.dataSize->DXCoolCap;
-            } else if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_HeatPumpWaterHeaterPumped ||
-                       thisDXCoil.DXCoilType_Num == HVAC::CoilDX_HeatPumpWaterHeaterWrapped) {
+            } else if (thisDXCoil.coilType == HVAC::CoilType::DXHeatPumpWaterHeaterPumped ||
+                       thisDXCoil.coilType == HVAC::CoilType::DXHeatPumpWaterHeaterWrapped) {
                 CompName = thisDXCoil.Name;
                 FieldNum = 1;
                 TempSize = thisDXCoil.RatedTotCap(Mode);
@@ -7508,7 +7513,7 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
                 PrintFlag = false;
                 state.dataLoopNodes->Node(thisDXCoil.WaterInNode).Temp =
                     thisDXCoil.RatedInletWaterTemp; // set the rated water inlet node for HPWHs for use in CalcHPWHDXCoil
-            } else if (thisDXCoil.DXCoilType_Num == HVAC::CoilVRF_FluidTCtrl_Cooling) {
+            } else if (thisDXCoil.coilType == HVAC::CoilType::VRFFluidTCtrlCooling) {
                 CompName = thisDXCoil.Name;
                 FieldNum = 1;
                 TempSize = thisDXCoil.RatedTotCap(Mode);
@@ -7526,14 +7531,14 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
                     }
                 }
                 CalcVRFCoilCapModFac(state, 0, _, CompName, CoilInTemp, _, _, _, state.dataSize->DataTotCapCurveValue);
-            } else if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_MultiSpeedCooling) {
+            } else if (thisDXCoil.coilType == HVAC::CoilType::DXMultiSpeedCooling) {
                 CompName = thisDXCoil.Name;
                 FieldNum = 7 + (thisDXCoil.NumOfSpeeds - 1) * 13;
                 state.dataSize->DataTotCapCurveIndex = thisDXCoil.MSCCapFTemp(thisDXCoil.NumOfSpeeds);
                 TempSize = thisDXCoil.MSRatedTotCap(thisDXCoil.NumOfSpeeds);
                 PrintFlag = false;
                 SizingString = state.dataDXCoils->DXCoilNumericFields(DXCoilNum).PerfMode(Mode).FieldNames(FieldNum) + " [W]";
-            } else if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_MultiSpeedHeating) {
+            } else if (thisDXCoil.coilType == HVAC::CoilType::DXMultiSpeedHeating) {
                 CompName = thisDXCoil.Name;
                 FieldNum = 10 + (thisDXCoil.NumOfSpeeds - 1) * 6;
                 state.dataSize->DataTotCapCurveIndex = thisDXCoil.MSCCapFTemp(thisDXCoil.NumOfSpeeds);
@@ -7546,12 +7551,13 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
                 TempSize = thisDXCoil.RatedTotCap(Mode);
                 SizingString = state.dataDXCoils->DXCoilNumericFields(DXCoilNum).PerfMode(Mode).FieldNames(FieldNum) + " [W]";
             }
-            CompType = thisDXCoil.DXCoilType;
+            CompType = HVAC::coilTypeNames[(int)thisDXCoil.coilType];
             state.dataSize->DataIsDXCoil = true;
             state.dataSize->DataEMSOverrideON = thisDXCoil.RatedTotCapEMSOverrideOn(Mode);
             state.dataSize->DataEMSOverride = thisDXCoil.RatedTotCapEMSOverrideValue(Mode);
-            if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_MultiSpeedHeating || thisDXCoil.DXCoilType_Num == HVAC::CoilDX_HeatingEmpirical ||
-                thisDXCoil.DXCoilType_Num == HVAC::CoilVRF_Heating || thisDXCoil.DXCoilType_Num == HVAC::CoilVRF_FluidTCtrl_Heating) {
+            if (thisDXCoil.coilType == HVAC::CoilType::DXMultiSpeedHeating ||
+                thisDXCoil.coilType == HVAC::CoilType::DXHeatingEmpirical ||
+                thisDXCoil.coilType == HVAC::CoilType::VRFHeating || thisDXCoil.coilType == HVAC::CoilType::VRFFluidTCtrlHeating) {
                 HeatingCapacitySizer sizerHeatingCapacity;
                 sizerHeatingCapacity.overrideSizingString(SizingString);
                 sizerHeatingCapacity.initializeWithinEP(state, CompType, CompName, PrintFlag, RoutineName);
@@ -7573,23 +7579,28 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
             state.dataSize->DataTotCapCurveValue = 0.0;
 
             // Cooling coil capacity
-            if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_CoolingSingleSpeed || thisDXCoil.DXCoilType_Num == HVAC::CoilDX_CoolingTwoSpeed ||
-                thisDXCoil.DXCoilType_Num == HVAC::CoilDX_CoolingTwoStageWHumControl || thisDXCoil.DXCoilType_Num == HVAC::CoilVRF_Cooling ||
-                thisDXCoil.DXCoilType_Num == HVAC::CoilVRF_FluidTCtrl_Cooling) {
+            if (thisDXCoil.coilType == HVAC::CoilType::DXCoolingSingleSpeed ||
+                thisDXCoil.coilType == HVAC::CoilType::DXCoolingTwoSpeed ||
+                thisDXCoil.coilType == HVAC::CoilType::DXCoolingTwoStageWHumControl ||
+                thisDXCoil.coilType == HVAC::CoilType::VRFCooling ||
+                thisDXCoil.coilType == HVAC::CoilType::VRFFluidTCtrlCooling) {
                 state.dataSize->DXCoolCap = thisDXCoil.RatedTotCap(Mode);
             }
 
             // Sizing DX cooling coil SHR
-            if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_CoolingSingleSpeed || thisDXCoil.DXCoilType_Num == HVAC::CoilDX_CoolingTwoSpeed ||
-                thisDXCoil.DXCoilType_Num == HVAC::CoilDX_CoolingTwoStageWHumControl || thisDXCoil.DXCoilType_Num == HVAC::CoilVRF_Cooling ||
-                thisDXCoil.DXCoilType_Num == HVAC::CoilVRF_FluidTCtrl_Cooling) {
+            // Why is this complex condition exactly the same as the previous one?
+            if (thisDXCoil.coilType == HVAC::CoilType::DXCoolingSingleSpeed ||
+                thisDXCoil.coilType == HVAC::CoilType::DXCoolingTwoSpeed ||
+                thisDXCoil.coilType == HVAC::CoilType::DXCoolingTwoStageWHumControl ||
+                thisDXCoil.coilType == HVAC::CoilType::VRFCooling ||
+                thisDXCoil.coilType == HVAC::CoilType::VRFFluidTCtrlCooling) {
 
-                if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_CoolingTwoStageWHumControl) {
-                    CompName = thisDXCoil.Name + ":" + thisDXCoil.CoilPerformanceName(Mode);
+                if (thisDXCoil.coilType == HVAC::CoilType::DXCoolingTwoStageWHumControl) {
+                    CompName = thisDXCoil.Name + ":" + thisDXCoil.coilPerformanceNames(Mode);
                 } else {
                     CompName = thisDXCoil.Name;
                 }
-                CompType = thisDXCoil.DXCoilType;
+                CompType = HVAC::coilTypeNames[(int)thisDXCoil.coilType];
                 TempSize = thisDXCoil.RatedSHR(Mode);
                 state.dataSize->DataDXSpeedNum = Mode;
                 state.dataSize->DataFlowUsedForSizing = thisDXCoil.RatedAirVolFlowRate(Mode);
@@ -7609,17 +7620,18 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
 
             // Sizing evaporator condenser air flow
             if (thisDXCoil.CondenserType(1) == DataHeatBalance::RefrigCondenserType::Evap && thisDXCoil.EvapCondAirFlow(Mode) != 0.0 &&
-                (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_CoolingSingleSpeed || thisDXCoil.DXCoilType_Num == HVAC::CoilDX_CoolingTwoSpeed ||
-                 thisDXCoil.DXCoilType_Num == HVAC::CoilDX_CoolingTwoStageWHumControl)) {
+                (thisDXCoil.coilType == HVAC::CoilType::DXCoolingSingleSpeed ||
+                 thisDXCoil.coilType == HVAC::CoilType::DXCoolingTwoSpeed ||
+                 thisDXCoil.coilType == HVAC::CoilType::DXCoolingTwoStageWHumControl)) {
 
                 AutoCalculateSizer sizerEvapCondAirFlow;
                 std::string stringOverride = "Evaporative Condenser Air Flow Rate [m3/s]";
                 if (state.dataGlobal->isEpJSON) stringOverride = "evaporative_condenser_air_flow_rate [m3/s]";
-                if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_CoolingTwoStageWHumControl) {
-                    CompName = thisDXCoil.Name + ":" + thisDXCoil.CoilPerformanceName(Mode);
+                if (thisDXCoil.coilType == HVAC::CoilType::DXCoolingTwoStageWHumControl) {
+                    CompName = thisDXCoil.Name + ":" + thisDXCoil.coilPerformanceNames(Mode);
                 } else {
                     CompName = thisDXCoil.Name;
-                    if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_CoolingTwoSpeed) {
+                    if (thisDXCoil.coilType == HVAC::CoilType::DXCoolingTwoSpeed) {
                         stringOverride = "High Speed Evaporative Condenser Air Flow Rate [m3/s]";
                         if (state.dataGlobal->isEpJSON) stringOverride = "high_speed_evaporative_condenser_air_flow_rate [m3/s]";
                     } else {
@@ -7627,7 +7639,7 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
                         if (state.dataGlobal->isEpJSON) stringOverride = "evaporative_condenser_air_flow_rate [m3/s]";
                     }
                 }
-                CompType = thisDXCoil.DXCoilType;
+                CompType = HVAC::coilTypeNames[(int)thisDXCoil.coilType];
                 // Auto-size condenser air flow to Total Capacity * 0.000114 m3/s/w (850 cfm/ton)
                 state.dataSize->DataConstantUsedForSizing = thisDXCoil.RatedTotCap(Mode);
                 state.dataSize->DataFractionUsedForSizing = 0.000114;
@@ -7647,12 +7659,12 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
                 if (IsAutoSize) {
                     thisDXCoil.SecCoilAirFlow = SecCoilAirFlowDes;
                     BaseSizer::reportSizerOutput(
-                        state, thisDXCoil.DXCoilType, thisDXCoil.Name, "Design Size Secondary Coil Air Flow Rate [m3/s]", SecCoilAirFlowDes);
+                        state, HVAC::coilTypeNames[(int)thisDXCoil.coilType], thisDXCoil.Name, "Design Size Secondary Coil Air Flow Rate [m3/s]", SecCoilAirFlowDes);
                 } else {
                     if (thisDXCoil.SecCoilAirFlow > 0.0 && SecCoilAirFlowDes > 0.0 && !HardSizeNoDesRun) {
                         SecCoilAirFlowUser = thisDXCoil.SecCoilAirFlow;
                         BaseSizer::reportSizerOutput(state,
-                                                     thisDXCoil.DXCoilType,
+                                                     HVAC::coilTypeNames[(int)thisDXCoil.coilType],
                                                      thisDXCoil.Name,
                                                      "Design Size Secondary Coil Air Flow Rate [m3/s]",
                                                      SecCoilAirFlowDes,
@@ -7662,7 +7674,7 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
                             if ((std::abs(SecCoilAirFlowDes - SecCoilAirFlowUser) / SecCoilAirFlowUser) > state.dataSize->AutoVsHardSizingThreshold) {
                                 ShowMessage(
                                     state,
-                                    format("SizeDxCoil: Potential issue with equipment sizing for {} {}", thisDXCoil.DXCoilType, thisDXCoil.Name));
+                                    format("SizeDxCoil: Potential issue with equipment sizing for {} {}", HVAC::coilTypeNames[(int)thisDXCoil.coilType], thisDXCoil.Name));
                                 ShowContinueError(state, format("User-Specified Secondary Coil Air Flow Rate of {:.5R} [m3/s]", SecCoilAirFlowUser));
                                 ShowContinueError(
                                     state, format("differs from Design Size Secondary Coil Air Flow Rate of {:.5R} [m3/s]", SecCoilAirFlowDes));
@@ -7677,11 +7689,11 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
             // Sizing evaporative condenser air flow 2
             PrintFlag = true;
             if (thisDXCoil.CondenserType(1) == DataHeatBalance::RefrigCondenserType::Evap && thisDXCoil.EvapCondAirFlow2 != 0.0 &&
-                thisDXCoil.DXCoilType_Num == HVAC::CoilDX_CoolingTwoSpeed) {
+                thisDXCoil.coilType == HVAC::CoilType::DXCoolingTwoSpeed) {
                 CompName = thisDXCoil.Name;
                 FieldNum = 15; // Low Speed Evaporative Condenser Air Flow Rate
                 SizingString = state.dataDXCoils->DXCoilNumericFields(DXCoilNum).PerfMode(Mode).FieldNames(FieldNum) + " [m3/s]";
-                CompType = thisDXCoil.DXCoilType;
+                CompType = HVAC::coilTypeNames[(int)thisDXCoil.coilType];
                 // Autosize low speed condenser air flow to 1/3 Total Capacity * 0.000114 m3/s/w (850 cfm/ton)
                 state.dataSize->DataConstantUsedForSizing = thisDXCoil.RatedTotCap(Mode);
                 state.dataSize->DataFractionUsedForSizing = 0.000114 * 0.3333;
@@ -7696,17 +7708,18 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
 
             // Sizing evaporative condenser pump electric nominal power
             if (thisDXCoil.CondenserType(1) == DataHeatBalance::RefrigCondenserType::Evap && thisDXCoil.EvapCondPumpElecNomPower(Mode) != 0.0 &&
-                (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_CoolingSingleSpeed || thisDXCoil.DXCoilType_Num == HVAC::CoilDX_CoolingTwoSpeed ||
-                 thisDXCoil.DXCoilType_Num == HVAC::CoilDX_CoolingTwoStageWHumControl)) {
+                (thisDXCoil.coilType == HVAC::CoilType::DXCoolingSingleSpeed ||
+                 thisDXCoil.coilType == HVAC::CoilType::DXCoolingTwoSpeed ||
+                 thisDXCoil.coilType == HVAC::CoilType::DXCoolingTwoStageWHumControl)) {
 
                 AutoCalculateSizer sizerEvapCondPumpPower;
                 std::string stringOverride = "Evaporative Condenser Pump Rated Power Consumption [W]";
                 if (state.dataGlobal->isEpJSON) stringOverride = "evaporative_condenser_pump_rated_power_consumption [W]";
-                if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_CoolingTwoStageWHumControl) {
-                    CompName = thisDXCoil.Name + ":" + thisDXCoil.CoilPerformanceName(Mode);
+                if (thisDXCoil.coilType == HVAC::CoilType::DXCoolingTwoStageWHumControl) {
+                    CompName = thisDXCoil.Name + ":" + thisDXCoil.coilPerformanceNames(Mode);
                 } else {
                     CompName = thisDXCoil.Name;
-                    if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_CoolingTwoSpeed) {
+                    if (thisDXCoil.coilType == HVAC::CoilType::DXCoolingTwoSpeed) {
                         stringOverride = "High Speed Evaporative Condenser Pump Rated Power Consumption [W]";
                         if (state.dataGlobal->isEpJSON) stringOverride = "high_speed_evaporative_condenser_pump_rated_power_consumption [W]";
                     } else {
@@ -7714,7 +7727,7 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
                         if (state.dataGlobal->isEpJSON) stringOverride = "evaporative_condenser_pump_rated_power_consumption [W]";
                     }
                 }
-                CompType = thisDXCoil.DXCoilType;
+                CompType = HVAC::coilTypeNames[(int)thisDXCoil.coilType];
                 // Autosize high speed evap condenser pump power to Total Capacity * 0.004266 w/w (15 w/ton)
                 state.dataSize->DataConstantUsedForSizing = thisDXCoil.RatedTotCap(Mode);
                 state.dataSize->DataFractionUsedForSizing = 0.004266;
@@ -7726,9 +7739,9 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
 
             // Sizing low speed evaporative condenser pump electric nominal power
             if (thisDXCoil.CondenserType(1) == DataHeatBalance::RefrigCondenserType::Evap && thisDXCoil.EvapCondPumpElecNomPower2 != 0.0 &&
-                thisDXCoil.DXCoilType_Num == HVAC::CoilDX_CoolingTwoSpeed) {
+                thisDXCoil.coilType == HVAC::CoilType::DXCoolingTwoSpeed) {
                 CompName = thisDXCoil.Name;
-                CompType = thisDXCoil.DXCoilType;
+                CompType = HVAC::coilTypeNames[(int)thisDXCoil.coilType];
                 // Autosize low speed evap condenser pump power to 1/3 Total Capacity * 0.004266 w/w (15 w/ton)
                 state.dataSize->DataConstantUsedForSizing = thisDXCoil.RatedTotCap(Mode);
                 state.dataSize->DataFractionUsedForSizing = 0.004266 * 0.3333;
@@ -7742,9 +7755,9 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
             }
 
             //                // Sizing rated low speed air flow rate
-            if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_CoolingTwoSpeed) {
+            if (thisDXCoil.coilType == HVAC::CoilType::DXCoolingTwoSpeed) {
                 CompName = thisDXCoil.Name;
-                CompType = thisDXCoil.DXCoilType;
+                CompType = HVAC::coilTypeNames[(int)thisDXCoil.coilType];
                 // Autosize low speed air flow rate to 1/3 high speed air flow rate
                 state.dataSize->DataConstantUsedForSizing = thisDXCoil.RatedAirVolFlowRate(Mode);
                 state.dataSize->DataFractionUsedForSizing = 0.3333;
@@ -7758,9 +7771,9 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
             }
 
             //                // Sizing rated low speed total cooling capacity
-            if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_CoolingTwoSpeed) {
+            if (thisDXCoil.coilType == HVAC::CoilType::DXCoolingTwoSpeed) {
                 CompName = thisDXCoil.Name;
-                CompType = thisDXCoil.DXCoilType;
+                CompType = HVAC::coilTypeNames[(int)thisDXCoil.coilType];
                 // Autosize low speed capacity to 1/3 high speed capacity
                 state.dataSize->DataConstantUsedForSizing = thisDXCoil.RatedTotCap(Mode);
                 state.dataSize->DataFractionUsedForSizing = 0.3333;
@@ -7773,12 +7786,12 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
                 thisDXCoil.RatedTotCap2 = sizerLowSpdCap.size(state, TempSize, ErrorsFound);
             }
 
-            if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_CoolingTwoSpeed) {
+            if (thisDXCoil.coilType == HVAC::CoilType::DXCoolingTwoSpeed) {
                 if (thisDXCoil.EvapCondAirFlow2 > thisDXCoil.EvapCondAirFlow(Mode)) {
                     ShowSevereError(
                         state,
                         format("SizeDXCoil: {} {}, Evaporative Condenser low speed air flow must be less than or equal to high speed air flow.",
-                               thisDXCoil.DXCoilType,
+                               HVAC::coilTypeNames[(int)thisDXCoil.coilType],
                                thisDXCoil.Name));
                     ShowContinueError(state, format("Instead, {:.2R} > {:.2R}", thisDXCoil.EvapCondAirFlow2, thisDXCoil.EvapCondAirFlow(Mode)));
                     ShowFatalError(state, "Preceding conditions cause termination.");
@@ -7788,7 +7801,7 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
                     ShowSevereError(
                         state,
                         format("SizeDXCoil: {} {}, Evaporative Condenser low speed pump power must be less than or equal to high speed pump power.",
-                               thisDXCoil.DXCoilType,
+                               HVAC::coilTypeNames[(int)thisDXCoil.coilType],
                                thisDXCoil.Name));
                     ShowContinueError(
                         state, format("Instead, {:.2R} > {:.2R}", thisDXCoil.EvapCondPumpElecNomPower2, thisDXCoil.EvapCondPumpElecNomPower(Mode)));
@@ -7799,7 +7812,7 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
                     ShowSevereError(state,
                                     format("SizeDXCoil: {} {}, Rated Total Cooling Capacity, Low Speed must be less than or equal to Rated Total "
                                            "Cooling Capacity, High Speed.",
-                                           thisDXCoil.DXCoilType,
+                                           HVAC::coilTypeNames[(int)thisDXCoil.coilType],
                                            thisDXCoil.Name));
                     ShowContinueError(state, format("Instead, {:.2R} > {:.2R}", thisDXCoil.RatedTotCap2, thisDXCoil.RatedTotCap(Mode)));
                     ShowFatalError(state, "Preceding conditions cause termination.");
@@ -7809,7 +7822,7 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
                     ShowFatalError(state,
                                    format("SizeDXCoil: {} {}, Rated Air Volume Flow Rate, low speed must be less than or equal to Rated Air Volume "
                                           "Flow Rate, high speed.",
-                                          thisDXCoil.DXCoilType,
+                                          HVAC::coilTypeNames[(int)thisDXCoil.coilType],
                                           thisDXCoil.Name));
                     ShowContinueError(state,
                                       format("Instead, {:.2R} > {:.2R}", thisDXCoil.RatedAirVolFlowRate2, thisDXCoil.RatedAirVolFlowRate(Mode)));
@@ -7818,11 +7831,11 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
             }
 
             //                // Sizing rated low speed SHR2
-            if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_CoolingTwoSpeed) {
+            if (thisDXCoil.coilType == HVAC::CoilType::DXCoolingTwoSpeed) {
                 CompName = thisDXCoil.Name;
                 FieldNum = 7;
                 SizingString = state.dataDXCoils->DXCoilNumericFields(DXCoilNum).PerfMode(Mode).FieldNames(FieldNum);
-                CompType = thisDXCoil.DXCoilType;
+                CompType = HVAC::coilTypeNames[(int)thisDXCoil.coilType];
                 // Autosize low speed SHR to be the same as high speed SHR
                 state.dataSize->DataConstantUsedForSizing = thisDXCoil.RatedSHR(Mode);
                 state.dataSize->DataFractionUsedForSizing = 1.0;
@@ -7837,13 +7850,14 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
             }
 
             //                // Sizing resistive defrost heater capacity
-            if (thisDXCoil.DXCoilType_Num != HVAC::CoilVRF_Heating && thisDXCoil.DXCoilType_Num != HVAC::CoilVRF_FluidTCtrl_Heating &&
-                thisDXCoil.DXCoilType_Num != HVAC::CoilDX_MultiSpeedHeating) {
-                // IF (DXCoil(DXCoilNum)%DXCoilType_Num == HVAC::CoilDX_MultiSpeedHeating .OR. &
-                //    DXCoil(DXCoilNum)%DXCoilType_Num == Coil_HeatingAirToAirVariableSpeed) THEN
+            if (thisDXCoil.coilType != HVAC::CoilType::VRFHeating &&
+                thisDXCoil.coilType != HVAC::CoilType::VRFFluidTCtrlHeating &&
+                thisDXCoil.coilType != HVAC::CoilType::DXMultiSpeedHeating) {
+                // IF (DXCoil(DXCoilNum)%coilType == HVAC::CoilType::DX_MultiSpeedHeating .OR. &
+                //    DXCoil(DXCoilNum)%coilType == Coil_HeatingAirToAirVariableSpeed) THEN
                 if (thisDXCoil.DefrostStrategy == StandardRatings::DefrostStrat::Resistive) {
                     CompName = thisDXCoil.Name;
-                    CompType = thisDXCoil.DXCoilType;
+                    CompType = HVAC::coilTypeNames[(int)thisDXCoil.coilType];
                     // Autosize low speed capacity to 1/3 high speed capacity
                     state.dataSize->DataConstantUsedForSizing = state.dataSize->DXCoolCap;
                     state.dataSize->DataFractionUsedForSizing = 1.0;
@@ -7863,7 +7877,7 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
     }     // End dehumidification modes loop
 
     // Autosizing for multispeed cooling coil
-    if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_MultiSpeedCooling) {
+    if (thisDXCoil.coilType == HVAC::CoilType::DXMultiSpeedCooling) {
         // flow rate autosize
         for (Mode = thisDXCoil.NumOfSpeeds; Mode >= 1; --Mode) {
             // Sizing multispeed air volume flow rate
@@ -7873,7 +7887,7 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
             }
             state.dataSize->DataIsDXCoil = true;
             CompName = thisDXCoil.Name;
-            CompType = thisDXCoil.DXCoilType;
+            CompType = HVAC::coilTypeNames[(int)thisDXCoil.coilType];
             if (Mode == thisDXCoil.NumOfSpeeds) {
                 FieldNum = 10 + (Mode - 1) * 14;
                 SizingString = state.dataDXCoils->DXCoilNumericFields(DXCoilNum).PerfMode(1).FieldNames(FieldNum) + " [m3/s]";
@@ -7930,7 +7944,7 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
             if (thisDXCoil.MSRatedAirVolFlowRate(Mode) > thisDXCoil.MSRatedAirVolFlowRate(Mode + 1)) {
                 ShowWarningError(state,
                                  format("SizeDXCoil: {} {}, Speed {} Rated Air Flow Rate must be less than or equal to Speed {} Rated Air Flow Rate.",
-                                        thisDXCoil.DXCoilType,
+                                        HVAC::coilTypeNames[(int)thisDXCoil.coilType],
                                         thisDXCoil.Name,
                                         Mode,
                                         Mode + 1));
@@ -7947,7 +7961,7 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
                 IsAutoSize = true;
             }
             CompName = thisDXCoil.Name;
-            CompType = thisDXCoil.DXCoilType;
+            CompType = HVAC::coilTypeNames[(int)thisDXCoil.coilType];
             state.dataSize->DataIsDXCoil = true;
             state.dataSize->DataTotCapCurveIndex = thisDXCoil.MSCCapFTemp(Mode);
             if (Mode == thisDXCoil.NumOfSpeeds) {
@@ -8020,7 +8034,7 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
                 ShowWarningError(state,
                                  format("SizeDXCoil: {} {}, Speed {} Rated Total Cooling Capacity must be less than or equal to Speed {} Rated "
                                         "Total Cooling Capacity.",
-                                        thisDXCoil.DXCoilType,
+                                        HVAC::coilTypeNames[(int)thisDXCoil.coilType],
                                         thisDXCoil.Name,
                                         Mode,
                                         Mode + 1));
@@ -8036,7 +8050,7 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
                 IsAutoSize = true;
             }
             if (Mode == thisDXCoil.NumOfSpeeds) {
-                CompType = thisDXCoil.DXCoilType;
+                CompType = HVAC::coilTypeNames[(int)thisDXCoil.coilType];
                 CompName = thisDXCoil.Name;
                 TempSize = thisDXCoil.MSRatedSHR(Mode);
                 state.dataSize->DataFlowUsedForSizing = MSRatedAirVolFlowRateDes;
@@ -8087,7 +8101,7 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
             if (IsAutoSize) {
                 thisDXCoil.MSEvapCondAirFlow(Mode) = MSEvapCondAirFlowDes;
                 BaseSizer::reportSizerOutput(state,
-                                             thisDXCoil.DXCoilType,
+                                             HVAC::coilTypeNames[(int)thisDXCoil.coilType],
                                              thisDXCoil.Name,
                                              format("Design Size Speed {} Evaporative Condenser Air Flow Rate [m3/s]", Mode),
                                              MSEvapCondAirFlowDes);
@@ -8095,7 +8109,7 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
                 if (thisDXCoil.MSEvapCondAirFlow(Mode) > 0.0 && MSEvapCondAirFlowDes > 0.0 && !HardSizeNoDesRun) {
                     MSEvapCondAirFlowUser = thisDXCoil.MSEvapCondAirFlow(Mode);
                     BaseSizer::reportSizerOutput(state,
-                                                 thisDXCoil.DXCoilType,
+                                                 HVAC::coilTypeNames[(int)thisDXCoil.coilType],
                                                  thisDXCoil.Name,
                                                  format("Design Size Speed {} Evaporative Condenser Air Flow Rate [m3/s]", Mode),
                                                  MSEvapCondAirFlowDes,
@@ -8105,7 +8119,7 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
                         if ((std::abs(MSEvapCondAirFlowDes - MSEvapCondAirFlowUser) / MSEvapCondAirFlowUser) >
                             state.dataSize->AutoVsHardSizingThreshold) {
                             ShowMessage(
-                                state, format("SizeDxCoil: Potential issue with equipment sizing for {} {}", thisDXCoil.DXCoilType, thisDXCoil.Name));
+                                state, format("SizeDxCoil: Potential issue with equipment sizing for {} {}", HVAC::coilTypeNames[(int)thisDXCoil.coilType], thisDXCoil.Name));
                             ShowContinueError(state,
                                               format("User-Specified Evaporative Condenser Air Flow Rate of {:.5R} [m3/s]", MSEvapCondAirFlowUser));
                             ShowContinueError(
@@ -8124,7 +8138,7 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
                 ShowWarningError(state,
                                  format("SizeDXCoil: {} {}, Speed {} Evaporative Condenser Air Flow Rate must be less than or equal to Speed {} "
                                         "Evaporative Condenser Air Flow Rate.",
-                                        thisDXCoil.DXCoilType,
+                                        HVAC::coilTypeNames[(int)thisDXCoil.coilType],
                                         thisDXCoil.Name,
                                         Mode,
                                         Mode + 1));
@@ -8152,7 +8166,7 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
             if (IsAutoSize) {
                 thisDXCoil.MSEvapCondPumpElecNomPower(Mode) = MSEvapCondPumpElecNomPowerDes;
                 BaseSizer::reportSizerOutput(state,
-                                             thisDXCoil.DXCoilType,
+                                             HVAC::coilTypeNames[(int)thisDXCoil.coilType],
                                              thisDXCoil.Name,
                                              format("Design Size Speed {} Rated Evaporative Condenser Pump Power Consumption [W]", Mode),
                                              MSEvapCondPumpElecNomPowerDes);
@@ -8160,7 +8174,7 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
                 if (thisDXCoil.MSEvapCondPumpElecNomPower(Mode) > 0.0 && MSEvapCondPumpElecNomPowerDes > 0.0 && !HardSizeNoDesRun) {
                     MSEvapCondPumpElecNomPowerUser = thisDXCoil.MSEvapCondPumpElecNomPower(Mode);
                     BaseSizer::reportSizerOutput(state,
-                                                 thisDXCoil.DXCoilType,
+                                                 HVAC::coilTypeNames[(int)thisDXCoil.coilType],
                                                  thisDXCoil.Name,
                                                  format("Design Size Speed {} Rated Evaporative Condenser Pump Power Consumption [W]", Mode),
                                                  MSEvapCondPumpElecNomPowerDes,
@@ -8170,7 +8184,7 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
                         if ((std::abs(MSEvapCondPumpElecNomPowerDes - MSEvapCondPumpElecNomPowerUser) / MSEvapCondPumpElecNomPowerUser) >
                             state.dataSize->AutoVsHardSizingThreshold) {
                             ShowMessage(
-                                state, format("SizeDxCoil: Potential issue with equipment sizing for {} {}", thisDXCoil.DXCoilType, thisDXCoil.Name));
+                                state, format("SizeDxCoil: Potential issue with equipment sizing for {} {}", HVAC::coilTypeNames[(int)thisDXCoil.coilType], thisDXCoil.Name));
                             ShowContinueError(state,
                                               format("User-Specified Evaporative Condenser Pump Rated Power Consumption of {:.2R} [W]",
                                                      MSEvapCondPumpElecNomPowerUser));
@@ -8191,7 +8205,7 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
                 ShowWarningError(state,
                                  format("SizeDXCoil: {} {}, Speed {} Rated Evaporative Condenser Pump Power Consumption must be less than or "
                                         "equal to Speed {} Rated Evaporative Condenser Pump Power Consumption.",
-                                        thisDXCoil.DXCoilType,
+                                        HVAC::coilTypeNames[(int)thisDXCoil.coilType],
                                         thisDXCoil.Name,
                                         Mode,
                                         Mode + 1));
@@ -8204,7 +8218,7 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
     }
 
     // Autosizing for multispeed heating coil
-    if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_MultiSpeedHeating) {
+    if (thisDXCoil.coilType == HVAC::CoilType::DXMultiSpeedHeating) {
         // flow rate autosize
         for (Mode = thisDXCoil.NumOfSpeeds; Mode >= 1; --Mode) {
             IsAutoSize = false;
@@ -8213,7 +8227,7 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
             }
             state.dataSize->DataIsDXCoil = true;
             CompName = thisDXCoil.Name;
-            CompType = thisDXCoil.DXCoilType;
+            CompType = HVAC::coilTypeNames[(int)thisDXCoil.coilType];
             // Sizing rated air flow rate
             if (Mode == thisDXCoil.NumOfSpeeds) {
                 FieldNum = 12 + (Mode - 1) * 6;
@@ -8268,7 +8282,7 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
             if (thisDXCoil.MSRatedAirVolFlowRate(Mode) > thisDXCoil.MSRatedAirVolFlowRate(Mode + 1)) {
                 ShowWarningError(state,
                                  format("SizeDXCoil: {} {}, Speed {} Rated Air Flow Rate must be less than or equal to Speed {} Rated Air Flow Rate.",
-                                        thisDXCoil.DXCoilType,
+                                        HVAC::coilTypeNames[(int)thisDXCoil.coilType],
                                         thisDXCoil.Name,
                                         Mode,
                                         Mode + 1));
@@ -8289,7 +8303,7 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
                 if (IsAutoSize) {
                     thisDXCoil.MSSecCoilAirFlow(Mode) = SecCoilAirFlowDes;
                     BaseSizer::reportSizerOutput(state,
-                                                 thisDXCoil.DXCoilType,
+                                                 HVAC::coilTypeNames[(int)thisDXCoil.coilType],
                                                  thisDXCoil.Name,
                                                  format("Design Size Speed {} Secondary Coil Air Flow Rate [m3/s]", Mode),
                                                  SecCoilAirFlowDes);
@@ -8297,7 +8311,7 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
                     if (thisDXCoil.MSSecCoilAirFlow(Mode) > 0.0 && SecCoilAirFlowDes > 0.0 && !HardSizeNoDesRun) {
                         SecCoilAirFlowUser = thisDXCoil.MSSecCoilAirFlow(Mode);
                         BaseSizer::reportSizerOutput(state,
-                                                     thisDXCoil.DXCoilType,
+                                                     HVAC::coilTypeNames[(int)thisDXCoil.coilType],
                                                      thisDXCoil.Name,
                                                      format("Design Size Speed {} Secondary Coil Air Flow Rate [m3/s]", Mode),
                                                      SecCoilAirFlowDes,
@@ -8307,7 +8321,7 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
                             if ((std::abs(SecCoilAirFlowDes - SecCoilAirFlowUser) / SecCoilAirFlowUser) > state.dataSize->AutoVsHardSizingThreshold) {
                                 ShowMessage(
                                     state,
-                                    format("SizeDxCoil: Potential issue with equipment sizing for {} {}", thisDXCoil.DXCoilType, thisDXCoil.Name));
+                                    format("SizeDxCoil: Potential issue with equipment sizing for {} {}", HVAC::coilTypeNames[(int)thisDXCoil.coilType], thisDXCoil.Name));
                                 ShowContinueError(state, format("User-Specified Secondary Coil Air Flow Rate of {:.5R} [m3/s]", SecCoilAirFlowUser));
                                 ShowContinueError(
                                     state, format("differs from Design Size Secondary Coil Air Flow Rate of {:.5R} [m3/s]", SecCoilAirFlowDes));
@@ -8328,7 +8342,7 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
             }
             state.dataSize->DataIsDXCoil = true;
             CompName = thisDXCoil.Name;
-            CompType = thisDXCoil.DXCoilType;
+            CompType = HVAC::coilTypeNames[(int)thisDXCoil.coilType];
             if (Mode == thisDXCoil.NumOfSpeeds) {
                 state.dataSize->DataFlowUsedForSizing = thisDXCoil.MSRatedAirVolFlowRate(Mode);
                 FieldNum = 10 + (Mode - 1) * 6;
@@ -8405,7 +8419,7 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
                 ShowWarningError(state,
                                  format("SizeDXCoil: {} {}, Speed {} Rated Total Heating Capacity must be less than or equal to Speed {} Rated "
                                         "Total Heating Capacity.",
-                                        thisDXCoil.DXCoilType,
+                                        HVAC::coilTypeNames[(int)thisDXCoil.coilType],
                                         thisDXCoil.Name,
                                         Mode,
                                         Mode + 1));
@@ -8428,12 +8442,12 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
         if (IsAutoSize) {
             thisDXCoil.DefrostCapacity = DefrostCapacityDes;
             BaseSizer::reportSizerOutput(
-                state, thisDXCoil.DXCoilType, thisDXCoil.Name, "Design Size Resistive Defrost Heater Capacity", DefrostCapacityDes);
+                state, HVAC::coilTypeNames[(int)thisDXCoil.coilType], thisDXCoil.Name, "Design Size Resistive Defrost Heater Capacity", DefrostCapacityDes);
         } else {
             if (thisDXCoil.DefrostCapacity > 0.0 && DefrostCapacityDes > 0.0 && !HardSizeNoDesRun) {
                 DefrostCapacityUser = thisDXCoil.DefrostCapacity;
                 BaseSizer::reportSizerOutput(state,
-                                             thisDXCoil.DXCoilType,
+                                             HVAC::coilTypeNames[(int)thisDXCoil.coilType],
                                              thisDXCoil.Name,
                                              "Design Size Resistive Defrost Heater Capacity",
                                              DefrostCapacityDes,
@@ -8442,7 +8456,7 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
                 if (state.dataGlobal->DisplayExtraWarnings) {
                     if ((std::abs(DefrostCapacityDes - DefrostCapacityUser) / DefrostCapacityUser) > state.dataSize->AutoVsHardSizingThreshold) {
                         ShowWarningMessage(
-                            state, format("SizeDxCoil: Potential issue with equipment sizing for {} {}", thisDXCoil.DXCoilType, thisDXCoil.Name));
+                            state, format("SizeDxCoil: Potential issue with equipment sizing for {} {}", HVAC::coilTypeNames[(int)thisDXCoil.coilType], thisDXCoil.Name));
                         ShowContinueError(state, format("User-Specified Resistive Defrost Heater Capacity of {:.2R}[W]", DefrostCapacityUser));
                         ShowContinueError(state,
                                           format("differs from Design Size Resistive Defrost Heater Capacity of {:.2R}[W]", DefrostCapacityDes));
@@ -8455,14 +8469,13 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
     }
 
     // Call routine that computes AHRI certified rating for single-speed DX Coils
-    if ((thisDXCoil.DXCoilType_Num == HVAC::CoilDX_CoolingSingleSpeed &&
+    if ((thisDXCoil.coilType == HVAC::CoilType::DXCoolingSingleSpeed &&
          (thisDXCoil.CondenserType(1) == DataHeatBalance::RefrigCondenserType::Air ||
           thisDXCoil.CondenserType(1) == DataHeatBalance::RefrigCondenserType::Evap)) ||
-        thisDXCoil.DXCoilType_Num == HVAC::CoilDX_HeatingEmpirical) {
+        thisDXCoil.coilType == HVAC::CoilType::DXHeatingEmpirical) {
         CalcDXCoilStandardRating(state,
                                  thisDXCoil.Name,
-                                 thisDXCoil.DXCoilType,
-                                 thisDXCoil.DXCoilType_Num,
+                                 thisDXCoil.coilType,
                                  1,
                                  thisDXCoil.RatedTotCap(1),
                                  thisDXCoil.RatedCOP(1),
@@ -8483,11 +8496,11 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
                                  thisDXCoil.ASHRAE127StdRprt);
     }
     // Call routine that computes AHRI certified rating for multi-speed DX cooling Coils
-    if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_MultiSpeedCooling || thisDXCoil.DXCoilType_Num == HVAC::CoilDX_MultiSpeedHeating) {
+    if (thisDXCoil.coilType == HVAC::CoilType::DXMultiSpeedCooling ||
+        thisDXCoil.coilType == HVAC::CoilType::DXMultiSpeedHeating) {
         CalcDXCoilStandardRating(state,
                                  thisDXCoil.Name,
-                                 thisDXCoil.DXCoilType,
-                                 thisDXCoil.DXCoilType_Num,
+                                 thisDXCoil.coilType,
                                  thisDXCoil.NumOfSpeeds,
                                  thisDXCoil.MSRatedTotCap,
                                  thisDXCoil.MSRatedCOP,
@@ -8508,12 +8521,12 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
                                  ObjexxFCL::Optional_bool_const());
     }
 
-    if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_CoolingTwoSpeed && (thisDXCoil.CondenserType(1) == DataHeatBalance::RefrigCondenserType::Air ||
-                                                                      thisDXCoil.CondenserType(1) == DataHeatBalance::RefrigCondenserType::Evap)) {
+    if (thisDXCoil.coilType == HVAC::CoilType::DXCoolingTwoSpeed &&
+        (thisDXCoil.CondenserType(1) == DataHeatBalance::RefrigCondenserType::Air ||
+         thisDXCoil.CondenserType(1) == DataHeatBalance::RefrigCondenserType::Evap)) {
         StandardRatings::CalcTwoSpeedDXCoilRating(state,
                                                   thisDXCoil.Name,
-                                                  thisDXCoil.DXCoilType,
-                                                  thisDXCoil.DXCoilType_Num,
+                                                  thisDXCoil.coilType,
                                                   thisDXCoil.RatedTotCap,
                                                   thisDXCoil.RatedTotCap2,
                                                   thisDXCoil.RatedCOP,
@@ -8535,12 +8548,12 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
     // create predefined report entries
     equipName = thisDXCoil.Name;
     // put tables for cooling and heating separate
-    switch (thisDXCoil.DXCoilType_Num) {
-    case HVAC::CoilDX_CoolingSingleSpeed:
-    case HVAC::CoilDX_CoolingTwoSpeed:
-    case HVAC::CoilDX_CoolingTwoStageWHumControl:
-    case HVAC::CoilDX_MultiSpeedCooling: {
-        PreDefTableEntry(state, state.dataOutRptPredefined->pdchCoolCoilType, equipName, thisDXCoil.DXCoilType);
+    switch (thisDXCoil.coilType) {
+    case HVAC::CoilType::DXCoolingSingleSpeed:
+    case HVAC::CoilType::DXCoolingTwoSpeed:
+    case HVAC::CoilType::DXCoolingTwoStageWHumControl:
+    case HVAC::CoilType::DXMultiSpeedCooling: {
+        PreDefTableEntry(state, state.dataOutRptPredefined->pdchCoolCoilType, equipName, HVAC::coilTypeNames[(int)thisDXCoil.coilType]);
         if (thisDXCoil.NumOfSpeeds == 0) {
             if (thisDXCoil.NumCapacityStages == 1) {
                 PreDefTableEntry(state, state.dataOutRptPredefined->pdchCoolCoilTotCap, equipName, thisDXCoil.RatedTotCap(1));
@@ -8580,11 +8593,12 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
                             state.dataOutRptPredefined->pdstCoolCoil,
                             "Nominal values are gross at rated conditions, i.e., the supply air fan heat and electric power NOT accounted for.");
     } break;
-    case HVAC::CoilDX_HeatingEmpirical:
-    case HVAC::CoilDX_MultiSpeedHeating:
-    case HVAC::CoilDX_HeatPumpWaterHeaterPumped:
-    case HVAC::CoilDX_HeatPumpWaterHeaterWrapped: {
-        PreDefTableEntry(state, state.dataOutRptPredefined->pdchHeatCoilType, equipName, thisDXCoil.DXCoilType);
+      
+    case HVAC::CoilType::DXHeatingEmpirical:
+    case HVAC::CoilType::DXMultiSpeedHeating:
+    case HVAC::CoilType::DXHeatPumpWaterHeaterPumped:
+    case HVAC::CoilType::DXHeatPumpWaterHeaterWrapped: {
+        PreDefTableEntry(state, state.dataOutRptPredefined->pdchHeatCoilType, equipName, HVAC::coilTypeNames[(int)thisDXCoil.coilType]);
         if (thisDXCoil.NumOfSpeeds == 0) {
             if (thisDXCoil.NumCapacityStages == 1) {
                 PreDefTableEntry(state, state.dataOutRptPredefined->pdchHeatCoilNomCap, equipName, thisDXCoil.RatedTotCap(1));
@@ -8721,7 +8735,7 @@ void CalcHPWHDXCoil(EnergyPlusData &state,
         //   Warn user if curve output goes negative
         if (HeatCapFTemp < 0.0) {
             if (Coil.HCapFTempErrorIndex == 0) {
-                ShowWarningMessage(state, format("{} \"{}\":", Coil.DXCoilType, Coil.Name));
+              ShowWarningMessage(state, format("{} \"{}\":", HVAC::coilTypeNames[(int)Coil.coilType], Coil.Name));
                 ShowContinueError(
                     state, format(" HPWH Heating Capacity Modifier curve (function of temperature) output is negative ({:.3T}).", HeatCapFTemp));
                 if (state.dataCurveManager->PerfCurve(Coil.HCapFTemp)->numDims == 2) {
@@ -8737,8 +8751,8 @@ void CalcHPWHDXCoil(EnergyPlusData &state,
             }
             ShowRecurringWarningErrorAtEnd(
                 state,
-                Coil.DXCoilType + " \"" + Coil.Name +
-                    "\": HPWH Heating Capacity Modifier curve (function of temperature) output is negative warning continues...",
+                format("{} \"{}\": HPWH Heating Capacity Modifier curve (function of temperature) output is negative warning continues...",
+                       HVAC::coilTypeNames[(int)Coil.coilType], Coil.Name),
                 Coil.HCapFTempErrorIndex,
                 HeatCapFTemp,
                 HeatCapFTemp,
@@ -8760,7 +8774,7 @@ void CalcHPWHDXCoil(EnergyPlusData &state,
         //   Warn user if curve output goes negative
         if (HeatCOPFTemp < 0.0) {
             if (Coil.HCOPFTempErrorIndex == 0) {
-                ShowWarningMessage(state, format("{} \"{}\":", Coil.DXCoilType, Coil.Name));
+                ShowWarningMessage(state, format("{} \"{}\":", HVAC::coilTypeNames[(int)Coil.coilType], Coil.Name));
                 ShowContinueError(state,
                                   format(" HPWH Heating COP Modifier curve (function of temperature) output is negative ({:.3T}).", HeatCOPFTemp));
                 if (state.dataCurveManager->PerfCurve(Coil.HCOPFTemp)->numDims == 2) {
@@ -8776,8 +8790,8 @@ void CalcHPWHDXCoil(EnergyPlusData &state,
             }
             ShowRecurringWarningErrorAtEnd(
                 state,
-                Coil.DXCoilType + " \"" + Coil.Name +
-                    "\": HPWH Heating COP Modifier curve (function of temperature) output is negative warning continues...",
+                format("{} \"{}\": HPWH Heating COP Modifier curve (function of temperature) output is negative warning continues...",
+                       HVAC::coilTypeNames[(int)Coil.coilType], Coil.Name),
                 Coil.HCOPFTempErrorIndex,
                 HeatCOPFTemp,
                 HeatCOPFTemp,
@@ -8796,7 +8810,7 @@ void CalcHPWHDXCoil(EnergyPlusData &state,
         //   Warn user if curve output goes negative
         if (HeatCapFAirFlow < 0.0) {
             if (Coil.HCapFAirFlowErrorIndex == 0) {
-                ShowWarningMessage(state, format("{} \"{}\":", Coil.DXCoilType, Coil.Name));
+                ShowWarningMessage(state, format("{} \"{}\":", HVAC::coilTypeNames[(int)Coil.coilType], Coil.Name));
                 ShowContinueError(
                     state,
                     format(" HPWH Heating Capacity Modifier curve (function of air flow fraction) output is negative ({:.3T}).", HeatCapFAirFlow));
@@ -8805,8 +8819,8 @@ void CalcHPWHDXCoil(EnergyPlusData &state,
             }
             ShowRecurringWarningErrorAtEnd(
                 state,
-                Coil.DXCoilType + " \"" + Coil.Name +
-                    "\": HPWH Heating Capacity Modifier curve (function of air flow fraction) output is negative warning continues...",
+                format("{} \"{}\": HPWH Heating Capacity Modifier curve (function of air flow fraction) output is negative warning continues...",
+                       HVAC::coilTypeNames[(int)Coil.coilType], Coil.Name),
                 Coil.HCapFAirFlowErrorIndex,
                 HeatCapFAirFlow,
                 HeatCapFAirFlow);
@@ -8822,7 +8836,7 @@ void CalcHPWHDXCoil(EnergyPlusData &state,
         //   Warn user if curve output goes negative
         if (HeatCOPFAirFlow < 0.0) {
             if (Coil.HCOPFAirFlowErrorIndex == 0) {
-                ShowWarningMessage(state, format("{} \"{}\":", Coil.DXCoilType, Coil.Name));
+              ShowWarningMessage(state, format("{} \"{}\":", HVAC::coilTypeNames[(int)Coil.coilType], Coil.Name));
                 ShowContinueError(
                     state, format(" HPWH Heating COP Modifier curve (function of air flow fraction) output is negative ({:.3T}).", HeatCOPFAirFlow));
                 ShowContinueError(state, format(" Negative value occurs using an air flow fraction of {:.3T}.", AirFlowRateRatio));
@@ -8830,8 +8844,8 @@ void CalcHPWHDXCoil(EnergyPlusData &state,
             }
             ShowRecurringWarningErrorAtEnd(
                 state,
-                Coil.DXCoilType + " \"" + Coil.Name +
-                    "\": HPWH Heating COP Modifier curve (function of air flow fraction) output is negative warning continues...",
+                format("{} \"{}\": HPWH Heating COP Modifier curve (function of air flow fraction) output is negative warning continues...",
+                       HVAC::coilTypeNames[(int)Coil.coilType], Coil.Name),
                 Coil.HCOPFAirFlowErrorIndex,
                 HeatCOPFAirFlow,
                 HeatCOPFAirFlow);
@@ -8847,7 +8861,7 @@ void CalcHPWHDXCoil(EnergyPlusData &state,
         //   Warn user if curve output goes negative
         if (HeatCapFWaterFlow < 0.0) {
             if (Coil.HCapFWaterFlowErrorIndex == 0) {
-                ShowWarningMessage(state, format("{} \"{}\":", Coil.DXCoilType, Coil.Name));
+                ShowWarningMessage(state, format("{} \"{}\":", HVAC::coilTypeNames[(int)Coil.coilType], Coil.Name));
                 ShowContinueError(state,
                                   format(" HPWH Heating Capacity Modifier curve (function of water flow fraction) output is negative ({:.3T}).",
                                          HeatCapFWaterFlow));
@@ -8856,8 +8870,8 @@ void CalcHPWHDXCoil(EnergyPlusData &state,
             }
             ShowRecurringWarningErrorAtEnd(
                 state,
-                Coil.DXCoilType + " \"" + Coil.Name +
-                    "\": HPWH Heating Capacity Modifier curve (function of water flow fraction) output is negative warning continues...",
+                format("{} \"{}\": HPWH Heating Capacity Modifier curve (function of water flow fraction) output is negative warning continues...",
+                       HVAC::coilTypeNames[(int)Coil.coilType], Coil.Name),
                 Coil.HCapFWaterFlowErrorIndex,
                 HeatCapFWaterFlow,
                 HeatCapFWaterFlow);
@@ -8873,7 +8887,7 @@ void CalcHPWHDXCoil(EnergyPlusData &state,
         //   Warn user if curve output goes negative
         if (HeatCOPFWaterFlow < 0.0) {
             if (Coil.HCOPFWaterFlowErrorIndex == 0) {
-                ShowWarningMessage(state, format("{} \"{}\":", Coil.DXCoilType, Coil.Name));
+                ShowWarningMessage(state, format("{} \"{}\":", HVAC::coilTypeNames[(int)Coil.coilType], Coil.Name));
                 ShowContinueError(
                     state,
                     format(" HPWH Heating COP Modifier curve (function of water flow fraction) output is negative ({:.3T}).", HeatCOPFWaterFlow));
@@ -8882,8 +8896,8 @@ void CalcHPWHDXCoil(EnergyPlusData &state,
             }
             ShowRecurringWarningErrorAtEnd(
                 state,
-                Coil.DXCoilType + " \"" + Coil.Name +
-                    "\": HPWH Heating COP Modifier curve (function of water flow fraction) output is negative warning continues...",
+                format("{} \"{}\": HPWH Heating COP Modifier curve (function of water flow fraction) output is negative warning continues...",
+                       HVAC::coilTypeNames[(int)Coil.coilType], Coil.Name),
                 Coil.HCOPFWaterFlowErrorIndex,
                 HeatCOPFWaterFlow,
                 HeatCOPFWaterFlow);
@@ -9043,6 +9057,7 @@ void CalcDoe2DXCoil(EnergyPlusData &state,
 
     // SUBROUTINE PARAMETER DEFINITIONS:
     static constexpr std::string_view RoutineName("CalcDoe2DXCoil: ");
+    static constexpr std::string_view routineName = "CalcDoe2DXCoil";
     static constexpr std::string_view calcDoe2DXCoil("CalcDoe2DXCoil");
 
     // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
@@ -9248,8 +9263,8 @@ void CalcDoe2DXCoil(EnergyPlusData &state,
             }
             if (thisDXCoil.CondenserType(Mode) == DataHeatBalance::RefrigCondenserType::Air) {
                 ShowRecurringWarningErrorAtEnd(state,
-                                               std::string{RoutineName} + thisDXCoil.DXCoilType + "=\"" + thisDXCoil.Name +
-                                                   "\" - Low condenser dry-bulb temperature error continues...",
+                                               format("{}: {}=\"{}\" - Low condenser dry-bulb temperature error continues...",
+                                                      routineName, HVAC::coilTypeNames[(int)thisDXCoil.coilType], thisDXCoil.Name),
                                                thisDXCoil.LowAmbErrIndex,
                                                thisDXCoil.LowTempLast,
                                                thisDXCoil.LowTempLast,
@@ -9258,8 +9273,8 @@ void CalcDoe2DXCoil(EnergyPlusData &state,
                                                "[C]");
             } else {
                 ShowRecurringWarningErrorAtEnd(state,
-                                               std::string{RoutineName} + thisDXCoil.DXCoilType + "=\"" + thisDXCoil.Name +
-                                                   "\" - Low condenser wet-bulb temperature error continues...",
+                                               format("{}: {}=\"{}\" - Low condenser wet-bulb temperature error continues...",
+                                                      routineName, HVAC::coilTypeNames[(int)thisDXCoil.coilType], thisDXCoil.Name),
                                                thisDXCoil.LowAmbErrIndex,
                                                thisDXCoil.LowTempLast,
                                                thisDXCoil.LowTempLast,
@@ -9284,9 +9299,10 @@ void CalcDoe2DXCoil(EnergyPlusData &state,
                                   "   3) is used as part of a HX assisted cooling coil which uses a high sensible effectiveness. Check inputs.");
             }
             ShowRecurringWarningErrorAtEnd(state,
-                                           std::string{RoutineName} + thisDXCoil.DXCoilType + "=\"" + thisDXCoil.Name +
-                                               "\" - Full load outlet temperature indicates a possibility of frost/freeze error continues. "
-                                               "Outlet air temperature statistics follow:",
+                                           format("{}: {}=\"{}\" - Full load outlet temperature indicates a possibility of frost/freeze error continues. "
+                                                  "Outlet air temperature statistics follow:",
+
+                                                  routineName, HVAC::coilTypeNames[(int)thisDXCoil.coilType], thisDXCoil.Name),
                                            thisDXCoil.LowOutletTempIndex,
                                            thisDXCoil.FullLoadOutAirTempLast,
                                            thisDXCoil.FullLoadOutAirTempLast);
@@ -9300,13 +9316,13 @@ void CalcDoe2DXCoil(EnergyPlusData &state,
     thisDXCoil.PrintLowOutTempMessage = false;
 
     if ((AirMassFlow > 0.0) &&
-        (GetCurrentScheduleValue(state, thisDXCoil.SchedPtr) > 0.0 || thisDXCoil.DXCoilType_Num == HVAC::CoilDX_HeatPumpWaterHeaterPumped ||
-         thisDXCoil.DXCoilType_Num == HVAC::CoilDX_HeatPumpWaterHeaterWrapped) &&
+        (GetCurrentScheduleValue(state, thisDXCoil.SchedPtr) > 0.0 || thisDXCoil.coilType == HVAC::CoilType::DXHeatPumpWaterHeaterPumped ||
+         thisDXCoil.coilType == HVAC::CoilType::DXHeatPumpWaterHeaterWrapped) &&
         (PartLoadRatio > 0.0) && (compressorOp == HVAC::CompressorOp::On) &&
         CompAmbTemp > thisDXCoil.MinOATCompressor) { // criteria for coil operation
         if (fanOp == HVAC::FanOp::Cycling) {
             AirMassFlow /= (PartLoadRatio / DXcoolToHeatPLRRatio);
-        } else if (fanOp == HVAC::FanOp::Continuous && thisDXCoil.DXCoilType_Num != HVAC::CoilDX_CoolingTwoSpeed) {
+        } else if (fanOp == HVAC::FanOp::Continuous && thisDXCoil.coilType != HVAC::CoilType::DXCoolingTwoSpeed) {
             AirMassFlow *= AirFlowRatio;
         } else {
             AirMassFlow = thisDXCoil.RatedAirMassFlowRate(Mode);
@@ -9324,16 +9340,17 @@ void CalcDoe2DXCoil(EnergyPlusData &state,
         //  AirVolumeFlowRate = AirMassFlow/ PsyRhoAirFnPbTdbW(InletAirPressure,InletAirDryBulbTemp, InletAirHumRat)
         if (thisDXCoil.RatedTotCap(Mode) <= 0.0) {
             ShowFatalError(
-                state, format("{}{}=\"{}\" - Rated total cooling capacity is zero or less.", RoutineName, thisDXCoil.DXCoilType, thisDXCoil.Name));
+                state, format("{}{}=\"{}\" - Rated total cooling capacity is zero or less.", RoutineName, HVAC::coilTypeNames[(int)thisDXCoil.coilType], thisDXCoil.Name));
         }
-        if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_HeatPumpWaterHeaterPumped ||
-            thisDXCoil.DXCoilType_Num == HVAC::CoilDX_HeatPumpWaterHeaterWrapped) {
+        if (thisDXCoil.coilType == HVAC::CoilType::DXHeatPumpWaterHeaterPumped ||
+            thisDXCoil.coilType == HVAC::CoilType::DXHeatPumpWaterHeaterWrapped) {
             VolFlowperRatedTotCap = AirVolumeFlowRate / thisDXCoil.RatedTotCap2;
         } else {
             VolFlowperRatedTotCap = AirVolumeFlowRate / thisDXCoil.RatedTotCap(Mode);
         }
-        if (!FirstHVACIteration && !state.dataGlobal->WarmupFlag && thisDXCoil.DXCoilType_Num != HVAC::CoilDX_HeatPumpWaterHeaterPumped &&
-            thisDXCoil.DXCoilType_Num != HVAC::CoilDX_HeatPumpWaterHeaterWrapped &&
+        if (!FirstHVACIteration && !state.dataGlobal->WarmupFlag &&
+            thisDXCoil.coilType != HVAC::CoilType::DXHeatPumpWaterHeaterPumped &&
+            thisDXCoil.coilType != HVAC::CoilType::DXHeatPumpWaterHeaterWrapped &&
             ((VolFlowperRatedTotCap < HVAC::MinOperVolFlowPerRatedTotCap[(int)state.dataHVACGlobal->DXCT]) ||
              (VolFlowperRatedTotCap > HVAC::MaxCoolVolFlowPerRatedTotCap[(int)state.dataHVACGlobal->DXCT]))) {
             if (thisDXCoil.ErrIndex1 == 0) {
@@ -9341,7 +9358,7 @@ void CalcDoe2DXCoil(EnergyPlusData &state,
                     state,
                     format("{}{}=\"{}\" - Air volume flow rate per watt of rated total cooling capacity is out of range at {:.3R} m3/s/W.",
                            RoutineName,
-                           thisDXCoil.DXCoilType,
+                           HVAC::coilTypeNames[(int)thisDXCoil.coilType],
                            thisDXCoil.Name,
                            VolFlowperRatedTotCap));
                 ShowContinueErrorTimeStamp(state, "");
@@ -9354,14 +9371,14 @@ void CalcDoe2DXCoil(EnergyPlusData &state,
             }
             ShowRecurringWarningErrorAtEnd(
                 state,
-                std::string{RoutineName} + thisDXCoil.DXCoilType + "=\"" + thisDXCoil.Name +
-                    "\" - Air volume flow rate per watt of rated total cooling capacity is out of range error continues...",
-                thisDXCoil.ErrIndex1,
+                format("{}: {}=\"{}\" - Air volume flow rate per watt of rated total cooling capacity is out of range error continues...",
+                       routineName, HVAC::coilTypeNames[(int)thisDXCoil.coilType], thisDXCoil.Name),
+                       thisDXCoil.ErrIndex1,
                 VolFlowperRatedTotCap,
                 VolFlowperRatedTotCap);
         } else if (!state.dataGlobal->WarmupFlag &&
-                   (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_HeatPumpWaterHeaterPumped ||
-                    thisDXCoil.DXCoilType_Num == HVAC::CoilDX_HeatPumpWaterHeaterWrapped) &&
+                   (thisDXCoil.coilType == HVAC::CoilType::DXHeatPumpWaterHeaterPumped ||
+                    thisDXCoil.coilType == HVAC::CoilType::DXHeatPumpWaterHeaterWrapped) &&
                    ((VolFlowperRatedTotCap < HVAC::MinOperVolFlowPerRatedTotCap[(int)state.dataHVACGlobal->DXCT]) ||
                     (VolFlowperRatedTotCap > HVAC::MaxHeatVolFlowPerRatedTotCap[(int)state.dataHVACGlobal->DXCT]))) {
             if (thisDXCoil.ErrIndex1 == 0) {
@@ -9369,7 +9386,7 @@ void CalcDoe2DXCoil(EnergyPlusData &state,
                     state,
                     format("{}{}=\"{}\" - Air volume flow rate per watt of rated total water heating capacity is out of range at {:.2R} m3/s/W.",
                            RoutineName,
-                           thisDXCoil.DXCoilType,
+                           HVAC::coilTypeNames[(int)thisDXCoil.coilType],
                            thisDXCoil.Name,
                            VolFlowperRatedTotCap));
                 ShowContinueErrorTimeStamp(state, "");
@@ -9383,8 +9400,8 @@ void CalcDoe2DXCoil(EnergyPlusData &state,
             }
             ShowRecurringWarningErrorAtEnd(
                 state,
-                std::string{RoutineName} + thisDXCoil.DXCoilType + "=\"" + thisDXCoil.Name +
-                    "\" - Air volume flow rate per watt of rated total water heating capacity is out of range error continues...",
+                format("{}: {}=\"{}\" - Air volume flow rate per watt of rated total water heating capacity is out of range error continues...",
+                       routineName, HVAC::coilTypeNames[(int)thisDXCoil.coilType], thisDXCoil.Name),
                 thisDXCoil.ErrIndex1,
                 VolFlowperRatedTotCap,
                 VolFlowperRatedTotCap);
@@ -9413,7 +9430,7 @@ void CalcDoe2DXCoil(EnergyPlusData &state,
                 if (thisDXCoil.LowAmbErrIndex == 0) {
                     thisDXCoil.LowAmbBuffer1 =
                         format("{} \"{}\" - Air-cooled condenser inlet dry-bulb temperature below 0 C. Outdoor dry-bulb temperature = {:.2R}",
-                               thisDXCoil.DXCoilType,
+                               HVAC::coilTypeNames[(int)thisDXCoil.coilType],
                                thisDXCoil.Name,
                                OutdoorDryBulb);
                     thisDXCoil.LowAmbBuffer2 = " ... Occurrence info = " + state.dataEnvrn->EnvironmentName + ", " + state.dataEnvrn->CurMnDy + ' ' +
@@ -9427,7 +9444,7 @@ void CalcDoe2DXCoil(EnergyPlusData &state,
                 if (thisDXCoil.LowAmbErrIndex == 0) {
                     thisDXCoil.LowAmbBuffer1 =
                         format("{} \"{}\" - Evap-cooled condenser inlet wet-bulb temperature below 10 C. Outdoor wet-bulb temperature = {:.2R}",
-                               thisDXCoil.DXCoilType,
+                               HVAC::coilTypeNames[(int)thisDXCoil.coilType],
                                thisDXCoil.Name,
                                OutdoorWetBulb);
                     thisDXCoil.LowAmbBuffer2 = " ... Occurrence info = " + state.dataEnvrn->EnvironmentName + ", " + state.dataEnvrn->CurMnDy + ' ' +
@@ -9441,8 +9458,8 @@ void CalcDoe2DXCoil(EnergyPlusData &state,
         InletAirHumRatTemp = InletAirHumRat;
         AirMassFlowRatio = AirMassFlow / thisDXCoil.RatedAirMassFlowRate(Mode);
         while (true) {
-            if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_HeatPumpWaterHeaterPumped ||
-                thisDXCoil.DXCoilType_Num == HVAC::CoilDX_HeatPumpWaterHeaterWrapped) {
+            if (thisDXCoil.coilType == HVAC::CoilType::DXHeatPumpWaterHeaterPumped ||
+                thisDXCoil.coilType == HVAC::CoilType::DXHeatPumpWaterHeaterWrapped) {
                 // Coil:DX:HeatPumpWaterHeater does not have total cooling capacity as a function of temp or flow curve
                 TotCapTempModFac = 1.0;
                 TotCapFlowModFac = 1.0;
@@ -9456,7 +9473,7 @@ void CalcDoe2DXCoil(EnergyPlusData &state,
                 //    Warn user if curve output goes negative
                 if (TotCapTempModFac < 0.0) {
                     if (thisDXCoil.CCapFTempErrorIndex == 0) {
-                        ShowWarningMessage(state, format("{}{} \"{}\":", RoutineName, thisDXCoil.DXCoilType, thisDXCoil.Name));
+                        ShowWarningMessage(state, format("{}{} \"{}\":", RoutineName, HVAC::coilTypeNames[(int)thisDXCoil.coilType], thisDXCoil.Name));
                         ShowContinueError(state,
                                           format(" Total Cooling Capacity Modifier curve (function of temperature) output is negative ({:.3T}).",
                                                  TotCapTempModFac));
@@ -9477,8 +9494,8 @@ void CalcDoe2DXCoil(EnergyPlusData &state,
                     }
                     ShowRecurringWarningErrorAtEnd(
                         state,
-                        std::string{RoutineName} + thisDXCoil.DXCoilType + " \"" + thisDXCoil.Name +
-                            "\": Total Cooling Capacity Modifier curve (function of temperature) output is negative warning continues...",
+                        format("{}; {}=\"{}\" - Total Cooling Capacity Modifier curve (function of temperature) output is negative warning continues...",
+                               routineName, HVAC::coilTypeNames[(int)thisDXCoil.coilType], thisDXCoil.Name),
                         thisDXCoil.CCapFTempErrorIndex,
                         TotCapTempModFac,
                         TotCapTempModFac);
@@ -9490,7 +9507,7 @@ void CalcDoe2DXCoil(EnergyPlusData &state,
                 //    Warn user if curve output goes negative
                 if (TotCapFlowModFac < 0.0) {
                     if (thisDXCoil.CCapFFlowErrorIndex == 0) {
-                        ShowWarningMessage(state, format("{}{} \"{}\":", RoutineName, thisDXCoil.DXCoilType, thisDXCoil.Name));
+                        ShowWarningMessage(state, format("{}{} \"{}\":", RoutineName, HVAC::coilTypeNames[(int)thisDXCoil.coilType], thisDXCoil.Name));
                         ShowContinueError(state,
                                           format(" Total Cooling Capacity Modifier curve (function of flow fraction) output is negative ({:.3T}).",
                                                  TotCapFlowModFac));
@@ -9502,8 +9519,8 @@ void CalcDoe2DXCoil(EnergyPlusData &state,
                     }
                     ShowRecurringWarningErrorAtEnd(
                         state,
-                        std::string{RoutineName} + thisDXCoil.DXCoilType + " \"" + thisDXCoil.Name +
-                            "\": Total Cooling Capacity Modifier curve (function of flow fraction) output is negative warning continues...",
+                        format("{}: {}=\"{}\" - Total Cooling Capacity Modifier curve (function of flow fraction) output is negative warning continues..",
+                               routineName, HVAC::coilTypeNames[(int)thisDXCoil.coilType], thisDXCoil.Name),
                         thisDXCoil.CCapFFlowErrorIndex,
                         TotCapFlowModFac,
                         TotCapFlowModFac);
@@ -9564,26 +9581,31 @@ void CalcDoe2DXCoil(EnergyPlusData &state,
 
         if (PLF < 0.7) {
             if (thisDXCoil.ErrIndex2 == 0) {
-                if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_HeatPumpWaterHeaterPumped ||
-                    thisDXCoil.DXCoilType_Num == HVAC::CoilDX_HeatPumpWaterHeaterWrapped) {
-                    ShowWarningMessage(state, format("{}{}=\"{}\", PLF curve value", RoutineName, thisDXCoil.DXCoilType, thisDXCoil.Name));
+                if (thisDXCoil.coilType == HVAC::CoilType::DXHeatPumpWaterHeaterPumped ||
+                    thisDXCoil.coilType == HVAC::CoilType::DXHeatPumpWaterHeaterWrapped) {
+                    ShowWarningMessage(state, format("{}{}=\"{}\", PLF curve value", RoutineName, HVAC::coilTypeNames[(int)thisDXCoil.coilType], thisDXCoil.Name));
                     ShowContinueError(state, format("The PLF curve value = {:.3T} for part-load ratio = {:.3T}", PLF, PartLoadRatio));
                     ShowContinueErrorTimeStamp(state, "PLF curve values must be >= 0.7. PLF has been reset to 0.7 and simulation is continuing.");
-                    ShowContinueError(state, format("Check the IO reference manual for PLF curve guidance [{}].", thisDXCoil.DXCoilType));
+                    ShowContinueError(state, format("Check the IO reference manual for PLF curve guidance [{}].", HVAC::coilTypeNames[(int)thisDXCoil.coilType]));
                 } else {
-                    ShowWarningMessage(state, format("{}{}=\"{}\", PLF curve value", RoutineName, thisDXCoil.DXCoilType, thisDXCoil.Name));
+                    ShowWarningMessage(state, format("{}{}=\"{}\", PLF curve value", RoutineName, HVAC::coilTypeNames[(int)thisDXCoil.coilType], thisDXCoil.Name));
                     ShowContinueError(state, format("The PLF curve value = {:.3T} for part-load ratio = {:.3T}", PLF, PartLoadRatio));
                     ShowContinueErrorTimeStamp(state, "PLF curve values must be >= 0.7. PLF has been reset to 0.7 and simulation is continuing.");
-                    ShowContinueError(state, format("Check the IO reference manual for PLF curve guidance [{}].", thisDXCoil.DXCoilType));
+                    ShowContinueError(state, format("Check the IO reference manual for PLF curve guidance [{}].", HVAC::coilTypeNames[(int)thisDXCoil.coilType]));
                 }
             }
-            if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_HeatPumpWaterHeaterPumped ||
-                thisDXCoil.DXCoilType_Num == HVAC::CoilDX_HeatPumpWaterHeaterWrapped) {
+            if (thisDXCoil.coilType == HVAC::CoilType::DXHeatPumpWaterHeaterPumped ||
+                thisDXCoil.coilType == HVAC::CoilType::DXHeatPumpWaterHeaterWrapped) {
                 ShowRecurringWarningErrorAtEnd(
-                    state, thisDXCoil.Name + ", " + thisDXCoil.DXCoilType + " PLF curve < 0.7 warning continues...", thisDXCoil.ErrIndex2, PLF, PLF);
+                    state,
+                    format("{}=\"{}\" - PLF curve < 0.7 warning continues...", HVAC::coilTypeNames[(int)thisDXCoil.coilType], thisDXCoil.Name),
+                    thisDXCoil.ErrIndex2, PLF, PLF);
             } else {
                 ShowRecurringWarningErrorAtEnd(
-                    state, thisDXCoil.Name + ", " + thisDXCoil.DXCoilType + " PLF curve < 0.7 warning continues...", thisDXCoil.ErrIndex2, PLF, PLF);
+                    state,
+                    format("{}=\"{}\" - PLF curve < 0.7 warning continues...",
+                           HVAC::coilTypeNames[(int)thisDXCoil.coilType], thisDXCoil.Name),
+                           thisDXCoil.ErrIndex2, PLF, PLF);
             }
             PLF = 0.7;
         }
@@ -9592,31 +9614,33 @@ void CalcDoe2DXCoil(EnergyPlusData &state,
         thisDXCoil.CoolingCoilRuntimeFraction = PartLoadRatio / PLF;
         if (thisDXCoil.CoolingCoilRuntimeFraction > 1.0 && std::abs(thisDXCoil.CoolingCoilRuntimeFraction - 1.0) > 0.001) {
             if (thisDXCoil.ErrIndex3 == 0) {
-                if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_HeatPumpWaterHeaterPumped ||
-                    thisDXCoil.DXCoilType_Num == HVAC::CoilDX_HeatPumpWaterHeaterWrapped) {
-                    ShowWarningMessage(state, format("{}{}=\"{}\", runtime fraction", RoutineName, thisDXCoil.DXCoilType, thisDXCoil.Name));
+                if (thisDXCoil.coilType == HVAC::CoilType::DXHeatPumpWaterHeaterPumped ||
+                    thisDXCoil.coilType == HVAC::CoilType::DXHeatPumpWaterHeaterWrapped) {
+                    ShowWarningMessage(state, format("{}{}=\"{}\", runtime fraction", RoutineName, HVAC::coilTypeNames[(int)thisDXCoil.coilType], thisDXCoil.Name));
                     ShowWarningMessage(state, format("The runtime fraction exceeded 1.0. [{:.4R}].", thisDXCoil.CoolingCoilRuntimeFraction));
                     ShowContinueError(state, "Runtime fraction reset to 1 and the simulation will continue.");
-                    ShowContinueError(state, format("Check the IO reference manual for PLF curve guidance [{}].", thisDXCoil.DXCoilType));
+                    ShowContinueError(state, format("Check the IO reference manual for PLF curve guidance [{}].", HVAC::coilTypeNames[(int)thisDXCoil.coilType]));
                     ShowContinueErrorTimeStamp(state, "");
                 } else {
-                    ShowWarningMessage(state, format("{}{}=\"{}\", runtime fraction", RoutineName, thisDXCoil.DXCoilType, thisDXCoil.Name));
+                    ShowWarningMessage(state, format("{}{}=\"{}\", runtime fraction", RoutineName, HVAC::coilTypeNames[(int)thisDXCoil.coilType], thisDXCoil.Name));
                     ShowWarningMessage(state, format("The runtime fraction exceeded 1.0. [{:.4R}].", thisDXCoil.CoolingCoilRuntimeFraction));
                     ShowContinueError(state, "Runtime fraction reset to 1 and the simulation will continue.");
-                    ShowContinueError(state, format("Check the IO reference manual for PLF curve guidance [{}].", thisDXCoil.DXCoilType));
+                    ShowContinueError(state, format("Check the IO reference manual for PLF curve guidance [{}].", HVAC::coilTypeNames[(int)thisDXCoil.coilType]));
                     ShowContinueErrorTimeStamp(state, "");
                 }
             }
-            if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_HeatPumpWaterHeaterPumped ||
-                thisDXCoil.DXCoilType_Num == HVAC::CoilDX_HeatPumpWaterHeaterWrapped) {
+            if (thisDXCoil.coilType == HVAC::CoilType::DXHeatPumpWaterHeaterPumped ||
+                thisDXCoil.coilType == HVAC::CoilType::DXHeatPumpWaterHeaterWrapped) {
                 ShowRecurringWarningErrorAtEnd(state,
-                                               thisDXCoil.Name + ", " + thisDXCoil.DXCoilType + " runtime fraction > 1.0 warning continues...",
+                                               format("{}=\"{}\" - runtime fraction > 1.0 warning continues...",
+                                                      HVAC::coilTypeNames[(int)thisDXCoil.coilType], thisDXCoil.Name),
                                                thisDXCoil.ErrIndex3,
                                                thisDXCoil.CoolingCoilRuntimeFraction,
                                                thisDXCoil.CoolingCoilRuntimeFraction);
             } else {
                 ShowRecurringWarningErrorAtEnd(state,
-                                               thisDXCoil.Name + ", " + thisDXCoil.DXCoilType + " runtime fraction > 1.0 warning continues...",
+                                               format("{}=\"{}\" - runtime fraction > 1.0 warning continues...",
+                                                      HVAC::coilTypeNames[(int)thisDXCoil.coilType], thisDXCoil.Name),
                                                thisDXCoil.ErrIndex3,
                                                thisDXCoil.CoolingCoilRuntimeFraction,
                                                thisDXCoil.CoolingCoilRuntimeFraction);
@@ -9675,7 +9699,7 @@ void CalcDoe2DXCoil(EnergyPlusData &state,
                 thisDXCoil.FullLoadInletAirTempLast = InletAirDryBulbTemp;
                 thisDXCoil.LowOutTempBuffer1 = format("{} \"{}\" - Full load outlet air dry-bulb temperature < 2C. This indicates the "
                                                       "possibility of coil frost/freeze. Outlet temperature = {:.2R} C.",
-                                                      thisDXCoil.DXCoilType,
+                                                      HVAC::coilTypeNames[(int)thisDXCoil.coilType],
                                                       thisDXCoil.Name,
                                                       FullLoadOutAirTemp);
                 thisDXCoil.LowOutTempBuffer2 = " ...Occurrence info = " + state.dataEnvrn->EnvironmentName + ", " + state.dataEnvrn->CurMnDy + ' ' +
@@ -9816,8 +9840,8 @@ void CalcDoe2DXCoil(EnergyPlusData &state,
         }
 
         // Calculate electricity consumed. First, get EIR modifying factors for off-rated conditions
-        if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_HeatPumpWaterHeaterPumped ||
-            thisDXCoil.DXCoilType_Num == HVAC::CoilDX_HeatPumpWaterHeaterWrapped) {
+        if (thisDXCoil.coilType == HVAC::CoilType::DXHeatPumpWaterHeaterPumped ||
+            thisDXCoil.coilType == HVAC::CoilType::DXHeatPumpWaterHeaterWrapped) {
             //   Coil:DX:HeatPumpWaterHeater does not have EIR temp or flow curves
             EIRTempModFac = 1.0;
             EIRFlowModFac = 1.0;
@@ -9827,7 +9851,7 @@ void CalcDoe2DXCoil(EnergyPlusData &state,
             //   Warn user if curve output goes negative
             if (EIRTempModFac < 0.0) {
                 if (thisDXCoil.EIRFTempErrorIndex == 0) {
-                    ShowWarningMessage(state, format("{}{}=\"{}\":", RoutineName, thisDXCoil.DXCoilType, thisDXCoil.Name));
+                    ShowWarningMessage(state, format("{}{}=\"{}\":", RoutineName, HVAC::coilTypeNames[(int)thisDXCoil.coilType], thisDXCoil.Name));
                     ShowContinueError(
                         state, format(" Energy Input Ratio Modifier curve (function of temperature) output is negative ({:.3T}).", EIRTempModFac));
                     if (state.dataCurveManager->PerfCurve(thisDXCoil.EIRFTemp(Mode))->numDims == 2) {
@@ -9846,8 +9870,8 @@ void CalcDoe2DXCoil(EnergyPlusData &state,
                 }
                 ShowRecurringWarningErrorAtEnd(
                     state,
-                    std::string{RoutineName} + thisDXCoil.DXCoilType + "=\"" + thisDXCoil.Name +
-                        "\": Energy Input Ratio Modifier curve (function of temperature) output is negative warning continues...",
+                    format("{}: {}=\"{}\" - Energy Input Ratio Modifier curve (function of temperature) output is negative warning continues...",
+                           routineName, HVAC::coilTypeNames[(int)thisDXCoil.coilType], thisDXCoil.Name),
                     thisDXCoil.EIRFTempErrorIndex,
                     EIRTempModFac,
                     EIRTempModFac);
@@ -9859,7 +9883,7 @@ void CalcDoe2DXCoil(EnergyPlusData &state,
             //   Warn user if curve output goes negative
             if (EIRFlowModFac < 0.0) {
                 if (thisDXCoil.EIRFFlowErrorIndex == 0) {
-                    ShowWarningMessage(state, format("{}{}=\"{}\":", RoutineName, thisDXCoil.DXCoilType, thisDXCoil.Name));
+                    ShowWarningMessage(state, format("{}{}=\"{}\":", RoutineName, HVAC::coilTypeNames[(int)thisDXCoil.coilType], thisDXCoil.Name));
                     ShowContinueError(
                         state, format(" Energy Input Ratio Modifier curve (function of flow fraction) output is negative ({:.3T}).", EIRFlowModFac));
                     ShowContinueError(state, format(" Negative value occurs using an air flow fraction of {:.3T}.", AirMassFlowRatio));
@@ -9870,8 +9894,8 @@ void CalcDoe2DXCoil(EnergyPlusData &state,
                 }
                 ShowRecurringWarningErrorAtEnd(
                     state,
-                    std::string{RoutineName} + thisDXCoil.DXCoilType + "=\"" + thisDXCoil.Name +
-                        "\": Energy Input Ratio Modifier curve (function of flow fraction) output is negative warning continues...",
+                    format("{}: {}=\"{}\" - Energy Input Ratio Modifier curve (function of flow fraction) output is negative warning continues...",
+                           routineName, HVAC::coilTypeNames[(int)thisDXCoil.coilType], thisDXCoil.Name),
                     thisDXCoil.EIRFFlowErrorIndex,
                     EIRFlowModFac,
                     EIRFlowModFac);
@@ -9931,7 +9955,7 @@ void CalcDoe2DXCoil(EnergyPlusData &state,
                                  thisDXCoil.BasinHeaterSchedulePtr,
                                  thisDXCoil.BasinHeaterSetPointTemp,
                                  thisDXCoil.BasinHeaterPower);
-            if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_CoolingSingleSpeed) {
+            if (thisDXCoil.coilType == HVAC::CoilType::DXCoolingSingleSpeed) {
                 thisDXCoil.BasinHeaterPower *= (1.0 - thisDXCoil.CoolingCoilRuntimeFraction);
             }
         }
@@ -9968,7 +9992,7 @@ void CalcDoe2DXCoil(EnergyPlusData &state,
         }
 
         // Calculate basin heater power
-        if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_CoolingTwoStageWHumControl) {
+        if (thisDXCoil.coilType == HVAC::CoilType::DXCoolingTwoStageWHumControl) {
             if (any_eq(thisDXCoil.CondenserType, DataHeatBalance::RefrigCondenserType::Evap)) {
                 CalcBasinHeaterPower(state,
                                      thisDXCoil.BasinHeaterPowerFTempDiff,
@@ -10233,8 +10257,8 @@ void CalcVRFCoolingCoil(EnergyPlusData &state,
                 ShowContinueError(state, "... Operation at low inlet temperatures may require special performance curves.");
             }
             ShowRecurringWarningErrorAtEnd(state,
-                                           thisDXCoil.DXCoilType + " \"" + thisDXCoil.Name +
-                                               "\" - Low condenser inlet temperature error continues...",
+                                           format("{}=\"{}\" - Low condenser inlet temperature error continues...",
+                                                  HVAC::coilTypeNames[(int)thisDXCoil.coilType], thisDXCoil.Name),
                                            thisDXCoil.LowAmbErrIndex,
                                            thisDXCoil.LowTempLast,
                                            thisDXCoil.LowTempLast,
@@ -10252,8 +10276,8 @@ void CalcVRFCoolingCoil(EnergyPlusData &state,
                 ShowContinueError(state, "... Operation at high inlet temperatures may require special performance curves.");
             }
             ShowRecurringWarningErrorAtEnd(state,
-                                           thisDXCoil.DXCoilType + " \"" + thisDXCoil.Name +
-                                               "\" - High condenser inlet temperature error continues...",
+                                           format("{}=\"{}\" - High condenser inlet temperature error continues...",
+                                                  HVAC::coilTypeNames[(int)thisDXCoil.coilType], thisDXCoil.Name),
                                            thisDXCoil.HighAmbErrIndex,
                                            thisDXCoil.HighTempLast,
                                            thisDXCoil.HighTempLast,
@@ -10277,9 +10301,9 @@ void CalcVRFCoolingCoil(EnergyPlusData &state,
                                   "   3) is used as part of a HX assisted cooling coil which uses a high sensible effectiveness. Check inputs.");
             }
             ShowRecurringWarningErrorAtEnd(state,
-                                           thisDXCoil.DXCoilType + " \"" + thisDXCoil.Name +
-                                               "\" - Full load outlet temperature indicates a possibility of frost/freeze error continues. "
-                                               "Outlet air temperature statistics follow:",
+                                           format("{}=\"{}\" - Full load outlet temperature indicates a possibility of frost/freeze error continues. "
+                                                  "Outlet air temperature statistics follow:",
+                                                  HVAC::coilTypeNames[(int)thisDXCoil.coilType], thisDXCoil.Name),
                                            thisDXCoil.LowOutletTempIndex,
                                            thisDXCoil.FullLoadOutAirTempLast,
                                            thisDXCoil.FullLoadOutAirTempLast);
@@ -10312,7 +10336,7 @@ void CalcVRFCoolingCoil(EnergyPlusData &state,
         VolFlowperRatedTotCap = AirVolumeFlowRate / thisDXCoil.RatedTotCap(Mode);
 
         if (thisDXCoil.RatedTotCap(Mode) <= 0.0) {
-            ShowFatalError(state, format("{} \"{}\" - Rated total cooling capacity is zero or less.", thisDXCoil.DXCoilType, thisDXCoil.Name));
+            ShowFatalError(state, format("{} \"{}\" - Rated total cooling capacity is zero or less.", HVAC::coilTypeNames[(int)thisDXCoil.coilType], thisDXCoil.Name));
         }
 
         if (!FirstHVACIteration && !state.dataGlobal->WarmupFlag &&
@@ -10322,7 +10346,7 @@ void CalcVRFCoolingCoil(EnergyPlusData &state,
                 ShowWarningMessage(
                     state,
                     format("{} \"{}\" - Air volume flow rate per watt of rated total cooling capacity is out of range at {:.3R} m3/s/W.",
-                           thisDXCoil.DXCoilType,
+                           HVAC::coilTypeNames[(int)thisDXCoil.coilType],
                            thisDXCoil.Name,
                            VolFlowperRatedTotCap));
                 ShowContinueErrorTimeStamp(state, "");
@@ -10349,8 +10373,8 @@ void CalcVRFCoolingCoil(EnergyPlusData &state,
             }
             ShowRecurringWarningErrorAtEnd(
                 state,
-                thisDXCoil.DXCoilType + " \"" + thisDXCoil.Name +
-                    "\" - Air volume flow rate per watt of rated total cooling capacity is out of range error continues...",
+                format("{}=\"{}\" - Air volume flow rate per watt of rated total cooling capacity is out of range error continues...",
+                       HVAC::coilTypeNames[(int)thisDXCoil.coilType], thisDXCoil.Name),
                 thisDXCoil.ErrIndex1,
                 VolFlowperRatedTotCap,
                 VolFlowperRatedTotCap);
@@ -10377,7 +10401,7 @@ void CalcVRFCoolingCoil(EnergyPlusData &state,
             thisDXCoil.LowTempLast = OutdoorDryBulb;
             if (thisDXCoil.LowAmbErrIndex == 0) {
                 thisDXCoil.LowAmbBuffer1 = format("{} \"{}\" - Condenser inlet temperature below {:.2R} C. Condenser inlet temperature = {:.2R}",
-                                                  thisDXCoil.DXCoilType,
+                                                  HVAC::coilTypeNames[(int)thisDXCoil.coilType],
                                                   thisDXCoil.Name,
                                                   thisDXCoil.MinOATCompressor,
                                                   OutdoorDryBulb);
@@ -10392,7 +10416,7 @@ void CalcVRFCoolingCoil(EnergyPlusData &state,
             thisDXCoil.HighTempLast = OutdoorDryBulb;
             if (thisDXCoil.HighAmbErrIndex == 0) {
                 thisDXCoil.HighAmbBuffer1 = format("{} \"{}\" - Condenser inlet temperature above {:.2R} C. Condenser temperature = {:.2R}",
-                                                   thisDXCoil.DXCoilType,
+                                                   HVAC::coilTypeNames[(int)thisDXCoil.coilType],
                                                    thisDXCoil.Name,
                                                    thisDXCoil.MaxOATCompressor,
                                                    OutdoorDryBulb);
@@ -10419,7 +10443,7 @@ void CalcVRFCoolingCoil(EnergyPlusData &state,
         //  Warn user if curve output goes negative
         if (TotCapTempModFac < 0.0) {
             if (thisDXCoil.CCapFTempErrorIndex == 0) {
-                ShowWarningMessage(state, format("{} \"{}\":", thisDXCoil.DXCoilType, thisDXCoil.Name));
+                ShowWarningMessage(state, format("{} \"{}\":", HVAC::coilTypeNames[(int)thisDXCoil.coilType], thisDXCoil.Name));
                 ShowContinueError(
                     state, format(" Total Cooling Capacity Modifier curve (function of temperature) output is negative ({:.3T}).", TotCapTempModFac));
                 ShowContinueError(
@@ -10434,8 +10458,8 @@ void CalcVRFCoolingCoil(EnergyPlusData &state,
             }
             ShowRecurringWarningErrorAtEnd(
                 state,
-                thisDXCoil.DXCoilType + " \"" + thisDXCoil.Name +
-                    "\": Total Cooling Capacity Modifier curve (function of temperature) output is negative warning continues...",
+                format("{}=\"{}\" - Total Cooling Capacity Modifier curve (function of temperature) output is negative warning continues...",
+                       HVAC::coilTypeNames[(int)thisDXCoil.coilType], thisDXCoil.Name),
                 thisDXCoil.CCapFTempErrorIndex,
                 TotCapTempModFac,
                 TotCapTempModFac);
@@ -10449,7 +10473,7 @@ void CalcVRFCoolingCoil(EnergyPlusData &state,
         //  Warn user if curve output goes negative
         if (TotCapFlowModFac < 0.0) {
             if (thisDXCoil.CCapFFlowErrorIndex == 0) {
-                ShowWarningMessage(state, format("{} \"{}\":", thisDXCoil.DXCoilType, thisDXCoil.Name));
+                ShowWarningMessage(state, format("{} \"{}\":", HVAC::coilTypeNames[(int)thisDXCoil.coilType], thisDXCoil.Name));
                 ShowContinueError(
                     state,
                     format(" Total Cooling Capacity Modifier curve (function of flow fraction) output is negative ({:.3T}).", TotCapFlowModFac));
@@ -10461,8 +10485,8 @@ void CalcVRFCoolingCoil(EnergyPlusData &state,
             }
             ShowRecurringWarningErrorAtEnd(
                 state,
-                thisDXCoil.DXCoilType + " \"" + thisDXCoil.Name +
-                    "\": Total Cooling Capacity Modifier curve (function of flow fraction) output is negative warning continues...",
+                format("{}=\"{}\" - Total Cooling Capacity Modifier curve (function of flow fraction) output is negative warning continues...",
+                       HVAC::coilTypeNames[(int)thisDXCoil.coilType], thisDXCoil.Name),
                 thisDXCoil.CCapFFlowErrorIndex,
                 TotCapFlowModFac,
                 TotCapFlowModFac);
@@ -10585,7 +10609,7 @@ void CalcVRFCoolingCoil(EnergyPlusData &state,
                 thisDXCoil.FullLoadInletAirTempLast = InletAirDryBulbTemp;
                 thisDXCoil.LowOutTempBuffer1 = format("{} \"{}\" - Full load outlet air dry-bulb temperature < 2C. This indicates the "
                                                       "possibility of coil frost/freeze. Outlet temperature = {:.2R} C.",
-                                                      thisDXCoil.DXCoilType,
+                                                      HVAC::coilTypeNames[(int)thisDXCoil.coilType],
                                                       thisDXCoil.Name,
                                                       FullLoadOutAirTemp);
                 thisDXCoil.LowOutTempBuffer2 = " ...Occurrence info = " + state.dataEnvrn->EnvironmentName + ", " + state.dataEnvrn->CurMnDy + ' ' +
@@ -10889,7 +10913,7 @@ void CalcDXHeatingCoil(EnergyPlusData &state,
                 ShowWarningMessage(
                     state,
                     format("{} \"{}\" - Air volume flow rate per watt of rated total heating capacity is out of range at {:.3R} m3/s/W.",
-                           thisDXCoil.DXCoilType,
+                           HVAC::coilTypeNames[(int)thisDXCoil.coilType],
                            thisDXCoil.Name,
                            VolFlowperRatedTotCap));
                 ShowContinueErrorTimeStamp(state, "");
@@ -10902,8 +10926,8 @@ void CalcDXHeatingCoil(EnergyPlusData &state,
             }
             ShowRecurringWarningErrorAtEnd(
                 state,
-                thisDXCoil.DXCoilType + " \"" + thisDXCoil.Name +
-                    "\" - Air volume flow rate per watt of rated total heating capacity is out of range error continues...",
+                format("{}=\"{}\" - Air volume flow rate per watt of rated total heating capacity is out of range error continues...",
+                       HVAC::coilTypeNames[(int)thisDXCoil.coilType], thisDXCoil.Name),
                 thisDXCoil.ErrIndex1,
                 VolFlowperRatedTotCap,
                 VolFlowperRatedTotCap);
@@ -10928,14 +10952,16 @@ void CalcDXHeatingCoil(EnergyPlusData &state,
         } else {
             switch (thisDXCoil.HeatingPerformanceOATType) {
             case HVAC::OATType::DryBulb: {
-                if (thisDXCoil.DXCoilType_Num != HVAC::CoilVRF_Heating && thisDXCoil.DXCoilType_Num != HVAC::CoilVRF_FluidTCtrl_Heating) {
+                if (thisDXCoil.coilType != HVAC::CoilType::VRFHeating &&
+                    thisDXCoil.coilType != HVAC::CoilType::VRFFluidTCtrlHeating) {
                     TotCapTempModFac = CurveValue(state, thisDXCoil.CCapFTemp(Mode), OutdoorDryBulb);
                 } else {
                     TotCapTempModFac = CurveValue(state, thisDXCoil.CCapFTemp(Mode), InletAirDryBulbTemp);
                 }
             } break;
             case HVAC::OATType::WetBulb: {
-                if (thisDXCoil.DXCoilType_Num != HVAC::CoilVRF_Heating && thisDXCoil.DXCoilType_Num != HVAC::CoilVRF_FluidTCtrl_Heating) {
+                if (thisDXCoil.coilType != HVAC::CoilType::VRFHeating &&
+                    thisDXCoil.coilType != HVAC::CoilType::VRFFluidTCtrlHeating) {
                     TotCapTempModFac = CurveValue(state, thisDXCoil.CCapFTemp(Mode), OutdoorWetBulb);
                 } else {
                     TotCapTempModFac = CurveValue(state, thisDXCoil.CCapFTemp(Mode), InletAirDryBulbTemp);
@@ -10954,7 +10980,7 @@ void CalcDXHeatingCoil(EnergyPlusData &state,
                 ShowContinueError(state,
                                   "TotCapTempModFac curve value must be > 0. TotCapTempModFac curve value has been reset to 0.0 and "
                                   "simulation is continuing.");
-                ShowContinueError(state, format("Check the IO reference manual for TotCapTempModFac curve guidance [ {} ].", thisDXCoil.DXCoilType));
+                ShowContinueError(state, format("Check the IO reference manual for TotCapTempModFac curve guidance [ {} ].", HVAC::coilTypeNames[(int)thisDXCoil.coilType]));
                 ShowContinueErrorTimeStamp(state, "");
             }
             ShowRecurringWarningErrorAtEnd(state,
@@ -11052,7 +11078,8 @@ void CalcDXHeatingCoil(EnergyPlusData &state,
         // Model was extended to accept bi-quadratic curves. This allows sensitivity of the EIR
         // to the entering dry-bulb temperature as well as the outside dry-bulb temperature. User is
         // advised to use the bi-quadratic curve if sufficient manufacturer data is available.
-        if (thisDXCoil.DXCoilType_Num != HVAC::CoilVRF_Heating && thisDXCoil.DXCoilType_Num != HVAC::CoilVRF_FluidTCtrl_Heating) {
+        if (thisDXCoil.coilType != HVAC::CoilType::VRFHeating &&
+            thisDXCoil.coilType != HVAC::CoilType::VRFFluidTCtrlHeating) {
             if (state.dataCurveManager->PerfCurve(thisDXCoil.EIRFTemp(Mode))->numDims == 1) {
                 EIRTempModFac = CurveValue(state, thisDXCoil.EIRFTemp(Mode), OutdoorDryBulb);
             } else {
@@ -11069,7 +11096,7 @@ void CalcDXHeatingCoil(EnergyPlusData &state,
                 ShowWarningMessage(state, format("The EIRTempModFac curve value for DX heating coil {} ={:.2R}", thisDXCoil.Name, EIRTempModFac));
                 ShowContinueError(
                     state, "EIRTempModFac curve value must be > 0.  EIRTempModFac curve value has been reset to 0.0 and simulation is continuing.");
-                ShowContinueError(state, format("Check the IO reference manual for EIRTempModFac curve guidance [ {} ].", thisDXCoil.DXCoilType));
+                ShowContinueError(state, format("Check the IO reference manual for EIRTempModFac curve guidance [ {} ].", HVAC::coilTypeNames[(int)thisDXCoil.coilType]));
                 ShowContinueErrorTimeStamp(state, "");
             }
             ShowRecurringWarningErrorAtEnd(state,
@@ -11087,7 +11114,7 @@ void CalcDXHeatingCoil(EnergyPlusData &state,
         } else {
             PLRHeating = 0.0;
         }
-        if (thisDXCoil.DXCoilType_Num != HVAC::CoilVRF_Heating) {
+        if (thisDXCoil.coilType != HVAC::CoilType::VRFHeating) {
             PLF = CurveValue(state, thisDXCoil.PLFFPLR(Mode), PLRHeating); // Calculate part-load factor
         } else {
             PLF = 1.0;
@@ -11794,7 +11821,7 @@ Real64 AdjustCBF(Real64 const CBFNom,             // nominal coil bypass factor
 }
 
 Real64 CalcCBF(EnergyPlusData &state,
-               std::string const &UnitType,
+               HVAC::CoilType coilType, 
                std::string const &UnitName,
                Real64 const InletAirTemp,   // inlet air temperature [C]
                Real64 const InletAirHumRat, // inlet air humidity ratio [kg water / kg dry air]
@@ -11872,7 +11899,7 @@ Real64 CalcCBF(EnergyPlusData &state,
     //  Pressure will have to be pass into this subroutine to fix this one
     OutletAirRH = PsyRhFnTdbWPb(state, OutletAirTemp, OutletAirHumRat, DataEnvironment::StdPressureSeaLevel, RoutineName);
     if (OutletAirRH >= 1.0 && PrintFlag) {
-        ShowWarningError(state, format("For object = {}, name = \"{}\"", UnitType, UnitName));
+        ShowWarningError(state, format("For object = {}, name = \"{}\"", HVAC::coilTypeNames[(int)coilType], UnitName));
         ShowContinueError(state, "Calculated outlet air relative humidity greater than 1. The combination of");
         ShowContinueError(state, "rated air volume flow rate, total cooling capacity and sensible heat ratio yields coil exiting");
         ShowContinueError(state, "air conditions above the saturation curve. Possible fixes are to reduce the rated total cooling");
@@ -11909,7 +11936,7 @@ Real64 CalcCBF(EnergyPlusData &state,
     }
     DeltaT = InletAirTemp - OutletAirTemp;
     if (DeltaT <= 0.0) {
-        ShowSevereError(state, format("For object = {}, name = \"{}\"", UnitType, UnitName));
+        ShowSevereError(state, format("For object = {}, name = \"{}\"", HVAC::coilTypeNames[(int)coilType], UnitName));
         ShowContinueError(state, "Calculated coil delta T is less than or equal to 0. The combination of");
         ShowContinueError(state, "rated air volume flow rate, total cooling capacity and sensible heat ratio yields coil exiting");
         ShowContinueError(state, "air conditions that are not reasonable. Possible fixes are to adjust the rated total cooling");
@@ -11941,7 +11968,7 @@ Real64 CalcCBF(EnergyPlusData &state,
     if (SlopeAtConds < 0.0 || OutletAirHumRat <= 0.0) {
         //   Invalid conditions, slope can't be less than zero (SHR > 1) or
         //   outlet air humidity ratio can't be less than zero.
-        ShowSevereError(state, format("{} \"{}\"", UnitType, UnitName));
+        ShowSevereError(state, format("{} \"{}\"", HVAC::coilTypeNames[(int)coilType], UnitName));
         ShowContinueError(state, "...Invalid slope or outlet air condition when calculating cooling coil bypass factor.");
         ShowContinueError(state, format("...Slope = {:.8R}", SlopeAtConds));
         ShowContinueError(state, format("...Inlet Air Temperature     = {:.2R} C", InletAirTemp));
@@ -12007,7 +12034,7 @@ Real64 CalcCBF(EnergyPlusData &state,
         ADPEnthalpy = PsyHFnTdbW(ADPTemp, ADPHumRat);
         CBF = min(1.0, (OutletAirEnthalpy - ADPEnthalpy) / (InletAirEnthalpy - ADPEnthalpy));
         if (Iter > IterMax && PrintFlag) {
-            ShowSevereError(state, format("{} \"{}\" -- coil bypass factor calculation did not converge after max iterations.", UnitType, UnitName));
+          ShowSevereError(state, format("{} \"{}\" -- coil bypass factor calculation did not converge after max iterations.", HVAC::coilTypeNames[(int)coilType], UnitName));
             ShowContinueError(state, format("The RatedSHR of [{:.3R}], entered by the user or autosized (see *.eio file),", SHR));
             ShowContinueError(state, "may be causing this. The line defined by the coil rated inlet air conditions");
             ShowContinueError(state, "(26.7C drybulb and 19.4C wetbulb) and the RatedSHR (i.e., slope of the line) must intersect");
@@ -12021,7 +12048,7 @@ Real64 CalcCBF(EnergyPlusData &state,
             CBFErrors = true; // Didn't converge within MaxIter iterations
         }
         if (CBF < 0.0 && PrintFlag) {
-            ShowSevereError(state, format("{} \"{}\" -- negative coil bypass factor calculated.", UnitType, UnitName));
+            ShowSevereError(state, format("{} \"{}\" -- negative coil bypass factor calculated.", HVAC::coilTypeNames[(int)coilType], UnitName));
             ShowContinueErrorTimeStamp(state, "");
             CBFErrors = true; // Negative CBF not valid
         }
@@ -12029,14 +12056,14 @@ Real64 CalcCBF(EnergyPlusData &state,
 
     // Show fatal error for specific coil that caused a CBF error
     if (CBFErrors) {
-        ShowFatalError(state, format("{} \"{}\" Errors found in calculating coil bypass factors", UnitType, UnitName));
+      ShowFatalError(state, format("{} \"{}\" Errors found in calculating coil bypass factors", HVAC::coilTypeNames[(int)coilType], UnitName));
     }
 
     return CBF;
 }
 
 Real64 ValidateADP(EnergyPlusData &state,
-                   std::string const &UnitType,      // component name
+                   HVAC::CoilType coilType,      // component name
                    std::string const &UnitName,      // component type
                    Real64 const RatedInletAirTemp,   // coil inlet air temperature [C]
                    Real64 const RatedInletAirHumRat, // coil inlet air humidity ratio [kg/kg]
@@ -12090,7 +12117,7 @@ Real64 ValidateADP(EnergyPlusData &state,
     AirMassFlow =
         AirVolFlowRate * PsyRhoAirFnPbTdbW(state, DataEnvironment::StdPressureSeaLevel, RatedInletAirTemp, RatedInletAirHumRat, CallingRoutine);
     while (bStillValidating) {
-        CBF_calculated = max(0.0, CalcCBF(state, UnitType, UnitName, RatedInletAirTemp, RatedInletAirHumRat, TotCap, AirMassFlow, SHR, bNoReporting));
+        CBF_calculated = max(0.0, CalcCBF(state, coilType, UnitName, RatedInletAirTemp, RatedInletAirHumRat, TotCap, AirMassFlow, SHR, bNoReporting));
         DeltaH = TotCap / AirMassFlow;
         InletAirEnthalpy = PsyHFnTdbW(RatedInletAirTemp, RatedInletAirHumRat);
         HTinHumRatOut = InletAirEnthalpy - (1.0 - SHR) * DeltaH;
@@ -12197,7 +12224,7 @@ Real64 CalcEffectiveSHR(EnergyPlusData &state,
 
     auto &thisDXCoil = state.dataDXCoils->DXCoil(DXCoilNum);
 
-    if (thisDXCoil.DXCoilType_Num != HVAC::CoilDX_MultiSpeedCooling) {
+    if (thisDXCoil.coilType != HVAC::CoilType::DXMultiSpeedCooling) {
         Twet_Rated = thisDXCoil.Twet_Rated(Mode);
         Gamma_Rated = thisDXCoil.Gamma_Rated(Mode);
         Nmax = thisDXCoil.MaxONOFFCyclesperHour(Mode);
@@ -12581,7 +12608,7 @@ void CalcMultiSpeedDXCoilCooling(EnergyPlusData &state,
     if ((AirMassFlow > 0.0) && (CycRatio > 0.0) && (MSHPMassFlowRateHigh == 0.0)) {
         ShowSevereError(
             state,
-            format("CalcMultiSpeedDXCoilCooling: {} \"{} Developer error - inconsistent airflow rates.", thisDXCoil.DXCoilType, thisDXCoil.Name));
+            format("CalcMultiSpeedDXCoilCooling: {} \"{} Developer error - inconsistent airflow rates.", HVAC::coilTypeNames[(int)thisDXCoil.coilType], thisDXCoil.Name));
         if (MSHPMassFlowRateLow == 0.0 && SpeedNum > 1) {
             ShowContinueError(state,
                               "When AirMassFlow > 0.0 and CycRatio > 0.0 and SpeedNum > 1, then MSHPMassFlowRateLow and MSHPMassFlowRateHigh "
@@ -12605,7 +12632,7 @@ void CalcMultiSpeedDXCoilCooling(EnergyPlusData &state,
     } else if (CycRatio > 1.0 || SpeedRatio > 1.0) {
         ShowSevereError(
             state,
-            format("CalcMultiSpeedDXCoilCooling: {} \"{} Developer error - inconsistent speed ratios.", thisDXCoil.DXCoilType, thisDXCoil.Name));
+            format("CalcMultiSpeedDXCoilCooling: {} \"{} Developer error - inconsistent speed ratios.", HVAC::coilTypeNames[(int)thisDXCoil.coilType], thisDXCoil.Name));
         ShowContinueError(state, "CycRatio and SpeedRatio must be between 0.0 and 1.0");
         ShowContinueErrorTimeStamp(state, "");
         ShowContinueError(state, format("CycRatio={:.1R}, SpeedRatio = {:.1R}", CycRatio, SpeedRatio));
@@ -12656,7 +12683,7 @@ void CalcMultiSpeedDXCoilCooling(EnergyPlusData &state,
                     ShowWarningMessage(
                         state,
                         format("{} \"{}\" - Air volume flow rate per watt of rated total cooling capacity is out of range at speed {}.",
-                               thisDXCoil.DXCoilType,
+                               HVAC::coilTypeNames[(int)thisDXCoil.coilType],
                                thisDXCoil.Name,
                                SpeedNumLS));
                     ShowContinueErrorTimeStamp(state, "");
@@ -12671,7 +12698,7 @@ void CalcMultiSpeedDXCoilCooling(EnergyPlusData &state,
                 ShowRecurringWarningErrorAtEnd(state,
                                                format("{} \"{}\" - Air volume flow rate per watt of rated total cooling capacity is out of range "
                                                       "at speed {} error continues...",
-                                                      thisDXCoil.DXCoilType,
+                                                      HVAC::coilTypeNames[(int)thisDXCoil.coilType],
                                                       thisDXCoil.Name,
                                                       SpeedNumLS),
                                                thisDXCoil.MSErrIndex(SpeedNumLS),
@@ -12691,7 +12718,7 @@ void CalcMultiSpeedDXCoilCooling(EnergyPlusData &state,
                     ShowWarningMessage(
                         state,
                         format("{} \"{}\" - Air volume flow rate per watt of rated total cooling capacity is out of range at speed {}.",
-                               thisDXCoil.DXCoilType,
+                               HVAC::coilTypeNames[(int)thisDXCoil.coilType],
                                thisDXCoil.Name,
                                SpeedNumHS));
                     ShowContinueErrorTimeStamp(state, "");
@@ -12706,7 +12733,7 @@ void CalcMultiSpeedDXCoilCooling(EnergyPlusData &state,
                 ShowRecurringWarningErrorAtEnd(state,
                                                format("{} \"{}\" - Air volume flow rate per watt of rated total cooling capacity is out of range "
                                                       "at speed {} error continues...",
-                                                      thisDXCoil.DXCoilType,
+                                                      HVAC::coilTypeNames[(int)thisDXCoil.coilType],
                                                       thisDXCoil.Name,
                                                       SpeedNumHS),
                                                thisDXCoil.MSErrIndex(SpeedNumHS),
@@ -12994,7 +13021,7 @@ void CalcMultiSpeedDXCoilCooling(EnergyPlusData &state,
                     ShowWarningMessage(
                         state,
                         format("{} \"{}\" - Air volume flow rate per watt of rated total cooling capacity is out of range at speed {}.",
-                               thisDXCoil.DXCoilType,
+                               HVAC::coilTypeNames[(int)thisDXCoil.coilType],
                                thisDXCoil.Name,
                                SpeedNum));
                     ShowContinueErrorTimeStamp(state, "");
@@ -13009,7 +13036,7 @@ void CalcMultiSpeedDXCoilCooling(EnergyPlusData &state,
                 ShowRecurringWarningErrorAtEnd(state,
                                                format("{} \"{}\" - Air volume flow rate per watt of rated total cooling capacity is out of range "
                                                       "at speed {} error continues...",
-                                                      thisDXCoil.DXCoilType,
+                                                      HVAC::coilTypeNames[(int)thisDXCoil.coilType],
                                                       thisDXCoil.Name,
                                                       SpeedNumHS),
                                                thisDXCoil.MSErrIndex(SpeedNumHS),
@@ -13391,7 +13418,8 @@ void CalcMultiSpeedDXCoilHeating(EnergyPlusData &state,
     if ((AirMassFlow > 0.0) && (CycRatio > 0.0) && (MSHPMassFlowRateHigh == 0.0)) {
         ShowSevereError(
             state,
-            format("CalcMultiSpeedDXCoilHeating: {} \"{} Developer error - inconsistent airflow rates.", thisDXCoil.DXCoilType, thisDXCoil.Name));
+            format("CalcMultiSpeedDXCoilHeating: {} \"{} Developer error - inconsistent airflow rates.",
+                   HVAC::coilTypeNames[(int)thisDXCoil.coilType], thisDXCoil.Name));
         if (MSHPMassFlowRateLow == 0.0 && SpeedNum > 1) {
             ShowContinueError(state,
                               "When AirMassFlow > 0.0 and CycRatio > 0.0 and SpeedNum > 1, then MSHPMassFlowRateLow and MSHPMassFlowRateHigh "
@@ -13415,7 +13443,8 @@ void CalcMultiSpeedDXCoilHeating(EnergyPlusData &state,
     } else if (CycRatio > 1.0 || SpeedRatio > 1.0) {
         ShowSevereError(
             state,
-            format("CalcMultiSpeedDXCoilHeating: {} \"{} Developer error - inconsistent speed ratios.", thisDXCoil.DXCoilType, thisDXCoil.Name));
+            format("CalcMultiSpeedDXCoilHeating: {} \"{} Developer error - inconsistent speed ratios.",
+                   HVAC::coilTypeNames[(int)thisDXCoil.coilType], thisDXCoil.Name));
         ShowContinueError(state, "CycRatio and SpeedRatio must be between 0.0 and 1.0");
         ShowContinueErrorTimeStamp(state, "");
         ShowContinueError(state, format("CycRatio={:.1R}, SpeedRatio = {:.1R}", CycRatio, SpeedRatio));
@@ -13493,7 +13522,7 @@ void CalcMultiSpeedDXCoilHeating(EnergyPlusData &state,
                     ShowWarningMessage(
                         state,
                         format("{} \"{}\" - Air volume flow rate per watt of rated total heating capacity is out of range at speed {}.",
-                               thisDXCoil.DXCoilType,
+                               HVAC::coilTypeNames[(int)thisDXCoil.coilType],
                                thisDXCoil.Name,
                                SpeedNumLS));
                     ShowContinueErrorTimeStamp(state, "");
@@ -13508,7 +13537,7 @@ void CalcMultiSpeedDXCoilHeating(EnergyPlusData &state,
                 ShowRecurringWarningErrorAtEnd(state,
                                                format("{} \"{}\" - Air volume flow rate per watt of rated total heating capacity is out of range "
                                                       "at speed {} error continues...",
-                                                      thisDXCoil.DXCoilType,
+                                                      HVAC::coilTypeNames[(int)thisDXCoil.coilType],
                                                       thisDXCoil.Name,
                                                       SpeedNumLS),
                                                thisDXCoil.MSErrIndex(SpeedNumLS),
@@ -13527,7 +13556,7 @@ void CalcMultiSpeedDXCoilHeating(EnergyPlusData &state,
                     ShowWarningMessage(
                         state,
                         format("{} \"{}\" - Air volume flow rate per watt of rated total heating capacity is out of range at speed {}.",
-                               thisDXCoil.DXCoilType,
+                               HVAC::coilTypeNames[(int)thisDXCoil.coilType],
                                thisDXCoil.Name,
                                SpeedNumHS));
                     ShowContinueErrorTimeStamp(state, "");
@@ -13542,7 +13571,7 @@ void CalcMultiSpeedDXCoilHeating(EnergyPlusData &state,
                 ShowRecurringWarningErrorAtEnd(state,
                                                format("{} \"{}\" - Air volume flow rate per watt of rated total heating capacity is out of range "
                                                       "at speed {} error continues...",
-                                                      thisDXCoil.DXCoilType,
+                                                      HVAC::coilTypeNames[(int)thisDXCoil.coilType],
                                                       thisDXCoil.Name,
                                                       SpeedNumHS),
                                                thisDXCoil.MSErrIndex(SpeedNumHS),
@@ -13775,7 +13804,7 @@ void CalcMultiSpeedDXCoilHeating(EnergyPlusData &state,
                 if (thisDXCoil.ErrIndex1 == 0) {
                     ShowWarningMessage(state,
                                        format("{} \"{}\" - Air volume flow rate per watt of rated total heating capacity is out of range at speed 1.",
-                                              thisDXCoil.DXCoilType,
+                                              HVAC::coilTypeNames[(int)thisDXCoil.coilType],
                                               thisDXCoil.Name));
                     ShowContinueErrorTimeStamp(state, "");
                     ShowContinueError(state,
@@ -13788,8 +13817,9 @@ void CalcMultiSpeedDXCoilHeating(EnergyPlusData &state,
                 }
                 ShowRecurringWarningErrorAtEnd(
                     state,
-                    thisDXCoil.DXCoilType + " \"" + thisDXCoil.Name +
-                        "\" - Air volume flow rate per watt of rated total heating capacity is out of range error continues at speed 1...",
+                    format("{}=\"{}\" - Air volume flow rate per watt of rated total heating capacity is out of range error continues at speed 1...",
+                           HVAC::coilTypeNames[(int)thisDXCoil.coilType], thisDXCoil.Name),
+
                     thisDXCoil.ErrIndex1,
                     VolFlowperRatedTotCap,
                     VolFlowperRatedTotCap);
@@ -14083,17 +14113,17 @@ void ReportDXCoil(EnergyPlusData &state, int const DXCoilNum) // number of the c
             Real64 ratedSensCap(0.0);
             ratedSensCap = thisDXCoil.RatedTotCap(1) * thisDXCoil.RatedSHR(1);
             state.dataRptCoilSelection->coilSelectionReportObj->setCoilFinalSizes(
-                state, thisDXCoil.Name, thisDXCoil.DXCoilType, thisDXCoil.RatedTotCap(1), ratedSensCap, thisDXCoil.RatedAirVolFlowRate(1), -999.0);
+                state, thisDXCoil.Name, thisDXCoil.coilType, thisDXCoil.RatedTotCap(1), ratedSensCap, thisDXCoil.RatedAirVolFlowRate(1), -999.0);
             thisDXCoil.reportCoilFinalSizes = false;
         }
     }
 
     Real64 ReportingConstant = state.dataHVACGlobal->TimeStepSysSec;
 
-    switch (thisDXCoil.DXCoilType_Num) {
-    case HVAC::CoilDX_HeatingEmpirical:
-    case HVAC::CoilVRF_Heating:
-    case HVAC::CoilVRF_FluidTCtrl_Heating: {
+    switch (thisDXCoil.coilType) {
+    case HVAC::CoilType::DXHeatingEmpirical:
+    case HVAC::CoilType::VRFHeating:
+    case HVAC::CoilType::VRFFluidTCtrlHeating: {
         thisDXCoil.TotalHeatingEnergy = thisDXCoil.TotalHeatingEnergyRate * ReportingConstant;
         thisDXCoil.ElecHeatingConsumption = thisDXCoil.ElecHeatingPower * ReportingConstant;
         thisDXCoil.DefrostConsumption = thisDXCoil.DefrostPower * ReportingConstant;
@@ -14101,7 +14131,8 @@ void ReportDXCoil(EnergyPlusData &state, int const DXCoilNum) // number of the c
         state.dataHVACGlobal->DXElecHeatingPower = thisDXCoil.ElecHeatingPower + thisDXCoil.CrankcaseHeaterPower;
         state.dataHVACGlobal->DefrostElecPower = thisDXCoil.DefrostPower;
     } break;
-    case HVAC::CoilDX_MultiSpeedHeating: {
+
+    case HVAC::CoilType::DXMultiSpeedHeating: {
         thisDXCoil.TotalHeatingEnergy = thisDXCoil.TotalHeatingEnergyRate * ReportingConstant;
         if (thisDXCoil.FuelType == Constant::eFuel::Electricity) {
             thisDXCoil.ElecHeatingConsumption = thisDXCoil.ElecHeatingPower * ReportingConstant;
@@ -14113,7 +14144,8 @@ void ReportDXCoil(EnergyPlusData &state, int const DXCoilNum) // number of the c
         state.dataHVACGlobal->DXElecHeatingPower = thisDXCoil.ElecHeatingPower + thisDXCoil.CrankcaseHeaterPower;
         state.dataHVACGlobal->DefrostElecPower = thisDXCoil.DefrostPower;
     } break;
-    case HVAC::CoilDX_MultiSpeedCooling: {
+
+    case HVAC::CoilType::DXMultiSpeedCooling: {
         thisDXCoil.TotalCoolingEnergy = thisDXCoil.TotalCoolingEnergyRate * ReportingConstant;
         thisDXCoil.SensCoolingEnergy = thisDXCoil.SensCoolingEnergyRate * ReportingConstant;
         thisDXCoil.LatCoolingEnergy = thisDXCoil.TotalCoolingEnergy - thisDXCoil.SensCoolingEnergy;
@@ -14130,8 +14162,9 @@ void ReportDXCoil(EnergyPlusData &state, int const DXCoilNum) // number of the c
             thisDXCoil.BasinHeaterConsumption = thisDXCoil.BasinHeaterPower * ReportingConstant;
         }
     } break;
-    case HVAC::CoilDX_HeatPumpWaterHeaterPumped:
-    case HVAC::CoilDX_HeatPumpWaterHeaterWrapped: {
+
+    case HVAC::CoilType::DXHeatPumpWaterHeaterPumped:
+    case HVAC::CoilType::DXHeatPumpWaterHeaterWrapped: {
         // water heating energy for HP water heater DX Coil condenser
         thisDXCoil.TotalHeatingEnergy = thisDXCoil.TotalHeatingEnergyRate * ReportingConstant;
         // water heating power for HP water heater
@@ -14557,7 +14590,7 @@ void CalcTwoSpeedDXCoilStandardRating(EnergyPlusData &state, int const DXCoilNum
             //    Warn user if curve output goes negative
             if (TotCapFlowModFac < 0.0) {
                 if (thisDXCoil.CCapFFlowErrorIndex == 0) {
-                    ShowWarningMessage(state, format("{}{} \"{}\":", RoutineName, thisDXCoil.DXCoilType, thisDXCoil.Name));
+                  ShowWarningMessage(state, format("{}{} \"{}\":", RoutineName, HVAC::coilTypeNames[(int)thisDXCoil.coilType], thisDXCoil.Name));
                     ShowContinueError(
                         state,
                         format(" Total Cooling Capacity Modifier curve (function of flow fraction) output is negative ({:.3T}).", TotCapFlowModFac));
@@ -14568,7 +14601,7 @@ void CalcTwoSpeedDXCoilStandardRating(EnergyPlusData &state, int const DXCoilNum
                     state,
                     format("{}{}\"{}\": Total Cooling Capacity Modifier curve (function of flow fraction) output is negative warning continues...",
                            RoutineName,
-                           thisDXCoil.DXCoilType,
+                           HVAC::coilTypeNames[(int)thisDXCoil.coilType],
                            thisDXCoil.Name),
                     thisDXCoil.CCapFFlowErrorIndex,
                     TotCapFlowModFac,
@@ -14581,7 +14614,7 @@ void CalcTwoSpeedDXCoilStandardRating(EnergyPlusData &state, int const DXCoilNum
             //    Warn user if curve output goes negative
             if (TotCapTempModFac < 0.0) {
                 if (thisDXCoil.CCapFTempErrorIndex == 0) {
-                    ShowWarningMessage(state, format("{}{} \"{}\":", RoutineName, thisDXCoil.DXCoilType, thisDXCoil.Name));
+                  ShowWarningMessage(state, format("{}{} \"{}\":", RoutineName, HVAC::coilTypeNames[(int)thisDXCoil.coilType], thisDXCoil.Name));
                     ShowContinueError(
                         state,
                         format(" Total Cooling Capacity Modifier curve (function of temperature) output is negative ({:.3T}).", TotCapTempModFac));
@@ -14596,7 +14629,7 @@ void CalcTwoSpeedDXCoilStandardRating(EnergyPlusData &state, int const DXCoilNum
                     state,
                     format("{}{} \"{}\": Total Cooling Capacity Modifier curve (function of temperature) output is negative warning continues...",
                            RoutineName,
-                           thisDXCoil.DXCoilType,
+                           HVAC::coilTypeNames[(int)thisDXCoil.coilType],
                            thisDXCoil.Name),
                     thisDXCoil.CCapFTempErrorIndex,
                     TotCapTempModFac,
@@ -14623,7 +14656,7 @@ void CalcTwoSpeedDXCoilStandardRating(EnergyPlusData &state, int const DXCoilNum
             //    Warn user if curve output goes negative
             if (TotCapTempModFac < 0.0) {
                 if (thisDXCoil.CCapFTempErrorIndex == 0) {
-                    ShowWarningMessage(state, format("{}{} \"{}\":", RoutineName, thisDXCoil.DXCoilType, thisDXCoil.Name));
+                  ShowWarningMessage(state, format("{}{} \"{}\":", RoutineName, HVAC::coilTypeNames[(int)thisDXCoil.coilType], thisDXCoil.Name));
                     ShowContinueError(
                         state,
                         format(" Total Cooling Capacity Modifier curve (function of temperature) output is negative ({:.3T}).", TotCapTempModFac));
@@ -14638,7 +14671,7 @@ void CalcTwoSpeedDXCoilStandardRating(EnergyPlusData &state, int const DXCoilNum
                     state,
                     format("{}{} \"{}\": Total Cooling Capacity Modifier curve (function of temperature) output is negative warning continues...",
                            RoutineName,
-                           thisDXCoil.DXCoilType,
+                           HVAC::coilTypeNames[(int)thisDXCoil.coilType],
                            thisDXCoil.Name),
                     thisDXCoil.CCapFTempErrorIndex,
                     TotCapTempModFac,
@@ -14734,7 +14767,7 @@ void CalcTwoSpeedDXCoilStandardRating(EnergyPlusData &state, int const DXCoilNum
         for (index = 1; index <= state.dataDXCoils->NumDXCoils; ++index) {
 
             if (state.dataDXCoils->DXCoil(index).RateWithInternalStaticAndFanObject &&
-                state.dataDXCoils->DXCoil(index).DXCoilType_Num == HVAC::CoilDX_CoolingTwoSpeed) {
+                state.dataDXCoils->DXCoil(index).coilType == HVAC::CoilType::DXCoolingTwoSpeed) {
                 ++countStaticInputs;
             }
         }
@@ -15075,7 +15108,7 @@ Real64 GetCoilCapacity(EnergyPlusData &state,
 
 Real64 GetCoilCapacityByIndexType(EnergyPlusData &state,
                                   int const CoilIndex,    // must match coil index for the coil type
-                                  int const CoilType_Num, // must match coil types in this module
+                                  HVAC::CoilType const coilType, // must match coil types in this module
                                   bool &ErrorsFound       // set to true if problem
 )
 {
@@ -15106,15 +15139,15 @@ Real64 GetCoilCapacityByIndexType(EnergyPlusData &state,
         return CoilCapacity;
     }
 
-    if (CoilType_Num != state.dataDXCoils->DXCoil(CoilIndex).DXCoilType_Num) {
+    if (coilType != state.dataDXCoils->DXCoil(CoilIndex).coilType) {
         ShowSevereError(state, "GetCoilCapacityByIndexType: Index passed does not match DX Coil type passed.");
         ShowContinueError(state, "... returning capacity as -1000.");
         ErrorsFound = true;
         CoilCapacity = -1000.0;
     } else {
-        switch (state.dataDXCoils->DXCoil(CoilIndex).DXCoilType_Num) {
-        case HVAC::CoilDX_MultiSpeedCooling:
-        case HVAC::CoilDX_MultiSpeedHeating: {
+        switch (state.dataDXCoils->DXCoil(CoilIndex).coilType) {
+        case HVAC::CoilType::DXMultiSpeedCooling:
+        case HVAC::CoilType::DXMultiSpeedHeating: {
             CoilCapacity = state.dataDXCoils->DXCoil(CoilIndex).MSRatedTotCap(state.dataDXCoils->DXCoil(CoilIndex).NumOfSpeeds);
         } break;
         default: {
@@ -15126,6 +15159,7 @@ Real64 GetCoilCapacityByIndexType(EnergyPlusData &state,
     return CoilCapacity;
 }
 
+#ifdef GET_OUT
 int GetCoilTypeNum(EnergyPlusData &state,
                    std::string const &CoilType,                // must match coil types in this module
                    std::string const &CoilName,                // must match coil names for the coil type
@@ -15164,7 +15198,7 @@ int GetCoilTypeNum(EnergyPlusData &state,
 
     WhichCoil = Util::FindItemInList(CoilName, state.dataDXCoils->DXCoil);
     if (WhichCoil != 0) {
-        TypeNum = state.dataDXCoils->DXCoil(WhichCoil).DXCoilType_Num;
+        TypeNum = state.dataDXCoils->DXCoil(WhichCoil).coilType;
     } else {
         if (PrintMessage) {
             ShowSevereError(state, format("GetCoilTypeNum: Could not find Coil, Type=\"{}\" Name=\"{}\"", CoilType, CoilName));
@@ -15175,6 +15209,7 @@ int GetCoilTypeNum(EnergyPlusData &state,
 
     return TypeNum;
 }
+#endif // GET_OUT
 
 Real64 GetMinOATCompressor(EnergyPlusData &state,
                            int const CoilIndex, // index to cooling coil
@@ -15410,7 +15445,7 @@ Real64 GetDXCoilBypassedFlowFrac(EnergyPlusData &state,
 }
 
 int GetHPCoolingCoilIndex(EnergyPlusData &state,
-                          std::string const &HeatingCoilType, // Type of DX heating coil used in HP
+                          HVAC::CoilType heatingCoilType, // Type of DX heating coil used in HP
                           std::string const &HeatingCoilName, // Name of DX heating coil used in HP
                           int const HeatingCoilIndex          // Index of DX heating coil used in HP
 )
@@ -15434,7 +15469,7 @@ int GetHPCoolingCoilIndex(EnergyPlusData &state,
     DXCoolingCoilIndex = 0;
 
     DataLoopNode::ConnectionObjectType HeatingCoilTypeNum = static_cast<DataLoopNode::ConnectionObjectType>(
-        getEnumValue(BranchNodeConnections::ConnectionObjectTypeNamesUC, Util::makeUPPER(HeatingCoilType)));
+        getEnumValue(BranchNodeConnections::ConnectionObjectTypeNamesUC, HVAC::coilTypeNamesUC[(int)heatingCoilType]));
 
     DataLoopNode::ConnectionObjectType CompSetsParentType; // Parent object type which uses DX heating coil pass into this function
     std::string CompSetsParentName;
@@ -15623,7 +15658,7 @@ int GetDXCoilAvailSchPtr(EnergyPlusData &state,
 }
 
 Real64 GetDXCoilAirFlow(EnergyPlusData &state,
-                        std::string const &CoilType, // must match coil types in this module
+                        HVAC::CoilType coilType, // must match coil types in this module
                         std::string const &CoilName, // must match coil names for the coil type
                         bool &ErrorsFound            // set to true if problem
 )
@@ -15651,31 +15686,43 @@ Real64 GetDXCoilAirFlow(EnergyPlusData &state,
     }
 
     WhichCoil = Util::FindItemInList(CoilName, state.dataDXCoils->DXCoil);
-    if (WhichCoil != 0) {
-        switch (state.dataDXCoils->DXCoil(WhichCoil).DXCoilType_Num) {
-        case HVAC::CoilDX_CoolingSingleSpeed:
-        case HVAC::CoilDX_CoolingTwoSpeed:
-        case HVAC::CoilDX_HeatingEmpirical:
-        case HVAC::CoilDX_CoolingTwoStageWHumControl: {
-            AirFlow = state.dataDXCoils->DXCoil(WhichCoil).RatedAirVolFlowRate(1);
-        } break;
-        case HVAC::CoilDX_MultiSpeedCooling:
-        case HVAC::CoilDX_MultiSpeedHeating: {
-            AirFlow = state.dataDXCoils->DXCoil(WhichCoil).MSRatedAirVolFlowRate(1);
-        } break;
-        default: {
-            ShowSevereError(
-                state,
-                format("GetDXCoilAirFlow: Could not find Coil, Type=\"{}\" Name=\"{}\" when accessing coil air flow rate.", CoilType, CoilName));
-            ErrorsFound = true;
-            AirFlow = -1.0;
-        } break;
-        }
-    } else {
+
+    if (WhichCoil == 0) {
         ShowSevereError(
-            state, format("GetDXCoilAirFlow: Could not find Coil, Type=\"{}\" Name=\"{}\" when accessing coil air flow rate.", CoilType, CoilName));
+                        state, format("GetDXCoilAirFlow: Could not find Coil, Type=\"{}\" Name=\"{}\" when accessing coil air flow rate.", coilType, CoilName));
+        ErrorsFound = true;
+        return -1.0;
+    }
+
+    auto &dxCoil = state.dataDXCoils->DXCoil(WhichCoil);
+
+    if (dxCoil.coilType != coilType) {
+        ShowSevereError(
+                        state, format("GetDXCoilAirFlow: Coil \"{}\" has unexpected type.", CoilName, HVAC::coilTypeNames[(int)coilType]));
+        ErrorsFound = true;
+        return -1.0;
+    }
+
+    switch (dxCoil.coilType) {
+    case HVAC::CoilType::DXCoolingSingleSpeed:
+    case HVAC::CoilType::DXCoolingTwoSpeed:
+    case HVAC::CoilType::DXHeatingEmpirical:
+    case HVAC::CoilType::DXCoolingTwoStageWHumControl: {
+        AirFlow = dxCoil.RatedAirVolFlowRate(1);
+    } break;
+          
+    case HVAC::CoilType::DXMultiSpeedCooling:
+    case HVAC::CoilType::DXMultiSpeedHeating: {
+        AirFlow = dxCoil.MSRatedAirVolFlowRate(1);
+    } break;
+
+    default: {
+        ShowSevereError(
+                        state,
+                        format("GetDXCoilAirFlow: Could not find Coil, Type=\"{}\" Name=\"{}\" when accessing coil air flow rate.", HVAC::coilTypeNames[(int)coilType], CoilName));
         ErrorsFound = true;
         AirFlow = -1.0;
+    } break;
     }
 
     return AirFlow;
@@ -15705,34 +15752,36 @@ int GetDXCoilCapFTCurveIndex(EnergyPlusData &state,
         state.dataDXCoils->GetCoilsInputFlag = false;
     }
 
-    if (CoilIndex != 0) {
-        switch (state.dataDXCoils->DXCoil(CoilIndex).DXCoilType_Num) {
-        case HVAC::CoilDX_CoolingSingleSpeed:
-        case HVAC::CoilDX_CoolingTwoSpeed:
-        case HVAC::CoilDX_HeatingEmpirical:
-        case HVAC::CoilDX_CoolingTwoStageWHumControl: {
-            CapFTCurveIndex = state.dataDXCoils->DXCoil(CoilIndex).CCapFTemp(1);
-        } break;
-        case HVAC::CoilDX_MultiSpeedCooling:
-        case HVAC::CoilDX_MultiSpeedHeating: {
-            CapFTCurveIndex = state.dataDXCoils->DXCoil(CoilIndex).MSCCapFTemp(state.dataDXCoils->DXCoil(CoilIndex).NumOfSpeeds);
-        } break;
-        case HVAC::CoilVRF_Heating: {
-            CapFTCurveIndex = state.dataDXCoils->DXCoil(CoilIndex).CCapFTemp(1);
-        } break;
-        default: {
-            //        CALL ShowSevereError(state, 'GetDXCoilCapFTCurveIndex: Could not find Coil, Type="'// &
-            //             TRIM(cAllCoilTypes(DXCoil(CoilIndex)%DXCoilType_Num))//'" Name="'//TRIM(DXCoil(CoilIndex)%Name)//  &
-            //              '" when accessing coil capacity as a function of temperature curve.')
-            ErrorsFound = true;
-            CapFTCurveIndex = 0;
-        } break;
-        }
-    } else {
-        //    CALL ShowSevereError(state, 'GetDXCoilCapFTCurveIndex: Could not find Coil, Index = 0'// &
-        //          ' when accessing coil air flow rate.')
+    if (CoilIndex == 0) {
         ErrorsFound = true;
-        CapFTCurveIndex = 0;
+        return 0;
+    }
+
+    auto &dxCoil = state.dataDXCoils->DXCoil(CoilIndex);
+    switch (dxCoil.coilType) {
+    case HVAC::CoilType::DXCoolingSingleSpeed:
+    case HVAC::CoilType::DXCoolingTwoSpeed:
+    case HVAC::CoilType::DXHeatingEmpirical:
+    case HVAC::CoilType::DXCoolingTwoStageWHumControl: {
+        CapFTCurveIndex = dxCoil.CCapFTemp(1);
+    } break;
+
+    case HVAC::CoilType::DXMultiSpeedCooling:
+    case HVAC::CoilType::DXMultiSpeedHeating: {
+        CapFTCurveIndex = dxCoil.MSCCapFTemp(dxCoil.NumOfSpeeds);
+    } break;
+
+    case HVAC::CoilType::VRFHeating: {
+      CapFTCurveIndex = dxCoil.CCapFTemp(1);
+    } break;
+
+    default: {
+      //        CALL ShowSevereError(state, 'GetDXCoilCapFTCurveIndex: Could not find Coil, Type="'// &
+      //             TRIM(cAllCoilTypes(DXCoil(CoilIndex)%coilType))//'" Name="'//TRIM(DXCoil(CoilIndex)%Name)//  &
+      //              '" when accessing coil capacity as a function of temperature curve.')
+      ErrorsFound = true;
+      CapFTCurveIndex = 0;
+    } break;
     }
 
     return CapFTCurveIndex;
@@ -15882,7 +15931,7 @@ void SetDXCoolingCoilData(
         if (thisDXCoil.SupplyFanIndex > 0) {
             state.dataRptCoilSelection->coilSelectionReportObj->setCoilSupplyFanInfo(state,
                                                                                      thisDXCoil.Name,
-                                                                                     thisDXCoil.DXCoilType,
+                                                                                     thisDXCoil.coilType,
                                                                                      state.dataFans->fans(thisDXCoil.SupplyFanIndex)->Name,
                                                                                      state.dataFans->fans(thisDXCoil.SupplyFanIndex)->type,
                                                                                      thisDXCoil.SupplyFanIndex);
@@ -16101,10 +16150,10 @@ void CalcSecondaryDXCoils(EnergyPlusData &state, int const DXCoilNum)
     if (thisDXCoil.IsSecondaryDXCoilInZone) {
         auto &secZoneHB = state.dataZoneTempPredictorCorrector->zoneHeatBalance(thisDXCoil.SecZonePtr);
         // Select the correct unit type
-        switch (thisDXCoil.DXCoilType_Num) {
-        case HVAC::CoilDX_CoolingSingleSpeed:
-        case HVAC::CoilDX_CoolingTwoSpeed:
-        case HVAC::CoilDX_MultiSpeedCooling: {
+        switch (thisDXCoil.coilType) {
+        case HVAC::CoilType::DXCoolingSingleSpeed:
+        case HVAC::CoilType::DXCoolingTwoSpeed:
+        case HVAC::CoilType::DXMultiSpeedCooling: {
             // total sensible heat gain of the secondary zone from the secondary coil (condenser)
             if (thisDXCoil.ElecCoolingPower > 0.0) {
                 TotalHeatRejectionRate = thisDXCoil.TotalCoolingEnergyRate + thisDXCoil.ElecCoolingPower;
@@ -16114,7 +16163,7 @@ void CalcSecondaryDXCoils(EnergyPlusData &state, int const DXCoilNum)
             }
             thisDXCoil.SecCoilSensibleHeatGainRate = TotalHeatRejectionRate;
         } break;
-        case HVAC::CoilDX_HeatingEmpirical: {
+        case HVAC::CoilType::DXHeatingEmpirical: {
             // evaporator coil in the secondary zone
             if (thisDXCoil.ElecHeatingPower > 0.0) {
                 TotalHeatRemovalRate = max(0.0, thisDXCoil.TotalHeatingEnergyRate - thisDXCoil.ElecHeatingPower);
@@ -16180,7 +16229,7 @@ void CalcSecondaryDXCoils(EnergyPlusData &state, int const DXCoilNum)
             }
             thisDXCoil.SecCoilSHR = SHR;
         } break;
-        case HVAC::CoilDX_MultiSpeedHeating: {
+        case HVAC::CoilType::DXMultiSpeedHeating: {
             EvapInletDryBulb = secZoneHB.ZT;
             EvapInletHumRat = secZoneHB.airHumRat;
             RhoAir = PsyRhoAirFnPbTdbW(state, state.dataEnvrn->OutBaroPress, EvapInletDryBulb, EvapInletHumRat);
@@ -16629,9 +16678,9 @@ void CalcVRFCoolingCoil_FluidTCtrl(EnergyPlusData &state,
                                   "   3) is used as part of a HX assisted cooling coil which uses a high sensible effectiveness. Check inputs.");
             }
             ShowRecurringWarningErrorAtEnd(state,
-                                           thisDXCoil.DXCoilType + " \"" + thisDXCoil.Name +
-                                               "\" - Full load outlet temperature indicates a possibility of frost/freeze error continues. "
-                                               "Outlet air temperature statistics follow:",
+                                           format("{}=\"{}\" - Full load outlet temperature indicates a possibility of frost/freeze error continues. "
+                                                  "Outlet air temperature statistics follow:",
+                                                  HVAC::coilTypeNames[(int)thisDXCoil.coilType], thisDXCoil.Name),
                                            thisDXCoil.LowOutletTempIndex,
                                            thisDXCoil.FullLoadOutAirTempLast,
                                            thisDXCoil.FullLoadOutAirTempLast);
@@ -16648,7 +16697,8 @@ void CalcVRFCoolingCoil_FluidTCtrl(EnergyPlusData &state,
         (compressorOp == HVAC::CompressorOp::On)) { // for cycling fan, reset mass flow to full on rate
 
         if (thisDXCoil.RatedTotCap(Mode) <= 0.0) {
-            ShowFatalError(state, format("{} \"{}\" - Rated total cooling capacity is zero or less.", thisDXCoil.DXCoilType, thisDXCoil.Name));
+            ShowFatalError(state, format("{} \"{}\" - Rated total cooling capacity is zero or less.",
+                                         HVAC::coilTypeNames[(int)thisDXCoil.coilType], thisDXCoil.Name));
         }
 
         TotCap = min(MaxCoolCap, thisDXCoil.RatedTotCap(Mode));
@@ -16813,7 +16863,7 @@ void CalcVRFCoolingCoil_FluidTCtrl(EnergyPlusData &state,
                 thisDXCoil.FullLoadInletAirTempLast = InletAirDryBulbTemp;
                 thisDXCoil.LowOutTempBuffer1 = format("{} \"{}\" - Full load outlet air dry-bulb temperature < 2C. This indicates the "
                                                       "possibility of coil frost/freeze. Outlet temperature = {:.2R} C.",
-                                                      thisDXCoil.DXCoilType,
+                                                      HVAC::coilTypeNames[(int)thisDXCoil.coilType],
                                                       thisDXCoil.Name,
                                                       OutletAirTemp);
                 thisDXCoil.LowOutTempBuffer2 = " ...Occurrence info = " + state.dataEnvrn->EnvironmentName + ", " + state.dataEnvrn->CurMnDy + " " +
@@ -17062,7 +17112,8 @@ void CalcVRFHeatingCoil_FluidTCtrl(EnergyPlusData &state,
         // Model was extended to accept bi-quadratic curves. This allows sensitivity of the EIR
         // to the entering dry-bulb temperature as well as the outside dry-bulb temperature. User is
         // advised to use the bi-quaratic curve if sufficient manufacturer data is available.
-        if (thisDXCoil.DXCoilType_Num != HVAC::CoilVRF_Heating && thisDXCoil.DXCoilType_Num != HVAC::CoilVRF_FluidTCtrl_Heating) {
+        if (thisDXCoil.coilType != HVAC::CoilType::VRFHeating &&
+            thisDXCoil.coilType != HVAC::CoilType::VRFFluidTCtrlHeating) {
             if (state.dataCurveManager->PerfCurve(thisDXCoil.EIRFTemp(Mode))->numDims == 1) {
                 EIRTempModFac = CurveValue(state, thisDXCoil.EIRFTemp(Mode), OutdoorDryBulb);
             } else {
@@ -17082,7 +17133,8 @@ void CalcVRFHeatingCoil_FluidTCtrl(EnergyPlusData &state,
             PLRHeating = min(1.0, PartLoadRatio);
         }
 
-        if (thisDXCoil.DXCoilType_Num != HVAC::CoilVRF_Heating && thisDXCoil.DXCoilType_Num != HVAC::CoilVRF_FluidTCtrl_Heating) {
+        if (thisDXCoil.coilType != HVAC::CoilType::VRFHeating &&
+            thisDXCoil.coilType != HVAC::CoilType::VRFFluidTCtrlHeating) {
             PLF = CurveValue(state, thisDXCoil.PLFFPLR(Mode), PLRHeating); // Calculate part-load factor
         } else {
             PLF = 1.0;

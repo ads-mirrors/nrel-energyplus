@@ -338,7 +338,7 @@ struct EnergyPlusData : BaseGlobalStruct
     std::unique_ptr<ChillerIndirectAbsoprtionData> dataChillerIndirectAbsorption;
     std::unique_ptr<ChillerReformulatedEIRData> dataChillerReformulatedEIR;
     std::unique_ptr<ChillerElectricASHRAE205Data> dataChillerElectricASHRAE205;
-    std::unique_ptr<CoilCoolingDXData> dataCoilCooingDX;
+    std::unique_ptr<CoilCoolingDXData> dataCoilCoolingDX;
     std::unique_ptr<CondenserLoopTowersData> dataCondenserLoopTowers;
     std::unique_ptr<ConstructionData> dataConstruction;
     std::unique_ptr<ContaminantBalanceData> dataContaminantBalance;

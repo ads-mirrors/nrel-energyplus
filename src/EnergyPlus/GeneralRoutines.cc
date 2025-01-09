@@ -756,6 +756,26 @@ void ValidateComponent(EnergyPlusData &state,
     }
 }
 
+bool ValidateComponent(EnergyPlusData &state,
+                       std::string_view CompType,   // Component Type (e.g. Chiller:Electric)
+                       std::string const &CompName, // Component Name (e.g. Big Chiller)
+                       std::string_view CallString  // Context of this pair -- for error message
+)
+{
+    int ItemNum = state.dataInputProcessing->inputProcessor->getObjectItemNum(state, std::string{CompType}, CompName);
+
+    if (ItemNum < 0) {
+        ShowSevereError(state, format("During {} Input, Invalid Component Type input={}", CallString, CompType));
+        ShowContinueError(state, format("Component name={}", CompName));
+        return false;
+    } else if (ItemNum == 0) {
+        ShowSevereError(state, format("During {} Input, Invalid Component Name input={}", CallString, CompName));
+        ShowContinueError(state, format("Component type={}", CompType));
+        return false;
+    }
+    return true;
+}
+
 void ValidateComponent(EnergyPlusData &state,
                        std::string_view CompType,      // Component Type (e.g. Chiller:Electric)
                        std::string const &CompValType, // Component "name" field type
@@ -794,6 +814,28 @@ void ValidateComponent(EnergyPlusData &state,
         ShowContinueError(state, format("Component type={}", CompType));
         IsNotOK = true;
     }
+}
+
+bool ValidateComponent(EnergyPlusData &state,
+                       std::string_view CompType,      // Component Type (e.g. Chiller:Electric)
+                       std::string const &CompValType, // Component "name" field type
+                       std::string const &CompName,    // Component Name (e.g. Big Chiller)
+                       std::string_view CallString     // Context of this pair -- for error message
+)
+{
+    int ItemNum = state.dataInputProcessing->inputProcessor->getObjectItemNum(state, CompType, CompValType, CompName);
+
+    if (ItemNum < 0) {
+        ShowSevereError(state, format("During {} Input, Invalid Component Type input={}", CallString, CompType));
+        ShowContinueError(state, format("Component name={}", CompName));
+        return false; 
+    } else if (ItemNum == 0) {
+        ShowSevereError(state, format("During {} Input, Invalid Component Name input={}", CallString, CompName));
+        ShowContinueError(state, format("Component type={}", CompType));
+        return false; 
+    }
+
+    return true;
 }
 
 void CalcBasinHeaterPower(EnergyPlusData &state,

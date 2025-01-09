@@ -80,7 +80,7 @@ Real64 HeatingWaterDesCoilLoadUsedForUASizer::size(EnergyPlusData &state, Real64
                                                                      state.dataPlnt->PlantLoop(this->dataWaterLoopNum).FluidIndex,
                                                                      this->callingRoutine);
                 this->autoSizedValue = this->dataWaterFlowUsedForSizing * this->dataWaterCoilSizHeatDeltaT * Cp * rho;
-                state.dataRptCoilSelection->coilSelectionReportObj->setCoilReheatMultiplier(state, this->compName, this->compType, 1.0);
+                state.dataRptCoilSelection->coilSelectionReportObj->setCoilReheatMultiplier(state, this->compName, this->coilType, 1.0);
             } else if ((this->termUnitPIU || this->termUnitIU) && (this->curTermUnitSizingNum > 0)) {
                 Real64 const Cp = FluidProperties::GetSpecificHeatGlycol(state,
                                                                          state.dataPlnt->PlantLoop(this->dataWaterLoopNum).FluidName,
@@ -106,7 +106,7 @@ Real64 HeatingWaterDesCoilLoadUsedForUASizer::size(EnergyPlusData &state, Real64
                                                                      state.dataPlnt->PlantLoop(this->dataWaterLoopNum).FluidIndex,
                                                                      this->callingRoutine);
                 this->autoSizedValue = this->dataWaterFlowUsedForSizing * this->dataWaterCoilSizHeatDeltaT * Cp * rho;
-                state.dataRptCoilSelection->coilSelectionReportObj->setCoilReheatMultiplier(state, this->compName, this->compType, 1.0);
+                state.dataRptCoilSelection->coilSelectionReportObj->setCoilReheatMultiplier(state, this->compName, this->coilType, 1.0);
             } else {
                 Real64 DesMassFlow = 0.0;
                 if (this->zoneEqSizing(this->curZoneEqNum).SystemAirFlow) {
@@ -198,7 +198,7 @@ Real64 HeatingWaterDesCoilLoadUsedForUASizer::size(EnergyPlusData &state, Real64
         Real64 constexpr DXFlowPerCapMaxRatio = 1.0;
         state.dataRptCoilSelection->coilSelectionReportObj->setCoilHeatingCapacity(state,
                                                                                    this->compName,
-                                                                                   this->compType,
+                                                                                   this->coilType,
                                                                                    this->autoSizedValue,
                                                                                    this->wasAutoSized,
                                                                                    this->curSysNum,

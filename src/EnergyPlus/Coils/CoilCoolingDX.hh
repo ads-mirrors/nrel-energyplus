@@ -179,7 +179,7 @@ struct CoilCoolingDXData : BaseGlobalStruct
 {
     std::vector<CoilCoolingDX> coilCoolingDXs;
     bool coilCoolingDXGetInputFlag = true;
-    std::string const coilCoolingDXObjectName = "Coil:Cooling:DX";
+    HVAC::CoilType coilType = HVAC::CoilType::DXCooling; // Why is this a state variable and not an object member variable?
     bool stillNeedToReportStandardRatings = true; // standard ratings flag for all coils to report at the same time
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {

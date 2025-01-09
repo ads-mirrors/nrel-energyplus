@@ -450,19 +450,19 @@ Real64 HeatingCapacitySizer::size(EnergyPlusData &state, Real64 _originalValue, 
     if (this->isCoilReportObject) {
         if (CoilInTemp > -999.0) { // set inlet air properties used during capacity sizing if available, allow for negative winter temps
             state.dataRptCoilSelection->coilSelectionReportObj->setCoilEntAirTemp(
-                state, this->compName, this->compType, CoilInTemp, this->curSysNum, this->curZoneEqNum);
-            state.dataRptCoilSelection->coilSelectionReportObj->setCoilEntAirHumRat(state, this->compName, this->compType, CoilInHumRat);
+                state, this->compName, this->coilType, CoilInTemp, this->curSysNum, this->curZoneEqNum);
+            state.dataRptCoilSelection->coilSelectionReportObj->setCoilEntAirHumRat(state, this->compName, this->coilType, CoilInHumRat);
         }
         if (CoilOutTemp > -999.0) { // set outlet air properties used during capacity sizing if available
-            state.dataRptCoilSelection->coilSelectionReportObj->setCoilLvgAirTemp(state, this->compName, this->compType, CoilOutTemp);
-            state.dataRptCoilSelection->coilSelectionReportObj->setCoilLvgAirHumRat(state, this->compName, this->compType, CoilOutHumRat);
+            state.dataRptCoilSelection->coilSelectionReportObj->setCoilLvgAirTemp(state, this->compName, this->coilType, CoilOutTemp);
+            state.dataRptCoilSelection->coilSelectionReportObj->setCoilLvgAirHumRat(state, this->compName, this->coilType, CoilOutHumRat);
         }
-        state.dataRptCoilSelection->coilSelectionReportObj->setCoilAirFlow(state, this->compName, this->compType, DesVolFlow, this->wasAutoSized);
+        state.dataRptCoilSelection->coilSelectionReportObj->setCoilAirFlow(state, this->compName, this->coilType, DesVolFlow, this->wasAutoSized);
         Real64 constexpr FanCoolLoad = 0.0;
         Real64 constexpr TotCapTempModFac = 1.0;
         state.dataRptCoilSelection->coilSelectionReportObj->setCoilHeatingCapacity(state,
                                                                                    this->compName,
-                                                                                   this->compType,
+                                                                                   this->coilType,
                                                                                    this->autoSizedValue,
                                                                                    this->wasAutoSized,
                                                                                    this->curSysNum,

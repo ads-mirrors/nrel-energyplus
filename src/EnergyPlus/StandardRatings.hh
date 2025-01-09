@@ -144,8 +144,7 @@ namespace StandardRatings {
     void CalcDXCoilStandardRating(
         EnergyPlusData &state,
         std::string const &DXCoilName,                             // Name of DX coil for which HSPF is calculated
-        std::string const &DXCoilType,                             // Type of DX coil for which HSPF is calculated
-        int const DXCoilType_Num,                                  // Integer Type of DX coil - heating or cooling
+        HVAC::CoilType coilType,                                  // Integer Type of DX coil - heating or cooling
         int const ns,                                              // Number of compressor speeds
         Array1A<Real64> const RatedTotalCapacity,                  // Reference capacity of DX coil [W]
         Array1A<Real64> const RatedCOP,                            // Reference coefficient of performance [W/W]
@@ -176,8 +175,7 @@ namespace StandardRatings {
 
     void CalcTwoSpeedDXCoilRating(EnergyPlusData &state,
                                   std::string const &DXCoilName,
-                                  std::string const &DXCoilType,
-                                  int const DXCoilType_Num,
+                                  HVAC::CoilType coilType,
                                   Array1A<Real64> const &RatedTotalCapacity,
                                   Real64 const RatedTotCap2,
                                   Array1A<Real64> const &RatedCOP,

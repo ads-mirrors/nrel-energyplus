@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -12081,7 +12081,7 @@ namespace SurfaceGeometry {
     }
 
     // returns a vector of edges that are in both vectors
-    std::vector<EdgeOfSurf> edgesInBoth(std::vector<EdgeOfSurf> edges1, std::vector<EdgeOfSurf> edges2)
+    std::vector<EdgeOfSurf> edgesInBoth(std::vector<EdgeOfSurf> const &edges1, std::vector<EdgeOfSurf> const &edges2)
     {
         // J. Glazer - June 2017
         // this is not optimized but the number of edges for a typical polyhedron is 12 and is probably rarely bigger than 20.
@@ -12505,7 +12505,7 @@ namespace SurfaceGeometry {
     }
 
     // returns the index of vertex in a list that is in the same position in space as the given vertex
-    int findIndexOfVertex(DataVectorTypes::Vector vertexToFind, std::vector<DataVectorTypes::Vector> listOfVertices)
+    int findIndexOfVertex(DataVectorTypes::Vector vertexToFind, std::vector<DataVectorTypes::Vector> const &listOfVertices)
     {
         // J. Glazer - March 2017
 

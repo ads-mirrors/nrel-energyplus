@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -717,7 +717,7 @@ namespace OutputReportTabular {
                                            Real64 const unitConvMultiplier = 1.0);
 
     // return the table entry of the rowIndex-th row and columnIndex-th col
-    std::string RetrieveEntryFromTableBody(Array2D_string &tableBody, int const rowIndex, int const columnIndex);
+    std::string RetrieveEntryFromTableBody(Array2D_string const &tableBody, int const rowIndex, int const columnIndex);
 
     void WriteHourOfSafetyTable(EnergyPlusData &state,
                                 int const columnNum,

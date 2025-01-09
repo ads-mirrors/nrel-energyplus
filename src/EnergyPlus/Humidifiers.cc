@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -708,8 +708,6 @@ namespace Humidifiers {
 
         // Using/Aliasing
         using DataSizing::AutoSize;
-        using FluidProperties::GetSatEnthalpyRefrig;
-        using FluidProperties::GetSpecificHeatGlycol;
 
         using Psychrometrics::PsyRhoAirFnPbTdbW;
         using Psychrometrics::RhoH2O;
@@ -862,12 +860,12 @@ namespace Humidifiers {
             }
 
             NomCap = RhoH2O(Constant::InitConvTemp) * NomCapVol;
-            int RefrigerantIndex = FluidProperties::GetRefrigNum(state, format(fluidNameSteam));
-            int WaterIndex = FluidProperties::GetGlycolNum(state, format(fluidNameWater));
-            SteamSatEnthalpy = GetSatEnthalpyRefrig(state, format(fluidNameSteam), TSteam, 1.0, RefrigerantIndex, CalledFrom);
-            WaterSatEnthalpy = GetSatEnthalpyRefrig(state, format(fluidNameSteam), TSteam, 0.0, RefrigerantIndex, CalledFrom);
-            WaterSpecHeatAvg = 0.5 * (GetSpecificHeatGlycol(state, format(fluidNameWater), TSteam, WaterIndex, CalledFrom) +
-                                      GetSpecificHeatGlycol(state, format(fluidNameWater), Tref, WaterIndex, CalledFrom));
+
+            auto *water = Fluid::GetWater(state);
+            auto *steam = Fluid::GetSteam(state);
+            SteamSatEnthalpy = steam->getSatEnthalpy(state, TSteam, 1.0, CalledFrom);
+            WaterSatEnthalpy = steam->getSatEnthalpy(state, TSteam, 0.0, CalledFrom);
+            WaterSpecHeatAvg = 0.5 * (water->getSpecificHeat(state, TSteam, CalledFrom) + water->getSpecificHeat(state, Tref, CalledFrom));
             NominalPower = NomCap * ((SteamSatEnthalpy - WaterSatEnthalpy) + WaterSpecHeatAvg * (TSteam - Tref));
 
             if (NomPower == AutoSize) {
@@ -1146,8 +1144,6 @@ namespace Humidifiers {
 
         // Using/Aliasing
         using Curve::CurveValue;
-        using FluidProperties::GetSatEnthalpyRefrig;
-        using FluidProperties::GetSpecificHeatGlycol;
         using Psychrometrics::PsyHFnTdbW;
         using Psychrometrics::PsyTdbFnHW;
         using Psychrometrics::PsyWFnTdbRhPb;
@@ -1234,12 +1230,12 @@ namespace Humidifiers {
                     CurMakeupWaterTemp = state.dataEnvrn->WaterMainsTemp;
                 }
                 Tref = CurMakeupWaterTemp;
-                int RefrigerantIndex = FluidProperties::GetRefrigNum(state, format(fluidNameSteam));
-                int WaterIndex = FluidProperties::GetGlycolNum(state, format(fluidNameWater));
-                SteamSatEnthalpy = GetSatEnthalpyRefrig(state, format(fluidNameSteam), TSteam, 1.0, RefrigerantIndex, RoutineName);
-                WaterSatEnthalpy = GetSatEnthalpyRefrig(state, format(fluidNameSteam), TSteam, 0.0, RefrigerantIndex, RoutineName);
-                WaterSpecHeatAvg = 0.5 * (GetSpecificHeatGlycol(state, format(fluidNameWater), TSteam, WaterIndex, RoutineName) +
-                                          GetSpecificHeatGlycol(state, format(fluidNameWater), Tref, WaterIndex, RoutineName));
+
+                auto *water = Fluid::GetWater(state);
+                auto *steam = Fluid::GetSteam(state);
+                SteamSatEnthalpy = steam->getSatEnthalpy(state, TSteam, 1.0, RoutineName);
+                WaterSatEnthalpy = steam->getSatEnthalpy(state, TSteam, 0.0, RoutineName);
+                WaterSpecHeatAvg = 0.5 * (water->getSpecificHeat(state, TSteam, RoutineName) + water->getSpecificHeat(state, Tref, RoutineName));
                 GasUseRateAtRatedEff = WaterAdd * ((SteamSatEnthalpy - WaterSatEnthalpy) + WaterSpecHeatAvg * (TSteam - Tref)) / ThermalEffRated;
             }
             PartLoadRatio = GasUseRateAtRatedEff / NomPower;

@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -85,7 +85,7 @@ namespace IndoorGreen {
         // PURPOSE OF THIS SUBROUTINE:
         // This subroutine simulates the thermal performance of indoor living walls including the grow lights.
         // This subroutine interacts with inside surface heat balance, zone air heat balance and zone air moisture balance in EnergyPlus.
-        auto &lw = state.dataIndoorGreen;
+        auto const &lw = state.dataIndoorGreen;
         if (lw->getInputFlag) {
             bool ErrorsFound(false);
             const char *RoutineName("IndoorLivingWall: "); // include trailing blank space
@@ -459,7 +459,7 @@ namespace IndoorGreen {
         }
     }
 
-    void InitIndoorGreen(EnergyPlusData &state)
+    void InitIndoorGreen(EnergyPlusData const &state)
     {
         // Set the reporting variables to zero at each timestep.
         for (auto &ig : state.dataIndoorGreen->indoorGreens) {

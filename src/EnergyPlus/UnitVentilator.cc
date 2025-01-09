@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -116,8 +116,6 @@ namespace UnitVentilator {
     // ASHRAE Systems and Equipment Handbook (SI), 1996. pp. 31.1-31.3
     // Fred Buhl's fan coil module (FanCoilUnits.cc)
 
-    static constexpr std::string_view fluidNameSteam("STEAM");
-    static constexpr std::string_view fluidNameWater("WATER");
     static constexpr std::array<std::string_view, static_cast<int>(CoilsUsed::Num)> CoilsUsedNamesUC = {
         "NONE", "HEATINGANDCOOLING", "HEATING", "COOLING"};
     static constexpr std::array<std::string_view, static_cast<int>(OAControl::Num)> OAControlNamesUC = {
@@ -1122,11 +1120,8 @@ namespace UnitVentilator {
 
                 if (unitVent.HCoilType == HeatCoilType::Water) {
 
-                    Real64 rho = FluidProperties::GetDensityGlycol(state,
-                                                                   state.dataPlnt->PlantLoop(unitVent.HWplantLoc.loopNum).FluidName,
-                                                                   Constant::HWInitConvTemp,
-                                                                   state.dataPlnt->PlantLoop(unitVent.HWplantLoc.loopNum).FluidIndex,
-                                                                   RoutineName);
+                    Real64 rho =
+                        state.dataPlnt->PlantLoop(unitVent.HWplantLoc.loopNum).glycol->getDensity(state, Constant::HWInitConvTemp, RoutineName);
 
                     unitVent.MaxHotWaterFlow = rho * unitVent.MaxVolHotWaterFlow;
                     unitVent.MinHotWaterFlow = rho * unitVent.MinVolHotWaterFlow;
@@ -1136,8 +1131,7 @@ namespace UnitVentilator {
                 }
                 if (unitVent.HCoilType == HeatCoilType::Steam) {
                     Real64 TempSteamIn = 100.00;
-                    Real64 SteamDensity =
-                        FluidProperties::GetSatDensityRefrig(state, fluidNameSteam, TempSteamIn, 1.0, unitVent.HCoil_FluidIndex, RoutineName);
+                    Real64 SteamDensity = unitVent.HCoil_fluid->getSatDensity(state, TempSteamIn, 1.0, RoutineName);
                     unitVent.MaxHotSteamFlow = SteamDensity * unitVent.MaxVolHotSteamFlow;
                     unitVent.MinHotSteamFlow = SteamDensity * unitVent.MinVolHotSteamFlow;
 
@@ -1147,11 +1141,7 @@ namespace UnitVentilator {
             } //(UnitVent(UnitVentNum)%HCoilPresent)
 
             if (unitVent.CCoilPresent) { // Only initialize these if a cooling coil is actually present
-                Real64 rho = FluidProperties::GetDensityGlycol(state,
-                                                               state.dataPlnt->PlantLoop(unitVent.CWPlantLoc.loopNum).FluidName,
-                                                               5.0,
-                                                               state.dataPlnt->PlantLoop(unitVent.CWPlantLoc.loopNum).FluidIndex,
-                                                               RoutineName);
+                Real64 rho = state.dataPlnt->PlantLoop(unitVent.CWPlantLoc.loopNum).glycol->getDensity(state, 5.0, RoutineName);
 
                 unitVent.MaxColdWaterFlow = rho * unitVent.MaxVolColdWaterFlow;
                 unitVent.MinColdWaterFlow = rho * unitVent.MinVolColdWaterFlow;
@@ -1868,16 +1858,10 @@ namespace UnitVentilator {
                                     sizerHeatingCapacity.initializeWithinEP(state, CompType, CompName, PrintFlag, RoutineName);
                                     DesHeatingLoad = sizerHeatingCapacity.size(state, TempSize, errorsFound);
                                 }
-                                rho = FluidProperties::GetDensityGlycol(state,
-                                                                        state.dataPlnt->PlantLoop(unitVent.HWplantLoc.loopNum).FluidName,
-                                                                        Constant::HWInitConvTemp,
-                                                                        state.dataPlnt->PlantLoop(unitVent.HWplantLoc.loopNum).FluidIndex,
-                                                                        RoutineName);
-                                Cp = FluidProperties::GetSpecificHeatGlycol(state,
-                                                                            state.dataPlnt->PlantLoop(unitVent.HWplantLoc.loopNum).FluidName,
-                                                                            Constant::HWInitConvTemp,
-                                                                            state.dataPlnt->PlantLoop(unitVent.HWplantLoc.loopNum).FluidIndex,
-                                                                            RoutineName);
+                                rho = state.dataPlnt->PlantLoop(unitVent.HWplantLoc.loopNum)
+                                          .glycol->getDensity(state, Constant::HWInitConvTemp, RoutineName);
+                                Cp = state.dataPlnt->PlantLoop(unitVent.HWplantLoc.loopNum)
+                                         .glycol->getSpecificHeat(state, Constant::HWInitConvTemp, RoutineName);
                                 MaxVolHotWaterFlowDes = DesHeatingLoad / (WaterCoilSizDeltaT * Cp * rho);
 
                             } else {
@@ -1980,6 +1964,7 @@ namespace UnitVentilator {
                                     default: {
                                     } break;
                                     }
+
                                     PrintFlag = false;
                                     bool errorsFound = false;
                                     HeatingCapacitySizer sizerHeatingCapacity;
@@ -1997,18 +1982,13 @@ namespace UnitVentilator {
                                     DesHeatingLoad = sizerHeatingCapacity.size(state, TempSize, errorsFound);
                                 }
                                 TempSteamIn = 100.00;
-                                EnthSteamInDry = FluidProperties::GetSatEnthalpyRefrig(
-                                    state, fluidNameSteam, TempSteamIn, 1.0, state.dataUnitVentilators->RefrigIndex, RoutineName);
-                                EnthSteamOutWet = FluidProperties::GetSatEnthalpyRefrig(
-                                    state, fluidNameSteam, TempSteamIn, 0.0, state.dataUnitVentilators->RefrigIndex, RoutineName);
+                                auto *steam = Fluid::GetSteam(state);
+                                EnthSteamInDry = steam->getSatEnthalpy(state, TempSteamIn, 1.0, RoutineName);
+                                EnthSteamOutWet = steam->getSatEnthalpy(state, TempSteamIn, 0.0, RoutineName);
                                 LatentHeatSteam = EnthSteamInDry - EnthSteamOutWet;
-                                SteamDensity = FluidProperties::GetSatDensityRefrig(
-                                    state, fluidNameSteam, TempSteamIn, 1.0, state.dataUnitVentilators->RefrigIndex, RoutineName);
-                                Cp = FluidProperties::GetSpecificHeatGlycol(state,
-                                                                            fluidNameWater,
-                                                                            state.dataSize->PlantSizData(PltSizHeatNum).ExitTemp,
-                                                                            state.dataUnitVentilators->DummyWaterIndex,
-                                                                            RoutineName);
+                                SteamDensity = steam->getSatDensity(state, TempSteamIn, 1.0, RoutineName);
+                                Cp =
+                                    Fluid::GetWater(state)->getSpecificHeat(state, state.dataSize->PlantSizData(PltSizHeatNum).ExitTemp, RoutineName);
                                 MaxVolHotSteamFlowDes =
                                     DesHeatingLoad / (SteamDensity * (LatentHeatSteam + state.dataSize->PlantSizData(PltSizHeatNum).DeltaT * Cp));
                             } else {
@@ -2153,16 +2133,8 @@ namespace UnitVentilator {
                                     sizerCoolingCapacity.initializeWithinEP(state, CompType, CompName, PrintFlag, RoutineName);
                                     DesCoolingLoad = sizerCoolingCapacity.size(state, TempSize, ErrorsFound);
                                 }
-                                rho = FluidProperties::GetDensityGlycol(state,
-                                                                        state.dataPlnt->PlantLoop(unitVent.CWPlantLoc.loopNum).FluidName,
-                                                                        5.,
-                                                                        state.dataPlnt->PlantLoop(unitVent.CWPlantLoc.loopNum).FluidIndex,
-                                                                        RoutineName);
-                                Cp = FluidProperties::GetSpecificHeatGlycol(state,
-                                                                            state.dataPlnt->PlantLoop(unitVent.CWPlantLoc.loopNum).FluidName,
-                                                                            5.,
-                                                                            state.dataPlnt->PlantLoop(unitVent.CWPlantLoc.loopNum).FluidIndex,
-                                                                            RoutineName);
+                                rho = state.dataPlnt->PlantLoop(unitVent.CWPlantLoc.loopNum).glycol->getDensity(state, 5., RoutineName);
+                                Cp = state.dataPlnt->PlantLoop(unitVent.CWPlantLoc.loopNum).glycol->getSpecificHeat(state, 5., RoutineName);
                                 MaxVolColdWaterFlowDes = DesCoolingLoad / (WaterCoilSizDeltaT * Cp * rho);
 
                                 if (MaxVolColdWaterFlowDes < 0.0) {

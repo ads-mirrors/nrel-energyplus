@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -130,6 +130,8 @@ protected:
     virtual void SetUp()
     {
         EnergyPlusFixture::SetUp(); // Sets up the base fixture first.
+
+        state->dataFluid->init_state(*state);
 
         state->dataEnvrn->StdRhoAir = Psychrometrics::PsyRhoAirFnPbTdbW(*state, 101325.0, 20.0, 0.0); // initialize StdRhoAir
         state->dataEnvrn->OutBaroPress = 101325.0;
@@ -330,11 +332,11 @@ protected:
         }
         state->dataPlnt->PlantLoop(1).Name = "Hot Water Loop";
         state->dataPlnt->PlantLoop(1).FluidName = "WATER";
-        state->dataPlnt->PlantLoop(1).FluidIndex = 1;
+        state->dataPlnt->PlantLoop(1).glycol = Fluid::GetWater(*state);
 
         state->dataPlnt->PlantLoop(2).Name = "Chilled Water Loop";
         state->dataPlnt->PlantLoop(2).FluidName = "WATER";
-        state->dataPlnt->PlantLoop(2).FluidIndex = 1;
+        state->dataPlnt->PlantLoop(2).glycol = Fluid::GetWater(*state);
 
         state->dataSize->PlantSizData(1).PlantLoopName = "Hot Water Loop";
         state->dataSize->PlantSizData(1).ExitTemp = 80.0;
@@ -2355,13 +2357,17 @@ TEST_F(EnergyPlusFixture, VRF_FluidTCtrl_VRFOU_Compressor)
     ProcessScheduleInput(*state); // read schedules
     Curve::GetCurveInput(*state); // read curves
     // test consecutive call to fluid properties getInput
-    FluidProperties::GetFluidPropertiesData(*state); // read refrigerant properties
-    EXPECT_EQ(2, state->dataFluidProps->refrigs.isize());
-    EXPECT_EQ(1, state->dataFluidProps->glycols.isize());
+    Fluid::GetFluidPropertiesData(*state); // read refrigerant properties
+    EXPECT_EQ(2, state->dataFluid->refrigs.isize());
+    EXPECT_EQ(1, state->dataFluid->glycols.isize());
 
-    FluidProperties::GetFluidPropertiesData(*state); // should never happen but if it does it's safe
-    EXPECT_EQ(2, state->dataFluidProps->refrigs.isize());
-    EXPECT_EQ(1, state->dataFluidProps->glycols.isize());
+    // If this should never happen, then the right thing to do is to
+    // assert that it doesn't happen, not to test that it is safe if
+    // it does happen
+
+    Fluid::GetFluidPropertiesData(*state); // should never happen but if it does it's safe
+    EXPECT_EQ(2, state->dataFluid->refrigs.isize());
+    EXPECT_EQ(1, state->dataFluid->glycols.isize());
 
     // set up ZoneEquipConfig data
     state->dataGlobal->NumOfZones = 1;
@@ -2401,8 +2407,9 @@ TEST_F(EnergyPlusFixture, VRF_FluidTCtrl_VRFOU_Compressor)
 
         state->dataEnvrn->OutDryBulbTemp = 10.35;
 
+        auto *refrig = Fluid::GetRefrig(*state, Refrigerant);
         // Run
-        Temperature = FluidProperties::GetSupHeatTempRefrig(*state, Refrigerant, Pressure, Enthalpy, TempLow, TempUp, RefrigIndex, CalledFrom);
+        Temperature = refrig->getSupHeatTemp(*state, Pressure, Enthalpy, TempLow, TempUp, CalledFrom);
 
         // Test
         EXPECT_NEAR(Temperature, 44.5, 0.5);
@@ -5954,26 +5961,17 @@ TEST_F(EnergyPlusFixture, VRFTest_SysCurve_WaterCooled)
     EXPECT_TRUE(state->dataHVACVarRefFlow->VRF(VRFCond).VRFCondPLR > 0.0);
     EXPECT_NEAR(SysOutputProvided, state->dataZoneEnergyDemand->ZoneSysEnergyDemand(CurZoneNum).RemainingOutputReqToCoolSP, 1.0);
 
-    rho = FluidProperties::GetDensityGlycol(*state,
-                                            state->dataPlnt->PlantLoop(state->dataHVACVarRefFlow->VRF(VRFCond).SourcePlantLoc.loopNum).FluidName,
-                                            state->dataSize->PlantSizData(1).ExitTemp,
-                                            state->dataPlnt->PlantLoop(state->dataHVACVarRefFlow->VRF(VRFCond).SourcePlantLoc.loopNum).FluidIndex,
-                                            RoutineName);
-    Cp = FluidProperties::GetSpecificHeatGlycol(*state,
-                                                state->dataPlnt->PlantLoop(state->dataHVACVarRefFlow->VRF(VRFCond).SourcePlantLoc.loopNum).FluidName,
-                                                state->dataSize->PlantSizData(1).ExitTemp,
-                                                state->dataPlnt->PlantLoop(state->dataHVACVarRefFlow->VRF(VRFCond).SourcePlantLoc.loopNum).FluidIndex,
-                                                RoutineName);
+    rho = state->dataPlnt->PlantLoop(state->dataHVACVarRefFlow->VRF(VRFCond).SourcePlantLoc.loopNum)
+              .glycol->getDensity(*state, state->dataSize->PlantSizData(1).ExitTemp, RoutineName);
+    Cp = state->dataPlnt->PlantLoop(state->dataHVACVarRefFlow->VRF(VRFCond).SourcePlantLoc.loopNum)
+             .glycol->getSpecificHeat(*state, state->dataSize->PlantSizData(1).ExitTemp, RoutineName);
     CondVolFlowRate = max(state->dataHVACVarRefFlow->VRF(VRFCond).CoolingCapacity, state->dataHVACVarRefFlow->VRF(VRFCond).HeatingCapacity) /
                       (state->dataSize->PlantSizData(1).DeltaT * Cp * rho);
 
     EXPECT_DOUBLE_EQ(CondVolFlowRate, state->dataHVACVarRefFlow->VRF(VRFCond).WaterCondVolFlowRate);
 
-    rho = FluidProperties::GetDensityGlycol(*state,
-                                            state->dataPlnt->PlantLoop(state->dataHVACVarRefFlow->VRF(VRFCond).SourcePlantLoc.loopNum).FluidName,
-                                            Constant::InitConvTemp,
-                                            state->dataPlnt->PlantLoop(state->dataHVACVarRefFlow->VRF(VRFCond).SourcePlantLoc.loopNum).FluidIndex,
-                                            RoutineName);
+    rho = state->dataPlnt->PlantLoop(state->dataHVACVarRefFlow->VRF(VRFCond).SourcePlantLoc.loopNum)
+              .glycol->getDensity(*state, Constant::InitConvTemp, RoutineName);
     EXPECT_DOUBLE_EQ(state->dataHVACVarRefFlow->VRF(VRFCond).WaterCondenserDesignMassFlow,
                      (state->dataHVACVarRefFlow->VRF(VRFCond).WaterCondVolFlowRate * rho));
 
@@ -8443,7 +8441,8 @@ TEST_F(EnergyPlusFixture, VRFTU_CalcVRFSupplementalHeatingCoilWater)
 
     state->dataPlnt->PlantLoop(1).Name = "HotWaterLoop";
     state->dataPlnt->PlantLoop(1).FluidName = "WATER";
-    state->dataPlnt->PlantLoop(1).FluidIndex = 1;
+    state->dataPlnt->PlantLoop(1).glycol = Fluid::GetWater(*state);
+
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Name =
         state->dataWaterCoils->WaterCoil(CoilNum).Name;
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Type =
@@ -8538,6 +8537,9 @@ TEST_F(EnergyPlusFixture, VRFTU_CalcVRFSupplementalHeatingCoilSteam)
     state->dataSteamCoils->SteamCoil(CoilNum).plantLoc.compNum = 1;
     state->dataSteamCoils->SteamCoil(CoilNum).CoilType = DataPlant::PlantEquipmentType::CoilSteamAirHeating;
     state->dataSteamCoils->SteamCoil(CoilNum).TypeOfCoil = SteamCoils::CoilControlType::ZoneLoadControl;
+
+    state->dataSteamCoils->SteamCoil(CoilNum).steam = Fluid::GetSteam(*state);
+
     state->dataSteamCoils->GetSteamCoilsInputFlag = false;
     state->dataSteamCoils->CheckEquipName.dimension(state->dataSteamCoils->NumSteamCoils, true);
     state->dataSteamCoils->MySizeFlag.allocate(CoilNum);
@@ -8560,7 +8562,9 @@ TEST_F(EnergyPlusFixture, VRFTU_CalcVRFSupplementalHeatingCoilSteam)
 
     state->dataPlnt->PlantLoop(1).Name = "SteamLoop";
     state->dataPlnt->PlantLoop(1).FluidName = "STEAM";
-    state->dataPlnt->PlantLoop(1).FluidIndex = state->dataSteamCoils->SteamIndex;
+    state->dataPlnt->PlantLoop(1).glycol = Fluid::GetWater(*state);
+    state->dataPlnt->PlantLoop(1).steam = Fluid::GetSteam(*state);
+
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Name =
         state->dataSteamCoils->SteamCoil(CoilNum).Name;
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Type =
@@ -22897,9 +22901,9 @@ TEST_F(EnergyPlusFixture, VRF_MixedTypes)
     state->dataEnvrn->StdRhoAir = PsyRhoAirFnPbTdbW(*state, state->dataEnvrn->OutBaroPress, 20.0, 0.0);
 
     // Read in IDF
-    ProcessScheduleInput(*state);                    // read schedules
-    Curve::GetCurveInput(*state);                    // read curves
-    FluidProperties::GetFluidPropertiesData(*state); // read refrigerant properties
+    ProcessScheduleInput(*state);          // read schedules
+    Curve::GetCurveInput(*state);          // read curves
+    Fluid::GetFluidPropertiesData(*state); // read refrigerant properties
 
     // set up ZoneEquipConfig data
     state->dataGlobal->NumOfZones = 1;

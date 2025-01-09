@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -4954,11 +4954,11 @@ void ReportZoneMeanAirTemp(EnergyPlusData &state)
         state.dataHeatBalAirMgr->CalcExtraReportVarMyOneTimeFlag = false;
     }
     for (int ZoneLoop = 1; ZoneLoop <= state.dataGlobal->NumOfZones; ++ZoneLoop) {
-        auto &thisZoneHB = state.dataZoneTempPredictorCorrector->zoneHeatBalance(ZoneLoop);
+        auto const &thisZoneHB = state.dataZoneTempPredictorCorrector->zoneHeatBalance(ZoneLoop);
         calcMeanAirTemps(state, thisZoneHB.ZTAV, thisZoneHB.airHumRatAvg, thisZoneHB.MRT, state.dataHeatBal->ZnAirRpt(ZoneLoop), ZoneLoop);
         if (state.dataHeatBal->doSpaceHeatBalanceSimulation) {
             for (int spaceNum : state.dataHeatBal->Zone(ZoneLoop).spaceIndexes) {
-                auto &thisSpaceHB = state.dataZoneTempPredictorCorrector->spaceHeatBalance(spaceNum);
+                auto const &thisSpaceHB = state.dataZoneTempPredictorCorrector->spaceHeatBalance(spaceNum);
                 calcMeanAirTemps(
                     state, thisSpaceHB.ZTAV, thisSpaceHB.airHumRatAvg, thisSpaceHB.MRT, state.dataHeatBal->spaceAirRpt(spaceNum), ZoneLoop);
             }

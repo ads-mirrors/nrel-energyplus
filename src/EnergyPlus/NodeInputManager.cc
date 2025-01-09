@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -79,8 +79,6 @@ namespace EnergyPlus::NodeInputManager {
 
 using namespace DataLoopNode;
 using namespace BranchNodeConnections;
-
-constexpr const char *fluidNameSteam("STEAM");
 
 void GetNodeNums(EnergyPlusData &state,
                  std::string const &Name,                                 // Name for which to obtain information
@@ -962,10 +960,6 @@ void CalcMoreNodeInfo(EnergyPlusData &state)
     // stored in MoreNodeInfo.
 
     // Using/Aliasing
-    using FluidProperties::GetDensityGlycol;
-    using FluidProperties::GetSatDensityRefrig;
-    using FluidProperties::GetSatEnthalpyRefrig;
-    using FluidProperties::GetSpecificHeatGlycol;
     using Psychrometrics::CPCW;
     using Psychrometrics::PsyCpAirFnW;
     using Psychrometrics::PsyHFnTdbW;
@@ -990,7 +984,7 @@ void CalcMoreNodeInfo(EnergyPlusData &state)
     auto &NodeSpecificHeatRepReq = state.dataNodeInputMgr->NodeSpecificHeatRepReq;
     auto &NodeSpecificHeatSchedPtr = state.dataNodeInputMgr->NodeSpecificHeatSchedPtr;
     auto &nodeReportingStrings = state.dataNodeInputMgr->nodeReportingStrings;
-    auto &nodeFluidNames = state.dataNodeInputMgr->nodeFluidNames;
+    auto &nodeFluids = state.dataNodeInputMgr->nodeFluids;
     Real64 SteamDensity;
     Real64 EnthSteamInDry;
     Real64 RhoAirCurrent; // temporary value for current air density f(baro, db , W)
@@ -1010,7 +1004,7 @@ void CalcMoreNodeInfo(EnergyPlusData &state)
         NodeSpecificHeatRepReq.allocate(state.dataLoopNodes->NumOfNodes);
         NodeSpecificHeatSchedPtr.allocate(state.dataLoopNodes->NumOfNodes);
         nodeReportingStrings.reserve(state.dataLoopNodes->NumOfNodes);
-        nodeFluidNames.reserve(state.dataLoopNodes->NumOfNodes);
+        nodeFluids.reserve(state.dataLoopNodes->NumOfNodes);
         state.dataNodeInputMgr->NodeWetBulbRepReq = false;
         NodeWetBulbSchedPtr = 0;
         NodeRelHumidityRepReq = false;
@@ -1022,7 +1016,8 @@ void CalcMoreNodeInfo(EnergyPlusData &state)
 
         for (int iNode = 1; iNode <= state.dataLoopNodes->NumOfNodes; ++iNode) {
             nodeReportingStrings.push_back(std::string(NodeReportingCalc + state.dataLoopNodes->NodeID(iNode)));
-            nodeFluidNames.push_back(FluidProperties::GetGlycolNameByIndex(state, state.dataLoopNodes->Node(iNode).FluidIndex));
+            nodeFluids.push_back(
+                (state.dataLoopNodes->Node(iNode).FluidIndex == 0) ? nullptr : state.dataFluid->glycols(state.dataLoopNodes->Node(iNode).FluidIndex));
 
             for (auto const *reqVar : state.dataOutputProcessor->reqVars) {
                 if (Util::SameString(reqVar->key, state.dataLoopNodes->NodeID(iNode)) || reqVar->key.empty()) {
@@ -1134,26 +1129,14 @@ void CalcMoreNodeInfo(EnergyPlusData &state)
         } else if (state.dataLoopNodes->Node(iNode).FluidType == DataLoopNode::NodeFluidType::Water) {
 
             if (!((state.dataLoopNodes->Node(iNode).FluidIndex > 0) &&
-                  (state.dataLoopNodes->Node(iNode).FluidIndex <= state.dataFluidProps->glycols.isize()))) {
+                  (state.dataLoopNodes->Node(iNode).FluidIndex <= state.dataFluid->glycols.isize()))) {
                 rho = RhoWaterStdInit;
                 rhoStd = RhoWaterStdInit;
                 Cp = CPCW(state.dataLoopNodes->Node(iNode).Temp);
             } else {
-                Cp = GetSpecificHeatGlycol(state,
-                                           nodeFluidNames[iNode - 1],
-                                           state.dataLoopNodes->Node(iNode).Temp,
-                                           state.dataLoopNodes->Node(iNode).FluidIndex,
-                                           nodeReportingStrings[iNode - 1]);
-                rhoStd = GetDensityGlycol(state,
-                                          nodeFluidNames[iNode - 1],
-                                          Constant::InitConvTemp,
-                                          state.dataLoopNodes->Node(iNode).FluidIndex,
-                                          nodeReportingStrings[iNode - 1]);
-                rho = GetDensityGlycol(state,
-                                       nodeFluidNames[iNode - 1],
-                                       state.dataLoopNodes->Node(iNode).Temp,
-                                       state.dataLoopNodes->Node(iNode).FluidIndex,
-                                       nodeReportingStrings[iNode - 1]);
+                Cp = nodeFluids[iNode - 1]->getSpecificHeat(state, state.dataLoopNodes->Node(iNode).Temp, nodeReportingStrings[iNode - 1]);
+                rhoStd = nodeFluids[iNode - 1]->getDensity(state, Constant::InitConvTemp, nodeReportingStrings[iNode - 1]);
+                rho = nodeFluids[iNode - 1]->getDensity(state, state.dataLoopNodes->Node(iNode).Temp, nodeReportingStrings[iNode - 1]);
             }
 
             state.dataLoopNodes->MoreNodeInfo(iNode).VolFlowRateStdRho = state.dataLoopNodes->Node(iNode).MassFlowRate / rhoStd;
@@ -1165,18 +1148,11 @@ void CalcMoreNodeInfo(EnergyPlusData &state)
             state.dataLoopNodes->MoreNodeInfo(iNode).RelHumidity = 100.0;
         } else if (state.dataLoopNodes->Node(iNode).FluidType == DataLoopNode::NodeFluidType::Steam) {
             if (state.dataLoopNodes->Node(iNode).Quality == 1.0) {
-                SteamDensity = GetSatDensityRefrig(state,
-                                                   fluidNameSteam,
-                                                   state.dataLoopNodes->Node(iNode).Temp,
-                                                   state.dataLoopNodes->Node(iNode).Quality,
-                                                   state.dataLoopNodes->Node(iNode).FluidIndex,
-                                                   RoutineName);
-                EnthSteamInDry = GetSatEnthalpyRefrig(state,
-                                                      fluidNameSteam,
-                                                      state.dataLoopNodes->Node(iNode).Temp,
-                                                      state.dataLoopNodes->Node(iNode).Quality,
-                                                      state.dataLoopNodes->Node(iNode).FluidIndex,
-                                                      RoutineName);
+                auto *steam = Fluid::GetSteam(state);
+                SteamDensity =
+                    steam->getSatDensity(state, state.dataLoopNodes->Node(iNode).Temp, state.dataLoopNodes->Node(iNode).Quality, RoutineName);
+                EnthSteamInDry =
+                    steam->getSatEnthalpy(state, state.dataLoopNodes->Node(iNode).Temp, state.dataLoopNodes->Node(iNode).Quality, RoutineName);
                 state.dataLoopNodes->MoreNodeInfo(iNode).VolFlowRateStdRho = state.dataLoopNodes->Node(iNode).MassFlowRate / SteamDensity;
                 state.dataLoopNodes->MoreNodeInfo(iNode).ReportEnthalpy = EnthSteamInDry;
                 state.dataLoopNodes->MoreNodeInfo(iNode).WetBulbTemp = 0.0;

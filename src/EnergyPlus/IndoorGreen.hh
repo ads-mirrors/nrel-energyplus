@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -117,7 +117,7 @@ namespace IndoorGreen {
     void SimIndoorGreen(EnergyPlusData &state);
     void GetIndoorGreenInput(EnergyPlusData &state, bool &ErrorsFound);
     void SetIndoorGreenOutput(EnergyPlusData &state);
-    void InitIndoorGreen(EnergyPlusData &state);
+    void InitIndoorGreen(EnergyPlusData const &state);
     void ETModel(EnergyPlusData &state);
     Real64 ETBaseFunction(EnergyPlusData &state, Real64 ZonePreTemp, Real64 ZonePreHum, Real64 ZonePPFD, Real64 VPD, Real64 LAI, Real64 SwitchF);
 

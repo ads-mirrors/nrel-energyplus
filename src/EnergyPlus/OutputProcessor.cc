@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -310,7 +310,7 @@ namespace OutputProcessor {
         // Make sure that input has been read
         GetReportVariableInput(state);
 
-        auto &op = state.dataOutputProcessor;
+        auto const &op = state.dataOutputProcessor;
 
         for (int iReqVar = 0; iReqVar < (int)op->reqVars.size(); ++iReqVar) {
             auto *reqVar = op->reqVars[iReqVar];
@@ -1701,7 +1701,7 @@ namespace OutputProcessor {
         // Resets the accumulating meter values. Needed after warmup period is over to
         // reset the totals on meters so that they are not accumulated over the warmup period
 
-        auto &op = state.dataOutputProcessor;
+        auto const &op = state.dataOutputProcessor;
 
         for (auto *meter : op->meters) {
             for (int iPeriod = (int)ReportFreq::Hour; iPeriod < (int)ReportFreq::Num; ++iPeriod) {
@@ -3725,7 +3725,7 @@ void UpdateMeterReporting(EnergyPlusData &state)
     int NumReqMeterFOs;
 
     bool ErrorsFound(false); // If errors detected in input
-    auto &op = state.dataOutputProcessor;
+    auto const &op = state.dataOutputProcessor;
     auto &ipsc = state.dataIPShortCut;
 
     GetCustomMeterInput(state, ErrorsFound);
@@ -3743,7 +3743,7 @@ void UpdateMeterReporting(EnergyPlusData &state)
             name.erase(varnameLen);
         }
 
-        auto &op = state.dataOutputProcessor;
+        auto const &op = state.dataOutputProcessor;
 
         std::string::size_type wildCardPosition = index(name, '*');
 
@@ -4007,7 +4007,7 @@ Real64 GetInstantMeterValue(EnergyPlusData &state,
 
     if (meterNum == -1) return InstantMeterValue;
 
-    auto &op = state.dataOutputProcessor;
+    auto const &op = state.dataOutputProcessor;
     auto *meter = op->meters[meterNum];
 
     if (meter->type == MeterType::Normal || meter->type == MeterType::Custom) {
@@ -4072,7 +4072,7 @@ Real64 GetInternalVariableValue(EnergyPlusData &state,
     // Return value
     Real64 resultVal; // value returned
 
-    auto &op = state.dataOutputProcessor;
+    auto const &op = state.dataOutputProcessor;
 
     // Select based on variable type:  integer, real, or meter
     if (varType == VariableType::Invalid) { // Variable not a found variable
@@ -4123,7 +4123,7 @@ Real64 GetInternalVariableValueExternalInterface(EnergyPlusData &state,
     // Return value
     Real64 resultVal; // value returned
 
-    auto &op = state.dataOutputProcessor;
+    auto const &op = state.dataOutputProcessor;
 
     // Select based on variable type:  integer, REAL(r64), or meter
     if (varType == VariableType::Invalid) { // Variable not a found variable
@@ -4281,7 +4281,7 @@ void GetVariableKeyCountandType(EnergyPlusData &state,
     using ScheduleManager::GetScheduleType;
 
     // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-    auto &op = state.dataOutputProcessor;
+    auto const &op = state.dataOutputProcessor;
 
     varType = VariableType::Invalid;
     numKeys = 0;
@@ -4410,7 +4410,7 @@ bool ReportingThisVariable(EnergyPlusData &state, std::string const &RepVarName)
     // if user has requested this variable be reported.
     using namespace OutputProcessor;
 
-    auto &op = state.dataOutputProcessor;
+    auto const &op = state.dataOutputProcessor;
 
     std::string name = Util::makeUPPER(RepVarName);
 
@@ -4528,8 +4528,8 @@ void ProduceRDDMDD(EnergyPlusData &state)
     bool DoReport;
     bool SortByName;
 
-    auto &op = state.dataOutputProcessor;
-    auto &rf = state.dataResultsFramework->resultsFramework;
+    auto const &op = state.dataOutputProcessor;
+    auto const &rf = state.dataResultsFramework->resultsFramework;
 
     //  See if Report Variables should be turned on
     SortByName = false;

@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -370,20 +370,14 @@ void OutsideEnergySourceSpecs::size(EnergyPlusData &state)
         Real64 NomCapDes;
         if (this->EnergyType == DataPlant::PlantEquipmentType::PurchChilledWater ||
             this->EnergyType == DataPlant::PlantEquipmentType::PurchHotWater) {
-            Real64 const rho =
-                FluidProperties::GetDensityGlycol(state, loop.FluidName, Constant::InitConvTemp, loop.FluidIndex, format("Size {}", typeName));
-            Real64 const Cp =
-                FluidProperties::GetSpecificHeatGlycol(state, loop.FluidName, Constant::InitConvTemp, loop.FluidIndex, format("Size {}", typeName));
+            Real64 const rho = loop.glycol->getDensity(state, Constant::InitConvTemp, format("Size {}", typeName));
+            Real64 const Cp = loop.glycol->getSpecificHeat(state, Constant::InitConvTemp, format("Size {}", typeName));
             NomCapDes = Cp * rho * state.dataSize->PlantSizData(PltSizNum).DeltaT * state.dataSize->PlantSizData(PltSizNum).DesVolFlowRate;
         } else { // this->EnergyType == DataPlant::TypeOf_PurchSteam
-            Real64 const tempSteam = FluidProperties::GetSatTemperatureRefrig(
-                state, loop.FluidName, state.dataEnvrn->StdBaroPress, loop.FluidIndex, format("Size {}", typeName));
-            Real64 const rhoSteam =
-                FluidProperties::GetSatDensityRefrig(state, loop.FluidName, tempSteam, 1.0, loop.FluidIndex, format("Size {}", typeName));
-            Real64 const EnthSteamDry =
-                FluidProperties::GetSatEnthalpyRefrig(state, loop.FluidName, tempSteam, 1.0, loop.FluidIndex, format("Size {}", typeName));
-            Real64 const EnthSteamWet =
-                FluidProperties::GetSatEnthalpyRefrig(state, loop.FluidName, tempSteam, 0.0, loop.FluidIndex, format("Size {}", typeName));
+            Real64 const tempSteam = loop.steam->getSatTemperature(state, state.dataEnvrn->StdBaroPress, format("Size {}", typeName));
+            Real64 const rhoSteam = loop.steam->getSatDensity(state, tempSteam, 1.0, format("Size {}", typeName));
+            Real64 const EnthSteamDry = loop.steam->getSatEnthalpy(state, tempSteam, 1.0, format("Size {}", typeName));
+            Real64 const EnthSteamWet = loop.steam->getSatEnthalpy(state, tempSteam, 0.0, format("Size {}", typeName));
             Real64 const LatentHeatSteam = EnthSteamDry - EnthSteamWet;
             NomCapDes = rhoSteam * state.dataSize->PlantSizData(PltSizNum).DesVolFlowRate * LatentHeatSteam;
         }
@@ -474,8 +468,7 @@ void OutsideEnergySourceSpecs::calculate(EnergyPlusData &state, bool runFlag, Re
     if ((this->MassFlowRate > 0.0) && runFlag) {
         if (this->EnergyType == DataPlant::PlantEquipmentType::PurchChilledWater ||
             this->EnergyType == DataPlant::PlantEquipmentType::PurchHotWater) {
-            Real64 const Cp = FluidProperties::GetSpecificHeatGlycol(
-                state, state.dataPlnt->PlantLoop(LoopNum).FluidName, this->InletTemp, state.dataPlnt->PlantLoop(LoopNum).FluidIndex, RoutineName);
+            Real64 const Cp = state.dataPlnt->PlantLoop(LoopNum).glycol->getSpecificHeat(state, this->InletTemp, RoutineName);
             this->OutletTemp = (MyLoad + this->MassFlowRate * Cp * this->InletTemp) / (this->MassFlowRate * Cp);
             // apply loop limits on temperature result to keep in check
             if (this->OutletTemp < LoopMinTemp) {
@@ -488,12 +481,11 @@ void OutsideEnergySourceSpecs::calculate(EnergyPlusData &state, bool runFlag, Re
             }
         } else if (this->EnergyType == DataPlant::PlantEquipmentType::PurchSteam) { // determine mass flow rate based on inlet temp, saturate temp at
                                                                                     // atmospheric pressure, Cp of inlet condensate, and MyLoad
-            Real64 SatTempAtmPress =
-                FluidProperties::GetSatTemperatureRefrig(state, loop.FluidName, DataEnvironment::StdPressureSeaLevel, loop.FluidIndex, RoutineName);
-            Real64 CpCondensate = FluidProperties::GetSpecificHeatGlycol(state, loop.FluidName, this->InletTemp, loop.FluidIndex, RoutineName);
+            Real64 SatTempAtmPress = loop.steam->getSatTemperature(state, DataEnvironment::StdPressureSeaLevel, RoutineName);
+            Real64 CpCondensate = loop.glycol->getSpecificHeat(state, this->InletTemp, RoutineName);
             Real64 deltaTsensible = SatTempAtmPress - this->InletTemp;
-            Real64 EnthSteamInDry = FluidProperties::GetSatEnthalpyRefrig(state, loop.FluidName, this->InletTemp, 1.0, loop.FluidIndex, RoutineName);
-            Real64 EnthSteamOutWet = FluidProperties::GetSatEnthalpyRefrig(state, loop.FluidName, this->InletTemp, 0.0, loop.FluidIndex, RoutineName);
+            Real64 EnthSteamInDry = loop.steam->getSatEnthalpy(state, this->InletTemp, 1.0, RoutineName);
+            Real64 EnthSteamOutWet = loop.steam->getSatEnthalpy(state, this->InletTemp, 0.0, RoutineName);
             Real64 LatentHeatSteam = EnthSteamInDry - EnthSteamOutWet;
             this->MassFlowRate = MyLoad / (LatentHeatSteam + (CpCondensate * deltaTsensible));
             PlantUtilities::SetComponentFlowRate(state, this->MassFlowRate, this->InletNodeNum, this->OutletNodeNum, this->plantLoc);

@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -1083,20 +1083,13 @@ namespace FanCoilUnits {
             fanCoil.OutAirMassFlow = RhoAir * fanCoil.OutAirVolFlow;
 
             if (fanCoil.HCoilType_Num == HCoil::Water) {
-                Real64 rho = FluidProperties::GetDensityGlycol(state,
-                                                               state.dataPlnt->PlantLoop(fanCoil.HeatCoilPlantLoc.loopNum).FluidName,
-                                                               Constant::HWInitConvTemp,
-                                                               state.dataPlnt->PlantLoop(fanCoil.HeatCoilPlantLoc.loopNum).FluidIndex,
-                                                               RoutineName);
+                Real64 rho =
+                    state.dataPlnt->PlantLoop(fanCoil.HeatCoilPlantLoc.loopNum).glycol->getDensity(state, Constant::HWInitConvTemp, RoutineName);
                 fanCoil.MaxHeatCoilFluidFlow = rho * fanCoil.MaxHotWaterVolFlow;
                 fanCoil.MinHotWaterFlow = rho * fanCoil.MinHotWaterVolFlow;
             }
 
-            Real64 rho = FluidProperties::GetDensityGlycol(state,
-                                                           state.dataPlnt->PlantLoop(fanCoil.CoolCoilPlantLoc.loopNum).FluidName,
-                                                           Constant::CWInitConvTemp,
-                                                           state.dataPlnt->PlantLoop(fanCoil.CoolCoilPlantLoc.loopNum).FluidIndex,
-                                                           RoutineName);
+            Real64 rho = state.dataPlnt->PlantLoop(fanCoil.CoolCoilPlantLoc.loopNum).glycol->getDensity(state, Constant::CWInitConvTemp, RoutineName);
             fanCoil.MaxCoolCoilFluidFlow = rho * fanCoil.MaxColdWaterVolFlow;
             fanCoil.MinColdWaterFlow = rho * fanCoil.MinColdWaterVolFlow;
 
@@ -1630,16 +1623,10 @@ namespace FanCoilUnits {
                             }
                             fanCoil.DesHeatingLoad = DesCoilLoad;
                             if (DesCoilLoad >= HVAC::SmallLoad) {
-                                rho = FluidProperties::GetDensityGlycol(state,
-                                                                        state.dataPlnt->PlantLoop(fanCoil.HeatCoilPlantLoc.loopNum).FluidName,
-                                                                        Constant::HWInitConvTemp,
-                                                                        state.dataPlnt->PlantLoop(fanCoil.HeatCoilPlantLoc.loopNum).FluidIndex,
-                                                                        RoutineNameNoSpace);
-                                Cp = FluidProperties::GetSpecificHeatGlycol(state,
-                                                                            state.dataPlnt->PlantLoop(fanCoil.HeatCoilPlantLoc.loopNum).FluidName,
-                                                                            Constant::HWInitConvTemp,
-                                                                            state.dataPlnt->PlantLoop(fanCoil.HeatCoilPlantLoc.loopNum).FluidIndex,
-                                                                            RoutineNameNoSpace);
+                                rho = state.dataPlnt->PlantLoop(fanCoil.HeatCoilPlantLoc.loopNum)
+                                          .glycol->getDensity(state, Constant::HWInitConvTemp, RoutineNameNoSpace);
+                                Cp = state.dataPlnt->PlantLoop(fanCoil.HeatCoilPlantLoc.loopNum)
+                                         .glycol->getSpecificHeat(state, Constant::HWInitConvTemp, RoutineNameNoSpace);
 
                                 MaxHotWaterVolFlowDes = DesCoilLoad / (WaterCoilSizDeltaT * Cp * rho);
                             } else {
@@ -1815,16 +1802,8 @@ namespace FanCoilUnits {
                         }
                         fanCoil.DesCoolingLoad = DesCoilLoad;
                         if (DesCoilLoad >= HVAC::SmallLoad) {
-                            rho = FluidProperties::GetDensityGlycol(state,
-                                                                    state.dataPlnt->PlantLoop(fanCoil.CoolCoilPlantLoc.loopNum).FluidName,
-                                                                    5.,
-                                                                    state.dataPlnt->PlantLoop(fanCoil.CoolCoilPlantLoc.loopNum).FluidIndex,
-                                                                    RoutineNameNoSpace);
-                            Cp = FluidProperties::GetSpecificHeatGlycol(state,
-                                                                        state.dataPlnt->PlantLoop(fanCoil.CoolCoilPlantLoc.loopNum).FluidName,
-                                                                        5.,
-                                                                        state.dataPlnt->PlantLoop(fanCoil.CoolCoilPlantLoc.loopNum).FluidIndex,
-                                                                        RoutineNameNoSpace);
+                            rho = state.dataPlnt->PlantLoop(fanCoil.CoolCoilPlantLoc.loopNum).glycol->getDensity(state, 5., RoutineNameNoSpace);
+                            Cp = state.dataPlnt->PlantLoop(fanCoil.CoolCoilPlantLoc.loopNum).glycol->getSpecificHeat(state, 5., RoutineNameNoSpace);
                             MaxColdWaterVolFlowDes = DesCoilLoad / (WaterCoilSizDeltaT * Cp * rho);
                         } else {
                             MaxColdWaterVolFlowDes = 0.0;

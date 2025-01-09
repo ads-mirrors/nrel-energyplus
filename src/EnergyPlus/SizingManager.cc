@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -2291,9 +2291,9 @@ void ProcessInputOARequirements(EnergyPlusData &state,
                                 std::string const &CurrentModuleObject,
                                 int const OAIndex,
                                 Array1D_string const &Alphas,
-                                int &NumAlphas,
+                                int const NumAlphas,
                                 Array1D<Real64> const &Numbers,
-                                int &NumNumbers,
+                                int const NumNumbers,
                                 Array1D_bool const &lAlphaBlanks,
                                 Array1D_string const &cAlphaFields,
                                 bool &ErrorsFound // If errors found in input

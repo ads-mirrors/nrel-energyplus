@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -56,6 +56,7 @@
 #include <EnergyPlus/DataDefineEquip.hh>
 #include <EnergyPlus/DataGlobals.hh>
 #include <EnergyPlus/EnergyPlus.hh>
+#include <EnergyPlus/FluidProperties.hh>
 #include <EnergyPlus/Plant/Enums.hh>
 #include <EnergyPlus/Plant/PlantLocation.hh>
 
@@ -159,7 +160,7 @@ namespace PoweredInductionUnits {
         DataPlant::PlantEquipmentType HCoil_PlantType;
         std::string HCoil; // name of heating coil component
         int HCoil_Index;   // index to this heating coil
-        int HCoil_FluidIndex;
+        Fluid::RefrigProps *HCoil_fluid = nullptr;
         Real64 MaxVolHotWaterFlow; // m3/s
         Real64 MaxVolHotSteamFlow; // m3/s
         Real64 MaxHotWaterFlow;    // kg/s
@@ -212,8 +213,8 @@ namespace PoweredInductionUnits {
               MaxSecAirVolFlow(0.0), MaxSecAirMassFlow(0.0), FanOnFlowFrac(0.0), FanOnAirMassFlow(0.0), PriAirInNode(0), SecAirInNode(0),
               OutAirNode(0), HCoilInAirNode(0), ControlCompTypeNum(0), CompErrIndex(0), Mixer_Num(0), fanType(HVAC::FanType::Invalid), Fan_Index(0),
               FanAvailSchedPtr(0), HCoilType(HtgCoilType::Invalid), HCoil_PlantType(DataPlant::PlantEquipmentType::Invalid), HCoil_Index(0),
-              HCoil_FluidIndex(0), MaxVolHotWaterFlow(0.0), MaxVolHotSteamFlow(0.0), MaxHotWaterFlow(0.0), MaxHotSteamFlow(0.0),
-              MinVolHotWaterFlow(0.0), MinHotSteamFlow(0.0), MinVolHotSteamFlow(0.0), MinHotWaterFlow(0.0), HotControlNode(0), HotCoilOutNodeNum(0),
+              MaxVolHotWaterFlow(0.0), MaxVolHotSteamFlow(0.0), MaxHotWaterFlow(0.0), MaxHotSteamFlow(0.0), MinVolHotWaterFlow(0.0),
+              MinHotSteamFlow(0.0), MinVolHotSteamFlow(0.0), MinHotWaterFlow(0.0), HotControlNode(0), HotCoilOutNodeNum(0),
               HotControlOffset(0.0), HWplantLoc{}, ADUNum(0), InducesPlenumAir(false), HeatingRate(0.0), HeatingEnergy(0.0), SensCoolRate(0.0),
               SensCoolEnergy(0.0), CtrlZoneNum(0), ctrlZoneInNodeIndex(0), AirLoopNum(0), OutdoorAirFlowRate(0.0)
         {

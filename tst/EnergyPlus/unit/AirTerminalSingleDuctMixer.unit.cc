@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -7768,9 +7768,8 @@ TEST_F(EnergyPlusFixture, AirTerminalSingleDuctMixer_SimFCU_ATMInletSideTest)
     // chilled water plant loop
     auto &CWLoop(state->dataPlnt->PlantLoop(2));
     CWLoop.Name = "ChilledWaterLoop";
-    CWLoop.FluidName = "Water";
-    CWLoop.FluidIndex = 1;
     CWLoop.FluidName = "WATER";
+    CWLoop.glycol = Fluid::GetWater(*state);
     CWLoop.LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Name = CWCoil.Name;
     CWLoop.LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Type = DataPlant::PlantEquipmentType::CoilWaterCooling;
     CWLoop.LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).NodeNumIn = CWCoil.WaterInletNodeNum;
@@ -7785,9 +7784,8 @@ TEST_F(EnergyPlusFixture, AirTerminalSingleDuctMixer_SimFCU_ATMInletSideTest)
     // hot water plant loop
     auto &HWLoop(state->dataPlnt->PlantLoop(1));
     HWLoop.Name = "HotWaterLoop";
-    HWLoop.FluidName = "Water";
-    HWLoop.FluidIndex = 1;
     HWLoop.FluidName = "WATER";
+    HWLoop.glycol = Fluid::GetWater(*state);
     HWLoop.LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Name = HWCoil.Name;
     HWLoop.LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Type = DataPlant::PlantEquipmentType::CoilWaterSimpleHeating;
     HWLoop.LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).NodeNumIn = HWCoil.WaterInletNodeNum;
@@ -8200,9 +8198,8 @@ TEST_F(EnergyPlusFixture, AirTerminalSingleDuctMixer_FCU_NightCycleTest)
     // chilled water plant loop
     auto &CWLoop(state->dataPlnt->PlantLoop(2));
     CWLoop.Name = "ChilledWaterLoop";
-    CWLoop.FluidName = "Water";
-    CWLoop.FluidIndex = 1;
     CWLoop.FluidName = "WATER";
+    CWLoop.glycol = Fluid::GetWater(*state);
     CWLoop.LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Name = CWCoil.Name;
     CWLoop.LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Type = DataPlant::PlantEquipmentType::CoilWaterCooling;
     CWLoop.LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).NodeNumIn = CWCoil.WaterInletNodeNum;
@@ -8217,9 +8214,8 @@ TEST_F(EnergyPlusFixture, AirTerminalSingleDuctMixer_FCU_NightCycleTest)
     // hot water plant loop
     auto &HWLoop(state->dataPlnt->PlantLoop(1));
     HWLoop.Name = "HotWaterLoop";
-    HWLoop.FluidName = "Water";
-    HWLoop.FluidIndex = 1;
     HWLoop.FluidName = "WATER";
+    HWLoop.glycol = Fluid::GetWater(*state);
     HWLoop.LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Name = HWCoil.Name;
     HWLoop.LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Type = DataPlant::PlantEquipmentType::CoilWaterSimpleHeating;
     HWLoop.LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).NodeNumIn = HWCoil.WaterInletNodeNum;

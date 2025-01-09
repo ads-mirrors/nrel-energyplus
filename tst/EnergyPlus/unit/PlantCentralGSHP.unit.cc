@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -119,8 +119,8 @@ TEST_F(EnergyPlusFixture, ChillerHeater_Autosize)
     // Chilled Water Loop
     int PltSizNum = 1;
     state->dataPlnt->PlantLoop(PltSizNum).PlantSizNum = 1;
-    state->dataPlnt->PlantLoop(PltSizNum).FluidIndex = 1;
     state->dataPlnt->PlantLoop(PltSizNum).FluidName = "WATER";
+    state->dataPlnt->PlantLoop(PltSizNum).glycol = Fluid::GetWater(*state);
     state->dataSize->PlantSizData(PltSizNum).DesVolFlowRate = 1.0;
     state->dataSize->PlantSizData(PltSizNum).DeltaT = 10.0;
     state->dataSize->PlantSizData(PltSizNum).LoopType = DataSizing::TypeOfPlantLoop::Cooling;
@@ -130,37 +130,23 @@ TEST_F(EnergyPlusFixture, ChillerHeater_Autosize)
     // Condenser Loop
     int PltSizCondNum = 2;
     state->dataPlnt->PlantLoop(PltSizCondNum).PlantSizNum = PltSizCondNum;
-    state->dataPlnt->PlantLoop(PltSizCondNum).FluidIndex = 1;
     state->dataPlnt->PlantLoop(PltSizCondNum).FluidName = "WATER";
+    state->dataPlnt->PlantLoop(PltSizCondNum).glycol = Fluid::GetWater(*state);
     state->dataSize->PlantSizData(PltSizCondNum).DeltaT = 5.6;
     state->dataSize->PlantSizData(PltSizCondNum).LoopType = DataSizing::TypeOfPlantLoop::Condenser;
     // Assign to the wrapper
     state->dataPlantCentralGSHP->Wrapper(1).GLHEPlantLoc.loopNum = PltSizCondNum;
 
     // Calculate expected values
-    Real64 rho_evap = FluidProperties::GetDensityGlycol(*state,
-                                                        state->dataPlnt->PlantLoop(PltSizNum).FluidName,
-                                                        Constant::CWInitConvTemp,
-                                                        state->dataPlnt->PlantLoop(PltSizNum).FluidIndex,
-                                                        "ChillerHeater_Autosize_TEST");
+    Real64 rho_evap = state->dataPlnt->PlantLoop(PltSizNum).glycol->getDensity(*state, Constant::CWInitConvTemp, "ChillerHeater_Autosize_TEST");
 
-    Real64 Cp_evap = FluidProperties::GetSpecificHeatGlycol(*state,
-                                                            state->dataPlnt->PlantLoop(PltSizNum).FluidName,
-                                                            Constant::CWInitConvTemp,
-                                                            state->dataPlnt->PlantLoop(PltSizNum).FluidIndex,
-                                                            "ChillerHeater_Autosize_TEST");
+    Real64 Cp_evap = state->dataPlnt->PlantLoop(PltSizNum).glycol->getSpecificHeat(*state, Constant::CWInitConvTemp, "ChillerHeater_Autosize_TEST");
 
-    Real64 rho_cond = FluidProperties::GetDensityGlycol(*state,
-                                                        state->dataPlnt->PlantLoop(PltSizCondNum).FluidName,
-                                                        Constant::CWInitConvTemp,
-                                                        state->dataPlnt->PlantLoop(PltSizCondNum).FluidIndex,
-                                                        "ChillerHeater_Autosize_TEST");
+    Real64 rho_cond = state->dataPlnt->PlantLoop(PltSizCondNum).glycol->getDensity(*state, Constant::CWInitConvTemp, "ChillerHeater_Autosize_TEST");
 
-    Real64 Cp_cond = FluidProperties::GetSpecificHeatGlycol(*state,
-                                                            state->dataPlnt->PlantLoop(PltSizCondNum).FluidName,
-                                                            state->dataPlantCentralGSHP->Wrapper(1).ChillerHeater(1).TempRefCondInCooling,
-                                                            state->dataPlnt->PlantLoop(PltSizCondNum).FluidIndex,
-                                                            "ChillerHeater_Autosize_TEST");
+    Real64 Cp_cond = state->dataPlnt->PlantLoop(PltSizCondNum)
+                         .glycol->getSpecificHeat(
+                             *state, state->dataPlantCentralGSHP->Wrapper(1).ChillerHeater(1).TempRefCondInCooling, "ChillerHeater_Autosize_TEST");
 
     // Note: Each individual chiller heater module is sized to be capable of supporting the total load on the wrapper
 
@@ -366,6 +352,7 @@ TEST_F(EnergyPlusFixture, Test_CentralHeatPumpSystem_Control_Schedule_fix)
 
 TEST_F(EnergyPlusFixture, Test_CentralHeatPumpSystem_adjustChillerHeaterCondFlowTemp)
 {
+    state->dataFluid->init_state(*state);
     state->dataPlantCentralGSHP->Wrapper.allocate(1);
     state->dataPlantCentralGSHP->Wrapper(1).WrapperComp.allocate(1);
     state->dataPlantCentralGSHP->Wrapper(1).ChillerHeater.allocate(1);
@@ -373,9 +360,8 @@ TEST_F(EnergyPlusFixture, Test_CentralHeatPumpSystem_adjustChillerHeaterCondFlow
     auto &thisCH = thisWrap.ChillerHeater(1);
     state->dataPlnt->PlantLoop.allocate(1);
     state->dataPlnt->PlantLoop(1).FluidName = "WATER";
-    state->dataPlnt->PlantLoop(1).FluidIndex = FluidProperties::GetGlycolNum(*state, state->dataPlnt->PlantLoop(1).FluidName);
+    state->dataPlnt->PlantLoop(1).glycol = Fluid::GetWater(*state);
     thisWrap.HWPlantLoc.loopNum = 1;
-    FluidProperties::GetFluidPropertiesData(*state);
 
     Real64 qCondenser;
     Real64 condMassFlowRate;
@@ -450,6 +436,7 @@ TEST_F(EnergyPlusFixture, Test_CentralHeatPumpSystem_adjustChillerHeaterCondFlow
 
 TEST_F(EnergyPlusFixture, Test_CentralHeatPumpSystem_adjustChillerHeaterEvapFlowTemp)
 {
+    state->dataFluid->init_state(*state);
     state->dataPlantCentralGSHP->Wrapper.allocate(1);
     state->dataPlantCentralGSHP->Wrapper(1).WrapperComp.allocate(1);
     state->dataPlantCentralGSHP->Wrapper(1).ChillerHeater.allocate(1);
@@ -457,9 +444,8 @@ TEST_F(EnergyPlusFixture, Test_CentralHeatPumpSystem_adjustChillerHeaterEvapFlow
     auto &thisCH = thisWrap.ChillerHeater(1);
     state->dataPlnt->PlantLoop.allocate(1);
     state->dataPlnt->PlantLoop(1).FluidName = "WATER";
-    state->dataPlnt->PlantLoop(1).FluidIndex = FluidProperties::GetGlycolNum(*state, state->dataPlnt->PlantLoop(1).FluidName);
+    state->dataPlnt->PlantLoop(1).glycol = Fluid::GetWater(*state);
     thisWrap.HWPlantLoc.loopNum = 1;
-    FluidProperties::GetFluidPropertiesData(*state);
 
     Real64 qEvaporator;
     Real64 evapMassFlowRate;

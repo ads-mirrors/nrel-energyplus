@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -128,8 +128,6 @@ namespace HVACVariableRefrigerantFlow {
             return "";
         }
     }
-
-    constexpr const char *fluidNameSteam("STEAM");
 
     // Flag for hex operation
     enum class HXOpMode
@@ -359,7 +357,7 @@ namespace HVACVariableRefrigerantFlow {
         Real64 OUEvapHeatRate;           // Outdoor Unit Evaporator Heat Extract Rate, excluding piping loss  [W]
         Real64 OUFanPower;               // Outdoor unit fan power at real conditions[W]
         std::string refrigName;          // Name of refrigerant, must match name in FluidName (see fluidpropertiesrefdata.idf)
-        FluidProperties::RefrigProps *refrig;
+        Fluid::RefrigProps *refrig;
         Real64 RatedEvapCapacity;         // Rated Evaporative Capacity [W]
         Real64 RatedHeatCapacity;         // Rated Heating Capacity [W]
         Real64 RatedCompPower;            // Rated Compressor Power [W]

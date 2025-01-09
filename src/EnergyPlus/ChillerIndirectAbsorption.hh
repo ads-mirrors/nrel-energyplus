@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -55,6 +55,7 @@
 #include <EnergyPlus/Data/BaseData.hh>
 #include <EnergyPlus/DataGlobals.hh>
 #include <EnergyPlus/EnergyPlus.hh>
+#include <EnergyPlus/FluidProperties.hh>
 #include <EnergyPlus/Plant/DataPlant.hh>
 #include <EnergyPlus/PlantComponent.hh>
 
@@ -137,7 +138,7 @@ namespace ChillerIndirectAbsorption {
         DataLoopNode::NodeFluidType GenHeatSourceType =
             DataLoopNode::NodeFluidType::Blank;                      // Generator heat source type, DataLoopNode::NodeFluidType::Steam=3 or
                                                                      // DataLoopNode::NodeFluidType::Water=2
-        int SteamFluidIndex = 0;                                     // index to generator fluid type
+        Fluid::RefrigProps *steam = nullptr;                         // STEAM Fluid Properties
         bool Available = false;                                      // need an array of logicals--load identifiers of available equipment
         bool ON = false;                                             // simulate the machine at it's operating part load ratio
         DataPlant::FlowMode FlowMode = DataPlant::FlowMode::Invalid; // one of 3 modes for component flow during operation
@@ -176,6 +177,8 @@ namespace ChillerIndirectAbsorption {
         bool MyEnvrnFlag = true;
         ReportVars Report;
         DataBranchAirLoopPlant::ControlType EquipFlowCtrl = DataBranchAirLoopPlant::ControlType::Invalid;
+
+        Fluid::GlycolProps *water = nullptr;
 
         static IndirectAbsorberSpecs *factory(EnergyPlusData &state, std::string const &objectName);
 

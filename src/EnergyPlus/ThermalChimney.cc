@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -734,7 +734,7 @@ namespace ThermalChimney {
 
             // determine major width and minor width
             for (int spaceNum : state.dataHeatBal->Zone(ZoneNum).spaceIndexes) {
-                auto &thisSpace = state.dataHeatBal->space(spaceNum);
+                auto const &thisSpace = state.dataHeatBal->space(spaceNum);
                 for (int SurfNum = thisSpace.HTSurfaceFirst; SurfNum <= thisSpace.HTSurfaceLast; ++SurfNum) {
                     if (state.dataSurface->Surface(SurfNum).Class != SurfaceClass::Wall) continue;
 
@@ -801,12 +801,12 @@ namespace ThermalChimney {
             Process2 = 0.0;
             for (int TCZoneNum = 1; TCZoneNum <= state.dataThermalChimneys->ThermalChimneySys(Loop).TotZoneToDistrib; ++TCZoneNum) {
                 int tcZonePtr = state.dataThermalChimneys->ThermalChimneySys(Loop).ZonePtr(TCZoneNum);
-                auto &thisTCZoneHB = state.dataZoneTempPredictorCorrector->zoneHeatBalance(tcZonePtr);
+                auto const &thisTCZoneHB = state.dataZoneTempPredictorCorrector->zoneHeatBalance(tcZonePtr);
                 Real64 tcZoneMAT = thisTCZoneHB.MAT;
                 Real64 tcZoneHumRat = thisTCZoneHB.airHumRat;
                 int tcSpacePtr = state.dataThermalChimneys->ThermalChimneySys(Loop).spacePtr(TCZoneNum);
                 if ((state.dataHeatBal->doSpaceHeatBalance) && (tcSpacePtr > 0)) {
-                    auto &thisTCspaceHB = state.dataZoneTempPredictorCorrector->spaceHeatBalance(tcSpacePtr);
+                    auto const &thisTCspaceHB = state.dataZoneTempPredictorCorrector->spaceHeatBalance(tcSpacePtr);
                     tcZoneMAT = thisTCspaceHB.MAT;
                     tcZoneHumRat = thisTCspaceHB.airHumRat;
                 }
@@ -916,7 +916,7 @@ namespace ThermalChimney {
                 Real64 tcZoneHumRat = thisTCZoneHB.airHumRat;
                 int tcSpacePtr = state.dataThermalChimneys->ThermalChimneySys(Loop).spacePtr(TCZoneNum);
                 if ((state.dataHeatBal->doSpaceHeatBalance) && (tcSpacePtr > 0)) {
-                    auto &thisTCSpaceHB = state.dataZoneTempPredictorCorrector->spaceHeatBalance(tcSpacePtr);
+                    auto const &thisTCSpaceHB = state.dataZoneTempPredictorCorrector->spaceHeatBalance(tcSpacePtr);
                     tcZoneMAT = thisTCSpaceHB.MAT;
                     tcZoneHumRat = thisTCSpaceHB.airHumRat;
                 }

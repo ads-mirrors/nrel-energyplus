@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -1700,8 +1700,7 @@ namespace WaterUse {
         static constexpr std::string_view RoutineName{"calcH2ODensity"};
 
         if (state.dataWaterUse->calcRhoH2O) {
-            int DummyValue = 1;
-            state.dataWaterUse->rhoH2OStd = FluidProperties::GetDensityGlycol(state, "WATER", Constant::InitConvTemp, DummyValue, RoutineName);
+            state.dataWaterUse->rhoH2OStd = Fluid::GetWater(state)->getDensity(state, Constant::InitConvTemp, RoutineName);
             state.dataWaterUse->calcRhoH2O = false;
         }
         return state.dataWaterUse->rhoH2OStd;

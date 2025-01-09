@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -198,9 +198,6 @@ void GetTESCoilInput(EnergyPlusData &state)
     // Using/Aliasing
     using BranchNodeConnections::TestCompSet;
     using DataZoneEquipment::FindControlledZoneIndexFromSystemNodeNumberForZone;
-    using FluidProperties::CheckFluidPropertyName;
-    using FluidProperties::GetFluidDensityTemperatureLimits;
-    using FluidProperties::GetFluidSpecificHeatTemperatureLimits;
     using GlobalNames::VerifyUniqueCoilName;
     using NodeInputManager::GetOnlySingleNode;
     using ScheduleManager::GetScheduleIndex;
@@ -209,6 +206,7 @@ void GetTESCoilInput(EnergyPlusData &state)
 
     // SUBROUTINE PARAMETER DEFINITIONS:
     static constexpr std::string_view RoutineName("GetTESCoilInput: "); // include trailing blank space
+    static constexpr std::string_view routineName = "GetTESCoilInput";
 
     // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
     int NumAlphas = 0;       // Number of alphas in input
@@ -239,6 +237,9 @@ void GetTESCoilInput(EnergyPlusData &state)
                                                                  state.dataIPShortCut->lAlphaFieldBlanks,
                                                                  state.dataIPShortCut->cAlphaFieldNames,
                                                                  state.dataIPShortCut->cNumericFieldNames);
+
+        ErrorObjectHeader eoh{routineName, cCurrentModuleObject, state.dataIPShortCut->cAlphaArgs(1)};
+
         Util::IsNameEmpty(state, state.dataIPShortCut->cAlphaArgs(1), cCurrentModuleObject, ErrorsFound);
 
         // ErrorsFound will be set to True if problem was found, left untouched otherwise
@@ -285,7 +286,7 @@ void GetTESCoilInput(EnergyPlusData &state)
             break;
         case MediaType::Water:
             thisTESCoil.StorageFluidName = "WATER";
-            thisTESCoil.StorageFluidIndex = FluidProperties::GetGlycolNum(state, "WATER");
+            thisTESCoil.glycol = Fluid::GetWater(state);
             break;
         default:
             ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, cCurrentModuleObject, thisTESCoil.Name));
@@ -294,28 +295,13 @@ void GetTESCoilInput(EnergyPlusData &state)
             ErrorsFound = true;
         }
 
+        thisTESCoil.StorageFluidName = state.dataIPShortCut->cAlphaArgs(6);
         if (Util::SameString(state.dataIPShortCut->cAlphaArgs(5), "USERDEFINEDFLUIDTYPE")) {
-            if (!(state.dataIPShortCut->lAlphaFieldBlanks(6))) {
-                thisTESCoil.StorageFluidName = state.dataIPShortCut->cAlphaArgs(6);
-                if (CheckFluidPropertyName(state, state.dataIPShortCut->cAlphaArgs(6)) == 0) {
-                    ShowSevereError(state, format("{}{}=\"{}\", missing fluid data", RoutineName, cCurrentModuleObject, thisTESCoil.Name));
-                    ShowContinueError(
-                        state, format("Check that fluid property data have been input for fluid name = {}", state.dataIPShortCut->cAlphaArgs(6)));
-                    ErrorsFound = true;
-                } else {
-                    thisTESCoil.StorageFluidIndex = FluidProperties::GetGlycolNum(state, state.dataIPShortCut->cAlphaArgs(6));
-                    if (thisTESCoil.StorageFluidIndex == 0) {
-                        ShowSevereError(state, format("{}{}=\"{}\", invalid fluid data", RoutineName, cCurrentModuleObject, thisTESCoil.Name));
-                        ShowContinueError(state,
-                                          format("Check that correct fluid property data have been input for fluid name = {}",
-                                                 state.dataIPShortCut->cAlphaArgs(6)));
-                        ErrorsFound = true;
-                    }
-                }
-
-            } else {
-                ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, cCurrentModuleObject, thisTESCoil.Name));
-                ShowContinueError(state, "Storage Type is set to UserDefinedFluidType but no name of fluid was entered.");
+            if (!state.dataIPShortCut->lAlphaFieldBlanks(6)) {
+                ShowSevereEmptyField(state, eoh, state.dataIPShortCut->cAlphaFieldNames(6));
+                ErrorsFound = true;
+            } else if ((thisTESCoil.glycol = Fluid::GetGlycol(state, state.dataIPShortCut->cAlphaArgs(6))) == nullptr) {
+                ShowSevereItemNotFound(state, eoh, state.dataIPShortCut->cAlphaFieldNames(6), state.dataIPShortCut->cAlphaArgs(6));
                 ErrorsFound = true;
             }
         }
@@ -1558,15 +1544,15 @@ void GetTESCoilInput(EnergyPlusData &state)
             if (!state.dataIPShortCut->lNumericFieldBlanks(42)) {
                 thisTESCoil.MinimumFluidTankTempLimit = state.dataIPShortCut->rNumericArgs(42);
             } else {
-                GetFluidDensityTemperatureLimits(state, thisTESCoil.StorageFluidIndex, TminRho, TmaxRho);
-                GetFluidSpecificHeatTemperatureLimits(state, thisTESCoil.StorageFluidIndex, TminCp, TmaxCp);
+                thisTESCoil.glycol->getDensityTemperatureLimits(state, TminRho, TmaxRho);
+                thisTESCoil.glycol->getSpecificHeatTemperatureLimits(state, TminCp, TmaxCp);
                 thisTESCoil.MinimumFluidTankTempLimit = max(TminRho, TminCp);
             }
             if (!state.dataIPShortCut->lNumericFieldBlanks(43)) {
                 thisTESCoil.MaximumFluidTankTempLimit = state.dataIPShortCut->rNumericArgs(43);
             } else {
-                GetFluidDensityTemperatureLimits(state, thisTESCoil.StorageFluidIndex, TminRho, TmaxRho);
-                GetFluidSpecificHeatTemperatureLimits(state, thisTESCoil.StorageFluidIndex, TminCp, TmaxCp);
+                thisTESCoil.glycol->getDensityTemperatureLimits(state, TminRho, TmaxRho);
+                thisTESCoil.glycol->getSpecificHeatTemperatureLimits(state, TminCp, TmaxCp);
                 thisTESCoil.MaximumFluidTankTempLimit = min(TmaxRho, TmaxCp);
             }
         }
@@ -2144,8 +2130,6 @@ void SizeTESCoil(EnergyPlusData &state, int &TESCoilNum)
     // Using/Aliasing
     using namespace DataSizing;
     using namespace OutputReportPredefined;
-    using FluidProperties::GetDensityGlycol;
-    using FluidProperties::GetSpecificHeatGlycol;
 
     // SUBROUTINE PARAMETER DEFINITIONS:
     static constexpr std::string_view RoutineName("SizeTESCoil ");
@@ -2369,11 +2353,8 @@ void SizeTESCoil(EnergyPlusData &state, int &TESCoilNum)
 
             // for fluid tanks, assume a 10C deltaT or diff between max and min, whichever is smaller
             deltaT = min(FluidTankSizingDeltaT, (thisTESCoil.MaximumFluidTankTempLimit - thisTESCoil.MinimumFluidTankTempLimit));
-
-            rho = GetDensityGlycol(
-                state, thisTESCoil.StorageFluidName, Constant::CWInitConvTemp, thisTESCoil.StorageFluidIndex, calcTESWaterStorageTank);
-            Cp = GetSpecificHeatGlycol(
-                state, thisTESCoil.StorageFluidName, Constant::CWInitConvTemp, thisTESCoil.StorageFluidIndex, calcTESWaterStorageTank);
+            rho = thisTESCoil.glycol->getDensity(state, Constant::CWInitConvTemp, calcTESWaterStorageTank);
+            Cp = thisTESCoil.glycol->getSpecificHeat(state, Constant::CWInitConvTemp, calcTESWaterStorageTank);
             if (thisTESCoil.DischargeOnlyRatedDischargeCap > 0.0 && thisTESCoil.DischargeOnlyModeAvailable) {
                 thisTESCoil.FluidStorageVolume =
                     (thisTESCoil.DischargeOnlyRatedDischargeCap * thisTESCoil.StorageCapacitySizingFactor * Constant::SecInHour) /
@@ -2770,8 +2751,6 @@ void CalcTESCoilCoolingAndChargeMode(EnergyPlusData &state,
 
     // Using/Aliasing
     Real64 const TimeStepSysSec = state.dataHVACGlobal->TimeStepSysSec;
-    using FluidProperties::GetDensityGlycol;
-    using FluidProperties::GetSpecificHeatGlycol;
 
     // SUBROUTINE PARAMETER DEFINITIONS:
     int constexpr MaxIter(30);
@@ -2825,9 +2804,9 @@ void CalcTESCoilCoolingAndChargeMode(EnergyPlusData &state,
         if ((sTES > thisTESCoil.MinimumFluidTankTempLimit) && (sTES < thisTESCoil.MaximumFluidTankTempLimit)) {
             TESCanBeCharged = true;
             // find charge limit to reach limits
-            Real64 const rho = GetDensityGlycol(state, thisTESCoil.StorageFluidName, sTES, thisTESCoil.StorageFluidIndex, RoutineName);
+            Real64 const rho = thisTESCoil.glycol->getDensity(state, sTES, RoutineName);
             Real64 const TankMass = rho * thisTESCoil.FluidStorageVolume;
-            Real64 const CpTank = GetSpecificHeatGlycol(state, thisTESCoil.StorageFluidName, sTES, thisTESCoil.StorageFluidIndex, RoutineName);
+            Real64 const CpTank = thisTESCoil.glycol->getSpecificHeat(state, sTES, RoutineName);
             // simple linear approximation of DT/Dt term in McpDT/Dt
             QdotChargeLimit = TankMass * CpTank * (sTES - thisTESCoil.MinimumFluidTankTempLimit) / TimeStepSysSec;
         } else {
@@ -3180,8 +3159,6 @@ void CalcTESCoilCoolingAndDischargeMode(EnergyPlusData &state,
 
     // Using/Aliasing
     Real64 const TimeStepSysSec = state.dataHVACGlobal->TimeStepSysSec;
-    using FluidProperties::GetDensityGlycol;
-    using FluidProperties::GetSpecificHeatGlycol;
 
     // SUBROUTINE PARAMETER DEFINITIONS:
     int constexpr MaxIter(30);
@@ -3234,9 +3211,9 @@ void CalcTESCoilCoolingAndDischargeMode(EnergyPlusData &state,
         sTES = thisTESCoil.FluidTankTempFinalLastTimestep;
         if ((sTES >= thisTESCoil.MinimumFluidTankTempLimit) && (sTES < thisTESCoil.MaximumFluidTankTempLimit)) {
             TESHasSomeCharge = true;
-            Real64 const rho = GetDensityGlycol(state, thisTESCoil.StorageFluidName, sTES, thisTESCoil.StorageFluidIndex, RoutineName);
+            Real64 const rho = thisTESCoil.glycol->getDensity(state, sTES, RoutineName);
             Real64 const TankMass = rho * thisTESCoil.FluidStorageVolume;
-            Real64 const CpTank = GetSpecificHeatGlycol(state, thisTESCoil.StorageFluidName, sTES, thisTESCoil.StorageFluidIndex, RoutineName);
+            Real64 const CpTank = thisTESCoil.glycol->getSpecificHeat(state, sTES, RoutineName);
             // simple linear approximation of DT/Dt term in McpDT/Dt
             QdotDischargeLimit = TankMass * CpTank * (thisTESCoil.MaximumFluidTankTempLimit - sTES) / TimeStepSysSec;
         } else {
@@ -3527,8 +3504,6 @@ void CalcTESCoilChargeOnlyMode(EnergyPlusData &state, int const TESCoilNum)
 
     // Using/Aliasing
     Real64 const TimeStepSysSec = state.dataHVACGlobal->TimeStepSysSec;
-    using FluidProperties::GetDensityGlycol;
-    using FluidProperties::GetSpecificHeatGlycol;
 
     // SUBROUTINE PARAMETER DEFINITIONS:
     static constexpr std::string_view RoutineName("CalcTESCoilChargeOnlyMode");
@@ -3592,11 +3567,11 @@ void CalcTESCoilChargeOnlyMode(EnergyPlusData &state, int const TESCoilNum)
             TESCanBeCharged = true;
             // find charge limit to reach limits
             // density of water in tank (kg/m3)
-            Real64 const rho = GetDensityGlycol(state, thisTESCoil.StorageFluidName, sTES, thisTESCoil.StorageFluidIndex, RoutineName);
+            Real64 const rho = thisTESCoil.glycol->getDensity(state, sTES, RoutineName);
             // Mass of water in tank (kg)
             Real64 const TankMass = rho * thisTESCoil.FluidStorageVolume;
             // Specific heat of water in tank (J/kg K)
-            Real64 const CpTank = GetSpecificHeatGlycol(state, thisTESCoil.StorageFluidName, sTES, thisTESCoil.StorageFluidIndex, RoutineName);
+            Real64 const CpTank = thisTESCoil.glycol->getSpecificHeat(state, sTES, RoutineName);
             // simple linear approximation of DT/Dt term in McpDT/Dt
             QdotChargeLimit = TankMass * CpTank * (sTES - thisTESCoil.MinimumFluidTankTempLimit) / TimeStepSysSec;
         } else {
@@ -3691,8 +3666,6 @@ void CalcTESCoilDischargeOnlyMode(EnergyPlusData &state, int const TESCoilNum, R
 
     // Using/Aliasing
     Real64 const TimeStepSysSec = state.dataHVACGlobal->TimeStepSysSec;
-    using FluidProperties::GetDensityGlycol;
-    using FluidProperties::GetSpecificHeatGlycol;
 
     // SUBROUTINE PARAMETER DEFINITIONS:
     int constexpr MaxIter(30);
@@ -3714,11 +3687,11 @@ void CalcTESCoilDischargeOnlyMode(EnergyPlusData &state, int const TESCoilNum, R
         if ((sTES >= thisTESCoil.MinimumFluidTankTempLimit) && (sTES < thisTESCoil.MaximumFluidTankTempLimit)) {
             TESHasSomeCharge = true;
             // density of water in tank (kg/m3)
-            Real64 const rho = GetDensityGlycol(state, thisTESCoil.StorageFluidName, sTES, thisTESCoil.StorageFluidIndex, StorageTankName);
+            Real64 const rho = thisTESCoil.glycol->getDensity(state, sTES, StorageTankName);
             // Mass of water in tank (kg)
             Real64 const TankMass = rho * thisTESCoil.FluidStorageVolume;
             // Specific heat of water in tank (J/kg K)
-            Real64 const CpTank = GetSpecificHeatGlycol(state, thisTESCoil.StorageFluidName, sTES, thisTESCoil.StorageFluidIndex, StorageTankName);
+            Real64 const CpTank = thisTESCoil.glycol->getSpecificHeat(state, sTES, StorageTankName);
             // simple linear approximation of DT/Dt term in McpDT/Dt
             QdotDischargeLimit = TankMass * CpTank * (thisTESCoil.MaximumFluidTankTempLimit - sTES) / TimeStepSysSec;
         } else {
@@ -3993,8 +3966,6 @@ void CalcTESWaterStorageTank(EnergyPlusData &state, int const TESCoilNum)
 
     // Using/Aliasing
     Real64 const TimeStepSysSec = state.dataHVACGlobal->TimeStepSysSec;
-    using FluidProperties::GetDensityGlycol;
-    using FluidProperties::GetSpecificHeatGlycol;
     using WaterThermalTanks::WaterThermalTankData;
 
     auto &thisTESCoil = state.dataPackagedThermalStorageCoil->TESCoil(TESCoilNum);
@@ -4022,11 +3993,11 @@ void CalcTESWaterStorageTank(EnergyPlusData &state, int const TESCoilNum)
     // Source side inlet temperature (C)
     Real64 const SourceInletTemp = thisTESCoil.FluidTankTempFinalLastTimestep;
     // density of water in tank (kg/m3)
-    Real64 const rho = GetDensityGlycol(state, thisTESCoil.StorageFluidName, TankTemp, thisTESCoil.StorageFluidIndex, RoutineName);
+    Real64 const rho = thisTESCoil.glycol->getDensity(state, TankTemp, RoutineName);
     // Mass of water in tank (kg)
     Real64 const TankMass = rho * thisTESCoil.FluidStorageVolume;
     // Specific heat of water in tank (J/kg K)
-    Real64 const CpTank = GetSpecificHeatGlycol(state, thisTESCoil.StorageFluidName, TankTemp, thisTESCoil.StorageFluidIndex, RoutineName);
+    Real64 const CpTank = thisTESCoil.glycol->getSpecificHeat(state, TankTemp, RoutineName);
 
     // Use side flow rate, including effectiveness factor (kg/s)
     Real64 const UseMassFlowRate = thisTESCoil.TESPlantConnectionAvailable
@@ -4057,11 +4028,9 @@ void CalcTESWaterStorageTank(EnergyPlusData &state, int const TESCoilNum)
 
     if (thisTESCoil.TESPlantConnectionAvailable) {
         // Specific heat of fluid in plant connection (J/kg K)
-        Real64 const CpPlantConnection = GetSpecificHeatGlycol(state,
-                                                               state.dataPlnt->PlantLoop(thisTESCoil.TESPlantLoopNum).FluidName,
-                                                               state.dataLoopNodes->Node(thisTESCoil.TESPlantInletNodeNum).Temp,
-                                                               state.dataPlnt->PlantLoop(thisTESCoil.TESPlantLoopNum).FluidIndex,
-                                                               calcTESIceStorageTank);
+        Real64 const CpPlantConnection =
+            state.dataPlnt->PlantLoop(thisTESCoil.TESPlantLoopNum)
+                .glycol->getSpecificHeat(state, state.dataLoopNodes->Node(thisTESCoil.TESPlantInletNodeNum).Temp, calcTESIceStorageTank);
 
         thisTESCoil.QdotPlant = state.dataLoopNodes->Node(thisTESCoil.TESPlantInletNodeNum).MassFlowRate * CpPlantConnection *
                                 thisTESCoil.TESPlantEffectiveness * (UseInletTemp - NewTankTemp);
@@ -4103,7 +4072,6 @@ void CalcTESIceStorageTank(EnergyPlusData &state, int const TESCoilNum)
 
     // Using/Aliasing
     Real64 const TimeStepSysSec = state.dataHVACGlobal->TimeStepSysSec;
-    using FluidProperties::GetSpecificHeatGlycol;
 
     // SUBROUTINE PARAMETER DEFINITIONS:
     constexpr Real64 FreezingTemp(0.0); // zero degrees C
@@ -4124,11 +4092,7 @@ void CalcTESIceStorageTank(EnergyPlusData &state, int const TESCoilNum)
     if (thisTESCoil.TESPlantConnectionAvailable) {
 
         auto const &inletNode = state.dataLoopNodes->Node(thisTESCoil.TESPlantInletNodeNum);
-        Real64 const Cp = GetSpecificHeatGlycol(state,
-                                                state.dataPlnt->PlantLoop(thisTESCoil.TESPlantLoopNum).FluidName,
-                                                inletNode.Temp,
-                                                state.dataPlnt->PlantLoop(thisTESCoil.TESPlantLoopNum).FluidIndex,
-                                                RoutineName);
+        Real64 const Cp = state.dataPlnt->PlantLoop(thisTESCoil.TESPlantLoopNum).glycol->getSpecificHeat(state, inletNode.Temp, RoutineName);
 
         thisTESCoil.QdotPlant = inletNode.MassFlowRate * Cp * thisTESCoil.TESPlantEffectiveness * (inletNode.Temp - FreezingTemp);
         thisTESCoil.Q_Plant = thisTESCoil.QdotPlant * TimeStepSysSec;

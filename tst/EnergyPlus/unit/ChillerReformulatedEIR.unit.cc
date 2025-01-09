@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -150,9 +150,9 @@ TEST_F(EnergyPlusFixture, ChillerElectricReformulatedEIR_WaterCooledChillerVaria
     state->dataLoopNodes->Node.allocate(4);
 
     state->dataPlnt->PlantLoop(1).Name = "ChilledWaterLoop";
-    state->dataPlnt->PlantLoop(1).FluidIndex = 1;
     state->dataPlnt->PlantLoop(1).PlantSizNum = 1;
     state->dataPlnt->PlantLoop(1).FluidName = "WATER";
+    state->dataPlnt->PlantLoop(1).glycol = Fluid::GetWater(*state);
     state->dataPlnt->PlantLoop(1).TempSetPointNodeNum = 10;
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Name = thisChiller.Name;
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Type =
@@ -168,9 +168,9 @@ TEST_F(EnergyPlusFixture, ChillerElectricReformulatedEIR_WaterCooledChillerVaria
     state->dataSize->PlantSizData(1).DeltaT = 5.0;
 
     state->dataPlnt->PlantLoop(2).Name = "CondenserWaterLoop";
-    state->dataPlnt->PlantLoop(2).FluidIndex = 1;
     state->dataPlnt->PlantLoop(2).PlantSizNum = 1;
     state->dataPlnt->PlantLoop(2).FluidName = "WATER";
+    state->dataPlnt->PlantLoop(2).glycol = Fluid::GetWater(*state);
     state->dataPlnt->PlantLoop(2).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Name = thisChiller.Name;
     state->dataPlnt->PlantLoop(2).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Type =
         DataPlant::PlantEquipmentType::Chiller_ElectricReformEIR;
@@ -209,11 +209,8 @@ TEST_F(EnergyPlusFixture, ChillerElectricReformulatedEIR_WaterCooledChillerVaria
     EXPECT_NEAR(thisChiller.CondMassFlowRate, thisChiller.CondMassFlowRateMax / 2, 0.00001);
 
     thisChiller.CondenserFlowControl = DataPlant::CondenserFlowControl::ModulatedDeltaTemperature;
-    Real64 Cp = FluidProperties::GetSpecificHeatGlycol(*state,
-                                                       state->dataPlnt->PlantLoop(thisChiller.CWPlantLoc.loopNum).FluidName,
-                                                       thisChiller.CondInletTemp,
-                                                       state->dataPlnt->PlantLoop(thisChiller.CWPlantLoc.loopNum).FluidIndex,
-                                                       "ChillerElectricEIR_WaterCooledChillerVariableSpeedCondenser");
+    Real64 Cp = state->dataPlnt->PlantLoop(thisChiller.CWPlantLoc.loopNum)
+                    .glycol->getSpecificHeat(*state, thisChiller.CondInletTemp, "ChillerElectricEIR_WaterCooledChillerVariableSpeedCondenser");
     thisChiller.control(*state, MyLoad, RunFlag, false);
     Real64 ActualCondFlow = 3.0 * std::abs(MyLoad) / (Cp * 10.0);
     EXPECT_NEAR(thisChiller.CondMassFlowRate, ActualCondFlow, 0.00001);

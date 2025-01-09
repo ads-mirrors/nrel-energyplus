@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -2098,11 +2098,7 @@ namespace PlantPipingSystemsManager {
             }
 
             // Once we find ourselves on the plant loop, we can do other things
-            Real64 rho = FluidProperties::GetDensityGlycol(state,
-                                                           state.dataPlnt->PlantLoop(thisCircuit->plantLoc.loopNum).FluidName,
-                                                           Constant::InitConvTemp,
-                                                           state.dataPlnt->PlantLoop(thisCircuit->plantLoc.loopNum).FluidIndex,
-                                                           RoutineName);
+            Real64 rho = state.dataPlnt->PlantLoop(thisCircuit->plantLoc.loopNum).glycol->getDensity(state, Constant::InitConvTemp, RoutineName);
             thisCircuit->DesignMassFlowRate = thisCircuit->DesignVolumeFlowRate * rho;
             thisCircuit->NeedToFindOnPlantLoop = false;
         }
@@ -2333,7 +2329,7 @@ namespace PlantPipingSystemsManager {
         return (LocalMax < this->SimControls.Convergence_CurrentToPrevIteration);
     }
 
-    bool IsConverged_PipeCurrentToPrevIteration(Circuit *thisCircuit, CartesianCell const &CellToCheck)
+    bool IsConverged_PipeCurrentToPrevIteration(Circuit const *thisCircuit, CartesianCell const &CellToCheck)
     {
 
         // FUNCTION INFORMATION:
@@ -5367,7 +5363,7 @@ namespace PlantPipingSystemsManager {
         cell.PipeCellData.Insulation.Temperature = Numerator / Denominator;
     }
 
-    void SimulateRadialPipeCell(Circuit *thisCircuit, CartesianCell &cell)
+    void SimulateRadialPipeCell(Circuit const *thisCircuit, CartesianCell &cell)
     {
 
         // SUBROUTINE INFORMATION:
@@ -5432,7 +5428,7 @@ namespace PlantPipingSystemsManager {
         cell.PipeCellData.Pipe.Temperature = Numerator / Denominator;
     }
 
-    void SimulateFluidCell(Circuit *thisCircuit, CartesianCell &cell, Real64 const FlowRate, Real64 const EnteringFluidTemp)
+    void SimulateFluidCell(Circuit const *thisCircuit, CartesianCell &cell, Real64 const FlowRate, Real64 const EnteringFluidTemp)
     {
 
         // SUBROUTINE INFORMATION:
@@ -5676,26 +5672,12 @@ namespace PlantPipingSystemsManager {
 
         // retrieve fluid properties based on the circuit inlet temperature -- which varies during the simulation
         // but need to verify the value of inlet temperature during warm up, etc.
-        FluidCp = FluidProperties::GetSpecificHeatGlycol(state,
-                                                         state.dataPlnt->PlantLoop(thisCircuit->plantLoc.loopNum).FluidName,
-                                                         thisCircuit->InletTemperature,
-                                                         state.dataPlnt->PlantLoop(thisCircuit->plantLoc.loopNum).FluidIndex,
-                                                         RoutineName);
-        FluidDensity = FluidProperties::GetDensityGlycol(state,
-                                                         state.dataPlnt->PlantLoop(thisCircuit->plantLoc.loopNum).FluidName,
-                                                         thisCircuit->InletTemperature,
-                                                         state.dataPlnt->PlantLoop(thisCircuit->plantLoc.loopNum).FluidIndex,
-                                                         RoutineName);
-        FluidConductivity = FluidProperties::GetConductivityGlycol(state,
-                                                                   state.dataPlnt->PlantLoop(thisCircuit->plantLoc.loopNum).FluidName,
-                                                                   thisCircuit->InletTemperature,
-                                                                   state.dataPlnt->PlantLoop(thisCircuit->plantLoc.loopNum).FluidIndex,
-                                                                   RoutineName);
-        FluidViscosity = FluidProperties::GetViscosityGlycol(state,
-                                                             state.dataPlnt->PlantLoop(thisCircuit->plantLoc.loopNum).FluidName,
-                                                             thisCircuit->InletTemperature,
-                                                             state.dataPlnt->PlantLoop(thisCircuit->plantLoc.loopNum).FluidIndex,
-                                                             RoutineName);
+        FluidCp = state.dataPlnt->PlantLoop(thisCircuit->plantLoc.loopNum).glycol->getSpecificHeat(state, thisCircuit->InletTemperature, RoutineName);
+        FluidDensity = state.dataPlnt->PlantLoop(thisCircuit->plantLoc.loopNum).glycol->getDensity(state, thisCircuit->InletTemperature, RoutineName);
+        FluidConductivity =
+            state.dataPlnt->PlantLoop(thisCircuit->plantLoc.loopNum).glycol->getConductivity(state, thisCircuit->InletTemperature, RoutineName);
+        FluidViscosity =
+            state.dataPlnt->PlantLoop(thisCircuit->plantLoc.loopNum).glycol->getViscosity(state, thisCircuit->InletTemperature, RoutineName);
 
         // Doesn't anyone care about poor Ludwig Prandtl?
         FluidPrandtl = 3.0;

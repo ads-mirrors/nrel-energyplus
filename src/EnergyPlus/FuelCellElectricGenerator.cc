@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -3032,11 +3032,7 @@ namespace FuelCellElectricGenerator {
 
             this->ExhaustHX.THXexh = TprodGasIn - this->ExhaustHX.qHX / (NdotGas * CpProdGasMol * 1000.0);
 
-            Real64 Cp = FluidProperties::GetSpecificHeatGlycol(state,
-                                                               state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).FluidName,
-                                                               TwaterIn,
-                                                               state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).FluidIndex,
-                                                               RoutineName);
+            Real64 Cp = state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).glycol->getSpecificHeat(state, TwaterIn, RoutineName);
 
             if (this->ExhaustHX.WaterMassFlowRate * Cp <= 0.0) {
                 this->ExhaustHX.WaterOutletTemp = TwaterIn;
@@ -3068,7 +3064,7 @@ namespace FuelCellElectricGenerator {
                 this->ExhaustHX.THXexh =
                     ((1.0 - NdotCpAuxMix / NdotCpWater) / (std::exp(UAeff * (1.0 / NdotCpAuxMix - 1.0 / NdotCpWater)) - NdotCpAuxMix / NdotCpWater)) *
                         TauxMix +
-                    ((std::exp(UAeff * (1.0 / NdotCpAuxMix - 1.0 / NdotCpWater)) - 1.0) /
+                    (std::expm1(UAeff * (1.0 / NdotCpAuxMix - 1.0 / NdotCpWater)) /
                      (std::exp(UAeff * (1.0 / NdotCpAuxMix - 1.0 / NdotCpWater)) - NdotCpAuxMix / NdotCpWater)) *
                         TwaterIn;
 
@@ -3113,7 +3109,7 @@ namespace FuelCellElectricGenerator {
                 this->ExhaustHX.THXexh =
                     ((1.0 - NdotCpAuxMix / NdotCpWater) / (std::exp(UAeff * (1.0 / NdotCpAuxMix - 1.0 / NdotCpWater)) - NdotCpAuxMix / NdotCpWater)) *
                         TauxMix +
-                    ((std::exp(UAeff * (1.0 / NdotCpAuxMix - 1.0 / NdotCpWater)) - 1.0) /
+                    (std::expm1(UAeff * (1.0 / NdotCpAuxMix - 1.0 / NdotCpWater)) /
                      (std::exp(UAeff * (1.0 / NdotCpAuxMix - 1.0 / NdotCpWater)) - NdotCpAuxMix / NdotCpWater)) *
                         TwaterIn;
 
@@ -3174,7 +3170,7 @@ namespace FuelCellElectricGenerator {
                     this->ExhaustHX.THXexh = ((1.0 - NdotCpAuxMix / NdotCpWater) /
                                               (std::exp(UAeff * (1.0 / NdotCpAuxMix - 1.0 / NdotCpWater)) - NdotCpAuxMix / NdotCpWater)) *
                                                  TauxMix +
-                                             ((std::exp(UAeff * (1.0 / NdotCpAuxMix - 1.0 / NdotCpWater)) - 1.0) /
+                                             (std::expm1(UAeff * (1.0 / NdotCpAuxMix - 1.0 / NdotCpWater)) /
                                               (std::exp(UAeff * (1.0 / NdotCpAuxMix - 1.0 / NdotCpWater)) - NdotCpAuxMix / NdotCpWater)) *
                                                  TwaterIn;
 
@@ -3368,11 +3364,7 @@ namespace FuelCellElectricGenerator {
             this->Inverter.PCUlosses = 0.0;
             this->Inverter.QairIntake = 0.0;
 
-            Real64 rho = FluidProperties::GetDensityGlycol(state,
-                                                           state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).FluidName,
-                                                           DataGenerators::InitHRTemp,
-                                                           state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).FluidIndex,
-                                                           RoutineName);
+            Real64 rho = state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).glycol->getDensity(state, DataGenerators::InitHRTemp, RoutineName);
 
             this->ExhaustHX.WaterMassFlowRateDesign = this->ExhaustHX.WaterVolumeFlowMax * rho;
             this->ExhaustHX.WaterMassFlowRate = this->ExhaustHX.WaterMassFlowRateDesign;

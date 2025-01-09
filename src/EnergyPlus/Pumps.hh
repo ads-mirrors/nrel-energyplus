@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -52,6 +52,7 @@
 #include <EnergyPlus/Data/BaseData.hh>
 #include <EnergyPlus/DataGlobals.hh>
 #include <EnergyPlus/EnergyPlus.hh>
+// #include <EnergyPlus/FluidProperties.hh>
 
 namespace EnergyPlus {
 
@@ -137,26 +138,26 @@ namespace Pumps {
         int InletNodeNum = 0;                                              // Node number on the inlet side of the plant
         int OutletNodeNum = 0;                                             // Node number on the outlet side of the plant
         PumpBankControlSeq SequencingScheme = PumpBankControlSeq::Invalid; // Optimal, Sequential, User-Defined
-        int FluidIndex = 0;                                                // Index for Fluid Properties
-        int NumPumpsInBank = 0;                                            // Node number on the inlet side of the plant
-        int PowerErrIndex1 = 0;                                            // for recurring errors
-        int PowerErrIndex2 = 0;                                            // for recurring errors
-        Real64 MinVolFlowRateFrac = 0.0;                                   // minimum schedule value fraction modifier
-        Real64 NomVolFlowRate = 0.0;                                       // design nominal capacity of Pump
-        bool NomVolFlowRateWasAutoSized = false;                           // true if previous was autosize on input
-        Real64 MassFlowRateMax = 0.0;                                      // design nominal capacity of Pump
-        bool EMSMassFlowOverrideOn = false;                                // if true, then EMS is calling to override flow requests.
-        Real64 EMSMassFlowValue = 0.0;                                     // EMS value to use for mass flow rate [kg/s]
-        Real64 NomSteamVolFlowRate = 0.0;                                  // For Steam Pump
-        bool NomSteamVolFlowRateWasAutoSized = false;                      // true if steam volume flow rate was autosize on input
-        Real64 MinVolFlowRate = 0.0;                                       // For a Variable Flow Pump this is the minimum capacity during operation.
-        bool minVolFlowRateWasAutosized = false;                           // true if minimum flow rate was autosize on input
-        Real64 MassFlowRateMin = 0.0;                                      // For a Variable Flow Pump this is the minimum capacity during operation.
-        Real64 NomPumpHead = 0.0;                                          // design nominal head pressure of Pump, [Pa]
-        bool EMSPressureOverrideOn = false;                                // if true, EMS is calling to override pump pressure
-        Real64 EMSPressureOverrideValue = 0.0;                             // EMS value to use for pressure [Pa]
-        Real64 NomPowerUse = 0.0;                                          // design nominal capacity of Pump
-        bool NomPowerUseWasAutoSized = false;                              // true if power was autosize on input
+        // Fluid::RefrigProps *fluid = nullptr;                                                // Index for Fluid Properties
+        int NumPumpsInBank = 0;                       // Node number on the inlet side of the plant
+        int PowerErrIndex1 = 0;                       // for recurring errors
+        int PowerErrIndex2 = 0;                       // for recurring errors
+        Real64 MinVolFlowRateFrac = 0.0;              // minimum schedule value fraction modifier
+        Real64 NomVolFlowRate = 0.0;                  // design nominal capacity of Pump
+        bool NomVolFlowRateWasAutoSized = false;      // true if previous was autosize on input
+        Real64 MassFlowRateMax = 0.0;                 // design nominal capacity of Pump
+        bool EMSMassFlowOverrideOn = false;           // if true, then EMS is calling to override flow requests.
+        Real64 EMSMassFlowValue = 0.0;                // EMS value to use for mass flow rate [kg/s]
+        Real64 NomSteamVolFlowRate = 0.0;             // For Steam Pump
+        bool NomSteamVolFlowRateWasAutoSized = false; // true if steam volume flow rate was autosize on input
+        Real64 MinVolFlowRate = 0.0;                  // For a Variable Flow Pump this is the minimum capacity during operation.
+        bool minVolFlowRateWasAutosized = false;      // true if minimum flow rate was autosize on input
+        Real64 MassFlowRateMin = 0.0;                 // For a Variable Flow Pump this is the minimum capacity during operation.
+        Real64 NomPumpHead = 0.0;                     // design nominal head pressure of Pump, [Pa]
+        bool EMSPressureOverrideOn = false;           // if true, EMS is calling to override pump pressure
+        Real64 EMSPressureOverrideValue = 0.0;        // EMS value to use for pressure [Pa]
+        Real64 NomPowerUse = 0.0;                     // design nominal capacity of Pump
+        bool NomPowerUseWasAutoSized = false;         // true if power was autosize on input
         PowerSizingMethod powerSizingMethod = PowerSizingMethod::SizePowerPerFlowPerPressure; // which method is used for sizing nominal power use
         Real64 powerPerFlowScalingFactor = 348701.1;                                          // design electric power per unit flow rate (22 W/gpm)
         Real64 powerPerFlowPerPressureScalingFactor = (1 / .78);   // design shaft power per unit flow rate per unit head (legacy impeller efficiency)

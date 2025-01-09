@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -2478,7 +2478,7 @@ void InitSetPointManagers(EnergyPlusData &state)
             } break;
 
             case SPMType::IdealCondenserEnteringTemp: {
-                auto *spmICER = dynamic_cast<SPMIdealCondenserEnteringTemp *>(spm);
+                auto const *spmICER = dynamic_cast<SPMIdealCondenserEnteringTemp *>(spm);
                 assert(spmICER != nullptr);
 
                 if (spmICER->ctrlVar == HVAC::CtrlVarType::Temp) {
@@ -2489,7 +2489,7 @@ void InitSetPointManagers(EnergyPlusData &state)
             } break;
 
             case SPMType::SZOneStageCooling: {
-                auto *spmSZOSC = dynamic_cast<SPMSingleZoneOneStageCooling *>(spm);
+                auto const *spmSZOSC = dynamic_cast<SPMSingleZoneOneStageCooling *>(spm);
                 assert(spmSZOSC != nullptr);
 
                 if (spmSZOSC->ctrlVar == HVAC::CtrlVarType::Temp) {
@@ -2500,7 +2500,7 @@ void InitSetPointManagers(EnergyPlusData &state)
             } break;
 
             case SPMType::SZOneStageHeating: {
-                auto *spmSZOSH = dynamic_cast<SPMSingleZoneOneStageHeating *>(spm);
+                auto const *spmSZOSH = dynamic_cast<SPMSingleZoneOneStageHeating *>(spm);
                 assert(spmSZOSH != nullptr);
 
                 if (spmSZOSH->ctrlVar == HVAC::CtrlVarType::Temp) {
@@ -3880,7 +3880,7 @@ void SPMReturnWaterTemp::calculate(EnergyPlusData &state)
     // fluidIndex = state.dataPlnt->PlantLoop(this->plantLoopNum).FluidIndex;
     // // we don't need fluid names since we have a real index, so just pass in the temperature and get properties
     // Real64 const avgTemp = (returnNode.Temp + supplyNode.Temp) / 2;
-    // Real64 const cp = FluidProperties::GetSpecificHeatGlycol(state, "", avgTemp, fluidIndex, "ReturnWaterChWSetPointManager::calculate");
+    // Real64 const cp = Fluid::GetSpecificHeatGlycol(state, "", avgTemp, fluidIndex, "ReturnWaterChWSetPointManager::calculate");
     // Real64 const Qdemand = mdot * cp * deltaT;
 
     // check for strange conditions
@@ -4516,7 +4516,7 @@ bool GetCoilFreezingCheckFlag(EnergyPlusData &state, int const spmNum)
         state.dataSetPointManager->GetInputFlag = false;
     }
 
-    auto *spmMA = dynamic_cast<SPMMixedAir *>(state.dataSetPointManager->spms(spmNum));
+    auto const *spmMA = dynamic_cast<SPMMixedAir *>(state.dataSetPointManager->spms(spmNum));
     assert(spmMA != nullptr);
     return spmMA->freezeCheckEnable;
 } // GetCoilFreezingCheckFlag()

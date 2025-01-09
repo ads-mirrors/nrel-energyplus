@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -117,8 +117,6 @@ namespace VentilatedSlab {
     // ASHRAE Systems and Equipment Handbook (SI), 1996. pp. 31.1-31.3
     // Fred Buhl's fan coil module (FanCoilUnits.cc)
 
-    static std::string const fluidNameSteam("STEAM");
-    static std::string const fluidNameWater("WATER");
     std::string const cMO_VentilatedSlab = "ZoneHVAC:VentilatedSlab";
 
     //    int constexpr NotOperating = 0; // Parameter for use with OperatingMode variable, set for no heating/cooling
@@ -1035,8 +1033,8 @@ namespace VentilatedSlab {
                     }
                     case HeatingCoilType::Steam: {
                         ventSlab.heatingCoilType = DataPlant::PlantEquipmentType::CoilSteamAirHeating;
-                        ventSlab.heatingCoil_FluidIndex = FluidProperties::GetRefrigNum(state, "STEAM");
-                        if (ventSlab.heatingCoil_FluidIndex == 0) {
+                        ventSlab.heatingCoil_fluid = Fluid::GetSteam(state);
+                        if (ventSlab.heatingCoil_fluid == nullptr) {
                             ShowSevereError(state, format("{}=\"{}Steam Properties not found.", CurrentModuleObject, ventSlab.Name));
                             if (SteamMessageNeeded) ShowContinueError(state, "Steam Fluid Properties should have been included in the input file.");
                             ErrorsFound = true;
@@ -1635,11 +1633,7 @@ namespace VentilatedSlab {
 
                 if (ventSlab.heatingCoilType == DataPlant::PlantEquipmentType::CoilWaterSimpleHeating &&
                     !state.dataVentilatedSlab->MyPlantScanFlag(Item)) {
-                    rho = FluidProperties::GetDensityGlycol(state,
-                                                            state.dataPlnt->PlantLoop(ventSlab.HWPlantLoc.loopNum).FluidName,
-                                                            Constant::HWInitConvTemp,
-                                                            state.dataPlnt->PlantLoop(ventSlab.HWPlantLoc.loopNum).FluidIndex,
-                                                            RoutineName);
+                    rho = state.dataPlnt->PlantLoop(ventSlab.HWPlantLoc.loopNum).glycol->getDensity(state, Constant::HWInitConvTemp, RoutineName);
 
                     ventSlab.MaxHotWaterFlow = rho * ventSlab.MaxVolHotWaterFlow;
                     ventSlab.MinHotWaterFlow = rho * ventSlab.MinVolHotWaterFlow;
@@ -1650,8 +1644,7 @@ namespace VentilatedSlab {
                 if (ventSlab.heatingCoilType == DataPlant::PlantEquipmentType::CoilSteamAirHeating &&
                     !state.dataVentilatedSlab->MyPlantScanFlag(Item)) {
                     TempSteamIn = 100.00;
-                    SteamDensity =
-                        FluidProperties::GetSatDensityRefrig(state, fluidNameSteam, TempSteamIn, 1.0, ventSlab.heatingCoil_FluidIndex, RoutineName);
+                    SteamDensity = Fluid::GetSteam(state)->getSatDensity(state, TempSteamIn, 1.0, RoutineName);
                     ventSlab.MaxHotSteamFlow = SteamDensity * ventSlab.MaxVolHotSteamFlow;
                     ventSlab.MinHotSteamFlow = SteamDensity * ventSlab.MinVolHotSteamFlow;
 
@@ -1664,11 +1657,7 @@ namespace VentilatedSlab {
                 // Only initialize these if a cooling coil is actually present
                 if ((ventSlab.coolingCoilType == DataPlant::PlantEquipmentType::CoilWaterCooling) ||
                     (ventSlab.coolingCoilType == DataPlant::PlantEquipmentType::CoilWaterDetailedFlatCooling)) {
-                    rho = FluidProperties::GetDensityGlycol(state,
-                                                            state.dataPlnt->PlantLoop(ventSlab.CWPlantLoc.loopNum).FluidName,
-                                                            Constant::CWInitConvTemp,
-                                                            state.dataPlnt->PlantLoop(ventSlab.CWPlantLoc.loopNum).FluidIndex,
-                                                            RoutineName);
+                    rho = state.dataPlnt->PlantLoop(ventSlab.CWPlantLoc.loopNum).glycol->getDensity(state, Constant::CWInitConvTemp, RoutineName);
                     ventSlab.MaxColdWaterFlow = rho * ventSlab.MaxVolColdWaterFlow;
                     ventSlab.MinColdWaterFlow = rho * ventSlab.MinVolColdWaterFlow;
                     PlantUtilities::InitComponentNodes(
@@ -2124,16 +2113,10 @@ namespace VentilatedSlab {
                                     sizerHeatingCapacity.initializeWithinEP(state, CompType, CompName, PrintFlag, RoutineName);
                                     DesCoilLoad = sizerHeatingCapacity.size(state, TempSize, ErrorsFound);
                                 }
-                                rho = FluidProperties::GetDensityGlycol(state,
-                                                                        state.dataPlnt->PlantLoop(ventSlab.HWPlantLoc.loopNum).FluidName,
-                                                                        Constant::HWInitConvTemp,
-                                                                        state.dataPlnt->PlantLoop(ventSlab.HWPlantLoc.loopNum).FluidIndex,
-                                                                        RoutineName);
-                                Cp = FluidProperties::GetSpecificHeatGlycol(state,
-                                                                            state.dataPlnt->PlantLoop(ventSlab.HWPlantLoc.loopNum).FluidName,
-                                                                            Constant::HWInitConvTemp,
-                                                                            state.dataPlnt->PlantLoop(ventSlab.HWPlantLoc.loopNum).FluidIndex,
-                                                                            RoutineName);
+                                rho = state.dataPlnt->PlantLoop(ventSlab.HWPlantLoc.loopNum)
+                                          .glycol->getDensity(state, Constant::HWInitConvTemp, RoutineName);
+                                Cp = state.dataPlnt->PlantLoop(ventSlab.HWPlantLoc.loopNum)
+                                         .glycol->getSpecificHeat(state, Constant::HWInitConvTemp, RoutineName);
                                 MaxVolHotWaterFlowDes = DesCoilLoad / (WaterCoilSizDeltaT * Cp * rho);
                             } else {
                                 MaxVolHotWaterFlowDes = 0.0;
@@ -2243,18 +2226,16 @@ namespace VentilatedSlab {
                                     DesCoilLoad = sizerHeatingCapacity.size(state, TempSize, ErrorsFound);
                                 }
                                 TempSteamIn = 100.00;
-                                EnthSteamInDry = FluidProperties::GetSatEnthalpyRefrig(
-                                    state, fluidNameSteam, TempSteamIn, 1.0, ventSlab.heatingCoil_FluidIndex, RoutineName);
-                                EnthSteamOutWet = FluidProperties::GetSatEnthalpyRefrig(
-                                    state, fluidNameSteam, TempSteamIn, 0.0, ventSlab.heatingCoil_FluidIndex, RoutineName);
+                                auto *steam = Fluid::GetSteam(state);
+                                EnthSteamInDry = steam->getSatEnthalpy(state, TempSteamIn, 1.0, RoutineName);
+                                EnthSteamOutWet = steam->getSatEnthalpy(state, TempSteamIn, 0.0, RoutineName);
                                 LatentHeatSteam = EnthSteamInDry - EnthSteamOutWet;
-                                SteamDensity = FluidProperties::GetSatDensityRefrig(
-                                    state, fluidNameSteam, TempSteamIn, 1.0, ventSlab.heatingCoil_FluidIndex, RoutineName);
+                                SteamDensity = steam->getSatDensity(state, TempSteamIn, 1.0, RoutineName);
                                 int DummyWaterIndex = 1;
-                                Cp = FluidProperties::GetSpecificHeatGlycol(
-                                    state, fluidNameWater, Constant::HWInitConvTemp, DummyWaterIndex, RoutineName);
-                                rho =
-                                    FluidProperties::GetDensityGlycol(state, fluidNameWater, Constant::HWInitConvTemp, DummyWaterIndex, RoutineName);
+
+                                auto *water = Fluid::GetWater(state);
+                                Cp = water->getSpecificHeat(state, Constant::HWInitConvTemp, RoutineName);
+                                rho = water->getDensity(state, Constant::HWInitConvTemp, RoutineName);
                                 MaxVolHotSteamFlowDes =
                                     DesCoilLoad / ((state.dataSize->PlantSizData(PltSizHeatNum).DeltaT * Cp * rho) + SteamDensity * LatentHeatSteam);
                             } else {
@@ -2390,16 +2371,8 @@ namespace VentilatedSlab {
                                 sizerCoolingCapacity.initializeWithinEP(state, CompType, CompName, PrintFlag, RoutineName);
                                 DesCoilLoad = sizerCoolingCapacity.size(state, TempSize, ErrorsFound);
                             }
-                            rho = FluidProperties::GetDensityGlycol(state,
-                                                                    state.dataPlnt->PlantLoop(ventSlab.CWPlantLoc.loopNum).FluidName,
-                                                                    5.,
-                                                                    state.dataPlnt->PlantLoop(ventSlab.CWPlantLoc.loopNum).FluidIndex,
-                                                                    RoutineName);
-                            Cp = FluidProperties::GetSpecificHeatGlycol(state,
-                                                                        state.dataPlnt->PlantLoop(ventSlab.CWPlantLoc.loopNum).FluidName,
-                                                                        5.,
-                                                                        state.dataPlnt->PlantLoop(ventSlab.CWPlantLoc.loopNum).FluidIndex,
-                                                                        RoutineName);
+                            rho = state.dataPlnt->PlantLoop(ventSlab.CWPlantLoc.loopNum).glycol->getDensity(state, 5., RoutineName);
+                            Cp = state.dataPlnt->PlantLoop(ventSlab.CWPlantLoc.loopNum).glycol->getSpecificHeat(state, 5., RoutineName);
                             MaxVolColdWaterFlowDes = DesCoilLoad / (WaterCoilSizDeltaT * Cp * rho);
                         } else {
                             MaxVolColdWaterFlowDes = 0.0;

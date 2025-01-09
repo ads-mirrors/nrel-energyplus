@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -56,6 +56,7 @@
 #include <EnergyPlus/Data/BaseData.hh>
 #include <EnergyPlus/DataGlobals.hh>
 #include <EnergyPlus/EnergyPlus.hh>
+#include <EnergyPlus/FluidProperties.hh>
 
 namespace EnergyPlus {
 
@@ -121,7 +122,7 @@ namespace SteamCoils {
         int SteamOutletNodeNum;                                // SteamOutletNodeNum
         int TempSetPointNodeNum;                               // If applicable : node number that the temp setpoint exists.
         CoilControlType TypeOfCoil = CoilControlType::Invalid; // Control of Coil , temperature or Zone load
-        int FluidIndex;                                        // Fluid index for FluidProperties (Steam)
+        Fluid::RefrigProps *steam = nullptr;                   // FluidProperties (Steam)
         PlantLocation plantLoc;                                // Location object for plant component for steam coil
         DataPlant::PlantEquipmentType CoilType;                // plant level index for coil type
         Real64 OperatingCapacity;                              // capacity of steam coil at operating conditions (W)
@@ -143,7 +144,7 @@ namespace SteamCoils {
               DesiredOutletTemp(0.0), DesiredOutletHumRat(0.0), InletSteamTemp(0.0), OutletSteamTemp(0.0), InletSteamMassFlowRate(0.0),
               OutletSteamMassFlowRate(0.0), MaxSteamVolFlowRate(0.0), MaxSteamMassFlowRate(0.0), InletSteamEnthalpy(0.0), OutletWaterEnthalpy(0.0),
               InletSteamPress(0.0), InletSteamQuality(0.0), OutletSteamQuality(0.0), DegOfSubcooling(0.0), LoopSubcoolReturn(0.0), AirInletNodeNum(0),
-              AirOutletNodeNum(0), SteamInletNodeNum(0), SteamOutletNodeNum(0), TempSetPointNodeNum(0), FluidIndex(0), plantLoc{},
+              AirOutletNodeNum(0), SteamInletNodeNum(0), SteamOutletNodeNum(0), TempSetPointNodeNum(0), plantLoc{},
               CoilType(DataPlant::PlantEquipmentType::Invalid), OperatingCapacity(0.0), DesiccantRegenerationCoil(false), DesiccantDehumNum(0),
               FaultyCoilSATFlag(false), FaultyCoilSATIndex(0), FaultyCoilSATOffset(0.0), reportCoilFinalSizes(true), DesCoilCapacity(0.0),
               DesAirVolFlow(0.0)
@@ -277,7 +278,6 @@ namespace SteamCoils {
 
 struct SteamCoilsData : BaseGlobalStruct
 {
-    int SteamIndex = 0;
     int NumSteamCoils = 0; // The Number of SteamCoils found in the Input
     Array1D_bool MySizeFlag;
     Array1D_bool CoilWarningOnceFlag;

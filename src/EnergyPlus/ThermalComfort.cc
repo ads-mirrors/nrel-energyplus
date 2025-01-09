@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -1842,7 +1842,7 @@ namespace ThermalComfort {
                         state.dataThermalComforts->SkinThermCap;
     }
 
-    void RKG(EnergyPlusData &state, int &NEQ, Real64 &H, Real64 &X, Array1D<Real64> &Y, Array1D<Real64> &DY, Array1D<Real64> &C)
+    void RKG(EnergyPlusData &state, int &NEQ, Real64 const H, Real64 &X, Array1D<Real64> &Y, Array1D<Real64> &DY, Array1D<Real64> &C)
     {
 
         // SUBROUTINE INFORMATION:
@@ -2500,8 +2500,8 @@ namespace ThermalComfort {
 
         // Using/Aliasing
         using namespace OutputReportPredefined;
-        auto &deviationFromSetPtThresholdClg = state.dataHVACGlobal->deviationFromSetPtThresholdClg;
-        auto &deviationFromSetPtThresholdHtg = state.dataHVACGlobal->deviationFromSetPtThresholdHtg;
+        Real64 const deviationFromSetPtThresholdClg = state.dataHVACGlobal->deviationFromSetPtThresholdClg;
+        Real64 const deviationFromSetPtThresholdHtg = state.dataHVACGlobal->deviationFromSetPtThresholdHtg;
 
         // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
         Real64 SensibleLoadPredictedNoAdj;

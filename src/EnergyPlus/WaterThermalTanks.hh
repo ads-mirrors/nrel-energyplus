@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -56,6 +56,7 @@
 #include <EnergyPlus/DataBranchAirLoopPlant.hh>
 #include <EnergyPlus/DataGlobalConstants.hh>
 #include <EnergyPlus/EnergyPlus.hh>
+#include <EnergyPlus/FluidProperties.hh>
 #include <EnergyPlus/Plant/Enums.hh>
 #include <EnergyPlus/Plant/PlantLocation.hh>
 #include <EnergyPlus/PlantComponent.hh>
@@ -650,9 +651,11 @@ namespace WaterThermalTanks {
         int MaxCycleErrorIndex;        // recurring error index
         int FreezingErrorIndex;        // recurring error index for freeze conditions
         WaterHeaterSizingData Sizing;  // ancillary data for autosizing
-        int FluidIndex;                // fluid properties index
-        bool MyOneTimeFlagWH;          // first pass log
-        bool MyTwoTimeFlagWH;          // second pass do input check
+
+        Fluid::GlycolProps *water = nullptr; // Water properties
+
+        bool MyOneTimeFlagWH; // first pass log
+        bool MyTwoTimeFlagWH; // second pass do input check
         bool MyEnvrnFlag;
         bool WarmupFlag;
         bool SetLoopIndexFlag;
@@ -708,9 +711,9 @@ namespace WaterThermalTanks {
               HeaterEnergy2(0.0), FuelEnergy(0.0), FuelEnergy1(0.0), FuelEnergy2(0.0), VentEnergy(0.0), OffCycParaFuelEnergy(0.0),
               OffCycParaEnergyToTank(0.0), OnCycParaFuelEnergy(0.0), OnCycParaEnergyToTank(0.0), NetHeatTransferEnergy(0.0), FirstRecoveryDone(false),
               FirstRecoveryFuel(0.0), HeatPumpNum(0), DesuperheaterNum(0), ShowSetPointWarning(true), MaxCycleErrorIndex(0), FreezingErrorIndex(0),
-              FluidIndex(0), MyOneTimeFlagWH(true), MyTwoTimeFlagWH(true), MyEnvrnFlag(true), WarmupFlag(false), SetLoopIndexFlag(true),
-              AlreadyReported(false), AlreadyRated(false), MyHPSizeFlag(true), CheckWTTEquipName(true), myOneTimeInitFlag(true),
-              scanPlantLoopsFlag(true), callerLoopNum(0), waterIndex(1)
+              MyOneTimeFlagWH(true), MyTwoTimeFlagWH(true), MyEnvrnFlag(true), WarmupFlag(false), SetLoopIndexFlag(true), AlreadyReported(false),
+              AlreadyRated(false), MyHPSizeFlag(true), CheckWTTEquipName(true), myOneTimeInitFlag(true), scanPlantLoopsFlag(true), callerLoopNum(0),
+              waterIndex(1)
         {
         }
 

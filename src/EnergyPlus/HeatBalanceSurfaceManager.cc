@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -3476,7 +3476,7 @@ void InitSolarHeatGains(EnergyPlusData &state)
                                     // Exterior shade, screen or blind
 
                                 } else if (ShadeFlag == DataSurfaces::WinShadingType::ExtBlind) { // Exterior blind
-                                    auto &surfShade = state.dataSurface->surfShades(SurfNum);
+                                    auto const &surfShade = state.dataSurface->surfShades(SurfNum);
 
                                     int profIdxLo = surfShade.blind.profAngIdxLo;
                                     int profIdxHi = surfShade.blind.profAngIdxHi;
@@ -4247,7 +4247,7 @@ void ComputeIntSWAbsorpFactors(EnergyPlusData &state)
                     // Window with shade, screen or blind
 
                     if (ConstrNumSh != 0) {
-                        auto &constrSh = state.dataConstruction->Construct(ConstrNumSh);
+                        auto const &constrSh = state.dataConstruction->Construct(ConstrNumSh);
                         if (ANY_SHADE_SCREEN(ShadeFlag)) {
                             TransDiffWin = constrSh.TransDiff;
                             DiffAbsShade = constrSh.AbsDiffBackShade;

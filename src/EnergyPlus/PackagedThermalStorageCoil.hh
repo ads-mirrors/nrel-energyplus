@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -59,6 +59,7 @@
 #include <EnergyPlus/DataHVACGlobals.hh>
 #include <EnergyPlus/DataHeatBalance.hh>
 #include <EnergyPlus/EnergyPlus.hh>
+#include <EnergyPlus/FluidProperties.hh>
 #include <EnergyPlus/HVACUnitaryBypassVAV.hh>
 
 namespace EnergyPlus {
@@ -320,9 +321,10 @@ namespace PackagedThermalStorageCoil {
         int CondensateTankID;
         int CondensateTankSupplyARRID;
         // TES tank
-        MediaType StorageMedia;             // water/fluid or ice based TES
-        std::string StorageFluidName;       // if user defined, name of fluid type
-        int StorageFluidIndex;              // if user defined, index of fluid type
+        MediaType StorageMedia;       // water/fluid or ice based TES
+        std::string StorageFluidName; // if user defined, name of fluid type
+        Fluid::GlycolProps *glycol = nullptr;
+
         Real64 FluidStorageVolume;          // volume of water in storage tank for water systems [m3/s]
         Real64 IceStorageCapacity;          // capacity of storage in J
         Real64 StorageCapacitySizingFactor; // storage time used to autocalculate capacity [hr]
@@ -419,7 +421,7 @@ namespace PackagedThermalStorageCoil {
               CondInletTemp(0.0), EvapCondPumpElecNomPower(0.0), EvapCondPumpElecEnergy(0.0), BasinHeaterPowerFTempDiff(0.0),
               BasinHeaterAvailSchedNum(0), BasinHeaterSetpointTemp(0.0), EvapWaterSupplyMode(EvapWaterSupply::WaterSupplyFromMains),
               EvapWaterSupTankID(0), EvapWaterTankDemandARRID(0), CondensateCollectMode(CondensateAction::Discard), CondensateTankID(0),
-              CondensateTankSupplyARRID(0), StorageMedia(MediaType::Invalid), StorageFluidIndex(0), FluidStorageVolume(0.0), IceStorageCapacity(0.0),
+              CondensateTankSupplyARRID(0), StorageMedia(MediaType::Invalid), FluidStorageVolume(0.0), IceStorageCapacity(0.0),
               StorageCapacitySizingFactor(0.0), MinimumFluidTankTempLimit(0.0), MaximumFluidTankTempLimit(100.0), RatedFluidTankTemp(0.0),
               StorageAmbientNodeNum(0), StorageUA(0.0), TESPlantConnectionAvailable(false), TESPlantInletNodeNum(0), TESPlantOutletNodeNum(0),
               TESPlantLoopNum(0), TESPlantLoopSideNum(DataPlant::LoopSideLocation::Invalid), TESPlantBranchNum(0), TESPlantCompNum(0),

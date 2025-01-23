@@ -5916,23 +5916,28 @@ int GetWaterCoilIndex(EnergyPlusData &state,
 
     return IndexNum;
 }
-int GetCompIndex(EnergyPlusData &state, CoilModel compType, std::string_view const coilName)
-{
-    static constexpr std::array<std::string_view, (int)WaterCoils::CoilModel::Num> CoilModelNamesUC = {
-        "COIL:HEATING:WATER", "COIL:COOLING:WATER", "COIL:COOLING:WATER:DETAILED"};
 
+int GetWaterCoilIndex(EnergyPlusData &state,
+                      std::string const &CoilName // must match coil names for the coil type
+)
+{
+
+    // FUNCTION INFORMATION:
+    //       AUTHOR         B. Nigusse, FSEC
+    //       DATE WRITTEN   Feb 2012
+
+    // PURPOSE OF THIS FUNCTION:
+    // This function looks up the index for the given coil and returns it.  If incorrect coil
+    // type or name is given, ErrorsFound is returned as true and node number is returned
+    // as zero.
+
+    // Obtains and allocates WaterCoil related parameters from input file
     if (state.dataWaterCoils->GetWaterCoilsInputFlag) {
         GetWaterCoilInput(state);
         state.dataWaterCoils->GetWaterCoilsInputFlag = false;
     }
 
-    int index = Util::FindItemInList(coilName, state.dataWaterCoils->WaterCoil);
-
-    if (index == 0) { // may not find coil name
-        ShowSevereError(state,
-                        format("GetWaterCoilIndex: Could not find CoilType = \"{}\" with Name = \"{}\"", CoilModelNamesUC[(int)compType], coilName));
-    }
-    return index;
+    return Util::FindItemInList(CoilName, state.dataWaterCoils->WaterCoil);
 }
 
 Real64 GetWaterCoilCapacity(EnergyPlusData &state,

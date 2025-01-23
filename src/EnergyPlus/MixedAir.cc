@@ -578,11 +578,11 @@ void SimOAComponent(EnergyPlusData &state,
                                                          AirLoopNum,
                                                          CompName,
                                                          CompIndex,
-                                                         state.dataHVACAssistedCC->HXAssistedCoil(CompIndex).ControllerName,
-                                                         state.dataHVACAssistedCC->HXAssistedCoil(CompIndex).ControllerIndex,
+                                                         state.dataHVACAssistedCC->HXAssistedCoils(CompIndex).ControllerName,
+                                                         state.dataHVACAssistedCC->HXAssistedCoils(CompIndex).ControllerIndex,
                                                          true);
             // set flag to tell HVAC controller it will be simulated only in SolveWaterCoilController()
-            state.dataHVACControllers->ControllerProps(state.dataHVACAssistedCC->HXAssistedCoil(CompIndex).ControllerIndex).BypassControllerCalc =
+            state.dataHVACControllers->ControllerProps(state.dataHVACAssistedCC->HXAssistedCoils(CompIndex).ControllerIndex).BypassControllerCalc =
                 true;
         }
         OACoolingCoil = true;
@@ -790,15 +790,13 @@ void SimOAController(EnergyPlusData &state, std::string const &CtrlName, int &Ct
                     for (int CompNum = 1; CompNum <= primaryAirSystems.Branch(BranchNum).TotalComponents; ++CompNum) {
                         if (primaryAirSystems.Branch(BranchNum).Comp(CompNum).CompType_Num == SimAirServingZones::CompType::UnitarySystemModel) {
                             std::string_view unitarySystemName = primaryAirSystems.Branch(BranchNum).Comp(CompNum).Name;
-                            int unitarySystemNum = Util::FindItemInList(
+                            int usNum = Util::FindItemInList(
                                 unitarySystemName, state.dataUnitarySystems->unitarySys, state.dataUnitarySystems->numUnitarySystems);
-                            if (state.dataUnitarySystems->unitarySys[unitarySystemNum - 1].m_ControlType ==
+                            if (state.dataUnitarySystems->unitarySys[usNum - 1].m_ControlType ==
                                 UnitarySystems::UnitarySys::UnitarySysCtrlType::Load) {
-                                if (state.dataUnitarySystems->unitarySys[unitarySystemNum - 1].m_CoolingCoilType_Num ==
-                                        HVAC::CoilDX_MultiSpeedCooling ||
-                                    state.dataUnitarySystems->unitarySys[unitarySystemNum - 1].m_CoolingCoilType_Num ==
-                                        HVAC::Coil_CoolingAirToAirVariableSpeed ||
-                                    state.dataUnitarySystems->unitarySys[unitarySystemNum - 1].m_CoolingCoilType_Num == HVAC::CoilDX_Cooling) {
+                                if (state.dataUnitarySystems->unitarySys[usNum - 1].m_CoolingCoilType == HVAC::CoilType::DXMultiSpeedCooling ||
+                                    state.dataUnitarySystems->unitarySys[usNum - 1].m_CoolingCoilType == HVAC::CoilType::CoolingAirToAirVariableSpeed ||
+                                    state.dataUnitarySystems->unitarySys[usNum - 1].m_CoolingCoilType == HVAC::CoilType::DXCooling) {
                                     sensLoadCtrlUnitarySystemFound = true;
                                     break;
                                 }
@@ -4788,19 +4786,17 @@ void OAControllerProps::SizeOAController(EnergyPlusData &state)
         for (int CompNum = 1; CompNum <= state.dataAirLoop->OutsideAirSys(state.dataSize->CurOASysNum).NumComponents; ++CompNum) {
             std::string const &CompType = state.dataAirLoop->OutsideAirSys(state.dataSize->CurOASysNum).ComponentType(CompNum);
             std::string const &CompName = state.dataAirLoop->OutsideAirSys(state.dataSize->CurOASysNum).ComponentName(CompNum);
-            if (Util::SameString(CompType, "COIL:COOLING:WATER:DETAILEDGEOMETRY") || Util::SameString(CompType, "COIL:HEATING:WATER") ||
-                Util::SameString(CompType, "COILSYSTEM:COOLING:WATER:HEATEXCHANGERASSISTED")) {
-                std::string CoilName;
-                std::string CoilType;
-
-                if (Util::SameString(CompType, "COILSYSTEM:COOLING:WATER:HEATEXCHANGERASSISTED")) {
-                    CoilName = HVACHXAssistedCoolingCoil::GetHXDXCoilName(state, CompType, CompName, ErrorsFound);
-                    CoilType = HVACHXAssistedCoolingCoil::GetHXCoilType(state, CompType, CompName, ErrorsFound);
+            if (Util::SameString(CompType, "COIL:COOLING:WATER:DETAILEDGEOMETRY") || 
+                Util::SameString(CompType, "COIL:HEATING:WATER")) {
+                WaterCoils::SetCoilDesFlow(state, CompType, CompName, this->MinOA, ErrorsFound);
+            } else if (Util::SameString(CompType, "COILSYSTEM:COOLING:WATER:HEATEXCHANGERASSISTED")) {
+                int hxCoilNum = HVACHXAssistedCoolingCoil::GetHXCoilIndex(state, CompName);
+                if (hxCoilNum == 0) {
+                    ShowSevereError(state, format("Item not found: {} = \"{}\"", CompType, CompName));
+                    ErrorsFound = true;
                 } else {
-                    CoilName = CompName;
-                    CoilType = CompType;
+                    WaterCoils::SetCoilDesFlow(state, HVACHXAssistedCoolingCoil::GetHXCoilCoolCoilIndex(state, hxCoilNum), this->MinOA);
                 }
-                WaterCoils::SetCoilDesFlow(state, CoilType, CoilName, this->MinOA, ErrorsFound);
             }
         } // End of component loop
     }

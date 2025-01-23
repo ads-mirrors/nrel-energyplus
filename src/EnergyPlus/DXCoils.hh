@@ -710,6 +710,9 @@ namespace DXCoils {
                         std::string_view const ThisObjectType = {},
                         bool const SuppressWarning = false);
 
+    int GetDXCoilIndex(EnergyPlusData &state,
+                       std::string const &DXCoilName);
+  
     std::string GetDXCoilName(
         EnergyPlusData &state, int &DXCoilIndex, bool &ErrorsFound, std::string_view const ThisObjectType = {}, bool const SuppressWarning = false);
 
@@ -717,6 +720,10 @@ namespace DXCoils {
                            std::string const &CoilType, // must match coil types in this module
                            std::string const &CoilName, // must match coil names for the coil type
                            bool &ErrorsFound            // set to true if problem
+    );
+
+    Real64 GetCoilCapacity(EnergyPlusData &state,
+                           int coilNum
     );
 
     Real64 GetCoilCapacityByIndexType(EnergyPlusData &state,
@@ -732,9 +739,12 @@ namespace DXCoils {
                        ObjexxFCL::Optional_bool_const PrintWarning = _ // prints warning when true
     );
 
+    HVAC::CoilType GetCoilTypeNum(EnergyPlusData &state,
+                                  int const coilNum
+    );
+  
     Real64 GetMinOATCompressor(EnergyPlusData &state,
-                               int const CoilIndex, // index to coil
-                               bool &ErrorsFound    // set to true if problem
+                               int const coilNum
     );
 
     int GetCoilInletNode(EnergyPlusData &state,
@@ -743,10 +753,18 @@ namespace DXCoils {
                          bool &ErrorsFound            // set to true if problem
     );
 
+    int GetCoilInletNode(EnergyPlusData &state,
+                         int coilNum
+    );
+
     int GetCoilOutletNode(EnergyPlusData &state,
                           std::string const &CoilType, // must match coil types in this module
                           std::string const &CoilName, // must match coil names for the coil type
                           bool &ErrorsFound            // set to true if problem
+    );
+
+    int GetCoilOutletNode(EnergyPlusData &state,
+                          int coilNum
     );
 
     int getCoilInNodeIndex(EnergyPlusData &state,
@@ -765,12 +783,20 @@ namespace DXCoils {
                                   bool &ErrorsFound            // set to true if problem
     );
 
+    int GetCoilCondenserInletNode(EnergyPlusData &state,
+                                  int const coilNum
+    );
+  
     Real64 GetDXCoilBypassedFlowFrac(EnergyPlusData &state,
                                      std::string const &CoilType, // must match coil types in this module
                                      std::string const &CoilName, // must match coil names for the coil type
                                      bool &ErrorsFound            // set to true if problem
     );
 
+    Real64 GetDXCoilBypassedFlowFrac(EnergyPlusData &state,
+                                     int const coilNum
+    );
+  
     int GetHPCoolingCoilIndex(EnergyPlusData &state,
                               HVAC::CoilType heatingCoilType, // Type of DX heating coil used in HP
                               std::string const &HeatingCoilName, // Name of DX heating coil used in HP
@@ -783,6 +809,10 @@ namespace DXCoils {
                                 bool &ErrorsFound            // set to true if problem
     );
 
+    int GetDXCoilNumberOfSpeeds(EnergyPlusData &state,
+                                int const coilNum
+    );
+  
     int GetDXCoilAvailSchPtr(EnergyPlusData &state,
                              std::string const &CoilType,                // must match coil types in this module
                              std::string const &CoilName,                // must match coil names for the coil type
@@ -790,6 +820,10 @@ namespace DXCoils {
                              ObjexxFCL::Optional_int_const CoilIndex = _ // Coil index number
     );
 
+    int GetDXCoilAvailSchPtr(EnergyPlusData &state,
+                             int const coilNum
+    );
+  
     Real64 GetDXCoilAirFlow(EnergyPlusData &state,
                             std::string const &CoilType, // must match coil types in this module
                             std::string const &CoilName, // must match coil names for the coil type
@@ -797,8 +831,7 @@ namespace DXCoils {
     );
 
     int GetDXCoilCapFTCurveIndex(EnergyPlusData &state,
-                                 int const CoilIndex, // coil index pointer
-                                 bool &ErrorsFound    // set to true if problem
+                                 int const CoilIndex
     );
 
     void SetDXCoolingCoilData(
@@ -828,6 +861,51 @@ namespace DXCoils {
         ObjexxFCL::Optional_string SupplyFanName = _,
         ObjexxFCL::Optional<HVAC::FanType> supplyFanType = _);
 
+    void SetDXCoilHeatingPLFCurve(EnergyPlusData &state, int const DXCoilNum, int HeatingCoilPLFCurvePTR);
+
+    void SetDXCoilCondenserType(EnergyPlusData &state, int const DXCoilNum, DataHeatBalance::RefrigCondenserType CondenserType); 
+
+    void SetDXCoilCondenserInletNode(EnergyPlusData &state, int const DXCoilNum, int const condenserInletNode); 
+  
+    void SetDXCoilMaxOATCrankcaseHeater(EnergyPlusData &state, int const DXCoilNum, Real64 maxOATCrankcaseHeater);
+
+    void SetDXCoilMinOATCooling(EnergyPlusData &state, int const DXCoilNum, Real64 minOATCooling); 
+
+    void SetDXCoilMaxOATCooling(EnergyPlusData &state, int const DXCoilNum, Real64 maxOATCooling); 
+
+    void SetDXCoilMinOATHeating(EnergyPlusData &state, int const DXCoilNum, Real64 minOATHeating); 
+
+    void SetDXCoilMaxOATHeating(EnergyPlusData &state, int const DXCoilNum, Real64 maxOATHeating); 
+
+    void SetDXCoilHeatingPerformanceOATType(EnergyPlusData &state, int const DXCoilNum, HVAC::OATType heatingPerformanceOATType);
+
+    void SetDXCoilDefrostStrategy(EnergyPlusData &state, int const DXCoilNum, StandardRatings::DefrostStrat defrostStrategy);
+
+    void SetDXCoilDefrostControl(EnergyPlusData &state, int const DXCoilNum, StandardRatings::HPdefrostControl defrostControl);
+
+    void SetDXCoilDefrostEIR(EnergyPlusData &state, int const DXCoilNum, int defrostEIR);
+
+    void SetDXCoilDefrostFraction(EnergyPlusData &state, int const DXCoilNum, Real64 defrostFraction);
+
+    void SetDXCoilDefrostCapacity(EnergyPlusData &state, int const DXCoilNum, Real64 defrostCapacity);
+
+    void SetDXCoilMaxOATDefrost(EnergyPlusData &state, int const DXCoilNum, Real64 maxOATDefrost);
+
+    void SetDXCoilHeatingCoilPresent(EnergyPlusData &state, int const DXCoilNum, bool heatCoilPresent);
+
+    void SetDXCoilCoolingCoilPresent(EnergyPlusData &state, int const DXCoilNum, bool coolCoilPresent);
+
+    void SetDXCoilHeatSizeRatio(EnergyPlusData &state, int const DXCoilNum, Real64 heatSizeRatio);
+
+    void SetDXCoilTotalCapacity(EnergyPlusData &state, int const DXCoilNum, Real64 totalCapacity);
+
+    void SetDXCoilSupplyFanIndex(EnergyPlusData &state, int const DXCoilNum, int supplyFanIndex);
+
+    void SetDXCoilSupplyFanName(EnergyPlusData &state, int const DXCoilNum, std::string const &supplyFanIndex);
+
+    void SetDXCoilSupplyFanType(EnergyPlusData &state, int const DXCoilNum, HVAC::FanType supplyFanType);
+  
+  
     void SetCoilSystemHeatingDXFlag(EnergyPlusData &state,
                                     std::string const &CoilType, // must match coil types in this module
                                     std::string const &CoilName  // must match coil names for the coil type

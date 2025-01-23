@@ -1698,7 +1698,7 @@ void InitSetPointManagers(EnergyPlusData &state)
                     }
                     // still need to validate...
                     if (spmSZH->ctrlZoneNum == 0) { // didn't find
-                        ShowSevereCustomMessage(
+                        ShowSevereCustom(
                             state, eoh, format("could not find Controlled Zone={}", state.dataHeatBal->Zone(spmSZH->ctrlZoneNum).Name));
                         ErrorsFound = true;
                     } else {

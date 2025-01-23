@@ -934,7 +934,7 @@ void GetDXCoils(EnergyPlusData &state)
         thisDXCoil.Name = Alphas(1);
         // Initialize DataHeatBalance heat reclaim variable name for use by heat reclaim coils
         state.dataHeatBal->HeatReclaimDXCoil(DXCoilNum).Name = thisDXCoil.Name;
-        state.dataHeatBal->HeatReclaimDXCoil(DXCoilNum).coilType = HVAC::CoilType::DXCoolingSingleSpeed;
+        state.dataHeatBal->HeatReclaimDXCoil(DXCoilNum).SourceType = HVAC::coilTypeNames[(int)HVAC::CoilType::DXCoolingSingleSpeed];
         thisDXCoil.coilType = HVAC::CoilType::DXCoolingSingleSpeed;
         thisDXCoil.Schedule = Alphas(2);
         if (lAlphaBlanks(2)) {
@@ -1418,7 +1418,7 @@ void GetDXCoils(EnergyPlusData &state)
         thisDXCoil.Name = Alphas(1);
         // Initialize DataHeatBalance heat reclaim variable name for use by heat reclaim coils
         state.dataHeatBal->HeatReclaimDXCoil(DXCoilNum).Name = thisDXCoil.Name;
-        state.dataHeatBal->HeatReclaimDXCoil(DXCoilNum).coilType = HVAC::CoilType::DXCoolingTwoStageWHumControl;
+        state.dataHeatBal->HeatReclaimDXCoil(DXCoilNum).SourceType = HVAC::coilTypeNames[(int)HVAC::CoilType::DXCoolingTwoStageWHumControl];
         thisDXCoil.coilType = HVAC::CoilType::DXCoolingTwoStageWHumControl;
         thisDXCoil.Schedule = Alphas(2);
         if (lAlphaBlanks(2)) {
@@ -2443,7 +2443,7 @@ void GetDXCoils(EnergyPlusData &state)
         thisDXCoil.Name = Alphas(1);
         // Initialize DataHeatBalance heat reclaim variable name for use by heat reclaim coils
         state.dataHeatBal->HeatReclaimDXCoil(DXCoilNum).Name = thisDXCoil.Name;
-        state.dataHeatBal->HeatReclaimDXCoil(DXCoilNum).coilType = HVAC::CoilType::DXCoolingTwoSpeed; 
+        state.dataHeatBal->HeatReclaimDXCoil(DXCoilNum).SourceType = HVAC::coilTypeNames[(int)HVAC::CoilType::DXCoolingTwoSpeed]; 
         thisDXCoil.coilType = HVAC::CoilType::DXCoolingTwoSpeed;
         thisDXCoil.Schedule = Alphas(2);
         if (lAlphaBlanks(2)) {
@@ -3904,7 +3904,7 @@ void GetDXCoils(EnergyPlusData &state)
         thisDXCoil.Name = Alphas(1);
         // Initialize DataHeatBalance heat reclaim variable name for use by heat reclaim coils
         state.dataHeatBal->HeatReclaimDXCoil(DXCoilNum).Name = thisDXCoil.Name;
-        state.dataHeatBal->HeatReclaimDXCoil(DXCoilNum).coilType = HVAC::CoilType::DXMultiSpeedCooling;
+        state.dataHeatBal->HeatReclaimDXCoil(DXCoilNum).SourceType = HVAC::coilTypeNames[(int)HVAC::CoilType::DXMultiSpeedCooling];
         thisDXCoil.coilType = HVAC::CoilType::DXMultiSpeedCooling;
         thisDXCoil.Schedule = Alphas(2);
         if (lAlphaBlanks(2)) {
@@ -4453,7 +4453,7 @@ void GetDXCoils(EnergyPlusData &state)
         thisDXCoil.Name = Alphas(1);
         // Initialize DataHeatBalance heat reclaim variable name for use by heat reclaim coils
         state.dataHeatBal->HeatReclaimDXCoil(DXCoilNum).Name = thisDXCoil.Name;
-        state.dataHeatBal->HeatReclaimDXCoil(DXCoilNum).coilType = HVAC::CoilType::DXMultiSpeedHeating; 
+        state.dataHeatBal->HeatReclaimDXCoil(DXCoilNum).SourceType = HVAC::coilTypeNames[(int)HVAC::CoilType::DXMultiSpeedHeating]; 
         thisDXCoil.coilType = HVAC::CoilType::DXMultiSpeedHeating;
         thisDXCoil.Schedule = Alphas(2);
         if (lAlphaBlanks(2)) {
@@ -14106,113 +14106,113 @@ void ReportDXCoil(EnergyPlusData &state, int const DXCoilNum) // number of the c
 
     // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
 
-    auto &thisDXCoil = state.dataDXCoils->DXCoil(DXCoilNum);
+    auto &dxCoil = state.dataDXCoils->DXCoil(DXCoilNum);
 
-    if (thisDXCoil.reportCoilFinalSizes) {
+    if (dxCoil.reportCoilFinalSizes) {
         if (!state.dataGlobal->WarmupFlag && !state.dataGlobal->DoingHVACSizingSimulations && !state.dataGlobal->DoingSizing) {
             Real64 ratedSensCap(0.0);
-            ratedSensCap = thisDXCoil.RatedTotCap(1) * thisDXCoil.RatedSHR(1);
+            ratedSensCap = dxCoil.RatedTotCap(1) * dxCoil.RatedSHR(1);
             state.dataRptCoilSelection->coilSelectionReportObj->setCoilFinalSizes(
-                state, thisDXCoil.Name, thisDXCoil.coilType, thisDXCoil.RatedTotCap(1), ratedSensCap, thisDXCoil.RatedAirVolFlowRate(1), -999.0);
-            thisDXCoil.reportCoilFinalSizes = false;
+                state, dxCoil.Name, dxCoil.coilType, dxCoil.RatedTotCap(1), ratedSensCap, dxCoil.RatedAirVolFlowRate(1), -999.0);
+            dxCoil.reportCoilFinalSizes = false;
         }
     }
 
     Real64 ReportingConstant = state.dataHVACGlobal->TimeStepSysSec;
 
-    switch (thisDXCoil.coilType) {
+    switch (dxCoil.coilType) {
     case HVAC::CoilType::DXHeatingEmpirical:
     case HVAC::CoilType::VRFHeating:
     case HVAC::CoilType::VRFFluidTCtrlHeating: {
-        thisDXCoil.TotalHeatingEnergy = thisDXCoil.TotalHeatingEnergyRate * ReportingConstant;
-        thisDXCoil.ElecHeatingConsumption = thisDXCoil.ElecHeatingPower * ReportingConstant;
-        thisDXCoil.DefrostConsumption = thisDXCoil.DefrostPower * ReportingConstant;
-        thisDXCoil.CrankcaseHeaterConsumption = thisDXCoil.CrankcaseHeaterPower * ReportingConstant;
-        state.dataHVACGlobal->DXElecHeatingPower = thisDXCoil.ElecHeatingPower + thisDXCoil.CrankcaseHeaterPower;
-        state.dataHVACGlobal->DefrostElecPower = thisDXCoil.DefrostPower;
+        dxCoil.TotalHeatingEnergy = dxCoil.TotalHeatingEnergyRate * ReportingConstant;
+        dxCoil.ElecHeatingConsumption = dxCoil.ElecHeatingPower * ReportingConstant;
+        dxCoil.DefrostConsumption = dxCoil.DefrostPower * ReportingConstant;
+        dxCoil.CrankcaseHeaterConsumption = dxCoil.CrankcaseHeaterPower * ReportingConstant;
+        state.dataHVACGlobal->DXElecHeatingPower = dxCoil.ElecHeatingPower + dxCoil.CrankcaseHeaterPower;
+        state.dataHVACGlobal->DefrostElecPower = dxCoil.DefrostPower;
     } break;
 
     case HVAC::CoilType::DXMultiSpeedHeating: {
-        thisDXCoil.TotalHeatingEnergy = thisDXCoil.TotalHeatingEnergyRate * ReportingConstant;
-        if (thisDXCoil.FuelType == Constant::eFuel::Electricity) {
-            thisDXCoil.ElecHeatingConsumption = thisDXCoil.ElecHeatingPower * ReportingConstant;
+        dxCoil.TotalHeatingEnergy = dxCoil.TotalHeatingEnergyRate * ReportingConstant;
+        if (dxCoil.FuelType == Constant::eFuel::Electricity) {
+            dxCoil.ElecHeatingConsumption = dxCoil.ElecHeatingPower * ReportingConstant;
         } else {
-            thisDXCoil.FuelConsumed = thisDXCoil.FuelUsed * ReportingConstant;
+            dxCoil.FuelConsumed = dxCoil.FuelUsed * ReportingConstant;
         }
-        thisDXCoil.DefrostConsumption = thisDXCoil.DefrostPower * ReportingConstant;
-        thisDXCoil.CrankcaseHeaterConsumption = thisDXCoil.CrankcaseHeaterPower * ReportingConstant;
-        state.dataHVACGlobal->DXElecHeatingPower = thisDXCoil.ElecHeatingPower + thisDXCoil.CrankcaseHeaterPower;
-        state.dataHVACGlobal->DefrostElecPower = thisDXCoil.DefrostPower;
+        dxCoil.DefrostConsumption = dxCoil.DefrostPower * ReportingConstant;
+        dxCoil.CrankcaseHeaterConsumption = dxCoil.CrankcaseHeaterPower * ReportingConstant;
+        state.dataHVACGlobal->DXElecHeatingPower = dxCoil.ElecHeatingPower + dxCoil.CrankcaseHeaterPower;
+        state.dataHVACGlobal->DefrostElecPower = dxCoil.DefrostPower;
     } break;
 
     case HVAC::CoilType::DXMultiSpeedCooling: {
-        thisDXCoil.TotalCoolingEnergy = thisDXCoil.TotalCoolingEnergyRate * ReportingConstant;
-        thisDXCoil.SensCoolingEnergy = thisDXCoil.SensCoolingEnergyRate * ReportingConstant;
-        thisDXCoil.LatCoolingEnergy = thisDXCoil.TotalCoolingEnergy - thisDXCoil.SensCoolingEnergy;
-        thisDXCoil.CrankcaseHeaterConsumption = thisDXCoil.CrankcaseHeaterPower * ReportingConstant;
-        state.dataHVACGlobal->DXElecCoolingPower = thisDXCoil.ElecCoolingPower;
-        thisDXCoil.EvapCondPumpElecConsumption = thisDXCoil.EvapCondPumpElecPower * ReportingConstant;
-        thisDXCoil.EvapWaterConsump = thisDXCoil.EvapWaterConsumpRate * ReportingConstant;
-        if (thisDXCoil.FuelType == Constant::eFuel::Electricity) {
-            thisDXCoil.ElecCoolingConsumption = thisDXCoil.ElecCoolingPower * ReportingConstant;
+        dxCoil.TotalCoolingEnergy = dxCoil.TotalCoolingEnergyRate * ReportingConstant;
+        dxCoil.SensCoolingEnergy = dxCoil.SensCoolingEnergyRate * ReportingConstant;
+        dxCoil.LatCoolingEnergy = dxCoil.TotalCoolingEnergy - dxCoil.SensCoolingEnergy;
+        dxCoil.CrankcaseHeaterConsumption = dxCoil.CrankcaseHeaterPower * ReportingConstant;
+        state.dataHVACGlobal->DXElecCoolingPower = dxCoil.ElecCoolingPower;
+        dxCoil.EvapCondPumpElecConsumption = dxCoil.EvapCondPumpElecPower * ReportingConstant;
+        dxCoil.EvapWaterConsump = dxCoil.EvapWaterConsumpRate * ReportingConstant;
+        if (dxCoil.FuelType == Constant::eFuel::Electricity) {
+            dxCoil.ElecCoolingConsumption = dxCoil.ElecCoolingPower * ReportingConstant;
         } else {
-            thisDXCoil.FuelConsumed = thisDXCoil.FuelUsed * ReportingConstant;
+            dxCoil.FuelConsumed = dxCoil.FuelUsed * ReportingConstant;
         }
-        if (any_eq(thisDXCoil.CondenserType, DataHeatBalance::RefrigCondenserType::Evap)) {
-            thisDXCoil.BasinHeaterConsumption = thisDXCoil.BasinHeaterPower * ReportingConstant;
+        if (any_eq(dxCoil.CondenserType, DataHeatBalance::RefrigCondenserType::Evap)) {
+            dxCoil.BasinHeaterConsumption = dxCoil.BasinHeaterPower * ReportingConstant;
         }
     } break;
 
     case HVAC::CoilType::DXHeatPumpWaterHeaterPumped:
     case HVAC::CoilType::DXHeatPumpWaterHeaterWrapped: {
         // water heating energy for HP water heater DX Coil condenser
-        thisDXCoil.TotalHeatingEnergy = thisDXCoil.TotalHeatingEnergyRate * ReportingConstant;
+        dxCoil.TotalHeatingEnergy = dxCoil.TotalHeatingEnergyRate * ReportingConstant;
         // water heating power for HP water heater
-        thisDXCoil.ElecWaterHeatingConsumption = thisDXCoil.ElecWaterHeatingPower * ReportingConstant;
+        dxCoil.ElecWaterHeatingConsumption = dxCoil.ElecWaterHeatingPower * ReportingConstant;
         // other usual DX cooling coil outputs
-        thisDXCoil.TotalCoolingEnergy = thisDXCoil.TotalCoolingEnergyRate * ReportingConstant;
-        thisDXCoil.SensCoolingEnergy = thisDXCoil.SensCoolingEnergyRate * ReportingConstant;
-        thisDXCoil.LatCoolingEnergy = thisDXCoil.TotalCoolingEnergy - thisDXCoil.SensCoolingEnergy;
-        thisDXCoil.ElecCoolingConsumption = thisDXCoil.ElecCoolingPower * ReportingConstant;
-        thisDXCoil.CrankcaseHeaterConsumption = thisDXCoil.CrankcaseHeaterPower * ReportingConstant;
+        dxCoil.TotalCoolingEnergy = dxCoil.TotalCoolingEnergyRate * ReportingConstant;
+        dxCoil.SensCoolingEnergy = dxCoil.SensCoolingEnergyRate * ReportingConstant;
+        dxCoil.LatCoolingEnergy = dxCoil.TotalCoolingEnergy - dxCoil.SensCoolingEnergy;
+        dxCoil.ElecCoolingConsumption = dxCoil.ElecCoolingPower * ReportingConstant;
+        dxCoil.CrankcaseHeaterConsumption = dxCoil.CrankcaseHeaterPower * ReportingConstant;
         // DXElecCoolingPower global is only used for air-to-air cooling and heating coils
         state.dataHVACGlobal->DXElecCoolingPower = 0.0;
     } break;
     default: {
-        thisDXCoil.TotalCoolingEnergy = thisDXCoil.TotalCoolingEnergyRate * ReportingConstant;
-        thisDXCoil.SensCoolingEnergy = thisDXCoil.SensCoolingEnergyRate * ReportingConstant;
-        thisDXCoil.LatCoolingEnergy = thisDXCoil.TotalCoolingEnergy - thisDXCoil.SensCoolingEnergy;
-        thisDXCoil.ElecCoolingConsumption = thisDXCoil.ElecCoolingPower * ReportingConstant;
-        thisDXCoil.CrankcaseHeaterConsumption = thisDXCoil.CrankcaseHeaterPower * ReportingConstant;
-        state.dataHVACGlobal->DXElecCoolingPower = thisDXCoil.ElecCoolingPower;
-        thisDXCoil.EvapCondPumpElecConsumption = thisDXCoil.EvapCondPumpElecPower * ReportingConstant;
-        thisDXCoil.EvapWaterConsump = thisDXCoil.EvapWaterConsumpRate * ReportingConstant;
-        if (any_eq(thisDXCoil.CondenserType, DataHeatBalance::RefrigCondenserType::Evap)) {
-            thisDXCoil.BasinHeaterConsumption = thisDXCoil.BasinHeaterPower * ReportingConstant;
+        dxCoil.TotalCoolingEnergy = dxCoil.TotalCoolingEnergyRate * ReportingConstant;
+        dxCoil.SensCoolingEnergy = dxCoil.SensCoolingEnergyRate * ReportingConstant;
+        dxCoil.LatCoolingEnergy = dxCoil.TotalCoolingEnergy - dxCoil.SensCoolingEnergy;
+        dxCoil.ElecCoolingConsumption = dxCoil.ElecCoolingPower * ReportingConstant;
+        dxCoil.CrankcaseHeaterConsumption = dxCoil.CrankcaseHeaterPower * ReportingConstant;
+        state.dataHVACGlobal->DXElecCoolingPower = dxCoil.ElecCoolingPower;
+        dxCoil.EvapCondPumpElecConsumption = dxCoil.EvapCondPumpElecPower * ReportingConstant;
+        dxCoil.EvapWaterConsump = dxCoil.EvapWaterConsumpRate * ReportingConstant;
+        if (any_eq(dxCoil.CondenserType, DataHeatBalance::RefrigCondenserType::Evap)) {
+            dxCoil.BasinHeaterConsumption = dxCoil.BasinHeaterPower * ReportingConstant;
         }
     } break;
     }
 
-    if (thisDXCoil.CondensateCollectMode == CondensateCollectAction::ToTank) {
+    if (dxCoil.CondensateCollectMode == CondensateCollectAction::ToTank) {
         // calculate and report condensation rates  (how much water extracted from the air stream)
         // water flow of water in m3/s for water system interactions
         //  put here to catch all types of DX coils
-        Real64 Tavg = (thisDXCoil.InletAirTemp + thisDXCoil.OutletAirTemp) / 2.0;
+        Real64 Tavg = (dxCoil.InletAirTemp + dxCoil.OutletAirTemp) / 2.0;
         // CR9155 Remove specific humidity calculations
         //  mdot * del HumRat / rho water
-        thisDXCoil.CondensateVdot =
-            max(0.0, (thisDXCoil.InletAirMassFlowRate * (thisDXCoil.InletAirHumRat - thisDXCoil.OutletAirHumRat) / Psychrometrics::RhoH2O(Tavg)));
-        thisDXCoil.CondensateVol = thisDXCoil.CondensateVdot * ReportingConstant;
+        dxCoil.CondensateVdot =
+            max(0.0, (dxCoil.InletAirMassFlowRate * (dxCoil.InletAirHumRat - dxCoil.OutletAirHumRat) / Psychrometrics::RhoH2O(Tavg)));
+        dxCoil.CondensateVol = dxCoil.CondensateVdot * ReportingConstant;
 
-        state.dataWaterData->WaterStorage(thisDXCoil.CondensateTankID).VdotAvailSupply(thisDXCoil.CondensateTankSupplyARRID) =
-            thisDXCoil.CondensateVdot;
-        state.dataWaterData->WaterStorage(thisDXCoil.CondensateTankID).TwaterSupply(thisDXCoil.CondensateTankSupplyARRID) = thisDXCoil.OutletAirTemp;
+        state.dataWaterData->WaterStorage(dxCoil.CondensateTankID).VdotAvailSupply(dxCoil.CondensateTankSupplyARRID) =
+            dxCoil.CondensateVdot;
+        state.dataWaterData->WaterStorage(dxCoil.CondensateTankID).TwaterSupply(dxCoil.CondensateTankSupplyARRID) = dxCoil.OutletAirTemp;
     }
 
-    state.dataAirLoop->LoopDXCoilRTF = max(thisDXCoil.CoolingCoilRuntimeFraction, thisDXCoil.HeatingCoilRuntimeFraction);
-    if (thisDXCoil.AirLoopNum > 0) {
-        state.dataAirLoop->AirLoopAFNInfo(thisDXCoil.AirLoopNum).AFNLoopDXCoilRTF =
-            max(thisDXCoil.CoolingCoilRuntimeFraction, thisDXCoil.HeatingCoilRuntimeFraction);
+    state.dataAirLoop->LoopDXCoilRTF = max(dxCoil.CoolingCoilRuntimeFraction, dxCoil.HeatingCoilRuntimeFraction);
+    if (dxCoil.AirLoopNum > 0) {
+        state.dataAirLoop->AirLoopAFNInfo(dxCoil.AirLoopNum).AFNLoopDXCoilRTF =
+            max(dxCoil.CoolingCoilRuntimeFraction, dxCoil.HeatingCoilRuntimeFraction);
     }
 }
 
@@ -15008,6 +15008,18 @@ void GetDXCoilIndex(EnergyPlusData &state,
         }
         ErrorsFound = true;
     }
+}
+
+int GetDXCoilIndex(EnergyPlusData &state,
+                    std::string const &DXCoilName
+)
+{
+    if (state.dataDXCoils->GetCoilsInputFlag) {
+        GetDXCoils(state);
+        state.dataDXCoils->GetCoilsInputFlag = false;
+    }
+
+    return Util::FindItemInList(DXCoilName, state.dataDXCoils->DXCoil);
 }
 
 std::string

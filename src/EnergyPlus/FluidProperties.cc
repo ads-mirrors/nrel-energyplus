@@ -804,7 +804,7 @@ namespace Fluid {
             }
 
             if (refrig->satTempArrayName != "" && refrig->satTempArrayName != Alphas(4)) {
-                ShowSevereCustomMessage(state, eoh, "Saturated temperature arrays are not the same for different properties");
+                ShowSevereCustom(state, eoh, "Saturated temperature arrays are not the same for different properties");
                 ErrorsFound = true;
                 continue;
             }
@@ -902,7 +902,7 @@ namespace Fluid {
 
             ErrorObjectHeader eoh{routineName, CurrentModuleObject, refrig->Name};
             if (refrig->PsValues.size() == 0) {
-                ShowSevereCustomMessage(state,
+                ShowSevereCustom(state,
                                         eoh,
                                         format(R"(No Gas/Fluid Saturation Pressure found. Need properties with {}="Pressure" and {}="FluidGas".)",
                                                cAlphaFields(2),
@@ -911,7 +911,7 @@ namespace Fluid {
             }
 
             if (refrig->HfValues.size() == 0) {
-                ShowSevereCustomMessage(state,
+                ShowSevereCustom(state,
                                         eoh,
                                         format(R"(No Saturated Fluid Enthalpy found. Need properties with {}="Enthalpy" and {}="Fluid".)",
                                                cAlphaFields(2),
@@ -920,7 +920,7 @@ namespace Fluid {
             }
 
             if (refrig->HfgValues.size() == 0) {
-                ShowSevereCustomMessage(state,
+                ShowSevereCustom(state,
                                         eoh,
                                         format(R"(No Saturated Gas/Fluid Enthalpy found. Need properties with {}="Enthalpy" and {}="FluidGas".)",
                                                cAlphaFields(2),
@@ -929,7 +929,7 @@ namespace Fluid {
             }
 
             if (refrig->CpfValues.size() == 0) {
-                ShowSevereCustomMessage(state,
+                ShowSevereCustom(state,
                                         eoh,
                                         format(R"(No Saturated Fluid Specific Heat found. Need properties with {}="SpecificHeat" and {}="Fluid".)",
                                                cAlphaFields(2),
@@ -938,7 +938,7 @@ namespace Fluid {
             }
 
             if (refrig->CpfgValues.size() == 0) {
-                ShowSevereCustomMessage(
+                ShowSevereCustom(
                     state,
                     eoh,
                     format(R"(No Saturated Gas/Fluid Specific Heat found. Need properties with {}="SpecificHeat" and {}="FluidGas".)",
@@ -948,7 +948,7 @@ namespace Fluid {
             }
 
             if (refrig->RhofValues.size() == 0) {
-                ShowSevereCustomMessage(state,
+                ShowSevereCustom(state,
                                         eoh,
                                         format(R"(No Saturated Fluid Density found. Need properties with {}="Density" and {}="Fluid".)",
                                                cAlphaFields(2),
@@ -957,7 +957,7 @@ namespace Fluid {
             }
 
             if (refrig->RhofgValues.size() == 0) {
-                ShowSevereCustomMessage(state,
+                ShowSevereCustom(state,
                                         eoh,
                                         format(R"(No Saturated Gas/Fluid Density found. Need properties with {}="Density" and {}="FluidGas".)",
                                                cAlphaFields(2),
@@ -1020,7 +1020,7 @@ namespace Fluid {
             }
 
             if (refrig->supTempArrayName != "" && refrig->supTempArrayName != Alphas(3)) {
-                ShowSevereCustomMessage(state, eoh, "Saturated temperature arrays are not the same for different properties");
+                ShowSevereCustom(state, eoh, "Saturated temperature arrays are not the same for different properties");
                 ErrorsFound = true;
                 continue;
             }
@@ -1090,7 +1090,7 @@ namespace Fluid {
             }
 
             if ((NumNumbers - 1) != refrig->NumSupTempPoints) {
-                ShowSevereCustomMessage(state,
+                ShowSevereCustom(state,
                                         eoh,
                                         format("Number of superheated {} points ({}) not equal to number of temperature points ({})",
                                                Alphas(2),
@@ -1348,7 +1348,7 @@ namespace Fluid {
             }
 
             if (Numbers(1) < 0.0) {
-                ShowSevereCustomMessage(state, eoh, "Negative concentrations not allowed in fluid property input data");
+                ShowSevereCustom(state, eoh, "Negative concentrations not allowed in fluid property input data");
                 ErrorsFound = true;
                 continue;
             }
@@ -1356,7 +1356,7 @@ namespace Fluid {
             // Can temperatue and pressure points be different for different properties?  Why is this allowed?
             if (Alphas(2) == "SPECIFICHEAT") {
                 if (glycolRaw->CpTempArrayName != "" && glycolRaw->CpTempArrayName != Alphas(3)) {
-                    ShowSevereCustomMessage(state,
+                    ShowSevereCustom(state,
                                             eoh,
                                             format("All specific heat data for the same glycol must use the same temperature list"
                                                    "Expected name={}, Entered name={}",
@@ -1375,7 +1375,7 @@ namespace Fluid {
 
             } else if (Alphas(2) == "DENSITY") {
                 if (glycolRaw->RhoTempArrayName != "" && glycolRaw->RhoTempArrayName != Alphas(3)) {
-                    ShowSevereCustomMessage(state,
+                    ShowSevereCustom(state,
                                             eoh,
                                             format("All density data for the same glycol must use the same temperature list"
                                                    "Expected name={}, Entered name={}",
@@ -1394,7 +1394,7 @@ namespace Fluid {
 
             } else if (Alphas(2) == "CONDUCTIVITY") {
                 if (glycolRaw->CondTempArrayName != "" && glycolRaw->CondTempArrayName != Alphas(3)) {
-                    ShowSevereCustomMessage(state,
+                    ShowSevereCustom(state,
                                             eoh,
                                             format("All conductivity data for the same glycol must use the same temperature list"
                                                    "Expected name={}, Entered name={}",
@@ -1413,7 +1413,7 @@ namespace Fluid {
 
             } else if (Alphas(2) == "VISCOSITY") {
                 if (glycolRaw->ViscTempArrayName != "" && glycolRaw->ViscTempArrayName != Alphas(3)) {
-                    ShowSevereCustomMessage(state,
+                    ShowSevereCustom(state,
                                             eoh,
                                             format("All conductivity data for the same glycol must use the same temperature list"
                                                    "Expected name={}, Entered name={}",
@@ -1509,7 +1509,7 @@ namespace Fluid {
 
             if (Alphas(2) == "SPECIFICHEAT") {
                 if ((NumNumbers - 1) != glycolRaw->NumCpTempPoints) {
-                    ShowSevereCustomMessage(state,
+                    ShowSevereCustom(state,
                                             eoh,
                                             format("Number of specific heat points ({}) not equal to number of temperature points ({})",
                                                    NumNumbers - 1,
@@ -1524,7 +1524,7 @@ namespace Fluid {
 
             } else if (Alphas(2) == "DENSITY") {
                 if ((NumNumbers - 1) != glycolRaw->NumRhoTempPoints) {
-                    ShowSevereCustomMessage(state,
+                    ShowSevereCustom(state,
                                             eoh,
                                             format("Number of density points ({}) not equal to number of temperature points ({})",
                                                    NumNumbers - 1,
@@ -1539,7 +1539,7 @@ namespace Fluid {
 
             } else if (Alphas(2) == "CONDUCTIVITY") {
                 if ((NumNumbers - 1) != glycolRaw->NumCondTempPoints) {
-                    ShowSevereCustomMessage(state,
+                    ShowSevereCustom(state,
                                             eoh,
                                             format("Number of conductivity points ({}) not equal to number of temperature points ({})",
                                                    NumNumbers - 1,
@@ -1554,7 +1554,7 @@ namespace Fluid {
 
             } else if (Alphas(2) == "VISCOSITY") {
                 if ((NumNumbers - 1) != glycolRaw->NumViscTempPoints) {
-                    ShowSevereCustomMessage(state,
+                    ShowSevereCustom(state,
                                             eoh,
                                             format("Number of viscosity points ({}) not equal to number of temperature points ({})",
                                                    NumNumbers - 1,

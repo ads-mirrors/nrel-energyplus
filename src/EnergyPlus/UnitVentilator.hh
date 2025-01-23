@@ -78,23 +78,7 @@ namespace UnitVentilator {
         Cooling,
         Num
     };
-    enum class HeatCoilType
-    {
-        Invalid = -1,
-        Electric,
-        Gas,
-        Water,
-        Steam,
-        Num
-    };
-    enum class CoolCoilType
-    {
-        Invalid = -1,
-        Water,
-        Detailed,
-        HXAssisted,
-        Num
-    };
+  
     enum class OAControl
     {
         Invalid = -1,
@@ -134,13 +118,18 @@ namespace UnitVentilator {
         Real64 MinOutAirVolFlow = 0.0;                  // m3/s
         Real64 MinOutAirMassFlow = 0.0;                 // kg/s
         CoilsUsed CoilOption = CoilsUsed::Invalid;      // type of coil option; options are BOTH, HEATING, COOLING, AND NONE
-        bool HCoilPresent = false;                      // .TRUE. if unit ventilator has a heating coil
-        HeatCoilType HCoilType = HeatCoilType::Invalid; // type of heating coil (water, gas, electric, etc.)
-        std::string HCoilName;                          // name of heating coil
-        std::string HCoilTypeCh;                        // type of heating coil character string (same as type on idf file).
-        int HCoil_Index = 0;
-        DataPlant::PlantEquipmentType HeatingCoilType = DataPlant::PlantEquipmentType::Invalid;
-        Fluid::RefrigProps *HCoil_fluid = nullptr;
+
+        bool HeatCoilPresent = false;                      // .TRUE. if unit ventilator has a heating coil
+        HVAC::CoilType heatCoilType = HVAC::CoilType::Invalid; // type of heating coil (water, gas, electric, etc.)
+        std::string HeatCoilName;                          // name of heating coil
+        int HeatCoilNum = 0;
+        DataPlant::PlantEquipmentType HeatCoilPlantType = DataPlant::PlantEquipmentType::Invalid;
+        Fluid::RefrigProps *HeatCoilFluid = nullptr;
+        int HeatCoilOutNodeNum = 0;       // outlet of coil
+        int HeatCoilControlNodeNum = 0;          // hot water control node
+        Real64 HeatCoilControlOffset = 0.0;   // control tolerance
+        PlantLocation HWplantLoc;        // index for plant location for hot water coil
+      
         int HCoilSchedPtr = 0; // index to schedule
         Real64 HCoilSchedValue = 0.0;
         Real64 MaxVolHotWaterFlow = 0.0; // m3/s
@@ -151,18 +140,16 @@ namespace UnitVentilator {
         Real64 MinVolHotWaterFlow = 0.0; // m3/s
         Real64 MinVolHotSteamFlow = 0.0; // m3/s
         Real64 MinHotWaterFlow = 0.0;    // kg/s
-        int HotControlNode = 0;          // hot water control node
-        int HotCoilOutNodeNum = 0;       // outlet of coil
-        Real64 HotControlOffset = 0.0;   // control tolerance
-        PlantLocation HWplantLoc;        // index for plant location for hot water coil
-        bool CCoilPresent = false;       // .TRUE. if unit ventilator has a cooling coil
-        std::string CCoilName;           // name of cooling coil
-        std::string CCoilTypeCh;         // type of cooling coil as character string (same as on idf file)
-        int CCoil_Index = 0;
-        std::string CCoilPlantName; // name of cooling coil for plant
-        std::string CCoilPlantType; // type of cooling coil for plant
-        DataPlant::PlantEquipmentType CoolingCoilType = DataPlant::PlantEquipmentType::Invalid;
-        CoolCoilType CCoilType = CoolCoilType::Invalid;
+
+        bool CoolCoilPresent = false;       // .TRUE. if unit ventilator has a cooling coil
+        HVAC::CoilType coolCoilType = HVAC::CoilType::Invalid;
+        std::string CoolCoilName;           // name of cooling coil
+        int CoolCoilNum = 0;
+        DataPlant::PlantEquipmentType CoolCoilPlantType = DataPlant::PlantEquipmentType::Invalid;
+        std::string ChildCoolCoilName; // name of child coil if this is an HXAssisted coil
+        HVAC::CoilType ChildCoolCoilType; // name of child coil if this is an HXAssisted coil
+        int ChildCoolCoilNum = 0;
+      
         int CCoilSchedPtr = 0; // index to schedule
         Real64 CCoilSchedValue = 0.0;
         Real64 MaxVolColdWaterFlow = 0.0; // m3/s

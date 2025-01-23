@@ -622,9 +622,9 @@ namespace AirLoopHVACDOAS {
 
                     case ValidEquipListType::CoilSystemCoolingWaterHeatExchangerAssisted:
                         thisOutsideAirSys.InletNodeNum(CompNum) =
-                            HVACHXAssistedCoolingCoil::GetCoilInletNode(state, CompType, CompName, InletNodeErrFlag);
+                            HVACHXAssistedCoolingCoil::GetHXCoilInletNode(state, CompType, CompName, InletNodeErrFlag);
                         thisOutsideAirSys.OutletNodeNum(CompNum) =
-                            HVACHXAssistedCoolingCoil::GetCoilOutletNode(state, CompType, CompName, OutletNodeErrFlag);
+                            HVACHXAssistedCoolingCoil::GetHXCoilOutletNode(state, CompType, CompName, OutletNodeErrFlag);
                         break;
 
                     case ValidEquipListType::CoilSystemCoolingDX:
@@ -888,7 +888,7 @@ namespace AirLoopHVACDOAS {
 
                 if (Util::SameString(CompType, "COIL:HEATING:WATER")) {
                     WaterCoils::SimulateWaterCoilComponents(state, CompName, FirstHVACIteration, this->m_HeatCoilNum);
-                    Real64 CoilMaxVolFlowRate = WaterCoils::GetCoilMaxWaterFlowRate(state, "Coil:Heating:Water", CompName, ErrorsFound);
+                    Real64 CoilMaxVolFlowRate = WaterCoils::GetCoilMaxWaterFlowRate(state, this->m_HeatCoilNum);
                     rho = state.dataPlnt->PlantLoop(this->HWPlantLoc.loopNum).glycol->getDensity(state, Constant::HWInitConvTemp, RoutineName);
                     PlantUtilities::InitComponentNodes(state,
                                                        0.0,

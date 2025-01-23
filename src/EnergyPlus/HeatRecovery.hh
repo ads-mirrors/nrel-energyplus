@@ -201,7 +201,7 @@ namespace HeatRecovery {
         bool MySetPointTest = true;
         bool MySizeFlag = true;
 
-        void initialize(EnergyPlusData &state, int CompanionCoilIndex, int CompanionCoilType_Num);
+        void initialize(EnergyPlusData &state, int CompanionCoilIndex, HVAC::CoilType companionCoilType);
 
         void size(EnergyPlusData &state);
 
@@ -227,7 +227,7 @@ namespace HeatRecovery {
                                       HVAC::FanOp const fanOp, // Supply air fan operating mode (1=cycling, 2=constant)
                                       Real64 PartLoadRatio,    // Part load ratio requested of DX compressor
                                       int CompanionCoilIndex,  // index of companion cooling coil
-                                      int CompanionCoilType,   // type of cooling coil
+                                      HVAC::CoilType companionCoilType,   // type of cooling coil
                                       bool RegenInletIsOANode, // Flag to determine if regen side inlet is OANode, if so this air stream cycles
                                       ObjexxFCL::Optional_bool_const EconomizerFlag = _, // economizer flag pass by air loop or OA sys
                                       ObjexxFCL::Optional_bool_const HighHumCtrlFlag = _ // high humidity control flag passed by airloop or OA sys
@@ -401,7 +401,7 @@ namespace HeatRecovery {
                          ObjexxFCL::Optional_bool_const RegenInletIsOANode = _, // flag to determine if supply inlet is OA node, if so air flow cycles
                          ObjexxFCL::Optional_bool_const EconomizerFlag = _,     // economizer operation flag passed by airloop or OA sys
                          ObjexxFCL::Optional_bool_const HighHumCtrlFlag = _,    // high humidity control flag passed by airloop or OA sys
-                         ObjexxFCL::Optional<HVAC::CoilType const> CompanionCoilType = _ // cooling coil type of coil
+                         HVAC::CoilType companionCoilType = HVAC::CoilType::Invalid
     );
 
     void GetHeatRecoveryInput(EnergyPlusData &state);
@@ -427,6 +427,9 @@ namespace HeatRecovery {
                                          Real64 Z    // capacity rate ratio
     );
 
+    int GetHeatExchangerIndex(EnergyPlusData &state,
+                              std::string const &hxName);
+  
     int GetSupplyInletNode(EnergyPlusData &state,
                            std::string const &HXName, // must match HX names for the ExchCond type
                            bool &ErrorsFound          // set to true if problem
@@ -452,10 +455,22 @@ namespace HeatRecovery {
                                 bool &ErrorsFound          // set to true if problem
     );
 
-    HVAC::HXType GetHeatExchangerObjectTypeNum(EnergyPlusData &state,
-                                               std::string const &HXName, // must match HX names for the ExchCond type
-                                               bool &ErrorsFound          // set to true if problem
-    );
+    HVAC::HXType GetHeatExchangerType(EnergyPlusData &state,
+                                      std::string const &HXName, // must match HX names for the ExchCond type
+                                      bool &ErrorsFound          // set to true if problem
+                                      );
+    // New API
+    int GetSupplyInletNode(EnergyPlusData &state, int const hxNum);
+
+    int GetSupplyOutletNode(EnergyPlusData &state, int const hxNum);
+
+    int GetSecondaryInletNode(EnergyPlusData &state, int const hxNum);
+
+    int GetSecondaryOutletNode(EnergyPlusData &state, int const hxNum);
+
+    Real64 GetSupplyAirFlowRate(EnergyPlusData &state, int const hxNum);
+  
+    HVAC::HXType GetHeatExchangerType(EnergyPlusData &state, int const hxNum);
 
 } // namespace HeatRecovery
 

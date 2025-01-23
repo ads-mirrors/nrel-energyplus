@@ -74,8 +74,7 @@ namespace HVACDXHeatPumpSystem {
         std::string DXHeatPumpSystemType; // Type of DXHeatingSystem
         std::string Name;                 // Name of the DXHeatingSystem
         int SchedPtr;
-        std::string HeatPumpCoilType;
-        int HeatPumpCoilType_Num;
+        HVAC::CoilType heatPumpCoilType = HVAC::CoilType::Invalid;
         std::string HeatPumpCoilName;
         int HeatPumpCoilIndex;
         int DXHeatPumpCoilInletNodeNum;
@@ -103,7 +102,7 @@ namespace HVACDXHeatPumpSystem {
 
         // Default Constructor
         DXHeatPumpSystemStruct()
-            : SchedPtr(0), HeatPumpCoilType_Num(0), HeatPumpCoilIndex(0), DXHeatPumpCoilInletNodeNum(0), DXHeatPumpCoilOutletNodeNum(0),
+            : SchedPtr(0), HeatPumpCoilIndex(0), DXHeatPumpCoilInletNodeNum(0), DXHeatPumpCoilOutletNodeNum(0),
               DXSystemControlNodeNum(0), DesiredOutletTemp(0.0), PartLoadFrac(0.0), SpeedRatio(0.0), CycRatio(0.0), DXCoilSensPLRIter(0),
               DXCoilSensPLRIterIndex(0), DXCoilSensPLRFail(0), DXCoilSensPLRFailIndex(0), OAUnitSetTemp(0.0), SpeedNum(0), FaultyCoilSATFlag(false),
               FaultyCoilSATIndex(0), FaultyCoilSATOffset(0.0)
@@ -183,7 +182,6 @@ struct HVACDXHeatPumpSystemData : BaseGlobalStruct
     Real64 QZnReq = 0.001;          // Zone load (W), input to variable-speed DX coil
     Real64 QLatReq = 0.0;           // Zone latent load, input to variable-speed DX coil
     Real64 OnOffAirFlowRatio = 1.0; // ratio of compressor on flow to average flow over time step
-    bool ErrorsFound = false;       // If errors detected in input
     int TotalArgs = 0;              // Total number of alpha and numeric arguments (max) for a certain object in the input file
     bool MySetPointCheckFlag = true;
     int SpeedNum = 1;                  // speed number of variable speed DX cooling coil
@@ -211,7 +209,6 @@ struct HVACDXHeatPumpSystemData : BaseGlobalStruct
         this->QZnReq = 0.001;
         this->QLatReq = 0.0;
         this->OnOffAirFlowRatio = 1.0;
-        this->ErrorsFound = false;
         this->TotalArgs = 0;
         this->MySetPointCheckFlag = true;
         this->SpeedNum = 1;

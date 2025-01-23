@@ -78,6 +78,8 @@ namespace SteamCoils {
     {
         // Members
         std::string Name;                 // Name of the SteamCoil
+        HVAC::CoilType coilType = HVAC::CoilType::HeatingSteam;
+      
         std::string SteamCoilTypeA;       // Type of SteamCoil ie. Heating or Cooling
         int SteamCoilType;                // Type of SteamCoil ie. Heating or Cooling
         int SteamCoilModel;               // Type of SteamCoil ie. Simple, Detailed, etc.
@@ -184,6 +186,11 @@ namespace SteamCoils {
                           std::string const &CoilName, // must match coil names for the coil type
                           bool &ErrorsFound            // set to true if problem
     );
+
+    int GetSteamCoilIndex(EnergyPlusData &state,
+                          std::string const &CoilName
+    );
+  
     int GetCompIndex(EnergyPlusData &state, std::string_view coilName);
 
     void CheckSteamCoilSchedule(EnergyPlusData &state, std::string const &CompType, std::string_view CompName, Real64 &Value, int &CompIndex);
@@ -195,8 +202,7 @@ namespace SteamCoils {
     );
 
     Real64 GetCoilMaxSteamFlowRate(EnergyPlusData &state,
-                                   int CoilIndex,    // must match coil types in this module
-                                   bool &ErrorsFound // set to true if problem
+                                   int const coilNum
     );
 
     int GetCoilAirInletNode(EnergyPlusData &state,
@@ -205,10 +211,12 @@ namespace SteamCoils {
                             bool &ErrorsFound            // set to true if problem
     );
 
+    int GetCoilAirInletNode(EnergyPlusData &state,
+                            int const coilNum
+    );
+  
     int GetCoilAirOutletNode(EnergyPlusData &state,
-                             int CoilIndex,               // must match coil types in this module
-                             std::string const &CoilName, // must match coil names for the coil type
-                             bool &ErrorsFound            // set to true if problem
+                             int const coilNum
     );
 
     int GetCoilAirOutletNode(EnergyPlusData &state,
@@ -217,12 +225,21 @@ namespace SteamCoils {
                              bool &ErrorsFound            // set to true if problem
     );
 
+    int GetCoilAirOutletNode(EnergyPlusData &state,
+                             int const coilNum
+    );
+
     int GetCoilSteamInletNode(EnergyPlusData &state,
                               int CoilIndex,               // must match coil types in this module
                               std::string const &CoilName, // must match coil names for the coil type
                               bool &ErrorsFound            // set to true if problem
     );
 
+    int GetCoilSteamInletNode(EnergyPlusData &state,
+                              int const coilNum
+    );
+  
+  
     int GetCoilSteamInletNode(EnergyPlusData &state,
                               std::string const &CoilType, // must match coil types in this module
                               std::string const &CoilName, // must match coil names for the coil type
@@ -236,6 +253,10 @@ namespace SteamCoils {
     );
 
     int GetCoilSteamOutletNode(EnergyPlusData &state,
+                               int const coilNum
+    );
+  
+    int GetCoilSteamOutletNode(EnergyPlusData &state,
                                std::string_view CoilType,   // must match coil types in this module
                                std::string const &CoilName, // must match coil names for the coil type
                                bool &ErrorsFound            // set to true if problem
@@ -245,6 +266,10 @@ namespace SteamCoils {
                            std::string const &CoilType, // must match coil types in this module
                            std::string const &CoilName, // must match coil names for the coil type
                            bool &ErrorsFound            // set to true if problem
+    );
+
+    Real64 GetCoilCapacity(EnergyPlusData &state,
+                           int const coilNum
     );
 
     CoilControlType GetTypeOfCoil(EnergyPlusData &state,
@@ -259,6 +284,10 @@ namespace SteamCoils {
                                    bool &ErrorFlag              // set to true if problem
     );
 
+    int GetSteamCoilControlNodeNum(EnergyPlusData &state,
+                                   int const coilNum
+    );
+  
     int GetSteamCoilAvailScheduleIndex(EnergyPlusData &state,
                                        std::string const &CoilType, // must match coil types in this module
                                        std::string const &CoilName, // must match coil names for the coil type

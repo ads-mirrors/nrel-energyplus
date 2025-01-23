@@ -123,7 +123,7 @@ struct ZoneEquipControllerProps
 
 void ControlCompOutput(EnergyPlusData &state,
                        std::string const &CompName,                          // the component Name
-                       std::string const &CompType,                          // Type of component
+                       std::string_view const compType,                      // Type of component
                        int &CompNum,                                         // Index of component in component array
                        bool const FirstHVACIteration,                        // flag for 1st HVAV iteration in the time step
                        Real64 const QZnReq,                                  // zone load to be met

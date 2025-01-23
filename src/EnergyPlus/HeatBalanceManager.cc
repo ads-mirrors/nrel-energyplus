@@ -5301,7 +5301,7 @@ namespace HeatBalanceManager {
 
             windowThermalModel.SDScalar = s_ipsc->rNumericArgs(1);
             if ((s_ipsc->rNumericArgs(1) < 0.0) || (s_ipsc->rNumericArgs(1) > 1.0)) {
-                ShowSevereCustomMessage(
+                ShowSevereCustom(
                     state,
                     eoh,
                     format("{} should be >= 0.0 and <= 1.0, entered value = {:.2R}", s_ipsc->cNumericFieldNames(1), s_ipsc->rNumericArgs(1)));
@@ -5319,21 +5319,21 @@ namespace HeatBalanceManager {
                 windowThermalModel.VacuumPressureLimit = s_ipsc->rNumericArgs(2);
                 if (s_ipsc->rNumericArgs(2) <= 0.0) {
                     ErrorsFound = true;
-                    ShowSevereCustomMessage(
+                    ShowSevereCustom(
                         state, eoh, format("{} must be > 0, entered value = {:.2R}", s_ipsc->cNumericFieldNames(2), s_ipsc->rNumericArgs(2)));
                 }
 
                 windowThermalModel.InitialTemperature = s_ipsc->rNumericArgs(3);
                 if (s_ipsc->rNumericArgs(3) <= 0.0) {
                     ErrorsFound = true;
-                    ShowSevereCustomMessage(
+                    ShowSevereCustom(
                         state, eoh, format("{} must be > 0, entered value = {:.2R}", s_ipsc->cNumericFieldNames(3), s_ipsc->rNumericArgs(3)));
                 }
 
                 windowThermalModel.InitialPressure = s_ipsc->rNumericArgs(4);
                 if (s_ipsc->rNumericArgs(4) <= 0.0) {
                     ErrorsFound = true;
-                    ShowSevereCustomMessage(
+                    ShowSevereCustom(
                         state, eoh, format("{} must be > 0, entered value = {:.2R}", s_ipsc->cNumericFieldNames(4), s_ipsc->rNumericArgs(4)));
                 }
             }
@@ -5413,7 +5413,7 @@ namespace HeatBalanceManager {
 
             if (NumCols != 2 && NumCols != 1) {
                 ErrorsFound = true;
-                ShowSevereCustomMessage(state,
+                ShowSevereCustom(state,
                                         eoh,
                                         format("{} entered value=\"{}\" invalid matrix dimensions.  Basis matrix dimension can only be 2 x 1.",
                                                locAlphaFieldNames(5),
@@ -5437,7 +5437,7 @@ namespace HeatBalanceManager {
             if (mod((NumAlphas - 9), 3) != 0) {
                 // throw warning if incomplete field set
                 ErrorsFound = true;
-                ShowSevereCustomMessage(state, eoh, format("{} is missing some of the layers or/and gaps.", locAlphaArgs(1)));
+                ShowSevereCustom(state, eoh, format("{} is missing some of the layers or/and gaps.", locAlphaArgs(1)));
             }
 
             if (thisConstruct.BSDFInput.BasisSymmetryType == DataBSDFWindow::BasisSymmetry::None) {
@@ -5455,7 +5455,7 @@ namespace HeatBalanceManager {
 
                 if (NumRows != NBasis) {
                     ErrorsFound = true;
-                    ShowSevereCustomMessage(
+                    ShowSevereCustom(
                         state,
                         eoh,
                         format("Solar front transmittance matrix \"{}\" is not the same size as it is defined by basis definition. Basis "
@@ -5466,7 +5466,7 @@ namespace HeatBalanceManager {
 
                 if (NumRows != NumCols) {
                     ErrorsFound = true;
-                    ShowSevereCustomMessage(
+                    ShowSevereCustom(
                         state,
                         eoh,
                         format("Solar front transmittance matrix \"{}\" must have the same number of rows and columns.", locAlphaArgs(6)));
@@ -5480,7 +5480,7 @@ namespace HeatBalanceManager {
                 thisConstruct.BSDFInput.SolFrtTrans.allocate(NumCols, NumRows);
                 if (thisConstruct.BSDFInput.SolFrtTransIndex == 0) {
                     ErrorsFound = true;
-                    ShowSevereCustomMessage(
+                    ShowSevereCustom(
                         state,
                         eoh,
                         format("Solar front transmittance Matrix:TwoDimension = \"{}\" is missing from the input file.", locAlphaArgs(6)));
@@ -5498,7 +5498,7 @@ namespace HeatBalanceManager {
 
                 if (NumRows != NBasis) {
                     ErrorsFound = true;
-                    ShowSevereCustomMessage(
+                    ShowSevereCustom(
                         state,
                         eoh,
                         format("Solar back reflectance matrix \"{}\" is not the same size as it is defined by basis definition. Basis size "
@@ -5509,14 +5509,14 @@ namespace HeatBalanceManager {
 
                 if (NumRows != NumCols) {
                     ErrorsFound = true;
-                    ShowSevereCustomMessage(
+                    ShowSevereCustom(
                         state, eoh, format("Solar back reflectance matrix \"{}\" must have the same number of rows and columns.", locAlphaArgs(7)));
                 }
 
                 thisConstruct.BSDFInput.SolBkRefl.allocate(NumCols, NumRows);
                 if (thisConstruct.BSDFInput.SolBkReflIndex == 0) {
                     ErrorsFound = true;
-                    ShowSevereCustomMessage(
+                    ShowSevereCustom(
                         state, eoh, format("Solar back reflectance Matrix:TwoDimension = \"{}\" is missing from the input file.", locAlphaArgs(7)));
                 } else {
                     MatrixDataManager::Get2DMatrix(state, thisConstruct.BSDFInput.SolBkReflIndex, thisConstruct.BSDFInput.SolBkRefl);
@@ -5532,7 +5532,7 @@ namespace HeatBalanceManager {
 
                 if (NumRows != NBasis) {
                     ErrorsFound = true;
-                    ShowSevereCustomMessage(
+                    ShowSevereCustom(
                         state,
                         eoh,
                         format("Visible front transmittance matrix \"{}\" is not the same size as it is defined by basis definition. Basis "
@@ -5543,7 +5543,7 @@ namespace HeatBalanceManager {
 
                 if (NumRows != NumCols) {
                     ErrorsFound = true;
-                    ShowSevereCustomMessage(
+                    ShowSevereCustom(
                         state,
                         eoh,
                         format("Visible front transmittance matrix \"{}\" must have the same number of rows and columns.", locAlphaArgs(8)));
@@ -5552,7 +5552,7 @@ namespace HeatBalanceManager {
                 thisConstruct.BSDFInput.VisFrtTrans.allocate(NumCols, NumRows);
                 if (thisConstruct.BSDFInput.VisFrtTransIndex == 0) {
                     ErrorsFound = true;
-                    ShowSevereCustomMessage(
+                    ShowSevereCustom(
                         state,
                         eoh,
                         format("Visible front transmittance Matrix:TwoDimension = \"{}\" is missing from the input file.", locAlphaArgs(8)));
@@ -5570,7 +5570,7 @@ namespace HeatBalanceManager {
 
                 if (NumRows != NBasis) {
                     ErrorsFound = true;
-                    ShowSevereCustomMessage(
+                    ShowSevereCustom(
                         state,
                         eoh,
                         format("Visible back reflectance matrix \"{}\" is not the same size as it is defined by basis definition. Basis "
@@ -5581,14 +5581,14 @@ namespace HeatBalanceManager {
 
                 if (NumRows != NumCols) {
                     ErrorsFound = true;
-                    ShowSevereCustomMessage(
+                    ShowSevereCustom(
                         state, eoh, format("Visible back reflectance \"{}\" must have the same number of rows and columns.", locAlphaArgs(9)));
                 }
 
                 thisConstruct.BSDFInput.VisBkRefl.allocate(NumCols, NumRows);
                 if (thisConstruct.BSDFInput.VisBkReflIndex == 0) {
                     ErrorsFound = true;
-                    ShowSevereCustomMessage(
+                    ShowSevereCustom(
                         state, eoh, format("Visble back reflectance Matrix:TwoDimension = \"{}\" is missing from the input file.", locAlphaArgs(9)));
                 } else {
                     MatrixDataManager::Get2DMatrix(state, thisConstruct.BSDFInput.VisBkReflIndex, thisConstruct.BSDFInput.VisBkRefl);
@@ -5616,7 +5616,7 @@ namespace HeatBalanceManager {
 
                         if (NumRows != 1) {
                             ErrorsFound = true;
-                            ShowSevereCustomMessage(state,
+                            ShowSevereCustom(state,
                                                     eoh,
                                                     format("Front absorbtance Matrix:TwoDimension = \"{}\" for layer {} must have only one row.",
                                                            locAlphaArgs(AlphaIndex),
@@ -5625,7 +5625,7 @@ namespace HeatBalanceManager {
 
                         if (NumCols != NBasis) {
                             ErrorsFound = true;
-                            ShowSevereCustomMessage(
+                            ShowSevereCustom(
                                 state,
                                 eoh,
                                 format("Front absorbtance Matrix:TwoDimension = \"{}\" for layer {} must have same number of columns "
@@ -5641,7 +5641,7 @@ namespace HeatBalanceManager {
                         thisConstruct.BSDFInput.Layer(currentOpticalLayer).FrtAbs.allocate(NumCols, NumRows);
                         if (thisConstruct.BSDFInput.Layer(currentOpticalLayer).FrtAbsIndex == 0) {
                             ErrorsFound = true;
-                            ShowSevereCustomMessage(
+                            ShowSevereCustom(
                                 state,
                                 eoh,
                                 format("Front absorbtance Matrix:TwoDimension = \"{}\" for layer {} is missing from the input file.",
@@ -5664,7 +5664,7 @@ namespace HeatBalanceManager {
 
                         if (NumRows != 1) {
                             ErrorsFound = true;
-                            ShowSevereCustomMessage(state,
+                            ShowSevereCustom(state,
                                                     eoh,
                                                     format("Back absorbtance Matrix:TwoDimension = \"{}\" for layer {} must have only one row.",
                                                            locAlphaArgs(AlphaIndex),
@@ -5673,7 +5673,7 @@ namespace HeatBalanceManager {
 
                         if (NumCols != NBasis) {
                             ErrorsFound = true;
-                            ShowSevereCustomMessage(
+                            ShowSevereCustom(
                                 state,
                                 eoh,
                                 format("Back absorbtance Matrix:TwoDimension = \"{}\" for layer {} must have same number of columns as "
@@ -5688,7 +5688,7 @@ namespace HeatBalanceManager {
                         thisConstruct.BSDFInput.Layer(currentOpticalLayer).BkAbs.allocate(NumCols, NumRows);
                         if (thisConstruct.BSDFInput.Layer(currentOpticalLayer).BkAbsIndex == 0) {
                             ErrorsFound = true;
-                            ShowSevereCustomMessage(
+                            ShowSevereCustom(
                                 state,
                                 eoh,
                                 format("Back absorbtance Matrix:TwoDimension = \"{}\" for layer {} is missing from the input file.",
@@ -5716,7 +5716,7 @@ namespace HeatBalanceManager {
 
                 if (NumRows != NBasis) {
                     ErrorsFound = true;
-                    ShowSevereCustomMessage(
+                    ShowSevereCustom(
                         state,
                         eoh,
                         format("Solar front transmittance matrix \"{}\" is not the same size as it is defined by basis definition. Basis "
@@ -5727,7 +5727,7 @@ namespace HeatBalanceManager {
 
                 if (NumRows != NumCols) {
                     ErrorsFound = true;
-                    ShowSevereCustomMessage(
+                    ShowSevereCustom(
                         state,
                         eoh,
                         format("Solar front transmittance matrix \"{}\" must have the same number of rows and columns.", locAlphaArgs(6)));
@@ -5736,7 +5736,7 @@ namespace HeatBalanceManager {
                 thisConstruct.BSDFInput.SolFrtTrans.allocate(NBasis, NBasis);
                 if (thisConstruct.BSDFInput.SolFrtTransIndex == 0) {
                     ErrorsFound = true;
-                    ShowSevereCustomMessage(
+                    ShowSevereCustom(
                         state,
                         eoh,
                         format("Solar front transmittance Matrix:TwoDimension = \"{}\" is missing from the input file.", locAlphaArgs(6)));
@@ -5759,7 +5759,7 @@ namespace HeatBalanceManager {
 
                 if (NumRows != NBasis) {
                     ErrorsFound = true;
-                    ShowSevereCustomMessage(
+                    ShowSevereCustom(
                         state,
                         eoh,
                         format("Solar back reflectance matrix \"{}\" is not the same size as it is defined by basis definition. Basis size "
@@ -5770,14 +5770,14 @@ namespace HeatBalanceManager {
 
                 if (NumRows != NumCols) {
                     ErrorsFound = true;
-                    ShowSevereCustomMessage(
+                    ShowSevereCustom(
                         state, eoh, format("Solar back reflectance matrix \"{}\" must have the same number of rows and columns.", locAlphaArgs(7)));
                 }
 
                 thisConstruct.BSDFInput.SolBkRefl.allocate(NBasis, NBasis);
                 if (thisConstruct.BSDFInput.SolBkReflIndex == 0) {
                     ErrorsFound = true;
-                    ShowSevereCustomMessage(
+                    ShowSevereCustom(
                         state, eoh, format("Solar back reflectance Matrix:TwoDimension = \"{}\" is missing from the input file.", locAlphaArgs(7)));
                 } else {
                     MatrixDataManager::Get2DMatrix(state, thisConstruct.BSDFInput.SolBkReflIndex, state.dataBSDFWindow->BSDFTempMtrx);
@@ -5797,7 +5797,7 @@ namespace HeatBalanceManager {
 
                 if (NumRows != NBasis) {
                     ErrorsFound = true;
-                    ShowSevereCustomMessage(
+                    ShowSevereCustom(
                         state,
                         eoh,
                         format("Visible front transmittance matrix \"{}\" is not the same size as it is defined by basis definition. Basis "
@@ -5808,7 +5808,7 @@ namespace HeatBalanceManager {
 
                 if (NumRows != NumCols) {
                     ErrorsFound = true;
-                    ShowSevereCustomMessage(
+                    ShowSevereCustom(
                         state,
                         eoh,
                         format("Visible front transmittance matrix \"{}\" must have the same number of rows and columns.", locAlphaArgs(8)));
@@ -5817,7 +5817,7 @@ namespace HeatBalanceManager {
                 thisConstruct.BSDFInput.VisFrtTrans.allocate(NBasis, NBasis);
                 if (thisConstruct.BSDFInput.VisFrtTransIndex == 0) {
                     ErrorsFound = true;
-                    ShowSevereCustomMessage(
+                    ShowSevereCustom(
                         state,
                         eoh,
                         format("Visible front transmittance Matrix:TwoDimension = \"{}\" is missing from the input file.", locAlphaArgs(8)));
@@ -5839,7 +5839,7 @@ namespace HeatBalanceManager {
 
                 if (NumRows != NBasis) {
                     ErrorsFound = true;
-                    ShowSevereCustomMessage(
+                    ShowSevereCustom(
                         state,
                         eoh,
                         format("Visible back reflectance matrix \"{}\" is not the same size as it is defined by basis definition. Basis "
@@ -5850,14 +5850,14 @@ namespace HeatBalanceManager {
 
                 if (NumRows != NumCols) {
                     ErrorsFound = true;
-                    ShowSevereCustomMessage(
+                    ShowSevereCustom(
                         state, eoh, format("Visible back reflectance matrix \"{}\" must have the same number of rows and columns.", locAlphaArgs(9)));
                 }
 
                 thisConstruct.BSDFInput.VisBkRefl.allocate(NBasis, NBasis);
                 if (thisConstruct.BSDFInput.VisBkReflIndex == 0) {
                     ErrorsFound = true;
-                    ShowSevereCustomMessage(
+                    ShowSevereCustom(
                         state, eoh, format("Visible back reflectance Matrix:TwoDimension = \"{}\" is missing from the input file.", locAlphaArgs(9)));
                 } else {
                     MatrixDataManager::Get2DMatrix(state, thisConstruct.BSDFInput.VisBkReflIndex, state.dataBSDFWindow->BSDFTempMtrx);
@@ -5894,7 +5894,7 @@ namespace HeatBalanceManager {
 
                         if (NumRows != 1) {
                             ErrorsFound = true;
-                            ShowSevereCustomMessage(state,
+                            ShowSevereCustom(state,
                                                     eoh,
                                                     format("Front absorbtance Matrix:TwoDimension = \"{}\" for layer {} must have only one row.",
                                                            locAlphaArgs(AlphaIndex),
@@ -5903,7 +5903,7 @@ namespace HeatBalanceManager {
 
                         if (NumCols != NBasis) {
                             ErrorsFound = true;
-                            ShowSevereCustomMessage(
+                            ShowSevereCustom(
                                 state,
                                 eoh,
                                 format("Front absorbtance Matrix:TwoDimension = \"{}\" for layer {} must have same number of columns "
@@ -5920,7 +5920,7 @@ namespace HeatBalanceManager {
 
                         if (thisConstruct.BSDFInput.Layer(currentOpticalLayer).FrtAbsIndex == 0) {
                             ErrorsFound = true;
-                            ShowSevereCustomMessage(
+                            ShowSevereCustom(
                                 state,
                                 eoh,
                                 format("Front absorbtance Matrix:TwoDimension = \"{}\" for layer {} is missing from the input file.",
@@ -5943,7 +5943,7 @@ namespace HeatBalanceManager {
 
                         if (NumRows != 1) {
                             ErrorsFound = true;
-                            ShowSevereCustomMessage(state,
+                            ShowSevereCustom(state,
                                                     eoh,
                                                     format("Back absorbtance Matrix:TwoDimension = \"{}\" for layer {} must have only one row.",
                                                            locAlphaArgs(AlphaIndex),
@@ -5952,7 +5952,7 @@ namespace HeatBalanceManager {
 
                         if (NumCols != NBasis) {
                             ErrorsFound = true;
-                            ShowSevereCustomMessage(
+                            ShowSevereCustom(
                                 state,
                                 eoh,
                                 format("Back absorbtance Matrix:TwoDimension = \"{}\" for layer {} must have same number of columns as "
@@ -5968,7 +5968,7 @@ namespace HeatBalanceManager {
 
                         if (thisConstruct.BSDFInput.Layer(currentOpticalLayer).BkAbsIndex == 0) {
                             ErrorsFound = true;
-                            ShowSevereCustomMessage(
+                            ShowSevereCustom(
                                 state,
                                 eoh,
                                 format("Back absorbtance Matrix:TwoDimension = \"{}\" for layer {} is missing from the input file.",

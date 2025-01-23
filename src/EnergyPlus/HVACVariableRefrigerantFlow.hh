@@ -684,17 +684,22 @@ namespace HVACVariableRefrigerantFlow {
         HVAC::FanOp fanOp = HVAC::FanOp::Invalid;          // operation mode: 1 = cycling fan, cycling coil 2 = constant fan, cycling coil
         HVAC::FanPlace fanPlace = HVAC::FanPlace::Invalid; // fan placement; 1=blow through, 2=draw through
         Real64 ActualFanVolFlowRate = 0.0;                 // volumetric flow rate from fan object
-        std::string SuppHeatCoilType;                      // type of supplemental heating coil
-        std::string SuppHeatCoilName;                      // name of supplemental heating coil
         std::string OAMixerName;                           // name of outside air mixer
         int OAMixerIndex = 0;                              // index to outside air mixer
         bool OAMixerUsed = false;                          // true if OA Mixer object is used
-        int CoolCoilIndex = 0;                             // index to terminal unit cooling coil
-        int HeatCoilIndex = 0;                             // index to terminal unit heating coil
-        int SuppHeatCoilIndex = 0;                         // index to terminal unit supplemental heating coil
-        int DXCoolCoilType_Num = 0;                        // type of VRF cooling coil
-        int DXHeatCoilType_Num = 0;                        // type of VRF heating coil
-        int SuppHeatCoilType_Num = 0;                      // type of VRF supplemental heating coil
+
+        HVAC::CoilType coolCoilType = HVAC::CoilType::Invalid;                        // type of VRF cooling coil
+        std::string CoolCoilName;                      // name of supplemental heating coil
+        int CoolCoilNum = 0;                             // index to terminal unit cooling coil
+
+        HVAC::CoilType heatCoilType = HVAC::CoilType::Invalid;                        // type of VRF heating coil
+        std::string HeatCoilName;                      // name of supplemental heating coil
+        int HeatCoilNum = 0;                             // index to terminal unit heating coil
+
+        HVAC::CoilType suppHeatCoilType = HVAC::CoilType::Invalid;                      // type of VRF supplemental heating coil
+        std::string SuppHeatCoilName;                      // name of supplemental heating coil
+        int SuppHeatCoilNum = 0;                         // index to terminal unit supplemental heating coil
+
         Real64 ParasiticElec = 0.0;                        // parasitic electric for VRF terminal unit
         Real64 ParasiticOffElec = 0.0;                     // parasitic electric for VRF terminal unit when off
         Real64 HeatingSpeedRatio = 1.0;                    // Fan speed ratio in heating mode

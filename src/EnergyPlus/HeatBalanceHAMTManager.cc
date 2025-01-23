@@ -285,7 +285,7 @@ namespace HeatBalanceHAMTManager {
             auto *mat = s_mat->materials(matNum);
 
             if (mat->group != Material::Group::Regular) {
-                ShowSevereCustomMessage(state, eoh, format("{} = \"{}\" is not a regular material.", cAlphaFieldNames(1), AlphaArray(1)));
+                ShowSevereCustom(state, eoh, format("{} = \"{}\" is not a regular material.", cAlphaFieldNames(1), AlphaArray(1)));
                 ErrorsFound = true;
                 continue;
             }
@@ -334,7 +334,7 @@ namespace HeatBalanceHAMTManager {
 
             auto *mat = s_mat->materials(matNum);
             if (!mat->hasHAMT) {
-                ShowSevereCustomMessage(state, eoh, format("{} is not defined for {} = \"{}\"", cHAMTObject1, cAlphaFieldNames(1), AlphaArray(1)));
+                ShowSevereCustom(state, eoh, format("{} is not defined for {} = \"{}\"", cHAMTObject1, cAlphaFieldNames(1), AlphaArray(1)));
                 ErrorsFound = true;
                 continue;
             }
@@ -426,7 +426,7 @@ namespace HeatBalanceHAMTManager {
 
             auto *mat = s_mat->materials(matNum);
             if (!mat->hasHAMT) {
-                ShowSevereCustomMessage(state, eoh, format("{} is not defined for {} = \"{}\"", cHAMTObject1, cAlphaFieldNames(1), AlphaArray(1)));
+                ShowSevereCustom(state, eoh, format("{} is not defined for {} = \"{}\"", cHAMTObject1, cAlphaFieldNames(1), AlphaArray(1)));
                 ErrorsFound = true;
                 continue;
             }
@@ -473,7 +473,7 @@ namespace HeatBalanceHAMTManager {
 
             auto *mat = s_mat->materials(matNum);
             if (!mat->hasHAMT) {
-                ShowSevereCustomMessage(state, eoh, format("{} is not defined for {} = \"{}\"", cHAMTObject1, cAlphaFieldNames(1), AlphaArray(1)));
+                ShowSevereCustom(state, eoh, format("{} is not defined for {} = \"{}\"", cHAMTObject1, cAlphaFieldNames(1), AlphaArray(1)));
                 ErrorsFound = true;
                 continue;
             }
@@ -520,7 +520,7 @@ namespace HeatBalanceHAMTManager {
 
             auto *mat = s_mat->materials(matNum);
             if (!mat->hasHAMT) {
-                ShowSevereCustomMessage(state, eoh, format("{} is not defined for {} = \"{}\"", cHAMTObject1, cAlphaFieldNames(1), AlphaArray(1)));
+                ShowSevereCustom(state, eoh, format("{} is not defined for {} = \"{}\"", cHAMTObject1, cAlphaFieldNames(1), AlphaArray(1)));
                 ErrorsFound = true;
                 continue;
             }
@@ -569,7 +569,7 @@ namespace HeatBalanceHAMTManager {
 
             auto *mat = s_mat->materials(matNum);
             if (!mat->hasHAMT) {
-                ShowSevereCustomMessage(state, eoh, format("{} is not defined for {} = \"{}\"", cHAMTObject1, cAlphaFieldNames(1), AlphaArray(1)));
+                ShowSevereCustom(state, eoh, format("{} is not defined for {} = \"{}\"", cHAMTObject1, cAlphaFieldNames(1), AlphaArray(1)));
                 ErrorsFound = true;
                 continue;
             }

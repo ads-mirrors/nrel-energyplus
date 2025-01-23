@@ -74,7 +74,7 @@ public: // methods
 
 public:                                  // data
     std::string coilName_;               // user-defined coil name
-    std::string coilObjName;             // coil object name, e.g., Coil:Cooling:Water, Coil:Heating:DX:SingleSpeed, etc.
+    HVAC::CoilType coilType = HVAC::CoilType::Invalid;
     bool isCooling;                      // true if this coil is for cooling
     bool isHeating;                      // true if this coil is for heating
     std::string coilLocation;            // where is the coil located?, AirLoop or Zone
@@ -232,7 +232,7 @@ public: // methods
 
     void setCoilFinalSizes(EnergyPlusData &state,
                            std::string const &coilName,    // user-defined name of the coil
-                           HVAC::CoilType coilType, //  coil type, e.g., Coil:Cooling:Water
+                           HVAC::CoilType const coilType, //  coil type, e.g., Coil:Cooling:Water
                            Real64 const totGrossCap,       // total capacity [W]
                            Real64 const sensGrossCap,      // sensible capacity [W]
                            Real64 const airFlowRate,       // design or reference or rated air flow rate [m3/s]
@@ -241,7 +241,7 @@ public: // methods
 
     void setRatedCoilConditions(EnergyPlusData &state,
                                 std::string const &coilName,     // ! user-defined name of the coil
-                                HVAC::CoilType coilObjName,  //  coil object name, e.g., Coil:Cooling:Water
+                                HVAC::CoilType const coilType,  //  coil object name, e.g., Coil:Cooling:Water
                                 Real64 const RatedCoilTotCap,    // ! rated coil total capacity [W]
                                 Real64 const RatedCoilSensCap,   // rated coil sensible capacity [W]
                                 Real64 const RatedAirMassFlow,   // rated coil design air mass flow rate [m3/s]
@@ -438,7 +438,7 @@ private: // methods
 
     int getIndexForOrCreateDataObjFromCoilName(EnergyPlusData &state,
                                                std::string const &coilName, // user-defined name of the coil
-                                               std::string const &coilType  // idf input object class name of coil
+                                               HVAC::CoilType const coilType  // idf input object class name of coil
     );
 
     void associateZoneCoilWithParent(EnergyPlusData &state, std::unique_ptr<CoilSelectionData> &c);

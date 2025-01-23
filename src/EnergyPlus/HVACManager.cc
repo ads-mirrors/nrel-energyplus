@@ -1717,7 +1717,7 @@ void SimHVAC(EnergyPlusData &state)
             state.dataHVACGlobal->DoSetPointTest = false;
         }
 
-        if (state.dataCoilCooingDX->stillNeedToReportStandardRatings) {
+        if (state.dataCoilCoolingDX->stillNeedToReportStandardRatings) {
             if (!state.dataGlobal->WarmupFlag) {
                 CoilCoolingDX::reportAllStandardRatings(state);
             }

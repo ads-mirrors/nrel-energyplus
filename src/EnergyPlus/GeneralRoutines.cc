@@ -128,7 +128,7 @@ constexpr std::array<std::string_view, static_cast<int>(AirLoopHVACCompType::Num
 
 void ControlCompOutput(EnergyPlusData &state,
                        std::string const &CompName,                      // the component Name
-                       std::string const &CompType,                      // Type of component
+                       std::string_view const CompType,                      // Type of component
                        int &CompNum,                                     // Index of component in component array
                        bool const FirstHVACIteration,                    // flag for 1st HVAV iteration in the time step
                        Real64 const QZnReq,                              // zone load to be met
@@ -555,7 +555,7 @@ void ControlCompOutput(EnergyPlusData &state,
             ShowContinueError(state, format("... Actuated Node Mass Flow Rate ={:.9R} kg/s", state.dataLoopNodes->Node(ActuatedNode).MassFlowRate));
             ShowContinueErrorTimeStamp(state, "");
             ShowRecurringWarningErrorAtEnd(state,
-                                           "ControlCompOutput: Maximum iterations error for " + CompType + " = " + CompName,
+                                           format("ControlCompOutput: Maximum iterations error for {} = {}", CompType, CompName),
                                            CompErrIndex,
                                            std::abs((LoadMet - QZnReq) * 100.0 / Denom),
                                            std::abs((LoadMet - QZnReq) * 100.0 / Denom),
@@ -564,7 +564,7 @@ void ControlCompOutput(EnergyPlusData &state,
                                            "%");
             //}
             ShowRecurringWarningErrorAtEnd(state,
-                                           "ControlCompOutput: Maximum iterations error for " + CompType + " = " + CompName,
+                                           format("ControlCompOutput: Maximum iterations error for {} = {}", CompType, CompName),
                                            CompErrIndex,
                                            std::abs((LoadMet - QZnReq) * 100.0 / Denom),
                                            std::abs((LoadMet - QZnReq) * 100.0 / Denom),

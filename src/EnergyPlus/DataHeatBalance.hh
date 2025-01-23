@@ -1349,7 +1349,7 @@ namespace DataHeatBalance {
     {
         // Members
         std::string Name;                                         // Name of Coil
-        HVAC::CoilType coilType = HVAC::CoilType::Invalid;                                   // SourceType for Coil
+        std::string SourceType;
         Real64 AvailCapacity = 0.0;                               // Total available heat reclaim capacity
         Real64 ReclaimEfficiencyTotal = 0.0;                      // Total reclaimed portion
         Real64 WaterHeatingDesuperheaterReclaimedHeatTotal = 0.0; // total reclaimed heat by water heating desuperheater coils

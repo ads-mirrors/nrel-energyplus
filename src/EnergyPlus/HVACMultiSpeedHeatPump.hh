@@ -64,15 +64,6 @@ struct EnergyPlusData;
 
 namespace HVACMultiSpeedHeatPump {
 
-    // Heating coil types
-    int constexpr MultiSpeedHeatingCoil(1); // COIL:DX:MultiSpeed:Heating
-    // Cooling coil types
-    int constexpr MultiSpeedCoolingCoil(2); // COIL:DX:MultiSpeed:Cooling
-    // Supplymental heating coil types
-    int constexpr SuppHeatingCoilGas(1);  // Supplymental heating coil type: COIL:GAS:HEATING
-    int constexpr SuppHeatingCoilElec(2); // Supplymental heating coil type: COIL:ELECTRIC:HEATING
-    int constexpr SuppHeatingCoilRec(3);  // Supplymental heating coil type: COIL:ENGINEHEATRECOVERY:HEATING
-
     // Mode of operation
     enum class ModeOfOperation
     {
@@ -100,38 +91,58 @@ namespace HVACMultiSpeedHeatPump {
         std::string Name;                         // Name of the engine driven heat pump
         std::string AvaiSchedule;                 // Availability Schedule name
         int AvaiSchedPtr;                         // Pointer to the correct schedule
-        int AirInletNodeNum;                      // Node number of the heat pump air inlet
-        int AirOutletNodeNum;                     // Node number of the heat pump air inlet
-        std::string AirInletNodeName;             // Node name of the heat pump air inlet
-        std::string AirOutletNodeName;            // Node name of the heat pump air outlet
+        int AirInletNode = 0;                      // Node number of the heat pump air inlet
+        int AirOutletNode = 0;                     // Node number of the heat pump air inlet
         int ControlZoneNum;                       // Controlling zone or thermostat location
         int ZoneSequenceCoolingNum;               // Index to cooling sequence/priority for this zone
         int ZoneSequenceHeatingNum;               // Index to heating sequence/priority for this zone
         std::string ControlZoneName;              // Controlled zone name
-        int NodeNumOfControlledZone;              // Controlled zone node number
+        int NodeNumOfControlledZone = 0;              // Controlled zone node number
         Real64 FlowFraction;                      // Fraction of the total volume flow that goes through the controlling zone
         std::string FanName;                      // Name of supply air fan
         HVAC::FanType fanType;                    // Supply fan type
         int FanNum;                               // Supply fan number
         HVAC::FanPlace fanPlace;                  // Supply air fan placement: 1 Blow through; 2 Draw through
-        int FanInletNode;                         // Fan Inlet node
-        int FanOutletNode;                        // Fan Outlet node
+        int FanInletNode = 0;                         // Fan Inlet node
+        int FanOutletNode = 0;                        // Fan Outlet node
         Real64 FanVolFlow;                        // Supply fan volumetric flow rate
         std::string FanSchedule;                  // Supply air fan operating mode schedule name
         int FanSchedPtr;                          // Pointer to the Supply air fan operating mode schedule
         HVAC::FanOp fanOp = HVAC::FanOp::Invalid; // mode of operation; 1=cycling fan, cycling compressor; 2=continuous fan, cycling compresor
-        std::string DXHeatCoilName;               // COIL:DX:MultiSpeed:Heating name
-        int HeatCoilType;                         // Heating coil type: 1 COIL:DX:MultiSpeed:Heating only
-        int HeatCoilNum;                          // Heating coil number
-        int DXHeatCoilIndex;                      // DX heating coil index number
-        std::string HeatCoilName;                 // Coil:Electric:MultiSpeed:Heating OR Coil:Gas:MultiSpeed:Heating name
-        int HeatCoilIndex;                        // heating coil index number (Coil:Electric:MultiSpeed:Heating OR Coil:Gas:MultiSpeed:Heating)
-        std::string DXCoolCoilName;               // COIL:DX:MultiSpeed:Cooling name
-        int CoolCoilType;                         // Cooling coil type: 1 COIL:DX:MultiSpeed:Cooling only
-        int DXCoolCoilIndex;                      // DX cooling coil index number
+
+        std::string HeatCoilName;               // COIL:DX:MultiSpeed:Heating name
+        HVAC::CoilType heatCoilType = HVAC::CoilType::Invalid;
+        int HeatCoilNum = 0;                        // heating coil index (Coil:Electric:MultiSpeed:Heating OR Coil:Gas:MultiSpeed:Heating)
+        PlantLocation HeatCoilPlantLoc = {};         // plant loop component location for hot water and steam heating coil
+
+        int HeatCoilAirInletNode = 0;
+        int HeatCoilAirOutletNode = 0;
+        int HeatCoilFluidOutletNode = 0;
+        int HeatCoilControlNode = 0;                      // control node for simple water and steam heating coil
+
+        Real64 HeatCoilMaxVolFlowRate = 0.0;
+        Real64 HeatCoilMaxFluidFlow = 0.0; 
+      
+        std::string CoolCoilName;               // COIL:DX:MultiSpeed:Cooling name
+        HVAC::CoilType coolCoilType = HVAC::CoilType::Invalid;                         // Cooling coil type: 1 COIL:DX:MultiSpeed:Cooling only
+        int CoolCoilNum = 0;                      // DX cooling coil index number
+
+        int CoolCoilAirInletNode = 0;
+        int CoolCoilAirOutletNode = 0;
+      
         std::string SuppHeatCoilName;             // Supplymental heating coil name
-        int SuppHeatCoilType;                     // Supplymental heating coil type: 1 Gas; 2 Electric; 3 Recovery
-        int SuppHeatCoilNum;                      // Supplymental heating coil number
+        HVAC::CoilType suppHeatCoilType = HVAC::CoilType::Invalid; // Supplemental heating coil types: 1 Gas; 2 Electric; 3 Recovery
+        int SuppHeatCoilNum = 0;                      // Supplemental heating coil number
+        PlantLocation SuppHeatCoilPlantLoc = {};     // plant loop component location for hot water and steam supplemental heating coil
+
+        int SuppHeatCoilAirInletNode = 0;                 // air inlet node number of supplemental heating coil
+        int SuppHeatCoilAirOutletNode = 0;                // air outlet node number of supplemental heating coil
+        int SuppHeatCoilControlNode = 0;                  // control node for simple water and steam heating coil
+        int SuppHeatCoilFluidOutletNode = 0;                   // outlet node for hot water and steam supplemental heating coil
+
+        Real64 SuppHeatCoilMaxVolFlowRate = 0.0;
+        Real64 SuppHeatCoilMaxFluidFlow = 0.0;
+      
         Real64 DesignSuppHeatingCapacity;         // Supplemental heating coil design capacity
         Real64 SuppMaxAirTemp;                    // Maximum supply air temperature from supplemental heater
         Real64 SuppMaxOATemp;                     // Maximum outdoor dry-bulb temperature for supplemental heater operation
@@ -140,8 +151,8 @@ namespace HVACMultiSpeedHeatPump {
         Real64 DesignHeatRecFlowRate;             // Design water volume flow rate through heat recovery loop [m3/s]
         bool HeatRecActive;                       // True when entered Heat Rec Vol Flow Rate > 0
         std::string HeatRecName;                  // heat recovery water inlet name
-        int HeatRecInletNodeNum;                  // Node number on heat recovery water inlet
-        int HeatRecOutletNodeNum;                 // Node number on heat recovery water outlet
+        int HeatRecFluidInletNode = 0;                  // Node number on heat recovery water inlet
+        int HeatRecFluidOutletNode = 0;                 // Node number on heat recovery water outlet
         Real64 MaxHeatRecOutletTemp;              // Maximum outlet water temperature for heat recovery
         Real64 DesignHeatRecMassFlowRate;         // Design water mass flow rate through heat recovery loop [kg/s]
         PlantLocation HRPlantLoc;                 // plant loop component for heat recovery
@@ -162,7 +173,7 @@ namespace HVACMultiSpeedHeatPump {
         ModeOfOperation HeatCoolMode;             // System operating mode (0 = floating, 1 = cooling, 2 = heating)
         int AirLoopNumber;                        // Air loop served by the engine driven heat pump system
         int NumControlledZones;                   // Number of controlled zones for this system
-        int ZoneInletNode;                        // Zone inlet node number in the controlled zone
+        int ZoneInletNode = 0;                        // Zone inlet node number in the controlled zone
         Real64 CompPartLoadRatio;                 // Compressor part load ratio
         Real64 FanPartLoadRatio;                  // Fan part load ratio
         Real64 TotCoolEnergyRate;                 // Total cooling enertgy rate
@@ -181,24 +192,8 @@ namespace HVACMultiSpeedHeatPump {
         int ErrIndexCyc;                          // Error index at low speed
         int ErrIndexVar;                          // Error index at high speed
         Real64 LoadLoss;                          // Air distribution system loss
-        int SuppCoilAirInletNode;                 // air inlet node number of supplemental heating coil
-        int SuppCoilAirOutletNode;                // air outlet node number of supplemental heating coil
-        int SuppHeatCoilType_Num;                 // Numeric Equivalent for Supplemental Heat Coil Type
-        int SuppHeatCoilIndex;                    // Index to supplemental heater
-        int SuppCoilControlNode;                  // control node for simple water and steam heating coil
-        Real64 MaxSuppCoilFluidFlow;              // water or steam mass flow rate for supplemental heating coil [kg/s]
-        int SuppCoilOutletNode;                   // outlet node for hot water and steam supplemental heating coil
-        int CoilAirInletNode;                     // air inlet node number of supplemental heating coil
-        int CoilControlNode;                      // control node for simple water and steam heating coil
-        Real64 MaxCoilFluidFlow;                  // water or steam mass flow rate for supplemental heating coil [kg/s]
-        int CoilOutletNode;                       // outlet node for hot water and steam supplemental heating coil
-        int HotWaterCoilControlNode;
-        int HotWaterCoilOutletNode;
-        std::string HotWaterCoilName;
-        int HotWaterCoilNum;
-        PlantLocation plantLoc;         // plant loop component location for hot water and steam heating coil
-        PlantLocation SuppPlantLoc;     // plant loop component location for hot water and steam supplemental heating coil
-        PlantLocation HotWaterPlantLoc; // plant loop component location for hot water and steam heating coil
+        Real64 MaxSuppHeatCoilFluidFlow;              // water or steam mass flow rate for supplemental heating coil [kg/s]
+      
         int HotWaterCoilMaxIterIndex;   // Index to recurring warning message
         int HotWaterCoilMaxIterIndex2;  // Index to recurring warning message
         int StageNum;                   // Stage number specified by staged thermostat
@@ -223,21 +218,19 @@ namespace HVACMultiSpeedHeatPump {
 
         // Default Constructor
         MSHeatPumpData()
-            : AvaiSchedPtr(0), AirInletNodeNum(0), AirOutletNodeNum(0), ControlZoneNum(0), ZoneSequenceCoolingNum(0), ZoneSequenceHeatingNum(0),
-              NodeNumOfControlledZone(0), FlowFraction(0.0), fanType(HVAC::FanType::Invalid), FanNum(0), fanPlace(HVAC::FanPlace::Invalid),
-              FanInletNode(0), FanOutletNode(0), FanVolFlow(0.0), FanSchedPtr(0), HeatCoilType(0), HeatCoilNum(0), DXHeatCoilIndex(0),
-              HeatCoilIndex(0), CoolCoilType(0), DXCoolCoilIndex(0), SuppHeatCoilType(0), SuppHeatCoilNum(0), DesignSuppHeatingCapacity(0.0),
+            : AvaiSchedPtr(0), ControlZoneNum(0), ZoneSequenceCoolingNum(0), ZoneSequenceHeatingNum(0),
+              FlowFraction(0.0), fanType(HVAC::FanType::Invalid), FanNum(0), fanPlace(HVAC::FanPlace::Invalid),
+              FanVolFlow(0.0), FanSchedPtr(0), 
+              DesignSuppHeatingCapacity(0.0),
               SuppMaxAirTemp(0.0), SuppMaxOATemp(0.0), AuxOnCyclePower(0.0), AuxOffCyclePower(0.0), DesignHeatRecFlowRate(0.0), HeatRecActive(false),
-              HeatRecInletNodeNum(0), HeatRecOutletNodeNum(0), MaxHeatRecOutletTemp(0.0), DesignHeatRecMassFlowRate(0.0), HRPlantLoc{},
+              MaxHeatRecOutletTemp(0.0), DesignHeatRecMassFlowRate(0.0), HRPlantLoc{},
               AuxElecPower(0.0), IdleVolumeAirRate(0.0), IdleMassFlowRate(0.0), IdleSpeedRatio(0.0), NumOfSpeedCooling(0), NumOfSpeedHeating(0),
               CheckFanFlow(true), LastMode(ModeOfOperation::Invalid), HeatCoolMode(ModeOfOperation::Invalid), AirLoopNumber(0), NumControlledZones(0),
-              ZoneInletNode(0), CompPartLoadRatio(0.0), FanPartLoadRatio(0.0), TotCoolEnergyRate(0.0), TotHeatEnergyRate(0.0),
+              CompPartLoadRatio(0.0), FanPartLoadRatio(0.0), TotCoolEnergyRate(0.0), TotHeatEnergyRate(0.0),
               SensCoolEnergyRate(0.0), SensHeatEnergyRate(0.0), LatCoolEnergyRate(0.0), LatHeatEnergyRate(0.0), ElecPower(0.0), LoadMet(0.0),
               HeatRecoveryRate(0.0), HeatRecoveryInletTemp(0.0), HeatRecoveryOutletTemp(0.0), HeatRecoveryMassFlowRate(0.0),
-              AirFlowControl(AirflowControl::Invalid), ErrIndexCyc(0), ErrIndexVar(0), LoadLoss(0.0), SuppCoilAirInletNode(0),
-              SuppCoilAirOutletNode(0), SuppHeatCoilType_Num(0), SuppHeatCoilIndex(0), SuppCoilControlNode(0), MaxSuppCoilFluidFlow(0.0),
-              SuppCoilOutletNode(0), CoilAirInletNode(0), CoilControlNode(0), MaxCoilFluidFlow(0.0), CoilOutletNode(0),
-              HotWaterCoilControlNode(0), plantLoc{}, SuppPlantLoc{}, HotWaterPlantLoc{}, HotWaterCoilMaxIterIndex(0), HotWaterCoilMaxIterIndex2(0),
+              AirFlowControl(AirflowControl::Invalid), ErrIndexCyc(0), ErrIndexVar(0), LoadLoss(0.0), 
+              HotWaterCoilMaxIterIndex(0), HotWaterCoilMaxIterIndex2(0),
               StageNum(0), Staged(false), CoolCountAvail(0), CoolIndexAvail(0), HeatCountAvail(0), HeatIndexAvail(0), FirstPass(true),
               MinOATCompressorCooling(0.0), MinOATCompressorHeating(0.0), MyEnvrnFlag(true), MySizeFlag(true), MyCheckFlag(true),
               MyFlowFracFlag(true), MyPlantScantFlag(true), MyStagedFlag(true), EMSOverrideCoilSpeedNumOn(false), EMSOverrideCoilSpeedNumValue(0.0),
@@ -392,9 +385,9 @@ struct HVACMultiSpeedHeatPumpData : BaseGlobalStruct
 
     int NumMSHeatPumps = 0;     // Number of multi speed heat pumps
     int AirLoopPass = 0;        // Number of air loop pass
-    Real64 TempSteamIn = 100.0; // steam coil steam inlet temperature
-
     std::string CurrentModuleObject; // Object type for getting and error messages
+
+    // What is the point of all of these shared state variables?
     Real64 CompOnMassFlow = 0.0;     // System air mass flow rate w/ compressor ON
     Real64 CompOffMassFlow = 0.0;    // System air mass flow rate w/ compressor OFF
     Real64 CompOnFlowRatio = 0.0;    // fan flow ratio when coil on
@@ -416,8 +409,6 @@ struct HVACMultiSpeedHeatPumpData : BaseGlobalStruct
     int ErrCountCyc = 0;           // Counter used to minimize the occurrence of output warnings
     int ErrCountVar = 0;           // Counter used to minimize the occurrence of output warnings
 
-    std::string HeatCoilName; // TODO: What's the best plan here?
-
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {
     }
@@ -426,7 +417,6 @@ struct HVACMultiSpeedHeatPumpData : BaseGlobalStruct
     {
         this->NumMSHeatPumps = 0;
         this->AirLoopPass = 0;
-        this->TempSteamIn = 100.0;
         this->CurrentModuleObject = "";
         this->CompOnMassFlow = 0.0;
         this->CompOffMassFlow = 0.0;
@@ -443,7 +433,6 @@ struct HVACMultiSpeedHeatPumpData : BaseGlobalStruct
         this->FlowFracFlagReady = true;
         this->ErrCountCyc = 0;
         this->ErrCountVar = 0;
-        this->HeatCoilName = "";
     }
 };
 

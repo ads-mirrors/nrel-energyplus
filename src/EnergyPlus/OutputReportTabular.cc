@@ -4367,31 +4367,31 @@ void CalcHeatEmissionReport(EnergyPlusData &state)
 
     // DX Coils air to air
     for (int iCoil = 1; iCoil <= state.dataDXCoils->NumDXCoils; ++iCoil) {
-        auto const &thisDXCoil = state.dataDXCoils->DXCoil(iCoil);
+        auto const &dxCoil = state.dataDXCoils->DXCoil(iCoil);
 
-        if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_CoolingSingleSpeed || thisDXCoil.DXCoilType_Num == HVAC::CoilDX_CoolingTwoSpeed ||
-            thisDXCoil.DXCoilType_Num == HVAC::CoilDX_MultiSpeedCooling || thisDXCoil.DXCoilType_Num == HVAC::CoilDX_CoolingTwoStageWHumControl) {
-            if (thisDXCoil.CondenserType(1) == DataHeatBalance::RefrigCondenserType::Air) {
-                state.dataHeatBal->SysTotalHVACRejectHeatLoss += thisDXCoil.ElecCoolingConsumption + thisDXCoil.DefrostConsumption +
-                                                                 thisDXCoil.CrankcaseHeaterConsumption + thisDXCoil.TotalCoolingEnergy;
-            } else if (thisDXCoil.CondenserType(1) == DataHeatBalance::RefrigCondenserType::Evap) {
-                state.dataHeatBal->SysTotalHVACRejectHeatLoss += thisDXCoil.EvapCondPumpElecConsumption + thisDXCoil.BasinHeaterConsumption +
-                                                                 thisDXCoil.EvapWaterConsump * RhoWater * H2OHtOfVap_HVAC;
+        if (dxCoil.coilType == HVAC::CoilType::DXCoolingSingleSpeed || dxCoil.coilType == HVAC::CoilType::DXCoolingTwoSpeed ||
+            dxCoil.coilType == HVAC::CoilType::DXMultiSpeedCooling || dxCoil.coilType == HVAC::CoilType::DXCoolingTwoStageWHumControl) {
+            if (dxCoil.CondenserType(1) == DataHeatBalance::RefrigCondenserType::Air) {
+                state.dataHeatBal->SysTotalHVACRejectHeatLoss += dxCoil.ElecCoolingConsumption + dxCoil.DefrostConsumption +
+                                                                 dxCoil.CrankcaseHeaterConsumption + dxCoil.TotalCoolingEnergy;
+            } else if (dxCoil.CondenserType(1) == DataHeatBalance::RefrigCondenserType::Evap) {
+                state.dataHeatBal->SysTotalHVACRejectHeatLoss += dxCoil.EvapCondPumpElecConsumption + dxCoil.BasinHeaterConsumption +
+                                                                 dxCoil.EvapWaterConsump * RhoWater * H2OHtOfVap_HVAC;
             }
-            if (thisDXCoil.FuelType != Constant::eFuel::Electricity) {
-                state.dataHeatBal->SysTotalHVACRejectHeatLoss += thisDXCoil.MSFuelWasteHeat * TimeStepSysSec;
+            if (dxCoil.FuelType != Constant::eFuel::Electricity) {
+                state.dataHeatBal->SysTotalHVACRejectHeatLoss += dxCoil.MSFuelWasteHeat * TimeStepSysSec;
             }
-        } else if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_HeatingEmpirical || thisDXCoil.DXCoilType_Num == HVAC::CoilDX_MultiSpeedHeating) {
-            state.dataHeatBal->SysTotalHVACRejectHeatLoss += thisDXCoil.ElecHeatingConsumption + thisDXCoil.DefrostConsumption +
-                                                             thisDXCoil.FuelConsumed + thisDXCoil.CrankcaseHeaterConsumption -
-                                                             thisDXCoil.TotalHeatingEnergy;
+        } else if (dxCoil.coilType == HVAC::CoilType::DXHeatingEmpirical || dxCoil.coilType == HVAC::CoilType::DXMultiSpeedHeating) {
+            state.dataHeatBal->SysTotalHVACRejectHeatLoss += dxCoil.ElecHeatingConsumption + dxCoil.DefrostConsumption +
+                                                             dxCoil.FuelConsumed + dxCoil.CrankcaseHeaterConsumption -
+                                                             dxCoil.TotalHeatingEnergy;
         }
     }
     // VAV coils - air to air
     for (int iCoil = 1; iCoil <= state.dataVariableSpeedCoils->NumVarSpeedCoils; ++iCoil) {
         auto const &thisCoil = state.dataVariableSpeedCoils->VarSpeedCoil(iCoil);
 
-        if (thisCoil.VSCoilType == HVAC::Coil_CoolingAirToAirVariableSpeed) {
+        if (thisCoil.coilType == HVAC::CoilType::CoolingAirToAirVariableSpeed) {
             if (thisCoil.CondenserType == DataHeatBalance::RefrigCondenserType::Air) {
                 state.dataHeatBal->SysTotalHVACRejectHeatLoss +=
                     thisCoil.Energy + thisCoil.CrankcaseHeaterConsumption + thisCoil.DefrostConsumption + thisCoil.EnergyLoadTotal;
@@ -4399,7 +4399,7 @@ void CalcHeatEmissionReport(EnergyPlusData &state)
                 state.dataHeatBal->SysTotalHVACRejectHeatLoss +=
                     thisCoil.EvapCondPumpElecConsumption + thisCoil.BasinHeaterConsumption + thisCoil.EvapWaterConsump * RhoWater * H2OHtOfVap_HVAC;
             }
-        } else if (thisCoil.VSCoilType == HVAC::Coil_HeatingAirToAirVariableSpeed) {
+        } else if (thisCoil.coilType == HVAC::CoilType::HeatingAirToAirVariableSpeed) {
             state.dataHeatBal->SysTotalHVACRejectHeatLoss +=
                 thisCoil.Energy + thisCoil.CrankcaseHeaterConsumption + thisCoil.DefrostConsumption - thisCoil.EnergyLoadTotal;
         }
@@ -4409,7 +4409,7 @@ void CalcHeatEmissionReport(EnergyPlusData &state)
     for (int iCoil = 1; iCoil <= state.dataHeatingCoils->NumHeatingCoils; ++iCoil) {
         auto const &thisCoil = state.dataHeatingCoils->HeatingCoil(iCoil);
 
-        if (thisCoil.HCoilType_Num == HVAC::Coil_HeatingGas_MultiStage || thisCoil.HCoilType_Num == HVAC::Coil_HeatingGasOrOtherFuel) {
+        if (thisCoil.coilType == HVAC::CoilType::HeatingGasMultiStage || thisCoil.coilType == HVAC::CoilType::HeatingGasOrOtherFuel) {
             state.dataHeatBal->SysTotalHVACRejectHeatLoss += thisCoil.FuelUseLoad + thisCoil.ParasiticFuelConsumption - thisCoil.HeatingCoilLoad;
         }
     }

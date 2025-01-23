@@ -120,7 +120,7 @@ namespace HeatRecovery {
                          ObjexxFCL::Optional_bool_const RegenInletIsOANode,  // flag to determine if supply inlet is OA node, if so air flow cycles
                          ObjexxFCL::Optional_bool_const EconomizerFlag,      // economizer operation flag passed by airloop or OA sys
                          ObjexxFCL::Optional_bool_const HighHumCtrlFlag,     // high humidity control flag passed by airloop or OA sys
-                         ObjexxFCL::Optional_int_const CompanionCoilType_Num // cooling coil type of coil
+                         ObjexxFCL::Optional<HVAC::CoilType> companionCoilType // cooling coil type of coil
     )
     {
 
@@ -168,8 +168,6 @@ namespace HeatRecovery {
         }
 
         int CompanionCoilNum = present(CompanionCoilIndex) ? int(CompanionCoilIndex) : -1; // Index to companion cooling coil
-        int companionCoilType = present(CompanionCoilType_Num) ? int(CompanionCoilType_Num) : -1;
-
         bool HXUnitOn; // flag to enable heat exchanger
         if (present(HXUnitEnable)) {
             HXUnitOn = HXUnitEnable;
@@ -1198,7 +1196,7 @@ namespace HeatRecovery {
         }
     }
 
-    void HeatExchCond::initialize(EnergyPlusData &state, int const CompanionCoilIndex, int const CompanionCoilType_Num)
+    void HeatExchCond::initialize(EnergyPlusData &state, int const CompanionCoilIndex, HVAC::CoilType const companionCoilType)
     {
 
         // SUBROUTINE INFORMATION:
@@ -1482,10 +1480,12 @@ namespace HeatRecovery {
             }
 
             if ((CompanionCoilIndex > -1) &&
-                ((CompanionCoilType_Num == HVAC::CoilDX_CoolingSingleSpeed) || (CompanionCoilType_Num == HVAC::Coil_CoolingAirToAirVariableSpeed) ||
-                 (CompanionCoilType_Num == HVAC::CoilDX_Cooling))) {
+                (companionCoilType == HVAC::CoilType::DXCoolingSingleSpeed ||
+                 companionCoilType == HVAC::CoilType::CoolingAirToAirVariableSpeed ||
+                 companionCoilType == HVAC::CoilType::DXCooling)) {
 
-                if (CompanionCoilType_Num == HVAC::CoilDX_CoolingSingleSpeed || CompanionCoilType_Num == HVAC::CoilDX_CoolingTwoStageWHumControl) {
+                if (companionCoilType == HVAC::CoilType::DXCoolingSingleSpeed ||
+                    companionCoilType == HVAC::CoilType::DXCoolingTwoStageWHumControl) {
                     if (state.dataDXCoils->DXCoilFullLoadOutAirTemp(CompanionCoilIndex) == 0.0 ||
                         state.dataDXCoils->DXCoilFullLoadOutAirHumRat(CompanionCoilIndex) == 0.0) {
                         //       DX Coil is OFF, read actual inlet conditions
@@ -1496,14 +1496,14 @@ namespace HeatRecovery {
                         state.dataHeatRecovery->FullLoadOutAirTemp = state.dataDXCoils->DXCoilFullLoadOutAirTemp(CompanionCoilIndex);
                         state.dataHeatRecovery->FullLoadOutAirHumRat = state.dataDXCoils->DXCoilFullLoadOutAirHumRat(CompanionCoilIndex);
                     }
-                } else if (CompanionCoilType_Num == HVAC::Coil_CoolingAirToAirVariableSpeed) {
+                } else if (companionCoilType == HVAC::CoilType::CoolingAirToAirVariableSpeed) {
                     // how to support VS dx coil here?
                     state.dataHeatRecovery->FullLoadOutAirTemp = state.dataVariableSpeedCoils->VarSpeedCoil(CompanionCoilIndex).OutletAirDBTemp;
                     state.dataHeatRecovery->FullLoadOutAirHumRat = state.dataVariableSpeedCoils->VarSpeedCoil(CompanionCoilIndex).OutletAirHumRat;
-                } else if (CompanionCoilType_Num == HVAC::CoilDX_Cooling) {
+                } else if (companionCoilType == HVAC::CoilType::DXCooling) {
                     // Use the new coil option:
-                    state.dataHeatRecovery->FullLoadOutAirTemp = state.dataCoilCooingDX->coilCoolingDXs[CompanionCoilIndex].outletAirDryBulbTemp;
-                    state.dataHeatRecovery->FullLoadOutAirHumRat = state.dataCoilCooingDX->coilCoolingDXs[CompanionCoilIndex].outletAirHumRat;
+                    state.dataHeatRecovery->FullLoadOutAirTemp = state.dataCoilCoolingDX->coilCoolingDXs[CompanionCoilIndex].outletAirDryBulbTemp;
+                    state.dataHeatRecovery->FullLoadOutAirHumRat = state.dataCoilCoolingDX->coilCoolingDXs[CompanionCoilIndex].outletAirHumRat;
                 } else {
                     //
                 }
@@ -2402,7 +2402,7 @@ namespace HeatRecovery {
         HVAC::FanOp const fanOp,                       // Supply air fan operating mode (1=cycling, 2=constant)
         Real64 const PartLoadRatio,                    // Part load ratio requested of DX compressor
         int const CompanionCoilIndex,                  // index of companion cooling coil
-        int const CompanionCoilType,                   // type of cooling coil
+        HVAC::CoilType const companionCoilType,                   // type of cooling coil
         bool const RegenInletIsOANode,                 // Flag to determine if regen side inlet is OANode, if so this air stream cycles
         ObjexxFCL::Optional_bool_const EconomizerFlag, // economizer flag pass by air loop or OA sys
         ObjexxFCL::Optional_bool_const HighHumCtrlFlag // high humidity control flag passed by airloop or OA sys
@@ -2629,10 +2629,10 @@ namespace HeatRecovery {
                 HXPartLoadRatio = max(0.0, HXPartLoadRatio);
                 HXPartLoadRatio = min(1.0, HXPartLoadRatio);
 
-            } else if (CompanionCoilType > 0 && CompanionCoilIndex > -1) {
-                if (CompanionCoilType == HVAC::CoilDX_Cooling) {
-                    HXPartLoadRatio = state.dataCoilCooingDX->coilCoolingDXs[CompanionCoilIndex].partLoadRatioReport;
-                } else if (CompanionCoilType == HVAC::Coil_CoolingAirToAirVariableSpeed) {
+            } else if (companionCoilType != HVAC::CoilType::Invalid && CompanionCoilIndex > -1) {
+                if (companionCoilType == HVAC::CoilType::DXCooling) {
+                    HXPartLoadRatio = state.dataCoilCoolingDX->coilCoolingDXs[CompanionCoilIndex].partLoadRatioReport;
+                } else if (companionCoilType == HVAC::CoilType::CoolingAirToAirVariableSpeed) {
                     HXPartLoadRatio = state.dataVariableSpeedCoils->VarSpeedCoil(CompanionCoilIndex).PartLoadRatio;
                 } else {
                     HXPartLoadRatio = state.dataDXCoils->DXCoilPartLoadRatio(CompanionCoilIndex);
@@ -4786,199 +4786,91 @@ namespace HeatRecovery {
         }
     }
 
-    int GetSupplyInletNode(EnergyPlusData &state,
-                           std::string const &HXName, // must match HX names for the state.dataHeatRecovery->ExchCond type
-                           bool &ErrorsFound          // set to true if problem
-    )
-    {
-
-        // FUNCTION INFORMATION:
-        //       AUTHOR         Richard Raustad
-        //       DATE WRITTEN   February 2007
-        //       MODIFIED       na
-        //       RE-ENGINEERED  na
-
-        // PURPOSE OF THIS FUNCTION:
-        // This function looks up the given HX and returns the supply air inlet node number.
-        // If incorrect HX name is given, ErrorsFound is returned as true and node number as zero.
-
+    int GetHeatExchangerIndex(EnergyPlusData &state, std::string const &hxName, bool &ErrorsFound) {
         // Obtains and Allocates heat exchanger related parameters from input file
         if (state.dataHeatRecovery->GetInputFlag) { // First time subroutine has been entered
             GetHeatRecoveryInput(state);
             state.dataHeatRecovery->GetInputFlag = false;
         }
 
-        int const WhichHX = Util::FindItemInList(HXName, state.dataHeatRecovery->ExchCond);
-        if (WhichHX != 0) {
-            return state.dataHeatRecovery->ExchCond(WhichHX).SupInletNode;
-        } else {
-            ShowSevereError(state, format("GetSupplyInletNode: Could not find heat exchanger = \"{}\"", HXName));
+        int hxNum = Util::FindItemInList(hxName, state.dataHeatRecovery->ExchCond);
+        if (hxNum == 0) {
+            ShowSevereError(state, format("GetHeatExchangerIndex: Could not find heat exchanger = \"{}\"", hxName));
             ErrorsFound = true;
-            return 0;
         }
+        return hxNum;
+    }
+
+    int GetSupplyInletNode(EnergyPlusData &state,
+                           std::string const &hxName, 
+                           bool &ErrorsFound          
+    )
+    {
+        int hxNum = GetHeatExchangerIndex(state, hxName, ErrorsFound);
+        return (hxNum == 0) ? 0 : state.dataHeatRecovery->ExchCond(hxNum).SupInletNode;
     }
 
     int GetSupplyOutletNode(EnergyPlusData &state,
-                            std::string const &HXName, // must match HX names for the state.dataHeatRecovery->ExchCond type
-                            bool &ErrorsFound          // set to true if problem
+                            std::string const &hxName,
+                            bool &ErrorsFound    
     )
     {
-
-        // FUNCTION INFORMATION:
-        //       AUTHOR         Richard Raustad
-        //       DATE WRITTEN   February 2007
-        //       MODIFIED       na
-        //       RE-ENGINEERED  na
-
-        // PURPOSE OF THIS FUNCTION:
-        // This function looks up the given HX and returns the supply air outlet node number.
-        // If incorrect HX name is given, ErrorsFound is returned as true and node number as zero.
-
-        // Obtains and Allocates heat exchanger related parameters from input file
-        if (state.dataHeatRecovery->GetInputFlag) { // First time subroutine has been entered
-            GetHeatRecoveryInput(state);
-            state.dataHeatRecovery->GetInputFlag = false;
-        }
-
-        int const WhichHX = Util::FindItemInList(HXName, state.dataHeatRecovery->ExchCond);
-        if (WhichHX != 0) {
-            return state.dataHeatRecovery->ExchCond(WhichHX).SupOutletNode;
-        } else {
-            ShowSevereError(state, format("GetSupplyOutletNode: Could not find heat exchanger = \"{}\"", HXName));
-            ErrorsFound = true;
-            return 0;
-        }
+        int hxNum = GetHeatExchangerIndex(state, hxName, ErrorsFound);
+        return (hxNum == 0) ? 0 : state.dataHeatRecovery->ExchCond(hxNum).SupOutletNode;
     }
 
     int GetSecondaryInletNode(EnergyPlusData &state,
-                              std::string const &HXName, // must match HX names for the state.dataHeatRecovery->ExchCond type
+                              std::string const &hxName, // must match HX names for the state.dataHeatRecovery->ExchCond type
                               bool &ErrorsFound          // set to true if problem
     )
     {
-
-        // FUNCTION INFORMATION:
-        //       AUTHOR         Richard Raustad
-        //       DATE WRITTEN   February 2007
-        //       MODIFIED       na
-        //       RE-ENGINEERED  na
-
-        // PURPOSE OF THIS FUNCTION:
-        // This function looks up the given HX and returns the secondary air inlet node number.
-        // If incorrect HX name is given, ErrorsFound is returned as true and node number as zero.
-
-        // Obtains and Allocates heat exchanger related parameters from input file
-        if (state.dataHeatRecovery->GetInputFlag) { // First time subroutine has been entered
-            GetHeatRecoveryInput(state);
-            state.dataHeatRecovery->GetInputFlag = false;
-        }
-
-        int const WhichHX = Util::FindItemInList(HXName, state.dataHeatRecovery->ExchCond);
-        if (WhichHX != 0) {
-            return state.dataHeatRecovery->ExchCond(WhichHX).SecInletNode;
-        } else {
-            ShowSevereError(state, format("GetSecondaryInletNode: Could not find heat exchanger = \"{}\"", HXName));
-            ErrorsFound = true;
-            return 0;
-        }
+        int hxNum = GetHeatExchangerIndex(state, hxName, ErrorsFound);
+        return (hxNum == 0) ? 0 : state.dataHeatRecovery->ExchCond(hxNum).SecInletNode;
     }
 
     int GetSecondaryOutletNode(EnergyPlusData &state,
-                               std::string const &HXName, // must match HX names for the state.dataHeatRecovery->ExchCond type
+                               std::string const &hxName, // must match HX names for the state.dataHeatRecovery->ExchCond type
                                bool &ErrorsFound          // set to true if problem
     )
     {
-
-        // FUNCTION INFORMATION:
-        //       AUTHOR         Richard Raustad
-        //       DATE WRITTEN   February 2007
-        //       MODIFIED       na
-        //       RE-ENGINEERED  na
-
-        // PURPOSE OF THIS FUNCTION:
-        // This function looks up the given HX assisted cooling coil and returns the secondary air outlet node number.
-        // If incorrect HX name is given, ErrorsFound is returned as true and node number as zero.
-
-        // Obtains and Allocates heat exchanger related parameters from input file
-        if (state.dataHeatRecovery->GetInputFlag) { // First time subroutine has been entered
-            GetHeatRecoveryInput(state);
-            state.dataHeatRecovery->GetInputFlag = false;
-        }
-
-        int const WhichHX = Util::FindItemInList(HXName, state.dataHeatRecovery->ExchCond);
-        if (WhichHX != 0) {
-            return state.dataHeatRecovery->ExchCond(WhichHX).SecOutletNode;
-        } else {
-            ShowSevereError(state, format("GetSecondaryOutletNode: Could not find heat exchanger = \"{}\"", HXName));
-            ErrorsFound = true;
-            return 0;
-        }
+        int hxNum = GetHeatExchangerIndex(state, hxName, ErrorsFound);
+        return (hxNum == 0) ? 0 : state.dataHeatRecovery->ExchCond(hxNum).SecOutletNode;
     }
 
     Real64 GetSupplyAirFlowRate(EnergyPlusData &state,
-                                std::string const &HXName, // must match HX names for the state.dataHeatRecovery->ExchCond type
+                                std::string const &hxName, // must match HX names for the state.dataHeatRecovery->ExchCond type
                                 bool &ErrorsFound          // set to true if problem
     )
     {
-
-        // FUNCTION INFORMATION:
-        //       AUTHOR         Richard Raustad
-        //       DATE WRITTEN   October 2007
-        //       MODIFIED       na
-        //       RE-ENGINEERED  na
-
-        // PURPOSE OF THIS FUNCTION:
-        // This function looks up the given Generic HX and the volumetric air flow rate.
-        // If incorrect HX name is given, ErrorsFound is returned as true and air flow rate as zero.
-
-        // Obtains and Allocates heat exchanger related parameters from input file
-        if (state.dataHeatRecovery->GetInputFlag) { // First time subroutine has been entered
-            GetHeatRecoveryInput(state);
-            state.dataHeatRecovery->GetInputFlag = false;
-        }
-
-        int const WhichHX = Util::FindItemInList(HXName, state.dataHeatRecovery->ExchCond);
-        if (WhichHX != 0) {
-            return state.dataHeatRecovery->ExchCond(WhichHX).NomSupAirVolFlow;
-        } else {
-            ShowSevereError(state, format("GetSupplyAirFlowRate: Could not find heat exchanger = \"{}\"", HXName));
-            ShowContinueError(state, "... Supply Air Flow Rate returned as 0.");
-            ErrorsFound = true;
-            return 0.0;
-        }
+        int hxNum = GetHeatExchangerIndex(state, hxName, ErrorsFound);
+        return (hxNum == 0) ? 0.0 : state.dataHeatRecovery->ExchCond(hxNum).NomSupAirVolFlow;
     }
 
-    HVAC::HXType GetHeatExchangerObjectTypeNum(EnergyPlusData &state,
-                                               std::string const &HXName, // must match HX names for the state.dataHeatRecovery->ExchCond type
-                                               bool &ErrorsFound          // set to true if problem
+    HVAC::HXType GetHeatExchangerType(EnergyPlusData &state,
+                                      std::string const &hxName, // must match HX names for the state.dataHeatRecovery->ExchCond type
+                                      bool &ErrorsFound          // set to true if problem
     )
     {
+        int hxNum = GetHeatExchangerIndex(state, hxName, ErrorsFound);
+        return (hxNum == 0) ? HVAC::HXType::Invalid : state.dataHeatRecovery->ExchCond(hxNum).type;
+    }
 
-        // FUNCTION INFORMATION:
-        //       AUTHOR         Richard Raustad
-        //       DATE WRITTEN   October 2007
-        //       MODIFIED       na
-        //       RE-ENGINEERED  na
-
-        // PURPOSE OF THIS FUNCTION:
-        // This function looks up the given Generic HX and the volumetric air flow rate.
-        // If incorrect HX name is given, ErrorsFound is returned as true and air flow rate as zero.
-
+    int GetHeatExchangerIndex(EnergyPlusData &state, std::string const &hxName) {
         // Obtains and Allocates heat exchanger related parameters from input file
-        if (state.dataHeatRecovery->GetInputFlag) { // First time subroutine has been entered
+        if (state.dataHeatRecovery->GetInputFlag) { 
             GetHeatRecoveryInput(state);
             state.dataHeatRecovery->GetInputFlag = false;
         }
 
-        int const WhichHX = Util::FindItemInList(HXName, state.dataHeatRecovery->ExchCond);
-        if (WhichHX != 0) {
-            return state.dataHeatRecovery->ExchCond(WhichHX).type;
-        } else {
-            ShowSevereError(state, format("GetHeatExchangerObjectTypeNum: Could not find heat exchanger = \"{}\"", HXName));
-            ErrorsFound = true;
-            return HVAC::HXType::Invalid;
-        }
+        return Util::FindItemInList(hxName, state.dataHeatRecovery->ExchCond);
     }
-
+  
+    int GetSupplyInletNode(EnergyPlusData &state,
+                           int const hxNum)
+    {
+        assert(hxNum > 0 && hxNum <= state.dataHeatRecovery->NumHeatExchangers);
+        return state.dataHeatRecovery->ExchCond(hxNum).SupInletNode;
+    }
 } // namespace HeatRecovery
 
 } // namespace EnergyPlus

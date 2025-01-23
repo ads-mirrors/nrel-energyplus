@@ -140,26 +140,34 @@ namespace FanCoilUnits {
         int OAMixIndex = 0;
         std::string FanName;     // name of fan
         int FanIndex = 0;        // index for fan
-        std::string CCoilName;   // name of cooling coil
-        int CCoilName_Index = 0; // Index for this Cooling Coil in SimWaterComp
+
+        // If the cooling coil is HX assisted, then this is the HX coil
+        // object and CoolCoilName/Index/Type becomes the embedded coil
+        std::string hxCoolCoilName;
+        int hxCoolCoilNum = 0;
+        HVAC::CoilType hxCoolCoilType = HVAC::CoilType::Invalid;
+      
+        std::string CoolCoilName;   // name of cooling coil
+        int CoolCoilNum = 0; // Index for this Cooling Coil in SimWaterComp
         HVAC::CoilType coolCoilType = HVAC::CoilType::Invalid;   // type of cooling coil:
         // 'Coil:Cooling:Water' or
         // 'Coil:Cooling:Water:DetailedGeometry' or
         // 'CoilSystem:Cooling:Water:HeatExchangerAssisted'
-        std::string CCoilPlantName;           // name of cooling coil (child<=CoilSystem:Cooling:Water:HeatExchangerAssisted)
-        DataPlant::PlantEquipmentType CCoilPlantType = DataPlant::PlantEquipmentType::Invalid;
+        DataPlant::PlantEquipmentType CoolCoilPlantType = DataPlant::PlantEquipmentType::Invalid;
+      
         int ControlCompTypeNum = 0;
         int CompErrIndex = 0;
         Real64 MaxColdWaterVolFlow = 0.0; // m3/s
         Real64 MinColdWaterVolFlow = 0.0; // m3/s
         Real64 MinColdWaterFlow = 0.0;    // kg/s
         Real64 ColdControlOffset = 0.0;   // control tolerance
-        std::string HCoilName;            // name of heating coil
-        int HCoilName_Index = 0;
+
+        std::string HeatCoilName;            // name of heating coil
+        int HeatCoilNum = 0;
 
         // 'Coil:Heating:Water' or
         HVAC::CoilType heatCoilType = HVAC::CoilType::Invalid; // Numeric equivalent for type of cooling coil
-        DataPlant::PlantEquipmentType HCoilPlantTypeOf = DataPlant::PlantEquipmentType::Invalid;
+        DataPlant::PlantEquipmentType HeatCoilPlantType = DataPlant::PlantEquipmentType::Invalid;
         Real64 MaxHotWaterVolFlow = 0.0;    // m3/s
         Real64 MinHotWaterVolFlow = 0.0;    // m3/s
         Real64 MinHotWaterFlow = 0.0;       // kg/s
@@ -215,15 +223,15 @@ namespace FanCoilUnits {
         Real64 LowSpeedCoolFanRatio = 0.0;     // ratio of min air flow to max air flow
         Real64 LowSpeedHeatFanRatio = 0.0;     // ratio of min air flow to max air flow
         int CoolCoilFluidInletNode = 0;        // chilled water control node
-        int CoolCoilFluidOutletNodeNum = 0;    // chilled water coil outlet plant node
+        int CoolCoilFluidOutletNode = 0;    // chilled water coil outlet plant node
         int HeatCoilFluidInletNode = 0;        // hot water control node
-        int HeatCoilFluidOutletNodeNum = 0;    // hot water coil outlet plant node
+        int HeatCoilFluidOutletNode = 0;    // hot water coil outlet plant node
         PlantLocation CoolCoilPlantLoc{};      // index for plant location for chilled water coil
         PlantLocation HeatCoilPlantLoc{};      // index for plant location for hot water coil
-        int CoolCoilInletNodeNum = 0;          // index of cooling coil inlet node number
-        int CoolCoilOutletNodeNum = 0;         // index of cooling coil outlet node number
-        int HeatCoilInletNodeNum = 0;          // index of heating coil inlet node number
-        int HeatCoilOutletNodeNum = 0;         // index of heating coil outlet node number
+        int CoolCoilAirInletNode = 0;          // index of cooling coil inlet node number
+        int CoolCoilAirOutletNode = 0;         // index of cooling coil outlet node number
+        int HeatCoilAirInletNode = 0;          // index of heating coil inlet node number
+        int HeatCoilAirOutletNode = 0;         // index of heating coil outlet node number
         int ControlZoneNum = 0;                // pointer to a zone served by a fancoil unit
         int NodeNumOfControlledZone = 0;       // node number of controlled zone
         bool ATMixerExists = false;            // True if there is an ATMixer
@@ -413,8 +421,6 @@ struct FanCoilUnitsData : BaseGlobalStruct
     Array1D_bool MyEnvrnFlag;
     Array1D_bool MyPlantScanFlag;
     Array1D_bool MyZoneEqFlag; // used to set up zone equipment availability managers
-    int CoilWaterInletNode = 0;
-    int CoilWaterOutletNode = 0;
     int ATMixOutNode = 0; // outlet node of ATM Mixer
     int ZoneNode = 0;     // zone node
 

@@ -889,7 +889,7 @@ namespace StandardRatings {
         EnergyPlusData &state,
         std::string const &DXCoilName,                             // Name of DX coil for which HSPF is calculated
         std::string const &DXCoilType,                             // Type of DX coil for which HSPF is calculated
-        int const DXCoilType_Num,                                  // Integer Type of DX coil - heating or cooling
+        HVAC::CoilType coilType,                                   // Integer Type of DX coil - heating or cooling
         int const ns,                                              // Number of compressor speeds
         Array1A<Real64> const RatedTotalCapacity,                  // Reference capacity of DX coil [W]
         Array1A<Real64> const RatedCOP,                            // Reference coefficient of performance [W/W]
@@ -1024,11 +1024,6 @@ namespace StandardRatings {
         // Using/Aliasing
         using Curve::CurveValue;
         using Curve::GetCurveMinMaxValues;
-        using HVAC::Coil_CoolingAirToAirVariableSpeed;
-        using HVAC::CoilDX_CoolingSingleSpeed;
-        using HVAC::CoilDX_HeatingEmpirical;
-        using HVAC::CoilDX_MultiSpeedCooling;
-        using HVAC::CoilDX_MultiSpeedHeating;
 
         // Argument array dimensioning
         RatedTotalCapacity.dim(ns);
@@ -1096,14 +1091,14 @@ namespace StandardRatings {
 
         NetCoolingCapRated = 0.0;
 
-        switch (DXCoilType_Num) {
+        switch (coilType) {
 
-        case CoilDX_CoolingSingleSpeed: { // Coil:Cooling:DX:SingleSpeed
+        case HVAC::CoilType::DXCoolingSingleSpeed: { // Coil:Cooling:DX:SingleSpeed
 
             CheckCurveLimitsForStandardRatings(state,
                                                DXCoilName,
                                                DXCoilType,
-                                               DXCoilType_Num,
+                                               coilType,
                                                CapFTempCurveIndex(1),
                                                CapFFlowCurveIndex(1),
                                                EIRFTempCurveIndex(1),
@@ -1141,7 +1136,7 @@ namespace StandardRatings {
             ReportDXCoilRating(state,
                                DXCoilType,
                                DXCoilName,
-                               DXCoilType_Num,
+                               coilType,
                                NetCoolingCapRated(1),
                                SEER_User * ConvFromSIToIP,
                                SEER_Standard * ConvFromSIToIP,
@@ -1160,7 +1155,7 @@ namespace StandardRatings {
             ReportDXCoilRating(state,
                                DXCoilType,
                                DXCoilName,
-                               DXCoilType_Num,
+                               coilType,
                                NetCoolingCapRated_2023(1),
                                SEER2_User * ConvFromSIToIP,
                                SEER2_Standard * ConvFromSIToIP,
@@ -1188,16 +1183,16 @@ namespace StandardRatings {
                                                        FanPowerPerEvapAirFlowRateFromInput(1),
                                                        NetTotCoolingCapRated,
                                                        TotElectricPowerRated);
-                ReportDXCoolCoilDataCenterApplication(state, DXCoilType, DXCoilName, DXCoilType_Num, NetTotCoolingCapRated, TotElectricPowerRated);
+                ReportDXCoolCoilDataCenterApplication(state, DXCoilType, DXCoilName, coilType, NetTotCoolingCapRated, TotElectricPowerRated);
             }
             break;
         }
-        case CoilDX_HeatingEmpirical: { // Coil:Heating:DX:SingleSpeed
+        case HVAC::CoilType::DXHeatingEmpirical: { // Coil:Heating:DX:SingleSpeed
 
             CheckCurveLimitsForStandardRatings(state,
                                                DXCoilName,
                                                DXCoilType,
-                                               DXCoilType_Num,
+                                               coilType,
                                                CapFTempCurveIndex(1),
                                                CapFFlowCurveIndex(1),
                                                EIRFTempCurveIndex(1),
@@ -1233,7 +1228,7 @@ namespace StandardRatings {
             ReportDXCoilRating(state,
                                DXCoilType,
                                DXCoilName,
-                               DXCoilType_Num,
+                               coilType,
                                NetCoolingCapRated(1),
                                SEER_User * ConvFromSIToIP,
                                SEER_Standard * ConvFromSIToIP,
@@ -1251,7 +1246,7 @@ namespace StandardRatings {
             ReportDXCoilRating(state,
                                DXCoilType,
                                DXCoilName,
-                               DXCoilType_Num,
+                               coilType,
                                NetCoolingCapRated_2023(1),
                                SEER2_User * ConvFromSIToIP,
                                SEER2_Standard * ConvFromSIToIP,
@@ -1265,13 +1260,14 @@ namespace StandardRatings {
                                true);
             break;
         }
-        case CoilDX_MultiSpeedCooling: { // Coil:Cooling:DX:MultiSpeed,
+          
+        case HVAC::CoilType::DXMultiSpeedCooling: { // Coil:Cooling:DX:MultiSpeed,
 
             for (spnum = 1; spnum <= ns; ++spnum) {
                 CheckCurveLimitsForStandardRatings(state,
                                                    DXCoilName,
                                                    DXCoilType,
-                                                   DXCoilType_Num,
+                                                   coilType,
                                                    CapFTempCurveIndex(spnum),
                                                    CapFFlowCurveIndex(spnum),
                                                    EIRFTempCurveIndex(spnum),
@@ -1311,7 +1307,7 @@ namespace StandardRatings {
             ReportDXCoilRating(state,
                                DXCoilType,
                                DXCoilName,
-                               DXCoilType_Num,
+                               coilType,
                                NetCoolingCapRated(ns),
                                SEER_User * ConvFromSIToIP,
                                SEER_Standard * ConvFromSIToIP,
@@ -1328,7 +1324,7 @@ namespace StandardRatings {
             ReportDXCoilRating(state,
                                DXCoilType,
                                DXCoilName,
-                               DXCoilType_Num,
+                               coilType,
                                NetCoolingCapRated_2023(ns),
                                SEER2_User * ConvFromSIToIP,
                                SEER2_Standard * ConvFromSIToIP,
@@ -1343,13 +1339,13 @@ namespace StandardRatings {
 
             break;
         }
-        case CoilDX_MultiSpeedHeating: { // Coil:Heating:DX:MultiSpeed
+        case HVAC::CoilType::DXMultiSpeedHeating: { // Coil:Heating:DX:MultiSpeed
 
             for (spnum = 1; spnum <= ns; ++spnum) {
                 CheckCurveLimitsForStandardRatings(state,
                                                    DXCoilName,
                                                    DXCoilType,
-                                                   DXCoilType_Num,
+                                                   coilType,
                                                    CapFTempCurveIndex(spnum),
                                                    CapFFlowCurveIndex(spnum),
                                                    EIRFTempCurveIndex(spnum),
@@ -1391,7 +1387,7 @@ namespace StandardRatings {
             ReportDXCoilRating(state,
                                DXCoilType,
                                DXCoilName,
-                               DXCoilType_Num,
+                               coilType,
                                NetCoolingCapRated(ns),
                                SEER_User * ConvFromSIToIP,
                                SEER_Standard * ConvFromSIToIP,
@@ -1409,7 +1405,7 @@ namespace StandardRatings {
             ReportDXCoilRating(state,
                                DXCoilType,
                                DXCoilName,
-                               DXCoilType_Num,
+                               coilType,
                                NetCoolingCapRated(ns),
                                SEER_User * ConvFromSIToIP,
                                SEER_Standard * ConvFromSIToIP,
@@ -1424,12 +1420,12 @@ namespace StandardRatings {
 
             break;
         }
-        case Coil_CoolingAirToAirVariableSpeed: {
+        case HVAC::CoilType::CoolingAirToAirVariableSpeed: {
             for (spnum = 1; spnum <= ns; ++spnum) {
                 CheckCurveLimitsForStandardRatings(state,
                                                    DXCoilName,
                                                    DXCoilType,
-                                                   DXCoilType_Num,
+                                                   coilType,
                                                    CapFTempCurveIndex(spnum),
                                                    CapFFlowCurveIndex(spnum),
                                                    EIRFTempCurveIndex(spnum),
@@ -1470,7 +1466,7 @@ namespace StandardRatings {
             ReportDXCoilRating(state,
                                DXCoilType,
                                DXCoilName,
-                               DXCoilType_Num,
+                               coilType,
                                NetCoolingCapRated_2023(ns),
                                SEER2_User * ConvFromSIToIP,
                                SEER2_Standard * ConvFromSIToIP,
@@ -1492,7 +1488,7 @@ namespace StandardRatings {
     void CalcTwoSpeedDXCoilRating(EnergyPlusData &state,
                                   std::string const &DXCoilName,
                                   std::string const &DXCoilType,
-                                  int const DXCoilType_Num,
+                                  HVAC::CoilType const coilType,
                                   Array1A<Real64> const &RatedTotalCapacity,
                                   Real64 const RatedTotCap2,
                                   Array1A<Real64> const &RatedCOP,
@@ -1529,7 +1525,7 @@ namespace StandardRatings {
         StandardRatingsResult = TwoSpeedDXCoilStandardRatings(state,
                                                               DXCoilName,
                                                               DXCoilType,
-                                                              DXCoilType_Num,
+                                                              coilType,
                                                               RatedTotalCapacity,
                                                               RatedTotCap2,
                                                               RatedCOP,
@@ -1571,7 +1567,7 @@ namespace StandardRatings {
         ReportDXCoilRating(state,
                            DXCoilType,
                            DXCoilName,
-                           DXCoilType_Num,
+                           coilType,
                            NetCoolingCapRated,
                            SEER2_User * ConvFromSIToIP,
                            SEER2_Standard * ConvFromSIToIP,
@@ -1588,9 +1584,9 @@ namespace StandardRatings {
     std::map<std::string, Real64> TwoSpeedDXCoilStandardRatings(EnergyPlusData &state,
                                                                 std::string const &DXCoilName,
                                                                 std::string const &DXCoilType,
-                                                                int const &DXCoilType_Num,
+                                                                HVAC::CoilType const coilType,
                                                                 Array1A<Real64> const &RatedTotalCapacity,
-                                                                Real64 const &RatedTotCap2,
+                                                                Real64 const &RatedTotCap2, // What is the point of passing a scalar by const &?
                                                                 Array1A<Real64> const &RatedCOP,
                                                                 Real64 const &RatedCOP2,
                                                                 Array1A_int const &CapFFlowCurveIndex, // only hs
@@ -1652,7 +1648,7 @@ namespace StandardRatings {
             CheckCurveLimitsForStandardRatings(state,
                                                DXCoilName,
                                                DXCoilType,
-                                               DXCoilType_Num,
+                                               coilType,
                                                TSCCapFTemp(spnum),
                                                CapFFlowCurveIndex(1), // only HS
                                                TSEIRFTemp(spnum),
@@ -6689,7 +6685,7 @@ namespace StandardRatings {
     void ReportDXCoilRating(EnergyPlusData &state,
                             std::string const &CompType,    // Type of component
                             std::string_view CompName,      // Name of component
-                            int const CompTypeNum,          // TypeNum of component
+                            HVAC::CoilType coilType,
                             Real64 const CoolCapVal,        // Standard total (net) cooling capacity for AHRI Std. 210/240 {W}
                             Real64 const SEERUserIP,        // SEER value in IP units from user PLR curve {Btu/W-h}
                             Real64 const SEERStandardIP,    // SEER value in IP units from AHRI Std 210/240-2008 default PLF curve and C_D {Btu/W-h}
@@ -6723,13 +6719,6 @@ namespace StandardRatings {
         // Using/Aliasing
 
         using namespace OutputReportPredefined;
-        using HVAC::Coil_CoolingAirToAirVariableSpeed;
-        using HVAC::CoilDX_CoolingSingleSpeed;
-        using HVAC::CoilDX_CoolingTwoSpeed;
-        using HVAC::CoilDX_HeatingEmpirical;
-        using HVAC::CoilDX_MultiSpeedCooling;
-        using HVAC::CoilDX_MultiSpeedHeating;
-
         // Locals
         // SUBROUTINE ARGUMENT DEFINITIONS:
         //   or ANSI/AHRI Std. 340/360 {W}
@@ -6747,9 +6736,9 @@ namespace StandardRatings {
 
         // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
 
-        switch (CompTypeNum) {
+        switch (coilType) {
 
-        case CoilDX_CoolingSingleSpeed: {
+        case HVAC::CoilType::DXCoolingSingleSpeed: {
             if (!AHRI2023StandardRatings) {
                 if (state.dataHVACGlobal->StandardRatingsMyCoolOneTimeFlag) {
                     static constexpr std::string_view Format_994(
@@ -6868,8 +6857,9 @@ namespace StandardRatings {
             }
             break;
         }
-        case CoilDX_HeatingEmpirical:
-        case CoilDX_MultiSpeedHeating: {
+
+        case HVAC::CoilType::DXHeatingEmpirical:
+        case HVAC::CoilType::DXMultiSpeedHeating: {
             if (!AHRI2023StandardRatings) {
                 if (state.dataHVACGlobal->StandardRatingsMyHeatOneTimeFlag) {
                     static constexpr std::string_view Format_992(
@@ -6918,9 +6908,10 @@ namespace StandardRatings {
             }
             break;
         }
-        case CoilDX_CoolingTwoSpeed:
-        case Coil_CoolingAirToAirVariableSpeed:
-        case CoilDX_MultiSpeedCooling: {
+
+        case HVAC::CoilType::DXCoolingTwoSpeed:
+        case HVAC::CoilType::CoolingAirToAirVariableSpeed:
+        case HVAC::CoilType::DXMultiSpeedCooling: {
             if (!AHRI2023StandardRatings) {
                 if (state.dataHVACGlobal->StandardRatingsMyCoolOneTimeFlag) {
                     static constexpr std::string_view Format_994(
@@ -7045,7 +7036,7 @@ namespace StandardRatings {
     void ReportDXCoolCoilDataCenterApplication(EnergyPlusData &state,
                                                std::string const &CompType,           // Type of component
                                                std::string_view CompName,             // Name of component
-                                               int const CompTypeNum,                 // TypeNum of component
+                                               HVAC::CoilType const coilType,                 // TypeNum of component
                                                Array1D<Real64> &NetCoolingCapRated,   // net cooling capacity of single speed DX cooling coil
                                                Array1D<Real64> &TotElectricPowerRated // total electric power including supply fan
     )
@@ -7073,9 +7064,8 @@ namespace StandardRatings {
         // Using/Aliasing
 
         using namespace OutputReportPredefined;
-        using HVAC::CoilDX_CoolingSingleSpeed;
 
-        if (CompTypeNum == CoilDX_CoolingSingleSpeed) {
+        if (coilType == HVAC::CoilType::DXCoolingSingleSpeed) {
             if (state.dataHVACGlobal->StandardRatingsMyCoolOneTimeFlag3) {
                 static constexpr std::string_view Format_101(
                     "! <DX Cooling Coil ASHRAE 127 Standard Ratings Information>, Component Type, Component Name, Standard 127 "
@@ -7132,7 +7122,7 @@ namespace StandardRatings {
     void CheckCurveLimitsForStandardRatings(EnergyPlusData &state,
                                             std::string const &DXCoilName, // Name of DX coil for which HSPF is calculated
                                             std::string const &DXCoilType, // Type of DX coil - heating or cooling
-                                            int const DXCoilTypeNum,       // Integer type of DX coil - heating or cooling
+                                            HVAC::CoilType coilType,       // Integer type of DX coil - heating or cooling
                                             int const CapFTempCurveIndex,  // Index for the capacity as a function of temperature modifier curve
                                             int const CapFFlowCurveIndex,  // Index for the capacity as a function of flow fraction modifier curve
                                             int const EIRFTempCurveIndex,  // Index for the EIR as a function of temperature modifier curve
@@ -7162,10 +7152,6 @@ namespace StandardRatings {
         using Curve::GetCurveIndex;
         using Curve::GetCurveMinMaxValues;
         using Curve::GetCurveName;
-        using HVAC::CoilDX_CoolingSingleSpeed;
-        using HVAC::CoilDX_HeatingEmpirical;
-        using HVAC::CoilDX_MultiSpeedCooling;
-        using HVAC::CoilDX_MultiSpeedHeating;
 
         // Locals
         // SUBROUTINE ARGUMENT DEFINITIONS:
@@ -7228,9 +7214,9 @@ namespace StandardRatings {
         bool HeatingEIRCurveHSPFLimitsExceeded(false); // Logical for EIR curve temperature limits being exceeded
         // (HSPF calcs)
 
-        switch (DXCoilTypeNum) {
+        switch (coilType) {
 
-        case CoilDX_CoolingSingleSpeed: {
+        case HVAC::CoilType::DXCoolingSingleSpeed: {
             bool CapCurveMidOATLimitsExceeded = false; // Logical for capacity curve temperature limits being exceeded (mid temp)
             bool EIRCurveMidOATLimitsExceeded = false; // Logical for EIR curve temperature limits being exceeded (mid temp)
             bool PLFfPLRforSEERLimitsExceeded = false; // Logical for PLF function of PLR limits being exceeded
@@ -7452,7 +7438,7 @@ namespace StandardRatings {
             } // End of curve error messages
             break;
         }
-        case CoilDX_HeatingEmpirical: {
+        case HVAC::CoilType::DXHeatingEmpirical: {
             {
                 if (state.dataCurveManager->PerfCurve(CapFTempCurveIndex)->numDims == 1) {
                     GetCurveMinMaxValues(state, CapFTempCurveIndex, HeatingCapODBTempMin, HeatingCapODBTempMax);
@@ -7534,7 +7520,8 @@ namespace StandardRatings {
             //   MultiSpeed DX Coil Net Cooling Capacity and SEER:
             break;
         }
-        case CoilDX_MultiSpeedCooling: {
+
+        case HVAC::CoilType::DXMultiSpeedCooling: {
             bool CapCurveLowOATLimitsExceeded = false; // Logical for capacity curve temperature limits being exceeded (low temp)
             bool EIRCurveLowOATLimitsExceeded = false; // Logical for EIR curve temperature limits being exceeded (Low temp)
 
@@ -7657,7 +7644,8 @@ namespace StandardRatings {
 
             break;
         }
-        case CoilDX_MultiSpeedHeating: {
+          
+        case HVAC::CoilType::DXMultiSpeedHeating: {
 
             bool CapCurveOATLimitsExceeded = false; // Logical for capacity curve OD temp. limits being exceeded (low and High)
             {

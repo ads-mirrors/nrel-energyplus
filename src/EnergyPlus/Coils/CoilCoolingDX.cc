@@ -138,7 +138,7 @@ void CoilCoolingDX::instantiateFromInputSpec(EnergyPlusData &state, const CoilCo
 
     // initialize reclaim heat parameters
     this->reclaimHeat.Name = this->name;
-    this->reclaimHeat.coilType = state.dataCoilCoolingDX->coilType;
+    this->reclaimHeat.SourceType = HVAC::coilTypeNames[(int)state.dataCoilCoolingDX->coilType];
 
     this->performance = CoilCoolingDXCurveFitPerformance(state, input_data.performance_object_name);
 

@@ -180,8 +180,8 @@ namespace HVACDXHeatPumpSystem {
         // simulate DX Heating System
         CompName = DXHeatPumpSystem(DXSystemNum).HeatPumpCoilName;
 
-        switch (DXHeatPumpSystem(DXSystemNum).HeatPumpCoilType_Num) {
-        case HVAC::CoilDX_HeatingEmpirical: { // COIL:DX:COOLINGBYPASSFACTOREMPIRICAL
+        switch (DXHeatPumpSystem(DXSystemNum).heatPumpCoilType) {
+        case HVAC::CoilType::DXHeatingEmpirical: { // COIL:DX:COOLINGBYPASSFACTOREMPIRICAL
             SimDXCoil(state,
                       CompName,
                       HVAC::CompressorOp::On,
@@ -190,7 +190,7 @@ namespace HVACDXHeatPumpSystem {
                       DXHeatPumpSystem(DXSystemNum).fanOp,
                       DXHeatPumpSystem(DXSystemNum).PartLoadFrac);
         } break;
-        case HVAC::Coil_HeatingAirToAirVariableSpeed: { // Coil:Heating:DX:VariableSpeed
+        case HVAC::CoilType::HeatingAirToAirVariableSpeed: { // Coil:Heating:DX:VariableSpeed
             SimVariableSpeedCoils(state,
                                   CompName,
                                   DXHeatPumpSystem(DXSystemNum).HeatPumpCoilIndex,
@@ -204,7 +204,7 @@ namespace HVACDXHeatPumpSystem {
                                   state.dataHVACDXHeatPumpSys->OnOffAirFlowRatio);
         } break;
         default: {
-            ShowFatalError(state, format("SimDXCoolingSystem: Invalid DX Heating System/Coil={}", DXHeatPumpSystem(DXSystemNum).HeatPumpCoilType));
+          ShowFatalError(state, format("SimDXCoolingSystem: Invalid DX Heating System/Coil={}", HVAC::coilTypeNames[(int)DXHeatPumpSystem(DXSystemNum).heatPumpCoilType]));
         } break;
         }
         // set econo lockout flag
@@ -262,6 +262,7 @@ namespace HVACDXHeatPumpSystem {
         int NumNums;
         int IOStat;
         static constexpr std::string_view RoutineName("GetDXHeatPumpSystemInput: "); // include trailing blank space
+        static constexpr std::string_view routineName = "GetDXHeatPumpSystemInput"; 
         bool IsNotOK;                                                                // Flag to verify name
         int DXHeatSysNum;
         std::string CurrentModuleObject; // for ease in getting objects
@@ -272,14 +273,14 @@ namespace HVACDXHeatPumpSystem {
         Array1D_bool lAlphaBlanks;       // Logical array, alpha field input BLANK = .TRUE.
         Array1D_bool lNumericBlanks;     // Logical array, numeric field input BLANK = .TRUE.
 
-        auto &DXHeatPumpSystem(state.dataHVACDXHeatPumpSys->DXHeatPumpSystem);
+        bool ErrorsFound = false;
 
         CurrentModuleObject = "CoilSystem:Heating:DX";
         // Update Num in state and make local convenience copy
         int NumDXHeatPumpSystems = state.dataHVACDXHeatPumpSys->NumDXHeatPumpSystems =
             state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, CurrentModuleObject);
 
-        DXHeatPumpSystem.allocate(NumDXHeatPumpSystems);
+        state.dataHVACDXHeatPumpSys->DXHeatPumpSystem.allocate(NumDXHeatPumpSystems);
         state.dataHVACDXHeatPumpSys->CheckEquipName.dimension(NumDXHeatPumpSystems, true);
 
         state.dataInputProcessing->inputProcessor->getObjectDefMaxArgs(
@@ -307,13 +308,17 @@ namespace HVACDXHeatPumpSystem {
                                                                      lAlphaBlanks,
                                                                      cAlphaFields,
                                                                      cNumericFields);
-            DXHeatPumpSystem(DXHeatSysNum).DXHeatPumpSystemType = CurrentModuleObject; // push Object Name into data array
-            DXHeatPumpSystem(DXHeatSysNum).Name = Alphas(1);
+
+            ErrorObjectHeader eoh{routineName, CurrentModuleObject, Alphas(1)};
+
+            auto &dxhp = state.dataHVACDXHeatPumpSys->DXHeatPumpSystem(DXHeatSysNum);
+            dxhp.DXHeatPumpSystemType = CurrentModuleObject; // push Object Name into data array
+            dxhp.Name = Alphas(1);
             if (lAlphaBlanks(2)) {
-                DXHeatPumpSystem(DXHeatSysNum).SchedPtr = ScheduleManager::ScheduleAlwaysOn;
+                dxhp.SchedPtr = ScheduleManager::ScheduleAlwaysOn;
             } else {
-                DXHeatPumpSystem(DXHeatSysNum).SchedPtr = GetScheduleIndex(state, Alphas(2));
-                if (DXHeatPumpSystem(DXHeatSysNum).SchedPtr == 0) {
+                dxhp.SchedPtr = GetScheduleIndex(state, Alphas(2));
+                if (dxhp.SchedPtr == 0) {
                     ShowSevereError(state,
                                     format("{}{}: invalid {} entered ={} for {}={}",
                                            RoutineName,
@@ -322,102 +327,78 @@ namespace HVACDXHeatPumpSystem {
                                            Alphas(2),
                                            cAlphaFields(1),
                                            Alphas(1)));
-                    state.dataHVACDXHeatPumpSys->ErrorsFound = true;
+                    ErrorsFound = true;
                 }
             }
 
-            if (Util::SameString(Alphas(3), "Coil:Heating:DX:SingleSpeed")) {
+            dxhp.heatPumpCoilType = static_cast<HVAC::CoilType>(getEnumValue(HVAC::coilTypeNamesUC, Alphas(3)));
+            dxhp.HeatPumpCoilName = Alphas(4);
 
-                DXHeatPumpSystem(DXHeatSysNum).HeatPumpCoilType = Alphas(3);
-                DXHeatPumpSystem(DXHeatSysNum).HeatPumpCoilType_Num = HVAC::CoilDX_HeatingEmpirical;
+            if (dxhp.heatPumpCoilType == HVAC::CoilType::DXHeatingEmpirical) {
+                dxhp.HeatPumpCoilIndex = DXCoils::GetDXCoilIndex(state, dxhp.HeatPumpCoilName);
+                if (dxhp.HeatPumpCoilIndex == 0) {
+                    ShowSevereItemNotFound(state, eoh, cAlphaFields(4), Alphas(4));
+                    ErrorsFound = true;
+                } else {
+                    dxhp.DXHeatPumpCoilInletNodeNum = GetCoilInletNode(state, dxhp.HeatPumpCoilIndex);
+                    dxhp.DXHeatPumpCoilOutletNodeNum = GetCoilOutletNode(state, dxhp.HeatPumpCoilIndex);
+                }
 
-                DXHeatPumpSystem(DXHeatSysNum).HeatPumpCoilName = Alphas(4);
-            } else if (Util::SameString(Alphas(3), "Coil:Heating:DX:VariableSpeed")) {
-
-                DXHeatPumpSystem(DXHeatSysNum).HeatPumpCoilType = Alphas(3);
-                DXHeatPumpSystem(DXHeatSysNum).HeatPumpCoilType_Num = HVAC::Coil_HeatingAirToAirVariableSpeed;
-
-                DXHeatPumpSystem(DXHeatSysNum).HeatPumpCoilName = Alphas(4);
-
+            } else if (dxhp.heatPumpCoilType == HVAC::CoilType::HeatingAirToAirVariableSpeed) {
+                dxhp.HeatPumpCoilIndex = VariableSpeedCoils::GetCoilIndexVariableSpeed(state, dxhp.HeatPumpCoilName);
+                if (dxhp.HeatPumpCoilIndex == 0) {
+                    ShowSevereItemNotFound(state, eoh, cAlphaFields(4), Alphas(4));
+                    ErrorsFound = true;
+                } else {
+                    dxhp.DXHeatPumpCoilInletNodeNum = GetCoilInletNodeVariableSpeed(state, dxhp.HeatPumpCoilIndex);
+                    dxhp.DXHeatPumpCoilOutletNodeNum = GetCoilOutletNodeVariableSpeed(state, dxhp.HeatPumpCoilIndex);
+                }
             } else {
-                ShowSevereError(state, format("Invalid entry for {} :{}", cAlphaFields(3), Alphas(3)));
-                ShowContinueError(state, format("In {}=\"{}\".", CurrentModuleObject, DXHeatPumpSystem(DXHeatSysNum).Name));
-                state.dataHVACDXHeatPumpSys->ErrorsFound = true;
-            }
-
-            if (DXHeatPumpSystem(DXHeatSysNum).HeatPumpCoilType_Num == HVAC::Coil_HeatingAirToAirVariableSpeed) {
-                DXHeatPumpSystem(DXHeatSysNum).DXHeatPumpCoilInletNodeNum =
-                    GetCoilInletNodeVariableSpeed(state,
-                                                  DXHeatPumpSystem(DXHeatSysNum).HeatPumpCoilType,
-                                                  DXHeatPumpSystem(DXHeatSysNum).HeatPumpCoilName,
-                                                  state.dataHVACDXHeatPumpSys->ErrorsFound);
-                DXHeatPumpSystem(DXHeatSysNum).DXHeatPumpCoilOutletNodeNum =
-                    GetCoilOutletNodeVariableSpeed(state,
-                                                   DXHeatPumpSystem(DXHeatSysNum).HeatPumpCoilType,
-                                                   DXHeatPumpSystem(DXHeatSysNum).HeatPumpCoilName,
-                                                   state.dataHVACDXHeatPumpSys->ErrorsFound);
-            } else {
-                DXHeatPumpSystem(DXHeatSysNum).DXHeatPumpCoilInletNodeNum = GetCoilInletNode(state,
-                                                                                             DXHeatPumpSystem(DXHeatSysNum).HeatPumpCoilType,
-                                                                                             DXHeatPumpSystem(DXHeatSysNum).HeatPumpCoilName,
-                                                                                             state.dataHVACDXHeatPumpSys->ErrorsFound);
-
-                DXHeatPumpSystem(DXHeatSysNum).DXHeatPumpCoilOutletNodeNum = GetCoilOutletNode(state,
-                                                                                               DXHeatPumpSystem(DXHeatSysNum).HeatPumpCoilType,
-                                                                                               DXHeatPumpSystem(DXHeatSysNum).HeatPumpCoilName,
-                                                                                               state.dataHVACDXHeatPumpSys->ErrorsFound);
+                ShowSevereInvalidKey(state, eoh, cAlphaFields(3), Alphas(3));
+                ErrorsFound = true; // Why is this a state variable?
             }
 
             // Coil air-side outlet node is the control node
-            DXHeatPumpSystem(DXHeatSysNum).DXSystemControlNodeNum = DXHeatPumpSystem(DXHeatSysNum).DXHeatPumpCoilOutletNodeNum;
+            dxhp.DXSystemControlNodeNum = dxhp.DXHeatPumpCoilOutletNodeNum;
 
             TestCompSet(state,
                         CurrentModuleObject,
-                        DXHeatPumpSystem(DXHeatSysNum).Name,
-                        state.dataLoopNodes->NodeID(DXHeatPumpSystem(DXHeatSysNum).DXHeatPumpCoilInletNodeNum),
-                        state.dataLoopNodes->NodeID(DXHeatPumpSystem(DXHeatSysNum).DXHeatPumpCoilOutletNodeNum),
+                        dxhp.Name,
+                        state.dataLoopNodes->NodeID(dxhp.DXHeatPumpCoilInletNodeNum),
+                        state.dataLoopNodes->NodeID(dxhp.DXHeatPumpCoilOutletNodeNum),
                         "Air Nodes");
 
-            ValidateComponent(state,
-                              DXHeatPumpSystem(DXHeatSysNum).HeatPumpCoilType,
-                              DXHeatPumpSystem(DXHeatSysNum).HeatPumpCoilName,
-                              IsNotOK,
-                              CurrentModuleObject);
-            if (IsNotOK) {
-                ShowContinueError(state, format("In {} = \"{}\".", CurrentModuleObject, DXHeatPumpSystem(DXHeatSysNum).Name));
-                state.dataHVACDXHeatPumpSys->ErrorsFound = true;
-            }
-
             SetUpCompSets(state,
-                          DXHeatPumpSystem(DXHeatSysNum).DXHeatPumpSystemType,
-                          DXHeatPumpSystem(DXHeatSysNum).Name,
-                          DXHeatPumpSystem(DXHeatSysNum).HeatPumpCoilType,
-                          DXHeatPumpSystem(DXHeatSysNum).HeatPumpCoilName,
-                          state.dataLoopNodes->NodeID(DXHeatPumpSystem(DXHeatSysNum).DXHeatPumpCoilInletNodeNum),
-                          state.dataLoopNodes->NodeID(DXHeatPumpSystem(DXHeatSysNum).DXHeatPumpCoilOutletNodeNum));
+                          dxhp.DXHeatPumpSystemType,
+                          dxhp.Name,
+                          HVAC::coilTypeNames[(int)dxhp.heatPumpCoilType],
+                          dxhp.HeatPumpCoilName,
+                          state.dataLoopNodes->NodeID(dxhp.DXHeatPumpCoilInletNodeNum),
+                          state.dataLoopNodes->NodeID(dxhp.DXHeatPumpCoilOutletNodeNum));
 
             // Supply air fan operating mode defaulted to constant fan cycling coil/compressor
-            DXHeatPumpSystem(DXHeatSysNum).fanOp = HVAC::FanOp::Continuous;
+            dxhp.fanOp = HVAC::FanOp::Continuous;
 
-            if (DXHeatPumpSystem(DXHeatSysNum).HeatPumpCoilType_Num != HVAC::Coil_HeatingAirToAirVariableSpeed) {
-                SetCoilSystemHeatingDXFlag(state, DXHeatPumpSystem(DXHeatSysNum).HeatPumpCoilType, DXHeatPumpSystem(DXHeatSysNum).HeatPumpCoilName);
+            if (dxhp.heatPumpCoilType != HVAC::CoilType::HeatingAirToAirVariableSpeed) {
+              SetCoilSystemHeatingDXFlag(state, std::string(HVAC::coilTypeNames[(int)dxhp.heatPumpCoilType]), dxhp.HeatPumpCoilName);
             }
 
         } // End of the DX System Loop
 
-        if (state.dataHVACDXHeatPumpSys->ErrorsFound) {
+        if (ErrorsFound) {
             ShowFatalError(state, format("{}Errors found in input.  Program terminates.", RoutineName));
         }
 
         for (DXHeatSysNum = 1; DXHeatSysNum <= NumDXHeatPumpSystems; ++DXHeatSysNum) {
             // Setup Report variables for the DXHeatingSystem that is not reported in the components themselves
+            auto &dxhp = state.dataHVACDXHeatPumpSys->DXHeatPumpSystem(DXHeatSysNum);
             SetupOutputVariable(state,
                                 "Coil System Part Load Ratio",
                                 Constant::Units::None,
-                                DXHeatPumpSystem(DXHeatSysNum).PartLoadFrac,
+                                dxhp.PartLoadFrac,
                                 OutputProcessor::TimeStepType::System,
                                 OutputProcessor::StoreType::Average,
-                                DXHeatPumpSystem(DXHeatSysNum).Name);
+                                dxhp.Name);
         }
 
         Alphas.deallocate();
@@ -640,8 +621,8 @@ namespace HVACDXHeatPumpSystem {
                 {
                     Real64 TempOut1;
 
-                    switch (DXHeatPumpSystem.HeatPumpCoilType_Num) {
-                    case HVAC::CoilDX_HeatingEmpirical: { // Coil:Heating:DX:SingleSpeed
+                    switch (DXHeatPumpSystem.heatPumpCoilType) {
+                    case HVAC::CoilType::DXHeatingEmpirical: { // Coil:Heating:DX:SingleSpeed
 
                         // Get no load result
                         PartLoadFrac = 0.0;
@@ -760,7 +741,8 @@ namespace HVACDXHeatPumpSystem {
                             PartLoadFrac = 0.0;
                         }
                     } break;
-                    case HVAC::Coil_HeatingAirToAirVariableSpeed: {
+                      
+                    case HVAC::CoilType::HeatingAirToAirVariableSpeed: {
                         // variable-speed air-to-air heating coil, begin -------------------------
                         // Get no load result
                         PartLoadFrac = 0.0;
@@ -1038,7 +1020,7 @@ namespace HVACDXHeatPumpSystem {
                     } break;
                     default: {
                         ShowFatalError(state,
-                                       format("ControlDXHeatingSystem: Invalid DXHeatPumpSystem coil type = {}", DXHeatPumpSystem.HeatPumpCoilType));
+                                       format("ControlDXHeatingSystem: Invalid DXHeatPumpSystem coil type = {}", HVAC::coilTypeNames[(int)DXHeatPumpSystem.heatPumpCoilType]));
                     } break;
                     }
                 }

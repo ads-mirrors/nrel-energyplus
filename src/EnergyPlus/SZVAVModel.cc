@@ -127,10 +127,10 @@ namespace SZVAVModel {
             maxAirMassFlow = SZVAVModel.MaxCoolAirMassFlow;
             lowSpeedFanRatio = SZVAVModel.LowSpeedCoolFanRatio;
             coilFluidInletNode = SZVAVModel.CoolCoilFluidInletNode;
-            coilFluidOutletNode = SZVAVModel.CoolCoilFluidOutletNodeNum;
+            coilFluidOutletNode = SZVAVModel.CoolCoilFluidOutletNode;
             coilPlantLoc = SZVAVModel.CoolCoilPlantLoc;
-            coilAirInletNode = SZVAVModel.CoolCoilInletNodeNum;
-            coilAirOutletNode = SZVAVModel.CoolCoilOutletNodeNum;
+            coilAirInletNode = SZVAVModel.CoolCoilAirInletNode;
+            coilAirOutletNode = SZVAVModel.CoolCoilAirOutletNode;
         } else if (HeatingLoad) {
             maxCoilFluidFlow = SZVAVModel.MaxHeatCoilFluidFlow;
             maxOutletTemp = SZVAVModel.DesignMaxOutletTemp;
@@ -138,10 +138,10 @@ namespace SZVAVModel {
             maxAirMassFlow = SZVAVModel.MaxHeatAirMassFlow;
             lowSpeedFanRatio = SZVAVModel.LowSpeedHeatFanRatio;
             coilFluidInletNode = SZVAVModel.HeatCoilFluidInletNode;
-            coilFluidOutletNode = SZVAVModel.HeatCoilFluidOutletNodeNum;
+            coilFluidOutletNode = SZVAVModel.HeatCoilFluidOutletNode;
             coilPlantLoc = SZVAVModel.HeatCoilPlantLoc;
-            coilAirInletNode = SZVAVModel.HeatCoilInletNodeNum;
-            coilAirOutletNode = SZVAVModel.HeatCoilOutletNodeNum;
+            coilAirInletNode = SZVAVModel.HeatCoilAirInletNode;
+            coilAirOutletNode = SZVAVModel.HeatCoilAirOutletNode;
         } else { // should never get here, protect against uninitialized variables
             maxCoilFluidFlow = 0.0;
             maxOutletTemp = 0.0;
@@ -302,7 +302,7 @@ namespace SZVAVModel {
                         PlantUtilities::SetComponentFlowRate(state, maxCoilFluidFlow, coilFluidInletNode, coilFluidOutletNode, coilPlantLoc);
 
                     if ((CoolingLoad && (TempSensOutput < ZoneLoad)) || (HeatingLoad && (TempSensOutput > ZoneLoad))) {
-                        if (SZVAVModel.HCoilType_Num == FanCoilUnits::HCoil::Water || !HeatingLoad) {
+                        if (SZVAVModel.heatCoilType == HVAC::CoilType::HeatingWater || !HeatingLoad) {
                             auto f = [&state, SysIndex, FirstHVACIteration, &SZVAVModel, ZoneLoad, coilFluidInletNode, maxCoilFluidFlow, AirMassFlow](
                                          Real64 const PLR) {
                                 return FanCoilUnits::CalcFanCoilWaterFlowResidual(state,
@@ -334,7 +334,7 @@ namespace SZVAVModel {
                     } else { // not enough capacity at this air flow rate. Unit does have enough capacity a full water/air, otherwise wouldn't be here
                         // this is different from the PTUnit and UnitarySys routines in this module
                         // find the water flow rate that meets the min load at region 1/2 boundary
-                        if (SZVAVModel.HCoilType_Num == FanCoilUnits::HCoil::Water || !HeatingLoad) {
+                        if (SZVAVModel.heatCoilType == HVAC::CoilType::HeatingWater || !HeatingLoad) {
                             auto f = // (AUTO_OK_LAMBDA)
                                 [&state, SysIndex, FirstHVACIteration, &SZVAVModel, ZoneLoad, coilFluidInletNode, maxCoilFluidFlow, minAirMassFlow](
                                     Real64 const PLR) {
@@ -383,7 +383,7 @@ namespace SZVAVModel {
                         }
                     }
                 } else { // too much capacity when coil off, could lower air flow rate here to meet load if air flow is above minimum
-                    if (SZVAVModel.HCoilType_Num == FanCoilUnits::HCoil::Water || !HeatingLoad) {
+                    if (SZVAVModel.heatCoilType == HVAC::CoilType::HeatingWater || !HeatingLoad) {
                         auto f2 = [&state, SysIndex, FirstHVACIteration, &SZVAVModel, ZoneLoad, coilFluidInletNode](Real64 const PLR) {
                             return FanCoilUnits::CalcFanCoilAirAndWaterFlowResidual(state,
                                                                                     PLR,
@@ -446,7 +446,7 @@ namespace SZVAVModel {
                 FanCoilUnits::Calc4PipeFanCoil(state, SysIndex, SZVAVModel.ControlZoneNum, FirstHVACIteration, TempSensOutput, PartLoadRatio);
                 if ((CoolingLoad && ZoneLoad < TempSensOutput) || (HeatingLoad && ZoneLoad > TempSensOutput)) {
                     // otherwise iterate on load
-                    if (SZVAVModel.HCoilType_Num == FanCoilUnits::HCoil::Water || !HeatingLoad) {
+                    if (SZVAVModel.heatCoilType == HVAC::CoilType::HeatingWater || !HeatingLoad) {
                         auto f = [&state, SysIndex, FirstHVACIteration, &SZVAVModel, ZoneLoad, coilFluidInletNode, maxCoilFluidFlow, maxAirMassFlow](
                                      Real64 const PLR) {
                             return FanCoilUnits::CalcFanCoilWaterFlowResidual(state,
@@ -472,7 +472,7 @@ namespace SZVAVModel {
                         MessagePrefix = "Step 3: ";
                     }
                 } else { // too much capacity at full air flow with coil off, operate coil and fan in unison
-                    if (SZVAVModel.HCoilType_Num == FanCoilUnits::HCoil::Water || !HeatingLoad) {
+                    if (SZVAVModel.heatCoilType == HVAC::CoilType::HeatingWater || !HeatingLoad) {
                         auto f2 = [&state, SysIndex, FirstHVACIteration, &SZVAVModel, ZoneLoad, coilFluidInletNode](Real64 const PLR) {
                             return FanCoilUnits::CalcFanCoilAirAndWaterFlowResidual(state,
                                                                                     PLR,

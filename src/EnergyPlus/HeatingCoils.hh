@@ -84,9 +84,8 @@ namespace HeatingCoils {
     {
         // Members
         std::string Name;             // Name of the HeatingCoil
-        std::string HeatingCoilType;  // Type of HeatingCoil ie. Heating or Cooling
         std::string HeatingCoilModel; // Type of HeatingCoil ie. Simple, Detailed, etc.
-        int HCoilType_Num = 0;
+        HVAC::CoilType coilType = HVAC::CoilType::Invalid;
         Constant::eFuel FuelType = Constant::eFuel::Invalid; // Type of fuel used, reference resource type integers
         std::string Schedule;                                // HeatingCoil Operation Schedule
         int SchedPtr = 0;                                    // Pointer to the correct schedule
@@ -209,6 +208,8 @@ namespace HeatingCoils {
 
     void GetCoilIndex(EnergyPlusData &state, std::string const &HeatingCoilName, int &HeatingCoilIndex, bool &ErrorsFound);
 
+    int GetCoilIndex(EnergyPlusData &state, std::string const &HeatingCoilName);
+
     void CheckHeatingCoilSchedule(EnergyPlusData &state,
                                   std::string const &CompType, // unused1208
                                   std::string_view CompName,
@@ -221,6 +222,10 @@ namespace HeatingCoils {
                            bool &ErrorsFound            // set to true if problem
     );
 
+    Real64 GetCoilCapacity(EnergyPlusData &state,
+                           int const coilNum
+    );
+  
     int GetCoilAvailScheduleIndex(EnergyPlusData &state,
                                   std::string const &CoilType, // must match coil types in this module
                                   std::string const &CoilName, // must match coil names for the coil type
@@ -233,24 +238,40 @@ namespace HeatingCoils {
                          bool &ErrorsFound            // set to true if problem
     );
 
+    int GetCoilInletNode(EnergyPlusData &state,
+                         int const coilNum
+    );
+  
     int GetCoilOutletNode(EnergyPlusData &state,
                           std::string_view CoilType,   // must match coil types in this module
                           std::string const &CoilName, // must match coil names for the coil type
                           bool &ErrorsFound            // set to true if problem
     );
 
+    int GetCoilOutletNode(EnergyPlusData &state,
+                          int const coilNum
+    );
+  
     int GetHeatReclaimSourceIndex(EnergyPlusData &state,
                                   std::string const &CoilType, // must match coil types in this module
                                   std::string const &CoilName, // must match coil names for the coil type
                                   bool &ErrorsFound            // set to true if problem
     );
 
+    int GetHeatReclaimSourceIndex(EnergyPlusData &state,
+                                  int const coilNum
+    );
+  
     int GetCoilControlNodeNum(EnergyPlusData &state,
                               std::string const &CoilType, // must match coil types in this module
                               std::string const &CoilName, // must match coil names for the coil type
                               bool &ErrorsFound            // set to true if problem
     );
 
+    int GetCoilControlNodeNum(EnergyPlusData &state,
+                              int const coilNum
+    );
+  
     int GetHeatingCoilTypeNum(EnergyPlusData &state,
                               std::string const &CoilType, // must match coil types in this module
                               std::string const &CoilName, // must match coil names for the coil type
@@ -263,12 +284,20 @@ namespace HeatingCoils {
                             bool &ErrorsFound            // set to true if problem
     );
 
+    int GetHeatingCoilIndex(EnergyPlusData &state,
+                            std::string const &CoilName // must match coil names for the coil type
+    );
+  
     int GetHeatingCoilPLFCurveIndex(EnergyPlusData &state,
                                     std::string const &CoilType, // must match coil types in this module
                                     std::string const &CoilName, // must match coil names for the coil type
                                     bool &ErrorsFound            // set to true if problem
     );
 
+    int GetHeatingCoilPLFCurveIndex(EnergyPlusData &state,
+                                    int const coilNum
+    );
+  
     int GetHeatingCoilNumberOfStages(EnergyPlusData &state,
                                      std::string const &CoilType, // must match coil types in this module
                                      std::string const &CoilName, // must match coil names for the coil type

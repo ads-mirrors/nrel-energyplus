@@ -423,30 +423,50 @@ namespace WaterCoils {
                                    bool &ErrorsFound            // set to true if problem
     );
 
+    Real64 GetCoilMaxWaterFlowRate(EnergyPlusData &state,
+                                   int const coilNum
+    );
+  
     int GetCoilInletNode(EnergyPlusData &state,
                          std::string_view CoilType,   // must match coil types in this module
                          std::string const &CoilName, // must match coil names for the coil type
                          bool &ErrorsFound            // set to true if problem
     );
 
+    int GetCoilInletNode(EnergyPlusData &state,
+                         int const coilNum
+    );
+  
     int GetCoilOutletNode(EnergyPlusData &state,
                           std::string_view CoilType,   // must match coil types in this module
                           std::string const &CoilName, // must match coil names for the coil type
                           bool &ErrorsFound            // set to true if problem
     );
 
+    int GetCoilOutletNode(EnergyPlusData &state,
+                          int const coilNum
+    );
+  
     int GetCoilWaterInletNode(EnergyPlusData &state,
                               std::string_view CoilType,   // must match coil types in this module
                               std::string const &CoilName, // must match coil names for the coil type
                               bool &ErrorsFound            // set to true if problem
     );
 
+    int GetCoilWaterInletNode(EnergyPlusData &state,
+                              int const coilNum
+    );
+  
     int GetCoilWaterOutletNode(EnergyPlusData &state,
                                std::string_view CoilType,   // must match coil types in this module
                                std::string const &CoilName, // must match coil names for the coil type
                                bool &ErrorsFound            // set to true if problem
     );
 
+    int GetCoilWaterOutletNode(EnergyPlusData &state,
+                               int const coilNum
+    );
+  
     void SetCoilDesFlow(EnergyPlusData &state,
                         std::string_view CoilType,   // must match coil types in this module
                         std::string const &CoilName, // must match coil names for the coil type
@@ -454,6 +474,11 @@ namespace WaterCoils {
                         bool &ErrorsFound            // set to true if problem
     );
 
+    void SetCoilDesFlow(EnergyPlusData &state,
+                        int const coilNum,
+                        Real64 const CoilDesFlow    // coil volumetric air flow rate [m3/s]
+    );
+  
     Real64 GetWaterCoilDesAirFlow(EnergyPlusData &state,
                                   std::string const &CoilType, // must match coil types in this module
                                   std::string const &CoilName, // must match coil names for the coil type
@@ -481,11 +506,14 @@ namespace WaterCoils {
     Real64 EstimateHEXSurfaceArea(EnergyPlusData &state, int const CoilNum); // coil number, [-]
 
     int GetWaterCoilIndex(EnergyPlusData &state,
+                          std::string const &CoilName // must match coil names for the coil type
+    );
+  
+    int GetWaterCoilIndex(EnergyPlusData &state,
                           std::string_view CoilType,   // must match coil types in this module
                           std::string const &CoilName, // must match coil names for the coil type
                           bool &ErrorsFound            // set to true if problem
     );
-    int GetCompIndex(EnergyPlusData &state, CoilModel coilType, std::string_view const coilName);
 
     Real64 GetWaterCoilCapacity(EnergyPlusData &state,
                                 std::string const &CoilType, // must match coil types in this module
@@ -493,6 +521,10 @@ namespace WaterCoils {
                                 bool &ErrorsFound            // set to true if problem
     );
 
+    Real64 GetWaterCoilCapacity(EnergyPlusData &state,
+                                int const coilNum
+    );
+  
     void UpdateWaterToAirCoilPlantConnection(EnergyPlusData &state,
                                              DataPlant::PlantEquipmentType const CoilType,
                                              std::string const &CoilName,

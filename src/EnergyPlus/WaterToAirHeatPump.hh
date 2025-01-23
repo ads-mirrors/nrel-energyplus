@@ -231,10 +231,18 @@ namespace WaterToAirHeatPump {
                      bool &ErrorsFound            // set to true if problem
     );
 
+    int GetCoilIndex(EnergyPlusData &state,
+                     std::string const &CoilName // must match coil names for the coil type
+    );
+
     Real64 GetCoilCapacity(EnergyPlusData &state,
                            std::string const &CoilType, // must match coil types in this module
                            std::string const &CoilName, // must match coil names for the coil type
                            bool &ErrorsFound            // set to true if problem
+    );
+
+    Real64 GetCoilCapacity(EnergyPlusData &state,
+                           int const coilNum
     );
 
     int GetCoilInletNode(EnergyPlusData &state,
@@ -243,12 +251,20 @@ namespace WaterToAirHeatPump {
                          bool &ErrorsFound            // set to true if problem
     );
 
+    int GetCoilInletNode(EnergyPlusData &state,
+                         int const coilNum
+    );
+
     int GetCoilOutletNode(EnergyPlusData &state,
                           std::string const &CoilType, // must match coil types in this module
                           std::string const &CoilName, // must match coil names for the coil type
                           bool &ErrorsFound            // set to true if problem
     );
 
+    int GetCoilOutletNode(EnergyPlusData &state,
+                          int const coilNum
+    );
+  
 } // namespace WaterToAirHeatPump
 
 struct WaterToAirHeatPumpData : BaseGlobalStruct

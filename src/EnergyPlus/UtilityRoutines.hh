@@ -290,7 +290,7 @@ void ShowSevereInvalidKey(
     EnergyPlusData &state, ErrorObjectHeader const &eoh, std::string_view fieldName, std::string_view fieldValue, std::string_view msg = {});
 void ShowSevereInvalidBool(EnergyPlusData &state, ErrorObjectHeader const &eoh, std::string_view fieldName, std::string_view fieldValue);
 
-void ShowSevereCustomMessage(EnergyPlusData &state, ErrorObjectHeader const &eoh, std::string_view msg);
+void ShowSevereCustom(EnergyPlusData &state, ErrorObjectHeader const &eoh, std::string_view msg);
 void ShowWarningDuplicateName(EnergyPlusData &state, ErrorObjectHeader const &eoh);
 void ShowWarningEmptyField(EnergyPlusData &state,
                            ErrorObjectHeader const &eoh,

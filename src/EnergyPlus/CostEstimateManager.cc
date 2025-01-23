@@ -798,7 +798,7 @@ namespace CostEstimateManager {
                     if (WildcardObjNames) {
                         Real64 Qty(0.0);
                         for (auto const &e : state.dataHeatingCoils->HeatingCoil)
-                            if (e.HCoilType_Num == 1) Qty += e.NominalCapacity;
+                          if (e.coilType == HVAC::CoilType::DXCoolingSingleSpeed) Qty += e.NominalCapacity;
                         state.dataCostEstimateManager->CostLineItem(Item).Qty = Qty / 1000.0;
                         state.dataCostEstimateManager->CostLineItem(Item).Units = "kW (tot heat cap.)";
                         state.dataCostEstimateManager->CostLineItem(Item).ValuePer = state.dataCostEstimateManager->CostLineItem(Item).PerKiloWattCap;
@@ -828,7 +828,7 @@ namespace CostEstimateManager {
                     if (WildcardObjNames) {
                         Real64 Qty(0.0);
                         for (auto const &e : state.dataHeatingCoils->HeatingCoil)
-                            if (e.HCoilType_Num == 1) Qty += e.Efficiency * e.NominalCapacity;
+                            if (e.coilType == HVAC::CoilType::DXCoolingSingleSpeed) Qty += e.Efficiency * e.NominalCapacity;
                         state.dataCostEstimateManager->CostLineItem(Item).Qty = Qty / 1000.0;
                         state.dataCostEstimateManager->CostLineItem(Item).Units = "kW*Eff (total, rated) ";
                         state.dataCostEstimateManager->CostLineItem(Item).ValuePer = state.dataCostEstimateManager->CostLineItem(Item).PerKWCapPerCOP;

@@ -145,18 +145,28 @@ namespace HVACUnitaryBypassVAV {
         Real64 CoolingSpeedRatio = 1.0;                    // Fan speed ratio in cooling mode
         Real64 NoHeatCoolSpeedRatio = 1.0;                 // Fan speed ratio when no cooling or heating
         bool CheckFanFlow = true;                          // Check fan volumetric flow versus system flow in init routine.
-        std::string DXCoolCoilName;                        // Name of DX cooling coil
-        HVAC::CoilType CoolCoilType = HVAC::CoilType::Invalid;
-        int CoolCoilCompIndex = 0;  // cooling coil component index number
-        int DXCoolCoilIndexNum = 0; // actual DX cooling coil index number
-        int DXHeatCoilIndexNum = 0; // actual DX heating coil index number
-        std::string HeatCoilName;   // Name of heating coil
-        HVAC::CoilType HeatCoilType = HVAC::CoilType::Invalid;
-        int HeatCoilIndex = 0;                    // DX heating coil index number
         HVAC::FanOp fanOp = HVAC::FanOp::Invalid; // mode of operation
-        int CoilControlNode = 0;                  // heating coil hot water or steam inlet node
-        int CoilOutletNode = 0;                   // outlet node for hot water and steam coil
-        PlantLocation plantLoc;                   // plant loop component location object for water heating coil
+
+        std::string CoolCoilName;                        // Name of DX cooling coil
+        HVAC::CoilType coolCoilType = HVAC::CoilType::Invalid;
+        int CoolCoilNum = 0;  // cooling coil component index number
+        int CoolCoilAirInletNode = 0;                                 // Inlet node number of DX cooling coil
+        int CoolCoilAirOutletNode = 0;                                // Outlet node number of DX cooling coil
+
+        // For HXAssisted coils, these are the for the "parent" object while the variables above are for the child object
+        std::string hxCoolCoilName;
+        HVAC::CoilType hxCoolCoilType = HVAC::CoilType::Invalid;
+        int hxCoolCoilNum = 0;
+      
+        std::string HeatCoilName;   // Name of heating coil
+        HVAC::CoilType heatCoilType = HVAC::CoilType::Invalid;
+        int HeatCoilNum = 0;                    // DX heating coil index number
+        int HeatCoilAirInletNode = 0;
+        int HeatCoilAirOutletNode = 0;
+        PlantLocation HeatCoilPlantLoc = {};                   // plant loop component location object for water heating coil
+        int HeatCoilControlNode = 0;                  // heating coil hot water or steam inlet node
+        int HeatCoilFluidOutletNode = 0;                   // outlet node for hot water and steam coil
+      
         int HotWaterCoilMaxIterIndex = 0;         // Index to recurring warning message
         int HotWaterCoilMaxIterIndex2 = 0;        // Index to recurring warning message
         Real64 MaxHeatCoilFluidFlow = 0.0;        // water or steam mass flow rate for heating coil [kg/s]
@@ -197,10 +207,6 @@ namespace HVACUnitaryBypassVAV {
         int NumZonesHeated = 0;                                       // Number of zones requesting heating
         int PLRMaxIter = 0;                                           // Counter for recurring warning message
         int PLRMaxIterIndex = 0;                                      // Index to recurring warning message
-        int DXCoilInletNode = 0;                                      // Inlet node number of DX cooling coil
-        int DXCoilOutletNode = 0;                                     // Outlet node number of DX cooling coil
-        int HeatingCoilInletNode = 0;                                 // Inlet node of heating coil
-        int HeatingCoilOutletNode = 0;                                // Outlet node of heating coil
         int FanInletNodeNum = 0;                                      // fan inlet node number
         Real64 OutletTempSetPoint = 0.0;                              // Oulet node temperature setpoint [C]
         Real64 CoilTempSetPoint = 0.0;                                // Coil oulet node temperature setpoint (inc. fan heat) [C]
@@ -334,7 +340,7 @@ struct HVACUnitaryBypassVAVData : BaseGlobalStruct
     Real64 TempSteamIn = 100.0;          // steam coil steam inlet temperature
     Array1D_bool CheckEquipName;
 
-    EPVector<HVACUnitaryBypassVAV::CBVAVData> CBVAV;
+    EPVector<HVACUnitaryBypassVAV::CBVAVData> CBVAVs;
     bool GetInputFlag = true; // Flag set to make sure you get input once
 
     bool MyOneTimeFlag = true; // Initialization flag
@@ -349,7 +355,7 @@ struct HVACUnitaryBypassVAVData : BaseGlobalStruct
 
     void clear_state() override
     {
-        this->CBVAV.deallocate();
+        this->CBVAVs.deallocate();
         this->NumCBVAV = 0;
         this->CompOnMassFlow = 0.0;
         this->OACompOnMassFlow = 0.0;

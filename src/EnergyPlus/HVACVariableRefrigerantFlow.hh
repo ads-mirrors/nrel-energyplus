@@ -448,7 +448,7 @@ namespace HVACVariableRefrigerantFlow {
 
         void SizeVRFCondenser(EnergyPlusData &state);
 
-        void CalcVRFCondenser_FluidTCtrl(EnergyPlusData &state, const bool FirstHVACIteration);
+        void CalcVRFCondenser_FluidTCtrl(EnergyPlusData &state);
 
         void CalcVRFIUTeTc_FluidTCtrl(EnergyPlusData &state);
 

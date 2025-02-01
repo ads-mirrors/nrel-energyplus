@@ -266,7 +266,7 @@ void SimulateVRF(EnergyPlusData &state,
 
         if (state.dataHVACVarRefFlow->VRF(VRFCondenser).VRFAlgorithmType == AlgorithmType::FluidTCtrl) {
             // Algorithm Type: VRF model based on physics, applicable for Fluid Temperature Control
-            state.dataHVACVarRefFlow->VRF(VRFCondenser).CalcVRFCondenser_FluidTCtrl(state);
+            state.dataHVACVarRefFlow->VRF(VRFCondenser).CalcVRFCondenser_FluidTCtrl(state, FirstHVACIteration);
         } else {
             // Algorithm Type: VRF model based on system curve
             CalcVRFCondenser(state, VRFCondenser);
@@ -11020,7 +11020,7 @@ void VRFTerminalUnitEquipment::CalcVRFIUVariableTeTc(EnergyPlusData &state,
     }
 }
 
-void VRFCondenserEquipment::CalcVRFCondenser_FluidTCtrl(EnergyPlusData &state)
+void VRFCondenserEquipment::CalcVRFCondenser_FluidTCtrl(EnergyPlusData &state, const bool FirstHVACIteration)
 {
 
     // SUBROUTINE INFORMATION:
@@ -12327,6 +12327,25 @@ void VRFCondenserEquipment::CalcVRFCondenser_FluidTCtrl(EnergyPlusData &state)
 
     // Calculate the IU Te/Tc for the next time step
     this->CalcVRFIUTeTc_FluidTCtrl(state);
+    // update coil and IU evaporating temperature, also keep coil RTF updated with the condenser side cycling ratio, for the FluidTCtrl model
+    for (int VRFTUNum = 1; VRFTUNum <= state.dataHVACVarRefFlow->NumVRFTU; ++VRFTUNum) {
+        auto const &thisTU = state.dataHVACVarRefFlow->VRFTU(VRFTUNum);
+        auto &coolingCoil = state.dataDXCoils->DXCoil(thisTU.CoolCoilIndex);
+        if (this->adjustedTe && (!FirstHVACIteration)) {
+            coolingCoil.EvaporatingTemp = this->EvaporatingTemp;
+            this->IUEvaporatingTemp = this->EvaporatingTemp;
+        }
+
+        int PLF;
+        if (coolingCoil.PLFFPLR(1) > 0 && this->VRFCondCyclingRatio < 1.0) {
+            PLF = Curve::CurveValue(state, coolingCoil.PLFFPLR(1), this->VRFCondCyclingRatio); // Calculate part-load factor
+        } else {
+            PLF = 1.0;
+        }
+        if (coolingCoil.TotalCoolingEnergyRate > 0.0) {
+            coolingCoil.CoolingCoilRuntimeFraction = this->VRFCondCyclingRatio / PLF;
+        }
+    }
 }
 
 void VRFTerminalUnitEquipment::ControlVRF_FluidTCtrl(EnergyPlusData &state,
@@ -13923,6 +13942,7 @@ void VRFCondenserEquipment::VRFOU_CalcCompC(EnergyPlusData &state,
     C_cap_operation = this->VRFOU_CapModFactor(
         state, Pipe_h_comp_in, Pipe_h_IU_in, max(min(P_suction, RefPHigh), RefPLow), T_suction + Modifi_SH, T_suction + 8, T_discharge - 5);
 
+    this->adjustedTe = false;
     for (CounterCompSpdTemp = 1; CounterCompSpdTemp <= NumOfCompSpdInput; CounterCompSpdTemp++) {
         // Iteration to find the VRF speed that can meet the required load, Iteration DoName1
 
@@ -13971,6 +13991,8 @@ void VRFCondenserEquipment::VRFOU_CalcCompC(EnergyPlusData &state,
                 MinRefriPe = this->refrig->getSatPressure(state, -15, RoutineName);
                 MinOutdoorUnitPe = max(P_discharge - this->CompMaxDeltaP, MinRefriPe);
                 MinOutdoorUnitTe = this->refrig->getSatTemperature(state, max(min(MinOutdoorUnitPe, RefPHigh), RefPLow), RoutineName);
+                // Te can't be smaller than user input lower bound
+                MinOutdoorUnitTe = max(this->IUEvapTempLow, MinOutdoorUnitTe);
 
                 auto f = [&state, T_discharge_new, CondHeat, CAPFT](Real64 const T_suc) {
                     return CompResidual_FluidTCtrl(state, T_discharge_new, CondHeat, CAPFT, T_suc);
@@ -14000,6 +14022,7 @@ void VRFCondenserEquipment::VRFOU_CalcCompC(EnergyPlusData &state,
                     NumIteTe = 1;
                     MaxNumIteTe = (this->EvaporatingTemp - SmallLoadTe) / 0.1 + 1; // upper bound and lower bound of Te iterations
                     Pipe_Te_assumed = this->EvaporatingTemp - 0.1;
+                    this->adjustedTe = true;
 
                 Label11:;
                     Pipe_m_ref = 0; // Total Ref Flow Rate( kg/s )
@@ -14138,6 +14161,8 @@ void VRFCondenserEquipment::VRFOU_CalcCompC(EnergyPlusData &state,
 
                 this->CondensingTemp = T_discharge; // OU Tc' is updated due to OUCondHeatRelease updates, which is caused by IU Te' updates
                                                     // during low load conditions
+                this->EvaporatingTemp = T_suction;
+                this->IUEvaporatingTemp = T_suction;
 
                 break; // EXIT DoName1
 

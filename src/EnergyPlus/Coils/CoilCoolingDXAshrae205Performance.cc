@@ -213,7 +213,7 @@ void CoilCoolingDX205Performance::simulate(EnergyPlus::EnergyPlusData &state,
                                            Real64)     // LoadSHR)
 {
     static constexpr std::string_view RoutineName = "CoilCoolingDX205Performance::simulate";
-    Real64 reportingConstant = state.dataHVACGlobal->TimeStepSys * Constant::SecInHour;
+    Real64 reportingConstant = state.dataHVACGlobal->TimeStepSys * Constant::iSecsInHour;
     recoveredEnergyRate = 0.0;
     NormalSHR = 0.0;
 

@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -67,6 +67,9 @@ void CoilCoolingDXCurveFitPerformance::instantiateFromInputSpec(EnergyPlus::Ener
                                                                 const CoilCoolingDXCurveFitPerformanceInputSpecification &input_data)
 {
     static constexpr std::string_view routineName("CoilCoolingDXCurveFitPerformance::instantiateFromInputSpec: ");
+
+    ErrorObjectHeader eoh{routineName, this->object_name, input_data.name};
+
     bool errorsFound(false);
     this->original_input_specs = input_data;
     this->name = input_data.name;
@@ -75,6 +78,7 @@ void CoilCoolingDXCurveFitPerformance::instantiateFromInputSpec(EnergyPlus::Ener
     this->crankcaseHeaterCap = input_data.crankcase_heater_capacity;
     this->normalMode = CoilCoolingDXCurveFitOperatingMode(state, input_data.base_operating_mode_name);
     this->normalMode.oneTimeInit(state); // oneTimeInit does not need to be delayed in this use case
+
     if (Util::SameString(input_data.capacity_control, "CONTINUOUS")) {
         this->capControlMethod = CapControlMethod::CONTINUOUS;
     } else if (Util::SameString(input_data.capacity_control, "DISCRETE")) {
@@ -88,14 +92,10 @@ void CoilCoolingDXCurveFitPerformance::instantiateFromInputSpec(EnergyPlus::Ener
     this->evapCondBasinHeatCap = input_data.basin_heater_capacity;
     this->evapCondBasinHeatSetpoint = input_data.basin_heater_setpoint_temperature;
     if (input_data.basin_heater_operating_schedule_name.empty()) {
-        this->evapCondBasinHeatSchedulIndex = ScheduleManager::ScheduleAlwaysOn;
-    } else {
-        this->evapCondBasinHeatSchedulIndex = ScheduleManager::GetScheduleIndex(state, input_data.basin_heater_operating_schedule_name);
-    }
-    if (this->evapCondBasinHeatSchedulIndex == 0) {
-        ShowSevereError(state, format("{} {} =\"{}\" invalid", std::string{routineName}, this->object_name, this->name));
-        ShowContinueError(
-            state, format("...Evaporative Condenser Basin Heater Operating Schedule Name=\"{}\".", input_data.basin_heater_operating_schedule_name));
+        this->evapCondBasinHeatSched = Sched::GetScheduleAlwaysOn(state);
+    } else if ((this->evapCondBasinHeatSched = Sched::GetSchedule(state, input_data.basin_heater_operating_schedule_name)) == nullptr) {
+        ShowSevereItemNotFound(
+            state, eoh, "Evaporative Condenser Basin Heater Operating Schedule Name", input_data.basin_heater_operating_schedule_name);
         errorsFound = true;
     }
 
@@ -216,7 +216,7 @@ void CoilCoolingDXCurveFitPerformance::simulate(EnergyPlus::EnergyPlusData &stat
                                                 Real64 LoadSHR)
 {
     static constexpr std::string_view RoutineName = "CoilCoolingDXCurveFitPerformance::simulate";
-    Real64 reportingConstant = state.dataHVACGlobal->TimeStepSys * Constant::SecInHour;
+    Real64 reportingConstant = state.dataHVACGlobal->TimeStepSys * Constant::rSecsInHour;
     this->recoveredEnergyRate = 0.0;
     this->NormalSHR = 0.0;
 
@@ -354,8 +354,8 @@ void CoilCoolingDXCurveFitPerformance::simulate(EnergyPlus::EnergyPlusData &stat
     this->crankcaseHeaterElectricityConsumption = this->crankcaseHeaterPower * reportingConstant;
 
     // basin heater
-    if (this->evapCondBasinHeatSchedulIndex > 0) {
-        Real64 currentBasinHeaterAvail = ScheduleManager::GetCurrentScheduleValue(state, this->evapCondBasinHeatSchedulIndex);
+    if (this->evapCondBasinHeatSched != nullptr) {
+        Real64 currentBasinHeaterAvail = this->evapCondBasinHeatSched->getCurrentVal();
         if (this->evapCondBasinHeatCap > 0.0 && currentBasinHeaterAvail > 0.0) {
             this->basinHeaterPower = max(0.0, this->evapCondBasinHeatCap * (this->evapCondBasinHeatSetpoint - state.dataEnvrn->OutDryBulbTemp));
         }
@@ -437,7 +437,7 @@ void CoilCoolingDXCurveFitPerformance::calcStandardRatings210240(EnergyPlus::Ene
     Real64 ElecPowerReducedCap(0.0);              // Net power consumption (Cond Fan+Compressor) at reduced test condition [W]
     Real64 NetCoolingCapReduced(0.0);             // Net Cooling Coil capacity at reduced conditions, accounting for supply fan heat [W]
     Real64 LoadFactor(0.0);                       // Fractional "on" time for last stage at the desired reduced capacity, (dimensionless)
-    Real64 DegradationCoeff(0.0);                 // Degradation coeficient, (dimenssionless)
+    Real64 DegradationCoeff(0.0);                 // Degradation coefficient, (dimensionless)
     Real64 OutdoorUnitInletAirDryBulbTempReduced; // Outdoor unit entering air dry-bulb temperature at reduced capacity [C]
 
     // *** SOME CONSTANTS FROM THE STANDARD

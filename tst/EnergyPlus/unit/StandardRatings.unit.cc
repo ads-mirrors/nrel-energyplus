@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -102,7 +102,7 @@ TEST_F(EnergyPlusFixture, SingleSpeedHeatingCoilCurveTest)
     Coil.Name = "DX Single Speed Heating Coil";
     Coil.DXCoilType = "Coil:Heating:DX:SingleSpeed";
     Coil.DXCoilType_Num = HVAC::CoilDX_HeatingEmpirical;
-    Coil.SchedPtr = ScheduleManager::ScheduleAlwaysOn;
+    Coil.availSched = Sched::GetScheduleAlwaysOn(*state);
     Coil.RatedSHR(1) = 1.0;
     Coil.RatedTotCap(1) = 1600.0;
     Coil.RatedCOP(1) = 4.0;
@@ -298,7 +298,7 @@ TEST_F(EnergyPlusFixture, SingleSpeedHeatingCoilCurveTest_PositiveCurve)
     Coil.Name = "DX Single Speed Heating Coil";
     Coil.DXCoilType = "Coil:Heating:DX:SingleSpeed";
     Coil.DXCoilType_Num = HVAC::CoilDX_HeatingEmpirical;
-    Coil.SchedPtr = ScheduleManager::ScheduleAlwaysOn;
+    Coil.availSched = Sched::GetScheduleAlwaysOn(*state);
     Coil.RatedSHR(1) = 1.0;
     Coil.RatedTotCap(1) = 1600.0;
     Coil.RatedCOP(1) = 4.0;
@@ -485,7 +485,7 @@ TEST_F(EnergyPlusFixture, SingleSpeedHeatingCoilCurveTest2023)
     Coil.Name = "HeatingCoilDXSingleSpeedAutosize";
     Coil.DXCoilType = "Coil:Heating:DX:SingleSpeed";
     Coil.DXCoilType_Num = HVAC::CoilDX_HeatingEmpirical;
-    Coil.SchedPtr = ScheduleManager::ScheduleAlwaysOn;
+    Coil.availSched = Sched::GetScheduleAlwaysOn(*state);
     Coil.RatedSHR(1) = 1.0;
     Coil.RatedTotCap(1) = 1600.0;
     Coil.RatedCOP(1) = 3.8; //
@@ -740,6 +740,8 @@ TEST_F(EnergyPlusFixture, SingleSpeedHeatingCurveTest2023_II)
 
     ASSERT_TRUE(process_idf(idf_objects1));
 
+    state->init_state(*state);
+
     GetDXCoils(*state);
 
     auto &Coil(state->dataDXCoils->DXCoil(1));
@@ -967,6 +969,8 @@ TEST_F(EnergyPlusFixture, MultiSpeedHeatingCoil_HSPFValueTest_2Speed)
     });
 
     ASSERT_TRUE(process_idf(idf_objects1));
+
+    state->init_state(*state);
 
     GetDXCoils(*state);
 
@@ -1284,10 +1288,9 @@ TEST_F(EnergyPlusFixture, ChillerIPLVTestWaterCooledReform)
     loopsidebranch.TotalComponents = 1;
     loopsidebranch.Comp.allocate(1);
     state->dataPlnt->PlantLoop(1).Name = "ChilledWaterLoop";
-    state->dataPlnt->PlantLoop(1).FluidName = "ChilledWater";
-    state->dataPlnt->PlantLoop(1).FluidIndex = 1;
     state->dataPlnt->PlantLoop(1).PlantSizNum = 1;
     state->dataPlnt->PlantLoop(1).FluidName = "WATER";
+    state->dataPlnt->PlantLoop(1).glycol = Fluid::GetWater(*state);
 
     Real64 IPLVSI = 0.0;
     Real64 IPLVIP = 0.0;
@@ -1430,6 +1433,8 @@ TEST_F(EnergyPlusFixture, SingleSpeedCoolingCoil_15000W_SameFanPower_SEER2_2023_
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+
+    state->init_state(*state);
 
     GetDXCoils(*state);
 
@@ -1698,6 +1703,8 @@ TEST_F(EnergyPlusFixture, SingleSpeedCoolingCoil_9000W_SEER2_2023_ValueTest)
     });
     ASSERT_TRUE(process_idf(idf_objects));
 
+    state->init_state(*state);
+
     GetDXCoils(*state);
 
     auto &thisCoil(state->dataDXCoils->DXCoil(1));
@@ -1964,6 +1971,8 @@ TEST_F(EnergyPlusFixture, SingleSpeedCoolingCoil_18000W_SEER2_2023_ValueTest)
     });
     ASSERT_TRUE(process_idf(idf_objects));
 
+    state->init_state(*state);
+
     GetDXCoils(*state);
 
     auto &thisCoil(state->dataDXCoils->DXCoil(1));
@@ -2220,6 +2229,8 @@ TEST_F(EnergyPlusFixture, SingleSpeedCoolingCoilAir_25000W_IEER_2022_ValueTest)
 
     ASSERT_TRUE(process_idf(idf_objects));
 
+    state->init_state(*state);
+
     GetDXCoils(*state);
 
     auto &thisCoil(state->dataDXCoils->DXCoil(1));
@@ -2370,6 +2381,8 @@ TEST_F(EnergyPlusFixture, SingleSpeedCoolingCoilEvap_32000W_IEER_2022_ValueTest)
 
     ASSERT_TRUE(process_idf(idf_objects));
 
+    state->init_state(*state);
+
     GetDXCoils(*state);
 
     auto &thisCoil(state->dataDXCoils->DXCoil(1));
@@ -2513,6 +2526,8 @@ TEST_F(EnergyPlusFixture, SingleSpeedCoolingCoilAir_AHRIExample_IEER_2022_ValueT
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+
+    state->init_state(*state);
 
     GetDXCoils(*state);
 
@@ -2999,6 +3014,8 @@ TEST_F(EnergyPlusFixture, MultiSpeedCoolingCoil_02_Speed_4400W_SEER2_2023_ValueT
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+
+    state->init_state(*state);
 
     GetDXCoils(*state);
 
@@ -3594,6 +3611,8 @@ TEST_F(EnergyPlusFixture, MultiSpeedCoolingCoil_03_Speed_12000W_SEER2_2023_Value
 
     ASSERT_TRUE(process_idf(idf_objects));
 
+    state->init_state(*state);
+
     GetDXCoils(*state);
 
     auto &thisCoil(state->dataDXCoils->DXCoil(1));
@@ -4143,6 +4162,7 @@ TEST_F(EnergyPlusFixture, MultiSpeedCoolingCoil_04_Speed_17750W_SEER2_2023_Value
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     GetDXCoils(*state);
 
@@ -4329,6 +4349,8 @@ TEST_F(EnergyPlusFixture, MultiSpeedCoolingCoil_02_Speeds_27717W_IEER_2022_Value
         "    1.0;                     !- Maximum Value of x",
     });
     ASSERT_TRUE(process_idf(idf_objects));
+
+    state->init_state(*state);
 
     GetDXCoils(*state);
     auto &thisCoil(state->dataDXCoils->DXCoil(1));
@@ -4798,6 +4820,8 @@ TEST_F(EnergyPlusFixture, MultiSpeedCoolingCoil_03_Speeds_27717W_IEER_2022_Value
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+
+    state->init_state(*state);
 
     GetDXCoils(*state);
     auto &thisCoil(state->dataDXCoils->DXCoil(1));
@@ -5303,6 +5327,8 @@ TEST_F(EnergyPlusFixture, MultiSpeedCoolingCoil_04_Speeds_35500W_COP3_IEER_2022_
     });
     ASSERT_TRUE(process_idf(idf_objects));
 
+    state->init_state(*state);
+
     GetDXCoils(*state);
     auto &thisCoil(state->dataDXCoils->DXCoil(1));
     auto &thisCoolPLFfPLR(state->dataCurveManager->PerfCurve(thisCoil.MSPLFFPLR(1)));
@@ -5557,6 +5583,8 @@ TEST_F(EnergyPlusFixture, MultiSpeedCoolingCoil_04_Speed_35500W_COP4_IEER_2022_V
 
     ASSERT_TRUE(process_idf(idf_objects));
 
+    state->init_state(*state);
+
     GetDXCoils(*state);
 
     auto &thisCoil(state->dataDXCoils->DXCoil(1));
@@ -5706,6 +5734,8 @@ TEST_F(EnergyPlusFixture, VariableSpeedCooling_01_Speed_7200W_SEER2_2023_ValueTe
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+
+    state->init_state(*state);
 
     // get coil inputs
     EnergyPlus::VariableSpeedCoils::GetVarSpeedCoilInput(*state);
@@ -5937,6 +5967,8 @@ TEST_F(EnergyPlusFixture, VariableSpeedCooling_02_Speed_7200W_SEER2_2023_ValueTe
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+
+    state->init_state(*state);
 
     // get coil inputs
     EnergyPlus::VariableSpeedCoils::GetVarSpeedCoilInput(*state);
@@ -6178,6 +6210,7 @@ TEST_F(EnergyPlusFixture, VariableSpeedCooling_03_Speed_7200W_SEER2_2023_ValueTe
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
     // get coil inputs
     EnergyPlus::VariableSpeedCoils::GetVarSpeedCoilInput(*state);
     EXPECT_EQ(state->dataVariableSpeedCoils->VarSpeedCoil(1).Name, "ZONE1PTHPDXCOOLCOIL");
@@ -6431,6 +6464,7 @@ TEST_F(EnergyPlusFixture, VariableSpeedCooling_04_Speed_7200W_SEER2_2023_ValueTe
 
     ASSERT_TRUE(process_idf(idf_objects));
 
+    state->init_state(*state);
     // get coil inputs
     EnergyPlus::VariableSpeedCoils::GetVarSpeedCoilInput(*state);
     EXPECT_EQ(state->dataVariableSpeedCoils->VarSpeedCoil(1).Name, "ZONE1PTHPDXCOOLCOIL");
@@ -6720,6 +6754,8 @@ TEST_F(EnergyPlusFixture, VariableSpeedCooling_07_Speed_7200W_SEER2_2023_ValueTe
         "",
     });
     ASSERT_TRUE(process_idf(idf_objects));
+
+    state->init_state(*state);
 
     // get coil inputs
     EnergyPlus::VariableSpeedCoils::GetVarSpeedCoilInput(*state);
@@ -7013,6 +7049,7 @@ TEST_F(EnergyPlusFixture, VariableSpeedCooling_07_Speed_14400W_SEER2_2023_ValueT
 
     ASSERT_TRUE(process_idf(idf_objects));
 
+    state->init_state(*state);
     // get coil inputs
     EnergyPlus::VariableSpeedCoils::GetVarSpeedCoilInput(*state);
     EXPECT_EQ(state->dataVariableSpeedCoils->VarSpeedCoil(1).Name, "ZONE1PTHPDXCOOLCOIL");
@@ -7339,6 +7376,8 @@ TEST_F(EnergyPlusFixture, VariableSpeedCooling_10_Speed_7200W_SEER2_2023_ValueTe
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+
+    state->init_state(*state);
 
     // get coil inputs
     EnergyPlus::VariableSpeedCoils::GetVarSpeedCoilInput(*state);
@@ -7667,6 +7706,8 @@ TEST_F(EnergyPlusFixture, VariableSpeedCooling_10_Speed_14400W_SEER2_2023_ValueT
 
     ASSERT_TRUE(process_idf(idf_objects));
 
+    state->init_state(*state);
+
     // get coil inputs
     EnergyPlus::VariableSpeedCoils::GetVarSpeedCoilInput(*state);
     EXPECT_EQ(state->dataVariableSpeedCoils->VarSpeedCoil(1).Name, "ZONE1PTHPDXCOOLCOIL");
@@ -7875,6 +7916,8 @@ TEST_F(EnergyPlusFixture, VariableSpeedCooling_01_Speed_22000W_IEER_2022_ValueTe
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+
+    state->init_state(*state);
 
     // get coil inputs
     EnergyPlus::VariableSpeedCoils::GetVarSpeedCoilInput(*state);
@@ -8128,6 +8171,8 @@ TEST_F(EnergyPlusFixture, VariableSpeedCooling_02_Speed_36000W_IEER_2022_ValueTe
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+
+    state->init_state(*state);
 
     // get coil inputs
     EnergyPlus::VariableSpeedCoils::GetVarSpeedCoilInput(*state);
@@ -8433,6 +8478,8 @@ TEST_F(EnergyPlusFixture, VariableSpeedCooling_03_Speed_36000W_IEER_2022_ValueTe
 
     ASSERT_TRUE(process_idf(idf_objects));
 
+    state->init_state(*state);
+
     // get coil inputs
     EnergyPlus::VariableSpeedCoils::GetVarSpeedCoilInput(*state);
     EXPECT_EQ(state->dataVariableSpeedCoils->VarSpeedCoil(1).Name, "HEAT PUMP ACDXCOIL 1");
@@ -8698,6 +8745,8 @@ TEST_F(EnergyPlusFixture, VariableSpeedCooling_04_Speed_36000W_IEER_2022_ValueTe
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+
+    state->init_state(*state);
 
     // get coil inputs
     EnergyPlus::VariableSpeedCoils::GetVarSpeedCoilInput(*state);
@@ -8989,6 +9038,8 @@ TEST_F(EnergyPlusFixture, VariableSpeedCooling_07_Speed_25001W_IEER_2022_ValueTe
     // 7 100        A (Exact Match)
 
     ASSERT_TRUE(process_idf(idf_objects));
+
+    state->init_state(*state);
 
     // get coil inputs
     EnergyPlus::VariableSpeedCoils::GetVarSpeedCoilInput(*state);
@@ -9322,6 +9373,7 @@ TEST_F(EnergyPlusFixture, VariableSpeedCooling_10_Speed_34582W_IEER_2022_ValueTe
 
     ASSERT_TRUE(process_idf(idf_objects));
 
+    state->init_state(*state);
     // get coil inputs
     EnergyPlus::VariableSpeedCoils::GetVarSpeedCoilInput(*state);
     EXPECT_EQ(state->dataVariableSpeedCoils->VarSpeedCoil(1).Name, "ZONE1PTHPDXCOOLCOIL");
@@ -9658,6 +9710,7 @@ TEST_F(EnergyPlusFixture, VariableSpeedCooling_10_Speed_32000W_IEER_2022_ValueTe
 
     ASSERT_TRUE(process_idf(idf_objects));
 
+    state->init_state(*state);
     // get coil inputs
     EnergyPlus::VariableSpeedCoils::GetVarSpeedCoilInput(*state);
     EXPECT_EQ(state->dataVariableSpeedCoils->VarSpeedCoil(1).Name, "ZONE1PTHPDXCOOLCOIL");
@@ -10007,6 +10060,7 @@ TEST_F(EnergyPlusFixture, VariableSpeedCooling_04_Speed_AutoSize_IEER_2022_Value
 
     ASSERT_TRUE(process_idf(idf_objects));
 
+    state->init_state(*state);
     // get coil inputs
     EnergyPlus::VariableSpeedCoils::GetVarSpeedCoilInput(*state);
     EXPECT_EQ(state->dataVariableSpeedCoils->VarSpeedCoil(1).Name, "HEAT PUMP ACDXCOIL 1");
@@ -10270,6 +10324,7 @@ TEST_F(EnergyPlusFixture, TwoSpeedCoolingCoilAir_18000W_SEER2_2023_ValueTest)
     });
     ASSERT_TRUE(process_idf(idf_objects));
 
+    state->init_state(*state);
     GetDXCoils(*state);
 
     auto &thisCoil(state->dataDXCoils->DXCoil(1));
@@ -10560,6 +10615,8 @@ TEST_F(EnergyPlusFixture, TwoSpeedCoolingCoilAir_12000W_SEER2_2023_ValueTest)
     });
     ASSERT_TRUE(process_idf(idf_objects));
 
+    state->init_state(*state);
+
     GetDXCoils(*state);
 
     auto &thisCoil(state->dataDXCoils->DXCoil(1));
@@ -10839,6 +10896,7 @@ TEST_F(EnergyPlusFixture, TwoSpeedCoolingCoilAir_39000W_IEER_2022_ValueTest)
 
     ASSERT_TRUE(process_idf(idf_objects));
 
+    state->init_state(*state);
     GetDXCoils(*state);
 
     auto &thisCoil(state->dataDXCoils->DXCoil(1));
@@ -11128,6 +11186,7 @@ TEST_F(EnergyPlusFixture, TwoSpeedCoolingCoilAir_54000W_IEER_2022_ValueTest)
 
     ASSERT_TRUE(process_idf(idf_objects));
 
+    state->init_state(*state);
     GetDXCoils(*state);
 
     auto &thisCoil(state->dataDXCoils->DXCoil(1));
@@ -11425,6 +11484,7 @@ TEST_F(EnergyPlusFixture, TwoSpeedCoolingCoilAir_33000W_IEER_2022_ValueTest)
 
     ASSERT_TRUE(process_idf(idf_objects));
 
+    state->init_state(*state);
     GetDXCoils(*state);
 
     auto &thisCoil(state->dataDXCoils->DXCoil(1));
@@ -11724,9 +11784,10 @@ TEST_F(EnergyPlusFixture, CurveFit_02_Speed_15000W_alternateMode_SEER2_2023_Valu
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     int coilIndex = CoilCoolingDX::factory(*state, "DX Cooling Coil");
-    auto &thisCoil(state->dataCoilCooingDX->coilCoolingDXs[coilIndex]);
+    auto &thisCoil(state->dataCoilCoolingDX->coilCoolingDXs[coilIndex]);
     // size it
     thisCoil.size(*state);
     auto performance{dynamic_cast<CoilCoolingDXCurveFitPerformance *>(thisCoil.performance.get())};
@@ -12046,9 +12107,10 @@ TEST_F(EnergyPlusFixture, CurveFit_03_Speed_5000W_SEER2_2023_ValueTest)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     int coilIndex = CoilCoolingDX::factory(*state, "Sys 2 Furnace DX Cool Cooling Coil");
-    auto &thisCoil(state->dataCoilCooingDX->coilCoolingDXs[coilIndex]);
+    auto &thisCoil(state->dataCoilCoolingDX->coilCoolingDXs[coilIndex]);
 
     // size it
     thisCoil.size(*state);
@@ -12351,9 +12413,10 @@ TEST_F(EnergyPlusFixture, CurveFit_02_Speed_30000W_alternateMode_IEER_2022_Value
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     int coilIndex = CoilCoolingDX::factory(*state, "DX Cooling Coil");
-    auto &thisCoil(state->dataCoilCooingDX->coilCoolingDXs[coilIndex]);
+    auto &thisCoil(state->dataCoilCoolingDX->coilCoolingDXs[coilIndex]);
     // size it
     thisCoil.size(*state);
     auto performance{dynamic_cast<CoilCoolingDXCurveFitPerformance *>(thisCoil.performance.get())};
@@ -12671,9 +12734,10 @@ TEST_F(EnergyPlusFixture, CurveFit_03_Speed_20000W_IEER_2022_ValueTest)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     int coilIndex = CoilCoolingDX::factory(*state, "Sys 2 Furnace DX Cool Cooling Coil");
-    auto &thisCoil(state->dataCoilCooingDX->coilCoolingDXs[coilIndex]);
+    auto &thisCoil(state->dataCoilCoolingDX->coilCoolingDXs[coilIndex]);
     auto performance{dynamic_cast<CoilCoolingDXCurveFitPerformance *>(thisCoil.performance.get())};
 
     // size it

@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -91,6 +91,7 @@ using namespace EnergyPlus::PlantUtilities;
 
 TEST_F(EnergyPlusFixture, EMSManager_TestForUniqueEMSActuators)
 {
+    state->init_state(*state);
     state->dataRuntimeLang->EMSActuatorAvailable.allocate(100);
 
     std::string componentTypeName1("Chiller1");
@@ -134,7 +135,6 @@ TEST_F(EnergyPlusFixture, EMSManager_TestForUniqueEMSActuators)
 
 TEST_F(EnergyPlusFixture, Dual_NodeTempSetpoints)
 {
-
     std::string const idf_objects = delimited_string({
 
         "OutdoorAir:Node, Test node;",
@@ -164,6 +164,7 @@ TEST_F(EnergyPlusFixture, Dual_NodeTempSetpoints)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     OutAirNodeManager::SetOutAirNodes(*state);
 
@@ -206,6 +207,7 @@ TEST_F(EnergyPlusFixture, CheckActuatorInit)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
     OutAirNodeManager::SetOutAirNodes(*state);
     EMSManager::GetEMSInput(*state);
 
@@ -215,7 +217,6 @@ TEST_F(EnergyPlusFixture, CheckActuatorInit)
 
 TEST_F(EnergyPlusFixture, SupervisoryControl_PlantComponent_SetActuatedBranchFlowRate)
 {
-
     // test EMS actuator for Plant Component
     // test SetActuatedBranchFlowRate for expected response
 
@@ -238,6 +239,7 @@ TEST_F(EnergyPlusFixture, SupervisoryControl_PlantComponent_SetActuatedBranchFlo
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     // sets number of EMS objects
     EMSManager::CheckIfAnyEMS(*state);
@@ -402,6 +404,7 @@ TEST_F(EnergyPlusFixture, SupervisoryControl_PlantComponent_SetComponentFlowRate
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     // sets number of EMS objects
     EMSManager::CheckIfAnyEMS(*state);
@@ -708,6 +711,7 @@ TEST_F(EnergyPlusFixture, Test_EMSLogic)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     OutAirNodeManager::SetOutAirNodes(*state);
 
@@ -776,6 +780,7 @@ TEST_F(EnergyPlusFixture, Debug_EMSLogic)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     OutAirNodeManager::SetOutAirNodes(*state);
 
@@ -814,6 +819,7 @@ TEST_F(EnergyPlusFixture, TestAnyRanArgument)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     OutAirNodeManager::SetOutAirNodes(*state);
     NodeInputManager::SetupNodeVarsForReporting(*state);
@@ -853,6 +859,7 @@ TEST_F(EnergyPlusFixture, TestUnInitializedEMSVariable1)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     EMSManager::CheckIfAnyEMS(*state);
     state->dataEMSMgr->FinishProcessingUserInput = true;
@@ -909,6 +916,7 @@ TEST_F(EnergyPlusFixture, TestUnInitializedEMSVariable2)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     OutAirNodeManager::SetOutAirNodes(*state);
 
@@ -940,7 +948,6 @@ TEST_F(EnergyPlusFixture, TestUnInitializedEMSVariable2)
 
 TEST_F(EnergyPlusFixture, EMSManager_CheckIfAnyEMS_OutEMS)
 {
-
     std::string const idf_objects = delimited_string({
         "  Output:EnergyManagementSystem,                                                                ",
         "    Verbose,                 !- Actuator Availability Dictionary Reporting                      ",
@@ -949,6 +956,7 @@ TEST_F(EnergyPlusFixture, EMSManager_CheckIfAnyEMS_OutEMS)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     CheckIfAnyEMS(*state);
     EXPECT_TRUE(state->dataGlobal->AnyEnergyManagementSystemInModel);
@@ -1091,6 +1099,7 @@ TEST_F(EnergyPlusFixture, EMSManager_TestFuntionCall)
     ASSERT_TRUE(process_idf(idf_objects));
 
     state->dataGlobal->TimeStepZone = 0.25;
+    state->init_state(*state);
 
     EMSManager::CheckIfAnyEMS(*state); // get EMS input
     state->dataEMSMgr->FinishProcessingUserInput = true;
@@ -1557,6 +1566,8 @@ TEST_F(EnergyPlusFixture, EMSManager_TestFuntionCall)
 
 TEST_F(EnergyPlusFixture, EMSManager_TestOANodeAsActuators)
 {
+    state->init_state(*state);
+
     //    EMSActuatorAvailable.allocate(100);
     state->dataLoopNodes->NumOfNodes = 3;
     state->dataRuntimeLang->numActuatorsUsed = 3;
@@ -1596,6 +1607,8 @@ TEST_F(EnergyPlusFixture, EMSManager_TestOANodeAsActuators)
 }
 TEST_F(EnergyPlusFixture, EMSManager_TestWindowShadingControlExteriorScreenOption)
 {
+    state->init_state(*state);
+
     // #7586
     state->dataSurface->Surface.allocate(2);
     state->dataSurface->SurfaceWindow.allocate(2);
@@ -1653,7 +1666,6 @@ TEST_F(EnergyPlusFixture, EMSManager_TestWindowShadingControlExteriorScreenOptio
 }
 TEST_F(EnergyPlusFixture, EMS_WeatherDataActuators)
 {
-
     // GetNextEnvironment Will call ReadUserWeatherInput which calls inputProcessor, so let's use process_idf to create one Environment (Design Day)
     std::string const idf_objects = delimited_string({
 
@@ -1753,8 +1765,10 @@ TEST_F(EnergyPlusFixture, EMS_WeatherDataActuators)
     ASSERT_TRUE(process_idf(idf_objects));
 
     state->dataGlobal->BeginSimFlag = true;
-    state->dataGlobal->NumOfTimeStepInHour = 4;
+    state->dataGlobal->TimeStepsInHour = 4;
     state->dataWeather->LocationGathered = false;
+
+    state->init_state(*state);
 
     EMSManager::CheckIfAnyEMS(*state);
     bool available = false;
@@ -1797,7 +1811,6 @@ TEST_F(EnergyPlusFixture, EMS_WeatherDataActuators)
 }
 TEST_F(EnergyPlusFixture, EMS_TodayTomorrowFunctions)
 {
-
     // GetNextEnvironment Will call ReadUserWeatherInput which calls inputProcessor, so let's use process_idf to create one Environment (Design Day)
     std::string const idf_objects = delimited_string({
 
@@ -1881,8 +1894,9 @@ TEST_F(EnergyPlusFixture, EMS_TodayTomorrowFunctions)
     ASSERT_TRUE(process_idf(idf_objects));
 
     state->dataGlobal->BeginSimFlag = true;
-    state->dataGlobal->NumOfTimeStepInHour = 4;
+    state->dataGlobal->TimeStepsInHour = 4;
     state->dataWeather->LocationGathered = false;
+    state->init_state(*state);
 
     EMSManager::CheckIfAnyEMS(*state);
     bool available = false;
@@ -2209,6 +2223,7 @@ TEST_F(EnergyPlusFixture, EMS_ViewFactorToGround)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     state->dataEnvrn->Year = 2000;
     state->dataEnvrn->EndYear = 2000;
@@ -2254,7 +2269,6 @@ TEST_F(EnergyPlusFixture, EMS_ViewFactorToGround)
 
 TEST_F(EnergyPlusFixture, EMSManager_TrendValue_to_Actuator)
 {
-
     // Test for #10279 - Make sure that assigning the result of a TendVariable @TrendValue results in proper actuator behavior
     std::string const idf_objects = delimited_string({
         "Schedule:Constant,",
@@ -2303,25 +2317,27 @@ TEST_F(EnergyPlusFixture, EMSManager_TrendValue_to_Actuator)
 
     ASSERT_TRUE(process_idf(idf_objects));
 
-    state->dataGlobal->TimeStepZone = 0.25;
-
+    // Apparently this needs to be called before GetScheduleData, i.e., init_state()
     EMSManager::CheckIfAnyEMS(*state); // get EMS input
     EXPECT_TRUE(state->dataGlobal->AnyEnergyManagementSystemInModel);
 
-    state->dataEMSMgr->FinishProcessingUserInput = true;
+    state->dataGlobal->TimeStepZone = 0.25;
 
-    state->dataGlobal->NumOfTimeStepInHour = 4; // must initialize this to get schedules initialized
-    state->dataGlobal->MinutesPerTimeStep = 15; // must initialize this to get schedules initialized
+    state->dataGlobal->TimeStepsInHour = 4;    // must initialize this to get schedules initialized
+    state->dataGlobal->MinutesInTimeStep = 15; // must initialize this to get schedules initialized
     state->dataGlobal->TimeStepZone = 0.25;
     state->dataHVACGlobal->TimeStepSys = 0.25;
-    state->dataGlobal->TimeStepZoneSec = state->dataGlobal->TimeStepZone * Constant::SecInHour;
-    ScheduleManager::ProcessScheduleInput(*state); // read schedules
+    state->dataGlobal->TimeStepZoneSec = state->dataGlobal->TimeStepZone * Constant::rSecsInHour;
+    state->init_state(*state);
 
-    EXPECT_EQ(2, state->dataScheduleMgr->NumSchedules);
-    auto &schDirect = state->dataScheduleMgr->Schedule(1);
-    EXPECT_EQ("ACTUATED SCHEDULE DIRECT", schDirect.Name);
-    auto &schIndirect = state->dataScheduleMgr->Schedule(2);
-    EXPECT_EQ("ACTUATED SCHEDULE INDIRECT", schIndirect.Name);
+    state->dataEMSMgr->FinishProcessingUserInput = true;
+
+    EXPECT_EQ(4, state->dataSched->schedules.size());
+
+    auto *schedDirect = Sched::GetSchedule(*state, "ACTUATED SCHEDULE DIRECT");
+    auto *schedIndirect = Sched::GetSchedule(*state, "ACTUATED SCHEDULE INDIRECT");
+    EXPECT_NE(schedDirect, nullptr);
+    EXPECT_NE(schedIndirect, nullptr);
 
     state->dataEnvrn->Month = 12;
     state->dataEnvrn->DayOfMonth = 31;
@@ -2335,13 +2351,14 @@ TEST_F(EnergyPlusFixture, EMSManager_TrendValue_to_Actuator)
     state->dataEnvrn->DayOfYear_Schedule = General::OrdinalDay(state->dataEnvrn->Month, state->dataEnvrn->DayOfMonth, 1);
 
     state->dataEnvrn->DSTIndicator = 0; // DST IS OFF
-    ScheduleManager::UpdateScheduleValues(*state);
-    EXPECT_EQ(18.0, schDirect.CurrentValue);
-    EXPECT_FALSE(schDirect.EMSActuatedOn);
-    EXPECT_EQ(0.0, schDirect.EMSValue);
-    EXPECT_EQ(18.0, schIndirect.CurrentValue);
-    EXPECT_FALSE(schIndirect.EMSActuatedOn);
-    EXPECT_EQ(0.0, schIndirect.EMSValue);
+    Sched::UpdateScheduleVals(*state);
+
+    EXPECT_EQ(18.0, schedDirect->currentVal);
+    EXPECT_FALSE(schedDirect->EMSActuatedOn);
+    EXPECT_EQ(0.0, schedDirect->EMSVal);
+    EXPECT_EQ(18.0, schedIndirect->currentVal);
+    EXPECT_FALSE(schedIndirect->EMSActuatedOn);
+    EXPECT_EQ(0.0, schedIndirect->EMSVal);
 
     EMSManager::InitEMS(*state, EMSManager::EMSCallFrom::BeginTimestepBeforePredictor);
 
@@ -2502,13 +2519,13 @@ TEST_F(EnergyPlusFixture, EMSManager_TrendValue_to_Actuator)
     EXPECT_TRUE(resultValueErlVar.Value.Error.empty());
     EXPECT_TRUE(resultValueErlVar.Value.initialized);
 
-    ScheduleManager::UpdateScheduleValues(*state);
-    EXPECT_EQ(45.0, schDirect.CurrentValue);
-    EXPECT_TRUE(schDirect.EMSActuatedOn);
-    EXPECT_EQ(45.0, schDirect.EMSValue);
-    EXPECT_EQ(45.0, schIndirect.CurrentValue);
-    EXPECT_TRUE(schIndirect.EMSActuatedOn);
-    EXPECT_EQ(45.0, schIndirect.EMSValue);
+    Sched::UpdateScheduleVals(*state);
+    EXPECT_EQ(45.0, schedDirect->currentVal);
+    EXPECT_TRUE(schedDirect->EMSActuatedOn);
+    EXPECT_EQ(45.0, schedDirect->EMSVal);
+    EXPECT_EQ(45.0, schedIndirect->currentVal);
+    EXPECT_TRUE(schedIndirect->EMSActuatedOn);
+    EXPECT_EQ(45.0, schedIndirect->EMSVal);
 
     EMSManager::UpdateEMSTrendVariables(*state);
     for (int i = 0; i < 12; ++i) {
@@ -2579,11 +2596,11 @@ TEST_F(EnergyPlusFixture, EMSManager_TrendValue_to_Actuator)
     EXPECT_TRUE(resultValueErlVar.Value.Error.empty());
     EXPECT_TRUE(resultValueErlVar.Value.initialized);
 
-    ScheduleManager::UpdateScheduleValues(*state);
-    EXPECT_EQ(45.0, schDirect.CurrentValue);
-    EXPECT_TRUE(schDirect.EMSActuatedOn);
-    EXPECT_EQ(45.0, schDirect.EMSValue);
-    EXPECT_EQ(45.0, schIndirect.CurrentValue);
-    EXPECT_TRUE(schIndirect.EMSActuatedOn);
-    EXPECT_EQ(45.0, schIndirect.EMSValue);
+    Sched::UpdateScheduleVals(*state);
+    EXPECT_EQ(45.0, schedDirect->currentVal);
+    EXPECT_TRUE(schedDirect->EMSActuatedOn);
+    EXPECT_EQ(45.0, schedDirect->EMSVal);
+    EXPECT_EQ(45.0, schedIndirect->currentVal);
+    EXPECT_TRUE(schedIndirect->EMSActuatedOn);
+    EXPECT_EQ(45.0, schedIndirect->EMSVal);
 }

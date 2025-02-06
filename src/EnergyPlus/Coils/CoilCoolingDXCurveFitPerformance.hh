@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -55,6 +55,7 @@
 #include <EnergyPlus/Coils/CoilCoolingDXPerformanceBase.hh>
 #include <EnergyPlus/DataGlobalConstants.hh>
 #include <EnergyPlus/EnergyPlus.hh>
+#include <EnergyPlus/ScheduleManager.hh>
 #include <EnergyPlus/StandardRatings.hh>
 
 namespace EnergyPlus {
@@ -247,7 +248,7 @@ struct CoilCoolingDXCurveFitPerformance : public CoilCoolingDXPerformanceBase
     bool mySizeFlag = true;
 
     Real64 evapCondBasinHeatSetpoint = 0.0;
-    int evapCondBasinHeatSchedulIndex = 0;
+    Sched::Schedule *evapCondBasinHeatSched = nullptr;
     bool oneTimeEIOHeaderWrite = true;
     Real64 wasteHeatRate = 0.0;
 

@@ -135,7 +135,10 @@ jobs:
     - name: Build
       id: build
       working-directory: ./build
-      run: cmake --build . -j ${{ matrix.nproc }} --config Release
+      run: |
+        echo "::add-matcher::./.github/workflows/cpp-problem-matcher.json"
+        cmake --build . -j ${{ matrix.nproc }} --config Release
+        echo "::remove-matcher owner=gcc-problem-matcher::"
 
     - name: Test
       # Not running test on alternate build yet, I need to test things

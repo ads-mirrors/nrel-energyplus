@@ -1328,6 +1328,9 @@ namespace Dayltg {
         // Swift, P. D., and Smith, G. B.  "Cylindrical Mirror Light Pipes",
         //   Solar Energy Materials and Solar Cells 36 (1995), pp. 159-168.
 
+        // Using/Aliasing
+        using General::POLYF;
+
         // Return value
         Real64 TransTDD;
 
@@ -1350,7 +1353,7 @@ namespace Dayltg {
         // Get the transmittance of each component and of total TDD
         switch (RadiationType) {
         case RadType::VisibleBeam: {
-            transDome = Window::POLYF(COSI, state.dataConstruction->Construct(constDome).TransVisBeamCoef);
+            transDome = POLYF(COSI, state.dataConstruction->Construct(constDome).TransVisBeamCoef);
             transPipe = InterpolatePipeTransBeam(state, COSI, state.dataDaylightingDevicesData->TDDPipe(PipeNum).PipeTransVisBeam);
             transDiff = state.dataConstruction->Construct(constDiff).TransDiffVis; // May want to change to POLYF also!
 
@@ -1358,7 +1361,7 @@ namespace Dayltg {
 
         } break;
         case RadType::SolarBeam: {
-            transDome = Window::POLYF(COSI, state.dataConstruction->Construct(constDome).TransSolBeamCoef);
+            transDome = POLYF(COSI, state.dataConstruction->Construct(constDome).TransSolBeamCoef);
             transPipe = InterpolatePipeTransBeam(state, COSI, state.dataDaylightingDevicesData->TDDPipe(PipeNum).PipeTransSolBeam);
             transDiff = state.dataConstruction->Construct(constDiff).TransDiff; // May want to change to POLYF also!
 

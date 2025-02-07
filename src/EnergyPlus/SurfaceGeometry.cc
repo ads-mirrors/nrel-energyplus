@@ -13033,17 +13033,17 @@ namespace SurfaceGeometry {
             thisConstructNewSh.AbsDiffShade = 0.0;
             thisConstructNewSh.AbsDiffBackShade = 0.0;
             thisConstructNewSh.ShadeAbsorpThermal = 0.0;
-            std::fill(thisConstructNewSh.AbsBeamShadeCoef.begin(), thisConstructNewSh.AbsBeamShadeCoef.end(), 0.0);
+            thisConstructNewSh.AbsBeamShadeCoef = 0.0;
             thisConstructNewSh.TransDiff = 0.0;
             thisConstructNewSh.TransDiffVis = 0.0;
             thisConstructNewSh.ReflectSolDiffBack = 0.0;
             thisConstructNewSh.ReflectSolDiffFront = 0.0;
             thisConstructNewSh.ReflectVisDiffBack = 0.0;
             thisConstructNewSh.ReflectVisDiffFront = 0.0;
-            std::fill(thisConstructNewSh.TransSolBeamCoef.begin(), thisConstructNewSh.TransSolBeamCoef.end(), 0.0);
-            std::fill(thisConstructNewSh.TransVisBeamCoef.begin(), thisConstructNewSh.TransVisBeamCoef.end(), 0.0);
-            std::fill(thisConstructNewSh.ReflSolBeamFrontCoef.begin(), thisConstructNewSh.ReflSolBeamFrontCoef.end(), 0.0);
-            std::fill(thisConstructNewSh.ReflSolBeamBackCoef.begin(), thisConstructNewSh.ReflSolBeamBackCoef.end(), 0.0);
+            thisConstructNewSh.TransSolBeamCoef = 0.0;
+            thisConstructNewSh.TransVisBeamCoef = 0.0;
+            thisConstructNewSh.ReflSolBeamFrontCoef = 0.0;
+            thisConstructNewSh.ReflSolBeamBackCoef = 0.0;
             thisConstructNewSh.W5FrameDivider = 0;
             thisConstructNewSh.FromWindow5DataFile = false;
 
@@ -13055,8 +13055,10 @@ namespace SurfaceGeometry {
             thisConstructNewSh.IsUsed = true;
 
             for (int Layer = 1; Layer <= state.dataHeatBal->MaxSolidWinLayers; ++Layer) {
-                std::fill(thisConstructNewSh.AbsBeamCoef(Layer).begin(), thisConstructNewSh.AbsBeamCoef(Layer).end(), 0.0);
-                std::fill(thisConstructNewSh.AbsBeamBackCoef(Layer).begin(), thisConstructNewSh.AbsBeamBackCoef(Layer).end(), 0.0);
+                for (int index = 1; index <= DataSurfaces::MaxPolyCoeff; ++index) {
+                    thisConstructNewSh.AbsBeamCoef(Layer)(index) = 0.0;
+                    thisConstructNewSh.AbsBeamBackCoef(Layer)(index) = 0.0;
+                }
             }
         }
     }
@@ -13233,17 +13235,17 @@ namespace SurfaceGeometry {
             thisConstruct.AbsDiffShade = 0.0;
             thisConstruct.AbsDiffBackShade = 0.0;
             thisConstruct.ShadeAbsorpThermal = 0.0;
-            std::fill(thisConstruct.AbsBeamShadeCoef.begin(), thisConstruct.AbsBeamShadeCoef.end(), 0.0);
+            thisConstruct.AbsBeamShadeCoef = 0.0;
             thisConstruct.TransDiff = 0.0;
             thisConstruct.TransDiffVis = 0.0;
             thisConstruct.ReflectSolDiffBack = 0.0;
             thisConstruct.ReflectSolDiffFront = 0.0;
             thisConstruct.ReflectVisDiffBack = 0.0;
             thisConstruct.ReflectVisDiffFront = 0.0;
-            std::fill(thisConstruct.TransSolBeamCoef.begin(), thisConstruct.TransSolBeamCoef.end(), 0.0);
-            std::fill(thisConstruct.TransVisBeamCoef.begin(), thisConstruct.TransVisBeamCoef.end(), 0.0);
-            std::fill(thisConstruct.ReflSolBeamFrontCoef.begin(), thisConstruct.ReflSolBeamFrontCoef.end(), 0.0);
-            std::fill(thisConstruct.ReflSolBeamBackCoef.begin(), thisConstruct.ReflSolBeamBackCoef.end(), 0.0);
+            thisConstruct.TransSolBeamCoef = 0.0;
+            thisConstruct.TransVisBeamCoef = 0.0;
+            thisConstruct.ReflSolBeamFrontCoef = 0.0;
+            thisConstruct.ReflSolBeamBackCoef = 0.0;
             thisConstruct.W5FrameDivider = 0;
             thisConstruct.FromWindow5DataFile = false;
             thisConstruct.W5FileMullionWidth = 0.0;
@@ -13251,8 +13253,10 @@ namespace SurfaceGeometry {
             thisConstruct.W5FileGlazingSysWidth = 0.0;
             thisConstruct.W5FileGlazingSysHeight = 0.0;
             for (int Layer = 1; Layer <= state.dataHeatBal->MaxSolidWinLayers; ++Layer) {
-                std::fill(thisConstruct.AbsBeamCoef(Layer).begin(), thisConstruct.AbsBeamCoef(Layer).end(), 0.0);
-                std::fill(thisConstruct.AbsBeamBackCoef(Layer).begin(), thisConstruct.AbsBeamBackCoef(Layer).end(), 0.0);
+                for (int index = 1; index <= DataSurfaces::MaxPolyCoeff; ++index) {
+                    thisConstruct.AbsBeamCoef(Layer)(index) = 0.0;
+                    thisConstruct.AbsBeamBackCoef(Layer)(index) = 0.0;
+                }
             }
         }
         return (newConstruct);

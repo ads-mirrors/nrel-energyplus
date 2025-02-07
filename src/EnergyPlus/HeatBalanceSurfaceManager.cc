@@ -88,6 +88,7 @@
 #include <EnergyPlus/EcoRoofManager.hh>
 #include <EnergyPlus/ElectricBaseboardRadiator.hh>
 #include <EnergyPlus/FileSystem.hh>
+#include <EnergyPlus/General.hh>
 #include <EnergyPlus/HWBaseboardRadiator.hh>
 #include <EnergyPlus/HeatBalFiniteDiffManager.hh>
 #include <EnergyPlus/HeatBalanceAirManager.hh>
@@ -2437,6 +2438,7 @@ void InitSolarHeatGains(EnergyPlusData &state)
 
     // Using/Aliasing
     using Dayltg::TransTDD;
+    using General::POLYF;
     using SolarShading::CalcInteriorSolarDistribution;
     using namespace DataWindowEquivalentLayer;
     using SolarShading::SurfaceScheduledSolarInc;
@@ -3350,13 +3352,13 @@ void InitSolarHeatGains(EnergyPlusData &state)
                                     // Beam solar on outside of frame
                                     FrIncSolarOut += (BeamFrHorFaceInc + BeamFrVertFaceInc) * FrProjOut;
                                     if (FrProjIn > 0.0) {
-                                        Real64 TransGl = Window::POLYF(CosInc, thisConstruct.TransSolBeamCoef);
+                                        Real64 TransGl = General::POLYF(CosInc, thisConstruct.TransSolBeamCoef);
                                         TransDiffGl = thisConstruct.TransDiff;
                                         if (ShadeFlag == DataSurfaces::WinShadingType::SwitchableGlazing) { // Switchable glazing
                                             Real64 SwitchFac = state.dataSurface->SurfWinSwitchingFactor(SurfNum);
                                             int ConstrNumSh = Surface(SurfNum).activeShadedConstruction;
                                             auto const &constructionSh = state.dataConstruction->Construct(ConstrNumSh);
-                                            Real64 TransGlSh = Window::POLYF(CosInc, constructionSh.TransSolBeamCoef);
+                                            Real64 TransGlSh = General::POLYF(CosInc, constructionSh.TransSolBeamCoef);
                                             TransGl = Window::InterpSw(SwitchFac, TransGl, TransGlSh);
                                             Real64 TransDiffGlSh = constructionSh.TransDiff;
                                             TransDiffGl = Window::InterpSw(SwitchFac, TransDiffGl, TransDiffGlSh);
@@ -3442,14 +3444,14 @@ void InitSolarHeatGains(EnergyPlusData &state)
                                     DivIncSolarOutBm = BeamFaceInc + BeamDivHorFaceInc + BeamDivVertFaceInc;
                                     DivIncSolarOutDif = DifSolarFaceInc * (1.0 + state.dataSurface->SurfWinProjCorrDivOut(SurfNum));
                                     if (DivProjIn > 0.0) {
-                                        Real64 TransGl = Window::POLYF(CosInc, thisConstruct.TransSolBeamCoef);
+                                        Real64 TransGl = General::POLYF(CosInc, thisConstruct.TransSolBeamCoef);
                                         Real64 TransDiffGl = thisConstruct.TransDiff;                       // Diffuse solar transmittance
                                         if (ShadeFlag == DataSurfaces::WinShadingType::SwitchableGlazing) { // Switchable glazing
                                             Real64 SwitchFac = state.dataSurface->SurfWinSwitchingFactor(SurfNum);
                                             int ConstrNumSh = Surface(SurfNum).activeShadedConstruction;
                                             auto const &constructionSh = state.dataConstruction->Construct(ConstrNumSh);
 
-                                            Real64 TransGlSh = Window::POLYF(CosInc, constructionSh.TransSolBeamCoef);
+                                            Real64 TransGlSh = General::POLYF(CosInc, constructionSh.TransSolBeamCoef);
                                             // Outer glass solar trans, refl, absorptance if switched
                                             TransGl = Window::InterpSw(SwitchFac, TransGl, TransGlSh);
                                             Real64 TransDiffGlSh = constructionSh.TransDiff;

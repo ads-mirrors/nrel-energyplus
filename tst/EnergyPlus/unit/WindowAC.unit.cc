@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -435,10 +435,9 @@ TEST_F(EnergyPlusFixture, WindowAC_VStest1)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
-
-    state->dataGlobal->NumOfTimeStepInHour = 6;    // must initialize this to get schedules initialized
-    state->dataGlobal->MinutesPerTimeStep = 10;    // must initialize this to get schedules initialized
-    ScheduleManager::ProcessScheduleInput(*state); // read schedule data
+    state->dataGlobal->TimeStepsInHour = 6;    // must initialize this to get schedules initialized
+    state->dataGlobal->MinutesInTimeStep = 10; // must initialize this to get schedules initialized
+    state->init_state(*state);
 
     bool errorsFound(false);
     HeatBalanceManager::GetProjectControlData(*state, errorsFound); // read project control data

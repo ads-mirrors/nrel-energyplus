@@ -14,14 +14,14 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Run clang-format style check for C/C++ source code.
-        uses: jidicula/clang-format-action@v4.13.0
+        uses: jidicula/clang-format-action@v4.14.0
         if: always()
         with:
           clang-format-version: '10'
           check-path: 'src/EnergyPlus'
 
       - name: Run clang-format style check for C/C++ unit test code.
-        uses: jidicula/clang-format-action@v4.13.0
+        uses: jidicula/clang-format-action@v4.14.0
         if: always()
         with:
           clang-format-version: '10'
@@ -46,7 +46,8 @@ jobs:
           --force
           --std=c++17
           --inline-suppr
-          --suppress=cppcheckError
+          --suppress=missingInclude
+          --suppress=missingIncludeSystem
           --suppress=unusedFunction:src/EnergyPlus/api/autosizing.cc
           --suppress=unusedFunction:src/EnergyPlus/api/datatransfer.cc
           --suppress=unusedFunction:src/EnergyPlus/api/func.cc

@@ -14943,6 +14943,20 @@ void VRFCondenserEquipment::VRFOU_PipeLossC(
                          (1 / Pipe_Coe_k1 + 1 / Pipe_Coe_k2 + 1 / Pipe_Coe_k3));
 
         Pipe_h_comp_in = Pipe_h_IU_out + Pipe_Q / Pipe_m_ref;
+        // when Pipe_m_ref is close to 0, there will still be Pipe_Q, Pipe_Q / Pipe_m_ref will blow up
+        // At low flow rate (stationary flow)
+        // Pipe_h_comp_in = Pipe_h_IU_out + Cp * deltaT
+        // where deltaT is the refrigerant temperature change over time t,
+        // deltaT = Pipe_Q * t / (refrigerant_mass_in_pipe * Cp)
+        // so Pipe_h_comp_in = Pipe_h_IU_out + Cp * Pipe_Q / refrigerant_mass_in_pipe
+        // assume 0.001 is the cutoff Re for stationary flow
+        if (Pipe_Num_Re < 0.001) { // low flow rate calculation
+            Pipe_h_comp_in =
+                Pipe_h_IU_out + Pipe_Q * state.dataHVACGlobal->TimeStepSysSec /
+                                    ((Constant::Pi * std::pow(this->RefPipDiaSuc / 2, 2) * this->RefPipLen *
+                                      this->refrig->getSupHeatDensity(
+                                          state, this->EvaporatingTemp + Pipe_SH_merged, max(min(Pevap, RefPHigh), RefPLow), RoutineName)));
+        }
 
     } else {
         Pipe_DeltP = 0;

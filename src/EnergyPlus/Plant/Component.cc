@@ -126,5 +126,11 @@ namespace DataPlant {
         return state.dataPlnt->PlantLoop(plantLoc.loopNum).LoopSide(plantLoc.loopSideNum).Branch(plantLoc.branchNum).Comp(plantLoc.compNum);
     }
 
+    Real64 CompData::getDynamicMaxCapacity(EnergyPlusData &state) const
+    {
+        if (this->compPtr == NULL) return this->MaxLoad;
+        Real64 possibleLoad = this->compPtr->getDynamicMaxCapacity(state);
+        return (possibleLoad == 0) ? this->MaxLoad : possibleLoad;
+    }
 } // namespace DataPlant
 } // namespace EnergyPlus

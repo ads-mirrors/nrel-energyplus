@@ -49,9 +49,6 @@
 #include <algorithm>
 #include <cmath>
 
-// ObjexxFCL Headers
-#include <ObjexxFCL/Fmath.hh>
-
 // EnergyPlus Headers
 #include <EnergyPlus/Data/EnergyPlusData.hh>
 #include <EnergyPlus/DataContaminantBalance.hh>

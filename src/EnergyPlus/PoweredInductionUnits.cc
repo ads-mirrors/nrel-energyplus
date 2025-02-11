@@ -112,7 +112,6 @@ using HVAC::SmallAirVolFlow;
 using HVAC::SmallLoad;
 using HVAC::SmallMassFlow;
 using HVAC::SmallTempDiff;
-using namespace ScheduleManager;
 using Psychrometrics::PsyCpAirFnW;
 using Psychrometrics::PsyHFnTdbW;
 using SteamCoils::SimulateSteamCoilComponents;
@@ -272,6 +271,8 @@ void GetPIUs(EnergyPlusData &state)
                 ++PIUNum;
                 auto const &fields = instance.value();
 
+                ErrorObjectHeader eoh{routineName, cCurrentModuleObject, instance.key()};
+
                 GlobalNames::VerifyUniqueInterObjectName(
                     state, state.dataPowerInductionUnits->PiuUniqueNames, Util::makeUPPER(instance.key()), cCurrentModuleObject, "Name", ErrorsFound);
                 auto &thisPIU = state.dataPowerInductionUnits->PIU(PIUNum);
@@ -283,19 +284,16 @@ void GetPIUs(EnergyPlusData &state)
                 } else if (cCurrentModuleObject == "AirTerminal:SingleDuct:ParallelPIU:Reheat") {
                     thisPIU.UnitType_Num = DataDefineEquip::ZnAirLoopEquipType::SingleDuct_ParallelPIU_Reheat;
                 }
-                thisPIU.Sched = ip->getAlphaFieldValue(fields, objectSchemaProps, "availability_schedule_name");
-                if (!thisPIU.Sched.empty()) {
-                    thisPIU.SchedPtr = ScheduleManager::GetScheduleIndex(state, thisPIU.Sched);
-                    if (thisPIU.SchedPtr == 0) {
-                        ShowWarningError(
-                            state,
-                            format("GetPIUs {}=\"{}\", invalid Availability Schedule Name = {}", cCurrentModuleObject, thisPIU.Name, thisPIU.Sched));
-                        ShowContinueError(state, "Set the default as Always On. Simulation continues.");
-                        thisPIU.SchedPtr = ScheduleManager::ScheduleAlwaysOn;
-                    }
-                } else {
-                    thisPIU.SchedPtr = ScheduleManager::ScheduleAlwaysOn;
+
+                std::string schedName = ip->getAlphaFieldValue(fields, objectSchemaProps, "availability_schedule_name");
+                if (schedName.empty()) {
+                    thisPIU.availSched = Sched::GetScheduleAlwaysOn(state);
+                } else if ((thisPIU.availSched = Sched::GetSchedule(state, Util::makeUPPER(schedName))) == nullptr) {
+                    ShowWarningItemNotFound(
+                        state, eoh, "Availability Schedule Name", schedName, "Set the default as Always On. Simulation continues.");
+                    thisPIU.availSched = Sched::GetScheduleAlwaysOn(state);
                 }
+
                 if (cCurrentModuleObject == "AirTerminal:SingleDuct:SeriesPIU:Reheat") {
                     thisPIU.MaxTotAirVolFlow = ip->getRealFieldValue(fields, objectSchemaProps, "maximum_air_flow_rate");
                 }
@@ -404,7 +402,6 @@ void GetPIUs(EnergyPlusData &state)
 
                 // find fan type
                 // test if Fan:SystemModel fan of this name exists
-                ErrorObjectHeader eoh{routineName, cCurrentModuleObject, state.dataIPShortCut->cAlphaArgs(8)};
                 if ((thisPIU.Fan_Index = Fans::GetFanIndex(state, thisPIU.FanName)) == 0) {
                     ShowSevereItemNotFound(state, eoh, state.dataIPShortCut->cAlphaFieldNames(8), thisPIU.FanName);
                     ErrorsFound = true;
@@ -412,7 +409,7 @@ void GetPIUs(EnergyPlusData &state)
                     // Assert that this is a constant volume fan?
                     auto *fan = state.dataFans->fans(thisPIU.Fan_Index);
                     thisPIU.fanType = fan->type;
-                    thisPIU.FanAvailSchedPtr = fan->availSchedNum;
+                    thisPIU.fanAvailSched = fan->availSched;
                 }
 
                 thisPIU.HCoil = ip->getAlphaFieldValue(fields, objectSchemaProps, "reheat_coil_name");
@@ -458,7 +455,7 @@ void GetPIUs(EnergyPlusData &state)
                     } else if (Util::SameString(heating_control_type, "Modulated")) {
                         thisPIU.heatingControlType = HeatCntrlBehaviorType::ModulatedHeaterBehavior;
                     } else {
-                        ShowSevereError(state, format("Illegal Heating Control Type = {}", heating_control_type));
+                        ShowSevereError(state, "Heating Control Type should either be Staged or Modulated");
                         ShowContinueError(state, format("Occurs in {} = {}", cCurrentModuleObject, thisPIU.Name));
                         ErrorsFound = true;
                     }
@@ -790,7 +787,7 @@ void InitPIU(EnergyPlusData &state,
     // Do the start of HVAC time step initializations
     if (FirstHVACIteration) {
         // check for upstream zero flow. If nonzero and schedule ON, set primary flow to max
-        if (GetCurrentScheduleValue(state, thisPIU.SchedPtr) > 0.0 && state.dataLoopNodes->Node(PriNode).MassFlowRate > 0.0) {
+        if (thisPIU.availSched->getCurrentVal() > 0.0 && state.dataLoopNodes->Node(PriNode).MassFlowRate > 0.0) {
             if (thisPIU.UnitType == "AirTerminal:SingleDuct:SeriesPIU:Reheat") {
                 state.dataLoopNodes->Node(PriNode).MassFlowRate = thisPIU.MaxPriAirMassFlow;
                 state.dataLoopNodes->Node(SecNode).MassFlowRate = max(0.0, thisPIU.MaxTotAirMassFlow - thisPIU.MaxPriAirMassFlow);
@@ -803,7 +800,7 @@ void InitPIU(EnergyPlusData &state,
             state.dataLoopNodes->Node(SecNode).MassFlowRate = 0.0;
         }
         // reset the max and min avail flows
-        if (GetCurrentScheduleValue(state, thisPIU.SchedPtr) > 0.0 && state.dataLoopNodes->Node(PriNode).MassFlowRateMaxAvail > 0.0) {
+        if (thisPIU.availSched->getCurrentVal() > 0.0 && state.dataLoopNodes->Node(PriNode).MassFlowRateMaxAvail > 0.0) {
             if (thisPIU.UnitType == "AirTerminal:SingleDuct:SeriesPIU:Reheat") {
                 state.dataLoopNodes->Node(PriNode).MassFlowRateMaxAvail = thisPIU.MaxPriAirMassFlow;
                 state.dataLoopNodes->Node(PriNode).MassFlowRateMinAvail = thisPIU.MinPriAirMassFlow;
@@ -1451,10 +1448,10 @@ void CalcSeriesPIU(EnergyPlusData &state,
             MinWaterFlow = state.dataLoopNodes->Node(thisPIU.HotControlNode).MassFlowRateMinAvail;
         }
     }
-    if (GetCurrentScheduleValue(state, thisPIU.SchedPtr) <= 0.0) {
+    if (thisPIU.availSched->getCurrentVal() <= 0.0) {
         UnitOn = false;
     }
-    if ((GetCurrentScheduleValue(state, thisPIU.FanAvailSchedPtr) <= 0.0 || state.dataHVACGlobal->TurnFansOff) && !state.dataHVACGlobal->TurnFansOn) {
+    if ((thisPIU.fanAvailSched->getCurrentVal() <= 0.0 || state.dataHVACGlobal->TurnFansOff) && !state.dataHVACGlobal->TurnFansOn) {
         UnitOn = false;
     }
     if (thisPIU.PriAirMassFlow <= SmallMassFlow || PriAirMassFlowMax <= SmallMassFlow) {
@@ -1584,7 +1581,7 @@ void CalcSeriesPIU(EnergyPlusData &state,
                                                (state.dataLoopNodes->Node(thisPIU.HCoilInAirNode).Temp - state.dataLoopNodes->Node(ZoneNode).Temp);
 
     // check if heating coil is off
-    if (((!UnitOn) || (QActualHeating < SmallLoad) || (state.dataHeatBalFanSys->TempControlType(ZoneNum) == HVAC::ThermostatType::SingleCooling) ||
+    if (((!UnitOn) || (QActualHeating < SmallLoad) || (state.dataHeatBalFanSys->TempControlType(ZoneNum) == HVAC::SetptType::SingleCool) ||
          (thisPIU.PriAirMassFlow > PriAirMassFlowMin)) &&
         (thisPIU.heatingOperatingMode != HeatOpModeType::StagedHeatFirstStage)) { // reheat is off during the first stage of heating
         thisPIU.heatingOperatingMode = HeatOpModeType::HeaterOff;
@@ -1777,7 +1774,7 @@ void CalcParallelPIU(EnergyPlusData &state,
             MinWaterFlow = state.dataLoopNodes->Node(thisPIU.HotControlNode).MassFlowRateMinAvail;
         }
     }
-    if (GetCurrentScheduleValue(state, thisPIU.SchedPtr) <= 0.0) {
+    if (thisPIU.availSched->getCurrentVal() <= 0.0) {
         UnitOn = false;
     }
     if (thisPIU.PriAirMassFlow <= SmallMassFlow || PriAirMassFlowMax <= SmallMassFlow) {
@@ -1934,7 +1931,7 @@ void CalcParallelPIU(EnergyPlusData &state,
                                                (state.dataLoopNodes->Node(thisPIU.HCoilInAirNode).Temp - state.dataLoopNodes->Node(ZoneNode).Temp);
 
     // check if heating coil is off
-    if (((!UnitOn) || (QActualHeating < SmallLoad) || (state.dataHeatBalFanSys->TempControlType(ZoneNum) == HVAC::ThermostatType::SingleCooling) ||
+    if (((!UnitOn) || (QActualHeating < SmallLoad) || (state.dataHeatBalFanSys->TempControlType(ZoneNum) == HVAC::SetptType::SingleCool) ||
          (thisPIU.PriAirMassFlow > PriAirMassFlowMin)) &&
         (thisPIU.heatingOperatingMode != HeatOpModeType::StagedHeatFirstStage)) { // reheat is off during the first stage of heating
         thisPIU.heatingOperatingMode = HeatOpModeType::HeaterOff;
@@ -2112,7 +2109,7 @@ void CalcVariableSpeedPIUCoolingBehavior(EnergyPlusData &state,
                                          Real64 const zoneLoad,
                                          Real64 const loadToHeatSetPt,
                                          Real64 const priAirMassFlowMin,
-                                         Real64 const priAirMassFlowMax)
+                                         [[maybe_unused]] Real64 const priAirMassFlowMax)
 {
     auto &thisPIU = state.dataPowerInductionUnits->PIU(piuNum);
     thisPIU.coolingOperatingMode = CoolOpModeType::CoolerOff;

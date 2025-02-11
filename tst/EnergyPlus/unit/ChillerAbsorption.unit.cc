@@ -1784,6 +1784,8 @@ TEST_F(EnergyPlusFixture, ChillerAbsorption_Calc)
 
     ASSERT_TRUE(process_idf(idf_objects));
 
+    state->init_state(*state);
+
     SimulationManager::ManageSimulation(*state); // run the design day
 
     // set conditions for test
@@ -1840,11 +1842,11 @@ TEST_F(EnergyPlusFixture, ChillerAbsorption_Autosize)
     state->dataPlnt->TotNumLoops = 3;
     state->dataEnvrn->OutBaroPress = 101325.0;
     state->dataEnvrn->StdRhoAir = 1.20;
-    state->dataGlobal->NumOfTimeStepInHour = 4;
+    state->dataGlobal->TimeStepsInHour = 4;
     state->dataGlobal->TimeStep = 1;
-    state->dataGlobal->MinutesPerTimeStep = 15;
+    state->dataGlobal->MinutesInTimeStep = 15;
     state->dataHVACGlobal->TimeStepSys = 0.25;
-    state->dataHVACGlobal->TimeStepSysSec = state->dataHVACGlobal->TimeStepSys * Constant::SecInHour;
+    state->dataHVACGlobal->TimeStepSysSec = state->dataHVACGlobal->TimeStepSys * Constant::rSecsInHour;
     state->dataGlobal->SysSizingCalc = true;
 
     std::string const idf_objects = delimited_string({
@@ -1878,6 +1880,8 @@ TEST_F(EnergyPlusFixture, ChillerAbsorption_Autosize)
         "  1.5;                     !- Sizing Factor",
     });
     EXPECT_TRUE(process_idf(idf_objects, false));
+
+    state->init_state(*state);
 
     state->dataPlnt->PlantLoop.allocate(state->dataPlnt->TotNumLoops);
     state->dataSize->NumPltSizInput = state->dataPlnt->TotNumLoops;
@@ -2055,7 +2059,6 @@ TEST_F(EnergyPlusFixture, ChillerAbsorption_Autosize)
     bool RunFlag(true);
     Real64 MyLoad(-20000.0);
 
-    Psychrometrics::InitializePsychRoutines(*state);
     thisChiller.initialize(*state, RunFlag, MyLoad);
     thisChiller.sizeChiller(*state);
 

@@ -51,7 +51,6 @@
 #include <cstdlib>
 
 // ObjexxFCL Headers
-#include <ObjexxFCL/Fmath.hh>
 #include <ObjexxFCL/string.functions.hh>
 
 // EnergyPlus Headers

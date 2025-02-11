@@ -50,7 +50,6 @@
 
 // ObjexxFCL Headers
 #include <ObjexxFCL/Array1D.hh>
-#include <ObjexxFCL/Fmath.hh>
 #include <ObjexxFCL/member.functions.hh>
 
 // EnergyPlus Headers
@@ -796,12 +795,12 @@ namespace RoomAir {
         Real64 CeilingHeight = state.dataRoomAir->ZoneCeilingHeight2(ZoneNum) - state.dataRoomAir->ZoneCeilingHeight1(ZoneNum);
 
         auto &zoneU = state.dataRoomAir->ZoneUFAD(state.dataRoomAir->ZoneUFADPtr(ZoneNum));
-        Real64 HeightThermostat = zoneU.ThermostatHeight; // height of the thermostat above the floor [m]
-        Real64 HeightComfort = zoneU.ComfortHeight;       // height at which comfort temperature is calculated
-        Real64 TempDiffCritRep = zoneU.TempTrigger;       // Minimum temperature difference between upper and occupied subzones for reporting
-        Real64 DiffArea = zoneU.DiffArea;                 // diffuser effective area [m2]
-        Real64 ThrowAngle = Constant::DegToRadians * zoneU.DiffAngle; // diffuser slot angle relative to vertical [radians]
-        Real64 SourceHeight = 0.0;                                    // height of plume sources above the floor [m]
+        Real64 HeightThermostat = zoneU.ThermostatHeight;         // height of the thermostat above the floor [m]
+        Real64 HeightComfort = zoneU.ComfortHeight;               // height at which comfort temperature is calculated
+        Real64 TempDiffCritRep = zoneU.TempTrigger;               // Minimum temperature difference between upper and occupied subzones for reporting
+        Real64 DiffArea = zoneU.DiffArea;                         // diffuser effective area [m2]
+        Real64 ThrowAngle = Constant::DegToRad * zoneU.DiffAngle; // diffuser slot angle relative to vertical [radians]
+        Real64 SourceHeight = 0.0;                                // height of plume sources above the floor [m]
         Real64 NumDiffusers = zoneU.DiffusersPerZone;
         Real64 PowerPerPlume = zoneU.PowerPerPlume;
         // gains from occupants, task lighting, elec equip, gas equip, other equip, hot water equip, steam equip,
@@ -1222,12 +1221,12 @@ namespace RoomAir {
         Real64 CeilingHeight = state.dataRoomAir->ZoneCeilingHeight2(ZoneNum) - state.dataRoomAir->ZoneCeilingHeight1(ZoneNum);
 
         auto &zoneU = state.dataRoomAir->ZoneUFAD(state.dataRoomAir->ZoneUFADPtr(ZoneNum));
-        Real64 HeightThermostat = zoneU.ThermostatHeight; // height of the thermostat above the floor [m]
-        Real64 HeightComfort = zoneU.ComfortHeight;       // height at which comfort temperature is calculated
-        Real64 TempDiffCritRep = zoneU.TempTrigger;       // Minimum temperature difference between upper and occupied subzones for reporting
-        Real64 DiffArea = zoneU.DiffArea;                 // diffuser effective area [m2]
-        Real64 ThrowAngle = Constant::DegToRadians * zoneU.DiffAngle; // diffuser slot angle relative to vertical [radians]
-        Real64 SourceHeight = zoneU.HeatSrcHeight;                    // height of plume sources above the floor [m]
+        Real64 HeightThermostat = zoneU.ThermostatHeight;         // height of the thermostat above the floor [m]
+        Real64 HeightComfort = zoneU.ComfortHeight;               // height at which comfort temperature is calculated
+        Real64 TempDiffCritRep = zoneU.TempTrigger;               // Minimum temperature difference between upper and occupied subzones for reporting
+        Real64 DiffArea = zoneU.DiffArea;                         // diffuser effective area [m2]
+        Real64 ThrowAngle = Constant::DegToRad * zoneU.DiffAngle; // diffuser slot angle relative to vertical [radians]
+        Real64 SourceHeight = zoneU.HeatSrcHeight;                // height of plume sources above the floor [m]
         Real64 NumDiffusers = zoneU.DiffusersPerZone;
         Real64 PowerPerPlume = zoneU.PowerPerPlume;
         // gains from occupants, task lighting, elec equip, gas equip, other equip, hot water equip, steam equip,

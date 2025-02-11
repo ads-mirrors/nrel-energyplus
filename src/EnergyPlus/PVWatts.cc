@@ -388,7 +388,7 @@ namespace PVWatts {
         Real64 TimeStepSysSec = state.dataHVACGlobal->TimeStepSysSec;
 
         // We only run this once for each zone time step.
-        const int NumTimeStepsToday_loc = state.dataGlobal->HourOfDay * state.dataGlobal->NumOfTimeStepInHour + state.dataGlobal->TimeStep;
+        const int NumTimeStepsToday_loc = state.dataGlobal->HourOfDay * state.dataGlobal->TimeStepsInHour + state.dataGlobal->TimeStep;
         if (NumTimeStepsToday_ != NumTimeStepsToday_loc) {
             NumTimeStepsToday_ = NumTimeStepsToday_loc;
         } else {
@@ -402,7 +402,7 @@ namespace PVWatts {
         ssc_data_set_number(pvwattsData_, "month", state.dataEnvrn->Month);
         ssc_data_set_number(pvwattsData_, "day", state.dataEnvrn->DayOfMonth);
         ssc_data_set_number(pvwattsData_, "hour", state.dataGlobal->HourOfDay - 1);
-        ssc_data_set_number(pvwattsData_, "minute", (state.dataGlobal->TimeStep - 0.5) * state.dataGlobal->MinutesPerTimeStep);
+        ssc_data_set_number(pvwattsData_, "minute", (state.dataGlobal->TimeStep - 0.5) * state.dataGlobal->MinutesInTimeStep);
 
         // Weather Conditions
         ssc_data_set_number(pvwattsData_, "beam", state.dataEnvrn->BeamSolarRad);

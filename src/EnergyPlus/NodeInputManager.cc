@@ -968,7 +968,6 @@ void CalcMoreNodeInfo(EnergyPlusData &state)
     using Psychrometrics::PsyTdpFnWPb;
     using Psychrometrics::PsyTwbFnTdbWPb;
     using Psychrometrics::RhoH2O;
-    using ScheduleManager::GetCurrentScheduleValue;
 
     // SUBROUTINE PARAMETER DEFINITIONS:
     static constexpr std::string_view RoutineName("CalcMoreNodeInfo");
@@ -976,13 +975,13 @@ void CalcMoreNodeInfo(EnergyPlusData &state)
 
     auto &RhoAirStdInit = state.dataNodeInputMgr->RhoAirStdInit;
     auto &RhoWaterStdInit = state.dataNodeInputMgr->RhoWaterStdInit;
-    auto &NodeWetBulbSchedPtr = state.dataNodeInputMgr->NodeWetBulbSchedPtr;
+    auto &NodeWetBulbScheds = state.dataNodeInputMgr->NodeWetBulbScheds;
     auto &NodeRelHumidityRepReq = state.dataNodeInputMgr->NodeRelHumidityRepReq;
-    auto &NodeRelHumiditySchedPtr = state.dataNodeInputMgr->NodeRelHumiditySchedPtr;
+    auto &NodeRelHumidityScheds = state.dataNodeInputMgr->NodeRelHumidityScheds;
     auto &NodeDewPointRepReq = state.dataNodeInputMgr->NodeDewPointRepReq;
-    auto &NodeDewPointSchedPtr = state.dataNodeInputMgr->NodeDewPointSchedPtr;
+    auto &NodeDewPointScheds = state.dataNodeInputMgr->NodeDewPointScheds;
     auto &NodeSpecificHeatRepReq = state.dataNodeInputMgr->NodeSpecificHeatRepReq;
-    auto &NodeSpecificHeatSchedPtr = state.dataNodeInputMgr->NodeSpecificHeatSchedPtr;
+    auto &NodeSpecificHeatScheds = state.dataNodeInputMgr->NodeSpecificHeatScheds;
     auto &nodeReportingStrings = state.dataNodeInputMgr->nodeReportingStrings;
     auto &nodeFluids = state.dataNodeInputMgr->nodeFluids;
     Real64 SteamDensity;
@@ -996,23 +995,23 @@ void CalcMoreNodeInfo(EnergyPlusData &state)
         RhoAirStdInit = state.dataEnvrn->StdRhoAir;
         RhoWaterStdInit = RhoH2O(Constant::InitConvTemp);
         state.dataNodeInputMgr->NodeWetBulbRepReq.allocate(state.dataLoopNodes->NumOfNodes);
-        NodeWetBulbSchedPtr.allocate(state.dataLoopNodes->NumOfNodes);
+        NodeWetBulbScheds.allocate(state.dataLoopNodes->NumOfNodes);
         NodeRelHumidityRepReq.allocate(state.dataLoopNodes->NumOfNodes);
-        NodeRelHumiditySchedPtr.allocate(state.dataLoopNodes->NumOfNodes);
+        NodeRelHumidityScheds.allocate(state.dataLoopNodes->NumOfNodes);
         NodeDewPointRepReq.allocate(state.dataLoopNodes->NumOfNodes);
-        NodeDewPointSchedPtr.allocate(state.dataLoopNodes->NumOfNodes);
+        NodeDewPointScheds.allocate(state.dataLoopNodes->NumOfNodes);
         NodeSpecificHeatRepReq.allocate(state.dataLoopNodes->NumOfNodes);
-        NodeSpecificHeatSchedPtr.allocate(state.dataLoopNodes->NumOfNodes);
+        NodeSpecificHeatScheds.allocate(state.dataLoopNodes->NumOfNodes);
         nodeReportingStrings.reserve(state.dataLoopNodes->NumOfNodes);
         nodeFluids.reserve(state.dataLoopNodes->NumOfNodes);
         state.dataNodeInputMgr->NodeWetBulbRepReq = false;
-        NodeWetBulbSchedPtr = 0;
+        NodeWetBulbScheds = nullptr;
         NodeRelHumidityRepReq = false;
-        NodeRelHumiditySchedPtr = 0;
+        NodeRelHumidityScheds = nullptr;
         NodeDewPointRepReq = false;
-        NodeDewPointSchedPtr = 0;
+        NodeDewPointScheds = nullptr;
         NodeSpecificHeatRepReq = false;
-        NodeSpecificHeatSchedPtr = 0;
+        NodeSpecificHeatScheds = nullptr;
 
         for (int iNode = 1; iNode <= state.dataLoopNodes->NumOfNodes; ++iNode) {
             nodeReportingStrings.push_back(std::string(NodeReportingCalc + state.dataLoopNodes->NodeID(iNode)));
@@ -1023,34 +1022,34 @@ void CalcMoreNodeInfo(EnergyPlusData &state)
                 if (Util::SameString(reqVar->key, state.dataLoopNodes->NodeID(iNode)) || reqVar->key.empty()) {
                     if (Util::SameString(reqVar->name, "System Node Wetbulb Temperature")) {
                         state.dataNodeInputMgr->NodeWetBulbRepReq(iNode) = true;
-                        NodeWetBulbSchedPtr(iNode) = reqVar->SchedPtr;
+                        NodeWetBulbScheds(iNode) = reqVar->sched;
                     } else if (Util::SameString(reqVar->name, "System Node Relative Humidity")) {
                         NodeRelHumidityRepReq(iNode) = true;
-                        NodeRelHumiditySchedPtr(iNode) = reqVar->SchedPtr;
+                        NodeRelHumidityScheds(iNode) = reqVar->sched;
                     } else if (Util::SameString(reqVar->name, "System Node Dewpoint Temperature")) {
                         NodeDewPointRepReq(iNode) = true;
-                        NodeDewPointSchedPtr(iNode) = reqVar->SchedPtr;
+                        NodeDewPointScheds(iNode) = reqVar->sched;
                     } else if (Util::SameString(reqVar->name, "System Node Specific Heat")) {
                         NodeSpecificHeatRepReq(iNode) = true;
-                        NodeSpecificHeatSchedPtr(iNode) = reqVar->SchedPtr;
+                        NodeSpecificHeatScheds(iNode) = reqVar->sched;
                     }
                 }
             }
             if (EMSManager::CheckIfNodeMoreInfoSensedByEMS(state, iNode, "System Node Wetbulb Temperature")) {
                 state.dataNodeInputMgr->NodeWetBulbRepReq(iNode) = true;
-                NodeWetBulbSchedPtr(iNode) = 0;
+                NodeWetBulbScheds(iNode) = nullptr;
             }
             if (EMSManager::CheckIfNodeMoreInfoSensedByEMS(state, iNode, "System Node Relative Humidity")) {
                 NodeRelHumidityRepReq(iNode) = true;
-                NodeRelHumiditySchedPtr(iNode) = 0;
+                NodeRelHumidityScheds(iNode) = nullptr;
             }
             if (EMSManager::CheckIfNodeMoreInfoSensedByEMS(state, iNode, "System Node Dewpoint Temperature")) {
                 NodeDewPointRepReq(iNode) = true;
-                NodeDewPointSchedPtr(iNode) = 0;
+                NodeDewPointScheds(iNode) = nullptr;
             }
             if (EMSManager::CheckIfNodeMoreInfoSensedByEMS(state, iNode, "System Node Specific Heat")) {
                 NodeSpecificHeatRepReq(iNode) = true;
-                NodeSpecificHeatSchedPtr(iNode) = 0;
+                NodeSpecificHeatScheds(iNode) = nullptr;
             }
         }
         state.dataNodeInputMgr->CalcMoreNodeInfoMyOneTimeFlag = false;
@@ -1061,26 +1060,26 @@ void CalcMoreNodeInfo(EnergyPlusData &state)
         bool ReportRelHumidity = false;
         bool ReportDewPoint = false;
         bool ReportSpecificHeat = false;
-        if (state.dataNodeInputMgr->NodeWetBulbRepReq(iNode) && NodeWetBulbSchedPtr(iNode) > 0) {
-            ReportWetBulb = (GetCurrentScheduleValue(state, NodeWetBulbSchedPtr(iNode)) > 0.0);
-        } else if (state.dataNodeInputMgr->NodeWetBulbRepReq(iNode) && NodeWetBulbSchedPtr(iNode) == 0) {
+        if (state.dataNodeInputMgr->NodeWetBulbRepReq(iNode) && NodeWetBulbScheds(iNode) != nullptr) {
+            ReportWetBulb = (NodeWetBulbScheds(iNode)->getCurrentVal() > 0.0);
+        } else if (state.dataNodeInputMgr->NodeWetBulbRepReq(iNode) && NodeWetBulbScheds(iNode) == nullptr) {
             ReportWetBulb = true;
         } else if (state.dataLoopNodes->Node(iNode).SPMNodeWetBulbRepReq) {
             ReportWetBulb = true;
         }
-        if (NodeRelHumidityRepReq(iNode) && NodeRelHumiditySchedPtr(iNode) > 0) {
-            ReportRelHumidity = (GetCurrentScheduleValue(state, NodeRelHumiditySchedPtr(iNode)) > 0.0);
-        } else if (NodeRelHumidityRepReq(iNode) && NodeRelHumiditySchedPtr(iNode) == 0) {
+        if (NodeRelHumidityRepReq(iNode) && NodeRelHumidityScheds(iNode) != nullptr) {
+            ReportRelHumidity = (NodeRelHumidityScheds(iNode)->getCurrentVal() > 0.0);
+        } else if (NodeRelHumidityRepReq(iNode) && NodeRelHumidityScheds(iNode) == nullptr) {
             ReportRelHumidity = true;
         }
-        if (NodeDewPointRepReq(iNode) && NodeDewPointSchedPtr(iNode) > 0) {
-            ReportDewPoint = (GetCurrentScheduleValue(state, NodeDewPointSchedPtr(iNode)) > 0.0);
-        } else if (NodeDewPointRepReq(iNode) && NodeDewPointSchedPtr(iNode) == 0) {
+        if (NodeDewPointRepReq(iNode) && NodeDewPointScheds(iNode) != nullptr) {
+            ReportDewPoint = (NodeDewPointScheds(iNode)->getCurrentVal() > 0.0);
+        } else if (NodeDewPointRepReq(iNode) && NodeDewPointScheds(iNode) == nullptr) {
             ReportDewPoint = true;
         }
-        if (NodeSpecificHeatRepReq(iNode) && NodeSpecificHeatSchedPtr(iNode) > 0) {
-            ReportSpecificHeat = (GetCurrentScheduleValue(state, NodeSpecificHeatSchedPtr(iNode)) > 0.0);
-        } else if (NodeSpecificHeatRepReq(iNode) && NodeSpecificHeatSchedPtr(iNode) == 0) {
+        if (NodeSpecificHeatRepReq(iNode) && NodeSpecificHeatScheds(iNode) != nullptr) {
+            ReportSpecificHeat = (NodeSpecificHeatScheds(iNode)->getCurrentVal() > 0.0);
+        } else if (NodeSpecificHeatRepReq(iNode) && NodeSpecificHeatScheds(iNode) == nullptr) {
             ReportSpecificHeat = true;
         }
         // calculate the volume flow rate

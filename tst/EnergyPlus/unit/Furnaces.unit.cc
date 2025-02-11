@@ -77,7 +77,6 @@ using namespace EnergyPlus;
 using namespace EnergyPlus::Furnaces;
 using namespace EnergyPlus::DataLoopNode;
 using namespace DataZoneEnergyDemands;
-using namespace ScheduleManager;
 using namespace EnergyPlus::DataAirLoop;
 using namespace EnergyPlus::OutputProcessor;
 using namespace EnergyPlus::SimulationManager;
@@ -93,7 +92,6 @@ TEST_F(EnergyPlusFixture, SetVSHPAirFlowTest_VSFurnaceFlowTest)
     Real64 PartLoadRatio(1.0);
     state->dataLoopNodes->Node.allocate(10);
     state->dataZoneEnergyDemand->CurDeadBandOrSetback.allocate(1);
-    state->dataScheduleMgr->Schedule.allocate(1);
 
     state->dataHVACGlobal->MSHPMassFlowRateLow = 0.0;
     state->dataHVACGlobal->MSHPMassFlowRateHigh = 0.0;
@@ -117,7 +115,7 @@ TEST_F(EnergyPlusFixture, SetVSHPAirFlowTest_VSFurnaceFlowTest)
     state->dataFurnaces->Furnace(FurnaceNum).LastMode = Furnaces::ModeOfOperation::HeatingMode;
     state->dataFurnaces->Furnace(FurnaceNum).IdleMassFlowRate = 0.2;
     state->dataFurnaces->Furnace(FurnaceNum).IdleSpeedRatio = 0.2;
-    state->dataFurnaces->Furnace(FurnaceNum).FanAvailSchedPtr = ScheduleManager::ScheduleAlwaysOn;
+    state->dataFurnaces->Furnace(FurnaceNum).fanAvailSched = Sched::GetScheduleAlwaysOn(*state);
     state->dataFurnaces->Furnace(FurnaceNum).FurnaceInletNodeNum = 1;
 
     state->dataFurnaces->Furnace(FurnaceNum).HeatMassFlowRate(1) = 0.25;
@@ -142,7 +140,8 @@ TEST_F(EnergyPlusFixture, SetVSHPAirFlowTest_VSFurnaceFlowTest)
     state->dataFurnaces->Furnace(FurnaceNum).NumOfSpeedHeating = 0;
     state->dataFurnaces->Furnace(FurnaceNum).NumOfSpeedCooling = 0;
     //	Furnace( FurnaceNum ).SchedPtr = 0; // denotes incorrect schedule name in Furnace input ( returns 0.0 )
-    state->dataFurnaces->Furnace(FurnaceNum).SchedPtr = -1; // denotes missing schedule name in Furnace input ( returns 1.0 )
+    state->dataFurnaces->Furnace(FurnaceNum).availSched =
+        Sched::GetScheduleAlwaysOn(*state); // denotes missing schedule name in Furnace input ( returns 1.0 )
     state->dataFurnaces->HeatingLoad = true;
     state->dataFurnaces->CoolingLoad = false;
     SetVSHPAirFlow(*state, FurnaceNum, PartLoadRatio, OnOffAirFlowRatio);
@@ -1186,6 +1185,7 @@ TEST_F(EnergyPlusFixture, UnitaryHeatPumpAirToAir_MaxSuppAirTempTest)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     int CompIndex(0);
     int AirLoopNum(1);
@@ -1234,10 +1234,10 @@ TEST_F(EnergyPlusFixture, Furnaces_SetMinOATCompressor)
     state->dataHVACAssistedCC->HXAssistedCoil(1).CoolingCoilType = "COIL:COOLING:DX";
     state->dataHVACAssistedCC->HXAssistedCoil(1).CoolingCoilName = "Dummy_Name";
 
-    state->dataCoilCooingDX->coilCoolingDXGetInputFlag = false;
+    state->dataCoilCoolingDX->coilCoolingDXGetInputFlag = false;
     CoilCoolingDX thisCoil;
     thisCoil.name = "Dummy_Name";
-    state->dataCoilCooingDX->coilCoolingDXs.push_back(thisCoil);
+    state->dataCoilCoolingDX->coilCoolingDXs.push_back(thisCoil);
 
     int FurnaceNum = 1;
     std::string cCurModObj = "Furnace_Test";

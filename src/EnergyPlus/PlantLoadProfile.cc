@@ -218,7 +218,7 @@ void PlantProfileData::InitPlantProfile(EnergyPlusData &state)
             FluidDensityInit = state.dataPlnt->PlantLoop(this->plantLoc.loopNum).steam->getSatDensity(state, SatTempAtmPress, 1.0, RoutineName);
         }
 
-        Real64 MaxFlowMultiplier = ScheduleManager::GetScheduleMaxValue(state, this->FlowRateFracSchedule);
+        Real64 MaxFlowMultiplier = this->flowRateFracSched->getMaxVal(state);
 
         PlantUtilities::InitComponentNodes(
             state, 0.0, this->PeakVolFlowRate * FluidDensityInit * MaxFlowMultiplier, this->InletNode, this->OutletNode);
@@ -233,7 +233,7 @@ void PlantProfileData::InitPlantProfile(EnergyPlusData &state)
     if (!state.dataGlobal->BeginEnvrnFlag) this->Init = true;
 
     this->InletTemp = state.dataLoopNodes->Node(InletNode).Temp;
-    this->Power = ScheduleManager::GetCurrentScheduleValue(state, this->LoadSchedule);
+    this->Power = this->loadSched->getCurrentVal();
 
     if (this->EMSOverridePower) this->Power = this->EMSPowerValue;
 
@@ -244,7 +244,7 @@ void PlantProfileData::InitPlantProfile(EnergyPlusData &state)
     }
 
     // Get the scheduled mass flow rate
-    this->VolFlowRate = this->PeakVolFlowRate * ScheduleManager::GetCurrentScheduleValue(state, this->FlowRateFracSchedule);
+    this->VolFlowRate = this->PeakVolFlowRate * this->flowRateFracSched->getCurrentVal();
 
     this->MassFlowRate = this->VolFlowRate * FluidDensityInit;
 
@@ -331,6 +331,8 @@ void GetPlantProfileInput(EnergyPlusData &state)
     // PURPOSE OF THIS SUBROUTINE:
     // Gets the plant load profile input from the input file and sets up the objects.
 
+    static constexpr std::string_view routineName = "GetPlantProfileInput";
+
     // Using/Aliasing
     using namespace DataLoopNode;
 
@@ -360,6 +362,9 @@ void GetPlantProfileInput(EnergyPlusData &state)
                                                                      _,
                                                                      state.dataIPShortCut->cAlphaFieldNames,
                                                                      state.dataIPShortCut->cNumericFieldNames);
+
+            ErrorObjectHeader eoh{routineName, cCurrentModuleObject, state.dataIPShortCut->cAlphaArgs(1)};
+
             Util::IsNameEmpty(state, state.dataIPShortCut->cAlphaArgs(1), cCurrentModuleObject, ErrorsFound);
 
             state.dataPlantLoadProfile->PlantProfile(ProfileNum).Name = state.dataIPShortCut->cAlphaArgs(1);
@@ -416,32 +421,17 @@ void GetPlantProfileInput(EnergyPlusData &state)
                                                         ObjectIsNotParent);
             }
 
-            state.dataPlantLoadProfile->PlantProfile(ProfileNum).LoadSchedule =
-                ScheduleManager::GetScheduleIndex(state, state.dataIPShortCut->cAlphaArgs(4));
-
-            if (state.dataPlantLoadProfile->PlantProfile(ProfileNum).LoadSchedule == 0) {
-                ShowSevereError(state,
-                                format("{}=\"{}\"  The Schedule for {} called {} was not found.",
-                                       cCurrentModuleObject,
-                                       state.dataIPShortCut->cAlphaArgs(1),
-                                       state.dataIPShortCut->cAlphaFieldNames(4),
-                                       state.dataIPShortCut->cAlphaArgs(4)));
+            if ((state.dataPlantLoadProfile->PlantProfile(ProfileNum).loadSched = Sched::GetSchedule(state, state.dataIPShortCut->cAlphaArgs(4))) ==
+                nullptr) {
+                ShowSevereItemNotFound(state, eoh, state.dataIPShortCut->cAlphaFieldNames(4), state.dataIPShortCut->cAlphaArgs(4));
                 ErrorsFound = true;
             }
 
             state.dataPlantLoadProfile->PlantProfile(ProfileNum).PeakVolFlowRate = state.dataIPShortCut->rNumericArgs(1);
 
-            state.dataPlantLoadProfile->PlantProfile(ProfileNum).FlowRateFracSchedule =
-                ScheduleManager::GetScheduleIndex(state, state.dataIPShortCut->cAlphaArgs(5));
-
-            if (state.dataPlantLoadProfile->PlantProfile(ProfileNum).FlowRateFracSchedule == 0) {
-                ShowSevereError(state,
-                                format("{}=\"{}\"  The Schedule for {} called {} was not found.",
-                                       cCurrentModuleObject,
-                                       state.dataIPShortCut->cAlphaArgs(1),
-                                       state.dataIPShortCut->cAlphaFieldNames(5),
-                                       state.dataIPShortCut->cAlphaArgs(5)));
-
+            if ((state.dataPlantLoadProfile->PlantProfile(ProfileNum).flowRateFracSched =
+                     Sched::GetSchedule(state, state.dataIPShortCut->cAlphaArgs(5))) == nullptr) {
+                ShowSevereItemNotFound(state, eoh, state.dataIPShortCut->cAlphaFieldNames(5), state.dataIPShortCut->cAlphaArgs(5));
                 ErrorsFound = true;
             }
 

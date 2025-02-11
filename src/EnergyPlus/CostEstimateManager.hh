@@ -189,6 +189,10 @@ struct CostEstimateManagerData : BaseGlobalStruct
 
     Array1D<CostEstimateManager::monetaryUnitType> monetaryUnit;
 
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
+
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {
     }

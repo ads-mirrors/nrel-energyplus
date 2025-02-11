@@ -140,6 +140,7 @@ TEST_F(EnergyPlusFixture, GasAbsorption_GetInput_Test)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     GetGasAbsorberInput(*state);
 
@@ -171,6 +172,7 @@ TEST_F(EnergyPlusFixture, GasAbsorption_GetInput_Test)
 
 TEST_F(EnergyPlusFixture, GasAbsorption_getDesignCapacities_Test)
 {
+    state->init_state(*state);
     state->dataPlnt->TotNumLoops = 3;
     state->dataPlnt->PlantLoop.allocate(state->dataPlnt->TotNumLoops);
 
@@ -317,6 +319,7 @@ TEST_F(EnergyPlusFixture, GasAbsorption_calculateHeater_Fix_Test)
 
     ASSERT_TRUE(process_idf(idf_objects));
     compare_err_stream("");
+    state->init_state(*state);
 
     GetGasAbsorberInput(*state);
 

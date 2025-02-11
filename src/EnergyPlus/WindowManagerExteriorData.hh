@@ -166,6 +166,10 @@ struct WindowManagerExteriorData : BaseGlobalStruct
 {
     std::unique_ptr<Window::CWindowConstructionsSimplified> p_inst;
 
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
+
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {
     }

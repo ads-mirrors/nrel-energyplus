@@ -535,7 +535,7 @@ Real64 EIRPlantLoopHeatPump::heatingCapacityModifierASHP(EnergyPlusData &state) 
     }
 }
 
-void EIRPlantLoopHeatPump::setPartLoadAndCyclingRatio(EnergyPlusData &state, Real64 &partLoadRatio)
+void EIRPlantLoopHeatPump::setPartLoadAndCyclingRatio([[maybe_unused]] EnergyPlusData &state, Real64 &partLoadRatio)
 {
     // Initialize cycling ratio to 1.0
     Real64 cyclingRatio = 1.0;
@@ -698,7 +698,7 @@ void EIRPlantLoopHeatPump::calcHeatRecoveryHeatTransferASHP(EnergyPlusData &stat
     }
 }
 
-void EIRPlantLoopHeatPump::setHeatRecoveryOperatingStatusASHP(EnergyPlusData &state, bool FirstHVACIteration)
+void EIRPlantLoopHeatPump::setHeatRecoveryOperatingStatusASHP([[maybe_unused]] EnergyPlusData &state, [[maybe_unused]] bool FirstHVACIteration)
 {
     if (!this->running) {
         if (this->heatRecoveryAvailable) {
@@ -2444,6 +2444,15 @@ bool EIRPlantLoopHeatPump::thermosiphonDisabled(EnergyPlusData &state)
     }
 }
 
+Real64 EIRPlantLoopHeatPump::getDynamicMaxCapacity(EnergyPlusData &state)
+{
+    Real64 sourceInletTemp = state.dataLoopNodes->Node(this->sourceSideNodes.inlet).Temp;
+    Real64 loadSideOutletSetpointTemp = this->getLoadSideOutletSetPointTemp(state);
+    // evaluate capacity modifier curve and determine load side heat transfer
+    Real64 capacityModifierFuncTemp = Curve::CurveValue(state, this->capFuncTempCurveIndex, loadSideOutletSetpointTemp, sourceInletTemp);
+    return this->referenceCapacity * capacityModifierFuncTemp * heatingCapacityModifierASHP(state);
+}
+
 void EIRPlantLoopHeatPump::report(EnergyPlusData &state)
 {
 
@@ -3695,6 +3704,42 @@ void EIRFuelFiredHeatPump::report(EnergyPlusData &state)
     PlantUtilities::SafeCopyPlantNode(state, this->loadSideNodes.inlet, this->loadSideNodes.outlet);
     state.dataLoopNodes->Node(this->loadSideNodes.outlet).Temp = this->loadSideOutletTemp;
     state.dataLoopNodes->Node(this->sourceSideNodes.outlet).Temp = this->sourceSideOutletTemp;
+}
+
+Real64 EIRFuelFiredHeatPump::getDynamicMaxCapacity(EnergyPlusData &state)
+{
+    // Source (air) side temperature variable
+    auto &thisSourceSideInletNode = state.dataLoopNodes->Node(this->sourceSideNodes.inlet);
+    Real64 oaTempforCurve =
+        (this->oaTempCurveInputVar == OATempCurveVar::WetBulb)
+            ? Psychrometrics::PsyTwbFnTdbWPb(
+                  state, thisSourceSideInletNode.Temp, thisSourceSideInletNode.HumRat, thisSourceSideInletNode.Press, "PLFFHPEIR::doPhysics()")
+            : thisSourceSideInletNode.Temp;
+
+    // Load (water) side temperature variable
+    Real64 waterTempforCurve = state.dataLoopNodes->Node(this->loadSideNodes.inlet).Temp;
+    if (this->waterTempCurveInputVar == WaterTempCurveVar::LeavingCondenser || this->waterTempCurveInputVar == WaterTempCurveVar::LeavingEvaporator) {
+        if (this->flowMode == DataPlant::FlowMode::LeavingSetpointModulated) {
+            DataPlant::PlantLoopData &thisLoadPlantLoop = state.dataPlnt->PlantLoop(this->loadSidePlantLoc.loopNum);
+            auto &thisLoadSideOutletNode = state.dataLoopNodes->Node(this->loadSideNodes.outlet);
+            if (thisLoadPlantLoop.LoopDemandCalcScheme == DataPlant::LoopDemandCalcScheme::SingleSetPoint) {
+                waterTempforCurve = thisLoadSideOutletNode.TempSetPoint;
+            } else {
+                if (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpFuelFiredCooling) {
+                    waterTempforCurve = thisLoadSideOutletNode.TempSetPointHi;
+                } else {
+                    waterTempforCurve = thisLoadSideOutletNode.TempSetPointLo;
+                }
+            }
+        } else {
+            // If not SP modulated then use actual outlet temp from last iteration?
+            waterTempforCurve = state.dataLoopNodes->Node(this->loadSideNodes.outlet).Temp;
+        }
+    }
+
+    // evaluate capacity modifier curve and determine load side heat transfer
+    Real64 capacityModifierFuncTemp = Curve::CurveValue(state, this->capFuncTempCurveIndex, waterTempforCurve, oaTempforCurve);
+    return this->referenceCapacity * capacityModifierFuncTemp;
 }
 
 } // namespace EnergyPlus::EIRPlantLoopHeatPumps

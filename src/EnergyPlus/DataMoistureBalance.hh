@@ -92,6 +92,10 @@ struct MoistureBalanceData : BaseGlobalStruct
     Array1D<Real64> HGrndFD;        // Ground Convection Coefficient
     Array1D<Real64> HAirFD;         // Air Convection Coefficient
 
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
+
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {
     }

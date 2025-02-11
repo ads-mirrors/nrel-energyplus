@@ -143,6 +143,10 @@ struct HysteresisPhaseChangeData : BaseGlobalStruct
 
     bool getHysteresisModels = true;
 
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
+
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {
     }

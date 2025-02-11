@@ -48,9 +48,6 @@
 // C++ Headers
 #include <cmath>
 
-// ObjexxFCL Headers
-#include <ObjexxFCL/Fmath.hh>
-
 // EnergyPlus Headers
 #include <EnergyPlus/Data/EnergyPlusData.hh>
 #include <EnergyPlus/DataGlobals.hh>
@@ -260,11 +257,11 @@ void DetermineAzimuthAndTilt(Array1D<Vector> const &Surf, // Surface Definition
     }
 
     Real64 tlt = std::acos(NewellSurfaceNormalVector.z);
-    tlt /= Constant::DegToRadians;
+    tlt /= Constant::DegToRad;
 
     Real64 az = rotang_0;
 
-    az /= Constant::DegToRadians;
+    az /= Constant::DegToRad;
     az = mod(450.0 - az, 360.0);
     az += 90.0;
     if (az < 0.0) az += 360.0;

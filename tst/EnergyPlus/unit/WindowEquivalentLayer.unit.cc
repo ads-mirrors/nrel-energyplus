@@ -88,7 +88,6 @@
 using namespace EnergyPlus;
 using namespace EnergyPlus::DataZoneEquipment;
 using namespace EnergyPlus::HeatBalanceManager;
-using namespace EnergyPlus::ScheduleManager;
 
 using namespace EnergyPlus::WindowEquivalentLayer;
 

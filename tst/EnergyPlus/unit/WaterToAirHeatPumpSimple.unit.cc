@@ -364,6 +364,7 @@ TEST_F(EnergyPlusFixture, WaterToAirHeatPumpSimple_TestAirFlow)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     GetCurveInput(*state);
     GetSimpleWatertoAirHPInput(*state);
@@ -717,6 +718,7 @@ TEST_F(EnergyPlusFixture, WaterToAirHeatPumpSimple_TestWaterFlowControl)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     GetCurveInput(*state);
     GetSimpleWatertoAirHPInput(*state);
@@ -1600,6 +1602,8 @@ TEST_F(EnergyPlusFixture, EquationFit_Initialization)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
+
     std::string CurrentModuleObject = "Coil:Cooling:DX:VariableSpeed";
     int num_coils = state->dataInputProcessing->inputProcessor->getNumObjectsFound(*state, CurrentModuleObject);
     ASSERT_EQ(0, num_coils);

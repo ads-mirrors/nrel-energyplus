@@ -95,7 +95,7 @@ TEST_F(EnergyPlusFixture, CrossMixingReportTest)
     state->dataGlobal->NumOfZones = state->dataGlobal->NumOfZones;
     state->dataHeatBal->TotCrossMixing = NumOfCrossMixing;
     state->dataHVACGlobal->TimeStepSys = 1.0;
-    state->dataHVACGlobal->TimeStepSysSec = state->dataHVACGlobal->TimeStepSys * Constant::SecInHour;
+    state->dataHVACGlobal->TimeStepSysSec = state->dataHVACGlobal->TimeStepSys * Constant::rSecsInHour;
     state->dataZoneTempPredictorCorrector->zoneHeatBalance(1).MCPI = 0.0;
     state->dataZoneTempPredictorCorrector->zoneHeatBalance(2).MCPI = 0.0;
     state->dataZoneTempPredictorCorrector->zoneHeatBalance(1).MCPV = 0.0;
@@ -141,13 +141,46 @@ TEST_F(EnergyPlusFixture, InfiltrationObjectLevelReport)
 {
 
     std::string const idf_objects = delimited_string({
-        "Zone,Zone1;",
-
-        "Zone,Zone2;",
-
-        "Zone,Zone3;",
-
-        "Zone,Zone4;",
+        "  Zone,",
+        "    Zone1,                   !- Name",
+        "    0,                       !- Direction of Relative North {deg}",
+        "    0,                       !- X Origin {m}",
+        "    0,                       !- Y Origin {m}",
+        "    0,                       !- Z Origin {m}",
+        "    1,                       !- Type",
+        "    1,                       !- Multiplier",
+        "    autocalculate,           !- Ceiling Height {m}",
+        "    100.0;                   !- Volume {m3}",
+        "  Zone,",
+        "    Zone2,                   !- Name",
+        "    0,                       !- Direction of Relative North {deg}",
+        "    0,                       !- X Origin {m}",
+        "    0,                       !- Y Origin {m}",
+        "    0,                       !- Z Origin {m}",
+        "    1,                       !- Type",
+        "    1,                       !- Multiplier",
+        "    autocalculate,           !- Ceiling Height {m}",
+        "    200.0;                   !- Volume {m3}",
+        "  Zone,",
+        "    Zone3,                   !- Name",
+        "    0,                       !- Direction of Relative North {deg}",
+        "    0,                       !- X Origin {m}",
+        "    0,                       !- Y Origin {m}",
+        "    0,                       !- Z Origin {m}",
+        "    1,                       !- Type",
+        "    1,                       !- Multiplier",
+        "    autocalculate,           !- Ceiling Height {m}",
+        "    300.0;                   !- Volume {m3}",
+        "  Zone,",
+        "    Zone4,                   !- Name",
+        "    0,                       !- Direction of Relative North {deg}",
+        "    0,                       !- X Origin {m}",
+        "    0,                       !- Y Origin {m}",
+        "    0,                       !- Z Origin {m}",
+        "    1,                       !- Type",
+        "    1,                       !- Multiplier",
+        "    autocalculate,           !- Ceiling Height {m}",
+        "    400.0;                   !- Volume {m3}",
 
         "ZoneList,",
         "  ZoneList,",
@@ -194,10 +227,14 @@ TEST_F(EnergyPlusFixture, InfiltrationObjectLevelReport)
 
     ASSERT_TRUE(process_idf(idf_objects));
     EXPECT_FALSE(has_err_output());
+    state->init_state(*state);
 
     bool ErrorsFound(false);
-    ScheduleManager::ProcessScheduleInput(*state);
     GetZoneData(*state, ErrorsFound);
+    state->dataHeatBal->space(1).Volume = state->dataHeatBal->Zone(1).Volume;
+    state->dataHeatBal->space(2).Volume = state->dataHeatBal->Zone(2).Volume;
+    state->dataHeatBal->space(3).Volume = state->dataHeatBal->Zone(3).Volume;
+    state->dataHeatBal->space(4).Volume = state->dataHeatBal->Zone(4).Volume;
     AllocateHeatBalArrays(*state);
     GetSimpleAirModelInputs(*state, ErrorsFound);
 
@@ -238,9 +275,9 @@ TEST_F(EnergyPlusFixture, InfiltrationObjectLevelReport)
     state->dataHeatBal->Zone(2).OutDryBulbTemp = 15.0;
     state->dataHeatBal->Zone(3).OutDryBulbTemp = 15.0;
     state->dataHeatBal->Zone(4).OutDryBulbTemp = 15.0;
-    state->dataScheduleMgr->Schedule(1).CurrentValue = 1.0;
+    Sched::GetSchedule(*state, "ALWAYSON")->currentVal = 1.0;
     state->dataHVACGlobal->TimeStepSys = 1.0;
-    state->dataHVACGlobal->TimeStepSysSec = state->dataHVACGlobal->TimeStepSys * Constant::SecInHour;
+    state->dataHVACGlobal->TimeStepSysSec = state->dataHVACGlobal->TimeStepSys * Constant::rSecsInHour;
     state->dataGlobal->TimeStepZone = 1.0;
     state->dataGlobal->TimeStepZoneSec = 3600;
 
@@ -389,7 +426,7 @@ TEST_F(EnergyPlusFixture, InfiltrationReportTest)
 
     state->dataGlobal->NumOfZones = state->dataGlobal->NumOfZones;
     state->dataHVACGlobal->TimeStepSys = 1.0;
-    state->dataHVACGlobal->TimeStepSysSec = state->dataHVACGlobal->TimeStepSys * Constant::SecInHour;
+    state->dataHVACGlobal->TimeStepSysSec = state->dataHVACGlobal->TimeStepSys * Constant::rSecsInHour;
     state->dataZoneTempPredictorCorrector->zoneHeatBalance(1).MCPI = 1.0;
     state->dataZoneTempPredictorCorrector->zoneHeatBalance(2).MCPI = 1.5;
     state->dataZoneTempPredictorCorrector->zoneHeatBalance(1).MCPV = 2.0;
@@ -453,7 +490,7 @@ TEST_F(EnergyPlusFixture, ExfilAndExhaustReportTest)
 
     state->dataGlobal->NumOfZones = state->dataGlobal->NumOfZones;
     state->dataHVACGlobal->TimeStepSys = 1.0;
-    state->dataHVACGlobal->TimeStepSysSec = state->dataHVACGlobal->TimeStepSys * Constant::SecInHour;
+    state->dataHVACGlobal->TimeStepSysSec = state->dataHVACGlobal->TimeStepSys * Constant::rSecsInHour;
     state->dataZoneTempPredictorCorrector->zoneHeatBalance(1).MCPI = 1.0;
     state->dataZoneTempPredictorCorrector->zoneHeatBalance(2).MCPI = 1.5;
     state->dataZoneTempPredictorCorrector->zoneHeatBalance(1).MCPV = 2.0;

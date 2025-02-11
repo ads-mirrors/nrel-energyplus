@@ -134,6 +134,7 @@ void GetMicroCHPGeneratorInput(EnergyPlusData &state)
 
     // METHODOLOGY EMPLOYED:
     // EnergyPlus input processor
+    static constexpr std::string_view routineName = "GetMicroCHPGeneratorInput";
 
     Array1D_string AlphArray(25);  // character string data
     Array1D<Real64> NumArray(200); // numeric data TODO deal with allocatable for extensible
@@ -283,6 +284,9 @@ void GetMicroCHPGeneratorInput(EnergyPlusData &state)
                                                                      state.dataIPShortCut->lAlphaFieldBlanks,
                                                                      state.dataIPShortCut->cAlphaFieldNames,
                                                                      state.dataIPShortCut->cNumericFieldNames);
+
+            ErrorObjectHeader eoh{routineName, state.dataIPShortCut->cCurrentModuleObject, AlphArray(1)};
+
             Util::IsNameEmpty(state, AlphArray(1), state.dataIPShortCut->cCurrentModuleObject, ErrorsFound);
 
             // GENERATOR:MICRO CHP,
@@ -372,14 +376,10 @@ void GetMicroCHPGeneratorInput(EnergyPlusData &state)
             }
 
             if (state.dataIPShortCut->lAlphaFieldBlanks(9)) {
-                state.dataCHPElectGen->MicroCHP(GeneratorNum).AvailabilitySchedID = ScheduleManager::ScheduleAlwaysOn;
-            } else {
-                state.dataCHPElectGen->MicroCHP(GeneratorNum).AvailabilitySchedID = ScheduleManager::GetScheduleIndex(state, AlphArray(9));
-                if (state.dataCHPElectGen->MicroCHP(GeneratorNum).AvailabilitySchedID == 0) {
-                    ShowSevereError(state, format("Invalid, {} = {}", state.dataIPShortCut->cAlphaFieldNames(9), AlphArray(9)));
-                    ShowContinueError(state, format("Entered in {}={}", state.dataIPShortCut->cCurrentModuleObject, AlphArray(1)));
-                    ErrorsFound = true;
-                }
+                state.dataCHPElectGen->MicroCHP(GeneratorNum).availSched = Sched::GetScheduleAlwaysOn(state);
+            } else if ((state.dataCHPElectGen->MicroCHP(GeneratorNum).availSched = Sched::GetSchedule(state, AlphArray(9))) == nullptr) {
+                ShowSevereItemNotFound(state, eoh, state.dataIPShortCut->cAlphaFieldNames(9), AlphArray(9));
+                ErrorsFound = true;
             }
             state.dataCHPElectGen->MicroCHP(GeneratorNum).A42Model.TengLast = 20.0;      // inits
             state.dataCHPElectGen->MicroCHP(GeneratorNum).A42Model.TempCWOutLast = 20.0; // inits
@@ -1411,12 +1411,12 @@ void MicroCHPDataStruct::UpdateMicroCHPGeneratorRecords(EnergyPlusData &state) /
     this->A42Model.FuelCompressPower = state.dataGenerator->FuelSupply(this->FuelSupplyID).PfuelCompEl;
     // electrical power used by fuel supply compressor [W]
     this->A42Model.FuelCompressEnergy =
-        state.dataGenerator->FuelSupply(this->FuelSupplyID).PfuelCompEl * state.dataHVACGlobal->TimeStepSys * Constant::SecInHour; // elect energy
+        state.dataGenerator->FuelSupply(this->FuelSupplyID).PfuelCompEl * state.dataHVACGlobal->TimeStepSys * Constant::rSecsInHour; // elect energy
     this->A42Model.FuelCompressSkinLoss = state.dataGenerator->FuelSupply(this->FuelSupplyID).QskinLoss;
     // heat rate of losses.by fuel supply compressor [W]
     this->A42Model.FuelEnergyHHV = this->A42Model.NdotFuel * state.dataGenerator->FuelSupply(this->FuelSupplyID).HHV *
                                    state.dataGenerator->FuelSupply(this->FuelSupplyID).KmolPerSecToKgPerSec * state.dataHVACGlobal->TimeStepSys *
-                                   Constant::SecInHour;
+                                   Constant::rSecsInHour;
     // reporting: Fuel Energy used (W)
     this->A42Model.FuelEnergyUseRateHHV = this->A42Model.NdotFuel * state.dataGenerator->FuelSupply(this->FuelSupplyID).HHV *
                                           state.dataGenerator->FuelSupply(this->FuelSupplyID).KmolPerSecToKgPerSec;

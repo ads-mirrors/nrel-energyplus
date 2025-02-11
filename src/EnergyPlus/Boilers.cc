@@ -50,7 +50,6 @@
 
 // ObjexxFCL Headers
 #include <ObjexxFCL/Array.functions.hh>
-#include <ObjexxFCL/Fmath.hh>
 
 // EnergyPlus Headers
 #include <EnergyPlus/Autosizing/Base.hh>
@@ -864,7 +863,7 @@ void BoilerSpecs::CalcBoilerModel(EnergyPlusData &state,
 
             if ((BoilerDeltaTemp > 0.0) && (this->BoilerLoad > 0.0)) {
                 this->BoilerMassFlowRate = this->BoilerLoad / Cp / BoilerDeltaTemp;
-                this->BoilerMassFlowRate = min(BoilerMassFlowRateMax, this->BoilerMassFlowRate);
+                this->BoilerMassFlowRate = std::min(BoilerMassFlowRateMax, this->BoilerMassFlowRate);
             } else {
                 this->BoilerMassFlowRate = 0.0;
             }
@@ -893,8 +892,8 @@ void BoilerSpecs::CalcBoilerModel(EnergyPlusData &state,
         this->BoilerOutletTemp = state.dataLoopNodes->Node(BoilerInletNode).Temp;
     }
     this->BoilerPLR = this->BoilerLoad / BoilerNomCap; // operating part load ratio
-    this->BoilerPLR = min(this->BoilerPLR, BoilerMaxPLR);
-    this->BoilerPLR = max(this->BoilerPLR, BoilerMinPLR);
+    this->BoilerPLR = std::min(this->BoilerPLR, BoilerMaxPLR);
+    this->BoilerPLR = std::max(this->BoilerPLR, BoilerMinPLR);
 
     // calculate theoretical fuel use based on nominal thermal efficiency
     Real64 const TheorFuelUse = this->BoilerLoad / BoilerNomEff; // Theoretical (stoichiometric) fuel use

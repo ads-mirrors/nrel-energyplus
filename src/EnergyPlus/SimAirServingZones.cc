@@ -53,7 +53,6 @@
 // ObjexxFCL Headers
 #include <ObjexxFCL/Array.functions.hh>
 #include <ObjexxFCL/Array1D.hh>
-#include <ObjexxFCL/Fmath.hh>
 #include <ObjexxFCL/string.functions.hh>
 
 // EnergyPlus Headers
@@ -385,7 +384,7 @@ void GetAirPathData(EnergyPlusData &state)
     cAlphaFields = "";
     lAlphaBlanks = true;
 
-    state.dataSimAirServingZones->NumOfTimeStepInDay = state.dataGlobal->NumOfTimeStepInHour * 24;
+    state.dataSimAirServingZones->NumOfTimeStepInDay = state.dataGlobal->TimeStepsInHour * Constant::iHoursInDay;
 
     state.dataInputProcessing->inputProcessor->getObjectDefMaxArgs(state, "NodeList", NumParams, NumAlphas, NumNumbers);
     NodeNums.dimension(NumParams, 0);
@@ -5034,7 +5033,7 @@ void UpdateSysSizing(EnergyPlusData &state, Constant::CallIndicator const CallIn
     Real64 termunitsizingtemp;     // (1.0+termunitsizing(ctrlzone)%inducrat)
     Real64 VozClg(0.0);            // corrected (for ventilation efficiency) zone outside air flow rate [m3/s]
 
-    numOfTimeStepInDay = state.dataGlobal->NumOfTimeStepInHour * 24;
+    numOfTimeStepInDay = state.dataGlobal->TimeStepsInHour * Constant::iHoursInDay;
 
     // allocate scratch arrays
     if (!allocated(state.dataSize->SensCoolCapTemp)) {
@@ -5157,7 +5156,7 @@ void UpdateSysSizing(EnergyPlusData &state, Constant::CallIndicator const CallIn
         } // End of begin day loop over primary air systems
     } break;
     case Constant::CallIndicator::DuringDay: {
-        TimeStepInDay = (state.dataGlobal->HourOfDay - 1) * state.dataGlobal->NumOfTimeStepInHour +
+        TimeStepInDay = (state.dataGlobal->HourOfDay - 1) * state.dataGlobal->TimeStepsInHour +
                         state.dataGlobal->TimeStep; // calculate current zone time step index
 
         // Correct the zone return temperature in ZoneSizing for the case of induction units. The calc in
@@ -6978,9 +6977,9 @@ void UpdateSysSizing(EnergyPlusData &state, Constant::CallIndicator const CallIn
         Minutes = 0;
         TimeStepIndex = 0;
         for (HourCounter = 1; HourCounter <= 24; ++HourCounter) {
-            for (TimeStepCounter = 1; TimeStepCounter <= state.dataGlobal->NumOfTimeStepInHour; ++TimeStepCounter) {
+            for (TimeStepCounter = 1; TimeStepCounter <= state.dataGlobal->TimeStepsInHour; ++TimeStepCounter) {
                 ++TimeStepIndex;
-                Minutes += state.dataGlobal->MinutesPerTimeStep;
+                Minutes += state.dataGlobal->MinutesInTimeStep;
                 if (Minutes == 60) {
                     Minutes = 0;
                     HourPrint = HourCounter;

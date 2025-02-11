@@ -387,7 +387,7 @@ namespace RoomAir {
 
         // Check if wind direction is within +/- 90 degrees of the outward normal of the dominant surface
         SurfNorm = thisSurface.Azimuth;
-        CosPhi = std::cos((state.dataEnvrn->WindDir - SurfNorm) * Constant::DegToRadians);
+        CosPhi = std::cos((state.dataEnvrn->WindDir - SurfNorm) * Constant::DegToRad);
         if (CosPhi <= 0) {
             state.dataRoomAir->AirModel(ZoneNum).SimAirModel = false;
             auto flows(state.dataRoomAir->CrossVentJetRecFlows(_, ZoneNum)); // This is an array slice, need to get rid of this (THIS_AUTO_OK)
@@ -736,7 +736,7 @@ namespace RoomAir {
 
         for (int Ctd = 1; Ctd <= state.dataRoomAir->TotCrossVent; ++Ctd) {
             if (ZoneNum == state.dataRoomAir->ZoneCrossVent(Ctd).ZonePtr) {
-                GainsFrac = ScheduleManager::GetCurrentScheduleValue(state, state.dataRoomAir->ZoneCrossVent(Ctd).SchedGainsPtr);
+                GainsFrac = state.dataRoomAir->ZoneCrossVent(Ctd).gainsSched->getCurrentVal();
             }
         }
 

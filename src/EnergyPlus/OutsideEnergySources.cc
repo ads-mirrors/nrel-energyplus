@@ -146,6 +146,8 @@ void GetOutsideEnergySourcesInput(EnergyPlusData &state)
     // component arrays. Data items in the component arrays
     // are initialized. Output variables are set up.
 
+    static constexpr std::string_view routineName = "GetOutsideEnergySourcesInput";
+
     // GET NUMBER OF ALL EQUIPMENT TYPES
     int const NumDistrictUnitsHeatWater = state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, "DistrictHeating:Water");
     int const NumDistrictUnitsCool = state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, "DistrictCooling");
@@ -203,6 +205,8 @@ void GetOutsideEnergySourcesInput(EnergyPlusData &state)
                                                                  _,
                                                                  state.dataIPShortCut->lAlphaFieldBlanks,
                                                                  state.dataIPShortCut->cAlphaFieldNames);
+
+        ErrorObjectHeader eoh{routineName, state.dataIPShortCut->cCurrentModuleObject, state.dataIPShortCut->cAlphaArgs(1)};
 
         if (EnergySourceNum > 1) {
             GlobalNames::VerifyUniqueInterObjectName(state,
@@ -269,32 +273,22 @@ void GetOutsideEnergySourcesInput(EnergyPlusData &state)
         state.dataOutsideEnergySrcs->EnergySource(EnergySourceNum).EnergyTransfer = 0.0;
         state.dataOutsideEnergySrcs->EnergySource(EnergySourceNum).EnergyRate = 0.0;
         state.dataOutsideEnergySrcs->EnergySource(EnergySourceNum).EnergyType = EnergyType;
-        if (!state.dataIPShortCut->lAlphaFieldBlanks(4)) {
-            state.dataOutsideEnergySrcs->EnergySource(EnergySourceNum).CapFractionSchedNum =
-                ScheduleManager::GetScheduleIndex(state, state.dataIPShortCut->cAlphaArgs(4));
-            if (state.dataOutsideEnergySrcs->EnergySource(EnergySourceNum).CapFractionSchedNum == 0) {
-                ShowSevereError(state,
-                                format("{}=\"{}\", is not valid",
-                                       state.dataIPShortCut->cCurrentModuleObject,
-                                       state.dataOutsideEnergySrcs->EnergySource(EnergySourceNum).Name));
-                ShowContinueError(state,
-                                  format("{}=\"{}\" was not found.", state.dataIPShortCut->cAlphaFieldNames(4), state.dataIPShortCut->cAlphaArgs(4)));
-                ErrorsFound = true;
-            }
-            if (!ScheduleManager::CheckScheduleValueMinMax(
-                    state, state.dataOutsideEnergySrcs->EnergySource(EnergySourceNum).CapFractionSchedNum, true, 0.0)) {
-                ShowWarningError(state,
-                                 format("{}=\"{}\", is not valid",
-                                        state.dataIPShortCut->cCurrentModuleObject,
-                                        state.dataOutsideEnergySrcs->EnergySource(EnergySourceNum).Name));
-                ShowContinueError(state,
-                                  format("{}=\"{}\" should not have negative values.",
-                                         state.dataIPShortCut->cAlphaFieldNames(4),
-                                         state.dataIPShortCut->cAlphaArgs(4)));
-                ShowContinueError(state, "Negative values will be treated as zero, and the simulation continues.");
-            }
-        } else {
-            state.dataOutsideEnergySrcs->EnergySource(EnergySourceNum).CapFractionSchedNum = ScheduleManager::ScheduleAlwaysOn;
+
+        if (state.dataIPShortCut->lAlphaFieldBlanks(4)) {
+            state.dataOutsideEnergySrcs->EnergySource(EnergySourceNum).capFractionSched =
+                Sched::GetScheduleAlwaysOn(state); // Defaults to constant-1.0
+        } else if ((state.dataOutsideEnergySrcs->EnergySource(EnergySourceNum).capFractionSched =
+                        Sched::GetSchedule(state, state.dataIPShortCut->cAlphaArgs(4))) == nullptr) {
+            ShowSevereItemNotFound(state, eoh, state.dataIPShortCut->cAlphaFieldNames(4), state.dataIPShortCut->cAlphaArgs(4));
+            ErrorsFound = true;
+        } else if (!state.dataOutsideEnergySrcs->EnergySource(EnergySourceNum).capFractionSched->checkMinVal(state, Clusive::In, 0.0)) {
+            Sched::ShowWarningBadMin(state,
+                                     eoh,
+                                     state.dataIPShortCut->cAlphaFieldNames(4),
+                                     state.dataIPShortCut->cAlphaArgs(4),
+                                     Clusive::In,
+                                     0.0,
+                                     "Negative values will be treated as zero, and the simulation continues.");
         }
     }
 
@@ -451,7 +445,7 @@ void OutsideEnergySourceSpecs::calculate(EnergyPlusData &state, bool runFlag, Re
     Real64 const LoopMaxMdot = state.dataPlnt->PlantLoop(LoopNum).MaxMassFlowRate;
 
     //  apply power limit from input
-    Real64 CapFraction = ScheduleManager::GetCurrentScheduleValue(state, this->CapFractionSchedNum);
+    Real64 CapFraction = this->capFractionSched->getCurrentVal();
     CapFraction = max(0.0, CapFraction); // ensure non negative
     Real64 const CurrentCap = this->NomCap * CapFraction;
     if (std::abs(MyLoad) > CurrentCap) {

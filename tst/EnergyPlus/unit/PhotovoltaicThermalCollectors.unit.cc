@@ -69,6 +69,7 @@ using namespace EnergyPlus;
 
 TEST_F(EnergyPlusFixture, BIPVT_calc_k_taoalpha)
 {
+    state->init_state(*state);
     PhotovoltaicThermalCollectors::PVTCollectorStruct thisBIPVT;
     Real64 theta = 0.0; // lower value
     Real64 glass_thickness = 0.001;
@@ -233,6 +234,8 @@ TEST_F(EnergyPlusFixture, BIPVT_calculateBIPVTMaxHeatGain)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
+
     // bool foundErrors = false;
     // HeatBalanceManager::GetMaterialData(*state, foundErrors); // read material data
     // EXPECT_FALSE(foundErrors);                                // expect no errors

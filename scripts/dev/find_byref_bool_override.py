@@ -271,7 +271,7 @@ CHECKED_AND_OKED = {
     },
     "HeatBalanceIntRadExchange.cc": {
         "UpdateMovableInsulationFlag": [
-            "MovableInsulationChange"
+            "change"
         ]
     },
     "HeatBalanceManager.cc": {

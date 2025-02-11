@@ -197,6 +197,7 @@ namespace HVACSingleDuctInduc {
 
         // SUBROUTINE PARAMETER DEFINITIONS:
         static constexpr std::string_view RoutineName("GetIndUnits "); // include trailing blank space
+        static constexpr std::string_view routineName = "GetIndUnits";
 
         Array1D_string Alphas;         // Alpha input items for object
         Array1D_string cAlphaFields;   // Alpha field names
@@ -244,29 +245,20 @@ namespace HVACSingleDuctInduc {
                                                                      cAlphaFields,
                                                                      cNumericFields);
 
+            ErrorObjectHeader eoh{routineName, CurrentModuleObject, Alphas(1)};
+
             int IUNum = IUIndex;
             Util::IsNameEmpty(state, Alphas(1), CurrentModuleObject, ErrorsFound);
 
             state.dataHVACSingleDuctInduc->IndUnit(IUNum).Name = Alphas(1);
             state.dataHVACSingleDuctInduc->IndUnit(IUNum).UnitType = CurrentModuleObject;
             state.dataHVACSingleDuctInduc->IndUnit(IUNum).UnitType_Num = SingleDuct_CV::FourPipeInduc;
-            state.dataHVACSingleDuctInduc->IndUnit(IUNum).Sched = Alphas(2);
+
             if (lAlphaBlanks(2)) {
-                state.dataHVACSingleDuctInduc->IndUnit(IUNum).SchedPtr = ScheduleManager::ScheduleAlwaysOn;
-            } else {
-                state.dataHVACSingleDuctInduc->IndUnit(IUNum).SchedPtr =
-                    ScheduleManager::GetScheduleIndex(state, Alphas(2)); // convert schedule name to pointer
-                if (state.dataHVACSingleDuctInduc->IndUnit(IUNum).SchedPtr == 0) {
-                    ShowSevereError(state,
-                                    format("{}{}: invalid {} entered ={} for {}={}",
-                                           RoutineName,
-                                           CurrentModuleObject,
-                                           cAlphaFields(2),
-                                           Alphas(2),
-                                           cAlphaFields(1),
-                                           Alphas(1)));
-                    ErrorsFound = true;
-                }
+                state.dataHVACSingleDuctInduc->IndUnit(IUNum).availSched = Sched::GetScheduleAlwaysOn(state);
+            } else if ((state.dataHVACSingleDuctInduc->IndUnit(IUNum).availSched = Sched::GetSchedule(state, Alphas(2))) == nullptr) {
+                ShowSevereItemNotFound(state, eoh, cAlphaFields(2), Alphas(2));
+                ErrorsFound = true;
             }
             state.dataHVACSingleDuctInduc->IndUnit(IUNum).MaxTotAirVolFlow = Numbers(1);
             state.dataHVACSingleDuctInduc->IndUnit(IUNum).InducRatio = Numbers(2);
@@ -666,7 +658,7 @@ namespace HVACSingleDuctInduc {
         // Do the start of HVAC time step initializations
         if (FirstHVACIteration) {
             // check for upstream zero flow. If nonzero and schedule ON, set primary flow to max
-            if (ScheduleManager::GetCurrentScheduleValue(state, state.dataHVACSingleDuctInduc->IndUnit(IUNum).SchedPtr) > 0.0 &&
+            if (state.dataHVACSingleDuctInduc->IndUnit(IUNum).availSched->getCurrentVal() > 0.0 &&
                 state.dataLoopNodes->Node(PriNode).MassFlowRate > 0.0) {
                 if (Util::SameString(state.dataHVACSingleDuctInduc->IndUnit(IUNum).UnitType,
                                      "AirTerminal:SingleDuct:ConstantVolume:FourPipeInduction")) {
@@ -678,7 +670,7 @@ namespace HVACSingleDuctInduc {
                 state.dataLoopNodes->Node(SecNode).MassFlowRate = 0.0;
             }
             // reset the max and min avail flows
-            if (ScheduleManager::GetCurrentScheduleValue(state, state.dataHVACSingleDuctInduc->IndUnit(IUNum).SchedPtr) > 0.0 &&
+            if (state.dataHVACSingleDuctInduc->IndUnit(IUNum).availSched->getCurrentVal() > 0.0 &&
                 state.dataLoopNodes->Node(PriNode).MassFlowRateMaxAvail > 0.0) {
                 if (Util::SameString(state.dataHVACSingleDuctInduc->IndUnit(IUNum).UnitType,
                                      "AirTerminal:SingleDuct:ConstantVolume:FourPipeInduction")) {
@@ -1127,7 +1119,7 @@ namespace HVACSingleDuctInduc {
         PlantUtilities::SetComponentFlowRate(
             state, MinColdWaterFlow, ColdControlNode, CWOutletNode, state.dataHVACSingleDuctInduc->IndUnit(IUNum).CWPlantLoc);
 
-        if (ScheduleManager::GetCurrentScheduleValue(state, state.dataHVACSingleDuctInduc->IndUnit(IUNum).SchedPtr) <= 0.0) UnitOn = false;
+        if (state.dataHVACSingleDuctInduc->IndUnit(IUNum).availSched->getCurrentVal() <= 0.0) UnitOn = false;
         if (PriAirMassFlow <= HVAC::SmallMassFlow) UnitOn = false;
 
         // Set the unit's air inlet nodes mass flow rates

@@ -76,6 +76,10 @@ struct MoistureBalanceEMPDData : BaseGlobalStruct
     Array1D<Real64> RVDeepLayer;
     Array1D<Real64> RVwall;
 
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
+
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {
     }

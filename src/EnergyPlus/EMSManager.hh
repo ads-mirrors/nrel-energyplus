@@ -135,7 +135,7 @@ namespace EMSManager {
                                         int nodeNum, // index of node being checked.
                                         std::string const &varName);
 
-    bool isScheduleManaged(EnergyPlusData &state, int const scheduleNum);
+    bool isScheduleManaged(EnergyPlusData &state, Sched::Schedule *const sched);
 
     void SetupPrimaryAirSystemAvailMgrAsActuators(EnergyPlusData &state);
 
@@ -201,8 +201,13 @@ struct EMSManagerData : BaseGlobalStruct
     bool lDummy = false;                   // dummy pointer location
     bool lDummy2 = false;                  // dummy pointer location
 
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
+
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {
+        EMSManager::CheckIfAnyEMS(state);
     }
 
     void clear_state() override

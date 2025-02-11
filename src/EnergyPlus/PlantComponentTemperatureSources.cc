@@ -146,7 +146,7 @@ namespace PlantComponentTemperatureSources {
         // OK, so we can set up the inlet and boundary temperatures now
         this->InletTemp = state.dataLoopNodes->Node(this->InletNodeNum).Temp;
         if (this->tempSpecType == TempSpecType::Schedule) {
-            this->BoundaryTemp = ScheduleManager::GetCurrentScheduleValue(state, this->TempSpecScheduleNum);
+            this->BoundaryTemp = this->tempSpecSched->getCurrentVal();
         }
 
         // Calculate specific heat
@@ -443,6 +443,8 @@ namespace PlantComponentTemperatureSources {
         //  N2 , \field Boundary Temperature
         //  A5 ; \field Source Temperature Schedule Name
 
+        static constexpr std::string_view routineName = "GetWaterSourceInput";
+
         // LOCAL VARIABLES:
         int NumAlphas; // Number of elements in the alpha array
         int NumNums;   // Number of elements in the numeric array
@@ -477,6 +479,9 @@ namespace PlantComponentTemperatureSources {
                                                                      state.dataIPShortCut->lAlphaFieldBlanks,
                                                                      state.dataIPShortCut->cAlphaFieldNames,
                                                                      state.dataIPShortCut->cNumericFieldNames);
+
+            ErrorObjectHeader eoh{routineName, cCurrentModuleObject, state.dataIPShortCut->cAlphaArgs(1)};
+
             Util::IsNameEmpty(state, state.dataIPShortCut->cAlphaArgs(1), cCurrentModuleObject, ErrorsFound);
 
             state.dataPlantCompTempSrc->WaterSource(SourceNum).Name = state.dataIPShortCut->cAlphaArgs(1);
@@ -518,15 +523,9 @@ namespace PlantComponentTemperatureSources {
                 state.dataPlantCompTempSrc->WaterSource(SourceNum).BoundaryTemp = state.dataIPShortCut->rNumericArgs(2);
             } else if (state.dataIPShortCut->cAlphaArgs(4) == "SCHEDULED") {
                 state.dataPlantCompTempSrc->WaterSource(SourceNum).tempSpecType = TempSpecType::Schedule;
-                state.dataPlantCompTempSrc->WaterSource(SourceNum).TempSpecScheduleName = state.dataIPShortCut->cAlphaArgs(5);
-                state.dataPlantCompTempSrc->WaterSource(SourceNum).TempSpecScheduleNum =
-                    ScheduleManager::GetScheduleIndex(state, state.dataIPShortCut->cAlphaArgs(5));
-                if (state.dataPlantCompTempSrc->WaterSource(SourceNum).TempSpecScheduleNum == 0) {
-                    ShowSevereError(state, format("Input error for {}={}", cCurrentModuleObject, state.dataIPShortCut->cAlphaArgs(1)));
-                    ShowContinueError(state,
-                                      format("Invalid schedule name in field {}={}",
-                                             state.dataIPShortCut->cAlphaFieldNames(5),
-                                             state.dataIPShortCut->cAlphaArgs(5)));
+                if ((state.dataPlantCompTempSrc->WaterSource(SourceNum).tempSpecSched =
+                         Sched::GetSchedule(state, state.dataIPShortCut->cAlphaArgs(5))) == nullptr) {
+                    ShowSevereItemNotFound(state, eoh, state.dataIPShortCut->cAlphaFieldNames(5), state.dataIPShortCut->cAlphaArgs(5));
                     ErrorsFound = true;
                 }
             } else {

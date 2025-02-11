@@ -123,9 +123,6 @@ namespace EnergyPlus::DXCoils {
 using namespace DataLoopNode;
 using namespace Psychrometrics;
 
-// Use statements for access to subroutines in other modules
-using namespace ScheduleManager;
-
 // Functions
 
 void SimDXCoil(EnergyPlusData &state,
@@ -721,13 +718,14 @@ void GetDXCoils(EnergyPlusData &state)
     using GlobalNames::VerifyUniqueCoilName;
     using NodeInputManager::GetOnlySingleNode;
     using OutAirNodeManager::CheckOutAirNodeNumber;
-    using ScheduleManager::GetScheduleIndex;
     using WaterManager::SetupTankDemandComponent;
     using WaterManager::SetupTankSupplyComponent;
 
     // SUBROUTINE PARAMETER DEFINITIONS:
     static constexpr std::string_view RoutineName("GetDXCoils: "); // include trailing blank space
-    constexpr Real64 minOATCompDXCooling = -25.0;                  // min OAT for compressor operation for DX cooling coils
+    static constexpr std::string_view routineName = "GetDXCoils";  // include trailing blank space
+
+    constexpr Real64 minOATCompDXCooling = -25.0; // min OAT for compressor operation for DX cooling coils
 
     // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
     int DXCoilIndex;                 // loop index
@@ -912,6 +910,8 @@ void GetDXCoils(EnergyPlusData &state)
                                                                  cAlphaFields,
                                                                  cNumericFields);
 
+        ErrorObjectHeader eoh{routineName, CurrentModuleObject, Alphas(1)};
+
         ++DXCoilNum;
         // allocate single performance mode for numeric field strings used for sizing routine
         state.dataDXCoils->DXCoilNumericFields(DXCoilNum).PerfMode.allocate(1);
@@ -927,16 +927,11 @@ void GetDXCoils(EnergyPlusData &state)
         state.dataHeatBal->HeatReclaimDXCoil(DXCoilNum).SourceType = CurrentModuleObject;
         thisDXCoil.DXCoilType = CurrentModuleObject;
         thisDXCoil.DXCoilType_Num = HVAC::CoilDX_CoolingSingleSpeed;
-        thisDXCoil.Schedule = Alphas(2);
         if (lAlphaBlanks(2)) {
-            thisDXCoil.SchedPtr = ScheduleManager::ScheduleAlwaysOn;
-        } else {
-            thisDXCoil.SchedPtr = GetScheduleIndex(state, Alphas(2)); // convert schedule name to pointer
-            if (thisDXCoil.SchedPtr == 0) {
-                ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, thisDXCoil.Name));
-                ShowContinueError(state, format("...{}=\"{}\".", cAlphaFields(2), Alphas(2)));
-                ErrorsFound = true;
-            }
+            thisDXCoil.availSched = Sched::GetScheduleAlwaysOn(state);
+        } else if ((thisDXCoil.availSched = Sched::GetSchedule(state, Alphas(2))) == nullptr) {
+            ShowSevereItemNotFound(state, eoh, cAlphaFields(2), Alphas(2));
+            ErrorsFound = true;
         }
         thisDXCoil.RatedTotCap(1) = Numbers(1);
         thisDXCoil.RatedSHR(1) = Numbers(2);
@@ -1305,11 +1300,9 @@ void GetDXCoils(EnergyPlusData &state)
         }
 
         if (!lAlphaBlanks(15)) {
-            thisDXCoil.BasinHeaterSchedulePtr = GetScheduleIndex(state, Alphas(15));
-            if (thisDXCoil.BasinHeaterSchedulePtr == 0) {
-                ShowWarningError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, thisDXCoil.Name));
-                ShowContinueError(state, format("...not found {}=\"{}\".", cAlphaFields(15), Alphas(15)));
-                ShowContinueError(state, "Basin heater will be available to operate throughout the simulation.");
+            if ((thisDXCoil.basinHeaterSched = Sched::GetSchedule(state, Alphas(15))) == nullptr) {
+                ShowWarningItemNotFound(
+                    state, eoh, cAlphaFields(15), Alphas(15), "Basin heater will be available to operate throughout the simulation.");
             }
         }
 
@@ -1401,6 +1394,7 @@ void GetDXCoils(EnergyPlusData &state)
                                                                  cAlphaFields,
                                                                  cNumericFields);
 
+        ErrorObjectHeader eoh{routineName, CurrentModuleObject, Alphas(1)};
         ++DXCoilNum;
         // ErrorsFound will be set to True if problem was found, left untouched otherwise
         VerifyUniqueCoilName(state, CurrentModuleObject, Alphas(1), ErrorsFound, CurrentModuleObject + " Name");
@@ -1412,16 +1406,11 @@ void GetDXCoils(EnergyPlusData &state)
         state.dataHeatBal->HeatReclaimDXCoil(DXCoilNum).SourceType = CurrentModuleObject;
         thisDXCoil.DXCoilType = CurrentModuleObject;
         thisDXCoil.DXCoilType_Num = HVAC::CoilDX_CoolingTwoStageWHumControl;
-        thisDXCoil.Schedule = Alphas(2);
         if (lAlphaBlanks(2)) {
-            thisDXCoil.SchedPtr = ScheduleManager::ScheduleAlwaysOn;
-        } else {
-            thisDXCoil.SchedPtr = GetScheduleIndex(state, Alphas(2)); // convert schedule name to pointer
-            if (thisDXCoil.SchedPtr == 0) {
-                ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, thisDXCoil.Name));
-                ShowContinueError(state, format("...{}=\"{}\".", cAlphaFields(2), Alphas(2)));
-                ErrorsFound = true;
-            }
+            thisDXCoil.availSched = Sched::GetScheduleAlwaysOn(state);
+        } else if ((thisDXCoil.availSched = Sched::GetSchedule(state, Alphas(2))) == nullptr) {
+            ShowSevereItemNotFound(state, eoh, cAlphaFields(2), Alphas(2));
+            ErrorsFound = true;
         }
 
         thisDXCoil.AirInNode = GetOnlySingleNode(state,
@@ -1928,11 +1917,9 @@ void GetDXCoils(EnergyPlusData &state)
         }
 
         if (!lAlphaBlanks(16)) {
-            thisDXCoil.BasinHeaterSchedulePtr = GetScheduleIndex(state, Alphas(16));
-            if (thisDXCoil.BasinHeaterSchedulePtr == 0) {
-                ShowWarningError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, thisDXCoil.Name));
-                ShowContinueError(state, format("...not found {}=\"{}\".", cAlphaFields(16), Alphas(16)));
-                ShowContinueError(state, "Basin heater will be available to operate throughout the simulation.");
+            if ((thisDXCoil.basinHeaterSched = Sched::GetSchedule(state, Alphas(16))) == nullptr) {
+                ShowWarningItemNotFound(
+                    state, eoh, cAlphaFields(16), Alphas(16), "Basin heater will be available to operate throughout the simulation.");
             }
         }
 
@@ -1962,6 +1949,7 @@ void GetDXCoils(EnergyPlusData &state)
                                                                  cAlphaFields,
                                                                  cNumericFields);
 
+        ErrorObjectHeader eoh{routineName, CurrentModuleObject, Alphas(1)};
         // allocate single performance mode for numeric field strings used for sizing routine
         state.dataDXCoils->DXCoilNumericFields(DXCoilNum).PerfMode.allocate(1);
         state.dataDXCoils->DXCoilNumericFields(DXCoilNum).PerfMode(1).FieldNames.allocate(MaxNumbers);
@@ -1973,16 +1961,11 @@ void GetDXCoils(EnergyPlusData &state)
         thisDXCoil.Name = Alphas(1);
         thisDXCoil.DXCoilType = CurrentModuleObject;
         thisDXCoil.DXCoilType_Num = HVAC::CoilDX_HeatingEmpirical;
-        thisDXCoil.Schedule = Alphas(2);
         if (lAlphaBlanks(2)) {
-            thisDXCoil.SchedPtr = ScheduleManager::ScheduleAlwaysOn;
-        } else {
-            thisDXCoil.SchedPtr = GetScheduleIndex(state, Alphas(2)); // convert schedule name to pointer
-            if (thisDXCoil.SchedPtr == 0) {
-                ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, thisDXCoil.Name));
-                ShowContinueError(state, format("...{}=\"{}\".", cAlphaFields(2), Alphas(2)));
-                ErrorsFound = true;
-            }
+            thisDXCoil.availSched = Sched::GetScheduleAlwaysOn(state);
+        } else if ((thisDXCoil.availSched = Sched::GetSchedule(state, Alphas(2))) == nullptr) {
+            ShowSevereItemNotFound(state, eoh, cAlphaFields(2), Alphas(2));
+            ErrorsFound = true;
         }
 
         thisDXCoil.AirInNode = GetOnlySingleNode(state,
@@ -2426,6 +2409,8 @@ void GetDXCoils(EnergyPlusData &state)
                                                                  cAlphaFields,
                                                                  cNumericFields);
 
+        ErrorObjectHeader eoh{routineName, CurrentModuleObject, Alphas(1)};
+
         // allocate single performance mode for numeric field strings used for sizing routine
         state.dataDXCoils->DXCoilNumericFields(DXCoilNum).PerfMode.allocate(1);
         state.dataDXCoils->DXCoilNumericFields(DXCoilNum).PerfMode(1).FieldNames.allocate(MaxNumbers);
@@ -2440,16 +2425,11 @@ void GetDXCoils(EnergyPlusData &state)
         state.dataHeatBal->HeatReclaimDXCoil(DXCoilNum).SourceType = CurrentModuleObject;
         thisDXCoil.DXCoilType = CurrentModuleObject;
         thisDXCoil.DXCoilType_Num = HVAC::CoilDX_CoolingTwoSpeed;
-        thisDXCoil.Schedule = Alphas(2);
         if (lAlphaBlanks(2)) {
-            thisDXCoil.SchedPtr = ScheduleManager::ScheduleAlwaysOn;
-        } else {
-            thisDXCoil.SchedPtr = GetScheduleIndex(state, Alphas(2)); // convert schedule name to pointer
-            if (thisDXCoil.SchedPtr == 0) {
-                ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, thisDXCoil.Name));
-                ShowContinueError(state, format("...{}=\"{}\".", cAlphaFields(2), Alphas(2)));
-                ErrorsFound = true;
-            }
+            thisDXCoil.availSched = Sched::GetScheduleAlwaysOn(state);
+        } else if ((thisDXCoil.availSched = Sched::GetSchedule(state, Alphas(2))) == nullptr) {
+            ShowSevereItemNotFound(state, eoh, cAlphaFields(2), Alphas(2));
+            ErrorsFound = true;
         }
         thisDXCoil.RatedTotCap(1) = Numbers(1);
         thisDXCoil.RatedSHR(1) = Numbers(2);
@@ -2880,11 +2860,9 @@ void GetDXCoils(EnergyPlusData &state)
         }
 
         if (!lAlphaBlanks(16)) {
-            thisDXCoil.BasinHeaterSchedulePtr = GetScheduleIndex(state, Alphas(16));
-            if (thisDXCoil.BasinHeaterSchedulePtr == 0) {
-                ShowWarningError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, thisDXCoil.Name));
-                ShowContinueError(state, format("...not found {}=\"{}\".", cAlphaFields(16), Alphas(16)));
-                ShowContinueError(state, "Basin heater will be available to operate throughout the simulation.");
+            if ((thisDXCoil.basinHeaterSched = Sched::GetSchedule(state, Alphas(16))) == nullptr) {
+                ShowWarningItemNotFound(
+                    state, eoh, cAlphaFields(16), Alphas(16), "Basin heater will be available to operate throughout the simulation.");
             }
         }
 
@@ -3014,7 +2992,7 @@ void GetDXCoils(EnergyPlusData &state)
         thisDXCoil.Name = Alphas(1);
         thisDXCoil.DXCoilType = CurrentModuleObject;
         thisDXCoil.DXCoilType_Num = HVAC::CoilDX_HeatPumpWaterHeaterPumped;
-        thisDXCoil.SchedPtr = 0; // heat pump water heater DX coil has no schedule
+        thisDXCoil.availSched = Sched::GetScheduleAlwaysOff(state); // heat pump water heater DX coil has no schedule
 
         // Store the HPWH DX coil heating capacity in RatedTotCap2. After backing off pump and fan heat,
         // move to RatedTotCap() for use by DX coil
@@ -3507,7 +3485,7 @@ void GetDXCoils(EnergyPlusData &state)
         thisDXCoil.Name = Alphas(1);
         thisDXCoil.DXCoilType = CurrentModuleObject;
         thisDXCoil.DXCoilType_Num = HVAC::CoilDX_HeatPumpWaterHeaterWrapped;
-        thisDXCoil.SchedPtr = 0; // heat pump water heater DX coil has no schedule
+        thisDXCoil.availSched = Sched::GetScheduleAlwaysOff(state); // heat pump water heater DX coil has no schedule
 
         // Store the HPWH DX coil heating capacity in RatedTotCap2. After backing off pump and fan heat,
         // move to RatedTotCap() for use by DX coil
@@ -3890,6 +3868,7 @@ void GetDXCoils(EnergyPlusData &state)
                                                                  cAlphaFields,
                                                                  cNumericFields);
 
+        ErrorObjectHeader eoh{routineName, CurrentModuleObject, Alphas(1)};
         // allocate single performance mode for numeric field strings used for sizing routine (all fields are in this object)
         state.dataDXCoils->DXCoilNumericFields(DXCoilNum).PerfMode.allocate(1);
         state.dataDXCoils->DXCoilNumericFields(DXCoilNum).PerfMode(1).FieldNames.allocate(MaxNumbers);
@@ -3904,16 +3883,11 @@ void GetDXCoils(EnergyPlusData &state)
         state.dataHeatBal->HeatReclaimDXCoil(DXCoilNum).SourceType = CurrentModuleObject;
         thisDXCoil.DXCoilType = CurrentModuleObject;
         thisDXCoil.DXCoilType_Num = HVAC::CoilDX_MultiSpeedCooling;
-        thisDXCoil.Schedule = Alphas(2);
         if (lAlphaBlanks(2)) {
-            thisDXCoil.SchedPtr = ScheduleManager::ScheduleAlwaysOn;
-        } else {
-            thisDXCoil.SchedPtr = GetScheduleIndex(state, Alphas(2)); // convert schedule name to pointer
-            if (thisDXCoil.SchedPtr == 0) {
-                ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, thisDXCoil.Name));
-                ShowContinueError(state, format("...{}=\"{}\".", cAlphaFields(2), Alphas(2)));
-                ErrorsFound = true;
-            }
+            thisDXCoil.availSched = Sched::GetScheduleAlwaysOn(state);
+        } else if ((thisDXCoil.availSched = Sched::GetSchedule(state, Alphas(2))) == nullptr) {
+            ShowSevereItemNotFound(state, eoh, cAlphaFields(2), Alphas(2));
+            ErrorsFound = true;
         }
 
         thisDXCoil.AirInNode = GetOnlySingleNode(state,
@@ -4072,11 +4046,9 @@ void GetDXCoils(EnergyPlusData &state)
         }
 
         if (!lAlphaBlanks(12)) {
-            thisDXCoil.BasinHeaterSchedulePtr = GetScheduleIndex(state, Alphas(12));
-            if (thisDXCoil.BasinHeaterSchedulePtr == 0) {
-                ShowWarningError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, thisDXCoil.Name));
-                ShowContinueError(state, format("...not found {}=\"{}\".", cAlphaFields(12), Alphas(12)));
-                ShowContinueError(state, "Basin heater will be available to operate throughout the simulation.");
+            if ((thisDXCoil.basinHeaterSched = Sched::GetSchedule(state, Alphas(12))) == nullptr) {
+                ShowWarningItemNotFound(
+                    state, eoh, cAlphaFields(12), Alphas(12), "Basin heater will be available to operate throughout the simulation.");
             }
         }
 
@@ -4439,6 +4411,8 @@ void GetDXCoils(EnergyPlusData &state)
                                                                  cAlphaFields,
                                                                  cNumericFields);
 
+        ErrorObjectHeader eoh{routineName, CurrentModuleObject, Alphas(1)};
+
         // *** will have to circle back to this one to fix since the multispeed coil has all fields in this coil object ***
         // allocate single performance mode for numeric field strings used for sizing routine
         state.dataDXCoils->DXCoilNumericFields(DXCoilNum).PerfMode.allocate(1);
@@ -4454,16 +4428,11 @@ void GetDXCoils(EnergyPlusData &state)
         state.dataHeatBal->HeatReclaimDXCoil(DXCoilNum).SourceType = CurrentModuleObject;
         thisDXCoil.DXCoilType = CurrentModuleObject;
         thisDXCoil.DXCoilType_Num = HVAC::CoilDX_MultiSpeedHeating;
-        thisDXCoil.Schedule = Alphas(2);
         if (lAlphaBlanks(2)) {
-            thisDXCoil.SchedPtr = ScheduleManager::ScheduleAlwaysOn;
-        } else {
-            thisDXCoil.SchedPtr = GetScheduleIndex(state, Alphas(2)); // convert schedule name to pointer
-            if (thisDXCoil.SchedPtr == 0) {
-                ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, thisDXCoil.Name));
-                ShowContinueError(state, format("...{}=\"{}\".", cAlphaFields(2), Alphas(2)));
-                ErrorsFound = true;
-            }
+            thisDXCoil.availSched = Sched::GetScheduleAlwaysOn(state);
+        } else if ((thisDXCoil.availSched = Sched::GetSchedule(state, Alphas(2))) == nullptr) {
+            ShowSevereItemNotFound(state, eoh, cAlphaFields(2), Alphas(2));
+            ErrorsFound = true;
         }
 
         thisDXCoil.AirInNode = GetOnlySingleNode(state,
@@ -4931,6 +4900,8 @@ void GetDXCoils(EnergyPlusData &state)
                                                                  cAlphaFields,
                                                                  cNumericFields);
 
+        ErrorObjectHeader eoh{routineName, CurrentModuleObject, Alphas(1)};
+
         ++DXCoilNum;
 
         // allocate single performance mode for numeric field strings used for sizing routine
@@ -4944,16 +4915,12 @@ void GetDXCoils(EnergyPlusData &state)
         thisDXCoil.Name = Alphas(1);
         thisDXCoil.DXCoilType = CurrentModuleObject;
         thisDXCoil.DXCoilType_Num = HVAC::CoilVRF_Cooling;
-        thisDXCoil.Schedule = Alphas(2);
+
         if (lAlphaBlanks(2)) {
-            thisDXCoil.SchedPtr = ScheduleManager::ScheduleAlwaysOn;
-        } else {
-            thisDXCoil.SchedPtr = GetScheduleIndex(state, Alphas(2)); // convert schedule name to pointer
-            if (thisDXCoil.SchedPtr == 0) {
-                ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, thisDXCoil.Name));
-                ShowContinueError(state, format("...{}=\"{}\".", cAlphaFields(2), Alphas(2)));
-                ErrorsFound = true;
-            }
+            thisDXCoil.availSched = Sched::GetScheduleAlwaysOn(state);
+        } else if ((thisDXCoil.availSched = Sched::GetSchedule(state, Alphas(2))) == nullptr) {
+            ShowSevereItemNotFound(state, eoh, cAlphaFields(2), Alphas(2));
+            ErrorsFound = true;
         }
         thisDXCoil.RatedTotCap(1) = Numbers(1);
         thisDXCoil.RatedSHR(1) = Numbers(2);
@@ -5075,6 +5042,7 @@ void GetDXCoils(EnergyPlusData &state)
                                                                  cAlphaFields,
                                                                  cNumericFields);
 
+        ErrorObjectHeader eoh{routineName, CurrentModuleObject, Alphas(1)};
         ++DXCoilNum;
 
         // allocate single performance mode for numeric field strings used for sizing routine
@@ -5088,16 +5056,11 @@ void GetDXCoils(EnergyPlusData &state)
         thisDXCoil.Name = Alphas(1);
         thisDXCoil.DXCoilType = CurrentModuleObject;
         thisDXCoil.DXCoilType_Num = HVAC::CoilVRF_Heating;
-        thisDXCoil.Schedule = Alphas(2);
         if (lAlphaBlanks(2)) {
-            thisDXCoil.SchedPtr = ScheduleManager::ScheduleAlwaysOn;
-        } else {
-            thisDXCoil.SchedPtr = GetScheduleIndex(state, Alphas(2)); // convert schedule name to pointer
-            if (thisDXCoil.SchedPtr == 0) {
-                ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, thisDXCoil.Name));
-                ShowContinueError(state, format("...{}=\"{}\".", cAlphaFields(2), Alphas(2)));
-                ErrorsFound = true;
-            }
+            thisDXCoil.availSched = Sched::GetScheduleAlwaysOn(state);
+        } else if ((thisDXCoil.availSched = Sched::GetSchedule(state, Alphas(2))) == nullptr) {
+            ShowSevereItemNotFound(state, eoh, cAlphaFields(2), Alphas(2));
+            ErrorsFound = true;
         }
         thisDXCoil.RatedTotCap(1) = Numbers(1);
         thisDXCoil.RatedAirVolFlowRate(1) = Numbers(2);
@@ -5208,6 +5171,7 @@ void GetDXCoils(EnergyPlusData &state)
                                                                  cAlphaFields,
                                                                  cNumericFields);
 
+        ErrorObjectHeader eoh{routineName, CurrentModuleObject, Alphas(1)};
         ++DXCoilNum;
 
         // allocate single performance mode for numeric field strings used for sizing routine
@@ -5221,16 +5185,11 @@ void GetDXCoils(EnergyPlusData &state)
         thisDXCoil.Name = Alphas(1);
         thisDXCoil.DXCoilType = CurrentModuleObject;
         thisDXCoil.DXCoilType_Num = HVAC::CoilVRF_FluidTCtrl_Cooling;
-        thisDXCoil.Schedule = Alphas(2);
         if (lAlphaBlanks(2)) {
-            thisDXCoil.SchedPtr = ScheduleManager::ScheduleAlwaysOn;
-        } else {
-            thisDXCoil.SchedPtr = GetScheduleIndex(state, Alphas(2)); // convert schedule name to pointer
-            if (thisDXCoil.SchedPtr == 0) {
-                ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, thisDXCoil.Name));
-                ShowContinueError(state, format("...{}=\"{}\".", cAlphaFields(2), Alphas(2)));
-                ErrorsFound = true;
-            }
+            thisDXCoil.availSched = Sched::GetScheduleAlwaysOn(state);
+        } else if ((thisDXCoil.availSched = Sched::GetSchedule(state, Alphas(2))) == nullptr) {
+            ShowSevereItemNotFound(state, eoh, cAlphaFields(2), Alphas(2));
+            ErrorsFound = true;
         }
 
         thisDXCoil.AirInNode = GetOnlySingleNode(state,
@@ -5326,6 +5285,7 @@ void GetDXCoils(EnergyPlusData &state)
                                                                  cAlphaFields,
                                                                  cNumericFields);
 
+        ErrorObjectHeader eoh{routineName, CurrentModuleObject, Alphas(1)};
         ++DXCoilNum;
 
         // allocate single performance mode for numeric field strings used for sizing routine
@@ -5339,16 +5299,11 @@ void GetDXCoils(EnergyPlusData &state)
         thisDXCoil.Name = Alphas(1);
         thisDXCoil.DXCoilType = CurrentModuleObject;
         thisDXCoil.DXCoilType_Num = HVAC::CoilVRF_FluidTCtrl_Heating;
-        thisDXCoil.Schedule = Alphas(2);
         if (lAlphaBlanks(2)) {
-            thisDXCoil.SchedPtr = ScheduleManager::ScheduleAlwaysOn;
-        } else {
-            thisDXCoil.SchedPtr = GetScheduleIndex(state, Alphas(2)); // convert schedule name to pointer
-            if (thisDXCoil.SchedPtr == 0) {
-                ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, thisDXCoil.Name));
-                ShowContinueError(state, format("...{}=\"{}\".", cAlphaFields(2), Alphas(2)));
-                ErrorsFound = true;
-            }
+            thisDXCoil.availSched = Sched::GetScheduleAlwaysOn(state);
+        } else if ((thisDXCoil.availSched = Sched::GetSchedule(state, Alphas(2))) == nullptr) {
+            ShowSevereItemNotFound(state, eoh, cAlphaFields(2), Alphas(2));
+            ErrorsFound = true;
         }
 
         thisDXCoil.AirInNode = GetOnlySingleNode(state,
@@ -9300,7 +9255,7 @@ void CalcDoe2DXCoil(EnergyPlusData &state,
     thisDXCoil.PrintLowOutTempMessage = false;
 
     if ((AirMassFlow > 0.0) &&
-        (GetCurrentScheduleValue(state, thisDXCoil.SchedPtr) > 0.0 || thisDXCoil.DXCoilType_Num == HVAC::CoilDX_HeatPumpWaterHeaterPumped ||
+        (thisDXCoil.availSched->getCurrentVal() > 0.0 || thisDXCoil.DXCoilType_Num == HVAC::CoilDX_HeatPumpWaterHeaterPumped ||
          thisDXCoil.DXCoilType_Num == HVAC::CoilDX_HeatPumpWaterHeaterWrapped) &&
         (PartLoadRatio > 0.0) && (compressorOp == HVAC::CompressorOp::On) &&
         CompAmbTemp > thisDXCoil.MinOATCompressor) { // criteria for coil operation
@@ -9785,7 +9740,7 @@ void CalcDoe2DXCoil(EnergyPlusData &state,
             // Default to cycling fan, cycling compressor
             // Also return this result for stage 2 operation of multimode coil
             // Cycling fan typically provides full outlet conditions. When RH control is used, account for additional
-            // heating run time by using cooing/heating ratio the same as constant fan (otherwise PLRRatio = 1).
+            // heating run time by using cooling/heating ratio the same as constant fan (otherwise PLRRatio = 1).
             OutletAirEnthalpy = FullLoadOutAirEnth * DXcoolToHeatPLRRatio + InletAirEnthalpy * (1.0 - DXcoolToHeatPLRRatio);
             OutletAirHumRat = FullLoadOutAirHumRat * DXcoolToHeatPLRRatio + InletAirHumRat * (1.0 - DXcoolToHeatPLRRatio);
             OutletAirTemp = FullLoadOutAirTemp * DXcoolToHeatPLRRatio + InletAirDryBulbTemp * (1.0 - DXcoolToHeatPLRRatio);
@@ -9928,7 +9883,7 @@ void CalcDoe2DXCoil(EnergyPlusData &state,
             // Calculate basin heater power
             CalcBasinHeaterPower(state,
                                  thisDXCoil.BasinHeaterPowerFTempDiff,
-                                 thisDXCoil.BasinHeaterSchedulePtr,
+                                 thisDXCoil.basinHeaterSched,
                                  thisDXCoil.BasinHeaterSetPointTemp,
                                  thisDXCoil.BasinHeaterPower);
             if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_CoolingSingleSpeed) {
@@ -9972,7 +9927,7 @@ void CalcDoe2DXCoil(EnergyPlusData &state,
             if (any_eq(thisDXCoil.CondenserType, DataHeatBalance::RefrigCondenserType::Evap)) {
                 CalcBasinHeaterPower(state,
                                      thisDXCoil.BasinHeaterPowerFTempDiff,
-                                     thisDXCoil.BasinHeaterSchedulePtr,
+                                     thisDXCoil.basinHeaterSched,
                                      thisDXCoil.BasinHeaterSetPointTemp,
                                      thisDXCoil.BasinHeaterPower);
             }
@@ -9980,7 +9935,7 @@ void CalcDoe2DXCoil(EnergyPlusData &state,
             if (thisDXCoil.CondenserType(Mode) == DataHeatBalance::RefrigCondenserType::Evap) {
                 CalcBasinHeaterPower(state,
                                      thisDXCoil.BasinHeaterPowerFTempDiff,
-                                     thisDXCoil.BasinHeaterSchedulePtr,
+                                     thisDXCoil.basinHeaterSched,
                                      thisDXCoil.BasinHeaterSetPointTemp,
                                      thisDXCoil.BasinHeaterPower);
             }
@@ -10292,7 +10247,7 @@ void CalcVRFCoolingCoil(EnergyPlusData &state,
     thisDXCoil.PrintLowAmbMessage = false;
     thisDXCoil.PrintLowOutTempMessage = false;
 
-    if ((AirMassFlow > 0.0) && (GetCurrentScheduleValue(state, thisDXCoil.SchedPtr) > 0.0) && (PartLoadRatio > 0.0) &&
+    if ((AirMassFlow > 0.0) && (thisDXCoil.availSched->getCurrentVal() > 0.0) && (PartLoadRatio > 0.0) &&
         (compressorOp == HVAC::CompressorOp::On)) { // for cycling fan, reset mass flow to full on rate
         if (fanOp == HVAC::FanOp::Cycling) {
             AirMassFlow /= PartLoadRatio;
@@ -10872,7 +10827,7 @@ void CalcDXHeatingCoil(EnergyPlusData &state,
         CrankcaseHeatingPower = 0.0;
     }
 
-    if ((AirMassFlow > 0.0) && (GetCurrentScheduleValue(state, thisDXCoil.SchedPtr) > 0.0) && (PartLoadRatio > 0.0) &&
+    if ((AirMassFlow > 0.0) && (thisDXCoil.availSched->getCurrentVal() > 0.0) && (PartLoadRatio > 0.0) &&
         OutdoorDryBulb > thisDXCoil.MinOATCompressor) {
         // for cycling fan, reset mass flow to full on rate
         if (fanOp == HVAC::FanOp::Cycling) AirMassFlow /= PartLoadRatio;
@@ -11352,8 +11307,8 @@ void CalcMultiSpeedDXCoil(EnergyPlusData &state,
         CondInletHumRat = PsyWFnTdbTwbPb(state, CondInletTemp, OutdoorWetBulb, OutdoorPressure);
     }
 
-    if ((AirMassFlow > 0.0 && CompAmbTemp >= thisDXCoil.MinOATCompressor) &&
-        ((GetCurrentScheduleValue(state, thisDXCoil.SchedPtr) > 0.0) || (LocalForceOn)) && (SpeedRatio > 0.0 || CycRatio > 0.0)) {
+    if ((AirMassFlow > 0.0 && CompAmbTemp >= thisDXCoil.MinOATCompressor) && ((thisDXCoil.availSched->getCurrentVal() > 0.0) || (LocalForceOn)) &&
+        (SpeedRatio > 0.0 || CycRatio > 0.0)) {
 
         RhoAir = PsyRhoAirFnPbTdbW(state, OutdoorPressure, OutdoorDryBulb, OutdoorHumRat);
         if (SpeedRatio > 0.0) {
@@ -11662,7 +11617,7 @@ void CalcMultiSpeedDXCoil(EnergyPlusData &state,
             // Calculate basin heater power
             CalcBasinHeaterPower(state,
                                  thisDXCoil.BasinHeaterPowerFTempDiff,
-                                 thisDXCoil.BasinHeaterSchedulePtr,
+                                 thisDXCoil.basinHeaterSched,
                                  thisDXCoil.BasinHeaterSetPointTemp,
                                  thisDXCoil.BasinHeaterPower);
             thisDXCoil.BasinHeaterPower *= (1.0 - thisDXCoil.CoolingCoilRuntimeFraction);
@@ -11686,7 +11641,7 @@ void CalcMultiSpeedDXCoil(EnergyPlusData &state,
         if (thisDXCoil.CondenserType(Mode) == DataHeatBalance::RefrigCondenserType::Evap) {
             CalcBasinHeaterPower(state,
                                  thisDXCoil.BasinHeaterPowerFTempDiff,
-                                 thisDXCoil.BasinHeaterSchedulePtr,
+                                 thisDXCoil.basinHeaterSched,
                                  thisDXCoil.BasinHeaterSetPointTemp,
                                  thisDXCoil.BasinHeaterPower);
         }
@@ -11746,7 +11701,7 @@ void CalcBasinHeaterPowerForMultiModeDXCoil(EnergyPlusData &state,
         } else if (thisDXCoil.CondenserType(PerfMode + 1) == DataHeatBalance::RefrigCondenserType::Evap) {
             CalcBasinHeaterPower(state,
                                  thisDXCoil.BasinHeaterPowerFTempDiff,
-                                 thisDXCoil.BasinHeaterSchedulePtr,
+                                 thisDXCoil.basinHeaterSched,
                                  thisDXCoil.BasinHeaterSetPointTemp,
                                  thisDXCoil.BasinHeaterPower);
             thisDXCoil.BasinHeaterPower *= (1.0 - thisDXCoil.CoolingCoilStg2RuntimeFrac);
@@ -12638,7 +12593,7 @@ void CalcMultiSpeedDXCoilCooling(EnergyPlusData &state,
         CrankcaseHeatingPower = 0.0;
     }
 
-    if ((AirMassFlow > 0.0 && CondInletTemp >= thisDXCoil.MinOATCompressor) && (GetCurrentScheduleValue(state, thisDXCoil.SchedPtr) > 0.0) &&
+    if ((AirMassFlow > 0.0 && CondInletTemp >= thisDXCoil.MinOATCompressor) && (thisDXCoil.availSched->getCurrentVal() > 0.0) &&
         ((SpeedRatio > 0.0 && SingleMode == 0) || CycRatio > 0.0) && (compressorOp == HVAC::CompressorOp::On)) {
 
         RhoAir = PsyRhoAirFnPbTdbW(state, OutdoorPressure, OutdoorDryBulb, OutdoorHumRat, RoutineName);
@@ -13216,7 +13171,7 @@ void CalcMultiSpeedDXCoilCooling(EnergyPlusData &state,
             // Calculate basin heater power
             CalcBasinHeaterPower(state,
                                  thisDXCoil.BasinHeaterPowerFTempDiff,
-                                 thisDXCoil.BasinHeaterSchedulePtr,
+                                 thisDXCoil.basinHeaterSched,
                                  thisDXCoil.BasinHeaterSetPointTemp,
                                  thisDXCoil.BasinHeaterPower);
             thisDXCoil.BasinHeaterPower *= (1.0 - thisDXCoil.CoolingCoilRuntimeFraction);
@@ -13248,7 +13203,7 @@ void CalcMultiSpeedDXCoilCooling(EnergyPlusData &state,
         if (thisDXCoil.CondenserType(DXMode) == DataHeatBalance::RefrigCondenserType::Evap) {
             CalcBasinHeaterPower(state,
                                  thisDXCoil.BasinHeaterPowerFTempDiff,
-                                 thisDXCoil.BasinHeaterSchedulePtr,
+                                 thisDXCoil.basinHeaterSched,
                                  thisDXCoil.BasinHeaterSetPointTemp,
                                  thisDXCoil.BasinHeaterPower);
         }
@@ -13477,8 +13432,8 @@ void CalcMultiSpeedDXCoilHeating(EnergyPlusData &state,
     thisDXCoil.PartLoadRatio = 0.0;
     state.dataHeatBal->HeatReclaimDXCoil(DXCoilNum).AvailCapacity = 0.0;
 
-    if ((AirMassFlow > 0.0) && (GetCurrentScheduleValue(state, thisDXCoil.SchedPtr) > 0.0) &&
-        ((CycRatio > 0.0) || (SpeedRatio > 0.0 && SingleMode == 0)) && OutdoorDryBulb > thisDXCoil.MinOATCompressor) {
+    if ((AirMassFlow > 0.0) && (thisDXCoil.availSched->getCurrentVal() > 0.0) && ((CycRatio > 0.0) || (SpeedRatio > 0.0 && SingleMode == 0)) &&
+        OutdoorDryBulb > thisDXCoil.MinOATCompressor) {
 
         if (SpeedNum > 1 && SingleMode == 0) {
 
@@ -14824,18 +14779,7 @@ void CalcTwoSpeedDXCoilStandardRating(EnergyPlusData &state, int const DXCoilNum
     PreDefTableEntry(state, state.dataOutRptPredefined->pdchDXCoolCoilSEERUserIP, thisDXCoil.Name, "N/A");
     PreDefTableEntry(state, state.dataOutRptPredefined->pdchDXCoolCoilSEERStandardIP, thisDXCoil.Name, "N/A");
 
-    addFootNoteSubTable(
-        state,
-        state.dataOutRptPredefined->pdstDXCoolCoil,
-        "ANSI/AHRI ratings account for supply air fan heat and electric power. <br/>"
-        "1 - EnergyPlus object type. <br/>"
-        "2 - Capacity less than 65K Btu/h (19050 W) - calculated as per AHRI Standard 210/240-2017. <br/>"
-        "&emsp;&nbsp;Capacity of 65K Btu/h (19050 W) to less than 135K Btu/h (39565 W) - calculated as per AHRI Standard 340/360-2007. <br/>"
-        "&emsp;&nbsp;Capacity from 135K (39565 W) to 250K Btu/hr (73268 W) - calculated as per AHRI Standard 365-2009 - Ratings not yet supported in "
-        "EnergyPlus. <br/>"
-        "3 - SEER (User) is calculated using user-input PLF curve and cooling coefficient of degradation. <br/>"
-        "&emsp;&nbsp;SEER (Standard) is calculated using the default PLF curve and cooling coefficient of degradation"
-        "from the appropriate AHRI standard.");
+    addFootNoteSubTable(state, state.dataOutRptPredefined->pdstDXCoolCoil, StandardRatings::AHRI2017FOOTNOTE);
 
     PreDefTableEntry(state, state.dataOutRptPredefined->pdchVAVDXCoolCoilType, thisDXCoil.Name, "Coil:Cooling:DX:TwoSpeed");
     if (thisDXCoil.RateWithInternalStaticAndFanObject) {
@@ -15564,11 +15508,11 @@ int GetDXCoilNumberOfSpeeds(EnergyPlusData &state,
     return NumberOfSpeeds;
 }
 
-int GetDXCoilAvailSchPtr(EnergyPlusData &state,
-                         std::string const &CoilType,            // must match coil types in this module
-                         std::string const &CoilName,            // must match coil names for the coil type
-                         bool &ErrorsFound,                      // set to true if problem
-                         ObjexxFCL::Optional_int_const CoilIndex // Coil index number
+Sched::Schedule *GetDXCoilAvailSched(EnergyPlusData &state,
+                                     std::string const &CoilType,            // must match coil types in this module
+                                     std::string const &CoilName,            // must match coil names for the coil type
+                                     bool &ErrorsFound,                      // set to true if problem
+                                     ObjexxFCL::Optional_int_const CoilIndex // Coil index number
 )
 {
 
@@ -15580,9 +15524,6 @@ int GetDXCoilAvailSchPtr(EnergyPlusData &state,
     // This function looks up the given coil and returns the availability schedule index.  If
     // incorrect coil type or name is given, ErrorsFound is returned as true and schedule index is returned
     // as -1.
-
-    // Return value
-    int SchPtr; // returned availability schedule of matched coil
 
     // FUNCTION LOCAL VARIABLE DECLARATIONS:
     int WhichCoil;
@@ -15598,8 +15539,7 @@ int GetDXCoilAvailSchPtr(EnergyPlusData &state,
             ShowSevereError(state, "GetDXCoilAvailSchPtr: Invalid index passed = 0");
             ShowContinueError(state, "... returning DXCoilAvailSchPtr as -1.");
             ErrorsFound = true;
-            SchPtr = -1;
-            return SchPtr;
+            return nullptr;
         } else {
             WhichCoil = CoilIndex;
         }
@@ -15607,7 +15547,7 @@ int GetDXCoilAvailSchPtr(EnergyPlusData &state,
         WhichCoil = Util::FindItemInList(CoilName, state.dataDXCoils->DXCoil);
     }
     if (WhichCoil != 0) {
-        SchPtr = state.dataDXCoils->DXCoil(WhichCoil).SchedPtr;
+        return state.dataDXCoils->DXCoil(WhichCoil).availSched;
     } else {
         if (!present(CoilIndex)) {
             ShowSevereError(state,
@@ -15616,10 +15556,8 @@ int GetDXCoilAvailSchPtr(EnergyPlusData &state,
                                    CoilName));
         }
         ErrorsFound = true;
-        SchPtr = -1;
+        return nullptr;
     }
-
-    return SchPtr;
 }
 
 Real64 GetDXCoilAirFlow(EnergyPlusData &state,
@@ -16644,7 +16582,7 @@ void CalcVRFCoolingCoil_FluidTCtrl(EnergyPlusData &state,
     thisDXCoil.PrintLowAmbMessage = false;
     thisDXCoil.PrintLowOutTempMessage = false;
 
-    if ((AirMassFlow > 0.0) && (GetCurrentScheduleValue(state, thisDXCoil.SchedPtr) > 0.0) && (PartLoadRatio > 0.0) &&
+    if ((AirMassFlow > 0.0) && (thisDXCoil.availSched->getCurrentVal() > 0.0) && (PartLoadRatio > 0.0) &&
         (compressorOp == HVAC::CompressorOp::On)) { // for cycling fan, reset mass flow to full on rate
 
         if (thisDXCoil.RatedTotCap(Mode) <= 0.0) {
@@ -16988,8 +16926,8 @@ void CalcVRFHeatingCoil_FluidTCtrl(EnergyPlusData &state,
         CrankcaseHeatingPower = 0.0;
     }
 
-    if ((AirMassFlow > 0.0) && (compressorOp == HVAC::CompressorOp::On) && (GetCurrentScheduleValue(state, thisDXCoil.SchedPtr) > 0.0) &&
-        (PartLoadRatio > 0.0) && (OutdoorDryBulb > thisDXCoil.MinOATCompressor)) {
+    if ((AirMassFlow > 0.0) && (compressorOp == HVAC::CompressorOp::On) && (thisDXCoil.availSched->getCurrentVal() > 0.0) && (PartLoadRatio > 0.0) &&
+        (OutdoorDryBulb > thisDXCoil.MinOATCompressor)) {
 
         TotCap = thisDXCoil.RatedTotCap(Mode);
         HeatingCapacityMultiplier = 1.0;

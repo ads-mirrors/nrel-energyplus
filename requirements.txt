@@ -2,4 +2,4 @@
 wheel
 
 # requirements for the CI regression testing scripts
-energyplus-regressions
+energyplus-regressions>=2.1.1

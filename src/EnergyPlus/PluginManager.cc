@@ -59,19 +59,19 @@
 
 #if LINK_WITH_PYTHON
 
-#ifdef _DEBUG
+#    ifdef _DEBUG
 // We don't want to try to import a debug build of Python here
 // so if we are building a Debug build of the C++ code, we need
 // to undefine _DEBUG during the #include command for Python.h.
 // Otherwise it will fail
-#undef _DEBUG
-#include <Python.h>
-#define _DEBUG
-#else
-#include <Python.h>
-#endif
+#        undef _DEBUG
+#        include <Python.h>
+#        define _DEBUG
+#    else
+#        include <Python.h>
+#    endif
 
-#include <fmt/format.h>
+#    include <fmt/format.h>
 template <> struct fmt::formatter<PyStatus>
 {
     // parse is inherited from formatter<string_view>.
@@ -181,7 +181,7 @@ std::string pythonStringForUsage([[maybe_unused]] const EnergyPlusData &state)
 }
 #endif
 
-void PluginManager::setupOutputVariables(EnergyPlusData &state)
+void PluginManager::setupOutputVariables([[maybe_unused]] EnergyPlusData &state)
 {
 #if LINK_WITH_PYTHON
     // with the PythonPlugin:Variables all set in memory, we can now set them up as outputs as needed

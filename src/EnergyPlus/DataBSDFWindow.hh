@@ -52,6 +52,9 @@
 #include <ObjexxFCL/Array1D.hh>
 #include <ObjexxFCL/Array2D.hh>
 #include <ObjexxFCL/Array3D.hh>
+#include <ObjexxFCL/Vector3.fwd.hh>
+
+using ObjexxFCL::Vector3;
 
 // EnergyPlus Headers
 #include <EnergyPlus/Data/BaseData.hh>
@@ -392,6 +395,10 @@ struct BSDFWindowData : BaseGlobalStruct
     Array2D<Vector3<Real64>> SUNCOSTS = Array2D<Vector3<Real64>>(60, 24); // Timestep values of solar direction cosines
     Array2D<Real64> BSDFTempMtrx;                                         // Temporary matrix for holding axisymmetric input
     EPVector<DataBSDFWindow::BSDFWindowGeomDescr> ComplexWind;            // Window geometry structure: set in CalcPerSolarBeam/SolarShading
+
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
 
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {

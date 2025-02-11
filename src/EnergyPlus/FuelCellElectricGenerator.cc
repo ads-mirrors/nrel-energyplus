@@ -168,6 +168,7 @@ namespace FuelCellElectricGenerator {
 
         // METHODOLOGY EMPLOYED:
         // EnergyPlus input processor
+        static constexpr std::string_view routineName = "getFuelCellInput";
 
         int NumAlphas;                 // Number of elements in the alpha array
         int NumNums;                   // Number of elements in the numeric array
@@ -272,12 +273,12 @@ namespace FuelCellElectricGenerator {
                 state.dataFuelCellElectGen->FuelCell(thisFuelCell).FCPM.UpTranLimit = NumArray(8);
                 state.dataFuelCellElectGen->FuelCell(thisFuelCell).FCPM.DownTranLimit = NumArray(9);
                 state.dataFuelCellElectGen->FuelCell(thisFuelCell).FCPM.StartUpTime =
-                    NumArray(10) / Constant::SecInHour; // convert to hours from seconds
+                    NumArray(10) / Constant::rSecsInHour; // convert to hours from seconds
                 state.dataFuelCellElectGen->FuelCell(thisFuelCell).FCPM.StartUpFuel = NumArray(11);
                 state.dataFuelCellElectGen->FuelCell(thisFuelCell).FCPM.StartUpElectConsum = NumArray(12);
                 state.dataFuelCellElectGen->FuelCell(thisFuelCell).FCPM.StartUpElectProd = NumArray(13);
                 state.dataFuelCellElectGen->FuelCell(thisFuelCell).FCPM.ShutDownTime =
-                    NumArray(14) / Constant::SecInHour; // convert to hours from seconds
+                    NumArray(14) / Constant::rSecsInHour; // convert to hours from seconds
                 state.dataFuelCellElectGen->FuelCell(thisFuelCell).FCPM.ShutDownFuel = NumArray(15);
                 state.dataFuelCellElectGen->FuelCell(thisFuelCell).FCPM.ShutDownElectConsum = NumArray(16);
                 state.dataFuelCellElectGen->FuelCell(thisFuelCell).FCPM.ANC0 = NumArray(17);
@@ -608,6 +609,7 @@ namespace FuelCellElectricGenerator {
                                                                      state.dataIPShortCut->cAlphaFieldNames,
                                                                      state.dataIPShortCut->cNumericFieldNames);
 
+            ErrorObjectHeader eoh{routineName, state.dataIPShortCut->cCurrentModuleObject, AlphArray(1)};
             int thisFuelCell = Util::FindItemInList(AlphArray(1), state.dataFuelCellElectGen->FuelCell, &FCDataStruct::NameFCWaterSup);
 
             if (thisFuelCell > 0) {
@@ -674,13 +676,11 @@ namespace FuelCellElectricGenerator {
                     ErrorsFound = true;
                 }
 
-                state.dataFuelCellElectGen->FuelCell(thisFuelCell).WaterSup.SchedNum = ScheduleManager::GetScheduleIndex(state, AlphArray(6));
-                if ((state.dataFuelCellElectGen->FuelCell(thisFuelCell).WaterSup.SchedNum == 0) &&
+                state.dataFuelCellElectGen->FuelCell(thisFuelCell).WaterSup.sched = Sched::GetSchedule(state, AlphArray(6));
+                if ((state.dataFuelCellElectGen->FuelCell(thisFuelCell).WaterSup.sched == nullptr) &&
                     (state.dataFuelCellElectGen->FuelCell(thisFuelCell).WaterSup.WaterTempMode ==
                      DataGenerators::WaterTemperatureMode::WaterInReformSchedule)) {
-                    ShowSevereError(state, format("Invalid, {} = {}", state.dataIPShortCut->cAlphaFieldNames(6), AlphArray(6)));
-                    ShowContinueError(state, format("Entered in {}={}", state.dataIPShortCut->cCurrentModuleObject, AlphArray(1)));
-                    ShowContinueError(state, "Schedule was not found");
+                    ShowSevereItemNotFound(state, eoh, state.dataIPShortCut->cAlphaFieldNames(6), AlphArray(6));
                     ErrorsFound = true;
                 }
 
@@ -1606,7 +1606,7 @@ namespace FuelCellElectricGenerator {
                     double(state.dataGlobal->DayOfSim) +
                     (int(state.dataGlobal->CurrentTime) +
                      (state.dataHVACGlobal->SysTimeElapsed + (state.dataGlobal->CurrentTime - int(state.dataGlobal->CurrentTime)))) /
-                        Constant::HoursInDay;
+                        Constant::rHoursInDay;
                 this->FCPM.HasBeenOn = false;
 
                 if (this->FCPM.ShutDownTime > 0.0) this->FCPM.DuringShutDown = true;
@@ -1627,7 +1627,7 @@ namespace FuelCellElectricGenerator {
                 double(state.dataGlobal->DayOfSim) +
                 (int(state.dataGlobal->CurrentTime) +
                  (state.dataHVACGlobal->SysTimeElapsed + (state.dataGlobal->CurrentTime - int(state.dataGlobal->CurrentTime)))) /
-                    Constant::HoursInDay;
+                    Constant::rHoursInDay;
 
             this->FCPM.HasBeenOn = true;
             ++this->FCPM.NumCycles; // increment cycling counter
@@ -1761,7 +1761,7 @@ namespace FuelCellElectricGenerator {
             } else if (state.dataGenerator->FuelSupply(this->FuelSupNum).FuelTempMode == DataGenerators::FuelTemperatureMode::FuelInTempSchedule) {
 
                 state.dataGenerator->FuelSupply(this->FuelSupNum).TfuelIntoCompress =
-                    ScheduleManager::GetCurrentScheduleValue(state, state.dataGenerator->FuelSupply(this->FuelSupNum).SchedNum);
+                    state.dataGenerator->FuelSupply(this->FuelSupNum).sched->getCurrentVal();
             }
 
             //  evaluate  heat capacity at average temperature using shomate
@@ -1823,7 +1823,7 @@ namespace FuelCellElectricGenerator {
                 this->WaterSup.TwaterIntoCompress = state.dataLoopNodes->Node(this->WaterSup.NodeNum).Temp;
             } break;
             case DataGenerators::WaterTemperatureMode::WaterInReformSchedule: {
-                this->WaterSup.TwaterIntoCompress = ScheduleManager::GetCurrentScheduleValue(state, this->WaterSup.SchedNum);
+                this->WaterSup.TwaterIntoCompress = this->WaterSup.sched->getCurrentVal();
             } break;
             default:
                 break;
@@ -2910,13 +2910,13 @@ namespace FuelCellElectricGenerator {
         Real64 CurrentFractionalDay = double(state.dataGlobal->DayOfSim) +
                                       (int(state.dataGlobal->CurrentTime) + (state.dataHVACGlobal->SysTimeElapsed +
                                                                              (state.dataGlobal->CurrentTime - int(state.dataGlobal->CurrentTime)))) /
-                                          Constant::HoursInDay;
+                                          Constant::rHoursInDay;
 
         // Check if in start up and if it still should be
         if (this->FCPM.DuringStartUp) {
 
             // calculate time for end of start up period
-            Real64 EndingFractionalDay = this->FCPM.FractionalDayofLastStartUp + this->FCPM.StartUpTime / Constant::HoursInDay;
+            Real64 EndingFractionalDay = this->FCPM.FractionalDayofLastStartUp + this->FCPM.StartUpTime / Constant::rHoursInDay;
 
             if (CurrentFractionalDay > EndingFractionalDay) {
                 // start up period is now over
@@ -2928,7 +2928,7 @@ namespace FuelCellElectricGenerator {
         if (this->FCPM.DuringShutDown) {
 
             // calculate time for end of shut down period
-            Real64 EndingFractionalDay = this->FCPM.FractionalDayofLastShutDown + this->FCPM.ShutDownTime / Constant::HoursInDay;
+            Real64 EndingFractionalDay = this->FCPM.FractionalDayofLastShutDown + this->FCPM.ShutDownTime / Constant::rHoursInDay;
 
             if (CurrentFractionalDay > EndingFractionalDay) {
                 // start up period is now over
@@ -3552,7 +3552,7 @@ namespace FuelCellElectricGenerator {
         this->Report.FuelCompressPower = state.dataGenerator->FuelSupply(this->FuelSupNum).PfuelCompEl;
         // electrical power used by fuel supply compressor [W]
         this->Report.FuelCompressEnergy =
-            state.dataGenerator->FuelSupply(this->FuelSupNum).PfuelCompEl * state.dataHVACGlobal->TimeStepSys * Constant::SecInHour; // elect energy
+            state.dataGenerator->FuelSupply(this->FuelSupNum).PfuelCompEl * state.dataHVACGlobal->TimeStepSys * Constant::rSecsInHour; // elect energy
         this->Report.FuelCompressSkinLoss = state.dataGenerator->FuelSupply(this->FuelSupNum).QskinLoss;
         // heat rate of losses.by fuel supply compressor [W]
         this->Report.FuelEnergyLHV = this->FCPM.NdotFuel * state.dataGenerator->FuelSupply(this->FuelSupNum).LHV * 1000000.0 *
@@ -3561,7 +3561,7 @@ namespace FuelCellElectricGenerator {
             this->FCPM.NdotFuel * state.dataGenerator->FuelSupply(this->FuelSupNum).LHV * 1000000.0; // reporting: Fuel Energy used (W)
         this->Report.FuelEnergyHHV = this->FCPM.NdotFuel * state.dataGenerator->FuelSupply(this->FuelSupNum).HHV *
                                      state.dataGenerator->FuelSupply(this->FuelSupNum).KmolPerSecToKgPerSec * state.dataHVACGlobal->TimeStepSys *
-                                     Constant::SecInHour;
+                                     Constant::rSecsInHour;
 
         this->Report.FuelEnergyUseRateHHV = this->FCPM.NdotFuel * state.dataGenerator->FuelSupply(this->FuelSupNum).HHV *
                                             state.dataGenerator->FuelSupply(this->FuelSupNum).KmolPerSecToKgPerSec;

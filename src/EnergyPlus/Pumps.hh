@@ -114,11 +114,11 @@ namespace Pumps {
     {
         // Members
         std::string Name;
-        int ManualRPMSchedIndex = 0;
-        int LowerPsetSchedIndex = 0;
-        int UpperPsetSchedIndex = 0;
-        int MinRPMSchedIndex = 0;
-        int MaxRPMSchedIndex = 0;
+        Sched::Schedule *manualRPMSched = nullptr;
+        Sched::Schedule *lowerPsetSched = nullptr;
+        Sched::Schedule *upperPsetSched = nullptr;
+        Sched::Schedule *minRPMSched = nullptr;
+        Sched::Schedule *maxRPMSched = nullptr;
         ControlTypeVFD VFDControlType = ControlTypeVFD::Invalid; // VFDControlType
         Real64 MaxRPM = 0.0;                                     // Maximum RPM range value - schedule limit
         Real64 MinRPM = 0.0;                                     // Minimum RPM range value - schedule limit
@@ -134,7 +134,7 @@ namespace Pumps {
         DataPlant::PlantEquipmentType TypeOf_Num = DataPlant::PlantEquipmentType::Invalid; // pump type of number in reference to the dataplant values
         PlantLocation plantLoc = {0, DataPlant::LoopSideLocation::Invalid, 0, 0};
         PumpControlType PumpControl = PumpControlType::Invalid;            // Integer equivalent of PumpControlType
-        int PumpScheduleIndex = 0;                                         // Schedule Pointer
+        Sched::Schedule *flowRateSched = nullptr;                          // Flow rate modifier schedule, blank/missing --> AlwaysOn
         int InletNodeNum = 0;                                              // Node number on the inlet side of the plant
         int OutletNodeNum = 0;                                             // Node number on the outlet side of the plant
         PumpBankControlSeq SequencingScheme = PumpBankControlSeq::Invalid; // Optimal, Sequential, User-Defined
@@ -249,6 +249,10 @@ struct PumpsData : BaseGlobalStruct
     EPVector<Pumps::PumpSpecs> PumpEquip;
     EPVector<Pumps::ReportVars> PumpEquipReport;
     std::unordered_map<std::string, std::string> PumpUniqueNames;
+
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
 
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {

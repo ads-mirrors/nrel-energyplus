@@ -1043,10 +1043,10 @@ void DetailsForSurfaces(EnergyPlusData &state, int const RptType) // (1=Vertices
             *eiostream << "Shading Surface," << thisSurface.Name << "," << cSurfaceClass(thisSurface.Class) << "," << thisSurface.BaseSurfName << ","
                        << AlgoName << ",";
             if (RptType == 10) {
-                if (thisSurface.SchedShadowSurfIndex > 0) {
-                    ScheduleName = ScheduleManager::GetScheduleName(state, thisSurface.SchedShadowSurfIndex);
-                    cSchedMin = format("{:.2R}", ScheduleManager::GetScheduleMinValue(state, thisSurface.SchedShadowSurfIndex));
-                    cSchedMax = format("{:.2R}", ScheduleManager::GetScheduleMaxValue(state, thisSurface.SchedShadowSurfIndex));
+                if (thisSurface.shadowSurfSched != nullptr) {
+                    ScheduleName = thisSurface.shadowSurfSched->Name;
+                    cSchedMin = format("{:.2R}", thisSurface.shadowSurfSched->getMinVal(state));
+                    cSchedMax = format("{:.2R}", thisSurface.shadowSurfSched->getMinVal(state));
                 } else {
                     ScheduleName = "";
                     cSchedMin = "0.0";
@@ -1060,10 +1060,10 @@ void DetailsForSurfaces(EnergyPlusData &state, int const RptType) // (1=Vertices
             } else if (RptType == 1) {
                 *eiostream << fmt::to_string(thisSurface.Sides) << ",";
             } else {
-                if (thisSurface.SchedShadowSurfIndex > 0) {
-                    ScheduleName = ScheduleManager::GetScheduleName(state, thisSurface.SchedShadowSurfIndex);
-                    cSchedMin = format("{:.2R}", ScheduleManager::GetScheduleMinValue(state, thisSurface.SchedShadowSurfIndex));
-                    cSchedMax = format("{:.2R}", ScheduleManager::GetScheduleMaxValue(state, thisSurface.SchedShadowSurfIndex));
+                if (thisSurface.shadowSurfSched != nullptr) {
+                    ScheduleName = thisSurface.shadowSurfSched->Name;
+                    cSchedMin = format("{:.2R}", thisSurface.shadowSurfSched->getMinVal(state));
+                    cSchedMax = format("{:.2R}", thisSurface.shadowSurfSched->getMinVal(state));
                 } else {
                     ScheduleName = "";
                     cSchedMin = "0.0";

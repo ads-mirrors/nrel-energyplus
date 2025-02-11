@@ -99,6 +99,10 @@ struct SurfaceColorData : BaseGlobalStruct
 {
     std::array<int, 15> DXFcolorno = DataSurfaceColors::defaultcolorno;
 
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
+
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {
     }

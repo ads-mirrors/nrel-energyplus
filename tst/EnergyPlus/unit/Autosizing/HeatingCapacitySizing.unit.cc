@@ -80,6 +80,8 @@ TEST_F(AutoSizingFixture, HeatingCapacitySizingGauntlet)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
+
     state->dataEnvrn->StdRhoAir = 1.2;
     // call simulate to trigger sizing call
     Fans::GetFanInput(*state);

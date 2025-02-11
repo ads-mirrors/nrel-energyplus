@@ -111,6 +111,10 @@ struct DataBranchAirLoopPlantData : BaseGlobalStruct
 {
     Array1D<DataBranchAirLoopPlant::PlantPressureCurveData> PressureCurve;
 
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
+
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {
     }

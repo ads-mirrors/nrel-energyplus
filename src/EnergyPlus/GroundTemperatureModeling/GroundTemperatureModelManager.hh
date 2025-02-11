@@ -47,15 +47,4 @@
 
 #ifndef GroundTemperatureModelManager_hh_INCLUDED
 #define GroundTemperatureModelManager_hh_INCLUDED
-
-// EnergyPlus Headers
-#include <EnergyPlus/Data/BaseData.hh>
-#include <EnergyPlus/GroundTemperatureModeling/BaseGroundTemperatureModel.hh>
-
-namespace EnergyPlus::GroundTemperatureManager {
-
-BaseGroundTempsModel *GetGroundTempModelAndInit(EnergyPlusData &state, std::string_view type, std::string const &name);
-
-} // namespace EnergyPlus::GroundTemperatureManager
-
 #endif

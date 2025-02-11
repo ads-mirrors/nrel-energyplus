@@ -312,10 +312,10 @@ int SizingLoggerFramework::SetupVariableSizingLog(EnergyPlusData &state, Real64 
     for (int i = 1; i <= state.dataWeather->NumOfEnvrn; ++i) {
 
         if (state.dataWeather->Environment(i).KindOfEnvrn == Constant::KindOfSim::DesignDay) {
-            tmpLog.ztStepCountByEnvrnMap[i] = HoursPerDay * state.dataGlobal->NumOfTimeStepInHour;
+            tmpLog.ztStepCountByEnvrnMap[i] = HoursPerDay * state.dataGlobal->TimeStepsInHour;
         }
         if (state.dataWeather->Environment(i).KindOfEnvrn == Constant::KindOfSim::RunPeriodDesign) {
-            tmpLog.ztStepCountByEnvrnMap[i] = HoursPerDay * state.dataGlobal->NumOfTimeStepInHour * state.dataWeather->Environment(i).TotalDays;
+            tmpLog.ztStepCountByEnvrnMap[i] = HoursPerDay * state.dataGlobal->TimeStepsInHour * state.dataWeather->Environment(i).TotalDays;
         }
     }
 
@@ -368,7 +368,7 @@ ZoneTimestepObject SizingLoggerFramework::PrepareZoneTimestepStamp(EnergyPlusDat
         state.dataGlobal->HourOfDay,
         state.dataGlobal->TimeStep,
         *state.dataOutputProcessor->TimeValue[(int)OutputProcessor::TimeStepType::Zone].TimeStep,
-        state.dataGlobal->NumOfTimeStepInHour);
+        state.dataGlobal->TimeStepsInHour);
 
     return tmpztStepStamp;
 }

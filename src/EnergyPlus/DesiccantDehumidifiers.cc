@@ -300,21 +300,12 @@ namespace DesiccantDehumidifiers {
             desicDehum.DehumType = CurrentModuleObject;
             desicDehum.DehumTypeCode = DesicDehumType::Solid;
             desicDehum.Sched = Alphas(2);
+
             if (lAlphaBlanks(2)) {
-                desicDehum.SchedPtr = ScheduleManager::ScheduleAlwaysOn;
-            } else {
-                desicDehum.SchedPtr = ScheduleManager::GetScheduleIndex(state, Alphas(2)); // convert schedule name to pointer
-                if (desicDehum.SchedPtr == 0) {
-                    ShowSevereError(state,
-                                    format("{}{}: invalid {} entered ={} for {}={}",
-                                           RoutineName,
-                                           CurrentModuleObject,
-                                           cAlphaFields(2),
-                                           Alphas(2),
-                                           cAlphaFields(1),
-                                           Alphas(1)));
-                    ErrorsFound = true;
-                }
+                desicDehum.availSched = Sched::GetScheduleAlwaysOn(state);
+            } else if ((desicDehum.availSched = Sched::GetSchedule(state, Alphas(2))) == nullptr) {
+                ShowSevereItemNotFound(state, eoh, cAlphaFields(2), Alphas(2));
+                ErrorsFound = true;
             }
             // For node connections, this object is both a parent and a non-parent, because the
             // Desiccant wheel is not called out as a separate component, its nodes must be connected
@@ -674,20 +665,10 @@ namespace DesiccantDehumidifiers {
 
             desicDehum.Sched = Alphas(2);
             if (lAlphaBlanks(2)) {
-                desicDehum.SchedPtr = ScheduleManager::ScheduleAlwaysOn;
-            } else {
-                desicDehum.SchedPtr = ScheduleManager::GetScheduleIndex(state, Alphas(2)); // convert schedule name to pointer
-                if (desicDehum.SchedPtr == 0) {
-                    ShowSevereError(state,
-                                    format("{}{}: invalid {} entered ={} for {}={}",
-                                           RoutineName,
-                                           CurrentModuleObject,
-                                           cAlphaFields(2),
-                                           Alphas(2),
-                                           cAlphaFields(1),
-                                           Alphas(1)));
-                    ErrorsFound = true;
-                }
+                desicDehum.availSched = Sched::GetScheduleAlwaysOn(state);
+            } else if ((desicDehum.availSched = Sched::GetSchedule(state, Alphas(2))) == nullptr) {
+                ShowSevereItemNotFound(state, eoh, cAlphaFields(2), Alphas(2));
+                ErrorsFound = true;
             }
 
             desicDehum.HXType = Alphas(3);
@@ -1869,7 +1850,7 @@ namespace DesiccantDehumidifiers {
             ProcAirMassFlowRate = desicDehum.ProcAirInMassFlowRate;
             if (ProcAirMassFlowRate <= HVAC::SmallMassFlow) UnitOn = false;
 
-            if (ScheduleManager::GetCurrentScheduleValue(state, desicDehum.SchedPtr) <= 0.0) UnitOn = false;
+            if (desicDehum.availSched->getCurrentVal() <= 0.0) UnitOn = false;
 
             // If incoming conditions are outside valid range for curve fits, then shut unit off, do not issue warnings
 
@@ -1915,7 +1896,7 @@ namespace DesiccantDehumidifiers {
             ProcAirMassFlowRate = state.dataLoopNodes->Node(desicDehum.ProcAirInNode).MassFlowRate;
             if (ProcAirMassFlowRate <= HVAC::SmallMassFlow) UnitOn = false;
 
-            if (ScheduleManager::GetCurrentScheduleValue(state, desicDehum.SchedPtr) <= 0.0) UnitOn = false;
+            if (desicDehum.availSched->getCurrentVal() <= 0.0) UnitOn = false;
 
             if (UnitOn) {
                 if (desicDehum.ControlNodeNum == desicDehum.ProcAirOutNode) {

@@ -338,7 +338,7 @@ struct EnergyPlusData : BaseGlobalStruct
     std::unique_ptr<ChillerIndirectAbsoprtionData> dataChillerIndirectAbsorption;
     std::unique_ptr<ChillerReformulatedEIRData> dataChillerReformulatedEIR;
     std::unique_ptr<ChillerElectricASHRAE205Data> dataChillerElectricASHRAE205;
-    std::unique_ptr<CoilCoolingDXData> dataCoilCooingDX;
+    std::unique_ptr<CoilCoolingDXData> dataCoilCoolingDX;
     std::unique_ptr<CondenserLoopTowersData> dataCondenserLoopTowers;
     std::unique_ptr<ConstructionData> dataConstruction;
     std::unique_ptr<ContaminantBalanceData> dataContaminantBalance;
@@ -502,7 +502,7 @@ struct EnergyPlusData : BaseGlobalStruct
     std::unique_ptr<RuntimeLanguageData> dataRuntimeLang;
     std::unique_ptr<RuntimeLanguageProcessorData> dataRuntimeLangProcessor;
     std::unique_ptr<SQLiteProceduresData> dataSQLiteProcedures;
-    std::unique_ptr<ScheduleManagerData> dataScheduleMgr;
+    std::unique_ptr<ScheduleManagerData> dataSched;
     std::unique_ptr<SetPointManagerData> dataSetPointManager;
     std::unique_ptr<ShadowCombData> dataShadowComb;
     std::unique_ptr<SimAirServingZonesData> dataSimAirServingZones;
@@ -574,8 +574,10 @@ struct EnergyPlusData : BaseGlobalStruct
     EnergyPlusData(const EnergyPlusData &) = delete;
     EnergyPlusData(EnergyPlusData &&) = delete;
 
-    void init_state([[maybe_unused]] EnergyPlusData &state) override;
+    void init_constant_state(EnergyPlusData &state) override;
+    void init_state(EnergyPlusData &state) override;
     bool init_state_called = false;
+    bool init_constant_state_called = false;
 
     void clear_state() override;
 };

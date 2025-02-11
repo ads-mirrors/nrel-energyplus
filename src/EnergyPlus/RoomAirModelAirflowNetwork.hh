@@ -105,6 +105,10 @@ struct RoomAirModelAirflowNetworkData : BaseGlobalStruct
     bool OneTimeFlagConf = true;
     bool EnvrnFlag = true;
 
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
+
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {
     }

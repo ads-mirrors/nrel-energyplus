@@ -155,6 +155,10 @@ struct CTElectricGeneratorData : BaseGlobalStruct
     bool getCTInputFlag = true;
     Array1D<CTElectricGenerator::CTGeneratorData> CTGenerator;
 
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
+
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {
     }

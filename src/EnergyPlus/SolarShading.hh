@@ -58,7 +58,7 @@
 
 // Penumbra Headers
 #ifndef EP_NO_OPENGL
-#include <penumbra/penumbra.h>
+#    include <penumbra/penumbra.h>
 #endif
 
 // EnergyPlus Headers
@@ -510,6 +510,10 @@ struct SolarShadingData : BaseGlobalStruct
     std::vector<Real64> sin_Theta;
     std::vector<Real64> cos_Theta;
     std::unique_ptr<std::iostream> shd_stream; // Shading file stream
+
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
 
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {

@@ -2470,7 +2470,7 @@ Real64 GetCurrentHVACTime(const EnergyPlusData &state)
     // as real.
     Real64 const CurrentHVACTime =
         (state.dataGlobal->CurrentTime - state.dataGlobal->TimeStepZone) + state.dataHVACGlobal->SysTimeElapsed + state.dataHVACGlobal->TimeStepSys;
-    return CurrentHVACTime * Constant::SecInHour;
+    return CurrentHVACTime * Constant::rSecsInHour;
 }
 
 Real64 GetPreviousHVACTime(const EnergyPlusData &state)
@@ -2485,7 +2485,7 @@ Real64 GetPreviousHVACTime(const EnergyPlusData &state)
     // This is the correct formula that does not use MinutesPerSystemTimeStep, which would
     // erronously truncate all sub-minute system time steps down to the closest full minute.
     Real64 const PreviousHVACTime = (state.dataGlobal->CurrentTime - state.dataGlobal->TimeStepZone) + state.dataHVACGlobal->SysTimeElapsed;
-    return PreviousHVACTime * Constant::SecInHour;
+    return PreviousHVACTime * Constant::rSecsInHour;
 }
 
 std::string CreateHVACTimeString(const EnergyPlusData &state)

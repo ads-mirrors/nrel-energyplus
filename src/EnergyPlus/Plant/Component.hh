@@ -230,6 +230,8 @@ namespace DataPlant {
         void oneTimeInit(EnergyPlusData &state) const;
 
         static CompData &getPlantComponent(EnergyPlusData &state, PlantLocation const &plantLoc);
+
+        Real64 getDynamicMaxCapacity(EnergyPlusData &state) const;
     };
 } // namespace DataPlant
 } // namespace EnergyPlus

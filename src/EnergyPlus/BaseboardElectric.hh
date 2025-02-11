@@ -56,6 +56,7 @@
 #include <EnergyPlus/DataGlobals.hh>
 #include <EnergyPlus/EPVector.hh>
 #include <EnergyPlus/EnergyPlus.hh>
+#include <EnergyPlus/ScheduleManager.hh>
 
 namespace EnergyPlus {
 
@@ -69,7 +70,7 @@ namespace BaseboardElectric {
         std::string EquipName;
         std::string EquipType;
         std::string Schedule;
-        int SchedPtr = 0;
+        Sched::Schedule *availSched = nullptr;
         Real64 NominalCapacity = 0.0;
         Real64 BaseboardEfficiency = 0.0;
         Real64 AirInletTemp = 0.0;
@@ -104,6 +105,10 @@ struct BaseboardElectricData : BaseGlobalStruct
 {
     bool getInputFlag = true;
     EPVector<BaseboardElectric::BaseboardParams> baseboards;
+
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
 
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {

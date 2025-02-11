@@ -415,6 +415,10 @@ struct SystemReportsData : BaseGlobalStruct
     Array1D<SystemReports::CompTypeError> CompTypeErrors = Array1D<SystemReports::CompTypeError>(100);
     Array1D<SystemReports::IdentifyLoop> LoopStack;
 
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
+
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {
     }

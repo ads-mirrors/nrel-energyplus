@@ -48,9 +48,6 @@
 // C++ Headers
 #include <cmath>
 
-// ObjexxFCL Headers
-#include <ObjexxFCL/Fmath.hh>
-
 // EnergyPlus Headers
 #include <EnergyPlus/Data/EnergyPlusData.hh>
 #include <EnergyPlus/DataEnvironment.hh>
@@ -147,10 +144,7 @@ namespace ThermalChimney {
         // This subroutine obtains input data for ThermalChimney units and
         // stores it in the ThermalChimney data structure.
 
-        // Using/Aliasing
-
-        using ScheduleManager::GetScheduleIndex;
-
+        static constexpr std::string_view routineName = "GetThermalChimney";
         // SUBROUTINE PARAMETER DEFINITIONS:
         Real64 constexpr FlowFractionTolerance(0.0001); // Smallest deviation from unity for the sum of all fractions
 
@@ -188,6 +182,9 @@ namespace ThermalChimney {
                                                                      state.dataIPShortCut->lAlphaFieldBlanks,
                                                                      state.dataIPShortCut->cAlphaFieldNames,
                                                                      state.dataIPShortCut->cNumericFieldNames);
+
+            ErrorObjectHeader eoh{routineName, state.dataIPShortCut->cCurrentModuleObject, state.dataIPShortCut->cAlphaArgs(1)};
+
             if (Util::IsNameEmpty(state, state.dataIPShortCut->cAlphaArgs(1), cCurrentModuleObject, ErrorsFound)) {
                 continue;
             }
@@ -214,18 +211,12 @@ namespace ThermalChimney {
             }
             state.dataThermalChimneys->ThermalChimneySys(Loop).RealZoneName = state.dataIPShortCut->cAlphaArgs(2);
 
-            state.dataThermalChimneys->ThermalChimneySys(Loop).SchedName = state.dataIPShortCut->cAlphaArgs(3);
             if (state.dataIPShortCut->lAlphaFieldBlanks(3)) {
-                state.dataThermalChimneys->ThermalChimneySys(Loop).SchedPtr = ScheduleManager::ScheduleAlwaysOn;
-            } else {
-                state.dataThermalChimneys->ThermalChimneySys(Loop).SchedPtr = GetScheduleIndex(state, state.dataIPShortCut->cAlphaArgs(3));
-                if (state.dataThermalChimneys->ThermalChimneySys(Loop).SchedPtr == 0) {
-                    ShowSevereError(state, format("{}=\"{} invalid data", cCurrentModuleObject, state.dataIPShortCut->cAlphaArgs(1)));
-                    ShowContinueError(
-                        state,
-                        format("Invalid-not found {}=\"{}\".", state.dataIPShortCut->cAlphaFieldNames(3), state.dataIPShortCut->cAlphaArgs(3)));
-                    ErrorsFound = true;
-                }
+                state.dataThermalChimneys->ThermalChimneySys(Loop).availSched = Sched::GetScheduleAlwaysOn(state);
+            } else if ((state.dataThermalChimneys->ThermalChimneySys(Loop).availSched =
+                            Sched::GetSchedule(state, state.dataIPShortCut->cAlphaArgs(3))) == nullptr) {
+                ShowSevereItemNotFound(state, eoh, state.dataIPShortCut->cAlphaFieldNames(3), state.dataIPShortCut->cAlphaArgs(3));
+                ErrorsFound = true;
             }
 
             state.dataThermalChimneys->ThermalChimneySys(Loop).AbsorberWallWidth = state.dataIPShortCut->rNumericArgs(1);
@@ -674,8 +665,6 @@ namespace ThermalChimney {
         // PURPOSE OF THIS SUBROUTINE:
         // This subroutine simulates the components making up the ThermalChimney.
 
-        using ScheduleManager::GetCurrentScheduleValue;
-
         int constexpr NTC(15); // Number of subregions in thermal chimney air channel for FINITE DIFFERENCE
 
         // To be obtained from other modules and subroutines
@@ -958,7 +947,7 @@ namespace ThermalChimney {
             }
             state.dataThermalChimneys->ThermalChimneyReport(Loop).OutletAirTempThermalChim = ThermChimSubTemp(NTC) - Constant::Kelvin;
 
-            if (GetCurrentScheduleValue(state, state.dataThermalChimneys->ThermalChimneySys(Loop).SchedPtr) <= 0.0) {
+            if (state.dataThermalChimneys->ThermalChimneySys(Loop).availSched->getCurrentVal() <= 0.0) {
                 for (int TCZoneNum = 1; TCZoneNum <= state.dataThermalChimneys->ThermalChimneySys(Loop).TotZoneToDistrib; ++TCZoneNum) {
                     int tcZonePtr = state.dataThermalChimneys->ThermalChimneySys(Loop).ZonePtr(TCZoneNum);
                     auto &thisTCZoneHB = state.dataZoneTempPredictorCorrector->zoneHeatBalance(tcZonePtr);

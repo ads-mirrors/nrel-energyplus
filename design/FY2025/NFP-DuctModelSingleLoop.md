@@ -3,6 +3,8 @@ An Improved Duct Model for a Single AirLoop
 
 **Lixing Gu**
 
+ - 2/11/25
+ - Second revision after discussion with Jason DeGraw
  - 1/8/25
  - First revision after Technicalities call on 1/8/25
  - 12/25/2024
@@ -17,7 +19,7 @@ The task will improve duct modeling support to enable conduction heat losses for
 
 ## E-mail and Conference Call Conclusions ##
 
-The NFP was discussed in the Technicalities conference call on 1/8/25
+###The NFP was discussed in the Technicalities conference call on 1/8/25###
 
 Here are comments and replies.
 
@@ -32,6 +34,10 @@ Reply: I agree. Remove the change.
 Jason: May have comments via E-mail communications
 
 Reply: I am ready for further dicussion. 
+
+### Discussion between Jason on 02/09/25###
+
+Jason DeGraw and Lixing Gu met in the ASHRAE Winter Meeting 2025 in Orlando. No further comments from Jason. 
 
 ## Overview ##
 

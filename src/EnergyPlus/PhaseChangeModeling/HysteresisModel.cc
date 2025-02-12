@@ -356,8 +356,7 @@ namespace Material {
             }
 
             if (mat->hasPCM) {
-                ShowSevereCustom(
-                    state, eoh, format("Material {} already has {} properties defined.", mat->Name, s_ipsc->cCurrentModuleObject));
+                ShowSevereCustom(state, eoh, format("Material {} already has {} properties defined.", mat->Name, s_ipsc->cCurrentModuleObject));
                 ErrorsFound = true;
                 continue;
             }

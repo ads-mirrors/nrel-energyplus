@@ -76,15 +76,14 @@ TEST_F(EnergyPlusFixture, ChillerElectricReformulatedEIR_WaterCooledChillerVaria
     state->dataPlnt->TotNumLoops = 2;
     state->dataEnvrn->OutBaroPress = 101325.0;
     state->dataEnvrn->StdRhoAir = 1.20;
-    state->dataGlobal->NumOfTimeStepInHour = 1;
+    state->dataGlobal->TimeStepsInHour = 1;
     state->dataGlobal->TimeStep = 1;
-    state->dataGlobal->MinutesPerTimeStep = 60;
+    state->dataGlobal->MinutesInTimeStep = 60;
     state->dataGlobal->HourOfDay = 1;
     state->dataEnvrn->DayOfWeek = 1;
     state->dataEnvrn->Month = 1;
     state->dataEnvrn->DayOfMonth = 1;
     state->dataEnvrn->DayOfYear_Schedule = General::OrdinalDay(state->dataEnvrn->Month, state->dataEnvrn->DayOfMonth, 1);
-    Psychrometrics::InitializePsychRoutines(*state);
 
     std::string const idf_objects = delimited_string({
         "Chiller:Electric:ReformulatedEIR,",
@@ -133,6 +132,8 @@ TEST_F(EnergyPlusFixture, ChillerElectricReformulatedEIR_WaterCooledChillerVaria
     });
 
     EXPECT_TRUE(process_idf(idf_objects, false));
+
+    state->init_state(*state);
 
     state->dataPlnt->PlantLoop.allocate(state->dataPlnt->TotNumLoops);
     state->dataPlnt->PlantLoop.allocate(state->dataPlnt->TotNumLoops);
@@ -189,7 +190,7 @@ TEST_F(EnergyPlusFixture, ChillerElectricReformulatedEIR_WaterCooledChillerVaria
     thisChiller.size(*state);
     MyLoad = -thisChiller.RefCap;
     state->dataSize->PlantSizData(1).DesCapacity = std::abs(MyLoad) * 2;
-    ScheduleManager::UpdateScheduleValues(*state);
+    Sched::UpdateScheduleVals(*state);
 
     // run through init again after sizing is complete to set mass flow rate
     state->dataGlobal->BeginEnvrnFlag = true;

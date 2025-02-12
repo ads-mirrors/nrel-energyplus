@@ -75,7 +75,6 @@ using namespace EnergyPlus::DataHeatBalSurface;
 using namespace EnergyPlus::DataSurfaces;
 using namespace EnergyPlus::DataZoneEquipment;
 using namespace EnergyPlus::Psychrometrics;
-using namespace EnergyPlus::ScheduleManager;
 using namespace EnergyPlus::SurfaceGeometry;
 using namespace EnergyPlus::TranspiredCollector;
 using namespace EnergyPlus::HeatBalanceManager;
@@ -194,10 +193,9 @@ TEST_F(EnergyPlusFixture, TranspiredCollectors_InitTranspiredCollectorTest)
 
     });
     ASSERT_TRUE(process_idf(idf_objects));
-
-    state->dataGlobal->NumOfTimeStepInHour = 1;
-    state->dataGlobal->MinutesPerTimeStep = 60;
-    ScheduleManager::ProcessScheduleInput(*state);
+    state->dataGlobal->TimeStepsInHour = 1;
+    state->dataGlobal->MinutesInTimeStep = 60;
+    state->init_state(*state);
 
     GetProjectControlData(*state, ErrorsFound); // read project control data
     EXPECT_FALSE(ErrorsFound);
@@ -214,8 +212,8 @@ TEST_F(EnergyPlusFixture, TranspiredCollectors_InitTranspiredCollectorTest)
     state->dataSurfaceGeometry->CosZoneRelNorth.allocate(1);
     state->dataSurfaceGeometry->SinZoneRelNorth.allocate(1);
 
-    state->dataSurfaceGeometry->CosZoneRelNorth(1) = std::cos(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRadians);
-    state->dataSurfaceGeometry->SinZoneRelNorth(1) = std::sin(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRadians);
+    state->dataSurfaceGeometry->CosZoneRelNorth(1) = std::cos(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRad);
+    state->dataSurfaceGeometry->SinZoneRelNorth(1) = std::sin(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRad);
     state->dataSurfaceGeometry->CosBldgRelNorth = 1.0;
     state->dataSurfaceGeometry->SinBldgRelNorth = 0.0;
 
@@ -226,8 +224,6 @@ TEST_F(EnergyPlusFixture, TranspiredCollectors_InitTranspiredCollectorTest)
     state->dataEnvrn->OutWetBulbTemp = 15.0;
 
     SetSurfaceOutBulbTempAt(*state);
-
-    InitializePsychRoutines(*state);
 
     GetTranspiredCollectorInput(*state);
     EXPECT_FALSE(ErrorsFound);

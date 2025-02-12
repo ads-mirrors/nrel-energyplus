@@ -67,19 +67,24 @@ namespace HVACDXHeatPumpSystem {
     // MODULE PARAMETER DEFINITIONS
     constexpr Real64 MinAirMassFlow(0.001);
 
+    // What is the difference between this an a DXCoil?
     // Types
     struct DXHeatPumpSystemStruct
     {
         // Members
-        std::string DXHeatPumpSystemType; // Type of DXHeatingSystem
         std::string Name;                 // Name of the DXHeatingSystem
-        int SchedPtr;
-        HVAC::CoilType heatPumpCoilType = HVAC::CoilType::Invalid;
-        std::string HeatPumpCoilName;
-        int HeatPumpCoilIndex;
-        int DXHeatPumpCoilInletNodeNum;
-        int DXHeatPumpCoilOutletNodeNum;
-        int DXSystemControlNodeNum; // the node number of the node with the set point
+
+        std::string DXHeatPumpSystemType; // Type of DXHeatingSystem
+      
+        Sched::Schedule *availSched = nullptr;
+      
+        HVAC::CoilType dxCoilType = HVAC::CoilType::Invalid;
+        std::string DXCoilName;
+        int DXCoilNum = 0;
+        int DXCoilInNodeNum = 0;
+        int DXCoilOutNodeNum = 0;
+
+        int DXSystemControlNodeNum = 0; // the node number of the node with the set point
         Real64 DesiredOutletTemp;   // the temperature at the unit outlet node needed
         // to meet the supply air set point.
         Real64 PartLoadFrac;                      // part load fraction for current time step (single speed)
@@ -102,8 +107,7 @@ namespace HVACDXHeatPumpSystem {
 
         // Default Constructor
         DXHeatPumpSystemStruct()
-            : SchedPtr(0), HeatPumpCoilIndex(0), DXHeatPumpCoilInletNodeNum(0), DXHeatPumpCoilOutletNodeNum(0),
-              DXSystemControlNodeNum(0), DesiredOutletTemp(0.0), PartLoadFrac(0.0), SpeedRatio(0.0), CycRatio(0.0), DXCoilSensPLRIter(0),
+            : DesiredOutletTemp(0.0), PartLoadFrac(0.0), SpeedRatio(0.0), CycRatio(0.0), DXCoilSensPLRIter(0),
               DXCoilSensPLRIterIndex(0), DXCoilSensPLRFail(0), DXCoilSensPLRFailIndex(0), OAUnitSetTemp(0.0), SpeedNum(0), FaultyCoilSATFlag(false),
               FaultyCoilSATIndex(0), FaultyCoilSATOffset(0.0)
         {
@@ -164,10 +168,17 @@ namespace HVACDXHeatPumpSystem {
                                int speedNumber,
                                HVAC::FanOp const fanOp);
 
-    int GetHeatingCoilInletNodeNum(EnergyPlusData &state, std::string const &DXCoilSysName, bool &InletNodeErrFlag);
+#ifdef OLD_API
+    int GetCoilAirInletNode(EnergyPlusData &state, std::string const &DXCoilSysName, bool &InletNodeErrFlag);
 
-    int GetHeatingCoilOutletNodeNum(EnergyPlusData &state, std::string const &DXCoilSysName, bool &OutletNodeErrFlag);
+    int GetCoilAirOutletNode(EnergyPlusData &state, std::string const &DXCoilSysName, bool &OutletNodeErrFlag);
+#endif // OLD_API
 
+    int GetCoilIndex(EnergyPlusData &state, std::string const &coilName);
+
+    int GetCoilAirInletNode(EnergyPlusData &state, int const coilNum);
+
+    int GetCoilAirOutletNode(EnergyPlusData &state, int const coilNum);
 } // namespace HVACDXHeatPumpSystem
 
 struct HVACDXHeatPumpSystemData : BaseGlobalStruct
@@ -194,6 +205,10 @@ struct HVACDXHeatPumpSystemData : BaseGlobalStruct
     Real64 QLatentReq = 0.0;           // Zone latent load, input to variable-speed DX coil
     Real64 AirFlowOnOffRatio = 1.0;    // ratio of compressor on flow to average flow over time step
     Real64 SpeedPartLoadRatio = 1.0;   // SpeedRatio varies between 1.0 (higher speed) and 0.0 (lower speed)
+
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
 
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {

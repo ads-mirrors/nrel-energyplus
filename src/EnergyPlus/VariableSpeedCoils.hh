@@ -223,15 +223,15 @@ namespace VariableSpeedCoils {
         Real64 EvapCondPumpElecNomPower;                    // Nominal power input to the evap condenser water circulation pump [W]
         Real64 EvapCondPumpElecPower;                       // Average power consumed by the evap condenser water circulation pump over
         // the time step [W]
-        Real64 EvapWaterConsumpRate;        // Evap condenser water consumption rate [m3/s]
-        Real64 EvapCondPumpElecConsumption; // Electric energy consumed by the evap condenser water circulation pump [J]
-        Real64 EvapWaterConsump;            // Evap condenser water consumption [m3]
-        Real64 BasinHeaterConsumption;      // Basin heater energy consumption (J)
-        Real64 BasinHeaterPowerFTempDiff;   // Basin heater capacity per degree C below setpoint (W/C)
-        Real64 BasinHeaterSetPointTemp;     // setpoint temperature for basin heater operation (C)
-        Real64 BasinHeaterPower;            // Basin heater power (W)
-        int BasinHeaterSchedulePtr;         // Pointer to basin heater schedule
-        Array1D<Real64> EvapCondAirFlow;    // Air flow rate through the evap condenser at high speed, volumetric flow rate
+        Real64 EvapWaterConsumpRate;                 // Evap condenser water consumption rate [m3/s]
+        Real64 EvapCondPumpElecConsumption;          // Electric energy consumed by the evap condenser water circulation pump [J]
+        Real64 EvapWaterConsump;                     // Evap condenser water consumption [m3]
+        Real64 BasinHeaterConsumption;               // Basin heater energy consumption (J)
+        Real64 BasinHeaterPowerFTempDiff;            // Basin heater capacity per degree C below setpoint (W/C)
+        Real64 BasinHeaterSetPointTemp;              // setpoint temperature for basin heater operation (C)
+        Real64 BasinHeaterPower;                     // Basin heater power (W)
+        Sched::Schedule *basinHeaterSched = nullptr; // basin heater schedule
+        Array1D<Real64> EvapCondAirFlow;             // Air flow rate through the evap condenser at high speed, volumetric flow rate
         // for water use calcs [m3/s]
         Array1D<Real64> EvapCondEffect; // effectiveness of the evaporatively cooled condenser
         // [high speed for multi-speed unit] (-)
@@ -312,7 +312,7 @@ namespace VariableSpeedCoils {
               CondenserType(DataHeatBalance::RefrigCondenserType::Air), ReportEvapCondVars(false), EvapCondPumpElecNomPower(0.0),
               EvapCondPumpElecPower(0.0), EvapWaterConsumpRate(0.0), EvapCondPumpElecConsumption(0.0), EvapWaterConsump(0.0),
               BasinHeaterConsumption(0.0), BasinHeaterPowerFTempDiff(0.0), BasinHeaterSetPointTemp(0.0), BasinHeaterPower(0.0),
-              BasinHeaterSchedulePtr(0), EvapCondAirFlow(HVAC::MaxSpeedLevels, 0.0), EvapCondEffect(HVAC::MaxSpeedLevels, 0.0),
+              EvapCondAirFlow(HVAC::MaxSpeedLevels, 0.0), EvapCondEffect(HVAC::MaxSpeedLevels, 0.0),
               MSRatedEvapCondVolFlowPerRatedTotCap(HVAC::MaxSpeedLevels, 0.0), EvapWaterSupplyMode(101), EvapWaterSupTankID(0),
               EvapWaterTankDemandARRID(0), CondensateCollectMode(1001), CondensateTankID(0), CondensateTankSupplyARRID(0), CondensateVdot(0.0),
               CondensateVol(0.0), CondInletTemp(0.0), SupplyFanIndex(0), supplyFanType(HVAC::FanType::Invalid), SourceAirMassFlowRate(0.0),
@@ -356,6 +356,18 @@ namespace VariableSpeedCoils {
                                const Real64 OnOffAirFlowRatio = 1.0 // ratio of comp on to comp off air flow rate
     );
 
+    void SimVariableSpeedCoils(EnergyPlusData &state,
+                               int const coilNum,                  // Index for Component name
+                               HVAC::FanOp const fanOp,         // Continuous fan OR cycling compressor
+                               HVAC::CompressorOp compressorOp, // compressor on/off. 0 = off; 1= on
+                               Real64 const PartLoadFrac,
+                               int const SpeedNum,                  // compressor speed number
+                               Real64 const SpeedRatio,             // compressor speed ratio
+                               Real64 const SensLoad,               // Sensible demand load [W]
+                               Real64 const LatentLoad,             // Latent demand load [W]
+                               const Real64 OnOffAirFlowRatio = 1.0 // ratio of comp on to comp off air flow rate
+    );
+  
     void GetVarSpeedCoilInput(EnergyPlusData &state);
 
     // Beginning Initialization Section of the Module
@@ -396,99 +408,61 @@ namespace VariableSpeedCoils {
                                  int const SpeedNum               // Speed number, high bound, i.e. SpeedNum - 1 is the other side
     );
 
+#ifdef OLD_API
+    int GetCoilIndexVariableSpeed(EnergyPlusData &state,
+                                  std::string const &CoilType, // must match coil types in this module
+                                  std::string const &CoilName, // must match coil names for the coil type
+                                  bool &ErrorsFound            // set to true if problem
+    );
+  
     Real64 GetCoilCapacityVariableSpeed(EnergyPlusData &state,
                                         std::string const &CoilType, // must match coil types in this module
                                         std::string const &CoilName, // must match coil names for the coil type
                                         bool &ErrorsFound            // set to true if problem
     );
 
-    Real64 GetCoilCapacityVariableSpeed(EnergyPlusData &state,
-                                        int const coilNum
-    );
-  
-    int GetCoilIndexVariableSpeed(EnergyPlusData &state,
-                                  std::string const &CoilType, // must match coil types in this module
-                                  std::string const &CoilName, // must match coil names for the coil type
-                                  bool &ErrorsFound            // set to true if problem
-    );
-
-    int GetCoilIndexVariableSpeed(EnergyPlusData &state,
-                                  std::string const &CoilName // must match coil names for the coil type
-    );
-  
     Real64 GetCoilAirFlowRateVariableSpeed(EnergyPlusData &state,
                                            std::string const &CoilType, // must match coil types in this module
                                            std::string const &CoilName, // must match coil names for the coil type
                                            bool &ErrorsFound            // set to true if problem
-    );
+                                           );
 
-    Real64 GetCoilAirFlowRateVariableSpeed(EnergyPlusData &state,
-                                           int const coilNum
-    );
-
-    int GetCoilInletNodeVariableSpeed(EnergyPlusData &state,
-                                      std::string const &CoilType, // must match coil types in this module
-                                      std::string const &CoilName, // must match coil names for the coil type
-                                      bool &ErrorsFound            // set to true if problem
-    );
-
-    int GetCoilInletNodeVariableSpeed(EnergyPlusData &state,
-                                      int const coilNum
-                                      );
-      
-    int GetCoilOutletNodeVariableSpeed(EnergyPlusData &state,
-                                       std::string const &CoilType, // must match coil types in this module
-                                       std::string const &CoilName, // must match coil names for the coil type
-                                       bool &ErrorsFound            // set to true if problem
-    );
-
-    int GetCoilOutletNodeVariableSpeed(EnergyPlusData &state,
-                                       int const coilNum
-                                       );
-  
-    int GetVSCoilCondenserInletNode(EnergyPlusData &state,
-                                    std::string const &CoilName, // must match coil names for the coil type
-                                    bool &ErrorsFound            // set to true if problem
-    );
-
-    int GetVSCoilCondenserInletNode(EnergyPlusData &state,
-                                    int const coilNum
-    );
-
-    int GetVSCoilPLFFPLR(EnergyPlusData &state,
+    int GetCoilAirInletNode(EnergyPlusData &state,
                          std::string const &CoilType, // must match coil types in this module
                          std::string const &CoilName, // must match coil names for the coil type
                          bool &ErrorsFound            // set to true if problem
     );
 
-    int GetVSCoilCapFTCurveIndex(EnergyPlusData &state,
-                                 int CoilIndex,    // must match coil names for the coil type
-                                 bool &ErrorsFound // set to true if problem
+    int GetCoilAirOutletNode(EnergyPlusData &state,
+                          std::string const &CoilType, // must match coil types in this module
+                          std::string const &CoilName, // must match coil names for the coil type
+                          bool &ErrorsFound            // set to true if problem
     );
 
-    Real64 GetVSCoilMinOATCompressor(EnergyPlusData &state,
-                                     int const coilNum
+    int GetCoilCondenserInletNode(EnergyPlusData &state,
+                                  std::string const &CoilName, // must match coil names for the coil type
+                                  bool &ErrorsFound            // set to true if problem
     );
 
-    int GetVSCoilNumOfSpeeds(EnergyPlusData &state,
-                             std::string const &CoilName, // must match coil names for the coil type
-                             bool &ErrorsFound            // set to true if problem
+    int GetCoilPLFFPLR(EnergyPlusData &state,
+                         std::string const &CoilType, // must match coil types in this module
+                         std::string const &CoilName, // must match coil names for the coil type
+                         bool &ErrorsFound            // set to true if problem
     );
+ 
+    int GetCoilNumOfSpeeds(EnergyPlusData &state,
+                           std::string const &CoilName, // must match coil names for the coil type
+                           bool &ErrorsFound            // set to true if problem
+    );
+#endif // OLD_API
 
-    int GetVSCoilNumOfSpeeds(EnergyPlusData &state,
-                             int const coilNum
+    void SetCoilData(EnergyPlusData &state,
+                     int const WSHPNum,                                   // Number of OA Controller
+                     ObjexxFCL::Optional_int CompanionCoolingCoilNum = _, // Index to cooling coil for heating coil = SimpleWSHPNum
+                     ObjexxFCL::Optional_int CompanionHeatingCoilNum = _, // Index to heating coil for cooling coil = SimpleWSHPNum
+                     ObjexxFCL::Optional_int MSHPDesignSpecIndex = _      // index to UnitarySystemPerformance:Multispeed object
     );
   
-    Real64 GetVSCoilRatedSourceTemp(EnergyPlusData &state, int const CoilIndex);
-
-    void SetVarSpeedCoilData(EnergyPlusData &state,
-                             int const WSHPNum,                                   // Number of OA Controller
-                             bool &ErrorsFound,                                   // Set to true if certain errors found
-                             ObjexxFCL::Optional_int CompanionCoolingCoilNum = _, // Index to cooling coil for heating coil = SimpleWSHPNum
-                             ObjexxFCL::Optional_int CompanionHeatingCoilNum = _, // Index to heating coil for cooling coil = SimpleWSHPNum
-                             ObjexxFCL::Optional_int MSHPDesignSpecIndex = _      // index to UnitarySystemPerformance:Multispeed object
-    );
-
     void UpdateVarSpeedCoil(EnergyPlusData &state, int const DXCoilNum);
 
     Real64 CalcEffectiveSHR(EnergyPlusData &state,
@@ -538,11 +512,33 @@ namespace VariableSpeedCoils {
                           HVAC::FanOp const fanOp     // Continuous fan OR cycling compressor
     );
 
-    Real64 getVarSpeedPartLoadRatio(EnergyPlusData &state, int const DXCoilNum); // the number of the DX coil to mined for current PLR
+    int GetCoilIndex(EnergyPlusData &state, std::string const &CoilName);
+  
+    int GetCoilNumOfSpeeds(EnergyPlusData &state, int const coilNum);
+  
+    Real64 GetCoilCapacity(EnergyPlusData &state, int const coilNum);
+  
+    Real64 GetCoilAirFlowRate(EnergyPlusData &state, int const coilNum);
 
-    void setVarSpeedHPWHFanType(EnergyPlusData &state, int const dXCoilNum, HVAC::FanType fanType);
+    int GetCoilAirInletNode(EnergyPlusData &state, int const coilNum);
+      
+    int GetCoilAirOutletNode(EnergyPlusData &state, int const coilNum);
+  
+    int GetCoilCondenserInletNode(EnergyPlusData &state, int const coilNum);
 
-    void setVarSpeedHPWHFanIndex(EnergyPlusData &state, int const dXCoilNum, int const fanIndex);
+    int GetCoilPLFFPLR(EnergyPlusData &state, int const coilNum);
+
+    int GetCoilCapFTCurve(EnergyPlusData &state, int const coilNum);
+
+    Real64 GetCoilMinOATCompressor(EnergyPlusData &state, int const coilNum);
+
+    Real64 GetCoilRatedSourceTemp(EnergyPlusData &state, int const coilNum);
+
+    Real64 getVarSpeedPartLoadRatio(EnergyPlusData &state, int const coilNum); // the number of the DX coil to mined for current PLR
+
+    void setVarSpeedHPWHFanType(EnergyPlusData &state, int const coilNum, HVAC::FanType fanType);
+
+    void setVarSpeedHPWHFanIndex(EnergyPlusData &state, int const coilNum, int const fanIndex);
 
 } // namespace VariableSpeedCoils
 
@@ -607,6 +603,10 @@ struct VariableSpeedCoilsData : BaseGlobalStruct
     Real64 OutdoorPressure_CalcVarSpeedCoilCooling = 0.0;       // Outdoor barometric pressure at condenser (Pa)
     Real64 CrankcaseHeatingPower_CalcVarSpeedCoilCooling = 0.0; // power due to crankcase heater
     Real64 CompAmbTemp_CalcVarSpeedCoilCooling = 0.0;           // Ambient temperature at compressor
+
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
 
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {

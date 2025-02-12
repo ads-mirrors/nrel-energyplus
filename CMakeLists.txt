@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.17)
+cmake_minimum_required(VERSION 3.19)
 
 # Use ccache if available, has to be before "project()"
 find_program(CCACHE_PROGRAM NAMES ccache sccache)

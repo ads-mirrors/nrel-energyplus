@@ -50,7 +50,6 @@
 
 // ObjexxFCL Headers
 #include <ObjexxFCL/Array.functions.hh>
-#include <ObjexxFCL/Fmath.hh>
 
 // EnergyPlus Headers
 #include <EnergyPlus/BranchNodeConnections.hh>
@@ -159,20 +158,39 @@ namespace WaterToAirHeatPump {
         }
         // Calculate the Correct Water to Air HP Model with the current HPNum
 
-        if (state.dataWaterToAirHeatPump->WatertoAirHP(HPNum).WAHPType == DataPlant::PlantEquipmentType::CoilWAHPCoolingParamEst) {
-            InitWatertoAirHP(state, HPNum, InitFlag, SensLoad, LatentLoad, DesignAirflow, PartLoadRatio);
-            CalcWatertoAirHPCooling(state, HPNum, fanOp, FirstHVACIteration, InitFlag, SensLoad, compressorOp, PartLoadRatio);
+        SimWatertoAirHP(state,
+                        HPNum,
+                        DesignAirflow,    // design air flow rate
+                        fanOp,       // cycling scheme--either continuous fan/cycling compressor or
+                        FirstHVACIteration, // first iteration flag
+                        InitFlag,           // initialization flag used to suppress property routine errors
+                        SensLoad,         // sensible load
+                        LatentLoad,       // latent load
+                        compressorOp,
+                        PartLoadRatio);
+    }
+  
+    void SimWatertoAirHP(EnergyPlusData &state,
+                         int const hpNum,
+                         Real64 const DesignAirflow,    // design air flow rate
+                         HVAC::FanOp const fanOp,       // cycling scheme--either continuous fan/cycling compressor or
+                         bool const FirstHVACIteration, // first iteration flag
+                         bool const InitFlag,           // initialization flag used to suppress property routine errors
+                         Real64 const SensLoad,         // sensible load
+                         Real64 const LatentLoad,       // latent load
+                         HVAC::CompressorOp const compressorOp,
+                         Real64 const PartLoadRatio)
+    {
+      assert(hpNum > 0 && hpNum <= state.dataWaterToAirHeatPump->NumWatertoAirHPs);
+      if (state.dataWaterToAirHeatPump->WatertoAirHP(hpNum).coilPlantType == DataPlant::PlantEquipmentType::CoilWAHPCoolingParamEst) {
+            InitWatertoAirHP(state, hpNum, InitFlag, SensLoad, LatentLoad, DesignAirflow, PartLoadRatio);
+            CalcWatertoAirHPCooling(state, hpNum, fanOp, FirstHVACIteration, InitFlag, SensLoad, compressorOp, PartLoadRatio);
+            UpdateWatertoAirHP(state, hpNum);
 
-            UpdateWatertoAirHP(state, HPNum);
-
-        } else if (state.dataWaterToAirHeatPump->WatertoAirHP(HPNum).WAHPType == DataPlant::PlantEquipmentType::CoilWAHPHeatingParamEst) {
-            InitWatertoAirHP(state, HPNum, InitFlag, SensLoad, LatentLoad, DesignAirflow, PartLoadRatio);
-            CalcWatertoAirHPHeating(state, HPNum, fanOp, FirstHVACIteration, InitFlag, SensLoad, compressorOp, PartLoadRatio);
-
-            UpdateWatertoAirHP(state, HPNum);
-
-        } else {
-            ShowFatalError(state, "SimWatertoAirHP: AirtoAir heatpump not in either HEATING or COOLING");
+        } else if (state.dataWaterToAirHeatPump->WatertoAirHP(hpNum).coilPlantType == DataPlant::PlantEquipmentType::CoilWAHPHeatingParamEst) {
+            InitWatertoAirHP(state, hpNum, InitFlag, SensLoad, LatentLoad, DesignAirflow, PartLoadRatio);
+            CalcWatertoAirHPHeating(state, hpNum, fanOp, FirstHVACIteration, InitFlag, SensLoad, compressorOp, PartLoadRatio);
+            UpdateWatertoAirHP(state, hpNum);
         }
     }
 
@@ -285,8 +303,7 @@ namespace WaterToAirHeatPump {
             auto &heatPump = state.dataWaterToAirHeatPump->WatertoAirHP(HPNum);
 
             heatPump.Name = AlphArray(1);
-            heatPump.WatertoAirHPType = "COOLING";
-            heatPump.WAHPType = DataPlant::PlantEquipmentType::CoilWAHPCoolingParamEst;
+            heatPump.coilPlantType = DataPlant::PlantEquipmentType::CoilWAHPCoolingParamEst;
             heatPump.Refrigerant = AlphArray(3);
             if (heatPump.Refrigerant.empty()) {
                 ShowSevereEmptyField(state, eoh, cAlphaFields(3));
@@ -541,8 +558,7 @@ namespace WaterToAirHeatPump {
             auto &heatPump = state.dataWaterToAirHeatPump->WatertoAirHP(HPNum);
 
             heatPump.Name = AlphArray(1);
-            heatPump.WatertoAirHPType = "HEATING";
-            heatPump.WAHPType = DataPlant::PlantEquipmentType::CoilWAHPHeatingParamEst;
+            heatPump.coilPlantType = DataPlant::PlantEquipmentType::CoilWAHPHeatingParamEst;
             heatPump.Refrigerant = AlphArray(3);
             if (heatPump.Refrigerant.empty()) {
                 ShowSevereEmptyField(state, eoh, cAlphaFields(3));
@@ -759,7 +775,7 @@ namespace WaterToAirHeatPump {
         for (HPNum = 1; HPNum <= state.dataWaterToAirHeatPump->NumWatertoAirHPs; ++HPNum) {
 
             auto &heatPump = state.dataWaterToAirHeatPump->WatertoAirHP(HPNum);
-            if (heatPump.WAHPType == DataPlant::PlantEquipmentType::CoilWAHPCoolingParamEst) {
+            if (heatPump.coilPlantType == DataPlant::PlantEquipmentType::CoilWAHPCoolingParamEst) {
                 // COOLING COIL: Setup Report variables for the Heat Pump
                 SetupOutputVariable(state,
                                     "Cooling Coil Electricity Rate",
@@ -873,7 +889,7 @@ namespace WaterToAirHeatPump {
                                     OutputProcessor::TimeStepType::System,
                                     OutputProcessor::StoreType::Average,
                                     heatPump.Name);
-            } else if (heatPump.WAHPType == DataPlant::PlantEquipmentType::CoilWAHPHeatingParamEst) {
+            } else if (heatPump.coilPlantType == DataPlant::PlantEquipmentType::CoilWAHPHeatingParamEst) {
                 // HEATING COIL Setup Report variables for the Heat Pump
                 SetupOutputVariable(state,
                                     "Heating Coil Electricity Rate",
@@ -1044,7 +1060,7 @@ namespace WaterToAirHeatPump {
 
         if (state.dataWaterToAirHeatPump->MyPlantScanFlag(HPNum) && allocated(state.dataPlnt->PlantLoop)) {
             errFlag = false;
-            ScanPlantLoopsForObject(state, heatPump.Name, heatPump.WAHPType, heatPump.plantLoc, errFlag, _, _, _, _, _);
+            ScanPlantLoopsForObject(state, heatPump.Name, heatPump.coilPlantType, heatPump.plantLoc, errFlag, _, _, _, _, _);
 
             if (state.dataPlnt->PlantLoop(heatPump.plantLoc.loopNum).FluidName == "WATER") {
                 if (heatPump.SourceSideUACoeff < Constant::rTinyValue) {
@@ -2592,6 +2608,36 @@ namespace WaterToAirHeatPump {
         return NodeNumber;
     }
 
+    int GetCoilIndex(EnergyPlusData &state, std::string const &CoilName)
+    {
+        // Obtains and Allocates WatertoAirHP related parameters from input file
+        if (state.dataWaterToAirHeatPump->GetCoilsInputFlag) { // First time subroutine has been entered
+            GetWatertoAirHPInput(state);
+            state.dataWaterToAirHeatPump->GetCoilsInputFlag = false;
+        }
+
+        return Util::FindItemInList(CoilName, state.dataWaterToAirHeatPump->WatertoAirHP);
+    }
+
+    Real64 GetCoilCapacity(EnergyPlusData &state, int const coilNum) 
+    {
+        assert(coilNum > 0 && coilNum <= state.dataWaterToAirHeatPump->NumWatertoAirHPs);
+        auto &wahp = state.dataWaterToAirHeatPump->WatertoAirHP(coilNum);
+        return (wahp.coilPlantType == DataPlant::PlantEquipmentType::CoilWAHPHeatingParamEst) ? wahp.HeatingCapacity : wahp.CoolingCapacity;
+    }
+
+    int GetCoilInletNode(EnergyPlusData &state, int const coilNum)
+    {
+        assert(coilNum > 0 && coilNum <= state.dataWaterToAirHeatPump->NumWatertoAirHPs);
+        return state.dataWaterToAirHeatPump->WatertoAirHP(coilNum).AirInletNodeNum;
+    }
+
+    int GetCoilOutletNode(EnergyPlusData &state, int const coilNum)
+    {
+        assert(coilNum > 0 && coilNum <= state.dataWaterToAirHeatPump->NumWatertoAirHPs);
+        return state.dataWaterToAirHeatPump->WatertoAirHP(coilNum).AirOutletNodeNum;
+    }
+  
 } // namespace WaterToAirHeatPump
 
 } // namespace EnergyPlus

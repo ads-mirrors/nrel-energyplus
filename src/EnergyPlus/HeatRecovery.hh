@@ -111,7 +111,7 @@ namespace HeatRecovery {
         std::string Name; // name of component
         HVAC::HXType type = HVAC::HXType::Invalid;
         std::string HeatExchPerfName;                       // Desiccant balanced heat exchanger performance data name
-        int SchedPtr = 0;                                   // index of schedule
+        Sched::Schedule *availSched = nullptr;              // schedule // availability ?
         HXConfiguration FlowArr = HXConfiguration::Invalid; // flow Arrangement:
         bool EconoLockOut = false;
         Real64 hARatio = 0.0;          // ratio of supply side h*A to secondary side h*A
@@ -401,7 +401,7 @@ namespace HeatRecovery {
                          ObjexxFCL::Optional_bool_const RegenInletIsOANode = _, // flag to determine if supply inlet is OA node, if so air flow cycles
                          ObjexxFCL::Optional_bool_const EconomizerFlag = _,     // economizer operation flag passed by airloop or OA sys
                          ObjexxFCL::Optional_bool_const HighHumCtrlFlag = _,    // high humidity control flag passed by airloop or OA sys
-                         HVAC::CoilType companionCoilType = HVAC::CoilType::Invalid
+                         ObjexxFCL::Optional<HVAC::CoilType> companionCoilType = _ // cooling coil type of coil
     );
 
     void GetHeatRecoveryInput(EnergyPlusData &state);
@@ -429,7 +429,8 @@ namespace HeatRecovery {
 
     int GetHeatExchangerIndex(EnergyPlusData &state,
                               std::string const &hxName);
-  
+
+#ifdef OLD_API  
     int GetSupplyInletNode(EnergyPlusData &state,
                            std::string const &HXName, // must match HX names for the ExchCond type
                            bool &ErrorsFound          // set to true if problem
@@ -459,6 +460,8 @@ namespace HeatRecovery {
                                       std::string const &HXName, // must match HX names for the ExchCond type
                                       bool &ErrorsFound          // set to true if problem
                                       );
+#endif // OLD_API
+  
     // New API
     int GetSupplyInletNode(EnergyPlusData &state, int const hxNum);
 
@@ -516,6 +519,10 @@ struct HeatRecoveryData : BaseGlobalStruct
     std::unordered_map<std::string, std::string> HeatExchangerUniqueNames;
     Array1D<HeatRecovery::HeatExchCond> ExchCond;
     Array1D<HeatRecovery::BalancedDesDehumPerfData> BalDesDehumPerfData;
+
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
 
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {

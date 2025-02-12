@@ -152,6 +152,8 @@ void ManageHVAC(EnergyPlusData &state)
     Real64 PriorTimeStep;       // magnitude of time step for previous history terms
     Real64 ZoneTempChange(0.0); // change in zone air temperature from timestep t-1 to t
 
+    auto &s_hbfs = state.dataHeatBalFanSys;
+
     // SYSTEM INITIALIZATION
     if (state.dataHVACMgr->TriggerGetAFN) {
         state.dataHVACMgr->TriggerGetAFN = false;
@@ -171,17 +173,18 @@ void ManageHVAC(EnergyPlusData &state)
         thisSpaceHB.ZTAV = 0.0;
         thisSpaceHB.airHumRatAvg = 0.0;
     }
-    state.dataHeatBalFanSys->ZoneThermostatSetPointHiAver = 0.0;
-    state.dataHeatBalFanSys->ZoneThermostatSetPointLoAver = 0.0;
+
+    for (auto &zoneTstatSetpt : s_hbfs->zoneTstatSetpts) {
+        zoneTstatSetpt.setptHiAver = zoneTstatSetpt.setptLoAver = 0.0;
+    }
+
     state.dataHVACMgr->PrintedWarmup = false;
     if (state.dataContaminantBalance->Contaminant.CO2Simulation) {
-        state.dataContaminantBalance->OutdoorCO2 =
-            ScheduleManager::GetCurrentScheduleValue(state, state.dataContaminantBalance->Contaminant.CO2OutdoorSchedPtr);
+        state.dataContaminantBalance->OutdoorCO2 = state.dataContaminantBalance->Contaminant.CO2OutdoorSched->getCurrentVal();
         state.dataContaminantBalance->ZoneAirCO2Avg = 0.0;
     }
     if (state.dataContaminantBalance->Contaminant.GenericContamSimulation) {
-        state.dataContaminantBalance->OutdoorGC =
-            ScheduleManager::GetCurrentScheduleValue(state, state.dataContaminantBalance->Contaminant.GenericContamOutdoorSchedPtr);
+        state.dataContaminantBalance->OutdoorGC = state.dataContaminantBalance->Contaminant.genericOutdoorSched->getCurrentVal();
         if (allocated(state.dataContaminantBalance->ZoneAirGCAvg)) state.dataContaminantBalance->ZoneAirGCAvg = 0.0;
     }
 
@@ -199,7 +202,7 @@ void ManageHVAC(EnergyPlusData &state)
 
     state.dataHVACGlobal->SysTimeElapsed = 0.0;
     state.dataHVACGlobal->TimeStepSys = state.dataGlobal->TimeStepZone;
-    state.dataHVACGlobal->TimeStepSysSec = state.dataHVACGlobal->TimeStepSys * Constant::SecInHour;
+    state.dataHVACGlobal->TimeStepSysSec = state.dataHVACGlobal->TimeStepSys * Constant::rSecsInHour;
     state.dataHVACGlobal->FirstTimeStepSysFlag = true;
     state.dataHVACGlobal->ShortenTimeStepSys = false;
     state.dataHVACGlobal->UseZoneTimeStepHistory = true;
@@ -306,7 +309,7 @@ void ManageHVAC(EnergyPlusData &state)
             state.dataHVACGlobal->TimeStepSys = state.dataGlobal->TimeStepZone / state.dataHVACGlobal->NumOfSysTimeSteps;
         }
         state.dataHVACGlobal->TimeStepSys = max(state.dataHVACGlobal->TimeStepSys, state.dataConvergeParams->MinTimeStepSys);
-        state.dataHVACGlobal->TimeStepSysSec = state.dataHVACGlobal->TimeStepSys * Constant::SecInHour;
+        state.dataHVACGlobal->TimeStepSysSec = state.dataHVACGlobal->TimeStepSys * Constant::rSecsInHour;
         state.dataHVACGlobal->UseZoneTimeStepHistory = false;
         state.dataHVACGlobal->ShortenTimeStepSys = true;
 
@@ -404,10 +407,9 @@ void ManageHVAC(EnergyPlusData &state)
                 state.dataContaminantBalance->ZoneAirGCAvg(ZoneNum) +=
                     state.dataContaminantBalance->ZoneAirGC(ZoneNum) * state.dataHVACGlobal->FracTimeStepZone;
             if (state.dataZoneTempPredictorCorrector->NumOnOffCtrZone > 0) {
-                state.dataHeatBalFanSys->ZoneThermostatSetPointHiAver(ZoneNum) +=
-                    state.dataHeatBalFanSys->ZoneThermostatSetPointHi(ZoneNum) * state.dataHVACGlobal->FracTimeStepZone;
-                state.dataHeatBalFanSys->ZoneThermostatSetPointLoAver(ZoneNum) +=
-                    state.dataHeatBalFanSys->ZoneThermostatSetPointLo(ZoneNum) * state.dataHVACGlobal->FracTimeStepZone;
+                auto &zoneTstatSetpt = s_hbfs->zoneTstatSetpts(ZoneNum);
+                zoneTstatSetpt.setptHiAver += zoneTstatSetpt.setptHi * state.dataHVACGlobal->FracTimeStepZone;
+                zoneTstatSetpt.setptLoAver += zoneTstatSetpt.setptLo * state.dataHVACGlobal->FracTimeStepZone;
             }
         }
 
@@ -2742,19 +2744,12 @@ void SetHeatToReturnAirFlag(EnergyPlusData &state)
         for (int AirLoopNum = 1; AirLoopNum <= NumPrimaryAirSys; ++AirLoopNum) {
             auto &airLoopControlInfo = state.dataAirLoop->AirLoopControlInfo(AirLoopNum);
 
-            if (airLoopControlInfo.UnitarySys) { // for unitary systems check the cycling fan schedule
-                if (airLoopControlInfo.CycFanSchedPtr > 0) {
-                    Real64 CycFanMaxVal = ScheduleManager::GetScheduleMaxValue(state, airLoopControlInfo.CycFanSchedPtr);
-                    if (CycFanMaxVal > 0.0) {
-                        airLoopControlInfo.AnyContFan = true;
-                    } else {
-                        airLoopControlInfo.AnyContFan = false;
-                    }
-                } else { // no schedule means always cycling fan
-                    airLoopControlInfo.AnyContFan = false;
-                }
-            } else { // for nonunitary (central) all systems are continuous fan
+            if (!airLoopControlInfo.UnitarySys) { // for nonunitary (central) all systems are continuous fan
                 airLoopControlInfo.AnyContFan = true;
+            } else if (airLoopControlInfo.cycFanSched != nullptr) { // for unitary systems check the cycling fan schedule
+                airLoopControlInfo.AnyContFan = (airLoopControlInfo.cycFanSched->getMaxVal(state) > 0.0);
+            } else { // no schedule means always cycling fan
+                airLoopControlInfo.AnyContFan = false;
             }
         }
         // check to see if a controlled zone is served exclusively by a zonal system
@@ -2779,9 +2774,8 @@ void SetHeatToReturnAirFlag(EnergyPlusData &state)
             for (int zoneInNode = 1; zoneInNode <= zoneEquipConfig.NumInletNodes; ++zoneInNode) {
                 int AirLoopNum = zoneEquipConfig.InletNodeAirLoopNum(zoneInNode);
                 if (AirLoopNum > 0) {
-                    if (state.dataAirLoop->AirLoopControlInfo(AirLoopNum).CycFanSchedPtr > 0) {
-                        CyclingFan =
-                            ScheduleManager::CheckScheduleValue(state, state.dataAirLoop->AirLoopControlInfo(AirLoopNum).CycFanSchedPtr, 0.0);
+                    if (state.dataAirLoop->AirLoopControlInfo(AirLoopNum).cycFanSched != nullptr) {
+                        CyclingFan = state.dataAirLoop->AirLoopControlInfo(AirLoopNum).cycFanSched->hasVal(state, 0.0);
                     }
                 }
             }
@@ -2820,12 +2814,8 @@ void SetHeatToReturnAirFlag(EnergyPlusData &state)
     // set the air loop fan operation mode
     for (int AirLoopNum = 1; AirLoopNum <= NumPrimaryAirSys; ++AirLoopNum) {
         auto &airLoopControlInfo = state.dataAirLoop->AirLoopControlInfo(AirLoopNum);
-        if (airLoopControlInfo.CycFanSchedPtr > 0) {
-            if (ScheduleManager::GetCurrentScheduleValue(state, airLoopControlInfo.CycFanSchedPtr) == 0.0) {
-                airLoopControlInfo.fanOp = HVAC::FanOp::Cycling;
-            } else {
-                airLoopControlInfo.fanOp = HVAC::FanOp::Continuous;
-            }
+        if (airLoopControlInfo.cycFanSched != nullptr) {
+            airLoopControlInfo.fanOp = (airLoopControlInfo.cycFanSched->getCurrentVal() == 0.0) ? HVAC::FanOp::Cycling : HVAC::FanOp::Continuous;
         }
     }
     // set the zone level NoHeatToReturnAir flag

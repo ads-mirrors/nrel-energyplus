@@ -68,7 +68,6 @@
 
 using namespace EnergyPlus;
 using namespace DataZoneEnergyDemands;
-using namespace ScheduleManager;
 using namespace Psychrometrics;
 using namespace HWBaseboardRadiator;
 using namespace DataLoopNode;
@@ -102,7 +101,7 @@ TEST_F(EnergyPlusFixture, HWBaseboardRadiator_CalcHWBaseboard)
     HWBaseboard(1).WaterInletNode = 1;
     HWBaseboard(1).WaterMassFlowRateMax = 0.40;
     HWBaseboard(1).AirMassFlowRateStd = 0.5;
-    HWBaseboard(1).SchedPtr = -1;
+    HWBaseboard(1).availSched = Sched::GetScheduleAlwaysOn(*state);
     HWBaseboard(1).plantLoc.loopNum = 1;
     HWBaseboard(1).UA = 370;
     HWBaseboard(1).QBBRadSource = 0.0;
@@ -126,6 +125,7 @@ TEST_F(EnergyPlusFixture, HWBaseboardRadiator_CalcHWBaseboard)
 
 TEST_F(EnergyPlusFixture, HWBaseboardRadiator_HWBaseboardWaterFlowResetTest)
 {
+    state->init_state(*state);
     Real64 LoadMet;
     int BBNum;
 
@@ -156,7 +156,7 @@ TEST_F(EnergyPlusFixture, HWBaseboardRadiator_HWBaseboardWaterFlowResetTest)
     HWBaseboard(1).WaterOutletNode = 2;
     HWBaseboard(1).WaterMassFlowRateMax = 0.40;
     HWBaseboard(1).AirMassFlowRateStd = 0.5;
-    HWBaseboard(1).SchedPtr = -1;
+    HWBaseboard(1).availSched = Sched::GetScheduleAlwaysOn(*state);
     HWBaseboard(1).plantLoc.loopNum = 1;
     HWBaseboard(1).plantLoc.loopSideNum = DataPlant::LoopSideLocation::Demand;
     HWBaseboard(1).plantLoc.branchNum = 1;
@@ -292,6 +292,7 @@ TEST_F(EnergyPlusFixture, HWBaseboardRadiator_HWBaseboardWaterInputTest)
 
     });
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     errorFound = false;
     HeatBalanceManager::GetZoneData(*state, errorFound);
@@ -310,8 +311,8 @@ TEST_F(EnergyPlusFixture, HWBaseboardRadiator_HWBaseboardWaterInputTest)
     errorFound = false;
     state->dataSurfaceGeometry->CosZoneRelNorth.allocate(1);
     state->dataSurfaceGeometry->SinZoneRelNorth.allocate(1);
-    state->dataSurfaceGeometry->CosZoneRelNorth(1) = std::cos(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRadians);
-    state->dataSurfaceGeometry->SinZoneRelNorth(1) = std::sin(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRadians);
+    state->dataSurfaceGeometry->CosZoneRelNorth(1) = std::cos(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRad);
+    state->dataSurfaceGeometry->SinZoneRelNorth(1) = std::sin(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRad);
     state->dataSurfaceGeometry->CosBldgRelNorth = 1.0;
     state->dataSurfaceGeometry->SinBldgRelNorth = 0.0;
     SurfaceGeometry::GetSurfaceData(*state, errorFound);

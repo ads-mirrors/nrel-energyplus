@@ -551,7 +551,7 @@ namespace Window {
             conductivity = matGlass->Conductivity;
 
         } else if (mat->group == Material::Group::Blind) {
-            auto const &surfShade = state.dataSurface->surfShades(m_SurfNum);
+            // auto const &surfShade = state.dataSurface->surfShades(m_SurfNum);
             auto const *matBlind = dynamic_cast<Material::MaterialBlind const *>(mat);
             assert(matBlind != nullptr);
             thickness = matBlind->SlatThickness;

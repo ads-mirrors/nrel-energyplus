@@ -360,7 +360,7 @@ namespace HVACMultiSpeedHeatPump {
             }
         }
 
-        if (mshp.heatCoilType != HVAC::CoilType::DXMultiSpeedHeating) {
+        if (mshp.heatCoilType != HVAC::CoilType::HeatingDXMultiSpeed) {
             state.dataHVACMultiSpdHP->SaveCompressorPLR = PartLoadFrac;
         } else {
             if (SpeedNum > 1) {
@@ -536,16 +536,10 @@ namespace HVACMultiSpeedHeatPump {
             ErrorObjectHeader eoh{routineName, state.dataHVACMultiSpdHP->CurrentModuleObject, thisMSHP.Name};
 
             if (lAlphaBlanks(2)) {
-                thisMSHP.AvaiSchedPtr = ScheduleManager::ScheduleAlwaysOn;
-            } else {
-                thisMSHP.AvaiSchedPtr = ScheduleManager::GetScheduleIndex(state, Alphas(2));
-                if (thisMSHP.AvaiSchedPtr == 0) {
-                    ShowSevereError(
-                        state,
-                        format(
-                            "{}, \"{}\" {} not found: {}", state.dataHVACMultiSpdHP->CurrentModuleObject, thisMSHP.Name, cAlphaFields(2), Alphas(2)));
-                    ErrorsFound = true;
-                }
+                thisMSHP.availSched = Sched::GetScheduleAlwaysOn(state);
+            } else if ((thisMSHP.availSched = Sched::GetSchedule(state, Alphas(2))) == nullptr) {
+                ShowSevereItemNotFound(state, eoh, cAlphaFields(2), Alphas(2));
+                ErrorsFound = true;
             }
 
             thisMSHP.AirInletNode = GetOnlySingleNode(state,
@@ -667,24 +661,22 @@ namespace HVACMultiSpeedHeatPump {
             thisMSHP.fanPlace = static_cast<HVAC::FanPlace>(getEnumValue(HVAC::fanPlaceNamesUC, Alphas(8)));
             assert(thisMSHP.fanPlace != HVAC::FanPlace::Invalid);
 
-            thisMSHP.FanSchedule = Alphas(9);
-            thisMSHP.FanSchedPtr = ScheduleManager::GetScheduleIndex(state, Alphas(9));
-            if (thisMSHP.FanSchedPtr == 0) {
-                ShowSevereError(
-                    state,
-                    format("{}, \"{}\" {} not found: {}", state.dataHVACMultiSpdHP->CurrentModuleObject, thisMSHP.Name, cAlphaFields(9), Alphas(9)));
+            if ((thisMSHP.fanOpModeSched = Sched::GetSchedule(state, Alphas(9))) == nullptr) {
+                ShowSevereItemNotFound(state, eoh, cAlphaFields(9), Alphas(9));
                 ErrorsFound = true;
             }
 
-            if (thisMSHP.FanSchedPtr > 0 && thisMSHP.fanType == HVAC::FanType::Constant) {
-                if (!ScheduleManager::CheckScheduleValueMinMax(state, thisMSHP.FanSchedPtr, ">", 0.0, "<=", 1.0)) {
-                    ShowSevereError(state, format("{} \"{}\"", state.dataHVACMultiSpdHP->CurrentModuleObject, thisMSHP.Name));
-                    ShowContinueError(state,
-                                      format("{} must be continuous (fan operating mode schedule values > 0) for {} = Fan:ConstantVolume.",
-                                             cAlphaFields(9),
-                                             cAlphaFields(6)));
-                    ShowContinueError(state, format("Error found in {} = {}", cAlphaFields(9), Alphas(9)));
-                    ShowContinueError(state, "schedule values must be (>0., <=1.)");
+            if (thisMSHP.fanOpModeSched != nullptr && thisMSHP.fanType == HVAC::FanType::Constant) {
+                if (!thisMSHP.fanOpModeSched->checkMinMaxVals(state, Clusive::Ex, 0.0, Clusive::In, 1.0)) {
+                    Sched::ShowSevereBadMinMax(state,
+                                               eoh,
+                                               cAlphaFields(9),
+                                               Alphas(9),
+                                               Clusive::Ex,
+                                               0.0,
+                                               Clusive::In,
+                                               1.0,
+                                               "Fan mode must be continuous (schedule values > 0) for Fan:ConstantVolume.");
                     ErrorsFound = true;
                 }
             }
@@ -692,14 +684,14 @@ namespace HVACMultiSpeedHeatPump {
             thisMSHP.heatCoilType = static_cast<HVAC::CoilType>(getEnumValue(HVAC::coilTypeNamesUC, Alphas(10)));
             thisMSHP.HeatCoilName = Alphas(11);
 
-            if (thisMSHP.heatCoilType == HVAC::CoilType::DXMultiSpeedHeating) {
-                thisMSHP.HeatCoilNum = DXCoils::GetDXCoilIndex(state, thisMSHP.HeatCoilName);
+            if (thisMSHP.heatCoilType == HVAC::CoilType::HeatingDXMultiSpeed) {
+                thisMSHP.HeatCoilNum = DXCoils::GetCoilIndex(state, thisMSHP.HeatCoilName);
                 if (thisMSHP.HeatCoilNum == 0) {
                     ShowSevereItemNotFound(state, eoh, cAlphaFields(11), thisMSHP.HeatCoilName);
                     ErrorsFound = true;
                 } else {
-                    thisMSHP.HeatCoilAirInletNode = DXCoils::GetCoilInletNode(state, thisMSHP.HeatCoilNum); 
-                    thisMSHP.HeatCoilAirOutletNode = DXCoils::GetCoilOutletNode(state, thisMSHP.HeatCoilNum);
+                    thisMSHP.HeatCoilAirInletNode = DXCoils::GetCoilAirInletNode(state, thisMSHP.HeatCoilNum); 
+                    thisMSHP.HeatCoilAirOutletNode = DXCoils::GetCoilAirOutletNode(state, thisMSHP.HeatCoilNum);
 
                     thisMSHP.MinOATCompressorHeating = DXCoils::GetMinOATCompressor(state, thisMSHP.HeatCoilNum);
                     BranchNodeConnections::SetUpCompSets(state,
@@ -719,8 +711,8 @@ namespace HVACMultiSpeedHeatPump {
                     ShowSevereItemNotFound(state, eoh, cAlphaFields(11), thisMSHP.HeatCoilName);
                     ErrorsFound = true;
                 } else {
-                    thisMSHP.HeatCoilAirInletNode = HeatingCoils::GetCoilInletNode(state, thisMSHP.HeatCoilNum);
-                    thisMSHP.HeatCoilAirOutletNode = HeatingCoils::GetCoilOutletNode(state, thisMSHP.HeatCoilNum);
+                    thisMSHP.HeatCoilAirInletNode = HeatingCoils::GetCoilAirInletNode(state, thisMSHP.HeatCoilNum);
+                    thisMSHP.HeatCoilAirOutletNode = HeatingCoils::GetCoilAirOutletNode(state, thisMSHP.HeatCoilNum);
 
                     BranchNodeConnections::SetUpCompSets(state,
                                                          state.dataHVACMultiSpdHP->CurrentModuleObject,
@@ -733,15 +725,15 @@ namespace HVACMultiSpeedHeatPump {
                 
             } else if (thisMSHP.heatCoilType == HVAC::CoilType::HeatingWater) {
                 // Get the Heating Coil water Inlet or control Node number
-                thisMSHP.HeatCoilNum = WaterCoils::GetWaterCoilIndex(state, thisMSHP.HeatCoilName);
+                thisMSHP.HeatCoilNum = WaterCoils::GetCoilIndex(state, thisMSHP.HeatCoilName);
                 if (thisMSHP.HeatCoilNum == 0) {
                     ShowSevereItemNotFound(state, eoh, cAlphaFields(11), thisMSHP.HeatCoilName);
                     ErrorsFound = true;
                 } else {
                     thisMSHP.HeatCoilControlNode = WaterCoils::GetCoilWaterInletNode(state, thisMSHP.HeatCoilNum);
                     thisMSHP.HeatCoilMaxFluidFlow = WaterCoils::GetCoilMaxWaterFlowRate(state, thisMSHP.HeatCoilNum);
-                    thisMSHP.HeatCoilAirInletNode = WaterCoils::GetCoilInletNode(state, thisMSHP.HeatCoilNum);
-                    thisMSHP.HeatCoilAirOutletNode = WaterCoils::GetCoilOutletNode(state, thisMSHP.HeatCoilNum);
+                    thisMSHP.HeatCoilAirInletNode = WaterCoils::GetCoilAirInletNode(state, thisMSHP.HeatCoilNum);
+                    thisMSHP.HeatCoilAirOutletNode = WaterCoils::GetCoilAirOutletNode(state, thisMSHP.HeatCoilNum);
 
                     BranchNodeConnections::SetUpCompSets(state,
                                                          state.dataHVACMultiSpdHP->CurrentModuleObject,
@@ -753,7 +745,7 @@ namespace HVACMultiSpeedHeatPump {
                 }
                 
             } else if (thisMSHP.heatCoilType == HVAC::CoilType::HeatingSteam) {
-                thisMSHP.HeatCoilNum = SteamCoils::GetSteamCoilIndex(state, thisMSHP.HeatCoilName);
+                thisMSHP.HeatCoilNum = SteamCoils::GetCoilIndex(state, thisMSHP.HeatCoilName);
                 if (thisMSHP.HeatCoilNum == 0) {
                     ShowSevereItemNotFound(state, eoh, cAlphaFields(11), thisMSHP.HeatCoilName);
                     ErrorsFound = true;
@@ -785,15 +777,15 @@ namespace HVACMultiSpeedHeatPump {
             thisMSHP.coolCoilType = static_cast<HVAC::CoilType>(getEnumValue(HVAC::coilTypeNamesUC, Alphas(12)));
             thisMSHP.CoolCoilName = Alphas(13);
 
-            if (thisMSHP.coolCoilType == HVAC::CoilType::DXMultiSpeedCooling) {
+            if (thisMSHP.coolCoilType == HVAC::CoilType::HeatingDXMultiSpeed) {
               
-                thisMSHP.CoolCoilNum = DXCoils::GetDXCoilIndex(state, thisMSHP.CoolCoilName);
+                thisMSHP.CoolCoilNum = DXCoils::GetCoilIndex(state, thisMSHP.CoolCoilName);
                 if (thisMSHP.CoolCoilNum == 0) {
                     ShowSevereItemNotFound(state, eoh, cAlphaFields(13), thisMSHP.CoolCoilName);
                     ErrorsFound = true;
                 } else {
-                    thisMSHP.CoolCoilAirInletNode = DXCoils::GetCoilInletNode(state, thisMSHP.CoolCoilNum);
-                    thisMSHP.CoolCoilAirOutletNode = DXCoils::GetCoilOutletNode(state, thisMSHP.CoolCoilNum);
+                    thisMSHP.CoolCoilAirInletNode = DXCoils::GetCoilAirInletNode(state, thisMSHP.CoolCoilNum);
+                    thisMSHP.CoolCoilAirOutletNode = DXCoils::GetCoilAirOutletNode(state, thisMSHP.CoolCoilNum);
                     thisMSHP.MinOATCompressorCooling = DXCoils::GetMinOATCompressor(state, thisMSHP.CoolCoilNum);
             
                     BranchNodeConnections::SetUpCompSets(state,
@@ -816,13 +808,13 @@ namespace HVACMultiSpeedHeatPump {
             if (thisMSHP.suppHeatCoilType == HVAC::CoilType::HeatingElectric ||
                 thisMSHP.suppHeatCoilType == HVAC::CoilType::HeatingGasOrOtherFuel) {
               
-                thisMSHP.SuppHeatCoilNum = HeatingCoils::GetHeatingCoilIndex(state, thisMSHP.SuppHeatCoilName);
+                thisMSHP.SuppHeatCoilNum = HeatingCoils::GetCoilIndex(state, thisMSHP.SuppHeatCoilName);
                 if (thisMSHP.SuppHeatCoilNum) {
                     ShowSevereItemNotFound(state, eoh, cAlphaFields(15), thisMSHP.SuppHeatCoilName);
                     ErrorsFound = true;
                 } else {
-                    thisMSHP.SuppHeatCoilAirInletNode = HeatingCoils::GetCoilInletNode(state, thisMSHP.SuppHeatCoilNum);
-                    thisMSHP.SuppHeatCoilAirOutletNode = HeatingCoils::GetCoilOutletNode(state, thisMSHP.SuppHeatCoilNum);
+                    thisMSHP.SuppHeatCoilAirInletNode = HeatingCoils::GetCoilAirInletNode(state, thisMSHP.SuppHeatCoilNum);
+                    thisMSHP.SuppHeatCoilAirOutletNode = HeatingCoils::GetCoilAirOutletNode(state, thisMSHP.SuppHeatCoilNum);
                     thisMSHP.DesignSuppHeatingCapacity = HeatingCoils::GetCoilCapacity(state, thisMSHP.SuppHeatCoilNum);
                     BranchNodeConnections::SetUpCompSets(state,
                                                          state.dataHVACMultiSpdHP->CurrentModuleObject,
@@ -834,15 +826,15 @@ namespace HVACMultiSpeedHeatPump {
                 }
                 
             } else if (thisMSHP.suppHeatCoilType == HVAC::CoilType::HeatingWater) {
-                thisMSHP.SuppHeatCoilNum = WaterCoils::GetWaterCoilIndex(state, thisMSHP.SuppHeatCoilName);
+                thisMSHP.SuppHeatCoilNum = WaterCoils::GetCoilIndex(state, thisMSHP.SuppHeatCoilName);
                 if (thisMSHP.SuppHeatCoilNum == 0) {
                     ShowSevereItemNotFound(state, eoh, cAlphaFields(15), thisMSHP.SuppHeatCoilName);
                     ErrorsFound = true;
                 } else {
                     thisMSHP.SuppHeatCoilControlNode = WaterCoils::GetCoilWaterInletNode(state, thisMSHP.SuppHeatCoilNum);
                     thisMSHP.SuppHeatCoilMaxFluidFlow = WaterCoils::GetCoilMaxWaterFlowRate(state, thisMSHP.SuppHeatCoilNum);
-                    thisMSHP.SuppHeatCoilAirInletNode = WaterCoils::GetCoilInletNode(state, thisMSHP.SuppHeatCoilNum);
-                    thisMSHP.SuppHeatCoilAirOutletNode = WaterCoils::GetCoilOutletNode(state, thisMSHP.SuppHeatCoilNum);
+                    thisMSHP.SuppHeatCoilAirInletNode = WaterCoils::GetCoilAirInletNode(state, thisMSHP.SuppHeatCoilNum);
+                    thisMSHP.SuppHeatCoilAirOutletNode = WaterCoils::GetCoilAirOutletNode(state, thisMSHP.SuppHeatCoilNum);
                     BranchNodeConnections::SetUpCompSets(state,
                                                          state.dataHVACMultiSpdHP->CurrentModuleObject,
                                                          thisMSHP.Name,
@@ -853,7 +845,7 @@ namespace HVACMultiSpeedHeatPump {
                 }
 
             } else if (thisMSHP.suppHeatCoilType == HVAC::CoilType::HeatingSteam) {
-                thisMSHP.SuppHeatCoilNum = SteamCoils::GetSteamCoilIndex(state, thisMSHP.SuppHeatCoilName);
+                thisMSHP.SuppHeatCoilNum = SteamCoils::GetCoilIndex(state, thisMSHP.SuppHeatCoilName);
                 if (thisMSHP.SuppHeatCoilNum == 0) {
                     ShowSevereItemNotFound(state, eoh, cAlphaFields(15), thisMSHP.SuppHeatCoilName);
                     ErrorsFound = true;
@@ -1004,7 +996,7 @@ namespace HVACMultiSpeedHeatPump {
 
             thisMSHP.NumOfSpeedHeating = Numbers(9);
             if (thisMSHP.NumOfSpeedHeating < 2 || thisMSHP.NumOfSpeedHeating > 4) {
-                if (thisMSHP.heatCoilType == HVAC::CoilType::DXMultiSpeedHeating) {
+                if (thisMSHP.heatCoilType == HVAC::CoilType::HeatingDXMultiSpeed) {
                     ShowSevereError(state,
                                     format("{}, The maximum {} is 4, and the minimum number is 2",
                                            state.dataHVACMultiSpdHP->CurrentModuleObject,
@@ -1031,7 +1023,7 @@ namespace HVACMultiSpeedHeatPump {
                 thisMSHP.HeatingSpeedRatio = 1.0;
                 for (i = 1; i <= thisMSHP.NumOfSpeedHeating; ++i) {
                     thisMSHP.HeatVolumeFlowRate(i) = Numbers(10 + i);
-                    if (thisMSHP.heatCoilType == HVAC::CoilType::DXMultiSpeedHeating) {
+                    if (thisMSHP.heatCoilType == HVAC::CoilType::HeatingDXMultiSpeed) {
                         if (thisMSHP.HeatVolumeFlowRate(i) <= 0.0 && thisMSHP.HeatVolumeFlowRate(i) != DataSizing::AutoSize) {
                             ShowSevereError(state,
                                             format("{}, \"{}\", {} must be greater than zero.",
@@ -1195,8 +1187,8 @@ namespace HVACMultiSpeedHeatPump {
             }
 
             // Ensure the numbers of speeds defined in the parent object are equal to the numbers defined in coil objects
-            if (thisMSHP.heatCoilType == HVAC::CoilType::DXMultiSpeedHeating) {
-                int numSpeeds = DXCoils::GetDXCoilNumberOfSpeeds(state, thisMSHP.HeatCoilNum);
+            if (thisMSHP.heatCoilType == HVAC::CoilType::HeatingDXMultiSpeed) {
+                int numSpeeds = DXCoils::GetCoilNumberOfSpeeds(state, thisMSHP.HeatCoilNum);
                 if (thisMSHP.NumOfSpeedHeating != numSpeeds) {
                     ShowSevereError(state, format("For {} \"{}\"", state.dataHVACMultiSpdHP->CurrentModuleObject, thisMSHP.Name));
                     ShowContinueError(
@@ -1205,7 +1197,7 @@ namespace HVACMultiSpeedHeatPump {
                 }
             } else if (thisMSHP.heatCoilType == HVAC::CoilType::HeatingElectricMultiStage ||
                        thisMSHP.heatCoilType == HVAC::CoilType::HeatingGasMultiStage) {
-                int numSpeeds = HeatingCoils::GetHeatingCoilNumberOfStages(state, Alphas(10), Alphas(11), ErrorsFound);
+                int numSpeeds = HeatingCoils::GetCoilNumberOfStages(state, thisMSHP.HeatCoilNum);
                 if (thisMSHP.NumOfSpeedHeating != numSpeeds) {
                     ShowSevereError(state, format("For {} \"{}\"", state.dataHVACMultiSpdHP->CurrentModuleObject, thisMSHP.Name));
                     ShowContinueError(
@@ -1214,7 +1206,7 @@ namespace HVACMultiSpeedHeatPump {
                 }
             }
 
-            int numSpeeds = DXCoils::GetDXCoilNumberOfSpeeds(state, thisMSHP.CoolCoilNum);
+            int numSpeeds = DXCoils::GetCoilNumberOfSpeeds(state, thisMSHP.CoolCoilNum);
             if (thisMSHP.NumOfSpeedCooling != numSpeeds) {
                 ShowSevereError(state, format("For {} \"{}\"", state.dataHVACMultiSpdHP->CurrentModuleObject, thisMSHP.Name));
                 ShowContinueError(state,
@@ -1595,7 +1587,7 @@ namespace HVACMultiSpeedHeatPump {
             mshp.FlowFraction = 1.0;
             mshp.MySizeFlag = false;
             // Pass the fan cycling schedule index up to the air loop. Set the air loop unitary system flag.
-            state.dataAirLoop->AirLoopControlInfo(AirLoopNum).CycFanSchedPtr = mshp.FanSchedPtr;
+            state.dataAirLoop->AirLoopControlInfo(AirLoopNum).cycFanSched = mshp.fanOpModeSched;
             state.dataAirLoop->AirLoopControlInfo(AirLoopNum).UnitarySys = true;
             state.dataAirLoop->AirLoopControlInfo(AirLoopNum).UnitarySysSimulating =
                 false; // affects child coil sizing by allowing coil to size itself instead of parent telling coil what size to use
@@ -1900,12 +1892,8 @@ namespace HVACMultiSpeedHeatPump {
             }
         }
 
-        if (mshp.FanSchedPtr > 0) {
-            if (ScheduleManager::GetCurrentScheduleValue(state, mshp.FanSchedPtr) == 0.0) {
-                mshp.fanOp = HVAC::FanOp::Cycling;
-            } else {
-                mshp.fanOp = HVAC::FanOp::Continuous;
-            }
+        if (mshp.fanOpModeSched != nullptr) {
+            mshp.fanOp = (mshp.fanOpModeSched->getCurrentVal() == 0.0) ? HVAC::FanOp::Cycling : HVAC::FanOp::Continuous;
         }
 
         // Calculate air distribution losses
@@ -2023,8 +2011,7 @@ namespace HVACMultiSpeedHeatPump {
         }
 
         // Set the inlet node mass flow rate
-        if (ScheduleManager::GetCurrentScheduleValue(state, mshp.AvaiSchedPtr) > 0.0 &&
-            state.dataHVACMultiSpdHP->CompOnMassFlow != 0.0) {
+        if (mshp.availSched->getCurrentVal() > 0.0 && state.dataHVACMultiSpdHP->CompOnMassFlow != 0.0) {
             OnOffAirFlowRatio = 1.0;
             if (FirstHVACIteration) {
                 s_node->Node(mshp.AirInletNode).MassFlowRate = state.dataHVACMultiSpdHP->CompOnMassFlow;
@@ -2045,11 +2032,10 @@ namespace HVACMultiSpeedHeatPump {
         }
 
         // Check availability of DX coils
-        if (ScheduleManager::GetCurrentScheduleValue(state, mshp.AvaiSchedPtr) > 0.0) {
-            int CoilAvailSchPtr; // DX coil availability schedule pointer
+        if (mshp.availSched->getCurrentVal() > 0.0) {
             if (mshp.HeatCoolMode == ModeOfOperation::CoolingMode) {
-                CoilAvailSchPtr = DXCoils::GetDXCoilAvailSchPtr(state, mshp.CoolCoilNum);
-                if (ScheduleManager::GetCurrentScheduleValue(state, CoilAvailSchPtr) == 0.0) {
+                auto *coilAvailSched = DXCoils::GetCoilAvailSched(state, mshp.CoolCoilNum); // TODO: Why isn't this stored on the struct?
+                if (coilAvailSched->getCurrentVal() == 0.0) {
                     if (mshp.CoolCountAvail == 0) {
                         ++mshp.CoolCountAvail;
                         ShowWarningError(
@@ -2057,24 +2043,25 @@ namespace HVACMultiSpeedHeatPump {
                             format("{} is ready to perform cooling, but its DX cooling coil = {} is not available at Available Schedule = {}.",
                                    mshp.Name,
                                    mshp.CoolCoilName,
-                                   ScheduleManager::GetScheduleName(state, CoilAvailSchPtr)));
-                        ShowContinueErrorTimeStamp(
-                            state, format("Availability schedule returned={:.1R}", ScheduleManager::GetCurrentScheduleValue(state, CoilAvailSchPtr)));
+                                   coilAvailSched->Name));
+                        ShowContinueErrorTimeStamp(state, format("Availability schedule returned={:.1R}", coilAvailSched->getCurrentVal()));
                     } else {
                         ++mshp.CoolCountAvail;
                         ShowRecurringWarningErrorAtEnd(state,
                                                        mshp.Name + ": Cooling coil is still not available ...",
                                                        mshp.CoolIndexAvail,
-                                                       ScheduleManager::GetCurrentScheduleValue(state, CoilAvailSchPtr),
-                                                       ScheduleManager::GetCurrentScheduleValue(state, CoilAvailSchPtr));
+                                                       coilAvailSched->getCurrentVal(),
+                                                       coilAvailSched->getCurrentVal());
                     }
                 }
             }
-
             if (mshp.HeatCoolMode == ModeOfOperation::HeatingMode &&
-                mshp.heatCoilType == HVAC::CoilType::DXMultiSpeedHeating) {
-                CoilAvailSchPtr = DXCoils::GetDXCoilAvailSchPtr(state, mshp.HeatCoilNum);
-                if (ScheduleManager::GetCurrentScheduleValue(state, CoilAvailSchPtr) == 0.0) {
+                mshp.heatCoilType == HVAC::CoilType::HeatingDXMultiSpeed) {
+                auto *coilAvailSched = DXCoils::GetCoilAvailSched(state, mshp.HeatCoilNum);
+                if (ErrorsFound) {
+                    ShowFatalError(state, "InitMSHeatPump, The previous error causes termination.");
+                }
+                if (coilAvailSched->getCurrentVal() == 0.0) {
                     if (mshp.HeatCountAvail == 0) {
                         ++mshp.HeatCountAvail;
                         ShowWarningError(
@@ -2082,16 +2069,15 @@ namespace HVACMultiSpeedHeatPump {
                             format("{} is ready to perform heating, but its DX heating coil = {} is not available at Available Schedule = {}.",
                                    mshp.Name,
                                    mshp.CoolCoilName,
-                                   ScheduleManager::GetScheduleName(state, CoilAvailSchPtr)));
-                        ShowContinueErrorTimeStamp(
-                            state, format("Availability schedule returned={:.1R}", ScheduleManager::GetCurrentScheduleValue(state, CoilAvailSchPtr)));
+                                   coilAvailSched->Name));
+                        ShowContinueErrorTimeStamp(state, format("Availability schedule returned={:.1R}", coilAvailSched->getCurrentVal()));
                     } else {
                         ++mshp.HeatCountAvail;
                         ShowRecurringWarningErrorAtEnd(state,
                                                        mshp.Name + ": Heating coil is still not available ...",
                                                        mshp.HeatIndexAvail,
-                                                       ScheduleManager::GetCurrentScheduleValue(state, CoilAvailSchPtr),
-                                                       ScheduleManager::GetCurrentScheduleValue(state, CoilAvailSchPtr));
+                                                       coilAvailSched->getCurrentVal(),
+                                                       coilAvailSched->getCurrentVal());
                     }
                 }
             }
@@ -2122,7 +2108,7 @@ namespace HVACMultiSpeedHeatPump {
 
         // If unit is scheduled OFF, setpoint is equal to inlet node temperature.
         //!!LKL Discrepancy with < 0
-        if (ScheduleManager::GetCurrentScheduleValue(state, mshp.AvaiSchedPtr) == 0.0) {
+        if (mshp.availSched->getCurrentVal() == 0.0) {
             s_node->Node(mshp.AirOutletNode).Temp = s_node->Node(mshp.AirInletNode).Temp;
             return;
         }
@@ -2222,13 +2208,11 @@ namespace HVACMultiSpeedHeatPump {
 
                 //     simulate steam coil to find operating capacity
                 SteamCoils::SimulateSteamCoilComponents(state,
-                                                        mshp.SuppHeatCoilName,
-                                                        FirstHVACIteration,
                                                         mshp.SuppHeatCoilNum,
+                                                        FirstHVACIteration,
                                                         1.0,
                                                         QActual); // QCoilReq, simulate any load > 0 to get max capacity of steam coil
-                mshp.DesignSuppHeatingCapacity =
-                    SteamCoils::GetCoilCapacity(state, "Coil:Heating:Steam", mshp.SuppHeatCoilName, ErrorsFound);
+                mshp.DesignSuppHeatingCapacity = SteamCoils::GetCoilCapacity(state, mshp.SuppHeatCoilNum);
 
             } // from IF(MSHeatPump(MSHeatPumpNum)%SuppHeatCoilType == Coil_HeatingSteam) THEN
         }     // from IF( FirstHVACIteration ) THEN
@@ -2612,7 +2596,7 @@ namespace HVACMultiSpeedHeatPump {
         auto &mshp = state.dataHVACMultiSpdHP->MSHeatPump(MSHeatPumpNum);
 
         //!!LKL Discrepancy with < 0
-        if (ScheduleManager::GetCurrentScheduleValue(state, mshp.AvaiSchedPtr) == 0.0) return;
+        if (mshp.availSched->getCurrentVal() == 0.0) return;
 
         // Get result when DX coil is off
         CalcMSHeatPump(state,
@@ -3256,7 +3240,7 @@ namespace HVACMultiSpeedHeatPump {
                     state, mshp.CoolCoilName, 0.0, 0.0, mshp.CoolCoilNum, SpeedNum, mshp.fanOp, compressorOp);
             }
             
-            if (mshp.heatCoilType == HVAC::CoilType::DXMultiSpeedHeating) {
+            if (mshp.heatCoilType == HVAC::CoilType::HeatingDXMultiSpeed) {
                 if (QZnReq > HVAC::SmallLoad) {
                     if (OutsideDryBulbTemp > mshp.MinOATCompressorHeating) {
                         DXCoils::SimDXCoilMultiSpeed(state,
@@ -3315,7 +3299,7 @@ namespace HVACMultiSpeedHeatPump {
                     state, mshp.CoolCoilName, 0.0, 0.0, mshp.CoolCoilNum, SpeedNum, mshp.fanOp, compressorOp);
             }
             
-            if (mshp.heatCoilType == HVAC::CoilType::DXMultiSpeedHeating) {
+            if (mshp.heatCoilType == HVAC::CoilType::HeatingDXMultiSpeed) {
                 if (QZnReq > HVAC::SmallLoad) {
                     if (OutsideDryBulbTemp > mshp.MinOATCompressorHeating) {
                         DXCoils::SimDXCoilMultiSpeed(state,
@@ -3377,7 +3361,7 @@ namespace HVACMultiSpeedHeatPump {
                 DXCoils::SimDXCoilMultiSpeed(
                     state, mshp.CoolCoilName, 0.0, 0.0, mshp.CoolCoilNum, SpeedNum, mshp.fanOp, compressorOp);
             }
-            if (mshp.heatCoilType == HVAC::CoilType::DXMultiSpeedHeating) {
+            if (mshp.heatCoilType == HVAC::CoilType::HeatingDXMultiSpeed) {
                 if (QZnReq > HVAC::SmallLoad) {
                     if (OutsideDryBulbTemp > mshp.MinOATCompressorHeating) {
                         DXCoils::SimDXCoilMultiSpeed(state,
@@ -3664,7 +3648,7 @@ namespace HVACMultiSpeedHeatPump {
         }
 
         //!!LKL Discrepancy with > 0
-        if (ScheduleManager::GetCurrentScheduleValue(state, mshp.AvaiSchedPtr) == 0.0) {
+        if (mshp.availSched->getCurrentVal() == 0.0) {
             s_node->Node(mshp.AirInletNode).MassFlowRate = 0.0;
             OnOffAirFlowRatio = 0.0;
         } else {

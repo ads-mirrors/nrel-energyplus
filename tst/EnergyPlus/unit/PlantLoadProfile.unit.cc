@@ -103,6 +103,8 @@ TEST_F(EnergyPlusFixture, LoadProfile_GetInput)
     });
 
     ASSERT_TRUE(process_idf(idf_objects, false));
+    state->init_state(*state);
+
     GetPlantProfileInput(*state);
 
     // Tests for LoadProfile on Water loop
@@ -152,18 +154,17 @@ TEST_F(EnergyPlusFixture, LoadProfile_initandsimulate_Waterloop)
     thisLoadProfileWaterLoop.Name = "LOAD PROFILE WATER";
     thisLoadProfileWaterLoop.FluidType = PlantLoopFluidType::Water;
     thisLoadProfileWaterLoop.PeakVolFlowRate = 0.002;
-    thisLoadProfileWaterLoop.LoadSchedule = 1;
-    thisLoadProfileWaterLoop.FlowRateFracSchedule = 2;
+    thisLoadProfileWaterLoop.loadSched = Sched::AddScheduleConstant(*state, "LOAD");
+    thisLoadProfileWaterLoop.flowRateFracSched = Sched::AddScheduleConstant(*state, "FLOWRATEFRAC");
     thisLoadProfileWaterLoop.InletNode = 1;
     thisLoadProfileWaterLoop.OutletNode = 2;
     thisLoadProfileWaterLoop.plantLoc = locWater;
     thisLoadProfileWaterLoop.plantLoc.loopNum = 1;
 
-    state->dataScheduleMgr->Schedule.allocate(2);
-    state->dataScheduleMgr->Schedule(thisLoadProfileWaterLoop.LoadSchedule).EMSActuatedOn = false;
-    state->dataScheduleMgr->Schedule(thisLoadProfileWaterLoop.LoadSchedule).CurrentValue = 10000;
-    state->dataScheduleMgr->Schedule(thisLoadProfileWaterLoop.FlowRateFracSchedule).EMSActuatedOn = false;
-    state->dataScheduleMgr->Schedule(thisLoadProfileWaterLoop.FlowRateFracSchedule).CurrentValue = 0.8;
+    thisLoadProfileWaterLoop.loadSched->EMSActuatedOn = false;
+    thisLoadProfileWaterLoop.loadSched->currentVal = 10000;
+    thisLoadProfileWaterLoop.flowRateFracSched->EMSActuatedOn = false;
+    thisLoadProfileWaterLoop.flowRateFracSched->currentVal = 0.8;
 
     // InitPlantProfile()
     thisLoadProfileWaterLoop.InitPlantProfile(*state);
@@ -226,18 +227,17 @@ TEST_F(EnergyPlusFixture, LoadProfile_initandsimulate_Steamloop)
     thisLoadProfileSteamLoop.FluidType = PlantLoopFluidType::Steam;
     thisLoadProfileSteamLoop.PeakVolFlowRate = 0.008;
     thisLoadProfileSteamLoop.DegOfSubcooling = 3.0;
-    thisLoadProfileSteamLoop.LoadSchedule = 1;
-    thisLoadProfileSteamLoop.FlowRateFracSchedule = 2;
+    thisLoadProfileSteamLoop.loadSched = Sched::AddScheduleConstant(*state, "LOAD");
+    thisLoadProfileSteamLoop.flowRateFracSched = Sched::AddScheduleConstant(*state, "FLOWRATEFRAC");
     thisLoadProfileSteamLoop.InletNode = 1;
     thisLoadProfileSteamLoop.OutletNode = 2;
     thisLoadProfileSteamLoop.plantLoc = locSteam;
     thisLoadProfileSteamLoop.plantLoc.loopNum = 1;
 
-    state->dataScheduleMgr->Schedule.allocate(2);
-    state->dataScheduleMgr->Schedule(thisLoadProfileSteamLoop.LoadSchedule).EMSActuatedOn = false;
-    state->dataScheduleMgr->Schedule(thisLoadProfileSteamLoop.LoadSchedule).CurrentValue = 10000;
-    state->dataScheduleMgr->Schedule(thisLoadProfileSteamLoop.FlowRateFracSchedule).EMSActuatedOn = false;
-    state->dataScheduleMgr->Schedule(thisLoadProfileSteamLoop.FlowRateFracSchedule).CurrentValue = 0.8;
+    thisLoadProfileSteamLoop.loadSched->EMSActuatedOn = false;
+    thisLoadProfileSteamLoop.loadSched->currentVal = 10000;
+    thisLoadProfileSteamLoop.flowRateFracSched->EMSActuatedOn = false;
+    thisLoadProfileSteamLoop.flowRateFracSched->currentVal = 0.8;
 
     // InitPlantProfile()
     thisLoadProfileSteamLoop.InitPlantProfile(*state);

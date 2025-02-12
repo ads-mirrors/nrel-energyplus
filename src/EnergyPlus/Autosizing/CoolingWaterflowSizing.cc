@@ -149,18 +149,15 @@ Real64 CoolingWaterflowSizer::size(EnergyPlusData &state, Real64 _originalValue,
     }
     this->selectSizerOutput(state, errorsFound);
     if (this->isCoilReportObject) {
-        state.dataRptCoilSelection->coilSelectionReportObj->setCoilWaterFlowPltSizNum(
+        ReportCoilSelection::setCoilWaterFlowPltSizNum(
             state, this->compName, this->coilType, this->autoSizedValue, this->wasAutoSized, this->dataPltSizCoolNum, this->dataWaterLoopNum);
-        state.dataRptCoilSelection->coilSelectionReportObj->setCoilWaterDeltaT(state, this->compName, this->coilType, CoilDesWaterDeltaT);
+        ReportCoilSelection::setCoilWaterDeltaT(state, this->compName, this->coilType, CoilDesWaterDeltaT);
         if (this->dataDesInletWaterTemp > 0.0) {
-            state.dataRptCoilSelection->coilSelectionReportObj->setCoilEntWaterTemp(
-                state, this->compName, this->coilType, this->dataDesInletWaterTemp);
-            state.dataRptCoilSelection->coilSelectionReportObj->setCoilLvgWaterTemp(
-                state, this->compName, this->coilType, this->dataDesInletWaterTemp + CoilDesWaterDeltaT);
+            ReportCoilSelection::setCoilEntWaterTemp(state, this->compName, this->coilType, this->dataDesInletWaterTemp);
+            ReportCoilSelection::setCoilLvgWaterTemp(state, this->compName, this->coilType, this->dataDesInletWaterTemp + CoilDesWaterDeltaT);
         } else {
-            state.dataRptCoilSelection->coilSelectionReportObj->setCoilEntWaterTemp(state, this->compName, this->coilType, Constant::CWInitConvTemp);
-            state.dataRptCoilSelection->coilSelectionReportObj->setCoilLvgWaterTemp(
-                state, this->compName, this->coilType, Constant::CWInitConvTemp + CoilDesWaterDeltaT);
+            ReportCoilSelection::setCoilEntWaterTemp(state, this->compName, this->coilType, Constant::CWInitConvTemp);
+            ReportCoilSelection::setCoilLvgWaterTemp(state, this->compName, this->coilType, Constant::CWInitConvTemp + CoilDesWaterDeltaT);
         }
     }
     return this->autoSizedValue;

@@ -173,7 +173,7 @@ Real64 CoolingWaterDesAirOutletTempSizer::size(EnergyPlusData &state, Real64 _or
     }
     this->selectSizerOutput(state, errorsFound);
     if (this->isCoilReportObject) {
-        state.dataRptCoilSelection->coilSelectionReportObj->setCoilLvgAirTemp(state, this->compName, this->coilType, this->autoSizedValue);
+        ReportCoilSelection::setCoilLvgAirTemp(state, this->compName, this->coilType, this->autoSizedValue);
     }
     return this->autoSizedValue;
 }

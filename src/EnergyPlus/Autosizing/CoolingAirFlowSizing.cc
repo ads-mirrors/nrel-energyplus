@@ -337,7 +337,7 @@ Real64 CoolingAirFlowSizer::size(EnergyPlusData &state, Real64 _originalValue, b
             if (Util::SameString(this->compType, "ZoneHVAC:FourPipeFanCoil")) {
                 this->sizingString = "Maximum Supply Air Flow Rate [m3/s]";
                 if (this->isEpJSON) this->sizingString = "maximum_supply_air_flow_rate [m3/s]";
-            } else if (this->coilType == HVAC::CoilType::DXCoolingTwoSpeed) {
+            } else if (this->coilType == HVAC::CoilType::CoolingDXTwoSpeed) {
                 if (this->dataDXSpeedNum == 1) { // mode 1 is high speed in DXCoils loop
                     if (this->isEpJSON) {
                         this->sizingString = "high_speed_rated_air_flow_rate [m3/s]";
@@ -376,8 +376,7 @@ Real64 CoolingAirFlowSizer::size(EnergyPlusData &state, Real64 _originalValue, b
 
     if (this->isCoilReportObject) {
         // SizingResult is airflow in m3/s
-        state.dataRptCoilSelection->coilSelectionReportObj->setCoilAirFlow(
-            state, this->compName, this->coilType, this->autoSizedValue, this->wasAutoSized);
+      ReportCoilSelection::setCoilAirFlow(state, this->compName, this->coilType, this->autoSizedValue, this->wasAutoSized);
     }
     if (this->isFanReportObject) {
         //  fill fan peak day and time here
@@ -394,8 +393,7 @@ Real64 CoolingAirFlowSizer::size(EnergyPlusData &state, Real64 _originalValue, b
                     dateTimeFanPeak = format("{}/{} {}",
                                              state.dataWeather->DesDayInput(this->finalZoneSizing(this->curZoneEqNum).CoolDDNum).Month,
                                              state.dataWeather->DesDayInput(this->finalZoneSizing(this->curZoneEqNum).CoolDDNum).DayOfMonth,
-                                             state.dataRptCoilSelection->coilSelectionReportObj->getTimeText(
-                                                 state, this->finalZoneSizing(this->curZoneEqNum).TimeStepNumAtCoolMax));
+                                             ReportCoilSelection::getTimeText(state, this->finalZoneSizing(this->curZoneEqNum).TimeStepNumAtCoolMax));
                 }
             } else if (heatingFlow) {
                 if (this->finalZoneSizing(this->curZoneEqNum).HeatDDNum > 0 &&
@@ -404,8 +402,7 @@ Real64 CoolingAirFlowSizer::size(EnergyPlusData &state, Real64 _originalValue, b
                     dateTimeFanPeak = format("{}/{} {}",
                                              state.dataWeather->DesDayInput(this->finalZoneSizing(this->curZoneEqNum).HeatDDNum).Month,
                                              state.dataWeather->DesDayInput(this->finalZoneSizing(this->curZoneEqNum).HeatDDNum).DayOfMonth,
-                                             state.dataRptCoilSelection->coilSelectionReportObj->getTimeText(
-                                                 state, this->finalZoneSizing(this->curZoneEqNum).TimeStepNumAtHeatMax));
+                                             ReportCoilSelection::getTimeText(state, this->finalZoneSizing(this->curZoneEqNum).TimeStepNumAtHeatMax));
                 }
             }
         }

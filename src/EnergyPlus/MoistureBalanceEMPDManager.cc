@@ -200,8 +200,7 @@ void GetMoistureBalanceEMPDInput(EnergyPlusData &state)
 
         auto *mat = s_mat->materials(matNum);
         if (mat->group != Material::Group::Regular || mat->ROnly) {
-            ShowSevereCustom(
-                state, eoh, "Reference Material is not appropriate type for EMPD properties, must have regular properties (L,Cp,K,D)");
+            ShowSevereCustom(state, eoh, "Reference Material is not appropriate type for EMPD properties, must have regular properties (L,Cp,K,D)");
             ErrorsFound = true;
             continue;
         }

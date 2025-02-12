@@ -143,13 +143,13 @@ Real64 HeatingWaterflowSizer::size(EnergyPlusData &state, Real64 _originalValue,
     }
     this->selectSizerOutput(state, errorsFound);
     if (this->isCoilReportObject) {
-        state.dataRptCoilSelection->coilSelectionReportObj->setCoilWaterFlowPltSizNum(
+        ReportCoilSelection::setCoilWaterFlowPltSizNum(
             state, this->compName, this->coilType, this->autoSizedValue, this->wasAutoSized, this->dataPltSizHeatNum, this->dataWaterLoopNum);
-        state.dataRptCoilSelection->coilSelectionReportObj->setCoilEntWaterTemp(state, this->compName, this->coilType, Constant::HWInitConvTemp);
+        ReportCoilSelection::setCoilEntWaterTemp(state, this->compName, this->coilType, Constant::HWInitConvTemp);
         if (this->plantSizData.size() > 0 && this->dataPltSizHeatNum > 0) {
-            state.dataRptCoilSelection->coilSelectionReportObj->setCoilWaterDeltaT(
+            ReportCoilSelection::setCoilWaterDeltaT(
                 state, this->compName, this->coilType, this->plantSizData(this->dataPltSizHeatNum).DeltaT);
-            state.dataRptCoilSelection->coilSelectionReportObj->setCoilLvgWaterTemp(
+            ReportCoilSelection::setCoilLvgWaterTemp(
                 state, this->compName, this->coilType, Constant::HWInitConvTemp - this->plantSizData(this->dataPltSizHeatNum).DeltaT);
         }
     }

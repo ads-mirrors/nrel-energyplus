@@ -476,17 +476,17 @@ void PondGroundHeatExchangerData::CalcPondGroundHeatExchanger(EnergyPlusData &st
 
     Real64 Flux = this->CalcTotalFLux(state, this->PondTemp);
     Real64 PondTempStar =
-        this->PastBulkTemperature + 0.5 * Constant::SecInHour * state.dataHVACGlobal->TimeStepSys * Flux / (SpecificHeat * PondMass);
+        this->PastBulkTemperature + 0.5 * Constant::rSecsInHour * state.dataHVACGlobal->TimeStepSys * Flux / (SpecificHeat * PondMass);
 
     Real64 FluxStar = this->CalcTotalFLux(state, PondTempStar);
     Real64 PondTempStarStar =
-        this->PastBulkTemperature + 0.5 * Constant::SecInHour * state.dataHVACGlobal->TimeStepSys * FluxStar / (SpecificHeat * PondMass);
+        this->PastBulkTemperature + 0.5 * Constant::rSecsInHour * state.dataHVACGlobal->TimeStepSys * FluxStar / (SpecificHeat * PondMass);
 
     Real64 FluxStarStar = this->CalcTotalFLux(state, PondTempStarStar);
     Real64 PondTempStarStarStar =
-        this->PastBulkTemperature + Constant::SecInHour * state.dataHVACGlobal->TimeStepSys * FluxStarStar / (SpecificHeat * PondMass);
+        this->PastBulkTemperature + Constant::rSecsInHour * state.dataHVACGlobal->TimeStepSys * FluxStarStar / (SpecificHeat * PondMass);
 
-    this->PondTemp = this->PastBulkTemperature + Constant::SecInHour * state.dataHVACGlobal->TimeStepSys *
+    this->PondTemp = this->PastBulkTemperature + Constant::rSecsInHour * state.dataHVACGlobal->TimeStepSys *
                                                      (Flux + 2.0 * FluxStar + 2.0 * FluxStarStar + this->CalcTotalFLux(state, PondTempStarStarStar)) /
                                                      (6.0 * SpecificHeat * PondMass);
 }
@@ -794,7 +794,7 @@ Real64 PondGroundHeatExchangerData::CalcEffectiveness(EnergyPlusData &state,
                                        _,
                                        "[C]",
                                        "[C]");
-        if (this->ConsecutiveFrozen >= state.dataGlobal->NumOfTimeStepInHour * 30) {
+        if (this->ConsecutiveFrozen >= state.dataGlobal->TimeStepsInHour * 30) {
             ShowFatalError(state,
                            format("GroundHeatExchanger:Pond=\"{}\" has been frozen for 30 consecutive hours.  Program terminates.", this->Name));
         }

@@ -275,6 +275,8 @@ TEST_F(EnergyPlusFixture, MicroCHPTest_InitGeneratorDynamics)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
+
     state->dataPlnt->TotNumLoops = 1;
     state->dataPlnt->PlantLoop.allocate(1);
 

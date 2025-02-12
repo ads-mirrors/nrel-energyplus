@@ -118,8 +118,7 @@ void EnergyPlusFixture::SetUp()
 
     state->dataUtilityRoutines->outputErrorHeader = false;
 
-    Psychrometrics::InitializePsychRoutines(*state);
-    createCoilSelectionReportObj(*state);
+    state->init_constant_state(*state);
     state->dataEnvrn->StdRhoAir = 1.2;
 }
 
@@ -136,7 +135,8 @@ void EnergyPlusFixture::TearDown()
     state->files.mtr.del();
     state->files.bnd.del();
     state->files.shade.del();
-    //    state->clear_state();
+
+    state->clear_state();
     delete this->state;
 }
 
@@ -363,7 +363,11 @@ bool EnergyPlusFixture::process_idf(std::string_view const idf_snippet, bool use
     inputProcessor->initializeMaps();
     SimulationManager::PostIPProcessing(*state);
 
-    state->init_state(*state);
+    // Can't do this here because many tests set TimeStepsInHour and
+    // other global settings manually, and init_state() has to be
+    // called after those.
+
+    // state->init_state(*state);
 
     if (state->dataSQLiteProcedures->sqlite) {
         bool writeOutputToSQLite = false;

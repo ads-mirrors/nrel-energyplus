@@ -261,6 +261,10 @@ struct SolarCollectorsData : BaseGlobalStruct
     std::unordered_map<std::string, std::string> UniqueParametersNames;
     std::unordered_map<std::string, std::string> UniqueCollectorNames;
 
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
+
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {
     }

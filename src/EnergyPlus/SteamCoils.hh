@@ -56,6 +56,7 @@
 #include <EnergyPlus/Data/BaseData.hh>
 #include <EnergyPlus/DataGlobals.hh>
 #include <EnergyPlus/EnergyPlus.hh>
+
 #include <EnergyPlus/FluidProperties.hh>
 
 namespace EnergyPlus {
@@ -83,8 +84,9 @@ namespace SteamCoils {
         std::string SteamCoilTypeA;       // Type of SteamCoil ie. Heating or Cooling
         int SteamCoilType;                // Type of SteamCoil ie. Heating or Cooling
         int SteamCoilModel;               // Type of SteamCoil ie. Simple, Detailed, etc.
-        std::string Schedule;             // SteamCoil Operation Schedule
-        int SchedPtr;                     // Pointer to the correct schedule
+
+        Sched::Schedule *availSched = nullptr; // operating schedule
+      
         Real64 InletAirMassFlowRate;      // MassFlow through the SteamCoil being Simulated [kg/s]
         Real64 OutletAirMassFlowRate;     // MassFlow throught the SteamCoil being Simulated[kg/s]
         Real64 InletAirTemp;              // Inlet Air Temperature Operating Condition [C]
@@ -139,17 +141,16 @@ namespace SteamCoils {
 
         // Default Constructor
         SteamCoilEquipConditions()
-            : SteamCoilType(0), SteamCoilModel(0), SchedPtr(0), InletAirMassFlowRate(0.0), OutletAirMassFlowRate(0.0), InletAirTemp(0.0),
-              OutletAirTemp(0.0), InletAirHumRat(0.0), OutletAirHumRat(0.0), InletAirEnthalpy(0.0), OutletAirEnthalpy(0.0), TotSteamCoilLoad(0.0),
-              SenSteamCoilLoad(0.0), TotSteamHeatingCoilEnergy(0.0), TotSteamCoolingCoilEnergy(0.0), SenSteamCoolingCoilEnergy(0.0),
-              TotSteamHeatingCoilRate(0.0), LoopLoss(0.0), TotSteamCoolingCoilRate(0.0), SenSteamCoolingCoilRate(0.0), LeavingRelHum(0.0),
-              DesiredOutletTemp(0.0), DesiredOutletHumRat(0.0), InletSteamTemp(0.0), OutletSteamTemp(0.0), InletSteamMassFlowRate(0.0),
-              OutletSteamMassFlowRate(0.0), MaxSteamVolFlowRate(0.0), MaxSteamMassFlowRate(0.0), InletSteamEnthalpy(0.0), OutletWaterEnthalpy(0.0),
-              InletSteamPress(0.0), InletSteamQuality(0.0), OutletSteamQuality(0.0), DegOfSubcooling(0.0), LoopSubcoolReturn(0.0), AirInletNodeNum(0),
-              AirOutletNodeNum(0), SteamInletNodeNum(0), SteamOutletNodeNum(0), TempSetPointNodeNum(0), plantLoc{},
-              CoilType(DataPlant::PlantEquipmentType::Invalid), OperatingCapacity(0.0), DesiccantRegenerationCoil(false), DesiccantDehumNum(0),
-              FaultyCoilSATFlag(false), FaultyCoilSATIndex(0), FaultyCoilSATOffset(0.0), reportCoilFinalSizes(true), DesCoilCapacity(0.0),
-              DesAirVolFlow(0.0)
+            : SteamCoilType(0), SteamCoilModel(0), InletAirMassFlowRate(0.0), OutletAirMassFlowRate(0.0), InletAirTemp(0.0), OutletAirTemp(0.0),
+              InletAirHumRat(0.0), OutletAirHumRat(0.0), InletAirEnthalpy(0.0), OutletAirEnthalpy(0.0), TotSteamCoilLoad(0.0), SenSteamCoilLoad(0.0),
+              TotSteamHeatingCoilEnergy(0.0), TotSteamCoolingCoilEnergy(0.0), SenSteamCoolingCoilEnergy(0.0), TotSteamHeatingCoilRate(0.0),
+              LoopLoss(0.0), TotSteamCoolingCoilRate(0.0), SenSteamCoolingCoilRate(0.0), LeavingRelHum(0.0), DesiredOutletTemp(0.0),
+              DesiredOutletHumRat(0.0), InletSteamTemp(0.0), OutletSteamTemp(0.0), InletSteamMassFlowRate(0.0), OutletSteamMassFlowRate(0.0),
+              MaxSteamVolFlowRate(0.0), MaxSteamMassFlowRate(0.0), InletSteamEnthalpy(0.0), OutletWaterEnthalpy(0.0), InletSteamPress(0.0),
+              InletSteamQuality(0.0), OutletSteamQuality(0.0), DegOfSubcooling(0.0), LoopSubcoolReturn(0.0), AirInletNodeNum(0), AirOutletNodeNum(0),
+              SteamInletNodeNum(0), SteamOutletNodeNum(0), TempSetPointNodeNum(0), plantLoc{}, CoilType(DataPlant::PlantEquipmentType::Invalid),
+              OperatingCapacity(0.0), DesiccantRegenerationCoil(false), DesiccantDehumNum(0), FaultyCoilSATFlag(false), FaultyCoilSATIndex(0),
+              FaultyCoilSATOffset(0.0), reportCoilFinalSizes(true), DesCoilCapacity(0.0), DesAirVolFlow(0.0)
         {
         }
     };
@@ -163,6 +164,14 @@ namespace SteamCoils {
                                      ObjexxFCL::Optional<HVAC::FanOp const> fanOp = _,
                                      ObjexxFCL::Optional<Real64 const> PartLoadRatio = _);
 
+    void SimulateSteamCoilComponents(EnergyPlusData &state,
+                                     int const coilNum,
+                                     bool FirstHVACIteration,
+                                     ObjexxFCL::Optional<Real64 const> QCoilReq = _, // coil load to be met
+                                     ObjexxFCL::Optional<Real64> QCoilActual = _,    // coil load actually delivered returned to calling component
+                                     ObjexxFCL::Optional<HVAC::FanOp const> fanOp = _,
+                                     ObjexxFCL::Optional<Real64 const> PartLoadRatio = _);
+  
     void GetSteamCoilInput(EnergyPlusData &state);
 
     void InitSteamCoil(EnergyPlusData &state, int CoilNum, bool FirstHVACIteration);
@@ -181,96 +190,22 @@ namespace SteamCoils {
 
     void ReportSteamCoil(EnergyPlusData &state, int CoilNum);
 
-    int GetSteamCoilIndex(EnergyPlusData &state,
-                          std::string_view CoilType,   // must match coil types in this module
-                          std::string const &CoilName, // must match coil names for the coil type
-                          bool &ErrorsFound            // set to true if problem
-    );
+#ifdef OLD_API  
+    int GetCoilIndex(EnergyPlusData &state, std::string_view const coilType, std::string const &coilName, bool &ErrorsFound);           
 
-    int GetSteamCoilIndex(EnergyPlusData &state,
-                          std::string const &CoilName
-    );
-  
-    int GetCompIndex(EnergyPlusData &state, std::string_view coilName);
+    Real64 GetCoilScheduleValue(EnergyPlusData &state, std::string_view const compType, std::string const &compName, bool &ErrorsFound);
 
-    void CheckSteamCoilSchedule(EnergyPlusData &state, std::string const &CompType, std::string_view CompName, Real64 &Value, int &CompIndex);
+    Real64 GetCoilMaxWaterFlowRate(EnergyPlusData &state, std::string_view const coilType, std::string const &coilName, bool &ErrorsFound);
 
-    Real64 GetCoilMaxWaterFlowRate(EnergyPlusData &state,
-                                   std::string const &CoilType, // must match coil types in this module
-                                   std::string const &CoilName, // must match coil names for the coil type
-                                   bool &ErrorsFound            // set to true if problem
-    );
+    int GetCoilAirInletNode(EnergyPlusData &state, std::string_view const coilType, std::string const &CoilName, bool &ErrorsFound);
 
-    Real64 GetCoilMaxSteamFlowRate(EnergyPlusData &state,
-                                   int const coilNum
-    );
+    int GetCoilAirOutletNode(EnergyPlusData &state, std::string_view const coilType, std::string const &coilName, bool &ErrorsFound);
 
-    int GetCoilAirInletNode(EnergyPlusData &state,
-                            int CoilIndex,               // must match coil types in this module
-                            std::string const &CoilName, // must match coil names for the coil type
-                            bool &ErrorsFound            // set to true if problem
-    );
+    int GetCoilSteamInletNode(EnergyPlusData &state, std::string_view const coilType, std::string const &CoilName, bool &ErrorsFound);
 
-    int GetCoilAirInletNode(EnergyPlusData &state,
-                            int const coilNum
-    );
-  
-    int GetCoilAirOutletNode(EnergyPlusData &state,
-                             int const coilNum
-    );
+    int GetCoilSteamOutletNode(EnergyPlusData &state, std::string_view const coilType, std::string const &coilName, bool &ErrorsFound);
 
-    int GetCoilAirOutletNode(EnergyPlusData &state,
-                             std::string const &CoilType, // must match coil types in this module
-                             std::string const &CoilName, // must match coil names for the coil type
-                             bool &ErrorsFound            // set to true if problem
-    );
-
-    int GetCoilAirOutletNode(EnergyPlusData &state,
-                             int const coilNum
-    );
-
-    int GetCoilSteamInletNode(EnergyPlusData &state,
-                              int CoilIndex,               // must match coil types in this module
-                              std::string const &CoilName, // must match coil names for the coil type
-                              bool &ErrorsFound            // set to true if problem
-    );
-
-    int GetCoilSteamInletNode(EnergyPlusData &state,
-                              int const coilNum
-    );
-  
-  
-    int GetCoilSteamInletNode(EnergyPlusData &state,
-                              std::string const &CoilType, // must match coil types in this module
-                              std::string const &CoilName, // must match coil names for the coil type
-                              bool &ErrorsFound            // set to true if problem
-    );
-
-    int GetCoilSteamOutletNode(EnergyPlusData &state,
-                               int CoilIndex,               // must match coil types in this module
-                               std::string const &CoilName, // must match coil names for the coil type
-                               bool &ErrorsFound            // set to true if problem
-    );
-
-    int GetCoilSteamOutletNode(EnergyPlusData &state,
-                               int const coilNum
-    );
-  
-    int GetCoilSteamOutletNode(EnergyPlusData &state,
-                               std::string_view CoilType,   // must match coil types in this module
-                               std::string const &CoilName, // must match coil names for the coil type
-                               bool &ErrorsFound            // set to true if problem
-    );
-
-    Real64 GetCoilCapacity([[maybe_unused]] EnergyPlusData &state,
-                           std::string const &CoilType, // must match coil types in this module
-                           std::string const &CoilName, // must match coil names for the coil type
-                           bool &ErrorsFound            // set to true if problem
-    );
-
-    Real64 GetCoilCapacity(EnergyPlusData &state,
-                           int const coilNum
-    );
+    Real64 GetCoilCapacity(EnergyPlusData &state, std::string_view const coilType, std::string const &coilName, bool &ErrorsFound);
 
     CoilControlType GetTypeOfCoil(EnergyPlusData &state,
                                   int CoilIndex,               // must match coil types in this module
@@ -278,22 +213,10 @@ namespace SteamCoils {
                                   bool &ErrorsFound            // set to true if problem
     );
 
-    int GetSteamCoilControlNodeNum(EnergyPlusData &state,
-                                   std::string const &CoilType, // must match coil types in this module
-                                   std::string const &CoilName, // must match coil names for the coil type
-                                   bool &ErrorFlag              // set to true if problem
-    );
+    int GetCoilControlNode(EnergyPlusData &state, std::string_view const coilType, std::string const &coilName, bool &ErrorFlag);
 
-    int GetSteamCoilControlNodeNum(EnergyPlusData &state,
-                                   int const coilNum
-    );
-  
-    int GetSteamCoilAvailScheduleIndex(EnergyPlusData &state,
-                                       std::string const &CoilType, // must match coil types in this module
-                                       std::string const &CoilName, // must match coil names for the coil type
-                                       bool &ErrorsFound            // set to true if problem
-    );
-
+    Sched::Schedule *GetCoilAvailSchedule(EnergyPlusData &state, std::string_view const coilType, std::string const &coilName, bool &ErrorsFound);
+#endif // OLD_API
     // sets data to a coil that is used as a regeneration air heating coil in
     // desiccant dehumidification system
     void SetSteamCoilData(EnergyPlusData &state,
@@ -302,6 +225,28 @@ namespace SteamCoils {
                           ObjexxFCL::Optional_bool DesiccantRegenerationCoil = _, // Flag that this coil is used as regeneration air heating coil
                           ObjexxFCL::Optional_int DesiccantDehumIndex = _         // Index for the desiccant dehum system where this coil is used
     );
+
+      int GetCoilIndex(EnergyPlusData &state, std::string const &coilName);
+  
+    Real64 GetCoilScheduleValue(EnergyPlusData &state, int const coilNum);
+
+    Real64 GetCoilMaxWaterFlowRate(EnergyPlusData &state, int const coilNum);
+
+    Real64 GetCoilMaxSteamFlowRate(EnergyPlusData &state, int const coilNum);
+
+    int GetCoilAirInletNode(EnergyPlusData &state, int const coilNum);
+  
+    int GetCoilAirOutletNode(EnergyPlusData &state, int const coilNum);
+
+    int GetCoilAirOutletNode(EnergyPlusData &state, int const coilNum);
+
+    int GetCoilSteamInletNode(EnergyPlusData &state, int const coilNum);
+  
+    int GetCoilSteamOutletNode(EnergyPlusData &state, int const coilNum);
+  
+    Real64 GetCoilCapacity(EnergyPlusData &state, int const coilNum);
+
+    int GetCoilControlNode(EnergyPlusData &state, int const coilNum);  
 
 } // namespace SteamCoils
 
@@ -317,6 +262,10 @@ struct SteamCoilsData : BaseGlobalStruct
     Array1D_bool MyPlantScanFlag;
     int ErrCount = 0;
     Array1D<SteamCoils::SteamCoilEquipConditions> SteamCoil;
+
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
 
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {

@@ -66,7 +66,10 @@ using namespace EnergyPlus;
 void CoilCoolingDXCurveFitPerformance::instantiateFromInputSpec(EnergyPlus::EnergyPlusData &state,
                                                                 const CoilCoolingDXCurveFitPerformanceInputSpecification &input_data)
 {
-    static constexpr std::string_view routineName("CoilCoolingDXCurveFitOperatingMode::instantiateFromInputSpec: ");
+    static constexpr std::string_view routineName = "CoilCoolingDXCurveFitOperatingMode::instantiateFromInputSpec";
+
+    ErrorObjectHeader eoh{routineName, this->object_name, input_data.name};
+
     bool errorsFound(false);
     this->original_input_specs = input_data;
     this->name = input_data.name;
@@ -75,6 +78,7 @@ void CoilCoolingDXCurveFitPerformance::instantiateFromInputSpec(EnergyPlus::Ener
     this->crankcaseHeaterCap = input_data.crankcase_heater_capacity;
     this->normalMode = CoilCoolingDXCurveFitOperatingMode(state, input_data.base_operating_mode_name);
     this->normalMode.oneTimeInit(state); // oneTimeInit does not need to be delayed in this use case
+
     if (Util::SameString(input_data.capacity_control, "CONTINUOUS")) {
         this->capControlMethod = CapControlMethod::CONTINUOUS;
     } else if (Util::SameString(input_data.capacity_control, "DISCRETE")) {
@@ -88,14 +92,10 @@ void CoilCoolingDXCurveFitPerformance::instantiateFromInputSpec(EnergyPlus::Ener
     this->evapCondBasinHeatCap = input_data.basin_heater_capacity;
     this->evapCondBasinHeatSetpoint = input_data.basin_heater_setpoint_temperature;
     if (input_data.basin_heater_operating_schedule_name.empty()) {
-        this->evapCondBasinHeatSchedulIndex = ScheduleManager::ScheduleAlwaysOn;
-    } else {
-        this->evapCondBasinHeatSchedulIndex = ScheduleManager::GetScheduleIndex(state, input_data.basin_heater_operating_schedule_name);
-    }
-    if (this->evapCondBasinHeatSchedulIndex == 0) {
-        ShowSevereError(state, std::string{routineName} + this->object_name + "=\"" + this->name + "\", invalid");
-        ShowContinueError(
-            state, "...Evaporative Condenser Basin Heater Operating Schedule Name=\"" + input_data.basin_heater_operating_schedule_name + "\".");
+        this->evapCondBasinHeatSched = Sched::GetScheduleAlwaysOn(state);
+    } else if ((this->evapCondBasinHeatSched = Sched::GetSchedule(state, input_data.basin_heater_operating_schedule_name)) == nullptr) {
+        ShowSevereItemNotFound(
+            state, eoh, "Evaporative Condenser Basin Heater Operating Schedule Name", input_data.basin_heater_operating_schedule_name);
         errorsFound = true;
     }
 
@@ -215,7 +215,7 @@ void CoilCoolingDXCurveFitPerformance::simulate(EnergyPlus::EnergyPlusData &stat
                                                 Real64 LoadSHR)
 {
     static constexpr std::string_view RoutineName = "CoilCoolingDXCurveFitPerformance::simulate";
-    Real64 reportingConstant = state.dataHVACGlobal->TimeStepSys * Constant::SecInHour;
+    Real64 reportingConstant = state.dataHVACGlobal->TimeStepSys * Constant::rSecsInHour;
     this->recoveredEnergyRate = 0.0;
     this->NormalSHR = 0.0;
 
@@ -363,8 +363,8 @@ void CoilCoolingDXCurveFitPerformance::simulate(EnergyPlus::EnergyPlusData &stat
     this->crankcaseHeaterElectricityConsumption = this->crankcaseHeaterPower * reportingConstant;
 
     // basin heater
-    if (this->evapCondBasinHeatSchedulIndex > 0) {
-        Real64 currentBasinHeaterAvail = ScheduleManager::GetCurrentScheduleValue(state, this->evapCondBasinHeatSchedulIndex);
+    if (this->evapCondBasinHeatSched != nullptr) {
+        Real64 currentBasinHeaterAvail = this->evapCondBasinHeatSched->getCurrentVal();
         if (this->evapCondBasinHeatCap > 0.0 && currentBasinHeaterAvail > 0.0) {
             this->basinHeaterPower = max(0.0, this->evapCondBasinHeatCap * (this->evapCondBasinHeatSetpoint - state.dataEnvrn->OutDryBulbTemp));
         }
@@ -572,7 +572,7 @@ void CoilCoolingDXCurveFitPerformance::calcStandardRatings210240(EnergyPlus::Ene
             std::tie(this->standardRatingCoolingCapacity2023,
                      this->standardRatingSEER2_User,
                      this->standardRatingSEER2_Standard,
-                     this->standardRatingEER2) = StandardRatings::SEER2CalulcationCurveFit(state, "Coil:Cooling:DX:CurveFit", this->normalMode);
+                     this->standardRatingEER2) = StandardRatings::SEER2CalulcationCurveFit(state, HVAC::CoilType::CoolingDXCurveFit, this->normalMode);
         }
 
         // IEER calculations: Capacity of 65K Btu/h (19050 W) to less than 135K Btu/h (39565 W) - calculated as per AHRI Standard 340/360-2022.
@@ -614,7 +614,7 @@ void CoilCoolingDXCurveFitPerformance::calcStandardRatings210240(EnergyPlus::Ene
         // TODO: we can always decide and give precedence to Alternate Mode 1 or Alternate Mode 2 if present | Needs Discussion about the
         // applicability.
         std::tie(this->standardRatingIEER2, this->standardRatingCoolingCapacity2023, this->standardRatingEER2) =
-            StandardRatings::IEERCalulcationCurveFit(state, "Coil:Cooling:DX:CurveFit", this->normalMode);
+          StandardRatings::IEERCalulcationCurveFit(state, HVAC::CoilType::CoolingDXCurveFit, this->normalMode);
 
     } else {
         ShowSevereError(state,

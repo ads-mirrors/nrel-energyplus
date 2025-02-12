@@ -206,11 +206,11 @@ namespace PlantPipingSystemsManager {
             // The time init should be done here before we DoOneTimeInits because the DoOneTimeInits
             // includes a ground temperature initialization, which is based on the Cur%CurSimTimeSeconds variable
             // which would be carried over from the previous environment
-            thisDomain.Cur.CurSimTimeStepSize = state.dataGlobal->TimeStepZone * Constant::SecInHour;
+            thisDomain.Cur.CurSimTimeStepSize = state.dataGlobal->TimeStepZone * Constant::rSecsInHour;
             thisDomain.Cur.CurSimTimeSeconds =
-                ((state.dataGlobal->DayOfSim - 1) * 24 + (state.dataGlobal->HourOfDay - 1) +
+                ((state.dataGlobal->DayOfSim - 1) * Constant::iHoursInDay + (state.dataGlobal->HourOfDay - 1) +
                  (state.dataGlobal->TimeStep - 1) * state.dataGlobal->TimeStepZone + state.dataHVACGlobal->SysTimeElapsed) *
-                Constant::SecInHour;
+                Constant::rSecsInHour;
 
             // There are also some inits that are "close to one time" inits...( one-time in standalone, each envrn in E+ )
             if ((state.dataGlobal->BeginSimFlag && thisDomain.BeginSimInit) || (state.dataGlobal->BeginEnvrnFlag && thisDomain.BeginSimEnvironment)) {
@@ -488,7 +488,7 @@ namespace PlantPipingSystemsManager {
         //       RE-ENGINEERED  na
 
         // SUBROUTINE PARAMETER DEFINITIONS:
-        static constexpr std::string_view RoutineName("ReadGeneralDomainInputs");
+        static constexpr std::string_view routineName = "ReadGeneralDomainInputs";
 
         // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
         int NumAlphas;  // Number of Alphas for each GetObjectItem call
@@ -512,6 +512,8 @@ namespace PlantPipingSystemsManager {
                                                                      state.dataIPShortCut->cAlphaFieldNames,
                                                                      state.dataIPShortCut->cNumericFieldNames);
 
+            ErrorObjectHeader eoh{routineName, ObjName_ug_GeneralDomain, state.dataIPShortCut->cAlphaArgs(1)};
+
             auto &thisDomain = state.dataPlantPipingSysMgr->domains[DomainNum - 1];
 
             // Get the name, validate
@@ -531,7 +533,7 @@ namespace PlantPipingSystemsManager {
                 } else if (meshDistribution == "SYMMETRICGEOMETRIC") {
                     thisDomain.Mesh.X.thisMeshDistribution = MeshDistribution::SymmetricGeometric;
                     if (mod(thisDomain.Mesh.X.RegionMeshCount, 2) != 0) {
-                        ShowWarningError(state, format("PipingSystems:{}: Invalid mesh type-count combination.", RoutineName));
+                        ShowWarningError(state, format("PipingSystems:{}: Invalid mesh type-count combination.", routineName));
                         ShowContinueError(state, format("Instance:{}={}", ObjName_ug_GeneralDomain, thisDomain.Name));
                         ShowContinueError(state, "An ODD-valued X mesh count was found in the input for symmetric geometric configuration.");
                         ShowContinueError(state, "This is invalid, mesh count incremented UP by one to next EVEN value.");
@@ -542,7 +544,7 @@ namespace PlantPipingSystemsManager {
                     }
                 } else {
                     IssueSevereInputFieldError(state,
-                                               RoutineName,
+                                               routineName,
                                                ObjName_ug_GeneralDomain,
                                                state.dataIPShortCut->cAlphaArgs(1),
                                                state.dataIPShortCut->cAlphaFieldNames(2),
@@ -561,7 +563,7 @@ namespace PlantPipingSystemsManager {
                 } else if (meshDistribution == "SYMMETRICGEOMETRIC") {
                     thisDomain.Mesh.Y.thisMeshDistribution = MeshDistribution::SymmetricGeometric;
                     if (mod(thisDomain.Mesh.Y.RegionMeshCount, 2) != 0) {
-                        ShowWarningError(state, format("PipingSystems:{}: Invalid mesh type-count combination.", RoutineName));
+                        ShowWarningError(state, format("PipingSystems:{}: Invalid mesh type-count combination.", routineName));
                         ShowContinueError(state, format("Instance:{}={}", ObjName_ug_GeneralDomain, thisDomain.Name));
                         ShowContinueError(state, "An ODD-valued Y mesh count was found in the input for symmetric geometric configuration.");
                         ShowContinueError(state, "This is invalid, mesh count incremented UP by one to next EVEN value.");
@@ -572,7 +574,7 @@ namespace PlantPipingSystemsManager {
                     }
                 } else {
                     IssueSevereInputFieldError(state,
-                                               RoutineName,
+                                               routineName,
                                                ObjName_ug_GeneralDomain,
                                                state.dataIPShortCut->cAlphaArgs(1),
                                                state.dataIPShortCut->cAlphaFieldNames(3),
@@ -591,7 +593,7 @@ namespace PlantPipingSystemsManager {
                 } else if (meshDistribution == "SYMMETRICGEOMETRIC") {
                     thisDomain.Mesh.Z.thisMeshDistribution = MeshDistribution::SymmetricGeometric;
                     if (mod(thisDomain.Mesh.Z.RegionMeshCount, 2) != 0) {
-                        ShowWarningError(state, format("PipingSystems:{}: Invalid mesh type-count combination.", RoutineName));
+                        ShowWarningError(state, format("PipingSystems:{}: Invalid mesh type-count combination.", routineName));
                         ShowContinueError(state, format("Instance:{}={}", ObjName_ug_GeneralDomain, thisDomain.Name));
                         ShowContinueError(state, "An ODD-valued Z mesh count was found in the input for symmetric geometric configuration.");
                         ShowContinueError(state, "This is invalid, mesh count incremented UP by one to next EVEN value.");
@@ -602,7 +604,7 @@ namespace PlantPipingSystemsManager {
                     }
                 } else {
                     IssueSevereInputFieldError(state,
-                                               RoutineName,
+                                               routineName,
                                                ObjName_ug_GeneralDomain,
                                                state.dataIPShortCut->cAlphaArgs(1),
                                                state.dataIPShortCut->cAlphaFieldNames(4),
@@ -628,7 +630,7 @@ namespace PlantPipingSystemsManager {
                 thisDomain.HasBasement = false;
             } else {
                 IssueSevereInputFieldError(state,
-                                           RoutineName,
+                                           routineName,
                                            ObjName_ug_GeneralDomain,
                                            state.dataIPShortCut->cAlphaArgs(1),
                                            state.dataIPShortCut->cAlphaFieldNames(7),
@@ -656,7 +658,7 @@ namespace PlantPipingSystemsManager {
                 thisDomain.BasementZone.Width = state.dataIPShortCut->rNumericArgs(CurIndex);
                 if (thisDomain.BasementZone.Width <= 0.0) {
                     IssueSevereInputFieldError(state,
-                                               RoutineName,
+                                               routineName,
                                                ObjName_ug_GeneralDomain,
                                                state.dataIPShortCut->cAlphaArgs(1),
                                                state.dataIPShortCut->cNumericFieldNames(CurIndex),
@@ -669,7 +671,7 @@ namespace PlantPipingSystemsManager {
                 thisDomain.BasementZone.Depth = state.dataIPShortCut->rNumericArgs(CurIndex);
                 if (thisDomain.BasementZone.Depth <= 0.0) {
                     IssueSevereInputFieldError(state,
-                                               RoutineName,
+                                               routineName,
                                                ObjName_ug_GeneralDomain,
                                                state.dataIPShortCut->cAlphaArgs(1),
                                                state.dataIPShortCut->cNumericFieldNames(CurIndex),
@@ -686,7 +688,7 @@ namespace PlantPipingSystemsManager {
                     thisDomain.BasementZone.ShiftPipesByWidth = false;
                 } else {
                     IssueSevereInputFieldError(state,
-                                               RoutineName,
+                                               routineName,
                                                ObjName_ug_GeneralDomain,
                                                state.dataIPShortCut->cAlphaArgs(1),
                                                state.dataIPShortCut->cAlphaFieldNames(CurIndex),
@@ -702,7 +704,7 @@ namespace PlantPipingSystemsManager {
                     Util::FindItemInList(thisDomain.BasementZone.WallBoundaryOSCMName, state.dataSurface->OSCM);
                 if (thisDomain.BasementZone.WallBoundaryOSCMIndex <= 0) {
                     IssueSevereInputFieldError(state,
-                                               RoutineName,
+                                               routineName,
                                                ObjName_ug_GeneralDomain,
                                                state.dataIPShortCut->cAlphaArgs(1),
                                                state.dataIPShortCut->cAlphaFieldNames(CurIndex),
@@ -714,7 +716,7 @@ namespace PlantPipingSystemsManager {
                     if (wallIndexes.empty()) {
                         IssueSevereInputFieldError(
                             state,
-                            RoutineName,
+                            routineName,
                             ObjName_ug_GeneralDomain,
                             state.dataIPShortCut->cAlphaArgs(1),
                             state.dataIPShortCut->cAlphaFieldNames(CurIndex),
@@ -732,7 +734,7 @@ namespace PlantPipingSystemsManager {
                     Util::FindItemInList(thisDomain.BasementZone.FloorBoundaryOSCMName, state.dataSurface->OSCM);
                 if (thisDomain.BasementZone.FloorBoundaryOSCMIndex <= 0) {
                     IssueSevereInputFieldError(state,
-                                               RoutineName,
+                                               routineName,
                                                ObjName_ug_GeneralDomain,
                                                state.dataIPShortCut->cAlphaArgs(1),
                                                state.dataIPShortCut->cAlphaFieldNames(CurIndex),
@@ -744,7 +746,7 @@ namespace PlantPipingSystemsManager {
                     if (floorIndexes.empty()) {
                         IssueSevereInputFieldError(
                             state,
-                            RoutineName,
+                            routineName,
                             ObjName_ug_GeneralDomain,
                             state.dataIPShortCut->cAlphaArgs(1),
                             state.dataIPShortCut->cAlphaFieldNames(CurIndex),
@@ -768,7 +770,13 @@ namespace PlantPipingSystemsManager {
             int const NumCircuitsInThisDomain = int(state.dataIPShortCut->rNumericArgs(20));
 
             // Need to store the ground temp stuff because it will get wiped out in the call to the circuit factory
-            std::string const groundTempType = state.dataIPShortCut->cAlphaArgs(5);
+            GroundTemp::ModelType gtmType =
+                static_cast<GroundTemp::ModelType>(getEnumValue(GroundTemp::modelTypeNamesUC, state.dataIPShortCut->cAlphaArgs(5)));
+            if (gtmType == GroundTemp::ModelType::Invalid) {
+                ShowSevereInvalidKey(state, eoh, state.dataIPShortCut->cAlphaFieldNames(5), state.dataIPShortCut->cAlphaArgs(5));
+                ErrorsFound = true;
+            }
+
             std::string const groundTempName = state.dataIPShortCut->cAlphaArgs(6);
 
             // Need to loop once to store the names ahead of time because calling the segment factory will override cAlphaArgs
@@ -778,7 +786,7 @@ namespace PlantPipingSystemsManager {
                 CurIndex = CircuitCtr + NumAlphasBeforePipeCircOne;
                 if (state.dataIPShortCut->lAlphaFieldBlanks(CurIndex)) {
                     IssueSevereInputFieldError(state,
-                                               RoutineName,
+                                               routineName,
                                                ObjName_Segment,
                                                state.dataIPShortCut->cAlphaArgs(1),
                                                state.dataIPShortCut->cAlphaFieldNames(CurIndex),
@@ -794,7 +802,7 @@ namespace PlantPipingSystemsManager {
             }
 
             // Initialize ground temperature model and get pointer reference
-            thisDomain.groundTempModel = GetGroundTempModelAndInit(state, groundTempType, groundTempName);
+            thisDomain.groundTempModel = GroundTemp::GetGroundTempModelAndInit(state, gtmType, groundTempName);
         }
     }
 
@@ -1078,8 +1086,14 @@ namespace PlantPipingSystemsManager {
 
             thisDomain.NumSlabCells = thisDomain.Mesh.Y.RegionMeshCount; // Need to clean this out at some point
 
+            GroundTemp::ModelType gtmType = static_cast<GroundTemp::ModelType>(getEnumValue(GroundTemp::modelTypeNamesUC, s_ipsc->cAlphaArgs(2)));
+            if (gtmType == GroundTemp::ModelType::Invalid) {
+                ShowSevereInvalidKey(state, eoh, s_ipsc->cAlphaFieldNames(2), s_ipsc->cAlphaArgs(2));
+                ErrorsFound = true;
+            }
+
             // Farfield model
-            thisDomain.groundTempModel = GetGroundTempModelAndInit(state, s_ipsc->cAlphaArgs(2), s_ipsc->cAlphaArgs(3));
+            thisDomain.groundTempModel = GroundTemp::GetGroundTempModelAndInit(state, gtmType, s_ipsc->cAlphaArgs(3));
 
             // Other parameters
             thisDomain.SimControls.Convergence_CurrentToPrevIteration = 0.001;
@@ -1368,9 +1382,14 @@ namespace PlantPipingSystemsManager {
                 ErrorsFound = true;
             }
 
+            GroundTemp::ModelType gtmType = static_cast<GroundTemp::ModelType>(getEnumValue(GroundTemp::modelTypeNamesUC, s_ipsc->cAlphaArgs(2)));
+            if (gtmType == GroundTemp::ModelType::Invalid) {
+                ShowSevereInvalidKey(state, eoh, s_ipsc->cAlphaFieldNames(2), s_ipsc->cAlphaArgs(2));
+                ErrorsFound = true;
+            }
             // Farfield ground temperature model -- note this will overwrite the DataIPShortCuts variables
             // so any other processing below this line won't have access to the cAlphaArgs, etc., here
-            thisDomain.groundTempModel = GetGroundTempModelAndInit(state, s_ipsc->cAlphaArgs(2), s_ipsc->cAlphaArgs(3));
+            thisDomain.groundTempModel = GroundTemp::GetGroundTempModelAndInit(state, gtmType, s_ipsc->cAlphaArgs(3));
 
             // Total surface area
             Real64 ThisArea = 0.0;
@@ -1789,6 +1808,8 @@ namespace PlantPipingSystemsManager {
         //       MODIFIED       na
         //       RE-ENGINEERED  na
 
+        constexpr std::string_view routineName = "ReadHorizontalTrenchInputs";
+
         // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
         int NumAlphas;  // Number of Alphas for each GetObjectItem call
         int NumNumbers; // Number of Numbers for each GetObjectItem call
@@ -1828,6 +1849,8 @@ namespace PlantPipingSystemsManager {
                                                                      s_ipsc->cNumericFieldNames);
 
             auto &thisDomain = state.dataPlantPipingSysMgr->domains[DomainCtr - 1];
+
+            ErrorObjectHeader eoh{routineName, ObjName_HorizTrench, s_ipsc->cAlphaArgs(1)};
 
             // Get the name, validate
             std::string thisTrenchName = s_ipsc->cAlphaArgs(1);
@@ -1873,9 +1896,15 @@ namespace PlantPipingSystemsManager {
             // then we can loop through and allow the factory to be called and carry on
             thisDomain.circuits.push_back(Circuit::factory(state, thisTrenchName, ErrorsFound));
 
+            GroundTemp::ModelType gtmType = static_cast<GroundTemp::ModelType>(getEnumValue(GroundTemp::modelTypeNamesUC, s_ipsc->cAlphaArgs(4)));
+            if (gtmType == GroundTemp::ModelType::Invalid) {
+                ShowSevereInvalidKey(state, eoh, s_ipsc->cAlphaFieldNames(4), s_ipsc->cAlphaArgs(4));
+                ErrorsFound = true;
+            }
+
             // Farfield model parameters -- this is pushed down pretty low because it internally calls GetObjectItem
             // using DataIPShortCuts, so it will overwrite the cAlphaArgs and rNumericArgs values
-            thisDomain.groundTempModel = GetGroundTempModelAndInit(state, s_ipsc->cAlphaArgs(4), s_ipsc->cAlphaArgs(5));
+            thisDomain.groundTempModel = GroundTemp::GetGroundTempModelAndInit(state, gtmType, s_ipsc->cAlphaArgs(5));
 
             //******* Then we'll do the segments *******!
             for (int ThisCircuitPipeSegmentCounter = 1; ThisCircuitPipeSegmentCounter <= NumPipeSegments; ++ThisCircuitPipeSegmentCounter) {
@@ -4342,13 +4371,13 @@ namespace PlantPipingSystemsManager {
         Latitude_Radians = Constant::Pi / 180.0 * Latitude_Degrees;
 
         // The day of year at this point in the simulation
-        DayOfYear = int(this->Cur.CurSimTimeSeconds / Constant::SecsInDay);
+        DayOfYear = int(this->Cur.CurSimTimeSeconds / Constant::rSecsInDay);
 
         // The number of seconds into the current day
-        CurSecondsIntoToday = int(mod(this->Cur.CurSimTimeSeconds, Constant::SecsInDay));
+        CurSecondsIntoToday = int(mod(this->Cur.CurSimTimeSeconds, Constant::rSecsInDay));
 
         // The number of hours into today
-        HourOfDay = int(CurSecondsIntoToday / Constant::SecInHour);
+        HourOfDay = int(CurSecondsIntoToday / Constant::rSecsInHour);
 
         // For convenience convert to Kelvin once
         CurAirTempK = this->Cur.CurAirTemp + 273.15;

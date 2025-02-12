@@ -222,6 +222,10 @@ struct PlantUtilitiesData : BaseGlobalStruct
 
     Array1D<PlantUtilities::CriteriaData> CriteriaChecks; // stores criteria information
 
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
+
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {
     }

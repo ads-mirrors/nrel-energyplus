@@ -109,18 +109,21 @@ namespace HVAC {
     int constexpr AutoCalculateSizing(25);                // identifies an autocalulate input
 
     // The following parameters describe the setpoint types in TempControlType(ActualZoneNum)
-    enum class ThermostatType
+    enum class SetptType
     {
         Invalid = -1,
         Uncontrolled,
-        SingleHeating,
-        SingleCooling,
+        SingleHeat,
+        SingleCool,
         SingleHeatCool,
-        DualSetPointWithDeadBand,
+        DualHeatCool,
         Num
     };
 
-    static constexpr std::array<std::string_view, static_cast<int>(ThermostatType::Num)> thermostatTypeNames = {
+    static constexpr std::array<SetptType, (int)SetptType::Num> setptTypes = {
+        SetptType::SingleHeat, SetptType::SingleCool, SetptType::SingleHeatCool, SetptType::DualHeatCool};
+
+    static constexpr std::array<std::string_view, (int)SetptType::Num> setptTypeNames = {
         "Uncontrolled", "SingleHeating", "SingleCooling", "SingleHeatCool", "DualSetPointWithDeadBand"};
 
     enum class AirDuctType
@@ -218,15 +221,15 @@ namespace HVAC {
     enum class CoilType
     {
         Invalid = -1,
-        DXCoolingSingleSpeed,
-        DXHeatingEmpirical,
-        DXCoolingTwoSpeed,
-        DXCoolingHXAssisted,
-        DXCoolingTwoStageWHumControl,
-        DXHeatPumpWaterHeaterPumped,
-        DXHeatPumpWaterHeaterWrapped,
-        DXMultiSpeedCooling,
-        DXMultiSpeedHeating,
+        CoolingDXSingleSpeed,
+        HeatingDXSingleSpeed,
+        CoolingDXTwoSpeed,
+        CoolingDXHXAssisted,
+        CoolingDXTwoStageWHumControl,
+        WaterHeatingDXPumped,
+        WaterHeatingDXWrapped,
+        CoolingDXMultiSpeed,
+        HeatingDXMultiSpeed,
         HeatingGasOrOtherFuel,
         HeatingGasMultiStage,
         HeatingElectric,
@@ -236,25 +239,28 @@ namespace HVAC {
         CoolingWaterDetailed,
         HeatingWater,
         HeatingSteam,
-        WaterCoolingHXAssisted,
-        CoolingWaterToAirHP,
-        HeatingWaterToAirHP,
-        CoolingWaterToAirHPSimple,
-        HeatingWaterToAirHPSimple,
-        VRFCooling,
-        VRFHeating,
+        CoolingWaterHXAssisted,
+        CoolingWAHP,
+        HeatingWAHP,
+        CoolingWAHPSimple,
+        HeatingWAHPSimple,
+        CoolingVRF,
+        HeatingVRF,
         UserDefined,
-        DXPackagedThermalStorageCooling,
-        CoolingWaterToAirHPVSEquationFit,
-        HeatingWaterToAirHPVSEquationFit,
-        CoolingAirToAirVariableSpeed,
-        HeatingAirToAirVariableSpeed,
-        DXHeatPumpWaterHeaterVariableSpeed,
-        VRFFluidTCtrlCooling,
-        VRFFluidTCtrlHeating,
-        DXCooling,
+        CoolingDXPackagedThermalStorage,
+        CoolingWAHPVariableSpeedEquationFit,
+        HeatingWAHPVariableSpeedEquationFit,
+        CoolingDXVariableSpeed,
+        HeatingDXVariableSpeed,
+        WaterHeatingAWHPVariableSpeed,
+        CoolingVRFFluidTCtrl,
+        HeatingVRFFluidTCtrl,
+        CoolingDX,
         DXSubcoolReheat,
-        DXCurveFitSpeed,
+        CoolingDXCurveFit,
+        IHPAirSource,
+        CoolingSystemDX,
+        HeatingSystemDX,
         Num
     };
 
@@ -263,6 +269,8 @@ namespace HVAC {
 
     extern const std::array<bool, (int)CoilType::Num> coilTypeIsHeating; 
     extern const std::array<bool, (int)CoilType::Num> coilTypeIsCooling;
+
+    extern const std::array<bool, (int)CoilType::Num> coilTypeIsHeatPump;
   
 #ifdef GET_OUT
     // parameters describing coil types
@@ -315,6 +323,51 @@ namespace HVAC {
         Num
     };
 
+    enum class HeatReclaimType // reclaim heat object types
+    {
+        Invalid = -1,
+        RefrigeratedCaseCompressorRack,
+        RefrigeratedCaseCondenserAirCooled,
+        RefrigeratedCaseCondenserEvaporativeCooled,
+        RefrigeratedCaseCondenserWaterCooled,
+        CoilCoolDXSingleSpeed,
+        CoilCoolDXTwoSpeed,
+        CoilCoolDXMultiSpeed,
+        CoilCoolDXMultiMode,
+        CoilCoolDXVariableSpeed,
+        CoilCoolDX,
+        CoilCoolWAHPEquationFit,
+        Num
+    };
+
+    constexpr std::array<std::string_view, (int)HeatReclaimType::Num> heatReclaimTypeNames = {
+        "Refrigeration:CompressorRack",
+        "Refrigeration:Condenser:AirCooled", 
+        "Refrigeration:Condenser:EvaporativeCooled",
+        "Refrigeration:Condenser:WaterCooled",
+        "Coil:Cooling:DX:SingleSpeed",
+        "Coil:Cooling:DX:TwoSpeed",
+        "Coil:Cooling:DX:MultiSpeed",
+        "Coil:Cooling:DX:TwoStageWithHumidityControlMode"
+        "Coil:Cooling:DX:VariableSpeed",
+        "Coil:Cooling:DX",
+        "Coil:Cooling:WaterToAirHeatPump:EquationFit"        
+    };
+
+    constexpr std::array<std::string_view, (int)HeatReclaimType::Num> heatReclaimTypeNamesUC = {
+        "REFRIGERATION:COMPRESSORRACK",
+        "REFRIGERATION:CONDENSER:AIRCOOLED", 
+        "REFRIGERATION:CONDENSER:EVAPORATIVECOOLED",
+        "REFRIGERATION:CONDENSER:WATERCOOLED",
+        "COIL:COOLING:DX:SINGLESPEED",
+        "COIL:COOLING:DX:TWOSPEED",
+        "COIL:COOLING:DX:MULTISPEED",
+        "COIL:COOLING:DX:TWOSTAGEWITHHUMIDITYCONTROLMODE"
+        "COIL:COOLING:DX:VARIABLESPEED",
+        "COIL:COOLING:DX",
+        "COIL:COOLING:WATERTOAIRHEATPUMP:EQUATIONFIT"
+    };
+  
     enum class WaterFlow
     {
         Invalid = -1,
@@ -506,6 +559,10 @@ struct HVACGlobalsData : BaseGlobalStruct
     bool StandardRatingsMyCoolOneTimeFlag3 = true;
     bool StandardRatingsMyHeatOneTimeFlag = true;
     bool StandardRatingsMyHeatOneTimeFlag2 = true;
+
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
 
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {

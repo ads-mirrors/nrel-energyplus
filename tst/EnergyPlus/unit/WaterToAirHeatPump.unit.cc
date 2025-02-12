@@ -136,8 +136,10 @@ TEST_F(EnergyPlusFixture, WaterToAirHeatPumpTest_SimWaterToAir)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     auto *refrig = new Fluid::RefrigProps;
+
     refrig->Name = "R22";
     state->dataFluid->refrigs.push_back(refrig);
     refrig->Num = state->dataFluid->refrigs.isize();
@@ -234,7 +236,7 @@ TEST_F(EnergyPlusFixture, WaterToAirHeatPumpTest_SimWaterToAir)
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Name =
         state->dataWaterToAirHeatPump->WatertoAirHP(HPNum).Name;
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Type =
-        state->dataWaterToAirHeatPump->WatertoAirHP(HPNum).WAHPType;
+        state->dataWaterToAirHeatPump->WatertoAirHP(HPNum).coilPlantType;
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).NodeNumIn =
         state->dataWaterToAirHeatPump->WatertoAirHP(HPNum).WaterInletNodeNum;
 
@@ -269,7 +271,7 @@ TEST_F(EnergyPlusFixture, WaterToAirHeatPumpTest_SimWaterToAir)
     state->dataPlnt->PlantLoop(2).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Name =
         state->dataWaterToAirHeatPump->WatertoAirHP(HPNum).Name;
     state->dataPlnt->PlantLoop(2).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Type =
-        state->dataWaterToAirHeatPump->WatertoAirHP(HPNum).WAHPType;
+        state->dataWaterToAirHeatPump->WatertoAirHP(HPNum).coilPlantType;
     state->dataPlnt->PlantLoop(2).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).NodeNumIn =
         state->dataWaterToAirHeatPump->WatertoAirHP(HPNum).WaterInletNodeNum;
 
@@ -307,5 +309,4 @@ TEST_F(EnergyPlusFixture, WaterToAirHeatPumpTest_SimWaterToAir)
 
     // clean up
     state->dataWaterToAirHeatPump->WatertoAirHP.deallocate();
-    delete state->dataFluid->refrigs(1);
 }

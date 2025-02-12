@@ -117,7 +117,7 @@ namespace AirLoopHVACDOAS {
 
         int m_AirLoopDOASNum = 0;
         int m_OASystemNum = 0;
-        int m_AvailManagerSchedPtr = 0;
+        Sched::Schedule *m_AvailManagerSched = nullptr;
         int m_AirLoopMixerIndex = -1;
         int m_AirLoopSplitterIndex = -1;
         int NumOfAirLoops = 0;
@@ -183,6 +183,10 @@ struct AirLoopHVACDOASData : BaseGlobalStruct
     std::vector<AirLoopHVACDOAS::AirLoopDOAS> airloopDOAS;
     std::vector<AirLoopHVACDOAS::AirLoopMixer> airloopMixer;
     std::vector<AirLoopHVACDOAS::AirLoopSplitter> airloopSplitter;
+
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
 
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {

@@ -85,6 +85,7 @@ using namespace EnergyPlus::SimulationManager;
 
 TEST_F(EnergyPlusFixture, HeatRecovery_HRTest)
 {
+    state->init_state(*state);
     state->dataSize->CurZoneEqNum = 0;
     state->dataSize->CurSysNum = 0;
     state->dataSize->CurOASysNum = 0;
@@ -117,7 +118,7 @@ TEST_F(EnergyPlusFixture, HeatRecovery_HRTest)
     state->dataHeatRecovery->ExchCond(ExchNum).SupOutletNode = 2;
     state->dataHeatRecovery->ExchCond(ExchNum).SecInletNode = 3;
     state->dataHeatRecovery->ExchCond(ExchNum).SecOutletNode = 4;
-    state->dataHeatRecovery->ExchCond(ExchNum).SchedPtr = -1;
+    state->dataHeatRecovery->ExchCond(ExchNum).availSched = Sched::GetScheduleAlwaysOn(*state);
     state->dataHeatRecovery->ExchCond(ExchNum).HeatEffectSensible100 = 0.75;
     state->dataHeatRecovery->ExchCond(ExchNum).HeatEffectLatent100 = 0.0;
     state->dataHeatRecovery->ExchCond(ExchNum).CoolEffectSensible100 = 0.75;
@@ -158,7 +159,7 @@ TEST_F(EnergyPlusFixture, HeatRecovery_HRTest)
 
     auto &thisHX = state->dataHeatRecovery->ExchCond(ExchNum);
     // HXUnitOn is false so expect outlet = inlet
-    thisHX.initialize(*state, CompanionCoilNum, 0);
+    thisHX.initialize(*state, CompanionCoilNum, HVAC::CoilType::Invalid);
     thisHX.CalcAirToAirGenericHeatExch(*state, HXUnitOn, FirstHVACIteration, fanOp, EconomizerFlag, HighHumCtrlFlag);
     thisHX.UpdateHeatRecovery(*state);
     Toutlet = state->dataHeatRecovery->ExchCond(ExchNum).SupInTemp;
@@ -171,7 +172,7 @@ TEST_F(EnergyPlusFixture, HeatRecovery_HRTest)
     // HXUnitOn is true and ControlToTemperatureSetPoint is false so expect outlet = temperature based on effectiveness
     HXUnitOn = true;
     state->dataHeatRecovery->ExchCond(ExchNum).ExchConfig = HXConfigurationType::Plate;
-    thisHX.initialize(*state, CompanionCoilNum, 0);
+    thisHX.initialize(*state, CompanionCoilNum, HVAC::CoilType::Invalid);
     thisHX.CalcAirToAirGenericHeatExch(*state, HXUnitOn, FirstHVACIteration, fanOp, EconomizerFlag, HighHumCtrlFlag);
     thisHX.UpdateHeatRecovery(*state);
     Toutlet = (state->dataHeatRecovery->ExchCond(ExchNum).SupInTemp +
@@ -182,7 +183,7 @@ TEST_F(EnergyPlusFixture, HeatRecovery_HRTest)
 
     state->dataHeatRecovery->ExchCond(ExchNum).ExchConfig = HXConfigurationType::Rotary;
     HXUnitOn = true;
-    thisHX.initialize(*state, CompanionCoilNum, 0);
+    thisHX.initialize(*state, CompanionCoilNum, HVAC::CoilType::Invalid);
     thisHX.CalcAirToAirGenericHeatExch(*state, HXUnitOn, FirstHVACIteration, fanOp, EconomizerFlag, HighHumCtrlFlag);
     thisHX.UpdateHeatRecovery(*state);
     Toutlet = (state->dataHeatRecovery->ExchCond(ExchNum).SupInTemp +
@@ -197,7 +198,7 @@ TEST_F(EnergyPlusFixture, HeatRecovery_HRTest)
     // HXUnitOn is true and ControlToTemperatureSetPoint is true so expect outlet = set point temperature
     HXUnitOn = true;
     state->dataHeatRecovery->ExchCond(ExchNum).ExchConfig = HXConfigurationType::Plate;
-    thisHX.initialize(*state, CompanionCoilNum, 0);
+    thisHX.initialize(*state, CompanionCoilNum, HVAC::CoilType::Invalid);
     thisHX.CalcAirToAirGenericHeatExch(*state, HXUnitOn, FirstHVACIteration, fanOp, EconomizerFlag, HighHumCtrlFlag);
     thisHX.UpdateHeatRecovery(*state);
     Toutlet = SetPointTemp;
@@ -206,7 +207,7 @@ TEST_F(EnergyPlusFixture, HeatRecovery_HRTest)
 
     state->dataHeatRecovery->ExchCond(ExchNum).ExchConfig = HXConfigurationType::Rotary;
     HXUnitOn = true;
-    thisHX.initialize(*state, CompanionCoilNum, 0);
+    thisHX.initialize(*state, CompanionCoilNum, HVAC::CoilType::Invalid);
     thisHX.CalcAirToAirGenericHeatExch(*state, HXUnitOn, FirstHVACIteration, fanOp, EconomizerFlag, HighHumCtrlFlag);
     thisHX.UpdateHeatRecovery(*state);
     Toutlet = state->dataLoopNodes->Node(state->dataHeatRecovery->ExchCond(ExchNum).SupOutletNode).TempSetPoint;
@@ -240,7 +241,7 @@ TEST_F(EnergyPlusFixture, HeatRecovery_HRTest)
 
     // HXUnitOn is false so expect outlet = inlet
     HXUnitOn = false;
-    thisHX.initialize(*state, CompanionCoilNum, 0);
+    thisHX.initialize(*state, CompanionCoilNum, HVAC::CoilType::Invalid);
     thisHX.CalcAirToAirGenericHeatExch(*state, HXUnitOn, FirstHVACIteration, fanOp, EconomizerFlag, HighHumCtrlFlag);
     thisHX.UpdateHeatRecovery(*state);
     EXPECT_DOUBLE_EQ(state->dataHeatRecovery->ExchCond(ExchNum).SupInTemp,
@@ -252,7 +253,7 @@ TEST_F(EnergyPlusFixture, HeatRecovery_HRTest)
     // HXUnitOn is true and ControlToTemperatureSetPoint is false so expect outlet = temperature based on effectiveness
     HXUnitOn = true;
     state->dataHeatRecovery->ExchCond(ExchNum).ExchConfig = HXConfigurationType::Plate;
-    thisHX.initialize(*state, CompanionCoilNum, 0);
+    thisHX.initialize(*state, CompanionCoilNum, HVAC::CoilType::Invalid);
     thisHX.CalcAirToAirGenericHeatExch(*state, HXUnitOn, FirstHVACIteration, fanOp, EconomizerFlag, HighHumCtrlFlag);
     thisHX.UpdateHeatRecovery(*state);
     EXPECT_DOUBLE_EQ((state->dataHeatRecovery->ExchCond(ExchNum).SupInTemp +
@@ -262,7 +263,7 @@ TEST_F(EnergyPlusFixture, HeatRecovery_HRTest)
 
     state->dataHeatRecovery->ExchCond(ExchNum).ExchConfig = HXConfigurationType::Rotary;
     HXUnitOn = true;
-    thisHX.initialize(*state, CompanionCoilNum, 0);
+    thisHX.initialize(*state, CompanionCoilNum, HVAC::CoilType::Invalid);
     thisHX.CalcAirToAirGenericHeatExch(*state, HXUnitOn, FirstHVACIteration, fanOp, EconomizerFlag, HighHumCtrlFlag);
     thisHX.UpdateHeatRecovery(*state);
     EXPECT_DOUBLE_EQ((state->dataHeatRecovery->ExchCond(ExchNum).SupInTemp +
@@ -276,7 +277,7 @@ TEST_F(EnergyPlusFixture, HeatRecovery_HRTest)
     // HXUnitOn is true and ControlToTemperatureSetPoint is true so expect outlet = set point temperature
     HXUnitOn = true;
     state->dataHeatRecovery->ExchCond(ExchNum).ExchConfig = HXConfigurationType::Plate;
-    thisHX.initialize(*state, CompanionCoilNum, 0);
+    thisHX.initialize(*state, CompanionCoilNum, HVAC::CoilType::Invalid);
     thisHX.CalcAirToAirGenericHeatExch(*state, HXUnitOn, FirstHVACIteration, fanOp, EconomizerFlag, HighHumCtrlFlag);
     thisHX.UpdateHeatRecovery(*state);
     EXPECT_DOUBLE_EQ(state->dataLoopNodes->Node(state->dataHeatRecovery->ExchCond(ExchNum).SupOutletNode).TempSetPoint,
@@ -284,7 +285,7 @@ TEST_F(EnergyPlusFixture, HeatRecovery_HRTest)
 
     state->dataHeatRecovery->ExchCond(ExchNum).ExchConfig = HXConfigurationType::Rotary;
     HXUnitOn = true;
-    thisHX.initialize(*state, CompanionCoilNum, 0);
+    thisHX.initialize(*state, CompanionCoilNum, HVAC::CoilType::Invalid);
     thisHX.CalcAirToAirGenericHeatExch(*state, HXUnitOn, FirstHVACIteration, fanOp, EconomizerFlag, HighHumCtrlFlag);
     thisHX.UpdateHeatRecovery(*state);
     EXPECT_DOUBLE_EQ(state->dataLoopNodes->Node(state->dataHeatRecovery->ExchCond(ExchNum).SupOutletNode).TempSetPoint,
@@ -297,7 +298,7 @@ TEST_F(EnergyPlusFixture, HeatRecovery_HRTest)
     state->dataLoopNodes->Node(state->dataHeatRecovery->ExchCond(ExchNum).SecInletNode).MassFlowRate =
         state->dataHeatRecovery->ExchCond(ExchNum).SecInMassFlow / 4.0;
     state->dataHeatRecovery->ExchCond(ExchNum).ControlToTemperatureSetPoint = false;
-    thisHX.initialize(*state, CompanionCoilNum, 0);
+    thisHX.initialize(*state, CompanionCoilNum, HVAC::CoilType::Invalid);
     thisHX.CalcAirToAirGenericHeatExch(*state, HXUnitOn, FirstHVACIteration, fanOp, EconomizerFlag, HighHumCtrlFlag, PartLoadRatio);
     thisHX.UpdateHeatRecovery(*state);
     EXPECT_DOUBLE_EQ((state->dataHeatRecovery->ExchCond(ExchNum).SupInTemp +
@@ -504,10 +505,11 @@ TEST_F(EnergyPlusFixture, HeatRecoveryHXOnManinBranch_GetInputTest)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     GetReturnAirPathInput(*state);
     GetAirPathData(*state);
-    ASSERT_ENUM_EQ(SimAirServingZones::CompType::HeatXchngr, state->dataAirSystemsData->PrimaryAirSystems(1).Branch(1).Comp(4).CompType_Num);
+    ASSERT_ENUM_EQ(SimAirServingZones::CompType::HeatXchngr, state->dataAirSystemsData->PrimaryAirSystems(1).Branch(1).Comp(4).compType);
 }
 
 TEST_F(EnergyPlusFixture, HeatRecoveryHXOnMainBranch_SimHeatRecoveryTest)
@@ -3920,6 +3922,7 @@ TEST_F(EnergyPlusFixture, HeatRecoveryHXOnMainBranch_SimHeatRecoveryTest)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     // OutputProcessor::TimeValue.allocate(2); //
     ManageSimulation(*state); // run the design day
@@ -4026,6 +4029,7 @@ TEST_F(EnergyPlusFixture, HeatRecovery_AirFlowSizing)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     // get heat recovery heat exchanger generic
     GetHeatRecoveryInput(*state);
@@ -4145,8 +4149,8 @@ TEST_F(EnergyPlusFixture, HeatRecovery_HeatExchangerGenericCalcTest)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
-    ScheduleManager::ProcessScheduleInput(*state);
     // get OA Controller
     MixedAir::GetOAControllerInputs(*state);
     int OAContrllerNum = 1;
@@ -4203,7 +4207,7 @@ TEST_F(EnergyPlusFixture, HeatRecovery_HeatExchangerGenericCalcTest)
     thisHX.NomSecAirVolFlow = thisHX.NomSupAirVolFlow;
     state->dataLoopNodes->Node(thisHX.SecInletNode).MassFlowRate = thisHX.NomSecAirVolFlow * state->dataEnvrn->StdRhoAir;
     state->dataLoopNodes->Node(thisHX.SupOutletNode).TempSetPoint = 19.0;
-    thisHX.initialize(*state, CompanionCoilNum, 0);
+    thisHX.initialize(*state, CompanionCoilNum, HVAC::CoilType::Invalid);
     thisHX.CalcAirToAirGenericHeatExch(*state, HXUnitOn, FirstHVACIteration, fanOp, EconomizerFlag, HighHumCtrlFlag);
     thisHX.UpdateHeatRecovery(*state);
     EXPECT_DOUBLE_EQ(10.0, thisHX.SupInTemp);
@@ -4219,7 +4223,7 @@ TEST_F(EnergyPlusFixture, HeatRecovery_HeatExchangerGenericCalcTest)
     thisHX.NomSecAirVolFlow = 10.0 * thisHX.NomSupAirVolFlow;
     state->dataLoopNodes->Node(thisHX.SecInletNode).MassFlowRate = thisHX.NomSecAirVolFlow * state->dataEnvrn->StdRhoAir;
     state->dataLoopNodes->Node(thisHX.SupOutletNode).TempSetPoint = 19.0;
-    thisHX.initialize(*state, CompanionCoilNum, 0);
+    thisHX.initialize(*state, CompanionCoilNum, HVAC::CoilType::Invalid);
     thisHX.CalcAirToAirGenericHeatExch(*state, HXUnitOn, FirstHVACIteration, fanOp, EconomizerFlag, HighHumCtrlFlag);
     thisHX.UpdateHeatRecovery(*state);
     EXPECT_DOUBLE_EQ(10.0, thisHX.SupInTemp);
@@ -4259,6 +4263,7 @@ TEST_F(EnergyPlusFixture, HeatRecovery_NominalAirFlowAutosizeTest)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     // get HR HX generic
     GetHeatRecoveryInput(*state);

@@ -314,6 +314,12 @@ namespace UserDefinedComponents {
                             bool &HeatingActive,
                             bool &CoolingActive);
 
+    void SimCoilUserDefined(EnergyPlusData &state,
+                            int const coilNum,
+                            int AirLoopNum,
+                            bool &HeatingActive,
+                            bool &CoolingActive);
+  
     void SimZoneAirUserDefined(EnergyPlusData &state,
                                std::string_view CompName,      // name of the packaged terminal heat pump
                                int ZoneNum,                    // number of zone being served
@@ -329,15 +335,22 @@ namespace UserDefinedComponents {
 
     void GetUserDefinedComponents(EnergyPlusData &state);
 
+#ifdef OLD_API
     void GetUserDefinedCoilIndex(
         EnergyPlusData &state, std::string const &CoilName, int &CoilIndex, bool &ErrorsFound, std::string const &CurrentModuleObject);
 
-    void GetUserDefinedCoilAirInletNode(
+   void GetUserDefinedCoilAirInletNode(
         EnergyPlusData &state, std::string const &CoilName, int &CoilAirInletNode, bool &ErrorsFound, std::string const &CurrentModuleObject);
 
     void GetUserDefinedCoilAirOutletNode(
         EnergyPlusData &state, std::string const &CoilName, int &CoilAirOutletNode, bool &ErrorsFound, std::string const &CurrentModuleObject);
+#endif // OLD_API
+  
+    int GetCoilIndex(EnergyPlusData &state, std::string const &coilName);
 
+    int GetCoilAirInletNode(EnergyPlusData &state, int const coilNum); 
+
+    int GetCoilAirOutletNode(EnergyPlusData &state, int const coilNum);
 } // namespace UserDefinedComponents
 
 struct UserDefinedComponentsData : BaseGlobalStruct
@@ -364,6 +377,10 @@ struct UserDefinedComponentsData : BaseGlobalStruct
 
     bool lDummy_EMSActuatedPlantComp = false;
     bool lDummy_GetUserDefComp = false;
+
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
 
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {

@@ -478,8 +478,18 @@ TEST_F(EnergyPlusFixture, AirflowNetwork_TestTriangularWindowWarning)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
     state->afn->get_input();
     std::string const error_string = delimited_string({
+        "   ** Warning ** ProcessScheduleInput: Schedule:Constant = ONSCH",
+        "   **   ~~~   ** Schedule Type Limits Name is empty.",
+        "   **   ~~~   ** Schedule will not be validated.",
+        "   ** Warning ** ProcessScheduleInput: Schedule:Constant = AULA PEOPLE SCHED",
+        "   **   ~~~   ** Schedule Type Limits Name is empty.",
+        "   **   ~~~   ** Schedule will not be validated.",
+        "   ** Warning ** ProcessScheduleInput: Schedule:Constant = SEMPRE 21",
+        "   **   ~~~   ** Schedule Type Limits Name is empty.",
+        "   **   ~~~   ** Schedule will not be validated.",
         "   ** Warning ** AirflowNetwork::Solver::get_input: AirflowNetwork:MultiZone:Surface=\"WINDOW1\".",
         "   **   ~~~   ** The opening is a Triangular subsurface. A rectangular subsurface will be used with equivalent width and height.",
     });
@@ -1859,13 +1869,14 @@ TEST_F(EnergyPlusFixture, AirflowNetwork_UserDefinedDuctViewFactors)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     // Read objects
     HeatBalanceManager::GetHeatBalanceInput(*state);
     HeatBalanceManager::AllocateHeatBalArrays(*state);
     state->dataEnvrn->OutBaroPress = 101000;
     state->dataHVACGlobal->TimeStepSys = state->dataGlobal->TimeStepZone;
-    state->dataHVACGlobal->TimeStepSysSec = state->dataHVACGlobal->TimeStepSys * Constant::SecInHour;
+    state->dataHVACGlobal->TimeStepSysSec = state->dataHVACGlobal->TimeStepSys * Constant::rSecsInHour;
 
     // Read AirflowNetwork inputs
     state->afn->get_input();
@@ -2441,6 +2452,7 @@ TEST_F(EnergyPlusFixture, AirflowNetwork_TestPolygonalWindows)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     state->afn->get_input();
 
@@ -4373,6 +4385,7 @@ TEST_F(EnergyPlusFixture, AirflowNetwork_TestFanModel)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     state->dataIPShortCut->lNumericFieldBlanks.allocate(1000);
     state->dataIPShortCut->lAlphaFieldBlanks.allocate(1000);
@@ -4410,20 +4423,20 @@ TEST_F(EnergyPlusFixture, AirflowNetwork_TestFanModel)
     // Read AirflowNetwork inputs
     state->afn->get_input();
 
-    state->dataScheduleMgr->Schedule(1).CurrentValue = 1.0;
-    state->dataScheduleMgr->Schedule(2).CurrentValue = 100.0;
-    state->dataScheduleMgr->Schedule(3).CurrentValue = 1.0;
-    state->dataScheduleMgr->Schedule(4).CurrentValue = 1.0;
-    state->dataScheduleMgr->Schedule(5).CurrentValue = 0.1;
-    state->dataScheduleMgr->Schedule(6).CurrentValue = 1.0;
-    state->dataScheduleMgr->Schedule(7).CurrentValue = 1.0;
-    state->dataScheduleMgr->Schedule(8).CurrentValue = 1.0;
-    state->dataScheduleMgr->Schedule(9).CurrentValue = 1.0;
-    state->dataScheduleMgr->Schedule(10).CurrentValue = 1.0;
-    state->dataScheduleMgr->Schedule(11).CurrentValue = 21.0;
-    state->dataScheduleMgr->Schedule(12).CurrentValue = 25.0;
-    state->dataScheduleMgr->Schedule(13).CurrentValue = 1.0;
-    state->dataScheduleMgr->Schedule(14).CurrentValue = 1.0;
+    Sched::GetSchedule(*state, "WINDOWVENTSCHED")->currentVal = 1.0;
+    Sched::GetSchedule(*state, "ACTIVITY SCH")->currentVal = 100.0;
+    Sched::GetSchedule(*state, "WORK EFF SCH")->currentVal = 1.0;
+    Sched::GetSchedule(*state, "CLOTHING SCH")->currentVal = 1.0;
+    Sched::GetSchedule(*state, "AIR VELO SCH")->currentVal = 0.1;
+    Sched::GetSchedule(*state, "HOUSE OCCUPANCY")->currentVal = 1.0;
+    Sched::GetSchedule(*state, "INTERMITTENT")->currentVal = 1.0;
+    Sched::GetSchedule(*state, "HOUSE LIGHTING")->currentVal = 1.0;
+    Sched::GetSchedule(*state, "REPORTSCH")->currentVal = 1.0;
+    Sched::GetSchedule(*state, "HVACAVAILSCHED")->currentVal = 1.0;
+    Sched::GetSchedule(*state, "DUAL HEATING SETPOINTS")->currentVal = 21.0;
+    Sched::GetSchedule(*state, "DUAL COOLING SETPOINTS")->currentVal = 25.0;
+    Sched::GetSchedule(*state, "DUAL ZONE CONTROL TYPE SCHED")->currentVal = 1.0;
+    Sched::GetSchedule(*state, "CYCLINGFANSCHEDULE")->currentVal = 1.0;
 
     state->afn->AirflowNetworkFanActivated = true;
     state->dataEnvrn->OutDryBulbTemp = -17.29025;

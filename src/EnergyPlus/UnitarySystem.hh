@@ -69,6 +69,14 @@ struct EnergyPlusData;
 
 namespace UnitarySystems {
 
+    // Coil type for SimWater and SimSteamCoil
+    enum class WhichCoil {
+        Cool,
+        Heat,
+        SuppHeat,
+        Num
+    };
+  
     // Supply Air Sizing Option
     int constexpr None = 1;
     int constexpr SupplyAirFlowRate = 2;
@@ -83,6 +91,7 @@ namespace UnitarySystems {
     int constexpr HeatingMode = 2; // last compressor operating mode was in heating
     int constexpr NoCoolHeat = 3;  // last operating mode was no cooling or heating
 
+    // Is this structure automatically generated?
     struct UnitarySysInputSpec
     {
         // system_type is not an object input but the actual type of object (e.g., UnitarySystem, CoilSystem:Cooling:DX, etc.).
@@ -165,6 +174,7 @@ namespace UnitarySystems {
 
     public:
         std::string name;
+        // What is this factory nonsense?
         static DesignSpecMSHP *factory(EnergyPlusData &state, HVAC::UnitarySysType type, std::string const &objectName);
         int numOfSpeedHeating = 0;
         int numOfSpeedCooling = 0;
@@ -231,7 +241,7 @@ namespace UnitarySystems {
         int m_UnitarySysNum = -1;
         SysType m_sysType = SysType::Invalid;
         bool m_ThisSysInputShouldBeGotten = true;
-        int m_SysAvailSchedPtr = 0; // Pointer to the availability schedule
+        Sched::Schedule *m_sysAvailSched = nullptr; // availability schedule
         UnitarySysCtrlType m_ControlType = UnitarySysCtrlType::None;
         DehumCtrlType m_DehumidControlType_Num = DehumCtrlType::None;
         bool m_Humidistat = false;
@@ -241,14 +251,14 @@ namespace UnitarySystems {
         bool m_setFaultModelInput = true;
         int m_FanIndex = 0;
         HVAC::FanPlace m_FanPlace = HVAC::FanPlace::Invalid;
-        int m_FanOpModeSchedPtr = 0;
+        Sched::Schedule *m_fanOpModeSched = nullptr;
         bool m_FanExists = false;
         HVAC::FanType m_FanType = HVAC::FanType::Invalid;
         bool m_RequestAutoSize = false;
         Real64 m_ActualFanVolFlowRate = 0.0;
         Real64 m_DesignFanVolFlowRate = 0.0;
         Real64 m_DesignMassFlowRate = 0.0;
-        int m_FanAvailSchedPtr = 0;
+        Sched::Schedule *m_fanAvailSched = nullptr;
         HVAC::FanOp m_FanOpMode = HVAC::FanOp::Invalid;
         int m_ATMixerIndex = 0;
         int m_ATMixerPriNode = 0;
@@ -260,10 +270,13 @@ namespace UnitarySystems {
 
         bool m_HeatCoilExists = false;
         Real64 m_HeatingSizingRatio = 1.0;
-        HVAC::CoilType m_HeatingCoilType = HVAC::CoilType::Invalid;
         bool m_DXHeatingCoil = false;
-        int m_HeatingCoilIndex = 0;
-        int m_HeatingCoilAvailSchPtr = 0;
+
+        HVAC::CoilType m_heatCoilType = HVAC::CoilType::Invalid;
+        std::string m_HeatCoilName;
+        int m_HeatCoilNum = 0;
+      
+        Sched::Schedule *m_heatingCoilAvailSched = nullptr;
         Real64 m_DesignHeatingCapacity = 0.0;
         Real64 m_MaxHeatAirVolFlow = 0.0;
         int m_NumOfSpeedHeating = 0;
@@ -273,14 +286,21 @@ namespace UnitarySystems {
         int HeatCtrlNode = 0;
 
         bool m_CoolCoilExists = false;
-        HVAC::CoilType m_CoolingCoilType = HVAC::CoilType::Invalid;
+        std::string m_CoolCoilName;
+        HVAC::CoilType m_coolCoilType = HVAC::CoilType::Invalid;
+        int m_CoolCoilNum = 0;
+
+        std::string m_childCoolCoilName; // if cool coil is HXAssisted, this is the child coil
+        HVAC::CoilType m_childCoolCoilType = HVAC::CoilType::Invalid;
+        int m_childCoolCoilNum = 0;
+      
         int m_NumOfSpeedCooling = 0;
-        int m_CoolingCoilAvailSchPtr = 0;
+        Sched::Schedule *m_coolCoilAvailSched = nullptr;
         Real64 m_DesignCoolingCapacity = 0.0;
         Real64 m_MaxCoolAirVolFlow = 0.0;
         int m_CondenserNodeNum = 0;
         DataHeatBalance::RefrigCondenserType m_CondenserType = DataHeatBalance::RefrigCondenserType::Invalid;
-        int m_CoolingCoilIndex = 0;
+      
         bool m_HeatPump = false;
         int m_ActualDXCoilIndexForHXAssisted = 0;
         bool m_DiscreteSpeedCoolingCoil = false;
@@ -293,6 +313,7 @@ namespace UnitarySystems {
         bool m_RunOnLatentOnlyWithSensible = false;
         HVAC::CoilMode m_DehumidificationMode = HVAC::CoilMode::Normal; // Only explicitly initialized if something other than Normal
 
+        std::string m_SuppHeatCoilName;
         HVAC::CoilType m_SuppHeatCoilType = HVAC::CoilType::Invalid;
         bool m_SuppCoilExists = false;
         Real64 m_DesignSuppHeatingCapacity = 0.0;
@@ -300,7 +321,7 @@ namespace UnitarySystems {
         int SuppCoilOutletNodeNum = 0;
         int m_SuppCoilFluidInletNode = 0;
         Real64 m_MaxSuppCoilFluidFlow = 0.0;
-        int m_SuppHeatCoilIndex = 0;
+        int m_SuppHeatCoilNum = 0;
         int SuppCtrlNode = 0;
         Real64 m_SupHeaterLoad = 0.0;
         int m_CoolingSAFMethod = 0;
@@ -441,7 +462,6 @@ namespace UnitarySystems {
         Real64 m_MoistureLoadPredicted = 0.0;
 
         // Fault model of coil SAT sensor
-        bool m_FaultyCoilSATFlag = false;   // True if the coil has SAT sensor fault
         int m_FaultyCoilSATIndex = 0;       // Index of the fault object corresponding to the coil
         Real64 m_FaultyCoilSATOffset = 0.0; // Coil SAT sensor offset
 
@@ -459,6 +479,9 @@ namespace UnitarySystems {
         bool m_TemperatureOffsetControlActive = false; // true if water-side economizer coil is active
         Real64 m_minAirToWaterTempOffset = 0.0;        // coil entering air to entering water temp offset
 
+        std::string m_HRcoolCoilName;
+        HVAC::CoilType m_HRcoolCoilType = HVAC::CoilType::Invalid;
+        int m_HRcoolCoilNum = 0;
         int m_HRcoolCoilFluidInletNode = 0;
         int m_HRcoolCoilAirInNode = 0;
         Real64 m_minWaterLoopTempForHR = 0.0;   // water coil heat recovery loops
@@ -531,13 +554,9 @@ namespace UnitarySystems {
 
         //    private:
         // private members not initialized in constructor
+        // What is the point of making these private? 
         std::string m_FanName;
         std::string m_ATMixerName;
-        std::string m_HeatingCoilName;
-        std::string m_HeatingCoilTypeName;
-        std::string m_CoolingCoilName;
-        std::string m_SuppHeatCoilName;
-        std::string m_SuppHeatCoilTypeName;
         std::string m_DesignSpecMultispeedHPType;
         std::string m_DesignSpecMultispeedHPName;
         std::vector<Real64> m_CoolVolumeFlowRate;
@@ -702,7 +721,7 @@ namespace UnitarySystems {
         bool checkNodeSetPoint(EnergyPlusData &state,
                                int const AirLoopNum,       // number of the current air loop being simulated
                                int const ControlNode,      // Node to test for set point
-                               int const CoilType,         // True if cooling coil, then test for HumRatMax set point
+                               WhichCoil const whichCoil,         // True if cooling coil, then test for HumRatMax set point
                                Real64 const OAUCoilOutTemp // the coil inlet temperature of OutdoorAirUnit
         );
 
@@ -844,7 +863,7 @@ namespace UnitarySystems {
                                 bool const SensibleLoad,
                                 bool const LatentLoad,
                                 Real64 const PartLoadFrac,
-                                int const CoilType,
+                                WhichCoil const whichCoil,
                                 int const SpeedNumber);
 
         void calcPassiveSystem(EnergyPlusData &state,
@@ -950,9 +969,11 @@ namespace UnitarySystems {
         int getEquipIndex() override;
 
         UnitarySys() = default;
-        ~UnitarySys() = default;
+        virtual ~UnitarySys() = default;
     };
 
+    int getUnitarySysIndex(EnergyPlusData &state, std::string const &unitSysName);
+  
     int getDesignSpecMSHPIndex(EnergyPlusData &state, std::string_view objectName);
     int getUnitarySystemIndex(EnergyPlusData &state, std::string_view objectName);
     bool getUnitarySystemNodeNumber(EnergyPlusData &state, int const nodeNumber);
@@ -1015,6 +1036,10 @@ struct UnitarySystemsData : BaseGlobalStruct
 
     bool getInputFlag = true;
     bool setupOutputOnce = true;
+
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
 
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {

@@ -59,7 +59,7 @@ namespace PlantCondLoopOperation {
 
     void ManagePlantLoadDistribution(EnergyPlusData &state,
                                      PlantLocation const &plantLoc, // PlantLoop data structure Location struct
-                                     Real64 &LoopDemand,
+                                     Real64 const LoopDemand,
                                      Real64 &RemLoopDemand,
                                      bool const FirstHVACIteration,
                                      bool &LoopShutDownFlag, // EMS flag to tell loop solver to shut down pumps
@@ -184,6 +184,10 @@ struct PlantCondLoopOperationData : BaseGlobalStruct
     bool lDummy = false; // for User-defined component load dispatch
     bool LoadSupervisoryChillerHeaterOpScheme = true;
     Array1D<DataPlant::ChillerHeaterSupervisoryOperationData> ChillerHeaterSupervisoryOperationSchemes;
+
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
 
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {

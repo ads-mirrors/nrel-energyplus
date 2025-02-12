@@ -55,6 +55,7 @@
 #include <EnergyPlus/Data/BaseData.hh>
 #include <EnergyPlus/DataHeatBalance.hh>
 #include <EnergyPlus/EnergyPlus.hh>
+#include <EnergyPlus/ScheduleManager.hh>
 
 namespace EnergyPlus {
 
@@ -115,7 +116,7 @@ struct CoilCoolingDX
     bool myOneTimeInitFlag = true;
     int evapInletNodeIndex = 0;
     int evapOutletNodeIndex = 0;
-    int availScheduleIndex = 0;
+    Sched::Schedule *availSched = nullptr;
     int condInletNodeIndex = 0;
     int condOutletNodeIndex = 0;
     CoilCoolingDXCurveFitPerformance performance;
@@ -179,8 +180,13 @@ struct CoilCoolingDXData : BaseGlobalStruct
 {
     std::vector<CoilCoolingDX> coilCoolingDXs;
     bool coilCoolingDXGetInputFlag = true;
-    HVAC::CoilType coilType = HVAC::CoilType::DXCooling; // Why is this a state variable and not an object member variable?
+    HVAC::CoilType coilType = HVAC::CoilType::CoolingDX; // Why is this a state variable and not an object member variable?
     bool stillNeedToReportStandardRatings = true; // standard ratings flag for all coils to report at the same time
+
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
+
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {
     }

@@ -149,8 +149,8 @@ namespace FaultsManager {
         // Members
         std::string Name;
         FaultType type = FaultType::Invalid;
-        int availSchedNum = 0;
-        int severitySchedNum = 0;
+        Sched::Schedule *availSched = nullptr;
+        Sched::Schedule *severitySched = nullptr;
         Real64 Offset = 0.0; // offset, + means sensor reading is higher than actual value
         bool Status = false; // for future use
 
@@ -211,9 +211,9 @@ namespace FaultsManager {
     struct FaultPropertiesFoulingCoil : public FaultProperties // Class for FaultModel:Fouling:Coil
     {
         // Members
-        std::string FouledCoilName;                   // The fouled coil name
-        DataPlant::PlantEquipmentType FouledCoilType; // Type of coil that's fouled
-        int FouledCoilNum;             // The "FouledUARated" implies having to use the Coil's UA, which could be autosized, so have to use this index
+        std::string CoilName;                   // The fouled coil name
+        DataPlant::PlantEquipmentType coilPlantType = DataPlant::PlantEquipmentType::Invalid; // Type of coil that's fouled
+        int CoilNum = 0;             // The "FouledUARated" implies having to use the Coil's UA, which could be autosized, so have to use this index
         FouledCoil FoulingInputMethod; // Coil fouling input method
         Real64 UAFouled;               // Fouling coil UA under rating conditions
         Real64 Rfw;                    // Water side fouling factor
@@ -223,7 +223,7 @@ namespace FaultsManager {
 
         // Default Constructor
         FaultPropertiesFoulingCoil()
-            : FouledCoilName(""), FouledCoilType(DataPlant::PlantEquipmentType::Invalid), FouledCoilNum(0), FoulingInputMethod(FouledCoil::Invalid),
+            : CoilName(""), FoulingInputMethod(FouledCoil::Invalid),
               UAFouled(0.0), Rfw(0.0), Rfa(0.0), Aout(0.0), Aratio(0.0)
         {
         }
@@ -246,7 +246,7 @@ namespace FaultsManager {
         int fanNum = 0;
         HVAC::FanType fanType = HVAC::FanType::Invalid; // The type of the fan corresponding to the fouled air filter
         int fanCurveNum = 0;                            // The index to the curve
-        int pressFracSchedNum = 0;                      // The pointer to the schedule
+        Sched::Schedule *pressFracSched = nullptr;      // The pointer to the schedule
         Real64 fanPressInc = 0.0;                       // The increase of the fan pressure due to fouled air filter
         Real64 fanFlowDec = 0.0;                        // The decrease of the fan airflow rate due to fouled air filter
 
@@ -260,12 +260,15 @@ namespace FaultsManager {
     struct FaultPropertiesCoilSAT : public FaultProperties // Class for FaultModel:TemperatureSensorOffset:CoilSupplyAir
     {
         // Members
-        std::string CoilType;                // Coil type
+        HVAC::CoilType coilType = HVAC::CoilType::Invalid;                // Coil type
         std::string CoilName;                // Coil name
+        int CoilNum = 0;
+        
         std::string WaterCoilControllerName; // Water coil controller name
+        int ControllerNum = 0;
 
         // Default Constructor
-        FaultPropertiesCoilSAT() : CoilType(""), CoilName(""), WaterCoilControllerName("")
+        FaultPropertiesCoilSAT() : CoilName(""), WaterCoilControllerName("")
         {
         }
     };
@@ -377,8 +380,7 @@ namespace FaultsManager {
 
     void CheckAndReadFaults(EnergyPlusData &state);
 
-    void SetFaultyCoilSATSensor(
-        EnergyPlusData &state, std::string const &CompType, std::string_view CompName, bool &FaultyCoilSATFlag, int &FaultyCoilSATIndex);
+    int GetFaultyCoilSATIndex(EnergyPlusData &state, std::string const &coilName);
 
 } // namespace FaultsManager
 
@@ -416,6 +418,10 @@ struct FaultsManagerData : BaseGlobalStruct
     Array1D<FaultsManager::FaultPropertiesBoilerFouling> FaultsBoilerFouling;
     Array1D<FaultsManager::FaultPropertiesChillerFouling> FaultsChillerFouling;
     Array1D<FaultsManager::FaultPropertiesEvapCoolerFouling> FaultsEvapCoolerFouling;
+
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
 
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {

@@ -55,6 +55,7 @@
 #include <EnergyPlus/Construction.hh>
 #include <EnergyPlus/Data/EnergyPlusData.hh>
 #include <EnergyPlus/DataEnvironment.hh>
+#include <EnergyPlus/DataErrorTracking.hh>
 #include <EnergyPlus/DataHeatBalSurface.hh>
 #include <EnergyPlus/DataHeatBalance.hh>
 #include <EnergyPlus/DataSurfaces.hh>
@@ -86,7 +87,7 @@ using namespace EnergyPlus::Material;
 
 TEST_F(EnergyPlusFixture, BaseSurfaceRectangularTest)
 {
-
+    state->init_state(*state);
     // Test base surfaces for rectangular shape in ProcessSurfaceVertices
 
     state->dataSurface->TotSurfaces = 5;
@@ -238,7 +239,6 @@ TEST_F(EnergyPlusFixture, BaseSurfaceRectangularTest)
 
 TEST_F(EnergyPlusFixture, DataSurfaces_SurfaceShape)
 {
-
     bool ErrorsFound(false);
 
     std::string const idf_objects = delimited_string({
@@ -484,9 +484,7 @@ TEST_F(EnergyPlusFixture, DataSurfaces_SurfaceShape)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
-
-    GetProjectControlData(*state, ErrorsFound); // read project control data
-    EXPECT_FALSE(ErrorsFound);                  // expect no errors
+    state->init_state(*state);
 
     GetMaterialData(*state, ErrorsFound); // read material data
     EXPECT_FALSE(ErrorsFound);            // expect no errors
@@ -500,8 +498,8 @@ TEST_F(EnergyPlusFixture, DataSurfaces_SurfaceShape)
     state->dataSurfaceGeometry->CosZoneRelNorth.allocate(1);
     state->dataSurfaceGeometry->SinZoneRelNorth.allocate(1);
 
-    state->dataSurfaceGeometry->CosZoneRelNorth(1) = std::cos(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRadians);
-    state->dataSurfaceGeometry->SinZoneRelNorth(1) = std::sin(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRadians);
+    state->dataSurfaceGeometry->CosZoneRelNorth(1) = std::cos(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRad);
+    state->dataSurfaceGeometry->SinZoneRelNorth(1) = std::sin(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRad);
     state->dataSurfaceGeometry->CosBldgRelNorth = 1.0;
     state->dataSurfaceGeometry->SinBldgRelNorth = 0.0;
 
@@ -581,6 +579,7 @@ TEST_F(EnergyPlusFixture, DataSurfaces_SurfaceShape)
 
 TEST_F(EnergyPlusFixture, ConfirmCheckSubSurfAzTiltNorm)
 {
+    state->init_state(*state);
     SurfaceData BaseSurface;
     SurfaceData SubSurface;
     bool surfaceError;
@@ -600,7 +599,8 @@ TEST_F(EnergyPlusFixture, ConfirmCheckSubSurfAzTiltNorm)
     SubSurface.NewellSurfaceNormalVector.z = 1.;
     checkSubSurfAzTiltNorm(*state, BaseSurface, SubSurface, surfaceError);
     EXPECT_FALSE(surfaceError);
-    EXPECT_FALSE(has_err_output());
+    EXPECT_EQ(state->dataErrTracking->TotalSevereErrors, 0);
+    EXPECT_EQ(state->dataErrTracking->TotalWarningErrors, 1); // IDF version object
 
     // Case 2 - Base surface and subsurface face the opposite way - should be error message and surfaceError=true
     surfaceError = false;
@@ -711,6 +711,7 @@ TEST_F(EnergyPlusFixture, SurfaceGeometry_MakeMirrorSurface)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     bool FoundError = false;
     GetMaterialData(*state, FoundError);
@@ -772,6 +773,7 @@ TEST_F(EnergyPlusFixture, SurfaceGeometry_MakeMirrorSurface)
 
 TEST_F(EnergyPlusFixture, SurfacesGeometry_CalcSurfaceCentroid_NonconvexRealisticZ)
 {
+    state->init_state(*state);
     state->dataSurface->TotSurfaces = 10;
     state->dataSurface->Surface.allocate(state->dataSurface->TotSurfaces);
 
@@ -805,7 +807,6 @@ TEST_F(EnergyPlusFixture, SurfacesGeometry_CalcSurfaceCentroid_NonconvexRealisti
 
 TEST_F(EnergyPlusFixture, MakeEquivalentRectangle)
 {
-
     bool ErrorsFound(false);
 
     std::string const idf_objects = delimited_string({
@@ -949,6 +950,8 @@ TEST_F(EnergyPlusFixture, MakeEquivalentRectangle)
 
     // Prepare data for the test
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
+
     GetMaterialData(*state, ErrorsFound); // read material data
     EXPECT_FALSE(ErrorsFound);
     GetConstructData(*state, ErrorsFound); // read construction data
@@ -959,8 +962,8 @@ TEST_F(EnergyPlusFixture, MakeEquivalentRectangle)
     EXPECT_FALSE(ErrorsFound);
     state->dataSurfaceGeometry->CosZoneRelNorth.allocate(1);
     state->dataSurfaceGeometry->SinZoneRelNorth.allocate(1);
-    state->dataSurfaceGeometry->CosZoneRelNorth(1) = std::cos(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRadians);
-    state->dataSurfaceGeometry->SinZoneRelNorth(1) = std::sin(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRadians);
+    state->dataSurfaceGeometry->CosZoneRelNorth(1) = std::cos(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRad);
+    state->dataSurfaceGeometry->SinZoneRelNorth(1) = std::sin(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRad);
     state->dataSurfaceGeometry->CosBldgRelNorth = 1.0;
     state->dataSurfaceGeometry->SinBldgRelNorth = 0.0;
     GetSurfaceData(*state, ErrorsFound); // setup zone geometry and get zone data
@@ -989,7 +992,6 @@ TEST_F(EnergyPlusFixture, MakeEquivalentRectangle)
 
 TEST_F(EnergyPlusFixture, SurfaceGeometryUnitTests_distance)
 {
-
     DataVectorTypes::Vector a;
     DataVectorTypes::Vector b;
 
@@ -2814,8 +2816,8 @@ TEST_F(EnergyPlusFixture, MakeRectangularVertices)
 
     state->dataSurfaceGeometry->CosZoneRelNorth.allocate(zoneNum);
     state->dataSurfaceGeometry->SinZoneRelNorth.allocate(zoneNum);
-    state->dataSurfaceGeometry->CosZoneRelNorth(zoneNum) = std::cos(-state->dataHeatBal->Zone(zoneNum).RelNorth * Constant::DegToRadians);
-    state->dataSurfaceGeometry->SinZoneRelNorth(zoneNum) = std::sin(-state->dataHeatBal->Zone(zoneNum).RelNorth * Constant::DegToRadians);
+    state->dataSurfaceGeometry->CosZoneRelNorth(zoneNum) = std::cos(-state->dataHeatBal->Zone(zoneNum).RelNorth * Constant::DegToRad);
+    state->dataSurfaceGeometry->SinZoneRelNorth(zoneNum) = std::sin(-state->dataHeatBal->Zone(zoneNum).RelNorth * Constant::DegToRad);
 
     state->dataSurfaceGeometry->CosBldgRelNorth = 1.0;
     state->dataSurfaceGeometry->SinBldgRelNorth = 0.0;
@@ -2964,6 +2966,7 @@ TEST_F(EnergyPlusFixture, SurfaceGeometry_VertexNumberMismatchTest)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     state->dataGlobal->NumOfZones = 2;
     state->dataHeatBal->Zone.allocate(2);
@@ -3697,12 +3700,12 @@ TEST_F(EnergyPlusFixture, SurfaceGeometry_isWindowShadingControlSimilar_Test)
     state->dataSurface->WindowShadingControl(1).ShadingType = WinShadingType::ExtShade;
     state->dataSurface->WindowShadingControl(1).ShadingDevice = 17;
     state->dataSurface->WindowShadingControl(1).shadingControlType = WindowShadingControlType::OnIfScheduled;
-    state->dataSurface->WindowShadingControl(1).Schedule = 83;
+    state->dataSurface->WindowShadingControl(1).sched = nullptr;
     state->dataSurface->WindowShadingControl(1).SetPoint = 200;
     state->dataSurface->WindowShadingControl(1).SetPoint2 = 170;
     state->dataSurface->WindowShadingControl(1).ShadingControlIsScheduled = true;
     state->dataSurface->WindowShadingControl(1).GlareControlIsActive = false;
-    state->dataSurface->WindowShadingControl(1).SlatAngleSchedule = 84;
+    state->dataSurface->WindowShadingControl(1).slatAngleSched = nullptr;
     state->dataSurface->WindowShadingControl(1).slatAngleControl = SlatAngleControl::BlockBeamSolar;
     state->dataSurface->WindowShadingControl(1).DaylightingControlName = "TheDaylightingControl";
     state->dataSurface->WindowShadingControl(1).DaylightControlIndex = 7;
@@ -3738,11 +3741,11 @@ TEST_F(EnergyPlusFixture, SurfaceGeometry_isWindowShadingControlSimilar_Test)
     EXPECT_TRUE(isWindowShadingControlSimilar(*state, 1, 2));
     state->dataSurface->WindowShadingControl(2) = state->dataSurface->WindowShadingControl(1);
 
-    state->dataSurface->WindowShadingControl(2).Schedule = 91;
+    state->dataSurface->WindowShadingControl(2).sched = Sched::GetScheduleAlwaysOn(*state);
     EXPECT_TRUE(isWindowShadingControlSimilar(*state, 1, 2));
     state->dataSurface->WindowShadingControl(2) = state->dataSurface->WindowShadingControl(1);
 
-    state->dataSurface->WindowShadingControl(2).SlatAngleSchedule = 76;
+    state->dataSurface->WindowShadingControl(2).slatAngleSched = Sched::GetScheduleAlwaysOff(*state);
     EXPECT_TRUE(isWindowShadingControlSimilar(*state, 1, 2));
     state->dataSurface->WindowShadingControl(2) = state->dataSurface->WindowShadingControl(1);
 
@@ -3823,12 +3826,12 @@ TEST_F(EnergyPlusFixture, SurfaceGeometry_CheckWindowShadingControlSimilarForWin
     state->dataSurface->WindowShadingControl(1).ShadingType = WinShadingType::ExtShade;
     state->dataSurface->WindowShadingControl(1).ShadingDevice = 17;
     state->dataSurface->WindowShadingControl(1).shadingControlType = WindowShadingControlType::OnIfScheduled;
-    state->dataSurface->WindowShadingControl(1).Schedule = 83;
+    state->dataSurface->WindowShadingControl(1).sched = nullptr;
     state->dataSurface->WindowShadingControl(1).SetPoint = 200;
     state->dataSurface->WindowShadingControl(1).SetPoint2 = 170;
     state->dataSurface->WindowShadingControl(1).ShadingControlIsScheduled = true;
     state->dataSurface->WindowShadingControl(1).GlareControlIsActive = false;
-    state->dataSurface->WindowShadingControl(1).SlatAngleSchedule = 84;
+    state->dataSurface->WindowShadingControl(1).slatAngleSched = nullptr;
     state->dataSurface->WindowShadingControl(1).slatAngleControl = SlatAngleControl::BlockBeamSolar;
     state->dataSurface->WindowShadingControl(1).DaylightingControlName = "TheDaylightingControl";
     state->dataSurface->WindowShadingControl(1).DaylightControlIndex = 7;
@@ -4105,6 +4108,7 @@ TEST_F(EnergyPlusFixture, SurfaceGeometry_HeatTransferAlgorithmTest)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     GetProjectControlData(*state, ErrorsFound); // read project control data
     EXPECT_FALSE(ErrorsFound);                  // expect no errors
@@ -4121,8 +4125,8 @@ TEST_F(EnergyPlusFixture, SurfaceGeometry_HeatTransferAlgorithmTest)
     state->dataSurfaceGeometry->CosZoneRelNorth.allocate(2);
     state->dataSurfaceGeometry->SinZoneRelNorth.allocate(2);
 
-    state->dataSurfaceGeometry->CosZoneRelNorth(1) = std::cos(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRadians);
-    state->dataSurfaceGeometry->SinZoneRelNorth(1) = std::sin(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRadians);
+    state->dataSurfaceGeometry->CosZoneRelNorth(1) = std::cos(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRad);
+    state->dataSurfaceGeometry->SinZoneRelNorth(1) = std::sin(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRad);
     state->dataSurfaceGeometry->CosZoneRelNorth(2) = state->dataSurfaceGeometry->CosZoneRelNorth(1);
     state->dataSurfaceGeometry->SinZoneRelNorth(2) = state->dataSurfaceGeometry->SinZoneRelNorth(1);
     state->dataSurfaceGeometry->CosBldgRelNorth = 1.0;
@@ -4221,6 +4225,7 @@ TEST_F(EnergyPlusFixture, SurfaceGeometry_SurfaceReferencesNonExistingSurface)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     // Read Material and Construction, and expect no errors
     GetMaterialData(*state, ErrorsFound);
@@ -4580,6 +4585,7 @@ TEST_F(EnergyPlusFixture, SurfaceGeometry_InternalMassSurfacesCount)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     // Read Materials
     GetMaterialData(*state, ErrorsFound);
@@ -4921,6 +4927,7 @@ TEST_F(EnergyPlusFixture, SurfaceGeometry_CreateInternalMassSurfaces)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     // Read Materials
     GetMaterialData(*state, ErrorsFound);
@@ -4989,6 +4996,7 @@ TEST_F(EnergyPlusFixture, WorldCoord_with_RelativeRectSurfCoord_test1)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     bool ErrorsFound(false);
 
@@ -5019,6 +5027,7 @@ TEST_F(EnergyPlusFixture, WorldCoord_with_RelativeRectSurfCoord_test2)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     bool ErrorsFound(false);
 
@@ -5049,6 +5058,7 @@ TEST_F(EnergyPlusFixture, WorldCoord_with_RelativeRectSurfCoord_test3)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     bool ErrorsFound(false);
 
@@ -5085,6 +5095,7 @@ TEST_F(EnergyPlusFixture, WorldCoord_with_RelativeRectSurfCoord_test4)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     bool ErrorsFound(false);
 
@@ -5395,6 +5406,7 @@ TEST_F(EnergyPlusFixture, HeatBalanceIntRadExchange_SetupEnclosuresNoAirBoundari
         "    0,0,1;              !- Vertex 1",
     });
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
     bool ErrorsFound = false;
 
     GetMaterialData(*state, ErrorsFound); // read material data
@@ -5598,6 +5610,7 @@ TEST_F(EnergyPlusFixture, HeatBalanceIntRadExchange_SetupEnclosuresWithAirBounda
 
     });
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
     bool ErrorsFound = false;
 
     GetMaterialData(*state, ErrorsFound); // read material data
@@ -5798,6 +5811,7 @@ TEST_F(EnergyPlusFixture, HeatBalanceIntRadExchange_SetupEnclosuresWithAirBounda
 
     });
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
     bool ErrorsFound = false;
 
     GetMaterialData(*state, ErrorsFound); // read material data
@@ -6255,6 +6269,7 @@ TEST_F(EnergyPlusFixture, HeatBalanceIntRadExchange_SetupEnclosuresWithAirBounda
 
     });
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
     bool ErrorsFound = false;
 
     GetMaterialData(*state, ErrorsFound); // read material data
@@ -6808,6 +6823,7 @@ TEST_F(EnergyPlusFixture, HeatBalanceIntRadExchange_SetupEnclosuresWithAirBounda
 
     });
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
     bool ErrorsFound = false;
 
     GetMaterialData(*state, ErrorsFound); // read material data
@@ -7451,6 +7467,8 @@ TEST_F(EnergyPlusFixture, TwoZones_With_AirDoor)
 
     });
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
+
     bool ErrorsFound = false;
 
     GetMaterialData(*state, ErrorsFound); // read material data
@@ -7785,6 +7803,7 @@ TEST_F(EnergyPlusFixture, TwoZones_With_AirWindow)
     state->dataSurfaceGeometry->NoGroundTempObjWarning = false;
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
     bool ErrorsFound = false;
 
     GetMaterialData(*state, ErrorsFound); // read material data
@@ -8669,9 +8688,7 @@ TEST_F(EnergyPlusFixture, GetSurfaceData_SurfaceOrder)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
-
-    GetProjectControlData(*state, ErrorsFound); // read project control data
-    EXPECT_FALSE(ErrorsFound);                  // expect no errors
+    state->init_state(*state);
 
     GetMaterialData(*state, ErrorsFound); // read material data
     EXPECT_FALSE(ErrorsFound);            // expect no errors
@@ -9654,6 +9671,7 @@ TEST_F(EnergyPlusFixture, GetSurfaceData_SurfaceOrder2)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     GetProjectControlData(*state, ErrorsFound); // read project control data
     EXPECT_FALSE(ErrorsFound);                  // expect no errors
@@ -10507,6 +10525,7 @@ TEST_F(EnergyPlusFixture, GetSurfaceData_SurfaceOrder3)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     GetProjectControlData(*state, ErrorsFound); // read project control data
     EXPECT_FALSE(ErrorsFound);                  // expect no errors
@@ -11274,6 +11293,7 @@ TEST_F(EnergyPlusFixture, GetSurfaceData_SurfaceOrder4)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     GetProjectControlData(*state, ErrorsFound); // read project control data
     EXPECT_FALSE(ErrorsFound);                  // expect no errors
@@ -11662,6 +11682,7 @@ TEST_F(EnergyPlusFixture, Use_Gross_Roof_Area_for_Averge_Height)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     GetProjectControlData(*state, ErrorsFound);
     EXPECT_FALSE(ErrorsFound);
@@ -11961,6 +11982,7 @@ TEST_F(EnergyPlusFixture, Use_Gross_Roof_Area_for_Averge_Height_with_Window)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     GetProjectControlData(*state, ErrorsFound);
     EXPECT_FALSE(ErrorsFound);
@@ -12030,6 +12052,7 @@ TEST_F(EnergyPlusFixture, SurfaceGeometry_GetKivaFoundationTest)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     GetFoundationData(*state, ErrorsFound);
     std::string const error_string = delimited_string({
@@ -12058,6 +12081,7 @@ TEST_F(EnergyPlusFixture, SurfaceGeometry_GetKivaFoundationTest2)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     state->dataEnvrn->Elevation = 600.;
 
@@ -12254,6 +12278,7 @@ TEST_F(EnergyPlusFixture, SurfaceGeometry_ZoneAndSpaceAreas)
 
     });
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
     bool ErrorsFound = false;
 
     GetMaterialData(*state, ErrorsFound); // read material data
@@ -12444,6 +12469,8 @@ TEST_F(EnergyPlusFixture, ZoneFloorAreaTest)
 
     // Prepare data for the test
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
+
     GetMaterialData(*state, ErrorsFound); // read material data
     EXPECT_FALSE(ErrorsFound);
     GetConstructData(*state, ErrorsFound); // read construction data
@@ -12454,8 +12481,8 @@ TEST_F(EnergyPlusFixture, ZoneFloorAreaTest)
     EXPECT_FALSE(ErrorsFound);
     state->dataSurfaceGeometry->CosZoneRelNorth.allocate(1);
     state->dataSurfaceGeometry->SinZoneRelNorth.allocate(1);
-    state->dataSurfaceGeometry->CosZoneRelNorth(1) = std::cos(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRadians);
-    state->dataSurfaceGeometry->SinZoneRelNorth(1) = std::sin(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRadians);
+    state->dataSurfaceGeometry->CosZoneRelNorth(1) = std::cos(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRad);
+    state->dataSurfaceGeometry->SinZoneRelNorth(1) = std::sin(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRad);
     state->dataSurfaceGeometry->CosBldgRelNorth = 1.0;
     state->dataSurfaceGeometry->SinBldgRelNorth = 0.0;
     GetSurfaceData(*state, ErrorsFound); // setup zone geometry and get zone data
@@ -12620,7 +12647,8 @@ TEST_F(EnergyPlusFixture, SurfaceGeometry_GetSurfaceGroundSurfsTest)
                           "    autocalculate;                !- Volume {m3}"});
 
     ASSERT_TRUE(process_idf(idf_objects));
-    ScheduleManager::ProcessScheduleInput(*state);
+    state->init_state(*state);
+
     state->dataHeatBal->ZoneIntGain.allocate(1);
 
     createFacilityElectricPowerServiceObject(*state);
@@ -12635,7 +12663,7 @@ TEST_F(EnergyPlusFixture, SurfaceGeometry_GetSurfaceGroundSurfsTest)
     state->dataGlobal->TimeStepZone = 1;
     state->dataGlobal->TimeStepZoneSec = 3600.0;
     state->dataGlobal->HourOfDay = 1;
-    state->dataGlobal->NumOfTimeStepInHour = 1;
+    state->dataGlobal->TimeStepsInHour = 1;
     state->dataGlobal->BeginSimFlag = true;
     state->dataGlobal->BeginEnvrnFlag = true;
     state->dataEnvrn->OutBaroPress = 100000;
@@ -12732,6 +12760,7 @@ TEST_F(EnergyPlusFixture, SurfaceGeometry_GetVerticesDropDuplicates)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     state->dataGlobal->NumOfZones = 2;
     state->dataHeatBal->Zone.allocate(2);
@@ -12876,6 +12905,7 @@ TEST_F(EnergyPlusFixture, SurfaceGeometry_GetVerticesDropDuplicates_Once)
                                                 fmt::arg("max_y", max_y),
                                                 fmt::arg("off_y", off_y));
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     state->dataGlobal->NumOfZones = 2;
     state->dataHeatBal->Zone.allocate(2);
@@ -13008,6 +13038,7 @@ TEST_F(EnergyPlusFixture, Wrong_Window_Construction)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     GetProjectControlData(*state, ErrorsFound); // read project control data
     EXPECT_FALSE(ErrorsFound);                  // expect no errors
@@ -13024,8 +13055,8 @@ TEST_F(EnergyPlusFixture, Wrong_Window_Construction)
     state->dataSurfaceGeometry->CosZoneRelNorth.allocate(1);
     state->dataSurfaceGeometry->SinZoneRelNorth.allocate(1);
 
-    state->dataSurfaceGeometry->CosZoneRelNorth(1) = std::cos(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRadians);
-    state->dataSurfaceGeometry->SinZoneRelNorth(1) = std::sin(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRadians);
+    state->dataSurfaceGeometry->CosZoneRelNorth(1) = std::cos(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRad);
+    state->dataSurfaceGeometry->SinZoneRelNorth(1) = std::sin(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRad);
     state->dataSurfaceGeometry->CosBldgRelNorth = 1.0;
     state->dataSurfaceGeometry->SinBldgRelNorth = 0.0;
 
@@ -13222,6 +13253,7 @@ TEST_F(EnergyPlusFixture, CalculateZoneVolume_WithAirBoundaries)
     )IDF";
     ASSERT_TRUE(process_idf(idf_objects));
     bool ErrorsFound = false;
+    state->init_state(*state);
 
     GetMaterialData(*state, ErrorsFound); // read material data
     EXPECT_FALSE(ErrorsFound);            // expect no errors
@@ -13445,6 +13477,7 @@ TEST_F(EnergyPlusFixture, CalculatZoneVolume_WithoutAirBoundaries)
 
     )IDF";
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
     bool ErrorsFound = false;
 
     GetMaterialData(*state, ErrorsFound); // read material data
@@ -13786,9 +13819,7 @@ TEST_F(EnergyPlusFixture, GetSurfaceData_ShadingSurfaceScheduleChecks)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
-
-    SimulationManager::GetProjectData(*state); // read project data
-    ScheduleManager::ProcessScheduleInput(*state);
+    state->init_state(*state);
 
     GetMaterialData(*state, ErrorsFound); // read material data
     EXPECT_FALSE(ErrorsFound);            // expect no errors
@@ -14033,9 +14064,7 @@ TEST_F(EnergyPlusFixture, GetSurfaceData_ShadingSurfaceScheduleOutOfRange)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
-
-    SimulationManager::GetProjectData(*state); // read project data
-    ScheduleManager::ProcessScheduleInput(*state);
+    state->init_state(*state);
 
     GetMaterialData(*state, ErrorsFound); // read material data
     EXPECT_FALSE(ErrorsFound);            // expect no errors
@@ -14049,31 +14078,15 @@ TEST_F(EnergyPlusFixture, GetSurfaceData_ShadingSurfaceScheduleOutOfRange)
     EXPECT_THROW(SetupZoneGeometry(*state, ErrorsFound), std::runtime_error);
     // EXPECT_THROW(GetSurfaceData(*state, ErrorsFound), std::runtime_error);
     EXPECT_TRUE(ErrorsFound);
-    std::string const error_string = delimited_string(
-        {"   ** Severe  ** Shading:Building:Detailed=\"BUILDINGSHADE:TILTEDSHADESURFACE\", Transmittance Schedule Name=\"OUTOFRANGE\", values not in "
-         "range [0,1].",
-         "   ** Severe  ** Shading:Building:Detailed=\"BUILDINGSHADE:TILTEDSHADESURFACE\", Transmittance Schedule Name=\"OUTOFRANGE\", "
-         "has schedule values < 0.",
-         "   **   ~~~   ** ...Schedule values < 0 have no meaning for shading elements.",
-         "   ** Severe  ** "
-         "Shading:Building:Detailed=\"BUILDINGSHADE:TILTEDSHADESURFACE\", Transmittance Schedule Name=\"OUTOFRANGE\", has schedule values > 1.",
-         "   **   ~~~   ** ...Schedule values > 1 have no meaning for shading elements.",
-         "   ** Severe  ** "
-         "Shading:Zone:Detailed=\"ZONESHADE:LIVING:SOUTH:SHADE001\", Transmittance Schedule Name=\"OUTOFRANGE\", values not in range [0,1].",
-         "   ** "
-         "Severe  ** Shading:Zone:Detailed=\"ZONESHADE:LIVING:SOUTH:SHADE001\", Base Surface Name=\"LIVING:SOUTH\", has schedule values < 0.",
-         "   **  "
-         " ~~~   ** ...Schedule values < 0 have no meaning for shading elements.",
-         "   ** Severe  ** "
-         "Shading:Zone:Detailed=\"ZONESHADE:LIVING:SOUTH:SHADE001\", Base Surface Name=\"LIVING:SOUTH\", has schedule values > 1.",
-         "   **   ~~~   ** "
-         "...Schedule values > 1 have no meaning for shading elements.",
-         "   **  Fatal  ** GetSurfaceData: Errors discovered, program terminates.",
-         "   "
-         "...Summary of Errors that led to program termination:",
-         "   ..... Reference severe error count=6",
-         "   ..... Last severe error=Shading:Zone:Detailed=\"ZONESHADE:LIVING:SOUTH:SHADE001\", Base Surface Name=\"LIVING:SOUTH\", has schedule "
-         "values > 1."});
+    std::string const error_string =
+        delimited_string({"   ** Severe  ** GetDetShdSurfaceData: Shading:Building:Detailed = BUILDINGSHADE:TILTEDSHADESURFACE",
+                          "   **   ~~~   ** Transmittance Schedule Name = OUTOFRANGE, schedule contains values that are < 0 and/or > 1",
+                          "   ** Severe  ** GetAttShdSurfaceData: Shading:Zone:Detailed = ZONESHADE:LIVING:SOUTH:SHADE001",
+                          "   **   ~~~   ** Transmittance Schedule Name = OUTOFRANGE, schedule contains values that are < 0 and/or > 1",
+                          "   **  Fatal  ** GetSurfaceData: Errors discovered, program terminates.",
+                          "   ...Summary of Errors that led to program termination:",
+                          "   ..... Reference severe error count=2",
+                          "   ..... Last severe error=GetAttShdSurfaceData: Shading:Zone:Detailed = ZONESHADE:LIVING:SOUTH:SHADE001"});
 
     compare_err_stream(error_string);
     // compare_err_stream( "" ); // just for debugging
@@ -14289,9 +14302,8 @@ TEST_F(EnergyPlusFixture, SurfaceGeometry_SurroundingSurfacesViewFactorTest)
 
     bool ErrorsFound = false;
     ASSERT_TRUE(process_idf(idf_objects));
-    // process schedules
-    ScheduleManager::ProcessScheduleInput(*state);
-    state->dataScheduleMgr->ScheduleInputProcessed = true;
+    state->init_state(*state);
+
     state->dataHeatBal->ZoneIntGain.allocate(1);
     createFacilityElectricPowerServiceObject(*state);
     HeatBalanceManager::SetPreConstructionInputParameters(*state);
@@ -14520,6 +14532,7 @@ TEST_F(EnergyPlusFixture, ExtSolarForShadingTest)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     int TotSurfaces = 8;                                          // Need to double the number of surfaces because E+ will add mirrored surfaces
     state->dataSurfaceGeometry->SurfaceTmp.allocate(TotSurfaces); // Allocate the Surface derived type appropriately

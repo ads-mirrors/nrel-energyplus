@@ -173,6 +173,7 @@ TEST_F(EnergyPlusFixture, ExerciseSingleSpeedEvapFluidCooler)
                                                       "25.6;                    !- Design Entering Air Wet-bulb Temperature {C}"});
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     EvapFluidCoolerSpecs *ptr =
         EvapFluidCoolerSpecs::factory(*state, DataPlant::PlantEquipmentType::EvapFluidCooler_SingleSpd, "BIG EVAPORATIVEFLUIDCOOLER");
@@ -260,6 +261,7 @@ TEST_F(EnergyPlusFixture, ExerciseTwoSpeedEvapFluidCooler)
                                                       "3;                       !- Blowdown Concentration Ratio"});
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     EvapFluidCoolerSpecs *ptr = EvapFluidCoolerSpecs::factory(*state, DataPlant::PlantEquipmentType::EvapFluidCooler_TwoSpd, "CENTRAL TOWER");
 

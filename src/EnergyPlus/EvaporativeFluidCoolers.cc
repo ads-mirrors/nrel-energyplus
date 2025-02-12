@@ -142,6 +142,8 @@ namespace EvaporativeFluidCoolers {
         // B.A. Qureshi and S.M. Zubair , Prediction of evaporation losses in evaporative fluid coolers
         // Applied thermal engineering 27 (2007) 520-527
 
+        static constexpr std::string_view routineName = "GetEvapFluidCoolerInput";
+
         int NumAlphas;                // Number of elements in the alpha array
         int NumNums;                  // Number of elements in the numeric array
         int IOStat;                   // IO Status when calling get input subroutine
@@ -181,6 +183,9 @@ namespace EvaporativeFluidCoolers {
                                                                      state.dataIPShortCut->lAlphaFieldBlanks,
                                                                      state.dataIPShortCut->cAlphaFieldNames,
                                                                      state.dataIPShortCut->cNumericFieldNames);
+
+            ErrorObjectHeader eoh{routineName, state.dataIPShortCut->cCurrentModuleObject, AlphArray(1)};
+
             GlobalNames::VerifyUniqueInterObjectName(state,
                                                      state.dataEvapFluidCoolers->UniqueSimpleEvapFluidCoolerNames,
                                                      AlphArray(1),
@@ -335,11 +340,11 @@ namespace EvaporativeFluidCoolers {
                 }
             }
 
-            thisEFC.SchedIDBlowdown = ScheduleManager::GetScheduleIndex(state, AlphArray(9));
-            if ((thisEFC.SchedIDBlowdown == 0) && (thisEFC.BlowdownMode == Blowdown::BySchedule)) {
-                ShowSevereError(state, format("Invalid, {} = {}", state.dataIPShortCut->cAlphaFieldNames(9), AlphArray(9)));
-                ShowContinueError(state, format("Entered in {} ={}", state.dataIPShortCut->cCurrentModuleObject, AlphArray(1)));
-                ErrorsFound = true;
+            if (thisEFC.BlowdownMode == Blowdown::BySchedule) {
+                if ((thisEFC.blowdownSched = Sched::GetSchedule(state, AlphArray(9))) == nullptr) {
+                    ShowSevereItemNotFound(state, eoh, state.dataIPShortCut->cAlphaFieldNames(9), AlphArray(9));
+                    ErrorsFound = true;
+                }
             }
 
             if (AlphArray(10).empty()) {
@@ -518,6 +523,8 @@ namespace EvaporativeFluidCoolers {
                                                                      state.dataIPShortCut->cAlphaFieldNames,
                                                                      state.dataIPShortCut->cNumericFieldNames);
 
+            ErrorObjectHeader eoh{routineName, state.dataIPShortCut->cCurrentModuleObject, AlphArray(1)};
+
             GlobalNames::VerifyUniqueInterObjectName(state,
                                                      state.dataEvapFluidCoolers->UniqueSimpleEvapFluidCoolerNames,
                                                      AlphArray(1),
@@ -675,11 +682,11 @@ namespace EvaporativeFluidCoolers {
                 }
             }
 
-            thisEFC.SchedIDBlowdown = ScheduleManager::GetScheduleIndex(state, AlphArray(8));
-            if ((thisEFC.SchedIDBlowdown == 0) && (thisEFC.BlowdownMode == Blowdown::BySchedule)) {
-                ShowSevereError(state, format("Invalid {} = {}", state.dataIPShortCut->cAlphaFieldNames(8), AlphArray(8)));
-                ShowContinueError(state, format("Entered in {} = {}", state.dataIPShortCut->cCurrentModuleObject, AlphArray(1)));
-                ErrorsFound = true;
+            if (thisEFC.BlowdownMode == Blowdown::BySchedule) {
+                if ((thisEFC.blowdownSched = Sched::GetSchedule(state, AlphArray(8))) == nullptr) {
+                    ShowSevereItemNotFound(state, eoh, state.dataIPShortCut->cAlphaFieldNames(8), AlphArray(8));
+                    ErrorsFound = true;
+                }
             }
 
             if (state.dataIPShortCut->lAlphaFieldBlanks(9)) {
@@ -2512,11 +2519,7 @@ namespace EvaporativeFluidCoolers {
 
         if (this->BlowdownMode == Blowdown::BySchedule) {
             // Amount of water lost due to blow down (purging contaminants from evaporative fluid cooler basin)
-            if (this->SchedIDBlowdown > 0) {
-                this->BlowdownVdot = ScheduleManager::GetCurrentScheduleValue(state, this->SchedIDBlowdown);
-            } else {
-                this->BlowdownVdot = 0.0;
-            }
+            this->BlowdownVdot = (this->blowdownSched != nullptr) ? this->blowdownSched->getCurrentVal() : 0.0;
         } else if (this->BlowdownMode == Blowdown::ByConcentration) {
             if (this->ConcentrationRatio > 2.0) { // protect divide by zero
                 this->BlowdownVdot = this->EvaporationVdot / (this->ConcentrationRatio - 1) - this->DriftVdot;

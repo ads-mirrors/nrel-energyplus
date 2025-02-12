@@ -462,6 +462,7 @@ TEST_F(EnergyPlusFixture, GetAirPathData_ControllerLockout1)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     SimAirServingZones::GetAirPathData(*state);
 
@@ -622,6 +623,7 @@ TEST_F(EnergyPlusFixture, GetAirPathData_ControllerLockout2)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     SimAirServingZones::GetAirPathData(*state);
 
@@ -774,6 +776,8 @@ TEST_F(EnergyPlusFixture, InitAirLoops_1AirLoop2ADU)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
+
     bool ErrorsFound = false;
     HeatBalanceManager::GetZoneData(*state, ErrorsFound);
     ASSERT_FALSE(ErrorsFound);
@@ -1006,6 +1010,8 @@ TEST_F(EnergyPlusFixture, InitAirLoops_2AirLoop2ADU)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
+
     bool ErrorsFound = false;
     HeatBalanceManager::GetZoneData(*state, ErrorsFound);
     ASSERT_FALSE(ErrorsFound);
@@ -1036,7 +1042,6 @@ TEST_F(EnergyPlusFixture, InitAirLoops_2AirLoop2ADU)
 // this test checks whether an AirLoop with 0 airflow will raise the correct severe error
 TEST_F(EnergyPlusFixture, SizeAirLoopBranches_0Airflow)
 {
-
     std::string const idf_objects = delimited_string({
         "Zone,",
         "  Space1;                  !- Name",
@@ -1140,6 +1145,8 @@ TEST_F(EnergyPlusFixture, SizeAirLoopBranches_0Airflow)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
+
     bool ErrorsFound = false;
     HeatBalanceManager::GetZoneData(*state, ErrorsFound);
     ASSERT_FALSE(ErrorsFound);
@@ -1171,7 +1178,6 @@ TEST_F(EnergyPlusFixture, SizeAirLoopBranches_0Airflow)
 
 TEST_F(EnergyPlusFixture, InitAirLoops_2AirLoop3ADUa)
 {
-
     std::string const idf_objects = delimited_string({
         "Zone,",
         "  Space1;                  !- Name",
@@ -1407,6 +1413,8 @@ TEST_F(EnergyPlusFixture, InitAirLoops_2AirLoop3ADUa)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
+
     bool ErrorsFound = false;
     HeatBalanceManager::GetZoneData(*state, ErrorsFound);
     ASSERT_FALSE(ErrorsFound);
@@ -1437,7 +1445,6 @@ TEST_F(EnergyPlusFixture, InitAirLoops_2AirLoop3ADUa)
 
 TEST_F(EnergyPlusFixture, InitAirLoops_2AirLoop3ADUb)
 {
-
     std::string const idf_objects = delimited_string({
         "Zone,",
         "  Space1;                  !- Name",
@@ -1673,6 +1680,8 @@ TEST_F(EnergyPlusFixture, InitAirLoops_2AirLoop3ADUb)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
+
     bool ErrorsFound = false;
     HeatBalanceManager::GetZoneData(*state, ErrorsFound);
     ASSERT_FALSE(ErrorsFound);
@@ -1870,6 +1879,8 @@ TEST_F(EnergyPlusFixture, InitAirLoops_1AirLoop2Zones3ADU)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
+
     bool ErrorsFound = false;
     HeatBalanceManager::GetZoneData(*state, ErrorsFound);
     ASSERT_FALSE(ErrorsFound);
@@ -2415,6 +2426,7 @@ TEST_F(EnergyPlusFixture, DISABLED_AirLoop_ReturnFan_MinFlow)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     SimulationManager::ManageSimulation(*state); // run the design days
 

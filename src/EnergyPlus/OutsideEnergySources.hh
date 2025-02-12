@@ -72,7 +72,7 @@ namespace OutsideEnergySources {
         std::string Name;                                                                 // user identifier
         Real64 NomCap = 0.0;                                                              // design nominal capacity of district service
         bool NomCapWasAutoSized = false;                                                  // ture if Nominal Capacity was autosize on input
-        int CapFractionSchedNum = 0;                                                      // capacity modifier schedule number
+        Sched::Schedule *capFractionSched = nullptr;                                      // capacity modifier schedule number
         int InletNodeNum = 0;                                                             // Node number on the inlet side of the plant
         int OutletNodeNum = 0;                                                            // Node number on the inlet side of the plant
         Real64 EnergyTransfer = 0.0;                                                      // cooling energy provided in time step
@@ -129,6 +129,10 @@ struct OutsideEnergySourcesData : BaseGlobalStruct
     bool SimOutsideEnergyGetInputFlag = true;
     Array1D<OutsideEnergySources::OutsideEnergySourceSpecs> EnergySource;
     std::unordered_map<std::string, std::string> EnergySourceUniqueNames;
+
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
 
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {

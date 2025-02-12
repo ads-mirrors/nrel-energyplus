@@ -485,8 +485,7 @@ void GetMaterialData(EnergyPlusData &state, bool &ErrorsFound) // set to true if
 
         if (mat->windowOpticalData == Window::OpticalDataModel::Spectral) {
             if (s_ipsc->lAlphaFieldBlanks(3)) {
-                ShowSevereCustom(
-                    state, eoh, format("{} = Spectral but {} is blank.", s_ipsc->cAlphaFieldNames(2), s_ipsc->cAlphaFieldNames(3)));
+                ShowSevereCustom(state, eoh, format("{} = Spectral but {} is blank.", s_ipsc->cAlphaFieldNames(2), s_ipsc->cAlphaFieldNames(3)));
                 ErrorsFound = true;
             } else if ((mat->GlassSpectralDataPtr = Util::FindItemInList(s_ipsc->cAlphaArgs(3), s_mat->SpectralData)) == 0) {
                 ShowSevereItemNotFound(state, eoh, s_ipsc->cAlphaFieldNames(3), s_ipsc->cAlphaArgs(3));
@@ -548,7 +547,7 @@ void GetMaterialData(EnergyPlusData &state, bool &ErrorsFound) // set to true if
             }
 
             if (s_ipsc->rNumericArgs(5) < 0.0) {
-                ShowWarningCustomMessage(state, eoh, format("{} not >= 0.0", s_ipsc->cNumericFieldNames(5)));
+                ShowWarningCustom(state, eoh, format("{} not >= 0.0", s_ipsc->cNumericFieldNames(5)));
             }
 
             if (s_ipsc->rNumericArgs(5) > 1.0) {
@@ -632,37 +631,37 @@ void GetMaterialData(EnergyPlusData &state, bool &ErrorsFound) // set to true if
                 if (minAngValue > 1.0e-6) {
                     ErrorsFound = true;
                     ShowSevereCustom(state,
-                                            eoh,
-                                            format("{} requires the minumum value = 0.0 in the entered table name={}",
-                                                   s_ipsc->cAlphaFieldNames(5),
-                                                   s_ipsc->cAlphaArgs(5)));
+                                     eoh,
+                                     format("{} requires the minumum value = 0.0 in the entered table name={}",
+                                            s_ipsc->cAlphaFieldNames(5),
+                                            s_ipsc->cAlphaArgs(5)));
                 }
 
                 if (std::abs(maxAngValue - 90.0) > 1.0e-6) {
                     ErrorsFound = true;
                     ShowSevereCustom(state,
-                                            eoh,
-                                            format("{} requires the maximum value = 90.0 in the entered table name={}",
-                                                   s_ipsc->cAlphaFieldNames(5),
-                                                   s_ipsc->cAlphaArgs(5)));
+                                     eoh,
+                                     format("{} requires the maximum value = 90.0 in the entered table name={}",
+                                            s_ipsc->cAlphaFieldNames(5),
+                                            s_ipsc->cAlphaArgs(5)));
                 }
 
                 if (minLamValue < 0.1) {
                     ErrorsFound = true;
                     ShowSevereCustom(state,
-                                            eoh,
-                                            format("{} requires the minumum value = 0.1 micron in the entered table name={}",
-                                                   s_ipsc->cAlphaFieldNames(5),
-                                                   s_ipsc->cAlphaArgs(5)));
+                                     eoh,
+                                     format("{} requires the minumum value = 0.1 micron in the entered table name={}",
+                                            s_ipsc->cAlphaFieldNames(5),
+                                            s_ipsc->cAlphaArgs(5)));
                 }
 
                 if (maxLamValue > 4.0) {
                     ErrorsFound = true;
                     ShowSevereCustom(state,
-                                            eoh,
-                                            format("{} requires the maximum value = 4.0 microns in the entered table name={}",
-                                                   s_ipsc->cAlphaFieldNames(5),
-                                                   s_ipsc->cAlphaArgs(5)));
+                                     eoh,
+                                     format("{} requires the maximum value = 4.0 microns in the entered table name={}",
+                                            s_ipsc->cAlphaFieldNames(5),
+                                            s_ipsc->cAlphaArgs(5)));
                 }
             }
 
@@ -685,34 +684,34 @@ void GetMaterialData(EnergyPlusData &state, bool &ErrorsFound) // set to true if
                 if (minAngValue > 1.0e-6) {
                     ErrorsFound = true;
                     ShowSevereCustom(state,
-                                            eoh,
-                                            format("{} requires the minumum value = 0.0 in the entered table name={}",
-                                                   s_ipsc->cAlphaFieldNames(5),
-                                                   s_ipsc->cAlphaArgs(5)));
+                                     eoh,
+                                     format("{} requires the minumum value = 0.0 in the entered table name={}",
+                                            s_ipsc->cAlphaFieldNames(5),
+                                            s_ipsc->cAlphaArgs(5)));
                 }
                 if (std::abs(maxAngValue - 90.0) > 1.0e-6) {
                     ErrorsFound = true;
                     ShowSevereCustom(state,
-                                            eoh,
-                                            format("{} requires the maximum value = 90.0 in the entered table name={}",
-                                                   s_ipsc->cAlphaFieldNames(5),
-                                                   s_ipsc->cAlphaArgs(5)));
+                                     eoh,
+                                     format("{} requires the maximum value = 90.0 in the entered table name={}",
+                                            s_ipsc->cAlphaFieldNames(5),
+                                            s_ipsc->cAlphaArgs(5)));
                 }
                 if (minLamValue < 0.1) {
                     ErrorsFound = true;
                     ShowSevereCustom(state,
-                                            eoh,
-                                            format("{} requires the minumum value = 0.1 micron in the entered table name={}",
-                                                   s_ipsc->cAlphaFieldNames(5),
-                                                   s_ipsc->cAlphaArgs(5)));
+                                     eoh,
+                                     format("{} requires the minumum value = 0.1 micron in the entered table name={}",
+                                            s_ipsc->cAlphaFieldNames(5),
+                                            s_ipsc->cAlphaArgs(5)));
                 }
                 if (maxLamValue > 4.0) {
                     ErrorsFound = true;
                     ShowSevereCustom(state,
-                                            eoh,
-                                            format("{} requires the maximum value = 4.0 microns in the entered table name={}",
-                                                   s_ipsc->cAlphaFieldNames(5),
-                                                   s_ipsc->cAlphaArgs(5)));
+                                     eoh,
+                                     format("{} requires the maximum value = 4.0 microns in the entered table name={}",
+                                            s_ipsc->cAlphaFieldNames(5),
+                                            s_ipsc->cAlphaArgs(5)));
                 }
             }
 
@@ -735,34 +734,34 @@ void GetMaterialData(EnergyPlusData &state, bool &ErrorsFound) // set to true if
                 if (minAngValue > 1.0e-6) {
                     ErrorsFound = true;
                     ShowSevereCustom(state,
-                                            eoh,
-                                            format("{} requires the minumum value = 0.0 in the entered table name={}",
-                                                   s_ipsc->cAlphaFieldNames(5),
-                                                   s_ipsc->cAlphaArgs(5)));
+                                     eoh,
+                                     format("{} requires the minumum value = 0.0 in the entered table name={}",
+                                            s_ipsc->cAlphaFieldNames(5),
+                                            s_ipsc->cAlphaArgs(5)));
                 }
                 if (std::abs(maxAngValue - 90.0) > 1.0e-6) {
                     ErrorsFound = true;
                     ShowSevereCustom(state,
-                                            eoh,
-                                            format("{} requires the maximum value = 90.0 in the entered table name={}",
-                                                   s_ipsc->cAlphaFieldNames(5),
-                                                   s_ipsc->cAlphaArgs(5)));
+                                     eoh,
+                                     format("{} requires the maximum value = 90.0 in the entered table name={}",
+                                            s_ipsc->cAlphaFieldNames(5),
+                                            s_ipsc->cAlphaArgs(5)));
                 }
                 if (minLamValue < 0.1) {
                     ErrorsFound = true;
                     ShowSevereCustom(state,
-                                            eoh,
-                                            format("{} requires the minumum value = 0.1 micron in the entered table name={}",
-                                                   s_ipsc->cAlphaFieldNames(5),
-                                                   s_ipsc->cAlphaArgs(5)));
+                                     eoh,
+                                     format("{} requires the minumum value = 0.1 micron in the entered table name={}",
+                                            s_ipsc->cAlphaFieldNames(5),
+                                            s_ipsc->cAlphaArgs(5)));
                 }
                 if (maxLamValue > 4.0) {
                     ErrorsFound = true;
                     ShowSevereCustom(state,
-                                            eoh,
-                                            format("{} requires the maximum value = 4.0 microns in the entered table name={}",
-                                                   s_ipsc->cAlphaFieldNames(5),
-                                                   s_ipsc->cAlphaArgs(5)));
+                                     eoh,
+                                     format("{} requires the maximum value = 4.0 microns in the entered table name={}",
+                                            s_ipsc->cAlphaFieldNames(5),
+                                            s_ipsc->cAlphaArgs(5)));
                 }
             }
         }
@@ -1993,7 +1992,7 @@ void GetMaterialData(EnergyPlusData &state, bool &ErrorsFound) // set to true if
 
         // Minimum and maximum slat angles allowed by slat geometry
         if (matBlind->SlatWidth > matBlind->SlatSeparation) {
-            MinSlatAngGeom = std::asin(matBlind->SlatThickness / (matBlind->SlatThickness + matBlind->SlatSeparation)) / Constant::DegToRadians;
+            MinSlatAngGeom = std::asin(matBlind->SlatThickness / (matBlind->SlatThickness + matBlind->SlatSeparation)) / Constant::DegToRad;
         } else {
             MinSlatAngGeom = 0.0;
         }
@@ -2609,14 +2608,12 @@ void GetMaterialData(EnergyPlusData &state, bool &ErrorsFound) // set to true if
 
         if (s_ipsc->rNumericArgs(1) <= 0.0) {
             ErrorsFound = true;
-            ShowSevereCustom(
-                state, eoh, format("{} must be > 0, entered value = {:.2R}", s_ipsc->cNumericFieldNames(1), s_ipsc->rNumericArgs(1)));
+            ShowSevereCustom(state, eoh, format("{} must be > 0, entered value = {:.2R}", s_ipsc->cNumericFieldNames(1), s_ipsc->rNumericArgs(1)));
         }
 
         if (s_ipsc->rNumericArgs(2) <= 0.0) {
             ErrorsFound = true;
-            ShowSevereCustom(
-                state, eoh, format("{} must be > 0, entered value = {:.2R}", s_ipsc->cNumericFieldNames(2), s_ipsc->rNumericArgs(2)));
+            ShowSevereCustom(state, eoh, format("{} must be > 0, entered value = {:.2R}", s_ipsc->cNumericFieldNames(2), s_ipsc->rNumericArgs(2)));
         }
 
         if ((s_ipsc->rNumericArgs(3) < 0.0) || (s_ipsc->rNumericArgs(3) > 1.0)) {
@@ -2645,8 +2642,7 @@ void GetMaterialData(EnergyPlusData &state, bool &ErrorsFound) // set to true if
 
         if ((s_ipsc->rNumericArgs(7) < 0.0) || (s_ipsc->rNumericArgs(7) > 1.0)) {
             ErrorsFound = true;
-            ShowSevereCustom(
-                state, eoh, format("{} must be >=0 or <=1, entered {:.2R}", s_ipsc->cNumericFieldNames(7), s_ipsc->rNumericArgs(7)));
+            ShowSevereCustom(state, eoh, format("{} must be >=0 or <=1, entered {:.2R}", s_ipsc->cNumericFieldNames(7), s_ipsc->rNumericArgs(7)));
         }
 
         if ((s_ipsc->rNumericArgs(8) < 0.0) || (s_ipsc->rNumericArgs(8) > 1.0)) {
@@ -2669,13 +2665,46 @@ void GetMaterialData(EnergyPlusData &state, bool &ErrorsFound) // set to true if
 
         if ((mat->LayerType == TARCOGParams::TARCOGLayerType::VENETBLIND_HORIZ) ||
             (mat->LayerType == TARCOGParams::TARCOGLayerType::VENETBLIND_VERT)) {
-            if ((s_ipsc->rNumericArgs(16) > 0.0) && (s_ipsc->rNumericArgs(16) < (s_ipsc->rNumericArgs(11) / 2))) {
+            if (s_ipsc->rNumericArgs(11) <= 0.0) {
+                ErrorsFound = true;
+                ShowSevereCustom(
+                    state, eoh, format("{} must be >0, entered value = {:.2R}", s_ipsc->cNumericFieldNames(11), s_ipsc->rNumericArgs(11)));
+            }
+
+            if (s_ipsc->rNumericArgs(12) <= 0.0) {
+                ErrorsFound = true;
+                ShowSevereCustom(
+                    state, eoh, format("{} must be >0, entered value = {:.2R}", s_ipsc->cNumericFieldNames(12), s_ipsc->rNumericArgs(12)));
+            }
+
+            if (s_ipsc->rNumericArgs(13) <= 0.0) {
+                ErrorsFound = true;
+                ShowSevereCustom(
+                    state, eoh, format("{} must be >0, entered value = {:.2R}", s_ipsc->cNumericFieldNames(13), s_ipsc->rNumericArgs(13)));
+            }
+
+            if ((s_ipsc->rNumericArgs(14) < -90.0) || (s_ipsc->rNumericArgs(14) > 90.0)) {
+                ErrorsFound = true;
+                ShowSevereCustom(
+                    state,
+                    eoh,
+                    format("{} must be >=-90 and <=90, entered value = {:.2R}", s_ipsc->cNumericFieldNames(14), s_ipsc->rNumericArgs(14)));
+            }
+
+            if (s_ipsc->rNumericArgs(15) <= 0.0) {
+                ErrorsFound = true;
+                ShowSevereCustom(
+                    state, eoh, format("{} must be >0, entered value = {:.2R}", s_ipsc->cNumericFieldNames(15), s_ipsc->rNumericArgs(15)));
+            }
+
+            if ((s_ipsc->rNumericArgs(16) < 0.0) ||
+                ((s_ipsc->rNumericArgs(16) > 0.0) && (s_ipsc->rNumericArgs(16) < (s_ipsc->rNumericArgs(11) / 2)))) {
                 ErrorsFound = true;
                 ShowSevereCustom(state,
-                                        eoh,
-                                        format("{} must be = 0 or greater than SlatWidth/2, entered value = {:.2R}",
-                                               s_ipsc->cNumericFieldNames(16),
-                                               s_ipsc->rNumericArgs(16)));
+                                 eoh,
+                                 format("{} must be = 0 or greater than SlatWidth/2, entered value = {:.2R}",
+                                        s_ipsc->cNumericFieldNames(16),
+                                        s_ipsc->rNumericArgs(16)));
             }
         }
 
@@ -2812,13 +2841,13 @@ void GetVariableAbsorptanceInput(EnergyPlusData &state, bool &errorsFound)
 
         mat->absorpVarCtrlSignal = VariableAbsCtrlSignal::SurfaceTemperature; // default value
         mat->absorpVarCtrlSignal = static_cast<VariableAbsCtrlSignal>(getEnumValue(variableAbsCtrlSignalNamesUC, s_ipsc->cAlphaArgs(3)));
-        //    init to 0 as GetScheduleIndex returns 0 for not-found schedule
+
         mat->absorpThermalVarFuncIdx = Curve::GetCurveIndex(state, s_ipsc->cAlphaArgs(4));
-        mat->absorpThermalVarSchedIdx = ScheduleManager::GetScheduleIndex(state, s_ipsc->cAlphaArgs(5));
+        mat->absorpThermalVarSched = Sched::GetSchedule(state, s_ipsc->cAlphaArgs(5));
         mat->absorpSolarVarFuncIdx = Curve::GetCurveIndex(state, s_ipsc->cAlphaArgs(6));
-        mat->absorpSolarVarSchedIdx = ScheduleManager::GetScheduleIndex(state, s_ipsc->cAlphaArgs(7));
+        mat->absorpSolarVarSched = Sched::GetSchedule(state, s_ipsc->cAlphaArgs(7));
         if (mat->absorpVarCtrlSignal == VariableAbsCtrlSignal::Scheduled) {
-            if ((mat->absorpThermalVarSchedIdx == 0) && (mat->absorpSolarVarSchedIdx == 0)) {
+            if ((mat->absorpThermalVarSched == nullptr) && (mat->absorpSolarVarSched == nullptr)) {
                 ShowSevereError(
                     state,
                     format("{}: Control signal \"Scheduled\" is chosen but both thermal and solar absorptance schedules are undefined, for object {}",
@@ -2846,7 +2875,7 @@ void GetVariableAbsorptanceInput(EnergyPlusData &state, bool &errorsFound)
                 errorsFound = true;
                 return;
             }
-            if ((mat->absorpThermalVarSchedIdx > 0) || (mat->absorpSolarVarSchedIdx > 0)) {
+            if ((mat->absorpThermalVarSched != nullptr) || (mat->absorpSolarVarSched != nullptr)) {
                 ShowWarningError(state,
                                  format("{}: Non-schedule control signal is chosen. Thermal or solar absorptance schedule name is going to be "
                                         "ignored, for object {}",
@@ -2921,7 +2950,7 @@ void GetWindowGlassSpectralData(EnergyPlusData &state, bool &ErrorsFound) // set
         specData.Name = s_ipsc->cAlphaArgs(1);
         int TotLam = NumNums / 4;
         if (mod(NumNums, 4) != 0) {
-            ShowWarningCustomMessage(
+            ShowWarningCustom(
                 state,
                 eoh,
                 format("{} of items in data set is not a multiple of 4 (Wavelength,Trans,ReflFront,ReflBack), remainder items set to 0.0", NumNums));

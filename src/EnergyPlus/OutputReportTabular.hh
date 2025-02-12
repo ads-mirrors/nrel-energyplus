@@ -269,8 +269,7 @@ namespace OutputReportTabular {
         OutputProcessor::StoreType avgSum = OutputProcessor::StoreType::Average;          // Variable  is Averaged=1 or Summed=2
         OutputProcessor::TimeStepType stepType = OutputProcessor::TimeStepType::Zone;     // Variable time step is Zone=1 or HVAC=2
         Constant::Units units = Constant::Units::Invalid;                                 // the units enumeration
-        std::string ScheduleName;                                                         // the name of the schedule
-        int scheduleIndex = 0;                                                            // index to the schedule specified - if no schedule use zero
+        Sched::Schedule *sched = nullptr;                                                 // index to the schedule specified - if no schedule use zero
     };
 
     struct BinResultsType
@@ -1044,7 +1043,7 @@ struct OutputReportTabularData : BaseGlobalStruct
     Array1D_bool ffUsed = Array1D_bool(OutputReportTabular::numResourceTypes, false);
     Array1D<Real64> SourceFactors = Array1D<Real64>(OutputReportTabular::numResourceTypes, 0.0);
     Array1D_bool ffSchedUsed = Array1D_bool(OutputReportTabular::numResourceTypes, false);
-    Array1D_int ffSchedIndex = Array1D_int(OutputReportTabular::numResourceTypes, 0);
+    Array1D<Sched::Schedule *> ffScheds = Array1D<Sched::Schedule *>(OutputReportTabular::numResourceTypes, nullptr);
     Array2D_int meterNumEndUseBEPS = Array2D_int(OutputReportTabular::numResourceTypes, static_cast<int>(Constant::EndUse::Num), -1);
     Array3D_int meterNumEndUseSubBEPS;
     Array3D_int meterNumEndUseSpTypeBEPS;
@@ -1331,6 +1330,10 @@ struct OutputReportTabularData : BaseGlobalStruct
     std::string curColHeadWithSI;
     std::string curColHead;
 
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
+
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {
     }
@@ -1389,7 +1392,7 @@ struct OutputReportTabularData : BaseGlobalStruct
         this->ffUsed = Array1D_bool(OutputReportTabular::numResourceTypes, false);
         this->SourceFactors = Array1D<Real64>(OutputReportTabular::numResourceTypes, 0.0);
         this->ffSchedUsed = Array1D_bool(OutputReportTabular::numResourceTypes, false);
-        this->ffSchedIndex = Array1D_int(OutputReportTabular::numResourceTypes, 0);
+        this->ffScheds = Array1D<Sched::Schedule *>(OutputReportTabular::numResourceTypes, nullptr);
         this->meterNumEndUseBEPS = Array2D_int(OutputReportTabular::numResourceTypes, static_cast<int>(Constant::EndUse::Num), 0);
         this->meterNumEndUseSubBEPS.deallocate();
         this->meterNumEndUseSpTypeBEPS.deallocate();

@@ -148,19 +148,6 @@ TEST_F(EnergyPlusFixture, CondenserLoopTowers_MerkelNoCooling)
          "  ScheduleTypeLimits,",
          "    Any Number;              !- Name",
 
-         "  Schedule:Compact,",
-         "    ALWAYS_ON,               !- Name",
-         "    On/Off,                  !- Schedule Type Limits Name",
-         "    Through: 12/31,          !- Field 1",
-         "    For: AllDays,            !- Field 2",
-         "    Until: 24:00,1;          !- Field 3",
-
-         "  ScheduleTypeLimits,",
-         "    On/Off,                  !- Name",
-         "    0,                       !- Lower Limit Value",
-         "    1,                       !- Upper Limit Value",
-         "    DISCRETE;                !- Numeric Type",
-
          "  CoolingTower:VariableSpeed:Merkel,",
          "    TowerWaterSys CoolTower1,!- Name",
          "    TowerWaterSys Pump-TowerWaterSys CoolTowerNode,  !- Water Inlet Node Name",
@@ -298,7 +285,7 @@ TEST_F(EnergyPlusFixture, CondenserLoopTowers_MerkelNoCooling)
          "    TowerWaterSys Loop Operation Scheme List,  !- Name",
          "    PlantEquipmentOperation:CoolingLoad,  !- Control Scheme 1 Object Type",
          "    TowerWaterSys Operation Scheme,  !- Control Scheme 1 Name",
-         "    ALWAYS_ON;               !- Control Scheme 1 Schedule Name",
+         "    CONSTANT-1.0;               !- Control Scheme 1 Schedule Name",
 
          "  PlantEquipmentOperation:CoolingLoad,",
          "    TowerWaterSys Operation Scheme,  !- Name",
@@ -487,12 +474,13 @@ TEST_F(EnergyPlusFixture, CondenserLoopTowers_MerkelNoCooling)
 
         });
     ASSERT_TRUE(process_idf(idf_objects));
-    SimulationManager::PostIPProcessing(*state);
 
     bool ErrorsFound = false;
 
     state->dataGlobal->BeginSimFlag = true;
-    SimulationManager::GetProjectData(*state);
+
+    state->init_state(*state);
+
     OutputReportPredefined::SetPredefinedTables(*state);
 
     // OutputProcessor::TimeValue.allocate(2);
@@ -602,19 +590,6 @@ TEST_F(EnergyPlusFixture, CondenserLoopTowers_SingleSpeedSizing)
                           "  ScheduleTypeLimits,",
                           "    Any Number;              !- Name",
 
-                          "  Schedule:Compact,",
-                          "    ALWAYS_ON,               !- Name",
-                          "    On/Off,                  !- Schedule Type Limits Name",
-                          "    Through: 12/31,          !- Field 1",
-                          "    For: AllDays,            !- Field 2",
-                          "    Until: 24:00,1;          !- Field 3",
-
-                          "  ScheduleTypeLimits,",
-                          "    On/Off,                  !- Name",
-                          "    0,                       !- Lower Limit Value",
-                          "    1,                       !- Upper Limit Value",
-                          "    DISCRETE;                !- Numeric Type",
-
                           "  CoolingTower:SingleSpeed,",
                           "    TowerWaterSys CoolTower1,!- Name",
                           "    TowerWaterSys Pump-TowerWaterSys CoolTowerNode,  !- Water Inlet Node Name",
@@ -692,7 +667,7 @@ TEST_F(EnergyPlusFixture, CondenserLoopTowers_SingleSpeedSizing)
                           "    TowerWaterSys Loop Operation Scheme List,  !- Name",
                           "    PlantEquipmentOperation:CoolingLoad,  !- Control Scheme 1 Object Type",
                           "    TowerWaterSys Operation Scheme,  !- Control Scheme 1 Name",
-                          "    ALWAYS_ON;               !- Control Scheme 1 Schedule Name",
+                          "    CONSTANT-1.0;               !- Control Scheme 1 Schedule Name",
 
                           "  PlantEquipmentOperation:CoolingLoad,",
                           "    TowerWaterSys Operation Scheme,  !- Name",
@@ -881,12 +856,13 @@ TEST_F(EnergyPlusFixture, CondenserLoopTowers_SingleSpeedSizing)
 
         });
     ASSERT_TRUE(process_idf(idf_objects));
-    SimulationManager::PostIPProcessing(*state);
 
     bool ErrorsFound = false;
 
     state->dataGlobal->BeginSimFlag = true;
-    SimulationManager::GetProjectData(*state);
+
+    state->init_state(*state);
+
     OutputReportPredefined::SetPredefinedTables(*state);
 
     // OutputProcessor::TimeValue.allocate(2);
@@ -1041,19 +1017,6 @@ TEST_F(EnergyPlusFixture, CondenserLoopTowers_SingleSpeedUserInputTowerSizing)
                           "  ScheduleTypeLimits,",
                           "    Any Number;              !- Name",
 
-                          "  Schedule:Compact,",
-                          "    ALWAYS_ON,               !- Name",
-                          "    On/Off,                  !- Schedule Type Limits Name",
-                          "    Through: 12/31,          !- Field 1",
-                          "    For: AllDays,            !- Field 2",
-                          "    Until: 24:00,1;          !- Field 3",
-
-                          "  ScheduleTypeLimits,",
-                          "    On/Off,                  !- Name",
-                          "    0,                       !- Lower Limit Value",
-                          "    1,                       !- Upper Limit Value",
-                          "    DISCRETE;                !- Numeric Type",
-
                           "  CoolingTower:SingleSpeed,",
                           "    TowerWaterSys CoolTower1,!- Name",
                           "    TowerWaterSys Pump-TowerWaterSys CoolTowerNode,  !- Water Inlet Node Name",
@@ -1130,7 +1093,7 @@ TEST_F(EnergyPlusFixture, CondenserLoopTowers_SingleSpeedUserInputTowerSizing)
                           "    TowerWaterSys Loop Operation Scheme List,  !- Name",
                           "    PlantEquipmentOperation:CoolingLoad,  !- Control Scheme 1 Object Type",
                           "    TowerWaterSys Operation Scheme,  !- Control Scheme 1 Name",
-                          "    ALWAYS_ON;                       !- Control Scheme 1 Schedule Name",
+                          "    CONSTANT-1.0;                       !- Control Scheme 1 Schedule Name",
 
                           "  PlantEquipmentOperation:CoolingLoad,",
                           "    TowerWaterSys Operation Scheme,  !- Name",
@@ -1319,12 +1282,13 @@ TEST_F(EnergyPlusFixture, CondenserLoopTowers_SingleSpeedUserInputTowerSizing)
 
         });
     ASSERT_TRUE(process_idf(idf_objects));
-    SimulationManager::PostIPProcessing(*state);
+
+    state->init_state(*state);
 
     bool ErrorsFound = false;
 
     state->dataGlobal->BeginSimFlag = true;
-    SimulationManager::GetProjectData(*state);
+
     OutputReportPredefined::SetPredefinedTables(*state);
 
     // OutputProcessor::TimeValue.allocate(2);
@@ -1455,19 +1419,6 @@ TEST_F(EnergyPlusFixture, CondenserLoopTowers_TwoSpeedUserInputTowerSizing)
                           "  ScheduleTypeLimits,",
                           "    Any Number;              !- Name",
 
-                          "  Schedule:Compact,",
-                          "    ALWAYS_ON,               !- Name",
-                          "    On/Off,                  !- Schedule Type Limits Name",
-                          "    Through: 12/31,          !- Field 1",
-                          "    For: AllDays,            !- Field 2",
-                          "    Until: 24:00,1;          !- Field 3",
-
-                          "  ScheduleTypeLimits,",
-                          "    On/Off,                  !- Name",
-                          "    0,                       !- Lower Limit Value",
-                          "    1,                       !- Upper Limit Value",
-                          "    DISCRETE;                !- Numeric Type",
-
                           "  CoolingTower:TwoSpeed,",
                           "    TowerWaterSys CoolTower1,!- Name",
                           "    TowerWaterSys Pump-TowerWaterSys CoolTowerNode,  !- Water Inlet Node Name",
@@ -1550,7 +1501,7 @@ TEST_F(EnergyPlusFixture, CondenserLoopTowers_TwoSpeedUserInputTowerSizing)
                           "    TowerWaterSys Loop Operation Scheme List,  !- Name",
                           "    PlantEquipmentOperation:CoolingLoad,  !- Control Scheme 1 Object Type",
                           "    TowerWaterSys Operation Scheme,  !- Control Scheme 1 Name",
-                          "    ALWAYS_ON;                       !- Control Scheme 1 Schedule Name",
+                          "    CONSTANT-1.0;                       !- Control Scheme 1 Schedule Name",
 
                           "  PlantEquipmentOperation:CoolingLoad,",
                           "    TowerWaterSys Operation Scheme,  !- Name",
@@ -1739,12 +1690,12 @@ TEST_F(EnergyPlusFixture, CondenserLoopTowers_TwoSpeedUserInputTowerSizing)
 
         });
     ASSERT_TRUE(process_idf(idf_objects));
-    SimulationManager::PostIPProcessing(*state);
+
+    state->init_state(*state);
 
     bool ErrorsFound = false;
 
     state->dataGlobal->BeginSimFlag = true;
-    SimulationManager::GetProjectData(*state);
     OutputReportPredefined::SetPredefinedTables(*state);
 
     // OutputProcessor::TimeValue.allocate(2);
@@ -1890,19 +1841,6 @@ TEST_F(EnergyPlusFixture, CondenserLoopTowers_MerkelUserInputTowerSizing)
          "  ScheduleTypeLimits,",
          "    Any Number;              !- Name",
 
-         "  Schedule:Compact,",
-         "    ALWAYS_ON,               !- Name",
-         "    On/Off,                  !- Schedule Type Limits Name",
-         "    Through: 12/31,          !- Field 1",
-         "    For: AllDays,            !- Field 2",
-         "    Until: 24:00,1;          !- Field 3",
-
-         "  ScheduleTypeLimits,",
-         "    On/Off,                  !- Name",
-         "    0,                       !- Lower Limit Value",
-         "    1,                       !- Upper Limit Value",
-         "    DISCRETE;                !- Numeric Type",
-
          "  CoolingTower:VariableSpeed:Merkel,",
          "    TowerWaterSys CoolTower1,!- Name",
          "    TowerWaterSys Pump-TowerWaterSys CoolTowerNode,  !- Water Inlet Node Name",
@@ -2040,7 +1978,7 @@ TEST_F(EnergyPlusFixture, CondenserLoopTowers_MerkelUserInputTowerSizing)
          "    TowerWaterSys Loop Operation Scheme List,  !- Name",
          "    PlantEquipmentOperation:CoolingLoad,  !- Control Scheme 1 Object Type",
          "    TowerWaterSys Operation Scheme,  !- Control Scheme 1 Name",
-         "    ALWAYS_ON;               !- Control Scheme 1 Schedule Name",
+         "    CONSTANT-1.0;               !- Control Scheme 1 Schedule Name",
 
          "  PlantEquipmentOperation:CoolingLoad,",
          "    TowerWaterSys Operation Scheme,  !- Name",
@@ -2229,12 +2167,12 @@ TEST_F(EnergyPlusFixture, CondenserLoopTowers_MerkelUserInputTowerSizing)
 
         });
     ASSERT_TRUE(process_idf(idf_objects));
-    SimulationManager::PostIPProcessing(*state);
+
+    state->init_state(*state);
 
     bool ErrorsFound = false;
 
     state->dataGlobal->BeginSimFlag = true;
-    SimulationManager::GetProjectData(*state);
     OutputReportPredefined::SetPredefinedTables(*state);
 
     // OutputProcessor::TimeValue.allocate(2);
@@ -2373,19 +2311,6 @@ TEST_F(EnergyPlusFixture, CondenserLoopTowers_TwoSpeedTowerLowSpeedNomCapSizing)
                           "  ScheduleTypeLimits,",
                           "    Any Number;              !- Name",
 
-                          "  Schedule:Compact,",
-                          "    ALWAYS_ON,               !- Name",
-                          "    On/Off,                  !- Schedule Type Limits Name",
-                          "    Through: 12/31,          !- Field 1",
-                          "    For: AllDays,            !- Field 2",
-                          "    Until: 24:00,1;          !- Field 3",
-
-                          "  ScheduleTypeLimits,",
-                          "    On/Off,                  !- Name",
-                          "    0,                       !- Lower Limit Value",
-                          "    1,                       !- Upper Limit Value",
-                          "    DISCRETE;                !- Numeric Type",
-
                           "  CoolingTower:TwoSpeed,",
                           "    TowerWaterSys CoolTower1,!- Name",
                           "    TowerWaterSys Pump-TowerWaterSys CoolTowerNode,  !- Water Inlet Node Name",
@@ -2473,7 +2398,7 @@ TEST_F(EnergyPlusFixture, CondenserLoopTowers_TwoSpeedTowerLowSpeedNomCapSizing)
                           "    TowerWaterSys Loop Operation Scheme List,  !- Name",
                           "    PlantEquipmentOperation:CoolingLoad,  !- Control Scheme 1 Object Type",
                           "    TowerWaterSys Operation Scheme,  !- Control Scheme 1 Name",
-                          "    ALWAYS_ON;                       !- Control Scheme 1 Schedule Name",
+                          "    CONSTANT-1.0;                       !- Control Scheme 1 Schedule Name",
 
                           "  PlantEquipmentOperation:CoolingLoad,",
                           "    TowerWaterSys Operation Scheme,  !- Name",
@@ -2662,12 +2587,12 @@ TEST_F(EnergyPlusFixture, CondenserLoopTowers_TwoSpeedTowerLowSpeedNomCapSizing)
 
         });
     ASSERT_TRUE(process_idf(idf_objects));
-    SimulationManager::PostIPProcessing(*state);
+
+    state->init_state(*state);
 
     bool ErrorsFound = false;
 
     state->dataGlobal->BeginSimFlag = true;
-    SimulationManager::GetProjectData(*state);
     OutputReportPredefined::SetPredefinedTables(*state);
 
     // OutputProcessor::TimeValue.allocate(2);
@@ -3053,10 +2978,11 @@ TEST_F(EnergyPlusFixture, CondenserLoopTowers_SingleSpeedUser_SizingError_Sizing
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
-    SimulationManager::PostIPProcessing(*state);
+
+    state->init_state(*state);
 
     state->dataGlobal->BeginSimFlag = true;
-    SimulationManager::GetProjectData(*state);
+
     OutputReportPredefined::SetPredefinedTables(*state);
 
     // OutputProcessor::TimeValue.allocate(2);
@@ -3445,10 +3371,10 @@ TEST_F(EnergyPlusFixture, CondenserLoopTowers_SingleSpeedUser_SizingError_UserSp
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
-    SimulationManager::PostIPProcessing(*state);
+
+    state->init_state(*state);
 
     state->dataGlobal->BeginSimFlag = true;
-    SimulationManager::GetProjectData(*state);
     OutputReportPredefined::SetPredefinedTables(*state);
 
     // OutputProcessor::TimeValue.allocate(2);
@@ -3584,19 +3510,6 @@ TEST_F(EnergyPlusFixture, VSCoolingTowers_WaterOutletTempTest)
                           "  ScheduleTypeLimits,",
                           "    Any Number;              !- Name",
 
-                          "  Schedule:Compact,",
-                          "    ALWAYS_ON,               !- Name",
-                          "    On/Off,                  !- Schedule Type Limits Name",
-                          "    Through: 12/31,          !- Field 1",
-                          "    For: AllDays,            !- Field 2",
-                          "    Until: 24:00,1;          !- Field 3",
-
-                          "  ScheduleTypeLimits,",
-                          "    On/Off,                  !- Name",
-                          "    0,                       !- Lower Limit Value",
-                          "    1,                       !- Upper Limit Value",
-                          "    DISCRETE;                !- Numeric Type",
-
                           "  CoolingTower:VariableSpeed,",
                           "    CoolingTower Variable Speed,  !- Name",
                           "    Tower Inlet Node,        !- Water Inlet Node Name",
@@ -3712,10 +3625,10 @@ TEST_F(EnergyPlusFixture, VSCoolingTowers_WaterOutletTempTest)
                           "    CoolingTower Loop Operation Scheme List,  !- Name",
                           "    PlantEquipmentOperation:CoolingLoad,  !- Control Scheme 1 Object Type",
                           "    CoolingTower Operation Scheme,  !- Control Scheme 1 Name",
-                          "    ALWAYS_ON,                      !- Control Scheme 1 Schedule Name",
+                          "    CONSTANT-1.0,                      !- Control Scheme 1 Schedule Name",
                           "    PlantEquipmentOperation:ComponentSetpoint,  !- Control Scheme 3 Object Type",
                           "    CoolingTower Loop Setpoint Operation Scheme,  !- Control Scheme 3 Name",
-                          "    ALWAYS_ON;      !- Control Scheme 3 Schedule Name",
+                          "    CONSTANT-1.0;      !- Control Scheme 3 Schedule Name",
 
                           "  PlantEquipmentOperation:ComponentSetpoint,",
                           "    CoolingTower Loop Setpoint Operation Scheme,  !- Name",
@@ -3919,10 +3832,10 @@ TEST_F(EnergyPlusFixture, VSCoolingTowers_WaterOutletTempTest)
         });
 
     ASSERT_TRUE(process_idf(idf_objects));
-    SimulationManager::PostIPProcessing(*state);
+
+    state->init_state(*state);
 
     state->dataGlobal->BeginSimFlag = true;
-    SimulationManager::GetProjectData(*state);
     OutputReportPredefined::SetPredefinedTables(*state);
 
     OutputProcessor::SetupTimePointers(*state, OutputProcessor::TimeStepType::Zone, state->dataGlobal->TimeStepZone);
@@ -4176,6 +4089,9 @@ TEST_F(EnergyPlusFixture, CondenserLoopTowers_CoolingTowersDefaultValuesTest)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+
+    state->init_state(*state);
+
     // cooling towers get input
     CondenserLoopTowers::GetTowerInput(*state);
 
@@ -4294,6 +4210,9 @@ TEST_F(EnergyPlusFixture, CondenserLoopTowers_CalculateVariableTowerOutletTemp)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+
+    state->init_state(*state);
+
     // cooling tower get input
     CondenserLoopTowers::GetTowerInput(*state);
     int index;
@@ -4338,7 +4257,7 @@ TEST_F(EnergyPlusFixture, CondenserLoopTowers_checkMassFlowAndLoadTest)
     state->dataEnvrn->OutDryBulbTemp = 27.0;
     tower.WaterMassFlowRate = 0.0;
     tower.BasinHeaterPowerFTempDiff = 1.0;
-    tower.BasinHeaterSchedulePtr = 0;
+    tower.basinHeaterSched = nullptr;
     tower.BasinHeaterSetPointTemp = 26.0;
     tower.BasinHeaterPower = 1.0;
     expectedPower = 0.0;
@@ -4353,7 +4272,7 @@ TEST_F(EnergyPlusFixture, CondenserLoopTowers_checkMassFlowAndLoadTest)
     state->dataEnvrn->OutDryBulbTemp = 27.0;
     tower.WaterMassFlowRate = 0.5;
     tower.BasinHeaterPowerFTempDiff = 1.0;
-    tower.BasinHeaterSchedulePtr = 0;
+    tower.basinHeaterSched = nullptr;
     tower.BasinHeaterSetPointTemp = 25.0;
     tower.BasinHeaterPower = 2.0;
     tower.FanPower = 1.0;
@@ -4377,7 +4296,7 @@ TEST_F(EnergyPlusFixture, CondenserLoopTowers_checkMassFlowAndLoadTest)
     state->dataEnvrn->OutDryBulbTemp = 27.0;
     tower.WaterMassFlowRate = 0.5;
     tower.BasinHeaterPowerFTempDiff = 1.0;
-    tower.BasinHeaterSchedulePtr = 0;
+    tower.basinHeaterSched = nullptr;
     tower.BasinHeaterSetPointTemp = 25.0;
     tower.BasinHeaterPower = 3.0;
     expectedPower = 3.0;

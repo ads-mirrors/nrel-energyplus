@@ -114,7 +114,6 @@ namespace OutdoorAirUnit {
     using HVAC::SmallAirVolFlow;
     using HVAC::SmallLoad;
     using HVAC::SmallMassFlow;
-    using namespace ScheduleManager;
     using namespace Psychrometrics;
 
     // component types addressed by this module
@@ -218,7 +217,6 @@ namespace OutdoorAirUnit {
         using BranchNodeConnections::SetUpCompSets;
         using BranchNodeConnections::TestCompSet;
         using NodeInputManager::GetOnlySingleNode;
-        using ScheduleManager::GetScheduleIndex;
         using namespace DataLoopNode;
         using OutAirNodeManager::CheckAndAddAirNodeNumber;
 
@@ -301,20 +299,11 @@ namespace OutdoorAirUnit {
             thisOutAirUnit.Name = state.dataIPShortCut->cAlphaArgs(1);
 
             // A2
-            thisOutAirUnit.SchedName = state.dataIPShortCut->cAlphaArgs(2);
             if (lAlphaBlanks(2)) {
-                thisOutAirUnit.SchedPtr = ScheduleManager::ScheduleAlwaysOn;
-            } else {
-                thisOutAirUnit.SchedPtr = GetScheduleIndex(state, state.dataIPShortCut->cAlphaArgs(2)); // convert schedule name to pointer
-                if (thisOutAirUnit.SchedPtr == 0) {
-                    ShowSevereError(state,
-                                    format("{}=\"{}\" invalid {}=\"{}\" not found.",
-                                           CurrentModuleObject,
-                                           state.dataIPShortCut->cAlphaArgs(1),
-                                           state.dataIPShortCut->cAlphaArgs(2),
-                                           state.dataIPShortCut->cAlphaArgs(2)));
-                    ErrorsFound = true;
-                }
+                thisOutAirUnit.availSched = Sched::GetScheduleAlwaysOn(state);
+            } else if ((thisOutAirUnit.availSched = Sched::GetSchedule(state, state.dataIPShortCut->cAlphaArgs(2))) == nullptr) {
+                ShowSevereItemNotFound(state, eoh, state.dataIPShortCut->cAlphaArgs(2), state.dataIPShortCut->cAlphaArgs(2));
+                ErrorsFound = true;
             }
 
             // A3
@@ -343,16 +332,11 @@ namespace OutdoorAirUnit {
             // N1
             thisOutAirUnit.OutAirVolFlow = NumArray(1);
             // A4
-            thisOutAirUnit.OutAirSchedName = state.dataIPShortCut->cAlphaArgs(4);
-            // convert schedule name to pointer
-            thisOutAirUnit.OutAirSchedPtr = GetScheduleIndex(state, thisOutAirUnit.OutAirSchedName);
-            if (thisOutAirUnit.OutAirSchedPtr == 0) {
-                ShowSevereError(state,
-                                format("{}=\"{}\" invalid {}=\"{}\" not found.",
-                                       CurrentModuleObject,
-                                       state.dataIPShortCut->cAlphaArgs(1),
-                                       cAlphaFields(4),
-                                       state.dataIPShortCut->cAlphaArgs(4)));
+            if (lAlphaBlanks(4)) {
+                ShowSevereEmptyField(state, eoh, cAlphaFields(4));
+                ErrorsFound = true;
+            } else if ((thisOutAirUnit.outAirSched = Sched::GetSchedule(state, state.dataIPShortCut->cAlphaArgs(4))) == nullptr) {
+                ShowSevereItemNotFound(state, eoh, cAlphaFields(4), state.dataIPShortCut->cAlphaArgs(4));
                 ErrorsFound = true;
             }
 
@@ -372,7 +356,7 @@ namespace OutdoorAirUnit {
                 auto *fan = state.dataFans->fans(thisOutAirUnit.SFan_Index);
                 thisOutAirUnit.supFanType = fan->type;
                 thisOutAirUnit.SFanMaxAirVolFlow = fan->maxAirFlowRate;
-                thisOutAirUnit.SFanAvailSchedPtr = fan->availSchedNum;
+                thisOutAirUnit.supFanAvailSched = fan->availSched;
             }
             // A6 :Fan Place
             thisOutAirUnit.supFanPlace = static_cast<HVAC::FanPlace>(getEnumValue(HVAC::fanPlaceNamesUC, state.dataIPShortCut->cAlphaArgs(6)));
@@ -403,7 +387,7 @@ namespace OutdoorAirUnit {
                     auto *fan = state.dataFans->fans(thisOutAirUnit.ExtFan_Index);
                     thisOutAirUnit.extFanType = fan->type;
                     thisOutAirUnit.EFanMaxAirVolFlow = fan->maxAirFlowRate;
-                    thisOutAirUnit.ExtFanAvailSchedPtr = fan->availSchedNum;
+                    thisOutAirUnit.extFanAvailSched = fan->availSched;
                 }
                 thisOutAirUnit.ExtFan = true;
             }
@@ -422,33 +406,28 @@ namespace OutdoorAirUnit {
                 }
             }
             // A8
-            thisOutAirUnit.ExtAirSchedName = state.dataIPShortCut->cAlphaArgs(8);
+
             // convert schedule name to pointer
-            thisOutAirUnit.ExtOutAirSchedPtr = GetScheduleIndex(state, thisOutAirUnit.ExtAirSchedName);
             if (thisOutAirUnit.ExtFan) {
-                if ((thisOutAirUnit.ExtOutAirSchedPtr == 0) || (lNumericBlanks(2))) {
-                    ShowSevereError(state,
-                                    format("{}=\"{}\" invalid {}=\"{}\" not found.",
-                                           CurrentModuleObject,
-                                           state.dataIPShortCut->cAlphaArgs(1),
-                                           cAlphaFields(8),
-                                           state.dataIPShortCut->cAlphaArgs(8)));
+                if (lAlphaBlanks(8)) {
+                    ShowSevereEmptyField(state, eoh, cAlphaFields(8));
                     ErrorsFound = true;
-                } else {
-                    if ((thisOutAirUnit.ExtOutAirSchedPtr != thisOutAirUnit.OutAirSchedPtr) &&
-                        (!state.dataHeatBal->ZoneAirMassFlow.EnforceZoneMassBalance)) {
-                        ShowWarningError(
-                            state,
-                            format("{}=\"{}\", different schedule inputs for outdoor air and exhaust air schedules may cause unbalanced mass flow.",
-                                   CurrentModuleObject,
-                                   state.dataIPShortCut->cAlphaArgs(1)));
-                        ShowContinueError(state,
-                                          format("{}={} and {}={}",
-                                                 cAlphaFields(4),
-                                                 state.dataIPShortCut->cAlphaArgs(4),
-                                                 cAlphaFields(8),
-                                                 state.dataIPShortCut->cAlphaArgs(8)));
-                    }
+                } else if ((thisOutAirUnit.extAirSched = Sched::GetSchedule(state, state.dataIPShortCut->cAlphaArgs(8))) == nullptr) {
+                    ShowSevereItemNotFound(state, eoh, cAlphaFields(8), state.dataIPShortCut->cAlphaArgs(8));
+                    ErrorsFound = true;
+                } else if ((thisOutAirUnit.extAirSched != thisOutAirUnit.outAirSched) &&
+                           (!state.dataHeatBal->ZoneAirMassFlow.EnforceZoneMassBalance)) {
+                    ShowWarningError(
+                        state,
+                        format("{}=\"{}\", different schedule inputs for outdoor air and exhaust air schedules may cause unbalanced mass flow.",
+                               CurrentModuleObject,
+                               state.dataIPShortCut->cAlphaArgs(1)));
+                    ShowContinueError(state,
+                                      format("{}={} and {}={}",
+                                             cAlphaFields(4),
+                                             state.dataIPShortCut->cAlphaArgs(4),
+                                             cAlphaFields(8),
+                                             state.dataIPShortCut->cAlphaArgs(8)));
                 }
 
                 SetUpCompSets(
@@ -456,52 +435,31 @@ namespace OutdoorAirUnit {
             }
 
             // Process the unit control type
-            if (!lAlphaBlanks(9)) {
-                constexpr std::array<std::string_view, static_cast<int>(OAUnitCtrlType::Num)> ctrlTypeNamesUC = {
-                    "NEUTRALCONTROL", "INVALID-UNCONDITIONED", "TEMPERATURECONTROL"};
-                OAUnitCtrlType const tmpCtrlType = static_cast<OAUnitCtrlType>(getEnumValue(ctrlTypeNamesUC, state.dataIPShortCut->cAlphaArgs(9)));
-                switch (tmpCtrlType) {
-                case OAUnitCtrlType::Neutral:
-                case OAUnitCtrlType::Temperature:
-                    thisOutAirUnit.controlType = tmpCtrlType;
-                    break;
-                default:
-                    break; // just leave it alone, nothing was done here
-                }
-            } else {
-                ShowSevereError(state,
-                                format(R"({}="{}" invalid {}="{}".)",
-                                       CurrentModuleObject,
-                                       state.dataIPShortCut->cAlphaArgs(1),
-                                       cAlphaFields(9),
-                                       state.dataIPShortCut->cAlphaArgs(9)));
-                ShowContinueError(state, "Control reset to Unconditioned Control.");
+            if (lAlphaBlanks(9)) {
+                ShowWarningEmptyField(state, eoh, cAlphaFields(9), "Control reset to Unconditioned Control.");
                 thisOutAirUnit.controlType = OAUnitCtrlType::Neutral;
+            } else {
+                constexpr std::array<std::string_view, (int)OAUnitCtrlType::Num> ctrlTypeNamesUC = {
+                    "NEUTRALCONTROL", "INVALID-UNCONDITIONED", "TEMPERATURECONTROL"};
+                OAUnitCtrlType tmpCtrlType = static_cast<OAUnitCtrlType>(getEnumValue(ctrlTypeNamesUC, state.dataIPShortCut->cAlphaArgs(9)));
+                if (tmpCtrlType == OAUnitCtrlType::Invalid) {
+                    ShowWarningEmptyField(state, eoh, cAlphaFields(9), "Control reset to Unconditioned Control.");
+                } else if (tmpCtrlType == OAUnitCtrlType::Neutral || tmpCtrlType == OAUnitCtrlType::Temperature) {
+                    thisOutAirUnit.controlType = tmpCtrlType;
+                }
             }
 
             // A10:High Control Temp :
-            thisOutAirUnit.HiCtrlTempSched = state.dataIPShortCut->cAlphaArgs(10);
-            thisOutAirUnit.HiCtrlTempSchedPtr = GetScheduleIndex(state, state.dataIPShortCut->cAlphaArgs(10));
-            if ((thisOutAirUnit.HiCtrlTempSchedPtr == 0) && (!lAlphaBlanks(10))) {
-                ShowSevereError(state,
-                                format(R"({}="{}" invalid {}="{}" not found.)",
-                                       CurrentModuleObject,
-                                       state.dataIPShortCut->cAlphaArgs(1),
-                                       cAlphaFields(10),
-                                       state.dataIPShortCut->cAlphaArgs(9)));
+            if (lAlphaBlanks(10)) {
+            } else if ((thisOutAirUnit.hiCtrlTempSched = Sched::GetSchedule(state, state.dataIPShortCut->cAlphaArgs(10))) == nullptr) {
+                ShowSevereItemNotFound(state, eoh, cAlphaFields(10), state.dataIPShortCut->cAlphaArgs(10));
                 ErrorsFound = true;
             }
 
             // A11:Low Control Temp :
-            thisOutAirUnit.LoCtrlTempSched = state.dataIPShortCut->cAlphaArgs(11);
-            thisOutAirUnit.LoCtrlTempSchedPtr = GetScheduleIndex(state, state.dataIPShortCut->cAlphaArgs(11));
-            if ((thisOutAirUnit.LoCtrlTempSchedPtr == 0) && (!lAlphaBlanks(11))) {
-                ShowSevereError(state,
-                                format(R"({}="{}" invalid {}="{}" not found.)",
-                                       CurrentModuleObject,
-                                       state.dataIPShortCut->cAlphaArgs(1),
-                                       cAlphaFields(11),
-                                       state.dataIPShortCut->cAlphaArgs(10)));
+            if (lAlphaBlanks(11)) {
+            } else if ((thisOutAirUnit.loCtrlTempSched = Sched::GetSchedule(state, state.dataIPShortCut->cAlphaArgs(11))) == nullptr) {
+                ShowSevereItemNotFound(state, eoh, cAlphaFields(11), state.dataIPShortCut->cAlphaArgs(11));
                 ErrorsFound = true;
             }
 
@@ -619,13 +577,13 @@ namespace OutdoorAirUnit {
                         switch (oaEquip.Type) {
                         case CompType::WaterCoil_Cooling: {
                             oaEquip.CoilType = DataPlant::PlantEquipmentType::CoilWaterCooling;
-                            oaEquip.ComponentIndex = WaterCoils::GetWaterCoilIndex(state, oaEquip.ComponentName);
+                            oaEquip.ComponentIndex = WaterCoils::GetCoilIndex(state, oaEquip.ComponentName);
                             if (oaEquip.ComponentIndex == 0) {
                                 ShowSevereItemNotFound(state, eoh, cAlphaFields(InListNum * 2 + 1), oaEquip.ComponentName);
                                 ErrorsFound = true;
                             } else {
-                                oaEquip.CoilAirInletNode = WaterCoils::GetCoilInletNode(state, oaEquip.ComponentIndex);
-                                oaEquip.CoilAirOutletNode = WaterCoils::GetCoilOutletNode(state, oaEquip.ComponentIndex);
+                                oaEquip.CoilAirInletNode = WaterCoils::GetCoilAirInletNode(state, oaEquip.ComponentIndex);
+                                oaEquip.CoilAirOutletNode = WaterCoils::GetCoilAirOutletNode(state, oaEquip.ComponentIndex);
                                 oaEquip.CoilWaterInletNode = WaterCoils::GetCoilWaterInletNode(state, oaEquip.ComponentIndex);
                                 oaEquip.CoilWaterOutletNode = WaterCoils::GetCoilWaterOutletNode(state, oaEquip.ComponentIndex);
                                 oaEquip.MaxVolWaterFlow = WaterCoils::GetCoilMaxWaterFlowRate(state, oaEquip.ComponentIndex);
@@ -635,13 +593,13 @@ namespace OutdoorAirUnit {
 
                         case CompType::WaterCoil_SimpleHeat: {
                             oaEquip.CoilType = DataPlant::PlantEquipmentType::CoilWaterSimpleHeating;
-                            oaEquip.ComponentIndex = WaterCoils::GetWaterCoilIndex(state, oaEquip.ComponentName);
+                            oaEquip.ComponentIndex = WaterCoils::GetCoilIndex(state, oaEquip.ComponentName);
                             if (oaEquip.ComponentIndex == 0) {
                                 ShowSevereItemNotFound(state, eoh, cAlphaFields(InListNum * 2 + 1), oaEquip.ComponentName);
                                 ErrorsFound = true;
                             } else {
-                                oaEquip.CoilAirInletNode = WaterCoils::GetCoilInletNode(state, oaEquip.ComponentIndex);
-                                oaEquip.CoilAirOutletNode = WaterCoils::GetCoilOutletNode(state, oaEquip.ComponentIndex);
+                                oaEquip.CoilAirInletNode = WaterCoils::GetCoilAirInletNode(state, oaEquip.ComponentIndex);
+                                oaEquip.CoilAirOutletNode = WaterCoils::GetCoilAirOutletNode(state, oaEquip.ComponentIndex);
                                 oaEquip.CoilWaterInletNode = WaterCoils::GetCoilWaterInletNode(state, oaEquip.ComponentIndex);
                                 oaEquip.CoilWaterOutletNode = WaterCoils::GetCoilWaterOutletNode(state, oaEquip.ComponentIndex);
                                 oaEquip.MaxVolWaterFlow = WaterCoils::GetCoilMaxWaterFlowRate(state, oaEquip.ComponentIndex);
@@ -651,7 +609,7 @@ namespace OutdoorAirUnit {
                           
                         case CompType::SteamCoil_AirHeat: {
                             oaEquip.CoilType = DataPlant::PlantEquipmentType::CoilSteamAirHeating;
-                            oaEquip.ComponentIndex = SteamCoils::GetSteamCoilIndex(state, oaEquip.ComponentName);
+                            oaEquip.ComponentIndex = SteamCoils::GetCoilIndex(state, oaEquip.ComponentName);
                             if (oaEquip.ComponentIndex == 0) {
                                 ShowSevereItemNotFound(state, eoh, cAlphaFields(InListNum * 2 + 1), oaEquip.ComponentName);
                                 ErrorsFound = true;
@@ -670,13 +628,13 @@ namespace OutdoorAirUnit {
                           
                         case CompType::WaterCoil_DetailedCool: {
                             oaEquip.CoilType = DataPlant::PlantEquipmentType::CoilWaterDetailedFlatCooling;
-                            oaEquip.ComponentIndex = WaterCoils::GetWaterCoilIndex(state, oaEquip.ComponentName);
+                            oaEquip.ComponentIndex = WaterCoils::GetCoilIndex(state, oaEquip.ComponentName);
                             if (oaEquip.ComponentIndex == 0) {
                                 ShowSevereItemNotFound(state, eoh, cAlphaFields(InListNum * 2 + 1), oaEquip.ComponentName);
                                 ErrorsFound = true;
                             } else {
-                                oaEquip.CoilAirInletNode = WaterCoils::GetCoilInletNode(state, oaEquip.ComponentIndex);
-                                oaEquip.CoilAirOutletNode = WaterCoils::GetCoilOutletNode(state, oaEquip.ComponentIndex);
+                                oaEquip.CoilAirInletNode = WaterCoils::GetCoilAirInletNode(state, oaEquip.ComponentIndex);
+                                oaEquip.CoilAirOutletNode = WaterCoils::GetCoilAirOutletNode(state, oaEquip.ComponentIndex);
                                 oaEquip.CoilWaterInletNode = WaterCoils::GetCoilWaterInletNode(state, oaEquip.ComponentIndex);
                                 oaEquip.CoilWaterOutletNode = WaterCoils::GetCoilWaterOutletNode(state, oaEquip.ComponentIndex);
                                 oaEquip.MaxVolWaterFlow = WaterCoils::GetCoilMaxWaterFlowRate(state, oaEquip.ComponentIndex);
@@ -686,17 +644,17 @@ namespace OutdoorAirUnit {
                           
                         case CompType::WaterCoil_CoolingHXAsst: {
                             // Does this not have a PlantEquipmentType?
-                            oaEquip.ComponentIndex = HVACHXAssistedCoolingCoil::GetHXCoilIndex(state, oaEquip.ComponentName);
+                            oaEquip.ComponentIndex = HXAssistCoil::GetCoilIndex(state, oaEquip.ComponentName);
                             if (oaEquip.ComponentIndex == 0) {
                                 ShowSevereItemNotFound(state, eoh, cAlphaFields(InListNum * 2 + 1), oaEquip.ComponentName);
                                 ErrorsFound = true;
                             } else {
                                 // Should this be the index of the child coil or the parent HXAssisted Coil?
-                                oaEquip.CoilAirInletNode = HVACHXAssistedCoolingCoil::GetHXCoilInletNode(state, oaEquip.ComponentIndex);
-                                oaEquip.CoilAirOutletNode = HVACHXAssistedCoolingCoil::GetHXCoilOutletNode(state, oaEquip.ComponentIndex);
-                                oaEquip.CoilWaterInletNode = HVACHXAssistedCoolingCoil::GetHXCoilWaterInletNode(state, oaEquip.ComponentIndex);
-                                oaEquip.CoilWaterOutletNode = HVACHXAssistedCoolingCoil::GetHXCoilWaterOutletNode(state, oaEquip.ComponentIndex);
-                                oaEquip.MaxVolWaterFlow = HVACHXAssistedCoolingCoil::GetHXCoilMaxWaterFlowRate(state, oaEquip.ComponentIndex);
+                                oaEquip.CoilAirInletNode = HXAssistCoil::GetCoilAirInletNode(state, oaEquip.ComponentIndex);
+                                oaEquip.CoilAirOutletNode = HXAssistCoil::GetCoilAirOutletNode(state, oaEquip.ComponentIndex);
+                                oaEquip.CoilWaterInletNode = HXAssistCoil::GetCoilWaterInletNode(state, oaEquip.ComponentIndex);
+                                oaEquip.CoilWaterOutletNode = HXAssistCoil::GetCoilWaterOutletNode(state, oaEquip.ComponentIndex);
+                                oaEquip.MaxVolWaterFlow = HXAssistCoil::GetCoilMaxWaterFlowRate(state, oaEquip.ComponentIndex);
                                 oaEquip.MinVolWaterFlow = 0.0;
                             }
                         } break;
@@ -709,8 +667,8 @@ namespace OutdoorAirUnit {
                                 ShowSevereItemNotFound(state, eoh, cAlphaFields(InListNum * 2 + 1), oaEquip.ComponentName);
                                 ErrorsFound = true;
                             } else {
-                               oaEquip.CoilAirInletNode = HeatingCoils::GetCoilInletNode(state, oaEquip.ComponentIndex);
-                               oaEquip.CoilAirOutletNode = HeatingCoils::GetCoilOutletNode(state, oaEquip.ComponentIndex);
+                               oaEquip.CoilAirInletNode = HeatingCoils::GetCoilAirInletNode(state, oaEquip.ComponentIndex);
+                               oaEquip.CoilAirOutletNode = HeatingCoils::GetCoilAirOutletNode(state, oaEquip.ComponentIndex);
                             }
                         } break;
                             
@@ -1009,7 +967,6 @@ namespace OutdoorAirUnit {
         using DataZoneEquipment::CheckZoneEquipmentList;
         using PlantUtilities::InitComponentNodes;
         using PlantUtilities::ScanPlantLoopsForObject;
-        using ScheduleManager::GetCurrentScheduleValue;
         using SteamCoils::GetCoilMaxSteamFlowRate;
         using WaterCoils::SimulateWaterCoilComponents;
 
@@ -1026,7 +983,7 @@ namespace OutdoorAirUnit {
         int const InNode = thisOutAirUnit.AirInletNode;
         int const OutNode = thisOutAirUnit.AirOutletNode;
         int const OutsideAirNode = thisOutAirUnit.OutsideAirNode;
-        Real64 const OAFrac = GetCurrentScheduleValue(state, thisOutAirUnit.OutAirSchedPtr);
+        Real64 const OAFrac = thisOutAirUnit.outAirSched->getCurrentVal();
 
         if (state.dataOutdoorAirUnit->MyOneTimeFlag) {
 
@@ -1116,7 +1073,7 @@ namespace OutdoorAirUnit {
 
             if (thisOutAirUnit.ExtFan) {
                 // set the exhaust air mass flow rate from input
-                Real64 const EAFrac = GetCurrentScheduleValue(state, thisOutAirUnit.ExtOutAirSchedPtr);
+                Real64 const EAFrac = thisOutAirUnit.extAirSched->getCurrentVal();
                 thisOutAirUnit.ExtAirMassFlow = RhoAir * EAFrac * thisOutAirUnit.ExtAirVolFlow;
                 thisOutAirUnit.EMaxAirMassFlow = RhoAir * EAFrac * thisOutAirUnit.EFanMaxAirVolFlow;
 
@@ -1212,9 +1169,8 @@ namespace OutdoorAirUnit {
 
         // set the exhaust air mass flow rate from input
         if (thisOutAirUnit.ExtFan) {
-            Real64 const EAFrac = GetCurrentScheduleValue(state, thisOutAirUnit.ExtOutAirSchedPtr);
-            if (thisOutAirUnit.ExtFanAvailSchedPtr > 0.0) {
-                thisOutAirUnit.ExtAirMassFlow = RhoAir * EAFrac * thisOutAirUnit.ExtAirVolFlow;
+            if (thisOutAirUnit.extFanAvailSched != nullptr) {
+                thisOutAirUnit.ExtAirMassFlow = RhoAir * thisOutAirUnit.ExtAirVolFlow * thisOutAirUnit.extAirSched->getCurrentVal();
             } else {
                 thisOutAirUnit.ExtAirMassFlow = 0.0;
             }
@@ -1415,7 +1371,7 @@ namespace OutdoorAirUnit {
             }
             if (thisOAEquip.Type == CompType::WaterCoil_CoolingHXAsst) {
                 if (thisOAEquip.MaxVolWaterFlow == AutoSize) {
-                  HVACHXAssistedCoolingCoil::SimHXAssistedCoolingCoil(
+                  HXAssistCoil::SimHXAssistedCoolingCoil(
                         state, thisOAEquip.ComponentName, true, HVAC::CompressorOp::On, 0.0, thisOAEquip.ComponentIndex, HVAC::FanOp::Continuous);
                 }
             }
@@ -1464,10 +1420,6 @@ namespace OutdoorAirUnit {
 
         auto &TurnFansOff = state.dataHVACGlobal->TurnFansOff;
         auto &TurnFansOn = state.dataHVACGlobal->TurnFansOn;
-        using HeatingCoils::CheckHeatingCoilSchedule;
-        using HVACHXAssistedCoolingCoil::CheckHXAssistedCoolingCoilSchedule;
-        using ScheduleManager::GetCurrentScheduleValue;
-
         // Locals
 
         // SUBROUTINE ARGUMENT DEFINITIONS:
@@ -1507,8 +1459,8 @@ namespace OutdoorAirUnit {
         thisOutAirUnit.CompOutSetTemp = 0.0;
         thisOutAirUnit.FanEffect = false;
 
-        if ((GetCurrentScheduleValue(state, thisOutAirUnit.SchedPtr) <= 0) || (GetCurrentScheduleValue(state, thisOutAirUnit.OutAirSchedPtr) <= 0) ||
-            ((GetCurrentScheduleValue(state, thisOutAirUnit.SFanAvailSchedPtr) <= 0) && !TurnFansOn) || TurnFansOff) {
+        if ((thisOutAirUnit.availSched->getCurrentVal() <= 0) || (thisOutAirUnit.outAirSched->getCurrentVal() <= 0) ||
+            ((thisOutAirUnit.supFanAvailSched->getCurrentVal() <= 0) && !TurnFansOn) || TurnFansOff) {
             // System is off or has no load upon the unit; set the flow rates to zero and then
             // simulate the components with the no flow conditions
             if (thisOutAirUnit.ExtFan) {
@@ -1616,8 +1568,8 @@ namespace OutdoorAirUnit {
             } break;
             case OAUnitCtrlType::Temperature: {
                 SetPointTemp = DesOATemp;
-                HiCtrlTemp = GetCurrentScheduleValue(state, thisOutAirUnit.HiCtrlTempSchedPtr);
-                LoCtrlTemp = GetCurrentScheduleValue(state, thisOutAirUnit.LoCtrlTempSchedPtr);
+                HiCtrlTemp = thisOutAirUnit.hiCtrlTempSched->getCurrentVal();
+                LoCtrlTemp = thisOutAirUnit.loCtrlTempSched->getCurrentVal();
                 if ((DesOATemp <= HiCtrlTemp) && (DesOATemp >= LoCtrlTemp)) {
                     thisOutAirUnit.OperatingMode = Operation::NeutralMode;
                     AirOutletTemp = DesOATemp;
@@ -1775,7 +1727,6 @@ namespace OutdoorAirUnit {
         using HeatRecovery::SimHeatRecovery;
         using HVAC::SmallLoad;
         using HVACDXHeatPumpSystem::SimDXHeatPumpSystem;
-        using ScheduleManager::GetCurrentScheduleValue;
         using WaterCoils::SimulateWaterCoilComponents;
 
         // SUBROUTINE LOCAL VARIABLE DEFINITIONS
@@ -2198,7 +2149,7 @@ namespace OutdoorAirUnit {
         } break;
           
         case CompType::WaterCoil_CoolingHXAsst: {
-            HVACHXAssistedCoolingCoil::SimHXAssistedCoolingCoil(
+            HXAssistCoil::SimHXAssistedCoolingCoil(
                 state, thisOAEquip.ComponentName, FirstHVACIteration, HVAC::CompressorOp::On, 0.0, CoilIndex, HVAC::FanOp::Continuous);
             Real64 const AirMassFlow = oaInletNode.MassFlowRate;
             LoadMet = AirMassFlow * (PsyHFnTdbW(oaOutletNode.Temp, oaInletNode.HumRat) - PsyHFnTdbW(oaInletNode.Temp, oaInletNode.HumRat));

@@ -189,7 +189,7 @@ namespace Dayltg {
         int spaceIndex = 0;   // Index to space where the daylighting:controls object is located (0 if specified for a zone)
         int enclIndex = 0;    // Index to enclosure where the daylighting:controls object is located
         Dayltg::DaylightingMethod DaylightMethod = DaylightingMethod::None; // Type of Daylighting (1=SplitFlux, 2=DElight)
-        int AvailSchedNum = 0;                                              // pointer to availability schedule if present
+        Sched::Schedule *availSched = nullptr;                              // availability schedule if present
         int TotalExtWindows = 0;
         int TotalDaylRefPoints = 0; // Number of daylighting reference points for this control
 
@@ -214,7 +214,7 @@ namespace Dayltg {
         //  3: Reference point number (1 to Total Daylighting Reference Points)
         //  4: Sky type (1 to 4; 1 = clear, 2 = clear turbid, 3 = intermediate, 4 = overcast
         //  5: Daylit window number (1 to NumOfDayltgExtWins)
-        std::array<Array2D<std::array<std::array<Dayltg::Illums, (int)Lum::Num>, (int)DataSurfaces::WinCover::Num>>, (int)Constant::HoursInDay + 1>
+        std::array<Array2D<std::array<std::array<Dayltg::Illums, (int)Lum::Num>, (int)DataSurfaces::WinCover::Num>>, (int)Constant::iHoursInDay + 1>
             daylFac;
 
         // Time exceeding daylight illuminance setpoint at reference points (hours)
@@ -271,7 +271,7 @@ namespace Dayltg {
         //  3: Reference point number (1 to Total Map Reference Points)
         //  4: Shading index (1 to MaxSlatAngs+1; 1 = bare window; 2 = with shade, or, if blinds
         //      2 = first slat position, 3 = second position, ..., MaxSlatAngs+1 = last position)
-        std::array<Array2D<std::array<Dayltg::Illums, (int)DataSurfaces::WinCover::Num>>, (int)Constant::HoursInDay + 1> daylFac;
+        std::array<Array2D<std::array<Dayltg::Illums, (int)DataSurfaces::WinCover::Num>>, (int)Constant::iHoursInDay + 1> daylFac;
     };
 
     struct RefPointData

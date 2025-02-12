@@ -106,6 +106,10 @@ void ManageHVACSizingSimulation(EnergyPlusData &state, bool &ErrorsFound);
 struct HVACSizingSimMgrData : BaseGlobalStruct
 {
     std::unique_ptr<HVACSizingSimulationManager> hvacSizingSimulationManager;
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
+
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {
     }

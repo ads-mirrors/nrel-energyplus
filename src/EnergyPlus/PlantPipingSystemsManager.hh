@@ -63,7 +63,7 @@
 #include <EnergyPlus/Data/BaseData.hh>
 #include <EnergyPlus/DataGlobals.hh>
 #include <EnergyPlus/EnergyPlus.hh>
-#include <EnergyPlus/GroundTemperatureModeling/GroundTemperatureModelManager.hh>
+#include <EnergyPlus/GroundTemperatureModeling/BaseGroundTemperatureModel.hh>
 #include <EnergyPlus/Plant/Enums.hh>
 #include <EnergyPlus/Plant/PlantLocation.hh>
 #include <EnergyPlus/PlantComponent.hh>
@@ -82,9 +82,6 @@ namespace PlantPipingSystemsManager {
     extern std::string const ObjName_HorizTrench;
     extern std::string const ObjName_ZoneCoupled_Slab;
     extern std::string const ObjName_ZoneCoupled_Basement;
-
-    // Using/Aliasing
-    using namespace GroundTemperatureManager;
 
     enum class SegmentFlow
     {
@@ -774,7 +771,7 @@ namespace PlantPipingSystemsManager {
         BaseThermalPropertySet HorizInsProperties;
         BaseThermalPropertySet VertInsProperties;
         SimulationControl SimControls;
-        BaseGroundTempsModel *groundTempModel; // non-owning pointer
+        GroundTemp::BaseGroundTempsModel *groundTempModel; // non-owning pointer
         BasementZoneInfo BasementZone;
         MoistureInfo Moisture;
         // "Internal" data structure variables
@@ -1081,6 +1078,10 @@ struct PlantPipingSysMgrData : BaseGlobalStruct
     std::vector<PlantPipingSystemsManager::Circuit> circuits;
     std::vector<PlantPipingSystemsManager::Segment> segments;
     std::unordered_map<std::string, std::string> GroundDomainUniqueNames;
+
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
 
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {

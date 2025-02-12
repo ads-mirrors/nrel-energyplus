@@ -77,7 +77,6 @@ using namespace EnergyPlus;
 
 TEST_F(EnergyPlusFixture, FuelCellTest)
 {
-
     std::string const idf_objects = delimited_string({
 
         "Material,",
@@ -794,6 +793,7 @@ TEST_F(EnergyPlusFixture, FuelCellTest)
 
     ASSERT_TRUE(process_idf(idf_objects));
     EXPECT_FALSE(has_err_output());
+    state->init_state(*state);
 
     SimulationManager::ManageSimulation(*state);
     EXPECT_TRUE(has_err_output(true));
@@ -813,8 +813,7 @@ TEST_F(EnergyPlusFixture, FuelCellTest)
     EXPECT_EQ("GENERATOR FUEL CELL EXHAUST GAS TO WATER HEAT EXCHANGER 1", generatorController->compPlantName);
     EXPECT_EQ(0, generatorController->generatorIndex);
 
-    EXPECT_EQ("ALWAYS ON DISCRETE", generatorController->availSched);
-    EXPECT_GT(generatorController->availSchedPtr, 0);
+    EXPECT_EQ("ALWAYS ON DISCRETE", generatorController->availSched->Name);
 
     EXPECT_EQ(0, generatorController->nominalThermElectRatio);
 
@@ -923,7 +922,7 @@ TEST_F(EnergyPlusFixture, FuelCellTest)
 
     EXPECT_ENUM_EQ(DataGenerators::WaterTemperatureMode::WaterInReformSchedule, waterSup.WaterTempMode);
 
-    ASSERT_GT(waterSup.SchedNum, 0);
+    ASSERT_NE(waterSup.sched, nullptr);
 
     // Auxiliary Heater
     EXPECT_EQ("GENERATOR FUEL CELL AUXILIARY HEATER 1", thisFC->NameFCAuxilHeat);
@@ -1020,7 +1019,6 @@ TEST_F(EnergyPlusFixture, FuelCellTest)
 TEST_F(EnergyPlusFixture, DISABLED_FuelCellTest_Zero_Cp_Fix)
 {
     // state->clear_state();
-
     std::string const idf_objects = delimited_string({
 
         "Material,",
@@ -1740,6 +1738,8 @@ TEST_F(EnergyPlusFixture, DISABLED_FuelCellTest_Zero_Cp_Fix)
     process_err = has_err_output(true);
     EXPECT_FALSE(process_err);
 
+    state->init_state(*state);
+
     SimulationManager::ManageSimulation(*state);
     bool simulation_err(false);
     simulation_err = has_err_output(false);
@@ -1760,8 +1760,7 @@ TEST_F(EnergyPlusFixture, DISABLED_FuelCellTest_Zero_Cp_Fix)
     EXPECT_EQ("GENERATOR FUEL CELL EXHAUST GAS TO WATER HEAT EXCHANGER 1", generatorController->compPlantName);
     EXPECT_EQ(0, generatorController->generatorIndex);
 
-    EXPECT_EQ("ALWAYS ON DISCRETE", generatorController->availSched);
-    EXPECT_GT(generatorController->availSchedPtr, 0);
+    EXPECT_EQ("ALWAYS ON DISCRETE", generatorController->availSched->Name);
 
     EXPECT_EQ(0, generatorController->nominalThermElectRatio);
 
@@ -1870,7 +1869,7 @@ TEST_F(EnergyPlusFixture, DISABLED_FuelCellTest_Zero_Cp_Fix)
 
     EXPECT_ENUM_EQ(DataGenerators::WaterTemperatureMode::WaterInReformSchedule, waterSup.WaterTempMode);
 
-    ASSERT_GT(waterSup.SchedNum, 0);
+    ASSERT_NE(waterSup.sched, nullptr);
 
     // Auxiliary Heater
     EXPECT_EQ("GENERATOR FUEL CELL AUXILIARY HEATER 1", thisFC->NameFCAuxilHeat);

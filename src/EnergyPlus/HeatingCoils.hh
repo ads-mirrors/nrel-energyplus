@@ -67,19 +67,6 @@ namespace HeatingCoils {
     // MODULE PARAMETER DEFINITIONS
     Real64 constexpr MinAirMassFlow(0.001);
 
-    enum class HeatObjTypes // reclaim heat object types
-    {
-        Invalid = -1,
-        COMPRESSORRACK_REFRIGERATEDCASE,
-        COIL_DX_COOLING, // single speed DX
-        COIL_DX_MULTISPEED,
-        COIL_DX_MULTIMODE,
-        CONDENSER_REFRIGERATION,
-        COIL_DX_VARIABLE_COOLING,
-        COIL_COOLING_DX_NEW, // Coil:Cooling:DX main one-for-all coil
-        Num
-    };
-
     struct HeatingCoilEquipConditions
     {
         // Members
@@ -87,8 +74,7 @@ namespace HeatingCoils {
         std::string HeatingCoilModel; // Type of HeatingCoil ie. Simple, Detailed, etc.
         HVAC::CoilType coilType = HVAC::CoilType::Invalid;
         Constant::eFuel FuelType = Constant::eFuel::Invalid; // Type of fuel used, reference resource type integers
-        std::string Schedule;                                // HeatingCoil Operation Schedule
-        int SchedPtr = 0;                                    // Pointer to the correct schedule
+        Sched::Schedule *availSched = nullptr;               // availability schedule
         int InsuffTemperatureWarn = 0;                       // Used for recurring error message
         Real64 InletAirMassFlowRate = 0.0;                   // MassFlow through the HeatingCoil being Simulated [kg/Sec]
         Real64 OutletAirMassFlowRate = 0.0;
@@ -123,9 +109,11 @@ namespace HeatingCoils {
         int RTFErrorCount = 0;                 // used in recurring error warnings
         int PLFErrorIndex = 0;                 // used in recurring error warnings
         int PLFErrorCount = 0;                 // used in recurring error warnings
-        std::string ReclaimHeatingCoilName;    // Name of reclaim heating coil
-        int ReclaimHeatingSourceIndexNum = 0;  // Index to reclaim heating source (condenser) of a specific type
-        HeatObjTypes ReclaimHeatingSource = HeatObjTypes::Invalid; // The source for the Reclaim Heating Coil
+
+        std::string ReclaimHeatSourceName;    // Name of reclaim heating coil
+        int ReclaimHeatSourceNum = 0;  // Index to reclaim heating source (condenser) of a specific type
+        HVAC::HeatReclaimType ReclaimHeatSourceType = HVAC::HeatReclaimType::Invalid; // The source for the Reclaim Heating Coil
+
         int NumOfStages = 0;                                       // Number of speeds
         Array1D<Real64> MSNominalCapacity;                         // Nominal Capacity MS AC Furnace [W]
         Array1D<Real64> MSEfficiency;                              // Efficiency for MS AC Furnace [dimensionless]
@@ -155,8 +143,21 @@ namespace HeatingCoils {
                                        ObjexxFCL::Optional<Real64 const> PartLoadRatio = _, // part-load ratio of heating coil
                                        ObjexxFCL::Optional_int StageNum = _,
                                        ObjexxFCL::Optional<Real64 const> SpeedRatio = _ // Speed ratio of MultiStage heating coil
-    );
 
+                                       );
+
+    void SimulateHeatingCoilComponents(EnergyPlusData &state,
+                                       int const coilNum,
+                                       bool FirstHVACIteration,
+                                       ObjexxFCL::Optional<Real64 const> QCoilReq = _, // coil load to be met
+                                       ObjexxFCL::Optional<Real64> QCoilActual = _, // coil load actually delivered returned to calling component
+                                       ObjexxFCL::Optional_bool_const SuppHeat = _, // True if current heating coil is a supplemental heating coil
+                                       ObjexxFCL::Optional<HVAC::FanOp const> fanOp = _,    // fan operating mode, FanOp::Cycling or FanOp::Continuous
+                                       ObjexxFCL::Optional<Real64 const> PartLoadRatio = _, // part-load ratio of heating coil
+                                       ObjexxFCL::Optional_int StageNum = _,
+                                       ObjexxFCL::Optional<Real64 const> SpeedRatio = _ // Speed ratio of MultiStage heating coil
+    );
+  
     void GetHeatingCoilInput(EnergyPlusData &state);
 
     void InitHeatingCoil(EnergyPlusData &state, int CoilNum, bool FirstHVACIteration, Real64 QCoilRequired);
@@ -206,114 +207,50 @@ namespace HeatingCoils {
 
     void ReportHeatingCoil(EnergyPlusData &state, int CoilNum, bool coilIsSuppHeater);
 
-    void GetCoilIndex(EnergyPlusData &state, std::string const &HeatingCoilName, int &HeatingCoilIndex, bool &ErrorsFound);
 
-    int GetCoilIndex(EnergyPlusData &state, std::string const &HeatingCoilName);
+    int GetCoilIndex(EnergyPlusData &state, std::string_view const coilType, std::string const &coilName, bool &ErrorsFound);
+#ifdef OLD_API
+    Real64 GetCoilScheduleValue(EnergyPlusData &state, std::string_view const compType, std::string const &compName, bool &ErrorsFound);
 
-    void CheckHeatingCoilSchedule(EnergyPlusData &state,
-                                  std::string const &CompType, // unused1208
-                                  std::string_view CompName,
-                                  Real64 &Value,
-                                  int &CompIndex);
+    Real64 GetCoilCapacity(EnergyPlusData &state, std::string_view const coilType, std::string const &coilName, bool &ErrorsFound);
 
-    Real64 GetCoilCapacity(EnergyPlusData &state,
-                           std::string const &CoilType, // must match coil types in this module
-                           std::string const &CoilName, // must match coil names for the coil type
-                           bool &ErrorsFound            // set to true if problem
-    );
+    Sched::Schedule *GetCoilAvailSched(EnergyPlusData &state, std::string_view const coilType, std::string const &coilName, bool &ErrorsFound);
 
-    Real64 GetCoilCapacity(EnergyPlusData &state,
-                           int const coilNum
-    );
+    int GetCoilAirInletNode(EnergyPlusData &state, std::string_view const coilType, std::string const &coilName, bool &ErrorsFound);
+
+    int GetCoilAirOutletNode(EnergyPlusData &state, std::string_view const coilType, std::string const &coilName, bool &ErrorsFound);
+
+    int GetCoilHeatReclaimSourceIndex(EnergyPlusData &state, std::string_view const coilType, std::string const &coilName, bool &ErrorsFound);
+
+    int GetCoilControlNode(EnergyPlusData &state, std::string_view const coilType, std::string const &coilName, bool &ErrorsFound);
+
+    int GetCoilPLFCurve(EnergyPlusData &state, std::string_view const coilType, std::string const &coilName, bool &ErrorsFound);
+
+    int GetCoilNumberOfStages(EnergyPlusData &state, std::string_view const coilType, std::string const &coilName, bool &ErrorsFound);
+#endif // OLD_API
   
-    int GetCoilAvailScheduleIndex(EnergyPlusData &state,
-                                  std::string const &CoilType, // must match coil types in this module
-                                  std::string const &CoilName, // must match coil names for the coil type
-                                  bool &ErrorsFound            // set to true if problem
-    );
+    // New API
+    int GetCoilIndex(EnergyPlusData &state, std::string const &coilName);
 
-    int GetCoilInletNode(EnergyPlusData &state,
-                         std::string_view CoilType,   // must match coil types in this module
-                         std::string const &CoilName, // must match coil names for the coil type
-                         bool &ErrorsFound            // set to true if problem
-    );
-
-    int GetCoilInletNode(EnergyPlusData &state,
-                         int const coilNum
-    );
+    Real64 GetCoilScheduleValue(EnergyPlusData &state, int const coilNum);
   
-    int GetCoilOutletNode(EnergyPlusData &state,
-                          std::string_view CoilType,   // must match coil types in this module
-                          std::string const &CoilName, // must match coil names for the coil type
-                          bool &ErrorsFound            // set to true if problem
-    );
-
-    int GetCoilOutletNode(EnergyPlusData &state,
-                          int const coilNum
-    );
+    Real64 GetCoilCapacity(EnergyPlusData &state, int const coilNum);
   
-    int GetHeatReclaimSourceIndex(EnergyPlusData &state,
-                                  std::string const &CoilType, // must match coil types in this module
-                                  std::string const &CoilName, // must match coil names for the coil type
-                                  bool &ErrorsFound            // set to true if problem
-    );
-
-    int GetHeatReclaimSourceIndex(EnergyPlusData &state,
-                                  int const coilNum
-    );
+    int GetCoilAirInletNode(EnergyPlusData &state, int const coilNum);
   
-    int GetCoilControlNodeNum(EnergyPlusData &state,
-                              std::string const &CoilType, // must match coil types in this module
-                              std::string const &CoilName, // must match coil names for the coil type
-                              bool &ErrorsFound            // set to true if problem
-    );
-
-    int GetCoilControlNodeNum(EnergyPlusData &state,
-                              int const coilNum
-    );
+    int GetCoilAirOutletNode(EnergyPlusData &state, int const coilNum);
   
-    int GetHeatingCoilTypeNum(EnergyPlusData &state,
-                              std::string const &CoilType, // must match coil types in this module
-                              std::string const &CoilName, // must match coil names for the coil type
-                              bool &ErrorsFound            // set to true if problem
-    );
-
-    int GetHeatingCoilIndex(EnergyPlusData &state,
-                            std::string const &CoilType, // must match coil types in this module
-                            std::string const &CoilName, // must match coil names for the coil type
-                            bool &ErrorsFound            // set to true if problem
-    );
-
-    int GetHeatingCoilIndex(EnergyPlusData &state,
-                            std::string const &CoilName // must match coil names for the coil type
-    );
+    int GetCoilHeatReclaimSourceIndex(EnergyPlusData &state, int const coilNum);
   
-    int GetHeatingCoilPLFCurveIndex(EnergyPlusData &state,
-                                    std::string const &CoilType, // must match coil types in this module
-                                    std::string const &CoilName, // must match coil names for the coil type
-                                    bool &ErrorsFound            // set to true if problem
-    );
-
-    int GetHeatingCoilPLFCurveIndex(EnergyPlusData &state,
-                                    int const coilNum
-    );
+    int GetCoilControlNode(EnergyPlusData &state, int const coilNum);
   
-    int GetHeatingCoilNumberOfStages(EnergyPlusData &state,
-                                     std::string const &CoilType, // must match coil types in this module
-                                     std::string const &CoilName, // must match coil names for the coil type
-                                     bool &ErrorsFound            // set to true if problem
-    );
+    int GetCoilPLFCurveIndex(EnergyPlusData &state, int const coilNum);
+  
+    int GetCoilNumberOfStages(EnergyPlusData &state, int const coilNum);
 
-    // sets data to a coil that is used as a regeneration air heating coil in
-    // desiccant dehumidification system
-    void SetHeatingCoilData(EnergyPlusData &state,
-                            int CoilNum,                                            // Number of electric or gas heating Coil
-                            bool &ErrorsFound,                                      // Set to true if certain errors found
-                            ObjexxFCL::Optional_bool DesiccantRegenerationCoil = _, // Flag that this coil is used as regeneration air heating coil
-                            ObjexxFCL::Optional_int DesiccantDehumIndex = _         // Index for the desiccant dehum system where this caoil is used
-    );
+    void SetCoilDesicData(EnergyPlusData &state, int const coilNum, bool desicRegenCoil, int desicDehumNum);
 
-    void SetHeatingCoilAirLoopNumber(EnergyPlusData &state, std::string const &HeatingCoilName, int AirLoopNum, bool &ErrorsFound);
+    void SetCoilAirLoopNumber(EnergyPlusData &state, int const coilNum, int AirLoopNum);
 
 } // namespace HeatingCoils
 
@@ -334,16 +271,16 @@ struct HeatingCoilsData : BaseGlobalStruct
     Array1D<HeatingCoils::HeatingCoilEquipConditions> HeatingCoil;
     Array1D<HeatingCoils::HeatingCoilNumericFieldData> HeatingCoilNumericFields;
     bool MyOneTimeFlag = true; // one time initialization flag
-    bool InputErrorsFound = false;
 
-    int MaxNums = 0;                    // Maximum number of numeric input fields
-    int MaxAlphas = 0;                  // Maximum number of alpha input fields
-    int TotalArgs = 0;                  // Total number of alpha and numeric arguments (max) for a certain object in the input file
     int ValidSourceTypeCounter = 0;     // Counter used to determine if desuperheater source name is valid
     bool HeatingCoilFatalError = false; // used for error checking
     Array1D_bool MySPTestFlag;          // used for error checking
     Array1D_bool ShowSingleWarning;     // Used for single warning message for desuperheater coil
     Array1D_bool MyEnvrnFlag;           // one time environment flag
+
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
 
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {
@@ -365,10 +302,6 @@ struct HeatingCoilsData : BaseGlobalStruct
         this->HeatingCoil.deallocate();
         this->HeatingCoilNumericFields.deallocate();
         this->MyOneTimeFlag = true;
-        this->InputErrorsFound = false;
-        this->MaxNums = 0;
-        this->MaxAlphas = 0;
-        this->TotalArgs = 0;
         this->ValidSourceTypeCounter = 0;
         this->HeatingCoilFatalError = false;
         this->MySPTestFlag.clear();
@@ -380,3 +313,4 @@ struct HeatingCoilsData : BaseGlobalStruct
 } // namespace EnergyPlus
 
 #endif
+

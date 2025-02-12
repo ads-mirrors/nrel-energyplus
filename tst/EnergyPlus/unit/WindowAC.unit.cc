@@ -435,10 +435,9 @@ TEST_F(EnergyPlusFixture, WindowAC_VStest1)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
-
-    state->dataGlobal->NumOfTimeStepInHour = 6;    // must initialize this to get schedules initialized
-    state->dataGlobal->MinutesPerTimeStep = 10;    // must initialize this to get schedules initialized
-    ScheduleManager::ProcessScheduleInput(*state); // read schedule data
+    state->dataGlobal->TimeStepsInHour = 6;    // must initialize this to get schedules initialized
+    state->dataGlobal->MinutesInTimeStep = 10; // must initialize this to get schedules initialized
+    state->init_state(*state);
 
     bool errorsFound(false);
     HeatBalanceManager::GetProjectControlData(*state, errorsFound); // read project control data
@@ -467,7 +466,7 @@ TEST_F(EnergyPlusFixture, WindowAC_VStest1)
     // check input processing
     EXPECT_EQ(compIndex, 1);
 
-    EXPECT_EQ(state->dataWindowAC->WindAC(1).DXCoilType_Num, HVAC::Coil_CoolingAirToAirVariableSpeed);
+    EXPECT_ENUM_EQ(state->dataWindowAC->WindAC(1).coilType, HVAC::CoilType::CoolingDXVariableSpeed);
     // check Sizing
     EXPECT_NEAR(state->dataWindowAC->WindAC(1).MaxAirVolFlow, 0.0415, 0.0001);
 

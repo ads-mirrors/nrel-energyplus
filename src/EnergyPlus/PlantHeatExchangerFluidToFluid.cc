@@ -175,6 +175,7 @@ void GetFluidHeatExchangerInput(EnergyPlusData &state)
     // get input for heat exchanger model
 
     static constexpr std::string_view RoutineName("GetFluidHeatExchangerInput: ");
+    static constexpr std::string_view routineName = "GetFluidHeatExchangerInput";
 
     bool ErrorsFound(false);
     int NumAlphas;        // Number of elements in the alpha array
@@ -222,20 +223,18 @@ void GetFluidHeatExchangerInput(EnergyPlusData &state)
                                                                      lAlphaFieldBlanks,
                                                                      cAlphaFieldNames,
                                                                      cNumericFieldNames);
+
+            ErrorObjectHeader eoh{routineName, cCurrentModuleObject, cAlphaArgs(1)};
+
             Util::IsNameEmpty(state, cAlphaArgs(1), cCurrentModuleObject, ErrorsFound);
 
             state.dataPlantHXFluidToFluid->FluidHX(CompLoop).Name = cAlphaArgs(1);
 
             if (lAlphaFieldBlanks(2)) {
-                state.dataPlantHXFluidToFluid->FluidHX(CompLoop).AvailSchedNum = ScheduleManager::ScheduleAlwaysOn;
-            } else {
-                state.dataPlantHXFluidToFluid->FluidHX(CompLoop).AvailSchedNum = ScheduleManager::GetScheduleIndex(state, cAlphaArgs(2));
-                if (state.dataPlantHXFluidToFluid->FluidHX(CompLoop).AvailSchedNum <= 0) {
-                    ShowSevereError(state, format("{}{}=\"{}\", invalid entry.", RoutineName, cCurrentModuleObject, cAlphaArgs(1)));
-                    ShowContinueError(state, format("Invalid {} = {}", cAlphaFieldNames(2), cAlphaArgs(2)));
-                    ShowContinueError(state, "Schedule was not found ");
-                    ErrorsFound = true;
-                }
+                state.dataPlantHXFluidToFluid->FluidHX(CompLoop).availSched = Sched::GetScheduleAlwaysOn(state);
+            } else if ((state.dataPlantHXFluidToFluid->FluidHX(CompLoop).availSched = Sched::GetSchedule(state, cAlphaArgs(2))) == nullptr) {
+                ShowSevereItemNotFound(state, eoh, cAlphaFieldNames(2), cAlphaArgs(2));
+                ErrorsFound = true;
             }
 
             state.dataPlantHXFluidToFluid->FluidHX(CompLoop).DemandSideLoop.inletNodeNum =
@@ -923,7 +922,7 @@ void HeatExchangerStruct::control(EnergyPlusData &state, Real64 MyLoad, bool Fir
 
     // check if available by schedule
     bool ScheduledOff;
-    Real64 AvailSchedValue = ScheduleManager::GetCurrentScheduleValue(state, this->AvailSchedNum);
+    Real64 AvailSchedValue = this->availSched->getCurrentVal();
     if (AvailSchedValue <= 0) {
         ScheduledOff = true;
     } else {

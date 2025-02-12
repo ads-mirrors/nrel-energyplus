@@ -53,7 +53,6 @@
 
 // ObjexxFCL Headers
 #include <ObjexxFCL/Array.functions.hh>
-#include <ObjexxFCL/Fmath.hh>
 #include <ObjexxFCL/Vector3.hh>
 #include <ObjexxFCL/member.functions.hh>
 
@@ -382,7 +381,7 @@ void checkShadingSurfaceSchedules(EnergyPlusData &state)
         bool const anyPlugins = size(state.dataPluginManager->plugins) > 0;
         bool const runningByAPI = state.dataGlobal->eplusRunningViaAPI;
         bool const anyEMS = state.dataGlobal->AnyEnergyManagementSystemInModel;
-        if ((anyEMS && EMSManager::isScheduleManaged(state, thisSurface.SchedShadowSurfIndex)) || runningByAPI || anyPlugins) {
+        if ((anyEMS && EMSManager::isScheduleManaged(state, thisSurface.shadowSurfSched)) || runningByAPI || anyPlugins) {
             // Transmittance schedule definitely has an actuator or may have one via python plugin or API
             // Set not transparent so it won't be skipped during shading calcs
             thisSurface.IsTransparent = false;
@@ -394,7 +393,7 @@ void checkShadingSurfaceSchedules(EnergyPlusData &state)
             ShowWarningError(state,
                              format(R"(Shading Surface="{}", Transmittance Schedule Name="{}", is always transparent.)",
                                     thisSurface.Name,
-                                    state.dataScheduleMgr->Schedule(thisSurface.SchedShadowSurfIndex).Name));
+                                    thisSurface.shadowSurfSched->Name));
             ShowContinueError(state, "This shading surface will be ignored.");
         }
     }
@@ -471,7 +470,7 @@ void GetShadowingInput(EnergyPlusData &state)
             state.dataIPShortCut->cAlphaArgs(aNum) = "Scheduled";
             checkScheduledSurfacePresent(state);
         } else if (Util::SameString(state.dataIPShortCut->cAlphaArgs(aNum), "Imported")) {
-            if (state.dataScheduleMgr->ScheduleFileShadingProcessed) {
+            if (state.dataSched->ScheduleFileShadingProcessed) {
                 state.dataSysVars->shadingMethod = ShadingMethod::Imported;
                 state.dataIPShortCut->cAlphaArgs(aNum) = "Imported";
             } else {
@@ -738,16 +737,12 @@ void processShadowingInput(EnergyPlusData &state)
     }
 
     if (state.dataSysVars->shadingMethod == DataSystemVariables::ShadingMethod::Imported) {
-        int ExtShadingSchedNum;
-        for (int SurfNum = 1; SurfNum <= state.dataSurface->TotSurfaces; ++SurfNum) {
-            ExtShadingSchedNum = ScheduleManager::GetScheduleIndex(state, state.dataSurface->Surface(SurfNum).Name + "_shading");
-            if (ExtShadingSchedNum != 0) {
-                state.dataSurface->Surface(SurfNum).SurfSchedExternalShadingFrac = true;
-                state.dataSurface->Surface(SurfNum).SurfExternalShadingSchInd = ExtShadingSchedNum;
+        for (auto &surf : state.dataSurface->Surface) {
+            if ((surf.surfExternalShadingSched = Sched::GetSchedule(state, surf.Name + "_shading")) != nullptr) {
+                surf.SurfSchedExternalShadingFrac = true;
             } else {
                 ShowWarningError(state,
-                                 format("processShadowingInput: sunlit fraction schedule not found for {} when using ImportedShading.",
-                                        state.dataSurface->Surface(SurfNum).Name));
+                                 format("processShadowingInput: sunlit fraction schedule not found for {} when using ImportedShading.", surf.Name));
                 ShowContinueError(state, "These values are set to 1.0.");
             }
         }
@@ -889,7 +884,7 @@ void AllocateModuleArrays(EnergyPlusData &state)
     state.dataSolarShading->SurfMultIsoSky.dimension(s_surf->TotSurfaces, 0.0);
     state.dataSolarShading->SurfMultCircumSolar.dimension(s_surf->TotSurfaces, 0.0);
     state.dataSolarShading->SurfMultHorizonZenith.dimension(s_surf->TotSurfaces, 0.0);
-    state.dataSolarShading->SurfWinRevealStatus.dimension(24, state.dataGlobal->NumOfTimeStepInHour, s_surf->TotSurfaces, 0);
+    state.dataSolarShading->SurfWinRevealStatus.dimension(24, state.dataGlobal->TimeStepsInHour, s_surf->TotSurfaces, 0);
 
     // Weiler-Atherton
     state.dataSolarShading->MAXHCArrayBounds = 2 * (s_surf->MaxVerticesPerSurface + 1);
@@ -909,8 +904,8 @@ void AllocateModuleArrays(EnergyPlusData &state)
     state.dataSolarShading->XTEMP1.dimension(2 * (s_surf->MaxVerticesPerSurface + 1), 0.0);
     state.dataSolarShading->YTEMP1.dimension(2 * (s_surf->MaxVerticesPerSurface + 1), 0.0);
 
-    s_surf->SurfSunCosHourly.allocate(Constant::HoursInDay);
-    for (int hour = 1; hour <= Constant::HoursInDay; hour++) {
+    s_surf->SurfSunCosHourly.allocate(Constant::iHoursInDay);
+    for (int hour = 1; hour <= Constant::iHoursInDay; hour++) {
         s_surf->SurfSunCosHourly(hour) = 0.0;
     }
     s_surf->SurfSunlitArea.dimension(s_surf->TotSurfaces, 0.0);
@@ -946,15 +941,15 @@ void AllocateModuleArrays(EnergyPlusData &state)
     s_surf->SurfWinInsideFrameCondensationFlag.dimension(s_surf->TotSurfaces, 0);
     s_surf->SurfWinInsideDividerCondensationFlag.dimension(s_surf->TotSurfaces, 0);
 
-    state.dataHeatBal->SurfSunlitFracHR.dimension(Constant::HoursInDay, s_surf->TotSurfaces, 0.0);
-    state.dataHeatBal->SurfSunlitFrac.dimension(Constant::HoursInDay, state.dataGlobal->NumOfTimeStepInHour, s_surf->TotSurfaces, 0.0);
-    state.dataHeatBal->SurfSunlitFracWithoutReveal.dimension(Constant::HoursInDay, state.dataGlobal->NumOfTimeStepInHour, s_surf->TotSurfaces, 0.0);
+    state.dataHeatBal->SurfSunlitFracHR.dimension(Constant::iHoursInDay, s_surf->TotSurfaces, 0.0);
+    state.dataHeatBal->SurfSunlitFrac.dimension(Constant::iHoursInDay, state.dataGlobal->TimeStepsInHour, s_surf->TotSurfaces, 0.0);
+    state.dataHeatBal->SurfSunlitFracWithoutReveal.dimension(Constant::iHoursInDay, state.dataGlobal->TimeStepsInHour, s_surf->TotSurfaces, 0.0);
     state.dataHeatBal->SurfWinBackSurfaces.dimension(
-        Constant::HoursInDay, state.dataGlobal->NumOfTimeStepInHour, state.dataBSDFWindow->MaxBkSurf, s_surf->TotSurfaces, 0);
+        Constant::iHoursInDay, state.dataGlobal->TimeStepsInHour, state.dataBSDFWindow->MaxBkSurf, s_surf->TotSurfaces, 0);
     state.dataHeatBal->SurfWinOverlapAreas.dimension(
-        Constant::HoursInDay, state.dataGlobal->NumOfTimeStepInHour, state.dataBSDFWindow->MaxBkSurf, s_surf->TotSurfaces, 0.0);
-    state.dataHeatBal->SurfCosIncAngHR.dimension(Constant::HoursInDay, s_surf->TotSurfaces, 0.0);
-    state.dataHeatBal->SurfCosIncAng.dimension(Constant::HoursInDay, state.dataGlobal->NumOfTimeStepInHour, s_surf->TotSurfaces, 0.0);
+        Constant::iHoursInDay, state.dataGlobal->TimeStepsInHour, state.dataBSDFWindow->MaxBkSurf, s_surf->TotSurfaces, 0.0);
+    state.dataHeatBal->SurfCosIncAngHR.dimension(Constant::iHoursInDay, s_surf->TotSurfaces, 0.0);
+    state.dataHeatBal->SurfCosIncAng.dimension(Constant::iHoursInDay, state.dataGlobal->TimeStepsInHour, s_surf->TotSurfaces, 0.0);
 
     state.dataHeatBal->ZoneTransSolar.dimension(state.dataViewFactor->NumOfSolarEnclosures, 0.0);
     state.dataHeatBal->ZoneBmSolFrExtWinsRep.dimension(state.dataViewFactor->NumOfSolarEnclosures, 0.0);
@@ -2610,7 +2605,7 @@ void AnisoSkyViewFactors(EnergyPlusData &state)
 
     CosZenithAng = state.dataEnvrn->SOLCOS(3);
     ZenithAng = std::acos(CosZenithAng);
-    ZenithAngDeg = ZenithAng / Constant::DegToRadians;
+    ZenithAngDeg = ZenithAng / Constant::DegToRad;
 
     state.dataSolarShading->SurfAnisoSkyMult = 0.0;
 
@@ -4769,7 +4764,6 @@ void CalcPerSolarBeam(EnergyPlusData &state,
 
     // Using/Aliasing
 
-    using ScheduleManager::LookUpScheduleValue;
     using WindowComplexManager::InitComplexWindows;
     using WindowComplexManager::UpdateComplexWindows;
 
@@ -4809,7 +4803,7 @@ void CalcPerSolarBeam(EnergyPlusData &state,
                     }
                 }
                 for (int hour = 1; hour <= 24; ++hour) {
-                    for (int timestep = 1; timestep <= state.dataGlobal->NumOfTimeStepInHour; ++timestep) {
+                    for (int timestep = 1; timestep <= state.dataGlobal->TimeStepsInHour; ++timestep) {
                         for (int surfNum = firstSurf; surfNum <= lastSurf; ++surfNum) {
                             state.dataHeatBal->SurfSunlitFrac(hour, timestep, surfNum) = 0.0;
                             state.dataHeatBal->SurfCosIncAng(hour, timestep, surfNum) = 0.0;
@@ -4818,7 +4812,7 @@ void CalcPerSolarBeam(EnergyPlusData &state,
                     }
                 }
                 for (int hour = 1; hour <= 24; ++hour) {
-                    for (int timestep = 1; timestep <= state.dataGlobal->NumOfTimeStepInHour; ++timestep) {
+                    for (int timestep = 1; timestep <= state.dataGlobal->TimeStepsInHour; ++timestep) {
                         for (int backSurfNum = 1; backSurfNum <= state.dataBSDFWindow->MaxBkSurf; ++backSurfNum) {
                             for (int surfNum = firstSurf; surfNum <= lastSurf; ++surfNum) {
                                 state.dataHeatBal->SurfWinBackSurfaces(hour, timestep, backSurfNum, surfNum) = 0.0;
@@ -4866,7 +4860,7 @@ void CalcPerSolarBeam(EnergyPlusData &state,
 
     if (!state.dataSysVars->DetailedSolarTimestepIntegration) {
         for (iHour = 1; iHour <= 24; ++iHour) { // Do for all hours
-            for (TS = 1; TS <= state.dataGlobal->NumOfTimeStepInHour; ++TS) {
+            for (TS = 1; TS <= state.dataGlobal->TimeStepsInHour; ++TS) {
                 FigureSunCosines(state, iHour, TS, AvgEqOfTime, AvgSinSolarDeclin, AvgCosSolarDeclin);
             }
         }
@@ -4877,7 +4871,7 @@ void CalcPerSolarBeam(EnergyPlusData &state,
     UpdateComplexWindows(state);
     if (!state.dataSysVars->DetailedSolarTimestepIntegration) {
         for (iHour = 1; iHour <= 24; ++iHour) { // Do for all hours.
-            for (TS = 1; TS <= state.dataGlobal->NumOfTimeStepInHour; ++TS) {
+            for (TS = 1; TS <= state.dataGlobal->TimeStepsInHour; ++TS) {
                 FigureSolarBeamAtTimestep(state, iHour, TS);
             } // TimeStep Loop
         }     // Hour Loop
@@ -4914,7 +4908,7 @@ void FigureSunCosines(EnergyPlusData &state,
 
     auto &s_surf = state.dataSurface;
 
-    if (state.dataGlobal->NumOfTimeStepInHour != 1) {
+    if (state.dataGlobal->TimeStepsInHour != 1) {
         CurrentTime = double(iHour - 1) + double(iTimeStep) * (state.dataGlobal->TimeStepZone);
     } else {
         CurrentTime = double(iHour) + state.dataEnvrn->TS1TimeOffset;
@@ -4923,7 +4917,7 @@ void FigureSunCosines(EnergyPlusData &state,
 
     // Save hourly values for use in DaylightingManager
     if (!state.dataSysVars->DetailedSolarTimestepIntegration) {
-        if (iTimeStep == state.dataGlobal->NumOfTimeStepInHour) s_surf->SurfSunCosHourly(iHour) = state.dataSolarShading->SUNCOS;
+        if (iTimeStep == state.dataGlobal->TimeStepsInHour) s_surf->SurfSunCosHourly(iHour) = state.dataSolarShading->SUNCOS;
     } else {
         s_surf->SurfSunCosHourly(iHour) = state.dataSolarShading->SUNCOS;
     }
@@ -4944,7 +4938,6 @@ void FigureSolarBeamAtTimestep(EnergyPlusData &state, int const iHour, int const
     // This subroutine computes solar gain multipliers for beam solar
 
     using DataSystemVariables::ShadingMethod;
-    using ScheduleManager::LookUpScheduleValue;
 
     Real64 SurfArea;        // Surface area. For walls, includes all window frame areas.
     Real64 Fac1WoShdg;      // Intermediate calculation factor, without shading
@@ -4965,7 +4958,7 @@ void FigureSolarBeamAtTimestep(EnergyPlusData &state, int const iHour, int const
                                                            state.dataSolarShading->SUNCOS(2) * s_surf->Surface(SurfNum).OutNormVec(2) +
                                                            state.dataSolarShading->SUNCOS(3) * s_surf->Surface(SurfNum).OutNormVec(3);
         if (!state.dataSysVars->DetailedSolarTimestepIntegration) {
-            if (iTimeStep == state.dataGlobal->NumOfTimeStepInHour)
+            if (iTimeStep == state.dataGlobal->TimeStepsInHour)
                 state.dataHeatBal->SurfCosIncAngHR(iHour, SurfNum) = state.dataSolarShading->SurfSunCosTheta(SurfNum);
         } else {
             state.dataHeatBal->SurfCosIncAngHR(iHour, SurfNum) = state.dataSolarShading->SurfSunCosTheta(SurfNum);
@@ -4976,9 +4969,9 @@ void FigureSolarBeamAtTimestep(EnergyPlusData &state, int const iHour, int const
     if ((state.dataSysVars->shadingMethod == ShadingMethod::Scheduled || state.dataSysVars->shadingMethod == ShadingMethod::Imported) &&
         !state.dataGlobal->DoingSizing && state.dataGlobal->KindOfSim == Constant::KindOfSim::RunPeriodWeather) {
         for (int SurfNum = 1; SurfNum <= s_surf->TotSurfaces; ++SurfNum) {
-            if (s_surf->Surface(SurfNum).SurfSchedExternalShadingFrac) {
-                state.dataHeatBal->SurfSunlitFrac(iHour, iTimeStep, SurfNum) =
-                    LookUpScheduleValue(state, s_surf->Surface(SurfNum).SurfExternalShadingSchInd, iHour, iTimeStep);
+            auto &surf = s_surf->Surface(SurfNum);
+            if (surf.SurfSchedExternalShadingFrac) {
+                state.dataHeatBal->SurfSunlitFrac(iHour, iTimeStep, SurfNum) = surf.surfExternalShadingSched->getHrTsVal(state, iHour, iTimeStep);
             } else {
                 state.dataHeatBal->SurfSunlitFrac(iHour, iTimeStep, SurfNum) = 1.0;
             }
@@ -4989,7 +4982,7 @@ void FigureSolarBeamAtTimestep(EnergyPlusData &state, int const iHour, int const
             if (s_surf->Surface(SurfNum).Area >= 1.e-10) {
                 SurfArea = s_surf->Surface(SurfNum).NetAreaShadowCalc;
                 if (!state.dataSysVars->DetailedSolarTimestepIntegration) {
-                    if (iTimeStep == state.dataGlobal->NumOfTimeStepInHour)
+                    if (iTimeStep == state.dataGlobal->TimeStepsInHour)
                         state.dataHeatBal->SurfSunlitFracHR(iHour, SurfNum) = state.dataSolarShading->SurfSunlitArea(SurfNum) / SurfArea;
                 } else {
                     state.dataHeatBal->SurfSunlitFracHR(iHour, SurfNum) = state.dataSolarShading->SurfSunlitArea(SurfNum) / SurfArea;
@@ -5881,12 +5874,6 @@ void SHDGSS(EnergyPlusData &state,
     // REFERENCES:
     // BLAST/IBLAST code, original author George Walton
 
-    // Using/Aliasing
-    using ScheduleManager::GetCurrentScheduleValue;
-    using ScheduleManager::GetScheduleMinValue;
-    using ScheduleManager::GetScheduleName;
-    using ScheduleManager::LookUpScheduleValue;
-
     typedef Array2D<Int64>::size_type size_type;
     int GSSNR;             // General shadowing surface number
     int MainOverlapStatus; // Overlap status of the main overlap calculation not the check for
@@ -5936,10 +5923,10 @@ void SHDGSS(EnergyPlusData &state,
 
             if (notHeatTransSurf) {
                 if (surface.IsTransparent) continue; // No shadow if shading surface is transparent
-                if (surface.SchedShadowSurfIndex > 0) {
-                    if (LookUpScheduleValue(state, surface.SchedShadowSurfIndex, iHour) == 1.0) continue;
+                if (surface.shadowSurfSched != nullptr) {
+                    if (surface.shadowSurfSched->getHrTsVal(state, iHour) == 1.0) continue;
                     if (!state.dataSolarShading->CalcSkyDifShading) {
-                        if (LookUpScheduleValue(state, surface.SchedShadowSurfIndex, iHour, TS) == 1.0) continue;
+                        if (surface.shadowSurfSched->getHrTsVal(state, iHour, TS) == 1.0) continue;
                     }
                 }
             }
@@ -6028,9 +6015,9 @@ void SHDGSS(EnergyPlusData &state,
                 }
             }
             HTRANS0(state, NS3, state.dataSolarShading->NumVertInShadowOrClippedSurface);
-            if (!state.dataSolarShading->CalcSkyDifShading) {
+            if (!state.dataSolarShading->CalcSkyDifShading && surface.shadowSurfSched != nullptr) {
                 if (iHour != 0) {
-                    SchValue = LookUpScheduleValue(state, surface.SchedShadowSurfIndex, iHour, TS);
+                    SchValue = surface.shadowSurfSched->getHrTsVal(state, iHour, TS);
                 } else {
                     SchValue = surface.SchedMinValue;
                 }
@@ -6324,7 +6311,6 @@ void CalcInteriorSolarDistribution(EnergyPlusData &state)
 
     using Dayltg::TransTDD;
     using General::POLYF;
-    using ScheduleManager::GetCurrentScheduleValue;
     using namespace DataWindowEquivalentLayer;
 
     Array1D<Real64> CFBoverlap;    // Sum of boverlap for each back surface
@@ -8199,8 +8185,7 @@ void CalcInteriorSolarDistribution(EnergyPlusData &state)
                 if (surf.SolarEnclIndex == enclosureNum) {
                     Real64 AbsIntSurf = state.dataConstruction->Construct(surf.Construction).InsideAbsorpSolar;
                     // SolarIntoZone = GetCurrentScheduleValue(SurfIncSolSSG(iSSG)%SchedPtr) * Surface(SurfNum)%Area
-                    Real64 SolarIntoZone =
-                        GetCurrentScheduleValue(state, s_surf->SurfIncSolSSG(iSSG).SchedPtr); // Solar radiation into zone to current surface
+                    Real64 SolarIntoZone = s_surf->SurfIncSolSSG(iSSG).sched->getCurrentVal(); // Solar radiation into zone to current surface
                     s_surf->SurfOpaqAI(SurfNum) = SolarIntoZone * AbsIntSurf;
                     BABSZoneSSG += s_surf->SurfOpaqAI(SurfNum) * surf.Area;
                     BTOTZoneSSG += SolarIntoZone * surf.Area;
@@ -8430,7 +8415,6 @@ void CalcInteriorSolarDistributionWCESimple(EnergyPlusData &state)
     // gain into zone from exterior window, beam solar on exterior window transmitted as beam and/or diffuse
     // and interior beam from exterior window that is absorbed/transmitted by back surfaces
 
-    using ScheduleManager::GetCurrentScheduleValue;
     using namespace MultiLayerOptics;
 
     auto &s_surf = state.dataSurface;
@@ -9249,7 +9233,7 @@ void SUN4(EnergyPlusData &state,
 
     // Compute the hour angle
     HrAngle = (15.0 * (12.0 - (CurrentTime + EqOfTime)) + (state.dataEnvrn->TimeZoneMeridian - state.dataEnvrn->Longitude));
-    H = HrAngle * Constant::DegToRadians;
+    H = HrAngle * Constant::DegToRad;
 
     // Compute the cosine of the solar zenith angle.
     state.dataSolarShading->SUNCOS(3) = SinSolarDeclin * state.dataEnvrn->SinLatitude + CosSolarDeclin * state.dataEnvrn->CosLatitude * std::cos(H);
@@ -9325,7 +9309,6 @@ void WindowShadingManager(EnergyPlusData &state)
 
     // Using/Aliasing
     using General::POLYF;
-    using ScheduleManager::GetCurrentScheduleValue;
 
     int IConst; // Construction
 
@@ -9437,9 +9420,9 @@ void WindowShadingManager(EnergyPlusData &state)
                 Real64 SetPoint2 = s_surf->WindowShadingControl(IShadingCtrl).SetPoint2; // Second control setpoint
 
                 bool SchedAllowsControl = true; // True if control schedule is not specified or is specified and schedule value = 1
-                int SchedulePtr = s_surf->WindowShadingControl(IShadingCtrl).Schedule;
-                if (SchedulePtr != 0) {
-                    if (s_surf->WindowShadingControl(IShadingCtrl).ShadingControlIsScheduled && GetCurrentScheduleValue(state, SchedulePtr) <= 0.0)
+                auto const *sched = s_surf->WindowShadingControl(IShadingCtrl).sched;
+                if (sched != nullptr) {
+                    if (s_surf->WindowShadingControl(IShadingCtrl).ShadingControlIsScheduled && sched->getCurrentVal() <= 0.0)
                         SchedAllowsControl = false;
                 }
 
@@ -9845,7 +9828,7 @@ void WindowShadingManager(EnergyPlusData &state)
                         } break;
 
                         case SlatAngleControl::Scheduled: { // 'SCHEDULEDSLATANGLE'
-                            slatAng = GetCurrentScheduleValue(state, s_surf->WindowShadingControl(IShadingCtrl).SlatAngleSchedule);
+                            slatAng = s_surf->WindowShadingControl(IShadingCtrl).slatAngleSched->getCurrentVal();
                             slatAng = max(matBlind->MinSlatAngle, min(slatAng, matBlind->MaxSlatAngle)) * Constant::DegToRad;
 
                             if ((slatAng <= state.dataSolarShading->ThetaSmall || slatAng >= state.dataSolarShading->ThetaBig) &&
@@ -10084,7 +10067,7 @@ int selectActiveWindowShadingControlIndex(EnergyPlusData &state, int curSurface)
         for (std::size_t listIndex = 0; listIndex < s_surf->Surface(curSurface).windowShadingControlList.size(); ++listIndex) {
             int wsc = s_surf->Surface(curSurface).windowShadingControlList[listIndex];
             // pick the first WindowShadingControl that has a non-zero schedule value
-            if (ScheduleManager::GetCurrentScheduleValue(state, s_surf->WindowShadingControl(wsc).Schedule) > 0.0) {
+            if (s_surf->WindowShadingControl(wsc).sched->getCurrentVal() > 0.0) {
                 return listIndex;
             }
         }
@@ -10108,9 +10091,6 @@ void WindowGapAirflowControl(EnergyPlusData &state)
     // REFERENCES:
     // na
 
-    // Using/Aliasing
-    using ScheduleManager::GetCurrentScheduleValue;
-
     auto &s_surf = state.dataSurface;
     for (int zoneNum = 1; zoneNum <= state.dataGlobal->NumOfZones; ++zoneNum) {
         for (int spaceNum : state.dataHeatBal->Zone(zoneNum).spaceIndexes) {
@@ -10131,8 +10111,8 @@ void WindowGapAirflowControl(EnergyPlusData &state)
                 } break;
                 case WindowAirFlowControlType::Schedule: {
                     if (s_surf->SurfWinAirflowHasSchedule(ISurf)) {
-                        int SchedulePtr = s_surf->SurfWinAirflowSchedulePtr(ISurf);        // Schedule pointer
-                        Real64 ScheduleMult = GetCurrentScheduleValue(state, SchedulePtr); // Multiplier value from schedule
+                        auto const *sched = s_surf->SurfWinAirflowScheds(ISurf);
+                        Real64 ScheduleMult = sched->getCurrentVal(); // Multiplier value from schedule
                         if (ScheduleMult < 0.0 || ScheduleMult > 1.0) {
                             ShowFatalError(
                                 state,
@@ -10232,9 +10212,9 @@ void SkyDifSolarShading(EnergyPlusData &state)
     state.dataSolarShading->SurfDifShdgRatioHoriz = 1.0;
     if (detailedShading) {
         state.dataSolarShading->SurfCurDifShdgRatioIsoSky.dimension(s_surf->TotSurfaces, 1.0);
-        state.dataSolarShading->SurfDifShdgRatioIsoSkyHRTS.allocate(state.dataGlobal->NumOfTimeStepInHour, 24, s_surf->TotSurfaces);
+        state.dataSolarShading->SurfDifShdgRatioIsoSkyHRTS.allocate(state.dataGlobal->TimeStepsInHour, 24, s_surf->TotSurfaces);
         state.dataSolarShading->SurfDifShdgRatioIsoSkyHRTS = 1.0;
-        state.dataSolarShading->SurfDifShdgRatioHorizHRTS.allocate(state.dataGlobal->NumOfTimeStepInHour, 24, s_surf->TotSurfaces);
+        state.dataSolarShading->SurfDifShdgRatioHorizHRTS.allocate(state.dataGlobal->TimeStepsInHour, 24, s_surf->TotSurfaces);
         state.dataSolarShading->SurfDifShdgRatioHorizHRTS = 1.0;
     }
 
@@ -10374,9 +10354,9 @@ void SkyDifSolarShading(EnergyPlusData &state)
     if (state.dataSysVars->DetailedSkyDiffuseAlgorithm && s_surf->ShadingTransmittanceVaries &&
         state.dataHeatBal->SolarDistribution != DataHeatBalance::Shadowing::Minimal) {
         for (int SurfNum = 1; SurfNum <= s_surf->TotSurfaces; ++SurfNum) {
-            state.dataSolarShading->SurfDifShdgRatioIsoSkyHRTS({1, state.dataGlobal->NumOfTimeStepInHour}, {1, 24}, SurfNum) =
+            state.dataSolarShading->SurfDifShdgRatioIsoSkyHRTS({1, state.dataGlobal->TimeStepsInHour}, {1, 24}, SurfNum) =
                 state.dataSolarShading->SurfDifShdgRatioIsoSky(SurfNum);
-            state.dataSolarShading->SurfDifShdgRatioHorizHRTS({1, state.dataGlobal->NumOfTimeStepInHour}, {1, 24}, SurfNum) =
+            state.dataSolarShading->SurfDifShdgRatioHorizHRTS({1, state.dataGlobal->TimeStepsInHour}, {1, 24}, SurfNum) =
                 state.dataSolarShading->SurfDifShdgRatioHoriz(SurfNum);
         }
     }
@@ -10440,8 +10420,8 @@ void CalcWindowProfileAngles(EnergyPlusData &state)
                 s_surf->SurfWinProfileAngVert(SurfNum) = 0.0;
                 if (state.dataHeatBal->SurfCosIncAng(state.dataGlobal->HourOfDay, state.dataGlobal->TimeStep, SurfNum) <= 0.0) continue;
 
-                ElevWin = Constant::PiOvr2 - surf.Tilt * Constant::DegToRadians;
-                AzimWin = surf.Azimuth * Constant::DegToRadians;
+                ElevWin = Constant::PiOvr2 - surf.Tilt * Constant::DegToRad;
+                AzimWin = surf.Azimuth * Constant::DegToRad;
 
                 ProfileAngHor = std::atan(sin_ElevSun / std::abs(cos_ElevSun * std::cos(AzimWin - AzimSun))) - ElevWin;
 
@@ -10472,8 +10452,8 @@ void CalcWindowProfileAngles(EnergyPlusData &state)
                 // Constrain to 0 to pi
                 if (ProfileAngVert > Constant::Pi) ProfileAngVert = Constant::TwoPi - ProfileAngVert;
 
-                s_surf->SurfWinProfileAngHor(SurfNum) = ProfileAngHor / Constant::DegToRadians;
-                s_surf->SurfWinProfileAngVert(SurfNum) = ProfileAngVert / Constant::DegToRadians;
+                s_surf->SurfWinProfileAngHor(SurfNum) = ProfileAngHor / Constant::DegToRad;
+                s_surf->SurfWinProfileAngVert(SurfNum) = ProfileAngVert / Constant::DegToRad;
                 s_surf->SurfWinTanProfileAngHor(SurfNum) = std::abs(std::tan(ProfileAngHor));
                 s_surf->SurfWinTanProfileAngVert(SurfNum) = std::abs(std::tan(ProfileAngVert));
             }
@@ -10582,9 +10562,9 @@ void CalcFrameDividerShadow(EnergyPlusData &state,
 
     auto &surf = s_surf->Surface(SurfNum);
     GlArea = surf.Area;
-    ElevWin = Constant::PiOvr2 - surf.Tilt * Constant::DegToRadians;
+    ElevWin = Constant::PiOvr2 - surf.Tilt * Constant::DegToRad;
     ElevSun = Constant::PiOvr2 - std::acos(state.dataSolarShading->SUNCOS(3));
-    AzimWin = surf.Azimuth * Constant::DegToRadians;
+    AzimWin = surf.Azimuth * Constant::DegToRad;
     AzimSun = std::atan2(state.dataSolarShading->SUNCOS(1), state.dataSolarShading->SUNCOS(2));
 
     ProfileAngHor = std::atan(std::sin(ElevSun) / std::abs(std::cos(ElevSun) * std::cos(AzimWin - AzimSun))) - ElevWin;
@@ -11534,7 +11514,6 @@ void CalcWinTransDifSolInitialDistribution(EnergyPlusData &state)
     // determined here using revised code from SUBROUTINE InitIntSolarDistribution
 
     // Using/Aliasing
-    using ScheduleManager::GetCurrentScheduleValue;
     using namespace DataViewFactorInformation;
     using namespace DataWindowEquivalentLayer;
 
@@ -12093,7 +12072,6 @@ void CalcInteriorWinTransDifSolInitialDistribution(EnergyPlusData &state,
     // determined here using revised code from SUBROUTINE InitIntSolarDistribution
 
     // Using/Aliasing
-    using ScheduleManager::GetCurrentScheduleValue;
     using namespace DataViewFactorInformation;
 
     // SUBROUTINE LOCAL VARIABLE DECLARATIONS:

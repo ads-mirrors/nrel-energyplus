@@ -45,7 +45,6 @@
 // OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#include <ObjexxFCL/Fmath.hh>
 #include <ObjexxFCL/member.functions.hh>
 
 #include <EnergyPlus/Data/EnergyPlusData.hh>

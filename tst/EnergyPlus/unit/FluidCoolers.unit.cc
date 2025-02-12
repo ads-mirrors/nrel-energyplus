@@ -66,6 +66,7 @@ using namespace EnergyPlus::DataSizing;
 
 TEST_F(EnergyPlusFixture, TwoSpeedFluidCoolerInput_Test1)
 {
+    state->init_state(*state);
 
     using DataSizing::AutoSize;
     int StringArraySize = 20;
@@ -136,6 +137,7 @@ TEST_F(EnergyPlusFixture, TwoSpeedFluidCoolerInput_Test1)
 
 TEST_F(EnergyPlusFixture, TwoSpeedFluidCoolerInput_Test2)
 {
+    state->init_state(*state);
 
     using DataSizing::AutoSize;
     int StringArraySize = 20;
@@ -195,6 +197,8 @@ TEST_F(EnergyPlusFixture, TwoSpeedFluidCoolerInput_Test2)
 
 TEST_F(EnergyPlusFixture, SingleSpeedFluidCoolerInput_Test3)
 {
+    state->init_state(*state);
+
     using DataSizing::AutoSize;
     int StringArraySize = 20;
     Array1D_string cNumericFieldNames;
@@ -275,6 +279,7 @@ TEST_F(EnergyPlusFixture, SingleSpeedFluidCoolerInput_Test4)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     GetFluidCoolerInput(*state);
     auto &thisFluidCooler = state->dataFluidCoolers->SimpleFluidCooler(FluidCoolerNum);
@@ -285,6 +290,7 @@ TEST_F(EnergyPlusFixture, SingleSpeedFluidCoolerInput_Test4)
 
 TEST_F(EnergyPlusFixture, SingleSpeedFluidCoolerInput_Test5)
 {
+    state->init_state(*state);
     using DataSizing::AutoSize;
     int StringArraySize = 20;
     Array1D_string cNumericFieldNames;
@@ -350,6 +356,7 @@ TEST_F(EnergyPlusFixture, SizeFunctionTestWhenPlantSizingIndexIsZero)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     GetFluidCoolerInput(*state);
 
@@ -389,6 +396,7 @@ TEST_F(EnergyPlusFixture, ExerciseSingleSpeedFluidCooler)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     FluidCoolerspecs *ptr = FluidCoolerspecs::factory(*state, DataPlant::PlantEquipmentType::FluidCooler_SingleSpd, "DRY COOLER");
 
@@ -462,6 +470,7 @@ TEST_F(EnergyPlusFixture, ExerciseTwoSpeedFluidCooler)
                                                       ";                        !- Low Fan Speed Fan Power Sizing Factor"});
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     FluidCoolerspecs *ptr = FluidCoolerspecs::factory(*state, DataPlant::PlantEquipmentType::FluidCooler_TwoSpd, "BIG FLUIDCOOLER");
 

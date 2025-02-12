@@ -49,9 +49,6 @@
 #include <cassert>
 #include <cmath>
 
-// ObjexxFCL Headers
-#include <ObjexxFCL/Fmath.hh>
-
 // EnergyPlus Headers
 #include <EnergyPlus/Construction.hh>
 #include <EnergyPlus/Data/EnergyPlusData.hh>
@@ -90,7 +87,6 @@ namespace SolarReflectionManager {
     // Using/Aliasing
     using namespace DataHeatBalance;
     using namespace DataSurfaces;
-    using namespace ScheduleManager;
     using namespace DataEnvironment;
 
     using namespace DataVectorTypes;

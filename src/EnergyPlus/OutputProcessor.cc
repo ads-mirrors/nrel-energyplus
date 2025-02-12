@@ -182,7 +182,7 @@ namespace OutputProcessor {
 
         op->OutputInitialized = true;
 
-        op->TimeStepZoneSec = double(state.dataGlobal->MinutesPerTimeStep) * 60.0;
+        op->TimeStepZoneSec = double(state.dataGlobal->MinutesInTimeStep) * 60.0;
 
         state.files.mtd.ensure_open(state, "InitializeMeters", state.files.outputControl.mtd);
     } // InitializeOutput()
@@ -329,7 +329,7 @@ namespace OutputProcessor {
             bool Dup = false;
             // op->ReportList is allocated to a large value, so we can't use a std::find_if on it (why not?)
             for (int iReqVar2 : reqVarList) {
-                if (op->reqVars[iReqVar2]->freq == reqVar->freq && op->reqVars[iReqVar2]->SchedPtr == reqVar->SchedPtr) {
+                if (op->reqVars[iReqVar2]->freq == reqVar->freq && op->reqVars[iReqVar2]->sched == reqVar->sched) {
                     Dup = true;
                     break;
                 }
@@ -447,8 +447,6 @@ namespace OutputProcessor {
         //        \object-list ScheduleNames
 
         constexpr std::string_view routineName = "GetReportVariableInput";
-        // Using/Aliasing
-        using ScheduleManager::GetScheduleIndex;
 
         // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
         int NumAlpha;
@@ -531,8 +529,8 @@ namespace OutputProcessor {
 
             // Schedule information
             if (lAlphaBlanks(4)) {
-                reqVar->SchedPtr = 0;
-            } else if ((reqVar->SchedPtr = GetScheduleIndex(state, Util::makeUPPER(cAlphaArgs(4)))) == 0) {
+                reqVar->sched = nullptr;
+            } else if ((reqVar->sched = Sched::GetSchedule(state, cAlphaArgs(4))) == nullptr) {
                 ShowSevereItemNotFound(state, eoh, cAlphaFieldNames(4), cAlphaArgs(4));
                 ErrorsFound = true;
             }
@@ -780,12 +778,12 @@ namespace OutputProcessor {
                         units = srcMeter->units;
                         itemsAssigned = true;
                     } else if (units != srcMeter->units) {
-                        ShowWarningCustomMessage(state,
-                                                 eoh,
-                                                 format(R"(Meter:Custom="{}", differing units in {}="{}".)",
-                                                        ipsc->cAlphaArgs(1),
-                                                        ipsc->cAlphaFieldNames(fldIndex + 1),
-                                                        meterOrVarNameUC));
+                        ShowWarningCustom(state,
+                                          eoh,
+                                          format(R"(Meter:Custom="{}", differing units in {}="{}".)",
+                                                 ipsc->cAlphaArgs(1),
+                                                 ipsc->cAlphaFieldNames(fldIndex + 1),
+                                                 meterOrVarNameUC));
                         ShowContinueError(state,
                                           format("...will not be shown with the Meter results; units for meter={}, units for this variable={}.",
                                                  Constant::unitNames[(int)units],
@@ -801,12 +799,12 @@ namespace OutputProcessor {
 
                     // Has to be a summed variable
                     if (srcDDVar->storeType != StoreType::Sum) {
-                        ShowWarningCustomMessage(state, // Is clang-format formatting things like this? This is gross.
-                                                 eoh,
-                                                 format(R"(Meter:Custom="{}", variable not summed variable {}="{}".)",
-                                                        ipsc->cAlphaArgs(1),
-                                                        ipsc->cAlphaFieldNames(fldIndex + 1),
-                                                        meterOrVarNameUC));
+                        ShowWarningCustom(state,
+                                          eoh,
+                                          format(R"(Meter:Custom="{}", variable not summed variable {}="{}".)",
+                                                 ipsc->cAlphaArgs(1),
+                                                 ipsc->cAlphaFieldNames(fldIndex + 1),
+                                                 meterOrVarNameUC));
                         ShowContinueError(state,
                                           format("...will not be shown with the Meter results; units for meter={}, units for this variable={}.",
                                                  Constant::unitNames[(int)units],
@@ -820,7 +818,7 @@ namespace OutputProcessor {
                         units = srcDDVar->units;
                         // Otherwise it has to match the existing units
                     } else if (units != srcDDVar->units) {
-                        ShowWarningCustomMessage(
+                        ShowWarningCustom(
                             state, eoh, format("differing units in {}=\"{}\".", ipsc->cAlphaFieldNames(fldIndex + 1), meterOrVarNameUC));
                         ShowContinueError(state,
                                           format("...will not be shown with the Meter results; units for meter={}, units for this variable={}.",
@@ -927,11 +925,11 @@ namespace OutputProcessor {
 
                     // Check for duplicates
                     if (std::find(meter->srcMeterNums.begin(), meter->srcMeterNums.end(), srcMeterNum) != meter->srcMeterNums.end()) {
-                        ShowWarningCustomMessage(state,
-                                                 eoh,
-                                                 format("{}=\"{}\" referenced multiple times, only first instance will be used",
-                                                        ipsc->cAlphaFieldNames(fldIndex + 1),
-                                                        meterOrVarNameUC));
+                        ShowWarningCustom(state,
+                                          eoh,
+                                          format("{}=\"{}\" referenced multiple times, only first instance will be used",
+                                                 ipsc->cAlphaFieldNames(fldIndex + 1),
+                                                 meterOrVarNameUC));
                         continue;
                     }
 
@@ -960,10 +958,10 @@ namespace OutputProcessor {
                         // No need to check for empty keys
                         for (int keyOutVarNum : srcDDVar->keyOutVarNums) {
                             if (std::find(meter->srcVarNums.begin(), meter->srcVarNums.end(), keyOutVarNum) != meter->srcVarNums.end()) {
-                                ShowWarningCustomMessage(state,
-                                                         eoh,
-                                                         format("Output variable \"{}\" referenced multiple times (directly or via meter)",
-                                                                op->outVars[keyOutVarNum]->keyColonNameUC));
+                                ShowWarningCustom(state,
+                                                  eoh,
+                                                  format("Output variable \"{}\" referenced multiple times (directly or via meter)",
+                                                         op->outVars[keyOutVarNum]->keyColonNameUC));
 
                             } else {
                                 meter->srcVarNums.push_back(keyOutVarNum);
@@ -974,10 +972,10 @@ namespace OutputProcessor {
                         for (int keyOutVarNum : srcDDVar->keyOutVarNums) {
                             if (op->outVars[keyOutVarNum]->keyUC == ipsc->cAlphaArgs(fldIndex)) {
                                 if (std::find(meter->srcVarNums.begin(), meter->srcVarNums.end(), keyOutVarNum) != meter->srcVarNums.end()) {
-                                    ShowWarningCustomMessage(state,
-                                                             eoh,
-                                                             format("Output variable \"{}\" referenced multiple times (directly or via meter)",
-                                                                    op->outVars[keyOutVarNum]->keyColonNameUC));
+                                    ShowWarningCustom(state,
+                                                      eoh,
+                                                      format("Output variable \"{}\" referenced multiple times (directly or via meter)",
+                                                             op->outVars[keyOutVarNum]->keyColonNameUC));
                                 } else {
                                     meter->srcVarNums.push_back(keyOutVarNum);
                                     op->outVars[keyOutVarNum]->meterNums.push_back(meterNum);
@@ -1101,12 +1099,12 @@ namespace OutputProcessor {
                         units = srcMeter->units;
                         itemsAssigned = true;
                     } else if (units != srcMeter->units) {
-                        ShowWarningCustomMessage(state,
-                                                 eoh,
-                                                 format(R"(Meter:Custom="{}", differing units in {}="{}".)",
-                                                        ipsc->cAlphaArgs(1),
-                                                        ipsc->cAlphaFieldNames(fldIndex + 1),
-                                                        meterOrVarNameUC));
+                        ShowWarningCustom(state,
+                                          eoh,
+                                          format(R"(Meter:Custom="{}", differing units in {}="{}".)",
+                                                 ipsc->cAlphaArgs(1),
+                                                 ipsc->cAlphaFieldNames(fldIndex + 1),
+                                                 meterOrVarNameUC));
                         ShowContinueError(state,
                                           format("...will not be shown with the Meter results; units for meter={}, units for this variable={}.",
                                                  Constant::unitNames[(int)units],
@@ -1122,12 +1120,12 @@ namespace OutputProcessor {
 
                     // Has to be a summed variable
                     if (srcDDVar->storeType != StoreType::Sum) {
-                        ShowWarningCustomMessage(state,
-                                                 eoh,
-                                                 format(R"(Meter:Custom="{}", variable not summed variable {}="{}".)",
-                                                        ipsc->cAlphaArgs(1),
-                                                        ipsc->cAlphaFieldNames(fldIndex + 1),
-                                                        meterOrVarNameUC));
+                        ShowWarningCustom(state,
+                                          eoh,
+                                          format(R"(Meter:Custom="{}", variable not summed variable {}="{}".)",
+                                                 ipsc->cAlphaArgs(1),
+                                                 ipsc->cAlphaFieldNames(fldIndex + 1),
+                                                 meterOrVarNameUC));
                         ShowContinueError(state,
                                           format("...will not be shown with the Meter results; units for meter={}, units for this variable={}.",
                                                  Constant::unitNames[(int)units],
@@ -1141,7 +1139,7 @@ namespace OutputProcessor {
                         units = srcDDVar->units;
                         // Otherwise it has to match the existing units
                     } else if (units != srcDDVar->units) {
-                        ShowWarningCustomMessage(
+                        ShowWarningCustom(
                             state, eoh, format("differing units in {}=\"{}\".", ipsc->cAlphaFieldNames(fldIndex + 1), meterOrVarNameUC));
                         ShowContinueError(state,
                                           format("...will not be shown with the Meter results; units for meter={}, units for this variable={}.",
@@ -1262,11 +1260,11 @@ namespace OutputProcessor {
 
                     // Check for duplicates
                     if (std::find(meter->srcMeterNums.begin(), meter->srcMeterNums.end(), srcMeterNum) != meter->srcMeterNums.end()) {
-                        ShowWarningCustomMessage(state,
-                                                 eoh,
-                                                 format("{}=\"{}\" referenced multiple times, only first instance will be used",
-                                                        ipsc->cAlphaFieldNames(fldIndex + 1),
-                                                        meterOrVarNameUC));
+                        ShowWarningCustom(state,
+                                          eoh,
+                                          format("{}=\"{}\" referenced multiple times, only first instance will be used",
+                                                 ipsc->cAlphaFieldNames(fldIndex + 1),
+                                                 meterOrVarNameUC));
                         continue;
                     }
 
@@ -1295,10 +1293,10 @@ namespace OutputProcessor {
                         // No need to check for empty keys
                         for (int keyOutVarNum : srcDDVar->keyOutVarNums) {
                             if (std::find(meter->srcVarNums.begin(), meter->srcVarNums.end(), keyOutVarNum) != meter->srcVarNums.end()) {
-                                ShowWarningCustomMessage(state,
-                                                         eoh,
-                                                         format("Output variable \"{}\" referenced multiple times (directly or via meter)",
-                                                                op->outVars[keyOutVarNum]->keyColonNameUC));
+                                ShowWarningCustom(state,
+                                                  eoh,
+                                                  format("Output variable \"{}\" referenced multiple times (directly or via meter)",
+                                                         op->outVars[keyOutVarNum]->keyColonNameUC));
 
                             } else {
                                 meter->srcVarNums.push_back(keyOutVarNum);
@@ -1309,10 +1307,10 @@ namespace OutputProcessor {
                         for (int keyOutVarNum : srcDDVar->keyOutVarNums) {
                             if (op->outVars[keyOutVarNum]->keyUC == ipsc->cAlphaArgs(fldIndex)) {
                                 if (std::find(meter->srcVarNums.begin(), meter->srcVarNums.end(), keyOutVarNum) != meter->srcVarNums.end()) {
-                                    ShowWarningCustomMessage(state,
-                                                             eoh,
-                                                             format("Output variable \"{}\" referenced multiple times (directly or via meter)",
-                                                                    op->outVars[keyOutVarNum]->keyColonNameUC));
+                                    ShowWarningCustom(state,
+                                                      eoh,
+                                                      format("Output variable \"{}\" referenced multiple times (directly or via meter)",
+                                                             op->outVars[keyOutVarNum]->keyColonNameUC));
                                 } else {
                                     meter->srcVarNums.push_back(keyOutVarNum);
                                     op->outVars[keyOutVarNum]->meterNums.push_back(meterNum);
@@ -1770,7 +1768,7 @@ namespace OutputProcessor {
                                          EndMinute,
                                          StartMinute,
                                          state.dataEnvrn->DSTIndicator,
-                                         ScheduleManager::dayTypeNames[CurDayType]);
+                                         Sched::dayTypeNames[CurDayType]);
                 if (rfMetersTS.dataFrameEnabled()) {
                     rfMetersTS.newRow(
                         state.dataEnvrn->Month, state.dataEnvrn->DayOfMonth, state.dataGlobal->HourOfDay, EndMinute, state.dataGlobal->CalendarYear);
@@ -1793,7 +1791,7 @@ namespace OutputProcessor {
                                          EndMinute,
                                          StartMinute,
                                          state.dataEnvrn->DSTIndicator,
-                                         ScheduleManager::dayTypeNames[CurDayType]);
+                                         Sched::dayTypeNames[CurDayType]);
                 PrintESOTimeStamp = false;
             }
 
@@ -1872,7 +1870,7 @@ namespace OutputProcessor {
                                              -1, // EndMinute
                                              -1, // StartMinute
                                              state.dataEnvrn->DSTIndicator,
-                                             ScheduleManager::dayTypeNames[CurDayType]);
+                                             Sched::dayTypeNames[CurDayType]);
                 } break;
 
                 case ReportFreq::Day: {
@@ -1888,7 +1886,7 @@ namespace OutputProcessor {
                                              -1, // EndMinute
                                              -1, // StartMinute
                                              state.dataEnvrn->DSTIndicator,
-                                             ScheduleManager::dayTypeNames[CurDayType]);
+                                             Sched::dayTypeNames[CurDayType]);
                 } break;
 
                 case ReportFreq::Month: {
@@ -2428,7 +2426,7 @@ namespace OutputProcessor {
                                            ? unitNameCustomEMS
                                            : ((units == Constant::Units::Invalid) ? "" : Constant::unitNames[(int)units]);
 
-        std::string schedString = (SchedPtr != 0) ? state.dataScheduleMgr->Schedule(SchedPtr).Name : "";
+        std::string schedString = (sched != nullptr) ? sched->Name : "";
 
         if (state.files.eso.good()) {
             print(state.files.eso,
@@ -2620,7 +2618,7 @@ namespace OutputProcessor {
         }
 
         if (sql) {
-            sql->createSQLiteReportDataRecord(RptNum, Value, freq, MinVal, MinValDate, MaxVal, MaxValDate, state.dataGlobal->MinutesPerTimeStep);
+            sql->createSQLiteReportDataRecord(RptNum, Value, freq, MinVal, MinValDate, MaxVal, MaxValDate, state.dataGlobal->MinutesInTimeStep);
         }
 
         if ((freq == ReportFreq::EachCall) || (freq == ReportFreq::TimeStep) || (freq == ReportFreq::Hour)) { // -1, 0, 1
@@ -3013,7 +3011,7 @@ void SetupOutputVariable(EnergyPlusData &state,
         var->units = units;
         if (units == Constant::Units::customEMS) var->unitNameCustomEMS = customUnitName;
         var->freq = freq;
-        var->SchedPtr = 0;
+        var->sched = nullptr;
         var->ReportID = ++op->ReportNumberCounter;
         var->Which = &ActualVariable;
         var->ZoneMult = ZoneMult;
@@ -3037,7 +3035,7 @@ void SetupOutputVariable(EnergyPlusData &state,
         // freq != ReportFreq::Hour
         if (freq == ReportFreq::Hour) {
             var->freq = op->reqVars[reqVarNum]->freq;
-            var->SchedPtr = op->reqVars[reqVarNum]->SchedPtr;
+            var->sched = op->reqVars[reqVarNum]->sched;
         }
 
         var->writeReportDictionaryItem(state);
@@ -3128,10 +3126,10 @@ void SetupOutputVariable(EnergyPlusData &state,
 
         if (freq != ReportFreq::Hour) {
             var->freq = freq;
-            var->SchedPtr = 0;
+            var->sched = nullptr;
         } else {
             var->freq = op->reqVars[reqVarNum]->freq;
-            var->SchedPtr = op->reqVars[reqVarNum]->SchedPtr;
+            var->sched = op->reqVars[reqVarNum]->sched;
         }
 
         var->writeReportDictionaryItem(state);
@@ -3155,7 +3153,6 @@ void UpdateDataandReport(EnergyPlusData &state, OutputProcessor::TimeStepType co
     // Using/Aliasing
     using namespace OutputProcessor;
     using General::EncodeMonDayHrMin;
-    using ScheduleManager::GetCurrentScheduleValue;
 
     // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
     bool TimePrint(true);        // True if the time needs to be printed
@@ -3185,7 +3182,7 @@ void UpdateDataandReport(EnergyPlusData &state, OutputProcessor::TimeStepType co
     TimePrint = true;
 
     Real64 rxTime = (MinuteNow - StartMinute) /
-                    double(state.dataGlobal->MinutesPerTimeStep); // (MinuteNow-StartMinute)/REAL(MinutesPerTimeStep,r64) - for execution time
+                    double(state.dataGlobal->MinutesInTimeStep); // (MinuteNow-StartMinute)/REAL(MinutesPerTimeStep,r64) - for execution time
 
     if (rf->timeSeriesEnabled()) {
         // R and I data frames for TimeStepType::TimeStepZone
@@ -3250,7 +3247,7 @@ void UpdateDataandReport(EnergyPlusData &state, OutputProcessor::TimeStepType co
         // End of "record keeping"  Report if applicable
         if (!var->Report) continue;
 
-        if (var->SchedPtr > 0 && GetCurrentScheduleValue(state, var->SchedPtr) == 0.0) continue;
+        if (var->sched != nullptr && var->sched->getCurrentVal() == 0.0) continue;
 
         var->tsStored = true;
         if (!var->thisTSStored) {
@@ -3279,7 +3276,7 @@ void UpdateDataandReport(EnergyPlusData &state, OutputProcessor::TimeStepType co
                                          op->TimeValue[(int)t_TimeStepTypeKey].CurMinute,
                                          StartMinute,
                                          state.dataEnvrn->DSTIndicator,
-                                         ScheduleManager::dayTypeNames[CurDayType]);
+                                         Sched::dayTypeNames[CurDayType]);
                 op->LHourP = state.dataGlobal->HourOfDay;
                 op->LStartMin = StartMinute;
                 op->LEndMin = op->TimeValue[(int)t_TimeStepTypeKey].CurMinute;
@@ -3345,7 +3342,7 @@ void UpdateDataandReport(EnergyPlusData &state, OutputProcessor::TimeStepType co
             if (var->timeStepType != TimeStepType::Zone && var->timeStepType != TimeStepType::System) continue;
 
             bool ReportNow = true;
-            if (var->SchedPtr > 0) ReportNow = (GetCurrentScheduleValue(state, var->SchedPtr) != 0.0); // SetReportNow(RVar%SchedPtr)
+            if (var->sched != nullptr) ReportNow = (var->sched->getCurrentVal() != 0.0); // SetReportNow(RVar%SchedPtr)
             if (!ReportNow || !var->Report) {
                 var->TSValue = 0.0;
             }
@@ -3377,7 +3374,7 @@ void UpdateDataandReport(EnergyPlusData &state, OutputProcessor::TimeStepType co
                                                  op->TimeValue[(int)var->timeStepType].CurMinute,
                                                  StartMinute,
                                                  state.dataEnvrn->DSTIndicator,
-                                                 ScheduleManager::dayTypeNames[CurDayType]);
+                                                 Sched::dayTypeNames[CurDayType]);
                         op->LHourP = state.dataGlobal->HourOfDay;
                         op->LStartMin = StartMinute;
                         op->LEndMin = op->TimeValue[(int)var->timeStepType].CurMinute;
@@ -3421,7 +3418,7 @@ void UpdateDataandReport(EnergyPlusData &state, OutputProcessor::TimeStepType co
                                      -1, // EndMinute
                                      -1, // startMinute
                                      state.dataEnvrn->DSTIndicator,
-                                     ScheduleManager::dayTypeNames[CurDayType]);
+                                     Sched::dayTypeNames[CurDayType]);
             TimePrint = false;
         }
 
@@ -3491,7 +3488,7 @@ void UpdateDataandReport(EnergyPlusData &state, OutputProcessor::TimeStepType co
                                      -1, // EndMinute
                                      -1, // StartMinute
                                      state.dataEnvrn->DSTIndicator,
-                                     ScheduleManager::dayTypeNames[CurDayType]);
+                                     Sched::dayTypeNames[CurDayType]);
             TimePrint = false;
         }
         if (rf->timeSeriesEnabled()) {
@@ -4067,7 +4064,6 @@ Real64 GetInternalVariableValue(EnergyPlusData &state,
 
     // Using/Aliasing
     using namespace OutputProcessor;
-    using ScheduleManager::GetCurrentScheduleValue;
 
     // Return value
     Real64 resultVal; // value returned
@@ -4089,7 +4085,7 @@ Real64 GetInternalVariableValue(EnergyPlusData &state,
     } else if (varType == VariableType::Meter) {
         resultVal = GetCurrentMeterValue(state, keyVarIndex);
     } else if (varType == VariableType::Schedule) {
-        resultVal = GetCurrentScheduleValue(state, keyVarIndex);
+        resultVal = state.dataSched->schedules[keyVarIndex]->getCurrentVal();
     } else {
         resultVal = 0.0;
     }
@@ -4118,7 +4114,6 @@ Real64 GetInternalVariableValueExternalInterface(EnergyPlusData &state,
 
     // Using/Aliasing
     using namespace OutputProcessor;
-    using ScheduleManager::GetCurrentScheduleValue;
 
     // Return value
     Real64 resultVal; // value returned
@@ -4137,7 +4132,7 @@ Real64 GetInternalVariableValueExternalInterface(EnergyPlusData &state,
     } else if (varType == VariableType::Meter) {
         resultVal = GetCurrentMeterValue(state, keyVarIndex);
     } else if (varType == VariableType::Schedule) {
-        resultVal = GetCurrentScheduleValue(state, keyVarIndex);
+        resultVal = state.dataSched->schedules[keyVarIndex]->getCurrentVal();
     } else {
         resultVal = 0.0;
     }
@@ -4275,10 +4270,7 @@ void GetVariableKeyCountandType(EnergyPlusData &state,
     // When the variable is found, the variable type (varType) is set and the
     // number of associated keys is counted.
 
-    // Using/Aliasing
     using namespace OutputProcessor;
-    using ScheduleManager::GetScheduleIndex;
-    using ScheduleManager::GetScheduleType;
 
     // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
     auto const &op = state.dataOutputProcessor;
@@ -4313,13 +4305,15 @@ void GetVariableKeyCountandType(EnergyPlusData &state,
 
     } else {
         // Search schedules if not found in integers, reals, or meters
-        // Use the GetScheduleIndex function
         // Schedules do not have keys, so only one will be found
-        int schedNum = GetScheduleIndex(state, nameUC);
-        if (schedNum > 0) {
+        auto *sched = Sched::GetSchedule(state, nameUC);
+        if (sched != nullptr) {
             numKeys = 1;
             varType = VariableType::Schedule;
-            units = static_cast<Constant::Units>(getEnumValue(Constant::unitNamesUC, Util::makeUPPER(GetScheduleType(state, schedNum))));
+            if (sched->schedTypeNum != Sched::SchedNum_Invalid) {
+                std::string const &schedTypeName = state.dataSched->scheduleTypes[sched->schedTypeNum]->Name;
+                units = static_cast<Constant::Units>(getEnumValue(Constant::unitNamesUC, schedTypeName));
+            }
             storeType = StoreType::Average;
             timeStepType = TimeStepType::Zone;
         }
@@ -4354,7 +4348,6 @@ void GetVariableKeys(EnergyPlusData &state,
 
     // Using/Aliasing
     using namespace OutputProcessor;
-    using ScheduleManager::GetScheduleIndex;
 
     // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
     std::string nameUC = Util::makeUPPER(varName);
@@ -4391,7 +4384,7 @@ void GetVariableKeys(EnergyPlusData &state,
         if (size(keyOutVarNums) == 0) {
             ShowFatalError(state, "Invalid array size in GetVariableKeys");
         }
-        keyOutVarNums(1) = GetScheduleIndex(state, varName);
+        keyOutVarNums(1) = Sched::GetScheduleNum(state, varName);
         keyNames(1) = "Environment";
     } else {
         // do nothing

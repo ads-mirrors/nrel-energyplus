@@ -74,7 +74,7 @@ namespace SimAirServingZones {
     enum class CompType
     {
         Invalid = -1,
-        OAMixer_Num,
+        OAMixer,
         Fan_Simple_CV,
         Fan_Simple_VAV,
         WaterCoil_Cooling,
@@ -107,6 +107,8 @@ namespace SimAirServingZones {
         Num
     };
 
+    extern const std::array<std::string_view, (int)CompType::Num> compTypeNamesUC;
+  
     void ManageAirLoops(EnergyPlusData &state,
                         bool FirstHVACIteration, // TRUE if first full HVAC iteration in an HVAC timestep
                         bool &SimAir,            // TRUE means air loops must be (re)simulated
@@ -151,7 +153,7 @@ namespace SimAirServingZones {
 
     void SimAirLoopComponent(EnergyPlusData &state,
                              std::string const &CompName, // the component Name
-                             CompType CompType_Num,       // numeric equivalent for component type
+                             CompType compType,       // numeric equivalent for component type
                              bool FirstHVACIteration,     // TRUE if first full HVAC iteration in an HVAC timestep
                              int AirLoopNum,              // Primary air loop number
                              int &CompIndex,              // numeric pointer for CompType/CompName -- passed back from other routines
@@ -197,7 +199,7 @@ namespace SimAirServingZones {
 
     void CheckWaterCoilIsOnAirLoop(EnergyPlusData &state,
                                    SimAirServingZones::CompType CompTypeNum,
-                                   std::string const &CompType,
+                                   HVAC::CoilType coilType,
                                    std::string const &CompName,
                                    bool &WaterCoilOnAirLoop);
 
@@ -277,6 +279,10 @@ struct SimAirServingZonesData : BaseGlobalStruct
     // Placeholder for environment name used in error reporting
     std::string ErrEnvironmentName;
     std::string ErrEnvironmentNameSolveWaterCoilController;
+
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
 
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {

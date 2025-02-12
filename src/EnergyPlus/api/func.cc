@@ -61,6 +61,7 @@ void initializeFunctionalAPI(EnergyPlusState state)
     if (!thisState->dataInputProcessing->inputProcessor) {
         thisState->dataInputProcessing->inputProcessor = EnergyPlus::InputProcessor::factory();
     }
+    thisState->init_constant_state(*thisState);
     thisState->init_state(*thisState);
 }
 

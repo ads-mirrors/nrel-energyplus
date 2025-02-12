@@ -87,6 +87,8 @@ TEST_F(EnergyPlusFixture, DistrictCoolingandHeating)
     });
 
     ASSERT_TRUE(process_idf(idf_objects, false));
+    state->init_state(*state);
+
     GetOutsideEnergySourcesInput(*state);
 
     // GetOutsideEnergySourcesInput() finds DistrictHeating:Water, DistrictCooling, and DistrictHeating:Steam, respectively

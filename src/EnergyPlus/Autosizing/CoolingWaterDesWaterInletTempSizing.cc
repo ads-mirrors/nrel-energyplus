@@ -70,7 +70,7 @@ Real64 CoolingWaterDesWaterInletTempSizer::size(EnergyPlusData &state, Real64 _o
     }
     this->selectSizerOutput(state, errorsFound);
     if (this->isCoilReportObject)
-        state.dataRptCoilSelection->coilSelectionReportObj->setCoilEntWaterTemp(state, this->compName, this->coilType, this->autoSizedValue);
+        ReportCoilSelection::setCoilEntWaterTemp(state, this->compName, this->coilType, this->autoSizedValue);
     return this->autoSizedValue;
 }
 

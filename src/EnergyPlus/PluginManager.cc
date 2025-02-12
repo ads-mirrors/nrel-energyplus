@@ -181,7 +181,7 @@ std::string pythonStringForUsage([[maybe_unused]] const EnergyPlusData &state)
 }
 #endif
 
-void PluginManager::setupOutputVariables(EnergyPlusData &state)
+void PluginManager::setupOutputVariables([[maybe_unused]] EnergyPlusData &state)
 {
 #if LINK_WITH_PYTHON
     // with the PythonPlugin:Variables all set in memory, we can now set them up as outputs as needed

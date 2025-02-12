@@ -75,7 +75,7 @@ TEST_F(EnergyPlusFixture, ChillerHeater_Autosize)
 
     state->dataPlantCentralGSHP->Wrapper(1).WrapperComp(1).WrapperPerformanceObjectType = "CHILLERHEATERPERFORMANCE:ELECTRIC:EIR";
     state->dataPlantCentralGSHP->Wrapper(1).WrapperComp(1).WrapperIdenticalObjectNum = 2;
-    state->dataPlantCentralGSHP->Wrapper(1).WrapperComp(1).CHSchedPtr = ScheduleManager::ScheduleAlwaysOn;
+    state->dataPlantCentralGSHP->Wrapper(1).WrapperComp(1).chSched = Sched::GetScheduleAlwaysOn(*state);
     state->dataPlantCentralGSHP->Wrapper(1).ChillerHeaterNums = 2;
     state->dataPlantCentralGSHP->Wrapper(1).ChillerHeater.allocate(2);
     // First test in SizeWrapper, so need to set that
@@ -340,6 +340,8 @@ TEST_F(EnergyPlusFixture, Test_CentralHeatPumpSystem_Control_Schedule_fix)
 
     ASSERT_TRUE(process_idf(idf_objects));
 
+    state->init_state(*state);
+
     // May not need for direct wrapper input processing call (need when caling factory)
     state->dataPlantCentralGSHP->getWrapperInputFlag = true;
 
@@ -347,7 +349,7 @@ TEST_F(EnergyPlusFixture, Test_CentralHeatPumpSystem_Control_Schedule_fix)
     PlantCentralGSHP::GetWrapperInput(*state);
 
     // verify that under this scenario of not finding a schedule match, ScheduleAlwaysOn is the treated default
-    EXPECT_EQ(state->dataPlantCentralGSHP->Wrapper(1).WrapperComp(1).CHSchedPtr, ScheduleManager::ScheduleAlwaysOn);
+    EXPECT_EQ(state->dataPlantCentralGSHP->Wrapper(1).WrapperComp(1).chSched, Sched::GetScheduleAlwaysOn(*state));
 }
 
 TEST_F(EnergyPlusFixture, Test_CentralHeatPumpSystem_adjustChillerHeaterCondFlowTemp)

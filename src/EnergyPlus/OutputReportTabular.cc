@@ -1028,9 +1028,6 @@ void GetInputTabularTimeBins(EnergyPlusData &state)
     // REFERENCES:
     // na
 
-    // Using/Aliasing
-    using ScheduleManager::GetScheduleIndex;
-
     // Locals
     // SUBROUTINE ARGUMENT DEFINITIONS:
     // na
@@ -1055,6 +1052,8 @@ void GetInputTabularTimeBins(EnergyPlusData &state)
 
     Array1D_int objVarIDs;
     Array1D_string objNames;
+
+    static constexpr std::string_view routineName = "GetInputTabularTimeBins";
 
     auto &ort = state.dataOutRptTab;
 
@@ -1099,20 +1098,17 @@ void GetInputTabularTimeBins(EnergyPlusData &state)
                                                                  state.dataIPShortCut->lAlphaFieldBlanks,
                                                                  state.dataIPShortCut->cAlphaFieldNames,
                                                                  state.dataIPShortCut->cNumericFieldNames);
+
+        ErrorObjectHeader eoh{routineName, CurrentModuleObject, AlphArray(1)};
+
         ort->OutputTableBinned(iInObj).keyValue = AlphArray(1);
         ort->OutputTableBinned(iInObj).varOrMeter = AlphArray(2);
         // if a schedule has been specified assign
-        if (len(AlphArray(3)) > 0) {
-            ort->OutputTableBinned(iInObj).ScheduleName = AlphArray(3);
-            ort->OutputTableBinned(iInObj).scheduleIndex = GetScheduleIndex(state, AlphArray(3));
-            if (ort->OutputTableBinned(iInObj).scheduleIndex == 0) {
-                ShowWarningError(
-                    state,
-                    format("{}: invalid {}=\"{}\" - not found.", CurrentModuleObject, state.dataIPShortCut->cAlphaFieldNames(3), AlphArray(3)));
-            }
-        } else {
-            ort->OutputTableBinned(iInObj).scheduleIndex = 0; // flag value for no schedule used
+        if (state.dataIPShortCut->lAlphaFieldBlanks(3)) {
+        } else if ((ort->OutputTableBinned(iInObj).sched = Sched::GetSchedule(state, AlphArray(3))) == nullptr) {
+            ShowWarningItemNotFound(state, eoh, state.dataIPShortCut->cAlphaFieldNames(3), AlphArray(3), "");
         }
+
         // validate the kind of variable - not used internally except for validation
         if (len(AlphArray(4)) > 0) {
             if (!(Util::SameString(AlphArray(4), "ENERGY") || Util::SameString(AlphArray(4), "DEMAND") ||
@@ -2831,7 +2827,8 @@ void GetInputFuelAndPollutionFactors(EnergyPlusData &state)
     Real64 curSourceFactor;
     bool fuelFactorUsed;
     bool fFScheduleUsed;
-    int ffScheduleIndex;
+    Sched::Schedule *ffSched = nullptr;
+
     auto &ort = state.dataOutRptTab;
 
     // set the default factors for source energy - they will be overwritten if the user sets any values
@@ -2863,7 +2860,7 @@ void GetInputFuelAndPollutionFactors(EnergyPlusData &state)
     //                  + gatherTotalsBEPS(5)*sourceFactorSteam  & !steam
     //                                          ) / largeConversionFactor
 
-    GetFuelFactorInfo(state, Constant::eFuel::NaturalGas, fuelFactorUsed, curSourceFactor, fFScheduleUsed, ffScheduleIndex);
+    GetFuelFactorInfo(state, Constant::eFuel::NaturalGas, fuelFactorUsed, curSourceFactor, fFScheduleUsed, &ffSched);
     if (fuelFactorUsed) {
         ort->sourceFactorNaturalGas = curSourceFactor;
         ort->fuelfactorsused(2) = true;
@@ -2873,10 +2870,10 @@ void GetInputFuelAndPollutionFactors(EnergyPlusData &state)
     if (fFScheduleUsed) {
         ort->fuelFactorSchedulesUsed = true;
         ort->ffSchedUsed(2) = true;
-        ort->ffSchedIndex(2) = ffScheduleIndex;
+        ort->ffScheds(2) = ffSched;
     }
 
-    GetFuelFactorInfo(state, Constant::eFuel::FuelOilNo2, fuelFactorUsed, curSourceFactor, fFScheduleUsed, ffScheduleIndex);
+    GetFuelFactorInfo(state, Constant::eFuel::FuelOilNo2, fuelFactorUsed, curSourceFactor, fFScheduleUsed, &ffSched);
     if (fuelFactorUsed) {
         ort->sourceFactorFuelOil2 = curSourceFactor;
         ort->fuelfactorsused(7) = true;
@@ -2886,10 +2883,10 @@ void GetInputFuelAndPollutionFactors(EnergyPlusData &state)
     if (fFScheduleUsed) {
         ort->fuelFactorSchedulesUsed = true;
         ort->ffSchedUsed(11) = true;
-        ort->ffSchedIndex(11) = ffScheduleIndex;
+        ort->ffScheds(11) = ffSched;
     }
 
-    GetFuelFactorInfo(state, Constant::eFuel::FuelOilNo1, fuelFactorUsed, curSourceFactor, fFScheduleUsed, ffScheduleIndex);
+    GetFuelFactorInfo(state, Constant::eFuel::FuelOilNo1, fuelFactorUsed, curSourceFactor, fFScheduleUsed, &ffSched);
     if (fuelFactorUsed) {
         ort->sourceFactorFuelOil1 = curSourceFactor;
         ort->fuelfactorsused(6) = true;
@@ -2899,10 +2896,10 @@ void GetInputFuelAndPollutionFactors(EnergyPlusData &state)
     if (fFScheduleUsed) {
         ort->fuelFactorSchedulesUsed = true;
         ort->ffSchedUsed(10) = true;
-        ort->ffSchedIndex(10) = ffScheduleIndex;
+        ort->ffScheds(10) = ffSched;
     }
 
-    GetFuelFactorInfo(state, Constant::eFuel::Coal, fuelFactorUsed, curSourceFactor, fFScheduleUsed, ffScheduleIndex);
+    GetFuelFactorInfo(state, Constant::eFuel::Coal, fuelFactorUsed, curSourceFactor, fFScheduleUsed, &ffSched);
     if (fuelFactorUsed) {
         ort->sourceFactorCoal = curSourceFactor;
         ort->fuelfactorsused(5) = true;
@@ -2912,10 +2909,10 @@ void GetInputFuelAndPollutionFactors(EnergyPlusData &state)
     if (fFScheduleUsed) {
         ort->fuelFactorSchedulesUsed = true;
         ort->ffSchedUsed(9) = true;
-        ort->ffSchedIndex(9) = ffScheduleIndex;
+        ort->ffScheds(9) = ffSched;
     }
 
-    GetFuelFactorInfo(state, Constant::eFuel::Electricity, fuelFactorUsed, curSourceFactor, fFScheduleUsed, ffScheduleIndex);
+    GetFuelFactorInfo(state, Constant::eFuel::Electricity, fuelFactorUsed, curSourceFactor, fFScheduleUsed, &ffSched);
     if (fuelFactorUsed) {
         ort->sourceFactorElectric = curSourceFactor;
         ort->fuelfactorsused(1) = true;
@@ -2925,10 +2922,10 @@ void GetInputFuelAndPollutionFactors(EnergyPlusData &state)
     if (fFScheduleUsed) {
         ort->fuelFactorSchedulesUsed = true;
         ort->ffSchedUsed(1) = true;
-        ort->ffSchedIndex(1) = ffScheduleIndex;
+        ort->ffScheds(1) = ffSched;
     }
 
-    GetFuelFactorInfo(state, Constant::eFuel::Gasoline, fuelFactorUsed, curSourceFactor, fFScheduleUsed, ffScheduleIndex);
+    GetFuelFactorInfo(state, Constant::eFuel::Gasoline, fuelFactorUsed, curSourceFactor, fFScheduleUsed, &ffSched);
     if (fuelFactorUsed) {
         ort->sourceFactorGasoline = curSourceFactor;
         ort->fuelfactorsused(3) = true;
@@ -2938,10 +2935,10 @@ void GetInputFuelAndPollutionFactors(EnergyPlusData &state)
     if (fFScheduleUsed) {
         ort->fuelFactorSchedulesUsed = true;
         ort->ffSchedUsed(6) = true;
-        ort->ffSchedIndex(6) = ffScheduleIndex;
+        ort->ffScheds(6) = ffSched;
     }
 
-    GetFuelFactorInfo(state, Constant::eFuel::Propane, fuelFactorUsed, curSourceFactor, fFScheduleUsed, ffScheduleIndex);
+    GetFuelFactorInfo(state, Constant::eFuel::Propane, fuelFactorUsed, curSourceFactor, fFScheduleUsed, &ffSched);
     if (fuelFactorUsed) {
         ort->sourceFactorPropane = curSourceFactor;
         ort->fuelfactorsused(8) = true;
@@ -2951,10 +2948,10 @@ void GetInputFuelAndPollutionFactors(EnergyPlusData &state)
     if (fFScheduleUsed) {
         ort->fuelFactorSchedulesUsed = true;
         ort->ffSchedUsed(12) = true;
-        ort->ffSchedIndex(12) = ffScheduleIndex;
+        ort->ffScheds(12) = ffSched;
     }
 
-    GetFuelFactorInfo(state, Constant::eFuel::Diesel, fuelFactorUsed, curSourceFactor, fFScheduleUsed, ffScheduleIndex);
+    GetFuelFactorInfo(state, Constant::eFuel::Diesel, fuelFactorUsed, curSourceFactor, fFScheduleUsed, &ffSched);
     if (fuelFactorUsed) {
         ort->sourceFactorDiesel = curSourceFactor;
         ort->fuelfactorsused(4) = true;
@@ -2964,40 +2961,40 @@ void GetInputFuelAndPollutionFactors(EnergyPlusData &state)
     if (fFScheduleUsed) {
         ort->fuelFactorSchedulesUsed = true;
         ort->ffSchedUsed(8) = true;
-        ort->ffSchedIndex(8) = ffScheduleIndex;
+        ort->ffScheds(8) = ffSched;
     }
 
-    GetFuelFactorInfo(state, Constant::eFuel::DistrictCooling, fuelFactorUsed, curSourceFactor, fFScheduleUsed, ffScheduleIndex);
+    GetFuelFactorInfo(state, Constant::eFuel::DistrictCooling, fuelFactorUsed, curSourceFactor, fFScheduleUsed, &ffSched);
     if (fuelFactorUsed) {
         ort->ffUsed(3) = true;
     }
     ort->SourceFactors(3) = curSourceFactor;
     if (fFScheduleUsed) {
         ort->ffSchedUsed(3) = true;
-        ort->ffSchedIndex(3) = ffScheduleIndex;
+        ort->ffScheds(3) = ffSched;
     }
 
-    GetFuelFactorInfo(state, Constant::eFuel::DistrictHeatingWater, fuelFactorUsed, curSourceFactor, fFScheduleUsed, ffScheduleIndex);
+    GetFuelFactorInfo(state, Constant::eFuel::DistrictHeatingWater, fuelFactorUsed, curSourceFactor, fFScheduleUsed, &ffSched);
     if (fuelFactorUsed) {
         ort->ffUsed(4) = true;
     }
     ort->SourceFactors(4) = curSourceFactor;
     if (fFScheduleUsed) {
         ort->ffSchedUsed(4) = true;
-        ort->ffSchedIndex(4) = ffScheduleIndex;
+        ort->ffScheds(4) = ffSched;
     }
 
-    GetFuelFactorInfo(state, Constant::eFuel::DistrictHeatingSteam, fuelFactorUsed, curSourceFactor, fFScheduleUsed, ffScheduleIndex);
+    GetFuelFactorInfo(state, Constant::eFuel::DistrictHeatingSteam, fuelFactorUsed, curSourceFactor, fFScheduleUsed, &ffSched);
     if (fuelFactorUsed) {
         ort->ffUsed(5) = true;
     }
     ort->SourceFactors(5) = curSourceFactor;
     if (fFScheduleUsed) {
         ort->ffSchedUsed(5) = true;
-        ort->ffSchedIndex(5) = ffScheduleIndex;
+        ort->ffScheds(5) = ffSched;
     }
 
-    GetFuelFactorInfo(state, Constant::eFuel::OtherFuel1, fuelFactorUsed, curSourceFactor, fFScheduleUsed, ffScheduleIndex);
+    GetFuelFactorInfo(state, Constant::eFuel::OtherFuel1, fuelFactorUsed, curSourceFactor, fFScheduleUsed, &ffSched);
     if (fuelFactorUsed) {
         ort->sourceFactorOtherFuel1 = curSourceFactor;
         ort->fuelfactorsused(11) = true; // should be source number
@@ -3007,10 +3004,10 @@ void GetInputFuelAndPollutionFactors(EnergyPlusData &state)
     if (fFScheduleUsed) {
         ort->fuelFactorSchedulesUsed = true;
         ort->ffSchedUsed(13) = true;
-        ort->ffSchedIndex(13) = ffScheduleIndex;
+        ort->ffScheds(13) = ffSched;
     }
 
-    GetFuelFactorInfo(state, Constant::eFuel::OtherFuel2, fuelFactorUsed, curSourceFactor, fFScheduleUsed, ffScheduleIndex);
+    GetFuelFactorInfo(state, Constant::eFuel::OtherFuel2, fuelFactorUsed, curSourceFactor, fFScheduleUsed, &ffSched);
     if (fuelFactorUsed) {
         ort->sourceFactorOtherFuel2 = curSourceFactor;
         ort->fuelfactorsused(12) = true; // should be source number
@@ -3020,7 +3017,7 @@ void GetInputFuelAndPollutionFactors(EnergyPlusData &state)
     if (fFScheduleUsed) {
         ort->fuelFactorSchedulesUsed = true;
         ort->ffSchedUsed(14) = true;
-        ort->ffSchedIndex(14) = ffScheduleIndex;
+        ort->ffScheds(14) = ffSched;
     }
 
     GetEnvironmentalImpactFactorInfo(
@@ -3338,10 +3335,10 @@ void WriteTableOfContents(EnergyPlusData &state)
                 }
                 for (int iInput = 1; iInput <= ort->OutputTableBinnedCount; ++iInput) {
                     if (ort->OutputTableBinned(iInput).numTables > 0) {
-                        if (ort->OutputTableBinned(iInput).scheduleIndex == 0) {
+                        if (ort->OutputTableBinned(iInput).sched == nullptr) {
                             tbl_stream << "<p><b>" << ort->OutputTableBinned(iInput).varOrMeter << "</b></p> |\n";
                         } else {
-                            tbl_stream << "<p><b>" << ort->OutputTableBinned(iInput).varOrMeter << " [" << ort->OutputTableBinned(iInput).ScheduleName
+                            tbl_stream << "<p><b>" << ort->OutputTableBinned(iInput).varOrMeter << " [" << ort->OutputTableBinned(iInput).sched->Name
                                        << "]</b></p> |\n";
                         }
                         for (int jTable = 1; jTable <= ort->OutputTableBinned(iInput).numTables; ++jTable) {
@@ -3358,12 +3355,12 @@ void WriteTableOfContents(EnergyPlusData &state)
                                                  ort->OutputTableBinned(iInput).varOrMeter,
                                                  Constant::unitNames[(int)ort->OutputTableBinned(iInput).units]);
                             }
-                            if (ort->OutputTableBinned(iInput).scheduleIndex == 0) {
+                            if (ort->OutputTableBinned(iInput).sched == nullptr) {
                                 tbl_stream << "<a href=\"#" << MakeAnchorName(curName, ort->BinObjVarID(curTable).namesOfObj) << "\">"
                                            << ort->BinObjVarID(curTable).namesOfObj << "</a>   |  \n";
                             } else {
                                 tbl_stream << "<a href=\"#"
-                                           << MakeAnchorName(curName + ort->OutputTableBinned(iInput).ScheduleName,
+                                           << MakeAnchorName(curName + ort->OutputTableBinned(iInput).sched->Name,
                                                              ort->BinObjVarID(curTable).namesOfObj)
                                            << "\">" << ort->BinObjVarID(curTable).namesOfObj << "</a>   |  \n";
                             }
@@ -3436,9 +3433,6 @@ void GatherBinResultsForTimestep(EnergyPlusData &state, OutputProcessor::TimeSte
     //   Gathers the data each timestep and adds the length of the
     //   timestep to the appropriate bin.
 
-    // Using/Aliasing
-    using ScheduleManager::GetCurrentScheduleValue;
-
     // Locals
     // SUBROUTINE ARGUMENT DEFINITIONS:
 
@@ -3467,18 +3461,10 @@ void GatherBinResultsForTimestep(EnergyPlusData &state, OutputProcessor::TimeSte
     for (int iInObj = 1; iInObj <= ort->OutputTableBinnedCount; ++iInObj) {
         // get values of array for current object being referenced
 
-        int const curScheduleIndex = ort->OutputTableBinned(iInObj).scheduleIndex;
+        auto *sched = ort->OutputTableBinned(iInObj).sched;
         // if a schedule was used, check if it was non-zero value
-        bool gatherThisTime = false;
-        if (curScheduleIndex != 0) {
-            if (GetCurrentScheduleValue(state, curScheduleIndex) != 0.0) {
-                gatherThisTime = true;
-            } else {
-                gatherThisTime = false;
-            }
-        } else {
-            gatherThisTime = true;
-        }
+        bool gatherThisTime = (sched == nullptr) || (sched->getCurrentVal() != 0.0);
+
         if (gatherThisTime) {
             Real64 const &curIntervalStart = ort->OutputTableBinned(iInObj).intervalStart;
             Real64 const &curIntervalSize = ort->OutputTableBinned(iInObj).intervalSize;
@@ -3496,7 +3482,7 @@ void GatherBinResultsForTimestep(EnergyPlusData &state, OutputProcessor::TimeSte
                     Real64 curValue = GetInternalVariableValue(state, curTypeOfVar, ort->BinObjVarID(repIndex).varMeterNum);
                     // per MJW when a summed variable is used divide it by the length of the time step
                     if (ort->OutputTableBinned(iInObj).avgSum == OutputProcessor::StoreType::Sum) { // if it is a summed variable
-                        curValue /= (elapsedTime * Constant::SecInHour);
+                        curValue /= (elapsedTime * Constant::rSecsInHour);
                     }
                     // round the value to the number of significant digits used in the final output report
                     if (curIntervalSize < 1) {
@@ -4042,7 +4028,6 @@ void GatherSourceEnergyEndUseResultsForTimestep(EnergyPlusData &state,
     using DataStringGlobals::CharComma;
     using DataStringGlobals::CharSpace;
     using DataStringGlobals::CharTab;
-    using ScheduleManager::GetCurrentScheduleValue;
 
     // Locals
     // SUBROUTINE ARGUMENT DEFINITIONS:
@@ -4068,8 +4053,8 @@ void GatherSourceEnergyEndUseResultsForTimestep(EnergyPlusData &state,
             if (ort->ffSchedUsed(iResource)) {
                 int const curMeterNumber = ort->meterNumTotalsBEPS(iResource);
                 if (curMeterNumber > -1) {
-                    Real64 const curMeterValue = GetCurrentMeterValue(state, curMeterNumber) *
-                                                 GetCurrentScheduleValue(state, ort->ffSchedIndex(iResource)) * ort->SourceFactors(iResource);
+                    Real64 const curMeterValue =
+                        GetCurrentMeterValue(state, curMeterNumber) * ort->ffScheds(iResource)->getCurrentVal() * ort->SourceFactors(iResource);
                     ort->gatherTotalsBySourceBEPS(iResource) += curMeterValue;
                 }
             } else {
@@ -4084,8 +4069,8 @@ void GatherSourceEnergyEndUseResultsForTimestep(EnergyPlusData &state,
                 if (ort->ffSchedUsed(iResource)) {
                     int const curMeterNumber = ort->meterNumEndUseBEPS(iResource, jEndUse);
                     if (curMeterNumber > -1) {
-                        Real64 const curMeterValue = GetCurrentMeterValue(state, curMeterNumber) *
-                                                     GetCurrentScheduleValue(state, ort->ffSchedIndex(iResource)) * ort->SourceFactors(iResource);
+                        Real64 const curMeterValue =
+                            GetCurrentMeterValue(state, curMeterNumber) * ort->ffScheds(iResource)->getCurrentVal() * ort->SourceFactors(iResource);
                         ort->gatherEndUseBySourceBEPS(iResource, jEndUse) += curMeterValue;
                     }
                 } else {
@@ -4369,8 +4354,10 @@ void CalcHeatEmissionReport(EnergyPlusData &state)
     for (int iCoil = 1; iCoil <= state.dataDXCoils->NumDXCoils; ++iCoil) {
         auto const &dxCoil = state.dataDXCoils->DXCoil(iCoil);
 
-        if (dxCoil.coilType == HVAC::CoilType::DXCoolingSingleSpeed || dxCoil.coilType == HVAC::CoilType::DXCoolingTwoSpeed ||
-            dxCoil.coilType == HVAC::CoilType::DXMultiSpeedCooling || dxCoil.coilType == HVAC::CoilType::DXCoolingTwoStageWHumControl) {
+        if (dxCoil.coilType == HVAC::CoilType::CoolingDXSingleSpeed ||
+            dxCoil.coilType == HVAC::CoilType::CoolingDXTwoSpeed ||
+            dxCoil.coilType == HVAC::CoilType::CoolingDXMultiSpeed ||
+            dxCoil.coilType == HVAC::CoilType::CoolingDXTwoStageWHumControl) {
             if (dxCoil.CondenserType(1) == DataHeatBalance::RefrigCondenserType::Air) {
                 state.dataHeatBal->SysTotalHVACRejectHeatLoss += dxCoil.ElecCoolingConsumption + dxCoil.DefrostConsumption +
                                                                  dxCoil.CrankcaseHeaterConsumption + dxCoil.TotalCoolingEnergy;
@@ -4381,7 +4368,8 @@ void CalcHeatEmissionReport(EnergyPlusData &state)
             if (dxCoil.FuelType != Constant::eFuel::Electricity) {
                 state.dataHeatBal->SysTotalHVACRejectHeatLoss += dxCoil.MSFuelWasteHeat * TimeStepSysSec;
             }
-        } else if (dxCoil.coilType == HVAC::CoilType::DXHeatingEmpirical || dxCoil.coilType == HVAC::CoilType::DXMultiSpeedHeating) {
+        } else if (dxCoil.coilType == HVAC::CoilType::HeatingDXSingleSpeed ||
+                   dxCoil.coilType == HVAC::CoilType::HeatingDXMultiSpeed) {
             state.dataHeatBal->SysTotalHVACRejectHeatLoss += dxCoil.ElecHeatingConsumption + dxCoil.DefrostConsumption +
                                                              dxCoil.FuelConsumed + dxCoil.CrankcaseHeaterConsumption -
                                                              dxCoil.TotalHeatingEnergy;
@@ -4391,7 +4379,7 @@ void CalcHeatEmissionReport(EnergyPlusData &state)
     for (int iCoil = 1; iCoil <= state.dataVariableSpeedCoils->NumVarSpeedCoils; ++iCoil) {
         auto const &thisCoil = state.dataVariableSpeedCoils->VarSpeedCoil(iCoil);
 
-        if (thisCoil.coilType == HVAC::CoilType::CoolingAirToAirVariableSpeed) {
+        if (thisCoil.coilType == HVAC::CoilType::CoolingDXVariableSpeed) {
             if (thisCoil.CondenserType == DataHeatBalance::RefrigCondenserType::Air) {
                 state.dataHeatBal->SysTotalHVACRejectHeatLoss +=
                     thisCoil.Energy + thisCoil.CrankcaseHeaterConsumption + thisCoil.DefrostConsumption + thisCoil.EnergyLoadTotal;
@@ -4399,7 +4387,7 @@ void CalcHeatEmissionReport(EnergyPlusData &state)
                 state.dataHeatBal->SysTotalHVACRejectHeatLoss +=
                     thisCoil.EvapCondPumpElecConsumption + thisCoil.BasinHeaterConsumption + thisCoil.EvapWaterConsump * RhoWater * H2OHtOfVap_HVAC;
             }
-        } else if (thisCoil.coilType == HVAC::CoilType::HeatingAirToAirVariableSpeed) {
+        } else if (thisCoil.coilType == HVAC::CoilType::HeatingDXVariableSpeed) {
             state.dataHeatBal->SysTotalHVACRejectHeatLoss +=
                 thisCoil.Energy + thisCoil.CrankcaseHeaterConsumption + thisCoil.DefrostConsumption - thisCoil.EnergyLoadTotal;
         }
@@ -5270,7 +5258,7 @@ void WriteTabularReports(EnergyPlusData &state)
             WriteVisualResilienceTablesRepPeriod(state, i);
         }
 
-        state.dataRptCoilSelection->coilSelectionReportObj->finishCoilSummaryReportTable(
+        ReportCoilSelection::finishCoilSummaryReportTable(
             state);                   // call to write out the coil selection summary table data
         WritePredefinedTables(state); // moved to come after zone load components is finished
 
@@ -6180,9 +6168,6 @@ void FillRemainingPredefinedEntries(EnergyPlusData &state)
     int iTotalAutoSizableFields = state.dataOutput->iTotalAutoSizableFields;
     int iTotalFieldsWithDefaults = state.dataOutput->iTotalFieldsWithDefaults;
 
-    using ScheduleManager::GetScheduleName;
-    using ScheduleManager::ScheduleAverageHoursPerWeek;
-
     Real64 consumptionTotal;
 
     auto const &ort = state.dataOutRptTab;
@@ -6208,7 +6193,7 @@ void FillRemainingPredefinedEntries(EnergyPlusData &state)
         PreDefTableEntry(state,
                          state.dataOutRptPredefined->pdchInLtAvgHrSchd,
                          thisLight.Name,
-                         ScheduleAverageHoursPerWeek(state, thisLight.SchedPtr, StartOfWeek, state.dataEnvrn->CurrentYearIsLeapYear));
+                         thisLight.sched->getAverageWeeklyHoursFullLoad(state, StartOfWeek, state.dataEnvrn->CurrentYearIsLeapYear));
         // average operating hours per week
         if (ort->gatherElapsedTimeBEPS > 0) {
             state.dataOutRptTab->HrsPerWeek = 24 * 7 * thisLight.SumTimeNotZeroCons / ort->gatherElapsedTimeBEPS;
@@ -6217,7 +6202,7 @@ void FillRemainingPredefinedEntries(EnergyPlusData &state)
         // full load hours per week
         if ((thisLight.DesignLevel * ort->gatherElapsedTimeBEPS) > 0) {
             state.dataOutRptTab->HrsPerWeek =
-                24 * 7 * thisLight.SumConsumption / (thisLight.DesignLevel * ort->gatherElapsedTimeBEPS * Constant::SecInHour);
+                24 * 7 * thisLight.SumConsumption / (thisLight.DesignLevel * ort->gatherElapsedTimeBEPS * Constant::rSecsInHour);
             PreDefTableEntry(state, state.dataOutRptPredefined->pdchInLtFullLoadHrs, thisLight.Name, state.dataOutRptTab->HrsPerWeek);
         }
         PreDefTableEntry(state, state.dataOutRptPredefined->pdchInLtConsump, thisLight.Name, thisLight.SumConsumption * mult / 1000000000.0);
@@ -6234,7 +6219,7 @@ void FillRemainingPredefinedEntries(EnergyPlusData &state)
             PreDefTableEntry(state,
                              state.dataOutRptPredefined->pdchExLtAvgHrSchd,
                              thisLight.Name,
-                             ScheduleAverageHoursPerWeek(state, thisLight.SchedPtr, StartOfWeek, state.dataEnvrn->CurrentYearIsLeapYear));
+                             thisLight.sched->getAverageWeeklyHoursFullLoad(state, StartOfWeek, state.dataEnvrn->CurrentYearIsLeapYear));
         }
         // average operating hours per week
         if (ort->gatherElapsedTimeBEPS > 0) {
@@ -6244,7 +6229,7 @@ void FillRemainingPredefinedEntries(EnergyPlusData &state)
         // full load hours per week
         if ((thisLight.DesignLevel * ort->gatherElapsedTimeBEPS) > 0) {
             state.dataOutRptTab->HrsPerWeek =
-                24 * 7 * thisLight.SumConsumption / (thisLight.DesignLevel * ort->gatherElapsedTimeBEPS * Constant::SecInHour);
+                24 * 7 * thisLight.SumConsumption / (thisLight.DesignLevel * ort->gatherElapsedTimeBEPS * Constant::rSecsInHour);
             PreDefTableEntry(state, state.dataOutRptPredefined->pdchExLtFullLoadHrs, thisLight.Name, state.dataOutRptTab->HrsPerWeek);
         }
         PreDefTableEntry(state, state.dataOutRptPredefined->pdchExLtConsump, thisLight.Name, thisLight.SumConsumption / 1000000000.0);
@@ -6417,7 +6402,7 @@ void FillRemainingPredefinedEntries(EnergyPlusData &state)
                 PreDefTableEntry(state, state.dataOutRptPredefined->pdchOaTaBzTmAboveUnocc, thisZone.Name, thisZonePreDefRep.TotVentTimeNonZeroUnocc);
 
                 if (thisZone.isNominalOccupied && (thisZonePreDefRep.TotTimeOcc > 0.0)) {
-                    Real64 totTimeOccSec = thisZonePreDefRep.TotTimeOcc * Constant::SecInHour;
+                    Real64 totTimeOccSec = thisZonePreDefRep.TotTimeOcc * Constant::rSecsInHour;
                     // Mechanical ventilation
                     Real64 mechVent = thisZonePreDefRep.MechVentVolTotalOccStdDen / totTimeOccSec;
                     PreDefTableEntry(state, state.dataOutRptPredefined->pdchOaOccBzMechVent, thisZone.Name, mechVent, 4);
@@ -6512,7 +6497,7 @@ void FillRemainingPredefinedEntries(EnergyPlusData &state)
 
         if (thisSysPreDefRep.TimeOccupiedTotal > 0.0) {
             // Average Outdoor Air During Occupancy by Airloop
-            Real64 totTimeOccSec = thisSysPreDefRep.TimeOccupiedTotal * Constant::SecInHour;
+            Real64 totTimeOccSec = thisSysPreDefRep.TimeOccupiedTotal * Constant::rSecsInHour;
             PreDefTableEntry(
                 state, state.dataOutRptPredefined->pdchOaOccAlMechVent, thisPrimaryAirSys.Name, thisSysPreDefRep.MechVentTotalOcc / totTimeOccSec, 4);
             PreDefTableEntry(
@@ -6537,7 +6522,7 @@ void FillRemainingPredefinedEntries(EnergyPlusData &state)
                 int time = state.dataSysRpts->SysPreDefRep(sysNum).TimeAtOALimitOcc[static_cast<int>(limitingFactorType)];
                 if (time > 0) {
                     return state.dataSysRpts->SysPreDefRep(sysNum).MechVentTotAtLimitOcc[static_cast<int>(limitingFactorType)] /
-                           (time * Constant::SecInHour);
+                           (time * Constant::rSecsInHour);
                 } else {
                     return 0.0;
                 }
@@ -6880,22 +6865,22 @@ void FillRemainingPredefinedEntries(EnergyPlusData &state)
         PreDefTableEntry(state, state.dataOutRptPredefined->pdchLeedGenData, "Total gross floor area [m2]", "-");
     }
     // LEED schedule sub table
-    for (long iSch = 1; iSch <= state.dataScheduleMgr->NumSchedules; ++iSch) {
-        std::string curSchName = state.dataScheduleMgr->Schedule(iSch).Name;
-        std::string curSchType = ScheduleManager::GetScheduleType(state, iSch);
-        if (Util::SameString(curSchType, "FRACTION")) {
-            PreDefTableEntry(state,
-                             state.dataOutRptPredefined->pdchLeedEflhEflh,
-                             curSchName,
-                             ScheduleManager::ScheduleAnnualFullLoadHours(state, iSch, StartOfWeek, state.dataEnvrn->CurrentYearIsLeapYear),
-                             0);
-            PreDefTableEntry(state,
-                             state.dataOutRptPredefined->pdchLeedEflhNonZerHrs,
-                             curSchName,
-                             ScheduleManager::ScheduleHoursGT1perc(state, iSch, StartOfWeek, state.dataEnvrn->CurrentYearIsLeapYear),
-                             0);
-        }
+    for (auto *sched : state.dataSched->schedules) {
+        if (sched->schedTypeNum == -1) continue;
+        if (!Util::SameString(state.dataSched->scheduleTypes[sched->schedTypeNum]->Name, "FRACTION")) continue;
+
+        PreDefTableEntry(state,
+                         state.dataOutRptPredefined->pdchLeedEflhEflh,
+                         sched->Name,
+                         sched->getAnnualHoursFullLoad(state, StartOfWeek, state.dataEnvrn->CurrentYearIsLeapYear),
+                         0);
+        PreDefTableEntry(state,
+                         state.dataOutRptPredefined->pdchLeedEflhNonZerHrs,
+                         sched->Name,
+                         sched->getAnnualHoursGreaterThan1Percent(state, StartOfWeek, state.dataEnvrn->CurrentYearIsLeapYear),
+                         0);
     }
+
     // fill the LEED setpoint table
     ZoneTempPredictorCorrector::FillPredefinedTableOnThermostatSetpoints(state);
     ZoneTempPredictorCorrector::FillPredefinedTableOnThermostatSchedules(state);
@@ -6969,6 +6954,7 @@ void WriteMonthlyTables(EnergyPlusData &state)
     rowHead(15) = "Minimum of Months";
     rowHead(16) = "Maximum of Months";
 
+    // Why is this a map? If the enum/integer is the independent variable/index, it should be a std::array.
     std::unordered_map<AggType, std::string> aggString = {
         {AggType::SumOrAvg, ""},
         {AggType::Maximum, " Maximum "},
@@ -7461,10 +7447,10 @@ void WriteTimeBinTables(EnergyPlusData &state)
             tableBody(numCols, 2) = "Total";
             for (int iTable = 1; iTable <= curNumTables; ++iTable) {
                 int const repIndex = firstReport + (iTable - 1);
-                if (ort->OutputTableBinned(iInObj).scheduleIndex == 0) {
+                if (ort->OutputTableBinned(iInObj).sched == nullptr) {
                     repNameWithUnitsandscheduleName = curNameAndUnits;
                 } else {
-                    repNameWithUnitsandscheduleName = curNameAndUnits + " [" + ort->OutputTableBinned(iInObj).ScheduleName + ']';
+                    repNameWithUnitsandscheduleName = curNameAndUnits + " [" + ort->OutputTableBinned(iInObj).sched->Name + ']';
                 }
                 if (produceTabular) {
                     WriteReportHeaders(
@@ -8194,7 +8180,7 @@ void WriteBEPSTable(EnergyPlusData &state)
             tableBody(1, 1) = RealToStr(ort->sourceFactorElectric, 3);
         } else if (ort->gatherTotalsBEPS(1) > SmallValue) {
             tableBody(1, 1) = "Effective Factor = " + RealToStr(ort->gatherTotalsBySourceBEPS(1) / ort->gatherTotalsBEPS(1), 3) +
-                              " (calculated using schedule \"" + ScheduleManager::GetScheduleName(state, ort->ffSchedIndex(1)) + "\")";
+                              " (calculated using schedule \"" + ort->ffScheds(1)->Name + "\")";
         } else {
             tableBody(1, 1) = "N/A";
         }
@@ -8203,7 +8189,7 @@ void WriteBEPSTable(EnergyPlusData &state)
             tableBody(1, 2) = RealToStr(ort->sourceFactorNaturalGas, 3);
         } else if (ort->gatherTotalsBEPS(2) > SmallValue) {
             tableBody(1, 2) = "Effective Factor = " + RealToStr(ort->gatherTotalsBySourceBEPS(2) / ort->gatherTotalsBEPS(2), 3) +
-                              " (calculated using schedule \"" + ScheduleManager::GetScheduleName(state, ort->ffSchedIndex(2)) + "\")";
+                              " (calculated using schedule \"" + ort->ffScheds(2)->Name + "\")";
         } else {
             tableBody(1, 2) = "N/A";
         }
@@ -8218,7 +8204,7 @@ void WriteBEPSTable(EnergyPlusData &state)
             tableBody(1, 6) = RealToStr(ort->sourceFactorGasoline, 3);
         } else if (ort->gatherTotalsBEPS(6) > SmallValue) {
             tableBody(1, 6) = "Effective Factor = " + RealToStr(ort->gatherTotalsBySourceBEPS(6) / ort->gatherTotalsBEPS(6), 3) +
-                              " (calculated using schedule \"" + ScheduleManager::GetScheduleName(state, ort->ffSchedIndex(6)) + "\")";
+                              " (calculated using schedule \"" + ort->ffScheds(6)->Name + "\")";
         } else {
             tableBody(1, 6) = "N/A";
         }
@@ -8227,7 +8213,7 @@ void WriteBEPSTable(EnergyPlusData &state)
             tableBody(1, 7) = RealToStr(ort->sourceFactorDiesel, 3);
         } else if (ort->gatherTotalsBEPS(8) > SmallValue) {
             tableBody(1, 7) = "Effective Factor = " + RealToStr(ort->gatherTotalsBySourceBEPS(8) / ort->gatherTotalsBEPS(8), 3) +
-                              " (calculated using schedule \"" + ScheduleManager::GetScheduleName(state, ort->ffSchedIndex(8)) + "\")";
+                              " (calculated using schedule \"" + ort->ffScheds(8)->Name + "\")";
         } else {
             tableBody(1, 7) = "N/A";
         }
@@ -8236,7 +8222,7 @@ void WriteBEPSTable(EnergyPlusData &state)
             tableBody(1, 8) = RealToStr(ort->sourceFactorCoal, 3);
         } else if (ort->gatherTotalsBEPS(9) > SmallValue) {
             tableBody(1, 8) = "Effective Factor = " + RealToStr(ort->gatherTotalsBySourceBEPS(9) / ort->gatherTotalsBEPS(9), 3) +
-                              " (calculated using schedule \"" + ScheduleManager::GetScheduleName(state, ort->ffSchedIndex(9)) + "\")";
+                              " (calculated using schedule \"" + ort->ffScheds(9)->Name + "\")";
         } else {
             tableBody(1, 8) = "N/A";
         }
@@ -8245,7 +8231,7 @@ void WriteBEPSTable(EnergyPlusData &state)
             tableBody(1, 9) = RealToStr(ort->sourceFactorFuelOil1, 3);
         } else if (ort->gatherTotalsBEPS(10) > SmallValue) {
             tableBody(1, 9) = "Effective Factor = " + RealToStr(ort->gatherTotalsBySourceBEPS(10) / ort->gatherTotalsBEPS(10), 3) +
-                              " (calculated using schedule \"" + ScheduleManager::GetScheduleName(state, ort->ffSchedIndex(10)) + "\")";
+                              " (calculated using schedule \"" + ort->ffScheds(10)->Name + "\")";
         } else {
             tableBody(1, 9) = "N/A";
         }
@@ -8254,7 +8240,7 @@ void WriteBEPSTable(EnergyPlusData &state)
             tableBody(1, 10) = RealToStr(ort->sourceFactorFuelOil2, 3);
         } else if (ort->gatherTotalsBEPS(11) > SmallValue) {
             tableBody(1, 10) = "Effective Factor = " + RealToStr(ort->gatherTotalsBySourceBEPS(11) / ort->gatherTotalsBEPS(11), 3) +
-                               " (calculated using schedule \"" + ScheduleManager::GetScheduleName(state, ort->ffSchedIndex(11)) + "\")";
+                               " (calculated using schedule \"" + ort->ffScheds(11)->Name + "\")";
         } else {
             tableBody(1, 10) = "N/A";
         }
@@ -8263,7 +8249,7 @@ void WriteBEPSTable(EnergyPlusData &state)
             tableBody(1, 11) = RealToStr(ort->sourceFactorPropane, 3);
         } else if (ort->gatherTotalsBEPS(12) > SmallValue) {
             tableBody(1, 11) = "Effective Factor = " + RealToStr(ort->gatherTotalsBySourceBEPS(12) / ort->gatherTotalsBEPS(12), 3) +
-                               " (calculated using schedule \"" + ScheduleManager::GetScheduleName(state, ort->ffSchedIndex(12)) + "\")";
+                               " (calculated using schedule \"" + ort->ffScheds(12)->Name + "\")";
         } else {
             tableBody(1, 11) = "N/A";
         }
@@ -8272,7 +8258,7 @@ void WriteBEPSTable(EnergyPlusData &state)
             tableBody(1, 12) = RealToStr(ort->sourceFactorOtherFuel1, 3);
         } else if (ort->gatherTotalsBEPS(13) > SmallValue) {
             tableBody(1, 12) = "Effective Factor = " + RealToStr(ort->gatherTotalsBySourceBEPS(13) / ort->gatherTotalsBEPS(13), 3) +
-                               " (calculated using schedule \"" + ScheduleManager::GetScheduleName(state, ort->ffSchedIndex(13)) + "\")";
+                               " (calculated using schedule \"" + ort->ffScheds(13)->Name + "\")";
         } else {
             tableBody(1, 12) = "N/A";
         }
@@ -8281,7 +8267,7 @@ void WriteBEPSTable(EnergyPlusData &state)
             tableBody(1, 13) = RealToStr(ort->sourceFactorOtherFuel2, 3);
         } else if (ort->gatherTotalsBEPS(14) > SmallValue) {
             tableBody(1, 13) = "Effective Factor = " + RealToStr(ort->gatherTotalsBySourceBEPS(14) / ort->gatherTotalsBEPS(14), 3) +
-                               " (calculated using schedule \"" + ScheduleManager::GetScheduleName(state, ort->ffSchedIndex(14)) + "\")";
+                               " (calculated using schedule \"" + ort->ffScheds(14)->Name + "\")";
         } else {
             tableBody(1, 13) = "N/A";
         }
@@ -10962,8 +10948,6 @@ void WriteVeriSumTable(EnergyPlusData &state)
     using DataSurfaces::OtherSideCondModeledExt;
     using DataSurfaces::SurfaceClass;
     using General::SafeDivide;
-    using ScheduleManager::GetScheduleName;
-    using ScheduleManager::ScheduleAverageHoursPerWeek;
 
     auto const &ort = state.dataOutRptTab;
 
@@ -11497,7 +11481,7 @@ void WriteVeriSumTable(EnergyPlusData &state)
                 auto const &thisZone = state.dataHeatBal->Zone(iZone);
 
                 rowHead(iZone) = thisZone.Name;
-                if (state.dataHybridModel->HybridModelZone(iZone).InternalThermalMassCalc_T) {
+                if (state.dataHybridModel->hybridModelZones(iZone).InternalThermalMassCalc_T) {
                     tableBody(1, iZone) = "Yes";
                 } else {
                     tableBody(1, iZone) = "No";
@@ -14480,113 +14464,86 @@ void AllocateLoadComponentArrays(EnergyPlusData &state)
     if (!ort->AllocateLoadComponentArraysDoAllocate) {
         return;
     }
+
+    Real64 timeStepsInDay = state.dataGlobal->TimeStepsInHour * Constant::rHoursInDay;
+
     // For many of the following arrays the last dimension is the number of environments and is same as sizing arrays
     ort->radiantPulseTimestep.allocate({0, state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays}, state.dataGlobal->NumOfZones);
     ort->radiantPulseTimestep = 0;
     ort->radiantPulseReceived.allocate({0, state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays}, state.dataSurface->TotSurfaces);
     ort->radiantPulseReceived = 0.0;
-    ort->loadConvectedNormal.allocate(state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays,
-                                      {0, state.dataGlobal->NumOfTimeStepInHour * 24},
-                                      state.dataSurface->TotSurfaces);
+    ort->loadConvectedNormal.allocate(
+        state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, {0, timeStepsInDay}, state.dataSurface->TotSurfaces);
     ort->loadConvectedNormal = 0.0;
-    ort->loadConvectedWithPulse.allocate(state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays,
-                                         {0, state.dataGlobal->NumOfTimeStepInHour * 24},
-                                         state.dataSurface->TotSurfaces);
+    ort->loadConvectedWithPulse.allocate(
+        state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, {0, timeStepsInDay}, state.dataSurface->TotSurfaces);
     ort->loadConvectedWithPulse = 0.0;
-    ort->netSurfRadSeq.allocate(
-        state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, state.dataGlobal->NumOfTimeStepInHour * 24, state.dataSurface->TotSurfaces);
+    ort->netSurfRadSeq.allocate(state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, timeStepsInDay, state.dataSurface->TotSurfaces);
     ort->netSurfRadSeq = 0.0;
-    ort->decayCurveCool.allocate(state.dataGlobal->NumOfTimeStepInHour * 24, state.dataSurface->TotSurfaces);
+    ort->decayCurveCool.allocate(timeStepsInDay, state.dataSurface->TotSurfaces);
     ort->decayCurveCool = 0.0;
-    ort->decayCurveHeat.allocate(state.dataGlobal->NumOfTimeStepInHour * 24, state.dataSurface->TotSurfaces);
+    ort->decayCurveHeat.allocate(timeStepsInDay, state.dataSurface->TotSurfaces);
     ort->decayCurveHeat = 0.0;
-    ort->ITABSFseq.allocate(
-        state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, state.dataGlobal->NumOfTimeStepInHour * 24, state.dataSurface->TotSurfaces);
+    ort->ITABSFseq.allocate(state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, timeStepsInDay, state.dataSurface->TotSurfaces);
     ort->ITABSFseq = 0.0;
-    ort->TMULTseq.allocate(state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays,
-                           state.dataGlobal->NumOfTimeStepInHour * 24,
-                           state.dataViewFactor->NumOfRadiantEnclosures);
+    ort->TMULTseq.allocate(
+        state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, timeStepsInDay, state.dataViewFactor->NumOfRadiantEnclosures);
     ort->TMULTseq = 0.0;
-    ort->peopleInstantSeq.allocate(
-        state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, state.dataGlobal->NumOfTimeStepInHour * 24, state.dataGlobal->NumOfZones);
+    ort->peopleInstantSeq.allocate(state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, timeStepsInDay, state.dataGlobal->NumOfZones);
     ort->peopleInstantSeq = 0.0;
-    ort->peopleLatentSeq.allocate(
-        state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, state.dataGlobal->NumOfTimeStepInHour * 24, state.dataGlobal->NumOfZones);
+    ort->peopleLatentSeq.allocate(state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, timeStepsInDay, state.dataGlobal->NumOfZones);
     ort->peopleLatentSeq = 0.0;
-    ort->peopleRadSeq.allocate(
-        state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, state.dataGlobal->NumOfTimeStepInHour * 24, state.dataGlobal->NumOfZones);
+    ort->peopleRadSeq.allocate(state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, timeStepsInDay, state.dataGlobal->NumOfZones);
     ort->peopleRadSeq = 0.0;
-    ort->lightInstantSeq.allocate(
-        state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, state.dataGlobal->NumOfTimeStepInHour * 24, state.dataGlobal->NumOfZones);
+    ort->lightInstantSeq.allocate(state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, timeStepsInDay, state.dataGlobal->NumOfZones);
     ort->lightInstantSeq = 0.0;
-    ort->lightRetAirSeq.allocate(
-        state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, state.dataGlobal->NumOfTimeStepInHour * 24, state.dataGlobal->NumOfZones);
+    ort->lightRetAirSeq.allocate(state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, timeStepsInDay, state.dataGlobal->NumOfZones);
     ort->lightRetAirSeq = 0.0;
-    ort->lightLWRadSeq.allocate(
-        state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, state.dataGlobal->NumOfTimeStepInHour * 24, state.dataGlobal->NumOfZones);
+    ort->lightLWRadSeq.allocate(state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, timeStepsInDay, state.dataGlobal->NumOfZones);
     ort->lightLWRadSeq = 0.0;
-    ort->lightSWRadSeq.allocate(
-        state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, state.dataGlobal->NumOfTimeStepInHour * 24, state.dataSurface->TotSurfaces);
+    ort->lightSWRadSeq.allocate(state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, timeStepsInDay, state.dataSurface->TotSurfaces);
     ort->lightSWRadSeq = 0.0;
-    ort->equipInstantSeq.allocate(
-        state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, state.dataGlobal->NumOfTimeStepInHour * 24, state.dataGlobal->NumOfZones);
+    ort->equipInstantSeq.allocate(state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, timeStepsInDay, state.dataGlobal->NumOfZones);
     ort->equipInstantSeq = 0.0;
-    ort->equipLatentSeq.allocate(
-        state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, state.dataGlobal->NumOfTimeStepInHour * 24, state.dataGlobal->NumOfZones);
+    ort->equipLatentSeq.allocate(state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, timeStepsInDay, state.dataGlobal->NumOfZones);
     ort->equipLatentSeq = 0.0;
-    ort->equipRadSeq.allocate(
-        state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, state.dataGlobal->NumOfTimeStepInHour * 24, state.dataGlobal->NumOfZones);
+    ort->equipRadSeq.allocate(state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, timeStepsInDay, state.dataGlobal->NumOfZones);
     ort->equipRadSeq = 0.0;
-    ort->refrigInstantSeq.allocate(
-        state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, state.dataGlobal->NumOfTimeStepInHour * 24, state.dataGlobal->NumOfZones);
+    ort->refrigInstantSeq.allocate(state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, timeStepsInDay, state.dataGlobal->NumOfZones);
     ort->refrigInstantSeq = 0.0;
-    ort->refrigRetAirSeq.allocate(
-        state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, state.dataGlobal->NumOfTimeStepInHour * 24, state.dataGlobal->NumOfZones);
+    ort->refrigRetAirSeq.allocate(state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, timeStepsInDay, state.dataGlobal->NumOfZones);
     ort->refrigRetAirSeq = 0.0;
-    ort->refrigLatentSeq.allocate(
-        state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, state.dataGlobal->NumOfTimeStepInHour * 24, state.dataGlobal->NumOfZones);
+    ort->refrigLatentSeq.allocate(state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, timeStepsInDay, state.dataGlobal->NumOfZones);
     ort->refrigLatentSeq = 0.0;
-    ort->waterUseInstantSeq.allocate(
-        state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, state.dataGlobal->NumOfTimeStepInHour * 24, state.dataGlobal->NumOfZones);
+    ort->waterUseInstantSeq.allocate(state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, timeStepsInDay, state.dataGlobal->NumOfZones);
     ort->waterUseInstantSeq = 0.0;
-    ort->waterUseLatentSeq.allocate(
-        state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, state.dataGlobal->NumOfTimeStepInHour * 24, state.dataGlobal->NumOfZones);
+    ort->waterUseLatentSeq.allocate(state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, timeStepsInDay, state.dataGlobal->NumOfZones);
     ort->waterUseLatentSeq = 0.0;
-    ort->hvacLossInstantSeq.allocate(
-        state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, state.dataGlobal->NumOfTimeStepInHour * 24, state.dataGlobal->NumOfZones);
+    ort->hvacLossInstantSeq.allocate(state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, timeStepsInDay, state.dataGlobal->NumOfZones);
     ort->hvacLossInstantSeq = 0.0;
-    ort->hvacLossRadSeq.allocate(
-        state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, state.dataGlobal->NumOfTimeStepInHour * 24, state.dataGlobal->NumOfZones);
+    ort->hvacLossRadSeq.allocate(state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, timeStepsInDay, state.dataGlobal->NumOfZones);
     ort->hvacLossRadSeq = 0.0;
-    ort->powerGenInstantSeq.allocate(
-        state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, state.dataGlobal->NumOfTimeStepInHour * 24, state.dataGlobal->NumOfZones);
+    ort->powerGenInstantSeq.allocate(state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, timeStepsInDay, state.dataGlobal->NumOfZones);
     ort->powerGenInstantSeq = 0.0;
-    ort->powerGenRadSeq.allocate(
-        state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, state.dataGlobal->NumOfTimeStepInHour * 24, state.dataGlobal->NumOfZones);
+    ort->powerGenRadSeq.allocate(state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, timeStepsInDay, state.dataGlobal->NumOfZones);
     ort->powerGenRadSeq = 0.0;
-    ort->infilInstantSeq.allocate(
-        state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, state.dataGlobal->NumOfTimeStepInHour * 24, state.dataGlobal->NumOfZones);
+    ort->infilInstantSeq.allocate(state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, timeStepsInDay, state.dataGlobal->NumOfZones);
     ort->infilInstantSeq = 0.0;
-    ort->infilLatentSeq.allocate(
-        state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, state.dataGlobal->NumOfTimeStepInHour * 24, state.dataGlobal->NumOfZones);
+    ort->infilLatentSeq.allocate(state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, timeStepsInDay, state.dataGlobal->NumOfZones);
     ort->infilLatentSeq = 0.0;
-    ort->zoneVentInstantSeq.allocate(
-        state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, state.dataGlobal->NumOfTimeStepInHour * 24, state.dataGlobal->NumOfZones);
+    ort->zoneVentInstantSeq.allocate(state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, timeStepsInDay, state.dataGlobal->NumOfZones);
     ort->zoneVentInstantSeq = 0.0;
-    ort->zoneVentLatentSeq.allocate(
-        state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, state.dataGlobal->NumOfTimeStepInHour * 24, state.dataGlobal->NumOfZones);
+    ort->zoneVentLatentSeq.allocate(state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, timeStepsInDay, state.dataGlobal->NumOfZones);
     ort->zoneVentLatentSeq = 0.0;
     ort->interZoneMixInstantSeq.allocate(
-        state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, state.dataGlobal->NumOfTimeStepInHour * 24, state.dataGlobal->NumOfZones);
+        state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, timeStepsInDay, state.dataGlobal->NumOfZones);
     ort->interZoneMixInstantSeq = 0.0;
     ort->interZoneMixLatentSeq.allocate(
-        state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, state.dataGlobal->NumOfTimeStepInHour * 24, state.dataGlobal->NumOfZones);
+        state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, timeStepsInDay, state.dataGlobal->NumOfZones);
     ort->interZoneMixLatentSeq = 0.0;
-    ort->feneCondInstantSeq.allocate(
-        state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, state.dataGlobal->NumOfTimeStepInHour * 24, state.dataGlobal->NumOfZones);
+    ort->feneCondInstantSeq.allocate(state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, timeStepsInDay, state.dataGlobal->NumOfZones);
     ort->feneCondInstantSeq = 0.0;
-    ort->feneSolarRadSeq.allocate(
-        state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, state.dataGlobal->NumOfTimeStepInHour * 24, state.dataSurface->TotSurfaces);
+    ort->feneSolarRadSeq.allocate(state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays, timeStepsInDay, state.dataSurface->TotSurfaces);
     ort->feneSolarRadSeq = 0.0;
     ort->AllocateLoadComponentArraysDoAllocate = false;
 }
@@ -14651,7 +14608,7 @@ void ComputeLoadComponentDecayCurve(EnergyPlusData &state)
             }
             if (state.dataOutRptTab->TimeOfPulseCLCDC == 0) state.dataOutRptTab->TimeOfPulseCLCDC = 1;
             for (state.dataOutRptTab->TimeStepCLCDC = state.dataOutRptTab->TimeOfPulseCLCDC;
-                 state.dataOutRptTab->TimeStepCLCDC <= state.dataGlobal->NumOfTimeStepInHour * 24;
+                 state.dataOutRptTab->TimeStepCLCDC <= state.dataGlobal->TimeStepsInHour * Constant::rHoursInDay;
                  ++state.dataOutRptTab->TimeStepCLCDC) {
                 if (ort->radiantPulseReceived(state.dataOutRptTab->CoolDesSelectedCLCDC, state.dataOutRptTab->SurfNumCLCDC) != 0.0) {
                     diff = ort->loadConvectedWithPulse(
@@ -14680,7 +14637,7 @@ void ComputeLoadComponentDecayCurve(EnergyPlusData &state)
             }
             if (state.dataOutRptTab->TimeOfPulseCLCDC == 0) state.dataOutRptTab->TimeOfPulseCLCDC = 1;
             for (state.dataOutRptTab->TimeStepCLCDC = state.dataOutRptTab->TimeOfPulseCLCDC;
-                 state.dataOutRptTab->TimeStepCLCDC <= state.dataGlobal->NumOfTimeStepInHour * 24;
+                 state.dataOutRptTab->TimeStepCLCDC <= state.dataGlobal->TimeStepsInHour * Constant::rHoursInDay;
                  ++state.dataOutRptTab->TimeStepCLCDC) {
                 if (ort->radiantPulseReceived(state.dataOutRptTab->HeatDesSelectedCLCDC, state.dataOutRptTab->SurfNumCLCDC) != 0.0) {
                     diff = ort->loadConvectedWithPulse(
@@ -14716,7 +14673,7 @@ void ComputeLoadComponentDecayCurve(EnergyPlusData &state)
                       "Radiant to Convective Decay Curves for Cooling",
                       thisZone.Name,
                       state.dataSurface->Surface(kSurf).Name);
-                for (int jTime = 1; jTime <= min(state.dataGlobal->NumOfTimeStepInHour * 24, 36); ++jTime) {
+                for (int jTime = 1; jTime <= min(int(state.dataGlobal->TimeStepsInHour * Constant::iHoursInDay), 36); ++jTime) {
                     print(state.files.eio, ",{:6.3F}", ort->decayCurveCool(jTime, kSurf));
                 }
                 // put a line feed at the end of the line
@@ -14730,7 +14687,7 @@ void ComputeLoadComponentDecayCurve(EnergyPlusData &state)
                       "Radiant to Convective Decay Curves for Heating",
                       thisZone.Name,
                       state.dataSurface->Surface(kSurf).Name);
-                for (int jTime = 1; jTime <= min(state.dataGlobal->NumOfTimeStepInHour * 24, 36); ++jTime) {
+                for (int jTime = 1; jTime <= min(int(state.dataGlobal->TimeStepsInHour * Constant::iHoursInDay), 36); ++jTime) {
                     print(state.files.eio, ",{:6.3F}", ort->decayCurveHeat(jTime, kSurf));
                 }
                 // put a line feed at the end of the line
@@ -14758,8 +14715,7 @@ void GatherComponentLoadsSurface(EnergyPlusData &state)
     auto const &ort = state.dataOutRptTab;
 
     if (state.dataGlobal->CompLoadReportIsReq && !state.dataGlobal->isPulseZoneSizing) {
-        state.dataOutRptTab->TimeStepInDayGCLS =
-            (state.dataGlobal->HourOfDay - 1) * state.dataGlobal->NumOfTimeStepInHour + state.dataGlobal->TimeStep;
+        state.dataOutRptTab->TimeStepInDayGCLS = (state.dataGlobal->HourOfDay - 1) * state.dataGlobal->TimeStepsInHour + state.dataGlobal->TimeStep;
         ort->feneCondInstantSeq(state.dataSize->CurOverallSimDay, state.dataOutRptTab->TimeStepInDayGCLS, _) = 0.0;
         for (state.dataOutRptTab->iSurfGCLS = 1; state.dataOutRptTab->iSurfGCLS <= state.dataSurface->TotSurfaces; ++state.dataOutRptTab->iSurfGCLS) {
             state.dataOutRptTab->ZoneNumGCLS = state.dataSurface->Surface(state.dataOutRptTab->iSurfGCLS).Zone;
@@ -14807,7 +14763,7 @@ void GatherComponentLoadsHVAC(EnergyPlusData &state)
     }
     auto &ort = state.dataOutRptTab;
     Real64 const TimeStepSysSec = state.dataHVACGlobal->TimeStepSysSec;
-    state.dataOutRptTab->TimeStepInDayGCLH = (state.dataGlobal->HourOfDay - 1) * state.dataGlobal->NumOfTimeStepInHour + state.dataGlobal->TimeStep;
+    state.dataOutRptTab->TimeStepInDayGCLH = (state.dataGlobal->HourOfDay - 1) * state.dataGlobal->TimeStepsInHour + state.dataGlobal->TimeStep;
     for (state.dataOutRptTab->iZoneGCLH = 1; state.dataOutRptTab->iZoneGCLH <= state.dataGlobal->NumOfZones; ++state.dataOutRptTab->iZoneGCLH) {
         ort->infilInstantSeq(state.dataSize->CurOverallSimDay, state.dataOutRptTab->TimeStepInDayGCLH, state.dataOutRptTab->iZoneGCLH) =
             ((state.dataHeatBal->ZnAirRpt(state.dataOutRptTab->iZoneGCLH).InfilHeatGain -
@@ -14978,34 +14934,36 @@ void WriteLoadComponentSummaryTables(EnergyPlusData &state)
         bool produceSQLite = false;
         if (produceDualUnitsFlags(iUnitSystem, ort->unitsStyle, ort->unitsStyle_SQLite, unitsStyle_cur, produceTabular, produceSQLite)) break;
 
-        // adjusted initialization location to after variable declaration for loops 2021-01-11
-        peopleDelaySeqHeat.dimension(state.dataGlobal->NumOfTimeStepInHour * 24, 0.0);
+        Real64 timeStepsInDay = state.dataGlobal->TimeStepsInHour * Constant::rHoursInDay;
+
+        // adjusted initilization location to after variable declaration for loops 2021-01-11
+        peopleDelaySeqHeat.dimension(timeStepsInDay, 0.0);
         peopleDelaySeqHeat = 0.0;
-        peopleDelaySeqCool.allocate(state.dataGlobal->NumOfTimeStepInHour * 24);
+        peopleDelaySeqCool.allocate(timeStepsInDay);
         peopleDelaySeqCool = 0.0;
-        lightDelaySeqHeat.allocate(state.dataGlobal->NumOfTimeStepInHour * 24);
+        lightDelaySeqHeat.allocate(timeStepsInDay);
         lightDelaySeqHeat = 0.0;
-        lightDelaySeqCool.allocate(state.dataGlobal->NumOfTimeStepInHour * 24);
+        lightDelaySeqCool.allocate(timeStepsInDay);
         lightDelaySeqCool = 0.0;
-        equipDelaySeqHeat.allocate(state.dataGlobal->NumOfTimeStepInHour * 24);
+        equipDelaySeqHeat.allocate(timeStepsInDay);
         equipDelaySeqHeat = 0.0;
-        equipDelaySeqCool.allocate(state.dataGlobal->NumOfTimeStepInHour * 24);
+        equipDelaySeqCool.allocate(timeStepsInDay);
         equipDelaySeqCool = 0.0;
-        hvacLossDelaySeqHeat.allocate(state.dataGlobal->NumOfTimeStepInHour * 24);
+        hvacLossDelaySeqHeat.allocate(timeStepsInDay);
         hvacLossDelaySeqHeat = 0.0;
-        hvacLossDelaySeqCool.allocate(state.dataGlobal->NumOfTimeStepInHour * 24);
+        hvacLossDelaySeqCool.allocate(timeStepsInDay);
         hvacLossDelaySeqCool = 0.0;
-        powerGenDelaySeqHeat.allocate(state.dataGlobal->NumOfTimeStepInHour * 24);
+        powerGenDelaySeqHeat.allocate(timeStepsInDay);
         powerGenDelaySeqHeat = 0.0;
-        powerGenDelaySeqCool.allocate(state.dataGlobal->NumOfTimeStepInHour * 24);
+        powerGenDelaySeqCool.allocate(timeStepsInDay);
         powerGenDelaySeqCool = 0.0;
-        feneSolarDelaySeqHeat.allocate(state.dataGlobal->NumOfTimeStepInHour * 24);
+        feneSolarDelaySeqHeat.allocate(timeStepsInDay);
         feneSolarDelaySeqHeat = 0.0;
-        feneSolarDelaySeqCool.allocate(state.dataGlobal->NumOfTimeStepInHour * 24);
+        feneSolarDelaySeqCool.allocate(timeStepsInDay);
         feneSolarDelaySeqCool = 0.0;
-        surfDelaySeqHeat.allocate(state.dataGlobal->NumOfTimeStepInHour * 24, state.dataSurface->TotSurfaces);
+        surfDelaySeqHeat.allocate(timeStepsInDay, state.dataSurface->TotSurfaces);
         surfDelaySeqHeat = 0.0;
-        surfDelaySeqCool.allocate(state.dataGlobal->NumOfTimeStepInHour * 24, state.dataSurface->TotSurfaces);
+        surfDelaySeqCool.allocate(timeStepsInDay, state.dataSurface->TotSurfaces);
         surfDelaySeqCool = 0.0;
 
         // initialize arrays
@@ -15130,8 +15088,7 @@ void WriteLoadComponentSummaryTables(EnergyPlusData &state)
                                                    surfDelaySeqCool);
                     CollectPeakZoneConditions(state, ZoneCoolCompLoadTables(iZone), coolDesSelected, timeCoolMax, iZone, true);
                     // send latent load info to coil summary report
-                    state.dataRptCoilSelection->coilSelectionReportObj->setZoneLatentLoadCoolingIdealPeak(
-                        iZone, ZoneCoolCompLoadTables(iZone).cells(LoadCompCol::Latent, LoadCompRow::GrdTot));
+                    ReportCoilSelection::setZoneLatentLoadCoolingIdealPeak(state, iZone, ZoneCoolCompLoadTables(iZone).cells(LoadCompCol::Latent, LoadCompRow::GrdTot));
 
                     heatDesSelected = thisCalcFinalZoneSizing.HeatDDNum;
                     ZoneHeatCompLoadTables(iZone).desDayNum = heatDesSelected;
@@ -15167,8 +15124,8 @@ void WriteLoadComponentSummaryTables(EnergyPlusData &state)
                     CollectPeakZoneConditions(state, ZoneHeatCompLoadTables(iZone), heatDesSelected, timeHeatMax, iZone, false);
 
                     // send latent load info to coil summary report
-                    state.dataRptCoilSelection->coilSelectionReportObj->setZoneLatentLoadHeatingIdealPeak(
-                        iZone, ZoneHeatCompLoadTables(iZone).cells(LoadCompCol::Latent, LoadCompRow::GrdTot));
+                    ReportCoilSelection::setZoneLatentLoadHeatingIdealPeak(
+                        state, iZone, ZoneHeatCompLoadTables(iZone).cells(LoadCompCol::Latent, LoadCompRow::GrdTot));
 
                     AddAreaColumnForZone(iZone, ZoneComponentAreas, ZoneCoolCompLoadTables(iZone));
                     AddAreaColumnForZone(iZone, ZoneComponentAreas, ZoneHeatCompLoadTables(iZone));
@@ -15604,7 +15561,7 @@ void GetDelaySequences(EnergyPlusData &state,
 
     if (!ort->initAdjFenDone) {
         state.dataOutRptTab->adjFenDone.allocate(state.dataEnvrn->TotDesDays + state.dataEnvrn->TotRunDesPersDays,
-                                                 state.dataGlobal->NumOfTimeStepInHour * 24,
+                                                 state.dataGlobal->TimeStepsInHour * Constant::iHoursInDay,
                                                  state.dataGlobal->NumOfZones);
         state.dataOutRptTab->adjFenDone = false;
         ort->initAdjFenDone = true;
@@ -15619,7 +15576,7 @@ void GetDelaySequences(EnergyPlusData &state,
             decayCurve = ort->decayCurveHeat;
         }
 
-        for (int kTimeStep = 1; kTimeStep <= state.dataGlobal->NumOfTimeStepInHour * 24; ++kTimeStep) {
+        for (int kTimeStep = 1; kTimeStep <= state.dataGlobal->TimeStepsInHour * Constant::iHoursInDay; ++kTimeStep) {
             Real64 peopleConvIntoZone = 0.0;
             Real64 equipConvIntoZone = 0.0;
             Real64 hvacLossConvIntoZone = 0.0;
@@ -15722,7 +15679,7 @@ void ComputeTableBodyUsingMovingAvg(EnergyPlusData &state,
     resultCells = 0.;
     resCellsUsd = false;
     delayOpaque.allocate(LoadCompRow::GrdTot);
-    AvgData.allocate(state.dataGlobal->NumOfTimeStepInHour * 24);
+    AvgData.allocate(state.dataGlobal->TimeStepsInHour * Constant::iHoursInDay);
 
     if (desDaySelected != 0 && timeOfMax != 0) {
         // Don't update/average original array data
@@ -15975,7 +15932,7 @@ void CollectPeakZoneConditions(
                 compLoad.peakDateHrMin = format("{}/{} {}",
                                                 state.dataWeather->DesDayInput(desDaySelected).Month,
                                                 state.dataWeather->DesDayInput(desDaySelected).DayOfMonth,
-                                                state.dataRptCoilSelection->coilSelectionReportObj->getTimeText(state, timeOfMax));
+                                                ReportCoilSelection::getTimeText(state, timeOfMax));
             } else {
                 compLoad.peakDateHrMin = thisCalcFinalZoneSizing.CoolPeakDateHrMin;
             }
@@ -16031,7 +15988,7 @@ void CollectPeakZoneConditions(
                 compLoad.peakDateHrMin = format("{}/{} {}",
                                                 state.dataWeather->DesDayInput(desDaySelected).Month,
                                                 state.dataWeather->DesDayInput(desDaySelected).DayOfMonth,
-                                                state.dataRptCoilSelection->coilSelectionReportObj->getTimeText(state, timeOfMax));
+                                                ReportCoilSelection::getTimeText(state, timeOfMax));
             } else {
                 compLoad.peakDateHrMin = thisCalcFinalZoneSizing.HeatPeakDateHrMin;
             }

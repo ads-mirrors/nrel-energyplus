@@ -94,9 +94,13 @@ public:
     bool ErrorsFound = false;
 
 protected:
-    virtual void SetUp()
+    virtual void SetUp() // Please don't do this
     {
         EnergyPlusFixture::SetUp(); // Sets up the base fixture first.
+
+        state->init_state(*state);
+
+        state->dataGlobal->TimeStepZone = 0; // Why do we need to override this?  Why is it not okay to just set this?
 
         state->dataGlobal->DayOfSim = 1;
         state->dataGlobal->HourOfDay = 1;
@@ -120,7 +124,7 @@ protected:
         state->dataZoneEquip->ZoneEquipConfig(1).ReturnNode(1) = 21;
         state->dataZoneEquip->ZoneEquipConfig(1).FixedReturnFlow.allocate(1);
         state->dataHeatBal->Zone(1).SystemZoneNodeNumber = state->dataZoneEquip->ZoneEquipConfig(1).ZoneNode;
-        state->dataZoneEquip->ZoneEquipConfig(1).ReturnFlowSchedPtrNum = ScheduleManager::ScheduleAlwaysOn;
+        state->dataZoneEquip->ZoneEquipConfig(1).returnFlowFracSched = Sched::GetScheduleAlwaysOn(*state);
         state->dataZoneEquip->ZoneEquipList(1).Name = "ZONEEQUIPMENT";
         int maxEquipCount = 1;
         state->dataZoneEquip->ZoneEquipList(1).NumOfEquipTypes = maxEquipCount;
@@ -186,20 +190,20 @@ protected:
 
         // note no fan used for these tests
         state->dataHVACUnitaryBypassVAV->NumCBVAV = 1;
-        state->dataHVACUnitaryBypassVAV->CBVAV.allocate(1);
-        auto &cbvav(state->dataHVACUnitaryBypassVAV->CBVAV(1));
+        state->dataHVACUnitaryBypassVAV->CBVAVs.allocate(1);
+        auto &cbvav(state->dataHVACUnitaryBypassVAV->CBVAVs(1));
         cbvav.Name = "CBVAVAirLoop";
         cbvav.UnitType = "AirLoopHVAC:UnitaryHeatCool:VAVChangeoverBypass";
-        cbvav.SchedPtr = -1;
+        cbvav.availSched = Sched::GetScheduleAlwaysOn(*state);
         cbvav.ControlledZoneNodeNum.allocate(1);
         cbvav.ControlledZoneNodeNum(1) = 1;
-        cbvav.DXCoolCoilIndexNum = 1;
+        cbvav.CoolCoilNum = 1;
         state->dataDXCoils->DXCoil.allocate(1);
         state->dataDXCoils->DXCoilNumericFields.allocate(1);
         state->dataDXCoils->DXCoilNumericFields(1).PerfMode.allocate(1);
         state->dataDXCoils->DXCoilNumericFields(1).PerfMode(1).FieldNames.allocate(20);
         state->dataDXCoils->DXCoil(1).Name = "MyDXCoolCoil";
-        state->dataDXCoils->DXCoil(1).DXCoilType = "COIL:COOLING:DX:SINGLESPEED";
+        state->dataDXCoils->DXCoil(1).coilType = HVAC::CoilType::CoolingDXSingleSpeed;
         state->dataDXCoils->NumDXCoils = 1;
         state->dataDXCoils->CheckEquipName.dimension(1, true);
         state->dataDXCoils->GetCoilsInputFlag = false;
@@ -224,27 +228,27 @@ protected:
         state->dataDXCoils->DXCoil(1).RatedEIR(1) = 0.3;
         state->dataDXCoils->DXCoil(1).RatedSHR.allocate(1);
         state->dataDXCoils->DXCoil(1).RatedSHR(1) = 0.7;
-        state->dataDXCoils->DXCoil(1).SchedPtr = -1;
+        state->dataDXCoils->DXCoil(1).availSched = Sched::GetScheduleAlwaysOn(*state);
         state->dataDXCoils->DXCoilOutletTemp.allocate(1);
         state->dataDXCoils->DXCoilOutletHumRat.allocate(1);
         state->dataDXCoils->DXCoilPartLoadRatio.allocate(1);
         state->dataDXCoils->DXCoilFanOp.allocate(1);
         state->dataHeatBal->HeatReclaimDXCoil.allocate(1);
 
-        cbvav.DXCoolCoilName = "MyDXCoolCoil";
-        state->dataDXCoils->DXCoil(1).DXCoilType_Num = HVAC::CoilDX_CoolingSingleSpeed;
+        cbvav.CoolCoilName = "MyDXCoolCoil";
+        state->dataDXCoils->DXCoil(1).coilType = HVAC::CoilType::CoolingDXSingleSpeed;
         state->dataHeatingCoils->HeatingCoil.allocate(1);
         state->dataHeatingCoils->HeatingCoilNumericFields.allocate(1);
         state->dataHeatingCoils->HeatingCoilNumericFields(1).FieldNames.allocate(20);
         state->dataHeatingCoils->HeatingCoil(1).Name = "MyHeatingCoil";
-        state->dataHeatingCoils->HeatingCoil(1).HCoilType_Num = HVAC::Coil_HeatingElectric;
+        state->dataHeatingCoils->HeatingCoil(1).coilType = HVAC::CoilType::HeatingElectric;
         state->dataHeatingCoils->NumHeatingCoils = 1;
         state->dataHeatingCoils->ValidSourceType.dimension(state->dataHeatingCoils->NumHeatingCoils, false);
         state->dataHeatingCoils->GetCoilsInputFlag = false;
         state->dataSize->UnitarySysEqSizing.allocate(1);
         cbvav.HeatCoilName = "MyHeatingCoil";
-        cbvav.CoolCoilType = HVAC::CoilType::DXCoolingSingleSpeed;
-        cbvav.HeatCoilType = HVAC::CoilType::HeatingElectric;
+        cbvav.coolCoilType = HVAC::CoilType::CoolingDXSingleSpeed;
+        cbvav.heatCoilType = HVAC::CoilType::HeatingElectric;
         cbvav.minModeChangeTime = 0.0;
         cbvav.AirInNode = 1;
         cbvav.AirOutNode = 2;
@@ -252,7 +256,7 @@ protected:
         cbvav.MixerReliefAirNode = 4;
         cbvav.MixerMixedAirNode = 5;
         cbvav.MixerInletAirNode = 6;
-        cbvav.HeatingCoilOutletNode = 9;
+        cbvav.HeatCoilAirOutletNode = 9;
         cbvav.SplitterOutletAirNode = 9;
         cbvav.NumControlledZones = 1;
         cbvav.ControlledZoneNum.allocate(1);
@@ -271,17 +275,17 @@ protected:
         state->dataMixedAir->OAMixer(1).RetNode = 6;
         state->dataMixedAir->OAMixer(1).MixNode = 7;
         state->dataDXCoils->DXCoil(1).AirInNode = 7;
-        cbvav.DXCoilInletNode = state->dataDXCoils->DXCoil(1).AirInNode;
+        cbvav.CoolCoilAirInletNode = state->dataDXCoils->DXCoil(1).AirInNode;
         state->dataDXCoils->DXCoil(1).AirOutNode = 8;
-        cbvav.DXCoilOutletNode = state->dataDXCoils->DXCoil(1).AirOutNode;
+        cbvav.CoolCoilAirOutletNode = state->dataDXCoils->DXCoil(1).AirOutNode;
         state->dataHeatingCoils->HeatingCoil(1).AirInletNodeNum = 8;
-        cbvav.HeatingCoilInletNode = state->dataHeatingCoils->HeatingCoil(1).AirInletNodeNum;
+        cbvav.HeatCoilAirInletNode = state->dataHeatingCoils->HeatingCoil(1).AirInletNodeNum;
         state->dataHeatingCoils->HeatingCoil(1).AirOutletNodeNum = 9;
         state->dataHeatingCoils->HeatingCoil(1).TempSetPointNodeNum = 9;
-        cbvav.HeatingCoilOutletNode = state->dataHeatingCoils->HeatingCoil(1).AirOutletNodeNum;
+        cbvav.HeatCoilAirOutletNode = state->dataHeatingCoils->HeatingCoil(1).AirOutletNodeNum;
         state->dataHeatingCoils->HeatingCoil(1).NominalCapacity = 10000.0;
         state->dataHeatingCoils->HeatingCoil(1).Efficiency = 1.0;
-        state->dataHeatingCoils->HeatingCoil(1).SchedPtr = -1;
+        state->dataHeatingCoils->HeatingCoil(1).availSched = Sched::GetScheduleAlwaysOn(*state);
 
         cbvav.CBVAVBoxOutletNode.allocate(1);
         cbvav.CBVAVBoxOutletNode(1) = 11;
@@ -644,10 +648,11 @@ TEST_F(EnergyPlusFixture, UnitaryBypassVAV_GetInputZoneEquipment)
 
     ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
 
+    state->init_state(*state);
+
     bool ErrorsFound = false;
     bool firstHVACIteration = true;
     // Read objects
-    SimulationManager::GetProjectData(*state);
     HeatBalanceManager::GetProjectControlData(*state, ErrorsFound);
     EXPECT_FALSE(ErrorsFound);
     HeatBalanceManager::GetHeatBalanceInput(*state);
@@ -680,7 +685,7 @@ TEST_F(EnergyPlusFixture, UnitaryBypassVAV_GetInputZoneEquipment)
 
     int CBVAVNum = 1;
     int zoneIndex = 1;
-    auto &cbvav(state->dataHVACUnitaryBypassVAV->CBVAV(CBVAVNum));
+    auto &cbvav(state->dataHVACUnitaryBypassVAV->CBVAVs(CBVAVNum));
     // should be the second zone in the zone list as well as actual zone number
     EXPECT_EQ(2, cbvav.ControlledZoneNum(CBVAVNum));
     // reflects sequence number in ZoneHVAC:EquipmentList
@@ -713,7 +718,7 @@ TEST_F(CBVAVSys, UnitaryBypassVAV_AutoSize)
 {
 
     //  reference CBVAV and FinalSysSizing data
-    auto &cbvav(state->dataHVACUnitaryBypassVAV->CBVAV(1));
+    auto &cbvav(state->dataHVACUnitaryBypassVAV->CBVAVs(1));
     auto &finalSysSizing(state->dataSize->FinalSysSizing(state->dataSize->CurSysNum));
 
     state->dataSize->SysSizingRunDone = true; // inform sizing that system sizing run is done
@@ -753,9 +758,8 @@ TEST_F(CBVAVSys, UnitaryBypassVAV_AutoSize)
 
 TEST_F(CBVAVSys, UnitaryBypassVAV_NoOASys)
 {
-
     //  reference CBVAV data
-    auto &cbvav(state->dataHVACUnitaryBypassVAV->CBVAV(1));
+    auto &cbvav(state->dataHVACUnitaryBypassVAV->CBVAVs(1));
     cbvav.FanVolFlow = 0.5;
     cbvav.MaxCoolAirVolFlow = 0.5;
     cbvav.MaxHeatAirVolFlow = 0.5;
@@ -850,7 +854,7 @@ TEST_F(CBVAVSys, UnitaryBypassVAV_InternalOAMixer)
 {
 
     //  reference CBVAV data
-    auto &cbvav(state->dataHVACUnitaryBypassVAV->CBVAV(1));
+    auto &cbvav(state->dataHVACUnitaryBypassVAV->CBVAVs(1));
     cbvav.FanVolFlow = 0.5;
     cbvav.MaxCoolAirVolFlow = 0.5;
     cbvav.MaxHeatAirVolFlow = 0.5;
@@ -937,7 +941,7 @@ TEST_F(CBVAVSys, UnitaryBypassVAV_Mixerconnected)
 {
 
     //  reference CBVAV data
-    auto &cbvav(state->dataHVACUnitaryBypassVAV->CBVAV(1));
+    auto &cbvav(state->dataHVACUnitaryBypassVAV->CBVAVs(1));
     cbvav.FanVolFlow = 0.5;
     cbvav.MaxCoolAirVolFlow = 0.5;
     cbvav.MaxHeatAirVolFlow = 0.5;
@@ -1649,12 +1653,13 @@ TEST_F(EnergyPlusFixture, UnitaryBypassVAV_ParentElectricityRateTest)
 
     ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
 
+    state->init_state(*state);
+
     int CBVAVNum = 1;
     bool HXUnitOn = false;
     bool ErrorsFound = false;
     bool firstHVACIteration = true;
     // get various objects
-    SimulationManager::GetProjectData(*state);
     HeatBalanceManager::GetProjectControlData(*state, ErrorsFound);
     EXPECT_FALSE(ErrorsFound);
     HeatBalanceManager::GetHeatBalanceInput(*state);
@@ -1693,7 +1698,7 @@ TEST_F(EnergyPlusFixture, UnitaryBypassVAV_ParentElectricityRateTest)
     state->dataEnvrn->OutBaroPress = 101325.0;
     state->dataEnvrn->StdRhoAir = 1.20;
     // set shortcut to system
-    auto &BypassVAV = state->dataHVACUnitaryBypassVAV->CBVAV(1);
+    auto &BypassVAV = state->dataHVACUnitaryBypassVAV->CBVAVs(1);
     // set zone air conditions
     auto &zoneAirNode =
         state->dataLoopNodes->Node(Util::FindItemInList("ZONE 1 NODE", state->dataLoopNodes->NodeID, state->dataLoopNodes->NumOfNodes));
@@ -1736,7 +1741,7 @@ TEST_F(EnergyPlusFixture, UnitaryBypassVAV_ParentElectricityRateTest)
     BypassVAV.changeOverTimer = -1.0;
     state->dataGlobal->DayOfSim = 15;
     state->dataGlobal->HourOfDay = 6;
-    state->dataScheduleMgr->Schedule(BypassVAV.SchedPtr).CurrentValue = 1.0;
+    BypassVAV.availSched->currentVal = 1.0;
 
     Real64 QUnitOut = 0.0;
     Real64 OnOffAirFlowRatio = 1;

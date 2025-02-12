@@ -89,44 +89,44 @@ namespace IntegratedHeatPump {
         std::string Name;    // Name of the  Coil
         std::string IHPtype; // type of coil
 
-        std::string SCCoilType; // Numeric Equivalent for SC Coil Type
+        HVAC::CoilType SCCoilType = HVAC::CoilType::Invalid; // Numeric Equivalent for SC Coil Type
         std::string SCCoilName;
-        int SCCoilIndex; // Index to SC coil
+        int SCCoilNum = 0; // Index to SC coil
         DataLoopNode::ConnectionObjectType SCCoilTypeNum = DataLoopNode::ConnectionObjectType::Invalid;
 
-        std::string SHCoilType; // Numeric Equivalent for SH Coil Type
+        HVAC::CoilType SHCoilType = HVAC::CoilType::Invalid; // Numeric Equivalent for SH Coil Type
         std::string SHCoilName;
-        int SHCoilIndex; // Index to SH coil
+        int SHCoilNum = 0; // Index to SH coil
         DataLoopNode::ConnectionObjectType SHCoilTypeNum = DataLoopNode::ConnectionObjectType::Invalid;
 
-        std::string SCWHCoilType; // Numeric Equivalent for SCWH Coil Type
+        HVAC::CoilType SCWHCoilType = HVAC::CoilType::Invalid; // Numeric Equivalent for SCWH Coil Type
         std::string SCWHCoilName;
-        int SCWHCoilIndex; // Index to SCWH coil
+        int SCWHCoilNum = 0; // Index to SCWH coil
         DataLoopNode::ConnectionObjectType SCWHCoilTypeNum = DataLoopNode::ConnectionObjectType::Invalid;
 
-        std::string DWHCoilType; // Numeric Equivalent for DWH Coil Type
+        HVAC::CoilType DWHCoilType = HVAC::CoilType::Invalid; // Numeric Equivalent for DWH Coil Type
         std::string DWHCoilName;
-        int DWHCoilIndex; // Index to DWH coil
+        int DWHCoilNum = 0; // Index to DWH coil
         DataLoopNode::ConnectionObjectType DWHCoilTypeNum = DataLoopNode::ConnectionObjectType::Invalid;
 
-        std::string SCDWHCoolCoilType; // Numeric Equivalent for SCDWH Coil Type, cooling part
+        HVAC::CoilType SCDWHCoolCoilType = HVAC::CoilType::Invalid; // Numeric Equivalent for SCDWH Coil Type, cooling part
         std::string SCDWHCoolCoilName;
-        int SCDWHCoolCoilIndex; // Index to SCDWH coil, cooling part
+        int SCDWHCoolCoilNum = 0; // Index to SCDWH coil, cooling part
         DataLoopNode::ConnectionObjectType SCDWHCoolCoilTypeNum = DataLoopNode::ConnectionObjectType::Invalid;
 
-        std::string SCDWHWHCoilType; // Numeric Equivalent for SCDWH Coil Type, water heating part
+        HVAC::CoilType SCDWHWHCoilType = HVAC::CoilType::Invalid; // Numeric Equivalent for SCDWH Coil Type, water heating part
         std::string SCDWHWHCoilName;
-        int SCDWHWHCoilIndex; // Index to SCDWH coil, water heating part
+        int SCDWHWHCoilNum = 0; // Index to SCDWH coil, water heating part
         DataLoopNode::ConnectionObjectType SCDWHWHCoilTypeNum = DataLoopNode::ConnectionObjectType::Invalid;
 
-        std::string SHDWHHeatCoilType; // Numeric Equivalent for SHDWH Coil Type, heating part
+        HVAC::CoilType SHDWHHeatCoilType = HVAC::CoilType::Invalid; // Numeric Equivalent for SHDWH Coil Type, heating part
         std::string SHDWHHeatCoilName;
-        int SHDWHHeatCoilIndex; // Index to SHDWH coil, heating part
+        int SHDWHHeatCoilNum = 0; // Index to SHDWH coil, heating part
         DataLoopNode::ConnectionObjectType SHDWHHeatCoilTypeNum = DataLoopNode::ConnectionObjectType::Invalid;
-
-        std::string SHDWHWHCoilType; // Numeric Equivalent for SHDWH Coil Type, water heating part
+ 
+        HVAC::CoilType SHDWHWHCoilType = HVAC::CoilType::Invalid; // Numeric Equivalent for SHDWH Coil Type, water heating part
         std::string SHDWHWHCoilName;
-        int SHDWHWHCoilIndex; // Index to SHDWH coil, water heating part
+        int SHDWHWHCoilNum = 0; // Index to SHDWH coil, water heating part
         DataLoopNode::ConnectionObjectType SHDWHWHCoilTypeNum = DataLoopNode::ConnectionObjectType::Invalid;
 
         int AirCoolInletNodeNum; // Node Number of the Air cooling coil Inlet
@@ -221,8 +221,7 @@ namespace IntegratedHeatPump {
 
         // Default Constructor
         IntegratedHeatPumpData()
-            : SCCoilIndex(0), SHCoilIndex(0), SCWHCoilIndex(0), DWHCoilIndex(0), SCDWHCoolCoilIndex(0), SCDWHWHCoilIndex(0), SHDWHHeatCoilIndex(0),
-              SHDWHWHCoilIndex(0), AirCoolInletNodeNum(0), AirHeatInletNodeNum(0), AirOutletNodeNum(0), WaterInletNodeNum(0), WaterOutletNodeNum(0),
+            : AirCoolInletNodeNum(0), AirHeatInletNodeNum(0), AirOutletNodeNum(0), WaterInletNodeNum(0), WaterOutletNodeNum(0),
               WaterTankoutNod(0), ModeMatchSCWH(0), MinSpedSCWH(1), MinSpedSCDWH(1), MinSpedSHDWH(1), TindoorOverCoolAllow(0.0),
               TambientOverCoolAllow(0.0), TindoorWHHighPriority(0.0), TambientWHHighPriority(0.0), WaterVolSCDWH(0.0), TimeLimitSHDWH(0.0),
               WHtankType(DataPlant::PlantEquipmentType::Invalid), WHtankID(0), LoopNum(0), LoopSideNum(0), IsWHCallAvail(false), CheckWHCall(false),
@@ -251,6 +250,20 @@ namespace IntegratedHeatPump {
     void SimIHP(EnergyPlusData &state,
                 std::string_view CompName,       // Coil Name
                 int &CompIndex,                  // Index for Component name
+                HVAC::FanOp const fanOp,         // Continuous fan OR cycling compressor
+                HVAC::CompressorOp compressorOp, // compressor on/off. 0 = off; 1= on
+                Real64 const PartLoadFrac,
+                int const SpeedNum,            // compressor speed number
+                Real64 const SpeedRatio,       // compressor speed ratio
+                Real64 const SensLoad,         // Sensible demand load [W]
+                Real64 const LatentLoad,       // Latent demand load [W]
+                bool const IsCallbyWH,         // whether the call from the water heating loop or air loop, true = from water heating loop
+                bool const FirstHVACIteration, // TRUE if First iteration of simulation
+                ObjexxFCL::Optional<Real64 const> OnOffAirFlowRat = _ // ratio of comp on to comp off air flow rate
+    );
+
+    void SimIHP(EnergyPlusData &state,
+                int const ihpNum,                  // Index for Component name
                 HVAC::FanOp const fanOp,         // Continuous fan OR cycling compressor
                 HVAC::CompressorOp compressorOp, // compressor on/off. 0 = off; 1= on
                 Real64 const PartLoadFrac,
@@ -301,41 +314,53 @@ namespace IntegratedHeatPump {
 
     bool IHPInModel(EnergyPlusData &state);
 
-    int GetCoilIndexIHP(EnergyPlusData &state,
-                        std::string const &CoilType, // must match coil types in this module
-                        std::string const &CoilName, // must match coil names for the coil type
-                        bool &ErrorsFound            // set to true if problem
+    int GetIHPIndex(EnergyPlusData &state,
+                    std::string const &CoilType, // must match coil types in this module
+                    std::string const &CoilName, // must match coil names for the coil type
+                    bool &ErrorsFound            // set to true if problem
     );
 
-    int GetCoilIndexIHP(EnergyPlusData &state,
-                        std::string const &CoilName
+    int GetIHPIndex(EnergyPlusData &state,
+                    std::string const &CoilName
     );
   
-    int GetCoilInletNodeIHP(EnergyPlusData &state,
+    int GetIHPCoilAirInletNode(EnergyPlusData &state,
                             std::string const &CoilType, // must match coil types in this module
                             std::string const &CoilName, // must match coil names for the coil type
                             bool &ErrorsFound            // set to true if problem
     );
 
-    int GetDWHCoilInletNodeIHP(EnergyPlusData &state,
-                               std::string const &CoilType, // must match coil types in this module
-                               std::string const &CoilName, // must match coil names for the coil type
-                               bool &ErrorsFound            // set to true if problem
+    int GetIHPCoilAirInletNode(EnergyPlusData &state,
+                               int const ihpNum);
+  
+    int GetIHPDWHCoilAirInletNode(EnergyPlusData &state,
+                                  std::string const &CoilType, // must match coil types in this module
+                                  std::string const &CoilName, // must match coil names for the coil type
+                                  bool &ErrorsFound            // set to true if problem
     );
 
-    int GetDWHCoilOutletNodeIHP(EnergyPlusData &state,
-                                std::string const &CoilType, // must match coil types in this module
-                                std::string const &CoilName, // must match coil names for the coil type
-                                bool &ErrorsFound            // set to true if problem
+    int GetIHPDWHCoilAirInletNode(EnergyPlusData &state,
+                                  int const ihpNum);
+  
+    int GetIHPDWHCoilAirOutletNode(EnergyPlusData &state,
+                                   std::string const &CoilType, // must match coil types in this module
+                                   std::string const &CoilName, // must match coil names for the coil type
+                                   bool &ErrorsFound            // set to true if problem
     );
 
-    Real64 GetDWHCoilCapacityIHP(EnergyPlusData &state,
+    int GetIHPDWHCoilAirOutletNode(EnergyPlusData &state,
+                                   int const ihpNum);
+  
+    Real64 GetIHPDWHCoilCapacity(EnergyPlusData &state,
                                  std::string const &CoilType, // must match coil types in this module
                                  std::string const &CoilName, // must match coil names for the coil type
                                  IHPOperationMode const Mode, // mode coil type
                                  bool &ErrorsFound            // set to true if problem
     );
 
+    Real64 GetIHPDWHCoilCapacity(EnergyPlusData &state,
+                                 int const ihpNum);
+  
     int GetIHPDWHCoilPLFFPLR(EnergyPlusData &state,
                              std::string const &CoilType, // must match coil types in this module
                              std::string const &CoilName, // must match coil names for the coil type
@@ -343,6 +368,9 @@ namespace IntegratedHeatPump {
                              bool &ErrorsFound            // set to true if problem
     );
 
+    int GetIHPDWHCoilPLFFPLR(EnergyPlusData &state,
+                             int const ihpNum);
+  
     void ClearCoils(EnergyPlusData &state, int const DXCoilNum // coil ID
     );
 
@@ -353,6 +381,10 @@ struct IntegratedHeatPumpGlobalData : BaseGlobalStruct
 
     bool GetCoilsInputFlag = true;
     EPVector<IntegratedHeatPump::IntegratedHeatPumpData> IntegratedHeatPumps;
+
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
 
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {

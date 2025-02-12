@@ -49,7 +49,7 @@
 #include <ObjexxFCL/Array.functions.hh>
 #include <ObjexxFCL/Array1D.hh>
 #include <ObjexxFCL/ArrayS.functions.hh>
-#include <ObjexxFCL/Fmath.hh>
+// #include <ObjexxFCL/Fmath.hh>
 #include <ObjexxFCL/member.functions.hh>
 
 // EnergyPlus Headers
@@ -198,11 +198,10 @@ void CalcTempDistModel(EnergyPlusData &state, int const ZoneNum) // index number
 
     // Using/Aliasing
     using General::FindNumberInList;
-    using ScheduleManager::GetCurrentScheduleValue;
 
     auto &patternZoneInfo = state.dataRoomAir->AirPatternZoneInfo(ZoneNum);
     // first determine availability
-    Real64 AvailTest = GetCurrentScheduleValue(state, patternZoneInfo.AvailSchedID);
+    Real64 AvailTest = patternZoneInfo.availSched->getCurrentVal();
 
     if ((AvailTest != 1.0) || (!patternZoneInfo.IsUsed)) {
         // model not to be used. Use complete mixing method
@@ -217,7 +216,7 @@ void CalcTempDistModel(EnergyPlusData &state, int const ZoneNum) // index number
 
     } else { // choose pattern and call subroutine
 
-        int CurntPatternKey = GetCurrentScheduleValue(state, patternZoneInfo.PatternSchedID);
+        int CurntPatternKey = patternZoneInfo.patternSched->getCurrentVal();
 
         int CurPatrnID = FindNumberInList(CurntPatternKey, state.dataRoomAir->AirPattern, &TemperaturePattern::PatrnID);
 

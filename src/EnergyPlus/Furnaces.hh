@@ -111,9 +111,9 @@ namespace Furnaces {
         std::string Name;                                          // Name of the Furnace
         HVAC::UnitarySysType type = HVAC::UnitarySysType::Invalid; // Numeric Equivalent for Furnace Type
         int FurnaceIndex;                                          // Index to furnace
-        int SchedPtr;                                              // Index to furnace operating schedule
-        int FanSchedPtr;                                           // Index to fan operating mode schedule
-        int FanAvailSchedPtr;                                      // Index to fan availability schedule
+        Sched::Schedule *availSched = nullptr;                     // furnace operating schedule
+        Sched::Schedule *fanOpModeSched = nullptr;                 // fan operating mode schedule
+        Sched::Schedule *fanAvailSched = nullptr;                  // fan availability schedule
         int ControlZoneNum;                                        // Index to controlled zone
         int ZoneSequenceCoolingNum;                                // Index to cooling sequence/priority for this zone
         int ZoneSequenceHeatingNum;                                // Index to heating sequence/priority for this zone
@@ -126,10 +126,10 @@ namespace Furnaces {
         int ActualDXCoilIndexForHXAssisted;                        // Index to DX cooling coil when HX assisted
         bool CoolCoilUpstream = true;                                  // Indicates if cooling coil is upstream of heating coil
 
-        // If the cooling coil is HXAssisted, these correspond to the enclosing HXAssisted coil object
-        HVAC::CoilType hxCoolCoilType = HVAC::CoilType::Invalid;     
-        std::string hxCoolCoilName;
-        int hxCoolCoilNum = 0;                                     
+        // If the cooling coil is HXAssisted, these correspond to embedded "child" coil
+        HVAC::CoilType childCoolCoilType = HVAC::CoilType::Invalid;     
+        std::string childCoolCoilName;
+        int childCoolCoilNum = 0;                                     
 
         HVAC::CoilType heatCoilType = HVAC::CoilType::Invalid;     // Numeric Equivalent for Heating Coil Type
         std::string HeatCoilName;                               // name of heating coil
@@ -270,7 +270,7 @@ namespace Furnaces {
         int ErrCountVar2 = 0; // Counter used to minimize the occurrence of output warnings
 
         FurnaceEquipConditions()
-            : FurnaceIndex(0), SchedPtr(0), FanSchedPtr(0), FanAvailSchedPtr(0), ControlZoneNum(0), ZoneSequenceCoolingNum(0),
+            : FurnaceIndex(0), ControlZoneNum(0), ZoneSequenceCoolingNum(0),
               ZoneSequenceHeatingNum(0), ActualDXCoilIndexForHXAssisted(0), 
               fanType(HVAC::FanType::Invalid), FanIndex(0), 
               LastMode(Furnaces::ModeOfOperation::Invalid), AirFlowControl(AirFlowControlConstFan::Invalid), fanPlace(HVAC::FanPlace::Invalid),
@@ -587,6 +587,10 @@ struct FurnacesData : BaseGlobalStruct
     Real64 HeatPartLoadRatio;   // Part load ratio (greater of sensible or latent part load ratio for cooling)
     int SpeedNum = 1;           // Speed number
     Real64 SupHeaterLoad = 0.0; // supplement heater load
+
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
 
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {

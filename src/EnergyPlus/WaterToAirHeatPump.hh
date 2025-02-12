@@ -77,8 +77,7 @@ namespace WaterToAirHeatPump {
     {
         // Members
         std::string Name;                       // Name of the Water to Air Heat pump
-        std::string WatertoAirHPType;           // Type of WatertoAirHP ie. Heating or Cooling
-        DataPlant::PlantEquipmentType WAHPType; // type of component in plant
+        DataPlant::PlantEquipmentType coilPlantType = DataPlant::PlantEquipmentType::Invalid; // type of component in plant
         std::string Refrigerant;                // Refrigerant name
         Fluid::RefrigProps *refrig = nullptr;
         bool SimFlag;
@@ -150,7 +149,7 @@ namespace WaterToAirHeatPump {
 
         // Default Constructor
         WatertoAirHPEquipConditions()
-            : WAHPType(DataPlant::PlantEquipmentType::Invalid), SimFlag(false), InletAirMassFlowRate(0.0), OutletAirMassFlowRate(0.0),
+            : SimFlag(false), InletAirMassFlowRate(0.0), OutletAirMassFlowRate(0.0),
               InletAirDBTemp(0.0), InletAirHumRat(0.0), OutletAirDBTemp(0.0), OutletAirHumRat(0.0), InletAirEnthalpy(0.0), OutletAirEnthalpy(0.0),
               InletWaterTemp(0.0), OutletWaterTemp(0.0), InletWaterMassFlowRate(0.0), OutletWaterMassFlowRate(0.0), DesignWaterMassFlowRate(0.0),
               DesignWaterVolFlowRate(0.0), InletWaterEnthalpy(0.0), OutletWaterEnthalpy(0.0), Power(0.0), Energy(0.0), QSensible(0.0), QLatent(0.0),
@@ -179,6 +178,17 @@ namespace WaterToAirHeatPump {
                          HVAC::CompressorOp compressorOp,
                          Real64 const PartLoadRatio);
 
+    void SimWatertoAirHP(EnergyPlusData &state,
+                         int const coilNum,                // Index for Component name
+                         Real64 const DesignAirflow,    // design air flow rate
+                         HVAC::FanOp const fanOp,       // cycling scheme--either continuous fan/cycling compressor or
+                         bool const FirstHVACIteration, // first iteration flag
+                         bool const InitFlag,           // initialization flag used to suppress property routine errors
+                         Real64 const SensLoad,         // sensible load
+                         Real64 const LatentLoad,       // latent load
+                         HVAC::CompressorOp compressorOp,
+                         Real64 const PartLoadRatio);
+  
     void GetWatertoAirHPInput(EnergyPlusData &state);
 
     void InitWatertoAirHP(EnergyPlusData &state,
@@ -225,14 +235,11 @@ namespace WaterToAirHeatPump {
                    Real64 &Temp // Temperature of the fluid
     );
 
+#ifdef OLD_API  
     int GetCoilIndex(EnergyPlusData &state,
                      std::string const &CoilType, // must match coil types in this module
                      std::string const &CoilName, // must match coil names for the coil type
                      bool &ErrorsFound            // set to true if problem
-    );
-
-    int GetCoilIndex(EnergyPlusData &state,
-                     std::string const &CoilName // must match coil names for the coil type
     );
 
     Real64 GetCoilCapacity(EnergyPlusData &state,
@@ -241,18 +248,10 @@ namespace WaterToAirHeatPump {
                            bool &ErrorsFound            // set to true if problem
     );
 
-    Real64 GetCoilCapacity(EnergyPlusData &state,
-                           int const coilNum
-    );
-
     int GetCoilInletNode(EnergyPlusData &state,
                          std::string const &CoilType, // must match coil types in this module
                          std::string const &CoilName, // must match coil names for the coil type
                          bool &ErrorsFound            // set to true if problem
-    );
-
-    int GetCoilInletNode(EnergyPlusData &state,
-                         int const coilNum
     );
 
     int GetCoilOutletNode(EnergyPlusData &state,
@@ -260,10 +259,15 @@ namespace WaterToAirHeatPump {
                           std::string const &CoilName, // must match coil names for the coil type
                           bool &ErrorsFound            // set to true if problem
     );
+#endif // OLD_API
+  
+    int GetCoilIndex(EnergyPlusData &state, std::string const &CoilName);
 
-    int GetCoilOutletNode(EnergyPlusData &state,
-                          int const coilNum
-    );
+    Real64 GetCoilCapacity(EnergyPlusData &state, int const coilNum);
+
+    int GetCoilInletNode(EnergyPlusData &state, int const coilNum);
+
+    int GetCoilOutletNode(EnergyPlusData &state, int const coilNum);
   
 } // namespace WaterToAirHeatPump
 
@@ -293,6 +297,10 @@ struct WaterToAirHeatPumpData : BaseGlobalStruct
     Real64 LoadSideInletDBTemp_Init = 0.0;  // rated conditions
     Real64 LoadSideInletHumRat_Init = 0.0;  // rated conditions
     Real64 LoadSideAirInletEnth_Init = 0.0; // rated conditions
+
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
 
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {

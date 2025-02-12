@@ -62,13 +62,13 @@ namespace EnergyPlus {
 // Forward declarations
 struct EnergyPlusData;
 
-namespace HVACHXAssistedCoolingCoil {
+namespace HXAssistCoil {
 
     struct HXAssistedCoilParameters
     {
         // Members
         std::string Name;               // Name of the HXAssistedCoolingCoil
-        HVAC::CoilType hxCoilType = HVAC::CoilType::Invalid; // coilType of the parent object
+        HVAC::CoilType coilType = HVAC::CoilType::Invalid; // coilType of the parent object
         int HXCoilInNodeNum = 0;              // Inlet node to HXAssistedCoolingCoil compound object
         int HXCoilOutNodeNum = 0;             // Outlet node to HXAssistedCoolingCoil compound object
       
@@ -76,8 +76,9 @@ namespace HVACHXAssistedCoolingCoil {
         std::string CoolCoilName; // Cooling coil name
         int CoolCoilNum = 0;
 
-        int CoolCoilCondenserNodeNum = 0;
+        int CoolCoilCondenserInNodeNum = 0;
         int CoolCoilWaterInNodeNum = 0;
+        int CoolCoilWaterOutNodeNum = 0;
         int CoolCoilInNodeNum = 0;
         int CoolCoilOutNodeNum = 0;
       
@@ -125,6 +126,21 @@ namespace HVACHXAssistedCoolingCoil {
                              ObjexxFCL::Optional<Real64 const> LoadSHR = _                       // Optional coil SHR pass over
     );
 
+    void
+    SimHXAssistedCoolingCoil(EnergyPlusData &state,
+                             int const coilNum,
+                             bool const FirstHVACIteration,       // FirstHVACIteration flag
+                             HVAC::CompressorOp compressorOp,     // compressor operation; 1=on, 0=off
+                             Real64 const PartLoadRatio,          // Part load ratio of Coil:DX:CoolingBypassFactorEmpirical
+                             HVAC::FanOp const fanOp,                           // Allows the parent object to control fan operation
+                             ObjexxFCL::Optional_bool_const HXUnitEnable = _,   // flag to enable heat exchanger heat recovery
+                             ObjexxFCL::Optional<Real64 const> OnOffAFR = _,    // Ratio of compressor ON air mass flow rate to AVERAGE over time step
+                             ObjexxFCL::Optional_bool_const EconomizerFlag = _, // OA sys or air loop economizer status
+                             ObjexxFCL::Optional<Real64> QTotOut = _,           // the total cooling output of unit
+                             ObjexxFCL::Optional<HVAC::CoilMode const> DehumidificationMode = _, // Optional dehumbidication mode
+                             ObjexxFCL::Optional<Real64 const> LoadSHR = _                       // Optional coil SHR pass over
+    );
+  
     void GetHXAssistedCoolingCoilInput(EnergyPlusData &state);
 
     void InitHXAssistedCoolingCoil(EnergyPlusData &state, int const HXAssistedCoilNum); // index for HXAssistedCoolingCoil
@@ -143,76 +159,77 @@ namespace HVACHXAssistedCoolingCoil {
                               [[maybe_unused]] ObjexxFCL::Optional<Real64 const> LoadSHR = _      // Optional coil SHR pass over
     );
 
-    int GetHXCoilIndex(EnergyPlusData &state,
-                       std::string_view const coilType,
-                       std::string const &coilName,
-                       bool &ErrorsFound);
-  
-    Real64 GetHXCoilCapacity(EnergyPlusData &state,
+    int GetCoilIndex(EnergyPlusData &state,
+                     std::string_view const coilType,
+                     std::string const &coilName,
+                     bool &ErrorsFound);
+
+#ifdef OLD_API
+    Real64 GetCoilCapacity(EnergyPlusData &state,
                              std::string_view const coilType,
                              std::string const &coilName,
                              bool &ErrorsFound);
 
-    HVAC::CoilType GetHXCoilCoolCoilType(EnergyPlusData &state,
+    HVAC::CoilType GetCoilChildCoilType(EnergyPlusData &state,
                                          std::string_view const coilType,
                                          std::string const &coilName, 
                                          bool &ErrorsFound);
 
-    std::string GetHXCoilCoolCoilName(EnergyPlusData &state,
+    std::string GetCoilChildCoilName(EnergyPlusData &state,
                                       std::string_view const coilType,
                                       std::string const &coilName, 
                                       bool &ErrorsFound);
 
-    int GetHXCoilCoolCoilIndex(EnergyPlusData &state,
-                               std::string_view const coilType,
-                               std::string const &coilName, 
-                               bool &ErrorsFound);
+    int GetCoilChildCoilIndex(EnergyPlusData &state,
+                              std::string_view const coilType,
+                              std::string const &coilName, 
+                              bool &ErrorsFound);
   
-    int GetHXCoilInletNode(EnergyPlusData &state, std::string_view const coilType, std::string const &coilName, bool &ErrorsFound);
+    int GetCoilAirInletNode(EnergyPlusData &state, std::string_view const coilType, std::string const &coilName, bool &ErrorsFound);
 
-    int GetHXCoilOutletNode(EnergyPlusData &state, std::string_view const coilType, std::string const &coilName, bool &ErrorsFound);
+    int GetCoilAirOutletNode(EnergyPlusData &state, std::string_view const coilType, std::string const &coilName, bool &ErrorsFound);
 
-    int GetHXCoilCondenserInletNode(EnergyPlusData &state, std::string_view const coilType, std::string const &coilName, bool &ErrorsFound);
+    int GetCoilCondenserInletNode(EnergyPlusData &state, std::string_view const coilType, std::string const &coilName, bool &ErrorsFound);
   
-    Real64 GetHXCoilMaxWaterFlowRate(EnergyPlusData &state, std::string_view const coilType, std::string const &coilName, bool &ErrorsFound);
+    Real64 GetCoilMaxWaterFlowRate(EnergyPlusData &state, std::string_view const coilType, std::string const &coilName, bool &ErrorsFound);
 
-    Real64 GetHXCoilAirFlowRate(EnergyPlusData &state, std::string_view const coilType, std::string const &coilName, bool &ErrorsFound);
+    Real64 GetCoilMaxAirFlowRate(EnergyPlusData &state, std::string_view const coilType, std::string const &coilName, bool &ErrorsFound);
 
-    void CheckHXAssistedCoolingCoilSchedule(EnergyPlusData &state,
-                                            std::string_view const compType, // unused1208
-                                            std::string const &compName,
-                                            Real64 &Value,
-                                            int &CompIndex);
-
+    Real64 GetCoilScheduleValue(EnergyPlusData &state, std::string_view const compType, std::string const &coilName, bool &ErrorsFound);
+#endif // OLD_API
+  
     // New API
-    int GetHXCoilIndex(EnergyPlusData &state, std::string const &coilName);
+    int GetCoilIndex(EnergyPlusData &state, std::string const &coilName);
 
-    HVAC::CoilType GetHXCoilCoolCoilType(EnergyPlusData &state, int const coilNum);
+    Real64 GetCoilCapacity(EnergyPlusData &state, int const coilNum);
 
-    std::string GetHXCoilCoolCoilName(EnergyPlusData &state, int const coilNum);
+    Real64 GetCoilMaxAirFlowRate(EnergyPlusData &state, int const coilNum);
 
-    int GetHXCoilCoolCoilIndex(EnergyPlusData &state, int const coilNum);
+    Real64 GetCoilMaxWaterFlowRate(EnergyPlusData &state, int const coilNum);
 
-    Real64 GetHXCoilCapacity(EnergyPlusData &state, int const coilNum);
-
-    int GetHXCoilInletNode(EnergyPlusData &state, int const coilNum);
+    int GetCoilAirInletNode(EnergyPlusData &state, int const coilNum);
   
-    int GetHXCoilOutletNode(EnergyPlusData &state, int const coilNum);
+    int GetCoilAirOutletNode(EnergyPlusData &state, int const coilNum);
 
-    int GetHXCoilCondenserInletNode(EnergyPlusData &state, int coilNum);
+    int GetCoilCondenserInletNode(EnergyPlusData &state, int const coilNum);
   
-    int GetHXCoilWaterInletNode(EnergyPlusData &state, int const coilNum);
+    int GetCoilWaterInletNode(EnergyPlusData &state, int const coilNum);
 
-    int GetHXCoilWaterOutletNode(EnergyPlusData &state, int const coilNum);
+    int GetCoilWaterOutletNode(EnergyPlusData &state, int const coilNum);
 
-    Real64 GetHXCoilMaxWaterFlowRate(EnergyPlusData &state, int coilNum);
+    HVAC::CoilType GetCoilChildCoilType(EnergyPlusData &state, int const coilNum);
+
+    std::string GetCoilChildCoilName(EnergyPlusData &state, int const coilNum);
+
+    int GetCoilChildCoilIndex(EnergyPlusData &state, int const coilType);  
   
     bool VerifyHeatExchangerParent(EnergyPlusData &state,
                                    std::string const &HXType, // must match coil types in this module
                                    std::string const &HXName  // must match coil names for the coil type
     );
 
-} // namespace HVACHXAssistedCoolingCoil
+    Real64 GetCoilScheduleValue(EnergyPlusData &state, int const coilNum);
+} // namespace HXAssistCoil
 
 struct HVACHXAssistedCoolingCoilData : BaseGlobalStruct
 {
@@ -221,11 +238,15 @@ struct HVACHXAssistedCoolingCoilData : BaseGlobalStruct
     Array1D<Real64> HXAssistedCoilOutletHumRat; // Outlet humidity ratio from this compound object
     bool GetCoilsInputFlag = true;              // Flag to allow input data to be retrieved from idf on first call to this subroutine
     Array1D_bool CheckEquipName;
-    Array1D<HVACHXAssistedCoolingCoil::HXAssistedCoilParameters> HXAssistedCoils;
+    Array1D<HXAssistCoil::HXAssistedCoilParameters> HXAssistedCoils;
     std::unordered_map<std::string, std::string> UniqueHXAssistedCoilNames;
     Real64 CoilOutputTempLast; // Exiting cooling coil temperature from last iteration
     int ErrCount = 0;
     int ErrCount2 = 0;
+
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
 
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {

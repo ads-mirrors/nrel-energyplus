@@ -100,7 +100,7 @@ namespace ChillerElectricASHRAE205 {
         Real64 AuxiliaryEnergy{0};
 
         AmbientTempIndicator AmbientTempType{AmbientTempIndicator::Invalid};
-        int AmbientTempSchedule{0};       // Schedule index pointer
+        Sched::Schedule *ambientTempSched = nullptr;
         int AmbientTempZone{0};           // Number of ambient zone around tank
         int AmbientTempOutsideAirNode{0}; // Number of outside air node
         Real64 AmbientTemp{0};
@@ -149,6 +149,10 @@ struct ChillerElectricASHRAE205Data : BaseGlobalStruct
 {
     bool getInputFlag = true;
     Array1D<ChillerElectricASHRAE205::ASHRAE205ChillerSpecs> Electric205Chiller;
+
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
 
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {

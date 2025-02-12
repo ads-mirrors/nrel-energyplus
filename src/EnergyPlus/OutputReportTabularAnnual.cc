@@ -333,10 +333,8 @@ void AnnualTable::gatherForTimestep(EnergyPlusData &state, OutputProcessor::Time
     bool activeMinMax = false;
     bool activeHoursShown = false;
     // if schedule is used and the current value is zero, don't gather values
-    if (m_scheduleNum != 0) {
-        if (ScheduleManager::GetCurrentScheduleValue(state, m_scheduleNum) == 0.0) {
-            return;
-        }
+    if (m_sched != nullptr && m_sched->getCurrentVal() == 0.0) {
+        return;
     }
     // loop through the fields
     std::vector<AnnualFieldSet>::iterator fldStIt;
@@ -1382,8 +1380,7 @@ void AnnualTable::clearTable()
 {
     m_name = "";
     m_filter = "";
-    m_scheduleName = "";
-    m_scheduleNum = 0;
+    m_sched = nullptr;
     m_objectNames.clear();
     m_annualFields.clear();
 }
@@ -1395,7 +1392,7 @@ std::vector<std::string> AnnualTable::inspectTable()
     std::vector<std::string> ret;
     ret.push_back(m_name);
     ret.push_back(m_filter);
-    ret.push_back(m_scheduleName);
+    ret.push_back(m_sched->Name);
     return ret;
 }
 

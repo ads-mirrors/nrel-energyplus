@@ -301,6 +301,8 @@ TEST_F(EnergyPlusFixture, ExhAbsorption_GetInput_Test)
     ASSERT_TRUE(process_idf(idf_objects));
     compare_err_stream("");
 
+    state->init_state(*state);
+
     GetExhaustAbsorberInput(*state);
 
     compare_err_stream("");
@@ -331,6 +333,7 @@ TEST_F(EnergyPlusFixture, ExhAbsorption_GetInput_Test)
 
 TEST_F(EnergyPlusFixture, ExhAbsorption_getDesignCapacities_Test)
 {
+    state->init_state(*state);
     state->dataPlnt->TotNumLoops = 3;
     state->dataPlnt->PlantLoop.allocate(state->dataPlnt->TotNumLoops);
 
@@ -633,6 +636,8 @@ TEST_F(EnergyPlusFixture, ExhAbsorption_calcHeater_Fix_Test)
 
     ASSERT_TRUE(process_idf(idf_objects));
     compare_err_stream("");
+
+    state->init_state(*state);
 
     GetExhaustAbsorberInput(*state);
 
@@ -1121,6 +1126,8 @@ TEST_F(EnergyPlusFixture, ExhAbsorption_GetInput_Multiple_Objects_Test)
     ASSERT_TRUE(process_idf(idf_objects));
     compare_err_stream("");
 
+    state->init_state(*state);
+
     GetExhaustAbsorberInput(*state);
 
     compare_err_stream("");
@@ -1429,6 +1436,8 @@ TEST_F(EnergyPlusFixture, ExhAbsorption_calcChiller_Err_Msg_Test)
 
     ASSERT_TRUE(process_idf(idf_objects));
     compare_err_stream("");
+
+    state->init_state(*state);
 
     GetExhaustAbsorberInput(*state);
 

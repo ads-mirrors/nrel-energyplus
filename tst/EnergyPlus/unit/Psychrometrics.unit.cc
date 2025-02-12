@@ -51,6 +51,7 @@
 // EnergyPlus Headers
 #include "Fixtures/EnergyPlusFixture.hh"
 #include <EnergyPlus/Data/EnergyPlusData.hh>
+#include <EnergyPlus/DataErrorTracking.hh>
 #include <EnergyPlus/Psychrometrics.hh>
 
 using namespace EnergyPlus;
@@ -58,8 +59,7 @@ using namespace EnergyPlus::Psychrometrics;
 
 TEST_F(EnergyPlusFixture, Psychrometrics_PsyTsatFnHPb_Test)
 {
-
-    InitializePsychRoutines(*state);
+    state->init_state(*state);
 
     // Test 1: TEMP. IS FROM  20 C  TO   40 C
     Real64 H = 7.5223e4 - 1.78637e4;
@@ -149,8 +149,7 @@ TEST_F(EnergyPlusFixture, Psychrometrics_PsyTsatFnHPb_Test)
 
 TEST_F(EnergyPlusFixture, Psychrometrics_PsyTsatFnPb_Test)
 {
-
-    InitializePsychRoutines(*state);
+    state->init_state(*state);
 
     // Test 1: general
     Real64 PB = 101325.0;
@@ -274,8 +273,7 @@ inline Real64 PsyCpAirFnWTdb(Real64 const dw, // humidity ratio {kgWater/kgDryAi
 
 TEST_F(EnergyPlusFixture, Psychrometrics_PsyCpAirFn_Test)
 {
-
-    InitializePsychRoutines(*state);
+    state->init_state(*state);
 
     // Test 1: analytical PsyCpAirFnW is independent of temperature
     Real64 W = 0.0080;
@@ -358,8 +356,7 @@ TEST_F(EnergyPlusFixture, Psychrometrics_PsyCpAirFn_Test)
 
 TEST_F(EnergyPlusFixture, Psychrometrics_CpAirValue_Test)
 {
-
-    InitializePsychRoutines(*state);
+    state->init_state(*state);
 
     // Test 1: dry cooling process test, delta enthalpy vs cpair times delta T
     Real64 W1 = 0.0030;
@@ -403,8 +400,7 @@ TEST_F(EnergyPlusFixture, Psychrometrics_CpAirValue_Test)
 
 TEST_F(EnergyPlusFixture, Psychrometrics_PsyTwbFnTdbWPb_Test)
 {
-
-    InitializePsychRoutines(*state);
+    state->init_state(*state);
 
     // Test when wet bulb temperature is below zero
     Real64 TDB = 1;   // C
@@ -417,8 +413,7 @@ TEST_F(EnergyPlusFixture, Psychrometrics_PsyTwbFnTdbWPb_Test)
 
 TEST_F(EnergyPlusFixture, Psychrometrics_CpAirAverageValue_Test)
 {
-
-    InitializePsychRoutines(*state);
+    state->init_state(*state);
 
     // Test 1: heating process, constant humidity ratio
     Real64 W1 = 0.0030;
@@ -451,7 +446,7 @@ TEST_F(EnergyPlusFixture, Psychrometrics_Interpolation_Sample_Test)
     // Verify sample data for interpolation.
     // The sample data were extracted from the original psychrometric function PsyTsatFnPb every 64 Pa in the range of 64 Pa to 105,664 Pa.
     // The sample data for saturated temperature from tsat_fn_pb_tsat were compared to the results from the original psychrometric function.
-    InitializePsychRoutines(*state);
+    state->init_state(*state);
     Real64 tsat_psy;
     Real64 error = 0.0;
     int i;
@@ -467,7 +462,7 @@ TEST_F(EnergyPlusFixture, Psychrometrics_Interpolation_Sample_Test)
 TEST_F(EnergyPlusFixture, Psychrometrics_CSpline_Test)
 {
     // compare the results of Tsat between CSpline interpolation and original psychrometric function for PsychTsatFnPb
-    InitializePsychRoutines(*state);
+    state->init_state(*state);
     Real64 tsat_psy;
     Real64 tsat_cspline;
     Real64 Press_test;
@@ -491,7 +486,7 @@ TEST_F(EnergyPlusFixture, Psychrometrics_CSpline_Test)
 TEST_F(EnergyPlusFixture, Psychrometrics_PsyTwbFnTdbWPb_Test_Discontinuity)
 {
     // Test for #8599
-    InitializePsychRoutines(*state);
+    state->init_state(*state);
 
     state->dataGlobal->WarmupFlag = true;
 
@@ -506,5 +501,6 @@ TEST_F(EnergyPlusFixture, Psychrometrics_PsyTwbFnTdbWPb_Test_Discontinuity)
     Real64 expected_result = -0.1027; // expected result from psychrometrics chart
     EXPECT_NEAR(result, expected_result, 0.001);
 
-    EXPECT_FALSE(has_err_output());
+    EXPECT_EQ(state->dataErrTracking->TotalSevereErrors, 0);
+    EXPECT_EQ(state->dataErrTracking->TotalWarningErrors, 1); // IDF version object
 }

@@ -88,6 +88,7 @@ TEST_F(EnergyPlusFixture, WindTurbineTest)
                                                       "    21;                      !- Power Coefficient C6"});
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
     WindTurbine::GetWindTurbineInput(*state);
     int index = 0;
 

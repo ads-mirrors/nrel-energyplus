@@ -94,7 +94,6 @@ using namespace EnergyPlus::HeatBalanceManager;
 using namespace EnergyPlus::OutputReportPredefined;
 using namespace EnergyPlus::DataPlant;
 using namespace EnergyPlus::Psychrometrics;
-using namespace EnergyPlus::ScheduleManager;
 using namespace EnergyPlus::SZVAVModel;
 using namespace EnergyPlus::UnitarySystems;
 using namespace EnergyPlus::WaterCoils;
@@ -168,6 +167,7 @@ TEST_F(EnergyPlusFixture, SZVAV_PTUnit_Testing)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     state->dataEnvrn->StdRhoAir = 1.0;
 
@@ -180,10 +180,12 @@ TEST_F(EnergyPlusFixture, SZVAV_PTUnit_Testing)
     UnitarySystems::UnitarySys thisUnit;
     int FanIndex = Fans::GetFanIndex(*state, "TEST FAN");
     thisUnit.AirInNode = state->dataFans->fans(FanIndex)->inletNodeNum;
-    thisUnit.CoolCoilInletNodeNum = DXCoils::GetCoilInletNode(*state, "Coil:Cooling:DX:SingleSpeed", "COOLINGCOIL", errFlag);
-    thisUnit.CoolCoilOutletNodeNum = DXCoils::GetCoilOutletNode(*state, "Coil:Cooling:DX:SingleSpeed", "COOLINGCOIL", errFlag);
+    int coolCoilNum = DXCoils::GetCoilIndex(*state, "COOLINGCOIL");
+    thisUnit.CoolCoilInletNodeNum = DXCoils::GetCoilAirInletNode(*state, coolCoilNum);
+    thisUnit.CoolCoilOutletNodeNum = DXCoils::GetCoilAirOutletNode(*state, coolCoilNum);
     thisUnit.HeatCoilInletNodeNum = thisUnit.CoolCoilOutletNodeNum;
-    thisUnit.HeatCoilOutletNodeNum = DXCoils::GetCoilOutletNode(*state, "Coil:Heating:DX:SingleSpeed", "HEATINGCOIL", errFlag);
+    int heatCoilNum = DXCoils::GetCoilIndex(*state, "HEATINGCOIL");
+    thisUnit.HeatCoilOutletNodeNum = DXCoils::GetCoilAirOutletNode(*state, heatCoilNum);
     thisUnit.AirOutNode = thisUnit.HeatCoilOutletNodeNum;
     // set zone condition
     int zoneNodeNum = NodeInputManager::GetOnlySingleNode(*state,
@@ -231,9 +233,6 @@ TEST_F(EnergyPlusFixture, SZVAV_PTUnit_Testing)
     state->dataZoneEquip->ZoneEquipConfig.allocate(1);
     state->dataZoneEquip->ZoneEquipConfig(1).ZoneNode = 1;
 
-    state->dataScheduleMgr->Schedule.allocate(1);
-    state->dataScheduleMgr->Schedule(1).CurrentValue = 1.0;
-
     thisUnit.m_SimASHRAEModel = true;
     thisUnit.m_CoolingCoilUpstream = true;
     thisUnit.m_FanExists = true;
@@ -243,15 +242,15 @@ TEST_F(EnergyPlusFixture, SZVAV_PTUnit_Testing)
     thisUnit.m_sysType = UnitarySystems::UnitarySys::SysType::Unitary;
     thisUnit.m_FanName = "TEST FAN";
     thisUnit.m_FanType = HVAC::FanType::OnOff;
-    thisUnit.m_CoolingCoilName = "COOLINGCOIL";
-    thisUnit.m_HeatingCoilName = "HEATINGCOIL";
-    thisUnit.m_CoolingCoilType_Num = HVAC::CoilDX_CoolingSingleSpeed;
-    thisUnit.m_HeatingCoilType_Num = HVAC::CoilDX_HeatingEmpirical;
-    thisUnit.m_CoolingCoilIndex = 1;
-    thisUnit.m_HeatingCoilIndex = 2;
+    thisUnit.m_CoolCoilName = "COOLINGCOIL";
+    thisUnit.m_HeatCoilName = "HEATINGCOIL";
+    thisUnit.m_coolCoilType = HVAC::CoilType::CoolingDXSingleSpeed;
+    thisUnit.m_heatCoilType = HVAC::CoilType::HeatingDXSingleSpeed;
+    thisUnit.m_CoolCoilNum = 1;
+    thisUnit.m_HeatCoilNum = 2;
     thisUnit.m_FanIndex = 1;
-    thisUnit.m_SysAvailSchedPtr = 1;
-    thisUnit.m_FanAvailSchedPtr = 1;
+    thisUnit.m_sysAvailSched = Sched::GetSchedule(*state, "ONSCHED");
+    thisUnit.m_fanAvailSched = Sched::GetSchedule(*state, "ONSCHED");
     thisUnit.m_FanPlace = HVAC::FanPlace::BlowThru;
     // ensure constant fan mode is used
     thisUnit.m_FanOpMode = HVAC::FanOp::Continuous;
@@ -273,8 +272,6 @@ TEST_F(EnergyPlusFixture, SZVAV_PTUnit_Testing)
     state->dataEnvrn->OutDryBulbTemp = 30.0;
     state->dataEnvrn->OutBaroPress = 101325.0;
     OutputReportPredefined::SetPredefinedTables(*state);
-    Psychrometrics::InitializePsychRoutines(*state);
-    createCoilSelectionReportObj(*state);
 
     int UnitNum = 0;
     bool FirstHVACIteration = true;
@@ -315,7 +312,8 @@ TEST_F(EnergyPlusFixture, SZVAV_PTUnit_Testing)
     state->dataLoopNodes->Node(zoneNodeNum).Enthalpy = 52120.0;
 
     // turn the availability schedule on
-    state->dataScheduleMgr->Schedule(1).CurrentValue = 1.0;
+    Sched::GetSchedule(*state, "ONSCHED")->currentVal = 1.0;
+
     state->dataUnitarySystems->CoolingLoad = CoolingLoad;
     state->dataUnitarySystems->HeatingLoad = HeatingLoad;
     // set fan inlet max avail so fan doesn't shut down flow
@@ -520,9 +518,9 @@ TEST_F(EnergyPlusFixture, SZVAV_FanCoilUnit_Testing)
     state->dataEnvrn->OutBaroPress = 101325.0;
     state->dataEnvrn->StdRhoAir = 1.20;
     state->dataWaterCoils->GetWaterCoilsInputFlag = true;
-    state->dataGlobal->NumOfTimeStepInHour = 1;
+    state->dataGlobal->TimeStepsInHour = 1;
     state->dataGlobal->TimeStep = 1;
-    state->dataGlobal->MinutesPerTimeStep = 60;
+    state->dataGlobal->MinutesInTimeStep = 60;
     state->dataSize->CurZoneEqNum = 1;
 
     std::string const idf_objects = delimited_string({
@@ -642,28 +640,27 @@ TEST_F(EnergyPlusFixture, SZVAV_FanCoilUnit_Testing)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->dataGlobal->TimeStepsInHour = 1;
+    state->dataGlobal->MinutesInTimeStep = 60;
+    state->init_state(*state);
+
     state->dataEnvrn->StdRhoAir = 1.0;
 
     state->dataEnvrn->OutBaroPress = 101325.0;
     state->dataEnvrn->StdRhoAir = 1.20;
     state->dataWaterCoils->GetWaterCoilsInputFlag = true;
-    state->dataGlobal->NumOfTimeStepInHour = 1;
     state->dataGlobal->TimeStep = 1;
-    state->dataGlobal->MinutesPerTimeStep = 60;
     state->dataSize->CurZoneEqNum = 1;
-    InitializePsychRoutines(*state);
     GetZoneData(*state, ErrorsFound);
     EXPECT_EQ("WEST ZONE", state->dataHeatBal->Zone(1).Name);
     GetZoneEquipmentData(*state);
-    ProcessScheduleInput(*state);
-    state->dataScheduleMgr->ScheduleInputProcessed = true;
     GetFanCoilUnits(*state);
     auto &thisFanCoil(state->dataFanCoilUnits->FanCoil(1));
     EXPECT_ENUM_EQ(CCM::ASHRAE, thisFanCoil.CapCtrlMeth_Num);
     EXPECT_EQ("OUTDOORAIR:MIXER", thisFanCoil.OAMixType);
-    EXPECT_EQ((int)HVAC::FanType::OnOff, (int)thisFanCoil.fanType);
-    EXPECT_EQ("COIL:COOLING:WATER", thisFanCoil.CCoilType);
-    EXPECT_EQ("COIL:HEATING:ELECTRIC", thisFanCoil.HCoilType);
+    EXPECT_ENUM_EQ(HVAC::FanType::OnOff, thisFanCoil.fanType);
+    EXPECT_ENUM_EQ(HVAC::CoilType::CoolingWater, thisFanCoil.coolCoilType);
+    EXPECT_ENUM_EQ(HVAC::CoilType::HeatingElectric, thisFanCoil.heatCoilType);
     state->dataPlnt->TotNumLoops = 1;
     state->dataPlnt->PlantLoop.allocate(state->dataPlnt->TotNumLoops);
     AirMassFlow = 0.60;
@@ -741,7 +738,7 @@ TEST_F(EnergyPlusFixture, SZVAV_FanCoilUnit_Testing)
     state->dataEnvrn->DayOfWeek = 2;
     state->dataEnvrn->HolidayIndex = 0;
     state->dataEnvrn->DayOfYear_Schedule = General::OrdinalDay(state->dataEnvrn->Month, state->dataEnvrn->DayOfMonth, 1);
-    UpdateScheduleValues(*state);
+    Sched::UpdateScheduleVals(*state);
     state->dataSize->ZoneEqSizing.allocate(1);
     state->dataSize->ZoneSizingRunDone = true;
     thisFanCoil.DesignHeatingCapacity = 10000.0;

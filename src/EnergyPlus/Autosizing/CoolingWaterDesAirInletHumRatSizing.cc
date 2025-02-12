@@ -105,7 +105,7 @@ Real64 CoolingWaterDesAirInletHumRatSizer::size(EnergyPlusData &state, Real64 _o
     }
     this->selectSizerOutput(state, errorsFound);
     if (this->isCoilReportObject)
-        state.dataRptCoilSelection->coilSelectionReportObj->setCoilEntAirHumRat(state, this->compName, this->coilType, this->autoSizedValue);
+        ReportCoilSelection::setCoilEntAirHumRat(state, this->compName, this->coilType, this->autoSizedValue);
     return this->autoSizedValue;
 }
 

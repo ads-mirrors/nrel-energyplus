@@ -108,7 +108,6 @@ using namespace EnergyPlus::Fans;
 using namespace EnergyPlus::HeatBalanceManager;
 using namespace EnergyPlus::HeatingCoils;
 using namespace EnergyPlus::Psychrometrics;
-using namespace EnergyPlus::ScheduleManager;
 using namespace EnergyPlus::SimulationManager;
 using namespace EnergyPlus::SingleDuct;
 using namespace EnergyPlus::SizingManager;
@@ -831,12 +830,11 @@ TEST_F(EnergyPlusFixture, AirTerminalSingleDuctMixer_SimPTAC_HeatingCoilTest)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->dataGlobal->TimeStepsInHour = 1;
+    state->dataGlobal->MinutesInTimeStep = 60;
+    state->init_state(*state);
 
-    state->dataGlobal->NumOfTimeStepInHour = 1;
     state->dataGlobal->TimeStep = 1;
-    state->dataGlobal->MinutesPerTimeStep = 60;
-    ProcessScheduleInput(*state); // read schedules
-    InitializePsychRoutines(*state);
     OutputReportPredefined::SetPredefinedTables(*state);
 
     GetZoneData(*state, ErrorsFound);
@@ -854,8 +852,8 @@ TEST_F(EnergyPlusFixture, AirTerminalSingleDuctMixer_SimPTAC_HeatingCoilTest)
     //// get input test for terminal air single duct mixer on inlet side of PTAC
     ASSERT_EQ(1, state->dataUnitarySystems->numUnitarySystems);
     EXPECT_EQ("ZoneHVAC:PackagedTerminalAirConditioner", thisSys.UnitType);                             // zoneHVAC equipment type
-    EXPECT_EQ("COIL:HEATING:FUEL", thisSys.m_HeatingCoilTypeName);                                      // PTAC heating coil type
-    EXPECT_EQ(state->dataHeatingCoils->HeatingCoil(1).HCoilType_Num, HVAC::Coil_HeatingGasOrOtherFuel); // gas heating coil type
+    EXPECT_ENUM_EQ(HVAC::CoilType::HeatingGasOrOtherFuel, thisSys.m_heatCoilType);                                      // PTAC heating coil type
+    EXPECT_ENUM_EQ(state->dataHeatingCoils->HeatingCoil(1).coilType, HVAC::CoilType::HeatingGasOrOtherFuel);
 
     state->dataGlobal->BeginEnvrnFlag = false;
 
@@ -875,9 +873,9 @@ TEST_F(EnergyPlusFixture, AirTerminalSingleDuctMixer_SimPTAC_HeatingCoilTest)
         Psychrometrics::PsyHFnTdbW(state->dataLoopNodes->Node(state->dataZoneEquip->ZoneEquipConfig(1).ZoneNode).Temp,
                                    state->dataLoopNodes->Node(state->dataZoneEquip->ZoneEquipConfig(1).ZoneNode).HumRat);
 
-    state->dataScheduleMgr->Schedule(thisSys.m_FanOpModeSchedPtr).CurrentValue = 1.0; // unit is always on
-    state->dataScheduleMgr->Schedule(thisSys.m_SysAvailSchedPtr).CurrentValue = 1.0;  // unit is always available
-    state->dataScheduleMgr->Schedule(thisSys.m_FanAvailSchedPtr).CurrentValue = 1.0;  // fan is always available
+    thisSys.m_fanOpModeSched->currentVal = 1.0; // unit is always on
+    thisSys.m_sysAvailSched->currentVal = 1.0;  // unit is always available
+    thisSys.m_fanAvailSched->currentVal = 1.0;  // fan is always available
 
     // initialize mass flow rates
     state->dataLoopNodes->Node(thisSys.AirInNode).MassFlowRate = HVACInletMassFlowRate;
@@ -911,7 +909,7 @@ TEST_F(EnergyPlusFixture, AirTerminalSingleDuctMixer_SimPTAC_HeatingCoilTest)
     state->dataGlobal->SysSizingCalc = true;
 
     state->dataHeatBalFanSys->TempControlType.allocate(1);
-    state->dataHeatBalFanSys->TempControlType(1) = HVAC::ThermostatType::SingleHeating;
+    state->dataHeatBalFanSys->TempControlType(1) = HVAC::SetptType::SingleHeat;
 
     state->dataZoneEnergyDemand->ZoneSysEnergyDemand.allocate(1);
     state->dataZoneEnergyDemand->ZoneSysMoistureDemand.allocate(1);
@@ -1184,12 +1182,11 @@ TEST_F(EnergyPlusFixture, SimPTAC_SZVAVTest)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->dataGlobal->TimeStepsInHour = 1;
+    state->dataGlobal->MinutesInTimeStep = 60;
+    state->init_state(*state);
 
-    state->dataGlobal->NumOfTimeStepInHour = 1;
     state->dataGlobal->TimeStep = 1;
-    state->dataGlobal->MinutesPerTimeStep = 60;
-    ProcessScheduleInput(*state); // read schedules
-    InitializePsychRoutines(*state);
     OutputReportPredefined::SetPredefinedTables(*state);
 
     GetZoneData(*state, ErrorsFound);
@@ -1228,9 +1225,9 @@ TEST_F(EnergyPlusFixture, SimPTAC_SZVAVTest)
     state->dataHVACGlobal->TurnFansOff = false;
     state->dataHVACGlobal->TurnFansOn = true;
 
-    state->dataScheduleMgr->Schedule(thisSys.m_FanOpModeSchedPtr).CurrentValue = 1.0; // unit is always on
-    state->dataScheduleMgr->Schedule(thisSys.m_SysAvailSchedPtr).CurrentValue = 1.0;  // unit is always available
-    state->dataScheduleMgr->Schedule(thisSys.m_FanAvailSchedPtr).CurrentValue = 1.0;  // fan is always available
+    thisSys.m_fanOpModeSched->currentVal = 1.0; // unit is always on
+    thisSys.m_sysAvailSched->currentVal = 1.0;  // unit is always available
+    thisSys.m_fanAvailSched->currentVal = 1.0;  // fan is always available
 
     // set fan parameters
     state->dataFans->fans(1)->maxAirMassFlowRate = HVACInletMassFlowRate;
@@ -1258,7 +1255,7 @@ TEST_F(EnergyPlusFixture, SimPTAC_SZVAVTest)
     state->dataGlobal->SysSizingCalc = false;
 
     state->dataHeatBalFanSys->TempControlType.allocate(1);
-    state->dataHeatBalFanSys->TempControlType(1) = HVAC::ThermostatType::SingleHeating;
+    state->dataHeatBalFanSys->TempControlType(1) = HVAC::SetptType::SingleHeat;
 
     state->dataZoneEnergyDemand->ZoneSysEnergyDemand.allocate(1);
     state->dataZoneEnergyDemand->ZoneSysMoistureDemand.allocate(1);
@@ -3834,18 +3831,18 @@ TEST_F(EnergyPlusFixture, PTACDrawAirfromReturnNodeAndPlenum_Test)
     state->dataIPShortCut->cAlphaArgs = " ";
     state->dataIPShortCut->rNumericArgs = 0.0;
 
+    state->dataGlobal->TimeStepsInHour = 4;    // must initialize this to get schedules initialized
+    state->dataGlobal->MinutesInTimeStep = 15; // must initialize this to get schedules initialized
+    state->init_state(*state);
+
     bool ErrorsFound = false;
     // Read objects
-    SimulationManager::GetProjectData(*state);
     HeatBalanceManager::GetProjectControlData(*state, ErrorsFound);
     EXPECT_FALSE(ErrorsFound);
-    state->dataGlobal->NumOfTimeStepInHour = 4; // must initialize this to get schedules initialized
-    state->dataGlobal->MinutesPerTimeStep = 15; // must initialize this to get schedules initialized
     state->dataGlobal->TimeStepZone = 0.25;
-    state->dataGlobal->TimeStepZoneSec = state->dataGlobal->TimeStepZone * Constant::SecInHour;
+    state->dataGlobal->TimeStepZoneSec = state->dataGlobal->TimeStepZone * Constant::rSecsInHour;
     state->dataGlobal->CurrentTime = 12.0;
 
-    ProcessScheduleInput(*state); // read schedules
     HeatBalanceManager::GetHeatBalanceInput(*state);
 
     HeatBalanceManager::AllocateHeatBalArrays(*state);
@@ -3908,21 +3905,24 @@ TEST_F(EnergyPlusFixture, PTACDrawAirfromReturnNodeAndPlenum_Test)
     }
     GetZoneAirSetPoints(*state);
     state->dataHeatBalFanSys->TempControlType.allocate(6);
-    state->dataHeatBalFanSys->TempControlType = HVAC::ThermostatType::DualSetPointWithDeadBand;
+    state->dataHeatBalFanSys->TempControlType = HVAC::SetptType::DualHeatCool;
     EnergyPlus::OutputReportPredefined::SetPredefinedTables(*state);
 
-    for (int i = 1; i <= 14; ++i) {
-        state->dataScheduleMgr->Schedule(i).CurrentValue = 1.0; // WindowVentSched
-    }
-    state->dataScheduleMgr->Schedule(5).CurrentValue = 117;   // activity level
-    state->dataScheduleMgr->Schedule(6).CurrentValue = 0.0;   // shade transmittance
-    state->dataScheduleMgr->Schedule(7).CurrentValue = 18.0;  // heating set point
-    state->dataScheduleMgr->Schedule(8).CurrentValue = 24.0;  // cooling set point
-    state->dataScheduleMgr->Schedule(11).CurrentValue = 4.0;  // dual Tstat sch
-    state->dataScheduleMgr->Schedule(12).CurrentValue = 21.1; // DOAS SAT
-    state->dataScheduleMgr->Schedule(13).CurrentValue = 0.0;  // cyc fan sch, CyclingFanSch
-    state->dataScheduleMgr->Schedule(14).CurrentValue = 1.0;  // constant fan sch, ContsFanSch
-    int oaNode = 36;                                          // this node index may change based on component calling order
+    Sched::GetSchedule(*state, "OCCUPY-1")->currentVal = 1.0;
+    Sched::GetSchedule(*state, "LIGHTS-1")->currentVal = 1.0;
+    Sched::GetSchedule(*state, "EQUIP-1")->currentVal = 1.0;
+    Sched::GetSchedule(*state, "INFIL-SCH")->currentVal = 1.0;
+    Sched::GetSchedule(*state, "ACTSCHD")->currentVal = 117;
+    Sched::GetSchedule(*state, "SHADETRANSSCH")->currentVal = 0.0;         // shade transmittance
+    Sched::GetSchedule(*state, "HTG-SETP-SCH")->currentVal = 18.0;         // heating set point
+    Sched::GetSchedule(*state, "CLG-SETP-SCH")->currentVal = 24.0;         // cooling set point
+    Sched::GetSchedule(*state, "HVACTEMPLATE-ALWAYS 4")->currentVal = 4.0; // dual Tstat sch
+    Sched::GetSchedule(*state, "ALWAYS 21.1")->currentVal = 21.1;          // DOAS SAT
+    Sched::GetSchedule(*state, "CYCLINGFANSCH")->currentVal = 0.0;         // cyc fan sch, CyclingFanSch
+    Sched::GetSchedule(*state, "CONTSFANSCH")->currentVal = 1.0;           // constant fan sch, ContsFanSch
+    Sched::GetSchedule(*state, "FANAVAILSCHED")->currentVal = 1.0;         // Fan availability
+
+    int oaNode = 36; // this node index may change based on component calling order
     state->dataLoopNodes->Node(oaNode).MassFlowRate = 0.26908 * 1.2;
     state->dataLoopNodes->Node(oaNode).Temp = state->dataEnvrn->OutDryBulbTemp;
     state->dataLoopNodes->Node(oaNode).HumRat = state->dataEnvrn->OutHumRat;
@@ -4285,8 +4285,8 @@ TEST_F(EnergyPlusFixture, PTAC_ZoneEquipment_NodeInputTest)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
-    ProcessScheduleInput(*state); // read schedules
     GetZoneData(*state, errorsFound);
     ASSERT_FALSE(errorsFound);
 
@@ -4553,9 +4553,9 @@ TEST_F(EnergyPlusFixture, ZonePTHP_ElectricityRateTest)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     bool errorsFound = false;
-    ProcessScheduleInput(*state); // read schedules
     GetZoneData(*state, errorsFound);
     ASSERT_FALSE(errorsFound);
 
@@ -4630,10 +4630,10 @@ TEST_F(EnergyPlusFixture, ZonePTHP_ElectricityRateTest)
     // set thermostat type
     state->dataHeatBalFanSys->TempControlType.allocate(1);
     state->dataHeatBalFanSys->TempControlTypeRpt.allocate(1);
-    state->dataHeatBalFanSys->TempControlType(1) = HVAC::ThermostatType::DualSetPointWithDeadBand;
+    state->dataHeatBalFanSys->TempControlType(1) = HVAC::SetptType::DualHeatCool;
     // set the uni sys is always available
-    state->dataScheduleMgr->Schedule(state->dataUnitarySystems->unitarySys[0].m_SysAvailSchedPtr).CurrentValue = 1.0;
-    state->dataScheduleMgr->Schedule(state->dataUnitarySystems->unitarySys[0].m_FanAvailSchedPtr).CurrentValue = 1.0;
+    state->dataUnitarySystems->unitarySys[0].m_sysAvailSched->currentVal = 1.0;
+    state->dataUnitarySystems->unitarySys[0].m_fanAvailSched->currentVal = 1.0;
 
     bool HeatActive = true;
     bool CoolActive = false;
@@ -4886,12 +4886,11 @@ TEST_F(EnergyPlusFixture, PTAC_AvailabilityManagerTest)
 )IDF";
 
     ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
+    state->dataGlobal->TimeStepsInHour = 1;
+    state->dataGlobal->MinutesInTimeStep = 60;
+    state->init_state(*state);
 
-    state->dataGlobal->NumOfTimeStepInHour = 1;
     state->dataGlobal->TimeStep = 1;
-    state->dataGlobal->MinutesPerTimeStep = 60;
-    ProcessScheduleInput(*state); // read schedules
-    InitializePsychRoutines(*state);
     OutputReportPredefined::SetPredefinedTables(*state);
     GetZoneData(*state, ErrorsFound);
     ASSERT_FALSE(ErrorsFound);
@@ -4906,8 +4905,8 @@ TEST_F(EnergyPlusFixture, PTAC_AvailabilityManagerTest)
     // get input test for terminal air single duct mixer on inlet side of PTAC
     ASSERT_EQ(1, state->dataUnitarySystems->numUnitarySystems);
     EXPECT_EQ("ZoneHVAC:PackagedTerminalAirConditioner", thisSys.UnitType);
-    EXPECT_EQ("COIL:HEATING:FUEL", thisSys.m_HeatingCoilTypeName);
-    EXPECT_EQ(state->dataHeatingCoils->HeatingCoil(1).HCoilType_Num, HVAC::Coil_HeatingGasOrOtherFuel);
+    EXPECT_ENUM_EQ(HVAC::CoilType::HeatingGasOrOtherFuel, thisSys.m_heatCoilType);
+    EXPECT_ENUM_EQ(state->dataHeatingCoils->HeatingCoil(1).coilType, HVAC::CoilType::HeatingGasOrOtherFuel);
     EXPECT_FALSE(thisSys.m_useNoLoadLowSpeedAirFlow);
     // set input variables
     state->dataEnvrn->OutBaroPress = 101325.0;
@@ -4923,9 +4922,9 @@ TEST_F(EnergyPlusFixture, PTAC_AvailabilityManagerTest)
     state->dataLoopNodes->Node(state->dataZoneEquip->ZoneEquipConfig(1).ZoneNode).Enthalpy =
         Psychrometrics::PsyHFnTdbW(state->dataLoopNodes->Node(state->dataZoneEquip->ZoneEquipConfig(1).ZoneNode).Temp,
                                    state->dataLoopNodes->Node(state->dataZoneEquip->ZoneEquipConfig(1).ZoneNode).HumRat);
-    state->dataScheduleMgr->Schedule(thisSys.m_FanOpModeSchedPtr).CurrentValue = 1.0;
-    state->dataScheduleMgr->Schedule(thisSys.m_SysAvailSchedPtr).CurrentValue = 1.0;
-    state->dataScheduleMgr->Schedule(thisSys.m_FanAvailSchedPtr).CurrentValue = 1.0;
+    thisSys.m_fanOpModeSched->currentVal = 1.0;
+    thisSys.m_sysAvailSched->currentVal = 1.0;
+    thisSys.m_fanAvailSched->currentVal = 1.0;
     // initialize mass flow rates
     state->dataLoopNodes->Node(thisSys.AirInNode).MassFlowRate = HVACInletMassFlowRate;
     state->dataLoopNodes->Node(thisSys.m_OAMixerNodes[0]).MassFlowRate = PrimaryAirMassFlowRate;
@@ -4949,7 +4948,7 @@ TEST_F(EnergyPlusFixture, PTAC_AvailabilityManagerTest)
     state->dataUnitarySystems->unitarySys[0].ControlZoneNum = 1;
 
     state->dataHeatBalFanSys->TempControlType.allocate(1);
-    state->dataHeatBalFanSys->TempControlType(1) = HVAC::ThermostatType::SingleHeating;
+    state->dataHeatBalFanSys->TempControlType(1) = HVAC::SetptType::SingleHeat;
     state->dataZoneEnergyDemand->ZoneSysEnergyDemand.allocate(1);
     state->dataZoneEnergyDemand->ZoneSysMoistureDemand.allocate(1);
     state->dataZoneEnergyDemand->ZoneSysEnergyDemand(1).RemainingOutputReqToHeatSP = 0.0;    // set heating load to zero
@@ -5011,9 +5010,9 @@ TEST_F(EnergyPlusFixture, PTAC_AvailabilityManagerTest)
     state->dataHeatBalFanSys->TempControlType.allocate(NumZones);
     state->dataHeatBalFanSys->TempControlTypeRpt.allocate(NumZones);
     state->dataHeatBalFanSys->TempTstatAir.allocate(NumZones);
-    state->dataHeatBalFanSys->TempZoneThermostatSetPoint.allocate(NumZones);
-    state->dataHeatBalFanSys->TempControlType(1) = HVAC::ThermostatType::SingleCooling;
-    state->dataHeatBalFanSys->TempZoneThermostatSetPoint(1) = 21.1;
+    state->dataHeatBalFanSys->zoneTstatSetpts.allocate(NumZones);
+    state->dataHeatBalFanSys->TempControlType(1) = HVAC::SetptType::SingleCool;
+    state->dataHeatBalFanSys->zoneTstatSetpts(1).setpt = 21.1;
     state->dataHeatBalFanSys->TempTstatAir(1) = 21.1;
     // get system availability schedule
     Avail::GetSysAvailManagerListInputs(*state);
@@ -5029,7 +5028,7 @@ TEST_F(EnergyPlusFixture, PTAC_AvailabilityManagerTest)
     // test 1: availability manager status to off
     state->dataHVACGlobal->TurnFansOn = false;
     state->dataHVACGlobal->TurnFansOff = true;
-    state->dataHeatBalFanSys->TempZoneThermostatSetPoint(1) = 21.10;
+    state->dataHeatBalFanSys->zoneTstatSetpts(1).setpt = 21.10;
     state->dataHeatBalFanSys->TempTstatAir(1) = 21.1;
     sysAvailMgr.availStatus = Avail::Status::NoAction;
     // run calc system availability requirement
@@ -5050,11 +5049,11 @@ TEST_F(EnergyPlusFixture, PTAC_AvailabilityManagerTest)
     // test 2: availability manager status to on
     state->dataAvail->ZoneComp(zoneEquipType).ZoneCompAvailMgrs(1).StartTime = 0.0;
     state->dataAvail->ZoneComp(zoneEquipType).ZoneCompAvailMgrs(1).StopTime = 4.0;
-    state->dataHeatBalFanSys->TempZoneThermostatSetPoint(1) = 21.10;
+    state->dataHeatBalFanSys->zoneTstatSetpts(1).setpt = 21.10;
     state->dataHeatBalFanSys->TempTstatAir(1) = 21.5;
     sysAvailMgr.availStatus = Avail::Status::NoAction;
-    state->dataScheduleMgr->Schedule(1).CurrentValue = 1;
-    state->dataScheduleMgr->Schedule(2).CurrentValue = 0;
+    Sched::GetSchedule(*state, "FANAVAILSCHED")->currentVal = 1;
+    Sched::GetSchedule(*state, "FANCYCLING")->currentVal = 0;
     // run calc system availability requirement
     availStatus = Avail::CalcNCycSysAvailMgr(*state, SysAvailNum, PriAirSysNum, zoneEquipType, CompNum);
     // check that the availability manager is cycling On

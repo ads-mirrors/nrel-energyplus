@@ -65,20 +65,13 @@ struct EnergyPlusData;
 
 namespace WaterToAirHeatPumpSimple {
 
-    enum class WatertoAirHP
-    {
-        Invalid = -1,
-        Heating,
-        Cooling,
-        Num
-    };
-
     struct SimpleWatertoAirHPConditions
     {
         // Members
         std::string Name;                                                                     // Name of the Water to Air Heat pump
-        WatertoAirHP WAHPType = WatertoAirHP::Invalid;                                        // Type of WatertoAirHP ie. Heating or Cooling
-        DataPlant::PlantEquipmentType WAHPPlantType = DataPlant::PlantEquipmentType::Invalid; // type of component in plant
+        HVAC::CoilType coilType = HVAC::CoilType::Invalid;                                        // Type of WatertoAirHP ie. Heating or Cooling
+        DataPlant::PlantEquipmentType coilPlantType = DataPlant::PlantEquipmentType::Invalid; // type of component in plant
+      
         bool SimFlag = false;                                                                 // Heat Pump Simulation Flag
         Real64 AirVolFlowRate = 0.0;                                                          // Air Volumetric Flow Rate[m3/s]
         Real64 AirMassFlowRate = 0.0;                                                         // Air Mass Flow Rate[kg/s]
@@ -156,7 +149,9 @@ namespace WaterToAirHeatPumpSimple {
         Real64 MaxONOFFCyclesperHour = 0.0;      // Maximum cycling rate of heat pump [cycles/hr]
         Real64 LatentCapacityTimeConstant = 0.0; // Latent capcacity time constant [s]
         Real64 FanDelayTime = 0.0;               // Fan delay time, time delay for the HP's fan to
+      
         bool reportCoilFinalSizes = true;        // one time report of sizes to coil report
+        int coilReportNum = -1;
     };
 
     void SimWatertoAirHPSimple(EnergyPlusData &state,
@@ -171,6 +166,17 @@ namespace WaterToAirHeatPumpSimple {
                                Real64 const OnOffAirFlowRat = 1.0 // ratio of comp on to comp off air flow rate
     );
 
+    void SimWatertoAirHPSimple(EnergyPlusData &state,
+                               int const coilIndex,
+                               Real64 const SensLoad,     // Sensible demand load [W]
+                               Real64 const LatentLoad,   // Latent demand load [W]
+                               HVAC::FanOp const fanOp,   // Continuous fan OR cycling compressor
+                               HVAC::CompressorOp compressorOp,
+                               Real64 const PartLoadRatio,
+                               bool const FirstHVACIteration,
+                               Real64 const OnOffAirFlowRat = 1.0 // ratio of comp on to comp off air flow rate
+    );
+  
     // MODULE SUBROUTINES:
     //*************************************************************************
 
@@ -225,14 +231,11 @@ namespace WaterToAirHeatPumpSimple {
                             Real64 const EnteringWB  // Entering air wet-bulb temperature
     );
 
+#ifdef OLD_API  
     int GetCoilIndex(EnergyPlusData &state,
                      std::string const &CoilType, // must match coil types in this module
                      std::string const &CoilName, // must match coil names for the coil type
                      bool &ErrorsFound            // set to true if problem
-    );
-
-    int GetCoilIndex(EnergyPlusData &state,
-                     std::string const &CoilName // must match coil names for the coil type
     );
 
     Real64 GetCoilCapacity(EnergyPlusData &state,
@@ -258,22 +261,16 @@ namespace WaterToAirHeatPumpSimple {
                           std::string const &CoilName, // must match coil names for the coil type
                           bool &ErrorsFound            // set to true if problem
     );
+#endif // OLD_API
+    int GetCoilIndex(EnergyPlusData &state, std::string const &coilName);
 
-    Real64 GetCoilCapacity(EnergyPlusData &state,
-                           int const coilNum
-    );
+    Real64 GetCoilCapacity(EnergyPlusData &state, int const coilNum);
 
-    Real64 GetCoilAirFlowRate(EnergyPlusData &state,
-                              int const coilNum
-    );
+    Real64 GetCoilAirFlowRate(EnergyPlusData &state, int const coilNum);
 
-    int GetCoilInletNode(EnergyPlusData &state,
-                         int const coilNum
-    );
+    int GetCoilAirInletNode(EnergyPlusData &state, int const coilNum);
 
-    int GetCoilOutletNode(EnergyPlusData &state,
-                          int const coilNum
-    );
+    int GetCoilAirOutletNode(EnergyPlusData &state, int const coilNum);
   
     void SetSimpleWSHPData(EnergyPlusData &state,
                            int const SimpleWSHPNum,                             // Number of OA Controller
@@ -327,6 +324,10 @@ struct WaterToAirHeatPumpSimpleData : BaseGlobalStruct
     Real64 LoadSideInletHumRat_Init = 0; // rated conditions
     Real64 LoadSideInletEnth_Init = 0;   // rated conditions
     Real64 CpAir_Init = 0;               // rated conditions
+
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
 
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {

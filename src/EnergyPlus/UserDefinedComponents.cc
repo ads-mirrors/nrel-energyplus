@@ -48,9 +48,6 @@
 // C++ Headers
 #include <cmath>
 
-// ObjexxFCL Headers
-#include <ObjexxFCL/Fmath.hh>
-
 // EnergyPlus Headers
 #include <EnergyPlus/BranchNodeConnections.hh>
 #include <EnergyPlus/Data/EnergyPlusData.hh>
@@ -268,63 +265,74 @@ namespace UserDefinedComponents {
                 state.dataUserDefinedComponents->CheckUserCoilName(CompNum) = false;
             }
         }
+
+        SimCoilUserDefined(state, CompNum, AirLoopNum, HeatingActive, CoolingActive);
+    }
+
+    void SimCoilUserDefined(EnergyPlusData &state,
+                            int coilNum,
+                            int const AirLoopNum,
+                            bool &HeatingActive,
+                            bool &CoolingActive)
+    {
+        assert(coilNum > 0 && coilNum <= state.dataUserDefinedComponents->NumUserCoils);
+        auto &userCoil = state.dataUserDefinedComponents->UserCoil(coilNum);
+        
         bool anyEMSRan;
         if (state.dataGlobal->BeginEnvrnFlag) {
-            if (state.dataUserDefinedComponents->UserCoil(CompNum).ErlInitProgramMngr > 0) {
+            if (userCoil.ErlInitProgramMngr > 0) {
                 EMSManager::ManageEMS(state,
                                       EMSManager::EMSCallFrom::UserDefinedComponentModel,
                                       anyEMSRan,
-                                      state.dataUserDefinedComponents->UserCoil(CompNum).ErlInitProgramMngr);
-            } else if (state.dataUserDefinedComponents->UserCoil(CompNum).initPluginLocation > -1) {
-                state.dataPluginManager->pluginManager->runSingleUserDefinedPlugin(
-                    state, state.dataUserDefinedComponents->UserCoil(CompNum).initPluginLocation);
-            } else if (state.dataUserDefinedComponents->UserCoil(CompNum).initCallbackIndex > -1) {
-                state.dataPluginManager->pluginManager->runSingleUserDefinedCallback(
-                    state, state.dataUserDefinedComponents->UserCoil(CompNum).initCallbackIndex);
+                                      userCoil.ErlInitProgramMngr);
+            } else if (userCoil.initPluginLocation > -1) {
+                state.dataPluginManager->pluginManager->runSingleUserDefinedPlugin(state, userCoil.initPluginLocation);
+            } else if (userCoil.initCallbackIndex > -1) {
+                state.dataPluginManager->pluginManager->runSingleUserDefinedCallback(state, userCoil.initCallbackIndex);
             }
 
-            if (state.dataUserDefinedComponents->UserCoil(CompNum).PlantIsConnected) {
+            if (userCoil.PlantIsConnected) {
 
                 PlantUtilities::InitComponentNodes(state,
-                                                   state.dataUserDefinedComponents->UserCoil(CompNum).Loop.MassFlowRateMin,
-                                                   state.dataUserDefinedComponents->UserCoil(CompNum).Loop.MassFlowRateMax,
-                                                   state.dataUserDefinedComponents->UserCoil(CompNum).Loop.InletNodeNum,
-                                                   state.dataUserDefinedComponents->UserCoil(CompNum).Loop.OutletNodeNum);
+                                                   userCoil.Loop.MassFlowRateMin,
+                                                   userCoil.Loop.MassFlowRateMax,
+                                                   userCoil.Loop.InletNodeNum,
+                                                   userCoil.Loop.OutletNodeNum);
 
                 PlantUtilities::RegisterPlantCompDesignFlow(state,
-                                                            state.dataUserDefinedComponents->UserCoil(CompNum).Loop.InletNodeNum,
-                                                            state.dataUserDefinedComponents->UserCoil(CompNum).Loop.DesignVolumeFlowRate);
+                                                            userCoil.Loop.InletNodeNum,
+                                                            userCoil.Loop.DesignVolumeFlowRate);
             }
         }
 
-        state.dataUserDefinedComponents->UserCoil(CompNum).initialize(state);
+        userCoil.initialize(state);
 
-        if (state.dataUserDefinedComponents->UserCoil(CompNum).ErlSimProgramMngr > 0) {
+        if (userCoil.ErlSimProgramMngr > 0) {
             EMSManager::ManageEMS(state,
                                   EMSManager::EMSCallFrom::UserDefinedComponentModel,
                                   anyEMSRan,
-                                  state.dataUserDefinedComponents->UserCoil(CompNum).ErlSimProgramMngr);
-        } else if (state.dataUserDefinedComponents->UserCoil(CompNum).simPluginLocation > -1) {
+                                  userCoil.ErlSimProgramMngr);
+        } else if (userCoil.simPluginLocation > -1) {
             state.dataPluginManager->pluginManager->runSingleUserDefinedPlugin(state,
-                                                                               state.dataUserDefinedComponents->UserCoil(CompNum).simPluginLocation);
-        } else if (state.dataUserDefinedComponents->UserCoil(CompNum).simCallbackIndex > -1) {
+                                                                               userCoil.simPluginLocation);
+        } else if (userCoil.simCallbackIndex > -1) {
             state.dataPluginManager->pluginManager->runSingleUserDefinedCallback(state,
-                                                                                 state.dataUserDefinedComponents->UserCoil(CompNum).simCallbackIndex);
+                                                                                 userCoil.simCallbackIndex);
         }
 
-        state.dataUserDefinedComponents->UserCoil(CompNum).report(state);
+        userCoil.report(state);
 
         if (AirLoopNum != -1) { // IF the system is not an equipment of outdoor air unit
             // determine if heating or cooling on primary air stream
-            HeatingActive = state.dataLoopNodes->Node(state.dataUserDefinedComponents->UserCoil(CompNum).Air(1).InletNodeNum).Temp <
-                            state.dataLoopNodes->Node(state.dataUserDefinedComponents->UserCoil(CompNum).Air(1).OutletNodeNum).Temp;
+            HeatingActive = state.dataLoopNodes->Node(userCoil.Air(1).InletNodeNum).Temp <
+                            state.dataLoopNodes->Node(userCoil.Air(1).OutletNodeNum).Temp;
 
             Real64 EnthInlet =
-                Psychrometrics::PsyHFnTdbW(state.dataLoopNodes->Node(state.dataUserDefinedComponents->UserCoil(CompNum).Air(1).InletNodeNum).Temp,
-                                           state.dataLoopNodes->Node(state.dataUserDefinedComponents->UserCoil(CompNum).Air(1).InletNodeNum).HumRat);
+                Psychrometrics::PsyHFnTdbW(state.dataLoopNodes->Node(userCoil.Air(1).InletNodeNum).Temp,
+                                           state.dataLoopNodes->Node(userCoil.Air(1).InletNodeNum).HumRat);
             Real64 EnthOutlet =
-                Psychrometrics::PsyHFnTdbW(state.dataLoopNodes->Node(state.dataUserDefinedComponents->UserCoil(CompNum).Air(1).OutletNodeNum).Temp,
-                                           state.dataLoopNodes->Node(state.dataUserDefinedComponents->UserCoil(CompNum).Air(1).OutletNodeNum).HumRat);
+                Psychrometrics::PsyHFnTdbW(state.dataLoopNodes->Node(userCoil.Air(1).OutletNodeNum).Temp,
+                                           state.dataLoopNodes->Node(userCoil.Air(1).OutletNodeNum).HumRat);
             CoolingActive = EnthInlet > EnthOutlet;
         }
     }
@@ -2898,6 +2906,7 @@ namespace UserDefinedComponents {
         }
     }
 
+#ifdef OLD_API  
     void GetUserDefinedCoilIndex(
         EnergyPlusData &state, std::string const &CoilName, int &CoilIndex, bool &ErrorsFound, std::string const &CurrentModuleObject)
     {
@@ -3003,6 +3012,30 @@ namespace UserDefinedComponents {
             CoilAirOutletNode = state.dataUserDefinedComponents->UserCoil(CoilIndex).Air(1).OutletNodeNum;
         }
     }
+#endif // OLD_API
+  
+    int GetCoilIndex(EnergyPlusData &state, std::string const &CoilName)
+    {
+        if (state.dataUserDefinedComponents->GetInput) { // First time subroutine has been called, get input data
+            GetUserDefinedComponents(state);
+            state.dataUserDefinedComponents->GetInput = false; // Set logic flag to disallow getting the input data on future calls to this subroutine
+        }
+
+        return Util::FindItem(CoilName, state.dataUserDefinedComponents->UserCoil, state.dataUserDefinedComponents->NumUserCoils);
+    }
+
+    int GetCoilAirInletNode(EnergyPlusData &state, int const coilNum)
+    {
+        assert(coilNum > 0 && coilNum <= state.dataUserDefinedComponents->NumUserCoils);
+        return state.dataUserDefinedComponents->UserCoil(coilNum).Air(1).InletNodeNum;
+    }
+
+    int GetCoilAirOutletNode(EnergyPlusData &state, int const coilNum)
+    {
+        assert(coilNum > 0 && coilNum <= state.dataUserDefinedComponents->NumUserCoils);
+        return state.dataUserDefinedComponents->UserCoil(coilNum).Air(1).OutletNodeNum;
+    }
+  
 
 } // namespace UserDefinedComponents
 

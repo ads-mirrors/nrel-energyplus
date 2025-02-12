@@ -203,7 +203,7 @@ namespace FuelCellElectricGenerator {
         DataGenerators::WaterTemperatureMode WaterTempMode; // temperature of water inlet determination
         std::string NodeName;                               // node name for temperature at input
         int NodeNum;                                        // node number for temperature at input
-        int SchedNum;                                       // water temperature at input
+        Sched::Schedule *sched = nullptr;                   // water temperature at input
         int WaterSupRateCurveID;                            // "pointer" to water flow rate curve as a function of fuel rate
         int PmpPowerCurveID;                                // "pointer to Pump power curve as a function of water flow Rate
         Real64 PmpPowerLossFactor;                          // Pump heat loss factor
@@ -216,7 +216,7 @@ namespace FuelCellElectricGenerator {
 
         // Default Constructor
         FCWaterSupplyDataStruct()
-            : WaterTempMode(DataGenerators::WaterTemperatureMode::Invalid), NodeNum(0), SchedNum(0), WaterSupRateCurveID(0), PmpPowerCurveID(0),
+            : WaterTempMode(DataGenerators::WaterTemperatureMode::Invalid), NodeNum(0), WaterSupRateCurveID(0), PmpPowerCurveID(0),
               PmpPowerLossFactor(0.0), IsModeled(true), TwaterIntoCompress(0.0), TwaterIntoFCPM(0.0), PwaterCompEl(0.0), QskinLoss(0.0)
         {
         }
@@ -651,6 +651,10 @@ struct FuelCellElectricGeneratorData : BaseGlobalStruct
     bool getFuelCellInputFlag = true;
     bool MyEnvrnFlag = true;
     Array1D<FuelCellElectricGenerator::FCDataStruct> FuelCell;
+
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
 
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {

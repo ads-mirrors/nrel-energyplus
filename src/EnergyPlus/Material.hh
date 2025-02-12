@@ -53,6 +53,7 @@
 #include <EnergyPlus/DataWindowEquivalentLayer.hh>
 #include <EnergyPlus/EnergyPlus.hh>
 #include <EnergyPlus/General.hh>
+#include <EnergyPlus/ScheduleManager.hh>
 #include <EnergyPlus/TARCOGGassesParams.hh>
 #include <EnergyPlus/TARCOGParams.hh>
 #include <EnergyPlus/WindowModel.hh>
@@ -255,9 +256,9 @@ namespace Material {
 
         // dynamic thermal and solar absorptance coating parameters
         VariableAbsCtrlSignal absorpVarCtrlSignal = VariableAbsCtrlSignal::Invalid;
-        int absorpThermalVarSchedIdx = 0;
+        Sched::Schedule *absorpThermalVarSched = nullptr;
         int absorpThermalVarFuncIdx = 0;
-        int absorpSolarVarSchedIdx = 0;
+        Sched::Schedule *absorpSolarVarSched = nullptr;
         int absorpSolarVarFuncIdx = 0;
 
         bool hasEMPD = false;
@@ -963,6 +964,10 @@ struct MaterialData : BaseGlobalStruct
 
     Array1D<Material::WindowThermalModelParams> WindowThermalModel;
     Array1D<Material::SpectralDataProperties> SpectralData;
+
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
 
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {

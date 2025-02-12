@@ -106,6 +106,10 @@ TEST_F(EnergyPlusFixture, AirflowNetwork_AdvancedTest_Test1)
     state->dataZoneTempPredictorCorrector->zoneHeatBalance(1).MAT = 22.0;
     state->dataZoneTempPredictorCorrector->zoneHeatBalance(1).MRT = 22.0;
 
+    state->dataHeatBalFanSys->TempControlType.allocate(1);
+    state->dataHeatBalFanSys->TempControlType(1) = HVAC::SetptType::Uncontrolled;
+    state->dataHeatBalFanSys->zoneTstatSetpts.allocate(1);
+
     TimeOpenElapsed = 5.0;
     TimeCloseElapsed = 0.0;
     state->afn->OccupantVentilationControl(1).MinTimeControlOnly = false;
@@ -157,18 +161,14 @@ TEST_F(EnergyPlusFixture, AirflowNetwork_AdvancedTest_Test1)
     TimeCloseElapsed = 5.0;
     state->dataHeatBal->ZoneIntGain.allocate(1);
     state->dataHeatBal->ZoneIntGain(1).NOFOCC = 0.5;
-    state->dataHeatBalFanSys->TempControlType.allocate(1);
-    state->dataHeatBalFanSys->TempControlType(1) = HVAC::ThermostatType::Uncontrolled;
-    state->dataHeatBalFanSys->ZoneThermostatSetPointLo.allocate(1);
-    state->dataHeatBalFanSys->ZoneThermostatSetPointHi.allocate(1);
 
     state->afn->OccupantVentilationControl(1).calc(*state, 1, TimeOpenElapsed, TimeCloseElapsed, OpenStatus, OpenProbStatus, CloseProbStatus);
     EXPECT_EQ(1, OpenProbStatus);
     EXPECT_EQ(0, CloseProbStatus);
 
-    state->dataHeatBalFanSys->TempControlType(1) = HVAC::ThermostatType::DualSetPointWithDeadBand;
-    state->dataHeatBalFanSys->ZoneThermostatSetPointLo(1) = 22.0;
-    state->dataHeatBalFanSys->ZoneThermostatSetPointHi(1) = 28.0;
+    state->dataHeatBalFanSys->TempControlType(1) = HVAC::SetptType::DualHeatCool;
+    state->dataHeatBalFanSys->zoneTstatSetpts(1).setptLo = 22.0;
+    state->dataHeatBalFanSys->zoneTstatSetpts(1).setptHi = 28.0;
     state->afn->OccupantVentilationControl(1).calc(*state, 1, TimeOpenElapsed, TimeCloseElapsed, OpenStatus, OpenProbStatus, CloseProbStatus);
     EXPECT_EQ(1, OpenProbStatus);
     EXPECT_EQ(0, CloseProbStatus);

@@ -117,6 +117,8 @@ TEST_F(CoilCoolingDXTest, CoilCoolingDXCurveFitOperatingMode_Sizing)
     });
     idf_objects += this->getSpeedObjectString("Coil Cooling DX Curve Fit Speed 1");
     EXPECT_TRUE(process_idf(idf_objects, false));
+    state->init_state(*state);
+
     CoilCoolingDXCurveFitOperatingMode thisMode(*state, "Coil Cooling DX Curve Fit Operating Mode 1");
     EXPECT_ENUM_EQ(CoilCoolingDXCurveFitOperatingMode::CondenserType::EVAPCOOLED, thisMode.condenserType);
     EXPECT_EQ(DataSizing::AutoSize, thisMode.ratedEvapAirFlowRate);
@@ -260,8 +262,10 @@ TEST_F(CoilCoolingDXTest, CoilCoolingDXCurveFitCrankcaseHeaterCurve)
 
     idf_objects += this->getSpeedObjectString("Coil Cooling DX Curve Fit Speed 1");
     EXPECT_TRUE(process_idf(idf_objects, false));
+    state->init_state(*state);
+
     int coilIndex = CoilCoolingDX::factory(*state, "Coil Cooling DX 1");
-    auto &thisCoil(state->dataCoilCooingDX->coilCoolingDXs[coilIndex]);
+    auto &thisCoil(state->dataCoilCoolingDX->coilCoolingDXs[coilIndex]);
     EXPECT_EQ("COIL COOLING DX 1", thisCoil.name);
     EXPECT_EQ("COIL COOLING DX CURVE FIT PERFORMANCE 1", thisCoil.performance.name);
     EXPECT_EQ("HEATERCAPCURVE", Curve::GetCurveName(*state, thisCoil.performance.crankcaseHeaterCapacityCurveIndex));

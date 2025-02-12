@@ -90,9 +90,6 @@ namespace DesiccantDehumidifiers {
         Num
     };
 
-    //  Desiccant heat exchanger type
-    int constexpr BalancedHX(1); // HeatExchanger:Desiccant:BalancedFlow = 1
-
     struct DesiccantDehumidifierData
     {
         // Members
@@ -101,6 +98,8 @@ namespace DesiccantDehumidifiers {
         std::string Sched;                     // name of availability schedule
         HVAC::CoilType regenCoilType = HVAC::CoilType::Invalid; 
         std::string RegenCoilName;             // name of regen coil
+        int RegenCoilNum = 0;             // Index for regen coil
+      
         std::string RegenFanName;              // name of regen fan
         PerformanceModel PerformanceModel_Num; // type of performance model, default or user curves
         int ProcAirInNode;                     // process air inlet node of dehumidifier
@@ -114,7 +113,6 @@ namespace DesiccantDehumidifiers {
         Real64 NomProcAirVolFlow;       // nominal process air flow rate [m3/s]
         Real64 NomProcAirVel;           // nominal process air velocity [m/s]
         Real64 NomRotorPower;           // rotor power consumption at full output [W]
-        int RegenCoilIndex;             // Index for regen coil
         int RegenFanIndex;              // Index for regen fan
         HVAC::FanType regenFanType;     // Fan type number (see DataHVACGlobals)
         int ProcDryBulbCurvefTW;        // number of process leaving dry bulb f(edb,ew) curve
@@ -132,46 +130,47 @@ namespace DesiccantDehumidifiers {
         Real64 MinProcAirInHumRat; // min allowable process inlet air humidity ratio [kg water / kg air]
         Real64 MaxProcAirInHumRat; // max allowable process inlet air humidity ratio [kg water / kg air]
         // Internal Data
-        int SchedPtr;                  // index of availability schedule
-        Real64 NomProcAirMassFlow;     // nominal process air mass flow rate [kg/s]
-        Real64 NomRegenAirMassFlow;    // nominal regeneration air mass flow rate [kg/s]
-        Real64 ProcAirInTemp;          // process inlet air temperature [C]
-        Real64 ProcAirInHumRat;        // process inlet air humidity ratio [kg water / kg air]
-        Real64 ProcAirInEnthalpy;      // process inlet air specific enthalpy [J/kg]
-        Real64 ProcAirInMassFlowRate;  // process inlet air mass flow rate [kg/s]
-        Real64 ProcAirOutTemp;         // process outlet air temperature [C]
-        Real64 ProcAirOutHumRat;       // process outlet air humidity ratio [kg water / kg air]
-        Real64 ProcAirOutEnthalpy;     // process outlet air specific enthalpy [J/kg]
-        Real64 ProcAirOutMassFlowRate; // process outlet air mass flow rate [kg/s]
-        Real64 RegenAirInTemp;         // regen inlet air temperature [C]
-        Real64 RegenAirInHumRat;       // regen inlet air humidity ratio [kg water / kg air]
-        Real64 RegenAirInEnthalpy;     // regen inlet air specific enthalpy [J/kg]
-        Real64 RegenAirInMassFlowRate; // regen inlet air mass flow rate [kg/s]
-        Real64 RegenAirVel;            // regen air velocity [m/s]
-        std::string DehumType;         // Type of desiccant dehumidifier
-        DesicDehumType DehumTypeCode;  // Type of desiccant dehumidifier, integer code
-        Real64 WaterRemove;            // water removed [kg]
-        Real64 WaterRemoveRate;        // water removal rate [kg/s]
-        Real64 SpecRegenEnergy;        // specific regen energy [J/kg of water removed]
-        Real64 QRegen;                 // regen energy rate requested from regen coil [W]
-        Real64 RegenEnergy;            // regen energy requested from regen coil [J]
-        Real64 ElecUseEnergy;          // electricity consumption [J]
-        Real64 ElecUseRate;            // electricity consumption rate [W]
-        Real64 PartLoad;               // fraction of dehumidification capacity required to meet setpoint
-        int RegenCapErrorIndex1;       // recurring error message index for insufficient regen coil capacity
-        int RegenCapErrorIndex2;       // recurring error message index for insufficient regen coil capacity
-        int RegenCapErrorIndex3;       // recurring error message index for insufficient regen coil capacity
-        int RegenCapErrorIndex4;       // recurring error message index for insufficient regen coil capacity
-        int RegenFanErrorIndex1;       // recurring error message index for incorrect regen fan flow
-        int RegenFanErrorIndex2;       // recurring error message index for incorrect regen fan flow
-        int RegenFanErrorIndex3;       // recurring error message index for incorrect regen fan flow
-        int RegenFanErrorIndex4;       // recurring error message index for incorrect regen fan flow
+        Sched::Schedule *availSched = nullptr; // availability schedule
+        Real64 NomProcAirMassFlow;             // nominal process air mass flow rate [kg/s]
+        Real64 NomRegenAirMassFlow;            // nominal regeneration air mass flow rate [kg/s]
+        Real64 ProcAirInTemp;                  // process inlet air temperature [C]
+        Real64 ProcAirInHumRat;                // process inlet air humidity ratio [kg water / kg air]
+        Real64 ProcAirInEnthalpy;              // process inlet air specific enthalpy [J/kg]
+        Real64 ProcAirInMassFlowRate;          // process inlet air mass flow rate [kg/s]
+        Real64 ProcAirOutTemp;                 // process outlet air temperature [C]
+        Real64 ProcAirOutHumRat;               // process outlet air humidity ratio [kg water / kg air]
+        Real64 ProcAirOutEnthalpy;             // process outlet air specific enthalpy [J/kg]
+        Real64 ProcAirOutMassFlowRate;         // process outlet air mass flow rate [kg/s]
+        Real64 RegenAirInTemp;                 // regen inlet air temperature [C]
+        Real64 RegenAirInHumRat;               // regen inlet air humidity ratio [kg water / kg air]
+        Real64 RegenAirInEnthalpy;             // regen inlet air specific enthalpy [J/kg]
+        Real64 RegenAirInMassFlowRate;         // regen inlet air mass flow rate [kg/s]
+        Real64 RegenAirVel;                    // regen air velocity [m/s]
+        std::string DehumType;                 // Type of desiccant dehumidifier
+        DesicDehumType DehumTypeCode;          // Type of desiccant dehumidifier, integer code
+        Real64 WaterRemove;                    // water removed [kg]
+        Real64 WaterRemoveRate;                // water removal rate [kg/s]
+        Real64 SpecRegenEnergy;                // specific regen energy [J/kg of water removed]
+        Real64 QRegen;                         // regen energy rate requested from regen coil [W]
+        Real64 RegenEnergy;                    // regen energy requested from regen coil [J]
+        Real64 ElecUseEnergy;                  // electricity consumption [J]
+        Real64 ElecUseRate;                    // electricity consumption rate [W]
+        Real64 PartLoad;                       // fraction of dehumidification capacity required to meet setpoint
+        int RegenCapErrorIndex1;               // recurring error message index for insufficient regen coil capacity
+        int RegenCapErrorIndex2;               // recurring error message index for insufficient regen coil capacity
+        int RegenCapErrorIndex3;               // recurring error message index for insufficient regen coil capacity
+        int RegenCapErrorIndex4;               // recurring error message index for insufficient regen coil capacity
+        int RegenFanErrorIndex1;               // recurring error message index for incorrect regen fan flow
+        int RegenFanErrorIndex2;               // recurring error message index for incorrect regen fan flow
+        int RegenFanErrorIndex3;               // recurring error message index for incorrect regen fan flow
+        int RegenFanErrorIndex4;               // recurring error message index for incorrect regen fan flow
         // structure elements unique to generic desiccant dehumidifier
-        std::string HXType;                  // type of desiccant heat exchanger
-        std::string HXName;                  // name of desiccant heat exchanger
-        int HXTypeNum;                       // parameter number of desiccant heat exchanger
+        HVAC::HXType hxType = HVAC::HXType::Invalid;                  // type of desiccant heat exchanger
+        std::string hxName;                  // name of desiccant heat exchanger
+        int hxNum = 0;
+      
         std::string ExhaustFanCurveObject;   // exhaust fan curve object
-        std::string CoolingCoilName;         // name of cooling coil used with desiccant heat exchanger
+        std::string CoolCoilName;         // name of cooling coil used with desiccant heat exchanger
         HVAC::CoilType coolCoilType = HVAC::CoilType::Invalid;         // type of cooling coil, DataHVACGlobals coil type constants
         bool Preheat = false;                   // determine condenser waste heat usage for pre heating regen air
         Real64 RegenSetPointTemp;            // heating set-point for regeneration air [C]
@@ -184,7 +183,6 @@ namespace DesiccantDehumidifiers {
         HVAC::FanPlace regenFanPlace;        // placement of the fan used for regeneration air flow
         int ControlNodeNum;                  // node number of control node
         int ExhaustFanCurveIndex;            // exhaust fan curve object index
-        int CompIndex;                       // index of HX component to call simheatrecovery
         int CoolingCoilOutletNode;           // node number of cooling coil outlet node
         int RegenFanOutNode;                 // fan outlet node number mined from regen fan object
         int RegenCoilInletNode;              // regen heating coil inlet node number mined from regen heater object
@@ -212,19 +210,19 @@ namespace DesiccantDehumidifiers {
         DesiccantDehumidifierData()
             : PerformanceModel_Num(PerformanceModel::Invalid), ProcAirInNode(0), ProcAirOutNode(0), RegenAirInNode(0), RegenAirOutNode(0),
               RegenFanInNode(0), controlType(DesicDehumCtrlType::Invalid), HumRatSet(0.0), NomProcAirVolFlow(0.0), NomProcAirVel(0.0),
-              NomRotorPower(0.0), RegenCoilIndex(0), RegenFanIndex(0), regenFanType(HVAC::FanType::Invalid), ProcDryBulbCurvefTW(0),
+              NomRotorPower(0.0), RegenFanIndex(0), regenFanType(HVAC::FanType::Invalid), ProcDryBulbCurvefTW(0),
               ProcDryBulbCurvefV(0), ProcHumRatCurvefTW(0), ProcHumRatCurvefV(0), RegenEnergyCurvefTW(0), RegenEnergyCurvefV(0), RegenVelCurvefTW(0),
               RegenVelCurvefV(0), NomRegenTemp(121.0), MinProcAirInTemp(-73.3), MaxProcAirInTemp(65.6), MinProcAirInHumRat(0.0),
-              MaxProcAirInHumRat(0.21273), SchedPtr(0), NomProcAirMassFlow(0.0), NomRegenAirMassFlow(0.0), ProcAirInTemp(0.0), ProcAirInHumRat(0.0),
+              MaxProcAirInHumRat(0.21273), NomProcAirMassFlow(0.0), NomRegenAirMassFlow(0.0), ProcAirInTemp(0.0), ProcAirInHumRat(0.0),
               ProcAirInEnthalpy(0.0), ProcAirInMassFlowRate(0.0), ProcAirOutTemp(0.0), ProcAirOutHumRat(0.0), ProcAirOutEnthalpy(0.0),
               ProcAirOutMassFlowRate(0.0), RegenAirInTemp(0.0), RegenAirInHumRat(0.0), RegenAirInEnthalpy(0.0), RegenAirInMassFlowRate(0.0),
               RegenAirVel(0.0), DehumTypeCode(DesicDehumType::Invalid), WaterRemove(0.0), WaterRemoveRate(0.0), SpecRegenEnergy(0.0), QRegen(0.0),
               RegenEnergy(0.0), ElecUseEnergy(0.0), ElecUseRate(0.0), PartLoad(0.0), RegenCapErrorIndex1(0), RegenCapErrorIndex2(0),
               RegenCapErrorIndex3(0), RegenCapErrorIndex4(0), RegenFanErrorIndex1(0), RegenFanErrorIndex2(0), RegenFanErrorIndex3(0),
-              RegenFanErrorIndex4(0), HXTypeNum(0), RegenSetPointTemp(0.0),
+              RegenFanErrorIndex4(0), RegenSetPointTemp(0.0),
               ExhaustFanMaxVolFlowRate(0.0), ExhaustFanMaxMassFlowRate(0.0), ExhaustFanMaxPower(0.0), ExhaustFanPower(0.0),
               ExhaustFanElecConsumption(0.0), CompanionCoilCapacity(0.0), regenFanPlace(HVAC::FanPlace::Invalid), ControlNodeNum(0),
-              ExhaustFanCurveIndex(0), CompIndex(0), CoolingCoilOutletNode(0), RegenFanOutNode(0), RegenCoilInletNode(0), RegenCoilOutletNode(0),
+              ExhaustFanCurveIndex(0), CoolingCoilOutletNode(0), RegenFanOutNode(0), RegenCoilInletNode(0), RegenCoilOutletNode(0),
               HXProcInNode(0), HXProcOutNode(0), HXRegenInNode(0), HXRegenOutNode(0), CondenserInletNode(0), CoolingCoilIndex(0), ErrCount(0),
               ErrIndex1(0), RegenInletIsOutsideAirNode(false), 
               CoilControlNode(0), CoilOutletNode(0), HotWaterCoilMaxIterIndex(0), HotWaterCoilMaxIterIndex2(0), MaxCoilFluidFlow(0.0),
@@ -297,6 +295,10 @@ struct DesiccantDehumidifiersData : BaseGlobalStruct
     Array1D_bool MyEnvrnFlag;
     Array1D_bool MyPlantScanFlag; // Used for init plant component for heating coils
     Real64 QRegen = 0.0;          // required coil load passed to sim heating coil routine (W)
+
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
 
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {

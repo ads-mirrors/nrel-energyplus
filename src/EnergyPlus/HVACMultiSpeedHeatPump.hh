@@ -89,25 +89,24 @@ namespace HVACMultiSpeedHeatPump {
         // Members
         // Some variables in this type are arrays (dimension=MaxSpeed) to support the number of speeds
         std::string Name;                         // Name of the engine driven heat pump
-        std::string AvaiSchedule;                 // Availability Schedule name
-        int AvaiSchedPtr;                         // Pointer to the correct schedule
-        int AirInletNode = 0;                      // Node number of the heat pump air inlet
-        int AirOutletNode = 0;                     // Node number of the heat pump air inlet
+        Sched::Schedule *availSched = nullptr;    // availability schedule
+        int AirInletNode = 0;                     // Node number of the heat pump air inlet
+        int AirOutletNode = 0;                    // Node number of the heat pump air inlet
         int ControlZoneNum;                       // Controlling zone or thermostat location
         int ZoneSequenceCoolingNum;               // Index to cooling sequence/priority for this zone
         int ZoneSequenceHeatingNum;               // Index to heating sequence/priority for this zone
         std::string ControlZoneName;              // Controlled zone name
-        int NodeNumOfControlledZone = 0;              // Controlled zone node number
+        int NodeNumOfControlledZone = 0;          // Controlled zone node number
         Real64 FlowFraction;                      // Fraction of the total volume flow that goes through the controlling zone
         std::string FanName;                      // Name of supply air fan
         HVAC::FanType fanType;                    // Supply fan type
         int FanNum;                               // Supply fan number
         HVAC::FanPlace fanPlace;                  // Supply air fan placement: 1 Blow through; 2 Draw through
-        int FanInletNode = 0;                         // Fan Inlet node
-        int FanOutletNode = 0;                        // Fan Outlet node
+        int FanInletNode = 0;                     // Fan Inlet node
+        int FanOutletNode = 0;                    // Fan Outlet node
         Real64 FanVolFlow;                        // Supply fan volumetric flow rate
-        std::string FanSchedule;                  // Supply air fan operating mode schedule name
-        int FanSchedPtr;                          // Pointer to the Supply air fan operating mode schedule
+
+        Sched::Schedule *fanOpModeSched = nullptr; // Supply air fan operating mode schedule
         HVAC::FanOp fanOp = HVAC::FanOp::Invalid; // mode of operation; 1=cycling fan, cycling compressor; 2=continuous fan, cycling compresor
 
         std::string HeatCoilName;               // COIL:DX:MultiSpeed:Heating name
@@ -218,9 +217,9 @@ namespace HVACMultiSpeedHeatPump {
 
         // Default Constructor
         MSHeatPumpData()
-            : AvaiSchedPtr(0), ControlZoneNum(0), ZoneSequenceCoolingNum(0), ZoneSequenceHeatingNum(0),
+            : ControlZoneNum(0), ZoneSequenceCoolingNum(0), ZoneSequenceHeatingNum(0),
               FlowFraction(0.0), fanType(HVAC::FanType::Invalid), FanNum(0), fanPlace(HVAC::FanPlace::Invalid),
-              FanVolFlow(0.0), FanSchedPtr(0), 
+              FanVolFlow(0.0),
               DesignSuppHeatingCapacity(0.0),
               SuppMaxAirTemp(0.0), SuppMaxOATemp(0.0), AuxOnCyclePower(0.0), AuxOffCyclePower(0.0), DesignHeatRecFlowRate(0.0), HeatRecActive(false),
               MaxHeatRecOutletTemp(0.0), DesignHeatRecMassFlowRate(0.0), HRPlantLoc{},
@@ -408,6 +407,10 @@ struct HVACMultiSpeedHeatPumpData : BaseGlobalStruct
     bool FlowFracFlagReady = true; // one time flag for calculating flow fraction through controlled zone
     int ErrCountCyc = 0;           // Counter used to minimize the occurrence of output warnings
     int ErrCountVar = 0;           // Counter used to minimize the occurrence of output warnings
+
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
 
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {

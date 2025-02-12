@@ -91,12 +91,8 @@ TEST_F(EnergyPlusFixture, ASIHP_GetCoilIndexIHP)
 
     state->dataIntegratedHP->IntegratedHeatPumps.push_back(IHP);
 
-    EXPECT_EQ(0, GetCoilIndexIHP(*state, "", "", ErrorsFound));
-    EXPECT_TRUE(ErrorsFound);
-
-    ErrorsFound = false;
-    EXPECT_EQ(1, GetCoilIndexIHP(*state, "", "ASIHP", ErrorsFound));
-    EXPECT_FALSE(ErrorsFound);
+    EXPECT_EQ(0, IntegratedHeatPump::GetIHPIndex(*state, ""));
+    EXPECT_EQ(1, IntegratedHeatPump::GetIHPIndex(*state, "ASIHP"));
 }
 
 TEST_F(EnergyPlusFixture, ASIHP_GetCoilInletNodeIHP)
@@ -114,12 +110,7 @@ TEST_F(EnergyPlusFixture, ASIHP_GetCoilInletNodeIHP)
 
     state->dataIntegratedHP->IntegratedHeatPumps.push_back(IHP);
 
-    EXPECT_EQ(0, GetCoilInletNodeIHP(*state, "", "", ErrorsFound));
-    EXPECT_TRUE(ErrorsFound);
-
-    ErrorsFound = false;
-    EXPECT_EQ(999, GetCoilInletNodeIHP(*state, "", "ASIHP", ErrorsFound));
-    EXPECT_FALSE(ErrorsFound);
+    EXPECT_EQ(999, IntegratedHeatPump::GetIHPCoilAirInletNode(*state, IntegratedHeatPump::GetIHPIndex(*state, "ASIHP")));
 }
 
 TEST_F(EnergyPlusFixture, ASIHP_GetLowSpeedNumIHP)
@@ -185,12 +176,12 @@ TEST_F(EnergyPlusFixture, ASIHP_GetMaxSpeedNumIHP)
     IHP.MinSpedSCWH = 9;
     IHP.MinSpedSCDWH = 99;
     IHP.MinSpedSHDWH = 999;
-    IHP.SCCoilIndex = 1;
-    IHP.SHCoilIndex = 1;
-    IHP.DWHCoilIndex = 1;
-    IHP.SCWHCoilIndex = 1;
-    IHP.SCDWHCoolCoilIndex = 1;
-    IHP.SHDWHHeatCoilIndex = 1;
+    IHP.SCCoilNum = 1;
+    IHP.SHCoilNum = 1;
+    IHP.DWHCoilNum = 1;
+    IHP.SCWHCoilNum = 1;
+    IHP.SCDWHCoolCoilNum = 1;
+    IHP.SHDWHHeatCoilNum = 1;
     // don't size for this test
     IHP.IHPCoilsSized = true;
 

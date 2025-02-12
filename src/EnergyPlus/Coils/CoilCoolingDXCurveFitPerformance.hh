@@ -55,6 +55,7 @@
 #include <EnergyPlus/DataGlobalConstants.hh>
 #include <EnergyPlus/DataLoopNode.hh>
 #include <EnergyPlus/EnergyPlus.hh>
+#include <EnergyPlus/ScheduleManager.hh>
 #include <EnergyPlus/StandardRatings.hh>
 
 namespace EnergyPlus {
@@ -138,7 +139,7 @@ struct CoilCoolingDXCurveFitPerformance
 
     Real64 evapCondBasinHeatCap = 0.0;
     Real64 evapCondBasinHeatSetpoint = 0.0;
-    int evapCondBasinHeatSchedulIndex = 0;
+    Sched::Schedule *evapCondBasinHeatSched = nullptr;
     Real64 basinHeaterElectricityConsumption = 0.0;
     Real64 basinHeaterPower = 0.0;
     Real64 powerUse = 0.0;

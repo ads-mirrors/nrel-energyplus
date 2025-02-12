@@ -97,7 +97,6 @@ using namespace AirflowNetwork;
 using namespace DataSurfaces;
 using namespace DataHeatBalance;
 using namespace EnergyPlus::DataLoopNode;
-using namespace EnergyPlus::ScheduleManager;
 using namespace OutAirNodeManager;
 using namespace EnergyPlus::Fans;
 using namespace EnergyPlus::HVACStandAloneERV;
@@ -198,12 +197,13 @@ TEST_F(EnergyPlusFixture, AirflowNetwork_TestZoneVentingSch)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+
+    state->init_state(*state);
     state->afn->get_input();
 
     // MultizoneZoneData has only 1 element so may be hardcoded
-    auto GetIndex = Util::FindItemInList(state->afn->MultizoneZoneData(1).VentingSchName,
-                                         state->dataScheduleMgr->Schedule({1, state->dataScheduleMgr->NumSchedules}));
-    EXPECT_EQ(GetIndex, state->afn->MultizoneZoneData(1).VentingSchNum);
+    auto *ventingSched = Sched::GetSchedule(*state, state->afn->MultizoneZoneData(1).VentAvailSchName);
+    EXPECT_EQ(ventingSched, state->afn->MultizoneZoneData(1).ventAvailSched);
 
     state->dataHeatBal->Zone.deallocate();
     state->dataSurface->Surface.deallocate();
@@ -2116,10 +2116,9 @@ TEST_F(EnergyPlusFixture, AirflowNetwork_TestPressureStat)
     state->dataIPShortCut->cAlphaArgs = " ";
     state->dataIPShortCut->rNumericArgs = 0.0;
 
+    state->init_state(*state);
     bool ErrorsFound = false;
     // Read objects
-    HeatBalanceManager::GetProjectControlData(*state, ErrorsFound);
-    EXPECT_FALSE(ErrorsFound);
     HeatBalanceManager::GetZoneData(*state, ErrorsFound);
     EXPECT_FALSE(ErrorsFound);
     Material::GetWindowGlassSpectralData(*state, ErrorsFound);
@@ -2141,20 +2140,11 @@ TEST_F(EnergyPlusFixture, AirflowNetwork_TestPressureStat)
 
     Real64 PressureSet = 0.5;
 
-    state->dataScheduleMgr
-        ->Schedule(Util::FindItemInList("PRESSURE SETPOINT SCHEDULE", state->dataScheduleMgr->Schedule({1, state->dataScheduleMgr->NumSchedules})))
-        .CurrentValue = PressureSet; // Pressure setpoint
-    state->dataScheduleMgr
-        ->Schedule(Util::FindItemInList("FANANDCOILAVAILSCHED", state->dataScheduleMgr->Schedule({1, state->dataScheduleMgr->NumSchedules})))
-        .CurrentValue = 1.0; // set availability and fan schedule to 1
-    state->dataScheduleMgr->Schedule(Util::FindItemInList("ON", state->dataScheduleMgr->Schedule({1, state->dataScheduleMgr->NumSchedules})))
-        .CurrentValue = 1.0; // On
-    state->dataScheduleMgr
-        ->Schedule(Util::FindItemInList("VENTINGSCHED", state->dataScheduleMgr->Schedule({1, state->dataScheduleMgr->NumSchedules})))
-        .CurrentValue = 25.55; // VentingSched
-    state->dataScheduleMgr
-        ->Schedule(Util::FindItemInList("WINDOWVENTSCHED", state->dataScheduleMgr->Schedule({1, state->dataScheduleMgr->NumSchedules})))
-        .CurrentValue = 1.0; // WindowVentSched
+    Sched::GetSchedule(*state, "PRESSURE SETPOINT SCHEDULE")->currentVal = PressureSet; // Pressure setpoint
+    Sched::GetSchedule(*state, "FANANDCOILAVAILSCHED")->currentVal = 1.0;               // set availability and fan schedule to 1
+    Sched::GetSchedule(*state, "ON")->currentVal = 1.0;                                 // On
+    Sched::GetSchedule(*state, "VENTINGSCHED")->currentVal = 25.55;                     // VentingSched
+    Sched::GetSchedule(*state, "WINDOWVENTSCHED")->currentVal = 1.0;                    // WindowVentSched
 
     state->afn->AirflowNetworkFanActivated = true;
     state->dataEnvrn->OutDryBulbTemp = -17.29025;
@@ -2260,7 +2250,7 @@ TEST_F(EnergyPlusFixture, AirflowNetwork_TestPressureStat)
     state->dataZoneEquip->ZoneEquipConfig(3).IsControlled = false;
     state->dataZoneEquip->ZoneEquipConfig(4).IsControlled = false;
     state->dataHVACGlobal->TimeStepSys = 0.1;
-    state->dataHVACGlobal->TimeStepSysSec = state->dataHVACGlobal->TimeStepSys * Constant::SecInHour;
+    state->dataHVACGlobal->TimeStepSysSec = state->dataHVACGlobal->TimeStepSys * Constant::rSecsInHour;
 
     state->afn->AirflowNetworkLinkSimu(1).FLOW2 = 0.1;
     state->afn->AirflowNetworkLinkSimu(10).FLOW2 = 0.15;
@@ -2293,41 +2283,7 @@ TEST_F(EnergyPlusFixture, AirflowNetwork_TestPressureStat)
 
 TEST_F(EnergyPlusFixture, AirflowNetwork_TestZoneVentingSchWithAdaptiveCtrl)
 {
-
     // Unit test for #5490
-
-    state->dataHeatBal->Zone.allocate(1);
-    state->dataHeatBal->Zone(1).Name = "SOFF";
-
-    state->dataSurface->Surface.allocate(2);
-    state->dataSurface->Surface(1).Name = "WINDOW 1";
-    state->dataSurface->Surface(1).Zone = 1;
-    state->dataSurface->Surface(1).ZoneName = "SOFF";
-    state->dataSurface->Surface(1).Azimuth = 0.0;
-    state->dataSurface->Surface(1).ExtBoundCond = 0;
-    state->dataSurface->Surface(1).HeatTransSurf = true;
-    state->dataSurface->Surface(1).Tilt = 90.0;
-    state->dataSurface->Surface(1).Sides = 4;
-    state->dataSurface->Surface(2).Name = "WINDOW 2";
-    state->dataSurface->Surface(2).Zone = 1;
-    state->dataSurface->Surface(2).ZoneName = "SOFF";
-    state->dataSurface->Surface(2).Azimuth = 180.0;
-    state->dataSurface->Surface(2).ExtBoundCond = 0;
-    state->dataSurface->Surface(2).HeatTransSurf = true;
-    state->dataSurface->Surface(2).Tilt = 90.0;
-    state->dataSurface->Surface(2).Sides = 4;
-
-    SurfaceGeometry::AllocateSurfaceWindows(*state, 2);
-    state->dataSurface->Surface(1).OriginalClass = DataSurfaces::SurfaceClass::Window;
-    state->dataSurface->Surface(2).OriginalClass = DataSurfaces::SurfaceClass::Window;
-    state->dataGlobal->NumOfZones = 1;
-
-    state->dataHeatBal->TotPeople = 1; // Total number of people statements
-    state->dataHeatBal->People.allocate(state->dataHeatBal->TotPeople);
-    state->dataHeatBal->People(1).ZonePtr = 1;
-    state->dataHeatBal->People(1).NumberOfPeople = 100.0;
-    state->dataHeatBal->People(1).NumberOfPeoplePtr = 1; // From dataglobals, always returns a 1 for schedule value
-    state->dataHeatBal->People(1).AdaptiveCEN15251 = true;
 
     std::string const idf_objects = delimited_string({
         "Schedule:Constant,OnSch,,1.0;",
@@ -2377,6 +2333,41 @@ TEST_F(EnergyPlusFixture, AirflowNetwork_TestZoneVentingSchWithAdaptiveCtrl)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    // Have to do this up-front
+    state->init_state(*state);
+
+    state->dataHeatBal->Zone.allocate(1);
+    state->dataHeatBal->Zone(1).Name = "SOFF";
+
+    state->dataSurface->Surface.allocate(2);
+    state->dataSurface->Surface(1).Name = "WINDOW 1";
+    state->dataSurface->Surface(1).Zone = 1;
+    state->dataSurface->Surface(1).ZoneName = "SOFF";
+    state->dataSurface->Surface(1).Azimuth = 0.0;
+    state->dataSurface->Surface(1).ExtBoundCond = 0;
+    state->dataSurface->Surface(1).HeatTransSurf = true;
+    state->dataSurface->Surface(1).Tilt = 90.0;
+    state->dataSurface->Surface(1).Sides = 4;
+    state->dataSurface->Surface(2).Name = "WINDOW 2";
+    state->dataSurface->Surface(2).Zone = 1;
+    state->dataSurface->Surface(2).ZoneName = "SOFF";
+    state->dataSurface->Surface(2).Azimuth = 180.0;
+    state->dataSurface->Surface(2).ExtBoundCond = 0;
+    state->dataSurface->Surface(2).HeatTransSurf = true;
+    state->dataSurface->Surface(2).Tilt = 90.0;
+    state->dataSurface->Surface(2).Sides = 4;
+
+    SurfaceGeometry::AllocateSurfaceWindows(*state, 2);
+    state->dataSurface->Surface(1).OriginalClass = DataSurfaces::SurfaceClass::Window;
+    state->dataSurface->Surface(2).OriginalClass = DataSurfaces::SurfaceClass::Window;
+    state->dataGlobal->NumOfZones = 1;
+
+    state->dataHeatBal->TotPeople = 1; // Total number of people statements
+    state->dataHeatBal->People.allocate(state->dataHeatBal->TotPeople);
+    state->dataHeatBal->People(1).ZonePtr = 1;
+    state->dataHeatBal->People(1).NumberOfPeople = 100.0;
+    state->dataHeatBal->People(1).sched = Sched::GetScheduleAlwaysOn(*state); // From dataglobals, always returns a 1 for schedule value
+    state->dataHeatBal->People(1).AdaptiveCEN15251 = true;
 
     state->afn->get_input();
 
@@ -2384,9 +2375,8 @@ TEST_F(EnergyPlusFixture, AirflowNetwork_TestZoneVentingSchWithAdaptiveCtrl)
 
     // changed index 2 to 1 because in new sorted scheedule MultizoneZone(1).VentingSchName ("FREERUNNINGSEASON")
     // has index 1 which is the .VentSchNum
-    auto GetIndex = Util::FindItemInList(state->afn->MultizoneZoneData(1).VentingSchName,
-                                         state->dataScheduleMgr->Schedule({1, state->dataScheduleMgr->NumSchedules}));
-    EXPECT_EQ(GetIndex, state->afn->MultizoneZoneData(1).VentingSchNum);
+    auto *ventingSched = Sched::GetSchedule(*state, state->afn->MultizoneZoneData(1).VentAvailSchName);
+    EXPECT_EQ(ventingSched, state->afn->MultizoneZoneData(1).ventAvailSched);
 
     state->dataHeatBal->Zone.deallocate();
     state->dataSurface->Surface.deallocate();
@@ -5925,10 +5915,10 @@ TEST_F(EnergyPlusFixture, AirflowNetwork_MultiAirLoopTest)
 
     ASSERT_TRUE(process_idf(idf_objects));
 
+    state->init_state(*state);
+
     bool ErrorsFound = false;
     // Read objects
-    HeatBalanceManager::GetProjectControlData(*state, ErrorsFound);
-    EXPECT_FALSE(ErrorsFound);
     HeatBalanceManager::GetZoneData(*state, ErrorsFound);
     EXPECT_FALSE(ErrorsFound);
     Material::GetWindowGlassSpectralData(*state, ErrorsFound);
@@ -5950,12 +5940,12 @@ TEST_F(EnergyPlusFixture, AirflowNetwork_MultiAirLoopTest)
 
     Real64 PresssureSet = 0.5;
     // Assign values
-    state->dataScheduleMgr->Schedule(1).CurrentValue = 25.55;         // WindowVentSched
-    state->dataScheduleMgr->Schedule(9).CurrentValue = 1.0;           // FanAndCoilAvailSched
-    state->dataScheduleMgr->Schedule(14).CurrentValue = 1.0;          // VentingSched
-    state->dataScheduleMgr->Schedule(16).CurrentValue = PresssureSet; // Pressure setpoint
-    state->dataScheduleMgr->Schedule(17).CurrentValue = 1.0;          // HVACTemplate-Always 1
-    state->dataScheduleMgr->Schedule(18).CurrentValue = 0.0;          // HVACTemplate-Always 0
+    Sched::GetSchedule(*state, "WINDOWVENTSCHED")->currentVal = 25.55;                   // WindowVentSched
+    Sched::GetSchedule(*state, "FANANDCOILAVAILSCHED")->currentVal = 1.0;                // FanAndCoilAvailSched
+    Sched::GetSchedule(*state, "VENTINGSCHED")->currentVal = 1.0;                        // VentingSched
+    Sched::GetSchedule(*state, "PRESSURE SETPOINT SCHEDULE")->currentVal = PresssureSet; // Pressure setpoint
+    Sched::GetSchedule(*state, "HVACTEMPLATE-ALWAYS 1")->currentVal = 1.0;               // HVACTemplate-Always 1
+    Sched::GetSchedule(*state, "HVACTEMPLATE-ALWAYS 0")->currentVal = 0.0;               // HVACTemplate-Always 0
 
     state->afn->AirflowNetworkFanActivated = true;
     state->dataEnvrn->OutDryBulbTemp = -17.29025;
@@ -6052,7 +6042,7 @@ TEST_F(EnergyPlusFixture, AirflowNetwork_MultiAirLoopTest)
     EXPECT_NEAR(state->afn->AirflowNetworkReportData(1).MultiZoneVentLatLossW, 0.969147, 0.001);
     // #8475
     state->dataHVACGlobal->TimeStepSys = 0.1;
-    state->dataHVACGlobal->TimeStepSysSec = state->dataHVACGlobal->TimeStepSys * Constant::SecInHour;
+    state->dataHVACGlobal->TimeStepSysSec = state->dataHVACGlobal->TimeStepSys * Constant::rSecsInHour;
     state->dataHeatBal->Zone(1).Volume = 30.0;
     // Ventilation
     state->afn->update();
@@ -7720,12 +7710,14 @@ TEST_F(EnergyPlusFixture, AirflowNetwork_DuplicatedNodeNameTest)
 
     ASSERT_TRUE(process_idf(idf_objects));
 
+    state->init_state(*state);
+
     // Read objects
     HeatBalanceManager::GetHeatBalanceInput(*state);
     HeatBalanceManager::AllocateHeatBalArrays(*state);
     state->dataEnvrn->OutBaroPress = 101000;
     state->dataHVACGlobal->TimeStepSys = state->dataGlobal->TimeStepZone;
-    state->dataHVACGlobal->TimeStepSysSec = state->dataHVACGlobal->TimeStepSys * Constant::SecInHour;
+    state->dataHVACGlobal->TimeStepSysSec = state->dataHVACGlobal->TimeStepSys * Constant::rSecsInHour;
 
     // Read AirflowNetwork inputs
     ASSERT_THROW(state->afn->get_input(), std::runtime_error);
@@ -10519,10 +10511,10 @@ TEST_F(EnergyPlusFixture, DISABLED_AirLoopNumTest)
 
     ASSERT_TRUE(process_idf(idf_objects));
 
+    state->init_state(*state);
+
     bool ErrorsFound = false;
     // Read objects
-    HeatBalanceManager::GetProjectControlData(*state, ErrorsFound);
-    EXPECT_FALSE(ErrorsFound);
     HeatBalanceManager::GetZoneData(*state, ErrorsFound);
     EXPECT_FALSE(ErrorsFound);
     Material::GetWindowGlassSpectralData(*state, ErrorsFound);
@@ -10711,27 +10703,38 @@ TEST_F(EnergyPlusFixture, AirflowNetwork_TestZoneVentingAirBoundary)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+
+    state->init_state(*state);
+
     state->afn->get_input();
     // Expect warnings about the air boundary surface
     EXPECT_TRUE(has_err_output(false));
     std::string const expectedErrString = delimited_string(
-        {"   ** Warning ** AirflowNetwork::Solver::get_input: AirflowNetwork:MultiZone:Surface=\"AIR WALL AULA 2\" is an air boundary surface.",
-         "   **   ~~~   ** Ventilation Control Mode = TEMPERATURE is not valid. Resetting to Constant.",
+        {"   ** Warning ** ProcessScheduleInput: Schedule:Constant = ONSCH",
+         "   **   ~~~   ** Schedule Type Limits Name is empty.",
+         "   **   ~~~   ** Schedule will not be validated.",
+         "   ** Warning ** ProcessScheduleInput: Schedule:Constant = AULA PEOPLE SCHED",
+         "   **   ~~~   ** Schedule Type Limits Name is empty.",
+         "   **   ~~~   ** Schedule will not be validated.",
+         "   ** Warning ** ProcessScheduleInput: Schedule:Constant = SEMPRE 21",
+         "   **   ~~~   ** Schedule Type Limits Name is empty.",
+         "   **   ~~~   ** Schedule will not be validated.",
          "   ** Warning ** AirflowNetwork::Solver::get_input: AirflowNetwork:MultiZone:Surface=\"AIR WALL AULA 2\" is an air boundary surface.",
-         "   **   ~~~   ** Venting Availability Schedule will be ignored, venting is always available."});
+         "   **   ~~~   ** Ventilation Control Mode = TEMPERATURE is not valid. Resetting to Constant.",
+         "   ** Warning ** AirflowNetwork::Solver::get_input: : AirflowNetwork:MultiZone:Surface = AIR WALL AULA 2",
+         "   **   ~~~   ** Venting Availbility Schedule is not empty.",
+         "   **   ~~~   ** Venting is always available for air-boundary surfaces."});
     EXPECT_TRUE(compare_err_stream(expectedErrString, true));
 
     // MultizoneSurfaceData(1) is connected to a normal heat transfer surface -
     // venting schedule should be non-zero and venting method should be ZoneLevel
-    auto GetIndex = Util::FindItemInList(state->afn->MultizoneSurfaceData(1).VentingSchName,
-                                         state->dataScheduleMgr->Schedule({1, state->dataScheduleMgr->NumSchedules}));
-    EXPECT_GT(GetIndex, 0);
-    EXPECT_EQ(GetIndex, state->afn->MultizoneSurfaceData(1).VentingSchNum);
+    auto *ventingSched = Sched::GetSchedule(*state, state->afn->MultizoneSurfaceData(1).VentAvailSchName);
+    EXPECT_EQ(ventingSched, state->afn->MultizoneSurfaceData(1).ventAvailSched);
     EXPECT_ENUM_EQ(state->afn->MultizoneSurfaceData(1).VentSurfCtrNum, AirflowNetwork::VentControlType::Temp);
 
     // MultizoneSurfaceData(2) is connected to an air boundary surface
     // venting schedule should be zero and venting method should be Constant
-    EXPECT_EQ(0, state->afn->MultizoneSurfaceData(2).VentingSchNum);
+    EXPECT_EQ(state->afn->MultizoneSurfaceData(2).ventAvailSched, Sched::GetScheduleAlwaysOn(*state));
     EXPECT_ENUM_EQ(state->afn->MultizoneSurfaceData(2).VentSurfCtrNum, AirflowNetwork::VentControlType::Const);
 }
 
@@ -10902,7 +10905,7 @@ TEST_F(EnergyPlusFixture, AirflowNetwork_TestNoZoneEqpSupportZoneERV)
     state->dataHVACStandAloneERV->StandAloneERV(1).ExhaustAirFanName = state->dataFans->fans(2)->Name;
     state->dataHVACStandAloneERV->StandAloneERV(1).ExhaustAirFanIndex = 2;
     state->dataHVACStandAloneERV->StandAloneERV(1).hxType = HVAC::HXType::AirToAir_Generic;
-    state->dataHVACStandAloneERV->StandAloneERV(1).HeatExchangerName = "ERV Heat Exchanger";
+    state->dataHVACStandAloneERV->StandAloneERV(1).hxName = "ERV Heat Exchanger";
 
     // Check validation and expected errors
     ASSERT_THROW(state->afn->validate_distribution(), std::runtime_error);
@@ -11095,7 +11098,7 @@ TEST_F(EnergyPlusFixture, AirflowNetwork_TestZoneEqpSupportZoneERV)
     state->dataHVACStandAloneERV->StandAloneERV(1).ExhaustAirFanName = state->dataFans->fans(2)->Name;
     state->dataHVACStandAloneERV->StandAloneERV(1).ExhaustAirFanIndex = 2;
     state->dataHVACStandAloneERV->StandAloneERV(1).hxType = HVAC::HXType::AirToAir_Generic;
-    state->dataHVACStandAloneERV->StandAloneERV(1).HeatExchangerName = "ERV Heat Exchanger";
+    state->dataHVACStandAloneERV->StandAloneERV(1).hxName = "ERV Heat Exchanger";
 
     // Check validation and expected warning
     state->afn->validate_distribution();
@@ -11273,7 +11276,7 @@ TEST_F(EnergyPlusFixture, AirflowNetwork_TestZoneEqpSupportUnbalancedZoneERV)
     state->dataHVACStandAloneERV->StandAloneERV(1).ExhaustAirFanName = fan2->Name;
     state->dataHVACStandAloneERV->StandAloneERV(1).ExhaustAirFanIndex = 2;
     state->dataHVACStandAloneERV->StandAloneERV(1).hxType = HVAC::HXType::AirToAir_Generic;
-    state->dataHVACStandAloneERV->StandAloneERV(1).HeatExchangerName = "ERV Heat Exchanger";
+    state->dataHVACStandAloneERV->StandAloneERV(1).hxName = "ERV Heat Exchanger";
 
     // Check validation and expected errors
     ASSERT_THROW(state->afn->validate_distribution(), std::runtime_error);
@@ -14179,12 +14182,11 @@ TEST_F(EnergyPlusFixture, AirflowNetwork_TestIntraZoneLinkageZoneIndex)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
-    bool ErrorsFound = false;
-    state->dataGlobal->NumOfTimeStepInHour = 1;
-    state->dataGlobal->MinutesPerTimeStep = 60;
+    state->dataGlobal->TimeStepsInHour = 1;
+    state->dataGlobal->MinutesInTimeStep = 60;
+    state->init_state(*state);
     // Read objects
-    HeatBalanceManager::GetProjectControlData(*state, ErrorsFound);
-    EXPECT_FALSE(ErrorsFound);
+    bool ErrorsFound = false;
     HeatBalanceManager::GetZoneData(*state, ErrorsFound);
     EXPECT_FALSE(ErrorsFound);
     ZoneEquipmentManager::GetZoneEquipment(*state);
@@ -14201,18 +14203,29 @@ TEST_F(EnergyPlusFixture, AirflowNetwork_TestIntraZoneLinkageZoneIndex)
     state->dataSurfaceGeometry->SinBldgRotAppGonly = 0.0;
     SurfaceGeometry::GetSurfaceData(*state, ErrorsFound);
     EXPECT_FALSE(ErrorsFound);
-    ScheduleManager::ProcessScheduleInput(*state);
-    state->dataScheduleMgr->Schedule(6).MinValue = 0.0;
-    state->dataScheduleMgr->Schedule(6).MaxValue = 2.0;
-    state->dataScheduleMgr->DaySchedule(1).TSValue = 150;
-    state->dataScheduleMgr->DaySchedule(1).TSValMax = 200;
-    state->dataScheduleMgr->DaySchedule(1).TSValMin = 0;
-    state->dataScheduleMgr->DaySchedule(2).TSValue = 1.0;
-    state->dataScheduleMgr->DaySchedule(3).TSValue = 1.0;
-    state->dataScheduleMgr->Schedule(2).MinValue = 0.0;
-    state->dataScheduleMgr->Schedule(2).MaxValue = 1.0;
-    state->dataScheduleMgr->Schedule(3).MinValue = 0.0;
-    state->dataScheduleMgr->Schedule(3).MaxValue = 1.0;
+
+    auto *officeOccSched = Sched::GetSchedule(*state, "OFFICE OCCUPANCY");
+    officeOccSched->minVal = 0.0;
+    officeOccSched->maxVal = 2.0;
+
+    auto *activityDay1Sched = Sched::GetDaySchedule(*state, "ACTIVITY SCH_DY_1");
+    std::fill(activityDay1Sched->tsVals.begin(), activityDay1Sched->tsVals.end(), 150);
+    activityDay1Sched->maxVal = 200;
+    activityDay1Sched->minVal = 0;
+
+    auto *workEffDay1Sched = Sched::GetDaySchedule(*state, "WORK EFF SCH_DY_1");
+    std::fill(workEffDay1Sched->tsVals.begin(), workEffDay1Sched->tsVals.end(), 1.0);
+
+    auto *workEffSched = Sched::GetSchedule(*state, "WORK EFF SCH");
+    workEffSched->minVal = 0.0;
+    workEffSched->maxVal = 1.0;
+
+    auto *clothingDay1Sched = Sched::GetDaySchedule(*state, "CLOTHING SCH_DY_1");
+    std::fill(clothingDay1Sched->tsVals.begin(), clothingDay1Sched->tsVals.end(), 1.0);
+
+    auto *clothingSched = Sched::GetSchedule(*state, "CLOTHING SCH");
+    clothingSched->minVal = 0.0;
+    clothingSched->maxVal = 1.0;
 
     InternalHeatGains::GetInternalHeatGainsInput(*state);
     HeatBalanceAirManager::GetRoomAirModelParameters(*state, ErrorsFound);
@@ -14352,9 +14365,7 @@ TEST_F(EnergyPlusFixture, AirflowNetwork_TestReferenceConditionsLeftBlank)
 
     ASSERT_TRUE(process_idf(idf_objects));
 
-    ErrorsFound = false;
-    HeatBalanceManager::GetProjectControlData(*state, ErrorsFound);
-    EXPECT_FALSE(ErrorsFound);
+    state->init_state(*state);
 
     ErrorsFound = false;
     HeatBalanceManager::GetZoneData(*state, ErrorsFound);
@@ -14371,8 +14382,8 @@ TEST_F(EnergyPlusFixture, AirflowNetwork_TestReferenceConditionsLeftBlank)
     ErrorsFound = false;
     state->dataSurfaceGeometry->CosZoneRelNorth.allocate(1);
     state->dataSurfaceGeometry->SinZoneRelNorth.allocate(1);
-    state->dataSurfaceGeometry->CosZoneRelNorth(1) = std::cos(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRadians);
-    state->dataSurfaceGeometry->SinZoneRelNorth(1) = std::sin(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRadians);
+    state->dataSurfaceGeometry->CosZoneRelNorth(1) = std::cos(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRad);
+    state->dataSurfaceGeometry->SinZoneRelNorth(1) = std::sin(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRad);
     state->dataSurfaceGeometry->CosBldgRelNorth = 1.0;
     state->dataSurfaceGeometry->SinBldgRelNorth = 0.0;
     SurfaceGeometry::GetSurfaceData(*state, ErrorsFound);
@@ -16306,10 +16317,9 @@ TEST_F(EnergyPlusFixture, AirflowNetwork_DuctSizingTest)
     state->dataIPShortCut->cAlphaArgs = " ";
     state->dataIPShortCut->rNumericArgs = 0.0;
 
+    state->init_state(*state);
     bool ErrorsFound = false;
     // Read objects
-    HeatBalanceManager::GetProjectControlData(*state, ErrorsFound);
-    EXPECT_FALSE(ErrorsFound);
     HeatBalanceManager::GetZoneData(*state, ErrorsFound);
     EXPECT_FALSE(ErrorsFound);
     Material::GetWindowGlassSpectralData(*state, ErrorsFound);
@@ -16329,20 +16339,20 @@ TEST_F(EnergyPlusFixture, AirflowNetwork_DuctSizingTest)
     // Read AirflowNetwork inputs
     state->afn->get_input();
 
-    state->dataScheduleMgr->Schedule(1).CurrentValue = 1.0;
-    state->dataScheduleMgr->Schedule(2).CurrentValue = 100.0;
-    state->dataScheduleMgr->Schedule(3).CurrentValue = 1.0;
-    state->dataScheduleMgr->Schedule(4).CurrentValue = 1.0;
-    state->dataScheduleMgr->Schedule(5).CurrentValue = 0.1;
-    state->dataScheduleMgr->Schedule(6).CurrentValue = 1.0;
-    state->dataScheduleMgr->Schedule(7).CurrentValue = 1.0;
-    state->dataScheduleMgr->Schedule(8).CurrentValue = 1.0;
-    state->dataScheduleMgr->Schedule(9).CurrentValue = 1.0;
-    state->dataScheduleMgr->Schedule(10).CurrentValue = 1.0;
-    state->dataScheduleMgr->Schedule(11).CurrentValue = 21.0;
-    state->dataScheduleMgr->Schedule(12).CurrentValue = 25.0;
-    state->dataScheduleMgr->Schedule(13).CurrentValue = 1.0;
-    state->dataScheduleMgr->Schedule(14).CurrentValue = 1.0;
+    Sched::GetSchedule(*state, "WINDOWVENTSCHED")->currentVal = 1.0;
+    Sched::GetSchedule(*state, "ACTIVITY SCH")->currentVal = 100.0;
+    Sched::GetSchedule(*state, "WORK EFF SCH")->currentVal = 1.0;
+    Sched::GetSchedule(*state, "CLOTHING SCH")->currentVal = 1.0;
+    Sched::GetSchedule(*state, "AIR VELO SCH")->currentVal = 0.1;
+    Sched::GetSchedule(*state, "HOUSE OCCUPANCY")->currentVal = 1.0;
+    Sched::GetSchedule(*state, "INTERMITTENT")->currentVal = 1.0;
+    Sched::GetSchedule(*state, "HOUSE LIGHTING")->currentVal = 1.0;
+    Sched::GetSchedule(*state, "REPORTSCH")->currentVal = 1.0;
+    Sched::GetSchedule(*state, "HVACAVAILSCHED")->currentVal = 1.0;
+    Sched::GetSchedule(*state, "DUAL HEATING SETPOINTS")->currentVal = 21.0;
+    Sched::GetSchedule(*state, "DUAL COOLING SETPOINTS")->currentVal = 25.0;
+    Sched::GetSchedule(*state, "DUAL ZONE CONTROL TYPE SCHED")->currentVal = 1.0;
+    Sched::GetSchedule(*state, "CYCLINGFANSCHEDULE")->currentVal = 1.0;
 
     state->afn->AirflowNetworkFanActivated = true;
     state->dataEnvrn->OutDryBulbTemp = -17.29025;
@@ -16487,6 +16497,8 @@ TEST_F(EnergyPlusFixture, AirflowNetwork_CheckMultistageHeatingCoil)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+
+    state->init_state(*state);
 
     state->dataGlobal->NumOfZones = 1;
     state->dataHeatBal->Zone.allocate(1);
@@ -19916,6 +19928,8 @@ TEST_F(EnergyPlusFixture, AirflowNetwork_ZoneOrderTest)
     ASSERT_TRUE(process_idf(idf_objects));
 
     state->dataGlobal->DDOnlySimulation = true;
+
+    state->init_state(*state);
 
     SimulationManager::ManageSimulation(*state); // run the design day over the warmup period (24 hrs, 25 days)
 

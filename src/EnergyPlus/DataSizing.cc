@@ -602,9 +602,9 @@ Real64 ZoneAirDistributionData::calculateEz(EnergyPlusData &state, int const Zon
     // Calc the zone supplied OA flow rate counting the zone air distribution effectiveness
     //  First check whether the zone air distribution effectiveness schedule exists, if yes uses it;
     //   otherwise uses the inputs of zone distribution effectiveness in cooling mode or heating mode
-    if (this->ZoneADEffSchPtr > 0) {
+    if (this->zoneADEffSched != nullptr) {
         // Get schedule value for the zone air distribution effectiveness
-        zoneEz = ScheduleManager::GetCurrentScheduleValue(state, this->ZoneADEffSchPtr);
+        zoneEz = this->zoneADEffSched->getCurrentVal();
     } else {
         Real64 zoneLoad = state.dataZoneEnergyDemand->ZoneSysEnergyDemand(ZoneNum).TotalOutputRequired;
 
@@ -909,23 +909,23 @@ Real64 OARequirementsData::calcOAFlowRate(EnergyPlusData &state,
                         if (state.dataHeatBal->People(PeopleNum).ZonePtr != ActualZoneNum) continue;
                     }
                     CO2PeopleGeneration += state.dataHeatBal->People(PeopleNum).NumberOfPeople * state.dataHeatBal->People(PeopleNum).CO2RateFactor *
-                                           ScheduleManager::GetCurrentScheduleValue(state, state.dataHeatBal->People(PeopleNum).ActivityLevelPtr);
+                                           state.dataHeatBal->People(PeopleNum).activityLevelSched->getCurrentVal();
                 }
             }
         }
         ZoneOAArea = floorArea * thisZone.Multiplier * thisZone.ListMultiplier * this->OAFlowPerArea;
         ZoneOAMin = ZoneOAArea;
         ZoneOAMax = (ZoneOAArea + ZoneOAPeople);
-        if (thisZone.ZoneContamControllerSchedIndex > 0.0) {
+        if (thisZone.zoneContamControllerSched != nullptr) {
             // Check the availability schedule value for ZoneControl:ContaminantController
-            ZoneContamControllerSched = ScheduleManager::GetCurrentScheduleValue(state, thisZone.ZoneContamControllerSchedIndex);
+            ZoneContamControllerSched = thisZone.zoneContamControllerSched->getCurrentVal();
             if (ZoneContamControllerSched > 0.0) {
                 if (ZoneOAPeople > 0.0) {
                     if (state.dataContaminantBalance->ZoneCO2GainFromPeople(ActualZoneNum) > 0.0) {
-                        if (thisZone.ZoneMinCO2SchedIndex > 0.0) {
+                        if (thisZone.zoneMinCO2Sched != nullptr) {
                             // Take the schedule value of "Minimum Carbon Dioxide Concentration Schedule Name"
                             // in the ZoneControl:ContaminantController
-                            ZoneMinCO2 = ScheduleManager::GetCurrentScheduleValue(state, thisZone.ZoneMinCO2SchedIndex);
+                            ZoneMinCO2 = thisZone.zoneMinCO2Sched->getCurrentVal();
                         } else {
                             ZoneMinCO2 = state.dataContaminantBalance->OutdoorCO2;
                         }
@@ -1083,11 +1083,11 @@ Real64 OARequirementsData::calcOAFlowRate(EnergyPlusData &state,
     OAVolumeFlowRate *= thisZone.Multiplier * thisZone.ListMultiplier;
 
     // Apply schedule as needed. Sizing does not use schedule.
-    if (this->OAFlowFracSchPtr > 0 && UseMinOASchFlag) {
+    if (this->oaFlowFracSched != nullptr && UseMinOASchFlag) {
         if (MaxOAVolFlowFlag) {
-            OAVolumeFlowRate *= ScheduleManager::GetScheduleMaxValue(state, this->OAFlowFracSchPtr);
+            OAVolumeFlowRate *= this->oaFlowFracSched->getMaxVal(state);
         } else {
-            OAVolumeFlowRate *= ScheduleManager::GetCurrentScheduleValue(state, this->OAFlowFracSchPtr);
+            OAVolumeFlowRate *= this->oaFlowFracSched->getCurrentVal();
         }
     }
 

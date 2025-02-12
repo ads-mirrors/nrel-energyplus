@@ -840,7 +840,7 @@ bool ValidateComponent(EnergyPlusData &state,
 
 void CalcBasinHeaterPower(EnergyPlusData &state,
                           Real64 const Capacity,     // Basin heater capacity per degree C below setpoint (W/C)
-                          int const SchedulePtr,     // Pointer to basin heater schedule
+                          Sched::Schedule *sched,    // basin heater schedule
                           Real64 const SetPointTemp, // setpoint temperature for basin heater operation (C)
                           Real64 &Power              // Basin heater power (W)
 )
@@ -863,8 +863,8 @@ void CalcBasinHeaterPower(EnergyPlusData &state,
     Power = 0.0;
     // Operate basin heater anytime outdoor temperature is below setpoint and water is not flowing through the equipment
     // IF schedule exists, basin heater performance can be scheduled OFF
-    if (SchedulePtr > 0) {
-        Real64 BasinHeaterSch = ScheduleManager::GetCurrentScheduleValue(state, SchedulePtr);
+    if (sched != nullptr) {
+        Real64 BasinHeaterSch = sched->getCurrentVal();
         if (Capacity > 0.0 && BasinHeaterSch > 0.0) {
             Power = max(0.0, Capacity * (SetPointTemp - state.dataEnvrn->OutDryBulbTemp));
         }

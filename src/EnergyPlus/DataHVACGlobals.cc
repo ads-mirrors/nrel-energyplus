@@ -127,7 +127,10 @@ namespace HVAC {
         "Coil:Heating:DX:VariableRefrigerantFlow:FluidTemperatureControl",
         "Coil:Cooling:DX",
         "Coil:Cooling:DX:SubcoolReheat",
-        "Coil:Cooling:DX:CurveFit:Speed"};
+        "Coil:Cooling:DX:CurveFit:Speed",
+        "CoilSystem:IntegratedHeatPump:AirSource",
+        "CoilSystem:Cooling:DX",
+        "CoilSystem:Heating:DX"};
   
     constexpr std::array<std::string_view, (int)CoilType::Num> coilTypeNamesUC = {
         "COIL:COOLING:DX:SINGLESPEED",
@@ -166,7 +169,10 @@ namespace HVAC {
         "COIL:HEATING:DX:VARIABLEREFRIGERANTFLOW:FLUIDTEMPERATURECONTROL",
         "COIL:COOLING:DX",
         "COIL:COOLING:DX:SUBCOOLREHEAT",
-        "COIL:COOLING:DX:CURVEFIT:SPEED"};
+        "COIL:COOLING:DX:CURVEFIT:SPEED",
+        "COILSYSTEM:INTEGRATEDHEATPUMP:AIRSOURCE",
+        "COILSYSTEM:COOLING:DX",
+        "COILSYSTEM:HEATING:DX"};
 
     constexpr std::array<bool, (int)CoilType::Num> coilTypeIsCooling = {
         true, // DXCoolingSingleSpeed,
@@ -203,21 +209,24 @@ namespace HVAC {
         false, // DXHeatPumpWaterHeaterVariableSpeed,
         true, // VRFFluidTCtrlCooling,
         false, // VRFFluidTCtrlHeating,
-        true, // DXCooling,
+        true, // CoolingDX,
         true, // DXSubcoolReheat,
-        true, // DXCurveFitSpeed,
+        true, // CoolingDXCurveFit,
+        true, // IHPAirSource,
+        true, // CoolingSystemDX,
+        false // HeatingSystemDX
     };
   
     constexpr std::array<bool, (int)CoilType::Num> coilTypeIsHeating = {
-        false, // DXCoolingSingleSpeed,
-        true, // DXHeatingEmpirical,
-        false, // DXCoolingTwoSpeed,
+        false, // CoolingDXSingleSpeed,
+        true, // HeatingDXSingleSpeed,
+        false, // CoolingDXTwoSpeed,
         false, // DXCoolingHXAssisted,
         false, // DXCoolingTwoStageWHumControl,
         true, // DXHeatPumpWaterHeaterPumped,
         true, // DXHeatPumpWaterHeaterWrapped,
-        false, // DXMultiSpeedCooling,
-        true, // DXMultiSpeedHeating,
+        false, // CoolingDXMultiSpeed,
+        true, // HeatingDXMultiSpeed,
         true, // HeatingGasOrOtherFuel,
         true, // HeatingGasMultiStage,
         true, // HeatingElectric,
@@ -232,20 +241,66 @@ namespace HVAC {
         true, // HeatingWaterToAirHP,
         false, // CoolingWaterToAirHPSimple,
         true, // HeatingWaterToAirHPSimple,
-        false, // VRFCooling,
-        true, // VRFHeating,
+        false, // CoolingVRF,
+        true, // HeatingVRF,
         false, // UserDefined,
-        false, // DXPackagedThermalStorageCooling,
-        false, // CoolingWaterToAirHPVSEquationFit,
-        true, // HeatingWaterToAirHPVSEquationFit,
-        false, // CoolingAirToAirVariableSpeed,
-        true, // HeatingAirToAirVariableSpeed,
-        true, // DXHeatPumpWaterHeaterVariableSpeed,
-        false, // VRFFluidTCtrlCooling,
-        true, // VRFFluidTCtrlHeating,
-        false, // DXCooling,
+        false, // CoolingDXPackagedThermalStorage,
+        false, // CoolingWAHPVariableSpeedEquationFit,
+        true, // HeatingWAHPVariableSpeedEquationFit,
+        false, // CoolingDXVariableSpeed,
+        true, // HeatingDXVariableSpeed,
+        true, // WaterHeatingAWHPVariableSpeed,
+        false, // CoolingVRFFluidTCtrl,
+        true, // HeatingVRFFluidTCtrl,
+        false, // CoolingDX,
         false, // DXSubcoolReheat,
-        false // DXCurveFitSpeed
+        false, // CoolingDXCurveFit
+        true, // IHP air source
+        false, // CoolingSystemDX
+        true // HeatingSystemDX
+    };
+
+    constexpr std::array<bool, (int)CoilType::Num> coilTypeIsHeatPump = {
+        false, // DXCoolingSingleSpeed,
+        true, // HeatingDXSingleSpeed,
+        false, // DXCoolingTwoSpeed,
+        false, // DXCoolingHXAssisted,
+        false, // DXCoolingTwoStageWHumControl,
+        false, // HeatPumpWaterHeaterDXPumped,
+        false, // HeatPumpWaterHeaterDXWrapped,
+        false, // CoolingDXMultiSpeed,
+        true, // HeatingDXMultiSpeed,
+        false, // HeatingGasOrOtherFuel,
+        false, // HeatingGasMultiStage,
+        false, // HeatingElectric,
+        false, // HeatingElectricMultiStage,
+        false, // HeatingDesuperheater,
+        false, // CoolingWater,
+        false, // CoolingWaterDetailed,
+        false, // HeatingWater,
+        false, // HeatingSteam,
+        false, // CoolingWaterHXAssisted,
+        false, // CoolingWAHP,
+        true, // HeatingWAHP,
+        false, // CoolingWAHPSimple,
+        true, // HeatingWAHPSimple,
+        false, // CoolingVRF,
+        false, // HeatingVRF,
+        false, // UserDefined,
+        false, // CoolingDXPackagedThermalStorage,
+        false, // CoolingWAHPVariableSpeedEquationFit,
+        true, // HeatingWAHPVariableSpeedEquationFit,
+        false, // CoolingDXVariableSpeed,
+        true, // HeatingDXVariableSpeed,
+        false, // WaterHeatingAWHPVariableSpeed,
+        false, // CoolingVRFFluidTCtrl,
+        false, // HeatingVRFFluidTCtrl,
+        false, // CoolingDX,
+        false, // DXSubcoolReheat,
+        false, // DXCurveFitSpeed
+        true, // IHPAirSource
+        true, // CoolingSystemDX
+        true, // HeatingSystemDX
     };
   
 #ifdef GET_OUT

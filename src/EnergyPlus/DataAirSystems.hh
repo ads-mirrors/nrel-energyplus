@@ -94,7 +94,7 @@ namespace DataAirSystems {
         // Members
         std::string TypeOf;                                                                // The 'keyWord' identifying  component type
         std::string Name;                                                                  // Component name
-        SimAirServingZones::CompType CompType_Num = SimAirServingZones::CompType::Invalid; // Numeric designator for CompType (TypeOf)
+        SimAirServingZones::CompType compType = SimAirServingZones::CompType::Invalid; // Numeric designator for CompType (TypeOf)
         int CompIndex = 0;                                                                 // Component Index in whatever is using this component
         HVACSystemData *compPointer = nullptr;                                             // pointer to HVAC system
         int FlowCtrl = 0;                                                                  // Component flow control (ACTIVE/PASSIVE)
@@ -331,6 +331,10 @@ struct AirSystemsData : BaseGlobalStruct
     Array1D<DataAirSystems::ConnectAirSysComp> AirSysCompToPlant;             // Connections between loops
     Array1D<DataAirSystems::ConnectAirSysSubComp> AirSysSubCompToPlant;       // Connections between loops
     Array1D<DataAirSystems::ConnectAirSysSubSubComp> AirSysSubSubCompToPlant; // Connections between loops
+
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
 
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {

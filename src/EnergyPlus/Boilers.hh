@@ -189,6 +189,10 @@ struct BoilersData : BaseGlobalStruct
     bool getBoilerInputFlag = true;
     Array1D<Boilers::BoilerSpecs> Boiler;
 
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
+
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {
     }

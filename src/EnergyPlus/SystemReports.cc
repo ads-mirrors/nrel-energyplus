@@ -54,7 +54,6 @@
 
 // ObjexxFCL Headers
 #include <ObjexxFCL/Array.functions.hh>
-#include <ObjexxFCL/Fmath.hh>
 
 // EnergyPlus Headers
 #include <EnergyPlus/BranchNodeConnections.hh>
@@ -5086,7 +5085,6 @@ void reportAirDistributionUnits(EnergyPlusData &state)
 
     auto &orp = state.dataOutRptPredefined;
     for (auto &adu : state.dataDefineEquipment->AirDistUnit) {
-        auto &airTerminal = adu.airTerminalPtr;
         constexpr int aduCompNum = 1;
         OutputReportPredefined::PreDefTableEntry(state, orp->pdchAirTermZoneName, adu.Name, state.dataHeatBal->Zone(adu.ZoneNum).Name);
         switch (adu.EquipTypeEnum(aduCompNum)) {

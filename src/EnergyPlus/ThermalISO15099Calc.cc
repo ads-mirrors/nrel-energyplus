@@ -48,9 +48,6 @@
 // C++ Headers
 #include <cassert>
 
-// ObjexxFCL Headers
-#include <ObjexxFCL/Fmath.hh>
-
 // EnergyPlus Headers
 #include <EnergyPlus/Data/EnergyPlusData.hh>
 #include <EnergyPlus/DataGlobals.hh>
@@ -2565,7 +2562,7 @@ void filmi(EnergyPlusData &state,
 
         //   Calculate grashoff number:
         //   The grashoff number is the Rayleigh Number (equation 5.29) in SPC142 divided by the Prandtl Number (prand):
-        gr = Constant::GravityConstant * pow_3(height) * delt * pow_2(dens) / (tmean * pow_2(visc));
+        gr = Constant::Gravity * pow_3(height) * delt * pow_2(dens) / (tmean * pow_2(visc));
 
         RaL = gr * pr;
         //   write(*,*)' RaCrit,RaL,gr,pr '
@@ -2720,7 +2717,7 @@ void filmg(EnergyPlusData &state,
 
             // Calculate grashoff number:
             // The grashoff number is the Rayleigh Number (equation 5.29) in SPC142 divided by the Prandtl Number (prand):
-            ra = Constant::GravityConstant * pow_3(gap(i)) * delt * cp * pow_2(dens) / (tmean * visc * con);
+            ra = Constant::Gravity * pow_3(gap(i)) * delt * cp * pow_2(dens) / (tmean * visc * con);
             Rayleigh(i) = ra;
             // write(*,*) 'height,gap(i),asp',height,gap(i),asp
             // asp = 1

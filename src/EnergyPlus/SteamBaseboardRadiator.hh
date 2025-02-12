@@ -67,15 +67,14 @@ namespace SteamBaseboardRadiator {
     struct SteamBaseboardParams
     {
         // Members
-        std::string EquipID;
+        std::string Name;
         DataPlant::PlantEquipmentType EquipType;
         std::string designObjectName; // Design Object
         int DesignObjectPtr;
-        std::string Schedule;
         Array1D_string SurfaceName;
         Array1D_int SurfacePtr;
         int ZonePtr;
-        int SchedPtr;         // Pointer to the correct schedule
+        Sched::Schedule *availSched = nullptr;
         int SteamInletNode;   // Inlet steam baseboard node
         int SteamOutletNode;  // Outlet steam baseboard node
         int TotSurfToDistrib; // Total numbers of the surfaces that the radiant heat gets distributed
@@ -125,7 +124,7 @@ namespace SteamBaseboardRadiator {
 
         // Default Constructor
         SteamBaseboardParams()
-            : EquipType(DataPlant::PlantEquipmentType::Invalid), DesignObjectPtr(0), ZonePtr(0), SchedPtr(0), SteamInletNode(0), SteamOutletNode(0),
+            : EquipType(DataPlant::PlantEquipmentType::Invalid), DesignObjectPtr(0), ZonePtr(0), SteamInletNode(0), SteamOutletNode(0),
               TotSurfToDistrib(0), ControlCompTypeNum(0), CompErrIndex(0), DegOfSubcooling(0.0), SteamMassFlowRate(0.0), SteamMassFlowRateMax(0.0),
               SteamVolFlowRateMax(0.0), SteamOutletTemp(0.0), SteamInletTemp(0.0), SteamInletEnthalpy(0.0), SteamOutletEnthalpy(0.0),
               SteamInletPress(0.0), SteamOutletPress(0.0), SteamInletQuality(0.0), SteamOutletQuality(0.0), FracRadiant(0.0), FracConvect(0.0),
@@ -235,6 +234,10 @@ struct SteamBaseboardRadiatorData : BaseGlobalStruct
     Array1D<SteamBaseboardRadiator::SteamBaseboardNumericFieldData> SteamBaseboardNumericFields;
     Array1D<SteamBaseboardRadiator::SteamBaseboardDesignNumericFieldData> SteamBaseboardDesignNumericFields;
     Array1D_string SteamBaseboardDesignNames; // Array that contains the names of Design objects
+
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
 
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {

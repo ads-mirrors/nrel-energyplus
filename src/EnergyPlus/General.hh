@@ -346,6 +346,10 @@ struct GeneralData : BaseGlobalStruct
     std::string VarDictOption1;
     std::string VarDictOption2;
 
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
+
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {
     }

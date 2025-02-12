@@ -3164,7 +3164,7 @@ TEST_F(EnergyPlusFixture, VariableSpeedCoils_RatedSource_Temp_ASHP_Cooling)
 
     ASSERT_TRUE(process_idf(idf_objects));
     VariableSpeedCoils::GetVarSpeedCoilInput(*state);
-    EXPECT_EQ(VariableSpeedCoils::GetVSCoilRatedSourceTemp(*state, 1.0), 35.0);
+    EXPECT_EQ(VariableSpeedCoils::GetCoilRatedSourceTemp(*state, 1.0), 35.0);
 }
 
 TEST_F(EnergyPlusFixture, VariableSpeedCoils_RatedSource_Temp_ASHP_Heating)
@@ -3294,7 +3294,7 @@ TEST_F(EnergyPlusFixture, VariableSpeedCoils_RatedSource_Temp_ASHP_Heating)
 
     ASSERT_TRUE(process_idf(idf_objects));
     VariableSpeedCoils::GetVarSpeedCoilInput(*state);
-    EXPECT_EQ(VariableSpeedCoils::GetVSCoilRatedSourceTemp(*state, 1.0), 8.3333);
+    EXPECT_EQ(VariableSpeedCoils::GetCoilRatedSourceTemp(*state, 1), 8.3333);
 }
 
 TEST_F(EnergyPlusFixture, VariableSpeedCoils_RatedSource_Temp_AWHP)
@@ -3496,7 +3496,7 @@ TEST_F(EnergyPlusFixture, VariableSpeedCoils_RatedSource_Temp_AWHP)
 
     ASSERT_TRUE(process_idf(idf_objects));
     VariableSpeedCoils::GetVarSpeedCoilInput(*state);
-    EXPECT_EQ(VariableSpeedCoils::GetVSCoilRatedSourceTemp(*state, 1.0), 55.72);
+    EXPECT_EQ(VariableSpeedCoils::GetCoilRatedSourceTemp(*state, 1), 55.72);
 }
 
 TEST_F(EnergyPlusFixture, VariableSpeedCoils_RatedSource_Temp_WSHP_Cooling)
@@ -3725,7 +3725,7 @@ TEST_F(EnergyPlusFixture, VariableSpeedCoils_RatedSource_Temp_WSHP_Cooling)
 
     ASSERT_TRUE(process_idf(idf_objects));
     VariableSpeedCoils::GetVarSpeedCoilInput(*state);
-    EXPECT_EQ(VariableSpeedCoils::GetVSCoilRatedSourceTemp(*state, 1.0), 29.4444);
+    EXPECT_EQ(VariableSpeedCoils::GetCoilRatedSourceTemp(*state, 1), 29.4444);
 }
 
 TEST_F(EnergyPlusFixture, VariableSpeedCoils_RatedSource_Temp_WSHP_Heating)
@@ -3938,7 +3938,7 @@ TEST_F(EnergyPlusFixture, VariableSpeedCoils_RatedSource_Temp_WSHP_Heating)
 
     ASSERT_TRUE(process_idf(idf_objects));
     VariableSpeedCoils::GetVarSpeedCoilInput(*state);
-    EXPECT_EQ(VariableSpeedCoils::GetVSCoilRatedSourceTemp(*state, 1.0), 21.1111);
+    EXPECT_EQ(VariableSpeedCoils::GetCoilRatedSourceTemp(*state, 1), 21.1111);
 }
 
 TEST_F(EnergyPlusFixture, VariableSpeedCooling_Initialization)
@@ -7290,7 +7290,7 @@ TEST_F(EnergyPlusFixture, VariableSpeedCoils_UpdateVarSpeedCoil_Test)
     thisInletNode.GenContam = 12.345;
     thisOutletNode.GenContam = 0.0;
     thisVarSpeedCoil.reportCoilFinalSizes = false;
-    thisVarSpeedCoil.VSCoilType == HVAC::Coil_CoolingAirToAirVariableSpeed;
+    thisVarSpeedCoil.coilType == HVAC::CoilType::CoolingDXVariableSpeed;
 
     // Run the test
     VariableSpeedCoils::UpdateVarSpeedCoil(*state, coilNum);

@@ -106,7 +106,7 @@ using HVAC::SmallLoad;
 
 void ManagePlantLoadDistribution(EnergyPlusData &state,
                                  PlantLocation const &plantLoc, // PlantLoop data structure Location struct
-                                 Real64 &LoopDemand,
+                                 Real64 const LoopDemand,
                                  Real64 &RemLoopDemand,
                                  bool const FirstHVACIteration,
                                  bool &LoopShutDownFlag, // EMS flag to tell loop solver to shut down pumps
@@ -333,11 +333,9 @@ void GetPlantOperationInput(EnergyPlusData &state, bool &GetInputOK)
     //    PlantEquipmentOperationSchemes
     //    CondenserEquipmentOperationSchemes
 
-    // Using/Aliasing
-    using ScheduleManager::GetScheduleIndex;
-
     // SUBROUTINE PARAMETER DEFINITIONS:
     static constexpr std::string_view RoutineName("GetPlantOperationInput: "); // include trailing blank space
+    static constexpr std::string_view routineName = "GetPlantOperationInput";
 
     // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
     int LoopNum;           // Loop counter (Plant or Cond)
@@ -402,6 +400,9 @@ void GetPlantOperationInput(EnergyPlusData &state, bool &GetInputOK)
                                                                      state.dataIPShortCut->lAlphaFieldBlanks,
                                                                      state.dataIPShortCut->cAlphaFieldNames,
                                                                      state.dataIPShortCut->cNumericFieldNames);
+
+            ErrorObjectHeader eoh{routineName, CurrentModuleObject, state.dataIPShortCut->cAlphaArgs(1)};
+
             state.dataPlnt->PlantLoop(LoopNum).NumOpSchemes = (NumAlphas - 1) / 3;
             if (state.dataPlnt->PlantLoop(LoopNum).NumOpSchemes > 0) {
                 state.dataPlnt->PlantLoop(LoopNum).OpScheme.clear();
@@ -454,17 +455,11 @@ void GetPlantOperationInput(EnergyPlusData &state, bool &GetInputOK)
                     }
 
                     state.dataPlnt->PlantLoop(LoopNum).OpScheme(Num).Name = state.dataIPShortCut->cAlphaArgs(Num * 3);
-                    state.dataPlnt->PlantLoop(LoopNum).OpScheme(Num).Sched = state.dataIPShortCut->cAlphaArgs(Num * 3 + 1);
-                    state.dataPlnt->PlantLoop(LoopNum).OpScheme(Num).SchedPtr =
-                        GetScheduleIndex(state, state.dataPlnt->PlantLoop(LoopNum).OpScheme(Num).Sched);
-                    if (state.dataPlnt->PlantLoop(LoopNum).OpScheme(Num).SchedPtr == 0) {
-                        ShowSevereError(state,
-                                        format("{}Invalid {} = \"{}\", entered in {}= \"{}\".",
-                                               RoutineName,
-                                               state.dataIPShortCut->cAlphaFieldNames(Num * 3 + 1),
-                                               state.dataIPShortCut->cAlphaArgs(Num * 3 + 1),
-                                               CurrentModuleObject,
-                                               state.dataIPShortCut->cAlphaArgs(1)));
+
+                    if ((state.dataPlnt->PlantLoop(LoopNum).OpScheme(Num).sched =
+                             Sched::GetSchedule(state, state.dataIPShortCut->cAlphaArgs(Num * 3 + 1))) == nullptr) {
+                        ShowSevereItemNotFound(
+                            state, eoh, state.dataIPShortCut->cAlphaFieldNames(Num * 3 + 1), state.dataIPShortCut->cAlphaArgs(Num * 3 + 1));
                         ErrorsFound = true;
                     }
                 }
@@ -1360,12 +1355,13 @@ void FindCompSPInput(EnergyPlusData &state,
     //    PlantEquipmentOperation:ComponentSetPoint
     //    PlantEquipmentOperation:ThermalEnergyStorage
 
+    static constexpr std::string_view routineName = "FindCompSPInput";
+
     // Using/Aliasing
     using namespace DataLoopNode;
     using NodeInputManager::GetOnlySingleNode;
     using namespace DataSizing;
     using EMSManager::CheckIfNodeSetPointManagedByEMS;
-    using ScheduleManager::GetScheduleIndex;
     using SetPointManager::SetUpNewScheduledTESSetPtMgr;
 
     // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
@@ -1394,6 +1390,7 @@ void FindCompSPInput(EnergyPlusData &state,
         for (int Num = 1; Num <= NumSchemes; ++Num) {
             state.dataInputProcessing->inputProcessor->getObjectItem(
                 state, CurrentModuleObject, Num, state.dataIPShortCut->cAlphaArgs, NumAlphas, state.dataIPShortCut->rNumericArgs, NumNums, IOStat);
+
             if (Util::SameString(state.dataPlnt->PlantLoop(LoopNum).OpScheme(SchemeNum).Name, state.dataIPShortCut->cAlphaArgs(1))) break;
             if (Num == NumSchemes) {
                 ShowSevereError(state,
@@ -1411,29 +1408,23 @@ void FindCompSPInput(EnergyPlusData &state,
             state.dataPlnt->PlantLoop(LoopNum).OpScheme(SchemeNum).NumEquipLists = 1;
             state.dataPlnt->PlantLoop(LoopNum).OpScheme(SchemeNum).EquipList.allocate(1);
             state.dataPlnt->PlantLoop(LoopNum).OpScheme(SchemeNum).EquipList(1).NumComps = (NumAlphas - 1) / 5;
-            int ChargeSchedPtr;
-            int OnPeakSchedPtr;
+
+            Sched::Schedule *chargeSched = nullptr;
+            Sched::Schedule *onPeakSched = nullptr;
+
+            ErrorObjectHeader eoh{routineName, CurrentModuleObject, state.dataIPShortCut->cAlphaArgs(1)};
 
             if (CurrentModuleObject == "PlantEquipmentOperation:ThermalEnergyStorage") {
                 // Read all of the additional parameters for ice storage control scheme and error check various parameters
-                std::string OnPeakSchedName = state.dataIPShortCut->cAlphaArgs(2);
-                OnPeakSchedPtr = GetScheduleIndex(state, OnPeakSchedName);
-                if (OnPeakSchedPtr == 0) {
-                    ShowSevereError(state,
-                                    format("Could not find On Peak Schedule {} in {}{}\".",
-                                           OnPeakSchedName,
-                                           CurrentModuleObject,
-                                           state.dataPlnt->PlantLoop(LoopNum).OpScheme(SchemeNum).Name));
+                onPeakSched = Sched::GetSchedule(state, state.dataIPShortCut->cAlphaArgs(2));
+                if (onPeakSched == nullptr) {
+                    ShowSevereItemNotFound(state, eoh, state.dataIPShortCut->cAlphaFieldNames(2), state.dataIPShortCut->cAlphaArgs(2));
                     ErrorsFound = true;
                 }
-                std::string ChargeSchedName = state.dataIPShortCut->cAlphaArgs(3);
-                ChargeSchedPtr = GetScheduleIndex(state, ChargeSchedName);
-                if (ChargeSchedPtr == 0) {
-                    ShowSevereError(state,
-                                    format("Could not find Charging Availability Schedule {} in {}{}\".",
-                                           ChargeSchedName,
-                                           CurrentModuleObject,
-                                           state.dataPlnt->PlantLoop(LoopNum).OpScheme(SchemeNum).Name));
+
+                chargeSched = Sched::GetSchedule(state, state.dataIPShortCut->cAlphaArgs(3));
+                if (chargeSched == nullptr) {
+                    ShowSevereItemNotFound(state, eoh, state.dataIPShortCut->cAlphaFieldNames(3), state.dataIPShortCut->cAlphaArgs(3));
                     ErrorsFound = true;
                 }
                 NonChargCHWTemp = state.dataIPShortCut->rNumericArgs(1);
@@ -1567,8 +1558,8 @@ void FindCompSPInput(EnergyPlusData &state,
                         // detailed input that is necessary to get thermal energy storage to work from the simpler input.
                         SetUpNewScheduledTESSetPtMgr(
                             state,
-                            OnPeakSchedPtr,
-                            ChargeSchedPtr,
+                            onPeakSched,
+                            chargeSched,
                             NonChargCHWTemp,
                             OffPeakCHWTemp,
                             CompOpType,
@@ -2526,8 +2517,6 @@ void InitLoadDistribution(EnergyPlusData &state, bool const FirstHVACIteration)
 
     // Using/Aliasing
     using EMSManager::ManageEMS;
-    using ScheduleManager::GetCurrentScheduleValue;
-    using ScheduleManager::GetScheduleIndex;
 
     // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
     DataPlant::LoopSideLocation LoopSidePtr;
@@ -2830,7 +2819,7 @@ void InitLoadDistribution(EnergyPlusData &state, bool const FirstHVACIteration)
                     continue;
                 }
 
-                if (GetCurrentScheduleValue(state, this_op_scheme.SchedPtr) > 0.0) {
+                if (this_op_scheme.sched->getCurrentVal() > 0.0) {
                     this_op_scheme.Available = true;
                     for (int ListNum = 1, ListNum_end = this_op_scheme.NumEquipLists; ListNum <= ListNum_end; ++ListNum) {
                         auto &this_equip_list = this_op_scheme.EquipList(ListNum);
@@ -3659,7 +3648,7 @@ void FindCompSPLoad(EnergyPlusData &state,
 
     // load local variables from the data structures
     CompMinLoad = this_component.MinLoad;
-    CompMaxLoad = this_component.MaxLoad;
+    CompMaxLoad = this_component.getDynamicMaxCapacity(state);
     CompOptLoad = this_component.OptLoad;
     DemandNode = state.dataPlnt->PlantLoop(plantLoc.loopNum).OpScheme(OpSchemePtr).EquipList(ListPtr).Comp(CompPtr).DemandNodeNum;
     SetPtNode = state.dataPlnt->PlantLoop(plantLoc.loopNum).OpScheme(OpSchemePtr).EquipList(ListPtr).Comp(CompPtr).SetPointNodeNum;

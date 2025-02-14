@@ -377,14 +377,17 @@ TEST_F(EnergyPlusFixture, InfiltrationObjectLevelReport)
     EXPECT_NEAR(ZnAirRpt(4).InfilVolumeCurDensity, infiltration(5).InfilVolumeCurDensity,
                 0.000001); // zone level reporting matches object level
 
-    EXPECT_NEAR(ZnAirRpt(1).InfilAirChangeRate, infiltration(1).InfilAirChangeRate,
+    EXPECT_NEAR(ZnAirRpt(1).InfilAirChangeRateCurDensity,
+                infiltration(1).InfilAirChangeRateCurDensity,
                 0.000001); // zone level reporting matches object level
-    expectedValue = infiltration(2).InfilAirChangeRate + infiltration(3).InfilAirChangeRate;
-    EXPECT_NEAR(ZnAirRpt(2).InfilAirChangeRate, expectedValue,
+    expectedValue = infiltration(2).InfilAirChangeRateCurDensity + infiltration(3).InfilAirChangeRateCurDensity;
+    EXPECT_NEAR(ZnAirRpt(2).InfilAirChangeRateCurDensity, expectedValue,
                 0.000001); // zone level reporting matches object level
-    EXPECT_NEAR(ZnAirRpt(3).InfilAirChangeRate, infiltration(4).InfilAirChangeRate,
+    EXPECT_NEAR(ZnAirRpt(3).InfilAirChangeRateCurDensity,
+                infiltration(4).InfilAirChangeRateCurDensity,
                 0.000001); // zone level reporting matches object level
-    EXPECT_NEAR(ZnAirRpt(4).InfilAirChangeRate, infiltration(5).InfilAirChangeRate,
+    EXPECT_NEAR(ZnAirRpt(4).InfilAirChangeRateCurDensity,
+                infiltration(5).InfilAirChangeRateCurDensity,
                 0.000001); // zone level reporting matches object level
 
     EXPECT_NEAR(ZnAirRpt(1).InfilVdotCurDensity, infiltration(1).InfilVdotCurDensity,

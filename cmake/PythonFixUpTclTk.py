@@ -127,6 +127,7 @@ if __name__ == "__main__":
         if not tcl_tk_so.exists():
             print(f"Hmmm... could not find the dependency shared object at {tcl_tk_so}; script will continue but fail")
             any_missing = True
+            continue
         shutil.copy(tcl_tk_so, new_tcl_tk_so)
         # during testing, the brew installed tcl and tk libraries were installed without write permission
         # the workaround was to manually chmod u+w those files in the brew install folder

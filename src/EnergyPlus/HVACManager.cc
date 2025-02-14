@@ -2237,13 +2237,13 @@ void ReportInfiltrations(EnergyPlusData &state)
             thisInfiltration.InfilTotalLoss = -TotalLoad;
         }
         // CR7751  second, calculate using indoor conditions for density property
-        Real64 const spAirDensity = Psychrometrics::PsyRhoAirFnPbTdbW(state, state.dataEnvrn->OutBaroPress, thisSpaceHB.MAT, thisSpaceHB.airHumRatAvg, RoutineName);
+        Real64 const spAirDensity =
+            Psychrometrics::PsyRhoAirFnPbTdbW(state, state.dataEnvrn->OutBaroPress, thisSpaceHB.MAT, thisSpaceHB.airHumRatAvg, RoutineName);
         thisInfiltration.InfilVdotCurDensity = thisInfiltration.InfilMdot / spAirDensity;
         thisInfiltration.InfilVolumeCurDensity = thisInfiltration.InfilVdotCurDensity * TimeStepSysSec;
 
         // CR7751 third, calculate using standard dry air at nominal elevation
-        Real64 const stdAirDensity = state.dataEnvrn->StdRhoAir;
-        thisInfiltration.InfilVdotStdDensity = thisInfiltration.InfilMdot / stdAirDensity;
+        thisInfiltration.InfilVdotStdDensity = thisInfiltration.InfilMdot / state.dataEnvrn->StdRhoAir;
         thisInfiltration.InfilVolumeStdDensity = thisInfiltration.InfilVdotStdDensity * TimeStepSysSec;
 
         // calculate using outdoor density
@@ -2438,10 +2438,9 @@ void reportAirHeatBal2(EnergyPlusData &state,
     szAirRpt.VentilVolumeCurDensity = szAirRpt.VentilVdotCurDensity * state.dataHVACGlobal->TimeStepSysSec;
 
     // CR7751 third, calculate using standard dry air at nominal elevation
-    Real64 const stdAirDensity = state.dataEnvrn->StdRhoAir;
-    szAirRpt.InfilVdotStdDensity = szAirRpt.InfilMdot / stdAirDensity;
+    szAirRpt.InfilVdotStdDensity = szAirRpt.InfilMdot / state.dataEnvrn->StdRhoAir;
     szAirRpt.InfilVolumeStdDensity = szAirRpt.InfilVdotStdDensity * state.dataHVACGlobal->TimeStepSysSec;
-    szAirRpt.VentilVdotStdDensity = szAirRpt.VentilMdot / stdAirDensity;
+    szAirRpt.VentilVdotStdDensity = szAirRpt.VentilMdot / state.dataEnvrn->StdRhoAir;
     szAirRpt.VentilVolumeStdDensity = szAirRpt.VentilVdotStdDensity * state.dataHVACGlobal->TimeStepSysSec;
 
     // Calculate using outdoor air density
@@ -2674,10 +2673,10 @@ void reportAirHeatBal2(EnergyPlusData &state,
                                         ? state.dataZoneTempPredictorCorrector->zoneHeatBalance(refDoorMixingA.ZonePtr).airHumRat
                                         : state.dataZoneTempPredictorCorrector->spaceHeatBalance(refDoorMixingA.spaceIndex).airHumRat;
                                 Real64 const AirDensity = Psychrometrics::PsyRhoAirFnPbTdbW(state,
-                                                                               state.dataEnvrn->OutBaroPress,
-                                                                               (szHeatBal.MAT + szAMAT) / 2.0,
-                                                                               (szHeatBal.airHumRat + szAHumRat) / 2.0,
-                                                                               std::string());
+                                                                                            state.dataEnvrn->OutBaroPress,
+                                                                                            (szHeatBal.MAT + szAMAT) / 2.0,
+                                                                                            (szHeatBal.airHumRat + szAHumRat) / 2.0,
+                                                                                            std::string());
                                 CpAir = Psychrometrics::PsyCpAirFnW((szHeatBal.airHumRat + szAHumRat) / 2.0);
                                 H2OHtOfVap = Psychrometrics::PsyHgAirFnWTdb((szHeatBal.airHumRat + szAHumRat) / 2.0, (szHeatBal.MAT + szAMAT) / 2.0);
                                 szAirRpt.MixVolume +=
@@ -2766,9 +2765,9 @@ void reportAirHeatBal2(EnergyPlusData &state,
             szAirRpt.OABalanceVolumeCurDensity = (szHeatBal.MDotOA / AirDensity) * state.dataHVACGlobal->TimeStepSysSec * ADSCorrectionFactor;
             szAirRpt.OABalanceAirChangeRate = szAirRpt.OABalanceVolumeCurDensity / (state.dataHVACGlobal->TimeStepSys * szVolume);
             szAirRpt.OABalanceVdotCurDensity = (szHeatBal.MDotOA / AirDensity) * ADSCorrectionFactor;
-            Real64 const stdAirDensity = state.dataEnvrn->StdRhoAir;
-            szAirRpt.OABalanceVolumeStdDensity = (szHeatBal.MDotOA / stdAirDensity) * state.dataHVACGlobal->TimeStepSysSec * ADSCorrectionFactor;
-            szAirRpt.OABalanceVdotStdDensity = (szHeatBal.MDotOA / stdAirDensity) * ADSCorrectionFactor;
+            szAirRpt.OABalanceVolumeStdDensity =
+                (szHeatBal.MDotOA / state.dataEnvrn->StdRhoAir) * state.dataHVACGlobal->TimeStepSysSec * ADSCorrectionFactor;
+            szAirRpt.OABalanceVdotStdDensity = (szHeatBal.MDotOA / state.dataEnvrn->StdRhoAir) * ADSCorrectionFactor;
             szAirRpt.OABalanceFanElec = szAirRpt.VentilFanElec;
         }
     }

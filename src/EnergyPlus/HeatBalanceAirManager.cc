@@ -911,10 +911,8 @@ void GetSimpleAirModelInputs(EnergyPlusData &state, bool &ErrorsFound) // IF err
                         ShowContinueError(state, "Infiltration Coefficients are all zero.  No Infiltration will be reported.");
                     }
                 }
-                if (!lAlphaFieldBlanks(5)) {
-                    thisInfiltration.densityBasis = static_cast<DataHeatBalance::InfVentDensityBasis>(
-                        getEnumValue(infVentDensityBasisNamesUC, cAlphaArgs(5))); // NOLINT(modernize-use-auto)
-                }
+                thisInfiltration.densityBasis = static_cast<DataHeatBalance::InfVentDensityBasis>(
+                    getEnumValue(infVentDensityBasisNamesUC, cAlphaArgs(5))); // NOLINT(modernize-use-auto)
             }
         }
     }
@@ -1799,10 +1797,8 @@ void GetSimpleAirModelInputs(EnergyPlusData &state, bool &ErrorsFound) // IF err
                     }
                 }
 
-                if (!lAlphaFieldBlanks(11)) {
-                    thisVentilation.densityBasis = static_cast<DataHeatBalance::InfVentDensityBasis>(
-                        getEnumValue(infVentDensityBasisNamesUC, cAlphaArgs(11))); // NOLINT(modernize-use-auto)
-                }
+                thisVentilation.densityBasis = static_cast<DataHeatBalance::InfVentDensityBasis>(
+                    getEnumValue(infVentDensityBasisNamesUC, cAlphaArgs(11))); // NOLINT(modernize-use-auto)
 
                 // Report variables should be added for individual VENTILATION objects, in addition to zone totals below
 

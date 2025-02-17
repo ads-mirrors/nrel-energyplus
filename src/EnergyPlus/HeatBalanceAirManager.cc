@@ -1911,6 +1911,13 @@ void GetSimpleAirModelInputs(EnergyPlusData &state, bool &ErrorsFound) // IF err
                                             OutputProcessor::StoreType::Average,
                                             thisZone.Name);
                         SetupOutputVariable(state,
+                                            "Zone Ventilation Outdoor Density Air Change Rate",
+                                            Constant::Units::ach,
+                                            state.dataHeatBal->ZnAirRpt(thisVentilation.ZonePtr).VentilAirChangeRateOutDensity,
+                                            OutputProcessor::TimeStepType::System,
+                                            OutputProcessor::StoreType::Average,
+                                            thisZone.Name);
+                        SetupOutputVariable(state,
                                             "Zone Ventilation Fan Electricity Energy",
                                             Constant::Units::J,
                                             state.dataHeatBal->ZnAirRpt(thisVentilation.ZonePtr).VentilFanElec,
@@ -2330,6 +2337,13 @@ void GetSimpleAirModelInputs(EnergyPlusData &state, bool &ErrorsFound) // IF err
                                             "Zone Ventilation Standard Density Air Change Rate",
                                             Constant::Units::ach,
                                             state.dataHeatBal->ZnAirRpt(thisVentilation.ZonePtr).VentilAirChangeRateStdDensity,
+                                            OutputProcessor::TimeStepType::System,
+                                            OutputProcessor::StoreType::Average,
+                                            thisZone.Name);
+                        SetupOutputVariable(state,
+                                            "Zone Ventilation Outdoor Density Air Change Rate",
+                                            Constant::Units::ach,
+                                            state.dataHeatBal->ZnAirRpt(thisVentilation.ZonePtr).VentilAirChangeRateOutDensity,
                                             OutputProcessor::TimeStepType::System,
                                             OutputProcessor::StoreType::Average,
                                             thisZone.Name);

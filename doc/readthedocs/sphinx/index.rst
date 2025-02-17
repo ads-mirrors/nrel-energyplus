@@ -18,6 +18,7 @@ Over time, that scope may grow much further.
    tips_and_tricks/tips_and_tricks
    acknowledgments/acknowledgments
    auxiliary-programs/auxiliary-programs
+   essentials/essentials
 
 Indices and tables
 ==================

@@ -53,7 +53,6 @@ if(EXISTS ${XELATEX})
   # add each of the documents, they have their own CMakeLists.txt files
   add_subdirectory(ems-application-guide)
   add_subdirectory(engineering-reference)
-  add_subdirectory(essentials)
   add_subdirectory(external-interfaces-application-guide)
   add_subdirectory(getting-started)
   add_subdirectory(input-output-reference)

@@ -16,6 +16,8 @@ Over time, that scope may grow much further.
    api
    schema
    tips_and_tricks/tips_and_tricks
+   acknowledgments/acknowledgments
+   auxiliary-programs/auxiliary-programs
 
 Indices and tables
 ==================

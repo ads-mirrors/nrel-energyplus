@@ -51,8 +51,6 @@ if(EXISTS ${XELATEX})
   include(cmake/doc-targets.cmake)
 
   # add each of the documents, they have their own CMakeLists.txt files
-  add_subdirectory(acknowledgments)
-  add_subdirectory(auxiliary-programs)
   add_subdirectory(ems-application-guide)
   add_subdirectory(engineering-reference)
   add_subdirectory(essentials)

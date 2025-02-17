@@ -2367,7 +2367,7 @@
 
   Output:Variable,LIVING ZONE,Zone Air Relative Humidity,Timestep;
 
-  Output:Variable,LIVING ZONE,AFN Zone Infiltration Current Density Air Change Rate,Timestep;
+  Output:Variable,LIVING ZONE,AFN Zone Infiltration Air Change Rate,Timestep;
 
   Output:Variable,*,Unitary System Fan Part Load Ratio,Timestep;
 

@@ -19,6 +19,7 @@ Over time, that scope may grow much further.
    acknowledgments/acknowledgments
    auxiliary-programs/auxiliary-programs
    essentials/essentials
+   ems-application-guide/ems-application-guide
 
 Indices and tables
 ==================

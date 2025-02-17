@@ -5943,7 +5943,7 @@
 
   Output:Variable,*,Solar Collector Sensible Heating Energy,hourly;
 
-  Output:Variable,*,Solar Collector Natural Ventilation Air Change Rate,hourly;
+  Output:Variable,*,Solar Collector Natural Ventilation Current Density Air Change Rate,hourly;
 
   Output:Variable,*,Solar Collector Natural Ventilation Mass Flow Rate,hourly;
 

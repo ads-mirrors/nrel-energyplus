@@ -546,7 +546,7 @@ namespace ThermalChimney {
                                         OutputProcessor::StoreType::Average,
                                         state.dataHeatBal->Zone(state.dataThermalChimneys->ThermalChimneySys(Loop).ZonePtr(TCZoneNum)).Name);
                     SetupOutputVariable(state,
-                                        "Zone Infiltration Air Change Rate",
+                                        "Zone Infiltration Current Density Air Change Rate",
                                         Constant::Units::ach,
                                         state.dataHeatBal->ZnAirRpt(state.dataThermalChimneys->ThermalChimneySys(Loop).ZonePtr(TCZoneNum))
                                             .InfilAirChangeRateCurDensity,

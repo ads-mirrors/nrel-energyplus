@@ -1179,7 +1179,7 @@ void GetSimpleAirModelInputs(EnergyPlusData &state, bool &ErrorsFound) // IF err
                                 OutputProcessor::StoreType::Average,
                                 state.dataHeatBal->Infiltration(Loop).Name);
             SetupOutputVariable(state,
-                                "Infiltration Air Change Rate",
+                                "Infiltration Current Density Air Change Rate",
                                 Constant::Units::ach,
                                 state.dataHeatBal->Infiltration(Loop).InfilAirChangeRateCurDensity,
                                 OutputProcessor::TimeStepType::System,
@@ -1294,7 +1294,7 @@ void GetSimpleAirModelInputs(EnergyPlusData &state, bool &ErrorsFound) // IF err
                                     OutputProcessor::StoreType::Average,
                                     state.dataHeatBal->Zone(state.dataHeatBal->Infiltration(Loop).ZonePtr).Name);
                 SetupOutputVariable(state,
-                                    "Zone Infiltration Air Change Rate",
+                                    "Zone Infiltration Current Density Air Change Rate",
                                     Constant::Units::ach,
                                     state.dataHeatBal->ZnAirRpt(state.dataHeatBal->Infiltration(Loop).ZonePtr).InfilAirChangeRateCurDensity,
                                     OutputProcessor::TimeStepType::System,
@@ -1897,7 +1897,7 @@ void GetSimpleAirModelInputs(EnergyPlusData &state, bool &ErrorsFound) // IF err
                                             OutputProcessor::StoreType::Average,
                                             thisZone.Name);
                         SetupOutputVariable(state,
-                                            "Zone Ventilation Air Change Rate",
+                                            "Zone Ventilation Current Density Air Change Rate",
                                             Constant::Units::ach,
                                             state.dataHeatBal->ZnAirRpt(thisVentilation.ZonePtr).VentilAirChangeRateCurDensity,
                                             OutputProcessor::TimeStepType::System,
@@ -2320,7 +2320,7 @@ void GetSimpleAirModelInputs(EnergyPlusData &state, bool &ErrorsFound) // IF err
                                             OutputProcessor::StoreType::Average,
                                             thisZone.Name);
                         SetupOutputVariable(state,
-                                            "Zone Ventilation Air Change Rate",
+                                            "Zone Ventilation Current Density Air Change Rate",
                                             Constant::Units::ach,
                                             state.dataHeatBal->ZnAirRpt(thisVentilation.ZonePtr).VentilAirChangeRateCurDensity,
                                             OutputProcessor::TimeStepType::System,

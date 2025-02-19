@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -49,7 +49,7 @@
 #include <ObjexxFCL/Array.functions.hh>
 #include <ObjexxFCL/Array1D.hh>
 #include <ObjexxFCL/ArrayS.functions.hh>
-#include <ObjexxFCL/Fmath.hh>
+// #include <ObjexxFCL/Fmath.hh>
 #include <ObjexxFCL/member.functions.hh>
 
 // EnergyPlus Headers
@@ -198,11 +198,10 @@ void CalcTempDistModel(EnergyPlusData &state, int const ZoneNum) // index number
 
     // Using/Aliasing
     using General::FindNumberInList;
-    using ScheduleManager::GetCurrentScheduleValue;
 
     auto &patternZoneInfo = state.dataRoomAir->AirPatternZoneInfo(ZoneNum);
     // first determine availability
-    Real64 AvailTest = GetCurrentScheduleValue(state, patternZoneInfo.AvailSchedID);
+    Real64 AvailTest = patternZoneInfo.availSched->getCurrentVal();
 
     if ((AvailTest != 1.0) || (!patternZoneInfo.IsUsed)) {
         // model not to be used. Use complete mixing method
@@ -217,7 +216,7 @@ void CalcTempDistModel(EnergyPlusData &state, int const ZoneNum) // index number
 
     } else { // choose pattern and call subroutine
 
-        int CurntPatternKey = GetCurrentScheduleValue(state, patternZoneInfo.PatternSchedID);
+        int CurntPatternKey = patternZoneInfo.patternSched->getCurrentVal();
 
         int CurPatrnID = FindNumberInList(CurntPatternKey, state.dataRoomAir->AirPattern, &TemperaturePattern::PatrnID);
 
@@ -300,7 +299,7 @@ void FigureHeightPattern(EnergyPlusData &state, int const PattrnID, int const Zo
     // treat profile as lookup table and interpolate
 
     // Using/Aliasing
-    using FluidProperties::FindArrayIndex;
+    using Fluid::FindArrayIndex;
 
     // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
 

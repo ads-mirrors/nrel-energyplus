@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -127,6 +127,7 @@ namespace OutputReportPredefined {
 
         s->pdchOpCons = newPreDefColumn(state, s->pdstOpaque, "Construction");
         s->pdchOpZone = newPreDefColumn(state, s->pdstOpaque, "Zone");
+        s->pdchOpSpace = newPreDefColumn(state, s->pdstOpaque, "Space");
         s->pdchOpRefl = newPreDefColumn(state, s->pdstOpaque, "Reflectance");
         s->pdchOpUfactFilm = newPreDefColumn(state, s->pdstOpaque, "U-Factor with Film [W/m2-K]");
         s->pdchOpUfactNoFilm = newPreDefColumn(state, s->pdstOpaque, "U-Factor no Film [W/m2-K]");
@@ -140,6 +141,7 @@ namespace OutputReportPredefined {
 
         s->pdchIntOpCons = newPreDefColumn(state, s->pdstIntOpaque, "Construction");
         s->pdchIntOpZone = newPreDefColumn(state, s->pdstIntOpaque, "Zone");
+        s->pdchIntOpSpace = newPreDefColumn(state, s->pdstIntOpaque, "Space");
         s->pdchIntOpAdjSurf = newPreDefColumn(state, s->pdstIntOpaque, "Adjacent Surface");
         s->pdchIntOpRefl = newPreDefColumn(state, s->pdstIntOpaque, "Reflectance");
         s->pdchIntOpUfactFilm = newPreDefColumn(state, s->pdstIntOpaque, "U-Factor with Film [W/m2-K]");
@@ -153,6 +155,8 @@ namespace OutputReportPredefined {
         s->pdstFen = newPreDefSubTable(state, s->pdrEnvelope, "Exterior Fenestration");
 
         s->pdchFenCons = newPreDefColumn(state, s->pdstFen, "Construction");
+        s->pdchFenZone = newPreDefColumn(state, s->pdstFen, "Zone");
+        s->pdchFenSpace = newPreDefColumn(state, s->pdstFen, "Space");
         s->pdchFenFrameDivName = newPreDefColumn(state, s->pdstFen, "Frame and Divider");
         s->pdchFenGlassAreaOf1 = newPreDefColumn(state, s->pdstFen, "Glass Area [m2]");
         s->pdchFenFrameAreaOf1 = newPreDefColumn(state, s->pdstFen, "Frame Area [m2]");
@@ -188,6 +192,8 @@ namespace OutputReportPredefined {
         s->pdstIntFen = newPreDefSubTable(state, s->pdrEnvelope, "Interior Fenestration");
 
         s->pdchIntFenCons = newPreDefColumn(state, s->pdstIntFen, "Construction");
+        s->pdchIntFenZone = newPreDefColumn(state, s->pdstIntFen, "Zone");
+        s->pdchIntFenSpace = newPreDefColumn(state, s->pdstIntFen, "Space");
         s->pdchIntFenAreaOf1 = newPreDefColumn(state, s->pdstIntFen, "Area of One Opening [m2]");
         s->pdchIntFenArea = newPreDefColumn(state, s->pdstIntFen, "Area of Openings [m2]");
         s->pdchIntFenUfact = newPreDefColumn(state, s->pdstIntFen, "Glass U-Factor [W/m2-K]");
@@ -202,6 +208,8 @@ namespace OutputReportPredefined {
 
         s->pdstDoor = newPreDefSubTable(state, s->pdrEnvelope, "Exterior Door");
         s->pdchDrCons = newPreDefColumn(state, s->pdstDoor, "Construction");
+        s->pdchDrZone = newPreDefColumn(state, s->pdstDoor, "Zone");
+        s->pdchDrSpace = newPreDefColumn(state, s->pdstDoor, "Space");
         s->pdchDrUfactFilm = newPreDefColumn(state, s->pdstDoor, "U-Factor with Film [W/m2-K]");
         s->pdchDrUfactNoFilm = newPreDefColumn(state, s->pdstDoor, "U-Factor no Film [W/m2-K]");
         s->pdchDrGrArea = newPreDefColumn(state, s->pdstDoor, "Gross Area [m2]");
@@ -210,6 +218,8 @@ namespace OutputReportPredefined {
         s->pdstIntDoor = newPreDefSubTable(state, s->pdrEnvelope, "Interior Door");
 
         s->pdchIntDrCons = newPreDefColumn(state, s->pdstIntDoor, "Construction");
+        s->pdchIntDrZone = newPreDefColumn(state, s->pdstIntDoor, "Zone");
+        s->pdchIntDrSpace = newPreDefColumn(state, s->pdstIntDoor, "Space");
         s->pdchIntDrUfactFilm = newPreDefColumn(state, s->pdstIntDoor, "U-Factor with Film [W/m2-K]");
         s->pdchIntDrUfactNoFilm = newPreDefColumn(state, s->pdstIntDoor, "U-Factor no Film [W/m2-K]");
         s->pdchIntDrGrArea = newPreDefColumn(state, s->pdstIntDoor, "Gross Area [m2]");
@@ -818,13 +828,13 @@ namespace OutputReportPredefined {
         s->pdchCoilEntHumRatIdealPeak =
             newPreDefColumn(state, s->pdstCoilSummaryCoilSelection, "Coil Entering Air Humidity Ratio at Ideal Loads Peak [kgWater/kgDryAir]");
         s->pdchCoilEntEnthalpyIdealPeak =
-            newPreDefColumn(state, s->pdstCoilSummaryCoilSelection, "Coil Entering Air Enthalpy at Ideal Loads Peak [J/KG-K]");
+            newPreDefColumn(state, s->pdstCoilSummaryCoilSelection, "Coil Entering Air Enthalpy at Ideal Loads Peak [J/kg]");
         s->pdchCoilLvgDryBulbIdealPeak = newPreDefColumn(state, s->pdstCoilSummaryCoilSelection, "Coil Leaving Air Drybulb at Ideal Loads Peak [C]");
         s->pdchCoilLvgWetBulbIdealPeak = newPreDefColumn(state, s->pdstCoilSummaryCoilSelection, "Coil Leaving Air Wetbulb at Ideal Loads Peak [C]");
         s->pdchCoilLvgHumRatIdealPeak =
             newPreDefColumn(state, s->pdstCoilSummaryCoilSelection, "Coil Leaving Air Humidity Ratio at Ideal Loads Peak [kgWater/kgDryAir]");
         s->pdchCoilLvgEnthalpyIdealPeak =
-            newPreDefColumn(state, s->pdstCoilSummaryCoilSelection, "Coil Leaving Air Enthalpy at Ideal Loads Peak [J/KG-K]");
+            newPreDefColumn(state, s->pdstCoilSummaryCoilSelection, "Coil Leaving Air Enthalpy at Ideal Loads Peak [J/kg]");
         s->pdchCoilWaterMassFlowIdealPeak =
             newPreDefColumn(state, s->pdstCoilSummaryCoilSelection, "Coil Plant Fluid Mass Flow Rate at Ideal Loads Peak [kg/s]");
         s->pdchCoilEntWaterTempIdealPeak =
@@ -863,13 +873,13 @@ namespace OutputReportPredefined {
         s->pdchCoilRatedEntHumRat =
             newPreDefColumn(state, s->pdstCoilSummaryCoilSelection, "Coil Entering Air Humidity Ratio at Rating Conditions [kgWater/kgDryAir]");
         s->pdchCoilRatedEntEnthalpy =
-            newPreDefColumn(state, s->pdstCoilSummaryCoilSelection, "Coil Entering Air Enthalpy at Rating Conditions [J/KG-K]");
+            newPreDefColumn(state, s->pdstCoilSummaryCoilSelection, "Coil Entering Air Enthalpy at Rating Conditions [J/kg]");
         s->pdchCoilRatedLvgDryBulb = newPreDefColumn(state, s->pdstCoilSummaryCoilSelection, "Coil Leaving Air Drybulb at Rating Conditions [C]");
         s->pdchCoilRatedLvgWetBulb = newPreDefColumn(state, s->pdstCoilSummaryCoilSelection, "Coil Leaving Air Wetbulb at Rating Conditions [C]");
         s->pdchCoilRatedLvgHumRat =
             newPreDefColumn(state, s->pdstCoilSummaryCoilSelection, "Coil Leaving Air Humidity Ratio at Rating Conditions [kgWater/kgDryAir]");
         s->pdchCoilRatedLvgEnthalpy =
-            newPreDefColumn(state, s->pdstCoilSummaryCoilSelection, "Coil Leaving Air Enthalpy at Rating Conditions [J/KG-K]");
+            newPreDefColumn(state, s->pdstCoilSummaryCoilSelection, "Coil Leaving Air Enthalpy at Rating Conditions [J/kg]");
 
         // Std 229 New Table "Coil Connections"
         s->pdstCoilConnections = newPreDefSubTable(state, s->pdrCoilSizingDetailsTable, "Coil Connections");

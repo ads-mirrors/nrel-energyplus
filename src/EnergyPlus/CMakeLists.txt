@@ -265,6 +265,8 @@ set(SRC
     EvaporativeFluidCoolers.hh
     ExhaustAirSystemManager.cc
     ExhaustAirSystemManager.hh
+    ExtendedHeatIndex.cc
+    ExtendedHeatIndex.hh
     ExteriorEnergyUse.cc
     ExteriorEnergyUse.hh
     ExternalInterface.cc
@@ -1159,6 +1161,13 @@ if(BUILD_TESTING)
         TIMEOUT 10  # This used to timeout! and we expect it NOT to
     )
   endif()
+
+  if(Pytest_AVAILABLE)
+    add_test(NAME energyplus.TabularXML_IsValid
+      COMMAND ${Python_EXECUTABLE} -m pytest --verbose --ep-cli-path $<TARGET_FILE:energyplus> "${PROJECT_SOURCE_DIR}/scripts/pytests/test_xml_output.py"
+    )
+  endif()
+
 endif()
 
 if(UNIX AND NOT APPLE)

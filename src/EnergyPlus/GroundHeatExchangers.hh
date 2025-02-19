@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -58,7 +58,7 @@
 #include <EnergyPlus/Data/BaseData.hh>
 #include <EnergyPlus/DataGlobals.hh>
 #include <EnergyPlus/EnergyPlus.hh>
-#include <EnergyPlus/GroundTemperatureModeling/GroundTemperatureModelManager.hh>
+#include <EnergyPlus/GroundTemperatureModeling/BaseGroundTemperatureModel.hh>
 #include <EnergyPlus/Plant/Enums.hh>
 #include <EnergyPlus/Plant/PlantLocation.hh>
 #include <EnergyPlus/PlantComponent.hh>
@@ -69,9 +69,6 @@ namespace EnergyPlus {
 struct EnergyPlusData;
 
 namespace GroundHeatExchangers {
-
-    // Using/Aliasing
-    using namespace GroundTemperatureManager;
 
     struct ThermophysicalProps // LCOV_EXCL_LINE
     {
@@ -249,11 +246,11 @@ namespace GroundHeatExchangers {
         bool myEnvrnFlag;
         bool gFunctionsExist;
         Real64 lastQnSubHr;
-        Real64 HXResistance;                   // The thermal resistance of the GHX, (K per W/m)
-        Real64 totalTubeLength;                // The total length of pipe. NumBoreholes * BoreholeDepth OR Pi * Dcoil * NumCoils
-        Real64 timeSS;                         // Steady state time
-        Real64 timeSSFactor;                   // Steady state time factor for calculation
-        BaseGroundTempsModel *groundTempModel; // non-owning pointer
+        Real64 HXResistance;                               // The thermal resistance of the GHX, (K per W/m)
+        Real64 totalTubeLength;                            // The total length of pipe. NumBoreholes * BoreholeDepth OR Pi * Dcoil * NumCoils
+        Real64 timeSS;                                     // Steady state time
+        Real64 timeSSFactor;                               // Steady state time factor for calculation
+        GroundTemp::BaseGroundTempsModel *groundTempModel; // non-owning pointer
 
         // some statics pulled out into member variables
         bool firstTime;
@@ -497,7 +494,7 @@ namespace GroundHeatExchangers {
 
     std::shared_ptr<GLHEVertArray> GetVertArray(EnergyPlusData &state, std::string const &objectName);
 
-    std::vector<Real64> TDMA(std::vector<Real64> a, std::vector<Real64> b, std::vector<Real64> c, std::vector<Real64> d);
+    std::vector<Real64> TDMA(std::vector<Real64> const &a, std::vector<Real64> const &b, std::vector<Real64> &c, std::vector<Real64> &d);
 
 } // namespace GroundHeatExchangers
 
@@ -529,6 +526,10 @@ struct GroundHeatExchangerData : BaseGlobalStruct
     std::vector<std::shared_ptr<GroundHeatExchangers::GLHEVertProps>> vertPropsVector;
     std::vector<std::shared_ptr<GroundHeatExchangers::GLHEResponseFactors>> responseFactorsVector;
     std::vector<std::shared_ptr<GroundHeatExchangers::GLHEVertSingle>> singleBoreholesVector;
+
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
 
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {

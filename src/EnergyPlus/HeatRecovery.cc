@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -249,6 +249,7 @@ namespace HeatRecovery {
         int IOStatus;                                                      // Used in GetObjectItem
         bool ErrorsFound(false);                                           // Set to true if errors in input, fatal at end of routine
         constexpr std::string_view RoutineName = "GetHeatRecoveryInput: "; // include trailing blank space
+        constexpr std::string_view routineName = "GetHeatRecoveryInput";
         auto &cCurrentModuleObject = state.dataIPShortCut->cCurrentModuleObject;
 
         int NumAirToAirPlateExchs = state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, "HeatExchanger:AirToAir:FlatPlate");
@@ -283,6 +284,8 @@ namespace HeatRecovery {
                                                                      state.dataIPShortCut->lAlphaFieldBlanks,
                                                                      state.dataIPShortCut->cAlphaFieldNames,
                                                                      state.dataIPShortCut->cNumericFieldNames);
+
+            ErrorObjectHeader eoh{routineName, cCurrentModuleObject, state.dataIPShortCut->cAlphaArgs(1)};
             int const ExchNum = ExchIndex;
             auto &thisExchanger = state.dataHeatRecovery->ExchCond(ExchNum);
             thisExchanger.NumericFieldNames.allocate(NumNumbers);
@@ -298,20 +301,10 @@ namespace HeatRecovery {
             thisExchanger.Name = state.dataIPShortCut->cAlphaArgs(1);
             thisExchanger.type = HVAC::HXType::AirToAir_FlatPlate;
             if (state.dataIPShortCut->lAlphaFieldBlanks(2)) {
-                thisExchanger.SchedPtr = ScheduleManager::ScheduleAlwaysOn;
-            } else {
-                thisExchanger.SchedPtr = ScheduleManager::GetScheduleIndex(state, state.dataIPShortCut->cAlphaArgs(2));
-                if (thisExchanger.SchedPtr == 0) {
-                    ShowSevereError(state,
-                                    format("{}{}: invalid {} entered ={} for {}={}",
-                                           RoutineName,
-                                           cCurrentModuleObject,
-                                           state.dataIPShortCut->cAlphaFieldNames(2),
-                                           state.dataIPShortCut->cAlphaArgs(2),
-                                           state.dataIPShortCut->cAlphaFieldNames(1),
-                                           state.dataIPShortCut->cAlphaArgs(1)));
-                    ErrorsFound = true;
-                }
+                thisExchanger.availSched = Sched::GetScheduleAlwaysOn(state);
+            } else if ((thisExchanger.availSched = Sched::GetSchedule(state, state.dataIPShortCut->cAlphaArgs(2))) == nullptr) {
+                ShowSevereItemNotFound(state, eoh, state.dataIPShortCut->cAlphaFieldNames(2), state.dataIPShortCut->cAlphaArgs(2));
+                ErrorsFound = true;
             }
 
             constexpr std::array<std::string_view, static_cast<int>(HXConfiguration::Num)> hxConfigurationNamesUC = {
@@ -400,6 +393,8 @@ namespace HeatRecovery {
                                                                      state.dataIPShortCut->lAlphaFieldBlanks,
                                                                      state.dataIPShortCut->cAlphaFieldNames,
                                                                      state.dataIPShortCut->cNumericFieldNames);
+
+            ErrorObjectHeader eoh{routineName, cCurrentModuleObject, state.dataIPShortCut->cAlphaArgs(1)};
             int const ExchNum = ExchIndex + NumAirToAirPlateExchs;
             auto &thisExchanger = state.dataHeatRecovery->ExchCond(ExchNum);
             thisExchanger.NumericFieldNames.allocate(NumNumbers);
@@ -415,20 +410,10 @@ namespace HeatRecovery {
             thisExchanger.Name = state.dataIPShortCut->cAlphaArgs(1);
             thisExchanger.type = HVAC::HXType::AirToAir_Generic;
             if (state.dataIPShortCut->lAlphaFieldBlanks(2)) {
-                thisExchanger.SchedPtr = ScheduleManager::ScheduleAlwaysOn;
-            } else {
-                thisExchanger.SchedPtr = ScheduleManager::GetScheduleIndex(state, state.dataIPShortCut->cAlphaArgs(2));
-                if (thisExchanger.SchedPtr == 0) {
-                    ShowSevereError(state,
-                                    format("{}{}: invalid {} entered ={} for {}={}",
-                                           RoutineName,
-                                           cCurrentModuleObject,
-                                           state.dataIPShortCut->cAlphaFieldNames(2),
-                                           state.dataIPShortCut->cAlphaArgs(2),
-                                           state.dataIPShortCut->cAlphaFieldNames(1),
-                                           thisExchanger.Name));
-                    ErrorsFound = true;
-                }
+                thisExchanger.availSched = Sched::GetScheduleAlwaysOn(state);
+            } else if ((thisExchanger.availSched = Sched::GetSchedule(state, state.dataIPShortCut->cAlphaArgs(2))) == nullptr) {
+                ShowSevereItemNotFound(state, eoh, state.dataIPShortCut->cAlphaFieldNames(2), state.dataIPShortCut->cAlphaArgs(2));
+                ErrorsFound = true;
             }
             thisExchanger.NomSupAirVolFlow = state.dataIPShortCut->rNumericArgs(1);
             thisExchanger.HeatEffectSensible100 = state.dataIPShortCut->rNumericArgs(2);
@@ -550,6 +535,9 @@ namespace HeatRecovery {
                                                                      state.dataIPShortCut->lAlphaFieldBlanks,
                                                                      state.dataIPShortCut->cAlphaFieldNames,
                                                                      state.dataIPShortCut->cNumericFieldNames);
+
+            ErrorObjectHeader eoh{routineName, cCurrentModuleObject, state.dataIPShortCut->cAlphaArgs(1)};
+
             int const ExchNum = ExchIndex + NumAirToAirPlateExchs + NumAirToAirGenericExchs;
             auto &thisExchanger = state.dataHeatRecovery->ExchCond(ExchNum);
             thisExchanger.NumericFieldNames.allocate(NumNumbers);
@@ -565,20 +553,10 @@ namespace HeatRecovery {
             thisExchanger.Name = state.dataIPShortCut->cAlphaArgs(1);
             thisExchanger.type = HVAC::HXType::Desiccant_Balanced;
             if (state.dataIPShortCut->lAlphaFieldBlanks(2)) {
-                thisExchanger.SchedPtr = ScheduleManager::ScheduleAlwaysOn;
-            } else {
-                thisExchanger.SchedPtr = ScheduleManager::GetScheduleIndex(state, state.dataIPShortCut->cAlphaArgs(2));
-                if (thisExchanger.SchedPtr == 0) {
-                    ShowSevereError(state,
-                                    format("{}{}: invalid {} entered ={} for {}={}",
-                                           RoutineName,
-                                           cCurrentModuleObject,
-                                           state.dataIPShortCut->cAlphaFieldNames(2),
-                                           state.dataIPShortCut->cAlphaArgs(2),
-                                           state.dataIPShortCut->cAlphaFieldNames(1),
-                                           thisExchanger.Name));
-                    ErrorsFound = true;
-                }
+                thisExchanger.availSched = Sched::GetScheduleAlwaysOn(state);
+            } else if ((thisExchanger.availSched = Sched::GetSchedule(state, state.dataIPShortCut->cAlphaArgs(2))) == nullptr) {
+                ShowSevereItemNotFound(state, eoh, state.dataIPShortCut->cAlphaFieldNames(2), state.dataIPShortCut->cAlphaArgs(2));
+                ErrorsFound = true;
             }
             // desiccant HX's usually refer to process and regeneration air streams
             // In this module, Sup = Regeneration nodes and Sec = Process nodes
@@ -1502,8 +1480,8 @@ namespace HeatRecovery {
                     state.dataHeatRecovery->FullLoadOutAirHumRat = state.dataVariableSpeedCoils->VarSpeedCoil(CompanionCoilIndex).OutletAirHumRat;
                 } else if (CompanionCoilType_Num == HVAC::CoilDX_Cooling) {
                     // Use the new coil option:
-                    state.dataHeatRecovery->FullLoadOutAirTemp = state.dataCoilCooingDX->coilCoolingDXs[CompanionCoilIndex].outletAirDryBulbTemp;
-                    state.dataHeatRecovery->FullLoadOutAirHumRat = state.dataCoilCooingDX->coilCoolingDXs[CompanionCoilIndex].outletAirHumRat;
+                    state.dataHeatRecovery->FullLoadOutAirTemp = state.dataCoilCoolingDX->coilCoolingDXs[CompanionCoilIndex].outletAirDryBulbTemp;
+                    state.dataHeatRecovery->FullLoadOutAirHumRat = state.dataCoilCoolingDX->coilCoolingDXs[CompanionCoilIndex].outletAirHumRat;
                 } else {
                     //
                 }
@@ -1745,7 +1723,7 @@ namespace HeatRecovery {
             UnitSecMassFlow = min(this->NomSecAirMassFlow, this->SecInMassFlow);
         }
 
-        if (ScheduleManager::GetCurrentScheduleValue(state, this->SchedPtr) <= 0.0) UnitOn = false;
+        if (this->availSched->getCurrentVal() <= 0.0) UnitOn = false;
         if (this->SupInMassFlow <= HVAC::SmallMassFlow) UnitOn = false;
         if (this->SecInMassFlow <= HVAC::SmallMassFlow) UnitOn = false;
         if (!HXUnitOn) UnitOn = false;
@@ -1972,7 +1950,7 @@ namespace HeatRecovery {
             this->SecBypassMassFlow = 0.0;
         }
         // Unit is scheduled OFF, so bypass heat exchange calcs
-        if (ScheduleManager::GetCurrentScheduleValue(state, this->SchedPtr) <= 0.0) UnitOn = false;
+        if (this->availSched->getCurrentVal() <= 0.0) UnitOn = false;
         //! Economizer is active, so bypass heat exchange calcs. This applies to both flat plate and rotary HX's
         if ((EconomizerActiveFlag || HighHumCtrlActiveFlag) && this->EconoLockOut) {
             UnitOn = false;
@@ -2493,7 +2471,7 @@ namespace HeatRecovery {
         }
 
         // Unit is scheduled OFF, so bypass heat exchange calcs
-        if (ScheduleManager::GetCurrentScheduleValue(state, this->SchedPtr) <= 0.0) UnitOn = false;
+        if (this->availSched->getCurrentVal() <= 0.0) UnitOn = false;
         // Determine if unit is ON or OFF based on air mass flow through the supply and secondary airstreams and operation flag
         if (this->SupInMassFlow <= HVAC::SmallMassFlow) UnitOn = false;
         if (this->SecInMassFlow <= HVAC::SmallMassFlow) UnitOn = false;
@@ -2631,7 +2609,7 @@ namespace HeatRecovery {
 
             } else if (CompanionCoilType > 0 && CompanionCoilIndex > -1) {
                 if (CompanionCoilType == HVAC::CoilDX_Cooling) {
-                    HXPartLoadRatio = state.dataCoilCooingDX->coilCoolingDXs[CompanionCoilIndex].partLoadRatioReport;
+                    HXPartLoadRatio = state.dataCoilCoolingDX->coilCoolingDXs[CompanionCoilIndex].partLoadRatioReport;
                 } else if (CompanionCoilType == HVAC::Coil_CoolingAirToAirVariableSpeed) {
                     HXPartLoadRatio = state.dataVariableSpeedCoils->VarSpeedCoil(CompanionCoilIndex).PartLoadRatio;
                 } else {
@@ -3133,7 +3111,7 @@ namespace HeatRecovery {
             } break;
             case HXConfiguration::CrossFlowBothUnmixed: { // CROSS FLOW BOTH UNMIXED
                 Temp = Z * std::pow(NTU, -0.22);
-                Eps = 1.0 - std::exp((std::exp(-NTU * Temp) - 1.0) / Temp);
+                Eps = 1.0 - std::exp(std::expm1(-NTU * Temp) / Temp);
             } break;
             case HXConfiguration::CrossFlowOther: { // CROSS FLOW, Cmax MIXED, Cmin UNMIXED
                 Eps = (1.0 - std::exp(-Z * (1.0 - std::exp(-NTU)))) / Z;
@@ -3221,13 +3199,13 @@ namespace HeatRecovery {
                 }
             } break;
             case HXConfiguration::ParallelFlow: { // PARALLEL FLOW
-                NTU = -std::log(-Eps - Eps * Z + 1.0) / (Z + 1.0);
+                NTU = -std::log1p(-Eps - Eps * Z) / (Z + 1.0);
             } break;
             case HXConfiguration::CrossFlowBothUnmixed: { // CROSS FLOW BOTH UNMIXED
                 NTU = GetNTUforCrossFlowBothUnmixed(state, Eps, Z);
             } break;
             case HXConfiguration::CrossFlowOther: { // CROSS FLOW, Cmax MIXED, Cmin UNMIXED
-                NTU = -std::log(1.0 + std::log(1.0 - Eps * Z) / Z);
+                NTU = -std::log1p(std::log(1.0 - Eps * Z) / Z);
             } break;
             default: {
                 ShowFatalError(state, format("HeatRecovery: Illegal flow arrangement in CalculateNTUfromEpsAndZ, Value={}", FlowArr));
@@ -3273,7 +3251,7 @@ namespace HeatRecovery {
         int SolFla;                  // Flag of solver
         Real64 constexpr NTU0(0.0);  // lower bound for NTU
         Real64 constexpr NTU1(50.0); // upper bound for NTU
-        auto f = [Eps, Z](Real64 const NTU) { return 1.0 - std::exp((std::exp(-std::pow(NTU, 0.78) * Z) - 1.0) / Z * std::pow(NTU, 0.22)) - Eps; };
+        auto f = [Eps, Z](Real64 const NTU) { return 1.0 - std::exp(std::expm1(-std::pow(NTU, 0.78) * Z) / Z * std::pow(NTU, 0.22)) - Eps; };
         General::SolveRoot(state, Acc, MaxIte, SolFla, NTU, f, NTU0, NTU1);
 
         if (SolFla == -2) {

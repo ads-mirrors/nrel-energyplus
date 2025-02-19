@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -214,6 +214,8 @@ void GetEvapInput(EnergyPlusData &state)
     // METHODOLOGY EMPLOYED:
     // Uses the status flags to trigger events.
 
+    static constexpr std::string_view routineName = "GetEvapInput";
+
     // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
     int NumDirectEvapCool;                // The number of Direct CelDek EvapCooler in this simulation
     int NumDryInDirectEvapCool;           // The number of dry indirect evap coolers
@@ -264,25 +266,25 @@ void GetEvapInput(EnergyPlusData &state)
                                                                  state.dataIPShortCut->lAlphaFieldBlanks,
                                                                  state.dataIPShortCut->cAlphaFieldNames,
                                                                  state.dataIPShortCut->cNumericFieldNames);
+
+        ErrorObjectHeader eoh{routineName, cCurrentModuleObject, state.dataIPShortCut->cAlphaArgs(1)};
+
         GlobalNames::VerifyUniqueInterObjectName(state,
                                                  UniqueEvapCondNames,
                                                  state.dataIPShortCut->cAlphaArgs(1),
                                                  cCurrentModuleObject,
                                                  state.dataIPShortCut->cAlphaFieldNames(1),
                                                  ErrorsFound);
+
         thisEvapCooler.Name = state.dataIPShortCut->cAlphaArgs(1);
         thisEvapCooler.evapCoolerType = EvapCoolerType::DirectCELDEKPAD;
 
         thisEvapCooler.Schedule = state.dataIPShortCut->cAlphaArgs(2);
         if (state.dataIPShortCut->lAlphaFieldBlanks(2)) {
-            thisEvapCooler.SchedPtr = ScheduleManager::ScheduleAlwaysOn;
-        } else {
-            thisEvapCooler.SchedPtr = ScheduleManager::GetScheduleIndex(state, state.dataIPShortCut->cAlphaArgs(2));
-            if (thisEvapCooler.SchedPtr == 0) {
-                ShowSevereError(state, format("Invalid {}={}", state.dataIPShortCut->cAlphaFieldNames(2), state.dataIPShortCut->cAlphaArgs(2)));
-                ShowContinueError(state, format("Entered in {}={}", cCurrentModuleObject, state.dataIPShortCut->cAlphaArgs(1)));
-                ErrorsFound = true;
-            }
+            thisEvapCooler.availSched = Sched::GetScheduleAlwaysOn(state);
+        } else if ((thisEvapCooler.availSched = Sched::GetSchedule(state, state.dataIPShortCut->cAlphaArgs(2))) == nullptr) {
+            ShowSevereItemNotFound(state, eoh, state.dataIPShortCut->cAlphaFieldNames(2), state.dataIPShortCut->cAlphaArgs(2));
+            ErrorsFound = true;
         }
 
         thisEvapCooler.InletNode = GetOnlySingleNode(state,
@@ -363,6 +365,9 @@ void GetEvapInput(EnergyPlusData &state)
                                                                  state.dataIPShortCut->lAlphaFieldBlanks,
                                                                  state.dataIPShortCut->cAlphaFieldNames,
                                                                  state.dataIPShortCut->cNumericFieldNames);
+
+        ErrorObjectHeader eoh{routineName, cCurrentModuleObject, state.dataIPShortCut->cAlphaArgs(1)};
+
         GlobalNames::VerifyUniqueInterObjectName(state,
                                                  UniqueEvapCondNames,
                                                  state.dataIPShortCut->cAlphaArgs(1),
@@ -374,14 +379,10 @@ void GetEvapInput(EnergyPlusData &state)
 
         thisEvapCooler.Schedule = state.dataIPShortCut->cAlphaArgs(2);
         if (state.dataIPShortCut->lAlphaFieldBlanks(2)) {
-            thisEvapCooler.SchedPtr = ScheduleManager::ScheduleAlwaysOn;
-        } else {
-            thisEvapCooler.SchedPtr = ScheduleManager::GetScheduleIndex(state, state.dataIPShortCut->cAlphaArgs(2));
-            if (thisEvapCooler.SchedPtr == 0) {
-                ShowSevereError(state, format("Invalid {}={}", state.dataIPShortCut->cAlphaFieldNames(2), state.dataIPShortCut->cAlphaArgs(2)));
-                ShowContinueError(state, format("Entered in {}={}", cCurrentModuleObject, state.dataIPShortCut->cAlphaArgs(1)));
-                ErrorsFound = true;
-            }
+            thisEvapCooler.availSched = Sched::GetScheduleAlwaysOn(state);
+        } else if ((thisEvapCooler.availSched = Sched::GetSchedule(state, state.dataIPShortCut->cAlphaArgs(2))) == nullptr) {
+            ShowSevereItemNotFound(state, eoh, state.dataIPShortCut->cAlphaFieldNames(2), state.dataIPShortCut->cAlphaArgs(2));
+            ErrorsFound = true;
         }
 
         thisEvapCooler.InletNode = GetOnlySingleNode(state,
@@ -494,6 +495,9 @@ void GetEvapInput(EnergyPlusData &state)
                                                                  state.dataIPShortCut->lAlphaFieldBlanks,
                                                                  state.dataIPShortCut->cAlphaFieldNames,
                                                                  state.dataIPShortCut->cNumericFieldNames);
+
+        ErrorObjectHeader eoh{routineName, cCurrentModuleObject, state.dataIPShortCut->cAlphaArgs(1)};
+
         GlobalNames::VerifyUniqueInterObjectName(state,
                                                  UniqueEvapCondNames,
                                                  state.dataIPShortCut->cAlphaArgs(1),
@@ -505,14 +509,10 @@ void GetEvapInput(EnergyPlusData &state)
 
         thisEvapCooler.Schedule = state.dataIPShortCut->cAlphaArgs(2);
         if (state.dataIPShortCut->lAlphaFieldBlanks(2)) {
-            thisEvapCooler.SchedPtr = ScheduleManager::ScheduleAlwaysOn;
-        } else {
-            thisEvapCooler.SchedPtr = ScheduleManager::GetScheduleIndex(state, state.dataIPShortCut->cAlphaArgs(2));
-            if (thisEvapCooler.SchedPtr == 0) {
-                ShowSevereError(state, format("Invalid {}={}", state.dataIPShortCut->cAlphaFieldNames(2), state.dataIPShortCut->cAlphaArgs(2)));
-                ShowContinueError(state, format("Entered in {}={}", cCurrentModuleObject, state.dataIPShortCut->cAlphaArgs(1)));
-                ErrorsFound = true;
-            }
+            thisEvapCooler.availSched = Sched::GetScheduleAlwaysOn(state);
+        } else if ((thisEvapCooler.availSched = Sched::GetSchedule(state, state.dataIPShortCut->cAlphaArgs(2))) == nullptr) {
+            ShowSevereItemNotFound(state, eoh, state.dataIPShortCut->cAlphaFieldNames(2), state.dataIPShortCut->cAlphaArgs(2));
+            ErrorsFound = true;
         }
 
         thisEvapCooler.InletNode = GetOnlySingleNode(state,
@@ -616,6 +616,8 @@ void GetEvapInput(EnergyPlusData &state)
                                                                  state.dataIPShortCut->lAlphaFieldBlanks,
                                                                  state.dataIPShortCut->cAlphaFieldNames,
                                                                  state.dataIPShortCut->cNumericFieldNames);
+
+        ErrorObjectHeader eoh{routineName, cCurrentModuleObject, state.dataIPShortCut->cAlphaArgs(1)};
         GlobalNames::VerifyUniqueInterObjectName(state,
                                                  UniqueEvapCondNames,
                                                  state.dataIPShortCut->cAlphaArgs(1),
@@ -627,14 +629,10 @@ void GetEvapInput(EnergyPlusData &state)
 
         thisEvapCooler.Schedule = state.dataIPShortCut->cAlphaArgs(2);
         if (state.dataIPShortCut->lAlphaFieldBlanks(2)) {
-            thisEvapCooler.SchedPtr = ScheduleManager::ScheduleAlwaysOn;
-        } else {
-            thisEvapCooler.SchedPtr = ScheduleManager::GetScheduleIndex(state, state.dataIPShortCut->cAlphaArgs(2));
-            if (thisEvapCooler.SchedPtr == 0) {
-                ShowSevereError(state, format("Invalid {}={}", state.dataIPShortCut->cAlphaFieldNames(2), state.dataIPShortCut->cAlphaArgs(2)));
-                ShowContinueError(state, format("Entered in {}={}", cCurrentModuleObject, state.dataIPShortCut->cAlphaArgs(1)));
-                ErrorsFound = true;
-            }
+            thisEvapCooler.availSched = Sched::GetScheduleAlwaysOn(state);
+        } else if ((thisEvapCooler.availSched = Sched::GetSchedule(state, state.dataIPShortCut->cAlphaArgs(2))) == nullptr) {
+            ShowSevereItemNotFound(state, eoh, state.dataIPShortCut->cAlphaFieldNames(2), state.dataIPShortCut->cAlphaArgs(2));
+            ErrorsFound = true;
         }
 
         thisEvapCooler.InletNode = GetOnlySingleNode(state,
@@ -818,6 +816,8 @@ void GetEvapInput(EnergyPlusData &state)
                                                                  state.dataIPShortCut->lAlphaFieldBlanks,
                                                                  state.dataIPShortCut->cAlphaFieldNames,
                                                                  state.dataIPShortCut->cNumericFieldNames);
+
+        ErrorObjectHeader eoh{routineName, cCurrentModuleObject, state.dataIPShortCut->cAlphaArgs(1)};
         GlobalNames::VerifyUniqueInterObjectName(state,
                                                  UniqueEvapCondNames,
                                                  state.dataIPShortCut->cAlphaArgs(1),
@@ -829,14 +829,10 @@ void GetEvapInput(EnergyPlusData &state)
 
         thisEvapCooler.Schedule = state.dataIPShortCut->cAlphaArgs(2);
         if (state.dataIPShortCut->lAlphaFieldBlanks(2)) {
-            thisEvapCooler.SchedPtr = ScheduleManager::ScheduleAlwaysOn;
-        } else {
-            thisEvapCooler.SchedPtr = ScheduleManager::GetScheduleIndex(state, state.dataIPShortCut->cAlphaArgs(2));
-            if (thisEvapCooler.SchedPtr == 0) {
-                ShowSevereError(state, format("Invalid {}={}", state.dataIPShortCut->cAlphaFieldNames(2), state.dataIPShortCut->cAlphaArgs(2)));
-                ShowContinueError(state, format("Entered in {}={}", cCurrentModuleObject, state.dataIPShortCut->cAlphaArgs(1)));
-                ErrorsFound = true;
-            }
+            thisEvapCooler.availSched = Sched::GetScheduleAlwaysOn(state);
+        } else if ((thisEvapCooler.availSched = Sched::GetSchedule(state, state.dataIPShortCut->cAlphaArgs(2))) == nullptr) {
+            ShowSevereItemNotFound(state, eoh, state.dataIPShortCut->cAlphaFieldNames(2), state.dataIPShortCut->cAlphaArgs(2));
+            ErrorsFound = true;
         }
 
         thisEvapCooler.InletNode = GetOnlySingleNode(state,
@@ -1691,7 +1687,7 @@ void CalcDirectEvapCooler(EnergyPlusData &state, int EvapCoolNum, Real64 const P
 
     // If the Evaporative Cooler  is operating there should be some mass flow rate
     //  Also the evap cooler has to be scheduled to be available
-    if ((thisEvapCond.InletMassFlowRate > 0.0) && (ScheduleManager::GetCurrentScheduleValue(state, thisEvapCond.SchedPtr) > 0.0)) {
+    if ((thisEvapCond.InletMassFlowRate > 0.0) && (thisEvapCond.availSched->getCurrentVal() > 0.0)) {
 
         PadDepth = thisEvapCond.PadDepth;
         //******************************************************************************
@@ -1797,7 +1793,7 @@ void CalcDryIndirectEvapCooler(EnergyPlusData &state, int EvapCoolNum, Real64 co
 
     // If the Evaporative Cooler  is operating there should be some mass flow rate
     //  Also the evap cooler has to be scheduled to be available
-    if ((thisEvapCond.InletMassFlowRate > 0.0) && (ScheduleManager::GetCurrentScheduleValue(state, thisEvapCond.SchedPtr) > 0.0)) {
+    if ((thisEvapCond.InletMassFlowRate > 0.0) && (thisEvapCond.availSched->getCurrentVal() > 0.0)) {
 
         PadDepth = thisEvapCond.IndirectPadDepth;
         //******************************************************************************
@@ -1933,7 +1929,7 @@ void CalcWetIndirectEvapCooler(EnergyPlusData &state, int EvapCoolNum, Real64 co
 
     // If the Evaporative Cooler  is operating there should be some mass flow rate
     //  Also the evap cooler has to be scheduled to be available
-    if ((thisEvapCond.InletMassFlowRate > 0.0) && (ScheduleManager::GetCurrentScheduleValue(state, thisEvapCond.SchedPtr) > 0.0)) {
+    if ((thisEvapCond.InletMassFlowRate > 0.0) && (thisEvapCond.availSched->getCurrentVal() > 0.0)) {
 
         //******************************************************************************
         //   THIS SUBROUTINE WILL CACULATE THE TEMPERATURE OF THE LEAVING AIR DRY BULB
@@ -2064,8 +2060,7 @@ void CalcResearchSpecialPartLoad(EnergyPlusData &state, int EvapCoolNum)
     Real64 PartLoadFrac = 0.0;
 
     // If Evap Cooler runs with a cooling load then set PartLoadFrac on Cooling System and the Mass Flow
-    if ((ScheduleManager::GetCurrentScheduleValue(state, thisEvapCond.SchedPtr) > 0.0) &&
-        (state.dataLoopNodes->Node(InletNode).MassFlowRate > MinAirMassFlow) &&
+    if ((thisEvapCond.availSched->getCurrentVal() > 0.0) && (state.dataLoopNodes->Node(InletNode).MassFlowRate > MinAirMassFlow) &&
         (state.dataLoopNodes->Node(InletNode).Temp > state.dataLoopNodes->Node(ControlNode).TempSetPoint) &&
         (std::abs(state.dataLoopNodes->Node(InletNode).Temp - DesOutTemp) > HVAC::TempControlTol)) {
 
@@ -2173,7 +2168,7 @@ void CalcIndirectResearchSpecialEvapCooler(EnergyPlusData &state, int const Evap
 
     // If the Evaporative Cooler  is operating there should be some mass flow rate
     //  Also the evap cooler has to be scheduled to be available
-    if ((thisEvapCond.InletMassFlowRate > 0.0) && (ScheduleManager::GetCurrentScheduleValue(state, thisEvapCond.SchedPtr) > 0.0)) {
+    if ((thisEvapCond.InletMassFlowRate > 0.0) && (thisEvapCond.availSched->getCurrentVal() > 0.0)) {
 
         //******************************************************************************
         //   THIS SUBROUTINE WILL CACULATE THE TEMPERATURE OF THE LEAVING AIR DRY BULB
@@ -3092,8 +3087,7 @@ void CalcDirectResearchSpecialEvapCooler(EnergyPlusData &state, int const EvapCo
 
     // If the Evaporative Cooler  is operating there should be some mass flow rate
     //  Also the evap cooler has to be scheduled to be available
-    if ((thisEvapCond.InletMassFlowRate > 0.0) && (ScheduleManager::GetCurrentScheduleValue(state, thisEvapCond.SchedPtr) > 0.0) &&
-        EvapCoolerOperatingLimitFlag) {
+    if ((thisEvapCond.InletMassFlowRate > 0.0) && (thisEvapCond.availSched->getCurrentVal() > 0.0) && EvapCoolerOperatingLimitFlag) {
 
         //***************************************************************************
         //   TEMP LEAVING DRY BULB IS CALCULATED FROM SATURATION EFFICIENCY AS THE
@@ -3419,15 +3413,10 @@ void GetInputZoneEvaporativeCoolerUnit(EnergyPlusData &state)
             auto &thisZoneEvapUnit = ZoneEvapUnit(UnitLoop);
             thisZoneEvapUnit.Name = Alphas(1);
             if (lAlphaBlanks(2)) {
-                thisZoneEvapUnit.AvailSchedIndex = ScheduleManager::ScheduleAlwaysOn;
-            } else {
-                thisZoneEvapUnit.AvailSchedIndex = ScheduleManager::GetScheduleIndex(state,
-                                                                                     Alphas(2)); // convert schedule name to pointer (index number)
-                if (thisZoneEvapUnit.AvailSchedIndex == 0) {
-                    ShowSevereError(state, format("{}=\"{}\" invalid data.", CurrentModuleObject, thisZoneEvapUnit.Name));
-                    ShowContinueError(state, format("invalid-not found {}=\"{}\".", cAlphaFields(2), Alphas(2)));
-                    ErrorsFound = true;
-                }
+                thisZoneEvapUnit.availSched = Sched::GetScheduleAlwaysOn(state);
+            } else if ((thisZoneEvapUnit.availSched = Sched::GetSchedule(state, Alphas(2))) == nullptr) {
+                ShowSevereItemNotFound(state, eoh, cAlphaFields(2), Alphas(2));
+                ErrorsFound = true;
             }
 
             if (!lAlphaBlanks(3)) {
@@ -3481,7 +3470,7 @@ void GetInputZoneEvaporativeCoolerUnit(EnergyPlusData &state)
                 thisZoneEvapUnit.FanInletNodeNum = fan->inletNodeNum;
                 thisZoneEvapUnit.FanOutletNodeNum = fan->outletNodeNum;
                 thisZoneEvapUnit.ActualFanVolFlowRate = fan->maxAirFlowRate;
-                thisZoneEvapUnit.FanAvailSchedPtr = fan->availSchedNum;
+                thisZoneEvapUnit.fanAvailSched = fan->availSched;
             }
 
             // set evap unit to cycling mode for all fan types. Note OpMode var is not used
@@ -3788,20 +3777,17 @@ void InitZoneEvaporativeCoolerUnit(EnergyPlusData &state,
         }
     }
 
-    if (zoneEvapUnit.FanAvailSchedPtr > 0) {
+    if (zoneEvapUnit.fanAvailSched != nullptr) {
         // include fan is not available, then unit is not available
-        zoneEvapUnit.UnitIsAvailable = ((ScheduleManager::GetCurrentScheduleValue(state, zoneEvapUnit.FanAvailSchedPtr) > 0.0) &&
-                                        (ScheduleManager::GetCurrentScheduleValue(state, zoneEvapUnit.AvailSchedIndex) > 0.0));
+        zoneEvapUnit.UnitIsAvailable = ((zoneEvapUnit.fanAvailSched->getCurrentVal() > 0.0) && (zoneEvapUnit.availSched->getCurrentVal() > 0.0));
     } else {
-        zoneEvapUnit.UnitIsAvailable = (ScheduleManager::GetCurrentScheduleValue(state, zoneEvapUnit.AvailSchedIndex) > 0.0);
+        zoneEvapUnit.UnitIsAvailable = (zoneEvapUnit.availSched->getCurrentVal() > 0.0);
     }
 
-    zoneEvapUnit.EvapCooler_1_AvailStatus =
-        (ScheduleManager::GetCurrentScheduleValue(state, state.dataEvapCoolers->EvapCond(zoneEvapUnit.EvapCooler_1_Index).SchedPtr) > 0.0);
+    zoneEvapUnit.EvapCooler_1_AvailStatus = (state.dataEvapCoolers->EvapCond(zoneEvapUnit.EvapCooler_1_Index).availSched->getCurrentVal() > 0.0);
 
     if (zoneEvapUnit.EvapCooler_2_Index > 0) {
-        zoneEvapUnit.EvapCooler_2_AvailStatus =
-            (ScheduleManager::GetCurrentScheduleValue(state, state.dataEvapCoolers->EvapCond(zoneEvapUnit.EvapCooler_2_Index).SchedPtr) > 0.0);
+        zoneEvapUnit.EvapCooler_2_AvailStatus = (state.dataEvapCoolers->EvapCond(zoneEvapUnit.EvapCooler_2_Index).availSched->getCurrentVal() > 0.0);
     }
     // Do the Begin Environment initializations
     if (state.dataGlobal->BeginEnvrnFlag && zoneEvapUnit.MyEnvrn) {
@@ -4022,8 +4008,10 @@ void CalcZoneEvaporativeCoolerUnit(EnergyPlusData &state,
 
         if (zoneEvapUnit.ControlSchemeType == ControlType::ZoneTemperatureDeadBandOnOffCycling) {
             ZoneTemp = state.dataLoopNodes->Node(zoneEvapUnit.ZoneNodeNum).Temp;
-            CoolSetLowThrottle = state.dataHeatBalFanSys->ZoneThermostatSetPointHi(ZoneNum) - (0.5 * zoneEvapUnit.ThrottlingRange);
-            CoolSetHiThrottle = state.dataHeatBalFanSys->ZoneThermostatSetPointHi(ZoneNum) + (0.5 * zoneEvapUnit.ThrottlingRange);
+
+            auto const &zoneTstatSetpt = state.dataHeatBalFanSys->zoneTstatSetpts(ZoneNum);
+            CoolSetLowThrottle = zoneTstatSetpt.setptHi - (0.5 * zoneEvapUnit.ThrottlingRange);
+            CoolSetHiThrottle = zoneTstatSetpt.setptHi + (0.5 * zoneEvapUnit.ThrottlingRange);
 
             if ((ZoneTemp < CoolSetLowThrottle) || !zoneEvapUnit.UnitIsAvailable) {
                 zoneEvapUnit.IsOnThisTimestep = false;

@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -350,26 +350,25 @@ namespace Material {
 
             auto *mat = s_mat->materials(matNum);
             if (mat->group != Group::Regular) {
-                ShowSevereCustomMessage(state, eoh, format("Material {} is not a Regular material.", mat->Name));
+                ShowSevereCustom(state, eoh, format("Material {} is not a Regular material.", mat->Name));
                 ErrorsFound = true;
                 continue;
             }
 
             if (mat->hasPCM) {
-                ShowSevereCustomMessage(
-                    state, eoh, format("Material {} already has {} properties defined.", mat->Name, s_ipsc->cCurrentModuleObject));
+                ShowSevereCustom(state, eoh, format("Material {} already has {} properties defined.", mat->Name, s_ipsc->cCurrentModuleObject));
                 ErrorsFound = true;
                 continue;
             }
 
             if (mat->hasEMPD) {
-                ShowSevereCustomMessage(state, eoh, format("Material {} already has EMPD properties defined.", mat->Name));
+                ShowSevereCustom(state, eoh, format("Material {} already has EMPD properties defined.", mat->Name));
                 ErrorsFound = true;
                 continue;
             }
 
             if (mat->hasHAMT) {
-                ShowSevereCustomMessage(state, eoh, format("Material {} already has HAMT properties defined.", mat->Name));
+                ShowSevereCustom(state, eoh, format("Material {} already has HAMT properties defined.", mat->Name));
                 ErrorsFound = true;
                 continue;
             }

@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -248,9 +248,9 @@ namespace Photovoltaics {
         using namespace DataHeatBalance;
 
         using PhotovoltaicThermalCollectors::GetPVTmodelIndex;
-        using ScheduleManager::GetScheduleIndex;
         using TranspiredCollector::GetTranspiredCollectorIndex;
 
+        static constexpr std::string_view routineName = "GetPVInput";
         // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
         int PVnum;     // working variable for do loop through pv arrays
         int SurfNum;   // working variable for surface id in Heat Balance domain
@@ -468,6 +468,9 @@ namespace Photovoltaics {
                                                                          state.dataIPShortCut->lAlphaFieldBlanks,
                                                                          state.dataIPShortCut->cAlphaFieldNames,
                                                                          state.dataIPShortCut->cNumericFieldNames);
+
+                ErrorObjectHeader eoh{routineName, cCurrentModuleObject, state.dataIPShortCut->cAlphaArgs(1)};
+
                 if (Util::IsNameEmpty(state, state.dataIPShortCut->cAlphaArgs(1), cCurrentModuleObject, ErrorsFound)) {
                     continue;
                 }
@@ -495,12 +498,14 @@ namespace Photovoltaics {
                 }
                 tmpSimpleModuleParams(ModNum).PVEfficiency = state.dataIPShortCut->rNumericArgs(2);
 
-                tmpSimpleModuleParams(ModNum).EffSchedPtr = GetScheduleIndex(state, state.dataIPShortCut->cAlphaArgs(3));
-                if ((tmpSimpleModuleParams(ModNum).EffSchedPtr == 0) && (tmpSimpleModuleParams(ModNum).EfficencyInputMode == Efficiency::Scheduled)) {
-                    ShowSevereError(state, format("Invalid {} = {}", state.dataIPShortCut->cAlphaFieldNames(3), state.dataIPShortCut->cAlphaArgs(3)));
-                    ShowContinueError(state, format("Entered in {} = {}", cCurrentModuleObject, state.dataIPShortCut->cAlphaArgs(1)));
-                    ShowContinueError(state, "Did not find schedule");
-                    ErrorsFound = true;
+                if (tmpSimpleModuleParams(ModNum).EfficencyInputMode == Efficiency::Scheduled) {
+                    if (state.dataIPShortCut->lAlphaFieldBlanks(3)) {
+                        ShowSevereEmptyField(state, eoh, state.dataIPShortCut->cAlphaFieldNames(3));
+                        ErrorsFound = true;
+                    } else if ((tmpSimpleModuleParams(ModNum).effSched = Sched::GetSchedule(state, state.dataIPShortCut->cAlphaArgs(3))) == nullptr) {
+                        ShowSevereItemNotFound(state, eoh, state.dataIPShortCut->cAlphaFieldNames(3), state.dataIPShortCut->cAlphaArgs(3));
+                        ErrorsFound = true;
+                    }
                 }
             }
         }
@@ -806,7 +811,6 @@ namespace Photovoltaics {
 
         // Using/Aliasing
         Real64 TimeStepSysSec = state.dataHVACGlobal->TimeStepSysSec;
-        using ScheduleManager::GetCurrentScheduleValue;
 
         // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
         int ThisSurf; // working index ptr to Surface arrays
@@ -822,7 +826,7 @@ namespace Photovoltaics {
                 Eff = state.dataPhotovoltaic->PVarray(thisPV).SimplePVModule.PVEfficiency;
             } break;
             case Efficiency::Scheduled: { // get from schedule
-                Eff = GetCurrentScheduleValue(state, state.dataPhotovoltaic->PVarray(thisPV).SimplePVModule.EffSchedPtr);
+                Eff = state.dataPhotovoltaic->PVarray(thisPV).SimplePVModule.effSched->getCurrentVal();
                 state.dataPhotovoltaic->PVarray(thisPV).SimplePVModule.PVEfficiency = Eff;
             } break;
             default: {
@@ -949,11 +953,11 @@ namespace Photovoltaics {
         thisPVarray.SNLPVinto.IcDiffuse =
             state.dataHeatBal->SurfQRadSWOutIncident(ThisSurf) - state.dataHeatBal->SurfQRadSWOutIncidentBeam(ThisSurf); //(W/ m2)(was kJ/hr m2)
         thisPVarray.SNLPVinto.IncidenceAngle =
-            std::acos(state.dataHeatBal->SurfCosIncidenceAngle(ThisSurf)) / Constant::DegToRadians;         // (deg) from dataHeatBalance
-        thisPVarray.SNLPVinto.ZenithAngle = std::acos(state.dataEnvrn->SOLCOS(3)) / Constant::DegToRadians; //(degrees),
-        thisPVarray.SNLPVinto.Tamb = state.dataSurface->SurfOutDryBulbTemp(ThisSurf);                       //(deg. C)
-        thisPVarray.SNLPVinto.WindSpeed = state.dataSurface->SurfOutWindSpeed(ThisSurf);                    // (m/s)
-        thisPVarray.SNLPVinto.Altitude = state.dataEnvrn->Elevation;                                        // from DataEnvironment via USE
+            std::acos(state.dataHeatBal->SurfCosIncidenceAngle(ThisSurf)) / Constant::DegToRad;         // (deg) from dataHeatBalance
+        thisPVarray.SNLPVinto.ZenithAngle = std::acos(state.dataEnvrn->SOLCOS(3)) / Constant::DegToRad; //(degrees),
+        thisPVarray.SNLPVinto.Tamb = state.dataSurface->SurfOutDryBulbTemp(ThisSurf);                   //(deg. C)
+        thisPVarray.SNLPVinto.WindSpeed = state.dataSurface->SurfOutWindSpeed(ThisSurf);                // (m/s)
+        thisPVarray.SNLPVinto.Altitude = state.dataEnvrn->Elevation;                                    // from DataEnvironment via USE
 
         if (((thisPVarray.SNLPVinto.IcBeam + thisPVarray.SNLPVinto.IcDiffuse) > DataPhotovoltaics::MinIrradiance) && (RunFlag)) {
 
@@ -1269,7 +1273,7 @@ namespace Photovoltaics {
         // if the cell temperature mode is 2, convert the timestep to seconds
         if (state.dataPhotovoltaicState->firstTime &&
             state.dataPhotovoltaic->PVarray(PVnum).CellIntegrationMode == CellIntegration::DecoupledUllebergDynamic) {
-            state.dataPhotovoltaicState->PVTimeStep = double(state.dataGlobal->MinutesPerTimeStep) * 60.0; // Seconds per time step
+            state.dataPhotovoltaicState->PVTimeStep = double(state.dataGlobal->MinutesInTimeStep) * 60.0; // Seconds per time step
         }
         state.dataPhotovoltaicState->firstTime = false;
 
@@ -1903,7 +1907,7 @@ namespace Photovoltaics {
         Real64 AbsoluteAirMass;
 
         if (SolZen < 89.9) {
-            Real64 const AM(1.0 / (std::cos(SolZen * Constant::DegToRadians) + 0.5057 * std::pow(96.08 - SolZen, -1.634)));
+            Real64 const AM(1.0 / (std::cos(SolZen * Constant::DegToRad) + 0.5057 * std::pow(96.08 - SolZen, -1.634)));
             AbsoluteAirMass = std::exp(-0.0001184 * Altitude) * AM;
         } else {
             Real64 constexpr AM(36.32); // evaluated above at SolZen = 89.9 issue #5528

@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -47,9 +47,6 @@
 
 // C++ Headers
 #include <cmath>
-
-// ObjexxFCL Headers
-#include <ObjexxFCL/Fmath.hh>
 
 // EnergyPlus Headers
 #include <EnergyPlus/Data/EnergyPlusData.hh>
@@ -260,11 +257,11 @@ void DetermineAzimuthAndTilt(Array1D<Vector> const &Surf, // Surface Definition
     }
 
     Real64 tlt = std::acos(NewellSurfaceNormalVector.z);
-    tlt /= Constant::DegToRadians;
+    tlt /= Constant::DegToRad;
 
     Real64 az = rotang_0;
 
-    az /= Constant::DegToRadians;
+    az /= Constant::DegToRad;
     az = mod(450.0 - az, 360.0);
     az += 90.0;
     if (az < 0.0) az += 360.0;

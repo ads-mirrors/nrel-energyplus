@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -54,7 +54,6 @@
 
 // ObjexxFCL Headers
 #include <ObjexxFCL/Array.functions.hh>
-#include <ObjexxFCL/Fmath.hh>
 
 // EnergyPlus Headers
 #include <EnergyPlus/BranchNodeConnections.hh>
@@ -4594,7 +4593,7 @@ void ReportAirLoopConnections(EnergyPlusData &state)
         "! <Outdoor Air Connections>,<OA Inlet Node #>,<OA Return Air Inlet Node Name>,<OA Outlet Node #>,<OA Mixed "
         "Air Outlet Node Name>,<AirLoopHVAC Name>");
 
-    auto &NodeID = state.dataLoopNodes->NodeID;
+    auto const &NodeID = state.dataLoopNodes->NodeID;
 
     print(state.files.bnd, "{}\n", "! ===============================================================");
     print(state.files.bnd, "{}\n", Format_706);
@@ -5086,7 +5085,6 @@ void reportAirDistributionUnits(EnergyPlusData &state)
 
     auto &orp = state.dataOutRptPredefined;
     for (auto &adu : state.dataDefineEquipment->AirDistUnit) {
-        auto &airTerminal = adu.airTerminalPtr;
         constexpr int aduCompNum = 1;
         OutputReportPredefined::PreDefTableEntry(state, orp->pdchAirTermZoneName, adu.Name, state.dataHeatBal->Zone(adu.ZoneNum).Name);
         switch (adu.EquipTypeEnum(aduCompNum)) {

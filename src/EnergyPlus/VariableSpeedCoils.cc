@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -214,6 +214,7 @@ namespace VariableSpeedCoils {
 
         // SUBROUTINE PARAMETER DEFINITIONS:
         static constexpr std::string_view RoutineName("GetVarSpeedCoilInput: "); // include trailing blank space
+        static constexpr std::string_view routineName = "GetVarSpeedCoilInput";
 
         // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
         int NumAlphas;    // Number of variables in String format
@@ -838,6 +839,9 @@ namespace VariableSpeedCoils {
                                                                      lAlphaBlanks,
                                                                      cAlphaFields,
                                                                      cNumericFields);
+
+            ErrorObjectHeader eoh{routineName, CurrentModuleObject, AlphArray(1)};
+
             // ErrorsFound will be set to True if problem was found, left untouched otherwise
             GlobalNames::VerifyUniqueCoilName(state, CurrentModuleObject, AlphArray(1), ErrorsFound, CurrentModuleObject + " Name");
 
@@ -1076,16 +1080,12 @@ namespace VariableSpeedCoils {
                 }
             }
 
-            if (!lAlphaBlanks(10)) {
-                state.dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).BasinHeaterSchedulePtr =
-                    ScheduleManager::GetScheduleIndex(state, AlphArray(10));
-                if (state.dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).BasinHeaterSchedulePtr == 0) {
-                    ShowWarningError(
-                        state,
-                        format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, state.dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).Name));
-                    ShowContinueError(state, format("...not found {}=\"{}\".", cAlphaFields(10), AlphArray(10)));
-                    ShowContinueError(state, "Basin heater will be available to operate throughout the simulation.");
-                }
+            if (lAlphaBlanks(10)) {
+                // Should this be ScheduleAlwaysOff?
+            } else if ((state.dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).basinHeaterSched = Sched::GetSchedule(state, AlphArray(10))) ==
+                       nullptr) {
+                ShowWarningItemNotFound(
+                    state, eoh, cAlphaFields(10), AlphArray(10), "Basin heater will be available to operate throughout the simulation.");
             }
 
             for (int I = 1; I <= state.dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).NumOfSpeeds; ++I) {
@@ -3977,12 +3977,8 @@ namespace VariableSpeedCoils {
                         state.dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).MSRatedWaterMassFlowRate(
                             state.dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).NumOfSpeeds);
                     state.dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).InletWaterTemp = RatedInletWaterTemp; // 85 F cooling mode
-                    Real64 CpSource = FluidProperties::GetSpecificHeatGlycol(
-                        state,
-                        state.dataPlnt->PlantLoop(state.dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).plantLoc.loopNum).FluidName,
-                        state.dataVariableSpeedCoils->SourceSideInletTemp,
-                        state.dataPlnt->PlantLoop(state.dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).plantLoc.loopNum).FluidIndex,
-                        RoutineName);
+                    Real64 CpSource = state.dataPlnt->PlantLoop(state.dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).plantLoc.loopNum)
+                                          .glycol->getSpecificHeat(state, state.dataVariableSpeedCoils->SourceSideInletTemp, RoutineName);
                     state.dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).InletWaterEnthalpy =
                         state.dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).InletWaterTemp * CpSource;
                 }
@@ -4101,12 +4097,8 @@ namespace VariableSpeedCoils {
                         state.dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).MSRatedWaterMassFlowRate(
                             state.dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).NumOfSpeeds);
                     state.dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).InletWaterTemp = RatedInletWaterTempHeat; // 21.11C or 70F, heating mode
-                    Real64 CpSource = FluidProperties::GetSpecificHeatGlycol(
-                        state,
-                        state.dataPlnt->PlantLoop(state.dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).plantLoc.loopNum).FluidName,
-                        state.dataVariableSpeedCoils->SourceSideInletTemp,
-                        state.dataPlnt->PlantLoop(state.dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).plantLoc.loopNum).FluidIndex,
-                        RoutineName);
+                    Real64 CpSource = state.dataPlnt->PlantLoop(state.dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).plantLoc.loopNum)
+                                          .glycol->getSpecificHeat(state, state.dataVariableSpeedCoils->SourceSideInletTemp, RoutineName);
                     state.dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).InletWaterEnthalpy =
                         state.dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).InletWaterTemp * CpSource;
                 }
@@ -4246,18 +4238,10 @@ namespace VariableSpeedCoils {
                 (state.dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).VSCoilType == HVAC::Coil_CoolingWaterToAirHPVSEquationFit)) {
                 WaterInletNode = state.dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).WaterInletNodeNum;
 
-                rho = FluidProperties::GetDensityGlycol(
-                    state,
-                    state.dataPlnt->PlantLoop(state.dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).plantLoc.loopNum).FluidName,
-                    Constant::CWInitConvTemp,
-                    state.dataPlnt->PlantLoop(state.dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).plantLoc.loopNum).FluidIndex,
-                    RoutineNameSimpleWatertoAirHP);
-                Cp = FluidProperties::GetSpecificHeatGlycol(
-                    state,
-                    state.dataPlnt->PlantLoop(state.dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).plantLoc.loopNum).FluidName,
-                    Constant::CWInitConvTemp,
-                    state.dataPlnt->PlantLoop(state.dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).plantLoc.loopNum).FluidIndex,
-                    RoutineNameSimpleWatertoAirHP);
+                rho = state.dataPlnt->PlantLoop(state.dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).plantLoc.loopNum)
+                          .glycol->getDensity(state, Constant::CWInitConvTemp, RoutineNameSimpleWatertoAirHP);
+                Cp = state.dataPlnt->PlantLoop(state.dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).plantLoc.loopNum)
+                         .glycol->getSpecificHeat(state, Constant::CWInitConvTemp, RoutineNameSimpleWatertoAirHP);
 
                 //    VarSpeedCoil(DXCoilNum)%DesignWaterMassFlowRate= &
                 //                             rho * VarSpeedCoil(DXCoilNum)%RatedWaterVolFlowRate
@@ -5165,16 +5149,10 @@ namespace VariableSpeedCoils {
                                                                false);
 
             if (PltSizNum > 0) {
-                rho = FluidProperties::GetDensityGlycol(state,
-                                                        state.dataPlnt->PlantLoop(varSpeedCoil.plantLoc.loopNum).FluidName,
-                                                        state.dataSize->PlantSizData(PltSizNum).ExitTemp,
-                                                        state.dataPlnt->PlantLoop(varSpeedCoil.plantLoc.loopNum).FluidIndex,
-                                                        RoutineNameAlt);
-                cp = FluidProperties::GetSpecificHeatGlycol(state,
-                                                            state.dataPlnt->PlantLoop(varSpeedCoil.plantLoc.loopNum).FluidName,
-                                                            state.dataSize->PlantSizData(PltSizNum).ExitTemp,
-                                                            state.dataPlnt->PlantLoop(varSpeedCoil.plantLoc.loopNum).FluidIndex,
-                                                            RoutineNameAlt);
+                rho = state.dataPlnt->PlantLoop(varSpeedCoil.plantLoc.loopNum)
+                          .glycol->getDensity(state, state.dataSize->PlantSizData(PltSizNum).ExitTemp, RoutineNameAlt);
+                cp = state.dataPlnt->PlantLoop(varSpeedCoil.plantLoc.loopNum)
+                         .glycol->getSpecificHeat(state, state.dataSize->PlantSizData(PltSizNum).ExitTemp, RoutineNameAlt);
 
                 if (varSpeedCoil.VSCoilType == HVAC::Coil_HeatingWaterToAirHPVSEquationFit ||
                     varSpeedCoil.VSCoilType == HVAC::Coil_HeatingAirToAirVariableSpeed) {
@@ -5306,11 +5284,7 @@ namespace VariableSpeedCoils {
             if (PltSizNum > 0) {
                 rhoW = rho;
             } else {
-                rhoW = FluidProperties::GetDensityGlycol(state,
-                                                         state.dataPlnt->PlantLoop(varSpeedCoil.plantLoc.loopNum).FluidName,
-                                                         RatedSourceTempCool,
-                                                         state.dataPlnt->PlantLoop(varSpeedCoil.plantLoc.loopNum).FluidIndex,
-                                                         RoutineName);
+                rhoW = state.dataPlnt->PlantLoop(varSpeedCoil.plantLoc.loopNum).glycol->getDensity(state, RatedSourceTempCool, RoutineName);
             }
 
             varSpeedCoil.RatedWaterMassFlowRate = varSpeedCoil.RatedWaterVolFlowRate * rhoW;
@@ -5928,12 +5902,8 @@ namespace VariableSpeedCoils {
             state.dataVariableSpeedCoils->SourceSideMassFlowRate = state.dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).WaterMassFlowRate;
             state.dataVariableSpeedCoils->SourceSideInletTemp = state.dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).InletWaterTemp;
             state.dataVariableSpeedCoils->SourceSideInletEnth = state.dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).InletWaterEnthalpy;
-            CpSource = FluidProperties::GetSpecificHeatGlycol(
-                state,
-                state.dataPlnt->PlantLoop(state.dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).plantLoc.loopNum).FluidName,
-                state.dataVariableSpeedCoils->SourceSideInletTemp,
-                state.dataPlnt->PlantLoop(state.dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).plantLoc.loopNum).FluidIndex,
-                RoutineNameSourceSideInletTemp);
+            CpSource = state.dataPlnt->PlantLoop(state.dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).plantLoc.loopNum)
+                           .glycol->getSpecificHeat(state, state.dataVariableSpeedCoils->SourceSideInletTemp, RoutineNameSourceSideInletTemp);
         }
 
         // Check for flows, do not perform simulation if no flow in load side or source side.
@@ -6312,7 +6282,7 @@ namespace VariableSpeedCoils {
                 // Calculate basin heater power
                 CalcBasinHeaterPower(state,
                                      state.dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).BasinHeaterPowerFTempDiff,
-                                     state.dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).BasinHeaterSchedulePtr,
+                                     state.dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).basinHeaterSched,
                                      state.dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).BasinHeaterSetPointTemp,
                                      state.dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).BasinHeaterPower);
                 state.dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).BasinHeaterPower *=
@@ -7166,12 +7136,8 @@ namespace VariableSpeedCoils {
             state.dataVariableSpeedCoils->SourceSideMassFlowRate = state.dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).WaterMassFlowRate;
             state.dataVariableSpeedCoils->SourceSideInletTemp = state.dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).InletWaterTemp;
             state.dataVariableSpeedCoils->SourceSideInletEnth = state.dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).InletWaterEnthalpy;
-            CpSource = FluidProperties::GetSpecificHeatGlycol(
-                state,
-                state.dataPlnt->PlantLoop(state.dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).plantLoc.loopNum).FluidName,
-                state.dataVariableSpeedCoils->SourceSideInletTemp,
-                state.dataPlnt->PlantLoop(state.dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).plantLoc.loopNum).FluidIndex,
-                RoutineNameSourceSideInletTemp);
+            CpSource = state.dataPlnt->PlantLoop(state.dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).plantLoc.loopNum)
+                           .glycol->getSpecificHeat(state, state.dataVariableSpeedCoils->SourceSideInletTemp, RoutineNameSourceSideInletTemp);
         }
 
         // Check for flows, do not perform simulation if no flow in load side or source side.
@@ -7583,7 +7549,6 @@ namespace VariableSpeedCoils {
         // Obtains and Allocates WatertoAirHP related parameters from input file
         if (state.dataVariableSpeedCoils->GetCoilsInputFlag) { // First time subroutine has been entered
             GetVarSpeedCoilInput(state);
-            //    WaterIndex=FindGlycol('WATER') !Initialize the WaterIndex once
             state.dataVariableSpeedCoils->GetCoilsInputFlag = false;
         }
 
@@ -7636,7 +7601,6 @@ namespace VariableSpeedCoils {
         // Obtains and Allocates WatertoAirHP related parameters from input file
         if (state.dataVariableSpeedCoils->GetCoilsInputFlag) { // First time subroutine has been entered
             GetVarSpeedCoilInput(state);
-            //    WaterIndex=FindGlycol('WATER') !Initialize the WaterIndex once
             state.dataVariableSpeedCoils->GetCoilsInputFlag = false;
         }
 
@@ -7674,7 +7638,6 @@ namespace VariableSpeedCoils {
         // Obtains and Allocates WatertoAirHP related parameters from input file
         if (state.dataVariableSpeedCoils->GetCoilsInputFlag) { // First time subroutine has been entered
             GetVarSpeedCoilInput(state);
-            //    WaterIndex=FindGlycol('WATER') !Initialize the WaterIndex once
             state.dataVariableSpeedCoils->GetCoilsInputFlag = false;
         }
 
@@ -7731,7 +7694,6 @@ namespace VariableSpeedCoils {
         // Obtains and Allocates WatertoAirHP related parameters from input file
         if (state.dataVariableSpeedCoils->GetCoilsInputFlag) { // First time subroutine has been entered
             GetVarSpeedCoilInput(state);
-            //    WaterIndex=FindGlycol('WATER') !Initialize the WaterIndex once
             state.dataVariableSpeedCoils->GetCoilsInputFlag = false;
         }
 
@@ -7808,7 +7770,6 @@ namespace VariableSpeedCoils {
         // Obtains and Allocates WatertoAirHP related parameters from input file
         if (state.dataVariableSpeedCoils->GetCoilsInputFlag) { // First time subroutine has been entered
             GetVarSpeedCoilInput(state);
-            //    WaterIndex=FindGlycol('WATER') !Initialize the WaterIndex once
             state.dataVariableSpeedCoils->GetCoilsInputFlag = false;
         }
 
@@ -7850,7 +7811,6 @@ namespace VariableSpeedCoils {
         // Obtains and Allocates WatertoAirHP related parameters from input file
         if (state.dataVariableSpeedCoils->GetCoilsInputFlag) { // First time subroutine has been entered
             GetVarSpeedCoilInput(state);
-            //    WaterIndex=FindGlycol('WATER') !Initialize the WaterIndex once
             state.dataVariableSpeedCoils->GetCoilsInputFlag = false;
         }
 
@@ -7891,7 +7851,6 @@ namespace VariableSpeedCoils {
         // Obtains and Allocates WatertoAirHP related parameters from input file
         if (state.dataVariableSpeedCoils->GetCoilsInputFlag) { // First time subroutine has been entered
             GetVarSpeedCoilInput(state);
-            //    WaterIndex=FindGlycol('WATER') !Initialize the WaterIndex once
             state.dataVariableSpeedCoils->GetCoilsInputFlag = false;
         }
 
@@ -8008,7 +7967,6 @@ namespace VariableSpeedCoils {
         // Obtains and Allocates WatertoAirHP related parameters from input file
         if (state.dataVariableSpeedCoils->GetCoilsInputFlag) { // First time subroutine has been entered
             GetVarSpeedCoilInput(state);
-            //    WaterIndex=FindGlycol('WATER') !Initialize the WaterIndex once
             state.dataVariableSpeedCoils->GetCoilsInputFlag = false;
         }
 

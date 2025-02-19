@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -50,7 +50,6 @@
 
 // ObjexxFCL Headers
 #include <ObjexxFCL/Array.functions.hh>
-#include <ObjexxFCL/Fmath.hh>
 
 // EnergyPlus Headers
 #include <EnergyPlus/Construction.hh>
@@ -121,7 +120,7 @@ namespace EnergyPlus::WindowEquivalentLayer {
 using namespace DataHeatBalance;
 using namespace DataSurfaces;
 
-constexpr std::array<std::string_view, (int)Orientation::Num> orientationNamesUC = {"HORIZONTAL", "VERTICAL"};
+// constexpr std::array<std::string_view, (int)Orientation::Num> orientationNamesUC = {"HORIZONTAL", "VERTICAL"};
 
 void InitEquivalentLayerWindowCalculations(EnergyPlusData &state)
 {
@@ -674,7 +673,6 @@ void EQLWindowSurfaceHeatBalance(EnergyPlusData &state,
 
     using Psychrometrics::PsyCpAirFnW;
     using Psychrometrics::PsyTdpFnWPb;
-    using ScheduleManager::GetCurrentScheduleValue;
 
     Real64 constexpr TOL(0.0001); // convergence tolerance
 
@@ -1070,7 +1068,7 @@ void RB_BEAM(EnergyPlusData &state,
     Real64 TAUBB_EXPO;   // exponent in the beam-beam transmittance model
     Real64 TAU_BT;       // beam-total transmittance
 
-    THETA = min(89.99 * Constant::DegToRadians, xTHETA);
+    THETA = min(89.99 * Constant::DegToRad, xTHETA);
 
     if (TAU_BB0 > 0.9999) {
         TAU_BB = 1.0;
@@ -1086,7 +1084,7 @@ void RB_BEAM(EnergyPlusData &state,
         TAU_BT = TAU_BT0 * std::pow(std::cos(THETA), TAUBT_EXPO); // always 0 - 1
 
         Real64 const cos_TAU_BB0(std::cos(TAU_BB0 * Constant::PiOvr2));
-        THETA_CUTOFF = Constant::DegToRadians * (90.0 - 25.0 * cos_TAU_BB0);
+        THETA_CUTOFF = Constant::DegToRad * (90.0 - 25.0 * cos_TAU_BB0);
         if (THETA >= THETA_CUTOFF) {
             TAU_BB = 0.0;
         } else {
@@ -1212,7 +1210,7 @@ void IS_BEAM(EnergyPlusData &state,
     Real64 RHO_BT90;     // beam-total reflectance at 90 deg incidence
     Real64 TAU_BT;       // beam-total transmittance
 
-    Real64 const THETA(min(89.99 * Constant::DegToRadians, xTHETA)); // working incident angle, radians
+    Real64 const THETA(min(89.99 * Constant::DegToRad, xTHETA)); // working incident angle, radians
     Real64 const COSTHETA(std::cos(THETA));
 
     RHO_W = RHO_BT0 / max(0.00001, 1.0 - TAU_BB0);
@@ -1384,7 +1382,7 @@ void FM_BEAM(EnergyPlusData &state,
     Real64 RHO_BT90; // beam-total reflectance at 90 deg incidence
     Real64 TAU_BT;   // beam-total transmittance
 
-    THETA = std::abs(max(-89.99 * Constant::DegToRadians, min(89.99 * Constant::DegToRadians, xTHETA)));
+    THETA = std::abs(max(-89.99 * Constant::DegToRad, min(89.99 * Constant::DegToRad, xTHETA)));
     // limit -89.99 - +89.99
     // by symmetry, optical properties same at +/- theta
     Real64 const COSTHETA(std::cos(THETA));
@@ -1667,8 +1665,8 @@ void PD_BEAM(EnergyPlusData &state,
     Real64 TAUBF_BB_PERP;
     Real64 TAUBF_BD_PERP;
 
-    OMEGA_V = std::abs(max(-89.5 * Constant::DegToRadians, min(89.5 * Constant::DegToRadians, OHM_V_RAD)));
-    OMEGA_H = std::abs(max(-89.5 * Constant::DegToRadians, min(89.5 * Constant::DegToRadians, OHM_H_RAD)));
+    OMEGA_V = std::abs(max(-89.5 * Constant::DegToRad, min(89.5 * Constant::DegToRad, OHM_V_RAD)));
+    OMEGA_H = std::abs(max(-89.5 * Constant::DegToRad, min(89.5 * Constant::DegToRad, OHM_H_RAD)));
     // limit profile angles -89.5 - +89.5
     // by symmetry, properties same for +/- profile angle
 
@@ -3666,9 +3664,9 @@ void VB_SOL46_CURVE(EnergyPlusData const &state,
     CORR = 1;
 
     // limit slat angle to +/- 90 deg
-    PHI = max(-Constant::DegToRadians * 90.0, min(Constant::DegToRadians * 90.0, PHIx));
+    PHI = max(-Constant::DegToRad * 90.0, min(Constant::DegToRad * 90.0, PHIx));
     // limit profile angle to +/- 89.5 deg
-    OMEGA = max(-Constant::DegToRadians * 89.5, min(Constant::DegToRadians * 89.5, OMEGAx));
+    OMEGA = max(-Constant::DegToRad * 89.5, min(Constant::DegToRad * 89.5, OMEGAx));
 
     SL_RAD = W / max(SL_WR, 0.0000001);
     SL_THETA = 2.0 * std::asin(0.5 * SL_WR);
@@ -5732,7 +5730,7 @@ Real64 FRA(Real64 const TM, // mean gas temp, K
     Real64 CP = ACP + BCP * TM + BCP * TM * TM;
     Real64 VISC = AVISC + BVISC * TM + BVISC * TM * TM;
 
-    return (Constant::GravityConstant * RHOGAS * RHOGAS * DT * T * T * T * CP) / (VISC * K * TM * Z * Z);
+    return (Constant::Gravity * RHOGAS * RHOGAS * DT * T * T * T * CP) / (VISC * K * TM * Z * Z);
 }
 
 Real64 FNU(Real64 const RA) // Rayleigh number
@@ -6597,11 +6595,11 @@ bool Specular_OffNormal(Real64 const THETA, // solar beam angle of incidence, fr
 
     Specular_OffNormal = true;
     THETA1 = std::abs(THETA);
-    if (THETA1 > Constant::PiOvr2 - Constant::DegToRadians) {
+    if (THETA1 > Constant::PiOvr2 - Constant::DegToRad) {
         // theta > 89 deg
         RAT_TAU = 0.0;
         RAT_1MR = 0.0;
-    } else if (THETA1 >= Constant::DegToRadians) {
+    } else if (THETA1 >= Constant::DegToRad) {
         // theta >= 1 deg
         N2 = 1.526;
         KL = 55.0 * 0.006;
@@ -7162,10 +7160,10 @@ bool VB_LWP(EnergyPlusData &state,
     RHOUFS_SLAT = 1.0 - L.LWP_MAT.EPSLF - L.LWP_MAT.TAUL; // upward surface
 
     // TODO: are there cases where 2 calls not needed (RHODFS_SLAT == RHOUFS_SLAT??)
-    VB_DIFF(state, L.S, L.W, Constant::DegToRadians * L.PHI_DEG, RHODFS_SLAT, RHOUFS_SLAT, L.LWP_MAT.TAUL, RHOLF, LLWP.TAUL);
+    VB_DIFF(state, L.S, L.W, Constant::DegToRad * L.PHI_DEG, RHODFS_SLAT, RHOUFS_SLAT, L.LWP_MAT.TAUL, RHOLF, LLWP.TAUL);
     LLWP.EPSLF = 1.0 - RHOLF - LLWP.TAUL;
 
-    VB_DIFF(state, L.S, L.W, -Constant::DegToRadians * L.PHI_DEG, RHODFS_SLAT, RHOUFS_SLAT, L.LWP_MAT.TAUL, RHOLB, TAULX);
+    VB_DIFF(state, L.S, L.W, -Constant::DegToRad * L.PHI_DEG, RHODFS_SLAT, RHOUFS_SLAT, L.LWP_MAT.TAUL, RHOLB, TAULX);
     LLWP.EPSLB = 1.0 - RHOLB - LLWP.TAUL;
 
     VB_LWP = true;
@@ -7200,7 +7198,7 @@ bool VB_SWP(EnergyPlusData const &state,
                    L.S,
                    L.W,
                    SL_WR,
-                   Constant::DegToRadians * L.PHI_DEG,
+                   Constant::DegToRad * L.PHI_DEG,
                    OMEGA,
                    L.SWP_MAT.RHOSBDD,
                    L.SWP_MAT.RHOSFDD,
@@ -7213,7 +7211,7 @@ bool VB_SWP(EnergyPlusData const &state,
                    L.S,
                    L.W,
                    SL_WR,
-                   -Constant::DegToRadians * L.PHI_DEG,
+                   -Constant::DegToRad * L.PHI_DEG,
                    OMEGA,
                    L.SWP_MAT.RHOSBDD,
                    L.SWP_MAT.RHOSFDD,
@@ -7250,9 +7248,9 @@ bool VB_SWP(EnergyPlusData &state,
 
     SL_WR = VB_SLAT_RADIUS_RATIO(L.W, L.C);
 
-    VB_DIFF(state, L.S, L.W, Constant::DegToRadians * L.PHI_DEG, L.SWP_MAT.RHOSBDD, L.SWP_MAT.RHOSFDD, L.SWP_MAT.TAUS_DD, LSWP.RHOSFDD, LSWP.TAUS_DD);
+    VB_DIFF(state, L.S, L.W, Constant::DegToRad * L.PHI_DEG, L.SWP_MAT.RHOSBDD, L.SWP_MAT.RHOSFDD, L.SWP_MAT.TAUS_DD, LSWP.RHOSFDD, LSWP.TAUS_DD);
 
-    VB_DIFF(state, L.S, L.W, -Constant::DegToRadians * L.PHI_DEG, L.SWP_MAT.RHOSBDD, L.SWP_MAT.RHOSFDD, L.SWP_MAT.TAUS_DD, LSWP.RHOSBDD, TAUX);
+    VB_DIFF(state, L.S, L.W, -Constant::DegToRad * L.PHI_DEG, L.SWP_MAT.RHOSBDD, L.SWP_MAT.RHOSFDD, L.SWP_MAT.TAUS_DD, LSWP.RHOSBDD, TAUX);
 
     return true;
 }
@@ -7974,7 +7972,7 @@ Real64 HCInWindowStandardRatings(EnergyPlusData &state,
     Real64 Nuint;           // Nusselt number for interior surface convection
 
     TiltDeg = 90.0;
-    sineTilt = std::sin(TiltDeg * Constant::DegToRadians); // degrees as arg
+    sineTilt = std::sin(TiltDeg * Constant::DegToRad); // degrees as arg
 
     // Begin calculating for ISO 15099 method.
     // mean film temperature
@@ -7987,8 +7985,7 @@ Real64 HCInWindowStandardRatings(EnergyPlusData &state,
     mu = 3.723E-6 + 4.94E-8 * TmeanFilmKelvin;     // Table B.2 in ISO 15099
     Cp = 1002.737 + 1.2324E-2 * TmeanFilmKelvin;   // Table B.3 in ISO 15099
 
-    RaH = (pow_2(rho) * pow_3(Height) * Constant::GravityConstant * Cp * std::abs(TSurfIn - TAirIn)) /
-          (TmeanFilmKelvin * mu * lambda); // eq 132 in ISO 15099
+    RaH = (pow_2(rho) * pow_3(Height) * Constant::Gravity * Cp * std::abs(TSurfIn - TAirIn)) / (TmeanFilmKelvin * mu * lambda); // eq 132 in ISO 15099
 
     // eq. 135 in ISO 15099 (only need this one because tilt is 90 deg)
     Nuint = 0.56 * root_4(RaH * sineTilt);

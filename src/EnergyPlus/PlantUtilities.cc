@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -962,9 +962,6 @@ void UpdateChillerComponentCondenserSide(EnergyPlusData &state,
     // check if anything changed or doesn't agree and set simulation flags.
     // update outlet conditions if needed or possible
 
-    // Using/Aliasing
-    using FluidProperties::GetSpecificHeatGlycol;
-
     // SUBROUTINE PARAMETER DEFINITIONS:
     static constexpr std::string_view RoutineName("UpdateChillerComponentCondenserSide");
 
@@ -995,8 +992,7 @@ void UpdateChillerComponentCondenserSide(EnergyPlusData &state,
         // use current mass flow rate and inlet temp from Node and recalculate outlet temp
         if (state.dataLoopNodes->Node(InletNodeNum).MassFlowRate > DataBranchAirLoopPlant::MassFlowTolerance) {
             // update node outlet conditions
-            Cp = GetSpecificHeatGlycol(
-                state, state.dataPlnt->PlantLoop(LoopNum).FluidName, ModelInletTemp, state.dataPlnt->PlantLoop(LoopNum).FluidIndex, RoutineName);
+            Cp = state.dataPlnt->PlantLoop(LoopNum).glycol->getSpecificHeat(state, ModelInletTemp, RoutineName);
             state.dataLoopNodes->Node(OutletNodeNum).Temp =
                 state.dataLoopNodes->Node(InletNodeNum).Temp + ModelCondenserHeatRate / (state.dataLoopNodes->Node(InletNodeNum).MassFlowRate * Cp);
         }
@@ -1054,9 +1050,6 @@ void UpdateComponentHeatRecoverySide(EnergyPlusData &state,
     // check if anything changed or doesn't agree and set simulation flags.
     // update outlet conditions if needed or possible
 
-    // Using/Aliasing
-    using FluidProperties::GetSpecificHeatGlycol;
-
     // SUBROUTINE PARAMETER DEFINITIONS:
     static constexpr std::string_view RoutineName("UpdateComponentHeatRecoverySide");
 
@@ -1086,8 +1079,7 @@ void UpdateComponentHeatRecoverySide(EnergyPlusData &state,
         // use current mass flow rate and inlet temp from Node and recalculate outlet temp
         if (state.dataLoopNodes->Node(InletNodeNum).MassFlowRate > DataBranchAirLoopPlant::MassFlowTolerance) {
             // update node outlet conditions
-            Cp = GetSpecificHeatGlycol(
-                state, state.dataPlnt->PlantLoop(LoopNum).FluidName, ModelInletTemp, state.dataPlnt->PlantLoop(LoopNum).FluidIndex, RoutineName);
+            Cp = state.dataPlnt->PlantLoop(LoopNum).glycol->getSpecificHeat(state, ModelInletTemp, RoutineName);
             state.dataLoopNodes->Node(OutletNodeNum).Temp =
                 state.dataLoopNodes->Node(InletNodeNum).Temp + ModelRecoveryHeatRate / (state.dataLoopNodes->Node(InletNodeNum).MassFlowRate * Cp);
         }

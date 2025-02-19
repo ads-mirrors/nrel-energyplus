@@ -28,3 +28,10 @@ See PR [#10750](https://github.com/NREL/EnergyPlus/pull/10750)
 * eio output header for "\<ShadingProperty Reflectance\>", "Contruction" --> "Construction". Also appears in the "Initialization Summary" table output, "ShadingProperty Reflectance" sub-table, column heading.
 
 See Pull Request [#10760](https://github.com/NREL/EnergyPlus/pull/10760).
+
+### Table Output, Envelope Summary Report, Add Space and Zone Columns
+* Added a column for *Space* to sub-tables "Opaque Exterior" and "Opaque Interior".
+
+* Added columns for *Zone* and *Space* to sub-tables "Exterior Fenestration", "Interior Fenestration", "Exterior Door", and "Interior Door".
+
+See Pull Request [#10914](https://github.com/NREL/EnergyPlus/pull/10914).

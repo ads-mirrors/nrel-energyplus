@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -52,12 +52,11 @@
 
 // EnergyPlus Headers
 #include "EnergyPlus/DataIPShortCuts.hh"
-#include "EnergyPlus/GroundTemperatureModeling/GroundTemperatureModelManager.hh"
+#include "EnergyPlus/GroundTemperatureModeling/BaseGroundTemperatureModel.hh"
 #include "Fixtures/EnergyPlusFixture.hh"
 #include <EnergyPlus/Data/EnergyPlusData.hh>
 
 using namespace EnergyPlus;
-using namespace EnergyPlus::GroundTemperatureManager;
 
 TEST_F(EnergyPlusFixture, XingGroundTempsModelTest)
 {
@@ -76,9 +75,7 @@ TEST_F(EnergyPlusFixture, XingGroundTempsModelTest)
 
     ASSERT_TRUE(process_idf(idf_objects));
 
-    std::string const CurrentModuleObject = static_cast<std::string>(groundTempModelNamesUC[static_cast<int>(GroundTempObjType::XingGroundTemp)]);
-
-    auto thisModel = GetGroundTempModelAndInit(*state, CurrentModuleObject, "TEST");
+    auto *thisModel = GroundTemp::GetGroundTempModelAndInit(*state, GroundTemp::ModelType::Xing, "TEST");
 
     EXPECT_NEAR(-1.43, thisModel->getGroundTempAtTimeInSeconds(*state, 0.0, 0.0), 0.01);
     EXPECT_NEAR(2.15, thisModel->getGroundTempAtTimeInSeconds(*state, 0.0, 6393600), 0.1);   // March 15

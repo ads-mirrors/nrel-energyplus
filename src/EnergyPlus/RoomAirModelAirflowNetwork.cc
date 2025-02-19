@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -48,7 +48,7 @@
 // ObjexxFCL Headers
 #include <ObjexxFCL/Array.functions.hh>
 #include <ObjexxFCL/Array1D.hh>
-#include <ObjexxFCL/Fmath.hh>
+// #include <ObjexxFCL/Fmath.hh>
 
 // EnergyPlus Headers
 #include <AirflowNetwork/Solver.hpp>
@@ -830,14 +830,14 @@ namespace RoomAir {
                             if (state.dataSurface->SurfWinHeatGain(SurfNum) >= 0.0) {
                                 state.dataSurface->SurfWinHeatGainRep(SurfNum) = state.dataSurface->SurfWinHeatGain(SurfNum);
                                 state.dataSurface->SurfWinHeatGainRepEnergy(SurfNum) =
-                                    state.dataSurface->SurfWinHeatGainRep(SurfNum) * state.dataGlobal->TimeStepZone * Constant::SecInHour;
+                                    state.dataSurface->SurfWinHeatGainRep(SurfNum) * state.dataGlobal->TimeStepZone * Constant::rSecsInHour;
                             } else {
                                 state.dataSurface->SurfWinHeatLossRep(SurfNum) = -state.dataSurface->SurfWinHeatGain(SurfNum);
                                 state.dataSurface->SurfWinHeatLossRepEnergy(SurfNum) =
-                                    state.dataSurface->SurfWinHeatLossRep(SurfNum) * state.dataGlobal->TimeStepZone * Constant::SecInHour;
+                                    state.dataSurface->SurfWinHeatLossRep(SurfNum) * state.dataGlobal->TimeStepZone * Constant::rSecsInHour;
                             }
                             state.dataSurface->SurfWinHeatTransferRepEnergy(SurfNum) =
-                                state.dataSurface->SurfWinHeatGain(SurfNum) * state.dataGlobal->TimeStepZone * Constant::SecInHour;
+                                state.dataSurface->SurfWinHeatGain(SurfNum) * state.dataGlobal->TimeStepZone * Constant::rSecsInHour;
                         }
                     }
 

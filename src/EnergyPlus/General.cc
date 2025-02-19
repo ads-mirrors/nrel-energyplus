@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -68,7 +68,7 @@
 #include <EnergyPlus/WeatherManager.hh>
 
 #if defined(_WIN32) && _MSC_VER < 1900
-#define snprintf _snprintf
+#    define snprintf _snprintf
 #endif
 
 namespace EnergyPlus::General {
@@ -207,7 +207,7 @@ void SolveRoot(const EnergyPlusData &state,
             break;
         }
         // new estimation
-        switch (state.dataRootFinder->HVACSystemRootFinding.HVACSystemRootSolver) {
+        switch (state.dataRootFinder->HVACSystemRootFinding.HVACSystemRootSolverMethod) {
         case HVACSystemRootSolverAlgorithm::RegulaFalsi: {
             XTemp = (Y0 * X1 - Y1 * X0) / DY;
             break;
@@ -236,6 +236,14 @@ void SolveRoot(const EnergyPlusData &state,
             if (AltIte > state.dataRootFinder->HVACSystemRootFinding.NumOfIter) {
                 XTemp = (X1 + X0) / 2.0;
                 if (AltIte >= 2 * state.dataRootFinder->HVACSystemRootFinding.NumOfIter) AltIte = 0;
+            } else {
+                XTemp = (Y0 * X1 - Y1 * X0) / DY;
+            }
+            break;
+        }
+        case HVACSystemRootSolverAlgorithm::ShortBisectionThenRegulaFalsi: {
+            if (NIte < 3) {
+                XTemp = (X1 + X0) / 2.0;
             } else {
                 XTemp = (Y0 * X1 - Y1 * X0) / DY;
             }

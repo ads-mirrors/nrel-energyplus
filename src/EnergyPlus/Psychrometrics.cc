@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -49,7 +49,7 @@
 #include <cstdlib>
 
 // ObjexxFCL Headers
-#include <ObjexxFCL/Fmath.hh>
+// #include <ObjexxFCL/Fmath.hh>
 
 // EnergyPlus Headers
 #include <EnergyPlus/CommandLineInterface.hh>
@@ -63,15 +63,15 @@
 namespace EnergyPlus {
 
 #ifdef EP_nocache_Psychrometrics
-#undef EP_cache_PsyTwbFnTdbWPb
-#undef EP_cache_PsyPsatFnTemp
-#undef EP_cache_PsyTsatFnPb
-#undef EP_cache_PsyTsatFnHPb
+#    undef EP_cache_PsyTwbFnTdbWPb
+#    undef EP_cache_PsyPsatFnTemp
+#    undef EP_cache_PsyTsatFnPb
+#    undef EP_cache_PsyTsatFnHPb
 #else
-#define EP_cache_PsyTwbFnTdbWPb
-#define EP_cache_PsyPsatFnTemp
-#define EP_cache_PsyTsatFnPb
-#define EP_cache_PsyTsatFnHPb
+#    define EP_cache_PsyTwbFnTdbWPb
+#    define EP_cache_PsyPsatFnTemp
+#    define EP_cache_PsyTsatFnPb
+#    define EP_cache_PsyTsatFnHPb
 #endif
 
 namespace Psychrometrics {
@@ -296,9 +296,9 @@ namespace Psychrometrics {
         // FUNCTION PARAMETER DEFINITIONS:
         std::uint64_t constexpr Grid_Shift = 64 - 12 - twbprecision_bits;
 
-#ifdef EP_psych_stats
+#    ifdef EP_psych_stats
         ++state.dataPsychCache->NumTimesCalled[static_cast<int>(PsychrometricFunction::TwbFnTdbWPb_cache)];
-#endif
+#    endif
 
         DISABLE_WARNING_PUSH
         DISABLE_WARNING_STRICT_ALIASING

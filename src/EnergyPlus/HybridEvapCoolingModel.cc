@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -90,8 +90,8 @@ namespace HybridEvapCoolingModel {
     using Curve::CurveValue;
     using Curve::GetCurveIndex;
     using Curve::GetCurveMinMaxValues;
-    using ScheduleManager::GetCurrentScheduleValue;
 
+// Ummm these will have to go
 #define DEF_Tdb 0
 #define DEF_RH 1
 
@@ -713,7 +713,7 @@ namespace HybridEvapCoolingModel {
         }
     }
 
-    bool Model::MeetsSupplyAirTOC(EnergyPlusData &state, Real64 Tsupplyair)
+    bool Model::MeetsSupplyAirTOC([[maybe_unused]] EnergyPlusData &state, Real64 Tsupplyair)
     {
         // SUBROUTINE INFORMATION:
         //       AUTHOR         Spencer Maxwell Dutton
@@ -734,17 +734,17 @@ namespace HybridEvapCoolingModel {
         // Using/Aliasing
         Real64 MinSAT = 10;
         Real64 MaxSAT = 20;
-        if (TsaMin_schedule_pointer > 0) {
-            MinSAT = GetCurrentScheduleValue(state, TsaMin_schedule_pointer);
+        if (TsaMinSched != nullptr) {
+            MinSAT = TsaMinSched->getCurrentVal();
         }
-        if (TsaMax_schedule_pointer > 0) {
-            MaxSAT = GetCurrentScheduleValue(state, TsaMax_schedule_pointer);
+        if (TsaMaxSched != nullptr) {
+            MaxSAT = TsaMaxSched->getCurrentVal();
         }
         if (Tsupplyair < MinSAT || Tsupplyair > MaxSAT) return false;
         return true;
     }
 
-    bool Model::MeetsSupplyAirRHOC(EnergyPlusData &state, Real64 SupplyW)
+    bool Model::MeetsSupplyAirRHOC([[maybe_unused]] EnergyPlusData &state, Real64 SupplyW)
     {
         // SUBROUTINE INFORMATION:
         //       AUTHOR         Spencer Maxwell Dutton
@@ -765,40 +765,38 @@ namespace HybridEvapCoolingModel {
         // Using/Aliasing
         Real64 MinRH = 0;
         Real64 MaxRH = 1;
-        if (RHsaMin_schedule_pointer > 0) {
-            MinRH = GetCurrentScheduleValue(state, RHsaMin_schedule_pointer);
+        if (RHsaMinSched != nullptr) {
+            MinRH = RHsaMinSched->getCurrentVal();
         }
-        if (RHsaMax_schedule_pointer > 0) {
-            MaxRH = GetCurrentScheduleValue(state, RHsaMax_schedule_pointer);
+        if (RHsaMaxSched != nullptr) {
+            MaxRH = RHsaMaxSched->getCurrentVal();
         }
         if (SupplyW < MinRH || SupplyW > MaxRH) return false;
         return true;
     }
 
     Model::Model()
-        : Initialized(false), ZoneNum(0), SchedPtr(0), SystemMaximumSupplyAirFlowRate(0.0), ScalingFactor(0.0),
-          ScaledSystemMaximumSupplyAirMassFlowRate(0.0), UnitOn(0), UnitTotalCoolingRate(0.0), UnitTotalCoolingEnergy(0.0),
-          UnitSensibleCoolingRate(0.0), UnitSensibleCoolingEnergy(0.0), UnitLatentCoolingRate(0.0), UnitLatentCoolingEnergy(0.0),
-          SystemTotalCoolingRate(0.0), SystemTotalCoolingEnergy(0.0), SystemSensibleCoolingRate(0.0), SystemSensibleCoolingEnergy(0.0),
-          SystemLatentCoolingRate(0.0), SystemLatentCoolingEnergy(0.0), UnitTotalHeatingRate(0.0), UnitTotalHeatingEnergy(0.0),
-          UnitSensibleHeatingRate(0.0), UnitSensibleHeatingEnergy(0.0), UnitLatentHeatingRate(0.0), UnitLatentHeatingEnergy(0.0),
-          SystemTotalHeatingRate(0.0), SystemTotalHeatingEnergy(0.0), SystemSensibleHeatingRate(0.0), SystemSensibleHeatingEnergy(0.0),
-          SystemLatentHeatingRate(0.0), SystemLatentHeatingEnergy(0.0), SupplyFanElectricPower(0.0), SupplyFanElectricEnergy(0.0),
-          SecondaryFuelConsumptionRate(0.0), SecondaryFuelConsumption(0.0), ThirdFuelConsumptionRate(0.0), ThirdFuelConsumption(0.0),
-          WaterConsumptionRate(0.0), WaterConsumption(0.0), QSensZoneOut(0), QLatentZoneOut(0), QLatentZoneOutMass(0), ExternalStaticPressure(0.0),
-          RequestedHumidificationMass(0.0), RequestedHumidificationLoad(0.0), RequestedHumidificationEnergy(0.0), RequestedDeHumidificationMass(0.0),
-          RequestedDeHumidificationLoad(0.0), RequestedDeHumidificationEnergy(0.0), RequestedLoadToHeatingSetpoint(0.0),
-          RequestedLoadToCoolingSetpoint(0.0), TsaMin_schedule_pointer(0), TsaMax_schedule_pointer(0), RHsaMin_schedule_pointer(0),
-          RHsaMax_schedule_pointer(0), PrimaryMode(0), PrimaryModeRuntimeFraction(0.0), averageOSAF(0), ErrorCode(0), InletNode(0), OutletNode(0),
-          SecondaryInletNode(0), SecondaryOutletNode(0), FinalElectricalPower(0.0), FinalElectricalEnergy(0.0), InletMassFlowRate(0.0),
-          InletTemp(0.0), InletWetBulbTemp(0.0), InletHumRat(0.0), InletEnthalpy(0.0), InletPressure(0.0), InletRH(0.0),
-          OutletVolumetricFlowRate(0.0), OutletMassFlowRate(0.0), PowerLossToAir(0.0), FanHeatTemp(0.0), OutletTemp(0.0), OutletWetBulbTemp(0.0),
-          OutletHumRat(0.0), OutletEnthalpy(0.0), OutletPressure(0.0), OutletRH(0.0), SecInletMassFlowRate(0.0), SecInletTemp(0.0),
-          SecInletWetBulbTemp(0.0), SecInletHumRat(0.0), SecInletEnthalpy(0.0), SecInletPressure(0.0), SecInletRH(0.0), SecOutletMassFlowRate(0.0),
-          SecOutletTemp(0.0), SecOutletWetBulbTemp(0.0), SecOutletHumRat(0.0), SecOutletEnthalpy(0.0), SecOutletPressure(0.0), SecOutletRH(0.0),
-          Wsa(0.0), SupplyVentilationAir(0.0), SupplyVentilationVolume(0.0), OutdoorAir(false), MinOA_Msa(0.0), OARequirementsPtr(0), Tsa(0.0),
-          ModeCounter(0), CoolingRequested(false), HeatingRequested(false), VentilationRequested(false), DehumidificationRequested(false),
-          HumidificationRequested(false)
+        : Initialized(false), ZoneNum(0), SystemMaximumSupplyAirFlowRate(0.0), ScalingFactor(0.0), ScaledSystemMaximumSupplyAirMassFlowRate(0.0),
+          UnitOn(0), UnitTotalCoolingRate(0.0), UnitTotalCoolingEnergy(0.0), UnitSensibleCoolingRate(0.0), UnitSensibleCoolingEnergy(0.0),
+          UnitLatentCoolingRate(0.0), UnitLatentCoolingEnergy(0.0), SystemTotalCoolingRate(0.0), SystemTotalCoolingEnergy(0.0),
+          SystemSensibleCoolingRate(0.0), SystemSensibleCoolingEnergy(0.0), SystemLatentCoolingRate(0.0), SystemLatentCoolingEnergy(0.0),
+          UnitTotalHeatingRate(0.0), UnitTotalHeatingEnergy(0.0), UnitSensibleHeatingRate(0.0), UnitSensibleHeatingEnergy(0.0),
+          UnitLatentHeatingRate(0.0), UnitLatentHeatingEnergy(0.0), SystemTotalHeatingRate(0.0), SystemTotalHeatingEnergy(0.0),
+          SystemSensibleHeatingRate(0.0), SystemSensibleHeatingEnergy(0.0), SystemLatentHeatingRate(0.0), SystemLatentHeatingEnergy(0.0),
+          SupplyFanElectricPower(0.0), SupplyFanElectricEnergy(0.0), SecondaryFuelConsumptionRate(0.0), SecondaryFuelConsumption(0.0),
+          ThirdFuelConsumptionRate(0.0), ThirdFuelConsumption(0.0), WaterConsumptionRate(0.0), WaterConsumption(0.0), QSensZoneOut(0),
+          QLatentZoneOut(0), QLatentZoneOutMass(0), ExternalStaticPressure(0.0), RequestedHumidificationMass(0.0), RequestedHumidificationLoad(0.0),
+          RequestedHumidificationEnergy(0.0), RequestedDeHumidificationMass(0.0), RequestedDeHumidificationLoad(0.0),
+          RequestedDeHumidificationEnergy(0.0), RequestedLoadToHeatingSetpoint(0.0), RequestedLoadToCoolingSetpoint(0.0), PrimaryMode(0),
+          PrimaryModeRuntimeFraction(0.0), averageOSAF(0), ErrorCode(0), InletNode(0), OutletNode(0), SecondaryInletNode(0), SecondaryOutletNode(0),
+          FinalElectricalPower(0.0), FinalElectricalEnergy(0.0), InletMassFlowRate(0.0), InletTemp(0.0), InletWetBulbTemp(0.0), InletHumRat(0.0),
+          InletEnthalpy(0.0), InletPressure(0.0), InletRH(0.0), OutletVolumetricFlowRate(0.0), OutletMassFlowRate(0.0), PowerLossToAir(0.0),
+          FanHeatTemp(0.0), OutletTemp(0.0), OutletWetBulbTemp(0.0), OutletHumRat(0.0), OutletEnthalpy(0.0), OutletPressure(0.0), OutletRH(0.0),
+          SecInletMassFlowRate(0.0), SecInletTemp(0.0), SecInletWetBulbTemp(0.0), SecInletHumRat(0.0), SecInletEnthalpy(0.0), SecInletPressure(0.0),
+          SecInletRH(0.0), SecOutletMassFlowRate(0.0), SecOutletTemp(0.0), SecOutletWetBulbTemp(0.0), SecOutletHumRat(0.0), SecOutletEnthalpy(0.0),
+          SecOutletPressure(0.0), SecOutletRH(0.0), Wsa(0.0), SupplyVentilationAir(0.0), SupplyVentilationVolume(0.0), OutdoorAir(false),
+          MinOA_Msa(0.0), OARequirementsPtr(0), Tsa(0.0), ModeCounter(0), CoolingRequested(false), HeatingRequested(false),
+          VentilationRequested(false), DehumidificationRequested(false), HumidificationRequested(false)
     {
         WarnOnceFlag = false;
         count_EnvironmentConditionsMetOnce = 0;
@@ -1011,7 +1009,7 @@ namespace HybridEvapCoolingModel {
         Real64 MassFlowDependentDenominator = 0;
         Real64 value = 0;
 
-        for (auto &thisOperatingSettings : CurrentOperatingSettings) {
+        for (auto const &thisOperatingSettings : CurrentOperatingSettings) {
             switch (val) {
             case SYSTEMOUTPUTS::VENTILATION_AIR_V:
                 value = thisOperatingSettings.ScaledSupply_Air_Ventilation_Volume;
@@ -1843,7 +1841,7 @@ namespace HybridEvapCoolingModel {
         UnitOn = 1;
         bool ForceOff = false;
         StandBy = false;
-        if (GetCurrentScheduleValue(state, SchedPtr) <= 0 || availStatus == Avail::Status::ForceOff) {
+        if (availSched->getCurrentVal() <= 0 || availStatus == Avail::Status::ForceOff) {
             UnitOn = 0;
             ForceOff = true;
         }

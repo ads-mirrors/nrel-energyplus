@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -47,15 +47,4 @@
 
 #ifndef GroundTemperatureModelManager_hh_INCLUDED
 #define GroundTemperatureModelManager_hh_INCLUDED
-
-// EnergyPlus Headers
-#include <EnergyPlus/Data/BaseData.hh>
-#include <EnergyPlus/GroundTemperatureModeling/BaseGroundTemperatureModel.hh>
-
-namespace EnergyPlus::GroundTemperatureManager {
-
-BaseGroundTempsModel *GetGroundTempModelAndInit(EnergyPlusData &state, std::string_view type, std::string const &name);
-
-} // namespace EnergyPlus::GroundTemperatureManager
-
 #endif

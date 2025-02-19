@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -54,7 +54,7 @@
 #include <ObjexxFCL/Array.functions.hh>
 #include <ObjexxFCL/Array1D.hh>
 #include <ObjexxFCL/Array2D.hh>
-#include <ObjexxFCL/Fmath.hh>
+// #include <ObjexxFCL/Fmath.hh>
 
 // EnergyPlus Headers
 #include <AirflowNetwork/Solver.hpp>
@@ -257,8 +257,6 @@ namespace RoomAir {
         // Using/Aliasing
         using DataZoneEquipment::EquipConfiguration;
 
-        using ScheduleManager::GetScheduleIndex;
-
         // SUBROUTINE PARAMETER DEFINITIONS:
         static constexpr std::string_view routineName = "GetUserDefinedPatternData: ";
 
@@ -323,20 +321,15 @@ namespace RoomAir {
             airPatternZoneInfo.Name = ipsc->cAlphaArgs(1);     // Name of this Control Object
             airPatternZoneInfo.ZoneName = ipsc->cAlphaArgs(2); // Zone Name
 
-            airPatternZoneInfo.AvailSched = ipsc->cAlphaArgs(3);
             if (ipsc->lAlphaFieldBlanks(3)) {
-                airPatternZoneInfo.AvailSchedID = ScheduleManager::ScheduleAlwaysOn;
-            } else {
-                airPatternZoneInfo.AvailSchedID = GetScheduleIndex(state, ipsc->cAlphaArgs(3));
-                if (airPatternZoneInfo.AvailSchedID == 0) {
-                    ShowSevereItemNotFound(state, eoh, ipsc->cAlphaFieldNames(3), ipsc->cAlphaArgs(3));
-                    ErrorsFound = true;
-                }
+                airPatternZoneInfo.availSched = Sched::GetScheduleAlwaysOn(state);
+            } else if ((airPatternZoneInfo.availSched = Sched::GetSchedule(state, ipsc->cAlphaArgs(3))) == nullptr) {
+                ShowSevereItemNotFound(state, eoh, ipsc->cAlphaFieldNames(3), ipsc->cAlphaArgs(3));
+                ErrorsFound = true;
             }
 
-            airPatternZoneInfo.PatternCntrlSched = ipsc->cAlphaArgs(4); // Schedule Name for Leading Pattern Control for this Zone
-            airPatternZoneInfo.PatternSchedID = GetScheduleIndex(state, ipsc->cAlphaArgs(4));
-            if (airPatternZoneInfo.PatternSchedID == 0) {
+            if (ipsc->lAlphaFieldBlanks(4)) {
+            } else if ((airPatternZoneInfo.patternSched = Sched::GetSchedule(state, ipsc->cAlphaArgs(4))) == nullptr) {
                 ShowSevereItemNotFound(state, eoh, ipsc->cAlphaFieldNames(4), ipsc->cAlphaArgs(4));
                 ErrorsFound = true;
             }
@@ -891,9 +884,6 @@ namespace RoomAir {
         // METHODOLOGY EMPLOYED:
         // Use input processor to get input from idf file
 
-        // Using/Aliasing
-        using namespace ScheduleManager;
-
         // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
         constexpr std::string_view routineName = "GetDisplacementVentData";
         int IOStat;
@@ -941,7 +931,7 @@ namespace RoomAir {
             if (ipsc->lAlphaFieldBlanks(2)) {
                 ShowSevereEmptyField(state, eoh, ipsc->cAlphaFieldNames(2));
                 ErrorsFound = true;
-            } else if ((zoneDV3N.SchedGainsPtr = GetScheduleIndex(state, ipsc->cAlphaArgs(2))) == 0) {
+            } else if ((zoneDV3N.gainsSched = Sched::GetSchedule(state, ipsc->cAlphaArgs(2))) == nullptr) {
                 ShowSevereItemNotFound(state, eoh, ipsc->cAlphaFieldNames(2), ipsc->cAlphaArgs(2));
                 ErrorsFound = true;
             }
@@ -965,9 +955,6 @@ namespace RoomAir {
 
         // METHODOLOGY EMPLOYED:
         // Use input processor to get input from idf file
-
-        // Using/Aliasing
-        using namespace ScheduleManager;
 
         // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
         constexpr std::string_view routineName = "GetCrossVentData";
@@ -1015,7 +1002,7 @@ namespace RoomAir {
             if (ipsc->lAlphaFieldBlanks(2)) {
                 ShowSevereEmptyField(state, eoh, ipsc->cAlphaFieldNames(2));
                 ErrorsFound = true;
-            } else if ((zoneCV.SchedGainsPtr = GetScheduleIndex(state, ipsc->cAlphaArgs(2))) == 0) {
+            } else if ((zoneCV.gainsSched = Sched::GetSchedule(state, ipsc->cAlphaArgs(2))) == nullptr) {
                 ShowSevereItemNotFound(state, eoh, ipsc->cAlphaFieldNames(2), ipsc->cAlphaArgs(2));
                 ErrorsFound = true;
             }
@@ -1085,9 +1072,6 @@ namespace RoomAir {
 
         // METHODOLOGY EMPLOYED:
         // Use input processor to get input from idf file
-
-        // Using/Aliasing
-        using namespace ScheduleManager;
 
         // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
         constexpr std::string_view routineName = "GetUFADZoneData";
@@ -1252,7 +1236,6 @@ namespace RoomAir {
 
         // Using/Aliasing
         using InternalHeatGains::GetInternalGainDeviceIndex;
-        using ScheduleManager::GetScheduleIndex;
 
         // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
         constexpr std::string_view routineName = "GetRoomAirflowNetworkData";

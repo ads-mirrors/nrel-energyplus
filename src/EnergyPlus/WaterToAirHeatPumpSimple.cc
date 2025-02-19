@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -50,7 +50,6 @@
 
 // ObjexxFCL Headers
 #include <ObjexxFCL/Array.functions.hh>
-#include <ObjexxFCL/Fmath.hh>
 
 // EnergyPlus Headers
 #include <EnergyPlus/Autosizing/Base.hh>
@@ -176,7 +175,7 @@ namespace WaterToAirHeatPumpSimple {
             }
         }
 
-        auto &simpleWAHP(state.dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(HPNum));
+        auto const &simpleWAHP = state.dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(HPNum);
 
         if (simpleWAHP.WAHPPlantType == DataPlant::PlantEquipmentType::CoilWAHPCoolingEquationFit) {
             // Cooling mode
@@ -1126,11 +1125,8 @@ namespace WaterToAirHeatPumpSimple {
                 simpleWatertoAirHP.PartLoadRatio = 0.0;
 
                 if (simpleWatertoAirHP.RatedWaterVolFlowRate != DataSizing::AutoSize) {
-                    rho = FluidProperties::GetDensityGlycol(state,
-                                                            state.dataPlnt->PlantLoop(simpleWatertoAirHP.plantLoc.loopNum).FluidName,
-                                                            Constant::InitConvTemp,
-                                                            state.dataPlnt->PlantLoop(simpleWatertoAirHP.plantLoc.loopNum).FluidIndex,
-                                                            RoutineName);
+                    rho =
+                        state.dataPlnt->PlantLoop(simpleWatertoAirHP.plantLoc.loopNum).glycol->getDensity(state, Constant::InitConvTemp, RoutineName);
 
                     simpleWatertoAirHP.DesignWaterMassFlowRate = rho * simpleWatertoAirHP.RatedWaterVolFlowRate;
                     PlantUtilities::InitComponentNodes(state,
@@ -1275,8 +1271,7 @@ namespace WaterToAirHeatPumpSimple {
         // METHODOLOGY EMPLOYED:
         // Obtains heating capacities and flow rates from the zone or system sizing arrays.
 
-        auto &ZoneEqSizing(state.dataSize->ZoneEqSizing);
-        auto &simpleWatertoAirHP(state.dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(HPNum));
+        auto &simpleWatertoAirHP = state.dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(HPNum);
 
         // SUBROUTINE PARAMETER DEFINITIONS:
         static constexpr std::string_view RoutineName("SizeWaterToAirCoil");
@@ -1523,7 +1518,7 @@ namespace WaterToAirHeatPumpSimple {
                     }
                     // cooling design day calculations
                     if (VolFlowRate >= HVAC::SmallAirVolFlow) {
-                        auto &finalSysSizing(state.dataSize->FinalSysSizing(state.dataSize->CurSysNum));
+                        auto const &finalSysSizing = state.dataSize->FinalSysSizing(state.dataSize->CurSysNum);
                         if (state.dataSize->CurOASysNum > 0) { // coil is in the OA stream
                             MixTemp = finalSysSizing.OutTempAtCoolPeak;
                             MixHumRat = finalSysSizing.OutHumRatAtCoolPeak;
@@ -1658,7 +1653,7 @@ namespace WaterToAirHeatPumpSimple {
                     if (VolFlowRate >= HVAC::SmallAirVolFlow) {
                         // cooling design calculations
                         if (state.dataSize->ZoneEqDXCoil) {
-                            if (ZoneEqSizing(state.dataSize->CurZoneEqNum).OAVolFlow > 0.0) {
+                            if (state.dataSize->ZoneEqSizing(state.dataSize->CurZoneEqNum).OAVolFlow > 0.0) {
                                 MixTemp = state.dataSize->FinalZoneSizing(state.dataSize->CurZoneEqNum).DesCoolCoilInTemp;
                                 MixHumRat = state.dataSize->FinalZoneSizing(state.dataSize->CurZoneEqNum).DesCoolCoilInHumRat;
                                 // calculate mixed air temperature and humidity with system airflow
@@ -1797,7 +1792,7 @@ namespace WaterToAirHeatPumpSimple {
                         VolFlowRate = HeatingAirVolFlowRateDes; // system air flow
                     }
                     if (VolFlowRate >= HVAC::SmallAirVolFlow) {
-                        auto &finalSysSizing(state.dataSize->FinalSysSizing(state.dataSize->CurSysNum));
+                        auto const &finalSysSizing = state.dataSize->FinalSysSizing(state.dataSize->CurSysNum);
                         if (state.dataSize->CurOASysNum > 0) { // coil is in the OA stream
                             MixTemp = finalSysSizing.OutTempAtCoolPeak;
                             MixHumRat = finalSysSizing.OutHumRatAtCoolPeak;
@@ -1913,7 +1908,7 @@ namespace WaterToAirHeatPumpSimple {
                     }
                     if (VolFlowRate >= HVAC::SmallAirVolFlow) {
                         if (state.dataSize->ZoneEqDXCoil) {
-                            if (ZoneEqSizing(state.dataSize->CurZoneEqNum).OAVolFlow > 0.0) {
+                            if (state.dataSize->ZoneEqSizing(state.dataSize->CurZoneEqNum).OAVolFlow > 0.0) {
                                 MixTemp = state.dataSize->FinalZoneSizing(state.dataSize->CurZoneEqNum).DesCoolCoilInTemp;
                                 MixHumRat = state.dataSize->FinalZoneSizing(state.dataSize->CurZoneEqNum).DesCoolCoilInHumRat;
                             } else {
@@ -2012,8 +2007,8 @@ namespace WaterToAirHeatPumpSimple {
             if (!HardSizeNoDesRun) {
                 if (RatedCapCoolTotalAutoSized) {
                     if (simpleWatertoAirHP.CompanionHeatingCoilNum > 0) {
-                        auto &companionHeatingCoil(
-                            state.dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(simpleWatertoAirHP.CompanionHeatingCoilNum));
+                        auto const &companionHeatingCoil =
+                            state.dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(simpleWatertoAirHP.CompanionHeatingCoilNum);
                         if (companionHeatingCoil.WAHPPlantType == DataPlant::PlantEquipmentType::CoilWAHPHeatingEquationFit &&
                             companionHeatingCoil.RatedCapHeat > 0) {
                             // case 1: companion heating coil has a user-specified capacity
@@ -2353,7 +2348,7 @@ namespace WaterToAirHeatPumpSimple {
                     }
                     // heating design day calculations
                     if (VolFlowRate >= HVAC::SmallAirVolFlow) {
-                        auto &finalSysSizing(state.dataSize->FinalSysSizing(state.dataSize->CurSysNum));
+                        auto const &finalSysSizing = state.dataSize->FinalSysSizing(state.dataSize->CurSysNum);
                         if (state.dataSize->CurOASysNum > 0) { // coil is in the OA stream
                             HeatMixTemp = finalSysSizing.HeatOutTemp;
                             HeatMixHumRat = finalSysSizing.HeatOutHumRat;
@@ -2471,7 +2466,7 @@ namespace WaterToAirHeatPumpSimple {
                     }
                     if (VolFlowRate >= HVAC::SmallAirVolFlow) {
                         if (state.dataSize->ZoneEqDXCoil) {
-                            if (ZoneEqSizing(state.dataSize->CurZoneEqNum).OAVolFlow > 0.0) {
+                            if (state.dataSize->ZoneEqSizing(state.dataSize->CurZoneEqNum).OAVolFlow > 0.0) {
                                 HeatMixTemp = state.dataSize->FinalZoneSizing(state.dataSize->CurZoneEqNum).DesHeatCoilInTemp;
                                 HeatMixHumRat = state.dataSize->FinalZoneSizing(state.dataSize->CurZoneEqNum).DesHeatCoilInHumRat;
                                 // calculate mixed air temperature with system airflow
@@ -2871,24 +2866,18 @@ namespace WaterToAirHeatPumpSimple {
                 false);
 
             if (PltSizNum > 0) {
-                rho = FluidProperties::GetDensityGlycol(state,
-                                                        state.dataPlnt->PlantLoop(simpleWatertoAirHP.plantLoc.loopNum).FluidName,
-                                                        state.dataSize->PlantSizData(PltSizNum).ExitTemp,
-                                                        state.dataPlnt->PlantLoop(simpleWatertoAirHP.plantLoc.loopNum).FluidIndex,
-                                                        RoutineNameAlt);
-                Cp = FluidProperties::GetSpecificHeatGlycol(state,
-                                                            state.dataPlnt->PlantLoop(simpleWatertoAirHP.plantLoc.loopNum).FluidName,
-                                                            state.dataSize->PlantSizData(PltSizNum).ExitTemp,
-                                                            state.dataPlnt->PlantLoop(simpleWatertoAirHP.plantLoc.loopNum).FluidIndex,
-                                                            RoutineNameAlt);
+                rho = state.dataPlnt->PlantLoop(simpleWatertoAirHP.plantLoc.loopNum)
+                          .glycol->getDensity(state, state.dataSize->PlantSizData(PltSizNum).ExitTemp, RoutineNameAlt);
+                Cp = state.dataPlnt->PlantLoop(simpleWatertoAirHP.plantLoc.loopNum)
+                         .glycol->getSpecificHeat(state, state.dataSize->PlantSizData(PltSizNum).ExitTemp, RoutineNameAlt);
 
                 if (simpleWatertoAirHP.WAHPType == WatertoAirHP::Heating) {
                     RatedWaterVolFlowRateDes = simpleWatertoAirHP.RatedCapHeat / (state.dataSize->PlantSizData(PltSizNum).DeltaT * Cp * rho);
                 } else if (simpleWatertoAirHP.WAHPType == WatertoAirHP::Cooling) {
                     //       use companion heating coil capacity to calculate volumetric flow rate
                     if (simpleWatertoAirHP.CompanionHeatingCoilNum > 0) {
-                        auto &companionHeatingCoil(
-                            state.dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(simpleWatertoAirHP.CompanionHeatingCoilNum));
+                        auto const &companionHeatingCoil =
+                            state.dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(simpleWatertoAirHP.CompanionHeatingCoilNum);
                         if (companionHeatingCoil.RatedCapHeat == DataSizing::AutoSize) {
                             SystemCapacity = simpleWatertoAirHP.RatedCapCoolTotal; // but you should use condenser capacity?
                         } else {
@@ -3102,11 +3091,8 @@ namespace WaterToAirHeatPumpSimple {
         state.dataWaterToAirHeatPumpSimple->SourceSideMassFlowRate = simpleWatertoAirHP.WaterMassFlowRate;
         state.dataWaterToAirHeatPumpSimple->SourceSideInletTemp = simpleWatertoAirHP.InletWaterTemp;
         state.dataWaterToAirHeatPumpSimple->SourceSideInletEnth = simpleWatertoAirHP.InletWaterEnthalpy;
-        CpWater = FluidProperties::GetSpecificHeatGlycol(state,
-                                                         state.dataPlnt->PlantLoop(simpleWatertoAirHP.plantLoc.loopNum).FluidName,
-                                                         state.dataWaterToAirHeatPumpSimple->SourceSideInletTemp,
-                                                         state.dataPlnt->PlantLoop(simpleWatertoAirHP.plantLoc.loopNum).FluidIndex,
-                                                         RoutineNameSourceSideInletTemp);
+        CpWater = state.dataPlnt->PlantLoop(simpleWatertoAirHP.plantLoc.loopNum)
+                      .glycol->getSpecificHeat(state, state.dataWaterToAirHeatPumpSimple->SourceSideInletTemp, RoutineNameSourceSideInletTemp);
 
         // Check for flows, do not perform simulation if no flow in load side or source side.
         if (state.dataWaterToAirHeatPumpSimple->SourceSideMassFlowRate <= 0.0 || LoadSideFullMassFlowRate <= 0.0) {
@@ -3404,11 +3390,8 @@ namespace WaterToAirHeatPumpSimple {
         state.dataWaterToAirHeatPumpSimple->SourceSideMassFlowRate = simpleWatertoAirHP.WaterMassFlowRate;
         state.dataWaterToAirHeatPumpSimple->SourceSideInletTemp = simpleWatertoAirHP.InletWaterTemp;
         state.dataWaterToAirHeatPumpSimple->SourceSideInletEnth = simpleWatertoAirHP.InletWaterEnthalpy;
-        CpWater = FluidProperties::GetSpecificHeatGlycol(state,
-                                                         state.dataPlnt->PlantLoop(simpleWatertoAirHP.plantLoc.loopNum).FluidName,
-                                                         state.dataWaterToAirHeatPumpSimple->SourceSideInletTemp,
-                                                         state.dataPlnt->PlantLoop(simpleWatertoAirHP.plantLoc.loopNum).FluidIndex,
-                                                         RoutineNameSourceSideInletTemp);
+        CpWater = state.dataPlnt->PlantLoop(simpleWatertoAirHP.plantLoc.loopNum)
+                      .glycol->getSpecificHeat(state, state.dataWaterToAirHeatPumpSimple->SourceSideInletTemp, RoutineNameSourceSideInletTemp);
 
         // Check for flows, do not perform simulation if no flow in load side or source side.
         if (state.dataWaterToAirHeatPumpSimple->SourceSideMassFlowRate <= 0.0 || LoadSideFullMassFlowRate <= 0.0) {
@@ -3719,7 +3702,7 @@ namespace WaterToAirHeatPumpSimple {
         Real64 Error;   // Error for iteration (DO) loop
         Real64 LHRmult; // Latent Heat Ratio (LHR) multiplier. The effective latent heat ratio LHR = (1-SHRss)*LHRmult
 
-        auto &simpleWatertoAirHP(state.dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(HPNum));
+        auto const &simpleWatertoAirHP = state.dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(HPNum);
 
         Twet_Rated = simpleWatertoAirHP.Twet_Rated;
         Gamma_Rated = simpleWatertoAirHP.Gamma_Rated;

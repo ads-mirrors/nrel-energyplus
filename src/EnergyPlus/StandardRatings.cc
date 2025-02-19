@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -47,9 +47,6 @@
 
 // C++ Headers
 #include <string>
-
-// ObjexxFCL Headers
-#include <ObjexxFCL/Fmath.hh>
 
 // EnergyPlus Headers
 #include <EnergyPlus/CurveManager.hh>
@@ -409,8 +406,6 @@ namespace StandardRatings {
         using namespace OutputReportPredefined;
         using Curve::CurveValue;
         using Curve::GetCurveName;
-        using FluidProperties::GetDensityGlycol;
-        using FluidProperties::GetSpecificHeatGlycol;
         using General::SolveRoot;
 
         Real64 constexpr Acc(0.0001);     // Accuracy of result
@@ -531,17 +526,9 @@ namespace StandardRatings {
 
                 } else if (ChillerType == DataPlant::PlantEquipmentType::Chiller_ElectricReformEIR) {
                     EnteringWaterTempReduced = CondenserInletTemp;
-                    Cp = GetSpecificHeatGlycol(state,
-                                               state.dataPlnt->PlantLoop(CondLoopNum).FluidName,
-                                               EnteringWaterTempReduced,
-                                               state.dataPlnt->PlantLoop(CondLoopNum).FluidIndex,
-                                               RoutineName);
+                    Cp = state.dataPlnt->PlantLoop(CondLoopNum).glycol->getSpecificHeat(state, EnteringWaterTempReduced, RoutineName);
 
-                    Rho = GetDensityGlycol(state,
-                                           state.dataPlnt->PlantLoop(CondLoopNum).FluidName,
-                                           EnteringWaterTempReduced,
-                                           state.dataPlnt->PlantLoop(CondLoopNum).FluidIndex,
-                                           RoutineName);
+                    Rho = state.dataPlnt->PlantLoop(CondLoopNum).glycol->getDensity(state, EnteringWaterTempReduced, RoutineName);
 
                     Real64 reducedPLR = ReducedPLR[RedCapNum];
                     CondenserOutletTemp0 = EnteringWaterTempReduced + 0.1;
@@ -4157,7 +4144,7 @@ namespace StandardRatings {
 
         Real64 cop_low = q_low / p_low;
         Real64 cop_int = q_int / p_int;
-        Real64 cop_full = q_full / p_full;
+        Real64 cop_full = q_full / p_full; // About half of the variables in this function are unused
         // Low Speed
         Real64 cop_int_bin = cop_low + (cop_int - cop_low) / (q_int - q_low) * (bl - q_low); // Equation 11.101 (AHRI-2023)
         q = bl * n;                                                                          // 11.92 --> n is missing in the print ?
@@ -6804,18 +6791,7 @@ namespace StandardRatings {
                 } else {
                     PreDefTableEntry(state, state.dataOutRptPredefined->pdchDXCoolCoilIEERIP, CompName, "N/A");
                 }
-                addFootNoteSubTable(state,
-                                    state.dataOutRptPredefined->pdstDXCoolCoil,
-                                    "ANSI/AHRI ratings account for supply air fan heat and electric power. <br/>"
-                                    "1 - EnergyPlus object type. <br/>"
-                                    "2 - Capacity less than 65K Btu/h (19050 W) - calculated as per AHRI Standard 210/240-2017. <br/>"
-                                    "&emsp;&nbsp;Capacity of 65K Btu/h (19050 W) to less than 135K Btu/hv (39565 W) - calculated as per AHRI "
-                                    "Standard 340/360-2007. <br/>"
-                                    "&emsp;&nbsp;Capacity from 135K (39565 W) to 250K Btu/hr (73268 W) - calculated as per AHRI Standard 365-2009 - "
-                                    "Ratings not yet supported in EnergyPlus. <br/>"
-                                    "3 - SEER (User) is calculated using user-input PLF curve and cooling coefficient of degradation. <br/>"
-                                    "&emsp;&nbsp;SEER (Standard) is calculated using the default PLF curve and cooling coefficient of degradation"
-                                    "from the appropriate AHRI standard.");
+                addFootNoteSubTable(state, state.dataOutRptPredefined->pdstDXCoolCoil, StandardRatings::AHRI2017FOOTNOTE);
             } else {
                 // ANSI/AHRI 210/240 Standard 2023 Ratings | SEER2
                 if (state.dataHVACGlobal->StandardRatingsMyCoolOneTimeFlag2) {
@@ -6862,19 +6838,7 @@ namespace StandardRatings {
                 } else {
                     PreDefTableEntry(state, state.dataOutRptPredefined->pdchDXCoolCoilIEERIP_2023, CompName, "N/A");
                 }
-                addFootNoteSubTable(state,
-                                    state.dataOutRptPredefined->pdstDXCoolCoil_2023,
-                                    "ANSI/AHRI ratings account for supply air fan heat and electric power. <br/>"
-                                    "1 - EnergyPlus object type. <br/>"
-                                    "2 - Capacity less than 65K Btu/h (19050 W) - calculated as per AHRI Standard 210/240-2023. <br/>"
-                                    "&emsp;&nbsp;Capacity of 65K Btu/h (19050 W) to less than 135K Btu/h (39565 W) - calculated as per AHRI Standard "
-                                    "340/360-2022. <br/>"
-                                    "&emsp;&nbsp;Capacity from 135K (39565 W) to 250K Btu/hr (73268 W) - calculated as per AHRI Standard 365-2009 - "
-                                    "Ratings not yet supported in EnergyPlus. <br/>"
-                                    "3 - SEER2 (User) is calculated using user-input PLF curve and cooling coefficient of degradation. <br/>"
-                                    "&emsp;&nbsp;SEER2 (Standard) is calculated using the default PLF curve and cooling coefficient of degradation"
-                                    "from the appropriate AHRI standard. <br/>"
-                                    "4 - Value for the Full Speed of the coil.");
+                addFootNoteSubTable(state, state.dataOutRptPredefined->pdstDXCoolCoil_2023, StandardRatings::AHRI2023FOOTNOTE);
             }
             break;
         }
@@ -6973,18 +6937,7 @@ namespace StandardRatings {
                 } else {
                     PreDefTableEntry(state, state.dataOutRptPredefined->pdchDXCoolCoilIEERIP, CompName, "N/A");
                 }
-                addFootNoteSubTable(state,
-                                    state.dataOutRptPredefined->pdstDXCoolCoil,
-                                    "ANSI/AHRI ratings account for supply air fan heat and electric power. <br/>"
-                                    "1 - EnergyPlus object type. <br/>"
-                                    "2 - Capacity less than 65K Btu/h (19050 W) - calculated as per AHRI Standard 210/240-2017. <br/>"
-                                    "&emsp;&nbsp;Capacity of 65K Btu/h (19050 W) to less than 135K Btu/h (39565 W) - calculated as per AHRI Standard "
-                                    "340/360-2007. <br/>"
-                                    "&emsp;&nbsp;Capacity from 135K (39565 W) to 250K Btu/hr (73268 W) - calculated as per AHRI Standard 365-2009 - "
-                                    "Ratings not yet supported in EnergyPlus. <br/>"
-                                    "3 - SEER (User) is calculated using user-input PLF curve and cooling coefficient of degradation. <br/>"
-                                    "&emsp;&nbsp;SEER (Standard) is calculated using the default PLF curve and cooling coefficient of degradation"
-                                    "from the appropriate AHRI standard.");
+                addFootNoteSubTable(state, state.dataOutRptPredefined->pdstDXCoolCoil, StandardRatings::AHRI2017FOOTNOTE);
             } else {
                 // ANSI/AHRI 210/240 Standard 2023 Ratings | SEER2
                 if (state.dataHVACGlobal->StandardRatingsMyCoolOneTimeFlag2) {
@@ -7030,19 +6983,7 @@ namespace StandardRatings {
                 } else {
                     PreDefTableEntry(state, state.dataOutRptPredefined->pdchDXCoolCoilIEERIP_2023, CompName, "N/A");
                 }
-                addFootNoteSubTable(state,
-                                    state.dataOutRptPredefined->pdstDXCoolCoil_2023,
-                                    "ANSI/AHRI ratings account for supply air fan heat and electric power. <br/>"
-                                    "1 - EnergyPlus object type. <br/>"
-                                    "2 - Capacity less than 65K Btu/h (19050 W) - calculated as per AHRI Standard 210/240-2023. <br/>"
-                                    "&emsp;&nbsp;Capacity of 65K Btu/h (19050 W) to less than 135K Btu/h (39565 W) - calculated as per AHRI Standard "
-                                    "340/360-2022. <br/>"
-                                    "&emsp;&nbsp;Capacity from 135K (39565 W) to 250K Btu/hr (73268 W) - calculated as per AHRI Standard 365-2009 - "
-                                    "Ratings not yet supported in EnergyPlus. <br/>"
-                                    "3 - SEER2 (User) is calculated using user-input PLF curve and cooling coefficient of degradation. <br/>"
-                                    "&emsp;&nbsp;SEER2 (Standard) is calculated using the default PLF curve and cooling coefficient of degradation"
-                                    "from the appropriate AHRI standard. <br/>"
-                                    "4 - Value for the Full Speed of the coil.");
+                addFootNoteSubTable(state, state.dataOutRptPredefined->pdstDXCoolCoil_2023, StandardRatings::AHRI2023FOOTNOTE);
             }
 
             break;

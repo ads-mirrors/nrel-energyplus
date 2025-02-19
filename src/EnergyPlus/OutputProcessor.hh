@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -63,6 +63,7 @@
 #include <EnergyPlus/DisplayRoutines.hh>
 #include <EnergyPlus/EPVector.hh>
 #include <EnergyPlus/EnergyPlus.hh>
+#include <EnergyPlus/ScheduleManager.hh>
 
 // Third party Headers
 #include "re2/re2.h"
@@ -444,7 +445,7 @@ namespace OutputProcessor {
         int maxValueDate = 0;               // Date stamp of maximum
         int minValueDate = 0;               // Date stamp of minimum
         int ReportID = 0;                   // Report variable ID number
-        int SchedPtr = 0;                   // If scheduled, this points to the schedule
+        Sched::Schedule *sched = nullptr;   // If scheduled, this is schedule
         int ZoneMult = 1;                   // If metered, Zone Multiplier is applied
         int ZoneListMult = 1;               // If metered, Zone List Multiplier is applied
 
@@ -517,8 +518,7 @@ namespace OutputProcessor {
         std::string key = "";               // Could be blank or "*"
         std::string name = "";              // Name of Variable
         ReportFreq freq = ReportFreq::Hour; // Reporting Frequency
-        int SchedPtr = 0;                   // Index of the Schedule
-        std::string SchedName = "";         // Schedule Name
+        Sched::Schedule *sched = nullptr;   // Schedule
         bool Used = false;                  // True when this combination (key, varname, frequency) has been set
 
         bool is_simple_string = true; // Whether the Key potentially includes a Regular Expression pattern
@@ -941,6 +941,10 @@ struct OutputProcessorData : BaseGlobalStruct
     int MaxNumSubcategories = 1;
     int maxNumEndUseSpaceTypes = 1;
     EPVector<OutputProcessor::EndUseCategoryType> EndUseCategory;
+
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
 
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {

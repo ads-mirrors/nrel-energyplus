@@ -4301,4 +4301,6 @@ TEST_F(EnergyPlusFixture, SizingManager_ZoneSizing_Coincident_NonAir_10x_Latent_
     EXPECT_EQ("CHICAGO_IL_USA ANNUAL COOLING 1% DESIGN CONDITIONS DB/MCWB",
               OutputReportPredefined::RetrievePreDefTableEntry(*state, state->dataOutRptPredefined->pdchZnClDesDay, "ZONE 1"));
     EXPECT_EQ("7/21 16:00:00", OutputReportPredefined::RetrievePreDefTableEntry(*state, state->dataOutRptPredefined->pdchZnClPkTime, "ZONE 1"));
+    // Expect output to spsz file
+    EXPECT_FALSE(state->files.spsz.get_output().empty());
 }

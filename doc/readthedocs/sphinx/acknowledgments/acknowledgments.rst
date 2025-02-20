@@ -1,6 +1,9 @@
 Notices and Acknowledgments
 ===========================
 
+.. contents::
+   :depth: 2
+
 Copyright Notice
 ----------------
 

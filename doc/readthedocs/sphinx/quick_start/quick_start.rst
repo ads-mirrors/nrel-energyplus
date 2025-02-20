@@ -1,7 +1,6 @@
 Quick Start Guide
 =================
 
-
 Welcome to the EnergyPlus Quick Start guide!
 
 The following guide is intended to give a very high-level
@@ -14,6 +13,9 @@ EnergyPlus) is available as well as training offerings from a
 variety of sources (see the `Support & Training
 page <https://energyplus.net/support-training>`__ for further
 details).
+
+.. contents::
+   :depth: 2
 
 Who should be using this guide?
 -------------------------------

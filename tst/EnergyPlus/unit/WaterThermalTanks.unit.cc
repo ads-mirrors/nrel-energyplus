@@ -3356,18 +3356,18 @@ TEST_F(EnergyPlusFixture, Desuperheater_WAHP_VSEQ_Coil_Test)
         "  2,                                      !- Maximum Value of x {BasedOnField A2}",
         "  0,                                      !- Minimum Curve Output {BasedOnField A3}",
         "  2;                                      !- Maximum Curve Output {BasedOnField A3}",
-        
-        "Curve:Biquadratic,", 
-        "  WasteHeat-FT1,                          !-Name", 
-        "  1,                                      !- Coefficient1 Constant", 
-        "  0,                                      !- Coefficient2 x", 
-        "  0,                                      !- Coefficient3 x**2", 
-        "  0,                                      !- Coefficient4 y", 
-        "  0,                                      !- Coefficient5 y**2", 
-        "  0,                                      !- Coefficient6 x*y", 
-        "  0,                                      !- Minimum Value of x {BasedOnField A2}", 
-        "  1,                                      !- Maximum Value of x {BasedOnField A2}", 
-        "  0,                                      !- Minimum Value of y {BasedOnField A3}", 
+
+        "Curve:Biquadratic,",
+        "  WasteHeat-FT1,                          !-Name",
+        "  1,                                      !- Coefficient1 Constant",
+        "  0,                                      !- Coefficient2 x",
+        "  0,                                      !- Coefficient3 x**2",
+        "  0,                                      !- Coefficient4 y",
+        "  0,                                      !- Coefficient5 y**2",
+        "  0,                                      !- Coefficient6 x*y",
+        "  0,                                      !- Minimum Value of x {BasedOnField A2}",
+        "  1,                                      !- Maximum Value of x {BasedOnField A2}",
+        "  0,                                      !- Minimum Value of y {BasedOnField A3}",
         "  1;                                      !- Maximum Value of y {BasedOnField A3}",
 
         "  Curve:Biquadratic,",
@@ -3392,7 +3392,7 @@ TEST_F(EnergyPlusFixture, Desuperheater_WAHP_VSEQ_Coil_Test)
         "  2,                                      !- Maximum Value of x {BasedOnField A2}",
         "  0,                                      !- Minimum Curve Output {BasedOnField A3}",
         "  2;                                      !- Maximum Curve Output {BasedOnField A3}",
-        
+
         "Curve:Quadratic,",
         "  Cool-Cap-fWF2,                          !- Name",
         "  0.815,                                  !- Coefficient1 Constant",
@@ -3425,7 +3425,7 @@ TEST_F(EnergyPlusFixture, Desuperheater_WAHP_VSEQ_Coil_Test)
         "  2,                                      !- Maximum Value of x {BasedOnField A2}",
         "  0,                                      !- Minimum Curve Output {BasedOnField A3}",
         "  2;                                      !- Maximum Curve Output {BasedOnField A3}",
-        
+
         "Curve:Quadratic,",
         "  Cool-EIR-fWF2,                          !- Name",
         "  1.5872,                                 !- Coefficient1 Constant",
@@ -3436,17 +3436,17 @@ TEST_F(EnergyPlusFixture, Desuperheater_WAHP_VSEQ_Coil_Test)
         "  0,                                      !- Minimum Curve Output {BasedOnField A3}",
         "  2;                                      !- Maximum Curve Output {BasedOnField A3}",
 
-        "Curve:Biquadratic,", 
-        "  WasteHeat-FT2,                          !- Name", 
-        "  1,                                      !- Coefficient1 Constant", 
-        "  0,                                      !- Coefficient2 x", 
+        "Curve:Biquadratic,",
+        "  WasteHeat-FT2,                          !- Name",
+        "  1,                                      !- Coefficient1 Constant",
+        "  0,                                      !- Coefficient2 x",
         "  0,                                      !- Coefficient3 x**2",
         "  0,                                      !- Coefficient4 y",
-        "  0,                                      !- Coefficient5 y**2", 
-        "  0,                                      !- Coefficient6 x*y", 
+        "  0,                                      !- Coefficient5 y**2",
+        "  0,                                      !- Coefficient6 x*y",
         "  0,                                      !- Minimum Value of x {BasedOnField A2}",
         "  1,                                      !- Maximum Value of x {BasedOnField A2}",
-        "  0,                                      !- Minimum Value of y {BasedOnField A3}", 
+        "  0,                                      !- Minimum Value of y {BasedOnField A3}",
         "  1;                                      !- Maximum Value of y {BasedOnField A3}",
     });
 
@@ -3495,8 +3495,7 @@ TEST_F(EnergyPlusFixture, Desuperheater_WAHP_VSEQ_Coil_Test)
         state->dataVariableSpeedCoils->VarSpeedCoil(1).MSRatedWaterVolFlowRate(1) * 1000.0;
     state->dataVariableSpeedCoils->VarSpeedCoil(1).MSRatedWaterMassFlowRate(2) =
         state->dataVariableSpeedCoils->VarSpeedCoil(1).MSRatedWaterVolFlowRate(2) * 1000.0;
-    state->dataVariableSpeedCoils->VarSpeedCoil(1).DesignAirMassFlowRate =
-        state->dataVariableSpeedCoils->VarSpeedCoil(1).MSRatedAirMassFlowRate(2);
+    state->dataVariableSpeedCoils->VarSpeedCoil(1).DesignAirMassFlowRate = state->dataVariableSpeedCoils->VarSpeedCoil(1).MSRatedAirMassFlowRate(2);
     state->dataVariableSpeedCoils->VarSpeedCoil(1).DesignWaterMassFlowRate =
         state->dataVariableSpeedCoils->VarSpeedCoil(1).MSRatedWaterMassFlowRate(2);
     state->dataVariableSpeedCoils->VarSpeedCoil(1).AirMassFlowRate = state->dataVariableSpeedCoils->VarSpeedCoil(1).MSRatedAirMassFlowRate(2);
@@ -3512,34 +3511,37 @@ TEST_F(EnergyPlusFixture, Desuperheater_WAHP_VSEQ_Coil_Test)
     state->dataVariableSpeedCoils->VarSpeedCoil(1).InletWaterEnthalpy = 27.0 * Cp;
     state->dataVariableSpeedCoils->VarSpeedCoil(1).plantLoc.loopNum = PlantLoopNum;
     state->dataPlnt->PlantLoop.allocate(PlantLoopNum);
-    
+
     state->dataPlnt->PlantLoop(PlantLoopNum).glycol = Fluid::GetWater(*state);
     state->dataPlnt->PlantLoop(PlantLoopNum).FluidName = "WATER";
     state->dataLoopNodes->Node(5).MassFlowRate = state->dataVariableSpeedCoils->VarSpeedCoil(1).MSRatedAirMassFlowRate(2);
-    state->dataVariableSpeedCoils->VarSpeedCoil(1).MSRatedCBF(1) = DXCoils::CalcCBF(*state,
-                                                                                    state->dataVariableSpeedCoils->VarSpeedCoil(1).VarSpeedCoilType,
-                                                                                    state->dataVariableSpeedCoils->VarSpeedCoil(1).Name,
-                                                                                    26.6667,
-                                                                                    0.0111847,
-                                                                                    state->dataVariableSpeedCoils->VarSpeedCoil(1).MSRatedTotCap(1),
-                                                                                    state->dataVariableSpeedCoils->VarSpeedCoil(1).MSRatedAirVolFlowRate(1),
-                                                                                    state->dataVariableSpeedCoils->VarSpeedCoil(1).MSRatedSHR(1),
-                                                                                    true);
-    state->dataVariableSpeedCoils->VarSpeedCoil(1).MSRatedCBF(2) = DXCoils::CalcCBF(*state,
-                                                                                    state->dataVariableSpeedCoils->VarSpeedCoil(1).VarSpeedCoilType,
-                                                                                    state->dataVariableSpeedCoils->VarSpeedCoil(1).Name,
-                                                                                    26.6667,
-                                                                                    0.0111847,
-                                                                                    state->dataVariableSpeedCoils->VarSpeedCoil(1).MSRatedTotCap(2),
-                                                                                    state->dataVariableSpeedCoils->VarSpeedCoil(1).MSRatedAirVolFlowRate(2),
-                                                                                    state->dataVariableSpeedCoils->VarSpeedCoil(1).MSRatedSHR(2),
-                                                                                    true);
+    state->dataVariableSpeedCoils->VarSpeedCoil(1).MSRatedCBF(1) =
+        DXCoils::CalcCBF(*state,
+                         state->dataVariableSpeedCoils->VarSpeedCoil(1).VarSpeedCoilType,
+                         state->dataVariableSpeedCoils->VarSpeedCoil(1).Name,
+                         26.6667,
+                         0.0111847,
+                         state->dataVariableSpeedCoils->VarSpeedCoil(1).MSRatedTotCap(1),
+                         state->dataVariableSpeedCoils->VarSpeedCoil(1).MSRatedAirVolFlowRate(1),
+                         state->dataVariableSpeedCoils->VarSpeedCoil(1).MSRatedSHR(1),
+                         true);
+    state->dataVariableSpeedCoils->VarSpeedCoil(1).MSRatedCBF(2) =
+        DXCoils::CalcCBF(*state,
+                         state->dataVariableSpeedCoils->VarSpeedCoil(1).VarSpeedCoilType,
+                         state->dataVariableSpeedCoils->VarSpeedCoil(1).Name,
+                         26.6667,
+                         0.0111847,
+                         state->dataVariableSpeedCoils->VarSpeedCoil(1).MSRatedTotCap(2),
+                         state->dataVariableSpeedCoils->VarSpeedCoil(1).MSRatedAirVolFlowRate(2),
+                         state->dataVariableSpeedCoils->VarSpeedCoil(1).MSRatedSHR(2),
+                         true);
 
     // Calculate multispeed DX cooling coils
     VariableSpeedCoils::CalcVarSpeedCoilCooling(*state, DXNum, HVAC::FanOp::Cycling, 1000.0, 100.0, HVAC::CompressorOp::On, 1.0, 1.0, 1.0, 2);
 
     // Source available heat successfully passed to DataHeatBalance::HeatReclaimVS_Coil data struct
-    EXPECT_EQ(state->dataHeatBal->HeatReclaimVS_Coil(DXNum).AvailCapacity, state->dataVariableSpeedCoils->VarSpeedCoil(DXNum).QLoadTotal + state->dataVariableSpeedCoils->Winput);
+    EXPECT_EQ(state->dataHeatBal->HeatReclaimVS_Coil(DXNum).AvailCapacity,
+              state->dataVariableSpeedCoils->VarSpeedCoil(DXNum).QLoadTotal + state->dataVariableSpeedCoils->Winput);
 
     // Now move to the water thermal tank calculation
     WaterThermalTanks::WaterThermalTankData &Tank = state->dataWaterThermalTanks->WaterThermalTank(TankNum);

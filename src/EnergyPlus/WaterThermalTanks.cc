@@ -8444,7 +8444,7 @@ void WaterThermalTankData::CalcDesuperheaterWaterHeater(EnergyPlusData &state, b
             AverageWasteHeat = state.dataHeatBal->HeatReclaimDXCoil(SourceID).AvailCapacity -
                                state.dataHeatBal->HeatReclaimDXCoil(SourceID).HVACDesuperheaterReclaimedHeatTotal;
             DesupHtr.DXSysPLR = state.dataDXCoils->DXCoil(SourceID).PartLoadRatio;
-        } else if (DesupHtr.ReclaimHeatingSource == ReclaimHeatObjectType::DXVariableCooling || 
+        } else if (DesupHtr.ReclaimHeatingSource == ReclaimHeatObjectType::DXVariableCooling ||
                    DesupHtr.ReclaimHeatingSource == ReclaimHeatObjectType::AirWaterHeatPumpVSEQ) {
             AverageWasteHeat = state.dataHeatBal->HeatReclaimVS_Coil(SourceID).AvailCapacity -
                                state.dataHeatBal->HeatReclaimVS_Coil(SourceID).HVACDesuperheaterReclaimedHeatTotal;

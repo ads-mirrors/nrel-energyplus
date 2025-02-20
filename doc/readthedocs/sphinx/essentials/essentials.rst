@@ -1094,7 +1094,7 @@ different folders:
 
 .. figure:: media/energyplusfolder.png
    :align: center 
-   :width: 50%
+   :width: 25%
    
    EnergyPlus Installation Folders
 

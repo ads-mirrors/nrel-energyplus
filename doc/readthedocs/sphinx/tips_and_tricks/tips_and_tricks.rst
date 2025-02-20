@@ -435,7 +435,7 @@ The preferred method of using WINDOW data in EnergyPlus is to excerpt or
 .. figure:: media/image001.jpg
    :alt: WINDOW screen for exporting IDF Window specifications
    :name: fig:window-screen-for-exporting-idf-window
-   :width: 90.0%
+   :width: 50.0%
 
    WINDOW screen for exporting IDF Window specifications
    `fig:window-screen-for-exporting-idf-window`_
@@ -546,7 +546,7 @@ WinOriginal:2.**
 .. figure:: media/image002.png
    :alt: Window Glazing system with dual glazing constructions
    :name: fig:window-glazing-system-with-dual-glazing
-   :width: 90.0%
+   :width: 50.0%
 
    Window Glazing system with dual glazing constructions
    `fig:window-glazing-system-with-dual-glazing`_
@@ -921,7 +921,7 @@ Figure `fig:extended-roof-surface-will-not-shade`_.
 .. figure:: media/image003.png
    :alt: Building heat transfer surfaces cast shadows in the direction of outward facing normal.
    :name: fig:building-heat-transfer-surfaces-cast-shadows
-   :width: 90.0%
+   :width: 50.0%
 
    Building heat transfer surfaces cast shadows in the direction of
    outward facing normal.
@@ -930,7 +930,7 @@ Figure `fig:extended-roof-surface-will-not-shade`_.
 .. figure:: media/image004.png
    :alt: Extended roof surface will not shade the walls below.
    :name: fig:extended-roof-surface-will-not-shade
-   :width: 90.0%
+   :width: 50.0%
 
    Extended roof surface will not shade the walls below.
    `fig:extended-roof-surface-will-not-shade`_
@@ -959,7 +959,7 @@ ceiling surface in the zone below.
 .. figure:: media/image005.png
    :alt: Proper surface configurations for roof overhangs for two types of attic construction.
    :name: fig:proper-surface-configurations-for-roof
-   :width: 90.0%
+   :width: 50.0%
 
    Proper surface configurations for roof overhangs for two types of
    attic construction. [fig:proper-surface-configurations-for-roof]
@@ -985,7 +985,7 @@ reflection from Shading Surface A.
 .. figure:: media/image006.jpg
    :alt: Limitations in modeling reflections from surfaces
    :name: fig:limitations-in-modeling-reflections-from
-   :width: 90.0%
+   :width: 50.0%
 
    Limitations in modeling reflections from surfaces
    [fig:limitations-in-modeling-reflections-from]
@@ -1171,7 +1171,7 @@ representations were made for comparisons:
 .. figure:: media/image007.png
    :alt: Original Multistory IDF
    :name: fig:original-multistory-idf
-   :width: 90.0%
+   :width: 50.0%
 
    Original Multistory IDF [fig:original-multistory-idf]
 
@@ -1226,7 +1226,7 @@ For comparison purposes, clones of the middle zones were done.
 .. figure:: media/image008.png
    :alt: Multistory with cloned middle zones.
    :name: fig:multistory-with-cloned-middle-zones
-   :width: 90.0%
+   :width: 50.0%
 
    Multistory with cloned middle zones.
    [fig:multistory-with-cloned-middle-zones.]
@@ -1236,7 +1236,7 @@ And, finally, the entire building was created:
 .. figure:: media/image009.png
    :alt: Multistory building – fully cloned.
    :name: fig:multistory-building-fully-cloned
-   :width: 90.0%
+   :width: 50.0%
 
    Multistory building – fully cloned.
    [fig:multistory-building-fully-cloned.]

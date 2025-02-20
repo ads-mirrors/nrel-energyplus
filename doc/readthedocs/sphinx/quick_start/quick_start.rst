@@ -328,11 +328,13 @@ output files:
 
 .. figure:: media/quickstart_1.png
    :name: fig:quickstart_1
+   :width: 50%
 
    Directory Contents Before Run
 
 .. figure:: media/quickstart_2.png
    :name: fig:quickstart_2
+   :width: 50%
 
    Directory Contents After Run
 
@@ -426,6 +428,7 @@ results in the graph shown in Figure 3.
 
 .. figure:: media/quickstart_3.png
    :name: fig:quickstart_3
+   :width: 50%
 
    Daily Boiler NaturalGas Energy
 

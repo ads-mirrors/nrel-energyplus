@@ -2,6 +2,9 @@
 EnergyPlus Essentials
 =====================
 
+.. contents::
+   :depth: 2
+
 Introduction
 ============
 
@@ -484,8 +487,10 @@ where the simulation results are compared to actual utility bills or
 other measured data.
 
 .. figure:: media/WeatherFileLocations.png
-   :alt: 
-   :width: 90.0%
+   :align: center 
+   :width: 50%
+   
+   EnergyPlus.net Weather File Locations
 
 Co-Simulation and Linked Software
 ---------------------------------
@@ -701,8 +706,10 @@ different versions of EP-Launch currently part of the EnergyPlus system.
 The main screen of EP-Launch 2 is shown below:
 
 .. figure:: media/eplaunch2.png
-   :alt: 
-   :width: 90.0%
+   :align: center 
+   :width: 50%
+   
+   EP-Launch 2
 
 It is a Windows program only. EP-Launch 2 is included in the EnergyPlus
 installation package when installing on Windows, so no additional steps
@@ -713,8 +720,10 @@ the version number.
 In 2018, EP-Launch 3 was developed, and its main screen is shown below:
 
 .. figure:: media/eplaunch3.png
-   :alt: 
-   :width: 90.0%
+   :align: center 
+   :width: 50%
+   
+   EP-Launch 3
 
 EP-Launch 3 is not part of the EnergyPlus installation package and needs
 to be installed separately. It is also open source and is available from
@@ -891,8 +900,10 @@ can be found in the Auxiliary Programs document under the “Creating
 Input Files” section.
 
 .. figure:: media/idfeditor.png
-   :alt: 
-   :width: 90.0%
+   :align: center 
+   :width: 50%
+   
+   IDF Editor
 
 Run-Check-Edit Repeat 
 ----------------------
@@ -1082,8 +1093,10 @@ The installation of EnergyPlus includes many different files in
 different folders:
 
 .. figure:: media/energyplusfolder.png
-   :alt: 
-   :width: 90.0%
+   :align: center 
+   :width: 50%
+   
+   EnergyPlus Installation Folders
 
 Many of these folders include valuable resources for using and learning
 EnergyPlus.
@@ -1250,8 +1263,10 @@ files are:
    AuxiliaryPrograms document.
 
 .. figure:: media/IDFVersionUpdater.png
-   :alt: 
-   :width: 90.0%
+   :align: center 
+   :width: 50%
+   
+   IDFVersionUpdater
 
 -  EP-Launch 2 - The Windows-only program that comes with the EnergyPlus
    installation can update a single file from the just previous version
@@ -1471,8 +1486,10 @@ great deal of flexibility exists in EnergyPlus to specify them.
    allows input specifically for shading.
 
 .. figure:: media/officeSchedules.png
-   :alt: 
-   :width: 90.0%
+   :align: center 
+   :width: 50%
+   
+   Various Office Schedules
 
 Other input objects in this input group allow specification of schedule
 values to be in different formats. These input objects and more are
@@ -1530,8 +1547,10 @@ the most commonly used input objects.
    they can be specified in this input object.
 
 .. figure:: media/EnvelopeHierarchy.png
-   :alt: 
-   :width: 90.0%
+   :align: center 
+   :width: 50%
+   
+   Envelope Component Hierarchy
 
 A large variety of input objects in this group are not as commonly used
 but are key to modeling specific types of walls and windows so if what
@@ -1581,8 +1600,10 @@ three dimensions. The X-axis points east, the Y-axis points north, and
 the Z-axis points up.
 
 .. figure:: media/coordinatesystem.png
-   :alt: 
-   :width: 90.0%
+   :align: center 
+   :width: 50%
+   
+   EnergyPlus Coordinate System
 
 -  Zone - defines the name of the thermal zone as well as the ceiling
    height, floor area, and volume. For most zones that are fully
@@ -1723,8 +1744,10 @@ Other Related Input Objects
    glazed area. See the PurchAirWithDaylighting.idf example file.
 
 .. figure:: media/window_frame_and_divider.png
-   :alt: 
-   :width: 90.0%
+   :align: center 
+   :width: 50%
+   
+   A window with frame and divider
 
 -  WindowProperty:AirflowControl - defines windows that have forced air
    flow between the panes of glass, also called heat-extract windows or
@@ -1837,8 +1860,10 @@ objects but also extra guidance on how they should be applied. The
 PurchAirWithDaylighting.idf contains examples of these input objects.
 
 .. figure:: media/DaylightingContinuous.png
-   :alt: 
-   :width: 90.0%
+   :align: center 
+   :width: 50%
+   
+   Daylighting with Continuous Dimming
 
 Three different devices can be used with daylighting:
 
@@ -1897,8 +1922,10 @@ objects.
    environment.
 
 .. figure:: media/kiva-2d-elements.png
-   :alt: 
-   :width: 90.0%
+   :align: center 
+   :width: 50%
+   
+   Structural and insulation components of Foundation:Kiva input objects
 
 Input objects of interest in this group not related to Kiva include
 
@@ -2222,8 +2249,10 @@ definition of a node diagram or map. This is helpful for visualization
 of the entire system.
 
 .. figure:: media/NodeDiagram.png
-   :alt: 
-   :width: 90.0%
+   :align: center 
+   :width: 50%
+   
+   Example Node Diagram
 
 So that these loops are manageable and more clearly defined both in the
 input and in the simulation, four different loop sections can be defined
@@ -2273,8 +2302,10 @@ zone/air loop and a plant loop.
    also include a splitter, a mixer, and a bypass.
 
 .. figure:: media/HvacHeatLoop.png
-   :alt: 
-   :width: 90.0%
+   :align: center 
+   :width: 50%
+   
+   Detailed HVAC Heat Loop Line Diagram
 
 The following is a list of groups of input objects related to specifying
 detailed HVAC systems in EnergyPlus related to zone equipment and
@@ -2589,8 +2620,10 @@ calculation of monthly and annual utility bills are as follows:
    structure.
 
 .. figure:: media/tariff-charges.png
-   :alt: 
-   :width: 90.0%
+   :align: center 
+   :width: 50%
+   
+   Hierarchy of Economic Charges
 
 The following two input objects are uncommon to use:
 

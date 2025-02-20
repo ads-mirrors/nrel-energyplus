@@ -8,71 +8,28 @@ available or only distributed for certain platforms. Typically, the
 programs are available on the Windows platform. Within the descriptions,
 other platforms will be noted as applicable. These programs include:
 
-**Weather Converter Program** (aka “Weather”)
+* :ref:`weather-converter-program` (aka “Weather”)
+* :ref:`ground-heat-transfer-in-energyplus` - Procedure for Ground Temperature creation
+* :ref:`view-factor-calculation-program` - Auxiliary program used to calculate View Factors which can be used with EnergyPlus
+* :ref:`using-older-version-input-files-transition` - to convert input files from one version to another upon release of a new version
+* :ref:`epw-draw-gui` - Create DXF files from your input files
+* :ref:`input-macros` - Use a macro language to increase efficiency in creating EnergyPlus input files. Unfortunately, IDF files containing macros cannot be read in the IDF Editor.
+* :ref:`hvac-diagram` - Use a post processing program to diagram your HVAC inputs.
+* :ref:`coeffconv-coeffcheck` - Convert DOE-2 temperature dependent curves (Fahrenheit) to EnergyPlus temperature curves (Centigrade/Celsius)
+* :ref:`expand-objects` - Some technical details of the Expand Objects program which preprocessed HVACTemplate:\* and GroundHeatTransfer:\* objects for use inside EnergyPlus.
+* :ref:`csvproc` - Get simple statistics from CSV output files.
+* :ref:`convertesomtr` - convert your outputs to Inch-Pound (default) or other custom unit conversions.
+* :ref:`calcsoilsurftemp-program` - calculate soil surface parameters used in the Earth Tube simulation
+* :ref:`hvac-performance-curve-fit-tool` - generates HVAC performance curves in EnergyPlus IDF format
+* :ref:`parametric-spreadsheets` - Parametric spreadsheets are available to help illustrate or calculate some parameters/coefficients.
+* :ref:`parametricpreprocessor` - Special objects can be inserted in IDF files and generate a series of IDF files from a single source IDF file that contains parametric objects and expressions. Unlike using the macro language, these input files are capable of being read in the IDF Editor.
+* :ref:`appgpostprocess-appendix-g-postprocessing-program` - The ASHRAE 90.1 Appendix G postprocessing program takes simulation outputs and processes them to help meet Appendix G requirements..
+* **BLASTTranslator** - The BLAST translator can take BLAST (Building Loads Analysis and System Thermodynamics) input files and make them ready for running in EnergyPlus.
+* **DOE2Translator** - The DOE-2 translator can take DOE-2 program input files and make them ready for running in EnergyPlus.
+* :ref:`running-console-applications` - this section describes how to run console applications that are part of EnergyPlus and how you might modify these to your specific needs. Instructions for running individual programs are included in their descriptions.
+* :ref:`technical-details-of-running-energyplus` - this section gives full instructions on both EP-Launch and the IDF-Editor as well as some more details on running EnergyPlus manually.
 
-**Ground Heat Transfer in EnergyPlus** - Procedure for Ground
-Temperature creation
-
-**View Factor Calculation Program** - Auxiliary program used to
-calculate View Factors which can be used with EnergyPlus
-
-**Using Older Version Input Files - Transition** - to convert input
-files from one version to another upon release of a new version
-
-**EPDraw** - Create DXF files from your input files
-
-**Input Macros** - Use a macro language to increase efficiency in
-creating EnergyPlus input files. Unfortunately, IDF files containing
-macros cannot be read in the IDF Editor.
-
-**HVAC Diagram** - Use a post processing program to diagram your HVAC
-inputs.
-
-**CoeffConv/CoeffCheck** - Convert DOE-2 temperature dependent curves
-(Fahrenheit) to EnergyPlus temperature curves (Centigrade/Celsius)
-
-**ExpandObjects** - Some technical details of the Expand Objects program
-which preprocessed HVACTemplate:\* and GroundHeatTransfer:\* objects for
-use inside EnergyPlus.
-
-**CSVproc** - Get simple statistics from CSV output files.
-
-**convertESOMTR** - convert your outputs to Inch-Pound (default) or
-other custom unit conversions.
-
-**CalcSoilSurfTemp Program** - calculate soil surface parameters used in
-the Earth Tube simulation
-
-**HVAC Performance Curve Fit Tool**- generates HVAC performance curves
-in EnergyPlus IDF format
-
-**Parametric Spreadsheets** - Parametric spreadsheets are available to
-help illustrate or calculate some parameters/coefficients.
-
-**ParametricPreprocessor** **-** Special objects can be inserted in IDF
-files and generate a series of IDF files from a single source IDF file
-that contains parametric objects and expressions. Unlike using the macro
-language, these input files are capable of being read in the IDF Editor.
-
-**AppGPostProcess - Appendix G PostProcessing program** - The ASHRAE
-90.1 Appendix G postprocessing program takes simulation outputs and
-processes them to help meet Appendix G requirements..
-
-**BLASTTranslator** - The BLAST translator can take BLAST (Building
-Loads Analysis and System Thermodynamics) input files and make them
-ready for running in EnergyPlus.
-
-**DOE2Translator** - The DOE-2 translator can take DOE-2 program input
-files and make them ready for running in EnergyPlus.
-
-**Running Console Applications** - this section describes how to run
-console applications that are part of EnergyPlus and how you might
-modify these to your specific needs. Instructions for running individual
-programs are included in their descriptions.
-
-**Technical Details of Running EnergyPlus** - this section gives full
-instructions on both EP-Launch and the IDF-Editor as well as some more
-details on running EnergyPlus manually.
+.. _weather-converter-program:
 
 Weather Converter Program
 =========================
@@ -400,8 +357,10 @@ on EP-Launch in this document for more information on how to use
 EP-Launch with the weather utility program.
 
 .. figure:: media/image001.jpg
-   :alt: 
-   :width: 90.0%
+   :align: center
+   :width: 50%
+
+   Main menu screen of the Weather Converter Utility
 
 .. _file-menu-001:
 
@@ -433,8 +392,10 @@ over the actual value reporting. Note that this data is not “fixed”,
 merely reported by the program in the audit output file.
 
 .. figure:: media/image002.jpg
-   :alt: 
-   :width: 90.0%
+   :align: center
+   :width: 50%
+   
+   Delta DB Trigger Selection
 
 Though only one “trigger” value is selected from this screen,
 consecutive values of dry-bulb temperature, dew-point temperature and
@@ -497,8 +458,10 @@ select where and what name to store for the processed data, and process
 the data. An “almost” completed screen shows:
 
 .. figure:: media/image003.jpg
-   :alt: 
-   :width: 90.0%
+   :align: center
+   :width: 50%
+   
+   Convert Data Screen selections
 
 The screen is navigated by choosing the following buttons on the left
 portion of the screen. Interpretation from the program is shown in the
@@ -1751,14 +1714,18 @@ For example, in Brisbane AUS, comparing the solar creation with the
 original IWEC data looks very good:
 
 .. figure:: media/image006.jpg
-   :alt: 
-   :width: 90.0%
+   :align: center
+   :width: 50%
+   
+   Solar radiation comparison - IWEC vs Weather Solar Model (Brisbane AUS)
 
 Of course, there are other locations that don’t compare quite as well:
 
 .. figure:: media/image007.jpg
-   :alt: 
-   :width: 90.0%
+   :align: center
+   :width: 50%
+   
+   Comparison of IWEC vs Weather program Solar Model (Singapore)
 
 Reports/Files Produced by the Weather Converter
 -----------------------------------------------
@@ -2434,14 +2401,18 @@ As this data is all tab-delimited, putting in a spreadsheet and
 displaying is not difficult:
 
 .. figure:: media/image008.jpg
-   :alt: 
-   :width: 90.0%
+   :align: center
+   :width: 50%
+   
+   Monthly Dry Bulb Data in SpreadSheet (for graphing)
 
 And these can be easily used to produce graphs:
 
 .. figure:: media/image009.png
-   :alt: 
-   :width: 90.0%
+   :align: center
+   :width: 50%
+   
+   Monthly Dry Bulb Data in SpreadSheet (for graphing)
 
 Design Day Calculations Output
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2793,19 +2764,25 @@ The following shows an overview of the world and its Köppen
 classifications.
 
 .. figure:: media/image010.jpg
-   :alt: 
-   :width: 90.0%
+   :align: center
+   :width: 50%
+   
+   World viewed as Köppen Climate Zones
 
 And a more basic view with monthly dry bulb temperature and dew point
 temperatures for these zones (Northern Hemisphere).
 
 .. figure:: media/image011.png
-   :alt: 
-   :width: 90.0%
+   :align: center
+   :width: 50%
+   
+   Monthly Dry Bulb Temperatures in Köppen Climates (Northern Hemisphere)
 
 .. figure:: media/image012.png
-   :alt: 
-   :width: 90.0%
+   :align: center
+   :width: 50%
+   
+   Monthly Dew Point in Köppen Climates (Northern Hemisphere)
 
 ASHRAE Climate Classification
 -----------------------------
@@ -4143,8 +4120,10 @@ Each data item field obeys the same “missing” and other content rules as
 shown above in the EnergyPlus Weather File (EPW) Data Dictionary.
 
 .. figure:: media/image015.png
-   :alt: 
-   :width: 90.0%
+   :align: center
+   :width: 50%
+   
+   EnergyPlus EPW CSV file (spreadsheet view)
 
 Figure `2.11 <#fig:energyplus-epw-csv-file-spreadsheet-view>`__ shows
 how the EnergyPlus EPW CSV file (initial header records) looks when
@@ -4152,8 +4131,10 @@ opened in a spreadsheet. Each header record is shown in bold with data
 following the headers..
 
 .. figure:: media/image016.png
-   :alt: 
-   :width: 90.0%
+   :align: center
+   :width: 50%
+   
+   EnergyPlus EPW CSV Data Records (spreadsheet view)
 
 Figure `2.12 <#fig:energyplus-epw-csv-data-records-spreadsheet>`__ shows
 how the data periods header record and the individual data records look
@@ -5394,6 +5375,8 @@ is a last resort–weather files generated from statistics will not
 demonstrate the normal hour-to-hour and day-to-day variability seen in
 measured data.
 
+.. _ground-heat-transfer-in-energyplus:
+
 Ground Heat Transfer in EnergyPlus
 ==================================
 
@@ -5628,8 +5611,10 @@ temperature change of 4 C produces only a small change in the slab lower
 face temperature.
 
 .. figure:: media/image017.jpg
-   :alt: 
-   :width: 90.0%
+   :align: center 
+   :width: 50%
+   
+   Daily Temperature Profiles (Slab)
 
 The resulting heat fluxes are shown below. They can be compared with the
 fluxes shown above for the constant inside temperature run. The changes
@@ -5686,8 +5671,10 @@ case, uninsulated slab edges are certainly not recommended in cold
 climates.
 
 .. figure:: media/image018.jpg
-   :alt: 
-   :width: 90.0%
+   :align: center 
+   :width: 50%
+   
+   Slab-in-grade illustration
 
 Running the Slab Program
 ------------------------
@@ -6384,8 +6371,10 @@ The object is shown below.
                \units m
 
 .. figure:: media/image019.jpg
-   :alt: 
-   :width: 90.0%
+   :align: center 
+   :width: 50%
+   
+   Graph of Slab Outside Temperature vs Slab Thickness
 
 **The EquivSlab object and the EquivAutoGrid Objects that follow have
 been replaced by the EquivalentSlab object above. They are included in
@@ -6641,15 +6630,19 @@ in EnergyPlus to supply the outside face temperature of the walls or
 slab.
 
 .. figure:: media/image020.jpg
-   :alt: 
-   :width: 90.0%
+   :align: center 
+   :width: 50%
+   
+   Basement Configuration
 
 The output from the program is a csv file, named MonthlyResults.csv, as
 shown below.
 
 .. figure:: media/image021.jpg
-   :alt: 
-   :width: 90.0%
+   :align: center 
+   :width: 50%
+   
+   Output from Basement program
 
 Column B gives the basement zone temperature. This can vary month by
 month as will be explained later. Column C is the monthly average wall
@@ -7858,6 +7851,8 @@ Cogil, Cynthia A. 1998. Modeling of Basement Heat Transfer and
 Parametric Study of Basement Insulation for Low Energy Housing. MS
 Thesis of Architectural Engineering, Pennsylvania State University.
 
+.. _view-factor-calculation-program:
+
 View Factor Calculation Program
 ===============================
 
@@ -7898,12 +7893,16 @@ Figure `4.1 <#fig:view-factor-interface-zonesheet>`__ and
 Figure `4.2 <#fig:view-factor-interface-verticeszonesheet>`__.
 
 .. figure:: media/image022.png
-   :alt: 
-   :width: 90.0%
+   :align: center 
+   :width: 50%
+   
+   View Factor Interface ZoneSheet
 
 .. figure:: media/image023.png
-   :alt: 
-   :width: 90.0%
+   :align: center 
+   :width: 50%
+   
+   View Factor Interface VerticesZoneSheet
 
 Either sheet can be used to generate an input file for the View3D
 program. An example of that file is shown below.
@@ -8074,8 +8073,10 @@ wire frame drawing shown in
 Figure `4.3 <#fig:dxf-format-of-example-zone>`__.
 
 .. figure:: media/image024.png
-   :alt: 
-   :width: 90.0%
+   :align: center 
+   :width: 50%
+   
+   DXF Format of Example Zone
 
 The input file and the output files produced by View3D are read into the
 interface spreadsheet, and appear on new worksheets.
@@ -8084,8 +8085,10 @@ Figure `4.4 <#fig:files-brought-into-the-interface-workbook>`__ shows
 the lower corner of the interface sheet with the additional sheet tabs.
 
 .. figure:: media/image025.png
-   :alt: 
-   :width: 90.0%
+   :align: center 
+   :width: 50%
+   
+   Files brought into the Interface Workbook
 
 The results file is named with the name in cell D13 with an extension of
 out. This file is shown below.
@@ -8108,8 +8111,10 @@ results are placed on the Results worksheet as shown in
 Figure `4.5 <#fig:view-factors-with-surface-names-inserted>`__.
 
 .. figure:: media/image026.png
-   :alt: 
-   :width: 90.0%
+   :align: center 
+   :width: 50%
+   
+   View Factors with Surface Names Inserted
 
 The results file information is used to generate a UserViewFactor object
 for EnergyPlus. This object is located in the first column of a new
@@ -8145,6 +8150,8 @@ four sections surrounding the subsurface. They can be combined using the
 “comb” column as described in the View3D document. However, this in not
 necessary if the user is willing to work with a few additional surfaces.
 
+.. _using-older-version-input-files-transition:
+
 Using Older Version Input Files - Transition
 ============================================
 
@@ -8173,8 +8180,10 @@ list, click on the “Run IDF Version Updater” box and the single window
 shown below appears:
 
 .. figure:: media/image027.jpg
-   :alt: 
-   :width: 90.0%
+   :align: center
+   :width: 50%
+   
+   Transition GUI screen
 
 Using the program is quite simple. As the window indicates, you press
 “Choose File to Update” to select a file or list of files (see IDF
@@ -8354,6 +8363,8 @@ They should look like this:
      Activity Sch;     !- Activity level SCHEDULE Name (units W/person, real)
      **\#\#endif   **
 
+.. _epw-draw-gui:
+
 EPDrawGUI
 =========
 
@@ -8365,8 +8376,10 @@ also needed in the same folder. And its library folders are required in
 a subfolder (EPDrawGUI Libs).
 
 .. figure:: media/image028.png
-   :alt: 
-   :width: 90.0%
+   :align: center 
+   :width: 50%
+   
+   EPDrawGUI Main Screen
 
 Help is offered on the Main Tab and on the Options Tab when you place
 the mouse, without clicking, over the buttons, check boxes, and option
@@ -8388,8 +8401,10 @@ files is automatically found but if the program cannot find a drawing
 viewer program, you can select one manually on the Options Tab.
 
 .. figure:: media/image029.png
-   :alt: 
-   :width: 90.0%
+   :align: center 
+   :width: 50%
+   
+   EPDrawGUI Options Tab
 
 Option Tab
 ----------
@@ -8455,6 +8470,8 @@ surfaces. It does not process daylighting reference points though the
 similar option in the EnergyPlus program (Report, Surfaces, DXF;) does
 show the daylighting reference points (but not illuminance map points)
 in the DXF view.
+
+.. _input-macros:
 
 Input Macros
 ============
@@ -9259,6 +9276,8 @@ of the input macros, as shown in the following:
     |
     "##include" nesting level
 
+.. _hvac-diagram:
+
 HVAC Diagram
 ============
 
@@ -9288,8 +9307,10 @@ and with the “copy” command, paste a zoomed in portion as a bitmap in
 your document.
 
 .. figure:: media/image030.jpg
-   :alt: 
-   :width: 90.0%
+   :align: center 
+   :width: 50%
+   
+   HVAC Diagram – SVG Drawing
 
 Objects that are recognized by the HVAC diagram are shown in
 Table `8.1 <#table_hvac-diagram-object-names-primary-sort-colors>`__
@@ -9460,6 +9481,8 @@ Table `8.2 <#table_hvac-diagram-object-names-and-color-primary>`__
   SolarCollector:FlatPlate:Water                      yellow
   =================================================== ==============
 
+.. _coeffconv-coeffcheck:
+
 CoeffConv/CoeffCheck
 ====================
 
@@ -9612,6 +9635,8 @@ CD PreProcess\\CoeffConv
 After creating your files as shown above, enter either CoeffConv or
 CoeffCheck as desired. The folder also contains a “readme.txt” file
 which you can peruse.
+
+.. _expand-objects:
 
 ExpandObjects
 =============
@@ -9773,6 +9798,8 @@ ExpandObjects preprocessor are:
 
 -  Site:GroundTemperature:BuildingSurface
 
+.. _csvproc:
+
 CSVproc
 =======
 
@@ -9873,6 +9900,8 @@ timestep. Due to this, CSVproc is best suited for an hourly output file.
 
 Source code is available upon request from jglazer@gard.com.
 
+.. _convertesomtr:
+
 convertESOMTR
 =============
 
@@ -9924,6 +9953,8 @@ A snippet of the convert.txt file:
    conv,W,kW,0.001,0
    !    (1 Btuh/ 0.2928751 W) * (1 kBtuh/1000 Btuh)
    conv,W,kBtuh,3.41442E-03,0
+
+.. _calcsoilsurftemp-program:
 
 CalcSoilSurfTemp Program
 ========================
@@ -10206,6 +10237,8 @@ fields highlighted is included:
      \type real
      \default 0
 
+.. _hvac-performance-curve-fit-tool:
+
 HVAC Performance Curve Fit Tool
 ===============================
 
@@ -10248,8 +10281,10 @@ labels selected to generate capacity and EIR biquadratic curves as
 function of temperatures for DX cooling coil.
 
 .. figure:: media/image034.jpg
-   :alt: 
-   :width: 90.0%
+   :align: center 
+   :width: 50%
+   
+   Curve Fit Tool Input Interface
 
 The tool can be used for Coil:Cooling:DX:SingleSpeed,
 Coil:Heating:DX:SingleSpeed, Coil:Cooling:DX:TwoSpeed (high and low
@@ -10358,8 +10393,10 @@ displayed on the “OUTPUT” tab as shown in
 Figure `2.2 <#fig:delta-db-trigger-selection>`__.
 
 .. figure:: media/image036.jpg
-   :alt: 
-   :width: 90.0%
+   :align: center 
+   :width: 50%
+   
+   Curve Fit Tool Output Interface
 
 Besides the curve coefficients, the goodness of curve fit indicator
 statistical parameters *R\ :math:`^{2}`* is also reported. The
@@ -10454,6 +10491,8 @@ AHRI 2003. ANSI/AHRI Standard 550/590: 2003 Standard for Performance
 Rating Of Water -Chilling Packages Using The Vapor Compression Cycle.
 Arlington, VA: Air-Conditioning, Heating, and Refrigeration Institute.
 
+.. _parametric-spreadsheets:
+
 Parametric Spreadsheets
 =======================
 
@@ -10524,12 +10563,12 @@ set of parameters/coefficients.
 For IP units:
 
 .. figure:: media/image037.png
-   :alt: 
+   :align: center 
 
 For SI units:
 
 .. figure:: media/image038.png
-   :alt: 
+   :align: center 
 
 -  The program will convert the values to the desired units and display
    them on
@@ -10544,10 +10583,9 @@ For SI units:
    generating parameters/coefficients for a new heat pump model.
 
 .. figure:: media/image039.png
-   :alt: 
+   :align: center 
 
-After
-Table `2.2 <#table_input-file-extensions-with-implied-data-types>`__ is
+After Table `2.2 <#table_input-file-extensions-with-implied-data-types>`__ is
 created, the parameters/coefficients are then calculated as follows:
 
 -  Worksheet “ParamEstimator” is used for generating the parameters for
@@ -10600,7 +10638,7 @@ Step 2a: Generating First Set of Parameters (PE-Based Model)
 -  Now click on Button 2 shown below to generate the parameters.
 
 .. figure:: media/image040.png
-   :alt: 
+   :align: center 
 
 It will take some time to generate the parameters depending on the
 number of data points. The parameters generated will be displayed at
@@ -10635,7 +10673,7 @@ Step 2b: Improving the Set of Parameters (PE-Based Model)
    parameters.
 
 .. figure:: media/image041.png
-   :alt: 
+   :align: center 
 
 The simulation time would most likely be less but it depends on the
 accuracy value as well. And the parameters generated will be displayed
@@ -10658,14 +10696,14 @@ Step 3: Generating EnergyPlus Input Parameters
    mode.
 
 .. figure:: media/image042.png
-   :alt: 
+   :align: center 
 
 -  The button shown below in worksheet “ParamEstimator” is used for
    clearing Initial Guess (2-5), Parameters(1-5), Error(1-5), EnergyPlus
    Input parameters and Result(1-5) in worksheet “RESULT”.
 
 .. figure:: media/image043.png
-   :alt: 
+   :align: center 
 
 .. _end-parameter-estimation-procedure-001:
 
@@ -10705,7 +10743,7 @@ Step 2: Generating the coefficients (Curve-Fit Model)
 -  Now click on Button 2 shown below to calculate the coefficients.
 
 .. figure:: media/image044.png
-   :alt: 
+   :align: center 
 
 -  The coefficients for the corresponding curves are listed at cell
    B12:C16. Error analysis of model is listed at cell B19:B27.
@@ -10718,7 +10756,7 @@ Step 2: Generating the coefficients (Curve-Fit Model)
    worksheet “RESULT”.
 
 .. figure:: media/image045.png
-   :alt: 
+   :align: center 
 
 .. _end-curve-fit-model-procedure-001:
 
@@ -10780,12 +10818,12 @@ have a good set of parameters/coefficients.
 For IP units:
 
 .. figure:: media/image046.png
-   :alt: 
+   :align: center 
 
 For SI units:
 
 .. figure:: media/image047.png
-   :alt: 
+   :align: center 
 
 -  The program will convert the values to the desired units and display
    them on
@@ -10806,7 +10844,7 @@ For SI units:
    parameters/coefficients for a new heat pump model.
 
 .. figure:: media/image048.png
-   :alt: 
+   :align: center 
 
 After Table `2.3 <#table_lst-file-structure>`__ is created, the
 parameters/coefficients are then calculated as follows:
@@ -10861,7 +10899,7 @@ Step 2a: Generating First Set of Parameters (PE-Based Model)
 -  Now click on Button 2 shown below to generate the parameters.
 
 .. figure:: media/image049.png
-   :alt: 
+   :align: center 
 
 It will take some time to generate the parameters depending on the
 number of data points. The parameters generated will be displayed at
@@ -10896,7 +10934,7 @@ Step 2b: Improving the Set of Parameters (PE-Based Model)
    parameters.
 
 .. figure:: media/image041.png
-   :alt: 
+   :align: center 
 
 The simulation time would most likely be less but it depends on the
 accuracy value as well. The parameters generated will be displayed at
@@ -10918,14 +10956,14 @@ Step 3: Generating EnergyPlus Input Parameters
    be listed from cell B52:B61.
 
 .. figure:: media/image050.png
-   :alt: 
+   :align: center 
 
 -  The button shown below in worksheet “ParamEstimator” is used for
    clearing Initial Guess (2-5), Parameters(1-5), Error(1-5), EnergyPlus
    Input parameters and Result(1-5) in worksheet “RESULT”.
 
 .. figure:: media/image051.png
-   :alt: 
+   :align: center 
 
 .. _end-parameter-estimation-procedure-000:
 
@@ -10967,7 +11005,7 @@ Step 2: Generating the coefficients (Curve-Fit Model)
 -  Now click on Button 2 shown below to calculate the coefficients.
 
 .. figure:: media/image052.png
-   :alt: 
+   :align: center 
 
 -  The coefficients for the corresponding curves are listed at cell
    B12:D17. Error analysis of model are listed at cell B19:B30.
@@ -10980,7 +11018,7 @@ Step 2: Generating the coefficients (Curve-Fit Model)
    worksheet “RESULT”.
 
 .. figure:: media/image053.png
-   :alt: 
+   :align: center 
 
 .. _end-curve-fit-model-procedure-000:
 
@@ -11040,12 +11078,12 @@ set of parameters/coefficients.
 For IP units:
 
 .. figure:: media/image054.png
-   :alt: 
+   :align: center 
 
 For SI units:
 
 .. figure:: media/image055.png
-   :alt: 
+   :align: center 
 
 -  The program will convert the values to the desired units and display
    them on
@@ -11061,7 +11099,7 @@ For SI units:
    generating parameters/coefficients for a new heat pump model.
 
 .. figure:: media/image056.png
-   :alt: 
+   :align: center 
 
 After
 Table `2.2 <#table_input-file-extensions-with-implied-data-types>`__ is
@@ -11119,7 +11157,7 @@ Step 2a: Generating First Set of Parameters (PE-Based Model)
 -  Now click on Button 2 shown below to generate the parameters.
 
 .. figure:: media/image057.png
-   :alt: 
+   :align: center 
 
 It will take some time to generate the parameters depending on the
 number of data points. The parameters generated will be displayed at
@@ -11152,7 +11190,7 @@ Step 2b: Improving the Set of Parameters (PE-Based Model)
    parameters.
 
 .. figure:: media/image041.png
-   :alt: 
+   :align: center 
 
 The simulation time would most likely be less but it depends on the
 accuracy value as well. And the parameters generated will be displayed
@@ -11172,14 +11210,14 @@ Step 3: Generating EnergyPlus Input Parameters
    be listed from cell B46:B54.
 
 .. figure:: media/image058.png
-   :alt: 
+   :align: center 
 
 -  The button shown below in worksheet “ParamEstimator” is used for
    clearing Initial Guess (2-5), Parameters(1-5), Error(1-5), EnergyPlus
    Input parameters and Result(1-5) in worksheet “RESULT”.
 
 .. figure:: media/image059.png
-   :alt: 
+   :align: center 
 
 End Parameter Estimation Procedure
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -11212,7 +11250,7 @@ Step 2: Generating the coefficients (Curve-Fit Model)
 -  Now click on Button 2 shown below to calculate the coefficients.
 
 .. figure:: media/image060.png
-   :alt: 
+   :align: center 
 
 -  The coefficients for the corresponding curves are listed at cell
    B12:C16. Error analysis of model are listed at cell B19:B27.
@@ -11225,7 +11263,7 @@ Step 2: Generating the coefficients (Curve-Fit Model)
    worksheet “RESULT”.
 
 .. figure:: media/image059.png
-   :alt: 
+   :align: center 
 
 End Curve Fit Model Procedure
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -11268,6 +11306,8 @@ enhanced’ grout (k = 1.471 W/m.K). The flow rate per borehole is .1514
 kg/s. The pipe given is 0.75in. Dia. SDR11 HDPE. The fluid is water. The
 borehole/length ratio is 0.06 (76.2m/4.572m [300ft/15ft])
 
+.. _parametricpreprocessor:
+
 ParametricPreprocessor
 ======================
 
@@ -11304,6 +11344,8 @@ of the source file as the only argument.
 
 The ParametricPreprocessor is used in the batch files that come with
 EnergyPlus and is used by EP-Launch automatically.
+
+.. _appgpostprocess-appendix-g-postprocessing-program:
 
 AppGPostProcess - Appendix G PostProcessing program
 ===================================================
@@ -11373,6 +11415,8 @@ of the field “Building Rotation for Appendix G” would change.
 EP-Launch can be used to run both the AppGPostProcess program by using
 the Utilities tab in EP-Launch. See the EP-Launch section in this
 document for more information on how to use EP-Launch.
+
+.. _running-console-applications:
 
 Running Console Applications
 ============================
@@ -11463,6 +11507,8 @@ Thus, the user can simply put the name of the weather data file onto the
 batch file run and it will look for that file in the installed
 WeatherData folder.
 
+.. _technical-details-of-running-energyplus:
+
 Technical Details of Running EnergyPlus
 =======================================
 
@@ -11486,8 +11532,10 @@ postprocessor results files, a web browser for the tabular results file,
 and start up a viewer for the selected drawing file.
 
 .. figure:: media/image101.png
-   :alt: 
-   :width: 90.0%
+   :align: center 
+   :width: 50%
+   
+   EP-Launch Screen
 
 Start EP-Launch
 ~~~~~~~~~~~~~~~
@@ -11551,8 +11599,10 @@ EnergyPlus has completed, and a status message is displayed (see figure
 below):
 
 .. figure:: media/image102.png
-   :alt: 
-   :width: 90.0%
+   :align: center 
+   :width: 50%
+   
+   EP-Launch Finish Status.
 
 This status gives you a quick overview of whether there were warning
 (**should look at**), severe (**should probably fix**) or fatal (**must
@@ -11571,8 +11621,10 @@ for view based on the current input file name, are “enabled” (extension
 names clearly readable).
 
 .. figure:: media/image103.png
-   :alt: 
-   :width: 90.0%
+   :align: center 
+   :width: 50%
+   
+   EP-Launch with the Sets tab of View Results
 
 The figure above shows the same main screen of EP-Launch but with the
 “Sets” tab selected on the left edge of the View Results section. The
@@ -11586,8 +11638,10 @@ to Set 8 allow you to select which sets of files you want to open. Press
 the “Define” button in order to define the files to view.
 
 .. figure:: media/image104.png
-   :alt: 
-   :width: 90.0%
+   :align: center 
+   :width: 50%
+   
+   Define Files to View
 
 When the “Define” button is pressed on the Sets tab of the View Results
 section of the main screen, the dialog box in the figure above is shown.
@@ -11751,12 +11805,16 @@ any user created files saved in the format: <filename>table.html (see
 *OutputControl:Table:Style*).
 
 .. figure:: media/image105.png
-   :alt: 
-   :width: 90.0%
+   :align: center 
+   :width: 50%
+   
+   EP-Launch View Menu
 
 .. figure:: media/image106.png
-   :alt: 
-   :width: 90.0%
+   :align: center 
+   :width: 50%
+   
+   EP-Launch Options Screen.
 
 The “View” menu also accesses the “Options” menu item shown in
 Figure `19.6 <#fig:ep-launch-options-screen.>`__ that is used to control
@@ -12026,8 +12084,10 @@ Window so that the simulations are completed as fast as your computer
 will allow.
 
 .. figure:: media/image107.png
-   :alt: 
-   :width: 90.0%
+   :align: center 
+   :width: 50%
+   
+   EP-Launch Group of Input Files Tab.
 
 This tab lets you manage EPG, EnergyPlus Group files which contain a
 list of simulations that need to be performed. The EPG file is simply a
@@ -12042,8 +12102,10 @@ the wizard is to selected the EnergyPlus input files that should be
 simulated as part of the group:
 
 .. figure:: media/image108.png
-   :alt: 
-   :width: 90.0%
+   :align: center 
+   :width: 50%
+   
+   EP-Launch Step 1 of New Group Wizard.
 
 Use the boxes next to each file to select the files to be simulated. The
 path to files shown may be changed using the “path” button. Once the
@@ -12056,8 +12118,10 @@ Select one or several weather files using the second step of the wizard,
 shown below:
 
 .. figure:: media/image109.png
-   :alt: 
-   :width: 90.0%
+   :align: center 
+   :width: 50%
+   
+   EP-Launch Step 2 of New Group Wizard.
 
 The next step is to review the simulations selected. Each combination of
 weather file and input file is initially shown. Each simulation is
@@ -12067,8 +12131,10 @@ desired, the “Add more simulations button” brings you back to the first
 step of the wizard to add more file.
 
 .. figure:: media/image110.png
-   :alt: 
-   :width: 90.0%
+   :align: center 
+   :width: 50%
+   
+   EP-Launch Step 3 of New Group Wizard.
 
 The next step of the wizard allows you to decide exactly where you want
 the output files located and what they should be named. For most people
@@ -12077,8 +12143,10 @@ the same directory as the input files, just select “Original Input File
 Locations”.
 
 .. figure:: media/image111.png
-   :alt: 
-   :width: 90.0%
+   :align: center 
+   :width: 50%
+   
+   EP-Launch Step 4 of New Group Wizard.
 
 More advanced users may choose to define their locations for the output
 files using symbols that define the name of the directory and file name
@@ -12127,8 +12195,10 @@ particular simulation that was performed. The list shows the date and
 time of the simulation along with the input and weather file names.
 
 .. figure:: media/image112.png
-   :alt: 
-   :width: 90.0%
+   :align: center 
+   :width: 50%
+   
+   EP-Launch History Tab.
 
 You can expand the level of detail by clicking on the plus signs or
 double clicking on the entry. The detail shown includes the names of all
@@ -12158,8 +12228,10 @@ on each utility is also available in the AuxiliaryPrograms
 documentation.
 
 .. figure:: media/image113.png
-   :alt: 
-   :width: 90.0%
+   :align: center 
+   :width: 50%
+   
+   EP-Launch Utilities Tab.
 
 For each utility, input files can be selected by using the Browse
 Button. The input file can be opened using a text editor and, for
@@ -12202,8 +12274,10 @@ will see a window appear as in the figure below
 instructions listed on the screen.
 
 .. figure:: media/image114.png
-   :alt: 
-   :width: 90.0%
+   :align: center 
+   :width: 50%
+   
+   EnergyPlus crash within EP-Launch.
 
 Bugs
 ~~~~
@@ -13318,8 +13392,10 @@ Reference <../../EnergyPlusFromStarTeam/EnergyPlusFromStarTeam/Documentation/sou
 document.
 
 .. figure:: media/image115.png
-   :alt: 
-   :width: 90.0%
+   :align: center 
+   :width: 50%
+   
+   IDF Editor Screen.
 
 Start IDF Editor
 ~~~~~~~~~~~~~~~~
@@ -13413,8 +13489,10 @@ that is on the right side of cells used for node names. Double clicking
 on cells containing node names can also make the dialog box appear.
 
 .. figure:: media/image116.png
-   :alt: 
-   :width: 90.0%
+   :align: center 
+   :width: 50%
+   
+   Edit or Select Node Name Dialog Box
 
 To enter a new node name, type it in the “Node Name” field near the top
 of the dialog. To select a name of a node that is already being used in
@@ -13481,8 +13559,10 @@ opened at a time.
 The “File”, “Save Options” screen is shown below.
 
 .. figure:: media/image117.png
-   :alt: 
-   :width: 90.0%
+   :align: center 
+   :width: 50%
+   
+   IDF Editor Save Options Screen.
 
 The save options allow the order of the objects in the file to be sorted
 by type of object or to keep the original order of the objects (for an
@@ -13575,8 +13655,10 @@ The Find Class menu item brings up the following dialog box used to
 search through the Class List:
 
 .. figure:: media/image118.png
-   :alt: 
-   :width: 90.0%
+   :align: center 
+   :width: 50%
+   
+   Find Class Dialog Box
 
 The Find Class dialog can be used to find class names quickly and can be
 activated by the CTRL-F keyboard combination. The Find Previous Class
@@ -13590,8 +13672,10 @@ The Search and Replace menu item or CTRL-H activates the following
 dialog box:
 
 .. figure:: media/image119.png
-   :alt: 
-   :width: 90.0%
+   :align: center 
+   :width: 50%
+   
+   Search and Replace Diaglog Box
 
 The Search and Replace dialog box can be used to find and change each
 instance of text being searched with some replacement text. The Search
@@ -13662,8 +13746,10 @@ The figure below shows the “Layout Options” also accessible under the
 View menu.
 
 .. figure:: media/image120.png
-   :alt: 
-   :width: 90.0%
+   :align: center 
+   :width: 50%
+   
+   IDF Editor Layout Options Screen.
 
 This option allows for different arrangements of the layout for the main
 screen of the IDF Editor. Select one of the four layouts available.
@@ -13678,8 +13764,10 @@ The “Validity Check” function performs three kinds of validity checks
 and displays the results as shown in the dialog box below:
 
 .. figure:: media/image121.png
-   :alt: 
-   :width: 90.0%
+   :align: center 
+   :width: 50%
+   
+   Validity Check Dialog Box
 
 The list displays the values and locations for objects with values that
 are either above the maximum or below the minimum values. This allows

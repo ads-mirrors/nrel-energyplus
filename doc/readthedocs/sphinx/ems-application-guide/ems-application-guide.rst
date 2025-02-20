@@ -2,6 +2,9 @@
 EMS Application Guide
 =====================
 
+.. contents::
+   :depth: 2
+
 Introduction
 ============
 
@@ -2880,16 +2883,22 @@ is similar but shows the calling points for shortened system timesteps.
 These diagram the flow of procedures during a run from top to bottom.
 
 .. figure:: media/image003.jpg
-   :alt: 
-   :width: 90.0%
+   :align: center 
+   :width: 50%
+   
+   Overall Program Flow and EMS Calling Points
 
 .. figure:: media/image004.jpg
-   :alt: 
-   :width: 90.0%
+   :align: center 
+   :width: 50%
+   
+   Timestep Sequence with EMS Calling Points
 
 .. figure:: media/image005.jpg
-   :alt: 
-   :width: 90.0%
+   :align: center 
+   :width: 50%
+   
+   System Timestep Sequence with EMS Calling Points
 
 When EnergyPlus runs a model, it first does various sizing and setup
 activities and then models the environment periods you ask for; e.g.,
@@ -5927,9 +5936,9 @@ state.
       Control State Lighting Power Ahjustment Factor Cooling Thermostat Offset
       ============= ================================ =========================
       0             None                             none
-      1             0.9                              - 0.8ºC
-      2             0.8                              - 1.5ºC
-      3             0.7                              - 2.0ºC
+      1             0.9                              \- 0.8ºC
+      2             0.8                              \- 1.5ºC
+      3             0.7                              \- 2.0ºC
       ============= ================================ =========================
 
 For control state level 0, the actuators are all set to Null so they
@@ -6674,8 +6683,10 @@ difference in the cooling capacity above 31°C.
           System Node Wetbulb Temperature, Hourly;
 
 .. figure:: media/image011.jpg
-   :alt: 
-   :width: 90.0%
+   :align: center 
+   :width: 50%
+   
+   Results of Performance Curve Override
 
 Example 12. Variable Refrigerant Flow System Override
 -----------------------------------------------------

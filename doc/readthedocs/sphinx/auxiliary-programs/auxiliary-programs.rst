@@ -2819,7 +2819,6 @@ Note that in the header records where “date” is used, the interpretation
 is shown in the following table.
 
 .. _table_weather-file-date-field-interpretation:
-
 .. table:: Weather File Date Field Interpretation
 
   +----------------------+----------------------+----------------------+
@@ -4119,16 +4118,19 @@ a bit harder if you use the CSV format as input.
 Each data item field obeys the same “missing” and other content rules as
 shown above in the EnergyPlus Weather File (EPW) Data Dictionary.
 
+.. _media-image015:
+
 .. figure:: media/image015.png
    :align: center
    :width: 50%
    
    EnergyPlus EPW CSV file (spreadsheet view)
 
-Figure `2.11 <#fig:energyplus-epw-csv-file-spreadsheet-view>`__ shows
-how the EnergyPlus EPW CSV file (initial header records) looks when
+:numref:`media-image015` shows how the EnergyPlus EPW CSV file (initial header records) looks when
 opened in a spreadsheet. Each header record is shown in bold with data
 following the headers..
+
+.. _media-image016:
 
 .. figure:: media/image016.png
    :align: center
@@ -4136,8 +4138,7 @@ following the headers..
    
    EnergyPlus EPW CSV Data Records (spreadsheet view)
 
-Figure `2.12 <#fig:energyplus-epw-csv-data-records-spreadsheet>`__ shows
-how the data periods header record and the individual data records look
+:numref:`media-image016` shows how the data periods header record and the individual data records look
 when opened in a spread sheet. Again, the headers are shown in bold.
 Note that there are two header records for the data records - one with
 short names - one with longer more descriptive names.

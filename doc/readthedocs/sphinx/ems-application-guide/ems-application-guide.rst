@@ -67,74 +67,74 @@ Every programming language has instructions or commands that tell the
 processor what to do. Erl supports a few types of program statements.
 Each line of an Erl program begins with a statement keyword. The syntax
 for each line depends on the keyword that starts that line. Only those
-listed in Table 1 are allowed.
+listed in :numref:`table-programming-statements-in-erl` are allowed.
 
 .. _table-programming-statements-in-erl:
 
-   .. table:: Programming Statements in ERL
+.. table:: Programming Statements in ERL
 
-      +----------+----------------------------+----------------------------+
-      | Keyword  | Syntax                     | Statement Description      |
-      +==========+============================+============================+
-      | RUN      | RUN <program name>         | Calls another Erl program  |
-      |          |                            | or subroutine. Returns to  |
-      |          |                            | the calling point when     |
-      |          |                            | completed. Recursive       |
-      |          |                            | calling is allowed.        |
-      +----------+----------------------------+----------------------------+
-      | RETURN   | RETURN,                    | Prematurely exits a        |
-      |          |                            | subroutine or program and  |
-      |          |                            | returns control to the     |
-      |          |                            | caller.                    |
-      +----------+----------------------------+----------------------------+
-      | SET      | SET <variable> =           | Assigns the right-hand     |
-      |          | <expression>,              | side to the left-hand      |
-      |          |                            | side. If <variable> has    |
-      |          |                            | not been used before, it   |
-      |          |                            | is dynamically declared    |
-      |          |                            | (with local scope).        |
-      |          |                            | **Note: <variables> should |
-      |          |                            | NOT start with numerics.** |
-      +----------+----------------------------+----------------------------+
-      | IF       | IF <expression>,           | Begins an “IF block.”      |
-      |          |                            | Conditional decision. If   |
-      |          |                            | <expression> evaluates to  |
-      |          |                            | anything other than zero,  |
-      |          |                            | the block of statements    |
-      |          |                            | after the IF is executed.  |
-      +----------+----------------------------+----------------------------+
-      | ELSEIF   | ELSEIF <expression>        | Conditional decision that  |
-      |          |                            | follows a regular IF block |
-      |          |                            | of instructions. If        |
-      |          |                            | <expression> evaluates to  |
-      |          |                            | anything other than zero,  |
-      |          |                            | the block of instructions  |
-      |          |                            | after the ELSEIF is        |
-      |          |                            | executed.                  |
-      +----------+----------------------------+----------------------------+
-      | ELSE     | ELSE,                      | Conditional decision.      |
-      |          |                            | Associated with an IF      |
-      |          |                            | statement, the block of    |
-      |          |                            | statements after the ELSE  |
-      |          |                            | is executed if             |
-      |          |                            | <expression> evaluates to  |
-      |          |                            | zero for preceding IF and  |
-      |          |                            | ELSEIF statements.         |
-      +----------+----------------------------+----------------------------+
-      | ENDIF    | ENDIF,                     | Terminates IF block        |
-      |          |                            | (required).                |
-      +----------+----------------------------+----------------------------+
-      | WHILE    | WHILE <expression>         | Begins a “WHILE block.”    |
-      |          |                            | Conditional decision. If   |
-      |          |                            | <expression> evaluates to  |
-      |          |                            | anything other than zero,  |
-      |          |                            | the block of statements    |
-      |          |                            | after the WHILE is         |
-      |          |                            | repeatedly executed.       |
-      +----------+----------------------------+----------------------------+
-      | ENDWHILE | ENDWHILE,                  | Terminates WHILE block     |
-      |          |                            | (required).                |
-      +----------+----------------------------+----------------------------+
+  +----------+----------------------------+----------------------------+
+  | Keyword  | Syntax                     | Statement Description      |
+  +==========+============================+============================+
+  | RUN      | RUN <program name>         | Calls another Erl program  |
+  |          |                            | or subroutine. Returns to  |
+  |          |                            | the calling point when     |
+  |          |                            | completed. Recursive       |
+  |          |                            | calling is allowed.        |
+  +----------+----------------------------+----------------------------+
+  | RETURN   | RETURN,                    | Prematurely exits a        |
+  |          |                            | subroutine or program and  |
+  |          |                            | returns control to the     |
+  |          |                            | caller.                    |
+  +----------+----------------------------+----------------------------+
+  | SET      | SET <variable> =           | Assigns the right-hand     |
+  |          | <expression>,              | side to the left-hand      |
+  |          |                            | side. If <variable> has    |
+  |          |                            | not been used before, it   |
+  |          |                            | is dynamically declared    |
+  |          |                            | (with local scope).        |
+  |          |                            | **Note: <variables> should |
+  |          |                            | NOT start with numerics.** |
+  +----------+----------------------------+----------------------------+
+  | IF       | IF <expression>,           | Begins an “IF block.”      |
+  |          |                            | Conditional decision. If   |
+  |          |                            | <expression> evaluates to  |
+  |          |                            | anything other than zero,  |
+  |          |                            | the block of statements    |
+  |          |                            | after the IF is executed.  |
+  +----------+----------------------------+----------------------------+
+  | ELSEIF   | ELSEIF <expression>        | Conditional decision that  |
+  |          |                            | follows a regular IF block |
+  |          |                            | of instructions. If        |
+  |          |                            | <expression> evaluates to  |
+  |          |                            | anything other than zero,  |
+  |          |                            | the block of instructions  |
+  |          |                            | after the ELSEIF is        |
+  |          |                            | executed.                  |
+  +----------+----------------------------+----------------------------+
+  | ELSE     | ELSE,                      | Conditional decision.      |
+  |          |                            | Associated with an IF      |
+  |          |                            | statement, the block of    |
+  |          |                            | statements after the ELSE  |
+  |          |                            | is executed if             |
+  |          |                            | <expression> evaluates to  |
+  |          |                            | zero for preceding IF and  |
+  |          |                            | ELSEIF statements.         |
+  +----------+----------------------------+----------------------------+
+  | ENDIF    | ENDIF,                     | Terminates IF block        |
+  |          |                            | (required).                |
+  +----------+----------------------------+----------------------------+
+  | WHILE    | WHILE <expression>         | Begins a “WHILE block.”    |
+  |          |                            | Conditional decision. If   |
+  |          |                            | <expression> evaluates to  |
+  |          |                            | anything other than zero,  |
+  |          |                            | the block of statements    |
+  |          |                            | after the WHILE is         |
+  |          |                            | repeatedly executed.       |
+  +----------+----------------------------+----------------------------+
+  | ENDWHILE | ENDWHILE,                  | Terminates WHILE block     |
+  |          |                            | (required).                |
+  +----------+----------------------------+----------------------------+
 
 Rules for IF blocks:
 ~~~~~~~~~~~~~~~~~~~~

@@ -58,6 +58,7 @@ templates_path = ['.templates']
 html_theme_options = {
     "titles_only": True,
 }
+numfig = True
 # html_sidebars = {
 #     '**': [
 #         'about.html',

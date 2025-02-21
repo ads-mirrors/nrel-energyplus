@@ -156,7 +156,7 @@ namespace ZoneEquipmentManager {
                       EnergyPlus::InputOutputFile &outputFile,
                       int const numSpacesOrZones,
                       EPVector<DataSizing::ZoneSizingData> const &zsCalcFinalSizing,
-                      Array2D<DataSizing::ZoneSizingData> const &zsCalcSizingbool,
+                      Array2D<DataSizing::ZoneSizingData> const &zsCalcSizing,
                       bool const forSpaces);
 
     std::string sizingPeakTimeStamp(EnergyPlusData const &state, int timeStepIndex);

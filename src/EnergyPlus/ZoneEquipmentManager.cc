@@ -2346,14 +2346,18 @@ std::string sizingPeakTimeStamp(EnergyPlusData const &state, int timeStepIndex)
 void writeZszSpsz(EnergyPlusData &state,
                   EnergyPlus::InputOutputFile &outputFile,
                   int const numSpacesOrZones,
-                  Array1D<DataZoneEquipment::EquipConfiguration> const &zsEquipConfig,
                   EPVector<DataSizing::ZoneSizingData> const &zsCalcFinalSizing,
-                  Array2D<DataSizing::ZoneSizingData> const &zsCalcSizing)
+                  Array2D<DataSizing::ZoneSizingData> const &zsCalcSizing,
+                  bool const forSpaces)
 {
     char const colSep = state.dataSize->SizingFileColSep;
     print(outputFile, "Time");
     for (int i = 1; i <= numSpacesOrZones; ++i) {
-        if (!zsEquipConfig(i).IsControlled) continue;
+        int zoneNum = i;
+        if (forSpaces) {
+            zoneNum = state.dataHeatBal->space(i).zoneNum;
+        }
+        if (!state.dataHeatBal->Zone(zoneNum).IsControlled) continue;
         auto &thisCalcFS = zsCalcFinalSizing(i);
 
         static constexpr std::string_view ZSizeFmt11("{}{}:{}{}{}{}:{}{}{}{}:{}{}{}{}:{}{}{}{}:{}{}{}{}:{}{}{}{}:{}{}{}{}:{}{}{}{}:{}{}{}{}:{"
@@ -2441,7 +2445,11 @@ void writeZszSpsz(EnergyPlusData &state,
             static constexpr std::string_view ZSizeFmt20("{:02}:{:02}:00");
             print(outputFile, ZSizeFmt20, HourPrint, Minutes);
             for (int i = 1; i <= numSpacesOrZones; ++i) {
-                if (!zsEquipConfig(i).IsControlled) continue;
+                int zoneNum = i;
+                if (forSpaces) {
+                    zoneNum = state.dataHeatBal->space(i).zoneNum;
+                }
+                if (!state.dataHeatBal->Zone(zoneNum).IsControlled) continue;
                 auto &thisCalcFS = zsCalcFinalSizing(i);
                 static constexpr std::string_view ZSizeFmt21("{}{:12.6E}{}{:12.6E}{}{:12.6E}{}{:12.6E}{}{:12.6E}{}{:12.6E}{}{:12.6E}{}{:12."
                                                              "6E}{}{:12.6E}{}{:12.6E}{}{:12.6E}{}{:12.6E}{}{:12.6E}{}{:12.6E}{}{:12.6E}{}{:12.6E}");
@@ -2506,7 +2514,11 @@ void writeZszSpsz(EnergyPlusData &state,
     print(outputFile, "Peak");
 
     for (int i = 1; i <= numSpacesOrZones; ++i) {
-        if (!zsEquipConfig(i).IsControlled) continue;
+        int zoneNum = i;
+        if (forSpaces) {
+            zoneNum = state.dataHeatBal->space(i).zoneNum;
+        }
+        if (!state.dataHeatBal->Zone(zoneNum).IsControlled) continue;
         auto &thisCalcFS = zsCalcFinalSizing(i);
 
         static constexpr std::string_view ZSizeFmt31("{}{:12.6E}{}{:12.6E}{}{:12.6E}{}{:12.6E}{}{:12.6E}{}{:12.6E}{}{:12.6E}{}{:12.6E}{}{:12."
@@ -2546,7 +2558,11 @@ void writeZszSpsz(EnergyPlusData &state,
 
     print(outputFile, "\nPeak Vol Flow (m3/s)");
     for (int i = 1; i <= numSpacesOrZones; ++i) {
-        if (!zsEquipConfig(i).IsControlled) continue;
+        int zoneNum = i;
+        if (forSpaces) {
+            zoneNum = state.dataHeatBal->space(i).zoneNum;
+        }
+        if (!state.dataHeatBal->Zone(zoneNum).IsControlled) continue;
         auto &thisCalcFS = zsCalcFinalSizing(i);
         static constexpr std::string_view ZSizeFmt41("{}{}{}{:12.6E}{}{:12.6E}{}{}{}{:12.6E}{}{:12.6E}{}{}{}{}{}{}{}{}");
         print(outputFile,
@@ -3302,19 +3318,17 @@ void UpdateZoneSizing(EnergyPlusData &state, Constant::CallIndicator const CallI
                 }
             }
 
-            writeZszSpsz(state,
-                         state.files.zsz,
-                         state.dataGlobal->NumOfZones,
-                         state.dataZoneEquip->ZoneEquipConfig,
-                         state.dataSize->CalcFinalZoneSizing,
-                         state.dataSize->CalcZoneSizing);
+            bool forSpaces = false;
+            writeZszSpsz(
+                state, state.files.zsz, state.dataGlobal->NumOfZones, state.dataSize->CalcFinalZoneSizing, state.dataSize->CalcZoneSizing, forSpaces);
             if (state.dataHeatBal->doSpaceHeatBalanceSizing) {
+                forSpaces = true;
                 writeZszSpsz(state,
                              state.files.spsz,
                              state.dataGlobal->numSpaces,
-                             state.dataZoneEquip->spaceEquipConfig,
                              state.dataSize->CalcFinalSpaceSizing,
-                             state.dataSize->CalcSpaceSizing);
+                             state.dataSize->CalcSpaceSizing,
+                             forSpaces);
             }
 
             // Move sizing data into final sizing array according to sizing method

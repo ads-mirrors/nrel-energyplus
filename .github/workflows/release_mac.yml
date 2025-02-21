@@ -139,8 +139,6 @@ jobs:
         which gfortran-13 || echo "FC=$(brew --prefix gcc@13)/bin/gfortran-13" >> $GITHUB_ENV
         brew install ninja tcl-tk
 
-    # - uses: lhotari/action-upterm@v1
-
     - name: Create Build Directory
       run: cmake -E make_directory ./build/
 
@@ -367,6 +365,3 @@ jobs:
         name: otool_info_dmg_${{ matrix.os }}_${{ matrix.arch }}
         path: dmg/otool*json
         if-no-files-found: error
-
-    - name: Temporarily Force Failure - fix the PythonFixUpTclTk.py back up before removing this step!
-      run: exit 1

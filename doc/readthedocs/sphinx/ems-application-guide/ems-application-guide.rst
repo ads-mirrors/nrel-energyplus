@@ -289,7 +289,7 @@ Erl programs have eight types of variables:
    history of Erl variables. Trend variables differ from other Erl
    variables in that they can be put to use only through the built-in
    trend functions (see
-   Table `2.6 <#table-built-in-functions-for-trend-variables-in-erl>`__).
+   :numref:`table-built-in-functions-for-trend-variables-in-erl`).
 
 -  Index. Each EnergyManagementSystem:CurveOrTableIndexVariable and/or
    EnergyManagementSystem:ConstructionIndexVariable declares a user
@@ -337,81 +337,81 @@ timesteps are available in the variables ZoneTimeStep and
 SystemTimeStep. The status of whether or not the simulation is currently
 during the initial warmup days is available in the variable WarmupFlag.
 
-Table `2.2 <#table-built-in-unique-variables-for-erl>`__ lists the
+:numref:`table-built-in-unique-variables-for-erl` lists the
 built-in variables that are always available for use in Erl programs.
 
 .. _table-built-in-unique-variables-for-erl:
 
-   .. table:: Built-In Unique Variables for Erl
+.. table:: Built-In Unique Variables for Erl
 
-      +--------------------+------------------------------------------------+
-      | Variable Name      | Value                                          |
-      +====================+================================================+
-      | Year               | 1900–2100 (Read from EPW)                      |
-      +--------------------+------------------------------------------------+
-      | CalendarYear       | 1900–2100 (Assigned from RunPeriod - only      |
-      |                    | valid for Weather File Run Periods)            |
-      +--------------------+------------------------------------------------+
-      | Month              | 1–12                                           |
-      +--------------------+------------------------------------------------+
-      | DayOfMonth         | 1–31                                           |
-      +--------------------+------------------------------------------------+
-      | DayOfWeek          | 1–7 (1 = Sun, 2 = Mon, …)                      |
-      +--------------------+------------------------------------------------+
-      | DayOfYear          | 1–365                                          |
-      +--------------------+------------------------------------------------+
-      | Holiday            | 0 if not. 1.0, 2.0, etc., for each type of     |
-      |                    | holiday in model                               |
-      +--------------------+------------------------------------------------+
-      | DaylightSavings    | 0 or 1, 0 if not daylight savings time, 1 if   |
-      |                    | daylight savings time                          |
-      +--------------------+------------------------------------------------+
-      | CurrentTime        | 0.0–24.0, (fractional hours)                   |
-      +--------------------+------------------------------------------------+
-      | Hour               | 0–23 (whole hours only)                        |
-      +--------------------+------------------------------------------------+
-      | Minute             | 1.0–60.0 (fractional minutes)                  |
-      +--------------------+------------------------------------------------+
-      | TimeStepsPerHour   | Number of zone timesteps per hour (user input) |
-      +--------------------+------------------------------------------------+
-      | TimeStepNum        | Current zone timestep number,                  |
-      |                    | 1–TimeStepsPerHour                             |
-      +--------------------+------------------------------------------------+
-      | True               | 1.0                                            |
-      +--------------------+------------------------------------------------+
-      | False              | 0.0                                            |
-      +--------------------+------------------------------------------------+
-      | On                 | 1.0                                            |
-      +--------------------+------------------------------------------------+
-      | Off                | 0.0                                            |
-      +--------------------+------------------------------------------------+
-      | PI                 | 3.14159265358979                               |
-      +--------------------+------------------------------------------------+
-      | SunIsUp            | 0 (= no) or 1 (= yes)                          |
-      +--------------------+------------------------------------------------+
-      | IsRaining          | 0 (= no) or 1 (= yes)                          |
-      +--------------------+------------------------------------------------+
-      | ZoneTimeStep       | Durating of the zone timestep in hours         |
-      +--------------------+------------------------------------------------+
-      | SystemTimeStep     | Current duration of the system timestep in     |
-      |                    | hours                                          |
-      +--------------------+------------------------------------------------+
-      | CurrentEnvironment | Integer index for the current environment      |
-      |                    | period (sizing periods and run periods         |
-      |                    | accumulate throughout the run).                |
-      +--------------------+------------------------------------------------+
-      | Null               | Special structure that stops an actuator from  |
-      |                    | overriding control                             |
-      +--------------------+------------------------------------------------+
-      | ActualDateAndTime  | A simple sum of the values of the date/time    |
-      |                    | function. Could be used in random seeding.     |
-      +--------------------+------------------------------------------------+
-      | ActualTime         | A simple sum of the values of the time part of |
-      |                    | the date/time function. Could be used in       |
-      |                    | random seeding.                                |
-      +--------------------+------------------------------------------------+
-      | WarmupFlag         | 0 (= not during warmup) or 1 (= during warmup) |
-      +--------------------+------------------------------------------------+
+  +--------------------+------------------------------------------------+
+  | Variable Name      | Value                                          |
+  +====================+================================================+
+  | Year               | 1900–2100 (Read from EPW)                      |
+  +--------------------+------------------------------------------------+
+  | CalendarYear       | 1900–2100 (Assigned from RunPeriod - only      |
+  |                    | valid for Weather File Run Periods)            |
+  +--------------------+------------------------------------------------+
+  | Month              | 1–12                                           |
+  +--------------------+------------------------------------------------+
+  | DayOfMonth         | 1–31                                           |
+  +--------------------+------------------------------------------------+
+  | DayOfWeek          | 1–7 (1 = Sun, 2 = Mon, …)                      |
+  +--------------------+------------------------------------------------+
+  | DayOfYear          | 1–365                                          |
+  +--------------------+------------------------------------------------+
+  | Holiday            | 0 if not. 1.0, 2.0, etc., for each type of     |
+  |                    | holiday in model                               |
+  +--------------------+------------------------------------------------+
+  | DaylightSavings    | 0 or 1, 0 if not daylight savings time, 1 if   |
+  |                    | daylight savings time                          |
+  +--------------------+------------------------------------------------+
+  | CurrentTime        | 0.0–24.0, (fractional hours)                   |
+  +--------------------+------------------------------------------------+
+  | Hour               | 0–23 (whole hours only)                        |
+  +--------------------+------------------------------------------------+
+  | Minute             | 1.0–60.0 (fractional minutes)                  |
+  +--------------------+------------------------------------------------+
+  | TimeStepsPerHour   | Number of zone timesteps per hour (user input) |
+  +--------------------+------------------------------------------------+
+  | TimeStepNum        | Current zone timestep number,                  |
+  |                    | 1–TimeStepsPerHour                             |
+  +--------------------+------------------------------------------------+
+  | True               | 1.0                                            |
+  +--------------------+------------------------------------------------+
+  | False              | 0.0                                            |
+  +--------------------+------------------------------------------------+
+  | On                 | 1.0                                            |
+  +--------------------+------------------------------------------------+
+  | Off                | 0.0                                            |
+  +--------------------+------------------------------------------------+
+  | PI                 | 3.14159265358979                               |
+  +--------------------+------------------------------------------------+
+  | SunIsUp            | 0 (= no) or 1 (= yes)                          |
+  +--------------------+------------------------------------------------+
+  | IsRaining          | 0 (= no) or 1 (= yes)                          |
+  +--------------------+------------------------------------------------+
+  | ZoneTimeStep       | Durating of the zone timestep in hours         |
+  +--------------------+------------------------------------------------+
+  | SystemTimeStep     | Current duration of the system timestep in     |
+  |                    | hours                                          |
+  +--------------------+------------------------------------------------+
+  | CurrentEnvironment | Integer index for the current environment      |
+  |                    | period (sizing periods and run periods         |
+  |                    | accumulate throughout the run).                |
+  +--------------------+------------------------------------------------+
+  | Null               | Special structure that stops an actuator from  |
+  |                    | overriding control                             |
+  +--------------------+------------------------------------------------+
+  | ActualDateAndTime  | A simple sum of the values of the date/time    |
+  |                    | function. Could be used in random seeding.     |
+  +--------------------+------------------------------------------------+
+  | ActualTime         | A simple sum of the values of the time part of |
+  |                    | the date/time function. Could be used in       |
+  |                    | random seeding.                                |
+  +--------------------+------------------------------------------------+
+  | WarmupFlag         | 0 (= not during warmup) or 1 (= during warmup) |
+  +--------------------+------------------------------------------------+
 
 For the built-in variable CurrentEnvironment, it depends on how many
 SizingPeriod modules and RunPeriod modules are activated in the idf
@@ -444,7 +444,7 @@ available in the ZoneTimeStep built-in variable.
 
 Trend variables differ from other Erl variables in that they can be used
 only through the built-in trend functions (see
-Table `2.6 <#table-built-in-functions-for-trend-variables-in-erl>`__).
+:numref:`table-built-in-functions-for-trend-variables-in-erl`).
 Trend functions provide a number of ways to analyze trend data and
 extract data from the log. There are functions to obtain the maximum,
 minimum, average, and sum of logged data. There is a function to obtain
@@ -473,58 +473,58 @@ The rules for expressions are:
 
 -  Variables must be initialized prior to being used in an expression.
 
-The operators shown in Table `2.3 <#table_operators-for-erl>`__ are
+The operators shown in :numref:`table_operators-for-erl` are
 available for use in Erl programs.
 
 .. _table_operators-for-erl:
 
-   .. table:: Operators for Erl
+.. table:: Operators for Erl
 
-      +----------------+----------------+----------------+----------------+
-      | Operator       | Description    | Evaluation     | Example        |
-      | Symbol         |                | Order          |                |
-      +================+================+================+================+
-      | ( )            | Parentheses    | left-to-right  | SET z = 23/(3  |
-      |                |                |                | + 2)           |
-      +----------------+----------------+----------------+----------------+
-      | +              | Addition       | right-to-left  | SET a = 4 + 5  |
-      +----------------+----------------+----------------+----------------+
-      | -              | Subtraction    | right-to-left  | SET b = a - 3  |
-      +----------------+----------------+----------------+----------------+
-      | :math:`{\ast}` | Multiplication | right-to-left  | SET c = a \* b |
-      +----------------+----------------+----------------+----------------+
-      | /              | Division       | left-to-right  | SET d = b/a    |
-      +----------------+----------------+----------------+----------------+
-      | ^              | Raise to a     | left-to-right  | SET e = c ^    |
-      |                | power          |                | 0.5            |
-      +----------------+----------------+----------------+----------------+
-      | ==             | Equality       | left-to-right  | IF a == b      |
-      |                | comparison     |                |                |
-      +----------------+----------------+----------------+----------------+
-      | < >            | Inequality     | left-to-right  | IF c < > d     |
-      |                | comparison     |                |                |
-      +----------------+----------------+----------------+----------------+
-      | >              | Greater than   | left-to-right  | IF a > e       |
-      |                | comparison     |                |                |
-      +----------------+----------------+----------------+----------------+
-      | > =            | Greater than   | left-to-right  | IF a > = 6     |
-      |                | or equal to    |                |                |
-      |                | comparison     |                |                |
-      +----------------+----------------+----------------+----------------+
-      | <              | Less than      | left-to-right  | IF b < 2       |
-      |                | comparison     |                |                |
-      +----------------+----------------+----------------+----------------+
-      | < =            | Less than or   | left-to-right  | IF b < = f     |
-      |                | equal to       |                |                |
-      |                | comparison     |                |                |
-      +----------------+----------------+----------------+----------------+
-      | & &            | Logical AND    | right-to-left  | IF c & & d     |
-      +----------------+----------------+----------------+----------------+
-      | :math:`{       | Logical OR     | right-to-left  | IF c           |
-      | \vert}{\vert}` |                |                | :math:`{       |
-      |                |                |                | \vert}{\vert}` |
-      |                |                |                | d              |
-      +----------------+----------------+----------------+----------------+
+  +----------------+----------------+----------------+----------------+
+  | Operator       | Description    | Evaluation     | Example        |
+  | Symbol         |                | Order          |                |
+  +================+================+================+================+
+  | ( )            | Parentheses    | left-to-right  | SET z = 23/(3  |
+  |                |                |                | + 2)           |
+  +----------------+----------------+----------------+----------------+
+  | +              | Addition       | right-to-left  | SET a = 4 + 5  |
+  +----------------+----------------+----------------+----------------+
+  | -              | Subtraction    | right-to-left  | SET b = a - 3  |
+  +----------------+----------------+----------------+----------------+
+  | :math:`{\ast}` | Multiplication | right-to-left  | SET c = a \* b |
+  +----------------+----------------+----------------+----------------+
+  | /              | Division       | left-to-right  | SET d = b/a    |
+  +----------------+----------------+----------------+----------------+
+  | ^              | Raise to a     | left-to-right  | SET e = c ^    |
+  |                | power          |                | 0.5            |
+  +----------------+----------------+----------------+----------------+
+  | ==             | Equality       | left-to-right  | IF a == b      |
+  |                | comparison     |                |                |
+  +----------------+----------------+----------------+----------------+
+  | < >            | Inequality     | left-to-right  | IF c < > d     |
+  |                | comparison     |                |                |
+  +----------------+----------------+----------------+----------------+
+  | >              | Greater than   | left-to-right  | IF a > e       |
+  |                | comparison     |                |                |
+  +----------------+----------------+----------------+----------------+
+  | > =            | Greater than   | left-to-right  | IF a > = 6     |
+  |                | or equal to    |                |                |
+  |                | comparison     |                |                |
+  +----------------+----------------+----------------+----------------+
+  | <              | Less than      | left-to-right  | IF b < 2       |
+  |                | comparison     |                |                |
+  +----------------+----------------+----------------+----------------+
+  | < =            | Less than or   | left-to-right  | IF b < = f     |
+  |                | equal to       |                |                |
+  |                | comparison     |                |                |
+  +----------------+----------------+----------------+----------------+
+  | & &            | Logical AND    | right-to-left  | IF c & & d     |
+  +----------------+----------------+----------------+----------------+
+  | :math:`{       | Logical OR     | right-to-left  | IF c           |
+  | \vert}{\vert}` |                |                | :math:`{       |
+  |                |                |                | \vert}{\vert}` |
+  |                |                |                | d              |
+  +----------------+----------------+----------------+----------------+
 
 Because expressions can be evaluated to a single value, they can be used
 in SET and IF statements. That means both of the following instructions
@@ -568,10 +568,10 @@ The “@” character is used to signal to the language processor that the
 following character string defines a built-in function that is used to
 assign a result to an Erl variable. The characters appended to the “@”
 operator must be one of the predefined names listed in
-Table `2.4 <#table-built-in-math-functions-for-erl>`__,
-Table `2.5 <#table-built-in-energyplus-simulation-management>`__,
-Table `2.6 <#table-built-in-functions-for-trend-variables-in-erl>`__, or
-Table `2.7 <#table-built-in-psychrometric-functions-for-erl>`__. The
+:numref:`table-built-in-math-functions-for-erl`,
+:numref:`table-built-in-energyplus-simulation-management`,
+:numref:`table-built-in-functions-for-trend-variables-in-erl`, or
+:numref:`table-built-in-psychrometric-functions-for-erl`. The
 syntax of the function call will vary depending on the arguments
 required by the function, but the general structure is:
 
@@ -591,130 +591,130 @@ SET mySupplyRH = mySupplyRH \* 100
 Built-in Math Functions
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-Table `2.4 <#table-built-in-math-functions-for-erl>`__ lists the
+:numref:`table-built-in-math-functions-for-erl` lists the
 built-in functions for common mathematical functions. The numerical
 model for these functions is provided by the underlying Fortran language
 and the compiler.
 
 .. _table-built-in-math-functions-for-erl:
 
-   .. table:: Built-in Math Functions for Erl
+.. table:: Built-in Math Functions for Erl
 
-      +----------------+-----------------------------+---------------------+
-      | Function Name  | Description                 | Number of Arguments |
-      +================+=============================+=====================+
-      | @Round         | Decreases precision of real | 1                   |
-      |                | number argument to nearest  |                     |
-      |                | whole number, remains a     |                     |
-      |                | real number.                |                     |
-      +----------------+-----------------------------+---------------------+
-      | @Mod           | Returns remainder after     | 2                   |
-      |                | dividing the first argument |                     |
-      |                | by the second.              |                     |
-      +----------------+-----------------------------+---------------------+
-      | @Sin           | Sine, returns sine of angle | 1                   |
-      |                | given in radians.           |                     |
-      +----------------+-----------------------------+---------------------+
-      | @Cos           | Cosine, returns cosine of   | 1                   |
-      |                | angle given in radians.     |                     |
-      +----------------+-----------------------------+---------------------+
-      | @ArcSin        | Arcsine, returns angle in   | 1                   |
-      |                | radians from sine of angle. |                     |
-      +----------------+-----------------------------+---------------------+
-      | @ArcCos        | ArcCosine, returns angle in | 1                   |
-      |                | radians from cosine of      |                     |
-      |                | angle.                      |                     |
-      +----------------+-----------------------------+---------------------+
-      | @DegToRad      | Degrees to radians, returns | 1                   |
-      |                | radians from degrees.       |                     |
-      +----------------+-----------------------------+---------------------+
-      | @RadToDeg      | Radians to degrees, returns | 1                   |
-      |                | degrees from radians.       |                     |
-      +----------------+-----------------------------+---------------------+
-      | @Exp           | Exponential, e , returns    | 1                   |
-      |                | result.                     |                     |
-      +----------------+-----------------------------+---------------------+
-      | @Ln            | Natural log, log (x),       | 1                   |
-      |                | returns result.             |                     |
-      +----------------+-----------------------------+---------------------+
-      | @Max           | Maximum, returns largest    | 2                   |
-      |                | value of two arguments.     |                     |
-      +----------------+-----------------------------+---------------------+
-      | @Min           | Minimum, returns smallest   | 2                   |
-      |                | value of two arguments.     |                     |
-      +----------------+-----------------------------+---------------------+
-      | @Abs           | Absolute value, returns     | 1                   |
-      |                | positive magnitude of       |                     |
-      |                | argument.                   |                     |
-      +----------------+-----------------------------+---------------------+
-      | @RandomUniform | Pseudo-Random Number        | 2                   |
-      |                | Generator, returns random   |                     |
-      |                | number with uniform         |                     |
-      |                | probability distribution    |                     |
-      |                | across the range of values  |                     |
-      |                | passed as the arguments,    |                     |
-      |                | inclusive. Argument 1 is    |                     |
-      |                | the lower limit. Argument 2 |                     |
-      |                | is the upper limit.         |                     |
-      +----------------+-----------------------------+---------------------+
-      | @RandomNormal  | Pseudo-Random Number        | 4                   |
-      |                | Generator, returns random   |                     |
-      |                | number with normal          |                     |
-      |                | (Gaussian) probability      |                     |
-      |                | distribution as a function  |                     |
-      |                | of the mean, standard       |                     |
-      |                | deviation, and limits.      |                     |
-      |                | Argument 1 is the mean.     |                     |
-      |                | Argument 2 is the standard  |                     |
-      |                | deviation. Argument 3 is    |                     |
-      |                | the lower limit. Argument 4 |                     |
-      |                | is the upper limit.         |                     |
-      +----------------+-----------------------------+---------------------+
-      | @SeedRandom    | Random Seed, controls the   | 1                   |
-      |                | seed used in the random     |                     |
-      |                | number generator for calls  |                     |
-      |                | to @RandomUniform and       |                     |
-      |                | @RandomNormal.  Use is      |                     |
-      |                | optional and provided for   |                     |
-      |                | repeatable series of random |                     |
-      |                | numbers. The argument is    |                     |
-      |                | rounded to the nearest      |                     |
-      |                | whole number and then used  |                     |
-      |                | to set the size and values  |                     |
-      |                | of the seed for the number  |                     |
-      |                | generator.                  |                     |
-      +----------------+-----------------------------+---------------------+
+  +----------------+-----------------------------+---------------------+
+  | Function Name  | Description                 | Number of Arguments |
+  +================+=============================+=====================+
+  | @Round         | Decreases precision of real | 1                   |
+  |                | number argument to nearest  |                     |
+  |                | whole number, remains a     |                     |
+  |                | real number.                |                     |
+  +----------------+-----------------------------+---------------------+
+  | @Mod           | Returns remainder after     | 2                   |
+  |                | dividing the first argument |                     |
+  |                | by the second.              |                     |
+  +----------------+-----------------------------+---------------------+
+  | @Sin           | Sine, returns sine of angle | 1                   |
+  |                | given in radians.           |                     |
+  +----------------+-----------------------------+---------------------+
+  | @Cos           | Cosine, returns cosine of   | 1                   |
+  |                | angle given in radians.     |                     |
+  +----------------+-----------------------------+---------------------+
+  | @ArcSin        | Arcsine, returns angle in   | 1                   |
+  |                | radians from sine of angle. |                     |
+  +----------------+-----------------------------+---------------------+
+  | @ArcCos        | ArcCosine, returns angle in | 1                   |
+  |                | radians from cosine of      |                     |
+  |                | angle.                      |                     |
+  +----------------+-----------------------------+---------------------+
+  | @DegToRad      | Degrees to radians, returns | 1                   |
+  |                | radians from degrees.       |                     |
+  +----------------+-----------------------------+---------------------+
+  | @RadToDeg      | Radians to degrees, returns | 1                   |
+  |                | degrees from radians.       |                     |
+  +----------------+-----------------------------+---------------------+
+  | @Exp           | Exponential, e , returns    | 1                   |
+  |                | result.                     |                     |
+  +----------------+-----------------------------+---------------------+
+  | @Ln            | Natural log, log (x),       | 1                   |
+  |                | returns result.             |                     |
+  +----------------+-----------------------------+---------------------+
+  | @Max           | Maximum, returns largest    | 2                   |
+  |                | value of two arguments.     |                     |
+  +----------------+-----------------------------+---------------------+
+  | @Min           | Minimum, returns smallest   | 2                   |
+  |                | value of two arguments.     |                     |
+  +----------------+-----------------------------+---------------------+
+  | @Abs           | Absolute value, returns     | 1                   |
+  |                | positive magnitude of       |                     |
+  |                | argument.                   |                     |
+  +----------------+-----------------------------+---------------------+
+  | @RandomUniform | Pseudo-Random Number        | 2                   |
+  |                | Generator, returns random   |                     |
+  |                | number with uniform         |                     |
+  |                | probability distribution    |                     |
+  |                | across the range of values  |                     |
+  |                | passed as the arguments,    |                     |
+  |                | inclusive. Argument 1 is    |                     |
+  |                | the lower limit. Argument 2 |                     |
+  |                | is the upper limit.         |                     |
+  +----------------+-----------------------------+---------------------+
+  | @RandomNormal  | Pseudo-Random Number        | 4                   |
+  |                | Generator, returns random   |                     |
+  |                | number with normal          |                     |
+  |                | (Gaussian) probability      |                     |
+  |                | distribution as a function  |                     |
+  |                | of the mean, standard       |                     |
+  |                | deviation, and limits.      |                     |
+  |                | Argument 1 is the mean.     |                     |
+  |                | Argument 2 is the standard  |                     |
+  |                | deviation. Argument 3 is    |                     |
+  |                | the lower limit. Argument 4 |                     |
+  |                | is the upper limit.         |                     |
+  +----------------+-----------------------------+---------------------+
+  | @SeedRandom    | Random Seed, controls the   | 1                   |
+  |                | seed used in the random     |                     |
+  |                | number generator for calls  |                     |
+  |                | to @RandomUniform and       |                     |
+  |                | @RandomNormal.  Use is      |                     |
+  |                | optional and provided for   |                     |
+  |                | repeatable series of random |                     |
+  |                | numbers. The argument is    |                     |
+  |                | rounded to the nearest      |                     |
+  |                | whole number and then used  |                     |
+  |                | to set the size and values  |                     |
+  |                | of the seed for the number  |                     |
+  |                | generator.                  |                     |
+  +----------------+-----------------------------+---------------------+
 
 Built-In Simulation Management Functions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. _table-built-in-energyplus-simulation-management:
 
-   .. table:: Built-in EnergyPlus Simulation Management Functions for Erl
+.. table:: Built-in EnergyPlus Simulation Management Functions for Erl
 
-      +---------------+------------------------------+---------------------+
-      | Function Name | Description                  | Number of Arguments |
-      +===============+==============================+=====================+
-      | @FatalHaltEp  | Throws fatal error with time | 1                   |
-      |               | of occurrence and stops      |                     |
-      |               | execution of current model.  |                     |
-      |               | Argument passes a number     |                     |
-      |               | that can be used as an error |                     |
-      |               | code.                        |                     |
-      +---------------+------------------------------+---------------------+
-      | @SevereWarnEp | Throws severe error with     | 1                   |
-      |               | time of occurrence and       |                     |
-      |               | continues execution.         |                     |
-      |               | Argument passes a number     |                     |
-      |               | that can be used as an error |                     |
-      |               | code.                        |                     |
-      +---------------+------------------------------+---------------------+
-      | @WarnEp       | Throws warning error and     | 1                   |
-      |               | continues execution.         |                     |
-      |               | Argument passes a number     |                     |
-      |               | that can be used as an error |                     |
-      |               | code.                        |                     |
-      +---------------+------------------------------+---------------------+
+  +---------------+------------------------------+---------------------+
+  | Function Name | Description                  | Number of Arguments |
+  +===============+==============================+=====================+
+  | @FatalHaltEp  | Throws fatal error with time | 1                   |
+  |               | of occurrence and stops      |                     |
+  |               | execution of current model.  |                     |
+  |               | Argument passes a number     |                     |
+  |               | that can be used as an error |                     |
+  |               | code.                        |                     |
+  +---------------+------------------------------+---------------------+
+  | @SevereWarnEp | Throws severe error with     | 1                   |
+  |               | time of occurrence and       |                     |
+  |               | continues execution.         |                     |
+  |               | Argument passes a number     |                     |
+  |               | that can be used as an error |                     |
+  |               | code.                        |                     |
+  +---------------+------------------------------+---------------------+
+  | @WarnEp       | Throws warning error and     | 1                   |
+  |               | continues execution.         |                     |
+  |               | Argument passes a number     |                     |
+  |               | that can be used as an error |                     |
+  |               | code.                        |                     |
+  +---------------+------------------------------+---------------------+
 
 Built-in Trend Variable Functions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -726,7 +726,7 @@ use the trend variables in Erl programs, their values must be extracted
 and placed into normal Erl variables. Setting up an Erl variable as a
 trend variable requires an EnergyManagementSystem:TrendVariable input
 object. The access functions listed in
-Table `2.6 <#table-built-in-functions-for-trend-variables-in-erl>`__ are
+:numref:`table-built-in-functions-for-trend-variables-in-erl` are
 used to obtain data from a trend variable during the execution of an Erl
 program. These functions act on trend variables and return values into
 the user’s Erl variables for subsequent use in calculations. Each trend
@@ -741,7 +741,6 @@ items is the zone timestep in hours, so that the slope returned by
 @TrendDirection is in per-hour units.
 
 .. _table-built-in-functions-for-trend-variables-in-erl:
-
 
 .. table:: Built-in Functions for Trend Variables in Erl
 
@@ -810,7 +809,7 @@ Built-in Psychrometric Functions
 Building modeling often involves calculations related to moist air. A
 comprehensive set of built-in functions is available for psychrometric
 calculations.
-Table `2.7 <#table-built-in-psychrometric-functions-for-erl>`__ lists
+:numref:`table-built-in-psychrometric-functions-for-erl` lists
 the functions available for use in Erl programs that are related to
 moist air properties and some physical properties related to water. More
 discussion of the psychrometric functions is provided in the section
@@ -818,237 +817,237 @@ discussion of the psychrometric functions is provided in the section
 
 .. _table-built-in-psychrometric-functions-for-erl:
 
-   .. table:: Built-in Psychrometric Functions for Erl
+.. table:: Built-in Psychrometric Functions for Erl
 
-      +----------------+----------------+----------------+----------------+
-      | Function Name  | Arguments      | Description    | Units          |
-      +================+================+================+================+
-      | @              | Result         | Density of     | k              |
-      | RhoAirFnPbTdbW |                | moist air      | g m\ :sup:`−3` |
-      +----------------+----------------+----------------+----------------+
-      | Input 1        | Barometric     | Pa             |                |
-      |                | pressure       |                |                |
-      +----------------+----------------+----------------+----------------+
-      | Input 2        | Drybulb        | °C             |                |
-      |                | temperature    |                |                |
-      +----------------+----------------+----------------+----------------+
-      | Input 3        | Humidity ratio | kg             |                |
-      |                |                | Water/kgDryAir |                |
-      +----------------+----------------+----------------+----------------+
-      | @CpAirFnW      | Result         | Heat capacity  | J/kg-°C        |
-      |                |                | of moist air   |                |
-      +----------------+----------------+----------------+----------------+
-      | Input 1        | Humidity ratio | kg             |                |
-      |                |                | Water/kgDryAir |                |
-      +----------------+----------------+----------------+----------------+
-      | @HfgAirFnWTdb‘ | Result         | Heat of        | J/kg           |
-      |                |                | vaporization   |                |
-      |                |                | for vapor      |                |
-      +----------------+----------------+----------------+----------------+
-      | Input 1        | Humidity ratio | kg             |                |
-      |                |                | Water/kgDryAir |                |
-      +----------------+----------------+----------------+----------------+
-      | Input 2        | Drybulb        | °C             |                |
-      |                | temperature    |                |                |
-      +----------------+----------------+----------------+----------------+
-      | @HgAirFnWTdb   | Result         | Enthalpy of    |                |
-      |                |                | the gas        |                |
-      +----------------+----------------+----------------+----------------+
-      | Input 1        | Humidity ratio | kg             |                |
-      |                |                | Water/kgDryAir |                |
-      +----------------+----------------+----------------+----------------+
-      | Input 2        | Drybulb        | °C             |                |
-      |                | temperature    |                |                |
-      +----------------+----------------+----------------+----------------+
-      | @TdpFnTdbTwbPb | Result         | Dew-point      | °C             |
-      |                |                | temperature    |                |
-      +----------------+----------------+----------------+----------------+
-      | Input 1        | Drybulb        | °C             |                |
-      |                | temperature    |                |                |
-      +----------------+----------------+----------------+----------------+
-      | Input 2        | Wetbulb        | °C             |                |
-      |                | temperature    |                |                |
-      +----------------+----------------+----------------+----------------+
-      | Input 3        | Barometric     | Pa             |                |
-      |                | pressure       |                |                |
-      +----------------+----------------+----------------+----------------+
-      | @TdpFnWPb      | Result         | Dew-point      | °C             |
-      |                |                | temperature    |                |
-      +----------------+----------------+----------------+----------------+
-      | Input 1        | Humidity ratio | kg             |                |
-      |                |                | Water/kgDryAir |                |
-      +----------------+----------------+----------------+----------------+
-      | Input 2        | Barometric     | Pa             |                |
-      |                | pressure       |                |                |
-      +----------------+----------------+----------------+----------------+
-      | @HFnTdbW       | Result         | Enthalpy of    | J/kg           |
-      |                |                | moist air      |                |
-      +----------------+----------------+----------------+----------------+
-      | Input 1        | Drybulb        | °C             |                |
-      |                | temperature    |                |                |
-      +----------------+----------------+----------------+----------------+
-      | Input 2        | Humidity ratio | kg             |                |
-      |                |                | Water/kgDryAir |                |
-      +----------------+----------------+----------------+----------------+
-      | @HFnTdbRhPb    | Result         | Enthalpy of    | J/kg           |
-      |                |                | moist air      |                |
-      +----------------+----------------+----------------+----------------+
-      | Input 1        | Drybulb        | °C             |                |
-      |                | temperature    |                |                |
-      +----------------+----------------+----------------+----------------+
-      | Input 2        | Relative       | Fraction (0.0  |                |
-      |                | humidity       | .. 1)          |                |
-      +----------------+----------------+----------------+----------------+
-      | Input 3        | Barometric     | Pa             |                |
-      |                | pressure       |                |                |
-      +----------------+----------------+----------------+----------------+
-      | @TdbFnHW       | Result         | Drybulb        | °C             |
-      |                |                | temperature    |                |
-      +----------------+----------------+----------------+----------------+
-      | Input 1        | Enthalpy of    | J/kg           |                |
-      |                | moist air      |                |                |
-      +----------------+----------------+----------------+----------------+
-      | Input 2        | Humidity ratio | kg             |                |
-      |                |                | Water/kgDryAir |                |
-      +----------------+----------------+----------------+----------------+
-      | @RhovFnTdbRh   | Result         | Vapor density  | k              |
-      |                |                | in air         | g m\ :sup:`−3` |
-      +----------------+----------------+----------------+----------------+
-      | Input 1        | Drybulb        | °C             |                |
-      |                | temperature    |                |                |
-      +----------------+----------------+----------------+----------------+
-      | Input 2        | Relative       | Fraction (0.0  |                |
-      |                | humidity       | .. 1)          |                |
-      +----------------+----------------+----------------+----------------+
-      | @RhovFnTdbWPb  | Result         | Vapor density  | k              |
-      |                |                | in air         | g m\ :sup:`−3` |
-      +----------------+----------------+----------------+----------------+
-      | Input 1        | Drybulb        | °C             |                |
-      |                | temperature    |                |                |
-      +----------------+----------------+----------------+----------------+
-      | Input 2        | Humidity ratio | kg             |                |
-      |                |                | Water/kgDryAir |                |
-      +----------------+----------------+----------------+----------------+
-      | Input 3        | Barometric     | Pa             |                |
-      |                | pressure       |                |                |
-      +----------------+----------------+----------------+----------------+
-      | @RhFnTdbRhov   | Result         | Relative       | Fraction (0.0  |
-      |                |                | humidity       | .. 1)          |
-      +----------------+----------------+----------------+----------------+
-      | Input 1        | Drybulb        | °C             |                |
-      |                | temperature    |                |                |
-      +----------------+----------------+----------------+----------------+
-      | Input 2        | Vapor density  | k              |                |
-      |                | in air         | g m\ :sup:`−3` |                |
-      +----------------+----------------+----------------+----------------+
-      | @RhFnTdbWPb    | Result         | Relative       | Fraction (0.0  |
-      |                |                | humidity       | .. 1)          |
-      +----------------+----------------+----------------+----------------+
-      | Input 1        | Drybulb        | °C             |                |
-      |                | temperature    |                |                |
-      +----------------+----------------+----------------+----------------+
-      | Input 2        | Humidity ratio | kg             |                |
-      |                |                | Water/kgDryAir |                |
-      +----------------+----------------+----------------+----------------+
-      | Input 3        | Barometric     | Pa             |                |
-      |                | pressure       |                |                |
-      +----------------+----------------+----------------+----------------+
-      | @TwbFnTdbWPb   | Result         | Wetbulb        | °C             |
-      |                |                | temperature    |                |
-      +----------------+----------------+----------------+----------------+
-      | Input 1        | Drybulb        | °C             |                |
-      |                | temperature    |                |                |
-      +----------------+----------------+----------------+----------------+
-      | Input 2        | Humidity ratio | kg             |                |
-      |                |                | Water/kgDryAir |                |
-      +----------------+----------------+----------------+----------------+
-      | Input 3        | Barometric     | Pa             |                |
-      |                | pressure       |                |                |
-      +----------------+----------------+----------------+----------------+
-      | @VFnTdbWPb     | Result         | Specific       | m\ :sup:`3`/kg |
-      |                |                | volume         |                |
-      +----------------+----------------+----------------+----------------+
-      | Input 1        | Drybulb        | °C             |                |
-      |                | temperature    |                |                |
-      +----------------+----------------+----------------+----------------+
-      | Input 2        | Humidity ratio | kg             |                |
-      |                |                | Water/kgDryAir |                |
-      +----------------+----------------+----------------+----------------+
-      | Input 3        | Barometric     | Pa             |                |
-      |                | pressure       |                |                |
-      +----------------+----------------+----------------+----------------+
-      | @WFnTdpPb      | Result         | Humidity ratio | kg             |
-      |                |                |                | Water/kgDryAir |
-      +----------------+----------------+----------------+----------------+
-      | Input 1        | Dew-point      | °C             |                |
-      |                | temperature    |                |                |
-      +----------------+----------------+----------------+----------------+
-      | Input 2        | Barometric     | Pa             |                |
-      |                | pressure       |                |                |
-      +----------------+----------------+----------------+----------------+
-      | @WFnTdbH       | Result         | Humidity ratio | kg             |
-      |                |                |                | Water/kgDryAir |
-      +----------------+----------------+----------------+----------------+
-      | Input 1        | Drybulb        | °C             |                |
-      |                | temperature    |                |                |
-      +----------------+----------------+----------------+----------------+
-      | Input 2        | Enthalpy of    | J/kg           |                |
-      |                | moist air      |                |                |
-      +----------------+----------------+----------------+----------------+
-      | @WFnTdbTwbPb   | Result         | Humidity ratio | kg             |
-      |                |                |                | Water/kgDryAir |
-      +----------------+----------------+----------------+----------------+
-      | Input 1        | Drybulb        | °C             |                |
-      |                | temperature    |                |                |
-      +----------------+----------------+----------------+----------------+
-      | Input 2        | Wetbulb        | °C             |                |
-      |                | temperature    |                |                |
-      +----------------+----------------+----------------+----------------+
-      | Input 3        | Barometric     | Pa             |                |
-      |                | pressure       |                |                |
-      +----------------+----------------+----------------+----------------+
-      | @WFnTdbRhPb    | Result         | Humidity ratio | kg             |
-      |                |                |                | Water/kgDryAir |
-      +----------------+----------------+----------------+----------------+
-      | Input 1        | Drybulb        | °C             |                |
-      |                | temperature    |                |                |
-      +----------------+----------------+----------------+----------------+
-      | Input 2        | Relative       | Fraction (0.0  |                |
-      |                | humidity       | .. 1)          |                |
-      +----------------+----------------+----------------+----------------+
-      | Input 3        | Barometric     | Pa             |                |
-      |                | pressure       |                |                |
-      +----------------+----------------+----------------+----------------+
-      | @PsatFnTemp    | Result         | Saturation     | Pa             |
-      |                |                | pressure       |                |
-      +----------------+----------------+----------------+----------------+
-      | Input 1        | Drybulb        | °C             |                |
-      |                | temperature    |                |                |
-      +----------------+----------------+----------------+----------------+
-      | @TsatFnHPb     | Result         | Saturation     | °C             |
-      |                |                | temperature    |                |
-      +----------------+----------------+----------------+----------------+
-      | Input 1        | Enthalpy of    | J/kg           |                |
-      |                | moist air      |                |                |
-      +----------------+----------------+----------------+----------------+
-      | Input 2        | Barometric     | Pa             |                |
-      |                | pressure       |                |                |
-      +----------------+----------------+----------------+----------------+
-      | @CpCW          | Result         | Heat capacity  | J/kg           |
-      |                |                | of water       |                |
-      +----------------+----------------+----------------+----------------+
-      | Input 1        | Temperature    | °C             |                |
-      +----------------+----------------+----------------+----------------+
-      | @CpHW          | Result         | Heat capacity  | J/kg           |
-      |                |                | of water       |                |
-      +----------------+----------------+----------------+----------------+
-      | Input 1        | Temperature    | °C             |                |
-      +----------------+----------------+----------------+----------------+
-      | @RhoH2O        | Result         | Density of     | k              |
-      |                |                | water          | g m\ :sup:`−3` |
-      +----------------+----------------+----------------+----------------+
-      | Input 1        | Temperature    | °C             |                |
-      +----------------+----------------+----------------+----------------+
+  +----------------+----------------+----------------+----------------+
+  | Function Name  | Arguments      | Description    | Units          |
+  +================+================+================+================+
+  | @              | Result         | Density of     | k              |
+  | RhoAirFnPbTdbW |                | moist air      | g m\ :sup:`−3` |
+  +----------------+----------------+----------------+----------------+
+  | Input 1        | Barometric     | Pa             |                |
+  |                | pressure       |                |                |
+  +----------------+----------------+----------------+----------------+
+  | Input 2        | Drybulb        | °C             |                |
+  |                | temperature    |                |                |
+  +----------------+----------------+----------------+----------------+
+  | Input 3        | Humidity ratio | kg             |                |
+  |                |                | Water/kgDryAir |                |
+  +----------------+----------------+----------------+----------------+
+  | @CpAirFnW      | Result         | Heat capacity  | J/kg-°C        |
+  |                |                | of moist air   |                |
+  +----------------+----------------+----------------+----------------+
+  | Input 1        | Humidity ratio | kg             |                |
+  |                |                | Water/kgDryAir |                |
+  +----------------+----------------+----------------+----------------+
+  | @HfgAirFnWTdb‘ | Result         | Heat of        | J/kg           |
+  |                |                | vaporization   |                |
+  |                |                | for vapor      |                |
+  +----------------+----------------+----------------+----------------+
+  | Input 1        | Humidity ratio | kg             |                |
+  |                |                | Water/kgDryAir |                |
+  +----------------+----------------+----------------+----------------+
+  | Input 2        | Drybulb        | °C             |                |
+  |                | temperature    |                |                |
+  +----------------+----------------+----------------+----------------+
+  | @HgAirFnWTdb   | Result         | Enthalpy of    |                |
+  |                |                | the gas        |                |
+  +----------------+----------------+----------------+----------------+
+  | Input 1        | Humidity ratio | kg             |                |
+  |                |                | Water/kgDryAir |                |
+  +----------------+----------------+----------------+----------------+
+  | Input 2        | Drybulb        | °C             |                |
+  |                | temperature    |                |                |
+  +----------------+----------------+----------------+----------------+
+  | @TdpFnTdbTwbPb | Result         | Dew-point      | °C             |
+  |                |                | temperature    |                |
+  +----------------+----------------+----------------+----------------+
+  | Input 1        | Drybulb        | °C             |                |
+  |                | temperature    |                |                |
+  +----------------+----------------+----------------+----------------+
+  | Input 2        | Wetbulb        | °C             |                |
+  |                | temperature    |                |                |
+  +----------------+----------------+----------------+----------------+
+  | Input 3        | Barometric     | Pa             |                |
+  |                | pressure       |                |                |
+  +----------------+----------------+----------------+----------------+
+  | @TdpFnWPb      | Result         | Dew-point      | °C             |
+  |                |                | temperature    |                |
+  +----------------+----------------+----------------+----------------+
+  | Input 1        | Humidity ratio | kg             |                |
+  |                |                | Water/kgDryAir |                |
+  +----------------+----------------+----------------+----------------+
+  | Input 2        | Barometric     | Pa             |                |
+  |                | pressure       |                |                |
+  +----------------+----------------+----------------+----------------+
+  | @HFnTdbW       | Result         | Enthalpy of    | J/kg           |
+  |                |                | moist air      |                |
+  +----------------+----------------+----------------+----------------+
+  | Input 1        | Drybulb        | °C             |                |
+  |                | temperature    |                |                |
+  +----------------+----------------+----------------+----------------+
+  | Input 2        | Humidity ratio | kg             |                |
+  |                |                | Water/kgDryAir |                |
+  +----------------+----------------+----------------+----------------+
+  | @HFnTdbRhPb    | Result         | Enthalpy of    | J/kg           |
+  |                |                | moist air      |                |
+  +----------------+----------------+----------------+----------------+
+  | Input 1        | Drybulb        | °C             |                |
+  |                | temperature    |                |                |
+  +----------------+----------------+----------------+----------------+
+  | Input 2        | Relative       | Fraction (0.0  |                |
+  |                | humidity       | .. 1)          |                |
+  +----------------+----------------+----------------+----------------+
+  | Input 3        | Barometric     | Pa             |                |
+  |                | pressure       |                |                |
+  +----------------+----------------+----------------+----------------+
+  | @TdbFnHW       | Result         | Drybulb        | °C             |
+  |                |                | temperature    |                |
+  +----------------+----------------+----------------+----------------+
+  | Input 1        | Enthalpy of    | J/kg           |                |
+  |                | moist air      |                |                |
+  +----------------+----------------+----------------+----------------+
+  | Input 2        | Humidity ratio | kg             |                |
+  |                |                | Water/kgDryAir |                |
+  +----------------+----------------+----------------+----------------+
+  | @RhovFnTdbRh   | Result         | Vapor density  | k              |
+  |                |                | in air         | g m\ :sup:`−3` |
+  +----------------+----------------+----------------+----------------+
+  | Input 1        | Drybulb        | °C             |                |
+  |                | temperature    |                |                |
+  +----------------+----------------+----------------+----------------+
+  | Input 2        | Relative       | Fraction (0.0  |                |
+  |                | humidity       | .. 1)          |                |
+  +----------------+----------------+----------------+----------------+
+  | @RhovFnTdbWPb  | Result         | Vapor density  | k              |
+  |                |                | in air         | g m\ :sup:`−3` |
+  +----------------+----------------+----------------+----------------+
+  | Input 1        | Drybulb        | °C             |                |
+  |                | temperature    |                |                |
+  +----------------+----------------+----------------+----------------+
+  | Input 2        | Humidity ratio | kg             |                |
+  |                |                | Water/kgDryAir |                |
+  +----------------+----------------+----------------+----------------+
+  | Input 3        | Barometric     | Pa             |                |
+  |                | pressure       |                |                |
+  +----------------+----------------+----------------+----------------+
+  | @RhFnTdbRhov   | Result         | Relative       | Fraction (0.0  |
+  |                |                | humidity       | .. 1)          |
+  +----------------+----------------+----------------+----------------+
+  | Input 1        | Drybulb        | °C             |                |
+  |                | temperature    |                |                |
+  +----------------+----------------+----------------+----------------+
+  | Input 2        | Vapor density  | k              |                |
+  |                | in air         | g m\ :sup:`−3` |                |
+  +----------------+----------------+----------------+----------------+
+  | @RhFnTdbWPb    | Result         | Relative       | Fraction (0.0  |
+  |                |                | humidity       | .. 1)          |
+  +----------------+----------------+----------------+----------------+
+  | Input 1        | Drybulb        | °C             |                |
+  |                | temperature    |                |                |
+  +----------------+----------------+----------------+----------------+
+  | Input 2        | Humidity ratio | kg             |                |
+  |                |                | Water/kgDryAir |                |
+  +----------------+----------------+----------------+----------------+
+  | Input 3        | Barometric     | Pa             |                |
+  |                | pressure       |                |                |
+  +----------------+----------------+----------------+----------------+
+  | @TwbFnTdbWPb   | Result         | Wetbulb        | °C             |
+  |                |                | temperature    |                |
+  +----------------+----------------+----------------+----------------+
+  | Input 1        | Drybulb        | °C             |                |
+  |                | temperature    |                |                |
+  +----------------+----------------+----------------+----------------+
+  | Input 2        | Humidity ratio | kg             |                |
+  |                |                | Water/kgDryAir |                |
+  +----------------+----------------+----------------+----------------+
+  | Input 3        | Barometric     | Pa             |                |
+  |                | pressure       |                |                |
+  +----------------+----------------+----------------+----------------+
+  | @VFnTdbWPb     | Result         | Specific       | m\ :sup:`3`/kg |
+  |                |                | volume         |                |
+  +----------------+----------------+----------------+----------------+
+  | Input 1        | Drybulb        | °C             |                |
+  |                | temperature    |                |                |
+  +----------------+----------------+----------------+----------------+
+  | Input 2        | Humidity ratio | kg             |                |
+  |                |                | Water/kgDryAir |                |
+  +----------------+----------------+----------------+----------------+
+  | Input 3        | Barometric     | Pa             |                |
+  |                | pressure       |                |                |
+  +----------------+----------------+----------------+----------------+
+  | @WFnTdpPb      | Result         | Humidity ratio | kg             |
+  |                |                |                | Water/kgDryAir |
+  +----------------+----------------+----------------+----------------+
+  | Input 1        | Dew-point      | °C             |                |
+  |                | temperature    |                |                |
+  +----------------+----------------+----------------+----------------+
+  | Input 2        | Barometric     | Pa             |                |
+  |                | pressure       |                |                |
+  +----------------+----------------+----------------+----------------+
+  | @WFnTdbH       | Result         | Humidity ratio | kg             |
+  |                |                |                | Water/kgDryAir |
+  +----------------+----------------+----------------+----------------+
+  | Input 1        | Drybulb        | °C             |                |
+  |                | temperature    |                |                |
+  +----------------+----------------+----------------+----------------+
+  | Input 2        | Enthalpy of    | J/kg           |                |
+  |                | moist air      |                |                |
+  +----------------+----------------+----------------+----------------+
+  | @WFnTdbTwbPb   | Result         | Humidity ratio | kg             |
+  |                |                |                | Water/kgDryAir |
+  +----------------+----------------+----------------+----------------+
+  | Input 1        | Drybulb        | °C             |                |
+  |                | temperature    |                |                |
+  +----------------+----------------+----------------+----------------+
+  | Input 2        | Wetbulb        | °C             |                |
+  |                | temperature    |                |                |
+  +----------------+----------------+----------------+----------------+
+  | Input 3        | Barometric     | Pa             |                |
+  |                | pressure       |                |                |
+  +----------------+----------------+----------------+----------------+
+  | @WFnTdbRhPb    | Result         | Humidity ratio | kg             |
+  |                |                |                | Water/kgDryAir |
+  +----------------+----------------+----------------+----------------+
+  | Input 1        | Drybulb        | °C             |                |
+  |                | temperature    |                |                |
+  +----------------+----------------+----------------+----------------+
+  | Input 2        | Relative       | Fraction (0.0  |                |
+  |                | humidity       | .. 1)          |                |
+  +----------------+----------------+----------------+----------------+
+  | Input 3        | Barometric     | Pa             |                |
+  |                | pressure       |                |                |
+  +----------------+----------------+----------------+----------------+
+  | @PsatFnTemp    | Result         | Saturation     | Pa             |
+  |                |                | pressure       |                |
+  +----------------+----------------+----------------+----------------+
+  | Input 1        | Drybulb        | °C             |                |
+  |                | temperature    |                |                |
+  +----------------+----------------+----------------+----------------+
+  | @TsatFnHPb     | Result         | Saturation     | °C             |
+  |                |                | temperature    |                |
+  +----------------+----------------+----------------+----------------+
+  | Input 1        | Enthalpy of    | J/kg           |                |
+  |                | moist air      |                |                |
+  +----------------+----------------+----------------+----------------+
+  | Input 2        | Barometric     | Pa             |                |
+  |                | pressure       |                |                |
+  +----------------+----------------+----------------+----------------+
+  | @CpCW          | Result         | Heat capacity  | J/kg           |
+  |                |                | of water       |                |
+  +----------------+----------------+----------------+----------------+
+  | Input 1        | Temperature    | °C             |                |
+  +----------------+----------------+----------------+----------------+
+  | @CpHW          | Result         | Heat capacity  | J/kg           |
+  |                |                | of water       |                |
+  +----------------+----------------+----------------+----------------+
+  | Input 1        | Temperature    | °C             |                |
+  +----------------+----------------+----------------+----------------+
+  | @RhoH2O        | Result         | Density of     | k              |
+  |                |                | water          | g m\ :sup:`−3` |
+  +----------------+----------------+----------------+----------------+
+  | Input 1        | Temperature    | °C             |                |
+  +----------------+----------------+----------------+----------------+
 
 Built-in Curve and Table Functions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1056,7 +1055,7 @@ Built-in Curve and Table Functions
 EnergyPlus has a number of different generic curve and table input
 objects that are used to describe the performance characteristics for
 various component models. 
-Table `2.8 <#table-built-in-function-for-accessing-curves>`__ describes
+:numref:`table-built-in-function-for-accessing-curves` describes
 a built-in function called @CurveValue that is available for reusing
 those curve and table input objects in your Erl programs.  Although the
 Erl language could be used to replicate the functionality, reusing those
@@ -1089,52 +1088,52 @@ because it is only filled once at the beginning of the simulation.
 
 .. _table-built-in-function-for-accessing-curves:
 
-   .. table:: Built-in Function for Accessing Curves and Tables
+.. table:: Built-in Function for Accessing Curves and Tables
 
-      +---------------+---------------------+---------------------+-------+
-      | Function Name | Arguments           | Description         | Notes |
-      +===============+=====================+=====================+=======+
-      | @CurveValue   | Result              | Result from         |       |
-      |               |                     | evaluating the      |       |
-      |               |                     | curve or table as a |       |
-      |               |                     | function of the     |       |
-      |               |                     | input arguments     |       |
-      +---------------+---------------------+---------------------+-------+
-      | Input 1       | Index variable that | This variable needs |       |
-      |               | "points" to a       | to be declared and  |       |
-      |               | specific curve or   | filled using an     |       |
-      |               | table object        | EnergyMana          |       |
-      |               | defined elsewhere   | gementSystem:CurveO |       |
-      |               | in the IDF.         | rTableIndexVariable |       |
-      |               |                     | object.             |       |
-      +---------------+---------------------+---------------------+-------+
-      | Input 2       | First independent   | Typically the "X"   |       |
-      |               | variable            | input value, always |       |
-      |               |                     | used                |       |
-      +---------------+---------------------+---------------------+-------+
-      | Input 3       | Second independent  | Typically the "Y"   |       |
-      |               | variable            | value, only used if |       |
-      |               |                     | curve/table has two |       |
-      |               |                     | or more independent |       |
-      |               |                     | variables           |       |
-      +---------------+---------------------+---------------------+-------+
-      | Input 4       | Third independent   | Typically the "Z"   |       |
-      |               | variable            | value, only used if |       |
-      |               |                     | curve/table has     |       |
-      |               |                     | three or more       |       |
-      |               |                     | independent         |       |
-      |               |                     | variables.          |       |
-      +---------------+---------------------+---------------------+-------+
-      | Input 5       | Fourth independent  | Only used if table  |       |
-      |               | variable            | has four or more    |       |
-      |               |                     | independent         |       |
-      |               |                     | variables           |       |
-      +---------------+---------------------+---------------------+-------+
-      | Input 6       | Fifth independent   | Only used if table  |       |
-      |               | variable            | has five            |       |
-      |               |                     | independent         |       |
-      |               |                     | variables           |       |
-      +---------------+---------------------+---------------------+-------+
+  +---------------+---------------------+---------------------+-------+
+  | Function Name | Arguments           | Description         | Notes |
+  +===============+=====================+=====================+=======+
+  | @CurveValue   | Result              | Result from         |       |
+  |               |                     | evaluating the      |       |
+  |               |                     | curve or table as a |       |
+  |               |                     | function of the     |       |
+  |               |                     | input arguments     |       |
+  +---------------+---------------------+---------------------+-------+
+  | Input 1       | Index variable that | This variable needs |       |
+  |               | "points" to a       | to be declared and  |       |
+  |               | specific curve or   | filled using an     |       |
+  |               | table object        | EnergyMana          |       |
+  |               | defined elsewhere   | gementSystem:CurveO |       |
+  |               | in the IDF.         | rTableIndexVariable |       |
+  |               |                     | object.             |       |
+  +---------------+---------------------+---------------------+-------+
+  | Input 2       | First independent   | Typically the "X"   |       |
+  |               | variable            | input value, always |       |
+  |               |                     | used                |       |
+  +---------------+---------------------+---------------------+-------+
+  | Input 3       | Second independent  | Typically the "Y"   |       |
+  |               | variable            | value, only used if |       |
+  |               |                     | curve/table has two |       |
+  |               |                     | or more independent |       |
+  |               |                     | variables           |       |
+  +---------------+---------------------+---------------------+-------+
+  | Input 4       | Third independent   | Typically the "Z"   |       |
+  |               | variable            | value, only used if |       |
+  |               |                     | curve/table has     |       |
+  |               |                     | three or more       |       |
+  |               |                     | independent         |       |
+  |               |                     | variables.          |       |
+  +---------------+---------------------+---------------------+-------+
+  | Input 5       | Fourth independent  | Only used if table  |       |
+  |               | variable            | has four or more    |       |
+  |               |                     | independent         |       |
+  |               |                     | variables           |       |
+  +---------------+---------------------+---------------------+-------+
+  | Input 6       | Fifth independent   | Only used if table  |       |
+  |               | variable            | has five            |       |
+  |               |                     | independent         |       |
+  |               |                     | variables           |       |
+  +---------------+---------------------+---------------------+-------+
 
 Built-in Weather Data Functions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1148,7 +1147,7 @@ predictive control or for setting Weather Data actuator overrides based
 on the incoming weather data using the
 BeginZoneTimestepBeforeSetCurrentWeather calling point.
 
-Table `2.9 <#table-built-in-function-for-weather-data>`__ describes a
+:numref:`table-built-in-function-for-weather-data` describes a
 set of built-in functions to access this weather data. For all of these
 functions, the first argument is the hour (from 0 to 23) and the second
 argument is the zone timestep number (from 1 to number of timesteps per
@@ -1161,97 +1160,97 @@ hour). To access the current timestep use internal variables “Hour”’ and
 
 .. _table-built-in-function-for-weather-data:
 
-   .. table:: Built-in Psychrometric Functions for Erl
+.. table:: Built-in Psychrometric Functions for Erl
 
-      +-------------------------+-------------------------+----------------+
-      | Function Name           | Description             | Units          |
-      +=========================+=========================+================+
-      | @TodayIsRain            | Rain indicator, 1.0 =   |                |
-      |                         | raining                 |                |
-      +-------------------------+-------------------------+----------------+
-      | @TodayIsSnow            | Snow indicator, 1.0 =   |                |
-      |                         | snow on ground          |                |
-      +-------------------------+-------------------------+----------------+
-      | @TodayOutDryBulbTemp    | Outdoor dry-bulb        |  °C            |
-      |                         | temperature             |                |
-      +-------------------------+-------------------------+----------------+
-      | @TodayOutDewPointTemp   | Outdoor dewpoint        |  °C            |
-      |                         | temperature             |                |
-      +-------------------------+-------------------------+----------------+
-      | @TodayOutBaroPress      | Outdoor barometric      | pascal         |
-      |                         | pressure                |                |
-      +-------------------------+-------------------------+----------------+
-      | @TodayOutRelHum         | Outdoor relative        | percent        |
-      |                         | humidity                |                |
-      +-------------------------+-------------------------+----------------+
-      | @TodayWindSpeed         | Wind speed              | m s\ :sup:`−1` |
-      +-------------------------+-------------------------+----------------+
-      | @TodayWindDir           | Wind direction (N = 0,  | degrees        |
-      |                         | E = 90, S = 180, W =    |                |
-      |                         | 270)                    |                |
-      +-------------------------+-------------------------+----------------+
-      | @TodaySkyTemp           | Sky temperature         |  °C            |
-      +-------------------------+-------------------------+----------------+
-      | @TodayHorizIRSky        | Horizontal infrared     | W m\ :sup:`−2` |
-      |                         | radiation rate per area |                |
-      +-------------------------+-------------------------+----------------+
-      | @TodayBeamSolarRad      | Direct normal solar     | W m\ :sup:`−2` |
-      |                         | irradiance              |                |
-      +-------------------------+-------------------------+----------------+
-      | @TodayDifSolarRad       | Diffuse horizontal      | W m\ :sup:`−2` |
-      |                         | solar irradiance        |                |
-      +-------------------------+-------------------------+----------------+
-      | @TodayAlbedo            | Ratio of ground         | dimensionless  |
-      |                         | reflected solar to      |                |
-      |                         | global horizontal       |                |
-      |                         | irradiance (unused)     |                |
-      +-------------------------+-------------------------+----------------+
-      | @TodayLiquidPrecip      | Liquid precipitation    | mm             |
-      |                         | depth                   |                |
-      +-------------------------+-------------------------+----------------+
-      | @TomorrowIsRain         | Rain indicator, 1.0 =   |                |
-      |                         | raining                 |                |
-      +-------------------------+-------------------------+----------------+
-      | @TomorrowIsSnow         | Snow indicator, 1.0 =   |                |
-      |                         | snow on ground          |                |
-      +-------------------------+-------------------------+----------------+
-      | @TomorrowOutDryBulbTemp | Outdoor dry-bulb        |  °C            |
-      |                         | temperature             |                |
-      +-------------------------+-------------------------+----------------+
-      | @                       | Outdoor dewpoint        |  °C            |
-      | TomorrowOutDewPointTemp | temperature             |                |
-      +-------------------------+-------------------------+----------------+
-      | @TomorrowOutBaroPress   | Outdoor barometric      | pascal         |
-      |                         | pressure                |                |
-      +-------------------------+-------------------------+----------------+
-      | @TomorrowOutRelHum      | Outdoor relative        | percent        |
-      |                         | humidity                |                |
-      +-------------------------+-------------------------+----------------+
-      | @TomorrowWindSpeed      | Wind speed              | m s\ :sup:`−1` |
-      +-------------------------+-------------------------+----------------+
-      | @TomorrowWindDir        | Wind direction (N = 0,  | degrees        |
-      |                         | E = 90, S = 180, W =    |                |
-      |                         | 270)                    |                |
-      +-------------------------+-------------------------+----------------+
-      | @TomorrowSkyTemp        | Sky temperature         |  °C            |
-      +-------------------------+-------------------------+----------------+
-      | @TomorrowHorizIRSky     | Horizontal infrared     | W m\ :sup:`−2` |
-      |                         | radiation rate per area |                |
-      +-------------------------+-------------------------+----------------+
-      | @TomorrowBeamSolarRad   | Direct normal solar     | W m\ :sup:`−2` |
-      |                         | irradiance              |                |
-      +-------------------------+-------------------------+----------------+
-      | @TomorrowDifSolarRad    | Diffuse horizontal      | W m\ :sup:`−2` |
-      |                         | solar irradiance        |                |
-      +-------------------------+-------------------------+----------------+
-      | @TomorrowAlbedo         | Ratio of ground         | dimensionless  |
-      |                         | reflected solar to      |                |
-      |                         | global horizontal       |                |
-      |                         | irradiance (unused)     |                |
-      +-------------------------+-------------------------+----------------+
-      | @TomorrowLiquidPrecip   | Liquid precipitation    | mm             |
-      |                         | depth                   |                |
-      +-------------------------+-------------------------+----------------+
+  +-------------------------+-------------------------+----------------+
+  | Function Name           | Description             | Units          |
+  +=========================+=========================+================+
+  | @TodayIsRain            | Rain indicator, 1.0 =   |                |
+  |                         | raining                 |                |
+  +-------------------------+-------------------------+----------------+
+  | @TodayIsSnow            | Snow indicator, 1.0 =   |                |
+  |                         | snow on ground          |                |
+  +-------------------------+-------------------------+----------------+
+  | @TodayOutDryBulbTemp    | Outdoor dry-bulb        |  °C            |
+  |                         | temperature             |                |
+  +-------------------------+-------------------------+----------------+
+  | @TodayOutDewPointTemp   | Outdoor dewpoint        |  °C            |
+  |                         | temperature             |                |
+  +-------------------------+-------------------------+----------------+
+  | @TodayOutBaroPress      | Outdoor barometric      | pascal         |
+  |                         | pressure                |                |
+  +-------------------------+-------------------------+----------------+
+  | @TodayOutRelHum         | Outdoor relative        | percent        |
+  |                         | humidity                |                |
+  +-------------------------+-------------------------+----------------+
+  | @TodayWindSpeed         | Wind speed              | m s\ :sup:`−1` |
+  +-------------------------+-------------------------+----------------+
+  | @TodayWindDir           | Wind direction (N = 0,  | degrees        |
+  |                         | E = 90, S = 180, W =    |                |
+  |                         | 270)                    |                |
+  +-------------------------+-------------------------+----------------+
+  | @TodaySkyTemp           | Sky temperature         |  °C            |
+  +-------------------------+-------------------------+----------------+
+  | @TodayHorizIRSky        | Horizontal infrared     | W m\ :sup:`−2` |
+  |                         | radiation rate per area |                |
+  +-------------------------+-------------------------+----------------+
+  | @TodayBeamSolarRad      | Direct normal solar     | W m\ :sup:`−2` |
+  |                         | irradiance              |                |
+  +-------------------------+-------------------------+----------------+
+  | @TodayDifSolarRad       | Diffuse horizontal      | W m\ :sup:`−2` |
+  |                         | solar irradiance        |                |
+  +-------------------------+-------------------------+----------------+
+  | @TodayAlbedo            | Ratio of ground         | dimensionless  |
+  |                         | reflected solar to      |                |
+  |                         | global horizontal       |                |
+  |                         | irradiance (unused)     |                |
+  +-------------------------+-------------------------+----------------+
+  | @TodayLiquidPrecip      | Liquid precipitation    | mm             |
+  |                         | depth                   |                |
+  +-------------------------+-------------------------+----------------+
+  | @TomorrowIsRain         | Rain indicator, 1.0 =   |                |
+  |                         | raining                 |                |
+  +-------------------------+-------------------------+----------------+
+  | @TomorrowIsSnow         | Snow indicator, 1.0 =   |                |
+  |                         | snow on ground          |                |
+  +-------------------------+-------------------------+----------------+
+  | @TomorrowOutDryBulbTemp | Outdoor dry-bulb        |  °C            |
+  |                         | temperature             |                |
+  +-------------------------+-------------------------+----------------+
+  | @                       | Outdoor dewpoint        |  °C            |
+  | TomorrowOutDewPointTemp | temperature             |                |
+  +-------------------------+-------------------------+----------------+
+  | @TomorrowOutBaroPress   | Outdoor barometric      | pascal         |
+  |                         | pressure                |                |
+  +-------------------------+-------------------------+----------------+
+  | @TomorrowOutRelHum      | Outdoor relative        | percent        |
+  |                         | humidity                |                |
+  +-------------------------+-------------------------+----------------+
+  | @TomorrowWindSpeed      | Wind speed              | m s\ :sup:`−1` |
+  +-------------------------+-------------------------+----------------+
+  | @TomorrowWindDir        | Wind direction (N = 0,  | degrees        |
+  |                         | E = 90, S = 180, W =    |                |
+  |                         | 270)                    |                |
+  +-------------------------+-------------------------+----------------+
+  | @TomorrowSkyTemp        | Sky temperature         |  °C            |
+  +-------------------------+-------------------------+----------------+
+  | @TomorrowHorizIRSky     | Horizontal infrared     | W m\ :sup:`−2` |
+  |                         | radiation rate per area |                |
+  +-------------------------+-------------------------+----------------+
+  | @TomorrowBeamSolarRad   | Direct normal solar     | W m\ :sup:`−2` |
+  |                         | irradiance              |                |
+  +-------------------------+-------------------------+----------------+
+  | @TomorrowDifSolarRad    | Diffuse horizontal      | W m\ :sup:`−2` |
+  |                         | solar irradiance        |                |
+  +-------------------------+-------------------------+----------------+
+  | @TomorrowAlbedo         | Ratio of ground         | dimensionless  |
+  |                         | reflected solar to      |                |
+  |                         | global horizontal       |                |
+  |                         | irradiance (unused)     |                |
+  +-------------------------+-------------------------+----------------+
+  | @TomorrowLiquidPrecip   | Liquid precipitation    | mm             |
+  |                         | depth                   |                |
+  +-------------------------+-------------------------+----------------+
 
 Internal Variables
 ==================
@@ -2874,13 +2873,15 @@ developer license.
 
 This section starts with a series of three figures and then discusses
 them and the 14 calling points.
-Figure `6.1 <#fig:overall-program-flow-and-ems-calling-points>`__ shows
+:numref:`fig-overall-program-flow-and-ems-calling-points` shows
 the overall flow of an EnergyPlus model with some EMS calling points.
-Figure `6.2 <#fig:timestep-sequence-with-ems-calling-points>`__ shows
+:numref:`fig-timestep-sequence-with-ems-calling-points` shows
 the sequence for a single timestep with the remaining EMS calling
-points. Figure `6.3 <#fig:system-timestep-sequence-with-ems-calling>`__
+points. :numref:`fig-system-timestep-sequence-with-ems-calling`
 is similar but shows the calling points for shortened system timesteps.
 These diagram the flow of procedures during a run from top to bottom.
+
+.. _fig-overall-program-flow-and-ems-calling-points:
 
 .. figure:: media/image003.jpg
    :align: center 
@@ -2888,11 +2889,15 @@ These diagram the flow of procedures during a run from top to bottom.
    
    Overall Program Flow and EMS Calling Points
 
+.. _fig-timestep-sequence-with-ems-calling-points:
+
 .. figure:: media/image004.jpg
    :align: center 
    :width: 50%
    
    Timestep Sequence with EMS Calling Points
+
+.. _fig-system-timestep-sequence-with-ems-calling:
 
 .. figure:: media/image005.jpg
    :align: center 
@@ -2905,7 +2910,7 @@ activities and then models the environment periods you ask for; e.g.,
 design days and run periods. The built-in variable called
 CurrentEnvironment indentifies which of these is being simulated and any
 given time.
-Figure `6.1 <#fig:overall-program-flow-and-ems-calling-points>`__
+:numref:`fig-overall-program-flow-and-ems-calling-points`
 diagrams the overall program flow starting at the top and listing
 certain key steps in outline form. EnergyPlus models contain a lot of
 input, and the internal processes to acquire and process that input take
@@ -2918,7 +2923,7 @@ design periods begin. Two EMS calling points that occur only once in a
 given run, EndOfZoneSizing and EndOfSystemSizing, can be triggered
 during this initial setup phase. During the phase called “Setup
 Simulation,” the various timestep-based calling points diagrammed in
-Figure `6.2 <#fig:timestep-sequence-with-ems-calling-points>`__ will
+:numref:`fig-timestep-sequence-with-ems-calling-points` will
 also be called.
 
 Another thing that happens during the setup phase described above is
@@ -2934,7 +2939,7 @@ values that result from sizing.
 
 To model environment periods, EnergyPlus runs through a serious of
 timesteps.
-Figure `6.2 <#fig:timestep-sequence-with-ems-calling-points>`__ diagrams
+:numref:`fig-timestep-sequence-with-ems-calling-points` diagrams
 the program flow for a single timestep where the timestep for the system
 modeling is equal to that for the zone load modeling. The *system*
 timestep can be shorter than the *zone* timestep. The usual process of
@@ -2943,9 +2948,9 @@ modeling a timestep is to first calculate the zone loads during the
 calculate the resulting zone conditions during the “Corrector.”  Within
 the HVAC system modeling, some system iterations are used to iteratively
 solve a system of systems.
-Figure `6.3 <#fig:system-timestep-sequence-with-ems-calling>`__ is a
+:numref:`fig-system-timestep-sequence-with-ems-calling` is a
 slightly modified version
-Figure `6.2 <#fig:timestep-sequence-with-ems-calling-points>`__ that
+:numref:`fig-timestep-sequence-with-ems-calling-points` that
 diagrams the situation when the timestep of the system calculations has
 been reduced to half the length of the zone timestep.
 

@@ -295,7 +295,7 @@ Step-By-Step Instructions
    ``/WeatherData/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw``
    into the directory with the IDF file. At this
    point the directory will look something like
-   what is shown in Figure 1.
+   what is shown in :numref:`fig-directory-contents-before-run`.
 #. Start up a terminal or command window and change
    directories into the directory created in step 1.
 #. Run EnergyPlus: ``energyplus -i /Energy+.idd -w USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw 5ZoneAirCooled.idf``
@@ -303,7 +303,7 @@ Step-By-Step Instructions
 On some systems (e.g. Windows) it may be
 necessary to enclose the IDD path in quotes.
 After completion of this step, the directory
-will have many more files in it, see Figure 2.
+will have many more files in it, see :numref:`fig-directory-contents-after-run`.
 Congratulations! You’ve completed your first
 simulation!
 
@@ -326,14 +326,20 @@ output files:
    web browser. This file contains a number of
    summary-type tables
 
+.. _fig-directory-contents-before-run:
+
 .. figure:: media/quickstart_1.png
    :name: fig:quickstart_1
+   :align: center
    :width: 50%
 
    Directory Contents Before Run
 
+.. _fig-directory-contents-after-run:
+
 .. figure:: media/quickstart_2.png
    :name: fig:quickstart_2
+   :align: center
    :width: 50%
 
    Directory Contents After Run
@@ -423,8 +429,9 @@ and note that it only has one entry per day. Even
 though the variable values are in the rows of the last
 hour of each day, each result applies to the whole day
 (and not just the last hour). Plotting the variable
-results in the graph shown in Figure 3.
+results in the graph shown in :numref:`fig-daily-boiler-naturalgas-energy`.
 
+.. _fig-daily-boiler-naturalgas-energy:
 
 .. figure:: media/quickstart_3.png
    :name: fig:quickstart_3

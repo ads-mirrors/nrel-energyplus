@@ -173,7 +173,7 @@ by the data is described in the files. Periods of typical weather
 patterns based on analysis of the data are also included within the
 format. A side-by-side comparison of data included in the E/E weather
 format with data previously used by ESP-r, DOE-2, and BLAST is shown in
-Table `2.1 <#table_comparison-of-ee-with-esp-rdoe-2blast-weather>`__. A
+:numref:`table_comparison-of-ee-with-esp-rdoe-2blast-weather`. A
 deficiency noted within ESP-r for example is the lack of correcting air
 volumes for elevation change-many of the users of ESP-r are in
 relatively low elevations. For DOE-2 and BLAST, neither program used
@@ -219,7 +219,7 @@ data for 2092 locations is available at the EnergyPlus web site:
 https://www.energyplus.net/weather
 
 The details are shown in
-Table `2.18 <#table_summary-of-downloadable-weather-data-by-type>`__.
+:numref:`table_summary-of-downloadable-weather-data-by-type`.
 Summary of Downloadable Weather Data by Type. This data has been
 selected with the energy simulation user in mind. All the data (as well
 as the statistical reports - described later in this document) are
@@ -356,6 +356,8 @@ is one of the options on the Utilities tab in EP-Launch. See the section
 on EP-Launch in this document for more information on how to use
 EP-Launch with the weather utility program.
 
+.. _fig-main-menu-screen-of-the-weather-converter:
+
 .. figure:: media/image001.jpg
    :align: center
    :width: 50%
@@ -390,6 +392,8 @@ values may make the data suspect for that time period. This selection
 brings up the screen shown below and will allow the user some control
 over the actual value reporting. Note that this data is not “fixed”,
 merely reported by the program in the audit output file.
+
+.. _fig-delta-db-trigger-selection:
 
 .. figure:: media/image002.jpg
    :align: center
@@ -838,7 +842,7 @@ Field: InputFileType
 
 You can always use this field and def file to “override” the default
 input format type that depends on the extension of your file (see
-Table `2.2 <#table_input-file-extensions-with-implied-data-types>`__.
+:numref:`table_input-file-extensions-with-implied-data-types`.
 Input File Extensions with implied Data types). A complete set of valid
 values for Input File types is shown in the following table. Data Files
 are described more fully in the section Source Weather Data Formats that
@@ -885,10 +889,10 @@ which positions of the raw data file. The fields must come from a
 standardized list of names see following tables that include internal
 names (short and long - as shown in Table 8) as well as the EnergyPlus
 CSV format names (short and long - shown in
-Table `2.9 <#table_names-from-the-energyplus-csv-files>`__) plus some
+:numref:`table_names-from-the-energyplus-csv-files`) plus some
 further elements that can be specified when the standard data elements
 are not part of the raw data (as shown in
-Table `2.10 <#table_auxiliary-data-for-custom-files>`__). “Ignore” is
+:numref:`table_auxiliary-data-for-custom-files`). “Ignore” is
 used to skip a raw data field that is not applicable to the weather
 converter formats. Note that variables listed in the following table (in
 italics) are allowed for flexibility - i.e. wetbulb temperature can be
@@ -2819,6 +2823,7 @@ Note that in the header records where “date” is used, the interpretation
 is shown in the following table.
 
 .. _table_weather-file-date-field-interpretation:
+
 .. table:: Weather File Date Field Interpretation
 
   +----------------------+----------------------+----------------------+
@@ -3517,7 +3522,7 @@ conventions for this field. Note that though this field may be
 represented as numeric (e.g. in the CSV format), it is really a text
 field of 9 single digits. This convention along with values for each
 “column” (left to right) is presented in
-Table `2.16 <#table_weather-codes-field-interpretation>`__. Note that
+:numref:`table_weather-codes-field-interpretation`. Note that
 some formats (e.g. TMY) does not follow this convention - as much as
 possible, the present weather codes are converted to this convention
 during WeatherConverter processing. Also note that the most important
@@ -3930,9 +3935,9 @@ file, they are basically the same as the header records for the EPW file
 (see above). However, in the CSV file, each header is shown and then the
 data. Partial year files will not have all of these headers “filled” in.
 Also see
-Figure `2.11 <#fig:energyplus-epw-csv-file-spreadsheet-view>`__.
+:numref:`fig-energyplus-epw-csv-file-spreadsheet-view`.
 EnergyPlus EPW CSV file (spreadsheet view) and
-Figure `2.12 <#fig:energyplus-epw-csv-data-records-spreadsheet>`__.
+:numref:`fig-energyplus-epw-csv-data-records-spreadsheet`.
 EnergyPlus EPW CSV Data Records (spreadsheet view) for snapshot pictures
 of the EnergyPlus EPW CSV file as shown in a spreadsheet.
 
@@ -4118,7 +4123,7 @@ a bit harder if you use the CSV format as input.
 Each data item field obeys the same “missing” and other content rules as
 shown above in the EnergyPlus Weather File (EPW) Data Dictionary.
 
-.. _media-image015:
+.. _fig-energyplus-epw-csv-file-spreadsheet-view:
 
 .. figure:: media/image015.png
    :align: center
@@ -4126,11 +4131,11 @@ shown above in the EnergyPlus Weather File (EPW) Data Dictionary.
    
    EnergyPlus EPW CSV file (spreadsheet view)
 
-:numref:`media-image015` shows how the EnergyPlus EPW CSV file (initial header records) looks when
+:numref:`fig-energyplus-epw-csv-file-spreadsheet-view` shows how the EnergyPlus EPW CSV file (initial header records) looks when
 opened in a spreadsheet. Each header record is shown in bold with data
 following the headers..
 
-.. _media-image016:
+.. _fig-energyplus-epw-csv-data-records-spreadsheet:
 
 .. figure:: media/image016.png
    :align: center
@@ -4138,7 +4143,7 @@ following the headers..
    
    EnergyPlus EPW CSV Data Records (spreadsheet view)
 
-:numref:`media-image016` shows how the data periods header record and the individual data records look
+:numref:`fig-energyplus-epw-csv-data-records-spreadsheet` shows how the data periods header record and the individual data records look
 when opened in a spread sheet. Again, the headers are shown in bold.
 Note that there are two header records for the data records - one with
 short names - one with longer more descriptive names.
@@ -7890,14 +7895,18 @@ The interface program has two main sheets. One, named ZoneSheet, uses
 surface areas, tilts and facing directions to develop the input for
 View3D. The other one, named VerticesZoneSheet, uses the surface
 vertices to develop the input for View3D. The sheets are shown in
-Figure `4.1 <#fig:view-factor-interface-zonesheet>`__ and
-Figure `4.2 <#fig:view-factor-interface-verticeszonesheet>`__.
+:numref:`fig-view-factor-interface-zonesheet` and
+:numref:`fig-view-factor-interface-verticeszonesheet`.
+
+.. _fig-view-factor-interface-zonesheet:
 
 .. figure:: media/image022.png
    :align: center 
    :width: 50%
    
    View Factor Interface ZoneSheet
+
+.. _fig-view-factor-interface-verticeszonesheet:
 
 .. figure:: media/image023.png
    :align: center 
@@ -8071,7 +8080,9 @@ from the outside.
 
 The vs3 file produced is shown previously and the dxf file generates the
 wire frame drawing shown in
-Figure `4.3 <#fig:dxf-format-of-example-zone>`__.
+:numref:`fig-dxf-format-of-example-zone`.
+
+.. _fig-dxf-format-of-example-zone:
 
 .. figure:: media/image024.png
    :align: center 
@@ -8082,8 +8093,10 @@ Figure `4.3 <#fig:dxf-format-of-example-zone>`__.
 The input file and the output files produced by View3D are read into the
 interface spreadsheet, and appear on new worksheets.
 
-Figure `4.4 <#fig:files-brought-into-the-interface-workbook>`__ shows
+:numref:`fig-files-brought-into-the-interface-workbook` shows
 the lower corner of the interface sheet with the additional sheet tabs.
+
+.. _fig-files-brought-into-the-interface-workbook:
 
 .. figure:: media/image025.png
    :align: center 
@@ -8109,7 +8122,9 @@ out. This file is shown below.
 Excel macro capabilities are used by the interface to convert the text
 to columns and add the surface names and other headings. The modified
 results are placed on the Results worksheet as shown in
-Figure `4.5 <#fig:view-factors-with-surface-names-inserted>`__.
+:numref:`fig-view-factors-with-surface-names-inserted`.
+
+.. _fig-view-factors-with-surface-names-inserted:
 
 .. figure:: media/image026.png
    :align: center 
@@ -8172,13 +8187,15 @@ who want to transition several versions or several files at one time.
 Thus the IDF Version Updater GUI application was created.
 
 The IDF Version Updater lives in the folder with the multiple transition
-programs – see Figure `5.1 <#fig:transition-gui-screen>`__. Note that
+programs – see :numref:`fig-transition-gui-screen`. Note that
 this application is also available from the EP-Launch Utilities tab
 (utility: IDFVersionUpdater). If you need to convert files from older
 than V6.0, the transition program set will need to be downloaded before
 use. Once “IDF Version Updater” is selected from the Utilities pulldown
 list, click on the “Run IDF Version Updater” box and the single window
 shown below appears:
+
+.. _fig-transition-gui-screen:
 
 .. figure:: media/image027.jpg
    :align: center
@@ -8376,6 +8393,8 @@ EnergyPlus folder upon installation. A companion DLL (EPlusDrw.dll) is
 also needed in the same folder. And its library folders are required in
 a subfolder (EPDrawGUI Libs).
 
+.. _fig-epdrawgui-main-screen:
+
 .. figure:: media/image028.png
    :align: center 
    :width: 50%
@@ -8390,7 +8409,7 @@ the mouse is over the Version number text in the lower left corner.
 Main Tab
 --------
 
-The Main Tab, shown in Figure `6.1 <#fig:epdrawgui-main-screen>`__,
+The Main Tab, shown in :numref:`fig-epdrawgui-main-screen`,
 contains the “Create DXF from IDF” button which is the button to use to
 create a DXF file from an IDF file, the main function of the EPDrawGUI
 program. This is the primary button that you will need to use. When
@@ -8401,6 +8420,8 @@ immediately after the DXF file is created. Normally, the viewer for DXF
 files is automatically found but if the program cannot find a drawing
 viewer program, you can select one manually on the Options Tab.
 
+.. _fig-epdrawgui-options-tab:
+
 .. figure:: media/image029.png
    :align: center 
    :width: 50%
@@ -8410,7 +8431,7 @@ viewer program, you can select one manually on the Options Tab.
 Option Tab
 ----------
 
-The Option Tab, shown in Figure `6.2 <#fig:epdrawgui-options-tab>`__,
+The Option Tab, shown in :numref:`fig-epdrawgui-options-tab`,
 contains an additional option to control some complex drawings as well
 as ways to select the DXF file viewer and view DXF files.
 
@@ -9314,9 +9335,9 @@ your document.
    HVAC Diagram – SVG Drawing
 
 Objects that are recognized by the HVAC diagram are shown in
-Table `8.1 <#table_hvac-diagram-object-names-primary-sort-colors>`__
+:numref:`table_hvac-diagram-object-names-primary-sort-colors`
 (sorted by Object Name) and
-Table `8.2 <#table_hvac-diagram-object-names-and-color-primary>`__
+:numref:`table_hvac-diagram-object-names-and-color-primary`
 (sorted by color).
 
 .. _table_hvac-diagram-object-names-primary-sort-colors:
@@ -10277,9 +10298,11 @@ data for each speed or stage at a time. The tool automatically populates
 the labels for each data inputs variable when users select the Coil
 Type, Independent Variables, Curve Type, and Units. The curve fit tool
 interface in
-Figure `2.1 <#fig:main-menu-screen-of-the-weather-converter>`__ shows
+:numref:`fig-main-menu-screen-of-the-weather-converter` shows
 labels selected to generate capacity and EIR biquadratic curves as
 function of temperatures for DX cooling coil.
+
+.. _fig-curve-fit-tool-input-interface:
 
 .. figure:: media/image034.jpg
    :align: center 
@@ -10293,7 +10316,7 @@ speed) , CoilPerformance:DX:Cooling (each stage), and any HVAC equipment
 that use Biquadratic, Cubic or Quadratic curves. To add this flexibility
 generic input data labels can be populated by selecting “Other” for DX
 Coil Type input field, located in Cell B3 in
-Figure `14.1 <#fig:curve-fit-tool-input-interface>`__.
+:numref:`fig-curve-fit-tool-input-interface`.
 
 Inputs
 ------
@@ -10355,7 +10378,7 @@ different from the values populated by the tool, then the user may enter
 the applicable values manually. The rated data can be one of the
 performance data points depending on the speed or stage. The rated data
 set is entered in the Cells range “B11:E11” of the INPUT tab as shown in
-Figure `2.1 <#fig:main-menu-screen-of-the-weather-converter>`__.
+:numref:`fig-main-menu-screen-of-the-weather-converter`.
 
 Performance Data
 ----------------
@@ -10370,7 +10393,7 @@ supply air flow rates and rated indoor and outdoor coil entering air (or
 water) temperatures. The performance data set may include the rated data
 as one of the data points. The performance data set is entered starting
 from row 15 and down for each of the variables as shown in
-Figure `14.1 <#fig:curve-fit-tool-input-interface>`__.
+:numref:`fig-curve-fit-tool-input-interface`.
 
 The total cooling and heating capacities must be the gross values, i.e.,
 not corrected for the supply fan heating effect. Also the input power
@@ -10391,7 +10414,9 @@ if the curve value at the rated condition deviates by a value less than
 or equal to 0.025 and the performance data set contains the rated data
 set as one the data points. The coefficients of these curves are
 displayed on the “OUTPUT” tab as shown in
-Figure `2.2 <#fig:delta-db-trigger-selection>`__.
+:numref:`fig-delta-db-trigger-selection`.
+
+.. _fig-curve-fit-tool-output-interface:
 
 .. figure:: media/image036.jpg
    :align: center 
@@ -10408,7 +10433,7 @@ good. The tool has an option to save the curve objects to an output file
 by running another macro (SaveCurveObjToTextFile). The option output
 files and the directory path are specified in the OUPUT tab in cells C2
 and C3, respectively, as shown in
-Figure `14.2 <#fig:curve-fit-tool-output-interface>`__. If the output
+:numref:`fig-curve-fit-tool-output-interface`. If the output
 file name and path are left blank, then default names,
 “EplusCurveObjects.IDF” and the local directory where the tool is
 located are used. The local directory where the tool is located must not
@@ -10556,7 +10581,7 @@ should be used to extend the catalog data range in order to have a good
 set of parameters/coefficients.
 
 -  Using the heat pump performance data, enter the values to
-   Table `2.1 <#table_comparison-of-ee-with-esp-rdoe-2blast-weather>`__
+   :numref:`table_comparison-of-ee-with-esp-rdoe-2blast-weather`
    in worksheet “CATALOG DATA”. The values can be in SI or IP units.
 
 -  Click on Button 1 based on the units used.
@@ -10573,20 +10598,20 @@ For SI units:
 
 -  The program will convert the values to the desired units and display
    them on
-   Table `2.2 <#table_input-file-extensions-with-implied-data-types>`__
+   :numref:`table_input-file-extensions-with-implied-data-types`
    in worksheet “INPUT”.
 
 -  The button shown below is used clearing
-   Table `2.1 <#table_comparison-of-ee-with-esp-rdoe-2blast-weather>`__
+   :numref:`table_comparison-of-ee-with-esp-rdoe-2blast-weather`
    (worksheet “CATALOG DATA”), and
-   Table `2.2 <#table_input-file-extensions-with-implied-data-types>`__
+   :numref:`table_input-file-extensions-with-implied-data-types`
    (worksheet “INPUT”). It is advisable to clear the tables before
    generating parameters/coefficients for a new heat pump model.
 
 .. figure:: media/image039.png
    :align: center 
 
-After Table `2.2 <#table_input-file-extensions-with-implied-data-types>`__ is
+After :numref:`table_input-file-extensions-with-implied-data-types` is
 created, the parameters/coefficients are then calculated as follows:
 
 -  Worksheet “ParamEstimator” is used for generating the parameters for
@@ -10608,7 +10633,7 @@ Step 2a: Generating First Set of Parameters (PE-Based Model)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 -  Using
-   Table `2.2 <#table_input-file-extensions-with-implied-data-types>`__,
+   :numref:`table_input-file-extensions-with-implied-data-types`,
    the program can generate parameters. The user must fill all the cells
    colored light blue in worksheet “ParamEstimator”.
 
@@ -10722,7 +10747,7 @@ Step 2: Generating the coefficients (Curve-Fit Model)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 -  Using
-   Table `2.2 <#table_input-file-extensions-with-implied-data-types>`__,
+   :numref:`table_input-file-extensions-with-implied-data-types`,
    the program is ready to generate the coefficients. User is required
    to fill all the cells colored light blue in worksheet
    “CoeffCalculator”.
@@ -10811,7 +10836,7 @@ manufacturer should be used to extend the catalog data range in order to
 have a good set of parameters/coefficients.
 
 -  Using the heat pump performance data, enter the values to
-   Table `2.1 <#table_comparison-of-ee-with-esp-rdoe-2blast-weather>`__
+   :numref:`table_comparison-of-ee-with-esp-rdoe-2blast-weather`
    in worksheet “CATALOG DATA”. The values can be in SI or IP units.
 
 -  Click on Button 1 based on the units used.
@@ -10827,27 +10852,26 @@ For SI units:
    :align: center 
 
 -  The program will convert the values to the desired units and display
-   them on
-   Table `2.2 <#table_input-file-extensions-with-implied-data-types>`__
+   them on :numref:`table_input-file-extensions-with-implied-data-types`
    in worksheet “INPUT”. Then the program will discard bad catalog
    points by calculating the relative humidity of the exiting air at the
    load side (relative humidity should be less or equal to 1).
-   Table `2.3 <#table_lst-file-structure>`__ in worksheet “INPUT” shows
+   :numref:`table_lst-file-structure` in worksheet “INPUT” shows
    the input catalog data that will be used by the parameter/coefficient
    generator program.
 
 -  The button shown below is used clearing
-   Table `2.1 <#table_comparison-of-ee-with-esp-rdoe-2blast-weather>`__
+   :numref:`table_comparison-of-ee-with-esp-rdoe-2blast-weather`
    (worksheet “CATALOG DATA”),
-   Table `2.2 <#table_input-file-extensions-with-implied-data-types>`__,
-   and Table `2.3 <#table_lst-file-structure>`__ (worksheet “INPUT”). It
+   :numref:`table_input-file-extensions-with-implied-data-types`,
+   and :numref:`table_lst-file-structure` (worksheet “INPUT”). It
    is advisable to clear the tables before generating
    parameters/coefficients for a new heat pump model.
 
 .. figure:: media/image048.png
    :align: center 
 
-After Table `2.3 <#table_lst-file-structure>`__ is created, the
+After :numref:`table_lst-file-structure` is created, the
 parameters/coefficients are then calculated as follows:
 
 -  Worksheet “ParamEstimator” is used for generating the parameters for
@@ -10868,7 +10892,7 @@ Parameter Estimation Procedure
 Step 2a: Generating First Set of Parameters (PE-Based Model)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
--  Using contents of Table `2.3 <#table_lst-file-structure>`__, the
+-  Using contents of :numref:`table_lst-file-structure`, the
    program can generate parameters. The user must fill all the cells
    colored light blue in worksheet “ParamEstimator”.
 
@@ -10981,7 +11005,7 @@ Curve Fit Model Procedure
 Step 2: Generating the coefficients (Curve-Fit Model)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
--  Using the contents of Table `2.3 <#table_lst-file-structure>`__, the
+-  Using the contents of :numref:`table_lst-file-structure`, the
    program can generate the coefficients. The user must fill all the
    cells colored light blue in worksheet “CoeffCalculator”.
 
@@ -11071,7 +11095,7 @@ should be used to extend the catalog data range in order to have a good
 set of parameters/coefficients.
 
 -  Using the heat pump performance data, enter the values to
-   Table `2.1 <#table_comparison-of-ee-with-esp-rdoe-2blast-weather>`__
+   :numref:`table_comparison-of-ee-with-esp-rdoe-2blast-weather`
    in worksheet “CATALOG DATA”. The values can be in SI or IP units.
 
 -  Click on Button 1 based on the units used.
@@ -11088,14 +11112,14 @@ For SI units:
 
 -  The program will convert the values to the desired units and display
    them on
-   Table `2.2 <#table_input-file-extensions-with-implied-data-types>`__
+   :numref:`table_input-file-extensions-with-implied-data-types`
    in worksheet “INPUT” which will be used by the parameter/coefficient
    generator program.
 
 -  The button shown below is used for clearing
-   Table `2.1 <#table_comparison-of-ee-with-esp-rdoe-2blast-weather>`__
+   :numref:`table_comparison-of-ee-with-esp-rdoe-2blast-weather`
    (worksheet “CATALOG DATA”) and
-   Table `2.2 <#table_input-file-extensions-with-implied-data-types>`__
+   :numref:`table_input-file-extensions-with-implied-data-types`
    (worksheet “INPUT”). It is advisable to clear the tables before
    generating parameters/coefficients for a new heat pump model.
 
@@ -11103,7 +11127,7 @@ For SI units:
    :align: center 
 
 After
-Table `2.2 <#table_input-file-extensions-with-implied-data-types>`__ is
+:numref:`table_input-file-extensions-with-implied-data-types` is
 created, the parameters/coefficients are then calculated as follows:
 
 -  Worksheet “ParamEstimator” is used for generating the parameters for
@@ -11121,7 +11145,7 @@ Step 2a: Generating First Set of Parameters (PE-Based Model)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 -  Using
-   Table `2.2 <#table_input-file-extensions-with-implied-data-types>`__,
+   :numref:`table_input-file-extensions-with-implied-data-types`,
    the program can generate parameters. The user must fill all the cells
    colored light blue in worksheet “ParamEstimator”.
 
@@ -11229,8 +11253,7 @@ Curve Fit Model Procedure
 Step 2: Generating the coefficients (Curve-Fit Model)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
--  Using
-   Table `2.2 <#table_input-file-extensions-with-implied-data-types>`__,
+-  Using :numref:`table_input-file-extensions-with-implied-data-types`,
    the program can generate the coefficients. The user must fill all the
    cells colored light blue in Worksheet “CoeffCalculator”.
 
@@ -11532,6 +11555,8 @@ text editor for the input and output files, open a spreadsheet for the
 postprocessor results files, a web browser for the tabular results file,
 and start up a viewer for the selected drawing file.
 
+.. _fig-ep-launch-screen:
+
 .. figure:: media/image101.png
    :align: center 
    :width: 50%
@@ -11544,7 +11569,7 @@ Start EP-Launch
 EP-Launch is located in the main directory/folder for EnergyPlus. In
 addition, it is available on the shortcut menu for EnergyPlus. By double
 clicking on the EP-Launch icon you get the screen shown above
-(Figure `19.1 <#fig:ep-launch-screen>`__) for running a single input
+(:numref:`fig-ep-launch-screen`) for running a single input
 file. The EP-Launch program simply starts other programs and allows you
 to avoid having to use the DOS command line prompt to run EnergyPlus.
 More help is provided for the program under the “Help” menu.
@@ -11795,7 +11820,7 @@ postprocessor command file (rvi) may be opened in the text editor.
 View Menu
 ~~~~~~~~~
 
-The View menu (see Figure `19.5 <#fig:ep-launch-view-menu>`__)
+The View menu (see :numref:`fig-ep-launch-view-menu`)
 duplicates the options in the “View Results” area of the main screen
 (see the *Looking at the Results* section above) and allows opening of
 selected output files. You can also open the folders that contain the
@@ -11805,11 +11830,15 @@ described above. Selecting “HTML File” from the “View” menu will open
 any user created files saved in the format: <filename>table.html (see
 *OutputControl:Table:Style*).
 
+.. _fig-ep-launch-view-menu:
+
 .. figure:: media/image105.png
    :align: center 
    :width: 50%
    
    EP-Launch View Menu
+
+.. _ep-launch-options-screen:
 
 .. figure:: media/image106.png
    :align: center 
@@ -11818,7 +11847,7 @@ any user created files saved in the format: <filename>table.html (see
    EP-Launch Options Screen.
 
 The “View” menu also accesses the “Options” menu item shown in
-Figure `19.6 <#fig:ep-launch-options-screen.>`__ that is used to control
+:numref:`ep-launch-options-screen` that is used to control
 many of the optional features of EP-Launch. These optional features are
 described below:
 
@@ -12271,8 +12300,10 @@ Though EnergyPlus has had several releases (including beta releases
 prior to initial release), there still may be problems when input files
 meet with EnergyPlus. If you are using EP-Launch when this happens, you
 will see a window appear as in the figure below
-(Figure `19.14 <#fig:energyplus-crash-within-ep-launch.>`__). Follow the
+(:numref:`fig-energyplus-crash-within-ep-launch`). Follow the
 instructions listed on the screen.
+
+.. _fig-energyplus-crash-within-ep-launch:
 
 .. figure:: media/image114.png
    :align: center 

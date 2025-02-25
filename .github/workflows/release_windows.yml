@@ -64,7 +64,7 @@ jobs:
     - name: Setup QtIFW 4.x
       uses: jmarrec/setup-qtifw@v1
       with:
-        qtifw-version: '4.6.1'
+        qtifw-version: '4.8.1'
 
     - name: Install Python dependencies
       run: |

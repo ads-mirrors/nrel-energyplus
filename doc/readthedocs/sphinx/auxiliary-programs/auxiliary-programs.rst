@@ -23,9 +23,7 @@ other platforms will be noted as applicable. These programs include:
 * :ref:`hvac-performance-curve-fit-tool` - generates HVAC performance curves in EnergyPlus IDF format
 * :ref:`parametric-spreadsheets` - Parametric spreadsheets are available to help illustrate or calculate some parameters/coefficients.
 * :ref:`parametricpreprocessor` - Special objects can be inserted in IDF files and generate a series of IDF files from a single source IDF file that contains parametric objects and expressions. Unlike using the macro language, these input files are capable of being read in the IDF Editor.
-* :ref:`appgpostprocess-appendix-g-postprocessing-program` - The ASHRAE 90.1 Appendix G postprocessing program takes simulation outputs and processes them to help meet Appendix G requirements..
-* **BLASTTranslator** - The BLAST translator can take BLAST (Building Loads Analysis and System Thermodynamics) input files and make them ready for running in EnergyPlus.
-* **DOE2Translator** - The DOE-2 translator can take DOE-2 program input files and make them ready for running in EnergyPlus.
+* :ref:`appgpostprocess-appendix-g-postprocessing-program` - The ASHRAE 90.1 Appendix G postprocessing program takes simulation outputs and processes them to help meet Appendix G requirements.
 * :ref:`running-console-applications` - this section describes how to run console applications that are part of EnergyPlus and how you might modify these to your specific needs. Instructions for running individual programs are included in their descriptions.
 * :ref:`technical-details-of-running-energyplus` - this section gives full instructions on both EP-Launch and the IDF-Editor as well as some more details on running EnergyPlus manually.
 
@@ -360,7 +358,7 @@ EP-Launch with the weather utility program.
 
 .. figure:: media/image001.jpg
    :align: center
-   :width: 50%
+   :width: 40%
 
    Main menu screen of the Weather Converter Utility
 
@@ -397,7 +395,7 @@ merely reported by the program in the audit output file.
 
 .. figure:: media/image002.jpg
    :align: center
-   :width: 50%
+   :width: 40%
    
    Delta DB Trigger Selection
 
@@ -463,7 +461,7 @@ the data. An “almost” completed screen shows:
 
 .. figure:: media/image003.jpg
    :align: center
-   :width: 50%
+   :width: 40%
    
    Convert Data Screen selections
 
@@ -1719,7 +1717,7 @@ original IWEC data looks very good:
 
 .. figure:: media/image006.jpg
    :align: center
-   :width: 50%
+   :width: 45%
    
    Solar radiation comparison - IWEC vs Weather Solar Model (Brisbane AUS)
 
@@ -1727,7 +1725,7 @@ Of course, there are other locations that don’t compare quite as well:
 
 .. figure:: media/image007.jpg
    :align: center
-   :width: 50%
+   :width: 45%
    
    Comparison of IWEC vs Weather program Solar Model (Singapore)
 
@@ -2778,13 +2776,13 @@ temperatures for these zones (Northern Hemisphere).
 
 .. figure:: media/image011.png
    :align: center
-   :width: 50%
+   :width: 45%
    
    Monthly Dry Bulb Temperatures in Köppen Climates (Northern Hemisphere)
 
 .. figure:: media/image012.png
    :align: center
-   :width: 50%
+   :width: 45%
    
    Monthly Dew Point in Köppen Climates (Northern Hemisphere)
 
@@ -4609,64 +4607,56 @@ weather processor cannot process any of the types directly.
 
 .. table:: Summary of Downloadable Weather Data by Type
 
-  +-------+-------+-------+-------+-------+------+-------+-------+-------+-------+
-  | S     | WMO   |       |       |       |      |       |       |       |       |
-  | ource | R     |       |       |       |      |       |       |       |       |
-  |       | egion |       |       |       |      |       |       |       |       |
-  +=======+=======+=======+=======+=======+======+=======+=======+=======+=======+
-  |       | North |       |       |       |      |       |       |       |       |
-  |       | and   |       |       |       |      |       |       |       |       |
-  |       | Ce    |       |       |       |      |       |       |       |       |
-  |       | ntral |       |       |       |      |       |       |       |       |
-  |       | Am    |       |       |       |      |       |       |       |       |
-  |       | erica |       |       |       |      |       |       |       |       |
-  +-------+-------+-------+-------+-------+------+-------+-------+-------+-------+
-  |       | USA   | C     | Ce    | A     | Asia | South | Sout  | E     | Total |
-  |       |       | anada | ntral | frica |      | Am    | hwest | urope |       |
-  |       |       |       | Am    |       |      | erica | Pa    |       |       |
-  |       |       |       | erica |       |      |       | cific |       |       |
-  +-------+-------+-------+-------+-------+------+-------+-------+-------+-------+
-  | ETMY  |       |       |       | 11    |      |       |       |       | 11    |
-  +-------+-------+-------+-------+-------+------+-------+-------+-------+-------+
-  | IGDG  |       |       |       |       |      |       |       | 66    | 66    |
-  +-------+-------+-------+-------+-------+------+-------+-------+-------+-------+
-  | IMGW  |       |       |       |       |      |       |       | 61    | 61    |
-  +-------+-------+-------+-------+-------+------+-------+-------+-------+-------+
-  | INETI |       |       |       |       |      |       |       | 2     | 2     |
-  +-------+-------+-------+-------+-------+------+-------+-------+-------+-------+
-  | I     |       |       |       |       | 58   |       |       |       | 58    |
-  | SHRAE |       |       |       |       |      |       |       |       |       |
-  +-------+-------+-------+-------+-------+------+-------+-------+-------+-------+
-  | ITMY  |       |       |       |       | 1    |       |       |       | 1     |
-  +-------+-------+-------+-------+-------+------+-------+-------+-------+-------+
-  | IWEC  |       |       | 5     | 12    | 49   | 19    | 20    | 122   | 227   |
-  +-------+-------+-------+-------+-------+------+-------+-------+-------+-------+
-  | KISR  |       |       |       |       | 2    |       |       |       | 2     |
-  +-------+-------+-------+-------+-------+------+-------+-------+-------+-------+
-  | Los   | 1     |       |       |       |      |       |       |       | 1     |
-  | A     |       |       |       |       |      |       |       |       |       |
-  | lamos |       |       |       |       |      |       |       |       |       |
-  | TMY2  |       |       |       |       |      |       |       |       |       |
-  +-------+-------+-------+-------+-------+------+-------+-------+-------+-------+
-  | MSI   |       |       |       |       |      |       |       | 4     | 4     |
-  +-------+-------+-------+-------+-------+------+-------+-------+-------+-------+
-  | NIWA  |       |       |       |       |      |       | 16    |       | 16    |
-  +-------+-------+-------+-------+-------+------+-------+-------+-------+-------+
-  | RMY   |       |       |       |       |      |       | 80    |       | 80    |
-  +-------+-------+-------+-------+-------+------+-------+-------+-------+-------+
-  | SWEC  |       |       |       | 2     |      |       |       | 50    | 52    |
-  +-------+-------+-------+-------+-------+------+-------+-------+-------+-------+
-  | SWERA |       |       | 37    | 33    | 66   | 20    |       |       | 156   |
-  +-------+-------+-------+-------+-------+------+-------+-------+-------+-------+
-  | TMY   | 229   |       | 1     |       |      |       | 4     |       | 234   |
-  +-------+-------+-------+-------+-------+------+-------+-------+-------+-------+
-  | TMY2  | 235   |       | 1     |       |      |       | 1     |       | 237   |
-  +-------+-------+-------+-------+-------+------+-------+-------+-------+-------+
-  | TMY3  | 1011  |       | 7     |       |      |       | 2     |       | 1020  |
-  +-------+-------+-------+-------+-------+------+-------+-------+-------+-------+
-  | T     | 1476  | 0     | 51    | 58    | 176  | 39    | 123   | 305   |       |
-  | otals |       |       |       |       |      |       |       |       |       |
-  +-------+-------+-------+-------+-------+------+-------+-------+-------+-------+
+  +-------+--------+-------+--------+-------+------+--------+----------+-------+-------+
+  | Source| WMO                                                                        |
+  |       | Region                                                                     |
+  +=======+========+=======+========+=======+======+========+==========+=======+=======+
+  |       | North                   |       |      |        |          |       |       |
+  |       | and                     |       |      |        |          |       |       |
+  |       | Central                 |       |      |        |          |       |       |
+  |       | America                 |       |      |        |          |       |       |
+  +-------+--------+-------+--------+-------+------+--------+----------+-------+-------+
+  |       | USA    | Canada| Central| Africa| Asia | South  | Southwest| Europe| Total |
+  |       |        |       | America|       |      | America| Pacific  |       |       |
+  +-------+--------+-------+--------+-------+------+--------+----------+-------+-------+
+  | ETMY  |        |       |        | 11    |      |        |          |       | 11    |
+  +-------+--------+-------+--------+-------+------+--------+----------+-------+-------+
+  | IGDG  |        |       |        |       |      |        |          | 66    | 66    |
+  +-------+--------+-------+--------+-------+------+--------+----------+-------+-------+
+  | IMGW  |        |       |        |       |      |        |          | 61    | 61    |
+  +-------+--------+-------+--------+-------+------+--------+----------+-------+-------+
+  | INETI |        |       |        |       |      |        |          | 2     | 2     |
+  +-------+--------+-------+--------+-------+------+--------+----------+-------+-------+
+  | ISHRAE|        |       |        |       | 58   |        |          |       | 58    |
+  +-------+--------+-------+--------+-------+------+--------+----------+-------+-------+
+  | ITMY  |        |       |        |       | 1    |        |          |       | 1     |
+  +-------+--------+-------+--------+-------+------+--------+----------+-------+-------+
+  | IWEC  |        |       | 5      | 12    | 49   | 19     | 20       | 122   | 227   |
+  +-------+--------+-------+--------+-------+------+--------+----------+-------+-------+
+  | KISR  |        |       |        |       | 2    |        |          |       | 2     |
+  +-------+--------+-------+--------+-------+------+--------+----------+-------+-------+
+  | Los   | 1      |       |        |       |      |        |          |       | 1     |
+  | Alamos|        |       |        |       |      |        |          |       |       |
+  | TMY2  |        |       |        |       |      |        |          |       |       |
+  +-------+--------+-------+--------+-------+------+--------+----------+-------+-------+
+  | MSI   |        |       |        |       |      |        |          | 4     | 4     |
+  +-------+--------+-------+--------+-------+------+--------+----------+-------+-------+
+  | NIWA  |        |       |        |       |      |        | 16       |       | 16    |
+  +-------+--------+-------+--------+-------+------+--------+----------+-------+-------+
+  | RMY   |        |       |        |       |      |        | 80       |       | 80    |
+  +-------+--------+-------+--------+-------+------+--------+----------+-------+-------+
+  | SWEC  |        |       |        | 2     |      |        |          | 50    | 52    |
+  +-------+--------+-------+--------+-------+------+--------+----------+-------+-------+
+  | SWERA |        |       | 37     | 33    | 66   | 20     |          |       | 156   |
+  +-------+--------+-------+--------+-------+------+--------+----------+-------+-------+
+  | TMY   | 229    |       | 1      |       |      |        | 4        |       | 234   |
+  +-------+--------+-------+--------+-------+------+--------+----------+-------+-------+
+  | TMY2  | 235    |       | 1      |       |      |        | 1        |       | 237   |
+  +-------+--------+-------+--------+-------+------+--------+----------+-------+-------+
+  | TMY3  | 1011   |       | 7      |       |      |        | 2        |       | 1020  |
+  +-------+--------+-------+--------+-------+------+--------+----------+-------+-------+
+  | Totals| 1476   | 0     | 51     | 58    | 176  | 39     | 123      | 305   |       |
+  +-------+--------+-------+--------+-------+------+--------+----------+-------+-------+
 
 One other format worth mentioning is TRY. TRY is “test reference year”
 data that did not include solar radiation data. “Test Reference Year” is
@@ -5128,8 +5118,6 @@ table:
   =============== ===============================
   Input File Type Source Data file Format Type
   =============== ===============================
-  \               
-  Input File Type Source Data file Format Type
   TMY2 or TM2     TMY2 data file
   IWEC or IWC     IWEC data file
   SAMSON or DAT   SAMSON data file
@@ -5521,41 +5509,35 @@ slab bottom surface was 0.27 (m\ :math:`^{2}` C)/W. This value is
 controlled by the user with the inside heat transfer coefficient and
 slab thermal properties values in the slab program input file.
 
-+-------+---------+----------+-------+--------+----------+----------+
-| Month | Average | P        | Core  | Inside | P        | Average  |
-|       |         | erimeter |       |        | erimeter | Heat     |
-|       |         |          |       |        | Heat     | Flux W/m |
-|       |         |          |       |        | Flux W/m |          |
-+=======+=========+==========+=======+========+==========+==========+
-| Month | Average | P        | Core  | Inside | P        | Average  |
-|       |         | erimeter |       |        | erimeter | Heat     |
-|       |         |          |       |        | Heat     | Flux W/m |
-|       |         |          |       |        | Flux W/m |          |
-+-------+---------+----------+-------+--------+----------+----------+
-| 1     | 17.67   | 16.11    | 18.03 | 18     | 7.00     | 1.22     |
-+-------+---------+----------+-------+--------+----------+----------+
-| 2     | 17.45   | 15.92    | 17.81 | 18     | 7.70     | 2.04     |
-+-------+---------+----------+-------+--------+----------+----------+
-| 3     | 17.43   | 16.07    | 17.74 | 18     | 7.15     | 2.11     |
-+-------+---------+----------+-------+--------+----------+----------+
-| 4     | 19      | 17.82    | 19.27 | 20     | 8.07     | 3.70     |
-+-------+---------+----------+-------+--------+----------+----------+
-| 5     | 19.24   | 18.23    | 19.48 | 20     | 6.56     | 2.81     |
-+-------+---------+----------+-------+--------+----------+----------+
-| 6     | 19.31   | 18.42    | 19.52 | 20     | 5.85     | 2.56     |
-+-------+---------+----------+-------+--------+----------+----------+
-| 7     | 20.92   | 20.14    | 21.11 | 22     | 6.89     | 4.00     |
-+-------+---------+----------+-------+--------+----------+----------+
-| 8     | 21.17   | 20.44    | 21.35 | 22     | 5.78     | 3.07     |
-+-------+---------+----------+-------+--------+----------+----------+
-| 9     | 21.22   | 20.45    | 21.4  | 22     | 5.74     | 2.89     |
-+-------+---------+----------+-------+--------+----------+----------+
-| 10    | 21.21   | 20.26    | 21.44 | 22     | 6.44     | 2.93     |
-+-------+---------+----------+-------+--------+----------+----------+
-| 11    | 19.62   | 18.54    | 19.88 | 20     | 5.41     | 1.41     |
-+-------+---------+----------+-------+--------+----------+----------+
-| 12    | 19.35   | 17.99    | 19.67 | 20     | 7.44     | 2.41     |
-+-------+---------+----------+-------+--------+----------+----------+
++-------+---------+-----------+-------+--------+-----------+----------+
+| Month | Average | Perimeter | Core  | Inside | Perimeter | Average  |
+|       |         |           |       |        | Heat      | Heat     |
+|       |         |           |       |        | Flux W/m  | Flux W/m |
++=======+=========+===========+=======+========+===========+==========+
+| 1     | 17.67   | 16.11     | 18.03 | 18     | 7.00      | 1.22     |
++-------+---------+-----------+-------+--------+-----------+----------+
+| 2     | 17.45   | 15.92     | 17.81 | 18     | 7.70      | 2.04     |
++-------+---------+-----------+-------+--------+-----------+----------+
+| 3     | 17.43   | 16.07     | 17.74 | 18     | 7.15      | 2.11     |
++-------+---------+-----------+-------+--------+-----------+----------+
+| 4     | 19      | 17.82     | 19.27 | 20     | 8.07      | 3.70     |
++-------+---------+-----------+-------+--------+-----------+----------+
+| 5     | 19.24   | 18.23     | 19.48 | 20     | 6.56      | 2.81     |
++-------+---------+-----------+-------+--------+-----------+----------+
+| 6     | 19.31   | 18.42     | 19.52 | 20     | 5.85      | 2.56     |
++-------+---------+-----------+-------+--------+-----------+----------+
+| 7     | 20.92   | 20.14     | 21.11 | 22     | 6.89      | 4.00     |
++-------+---------+-----------+-------+--------+-----------+----------+
+| 8     | 21.17   | 20.44     | 21.35 | 22     | 5.78      | 3.07     |
++-------+---------+-----------+-------+--------+-----------+----------+
+| 9     | 21.22   | 20.45     | 21.4  | 22     | 5.74      | 2.89     |
++-------+---------+-----------+-------+--------+-----------+----------+
+| 10    | 21.21   | 20.26     | 21.44 | 22     | 6.44      | 2.93     |
++-------+---------+-----------+-------+--------+-----------+----------+
+| 11    | 19.62   | 18.54     | 19.88 | 20     | 5.41      | 1.41     |
++-------+---------+-----------+-------+--------+-----------+----------+
+| 12    | 19.35   | 17.99     | 19.67 | 20     | 7.44      | 2.41     |
++-------+---------+-----------+-------+--------+-----------+----------+
 
 Then for the same conditions, the results with a 2 degree C amplitude
 24-hour sine wave variation. Notice that the inside temperatures are the
@@ -5618,7 +5600,7 @@ face temperature.
 
 .. figure:: media/image017.jpg
    :align: center 
-   :width: 50%
+   :width: 40%
    
    Daily Temperature Profiles (Slab)
 
@@ -5627,41 +5609,36 @@ fluxes shown above for the constant inside temperature run. The changes
 resulting from a fairly large 4 C daily temperature variation are
 probably not significant.
 
-+-------+---------+----------+-------+--------+----------+----------+
-| Month | Average | P        | Core  | Inside | P        | Average  |
-|       |         | erimeter |       |        | erimeter | Heat     |
-|       |         |          |       |        | Heat     | Flux W/m |
-|       |         |          |       |        | Flux W/m |          |
-+=======+=========+==========+=======+========+==========+==========+
-| Month | Average | P        | Core  | Inside | P        | Average  |
-|       |         | erimeter |       |        | erimeter | Heat     |
-|       |         |          |       |        | Heat     | Flux W/m |
-|       |         |          |       |        | Flux W/m |          |
-+-------+---------+----------+-------+--------+----------+----------+
-| 1     | 17.51   | 16.03    | 17.86 | 18     | 7.30     | 1.81     |
-+-------+---------+----------+-------+--------+----------+----------+
-| 2     | 17.29   | 15.85    | 17.63 | 18     | 7.96     | 2.63     |
-+-------+---------+----------+-------+--------+----------+----------+
-| 3     | 17.27   | 16       | 17.57 | 18     | 7.41     | 2.70     |
-+-------+---------+----------+-------+--------+----------+----------+
-| 4     | 18.87   | 17.77    | 19.13 | 20     | 8.26     | 4.19     |
-+-------+---------+----------+-------+--------+----------+----------+
-| 5     | 19.11   | 18.16    | 19.34 | 20     | 6.81     | 3.30     |
-+-------+---------+----------+-------+--------+----------+----------+
-| 6     | 19.17   | 18.34    | 19.37 | 20     | 6.15     | 3.07     |
-+-------+---------+----------+-------+--------+----------+----------+
-| 7     | 20.81   | 20.07    | 20.98 | 22     | 7.15     | 4.41     |
-+-------+---------+----------+-------+--------+----------+----------+
-| 8     | 21.05   | 20.36    | 21.21 | 22     | 6.07     | 3.52     |
-+-------+---------+----------+-------+--------+----------+----------+
-| 9     | 21.09   | 20.38    | 21.26 | 22     | 6.00     | 3.37     |
-+-------+---------+----------+-------+--------+----------+----------+
-| 10    | 21.08   | 20.19    | 21.29 | 22     | 6.70     | 3.41     |
-+-------+---------+----------+-------+--------+----------+----------+
-| 11    | 19.47   | 18.45    | 19.71 | 20     | 5.74     | 1.96     |
-+-------+---------+----------+-------+--------+----------+----------+
-| 12    | 19.2    | 17.92    | 19.51 | 20     | 7.70     | 2.96     |
-+-------+---------+----------+-------+--------+----------+----------+
++-------+---------+-----------+-------+--------+-----------+----------+
+| Month | Average | Perimeter | Core  | Inside | Perimeter | Average  |
+|       |         |           |       |        | Heat      | Heat     |
+|       |         |           |       |        | Flux W/m  | Flux W/m |
+|       |         |           |       |        |           |          |
++=======+=========+===========+=======+========+===========+==========+
+| 1     | 17.51   | 16.03     | 17.86 | 18     | 7.30      | 1.81     |
++-------+---------+-----------+-------+--------+-----------+----------+
+| 2     | 17.29   | 15.85     | 17.63 | 18     | 7.96      | 2.63     |
++-------+---------+-----------+-------+--------+-----------+----------+
+| 3     | 17.27   | 16        | 17.57 | 18     | 7.41      | 2.70     |
++-------+---------+-----------+-------+--------+-----------+----------+
+| 4     | 18.87   | 17.77     | 19.13 | 20     | 8.26      | 4.19     |
++-------+---------+-----------+-------+--------+-----------+----------+
+| 5     | 19.11   | 18.16     | 19.34 | 20     | 6.81      | 3.30     |
++-------+---------+-----------+-------+--------+-----------+----------+
+| 6     | 19.17   | 18.34     | 19.37 | 20     | 6.15      | 3.07     |
++-------+---------+-----------+-------+--------+-----------+----------+
+| 7     | 20.81   | 20.07     | 20.98 | 22     | 7.15      | 4.41     |
++-------+---------+-----------+-------+--------+-----------+----------+
+| 8     | 21.05   | 20.36     | 21.21 | 22     | 6.07      | 3.52     |
++-------+---------+-----------+-------+--------+-----------+----------+
+| 9     | 21.09   | 20.38     | 21.26 | 22     | 6.00      | 3.37     |
++-------+---------+-----------+-------+--------+-----------+----------+
+| 10    | 21.08   | 20.19     | 21.29 | 22     | 6.70      | 3.41     |
++-------+---------+-----------+-------+--------+-----------+----------+
+| 11    | 19.47   | 18.45     | 19.71 | 20     | 5.74      | 1.96     |
++-------+---------+-----------+-------+--------+-----------+----------+
+| 12    | 19.2    | 17.92     | 19.51 | 20     | 7.70      | 2.96     |
++-------+---------+-----------+-------+--------+-----------+----------+
 
 Slab configuration Drawing
 --------------------------
@@ -6378,7 +6355,7 @@ The object is shown below.
 
 .. figure:: media/image019.jpg
    :align: center 
-   :width: 50%
+   :width: 40%
    
    Graph of Slab Outside Temperature vs Slab Thickness
 
@@ -6637,7 +6614,7 @@ slab.
 
 .. figure:: media/image020.jpg
    :align: center 
-   :width: 50%
+   :width: 30%
    
    Basement Configuration
 
@@ -8199,7 +8176,7 @@ shown below appears:
 
 .. figure:: media/image027.jpg
    :align: center
-   :width: 50%
+   :width: 40%
    
    Transition GUI screen
 
@@ -8397,7 +8374,7 @@ a subfolder (EPDrawGUI Libs).
 
 .. figure:: media/image028.png
    :align: center 
-   :width: 50%
+   :width: 25%
    
    EPDrawGUI Main Screen
 
@@ -8424,7 +8401,7 @@ viewer program, you can select one manually on the Options Tab.
 
 .. figure:: media/image029.png
    :align: center 
-   :width: 50%
+   :width: 40%
    
    EPDrawGUI Options Tab
 
@@ -8610,7 +8587,6 @@ Example: Assume the following files contain the indicated lines:
 =================== ==============
 Main input file:    External file:
 =================== ==============
-Main input file:    External file:
 input1.inp          file2.inp
 line 1a             line 2a
 ##include file2.inp line 2b
@@ -8650,7 +8626,6 @@ following example:
 =================== ==================== =====================
 Main input file:    First external file: Second external file:
 =================== ==================== =====================
-Main input file:    First external file: Second external file:
 input1.inp          file2.inp            file3.inp
 line 1a             line 2a              line 3a
 ##include file2.inp line 2b              line 3b
@@ -8937,8 +8912,6 @@ corresponding result, are shown in the following table.
 +----------------+----------------+----------------+----------------+
 | X\*            | OP \*\*        | Y              | Result         |
 +================+================+================+================+
-| X\*            | OP \*\*        | Y              | Result         |
-+----------------+----------------+----------------+----------------+
 | number         | + (plus)       | number         | number         |
 +----------------+----------------+----------------+----------------+
 | number         | - (minus)      | number         | number         |
@@ -10334,8 +10307,6 @@ for curve generation: Rated, and Performance Data.
 +-----------------------+---------------------------------------------+
 | Input Parameter       | Input Description                           |
 +=======================+=============================================+
-| Input Parameter       | Input Description                           |
-+-----------------------+---------------------------------------------+
 | DX Coil Type          | *Cooling*: Applicable for DX cooling coil   |
 |                       | single speed; *Heating*: Applicable for DX  |
 |                       | heating coil single speed; *Other*:         |
@@ -11559,7 +11530,7 @@ and start up a viewer for the selected drawing file.
 
 .. figure:: media/image101.png
    :align: center 
-   :width: 50%
+   :width: 40%
    
    EP-Launch Screen
 
@@ -11648,7 +11619,7 @@ names clearly readable).
 
 .. figure:: media/image103.png
    :align: center 
-   :width: 50%
+   :width: 40%
    
    EP-Launch with the Sets tab of View Results
 
@@ -11665,7 +11636,7 @@ the “Define” button in order to define the files to view.
 
 .. figure:: media/image104.png
    :align: center 
-   :width: 50%
+   :width: 20%
    
    Define Files to View
 
@@ -11834,7 +11805,7 @@ any user created files saved in the format: <filename>table.html (see
 
 .. figure:: media/image105.png
    :align: center 
-   :width: 50%
+   :width: 40%
    
    EP-Launch View Menu
 
@@ -11842,7 +11813,7 @@ any user created files saved in the format: <filename>table.html (see
 
 .. figure:: media/image106.png
    :align: center 
-   :width: 50%
+   :width: 40%
    
    EP-Launch Options Screen.
 
@@ -12115,7 +12086,7 @@ will allow.
 
 .. figure:: media/image107.png
    :align: center 
-   :width: 50%
+   :width: 40%
    
    EP-Launch Group of Input Files Tab.
 
@@ -12226,7 +12197,7 @@ time of the simulation along with the input and weather file names.
 
 .. figure:: media/image112.png
    :align: center 
-   :width: 50%
+   :width: 40%
    
    EP-Launch History Tab.
 
@@ -12259,7 +12230,7 @@ documentation.
 
 .. figure:: media/image113.png
    :align: center 
-   :width: 50%
+   :width: 40%
    
    EP-Launch Utilities Tab.
 
@@ -12307,7 +12278,7 @@ instructions listed on the screen.
 
 .. figure:: media/image114.png
    :align: center 
-   :width: 50%
+   :width: 30%
    
    EnergyPlus crash within EP-Launch.
 
@@ -13592,7 +13563,7 @@ The “File”, “Save Options” screen is shown below.
 
 .. figure:: media/image117.png
    :align: center 
-   :width: 50%
+   :width: 30%
    
    IDF Editor Save Options Screen.
 
@@ -13688,7 +13659,7 @@ search through the Class List:
 
 .. figure:: media/image118.png
    :align: center 
-   :width: 50%
+   :width: 35%
    
    Find Class Dialog Box
 
@@ -13779,7 +13750,7 @@ View menu.
 
 .. figure:: media/image120.png
    :align: center 
-   :width: 50%
+   :width: 30%
    
    IDF Editor Layout Options Screen.
 

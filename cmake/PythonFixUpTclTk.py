@@ -124,7 +124,7 @@ if __name__ == "__main__":
             assert new_tcl_tk_so.is_file(), f"{new_tcl_tk_so} missing when the tkinter so is already adjusted. Wipe the dir"
             print("Already fixed up the libtcl and libtk, nothing to do here")
             continue
-        if not tcl_tk_so.exists():
+        elif not str(tcl_tk_so).startswith('@') and not tcl_tk_so.exists():
             print(f"Hmmm... could not find the dependency shared object at {tcl_tk_so}; script will continue but fail")
             any_missing = True
             continue

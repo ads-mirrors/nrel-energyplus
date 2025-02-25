@@ -5,6 +5,12 @@ on:
     tags:
       - '*'
   workflow_dispatch:
+    inputs:
+      BUILD_DOCS:
+        description: 'Whether to build docs or not as it takes 15 minutes to install MacTex'
+        required: true
+        type: boolean
+        default: false
 
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -123,6 +129,11 @@ jobs:
       run: |
         set -x
         brew update
+        if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          BUILD_DOCS="${{ inputs.BUILD_DOCS }}"
+          echo "BUILD_DOCS=$BUILD_DOCS" >> $GITHUB_ENV
+        fi
+
         if [[ "$BUILD_DOCS" != "false" ]]; then
           echo "Using brew to install mactex and adding it to PATH"
           brew install --cask mactex-no-gui

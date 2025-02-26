@@ -17,6 +17,9 @@ configure_file(ConfiguredFunctions.in.cc "${CMAKE_CURRENT_BINARY_DIR}/Configured
 
 if(LINK_WITH_PYTHON)
   add_compile_definitions(LINK_WITH_PYTHON)
+  if(PYTHON_CLI)
+    add_compile_definitions(PYTHON_CLI)
+  endif()
 endif()
 
 if(USE_PSYCHROMETRICS_CACHING)
@@ -262,6 +265,8 @@ set(SRC
     EvaporativeFluidCoolers.hh
     ExhaustAirSystemManager.cc
     ExhaustAirSystemManager.hh
+    ExtendedHeatIndex.cc
+    ExtendedHeatIndex.hh
     ExteriorEnergyUse.cc
     ExteriorEnergyUse.hh
     ExternalInterface.cc
@@ -968,10 +973,16 @@ if(LINK_WITH_PYTHON)
     TARGET energyplusapi
     POST_BUILD # TODO: I don't think we want to quote the generator expression
     COMMAND ${Python_EXECUTABLE} "${PROJECT_SOURCE_DIR}/cmake/PythonCopyStandardLib.py" "$<TARGET_FILE:energyplusapi>" "python_lib"
-    COMMAND ${CMAKE_COMMAND} -E env --unset=PIP_REQUIRE_VIRTUALENV
-            ${Python_EXECUTABLE} -m pip install --target="$<TARGET_FILE_DIR:energyplusapi>/python_lib" --upgrade energyplus-launch==3.7.2
-    COMMAND ${Python_EXECUTABLE} "${PROJECT_SOURCE_DIR}/cmake/PythonFixUpTclTk.py" "$<TARGET_FILE_DIR:energyplusapi>/python_lib"
   )
+  if (PYTHON_CLI)
+    add_custom_command(
+      TARGET energyplusapi
+      POST_BUILD # TODO: I don't think we want to quote the generator expression
+      COMMAND ${CMAKE_COMMAND} -E env --unset=PIP_REQUIRE_VIRTUALENV
+      ${Python_EXECUTABLE} -m pip install --target="$<TARGET_FILE_DIR:energyplusapi>/python_lib" --upgrade energyplus-launch==3.7.2
+      COMMAND ${Python_EXECUTABLE} "${PROJECT_SOURCE_DIR}/cmake/PythonFixUpTclTk.py" "$<TARGET_FILE_DIR:energyplusapi>/python_lib"
+    )
+  endif()
 endif()
 
 if(BUILD_PACKAGE)
@@ -980,7 +991,7 @@ if(BUILD_PACKAGE)
     # we'll want to grab the standard lib for python plugins
     # TODO: I don't think we want to quote the generator expression
     install(DIRECTORY "$<TARGET_FILE_DIR:energyplus>/python_lib/" DESTINATION "./python_lib")
-    if(WIN32)
+    if(WIN32 AND PYTHON_CLI)
       # on Windows, with Build Package, and also Link With Python, we can also drop in shortcuts to the new auxiliary CLI
       # NOTE: The install command COMPONENTS should line up so that they are run at the same packaging step
       install(CODE "execute_process(COMMAND powershell.exe -ExecutionPolicy Bypass -File ${PROJECT_SOURCE_DIR}/scripts/dev/create_shortcut.ps1 -TargetPath \"$<TARGET_FILE:energyplus>\" -ShortcutPath \"$<TARGET_FILE_DIR:energyplus>/EPLaunchPython.lnk\" -Arguments \"auxiliary eplaunch\")" COMPONENT Auxiliary)
@@ -1138,7 +1149,25 @@ if(BUILD_TESTING)
       COMMAND  energyplus -D -d "${CLI_TEST_DIR}/PythonPlugin.FromOutside/out-${NON_ASCII_DIRNAME}" ${NON_ASCII_DIRNAME}/${TEST_CASE}.idf
       WORKING_DIRECTORY  "${CLI_TEST_DIR}"
     )
+
+    set(TEST_DIR "${PROJECT_BINARY_DIR}/tst/api/TestRuntimeReleasesTheGIL")
+    file(MAKE_DIRECTORY ${TEST_DIR})
+    add_test(NAME "API.Runtime.PythonPlugin.TestRuntimeReleasesTheGIL"
+      COMMAND "${Python_EXECUTABLE}" "${PROJECT_SOURCE_DIR}/tst/EnergyPlus/api/TestRuntimeReleasesTheGIL.py" -d "${TEST_DIR}" -w "${EPW_FILE}" -D "${PROJECT_SOURCE_DIR}/tst/EnergyPlus/api/TestRuntimeReleasesTheGIL/mcve_gil.idf"
+    )
+    set_tests_properties("API.Runtime.PythonPlugin.TestRuntimeReleasesTheGIL"
+      PROPERTIES
+        ENVIRONMENT PYTHONPATH=${DIR_WITH_PY_ENERGYPLUS}
+        TIMEOUT 10  # This used to timeout! and we expect it NOT to
+    )
   endif()
+
+  if(Pytest_AVAILABLE)
+    add_test(NAME energyplus.TabularXML_IsValid
+      COMMAND ${Python_EXECUTABLE} -m pytest --verbose --ep-cli-path $<TARGET_FILE:energyplus> "${PROJECT_SOURCE_DIR}/scripts/pytests/test_xml_output.py"
+    )
+  endif()
+
 endif()
 
 if(UNIX AND NOT APPLE)

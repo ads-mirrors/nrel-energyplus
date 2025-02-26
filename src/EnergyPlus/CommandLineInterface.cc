@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -62,7 +62,7 @@
 #include <EnergyPlus/UtilityRoutines.hh>
 
 #if LINK_WITH_PYTHON
-#include <EnergyPlus/PythonEngine.hh>
+#    include <EnergyPlus/PythonEngine.hh>
 #endif
 
 namespace EnergyPlus {
@@ -235,6 +235,7 @@ Built on Platform: {}
         app.add_flag("--debug-cli", debugCLI, "Print the result of the CLI assignments to the console and exit")->group(""); // Empty group to hide it
 
 #if LINK_WITH_PYTHON
+#    ifdef PYTHON_CLI
         auto *auxiliaryToolsSubcommand = app.add_subcommand("auxiliary", "Run Auxiliary Python Tools");
         auxiliaryToolsSubcommand->require_subcommand(); // should default to requiring 1 or more additional args?
 
@@ -282,6 +283,7 @@ main_gui()
             engine.exec(cmd);
             exit(0);
         });
+#    endif
 #endif
 
         app.footer("Example: energyplus -w weather.epw -r input.idf");

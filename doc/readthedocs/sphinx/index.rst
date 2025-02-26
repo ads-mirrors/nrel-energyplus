@@ -9,17 +9,15 @@ Over time, that scope may grow much further.
    :maxdepth: 1
    :caption: Contents:
 
-   faq
    quick_start/quick_start
-   python
+   tips_and_tricks/tips_and_tricks
+   essentials/essentials
+   schema
    c
    api
-   schema
-   tips_and_tricks/tips_and_tricks
-   acknowledgments/acknowledgments
    auxiliary-programs/auxiliary-programs
-   essentials/essentials
    ems-application-guide/ems-application-guide
+   acknowledgments/acknowledgments
 
 Indices and tables
 ==================

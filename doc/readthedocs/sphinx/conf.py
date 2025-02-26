@@ -135,10 +135,7 @@ print("* Generating epJSON schema")
 # # OK, now we need to make sure the epJSON schema is generated so we can process it
 # Since this will primarily just be run by readthedocs, I'm just going to re-run the schema generator
 try:
-    if 'READTHEDOCS' in os.environ:
-        check_call(['python3', 'idd/schema/generate_epJSON_schema.py', 'idd'], cwd=repo_root)
-    else:
-        check_call(['c:/Python312/python.exe', 'idd/schema/generate_epJSON_schema.py', 'idd'], cwd=repo_root)
+    check_call([sys.executable, 'idd/schema/generate_epJSON_schema.py', 'idd'], cwd=repo_root)
 except CalledProcessError as e:
     raise Exception(f"Schema Generation failed! Exception string: {str(e)}") from None
 except FileNotFoundError as e:
@@ -250,10 +247,7 @@ for group_name in all_group_names:
         rtd_out += obj_snippet
 
 print("* Writing schema contents into template, saving at schema.rst")
-if 'READTHEDOCS' in os.environ:
-    schema_template = sphinx_dir / 'in.schema.rst.in'
-else:
-    schema_template = sphinx_dir / 'in.schema.local.rst.in'
+schema_template = sphinx_dir / 'in.schema.rst.in'
 with open(schema_template) as template:
     template_text = template.read()
 

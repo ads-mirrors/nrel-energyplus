@@ -17635,7 +17635,8 @@ Real64 FanSpdResidualHeatUsingH(Real64 FanSpdRto, Real64 QCoilSenHeatingLoad, Re
     //
     Real64 ZnSenLoad = QCoilSenHeatingLoad;
     // +-100 W minimum zone load?
-    if (std::abs(ZnSenLoad) < 100.0) ZnSenLoad = sign(100.0, ZnSenLoad);
+    // not sure why this is needed, inherited from FanSpdResidualHeat
+    //    if (std::abs(ZnSenLoad) < 100.0) ZnSenLoad = sign(100.0, ZnSenLoad);
     Real64 Wout = Win;
     Real64 TotCap = FanSpdRto * RatedAirMassFlowRate * (PsyHFnTdbW(Tout, Wout) - PsyHFnTdbW(Tin, Win));
     return (TotCap - ZnSenLoad) / ZnSenLoad;

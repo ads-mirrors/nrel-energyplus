@@ -17191,7 +17191,6 @@ void ControlVRFIUCoil(EnergyPlusData &state,
     MaxSH = 15;
     MaxSC = 20;
     Garate = state.dataDXCoils->DXCoil(CoilIndex).RatedAirMassFlowRate(1);
-    // why always limit the minimum fan speed ratio to 0.65?
     FanSpdRatioMin = min(OAMassFlow / Garate, 1.0); // ensure that coil flow rate is higher than OA flow rate
 
     if (QCoil == 0) {

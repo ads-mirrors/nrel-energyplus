@@ -5710,6 +5710,23 @@ void GetDXCoils(EnergyPlusData &state)
                                     OutputProcessor::StoreType::Average,
                                     thisDXCoil.Name);
             }
+            if (state.dataGlobal->AnyEnergyManagementSystemInModel) {
+                SetupEMSActuator(state,
+                                 thisDXCoil.DXCoilType,
+                                 thisDXCoil.Name,
+                                 "Frost Heating Capacity Multiplier",
+                                 "[]",
+                                 thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideOn,
+                                 thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideValue);
+
+                SetupEMSActuator(state,
+                                 thisDXCoil.DXCoilType,
+                                 thisDXCoil.Name,
+                                 "Frost Heating Input Power Multiplier",
+                                 "[]",
+                                 thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideOn,
+                                 thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideValue);
+            }
         }
 
         else if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_CoolingTwoSpeed) {
@@ -6312,6 +6329,24 @@ void GetDXCoils(EnergyPlusData &state)
                                     OutputProcessor::StoreType::Average,
                                     thisDXCoil.Name);
             }
+
+            if (state.dataGlobal->AnyEnergyManagementSystemInModel) {
+                SetupEMSActuator(state,
+                                 thisDXCoil.DXCoilType,
+                                 thisDXCoil.Name,
+                                 "Frost Heating Capacity Multiplier",
+                                 "[]",
+                                 thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideOn,
+                                 thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideValue);
+
+                SetupEMSActuator(state,
+                                 thisDXCoil.DXCoilType,
+                                 thisDXCoil.Name,
+                                 "Frost Heating Input Power Multiplier",
+                                 "[]",
+                                 thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideOn,
+                                 thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideValue);
+            }
         }
 
         // VRF cooling coil report variables
@@ -6419,6 +6454,24 @@ void GetDXCoils(EnergyPlusData &state)
                                 OutputProcessor::TimeStepType::System,
                                 OutputProcessor::StoreType::Average,
                                 thisDXCoil.Name);
+
+            if (state.dataGlobal->AnyEnergyManagementSystemInModel) {
+                SetupEMSActuator(state,
+                                 thisDXCoil.DXCoilType,
+                                 thisDXCoil.Name,
+                                 "Frost Heating Capacity Multiplier",
+                                 "[]",
+                                 thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideOn,
+                                 thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideValue);
+
+                SetupEMSActuator(state,
+                                 thisDXCoil.DXCoilType,
+                                 thisDXCoil.Name,
+                                 "Frost Heating Input Power Multiplier",
+                                 "[]",
+                                 thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideOn,
+                                 thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideValue);
+            }
         }
 
         // VRF cooling coil for FluidTCtrl, report variables
@@ -10979,13 +11032,38 @@ void CalcDXHeatingCoil(EnergyPlusData &state,
             if (thisDXCoil.DefrostControl == StandardRatings::HPdefrostControl::Timed) {
                 FractionalDefrostTime = thisDXCoil.DefrostTime;
                 if (FractionalDefrostTime > 0.0) {
-                    HeatingCapacityMultiplier = 0.909 - 107.33 * OutdoorCoildw;
-                    InputPowerMultiplier = 0.90 - 36.45 * OutdoorCoildw;
+                    if (thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideOn && thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideOn) {
+                        HeatingCapacityMultiplier = thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideValue;
+                        InputPowerMultiplier = thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideValue;
+                    } else {
+                        HeatingCapacityMultiplier = 0.909 - 107.33 * OutdoorCoildw;
+                        InputPowerMultiplier = 0.90 - 36.45 * OutdoorCoildw;
+                        if (thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideOn || thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideOn) {
+                            ShowWarningMessage(state,
+                                               format("The Frost Heating Capacity Multiplier actuator and the Frost Heating Input Power Multiplier "
+                                                      "actuator must be both provided for DX heating coil {}",
+                                                      thisDXCoil.Name));
+                            ShowContinueError(state,
+                                              "EMS actuators are ignored. Simulation is continuing.");
+                        }
+                    }
                 }
             } else { // else defrost control is on-demand
                 FractionalDefrostTime = 1.0 / (1.0 + 0.01446 / OutdoorCoildw);
-                HeatingCapacityMultiplier = 0.875 * (1.0 - FractionalDefrostTime);
-                InputPowerMultiplier = 0.954 * (1.0 - FractionalDefrostTime);
+                if (thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideOn && thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideOn) {
+                    HeatingCapacityMultiplier = thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideValue;
+                    InputPowerMultiplier = thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideValue;
+                } else {
+                    HeatingCapacityMultiplier = 0.875 * (1.0 - FractionalDefrostTime);
+                    InputPowerMultiplier = 0.954 * (1.0 - FractionalDefrostTime);
+                    if (thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideOn || thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideOn) {
+                        ShowWarningMessage(state,
+                                           format("The Frost Heating Capacity Multiplier actuator and the Frost Heating Input Power Multiplier "
+                                                  "actuator must be both provided for DX heating coil {}",
+                                                  thisDXCoil.Name));
+                        ShowContinueError(state, "EMS actuators are ignored. Simulation is continuing.");
+                    }
+                }
             }
 
             if (FractionalDefrostTime > 0.0) {
@@ -13605,13 +13683,38 @@ void CalcMultiSpeedDXCoilHeating(EnergyPlusData &state,
                 if (thisDXCoil.DefrostControl == StandardRatings::HPdefrostControl::Timed) {
                     FractionalDefrostTime = thisDXCoil.DefrostTime;
                     if (FractionalDefrostTime > 0.0) {
-                        HeatingCapacityMultiplier = 0.909 - 107.33 * OutdoorCoildw;
-                        InputPowerMultiplier = 0.90 - 36.45 * OutdoorCoildw;
+                        if (thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideOn && thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideOn) {
+                            HeatingCapacityMultiplier = thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideValue;
+                            InputPowerMultiplier = thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideValue;
+                        } else {
+                            HeatingCapacityMultiplier = 0.909 - 107.33 * OutdoorCoildw;
+                            InputPowerMultiplier = 0.90 - 36.45 * OutdoorCoildw;
+                            if (thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideOn || thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideOn) {
+                                ShowWarningMessage(
+                                    state,
+                                    format("The Frost Heating Capacity Multiplier actuator and the Frost Heating Input Power Multiplier "
+                                           "actuator must be both provided for DX heating coil {}",
+                                           thisDXCoil.Name));
+                                ShowContinueError(state, "EMS actuators are ignored. Simulation is continuing.");
+                            }
+                        }
                     }
                 } else { // else defrost control is on-demand
                     FractionalDefrostTime = 1.0 / (1.0 + 0.01446 / OutdoorCoildw);
-                    HeatingCapacityMultiplier = 0.875 * (1.0 - FractionalDefrostTime);
-                    InputPowerMultiplier = 0.954 * (1.0 - FractionalDefrostTime);
+                    if (thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideOn && thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideOn) {
+                        HeatingCapacityMultiplier = thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideValue;
+                        InputPowerMultiplier = thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideValue;
+                    } else {
+                        HeatingCapacityMultiplier = 0.875 * (1.0 - FractionalDefrostTime);
+                        InputPowerMultiplier = 0.954 * (1.0 - FractionalDefrostTime);
+                        if (thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideOn || thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideOn) {
+                            ShowWarningMessage(state,
+                                               format("The Frost Heating Capacity Multiplier actuator and the Frost Heating Input Power Multiplier "
+                                                      "actuator must be both provided for DX heating coil {}",
+                                                      thisDXCoil.Name));
+                            ShowContinueError(state, "EMS actuators are ignored. Simulation is continuing.");
+                        }
+                    }
                 }
 
                 if (FractionalDefrostTime > 0.0) {
@@ -13819,13 +13922,38 @@ void CalcMultiSpeedDXCoilHeating(EnergyPlusData &state,
                 if (thisDXCoil.DefrostControl == StandardRatings::HPdefrostControl::Timed) {
                     FractionalDefrostTime = thisDXCoil.DefrostTime;
                     if (FractionalDefrostTime > 0.0) {
-                        HeatingCapacityMultiplier = 0.909 - 107.33 * OutdoorCoildw;
-                        InputPowerMultiplier = 0.90 - 36.45 * OutdoorCoildw;
+                        if (thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideOn && thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideOn) {
+                            HeatingCapacityMultiplier = thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideValue;
+                            InputPowerMultiplier = thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideValue;
+                        } else {
+                            HeatingCapacityMultiplier = 0.909 - 107.33 * OutdoorCoildw;
+                            InputPowerMultiplier = 0.90 - 36.45 * OutdoorCoildw;
+                            if (thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideOn || thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideOn) {
+                                ShowWarningMessage(
+                                    state,
+                                    format("The Frost Heating Capacity Multiplier actuator and the Frost Heating Input Power Multiplier "
+                                           "actuator must be both provided for DX heating coil {}",
+                                           thisDXCoil.Name));
+                                ShowContinueError(state, "EMS actuators are ignored. Simulation is continuing.");
+                            }
+                        }
                     }
                 } else { // else defrost control is on-demand
                     FractionalDefrostTime = 1.0 / (1.0 + 0.01446 / OutdoorCoildw);
-                    HeatingCapacityMultiplier = 0.875 * (1.0 - FractionalDefrostTime);
-                    InputPowerMultiplier = 0.954 * (1.0 - FractionalDefrostTime);
+                    if (thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideOn && thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideOn) {
+                        HeatingCapacityMultiplier = thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideValue;
+                        InputPowerMultiplier = thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideValue;
+                    } else {
+                        HeatingCapacityMultiplier = 0.875 * (1.0 - FractionalDefrostTime);
+                        InputPowerMultiplier = 0.954 * (1.0 - FractionalDefrostTime);
+                        if (thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideOn || thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideOn) {
+                            ShowWarningMessage(state,
+                                               format("The Frost Heating Capacity Multiplier actuator and the Frost Heating Input Power Multiplier "
+                                                      "actuator must be both provided for DX heating coil {}",
+                                                      thisDXCoil.Name));
+                            ShowContinueError(state, "EMS actuators are ignored. Simulation is continuing.");
+                        }
+                    }
                 }
 
                 if (FractionalDefrostTime > 0.0) {

@@ -120,6 +120,11 @@ namespace DXCoils {
         Real64 HeatSizeRatio;                        // heat pump heating to cooling sizing ratio when autosized
         Array1D_bool RatedTotCapEMSOverrideOn;       // if true, then EMS is calling to override rated total capacity
         Array1D<Real64> RatedTotCapEMSOverrideValue; // value to use for EMS override
+        bool FrostHeatingCapacityMultiplierEMSOverrideOn; // if true, then EMS is calling to override multiplier for heating capacity when system is
+                                                          // in defrost
+        Real64 FrostHeatingCapacityMultiplierEMSOverrideValue; // value to use for EMS override
+        bool FrostHeatingInputPowerMultiplierEMSOverrideOn; // if true, then EMS is calling to override multiplier for power when system is in defrost
+        Real64 FrostHeatingInputPowerMultiplierEMSOverrideValue; // value to use for EMS override
         Array1D<Real64> RatedSHR;                    // Sensible heat ratio (sens cap/total cap) at rated conditions
         Array1D_bool RatedSHREMSOverrideOn;          // if true, then EMS is calling to override Sensible heat ratio
         Array1D<Real64> RatedSHREMSOverrideValue;    // value to use for EMS override forSensible heat ratio
@@ -455,7 +460,9 @@ namespace DXCoils {
         // Default Constructor
         DXCoilData()
             : DXCoilType_Num(0), RatedTotCap(MaxModes, 0.0), HeatSizeRatio(1.0), RatedTotCapEMSOverrideOn(MaxModes, false),
-              RatedTotCapEMSOverrideValue(MaxModes, 0.0), RatedSHR(MaxModes, 0.0), RatedSHREMSOverrideOn(MaxModes, false),
+              RatedTotCapEMSOverrideValue(MaxModes, 0.0), FrostHeatingCapacityMultiplierEMSOverrideOn(false),
+              FrostHeatingCapacityMultiplierEMSOverrideValue(0.0), FrostHeatingInputPowerMultiplierEMSOverrideOn(false),
+              FrostHeatingInputPowerMultiplierEMSOverrideValue(0.0), RatedSHR(MaxModes, 0.0), RatedSHREMSOverrideOn(MaxModes, false),
               RatedSHREMSOverrideValue(MaxModes, 0.0), RatedCOP(MaxModes, 0.0), RatedAirVolFlowRate(MaxModes, 0.0),
               RatedAirVolFlowRateEMSOverrideON(MaxModes, false), RatedAirVolFlowRateEMSOverrideValue(MaxModes, 0.0),
               FanPowerPerEvapAirFlowRate(MaxModes, 0.0), FanPowerPerEvapAirFlowRate_2023(MaxModes, 0.0), RatedAirMassFlowRate(MaxModes, 0.0),

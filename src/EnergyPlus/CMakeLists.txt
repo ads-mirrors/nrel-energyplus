@@ -986,9 +986,8 @@ if(LINK_WITH_PYTHON)
 endif()
 
 function(create_mac_app_bundle APP_NAME TARGET_NAME ARGUMENTS)
+  # Set App bundle paths in the target's build output location
   set(APP_BUNDLE_NAME "${APP_NAME}.app")
-
-  # The app bundle should be created in the same directory as the executable
   set(APP_DIR "$<TARGET_FILE_DIR:${TARGET_NAME}>/${APP_BUNDLE_NAME}")
   set(CONTENTS_DIR "${APP_DIR}/Contents")
   set(MACOS_DIR "${CONTENTS_DIR}/MacOS")
@@ -996,36 +995,22 @@ function(create_mac_app_bundle APP_NAME TARGET_NAME ARGUMENTS)
   # The path to the target executable
   set(EXECUTABLE_PATH "$<TARGET_FILE:${TARGET_NAME}>")
 
-  # Define the paths for the bundle
-  set(INFO_PLIST "${CONTENTS_DIR}/Info.plist")
-  set(LAUNCHER_SCRIPT "${MACOS_DIR}/launcher.sh")
+  # Paths for generated files
+  set(INFO_PLIST "${PROJECT_BINARY_DIR}/${APP_NAME}_Info.plist")
+  set(LAUNCHER_SCRIPT "${PROJECT_BINARY_DIR}/${APP_NAME}_launcher.sh")
+
+  # Create the Info.plist file and write the launcher script at configure time
+  configure_file(${PROJECT_SOURCE_DIR}/cmake/Shortcut.plist.in ${INFO_PLIST} @ONLY)
+  file(WRITE ${LAUNCHER_SCRIPT} "#!/bin/bash\n\"${EXECUTABLE_PATH}\" ${ARGUMENTS}")
 
   # Add a custom command to create the bundle at build time
-  add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+  add_custom_command(
+    TARGET ${TARGET_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E make_directory "${CONTENTS_DIR}"
     COMMAND ${CMAKE_COMMAND} -E make_directory "${MACOS_DIR}"
-
-    # Write Info.plist
-    COMMAND ${CMAKE_COMMAND} -E echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" > "${INFO_PLIST}"
-    COMMAND ${CMAKE_COMMAND} -E echo "<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">" >> "${INFO_PLIST}"
-    COMMAND ${CMAKE_COMMAND} -E echo "<plist version=\"1.0\">" >> "${INFO_PLIST}"
-    COMMAND ${CMAKE_COMMAND} -E echo "<dict>" >> "${INFO_PLIST}"
-    COMMAND ${CMAKE_COMMAND} -E echo "    <key>CFBundleName</key>" >> "${INFO_PLIST}"
-    COMMAND ${CMAKE_COMMAND} -E echo "    <string>${APP_NAME}</string>" >> "${INFO_PLIST}"
-    COMMAND ${CMAKE_COMMAND} -E echo "    <key>CFBundleExecutable</key>" >> "${INFO_PLIST}"
-    COMMAND ${CMAKE_COMMAND} -E echo "    <string>launcher.sh</string>" >> "${INFO_PLIST}"
-    COMMAND ${CMAKE_COMMAND} -E echo "    <key>CFBundleIdentifier</key>" >> "${INFO_PLIST}"
-    COMMAND ${CMAKE_COMMAND} -E echo "    <string>com.example.${APP_NAME}</string>" >> "${INFO_PLIST}"
-    COMMAND ${CMAKE_COMMAND} -E echo "    <key>CFBundleVersion</key>" >> "${INFO_PLIST}"
-    COMMAND ${CMAKE_COMMAND} -E echo "    <string>1.0</string>" >> "${INFO_PLIST}"
-    COMMAND ${CMAKE_COMMAND} -E echo "</dict>" >> "${INFO_PLIST}"
-    COMMAND ${CMAKE_COMMAND} -E echo "</plist>" >> "${INFO_PLIST}"
-
-    # Write the launcher script
-    COMMAND ${CMAKE_COMMAND} -E echo "#!/bin/bash" > "${LAUNCHER_SCRIPT}"
-    COMMAND ${CMAKE_COMMAND} -E echo "\"${EXECUTABLE_PATH}\" ${ARGUMENTS}" >> "${LAUNCHER_SCRIPT}"
-    COMMAND chmod +x "${LAUNCHER_SCRIPT}"
-
+    COMMAND ${CMAKE_COMMAND} -E copy "${INFO_PLIST}" "${CONTENTS_DIR}/Info.plist"
+    COMMAND ${CMAKE_COMMAND} -E copy "${LAUNCHER_SCRIPT}" "${MACOS_DIR}/launcher.sh"
+    COMMAND chmod +x "${MACOS_DIR}/launcher.sh"
     COMMENT "Creating macOS app bundle at ${APP_DIR}"
   )
 endfunction()
@@ -1045,12 +1030,12 @@ if(BUILD_PACKAGE)
       install(FILES $<TARGET_FILE_DIR:energyplus>/IDFVersionUpdater.lnk DESTINATION "./" COMPONENT Auxiliary)
     endif()
     if(APPLE AND PYTHON_CLI)
-      create_mac_app_bundle("EPLaunch" "energyplus" "auxiliary eplaunch")
+      create_mac_app_bundle("EPLaunch" energyplus "auxiliary eplaunch")
       install(DIRECTORY $<TARGET_FILE_DIR:energyplus>/EPLaunch.app
               DESTINATION "."
               COMPONENT Auxiliary
               USE_SOURCE_PERMISSIONS)
-      create_mac_app_bundle("VersionUpdater" "energyplus" "auxiliary updater")
+      create_mac_app_bundle("VersionUpdater" energyplus "auxiliary updater")
       install(DIRECTORY $<TARGET_FILE_DIR:energyplus>/VersionUpdater.app
               DESTINATION "."
               COMPONENT Auxiliary

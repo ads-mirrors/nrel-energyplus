@@ -32,6 +32,8 @@ NA
 
 The following two alternative approaches have been proposed for consideration to achieve the intended goal:
 
+These two options will be discussed and the full NFP will be drafted after the initial discussion.
+
 ** Option I: Adding EMS Actuators **
 Adds EMS actuator for heating and cooling fuel efficiencies to the ZoneHVAC:IdealLoadsAirSystem object. 
 

@@ -999,19 +999,19 @@ function(create_mac_app_bundle APP_NAME TARGET_NAME ARGUMENTS)
   configure_file(${PROJECT_SOURCE_DIR}/cmake/launcher.sh.in ${PROJECT_BINARY_DIR}/${APP_NAME}_launcher.sh @ONLY)
 
   # Generate Info.plist from template
-  configure_file(${PROJECT_SOURCE_DIR}/cmake/Info.plist.in ${PROJECT_BINARY_DIR}/${APP_NAME}_Info.plist @ONLY)
+  configure_file(${PROJECT_SOURCE_DIR}/cmake/Shortcut.plist.in ${PROJECT_BINARY_DIR}/${APP_NAME}_Info.plist @ONLY)
 
   # Add install rules
   install(DIRECTORY DESTINATION "${CONTENTS_DIR}")
   install(DIRECTORY DESTINATION "${MACOS_DIR}")
 
-  install(FILES "${CMAKE_BINARY_DIR}/${APP_NAME}_launcher.sh"
+  install(FILES "${PROJECT_BINARY_DIR}/${APP_NAME}_launcher.sh"
           DESTINATION "${MACOS_DIR}"
           RENAME "launcher.sh"
           PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
   )
 
-  install(FILES "${CMAKE_BINARY_DIR}/${APP_NAME}_Info.plist"
+  install(FILES "${PROJECT_BINARY_DIR}/${APP_NAME}_Info.plist"
           DESTINATION "${CONTENTS_DIR}"
           RENAME "Info.plist"
   )

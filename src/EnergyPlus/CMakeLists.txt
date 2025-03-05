@@ -986,41 +986,49 @@ if(LINK_WITH_PYTHON)
 endif()
 
 function(create_mac_app_bundle APP_NAME TARGET_NAME ARGUMENTS)
-  # Get the output directory of the built target
-  get_target_property(TARGET_EXECUTABLE_PATH ${TARGET_NAME} LOCATION)
-  get_filename_component(TARGET_DIR ${TARGET_EXECUTABLE_PATH} DIRECTORY)
-
   set(APP_BUNDLE_NAME "${APP_NAME}.app")
-  set(APP_DIR "${TARGET_DIR}/${APP_BUNDLE_NAME}")
+
+  # The app bundle should be created in the same directory as the executable
+  set(APP_DIR "$<TARGET_FILE_DIR:${TARGET_NAME}>/${APP_BUNDLE_NAME}")
   set(CONTENTS_DIR "${APP_DIR}/Contents")
   set(MACOS_DIR "${CONTENTS_DIR}/MacOS")
 
-  # Create necessary directories
-  file(MAKE_DIRECTORY "${CONTENTS_DIR}")
-  file(MAKE_DIRECTORY "${MACOS_DIR}")
+  # The path to the target executable
+  set(EXECUTABLE_PATH "$<TARGET_FILE:${TARGET_NAME}>")
 
-  # Create the Info.plist file
+  # Define the paths for the bundle
   set(INFO_PLIST "${CONTENTS_DIR}/Info.plist")
-  file(WRITE "${INFO_PLIST}" "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
-  file(APPEND "${INFO_PLIST}" "<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n")
-  file(APPEND "${INFO_PLIST}" "<plist version=\"1.0\">\n<dict>\n")
-  file(APPEND "${INFO_PLIST}" "    <key>CFBundleName</key>\n    <string>${APP_NAME}</string>\n")
-  file(APPEND "${INFO_PLIST}" "    <key>CFBundleExecutable</key>\n    <string>launcher.sh</string>\n")
-  file(APPEND "${INFO_PLIST}" "    <key>CFBundleIdentifier</key>\n    <string>com.example.${APP_NAME}</string>\n")
-  file(APPEND "${INFO_PLIST}" "    <key>CFBundleVersion</key>\n    <string>1.0</string>\n")
-  file(APPEND "${INFO_PLIST}" "</dict>\n</plist>\n")
-
-  # Create the launcher script
   set(LAUNCHER_SCRIPT "${MACOS_DIR}/launcher.sh")
-  file(WRITE "${LAUNCHER_SCRIPT}" "#!/bin/bash\n")
-  file(APPEND "${LAUNCHER_SCRIPT}" "\"${TARGET_EXECUTABLE_PATH}\" ${ARGUMENTS}\n")
 
-  # Make the script executable
-  execute_process(COMMAND chmod +x "${LAUNCHER_SCRIPT}")
+  # Add a custom command to create the bundle at build time
+  add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E make_directory "${CONTENTS_DIR}"
+    COMMAND ${CMAKE_COMMAND} -E make_directory "${MACOS_DIR}"
 
-  message(STATUS "Created macOS app bundle at ${APP_DIR}")
+    # Write Info.plist
+    COMMAND ${CMAKE_COMMAND} -E echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" > "${INFO_PLIST}"
+    COMMAND ${CMAKE_COMMAND} -E echo "<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">" >> "${INFO_PLIST}"
+    COMMAND ${CMAKE_COMMAND} -E echo "<plist version=\"1.0\">" >> "${INFO_PLIST}"
+    COMMAND ${CMAKE_COMMAND} -E echo "<dict>" >> "${INFO_PLIST}"
+    COMMAND ${CMAKE_COMMAND} -E echo "    <key>CFBundleName</key>" >> "${INFO_PLIST}"
+    COMMAND ${CMAKE_COMMAND} -E echo "    <string>${APP_NAME}</string>" >> "${INFO_PLIST}"
+    COMMAND ${CMAKE_COMMAND} -E echo "    <key>CFBundleExecutable</key>" >> "${INFO_PLIST}"
+    COMMAND ${CMAKE_COMMAND} -E echo "    <string>launcher.sh</string>" >> "${INFO_PLIST}"
+    COMMAND ${CMAKE_COMMAND} -E echo "    <key>CFBundleIdentifier</key>" >> "${INFO_PLIST}"
+    COMMAND ${CMAKE_COMMAND} -E echo "    <string>com.example.${APP_NAME}</string>" >> "${INFO_PLIST}"
+    COMMAND ${CMAKE_COMMAND} -E echo "    <key>CFBundleVersion</key>" >> "${INFO_PLIST}"
+    COMMAND ${CMAKE_COMMAND} -E echo "    <string>1.0</string>" >> "${INFO_PLIST}"
+    COMMAND ${CMAKE_COMMAND} -E echo "</dict>" >> "${INFO_PLIST}"
+    COMMAND ${CMAKE_COMMAND} -E echo "</plist>" >> "${INFO_PLIST}"
+
+    # Write the launcher script
+    COMMAND ${CMAKE_COMMAND} -E echo "#!/bin/bash" > "${LAUNCHER_SCRIPT}"
+    COMMAND ${CMAKE_COMMAND} -E echo "\"${EXECUTABLE_PATH}\" ${ARGUMENTS}" >> "${LAUNCHER_SCRIPT}"
+    COMMAND chmod +x "${LAUNCHER_SCRIPT}"
+
+    COMMENT "Creating macOS app bundle at ${APP_DIR}"
+  )
 endfunction()
-
 
 if(BUILD_PACKAGE)
   # if we are building package, we need to drop in some API/Plugin stuff

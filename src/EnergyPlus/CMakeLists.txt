@@ -985,10 +985,13 @@ if(LINK_WITH_PYTHON)
   endif()
 endif()
 
-function(create_mac_app_bundle APP_NAME ARGUMENTS)
+function(create_mac_app_bundle APP_NAME TARGET_NAME ARGUMENTS)
+  # Get the output directory of the built target
+  get_target_property(TARGET_EXECUTABLE_PATH ${TARGET_NAME} LOCATION)
+  get_filename_component(TARGET_DIR ${TARGET_EXECUTABLE_PATH} DIRECTORY)
+
   set(APP_BUNDLE_NAME "${APP_NAME}.app")
-  set(EP_BUILD_DIR $<TARGET_FILE_DIR:energyplus>)
-  set(APP_DIR "${EP_BUILD_DIR}/${APP_BUNDLE_NAME}")
+  set(APP_DIR "${TARGET_DIR}/${APP_BUNDLE_NAME}")
   set(CONTENTS_DIR "${APP_DIR}/Contents")
   set(MACOS_DIR "${CONTENTS_DIR}/MacOS")
 
@@ -1010,13 +1013,14 @@ function(create_mac_app_bundle APP_NAME ARGUMENTS)
   # Create the launcher script
   set(LAUNCHER_SCRIPT "${MACOS_DIR}/launcher.sh")
   file(WRITE "${LAUNCHER_SCRIPT}" "#!/bin/bash\n")
-  file(APPEND "${LAUNCHER_SCRIPT}" "energyplus ${ARGUMENTS}\n")
+  file(APPEND "${LAUNCHER_SCRIPT}" "\"${TARGET_EXECUTABLE_PATH}\" ${ARGUMENTS}\n")
 
   # Make the script executable
   execute_process(COMMAND chmod +x "${LAUNCHER_SCRIPT}")
 
   message(STATUS "Created macOS app bundle at ${APP_DIR}")
 endfunction()
+
 
 if(BUILD_PACKAGE)
   # if we are building package, we need to drop in some API/Plugin stuff
@@ -1032,14 +1036,16 @@ if(BUILD_PACKAGE)
       install(FILES $<TARGET_FILE_DIR:energyplus>/EPLaunchPython.lnk DESTINATION "./" COMPONENT Auxiliary)
       install(FILES $<TARGET_FILE_DIR:energyplus>/IDFVersionUpdater.lnk DESTINATION "./" COMPONENT Auxiliary)
     endif()
-    if(MACOS AND PYTHON_CLI)
-      create_mac_app_bundle("EPLaunch" "auxiliary eplaunch")
+    if(APPLE AND PYTHON_CLI)
+      create_mac_app_bundle("EPLaunch" "energyplus" "auxiliary eplaunch")
       install(DIRECTORY $<TARGET_FILE_DIR:energyplus>/EPLaunch.app
               DESTINATION "."
+              COMPONENT Auxiliary
               USE_SOURCE_PERMISSIONS)
-      create_mac_app_bundle("VersionUpdater" "auxiliary updater")
+      create_mac_app_bundle("VersionUpdater" "energyplus" "auxiliary updater")
       install(DIRECTORY $<TARGET_FILE_DIR:energyplus>/VersionUpdater.app
               DESTINATION "."
+              COMPONENT Auxiliary
               USE_SOURCE_PERMISSIONS)
     endif()
   endif()

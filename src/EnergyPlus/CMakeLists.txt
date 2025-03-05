@@ -988,32 +988,33 @@ endif()
 function(create_mac_app_bundle APP_NAME TARGET_NAME ARGUMENTS)
   set(APP_BUNDLE_NAME "${APP_NAME}.app")
 
-  # Install-time paths
-  set(CONTENTS_DIR "${CMAKE_INSTALL_PREFIX}/${APP_BUNDLE_NAME}/Contents")
+  # App bundle directory in the target's build output location
+  set(PRODUCTS_DIR "$<TARGET_FILE_DIR:${TARGET_NAME}>")
+  set(APP_DIR "$PRODUCTS_DIR/${APP_BUNDLE_NAME}")
+  set(CONTENTS_DIR "${APP_DIR}/Contents")
   set(MACOS_DIR "${CONTENTS_DIR}/MacOS")
 
-  # Define install-time paths for replacements
-  set(INSTALL_EXECUTABLE_PATH "${CMAKE_INSTALL_PREFIX}/bin/${APP_NAME}")
+  # Paths for generated files
+  set(INFO_PLIST "${PRODUCTS_DIR}/${APP_NAME}_Info.plist")
+  set(LAUNCHER_SCRIPT "${PRODUCTS_DIR}/${APP_NAME}_launcher.sh")
 
-  # Generate launcher script from template
-  configure_file(${PROJECT_SOURCE_DIR}/cmake/launcher.sh.in ${PROJECT_BINARY_DIR}/${APP_NAME}_launcher.sh @ONLY)
+  # Create the Info.plist file at configure time
+  configure_file(${PROJECT_SOURCE_DIR}/cmake/Shortcut.plist.in ${INFO_PLIST} @ONLY)
+  configure_file(${PROJECT_SOURCE_DIR}/cmake/launcher.sh.in ${LAUNCHER_SCRIPT} @ONLY)
 
-  # Generate Info.plist from template
-  configure_file(${PROJECT_SOURCE_DIR}/cmake/Shortcut.plist.in ${PROJECT_BINARY_DIR}/${APP_NAME}_Info.plist @ONLY)
+  # Add a custom command to create the bundle at build time
+  add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E make_directory "${CONTENTS_DIR}"
+    COMMAND ${CMAKE_COMMAND} -E make_directory "${MACOS_DIR}"
 
-  # Add install rules
-  install(DIRECTORY DESTINATION "${CONTENTS_DIR}")
-  install(DIRECTORY DESTINATION "${MACOS_DIR}")
+    # Copy the generated Info.plist
+    COMMAND ${CMAKE_COMMAND} -E copy "${INFO_PLIST}" "${CONTENTS_DIR}/Info.plist"
 
-  install(FILES "${PROJECT_BINARY_DIR}/${APP_NAME}_launcher.sh"
-          DESTINATION "${MACOS_DIR}"
-          RENAME "launcher.sh"
-          PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
-  )
+    # Copy the launcher script
+    COMMAND ${CMAKE_COMMAND} -E copy "${LAUNCHER_SCRIPT}" "${MACOS_DIR}/launcher.sh"
+    COMMAND chmod +x "${MACOS_DIR}/launcher.sh"
 
-  install(FILES "${PROJECT_BINARY_DIR}/${APP_NAME}_Info.plist"
-          DESTINATION "${CONTENTS_DIR}"
-          RENAME "Info.plist"
+    COMMENT "Creating macOS app bundle at ${APP_DIR}"
   )
 endfunction()
 

@@ -1,2 +1,3 @@
 #!/bin/bash
-"@EXECUTABLE_PATH@" @ARGUMENTS@
+SCRIPT_PATH=$(dirname "$0")
+$dirname/../../../energyplus @ARGUMENTS@

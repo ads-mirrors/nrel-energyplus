@@ -6090,6 +6090,72 @@ TEST_F(EnergyPlusFixture, AirflowNetwork_CheckNumOfFansInAirLoopTest)
     EXPECT_TRUE(compare_err_stream(error_string, true));
 }
 
+TEST_F(EnergyPlusFixture, AirflowNetwork_ValidateDistWAHPCoils)
+{
+    std::string const idf_objects = delimited_string({
+        "Coil:Cooling:WaterToAirHeatPump:EquationFit,",
+        "Super Coil,   !- Name",
+        "GSHP Clg Inlet,          !- Water Inlet Node Name",
+        "GSHP Clg Outlet,         !- Water Outlet Node Name",
+        "Cooling Coil Air Inlet Node_unit1,  !- Air Inlet Node Name",
+        "Heating Coil Air Inlet Node_unit1,  !- Air Outlet Node Name",
+        "autosize,                !- Rated Air Flow Rate {m3/s}",
+        "autosize,                !- Rated Water Flow Rate {m3/s}",
+        "autosize,                !- Gross Rated Total Cooling Capacity {W}",
+        "autosize,                !- Gross Rated Sensible Cooling Capacity {W}",
+        "5,                       !- Gross Rated Cooling COP {W/W}",
+        "25,                      !- Rated Entering Water Temperature {C}",
+        "27,                      !- Rated Entering Air Dry-Bulb Temperature {C}",
+        "19,                      !- Rated Entering Air Wet-Bulb Temperature {C}",
+        "TCH072_GSHP_CLG_CAPFT,   !- Total Cooling Capacity Curve Name",
+        "TCH072_GSHP_CLG_SENSCAPFT,  !- Sensible Cooling Capacity Curve Name",
+        "TCH072_GSHP_CLG_PWRFT,   !- Cooling Power Consumption Curve Name",
+        "PLF-f-PLR,               !- Part Load Fraction Correlation Curve Name",
+        "0.0,                     !- Nominal Time for Condensate Removal to Begin {s}",
+        "0.0,                     !- Ratio of Initial Moisture Evaporation Rate and Steady State Latent Capacity {dimensionless}",
+        "0.0,                     !- Maximum Cycling Rate {cycles/hr}",
+        "0.0,                     !- Latent Capacity Time Constant {s}",
+        "60;                      !- Fan Delay Time {s}",
+        "Coil:Heating:WaterToAirHeatPump:EquationFit,",
+        "Super Heating Coil,  !- Name",
+        "GSHP Htg Inlet,          !- Water Inlet Node Name",
+        "GSHP Htg Outlet,         !- Water Outlet Node Name",
+        "Heating Coil Air Inlet Node_unit1,  !- Air Inlet Node Name",
+        "Supp Heating Coil Air Inlet Node_unit1,  !- Air Outlet Node Name",
+        "autosize,                !- Rated Air Flow Rate {m3/s}",
+        "autosize,                !- Rated Water Flow Rate {m3/s}",
+        "autosize,                !- Gross Rated Heating Capacity {W}",
+        "4.5,                     !- Gross Rated Heating COP {W/W}",
+        "0,                       !- Rated Entering Water Temperature {C}",
+        "20,                      !- Rated Entering Air Dry-Bulb Temperature {C}",
+        "0.82,                    !- Ratio of Rated Heating Capacity to Rated Cooling Capacity",
+        "TCH072_GSHP_HTG_CAPFT,   !- Heating Capacity Curve Name",
+        "TCH072_GSHP_HTG_PWRFT,   !- Heating Power Consumption Curve Name",
+        "PLF-f-PLR;               !- Part Load Fraction Correlation Curve Name",
+    });
+
+    ASSERT_TRUE(process_idf(idf_objects));
+
+    state->dataAirSystemsData->PrimaryAirSystems.allocate(1);
+    state->dataAirSystemsData->PrimaryAirSystems(1).NumBranches = 1;
+    state->dataAirSystemsData->PrimaryAirSystems(1).Branch.allocate(1);
+    state->dataAirSystemsData->PrimaryAirSystems(1).Branch(1).TotalComponents = 2;
+    state->dataAirSystemsData->PrimaryAirSystems(1).Branch(1).Comp.allocate(2);
+    state->dataAirSystemsData->PrimaryAirSystems(1).Branch(1).Comp(1).TypeOf = "Coil:Cooling:WaterToAirHeatPump:EquationFit";
+    state->dataAirSystemsData->PrimaryAirSystems(1).Branch(1).Comp(1).Name = "WAHP Cooling";
+    state->dataAirSystemsData->PrimaryAirSystems(1).Branch(1).Comp(2).TypeOf = "Coil:Heating:WaterToAirHeatPump:EquationFit";
+    state->dataAirSystemsData->PrimaryAirSystems(1).Branch(1).Comp(2).Name = "WAHP Heating";
+
+    state->afn->DisSysNumOfCoils = 2;
+    state->afn->DisSysCompCoilData.allocate(2);
+    state->afn->DisSysCompCoilData(1).EPlusType = "COIL:COOLING:WATERTOAIRHEATPUMP:EQUATIONFIT";
+    state->afn->DisSysCompCoilData(1).name = "Super Coil";
+    state->afn->DisSysCompCoilData(2).EPlusType = "COIL:HEATING:WATERTOAIRHEATPUMP:EQUATIONFIT";
+    state->afn->DisSysCompCoilData(2).name = "Super Heating Coil";
+
+    state->afn->validate_distribution();
+}
+
 TEST_F(EnergyPlusFixture, AirflowNetwork_ValidateDistCoils)
 {
     std::string const idf_objects = delimited_string({

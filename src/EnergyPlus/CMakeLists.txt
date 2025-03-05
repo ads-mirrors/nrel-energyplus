@@ -986,32 +986,34 @@ if(LINK_WITH_PYTHON)
 endif()
 
 function(create_mac_app_bundle APP_NAME TARGET_NAME ARGUMENTS)
-  # Set App bundle paths in the target's build output location
   set(APP_BUNDLE_NAME "${APP_NAME}.app")
-  set(APP_DIR "$<TARGET_FILE_DIR:${TARGET_NAME}>/${APP_BUNDLE_NAME}")
-  set(CONTENTS_DIR "${APP_DIR}/Contents")
+
+  # Install-time paths
+  set(CONTENTS_DIR "${CMAKE_INSTALL_PREFIX}/${APP_BUNDLE_NAME}/Contents")
   set(MACOS_DIR "${CONTENTS_DIR}/MacOS")
 
-  # The path to the target executable
-  set(EXECUTABLE_PATH "$<TARGET_FILE:${TARGET_NAME}>")
+  # Define install-time paths for replacements
+  set(INSTALL_EXECUTABLE_PATH "${CMAKE_INSTALL_PREFIX}/bin/${APP_NAME}")
 
-  # Paths for generated files
-  set(INFO_PLIST "${PROJECT_BINARY_DIR}/${APP_NAME}_Info.plist")
-  set(LAUNCHER_SCRIPT "${PROJECT_BINARY_DIR}/${APP_NAME}_launcher.sh")
+  # Generate launcher script from template
+  configure_file(${PROJECT_SOURCE_DIR}/cmake/launcher.sh.in ${PROJECT_BINARY_DIR}/${APP_NAME}_launcher.sh @ONLY)
 
-  # Create the Info.plist file and write the launcher script at configure time
-  configure_file(${PROJECT_SOURCE_DIR}/cmake/Shortcut.plist.in ${INFO_PLIST} @ONLY)
-  file(WRITE ${LAUNCHER_SCRIPT} "#!/bin/bash\n\"${EXECUTABLE_PATH}\" ${ARGUMENTS}")
+  # Generate Info.plist from template
+  configure_file(${PROJECT_SOURCE_DIR}/cmake/Info.plist.in ${PROJECT_BINARY_DIR}/${APP_NAME}_Info.plist @ONLY)
 
-  # Add a custom command to create the bundle at build time
-  add_custom_command(
-    TARGET ${TARGET_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E make_directory "${CONTENTS_DIR}"
-    COMMAND ${CMAKE_COMMAND} -E make_directory "${MACOS_DIR}"
-    COMMAND ${CMAKE_COMMAND} -E copy "${INFO_PLIST}" "${CONTENTS_DIR}/Info.plist"
-    COMMAND ${CMAKE_COMMAND} -E copy "${LAUNCHER_SCRIPT}" "${MACOS_DIR}/launcher.sh"
-    COMMAND chmod +x "${MACOS_DIR}/launcher.sh"
-    COMMENT "Creating macOS app bundle at ${APP_DIR}"
+  # Add install rules
+  install(DIRECTORY DESTINATION "${CONTENTS_DIR}")
+  install(DIRECTORY DESTINATION "${MACOS_DIR}")
+
+  install(FILES "${CMAKE_BINARY_DIR}/${APP_NAME}_launcher.sh"
+          DESTINATION "${MACOS_DIR}"
+          RENAME "launcher.sh"
+          PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
+  )
+
+  install(FILES "${CMAKE_BINARY_DIR}/${APP_NAME}_Info.plist"
+          DESTINATION "${CONTENTS_DIR}"
+          RENAME "Info.plist"
   )
 endfunction()
 

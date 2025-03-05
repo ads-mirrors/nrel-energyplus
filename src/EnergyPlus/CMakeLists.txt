@@ -990,7 +990,7 @@ function(create_mac_app_bundle APP_NAME TARGET_NAME ARGUMENTS)
 
   # App bundle directory in the target's build output location
   set(PRODUCTS_DIR "$<TARGET_FILE_DIR:${TARGET_NAME}>")
-  set(APP_DIR "$PRODUCTS_DIR/${APP_BUNDLE_NAME}")
+  set(APP_DIR "${PRODUCTS_DIR}/${APP_BUNDLE_NAME}")
   set(CONTENTS_DIR "${APP_DIR}/Contents")
   set(MACOS_DIR "${CONTENTS_DIR}/MacOS")
 

@@ -985,6 +985,39 @@ if(LINK_WITH_PYTHON)
   endif()
 endif()
 
+function(create_mac_app_bundle APP_NAME ARGUMENTS)
+  set(APP_BUNDLE_NAME "${APP_NAME}.app")
+  set(EP_BUILD_DIR $<TARGET_FILE_DIR:energyplus>)
+  set(APP_DIR "${EP_BUILD_DIR}/${APP_BUNDLE_NAME}")
+  set(CONTENTS_DIR "${APP_DIR}/Contents")
+  set(MACOS_DIR "${CONTENTS_DIR}/MacOS")
+
+  # Create necessary directories
+  file(MAKE_DIRECTORY "${CONTENTS_DIR}")
+  file(MAKE_DIRECTORY "${MACOS_DIR}")
+
+  # Create the Info.plist file
+  set(INFO_PLIST "${CONTENTS_DIR}/Info.plist")
+  file(WRITE "${INFO_PLIST}" "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
+  file(APPEND "${INFO_PLIST}" "<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n")
+  file(APPEND "${INFO_PLIST}" "<plist version=\"1.0\">\n<dict>\n")
+  file(APPEND "${INFO_PLIST}" "    <key>CFBundleName</key>\n    <string>${APP_NAME}</string>\n")
+  file(APPEND "${INFO_PLIST}" "    <key>CFBundleExecutable</key>\n    <string>launcher.sh</string>\n")
+  file(APPEND "${INFO_PLIST}" "    <key>CFBundleIdentifier</key>\n    <string>com.example.${APP_NAME}</string>\n")
+  file(APPEND "${INFO_PLIST}" "    <key>CFBundleVersion</key>\n    <string>1.0</string>\n")
+  file(APPEND "${INFO_PLIST}" "</dict>\n</plist>\n")
+
+  # Create the launcher script
+  set(LAUNCHER_SCRIPT "${MACOS_DIR}/launcher.sh")
+  file(WRITE "${LAUNCHER_SCRIPT}" "#!/bin/bash\n")
+  file(APPEND "${LAUNCHER_SCRIPT}" "energyplus ${ARGUMENTS}\n")
+
+  # Make the script executable
+  execute_process(COMMAND chmod +x "${LAUNCHER_SCRIPT}")
+
+  message(STATUS "Created macOS app bundle at ${APP_DIR}")
+endfunction()
+
 if(BUILD_PACKAGE)
   # if we are building package, we need to drop in some API/Plugin stuff
   if(LINK_WITH_PYTHON)
@@ -998,6 +1031,16 @@ if(BUILD_PACKAGE)
       install(CODE "execute_process(COMMAND powershell.exe -ExecutionPolicy Bypass -File ${PROJECT_SOURCE_DIR}/scripts/dev/create_shortcut.ps1 -TargetPath \"$<TARGET_FILE:energyplus>\" -ShortcutPath \"$<TARGET_FILE_DIR:energyplus>/IDFVersionUpdater.lnk\" -Arguments \"auxiliary updater\")" COMPONENT Auxiliary)
       install(FILES $<TARGET_FILE_DIR:energyplus>/EPLaunchPython.lnk DESTINATION "./" COMPONENT Auxiliary)
       install(FILES $<TARGET_FILE_DIR:energyplus>/IDFVersionUpdater.lnk DESTINATION "./" COMPONENT Auxiliary)
+    endif()
+    if(MACOS AND PYTHON_CLI)
+      create_mac_app_bundle("EPLaunch" "auxiliary eplaunch")
+      install(DIRECTORY $<TARGET_FILE_DIR:energyplus>/EPLaunch.app
+              DESTINATION "."
+              USE_SOURCE_PERMISSIONS)
+      create_mac_app_bundle("VersionUpdater" "auxiliary updater")
+      install(DIRECTORY $<TARGET_FILE_DIR:energyplus>/VersionUpdater.app
+              DESTINATION "."
+              USE_SOURCE_PERMISSIONS)
     endif()
   endif()
   # we'll want to always provide the C API headers

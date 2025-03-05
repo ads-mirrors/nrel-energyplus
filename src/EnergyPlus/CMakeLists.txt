@@ -979,7 +979,7 @@ if(LINK_WITH_PYTHON)
       TARGET energyplusapi
       POST_BUILD # TODO: I don't think we want to quote the generator expression
       COMMAND ${CMAKE_COMMAND} -E env --unset=PIP_REQUIRE_VIRTUALENV
-      ${Python_EXECUTABLE} -m pip install --target="$<TARGET_FILE_DIR:energyplusapi>/python_lib" --upgrade energyplus-launch==3.7.2 energyplus-transition-tools==2.1.1
+      ${Python_EXECUTABLE} -m pip install --target="$<TARGET_FILE_DIR:energyplusapi>/python_lib" --upgrade energyplus-launch==3.7.2 energyplus-transition-tools==2.1.2
       COMMAND ${Python_EXECUTABLE} "${PROJECT_SOURCE_DIR}/cmake/PythonFixUpTclTk.py" "$<TARGET_FILE_DIR:energyplusapi>/python_lib"
     )
   endif()
@@ -995,6 +995,7 @@ if(BUILD_PACKAGE)
       # on Windows, with Build Package, and also Link With Python, we can also drop in shortcuts to the new auxiliary CLI
       # NOTE: The install command COMPONENTS should line up so that they are run at the same packaging step
       install(CODE "execute_process(COMMAND powershell.exe -ExecutionPolicy Bypass -File ${PROJECT_SOURCE_DIR}/scripts/dev/create_shortcut.ps1 -TargetPath \"$<TARGET_FILE:energyplus>\" -ShortcutPath \"$<TARGET_FILE_DIR:energyplus>/EPLaunchPython.lnk\" -Arguments \"auxiliary eplaunch\")" COMPONENT Auxiliary)
+      install(CODE "execute_process(COMMAND powershell.exe -ExecutionPolicy Bypass -File ${PROJECT_SOURCE_DIR}/scripts/dev/create_shortcut.ps1 -TargetPath \"$<TARGET_FILE:energyplus>\" -ShortcutPath \"$<TARGET_FILE_DIR:energyplus>/IDFVersionUpdater.lnk\" -Arguments \"auxiliary updater\")" COMPONENT Auxiliary)
       install(FILES $<TARGET_FILE_DIR:energyplus>/EPLaunchPython.lnk DESTINATION "./" COMPONENT Auxiliary)
     endif()
   endif()

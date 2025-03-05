@@ -10602,11 +10602,8 @@ namespace AirflowNetwork {
                                       DisSysCompCoilData(i).name,
                                       IsNotOK,
                                       format(RoutineName) + CurrentModuleObject);
-                    ++MultiSpeedHPIndicator;
                     if (IsNotOK) {
                         ErrorsFound = true;
-                    } else {
-                        SetDXCoilAirLoopNumber(m_state, DisSysCompCoilData(i).name, DisSysCompCoilData(i).AirLoopNum);
                     }
 
                 } else if (SELECT_CASE_var == "COIL:HEATING:WATERTOAIRHEATPUMP:EQUATIONFIT") {
@@ -10615,11 +10612,8 @@ namespace AirflowNetwork {
                                       DisSysCompCoilData(i).name,
                                       IsNotOK,
                                       format(RoutineName) + CurrentModuleObject);
-                    ++MultiSpeedHPIndicator;
                     if (IsNotOK) {
                         ErrorsFound = true;
-                    } else {
-                        SetDXCoilAirLoopNumber(m_state, DisSysCompCoilData(i).name, DisSysCompCoilData(i).AirLoopNum);
                     }
 
                 } else if (SELECT_CASE_var == "COIL:HEATING:DESUPERHEATER") {

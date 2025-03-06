@@ -7023,7 +7023,6 @@ TEST_F(EnergyPlusFixture, VariableSpeedCoils_Coil_Defrost_Power_Fix_Test)
 
     // Without the current PR (PR 10109), the DefrostPower would remain 908.1 and fail the following test:
     EXPECT_NEAR(state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).DefrostPower, 0.0, 1e-3);
-
 }
 
 TEST_F(EnergyPlusFixture, VariableSpeedCoils_ZeroRatedCoolingCapacity_Test)

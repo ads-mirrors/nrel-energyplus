@@ -96,6 +96,10 @@ An actuator is also available for overriding the autosize value for the fan's de
 
 Actuators are available for overriding the autosize rated airflow rate and total cooling capacity of the Coil:Cooling:DX object.~ Actuators called ``Coil:Cooling:DX:SingleSpeed'' are available with control types ``Autosized Rated Air Flow Rate'' (in m3/s), ``Autosized Rated Total Cooling Capacity'' (in W), and ``Autosized Rated Sensible Heat Ratio'' (in W/W).~ These are only useful from the calling point named AfterComponentInputReadIn.
 
+\subsection{DX Heating Coils}\label{dx-heating-coils}
+
+Actuators are available for overriding the input power and heating capacity frost adjustment factors of the Coil:Heating:DX objects.~ Actuators called ``Coil:Heating:DX:SingleSpeed'', ``Coil:Heating:DX:MultiSpeed'', ``Coil:Heating:DX:VariableSpeed'' are available with control types ``Frost Heating Capacity Multiplier'' and ``Frost Heating Input Power Multiplier''.~ These are only valid while being provided together. Providing only one of the multiplier will be ignored in the simulations using the default E+ frost formation adjustments.
+
 \subsection{DX Thermal Storage Coils}\label{dx-thermal-storage-coils}
 
 There is an actuator that is available for overriding the operating mode of the DX thermal storage coil object.~ The actuator is called ``Coil:Cooling:DX:SingleSpeed:ThermalStorage'' and is available with the control type ``Operating Mode.''  The operating mode has the following states/values:

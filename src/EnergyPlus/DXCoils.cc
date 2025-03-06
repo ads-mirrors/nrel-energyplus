@@ -11043,8 +11043,7 @@ void CalcDXHeatingCoil(EnergyPlusData &state,
                                                format("The Frost Heating Capacity Multiplier actuator and the Frost Heating Input Power Multiplier "
                                                       "actuator must be both provided for DX heating coil {}",
                                                       thisDXCoil.Name));
-                            ShowContinueError(state,
-                                              "EMS actuators are ignored. Simulation is continuing.");
+                            ShowContinueError(state, "EMS actuators are ignored. Simulation is continuing.");
                         }
                     }
                 }

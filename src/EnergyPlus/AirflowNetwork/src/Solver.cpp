@@ -10615,6 +10615,25 @@ namespace AirflowNetwork {
                     if (IsNotOK) {
                         ErrorsFound = true;
                     }
+                } else if (SELECT_CASE_var == "COIL:COOLING:WATERTOAIRHEATPUMP:VARIABLESPEEDEQUATIONFIT") {
+                    ValidateComponent(m_state,
+                                      "Coil:Cooling:WaterToAirHeatPump:VariableSpeedEquationFit",
+                                      DisSysCompCoilData(i).name,
+                                      IsNotOK,
+                                      format(RoutineName) + CurrentModuleObject);
+                    if (IsNotOK) {
+                        ErrorsFound = true;
+                    }
+
+                } else if (SELECT_CASE_var == "COIL:HEATING:WATERTOAIRHEATPUMP:VARIABLESPEEDEQUATIONFIT") {
+                    ValidateComponent(m_state,
+                                      "Coil:Heating:WaterToAirHeatPump:VariableSpeedEquationFit",
+                                      DisSysCompCoilData(i).name,
+                                      IsNotOK,
+                                      format(RoutineName) + CurrentModuleObject);
+                    if (IsNotOK) {
+                        ErrorsFound = true;
+                    }
 
                 } else if (SELECT_CASE_var == "COIL:HEATING:DESUPERHEATER") {
                     ValidateComponent(

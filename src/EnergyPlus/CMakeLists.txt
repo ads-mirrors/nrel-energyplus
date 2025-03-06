@@ -1012,7 +1012,6 @@ if(BUILD_PACKAGE)
       add_dependencies(EPLaunchApp energyplus)
       install(DIRECTORY $<TARGET_FILE_DIR:energyplus>/EPLaunch.app
               DESTINATION "."
-              COMPONENT Auxiliary
               USE_SOURCE_PERMISSIONS)
       add_custom_target(VersionUpdaterApp ALL
               COMMAND ${CMAKE_COMMAND}
@@ -1026,7 +1025,6 @@ if(BUILD_PACKAGE)
       add_dependencies(VersionUpdaterApp energyplus)
       install(DIRECTORY $<TARGET_FILE_DIR:energyplus>/VersionUpdater.app
               DESTINATION "."
-              COMPONENT Auxiliary
               USE_SOURCE_PERMISSIONS)
     endif()
   endif()

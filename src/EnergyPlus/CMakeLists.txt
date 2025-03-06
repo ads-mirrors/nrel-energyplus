@@ -991,41 +991,53 @@ if(BUILD_PACKAGE)
     # we'll want to grab the standard lib for python plugins
     # TODO: I don't think we want to quote the generator expression
     install(DIRECTORY "$<TARGET_FILE_DIR:energyplus>/python_lib/" DESTINATION "./python_lib")
-    if(WIN32 AND PYTHON_CLI)
-      # on Windows, with Build Package, and also Link With Python, we can also drop in shortcuts to the new auxiliary CLI
-      # NOTE: The install command COMPONENTS should line up so that they are run at the same packaging step
-      install(CODE "execute_process(COMMAND powershell.exe -ExecutionPolicy Bypass -File ${PROJECT_SOURCE_DIR}/scripts/dev/create_shortcut.ps1 -TargetPath \"$<TARGET_FILE:energyplus>\" -ShortcutPath \"$<TARGET_FILE_DIR:energyplus>/EPLaunchPython.lnk\" -Arguments \"auxiliary eplaunch\")" COMPONENT Auxiliary)
-      install(CODE "execute_process(COMMAND powershell.exe -ExecutionPolicy Bypass -File ${PROJECT_SOURCE_DIR}/scripts/dev/create_shortcut.ps1 -TargetPath \"$<TARGET_FILE:energyplus>\" -ShortcutPath \"$<TARGET_FILE_DIR:energyplus>/IDFVersionUpdater.lnk\" -Arguments \"auxiliary updater\")" COMPONENT Auxiliary)
-      install(FILES $<TARGET_FILE_DIR:energyplus>/EPLaunchPython.lnk DESTINATION "./" COMPONENT Auxiliary)
-      install(FILES $<TARGET_FILE_DIR:energyplus>/IDFVersionUpdater.lnk DESTINATION "./" COMPONENT Auxiliary)
-    endif()
-    if(APPLE AND PYTHON_CLI)
-      add_custom_target(EPLaunchApp ALL
-              COMMAND ${CMAKE_COMMAND}
-              -D PROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR}
-              -D APP_NAME="EPLaunch"
-              -D ARGUMENT="eplaunch"
-              -D PRODUCTS_DIR=$<TARGET_FILE_DIR:energyplus>
-              -P ${PROJECT_SOURCE_DIR}/cmake/create_mac_bundle.cmake
-              COMMENT "Creating macOS app bundle for EPLaunch"
-      )
-      add_dependencies(EPLaunchApp energyplus)
-      install(DIRECTORY $<TARGET_FILE_DIR:energyplus>/EPLaunch.app
-              DESTINATION "."
-              USE_SOURCE_PERMISSIONS)
-      add_custom_target(VersionUpdaterApp ALL
-              COMMAND ${CMAKE_COMMAND}
-              -D PROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR}
-              -D APP_NAME="VersionUpdater"
-              -D ARGUMENT="updater"
-              -D PRODUCTS_DIR=$<TARGET_FILE_DIR:energyplus>
-              -P ${PROJECT_SOURCE_DIR}/cmake/create_mac_bundle.cmake
-              COMMENT "Creating macOS app bundle for VersionUpdater"
-      )
-      add_dependencies(VersionUpdaterApp energyplus)
-      install(DIRECTORY $<TARGET_FILE_DIR:energyplus>/VersionUpdater.app
-              DESTINATION "."
-              USE_SOURCE_PERMISSIONS)
+    if(PYTHON_CLI)
+      if(WIN32)
+        # on Windows, with Build Package, and also Link With Python, we can also drop in shortcuts to the new auxiliary CLI
+        # NOTE: The install command COMPONENTS should line up so that they are run at the same packaging step
+        install(CODE "execute_process(COMMAND powershell.exe -ExecutionPolicy Bypass -File ${PROJECT_SOURCE_DIR}/scripts/dev/create_shortcut.ps1 -TargetPath \"$<TARGET_FILE:energyplus>\" -ShortcutPath \"$<TARGET_FILE_DIR:energyplus>/EPLaunchPython.lnk\" -Arguments \"auxiliary eplaunch\")" COMPONENT Auxiliary)
+        install(CODE "execute_process(COMMAND powershell.exe -ExecutionPolicy Bypass -File ${PROJECT_SOURCE_DIR}/scripts/dev/create_shortcut.ps1 -TargetPath \"$<TARGET_FILE:energyplus>\" -ShortcutPath \"$<TARGET_FILE_DIR:energyplus>/IDFVersionUpdater.lnk\" -Arguments \"auxiliary updater\")" COMPONENT Auxiliary)
+        install(FILES $<TARGET_FILE_DIR:energyplus>/EPLaunchPython.lnk DESTINATION "./" COMPONENT Auxiliary)
+        install(FILES $<TARGET_FILE_DIR:energyplus>/IDFVersionUpdater.lnk DESTINATION "./" COMPONENT Auxiliary)
+      elseif(APPLE)
+#        add_custom_target(EPLaunchApp ALL
+#                COMMAND ${CMAKE_COMMAND}
+#                -D PROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR}
+#                -D APP_NAME="EPLaunch"
+#                -D ARGUMENT="eplaunch"
+#                -D PRODUCTS_DIR=$<TARGET_FILE_DIR:energyplus>
+#                -P ${PROJECT_SOURCE_DIR}/cmake/create_mac_bundle.cmake
+#                COMMENT "Creating macOS app bundle for EPLaunch"
+#        )
+#        add_dependencies(EPLaunchApp energyplus)
+#        install(DIRECTORY $<TARGET_FILE_DIR:energyplus>/EPLaunch.app
+#                DESTINATION "."
+#                USE_SOURCE_PERMISSIONS)
+#        add_custom_target(VersionUpdaterApp ALL
+#                COMMAND ${CMAKE_COMMAND}
+#                -D PROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR}
+#                -D APP_NAME="VersionUpdater"
+#                -D ARGUMENT="updater"
+#                -D PRODUCTS_DIR=$<TARGET_FILE_DIR:energyplus>
+#                -P ${PROJECT_SOURCE_DIR}/cmake/create_mac_bundle.cmake
+#                COMMENT "Creating macOS app bundle for VersionUpdater"
+#        )
+#        add_dependencies(VersionUpdaterApp energyplus)
+#        install(DIRECTORY $<TARGET_FILE_DIR:energyplus>/VersionUpdater.app
+#                DESTINATION "."
+#                USE_SOURCE_PERMISSIONS)
+      elseif(LINUX)
+        set(ARGUMENT eplaunch)
+        configure_file(${PROJECT_SOURCE_DIR}/cmake/auxiliary.sh.in ${PROJECT_BINARY_DIR}/EPLaunch)
+        install(FILES ${PROJECT_BINARY_DIR}/EPLaunch
+                DESTINATION "."
+                PERMISSIONS OWNER_EXECUTE OWNER_READ OWNER_WRITE)
+        set(ARGUMENT updater)
+        configure_file(${PROJECT_SOURCE_DIR}/cmake/auxiliary.sh.in ${PROJECT_BINARY_DIR}/VersionUpdater)
+        install(FILES ${PROJECT_BINARY_DIR}/VersionUpdater
+                DESTINATION "."
+                PERMISSIONS OWNER_EXECUTE OWNER_READ OWNER_WRITE)
+      endif()
     endif()
   endif()
   # we'll want to always provide the C API headers

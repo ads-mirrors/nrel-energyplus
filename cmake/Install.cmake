@@ -678,6 +678,7 @@ if(APPLE)
       "runenergyplus"
       "runepmacro"
       "runreadvars"
+      "launcher.sh"
       # Copied-verbatim apps: Already signed because just copied from bin to package
       # "EPMacro"
       # "PreProcess/EP-Launch-Lite.app"

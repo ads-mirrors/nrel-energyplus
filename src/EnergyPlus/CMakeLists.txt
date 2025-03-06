@@ -999,7 +999,7 @@ if(BUILD_PACKAGE)
       install(FILES $<TARGET_FILE_DIR:energyplus>/EPLaunchPython.lnk DESTINATION "./" COMPONENT Auxiliary)
       install(FILES $<TARGET_FILE_DIR:energyplus>/IDFVersionUpdater.lnk DESTINATION "./" COMPONENT Auxiliary)
     endif()
-    if((APPLE OR LINUX) AND PYTHON_CLI)
+    if(APPLE AND PYTHON_CLI)
       add_custom_target(EPLaunchApp ALL
               COMMAND ${CMAKE_COMMAND}
               -D PROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR}

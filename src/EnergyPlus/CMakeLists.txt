@@ -985,39 +985,6 @@ if(LINK_WITH_PYTHON)
   endif()
 endif()
 
-function(create_mac_app_bundle APP_NAME TARGET_NAME ARGUMENTS)
-  set(APP_BUNDLE_NAME "${APP_NAME}.app")
-
-  # App bundle directory in the target's build output location
-  set(PRODUCTS_DIR "$<TARGET_FILE_DIR:${TARGET_NAME}>")
-  set(APP_DIR "${PRODUCTS_DIR}/${APP_BUNDLE_NAME}")
-  set(CONTENTS_DIR "${APP_DIR}/Contents")
-  set(MACOS_DIR "${CONTENTS_DIR}/MacOS")
-
-  # Paths for generated files
-  set(INFO_PLIST "${PRODUCTS_DIR}/${APP_NAME}_Info.plist")
-  set(LAUNCHER_SCRIPT "${PRODUCTS_DIR}/${APP_NAME}_launcher.sh")
-
-  # Create the Info.plist file at configure time
-  configure_file(${PROJECT_SOURCE_DIR}/cmake/Shortcut.plist.in ${INFO_PLIST} @ONLY)
-  configure_file(${PROJECT_SOURCE_DIR}/cmake/launcher.sh.in ${LAUNCHER_SCRIPT} @ONLY)
-
-  # Add a custom command to create the bundle at build time
-  add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E make_directory "${CONTENTS_DIR}"
-    COMMAND ${CMAKE_COMMAND} -E make_directory "${MACOS_DIR}"
-
-    # Copy the generated Info.plist
-    COMMAND ${CMAKE_COMMAND} -E copy "${INFO_PLIST}" "${CONTENTS_DIR}/Info.plist"
-
-    # Copy the launcher script
-    COMMAND ${CMAKE_COMMAND} -E copy "${LAUNCHER_SCRIPT}" "${MACOS_DIR}/launcher.sh"
-    COMMAND chmod +x "${MACOS_DIR}/launcher.sh"
-
-    COMMENT "Creating macOS app bundle at ${APP_DIR}"
-  )
-endfunction()
-
 if(BUILD_PACKAGE)
   # if we are building package, we need to drop in some API/Plugin stuff
   if(LINK_WITH_PYTHON)
@@ -1032,13 +999,31 @@ if(BUILD_PACKAGE)
       install(FILES $<TARGET_FILE_DIR:energyplus>/EPLaunchPython.lnk DESTINATION "./" COMPONENT Auxiliary)
       install(FILES $<TARGET_FILE_DIR:energyplus>/IDFVersionUpdater.lnk DESTINATION "./" COMPONENT Auxiliary)
     endif()
-    if(APPLE AND PYTHON_CLI)
-      create_mac_app_bundle("EPLaunch" energyplus "auxiliary eplaunch")
+    if((APPLE OR LINUX) AND PYTHON_CLI)
+      add_custom_target(EPLaunchApp ALL
+              COMMAND ${CMAKE_COMMAND}
+              -D PROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR}
+              -D APP_NAME="EPLaunch"
+              -D ARGUMENT="eplaunch"
+              -D PRODUCTS_DIR=$<TARGET_FILE_DIR:energyplus>
+              -P ${PROJECT_SOURCE_DIR}/cmake/create_mac_bundle.cmake
+              COMMENT "Creating macOS app bundle for EPLaunch"
+      )
+      add_dependencies(EPLaunchApp energyplus)
       install(DIRECTORY $<TARGET_FILE_DIR:energyplus>/EPLaunch.app
               DESTINATION "."
               COMPONENT Auxiliary
               USE_SOURCE_PERMISSIONS)
-      create_mac_app_bundle("VersionUpdater" energyplus "auxiliary updater")
+      add_custom_target(VersionUpdaterApp ALL
+              COMMAND ${CMAKE_COMMAND}
+              -D PROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR}
+              -D APP_NAME="VersionUpdater"
+              -D ARGUMENT="updater"
+              -D PRODUCTS_DIR=$<TARGET_FILE_DIR:energyplus>
+              -P ${PROJECT_SOURCE_DIR}/cmake/create_mac_bundle.cmake
+              COMMENT "Creating macOS app bundle for VersionUpdater"
+      )
+      add_dependencies(VersionUpdaterApp energyplus)
       install(DIRECTORY $<TARGET_FILE_DIR:energyplus>/VersionUpdater.app
               DESTINATION "."
               COMPONENT Auxiliary

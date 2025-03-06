@@ -502,7 +502,7 @@ namespace IndoorGreen {
             ZoneAirVol = state.dataHeatBal->Zone(ig.ZonePtr).Volume;
             ZoneNewHum = ZonePreHum + ETTotal / (rhoair * ZoneAirVol);
             Twb = Psychrometrics::PsyTwbFnTdbWPb(state, ZonePreTemp, ZonePreHum, state.dataEnvrn->OutBaroPress);
-            ZoneSatHum = Psychrometrics::PsyWFnTdbRhPb(state, Twb, 1.0, state.dataEnvrn->OutBaroPress);// saturated humidity ratio
+            ZoneSatHum = Psychrometrics::PsyWFnTdbRhPb(state, Twb, 1.0, state.dataEnvrn->OutBaroPress); // saturated humidity ratio
             HCons = Psychrometrics::PsyHFnTdbW(ZonePreTemp, ZonePreHum);
             if (ZoneNewHum <= ZoneSatHum) {
                 ZoneNewTemp = Psychrometrics::PsyTdbFnHW(HCons, ZoneNewHum);

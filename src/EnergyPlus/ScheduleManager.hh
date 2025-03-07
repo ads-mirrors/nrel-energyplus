@@ -517,11 +517,13 @@ struct ScheduleManagerData : BaseGlobalStruct
 
     void init_constant_state(EnergyPlusData &state) override
     {
-        Sched::InitConstantScheduleData(state);
     }
 
     void init_state(EnergyPlusData &state) override
     {
+        // This can't be calls in init_constant_state, because otherwise the Constant-0.0 and Constant-1.0 schedules will be gone after clear_state
+        // has been called (via stateReset in API mode for eg)
+        Sched::InitConstantScheduleData(state);
         Sched::ProcessScheduleInput(state);
     }
 

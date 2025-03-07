@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=EnergyPlus @VERSION@
+Exec=@INSTALL_DIR@/energyplus auxiliary eplaunch
+Icon=@INSTALL_DIR@/favicon.png
+Terminal=false
+Categories=Utility;
+
+[Desktop Action VersionUpdater]
+Name=Launch Version Updater
+Exec=@INSTALL_DIR@/energyplus auxiliary updater

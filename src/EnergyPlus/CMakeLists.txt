@@ -1014,6 +1014,10 @@ if(BUILD_PACKAGE)
         install(FILES ${PROJECT_BINARY_DIR}/VersionUpdater
                 DESTINATION "."
                 PERMISSIONS OWNER_EXECUTE OWNER_READ OWNER_WRITE)
+        install(
+                FILES ${PROJECT_SOURCE_DIR}/cmake/energyplus.desktop.in
+                DESTINATION share/applications
+        )
       endif()
     endif()
   endif()

@@ -340,9 +340,7 @@ namespace Sched {
             type = SchedType::Year;
         }
 
-        ~ScheduleDetailed()
-        {
-        }
+        virtual ~ScheduleDetailed(){}
 
         void can_instantiate()
         {

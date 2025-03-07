@@ -1802,14 +1802,15 @@ namespace Sched {
             }
 
             sched->currentVal = Numbers(1);
-            sched->tsVals.resize(Constant::iHoursInDay * s_glob->TimeStepsInHour);
-            for (int i = 0; i < Constant::iHoursInDay * s_glob->TimeStepsInHour; ++i)
-                sched->tsVals[i] = sched->currentVal;
+            sched->tsVals.assign(Constant::iHoursInDay * s_glob->TimeStepsInHour, sched->currentVal);
 
             if (s_glob->AnyEnergyManagementSystemInModel) { // setup constant schedules as actuators
                 SetupEMSActuator(state, "Schedule:Constant", sched->Name, "Schedule Value", "[ ]", sched->EMSActuatedOn, sched->EMSVal);
             }
         }
+        // When InitConstantScheduleData is called, TimeStepsInHour is 0, so we delay it here
+        static_cast<ScheduleConstant *>(s_sched->schedules[SchedNum_AlwaysOff])->tsVals.assign(Constant::iHoursInDay * s_glob->TimeStepsInHour, 0.0);
+        static_cast<ScheduleConstant *>(s_sched->schedules[SchedNum_AlwaysOn])->tsVals.assign(Constant::iHoursInDay * s_glob->TimeStepsInHour, 1.0);
 
         CurrentModuleObject = "ExternalInterface:Schedule";
         for (int Loop = 1; Loop <= NumExternalInterfaceSchedules; ++Loop) {
@@ -2458,7 +2459,8 @@ namespace Sched {
 
     Real64 ScheduleConstant::getHrTsVal([[maybe_unused]] EnergyPlusData &state, [[maybe_unused]] int hr, [[maybe_unused]] int ts) const
     {
-        return this->currentVal;
+        // cf #10962 - We can't use currentValue as it could be overwritten by the EMS Sensor
+        return this->tsVals.front();
     } // ScheduleConstant::getHrTsVal()
 
     Sched::Schedule *GetScheduleAlwaysOn(EnergyPlusData &state)

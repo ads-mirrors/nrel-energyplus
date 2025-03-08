@@ -6743,28 +6743,29 @@ void InitDXCoil(EnergyPlusData &state, int const DXCoilNum) // number of the cur
         if (state.dataAirLoop->AirLoopInputsFilled) {
             //     Set report variables for DX cooling coils that will have a crankcase heater (all DX coils not used in a HP AC unit)
             for (DXCoilNumTemp = 1; DXCoilNumTemp <= state.dataDXCoils->NumDXCoils; ++DXCoilNumTemp) {
-                if ((state.dataDXCoils->DXCoil(DXCoilNumTemp).DXCoilType_Num == HVAC::CoilDX_CoolingTwoStageWHumControl) ||
-                    (state.dataDXCoils->DXCoil(DXCoilNumTemp).DXCoilType_Num == HVAC::CoilDX_CoolingSingleSpeed) ||
-                    (state.dataDXCoils->DXCoil(DXCoilNumTemp).DXCoilType_Num == HVAC::CoilDX_MultiSpeedCooling)) {
-                    if (state.dataDXCoils->DXCoil(DXCoilNumTemp).ReportCoolingCoilCrankcasePower) {
+                auto &dXCoil_withCrankCase = state.dataDXCoils->DXCoil(DXCoilNumTemp);
+                if ((dXCoil_withCrankCase.DXCoilType_Num == HVAC::CoilDX_CoolingTwoStageWHumControl) ||
+                    (dXCoil_withCrankCase.DXCoilType_Num == HVAC::CoilDX_CoolingSingleSpeed) ||
+                    (dXCoil_withCrankCase.DXCoilType_Num == HVAC::CoilDX_MultiSpeedCooling)) {
+                    if (dXCoil_withCrankCase.ReportCoolingCoilCrankcasePower) {
                         SetupOutputVariable(state,
                                             "Cooling Coil Crankcase Heater Electricity Rate",
                                             Constant::Units::W,
-                                            state.dataDXCoils->DXCoil(DXCoilNumTemp).CrankcaseHeaterPower,
+                                            dXCoil_withCrankCase.CrankcaseHeaterPower,
                                             OutputProcessor::TimeStepType::System,
                                             OutputProcessor::StoreType::Average,
-                                            state.dataDXCoils->DXCoil(DXCoilNumTemp).Name);
+                                            dXCoil_withCrankCase.Name);
                         SetupOutputVariable(state,
                                             "Cooling Coil Crankcase Heater Electricity Energy",
                                             Constant::Units::J,
-                                            state.dataDXCoils->DXCoil(DXCoilNumTemp).CrankcaseHeaterConsumption,
+                                            dXCoil_withCrankCase.CrankcaseHeaterConsumption,
                                             OutputProcessor::TimeStepType::System,
                                             OutputProcessor::StoreType::Sum,
-                                            state.dataDXCoils->DXCoil(DXCoilNumTemp).Name,
+                                            dXCoil_withCrankCase.Name,
                                             Constant::eResource::Electricity,
                                             OutputProcessor::Group::HVAC,
                                             OutputProcessor::EndUseCat::Cooling);
-                        state.dataDXCoils->DXCoil(DXCoilNumTemp).ReportCoolingCoilCrankcasePower = false;
+                        dXCoil_withCrankCase.ReportCoolingCoilCrankcasePower = false;
                     }
                 }
             }
@@ -14722,9 +14723,8 @@ void CalcTwoSpeedDXCoilStandardRating(EnergyPlusData &state, int const DXCoilNum
         // determine footnote content
         countStaticInputs = 0;
         for (index = 1; index <= state.dataDXCoils->NumDXCoils; ++index) {
-
-            if (state.dataDXCoils->DXCoil(index).RateWithInternalStaticAndFanObject &&
-                state.dataDXCoils->DXCoil(index).DXCoilType_Num == HVAC::CoilDX_CoolingTwoSpeed) {
+            auto &dxCoil_temp = state.dataDXCoils->DXCoil(index);
+            if (dxCoil_temp.RateWithInternalStaticAndFanObject && dxCoil_temp.DXCoilType_Num == HVAC::CoilDX_CoolingTwoSpeed) {
                 ++countStaticInputs;
             }
         }
@@ -14861,31 +14861,29 @@ void GetFanIndexForTwoSpeedCoil(
     int BranchNum;
     int CompNum;
 
+    auto &thisDXCoil = state.dataDXCoils->DXCoil(CoolingCoilIndex);
+
     FoundBranch = 0;
     FoundAirSysNum = 0;
     SupplyFanIndex = 0;
     SupplyFanName = "n/a";
     for (AirSysNum = 1; AirSysNum <= NumPrimaryAirSys; ++AirSysNum) {
+        auto &primaryAirSystem = state.dataAirSystemsData->PrimaryAirSystems(AirSysNum);
+        for (BranchNum = 1; BranchNum <= primaryAirSystem.NumBranches; ++BranchNum) {
 
-        for (BranchNum = 1; BranchNum <= state.dataAirSystemsData->PrimaryAirSystems(AirSysNum).NumBranches; ++BranchNum) {
+            for (CompNum = 1; CompNum <= primaryAirSystem.Branch(BranchNum).TotalComponents; ++CompNum) {
 
-            for (CompNum = 1; CompNum <= state.dataAirSystemsData->PrimaryAirSystems(AirSysNum).Branch(BranchNum).TotalComponents; ++CompNum) {
+                if (primaryAirSystem.Branch(BranchNum).Comp(CompNum).CompType_Num == SimAirServingZones::CompType::DXSystem) {
 
-                if (state.dataAirSystemsData->PrimaryAirSystems(AirSysNum).Branch(BranchNum).Comp(CompNum).CompType_Num ==
-                    SimAirServingZones::CompType::DXSystem) {
-
-                    if (Util::SameString(state.dataAirSystemsData->PrimaryAirSystems(AirSysNum).Branch(BranchNum).Comp(CompNum).Name,
-                                         state.dataDXCoils->DXCoil(CoolingCoilIndex).CoilSystemName)) {
+                    if (Util::SameString(primaryAirSystem.Branch(BranchNum).Comp(CompNum).Name, thisDXCoil.CoilSystemName)) {
                         FoundBranch = BranchNum;
                         FoundAirSysNum = AirSysNum;
                         break;
                     }
                     // these are specified in SimAirServingZones and need to be moved to a Data* file. UnitarySystem=19
-                } else if (state.dataAirSystemsData->PrimaryAirSystems(AirSysNum).Branch(BranchNum).Comp(CompNum).CompType_Num ==
-                           SimAirServingZones::CompType::UnitarySystemModel) {
+                } else if (primaryAirSystem.Branch(BranchNum).Comp(CompNum).CompType_Num == SimAirServingZones::CompType::UnitarySystemModel) {
 
-                    if (Util::SameString(state.dataAirSystemsData->PrimaryAirSystems(AirSysNum).Branch(BranchNum).Comp(CompNum).Name,
-                                         state.dataDXCoils->DXCoil(CoolingCoilIndex).CoilSystemName)) {
+                    if (Util::SameString(primaryAirSystem.Branch(BranchNum).Comp(CompNum).Name, thisDXCoil.CoilSystemName)) {
                         FoundBranch = BranchNum;
                         FoundAirSysNum = AirSysNum;
                         break;
@@ -14894,26 +14892,23 @@ void GetFanIndexForTwoSpeedCoil(
             }
 
             if (FoundBranch > 0 && FoundAirSysNum > 0) {
-                for (CompNum = 1; CompNum <= state.dataAirSystemsData->PrimaryAirSystems(FoundAirSysNum).Branch(FoundBranch).TotalComponents;
-                     ++CompNum) {
-                    if (state.dataAirSystemsData->PrimaryAirSystems(FoundAirSysNum).Branch(FoundBranch).Comp(CompNum).CompType_Num ==
-                        SimAirServingZones::CompType::Fan_Simple_VAV) {
-                        SupplyFanName = state.dataAirSystemsData->PrimaryAirSystems(FoundAirSysNum).Branch(FoundBranch).Comp(CompNum).Name;
+                auto &primaryAirSystem_BranchFound = state.dataAirSystemsData->PrimaryAirSystems(FoundAirSysNum).Branch(FoundBranch);
+                for (CompNum = 1; CompNum <= primaryAirSystem_BranchFound.TotalComponents; ++CompNum) {
+                    if (primaryAirSystem_BranchFound.Comp(CompNum).CompType_Num == SimAirServingZones::CompType::Fan_Simple_VAV) {
+                        SupplyFanName = primaryAirSystem_BranchFound.Comp(CompNum).Name;
                         SupplyFanIndex = Fans::GetFanIndex(state, SupplyFanName);
                         supplyFanType = HVAC::FanType::VAV;
                         break;
                         // these are specified in SimAirServingZones and need to be moved to a Data* file. UnitarySystem=19
-                    } else if (state.dataAirSystemsData->PrimaryAirSystems(FoundAirSysNum).Branch(FoundBranch).Comp(CompNum).CompType_Num ==
-                               SimAirServingZones::CompType::Fan_System_Object) {
-                        SupplyFanName = state.dataAirSystemsData->PrimaryAirSystems(FoundAirSysNum).Branch(FoundBranch).Comp(CompNum).Name;
+                    } else if (primaryAirSystem_BranchFound.Comp(CompNum).CompType_Num == SimAirServingZones::CompType::Fan_System_Object) {
+                        SupplyFanName = primaryAirSystem_BranchFound.Comp(CompNum).Name;
                         SupplyFanIndex = Fans::GetFanIndex(state, SupplyFanName);
                         supplyFanType = HVAC::FanType::SystemModel;
 
-                    } else if (state.dataAirSystemsData->PrimaryAirSystems(FoundAirSysNum).Branch(FoundBranch).Comp(CompNum).CompType_Num ==
-                               SimAirServingZones::CompType::UnitarySystemModel) {
+                    } else if (primaryAirSystem_BranchFound.Comp(CompNum).CompType_Num == SimAirServingZones::CompType::UnitarySystemModel) {
                         // fan may not be specified in a unitary system object, keep looking
                         // Unitary System will "set" the fan index to the DX coil if contained within the HVAC system
-                        if (state.dataDXCoils->DXCoil(CoolingCoilIndex).SupplyFanIndex > 0) break;
+                        if (thisDXCoil.SupplyFanIndex > 0) break;
                     }
                 }
             }
@@ -15484,13 +15479,13 @@ int GetHPCoolingCoilIndex(EnergyPlusData &state,
 
     // Check and warn user is crankcase heater power or max OAT for crankcase heater differs in DX cooling and heating coils
     if (DXCoolingCoilIndex > 0) {
-        if (state.dataDXCoils->DXCoil(DXCoolingCoilIndex).CrankcaseHeaterCapacity != 0.0) {
-            if (state.dataDXCoils->DXCoil(DXCoolingCoilIndex).CrankcaseHeaterCapacity !=
-                    state.dataDXCoils->DXCoil(HeatingCoilIndex).CrankcaseHeaterCapacity ||
-                state.dataDXCoils->DXCoil(DXCoolingCoilIndex).MaxOATCrankcaseHeater !=
-                    state.dataDXCoils->DXCoil(HeatingCoilIndex).MaxOATCrankcaseHeater) {
+        auto &thisDXCoolingCoil = state.dataDXCoils->DXCoil(DXCoolingCoilIndex);
+        auto &thisDXHeatingCoil = state.dataDXCoils->DXCoil(HeatingCoilIndex);
+        if (thisDXCoolingCoil.CrankcaseHeaterCapacity != 0.0) {
+            if (thisDXCoolingCoil.CrankcaseHeaterCapacity != thisDXHeatingCoil.CrankcaseHeaterCapacity ||
+                thisDXCoolingCoil.MaxOATCrankcaseHeater != thisDXHeatingCoil.MaxOATCrankcaseHeater) {
                 ShowWarningError(state, "Crankcase heater capacity or max outdoor temp for crankcase heater operation specified in");
-                ShowContinueError(state, format("Coil:Cooling:DX:SingleSpeed = {}", state.dataDXCoils->DXCoil(DXCoolingCoilIndex).Name));
+                ShowContinueError(state, format("Coil:Cooling:DX:SingleSpeed = {}", thisDXCoolingCoil.Name));
                 ShowContinueError(state, format("is different than that specified in Coil:Heating:DX:SingleSpeed = {}.", HeatingCoilName));
                 ShowContinueError(state,
                                   format("Both of these DX coils are part of {}={}.",
@@ -17225,7 +17220,9 @@ void ControlVRFIUCoil(EnergyPlusData &state,
     RHsat = 0.98; // Saturated RH
     MaxSH = 15;
     MaxSC = 20;
-    Garate = state.dataDXCoils->DXCoil(CoilIndex).RatedAirMassFlowRate(1);
+
+    auto const &thisDXCoil = state.dataDXCoils->DXCoil(CoilIndex);
+    Garate = thisDXCoil.RatedAirMassFlowRate(1);
     FanSpdRatioMin = min(OAMassFlow / Garate, 1.0); // ensure that coil flow rate is higher than OA flow rate
 
     if (QCoil == 0) {
@@ -17246,11 +17243,11 @@ void ControlVRFIUCoil(EnergyPlusData &state,
         QCoilSenCoolingLoad = -QCoil;
 
         // Coefficients describing coil performance
-        SH = state.dataDXCoils->DXCoil(CoilIndex).SH;
-        C1Tevap = state.dataDXCoils->DXCoil(CoilIndex).C1Te;
-        C2Tevap = state.dataDXCoils->DXCoil(CoilIndex).C2Te;
-        C3Tevap = state.dataDXCoils->DXCoil(CoilIndex).C3Te;
-        BF = state.dataDXCoils->DXCoil(CoilIndex).RateBFVRFIUEvap;
+        SH = thisDXCoil.SH;
+        C1Tevap = thisDXCoil.C1Te;
+        C2Tevap = thisDXCoil.C2Te;
+        C3Tevap = thisDXCoil.C3Te;
+        BF = thisDXCoil.RateBFVRFIUEvap;
 
         // Coil sensible heat transfer_minimum value
         CalcVRFCoilSenCap(state, FlagCoolMode, CoilIndex, Tin, TeTc, SH, BF, QinSenPerFlowRate, Ts_1);
@@ -17343,11 +17340,11 @@ void ControlVRFIUCoil(EnergyPlusData &state,
         QCoilSenHeatingLoad = QCoil;
 
         // Coefficients describing coil performance
-        SC = state.dataDXCoils->DXCoil(CoilIndex).SC;
-        C1Tcond = state.dataDXCoils->DXCoil(CoilIndex).C1Tc;
-        C2Tcond = state.dataDXCoils->DXCoil(CoilIndex).C2Tc;
-        C3Tcond = state.dataDXCoils->DXCoil(CoilIndex).C3Tc;
-        BF = state.dataDXCoils->DXCoil(CoilIndex).RateBFVRFIUCond;
+        SC = thisDXCoil.SC;
+        C1Tcond = thisDXCoil.C1Tc;
+        C2Tcond = thisDXCoil.C2Tc;
+        C3Tcond = thisDXCoil.C3Tc;
+        BF = thisDXCoil.RateBFVRFIUCond;
 
         // Coil sensible heat transfer_minimum value
         CalcVRFCoilSenCap(state, FlagHeatMode, CoilIndex, Tin, TeTc, SC, BF, QinSenPerFlowRate, Ts_1);
@@ -17450,12 +17447,14 @@ void CalcVRFCoilSenCap(EnergyPlusData &state,
     Real64 T_coil_in;              // Air temperature at coil inlet (C)
     Real64 T_coil_out;             // Air temperature at coil outlet (C)
 
+    auto const &thisDXCoil = state.dataDXCoils->DXCoil(CoilNum);
+
     if (OperationMode == FlagCoolMode) {
         // Cooling: OperationMode 0
 
-        C1Tevap = state.dataDXCoils->DXCoil(CoilNum).C1Te;
-        C2Tevap = state.dataDXCoils->DXCoil(CoilNum).C2Te;
-        C3Tevap = state.dataDXCoils->DXCoil(CoilNum).C3Te;
+        C1Tevap = thisDXCoil.C1Te;
+        C2Tevap = thisDXCoil.C2Te;
+        C3Tevap = thisDXCoil.C3Te;
         SH = SHSC;
         T_coil_in = Tinlet;
 
@@ -17472,9 +17471,9 @@ void CalcVRFCoilSenCap(EnergyPlusData &state,
     } else if (OperationMode == FlagHeatMode) {
         // Heating: OperationMode 1
 
-        C1Tcond = state.dataDXCoils->DXCoil(CoilNum).C1Tc;
-        C2Tcond = state.dataDXCoils->DXCoil(CoilNum).C2Tc;
-        C3Tcond = state.dataDXCoils->DXCoil(CoilNum).C3Tc;
+        C1Tcond = thisDXCoil.C1Tc;
+        C2Tcond = thisDXCoil.C2Tc;
+        C3Tcond = thisDXCoil.C3Tc;
         SC = SHSC;
         T_coil_in = Tinlet;
 

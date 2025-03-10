@@ -2586,11 +2586,7 @@ namespace Sched {
 
     std::vector<Real64> const &ScheduleConstant::getDayVals(EnergyPlusData &state, [[maybe_unused]] int jDay, [[maybe_unused]] int dayofWeek)
     {
-        auto const &s_glob = state.dataGlobal;
-        if ((int)tsVals.size() != Constant::iHoursInDay * s_glob->TimeStepsInHour) {
-            this->tsVals.resize(Constant::iHoursInDay * s_glob->TimeStepsInHour);
-            std::fill(this->tsVals.begin(), this->tsVals.end(), this->currentVal);
-        }
+        assert((int)tsVals.size() == Constant::iHoursInDay * state.dataGlobal->TimeStepsInHour);
         return this->tsVals;
     } // ScheduleConstant::getDayVals()
 
@@ -3487,8 +3483,6 @@ namespace Sched {
             s_sched->DoScheduleReportingSetup = false;
         }
 
-        // TODO: Is this needed?
-        // Why is it doing exactly the same as UpdateScheduleValues?
         UpdateScheduleVals(state);
     }
 

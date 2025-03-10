@@ -375,6 +375,8 @@ namespace Sched {
 
     void ProcessScheduleInput(EnergyPlusData &state);
 
+    void InitConstantScheduleData(EnergyPlusData &state);
+
     void ReportScheduleDetails(EnergyPlusData &state, ReportLevel const LevelOfDetail);
 
     // Returns the CurrentScheduleValue
@@ -513,23 +515,15 @@ struct ScheduleManagerData : BaseGlobalStruct
     std::map<std::string, int> dayScheduleMap;
     std::map<std::string, int> weekScheduleMap;
 
-    Sched::ScheduleConstant SchedAlwaysOff;
-    Sched::ScheduleConstant SchedAlwaysOn;
-
     void init_constant_state(EnergyPlusData &state) override
     {
-        InitConstantScheduleData();
-        AddConstantSchedulesToContainers();
+        Sched::InitConstantScheduleData(state);
     }
 
     void init_state(EnergyPlusData &state) override
     {
         Sched::ProcessScheduleInput(state);
     }
-
-    void InitConstantScheduleData();
-
-    void AddConstantSchedulesToContainers();
 
     void clear_state() override
     {
@@ -545,14 +539,10 @@ struct ScheduleManagerData : BaseGlobalStruct
         scheduleTypes.clear(); // Allowed Schedule Types
         scheduleTypeMap.clear();
 
-        // Don't try to delete the constant schedules which were not malloced
-        for (int i = 2; i < (int)schedules.size(); ++i) {
+        for (int i = 0; i < (int)schedules.size(); ++i)
             delete schedules[i];
-        }
         schedules.clear(); // Schedule Storage
         scheduleMap.clear();
-        // Put back the ConstantSchedules
-        AddConstantSchedulesToContainers();
 
         for (int i = 0; i < (int)daySchedules.size(); ++i)
             delete daySchedules[i];

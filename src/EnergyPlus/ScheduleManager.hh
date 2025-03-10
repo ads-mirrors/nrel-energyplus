@@ -369,7 +369,7 @@ namespace Sched {
 
     // Functions
     ScheduleDetailed *AddScheduleDetailed(EnergyPlusData &state, std::string const &name);
-    ScheduleConstant *AddScheduleConstant(EnergyPlusData &state, std::string const &name);
+    ScheduleConstant *AddScheduleConstant(EnergyPlusData &state, std::string const &name, Real64 value = 0.0);
     DaySchedule *AddDaySchedule(EnergyPlusData &state, std::string const &name);
     WeekSchedule *AddWeekSchedule(EnergyPlusData &state, std::string const &name);
 

@@ -216,17 +216,22 @@ namespace Sched {
         }
     } // ScheduleDay::populateFromHrMinVals()
 
-    ScheduleConstant *AddScheduleConstant(EnergyPlusData &state, std::string const &name)
+    ScheduleConstant *AddScheduleConstant(EnergyPlusData &state, std::string const &name, Real64 value)
     {
         auto const &s_sched = state.dataSched;
+        auto const &s_glob = state.dataGlobal;
 
         auto *sched = new ScheduleConstant;
         sched->Name = name;
+        sched->type = SchedType::Constant;
         sched->Num = (int)s_sched->schedules.size();
+        sched->currentVal = value;
+        // When InitConstantScheduleData is called, TimeStepsInHour is 0, so we ensure 24
+        sched->tsVals.assign(Constant::iHoursInDay * max(1, s_glob->TimeStepsInHour), value);
+
         s_sched->schedules.push_back(sched);
         s_sched->scheduleMap.insert_or_assign(std::move(Util::makeUPPER(sched->Name)), sched->Num);
 
-        sched->type = SchedType::Constant;
         return sched;
     } // AddScheduleConstant()
 
@@ -280,14 +285,12 @@ namespace Sched {
     {
         // Create ScheduleAlwaysOn and ScheduleAlwaysOff
         // Create constant schedules
-        auto *schedOff = AddScheduleConstant(state, "Constant-0.0");
+        auto *schedOff = AddScheduleConstant(state, "Constant-0.0", 0.0);
         assert(schedOff->Num == SchedNum_AlwaysOff);
-        schedOff->currentVal = 0.0;
         schedOff->isUsed = true; // Suppress unused warnings
 
-        auto *schedOn = AddScheduleConstant(state, "Constant-1.0");
+        auto *schedOn = AddScheduleConstant(state, "Constant-1.0", 1.0);
         assert(schedOn->Num == SchedNum_AlwaysOn);
-        schedOn->currentVal = 1.0;
         schedOn->isUsed = true; // Suppress unused warnings
     }
 
@@ -1790,7 +1793,7 @@ namespace Sched {
                 continue;
             }
 
-            auto *sched = AddScheduleConstant(state, Alphas(1));
+            auto *sched = AddScheduleConstant(state, Alphas(1), Numbers(1));
 
             // Validate ScheduleType
             if (lAlphaBlanks(2)) { // No warning here for constant schedules
@@ -1800,9 +1803,6 @@ namespace Sched {
                 ShowWarningItemNotFound(state, eoh, cAlphaFields(2), Alphas(2));
                 ShowContinueError(state, "Schedule will not be validated.");
             }
-
-            sched->currentVal = Numbers(1);
-            sched->tsVals.assign(Constant::iHoursInDay * s_glob->TimeStepsInHour, sched->currentVal);
 
             if (s_glob->AnyEnergyManagementSystemInModel) { // setup constant schedules as actuators
                 SetupEMSActuator(state, "Schedule:Constant", sched->Name, "Schedule Value", "[ ]", sched->EMSActuatedOn, sched->EMSVal);

@@ -14015,10 +14015,14 @@ void VRFCondenserEquipment::VRFOU_CalcCompC(EnergyPlusData &state,
                                 state, max(RefTSat, Pipe_Te_assumed + Modifi_SHin), max(min(Pipe_Pe_assumed, RefPHigh), RefPLow), RoutineName);
 
                             if (Pipe_h_IU_out_i > Pipe_h_IU_in) {
+                                Real64 min_speed_capacity =
+                                    this->CoffEvapCap * this->RatedEvapCapacity * CurveValue(state, this->OUCoolingCAPFT(1), T_discharge, T_suction);
                                 Pipe_m_ref_i = (state.dataHVACVarRefFlow->TerminalUnitList(TUListNum).TotalCoolLoad(NumTU) <= 0.0)
                                                    ? 0.0
-                                                   : (state.dataHVACVarRefFlow->TerminalUnitList(TUListNum).TotalCoolLoad(NumTU) /
-                                                      (Pipe_h_IU_out_i - Pipe_h_IU_in));
+                                                   // refrigerant flow rate do not get smaller when the compressor needs to cycle.
+                                                   : max(min_speed_capacity,
+                                                         (state.dataHVACVarRefFlow->TerminalUnitList(TUListNum).TotalCoolLoad(NumTU)) /
+                                                             (Pipe_h_IU_out_i - Pipe_h_IU_in));
                                 Pipe_m_ref = Pipe_m_ref + Pipe_m_ref_i;
                                 Pipe_SH_merged = Pipe_SH_merged + Pipe_m_ref_i * Modifi_SHin;
                                 Pipe_h_IU_out = Pipe_h_IU_out + Pipe_m_ref_i * Pipe_h_IU_out_i;

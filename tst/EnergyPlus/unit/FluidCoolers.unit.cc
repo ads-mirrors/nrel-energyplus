@@ -365,7 +365,7 @@ TEST_F(EnergyPlusFixture, FluidCooler_SizeWhenPlantSizingIndexIsZero)
     state->dataPlnt->PlantLoop.allocate(FluidCoolerNum);
     state->dataPlnt->PlantLoop(1).FluidName = "WATER";
     state->dataPlnt->PlantLoop(1).glycol = Fluid::GetWater(*state);
-    state->dataFluidCoolers->SimpleFluidCooler.allocate(FluidCoolerNum);
+    // state->dataFluidCoolers->SimpleFluidCooler.allocate(FluidCoolerNum);
     state->dataFluidCoolers->SimpleFluidCooler(FluidCoolerNum).plantLoc.loopNum = 1;
     state->dataPlnt->PlantLoop(1).PlantSizNum = 0;
 

@@ -4195,7 +4195,7 @@ namespace Fluid {
 
         // Error handling
         if (error != GlycolError::Invalid && !state.dataGlobal->WarmupFlag) {
-            df->glycolErrorLimits[(int)error] = this->errors[(int)error].count;
+            df->glycolErrorLimits[(int)error] = ++this->errors[(int)error].count;
 
             if (error == GlycolError::DensityLow) {
                 if (df->glycolErrorLimits[(int)error] <= df->GlycolErrorLimitTest) {
@@ -4327,7 +4327,7 @@ namespace Fluid {
 
         // Error handling
         if (!state.dataGlobal->WarmupFlag && error != GlycolError::Invalid) {
-            df->glycolErrorLimits[(int)error] = this->errors[(int)error].count;
+            df->glycolErrorLimits[(int)error] = ++this->errors[(int)error].count;
 
             if (error == GlycolError::ConductivityLow) {
                 if (df->glycolErrorLimits[(int)error] <= df->GlycolErrorLimitTest) {

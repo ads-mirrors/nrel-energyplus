@@ -2174,8 +2174,12 @@ namespace Sched {
                     }
                 }
                 std::string_view constexpr SchDFmtdata0("DaySchedule,{},{},{},{}");
-                print(
-                    state.files.eio, SchDFmtdata0, daySched->Name, s_sched->scheduleTypes[daySched->schedTypeNum]->Name, NoAverageLinear, "Values:");
+                print(state.files.eio,
+                      SchDFmtdata0,
+                      daySched->Name,
+                      (daySched->schedTypeNum == SchedNum_Invalid) ? "" : s_sched->scheduleTypes[daySched->schedTypeNum]->Name,
+                      NoAverageLinear,
+                      "Values:");
 
                 switch (LevelOfDetail) {
                 case ReportLevel::Hourly: {
@@ -2216,7 +2220,11 @@ namespace Sched {
                 assert(schedDetailed != nullptr);
 
                 int NumF = 1;
-                print(state.files.eio, "Schedule,{},{}", schedDetailed->Name, s_sched->scheduleTypes[sched->schedTypeNum]->Name);
+                print(state.files.eio,
+                      "Schedule,{},{}",
+                      schedDetailed->Name,
+                      (sched->schedTypeNum == SchedNum_Invalid) ? "" : s_sched->scheduleTypes[sched->schedTypeNum]->Name);
+                
                 while (NumF <= 366) {
 
                     auto *weekSched = schedDetailed->weekScheds[NumF];

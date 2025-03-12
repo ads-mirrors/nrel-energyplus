@@ -216,17 +216,22 @@ namespace Sched {
         }
     } // ScheduleDay::populateFromHrMinVals()
 
-    ScheduleConstant *AddScheduleConstant(EnergyPlusData &state, std::string const &name)
+    ScheduleConstant *AddScheduleConstant(EnergyPlusData &state, std::string const &name, Real64 value)
     {
         auto const &s_sched = state.dataSched;
+        auto const &s_glob = state.dataGlobal;
 
         auto *sched = new ScheduleConstant;
         sched->Name = name;
+        sched->type = SchedType::Constant;
         sched->Num = (int)s_sched->schedules.size();
+        sched->currentVal = value;
+        // When InitConstantScheduleData is called, TimeStepsInHour is 0, so we ensure 24
+        sched->tsVals.assign(Constant::iHoursInDay * max(1, s_glob->TimeStepsInHour), value);
+
         s_sched->schedules.push_back(sched);
         s_sched->scheduleMap.insert_or_assign(std::move(Util::makeUPPER(sched->Name)), sched->Num);
 
-        sched->type = SchedType::Constant;
         return sched;
     } // AddScheduleConstant()
 
@@ -280,14 +285,12 @@ namespace Sched {
     {
         // Create ScheduleAlwaysOn and ScheduleAlwaysOff
         // Create constant schedules
-        auto *schedOff = AddScheduleConstant(state, "Constant-0.0");
+        auto *schedOff = AddScheduleConstant(state, "Constant-0.0", 0.0);
         assert(schedOff->Num == SchedNum_AlwaysOff);
-        schedOff->currentVal = 0.0;
         schedOff->isUsed = true; // Suppress unused warnings
 
-        auto *schedOn = AddScheduleConstant(state, "Constant-1.0");
+        auto *schedOn = AddScheduleConstant(state, "Constant-1.0", 1.0);
         assert(schedOn->Num == SchedNum_AlwaysOn);
-        schedOn->currentVal = 1.0;
         schedOn->isUsed = true; // Suppress unused warnings
     }
 
@@ -1790,7 +1793,7 @@ namespace Sched {
                 continue;
             }
 
-            auto *sched = AddScheduleConstant(state, Alphas(1));
+            auto *sched = AddScheduleConstant(state, Alphas(1), Numbers(1));
 
             // Validate ScheduleType
             if (lAlphaBlanks(2)) { // No warning here for constant schedules
@@ -1801,15 +1804,13 @@ namespace Sched {
                 ShowContinueError(state, "Schedule will not be validated.");
             }
 
-            sched->currentVal = Numbers(1);
-            sched->tsVals.resize(Constant::iHoursInDay * s_glob->TimeStepsInHour);
-            for (int i = 0; i < Constant::iHoursInDay * s_glob->TimeStepsInHour; ++i)
-                sched->tsVals[i] = sched->currentVal;
-
             if (s_glob->AnyEnergyManagementSystemInModel) { // setup constant schedules as actuators
                 SetupEMSActuator(state, "Schedule:Constant", sched->Name, "Schedule Value", "[ ]", sched->EMSActuatedOn, sched->EMSVal);
             }
         }
+        // When InitConstantScheduleData is called, TimeStepsInHour is 0, so we delay it here
+        static_cast<ScheduleConstant *>(s_sched->schedules[SchedNum_AlwaysOff])->tsVals.assign(Constant::iHoursInDay * s_glob->TimeStepsInHour, 0.0);
+        static_cast<ScheduleConstant *>(s_sched->schedules[SchedNum_AlwaysOn])->tsVals.assign(Constant::iHoursInDay * s_glob->TimeStepsInHour, 1.0);
 
         CurrentModuleObject = "ExternalInterface:Schedule";
         for (int Loop = 1; Loop <= NumExternalInterfaceSchedules; ++Loop) {
@@ -2466,7 +2467,8 @@ namespace Sched {
 
     Real64 ScheduleConstant::getHrTsVal([[maybe_unused]] EnergyPlusData &state, [[maybe_unused]] int hr, [[maybe_unused]] int ts) const
     {
-        return this->currentVal;
+        // cf #10962 - We can't use currentValue as it could be overwritten by the EMS Sensor
+        return this->tsVals.front();
     } // ScheduleConstant::getHrTsVal()
 
     Sched::Schedule *GetScheduleAlwaysOn(EnergyPlusData &state)
@@ -2592,11 +2594,7 @@ namespace Sched {
 
     std::vector<Real64> const &ScheduleConstant::getDayVals(EnergyPlusData &state, [[maybe_unused]] int jDay, [[maybe_unused]] int dayofWeek)
     {
-        auto const &s_glob = state.dataGlobal;
-        if ((int)tsVals.size() != Constant::iHoursInDay * s_glob->TimeStepsInHour) {
-            this->tsVals.resize(Constant::iHoursInDay * s_glob->TimeStepsInHour);
-            std::fill(this->tsVals.begin(), this->tsVals.end(), this->currentVal);
-        }
+        assert((int)tsVals.size() == Constant::iHoursInDay * state.dataGlobal->TimeStepsInHour);
         return this->tsVals;
     } // ScheduleConstant::getDayVals()
 
@@ -3493,8 +3491,6 @@ namespace Sched {
             s_sched->DoScheduleReportingSetup = false;
         }
 
-        // TODO: Is this needed?
-        // Why is it doing exactly the same as UpdateScheduleValues?
         UpdateScheduleVals(state);
     }
 

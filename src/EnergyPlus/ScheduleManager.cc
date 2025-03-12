@@ -2225,7 +2225,7 @@ namespace Sched {
                       "Schedule,{},{}",
                       schedDetailed->Name,
                       (sched->schedTypeNum == SchedNum_Invalid) ? "" : s_sched->scheduleTypes[sched->schedTypeNum]->Name);
-                
+
                 while (NumF <= 366) {
 
                     auto *weekSched = schedDetailed->weekScheds[NumF];

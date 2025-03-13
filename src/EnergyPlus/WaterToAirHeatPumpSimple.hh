@@ -77,9 +77,6 @@ namespace WaterToAirHeatPumpSimple {
     {
         // Members
         std::string Name;                                                                     // Name of the Water to Air Heat pump
-        //static SimpleWatertoAirHPConditions *factory(EnergyPlusData &state, int object_type_of_num, std::string const &objectName);
-        //static int factory(EnergyPlusData &state, std::string const &objectName);
-        //static void GetSimpleWatertoAirHPInput(EnergyPlusData &state);
         WatertoAirHP WAHPType = WatertoAirHP::Invalid;                                        // Type of WatertoAirHP ie. Heating or Cooling
         DataPlant::PlantEquipmentType WAHPPlantType = DataPlant::PlantEquipmentType::Invalid; // type of component in plant
         bool SimFlag = false;                                                                 // Heat Pump Simulation Flag
@@ -177,14 +174,9 @@ namespace WaterToAirHeatPumpSimple {
     // MODULE SUBROUTINES:
     //*************************************************************************
 
-    void GetSimpleWatertoAirHPCoolingCoilInput(EnergyPlusData &state, bool &errorsFound);
-    void GetSimpleWatertoAirHPHeatingCoilInput(EnergyPlusData &state, bool &errorsFound);
-
     void GetSimpleWatertoAirHPInput(EnergyPlusData &state);
 
-    static void allocateSimpleWatertoAirHP(EnergyPlusData &state);
-
-    static int factory(EnergyPlusData &state, std::string const &objectName);
+    //static int factory(EnergyPlusData &state, std::string const &objectName);
 
     // Beginning Initialization Section of the Module
     //******************************************************************************

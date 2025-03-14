@@ -13965,10 +13965,18 @@ void VRFCondenserEquipment::VRFOU_CalcCompC(EnergyPlusData &state,
                     ShowContinueErrorTimeStamp(state, "");
                     ShowContinueError(state, format("  Iteration limit [{}] exceeded in calculating OU evaporating temperature", MaxIter));
                 } else if (SolFla == -2) {
-                    // demand < capacity at both endpoints of the Te range, assuming f(x) is roughly monotonic than this is the low load case
-                    assert(f(T_suction) < 0);
-                    // TeTol is added to prevent the final updated Te to go out of bounds
-                    SmallLoadTe = 6 + TeTol; // MinOutdoorUnitTe; //SmallLoadTe( Te'_new ) is constant during iterations
+                    if (f(T_suction) < 0) {
+                        // demand < capacity at both endpoints of the Te range, assuming f(x) is roughly monotonic than this is the low load case
+                        // TeTol is added to prevent the final updated Te to go out of bounds
+                        SmallLoadTe = 6 + TeTol; // MinOutdoorUnitTe; //SmallLoadTe( Te'_new ) is constant during iterations
+                    } else {
+                        // demand > capacity at both endpoints of the Te range, take the end point x where f(x) is closer to zero
+                        if (f(MinOutdoorUnitTe) > f(T_suction)) { // f(T_suction > 0, not equal as SolFla will not be -2
+                            SmallLoadTe = T_suction;
+                        } else {
+                            SmallLoadTe = MinOutdoorUnitTe;
+                        }
+                    }
                 }
 
                 // Get an updated Te corresponding to the updated Te'

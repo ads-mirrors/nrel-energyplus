@@ -1874,8 +1874,8 @@ void ZoneEquipmentSplitterMixer::size(EnergyPlusData &state)
                                DataZoneEquipment::spaceEquipSizingBasisNamesUC[(int)this->spaceSizingBasis],
                                BranchNodeConnections::ConnectionObjectTypeNames[(int)this->spaceEquipType],
                                this->Name));
-        ShowFatalError(
-            state, "Set \"Do Space Heat Balance for Sizing\" to Yes in ZoneAirHeatBalanceAlgorithm or choose a different Space Fraction Method.");
+        ShowFatalError(state,
+                       "Set \"Do Space Heat Balance for Sizing\" to Yes in ZoneAirHeatBalanceAlgorithm or choose a different Space Fraction Method.");
         return;
     }
 

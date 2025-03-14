@@ -94,9 +94,12 @@ namespace Sched {
     int GetScheduleTypeNum(EnergyPlusData &state, std::string const &name)
     {
         auto const &s_sched = state.dataSched;
-        for (int i = 0; i < (int)s_sched->scheduleTypes.size(); ++i)
-            if (s_sched->scheduleTypes[i]->Name == name) return i;
-        return -1;
+        for (int i = 0; i < (int)s_sched->scheduleTypes.size(); ++i) {
+            if (s_sched->scheduleTypes[i]->Name == name) {
+                return i;
+            }
+        }
+        return SchedNum_Invalid;
     }
 
     Real64 ScheduleBase::getMinVal(EnergyPlusData &state)
@@ -1097,7 +1100,7 @@ namespace Sched {
             if (lAlphaBlanks(2)) {
                 ShowWarningEmptyField(state, eoh, cAlphaFields(2));
                 ShowContinueError(state, "Schedule will not be validated.");
-            } else if ((sched->schedTypeNum = GetScheduleTypeNum(state, Alphas(2))) == 0) {
+            } else if ((sched->schedTypeNum = GetScheduleTypeNum(state, Alphas(2))) == SchedNum_Invalid) {
                 ShowWarningItemNotFound(state, eoh, cAlphaFields(2), Alphas(2));
                 ShowContinueError(state, "Schedule will not be validated.");
             }

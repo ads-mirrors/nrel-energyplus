@@ -253,6 +253,7 @@ namespace WaterToAirHeatPumpSimple {
 
                 auto &simpleWAHP = state.dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(HPNum);
                 simpleWAHP.Name = Util::makeUPPER(thisObjectName);
+                GlobalNames::VerifyUniqueCoilName(state, CurrentModuleObject, simpleWAHP.Name, ErrorsFound, format("{} Name", CurrentModuleObject));
                 simpleWAHP.WAHPType = WatertoAirHP::Cooling;
                 simpleWAHP.WAHPPlantType = DataPlant::PlantEquipmentType::CoilWAHPCoolingEquationFit;
                 auto &aVdot = fields.at("rated_air_flow_rate");

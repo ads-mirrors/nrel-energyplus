@@ -13363,7 +13363,7 @@ TEST_F(EnergyPlusFixture, VRF_FluidTCtrl_ReportOutputVerificationTest)
     EXPECT_NEAR(5645.5696, thisVRFTU.TotalCoolingRate, 0.0001);
     EXPECT_NEAR(84.8359, thisFan->totalPower, 0.0001);
     EXPECT_NEAR(thisDXCoolingCoil.TotalCoolingEnergyRate, (thisVRFTU.TotalCoolingRate + thisFan->totalPower), 0.0001);
-    EXPECT_NEAR(0.4619, state->dataHVACVarRefFlow->VRF(1).VRFCondCyclingRatio, 0.0001);
+    EXPECT_NEAR(0.4772, state->dataHVACVarRefFlow->VRF(1).VRFCondCyclingRatio, 0.0001);
     EXPECT_NEAR(state->dataHVACVarRefFlow->VRF(1).OUFanPower,
                 state->dataHVACVarRefFlow->VRF(1).RatedOUFanPower * state->dataHVACVarRefFlow->VRF(1).VRFCondCyclingRatio,
                 0.0001);

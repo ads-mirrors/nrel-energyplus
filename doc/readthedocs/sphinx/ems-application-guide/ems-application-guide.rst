@@ -2052,6 +2052,18 @@ Cooling Capacity” (in W), and “Autosized Rated Sensible Heat Ratio” (in
 W/W).  These are only useful from the calling point named
 AfterComponentInputReadIn.
 
+DX Heating Coils
+~~~~~~~~~~~~~~~~
+
+Actuators are available for overriding the input power and heating capacity
+frost adjustment factors of the Coil:Heating:DX objects.  Actuators called
+“Coil:Heating:DX:SingleSpeed”, “Coil:Heating:DX:MultiSpeed”,
+“Coil:Heating:DX:VariableSpeed” are available with control types “Frost
+Heating Capacity Multiplier” and “Frost Heating Input Power Multiplier”. 
+These are only valid while being provided together. Providing only one of
+the multiplier will be ignored in the simulations using the default E+ frost
+formation adjustments.
+
 DX Thermal Storage Coils
 ~~~~~~~~~~~~~~~~~~~~~~~~
 

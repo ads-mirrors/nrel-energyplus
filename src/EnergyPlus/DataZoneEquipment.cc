@@ -352,6 +352,14 @@ void GetZoneEquipmentData(EnergyPlusData &state)
     } // end loop over controlled zones
     for (int controlledSpaceLoop = 1; controlledSpaceLoop <= numControlledSpaces; ++controlledSpaceLoop) {
         CurrentModuleObject = "SpaceHVAC:EquipmentConnections";
+        if (!state.dataHeatBal->doSpaceHeatBalanceSimulation) {
+            ShowWarningError(
+                state,
+                format("{} requires \"Do Space Heat Balance for Simulation = Yes\" in ZoneAirHeatBalanceAlgorithm. {} objects will be ignored.",
+                       CurrentModuleObject,
+                       CurrentModuleObject));
+            break;
+        }
         state.dataInputProcessing->inputProcessor->getObjectItem(state,
                                                                  CurrentModuleObject,
                                                                  controlledSpaceLoop,
@@ -498,113 +506,140 @@ void GetZoneEquipmentData(EnergyPlusData &state)
     CurrentModuleObject = "SpaceHVAC:ZoneEquipmentSplitter";
     auto instances = ip->epJSON.find(CurrentModuleObject);
     if (instances != ip->epJSON.end()) {
-        auto const &objectSchemaProps = ip->getObjectSchemaProps(state, CurrentModuleObject);
-        auto &instancesValue = instances.value();
-        int numZoneEqSplitters = instancesValue.size();
-        state.dataZoneEquip->zoneEquipSplitter.resize(numZoneEqSplitters);
-        int zeqSplitterNum = -1;
-        for (auto instance = instancesValue.begin(); instance != instancesValue.end(); ++instance) {
-            ++zeqSplitterNum;
-            auto const &objectFields = instance.value();
-            auto &thisZeqSplitter = state.dataZoneEquip->zoneEquipSplitter[zeqSplitterNum];
-            thisZeqSplitter.Name = Util::makeUPPER(instance.key());
-            thisZeqSplitter.spaceEquipType = DataLoopNode::ConnectionObjectType::SpaceHVACZoneEquipmentSplitter;
-            ip->markObjectAsUsed(CurrentModuleObject, instance.key());
+        if (!state.dataHeatBal->doSpaceHeatBalanceSimulation) {
+            ShowWarningError(
+                state,
+                format("{} requires \"Do Space Heat Balance for Simulation = Yes\" in ZoneAirHeatBalanceAlgorithm. {} objects will be ignored.",
+                       CurrentModuleObject,
+                       CurrentModuleObject));
+        } else {
+            auto const &objectSchemaProps = ip->getObjectSchemaProps(state, CurrentModuleObject);
+            auto &instancesValue = instances.value();
+            int numZoneEqSplitters = instancesValue.size();
+            state.dataZoneEquip->zoneEquipSplitter.resize(numZoneEqSplitters);
+            int zeqSplitterNum = -1;
+            for (auto instance = instancesValue.begin(); instance != instancesValue.end(); ++instance) {
+                ++zeqSplitterNum;
+                auto const &objectFields = instance.value();
+                auto &thisZeqSplitter = state.dataZoneEquip->zoneEquipSplitter[zeqSplitterNum];
+                thisZeqSplitter.Name = Util::makeUPPER(instance.key());
+                thisZeqSplitter.spaceEquipType = DataLoopNode::ConnectionObjectType::SpaceHVACZoneEquipmentSplitter;
+                ip->markObjectAsUsed(CurrentModuleObject, instance.key());
 
-            std::string zoneName = ip->getAlphaFieldValue(objectFields, objectSchemaProps, "zone_name");
-            int zoneNum = Util::FindItemInList(zoneName, state.dataHeatBal->Zone);
-            if (zoneNum == 0) {
-                ShowSevereError(state, format("{}{}=\"{}\"", RoutineName, CurrentModuleObject, thisZeqSplitter.Name));
-                ShowContinueError(state, format("..Zone Name={} not found, remaining items for this object not processed.", zoneName));
-                state.dataZoneEquip->GetZoneEquipmentDataErrorsFound = true;
-                continue;
-            }
-            if (!state.dataHeatBal->Zone(zoneNum).IsControlled) {
-                ShowSevereError(state, format("{}{}=\"{}\"", RoutineName, CurrentModuleObject, thisZeqSplitter.Name));
-                ShowContinueError(
-                    state,
-                    format("..Zone Name={} is not a controlled zone. A ZoneHVAC:EquipmentConnections object is required for this zone.", zoneName));
-                state.dataZoneEquip->GetZoneEquipmentDataErrorsFound = true;
-                continue;
-            }
+                std::string zoneName = ip->getAlphaFieldValue(objectFields, objectSchemaProps, "zone_name");
+                int zoneNum = Util::FindItemInList(zoneName, state.dataHeatBal->Zone);
+                if (zoneNum == 0) {
+                    ShowSevereError(state, format("{}{}=\"{}\"", RoutineName, CurrentModuleObject, thisZeqSplitter.Name));
+                    ShowContinueError(state, format("..Zone Name={} not found, remaining items for this object not processed.", zoneName));
+                    state.dataZoneEquip->GetZoneEquipmentDataErrorsFound = true;
+                    continue;
+                }
+                if (!state.dataHeatBal->Zone(zoneNum).IsControlled) {
+                    ShowSevereError(state, format("{}{}=\"{}\"", RoutineName, CurrentModuleObject, thisZeqSplitter.Name));
+                    ShowContinueError(
+                        state,
+                        format("..Zone Name={} is not a controlled zone. A ZoneHVAC:EquipmentConnections object is required for this zone.",
+                               zoneName));
+                    state.dataZoneEquip->GetZoneEquipmentDataErrorsFound = true;
+                    continue;
+                }
 
-            processZoneEquipSplitterInput(state, CurrentModuleObject, zeqSplitterNum, zoneNum, objectSchemaProps, objectFields, thisZeqSplitter);
+                processZoneEquipSplitterInput(state, CurrentModuleObject, zeqSplitterNum, zoneNum, objectSchemaProps, objectFields, thisZeqSplitter);
+            } // end loop over zone equipment splitters
         }
-    } // end loop over zone equipment splitters
+    }
 
     CurrentModuleObject = "SpaceHVAC:ZoneEquipmentMixer";
     instances = ip->epJSON.find(CurrentModuleObject);
     if (instances != ip->epJSON.end()) {
-        auto const &objectSchemaProps = ip->getObjectSchemaProps(state, CurrentModuleObject);
-        auto &instancesValue = instances.value();
-        int numZoneEqMixers = instancesValue.size();
-        state.dataZoneEquip->zoneEquipMixer.resize(numZoneEqMixers);
-        int zeqMixerNum = -1;
-        for (auto instance = instancesValue.begin(); instance != instancesValue.end(); ++instance) {
-            ++zeqMixerNum;
-            auto const &objectFields = instance.value();
-            auto &thisZeqMixer = state.dataZoneEquip->zoneEquipMixer[zeqMixerNum];
-            thisZeqMixer.Name = Util::makeUPPER(instance.key());
-            thisZeqMixer.spaceEquipType = DataLoopNode::ConnectionObjectType::SpaceHVACZoneEquipmentMixer;
-            ip->markObjectAsUsed(CurrentModuleObject, instance.key());
+        if (!state.dataHeatBal->doSpaceHeatBalanceSimulation) {
+            ShowWarningError(
+                state,
+                format("{} requires \"Do Space Heat Balance for Simulation = Yes\" in ZoneAirHeatBalanceAlgorithm. {} objects will be ignored.",
+                       CurrentModuleObject,
+                       CurrentModuleObject));
+        } else {
+            auto const &objectSchemaProps = ip->getObjectSchemaProps(state, CurrentModuleObject);
+            auto &instancesValue = instances.value();
+            int numZoneEqMixers = instancesValue.size();
+            state.dataZoneEquip->zoneEquipMixer.resize(numZoneEqMixers);
+            int zeqMixerNum = -1;
+            for (auto instance = instancesValue.begin(); instance != instancesValue.end(); ++instance) {
+                ++zeqMixerNum;
+                auto const &objectFields = instance.value();
+                auto &thisZeqMixer = state.dataZoneEquip->zoneEquipMixer[zeqMixerNum];
+                thisZeqMixer.Name = Util::makeUPPER(instance.key());
+                thisZeqMixer.spaceEquipType = DataLoopNode::ConnectionObjectType::SpaceHVACZoneEquipmentMixer;
+                ip->markObjectAsUsed(CurrentModuleObject, instance.key());
 
-            std::string zoneName = ip->getAlphaFieldValue(objectFields, objectSchemaProps, "zone_name");
-            int zoneNum = Util::FindItemInList(zoneName, state.dataHeatBal->Zone);
-            if (zoneNum == 0) {
-                ShowSevereError(state, format("{}{}=\"{}\"", RoutineName, CurrentModuleObject, thisZeqMixer.Name));
-                ShowContinueError(state, format("..Zone Name={} not found, remaining items for this object not processed.", zoneName));
-                state.dataZoneEquip->GetZoneEquipmentDataErrorsFound = true;
-                continue;
-            }
-            if (!state.dataHeatBal->Zone(zoneNum).IsControlled) {
-                ShowSevereError(state, format("{}{}=\"{}\"", RoutineName, CurrentModuleObject, thisZeqMixer.Name));
-                ShowContinueError(
-                    state,
-                    format("..Zone Name={} is not a controlled zone. A ZoneHVAC:EquipmentConnections object is required for this zone.", zoneName));
-                state.dataZoneEquip->GetZoneEquipmentDataErrorsFound = true;
-                continue;
-            }
+                std::string zoneName = ip->getAlphaFieldValue(objectFields, objectSchemaProps, "zone_name");
+                int zoneNum = Util::FindItemInList(zoneName, state.dataHeatBal->Zone);
+                if (zoneNum == 0) {
+                    ShowSevereError(state, format("{}{}=\"{}\"", RoutineName, CurrentModuleObject, thisZeqMixer.Name));
+                    ShowContinueError(state, format("..Zone Name={} not found, remaining items for this object not processed.", zoneName));
+                    state.dataZoneEquip->GetZoneEquipmentDataErrorsFound = true;
+                    continue;
+                }
+                if (!state.dataHeatBal->Zone(zoneNum).IsControlled) {
+                    ShowSevereError(state, format("{}{}=\"{}\"", RoutineName, CurrentModuleObject, thisZeqMixer.Name));
+                    ShowContinueError(
+                        state,
+                        format("..Zone Name={} is not a controlled zone. A ZoneHVAC:EquipmentConnections object is required for this zone.",
+                               zoneName));
+                    state.dataZoneEquip->GetZoneEquipmentDataErrorsFound = true;
+                    continue;
+                }
 
-            processZoneEquipMixerInput(state, CurrentModuleObject, zoneNum, objectSchemaProps, objectFields, thisZeqMixer);
+                processZoneEquipMixerInput(state, CurrentModuleObject, zoneNum, objectSchemaProps, objectFields, thisZeqMixer);
+            } // end loop over zone equipment mixers
         }
-    } // end loop over zone equipment mixers
+    }
 
     CurrentModuleObject = "SpaceHVAC:ZoneReturnMixer";
     instances = ip->epJSON.find(CurrentModuleObject);
     if (instances != ip->epJSON.end()) {
-        auto const &objectSchemaProps = ip->getObjectSchemaProps(state, CurrentModuleObject);
-        auto &instancesValue = instances.value();
-        int numZoneRetMixers = instancesValue.size();
-        state.dataZoneEquip->zoneReturnMixer.resize(numZoneRetMixers);
-        int zeqRetNum = -1;
-        for (auto instance = instancesValue.begin(); instance != instancesValue.end(); ++instance) {
-            ++zeqRetNum;
-            auto const &objectFields = instance.value();
-            auto &thisZretMixer = state.dataZoneEquip->zoneReturnMixer[zeqRetNum];
-            thisZretMixer.Name = Util::makeUPPER(instance.key());
-            thisZretMixer.spaceEquipType = DataLoopNode::ConnectionObjectType::SpaceHVACZoneReturnMixer;
-            ip->markObjectAsUsed(CurrentModuleObject, instance.key());
+        if (!state.dataHeatBal->doSpaceHeatBalanceSimulation) {
+            ShowWarningError(
+                state,
+                format("{} requires \"Do Space Heat Balance for Simulation = Yes\" in ZoneAirHeatBalanceAlgorithm. {} objects will be ignored.",
+                       CurrentModuleObject,
+                       CurrentModuleObject));
+        } else {
+            auto const &objectSchemaProps = ip->getObjectSchemaProps(state, CurrentModuleObject);
+            auto &instancesValue = instances.value();
+            int numZoneRetMixers = instancesValue.size();
+            state.dataZoneEquip->zoneReturnMixer.resize(numZoneRetMixers);
+            int zeqRetNum = -1;
+            for (auto instance = instancesValue.begin(); instance != instancesValue.end(); ++instance) {
+                ++zeqRetNum;
+                auto const &objectFields = instance.value();
+                auto &thisZretMixer = state.dataZoneEquip->zoneReturnMixer[zeqRetNum];
+                thisZretMixer.Name = Util::makeUPPER(instance.key());
+                thisZretMixer.spaceEquipType = DataLoopNode::ConnectionObjectType::SpaceHVACZoneReturnMixer;
+                ip->markObjectAsUsed(CurrentModuleObject, instance.key());
 
-            std::string zoneName = ip->getAlphaFieldValue(objectFields, objectSchemaProps, "zone_name");
-            int zoneNum = Util::FindItemInList(zoneName, state.dataHeatBal->Zone);
-            if (zoneNum == 0) {
-                ShowSevereError(state, format("{}{}=\"{}\"", RoutineName, CurrentModuleObject, thisZretMixer.Name));
-                ShowContinueError(state, format("..Zone Name={} not found, remaining items for this object not processed.", zoneName));
-                state.dataZoneEquip->GetZoneEquipmentDataErrorsFound = true;
-                continue;
-            }
-            if (!state.dataHeatBal->Zone(zoneNum).IsControlled) {
-                ShowSevereError(state, format("{}{}=\"{}\"", RoutineName, CurrentModuleObject, thisZretMixer.Name));
-                ShowContinueError(
-                    state,
-                    format("..Zone Name={} is not a controlled zone. A ZoneHVAC:EquipmentConnections object is required for this zone.", zoneName));
-                state.dataZoneEquip->GetZoneEquipmentDataErrorsFound = true;
-                continue;
-            }
+                std::string zoneName = ip->getAlphaFieldValue(objectFields, objectSchemaProps, "zone_name");
+                int zoneNum = Util::FindItemInList(zoneName, state.dataHeatBal->Zone);
+                if (zoneNum == 0) {
+                    ShowSevereError(state, format("{}{}=\"{}\"", RoutineName, CurrentModuleObject, thisZretMixer.Name));
+                    ShowContinueError(state, format("..Zone Name={} not found, remaining items for this object not processed.", zoneName));
+                    state.dataZoneEquip->GetZoneEquipmentDataErrorsFound = true;
+                    continue;
+                }
+                if (!state.dataHeatBal->Zone(zoneNum).IsControlled) {
+                    ShowSevereError(state, format("{}{}=\"{}\"", RoutineName, CurrentModuleObject, thisZretMixer.Name));
+                    ShowContinueError(
+                        state,
+                        format("..Zone Name={} is not a controlled zone. A ZoneHVAC:EquipmentConnections object is required for this zone.",
+                               zoneName));
+                    state.dataZoneEquip->GetZoneEquipmentDataErrorsFound = true;
+                    continue;
+                }
 
-            processZoneReturnMixerInput(state, CurrentModuleObject, zoneNum, objectSchemaProps, objectFields, zeqRetNum);
+                processZoneReturnMixerInput(state, CurrentModuleObject, zoneNum, objectSchemaProps, objectFields, zeqRetNum);
+            } // end loop over zone return mixers
         }
-    } // end loop over zone return mixers
+    }
 
     CurrentModuleObject = "AirLoopHVAC:SupplyPath";
     for (int PathNum = 1; PathNum <= state.dataZoneEquip->NumSupplyAirPaths; ++PathNum) {
@@ -1831,6 +1866,18 @@ void ZoneEquipmentSplitterMixer::size(EnergyPlusData &state)
     bool anyAutoSize =
         std::any_of(spaces.begin(), spaces.end(), [](ZoneEquipSplitterMixerSpace const &s) { return s.fraction == DataSizing::AutoSize; });
     if (!anyAutoSize) return;
+
+    if (!state.dataHeatBal->doSpaceHeatBalanceSizing && (this->spaceSizingBasis == DataZoneEquipment::SpaceEquipSizingBasis::DesignCoolingLoad ||
+                                                         (this->spaceSizingBasis == DataZoneEquipment::SpaceEquipSizingBasis::DesignHeatingLoad))) {
+        ShowSevereError(state,
+                        format("ZoneEquipmentSplitterMixer::size: {} is unknown for {}={}. Unable to autosize Space Fractions.",
+                               DataZoneEquipment::spaceEquipSizingBasisNamesUC[(int)this->spaceSizingBasis],
+                               BranchNodeConnections::ConnectionObjectTypeNames[(int)this->spaceEquipType],
+                               this->Name));
+        ShowFatalError(state,
+                       "Set \"Do Space Heat Balance for Sizing\" to Yes in ZoneAirHeatBalanceAlgorithm or choose a different Space Fraction Method.");
+        return;
+    }
 
     // Calculate total of space fraction basis value across all spaces for this splitter or mixer
     // including spaces which are not autosized here.

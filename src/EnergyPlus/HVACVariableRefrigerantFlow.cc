@@ -13985,7 +13985,7 @@ void VRFCondenserEquipment::VRFOU_CalcCompC(EnergyPlusData &state,
                     if (f(T_suction) < 0) {
                         // demand < capacity at both endpoints of the Te range, assuming f(x) is roughly monotonic than this is the low load case
                         // TeTol is added to prevent the final updated Te to go out of bounds
-                        SmallLoadTe = 6 + TeTol; // MinOutdoorUnitTe; //SmallLoadTe( Te'_new ) is constant during iterations
+                        SmallLoadTe = MinOutdoorUnitTe + TeTol; // MinOutdoorUnitTe; //SmallLoadTe( Te'_new ) is constant during iterations
                     } else {
                         // demand > capacity at both endpoints of the Te range, take the end point x where f(x) is closer to zero
                         if (f(MinOutdoorUnitTe) > f(T_suction)) { // f(T_suction > 0, not equal as SolFla will not be -2

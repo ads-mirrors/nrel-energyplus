@@ -286,7 +286,8 @@ sys.argv.append("energyplus")
 from eplaunch.tk_runner import main_gui
 main_gui()
 )python";
-            // std::cout << "Trying to execute this python snippet: " << std::endl << cmd << std::endl;
+
+            std::cout << "Trying to execute this python snippet: " << std::endl << cmd << std::endl;
             engine.exec(cmd);
             exit(0);
         });

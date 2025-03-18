@@ -1277,8 +1277,8 @@ namespace StandardRatings {
             }
             // Calculate the standard ratings for multispeed DX cooling coil
             std::map<std::string, Real64> StandardRatingsResult = MultiSpeedDXCoolingCoilStandardRatings(state,
-                                                                                                         DXCoilName,
                                                                                                          DXCoilType,
+                                                                                                         DXCoilName,
                                                                                                          CapFTempCurveIndex,
                                                                                                          CapFFlowCurveIndex,
                                                                                                          EIRFTempCurveIndex,

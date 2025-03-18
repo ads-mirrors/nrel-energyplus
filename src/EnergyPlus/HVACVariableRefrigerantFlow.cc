@@ -13965,10 +13965,27 @@ void VRFCondenserEquipment::VRFOU_CalcCompC(EnergyPlusData &state,
                     ShowContinueErrorTimeStamp(state, "");
                     ShowContinueError(state, format("  Iteration limit [{}] exceeded in calculating OU evaporating temperature", MaxIter));
                 } else if (SolFla == -2) {
+                    this->LowLoadTeError++;
+                    if (LowLoadTeError < 5) {
+                        ShowWarningMessage(state,
+                                           format("{}: no Te solution was found for {} f({})={} and f({})={} are the same sign",
+                                                  RoutineName,
+                                                  this->Name,
+                                                  MinOutdoorUnitTe,
+                                                  f(MinOutdoorUnitTe),
+                                                  T_suction,
+                                                  f(T_suction)));
+                        ShowContinueErrorTimeStamp(state, "");
+                    }
+                    ShowRecurringWarningErrorAtEnd(state,
+                                                   "Low load calculation Te solution not found as end points have the same sign",
+                                                   this->LowLoadTeErrorIndex,
+                                                   SolFla,
+                                                   SolFla);
                     if (f(T_suction) < 0) {
                         // demand < capacity at both endpoints of the Te range, assuming f(x) is roughly monotonic than this is the low load case
                         // TeTol is added to prevent the final updated Te to go out of bounds
-                        SmallLoadTe = 6 + TeTol; // MinOutdoorUnitTe; //SmallLoadTe( Te'_new ) is constant during iterations
+                        SmallLoadTe = MinOutdoorUnitTe + TeTol; // MinOutdoorUnitTe; //SmallLoadTe( Te'_new ) is constant during iterations
                     } else {
                         // demand > capacity at both endpoints of the Te range, take the end point x where f(x) is closer to zero
                         if (f(MinOutdoorUnitTe) > f(T_suction)) { // f(T_suction > 0, not equal as SolFla will not be -2

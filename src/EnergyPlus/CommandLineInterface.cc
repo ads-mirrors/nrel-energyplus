@@ -262,19 +262,26 @@ sys.argv.append("energyplus")
             std::replace(sPathToPythonPackages.begin(), sPathToPythonPackages.end(), '\\', '/');
             cmd += fmt::format("sys.path.insert(0, \"{}\")\n", sPathToPythonPackages);
 
-            std::string tclConfigDir = "";
+            std::string tclConfigDir;
+            std::string tkConfigDir;
             for (auto &p : std::filesystem::directory_iterator(pathToPythonPackages)) {
                 if (p.is_directory()) {
                     std::string dirName = p.path().filename().string();
                     if (dirName.find("tcl", 0) == 0 && dirName.find(".", 0) > 0) {
                         tclConfigDir = dirName;
+                    }
+                    if (dirName.find("tk", 0) == 0 && dirName.find(".", 0) > 0) {
+                        tkConfigDir = dirName;
+                    }
+                    if (!tclConfigDir.empty() && !tkConfigDir.empty()) {
                         break;
                     }
                 }
             }
             cmd += "from os import environ\n";
             cmd += fmt::format("environ[\'TCL_LIBRARY\'] = \"{}/{}\"\n", sPathToPythonPackages, tclConfigDir);
-
+            cmd += fmt::format("environ[\'TK_LIBRARY\'] = \"{}/{}\"\n", sPathToPythonPackages, tkConfigDir);
+            cmd += fmt::format("environ[\'LD_LIBRARY_PATH\'] = \"{}/{}\"\n", sPathToPythonPackages, "lib-dynload");
             cmd += R"python(
 from eplaunch.tk_runner import main_gui
 main_gui()
@@ -307,18 +314,25 @@ sys.argv.append("energyplus")
             cmd += fmt::format("sys.path.insert(0, \"{}\")\n", sPathToPythonPackages);
 
             std::string tclConfigDir;
+            std::string tkConfigDir;
             for (auto &p : std::filesystem::directory_iterator(pathToPythonPackages)) {
                 if (p.is_directory()) {
                     std::string dirName = p.path().filename().string();
                     if (dirName.find("tcl", 0) == 0 && dirName.find(".", 0) > 0) {
                         tclConfigDir = dirName;
+                    }
+                    if (dirName.find("tk", 0) == 0 && dirName.find(".", 0) > 0) {
+                        tkConfigDir = dirName;
+                    }
+                    if (!tclConfigDir.empty() && !tkConfigDir.empty()) {
                         break;
                     }
                 }
             }
             cmd += "from os import environ\n";
             cmd += fmt::format("environ[\'TCL_LIBRARY\'] = \"{}/{}\"\n", sPathToPythonPackages, tclConfigDir);
-
+            cmd += fmt::format("environ[\'TK_LIBRARY\'] = \"{}/{}\"\n", sPathToPythonPackages, tkConfigDir);
+            cmd += fmt::format("environ[\'LD_LIBRARY_PATH\'] = \"{}/{}\"\n", sPathToPythonPackages, "lib-dynload");
             cmd += R"python(
 from energyplus_transition.runner import main_gui
 main_gui(True)

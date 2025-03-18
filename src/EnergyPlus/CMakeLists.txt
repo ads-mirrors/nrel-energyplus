@@ -981,7 +981,7 @@ if(LINK_WITH_PYTHON)
       COMMAND ${CMAKE_COMMAND} -E env --unset=PIP_REQUIRE_VIRTUALENV
       ${Python_EXECUTABLE} ${PROJECT_SOURCE_DIR}/cmake/PythonInstallCLITools.py "$<TARGET_FILE_DIR:energyplusapi>/python_lib"
       COMMAND ${Python_EXECUTABLE} "${PROJECT_SOURCE_DIR}/cmake/PythonFixUpTclTk.py" "$<TARGET_FILE_DIR:energyplusapi>/python_lib"
-      COMMAND_ECHO STDOUT
+
     )
   endif()
 endif()

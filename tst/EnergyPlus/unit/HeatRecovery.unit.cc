@@ -130,6 +130,7 @@ TEST_F(EnergyPlusFixture, HeatRecovery_HRTest)
 
     state->dataHeatRecovery->ExchCond(ExchNum).Name = "Test Heat Recovery 1";
     state->dataHeatRecovery->ExchCond(ExchNum).type = HVAC::HXType::AirToAir_SensAndLatent;
+    state->dataHeatRecovery->ExchCond(ExchNum).ExchConfig = HeatRecovery::HXConfigurationType::Rotary;
     state->dataHeatRecovery->ExchCond(ExchNum).SupInTemp = 24.0;
     state->dataHeatRecovery->ExchCond(ExchNum).SecInTemp = 15.0;
     state->dataHeatRecovery->ExchCond(ExchNum).SupInHumRat = 0.01;
@@ -3965,6 +3966,7 @@ TEST_F(EnergyPlusFixture, SizeHeatRecovery)
     // initialize sizing required variables
     state->dataHeatRecovery->ExchCond.allocate(ExchNum);
     state->dataHeatRecovery->ExchCond(ExchNum).type = HVAC::HXType::Desiccant_Balanced;
+    state->dataHeatRecovery->ExchCond(ExchNum).ExchConfig = HeatRecovery::HXConfigurationType::Rotary;
     state->dataHeatRecovery->ExchCond(ExchNum).NomSupAirVolFlow = AutoSize;
     state->dataHeatRecovery->ExchCond(ExchNum).PerfDataIndex = BalDesDehumPerfDataIndex;
 

@@ -1647,7 +1647,6 @@ namespace HeatRecovery {
         }
 
         // std 229 new heat recovery table variables
-        OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchAirHRInputObjName, this->Name, this->Name);
         assert((this->type != HVAC::HXType::Invalid) && (this->ExchConfig != HXConfigurationType::Invalid));
         OutputReportPredefined::PreDefTableEntry(
             state, state.dataOutRptPredefined->pdchAirHRInputObjType, this->Name, HVAC::hxTypeNames[(int)this->type]);

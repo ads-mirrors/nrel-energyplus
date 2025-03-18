@@ -572,7 +572,6 @@ namespace OutputReportPredefined {
         // Std 229 Air Heat Recovery
         s->pdstAirHR = newPreDefSubTable(state, s->pdrEquip, "Air Heat Recovery");
 
-        s->pdchAirHRInputObjName = newPreDefColumn(state, s->pdstAirHR, "Name");
         s->pdchAirHRInputObjType = newPreDefColumn(state, s->pdstAirHR, "Input object type");
         s->pdchAirHRPlateOrRotary = newPreDefColumn(state, s->pdstAirHR, "Plate/Rotary");
         s->pdchAirHRSenEffAt100PerHeatAirFlow = newPreDefColumn(state, s->pdstAirHR, "Sensible Effectiveness at 100% Heating Air Flow");

@@ -1652,8 +1652,8 @@ namespace HeatRecovery {
             state, state.dataOutRptPredefined->pdchAirHRInputObjType, this->Name, HVAC::hxTypeNames[(int)this->type]);
         OutputReportPredefined::PreDefTableEntry(
             state, state.dataOutRptPredefined->pdchAirHRPlateOrRotary, this->Name, hxConfigurationNames[(int)this->ExchConfig]);
+        OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchAirHRSupplyAirflow, this->Name, this->NomSupAirVolFlow);
         OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchAirHRExhaustAirflow, this->Name, this->NomSecAirVolFlow);
-        OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchAirHROutdoorAirflow, this->Name, this->NomSupAirVolFlow);
 
         if (this->type == HVAC::HXType::AirToAir_SensAndLatent) {
             OutputReportPredefined::PreDefTableEntry(

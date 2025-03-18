@@ -473,8 +473,8 @@ struct OutputReportPredefinedData : BaseGlobalStruct
     int pdchAirHRSenEffAt100PerCoolAirFlow = 0; // Sensible Effectiveness at 100% Cooling Air Flow
     int pdchAirHRLatEffAt100PerHeatAirFlow = 0; // Latent Effectiveness at 100% Heating Air Flow
     int pdchAirHRLatEffAt100PerCoolAirFlow = 0; // Latent Effectiveness at 100% Cooling Air Flow
-    int pdchAirHRExhaustAirflow = 0;            // Exhaust airflow
-    int pdchAirHROutdoorAirflow = 0;            // Outdoor airflow
+    int pdchAirHRExhaustAirflow = 0;            // Exhaust (Secondary) airflow
+    int pdchAirHRSupplyAirflow = 0;             // Supply (Outdoor) airflow
 
     // Envelope Report
     int pdrEnvelope = 0;

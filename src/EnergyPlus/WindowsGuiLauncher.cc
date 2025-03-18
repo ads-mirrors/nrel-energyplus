@@ -1,7 +1,8 @@
-#include <windows.h>
 #include <string>
+#include <windows.h>
 
-int wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow) {
+int wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow)
+{
     // Get the path of the current executable
     wchar_t path[MAX_PATH];
     if (GetModuleFileNameW(NULL, path, MAX_PATH) == 0) {
@@ -30,13 +31,12 @@ int wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int
     args += lpCmdLine;
 
     // Launch the target application
-    HINSTANCE hInstance2 = ShellExecuteW(
-        NULL,         // Parent window
-        L"open",      // Operation
-        targetApp.c_str(), // Executable path
-        args.c_str(),              // Arguments
-        directory.c_str(), // Working directory
-        SW_HIDE       // Hide console
+    HINSTANCE hInstance2 = ShellExecuteW(NULL,              // Parent window
+                                         L"open",           // Operation
+                                         targetApp.c_str(), // Executable path
+                                         args.c_str(),      // Arguments
+                                         directory.c_str(), // Working directory
+                                         SW_HIDE            // Hide console
     );
 
     // Error handling

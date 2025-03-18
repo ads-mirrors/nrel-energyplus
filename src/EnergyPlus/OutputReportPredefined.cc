@@ -579,8 +579,8 @@ namespace OutputReportPredefined {
         s->pdchAirHRSenEffAt100PerCoolAirFlow = newPreDefColumn(state, s->pdstAirHR, "Sensible Effectiveness at 100% Cooling Air Flow");
         s->pdchAirHRLatEffAt100PerHeatAirFlow = newPreDefColumn(state, s->pdstAirHR, "Latent Effectiveness at 100% Heating Air Flow");
         s->pdchAirHRLatEffAt100PerCoolAirFlow = newPreDefColumn(state, s->pdstAirHR, "Latent Effectiveness at 100% Cooling Air Flow");
-        s->pdchAirHRExhaustAirflow = newPreDefColumn(state, s->pdstAirHR, "Exhaust Airflow [kg/s]");
-        s->pdchAirHROutdoorAirflow = newPreDefColumn(state, s->pdstAirHR, "Outdoor Airflow [kg/s]");
+        s->pdchAirHRExhaustAirflow = newPreDefColumn(state, s->pdstAirHR, "Exhaust Airflow [m3/s]");
+        s->pdchAirHROutdoorAirflow = newPreDefColumn(state, s->pdstAirHR, "Outdoor Airflow [m3/s]");
 
         // Sizing Report
 

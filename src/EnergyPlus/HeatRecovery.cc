@@ -109,11 +109,9 @@ namespace HeatRecovery {
     constexpr std::array<std::string_view, static_cast<int>(FrostControlOption::Num)> frostControlNamesUC = {
         "NONE", "EXHAUSTONLY", "EXHAUSTAIRRECIRCULATION", "MINIMUMEXHAUSTTEMPERATURE"};
 
-    constexpr std::array<std::string_view, static_cast<int>(HXConfigurationType::Num)> hxConfigurationNames = {
-        "Plate", "Rotary"};
+    constexpr std::array<std::string_view, static_cast<int>(HXConfigurationType::Num)> hxConfigurationNames = {"Plate", "Rotary"};
 
-    constexpr std::array<std::string_view, static_cast<int>(HXConfigurationType::Num)> hxConfigurationNamesUC = {
-        "PLATE", "ROTARY"};
+    constexpr std::array<std::string_view, static_cast<int>(HXConfigurationType::Num)> hxConfigurationNamesUC = {"PLATE", "ROTARY"};
 
     void SimHeatRecovery(EnergyPlusData &state,
                          std::string_view CompName,                          // name of the heat exchanger unit
@@ -1578,7 +1576,13 @@ namespace HeatRecovery {
         this->NomSupAirVolFlow = sizerSystemAirFlow.size(state, TempSize, errorsFound);
         state.dataSize->DataConstantUsedForSizing = 0.0;
         state.dataSize->DataFractionUsedForSizing = 0.0;
-        if (this->type == HVAC::HXType::AirToAir_FlatPlate) {
+        switch (this->type) {
+        case HVAC::HXType::AirToAir_SensAndLatent: {
+            this->NomSecAirVolFlow = this->NomSupAirVolFlow;
+            state.dataSize->HRFlowSizingFlag = false;
+            break;
+        }
+        case HVAC::HXType::AirToAir_FlatPlate: {
             PrintFlag = true;
             FieldNum = 5;
             CompName = this->Name;
@@ -1602,35 +1606,44 @@ namespace HeatRecovery {
             this->NomSecAirVolFlow = sizerSystemAirFlow2.size(state, TempSize, errorsFound2);
             state.dataSize->DataConstantUsedForSizing = 0.0;
             state.dataSize->DataFractionUsedForSizing = 0.0;
-        }
-        state.dataSize->HRFlowSizingFlag = false;
-        if (this->type == HVAC::HXType::Desiccant_Balanced) {
+            state.dataSize->HRFlowSizingFlag = false;
 
+            // Calculate nominal effectiveness
+
+            break;
+        }
+        case HVAC::HXType::Desiccant_Balanced: {
+            state.dataSize->HRFlowSizingFlag = false;
             int const BalDesDehumPerfIndex = this->PerfDataIndex; // index of dehum performance data1 object
+            auto &thisBDDPerf = state.dataHeatRecovery->BalDesDehumPerfData(BalDesDehumPerfIndex);
 
             FieldNum = 1;
             PrintFlag = true;
-            CompName = state.dataHeatRecovery->BalDesDehumPerfData(BalDesDehumPerfIndex).Name;
-            CompType = state.dataHeatRecovery->BalDesDehumPerfData(BalDesDehumPerfIndex).PerfType;
-            SizingString = state.dataHeatRecovery->BalDesDehumPerfData(BalDesDehumPerfIndex).NumericFieldNames(FieldNum) + " [m3/s]";
-            TempSize = state.dataHeatRecovery->BalDesDehumPerfData(BalDesDehumPerfIndex).NomSupAirVolFlow;
+            CompName = thisBDDPerf.Name;
+            CompType = thisBDDPerf.PerfType;
+            SizingString = thisBDDPerf.NumericFieldNames(FieldNum) + " [m3/s]";
+            TempSize = thisBDDPerf.NomSupAirVolFlow;
             bool errorsFound2 = false;
             SystemAirFlowSizer sizerSystemAirFlow3;
             sizerSystemAirFlow3.overrideSizingString(SizingString);
             // sizerSystemAirFlow3.setHVACSizingIndexData(FanCoil(FanCoilNum).HVACSizingIndex);
             sizerSystemAirFlow3.initializeWithinEP(state, CompType, CompName, PrintFlag, RoutineName);
-            state.dataHeatRecovery->BalDesDehumPerfData(BalDesDehumPerfIndex).NomSupAirVolFlow =
-                sizerSystemAirFlow3.size(state, TempSize, errorsFound2);
+            thisBDDPerf.NomSupAirVolFlow = sizerSystemAirFlow3.size(state, TempSize, errorsFound2);
+            this->NomSupAirVolFlow = thisBDDPerf.NomSupAirVolFlow;
+            this->NomSecAirVolFlow = thisBDDPerf.NomSupAirVolFlow;
 
-            state.dataSize->DataAirFlowUsedForSizing = state.dataHeatRecovery->BalDesDehumPerfData(BalDesDehumPerfIndex).NomSupAirVolFlow;
-            TempSize = state.dataHeatRecovery->BalDesDehumPerfData(BalDesDehumPerfIndex).NomProcAirFaceVel;
+            state.dataSize->DataAirFlowUsedForSizing = thisBDDPerf.NomSupAirVolFlow;
+            TempSize = thisBDDPerf.NomProcAirFaceVel;
             bool errorsFound3 = false;
             DesiccantDehumidifierBFPerfDataFaceVelocitySizer sizerDesDehumBFFaceVel;
             sizerDesDehumBFFaceVel.initializeWithinEP(state, CompType, CompName, PrintFlag, RoutineName);
-            state.dataHeatRecovery->BalDesDehumPerfData(BalDesDehumPerfIndex).NomProcAirFaceVel =
-                sizerDesDehumBFFaceVel.size(state, TempSize, errorsFound3);
+            thisBDDPerf.NomProcAirFaceVel = sizerDesDehumBFFaceVel.size(state, TempSize, errorsFound3);
 
             state.dataSize->DataAirFlowUsedForSizing = 0.0;
+            break;
+        }
+        default:
+            assert(0);
         }
 
         // std 229 new heat recovery table variables
@@ -1639,18 +1652,24 @@ namespace HeatRecovery {
             state, state.dataOutRptPredefined->pdchAirHRInputObjType, this->Name, HVAC::hxTypeNames[(int)this->type]);
         OutputReportPredefined::PreDefTableEntry(
             state, state.dataOutRptPredefined->pdchAirHRPlateOrRotary, this->Name, hxConfigurationNames[(int)this->ExchConfig]);
-
-        OutputReportPredefined::PreDefTableEntry(
-            state, state.dataOutRptPredefined->pdchAirHRSenEffAt100PerHeatAirFlow, this->Name, this->HeatEffectSensible100);
-        OutputReportPredefined::PreDefTableEntry(
-            state, state.dataOutRptPredefined->pdchAirHRSenEffAt100PerCoolAirFlow, this->Name, this->CoolEffectSensible100);
-        OutputReportPredefined::PreDefTableEntry(
-            state, state.dataOutRptPredefined->pdchAirHRLatEffAt100PerHeatAirFlow, this->Name, this->HeatEffectLatent100);
-        OutputReportPredefined::PreDefTableEntry(
-            state, state.dataOutRptPredefined->pdchAirHRLatEffAt100PerCoolAirFlow, this->Name, this->CoolEffectLatent100);
-
         OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchAirHRExhaustAirflow, this->Name, this->NomSecAirVolFlow);
         OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchAirHROutdoorAirflow, this->Name, this->NomSupAirVolFlow);
+
+        if (this->type == HVAC::HXType::AirToAir_SensAndLatent) {
+            OutputReportPredefined::PreDefTableEntry(
+                state, state.dataOutRptPredefined->pdchAirHRSenEffAt100PerHeatAirFlow, this->Name, this->HeatEffectSensible100);
+            OutputReportPredefined::PreDefTableEntry(
+                state, state.dataOutRptPredefined->pdchAirHRSenEffAt100PerCoolAirFlow, this->Name, this->CoolEffectSensible100);
+            OutputReportPredefined::PreDefTableEntry(
+                state, state.dataOutRptPredefined->pdchAirHRLatEffAt100PerHeatAirFlow, this->Name, this->HeatEffectLatent100);
+            OutputReportPredefined::PreDefTableEntry(
+                state, state.dataOutRptPredefined->pdchAirHRLatEffAt100PerCoolAirFlow, this->Name, this->CoolEffectLatent100);
+        } else {
+            OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchAirHRSenEffAt100PerHeatAirFlow, this->Name, "N/A");
+            OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchAirHRSenEffAt100PerCoolAirFlow, this->Name, "N/A");
+            OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchAirHRLatEffAt100PerHeatAirFlow, this->Name, "N/A");
+            OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchAirHRLatEffAt100PerCoolAirFlow, this->Name, "N/A");
+        }
     }
 
     void

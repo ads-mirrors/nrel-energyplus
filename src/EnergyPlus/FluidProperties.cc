@@ -865,7 +865,7 @@ namespace Fluid {
                     ShowSevereError(
                         state, format("{}: {} name={}, lists must have data in ascending order", routineName, CurrentModuleObject, tempArray.Name));
                     ShowContinueError(state,
-                                      format("First out of order occurrence at Temperature #({}) {{{:.R3}}} >= Temp({}) {{{:.R3}}}",
+                                      format("First out of order occurrence at Temperature #({}) {{{:.3R}}} >= Temp({}) {{{:.3R}}}",
                                              TempLoop - 1,
                                              tempArray.Temps(TempLoop - 1),
                                              TempLoop,

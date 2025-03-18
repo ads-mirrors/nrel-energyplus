@@ -591,6 +591,7 @@ TEST_F(EnergyPlusFixture, VariableSpeedCoils_RHControl)
     UnitarySystems::UnitarySys::factory(*state, HVAC::UnitarySysType::Unitary_AnyCoilType, compName, zoneEquipment, 0);
     UnitarySystems::UnitarySys *thisSys = &state->dataUnitarySystems->unitarySys[0];
     // call again to get the rest of the input when sysNum > -1
+    // I'm sorry, why is this necessary? There is literally nothing between the factory call and this call.
     UnitarySystems::UnitarySys::getUnitarySystemInput(*state, compName, false, 0);
 
     EXPECT_EQ(thisSys->Name, "DX COOLING COIL SYSTEM");

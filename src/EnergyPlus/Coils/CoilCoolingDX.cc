@@ -70,6 +70,7 @@
 #include <EnergyPlus/ReportCoilSelection.hh>
 #include <EnergyPlus/ScheduleManager.hh>
 #include <EnergyPlus/SimAirServingZones.hh>
+#include <EnergyPlus/StandardRatings.hh>
 #include <EnergyPlus/WaterManager.hh>
 
 using namespace EnergyPlus;
@@ -94,7 +95,7 @@ int CoilCoolingDX::factory(EnergyPlus::EnergyPlusData &state, std::string const 
 
 void CoilCoolingDX::getInput(EnergyPlusData &state)
 {
-  int numCoolingCoilDXs = state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, HVAC::coilTypeNames[(int)state.dataCoilCoolingDX->coilType]);
+    int numCoolingCoilDXs = state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, HVAC::coilTypeNames[(int)state.dataCoilCoolingDX->coilType]);
     if (numCoolingCoilDXs <= 0) {
         ShowFatalError(state, R"(No "Coil:Cooling:DX" objects in input file)");
     }
@@ -141,7 +142,6 @@ void CoilCoolingDX::instantiateFromInputSpec(EnergyPlusData &state, const CoilCo
     // initialize reclaim heat parameters
     this->reclaimHeat.Name = this->name;
     this->reclaimHeat.SourceType = HVAC::coilTypeNames[(int)state.dataCoilCoolingDX->coilType];
-
     this->performance = CoilCoolingDXCurveFitPerformance(state, input_data.performance_object_name);
 
     if (!this->performance.original_input_specs.base_operating_mode_name.empty() &&
@@ -657,12 +657,11 @@ void CoilCoolingDX::size(EnergyPlusData &state)
 
 void CoilCoolingDX::simulate(EnergyPlusData &state,
                              HVAC::CoilMode coilMode,
-                             Real64 PLR,
-                             int speedNum,
-                             Real64 speedRatio,
+                             int const speedNum,
+                             Real64 const speedRatio,
                              HVAC::FanOp const fanOp,
                              bool const singleMode,
-                             Real64 LoadSHR)
+                             Real64 const LoadSHR)
 {
     if (this->myOneTimeInitFlag) {
         this->oneTimeInit(state);
@@ -692,7 +691,7 @@ void CoilCoolingDX::simulate(EnergyPlusData &state,
     this->performance.OperatingMode = 0;
     this->performance.ModeRatio = 0.0;
     this->performance.simulate(
-        state, evapInletNode, evapOutletNode, coilMode, PLR, speedNum, speedRatio, fanOp, condInletNode, condOutletNode, singleMode, LoadSHR);
+        state, evapInletNode, evapOutletNode, coilMode, speedNum, speedRatio, fanOp, condInletNode, condOutletNode, singleMode, LoadSHR);
     CoilCoolingDX::passThroughNodeData(evapInletNode, evapOutletNode);
 
     // calculate energy conversion factor
@@ -769,7 +768,7 @@ void CoilCoolingDX::simulate(EnergyPlusData &state,
     this->wasteHeatEnergyRate = this->performance.wasteHeatRate;
     this->wasteHeatEnergy = this->performance.wasteHeatRate * reportingConstant;
 
-    this->partLoadRatioReport = PLR;
+    this->partLoadRatioReport = speedNum > 1 ? 1.0 : speedRatio;
     this->speedNumReport = speedNum;
     this->speedRatioReport = speedRatio;
 
@@ -803,22 +802,22 @@ void CoilCoolingDX::simulate(EnergyPlusData &state,
             Real64 ratedSensCap(0.0);
             ratedSensCap = this->performance.normalMode.ratedGrossTotalCap * this->normModeNomSpeed().grossRatedSHR;
             ReportCoilSelection::setCoilFinalSizes(state,
-                                                                                  this->name,
-                                                                                  state.dataCoilCoolingDX->coilType,
-                                                                                  this->performance.normalMode.ratedGrossTotalCap,
-                                                                                  ratedSensCap,
-                                                                                  this->performance.normalMode.ratedEvapAirFlowRate,
-                                                                                  -999.0);
+                                                   this->name,
+                                                   state.dataCoilCoolingDX->coilType,
+                                                   this->performance.normalMode.ratedGrossTotalCap,
+                                                   ratedSensCap,
+                                                   this->performance.normalMode.ratedEvapAirFlowRate,
+                                                   -999.0);
 
             // report out fan information
             // should work for all fan types
             if (this->supplyFanIndex > 0) {
                 ReportCoilSelection::setCoilSupplyFanInfo(state,
-                                                                                         this->name,
-                                                                                         state.dataCoilCoolingDX->coilType,
-                                                                                         state.dataFans->fans(this->supplyFanIndex)->Name,
-                                                                                         state.dataFans->fans(this->supplyFanIndex)->type,
-                                                                                         this->supplyFanIndex);
+                                                          this->name,
+                                                          state.dataCoilCoolingDX->coilType,
+                                                          state.dataFans->fans(this->supplyFanIndex)->Name,
+                                                          state.dataFans->fans(this->supplyFanIndex)->type,
+                                                          this->supplyFanIndex);
             }
 
             // report out coil rating conditions, just create a set of dummy nodes and run calculate on them
@@ -826,7 +825,6 @@ void CoilCoolingDX::simulate(EnergyPlusData &state,
             DataLoopNode::NodeData dummyEvapOutlet;
             DataLoopNode::NodeData dummyCondInlet;
             DataLoopNode::NodeData dummyCondOutlet;
-            Real64 dummyPLR = 1.0;
             int dummySpeedNum = 1;
             Real64 dummySpeedRatio = 1.0;
             HVAC::FanOp dummyFanOp = HVAC::FanOp::Cycling;
@@ -868,7 +866,6 @@ void CoilCoolingDX::simulate(EnergyPlusData &state,
                                        dummyEvapInlet,
                                        dummyEvapOutlet,
                                        HVAC::CoilMode::Normal,
-                                       dummyPLR,
                                        dummySpeedNum,
                                        dummySpeedRatio,
                                        dummyFanOp,
@@ -901,21 +898,21 @@ void CoilCoolingDX::simulate(EnergyPlusData &state,
             Real64 const ratedOutletWetBulb = Psychrometrics::PsyTwbFnTdbWPb(
                 state, dummyEvapOutlet.Temp, dummyEvapOutlet.HumRat, DataEnvironment::StdPressureSeaLevel, "Coil:Cooling:DX::simulate");
             ReportCoilSelection::setRatedCoilConditions(state,
-                                                                                       this->name,
-                                                                                       state.dataCoilCoolingDX->coilType,
-                                                                                       coolingRate,
-                                                                                       sensCoolingRate,
-                                                                                       ratedInletEvapMassFlowRate,
-                                                                                       RatedInletAirTemp,
-                                                                                       dummyInletAirHumRat,
-                                                                                       RatedInletWetBulbTemp,
-                                                                                       dummyEvapOutlet.Temp,
-                                                                                       dummyEvapOutlet.HumRat,
-                                                                                       ratedOutletWetBulb,
-                                                                                       RatedOutdoorAirTemp,
-                                                                                       ratedOutdoorAirWetBulb,
-                                                                                       this->normModeNomSpeed().RatedCBF,
-                                                                                       -999.0);
+                                                        this->name,
+                                                        state.dataCoilCoolingDX->coilType,
+                                                        coolingRate,
+                                                        sensCoolingRate,
+                                                        ratedInletEvapMassFlowRate,
+                                                        RatedInletAirTemp,
+                                                        dummyInletAirHumRat,
+                                                        RatedInletWetBulbTemp,
+                                                        dummyEvapOutlet.Temp,
+                                                        dummyEvapOutlet.HumRat,
+                                                        ratedOutletWetBulb,
+                                                        RatedOutdoorAirTemp,
+                                                        ratedOutdoorAirWetBulb,
+                                                        this->normModeNomSpeed().RatedCBF,
+                                                        -999.0);
 
             this->reportCoilFinalSizes = false;
         }
@@ -1046,19 +1043,7 @@ void CoilCoolingDX::reportAllStandardRatings(EnergyPlusData &state)
             } else {
                 OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchDXCoolCoilIEERIP, coil.name, "N/A");
             }
-            OutputReportPredefined::addFootNoteSubTable(
-                state,
-                state.dataOutRptPredefined->pdstDXCoolCoil,
-                "ANSI/AHRI ratings account for supply air fan heat and electric power. <br/>"
-                "1 - EnergyPlus object type. <br/>"
-                "2 - Capacity less than 65K Btu/h (19050 W) - calculated as per AHRI Standard 210/240-2017. <br/>"
-                "&emsp;&nbsp;Capacity of 65K Btu/h (19050 W) to less than 135K Btu/h (39565 W) - calculated as per AHRI Standard 340/360-2007. "
-                "<br/>"
-                "&emsp;&nbsp;Capacity from 135K (39565 W) to 250K Btu/hr (73268 W) - calculated as per AHRI Standard 365-2009 - Ratings not yet "
-                "supported in EnergyPlus. <br/>"
-                "3 - SEER (User) is calculated using user-input PLF curve and cooling coefficient of degradation. <br/>"
-                "&emsp;&nbsp;SEER (Standard) is calculated using the default PLF curve and cooling coefficient of degradation"
-                "from the appropriate AHRI standard.");
+            OutputReportPredefined::addFootNoteSubTable(state, state.dataOutRptPredefined->pdstDXCoolCoil, StandardRatings::AHRI2017FOOTNOTE);
 
             // AHRI 2023 Standard SEER2 Calculations
             if (state.dataHVACGlobal->StandardRatingsMyCoolOneTimeFlag2) {
@@ -1124,20 +1109,7 @@ void CoilCoolingDX::reportAllStandardRatings(EnergyPlusData &state)
             } else {
                 OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchDXCoolCoilIEERIP_2023, coil.name, "N/A");
             }
-            OutputReportPredefined::addFootNoteSubTable(
-                state,
-                state.dataOutRptPredefined->pdstDXCoolCoil_2023,
-                "ANSI/AHRI ratings account for supply air fan heat and electric power. <br/>"
-                "1 - EnergyPlus object type. <br/>"
-                "2 - Capacity less than 65K Btu/h (19050 W) - calculated as per AHRI Standard 210/240-2023. <br/>"
-                "&emsp;&nbsp;Capacity of 65K Btu/h (19050 W) to less than 135K Btu/h (39565 W) - calculated as per AHRI Standard 340/360-2022. "
-                "<br/>"
-                "&emsp;&nbsp;Capacity from 135K (39565 W) to 250K Btu/hr (73268 W) - calculated as per AHRI Standard 365-2009 - Ratings not yet "
-                "supported in EnergyPlus. <br/>"
-                "3 - SEER2 (User) is calculated using user-input PLF curve and cooling coefficient of degradation. <br/>"
-                "&emsp;&nbsp;SEER2 (Standard) is calculated using the default PLF curve and cooling coefficient of degradation"
-                "from the appropriate AHRI standard. <br/>"
-                "4 - Value for the Full Speed of the coil.");
+            OutputReportPredefined::addFootNoteSubTable(state, state.dataOutRptPredefined->pdstDXCoolCoil_2023, StandardRatings::AHRI2023FOOTNOTE);
         }
     }
     state.dataCoilCoolingDX->stillNeedToReportStandardRatings = false;

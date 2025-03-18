@@ -2535,8 +2535,15 @@ void SingleDuctAirTerminal::SizeSys(EnergyPlusData &state)
 
             CheckZoneSizing(state, this->sysType, this->SysName);
 
-            MaxAirVolFlowRateDes = max(state.dataSize->TermUnitFinalZoneSizing(state.dataSize->CurTermUnitSizingNum).DesCoolVolFlow,
-                                       state.dataSize->TermUnitFinalZoneSizing(state.dataSize->CurTermUnitSizingNum).DesHeatVolFlow);
+            Real64 heatingMaxFlow;
+            if (this->DamperHeatingAction == Action::ReverseWithLimits &&
+                state.dataSize->TermUnitFinalZoneSizing(state.dataSize->CurTermUnitSizingNum).DesHeatVolFlow >
+                    state.dataSize->TermUnitFinalZoneSizing(state.dataSize->CurTermUnitSizingNum).DesHeatVolFlowMax) {
+                heatingMaxFlow = state.dataSize->TermUnitFinalZoneSizing(state.dataSize->CurTermUnitSizingNum).DesHeatVolFlowMax;
+            } else {
+                heatingMaxFlow = state.dataSize->TermUnitFinalZoneSizing(state.dataSize->CurTermUnitSizingNum).DesHeatVolFlow;
+            }
+            MaxAirVolFlowRateDes = max(state.dataSize->TermUnitFinalZoneSizing(state.dataSize->CurTermUnitSizingNum).DesCoolVolFlow, heatingMaxFlow);
 
             if (MaxAirVolFlowRateDes < SmallAirVolFlow) {
                 MaxAirVolFlowRateDes = 0.0;
@@ -2585,7 +2592,13 @@ void SingleDuctAirTerminal::SizeSys(EnergyPlusData &state)
             }
         } else {
             CheckZoneSizing(state, this->sysType, this->SysName);
-            MaxHeatAirVolFlowRateDes = state.dataSize->TermUnitFinalZoneSizing(state.dataSize->CurTermUnitSizingNum).DesHeatVolFlow;
+            if (this->DamperHeatingAction == Action::ReverseWithLimits &&
+                state.dataSize->TermUnitFinalZoneSizing(state.dataSize->CurTermUnitSizingNum).DesHeatVolFlow >
+                    state.dataSize->TermUnitFinalZoneSizing(state.dataSize->CurTermUnitSizingNum).DesHeatVolFlowMax) {
+                MaxHeatAirVolFlowRateDes = state.dataSize->TermUnitFinalZoneSizing(state.dataSize->CurTermUnitSizingNum).DesHeatVolFlowMax;
+            } else {
+                MaxHeatAirVolFlowRateDes = state.dataSize->TermUnitFinalZoneSizing(state.dataSize->CurTermUnitSizingNum).DesHeatVolFlow;
+            }
             if (MaxHeatAirVolFlowRateDes < SmallAirVolFlow) {
                 MaxHeatAirVolFlowRateDes = 0.0;
             }
@@ -2872,7 +2885,13 @@ void SingleDuctAirTerminal::SizeSys(EnergyPlusData &state)
         if (state.dataSize->ZoneSizingRunDone) {
             if (state.dataSize->CurTermUnitSizingNum > 0) {
                 // if zone sizing run done, set the design max reheat air flow to the value from the design calcs
-                MaxAirVolFlowRateDuringReheatDes = state.dataSize->TermUnitFinalZoneSizing(state.dataSize->CurTermUnitSizingNum).DesHeatVolFlowMax;
+                if (state.dataSize->TermUnitFinalZoneSizing(state.dataSize->CurTermUnitSizingNum).DesHeatVolFlow >
+                    state.dataSize->TermUnitFinalZoneSizing(state.dataSize->CurTermUnitSizingNum).DesHeatVolFlowMax) {
+                    MaxAirVolFlowRateDuringReheatDes =
+                        state.dataSize->TermUnitFinalZoneSizing(state.dataSize->CurTermUnitSizingNum).DesHeatVolFlowMax;
+                } else {
+                    MaxAirVolFlowRateDuringReheatDes = state.dataSize->TermUnitFinalZoneSizing(state.dataSize->CurTermUnitSizingNum).DesHeatVolFlow;
+                }
             }
         } else {
             // if no design calc use 0.002032 [m3/s-m2] times floor area. That's .40 cfm/ft2
@@ -3068,9 +3087,13 @@ void SingleDuctAirTerminal::SizeSys(EnergyPlusData &state)
                     max(state.dataSize->TermUnitFinalZoneSizing(state.dataSize->CurTermUnitSizingNum).NonAirSysDesHeatVolFlow,
                         this->MaxAirVolFlowRate * this->ZoneTurndownMinAirFrac);
             } else {
-                TermUnitSizing(state.dataSize->CurTermUnitSizingNum).AirVolFlow =
-                    max(state.dataSize->TermUnitFinalZoneSizing(state.dataSize->CurTermUnitSizingNum).NonAirSysDesHeatVolFlow,
-                        this->MaxAirVolFlowRate * this->ZoneMinAirFracDes * this->ZoneTurndownMinAirFrac);
+                if (this->SysType_Num == SysType::SingleDuctVAVReheat && this->DamperHeatingAction == Action::ReverseWithLimits) {
+                    TermUnitSizing(state.dataSize->CurTermUnitSizingNum).AirVolFlow = this->MaxAirVolFlowRateDuringReheat;
+                } else {
+                    TermUnitSizing(state.dataSize->CurTermUnitSizingNum).AirVolFlow =
+                        max(state.dataSize->TermUnitFinalZoneSizing(state.dataSize->CurTermUnitSizingNum).NonAirSysDesHeatVolFlow,
+                            this->MaxAirVolFlowRate * this->ZoneMinAirFracDes * this->ZoneTurndownMinAirFrac);
+                }
             }
         } else {
             if (this->SysType_Num == SysType::SingleDuctVAVReheatVSFan) {
@@ -3729,7 +3752,7 @@ void SingleDuctAirTerminal::SimVAV(EnergyPlusData &state, bool const FirstHVACIt
                                       this->ControlCompTypeNum,
                                       this->CompErrIndex,
                                       ZoneNodeNum,
-                                      SysOutletNode); // why not QZnReq  ?
+                                      SysOutletNode);
                     // air flow controller, not on plant, don't pass plant topology info
                     // reset terminal unit inlet air mass flow to new value.
                     state.dataLoopNodes->Node(this->OutletNodeNum).MassFlowRateMaxAvail = this->sd_airterminalInlet.AirMassFlowRateMaxAvail;
@@ -3835,6 +3858,11 @@ void SingleDuctAirTerminal::SimVAV(EnergyPlusData &state, bool const FirstHVACIt
             HeatingCoils::SimulateHeatingCoilComponents(state, this->ReheatCoilName, FirstHVACIteration, 0.0, this->ReheatCoilNum);
         } break;
 
+        case HVAC::CoilType::Invalid: { // blank
+            // I no reheat is defined then assume that the damper is the only component.
+            // If something else is there that is not a reheat coil or a blank then give the error message
+        } break;
+          
         default: {
             ShowFatalError(state, format("Invalid Reheat Component={}", this->ReheatCoilName));
         } break;

@@ -529,7 +529,7 @@ void setCoilFinalSizes(EnergyPlusData &state,
                                             Real64 const waterFlowRate      // design or reference or rated water flow rate [m3/s]
 )
 {
-    int index = getIndexForOrCreateDataObjFromCoilName(state, coilName, coilType);
+    int index = getReportIndex(state, coilName, coilType);
     auto *c = state.dataRptCoilSelection->coils[index];
     if (c != nullptr) {
         c->coilTotCapFinal = totGrossCap;
@@ -843,10 +843,10 @@ void doFinalProcessingOfCoilData(EnergyPlusData &state)
     } // end for loop over each coil
 }
 
-int getIndexForOrCreateDataObjFromCoilName(EnergyPlusData &state,
-                                           std::string const &coilName, // user-defined name of the coil
-                                           HVAC::CoilType coilType  // idf input object class name of coil
-                                           )
+int getReportIndex(EnergyPlusData &state,
+                   std::string const &coilName, // user-defined name of the coil
+                   HVAC::CoilType coilType  // idf input object class name of coil
+                   )
 {
   for (int i = 0; i < state.dataRptCoilSelection->coils.size(); i++) {
         auto *c = state.dataRptCoilSelection->coils[i];
@@ -980,7 +980,7 @@ void setRatedCoilConditions(EnergyPlusData &state,
                                                  Real64 const RatedCoilEff        // rated coil effectiveness
 )
 {
-    int index = getIndexForOrCreateDataObjFromCoilName(state, coilName, coilType);
+    int index = getReportIndex(state, coilName, coilType);
     auto *c = state.dataRptCoilSelection->coils[index];
     c->coilRatedTotCap = RatedCoilTotCap;
     c->coilRatedSensCap = RatedCoilSensCap;
@@ -1017,7 +1017,7 @@ void setCoilAirFlow(EnergyPlusData &state,
                                          bool const isAutoSized       // true if air flow was autosized
 )
 {
-    int index = getIndexForOrCreateDataObjFromCoilName(state, coilName, coilType);
+    int index = getReportIndex(state, coilName, coilType);
     auto *c = state.dataRptCoilSelection->coils[index];
     c->coilDesVolFlow = airVdot;
     c->volFlowIsAutosized = isAutoSized;
@@ -1052,7 +1052,7 @@ void setCoilWaterFlowPltSizNum(EnergyPlusData &state,
                                                     int const plantLoopNum       // plant loop structure index
 )
 {
-    int index = getIndexForOrCreateDataObjFromCoilName(state, coilName, coilType);
+    int index = getReportIndex(state, coilName, coilType);
     auto *c = state.dataRptCoilSelection->coils[index];
     c->pltSizNum = plantSizNum;
     c->waterLoopNum = plantLoopNum;
@@ -1091,7 +1091,7 @@ void setCoilEntAirTemp(EnergyPlusData &state,
                                             int const curZoneEqNum          // zone equipment list index, if non-zero
 )
 {
-    int index = getIndexForOrCreateDataObjFromCoilName(state, coilName, coilType);
+    int index = getReportIndex(state, coilName, coilType);
     auto *c = state.dataRptCoilSelection->coils[index];
     c->coilDesEntTemp = entAirDryBulbTemp;
     c->airloopNum = curSysNum;
@@ -1119,7 +1119,7 @@ void setCoilEntAirHumRat(EnergyPlusData &state,
                                               Real64 const entAirHumrat    //
 )
 {
-    int index = getIndexForOrCreateDataObjFromCoilName(state, coilName, coilType);
+    int index = getReportIndex(state, coilName, coilType);
     auto *c = state.dataRptCoilSelection->coils[index];
     c->coilDesEntHumRat = entAirHumrat;
 }
@@ -1140,7 +1140,7 @@ void setCoilEntWaterTemp(EnergyPlusData &state,
                                               Real64 const entWaterTemp    //
 )
 {
-    int index = getIndexForOrCreateDataObjFromCoilName(state, coilName, coilType);
+    int index = getReportIndex(state, coilName, coilType);
     auto *c = state.dataRptCoilSelection->coils[index];
     c->coilDesWaterEntTemp = entWaterTemp;
 }
@@ -1161,7 +1161,7 @@ void setCoilLvgWaterTemp(EnergyPlusData &state,
                                               Real64 const lvgWaterTemp    //
 )
 {
-    int index = getIndexForOrCreateDataObjFromCoilName(state, coilName, coilType);
+    int index = getReportIndex(state, coilName, coilType);
     auto *c = state.dataRptCoilSelection->coils[index];
     c->coilDesWaterLvgTemp = lvgWaterTemp;
 }
@@ -1181,7 +1181,7 @@ void setCoilWaterDeltaT(EnergyPlusData &state,
                                              Real64 const CoilWaterDeltaT // degree C temperature difference used to size coil
 )
 {
-    int index = getIndexForOrCreateDataObjFromCoilName(state, coilName, coilType);
+    int index = getReportIndex(state, coilName, coilType);
     auto *c = state.dataRptCoilSelection->coils[index];
     c->coilDesWaterTempDiff = CoilWaterDeltaT;
 }
@@ -1201,7 +1201,7 @@ void setCoilLvgAirTemp(EnergyPlusData &state,
                                             Real64 const lvgAirDryBulbTemp //
 )
 {
-    int index = getIndexForOrCreateDataObjFromCoilName(state, coilName, coilType);
+    int index = getReportIndex(state, coilName, coilType);
     auto *c = state.dataRptCoilSelection->coils[index];
     c->coilDesLvgTemp = lvgAirDryBulbTemp;
 }
@@ -1221,7 +1221,7 @@ void setCoilLvgAirHumRat(EnergyPlusData &state,
                                               Real64 const lvgAirHumRat    //
 )
 {
-    int index = getIndexForOrCreateDataObjFromCoilName(state, coilName, coilType);
+    int index = getReportIndex(state, coilName, coilType);
     auto *c = state.dataRptCoilSelection->coils[index];
     c->coilDesLvgHumRat = lvgAirHumRat;
 }
@@ -1258,7 +1258,7 @@ void setCoilCoolingCapacity(
     Real64 const DXFlowPerCapMaxRatio  // non dimensional ratio, capacity adjustment ratio max
 )
 {
-    int index = getIndexForOrCreateDataObjFromCoilName(state, coilName, coilType);
+    int index = getReportIndex(state, coilName, coilType);
     setCoilCoolingCapacity(state,
                            index,
                            TotalCoolingCap,
@@ -1583,7 +1583,7 @@ void setCoilHeatingCapacity(
     Real64 const DXFlowPerCapMaxRatio  // non dimensional ratio, capacity adjustment ratio max
 )
 {
-    int index = getIndexForOrCreateDataObjFromCoilName(state, coilName, coilType);
+    int index = getReportIndex(state, coilName, coilType);
     setCoilHeatingCapacity(
         state,
         index,
@@ -1966,7 +1966,7 @@ void setCoilWaterCoolingCapacity(EnergyPlusData &state,
                                                       int const dataWaterLoopNum    // plant loop structure index
 )
 {
-    int index = getIndexForOrCreateDataObjFromCoilName(state, coilName, coilType);
+    int index = getReportIndex(state, coilName, coilType);
     auto *c = state.dataRptCoilSelection->coils[index];
     c->coilTotCapAtPeak = totalCoolingCap;
     c->capIsAutosized = isAutoSize;
@@ -1989,7 +1989,7 @@ void setCoilWaterHeaterCapacityNodeNums(EnergyPlusData &state,
                                                              int const dataWaterLoopNum    // plant loop structure index
 )
 {
-    int index = getIndexForOrCreateDataObjFromCoilName(state, coilName, coilType);
+    int index = getReportIndex(state, coilName, coilType);
     auto *c = state.dataRptCoilSelection->coils[index];
     c->coilTotCapAtPeak = totalHeatingCap;
     c->capIsAutosized = isAutoSize;
@@ -2011,7 +2011,7 @@ void setCoilWaterHeaterCapacityPltSizNum(EnergyPlusData &state,
                                                               int const dataWaterLoopNum    // plant loop structure index
 )
 {
-    int index = getIndexForOrCreateDataObjFromCoilName(state, coilName, coilType);
+    int index = getReportIndex(state, coilName, coilType);
     auto *c = state.dataRptCoilSelection->coils[index];
     c->coilTotCapAtPeak = totalHeatingCap;
     c->capIsAutosized = isAutoSize;
@@ -2029,7 +2029,7 @@ void setCoilUA(EnergyPlusData &state,
                                     int const curZoneEqNum                  // zone equipment list index, if non-zero
 )
 {
-    int index = getIndexForOrCreateDataObjFromCoilName(state, coilName, coilType);
+    int index = getReportIndex(state, coilName, coilType);
     auto *c = state.dataRptCoilSelection->coils[index];
     c->coilUA = UAvalue;
     c->coilTotCapAtPeak = dataCapacityUsedForSizing;
@@ -2044,7 +2044,7 @@ void setCoilReheatMultiplier(EnergyPlusData &state,
                                                   HVAC::CoilType const coilType, // idf input object class name of coil
                                                   Real64 const multiplierReheatLoad)
 {
-    int index = getIndexForOrCreateDataObjFromCoilName(state, coilName, coilType);
+    int index = getReportIndex(state, coilName, coilType);
     auto *c = state.dataRptCoilSelection->coils[index];
     c->reheatLoadMult = multiplierReheatLoad;
 }
@@ -2059,7 +2059,7 @@ void setCoilSupplyFanInfo(EnergyPlusData &state,
     if (fanName.empty()) {
         return;
     }
-    int index = getIndexForOrCreateDataObjFromCoilName(state, coilName, coilType);
+    int index = getReportIndex(state, coilName, coilType);
     auto *c = state.dataRptCoilSelection->coils[index];
     c->fanAssociatedWithCoilName = fanName;
     c->supFanType = fanType;
@@ -2074,7 +2074,7 @@ void setCoilEqNum(EnergyPlusData &state,
                                        int const curOASysNum,
                                        int const curZoneEqNum)
 {
-    int index = getIndexForOrCreateDataObjFromCoilName(state, coilName, coilType);
+    int index = getReportIndex(state, coilName, coilType);
     auto *c = state.dataRptCoilSelection->coils[index];
     c->airloopNum = curSysNum;
     c->oASysNum = curOASysNum;

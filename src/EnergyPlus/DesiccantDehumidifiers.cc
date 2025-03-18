@@ -245,7 +245,6 @@ namespace DesiccantDehumidifiers {
         bool errFlag;                   // local error flag
         std::string RegenCoilType;      // Regen heating coil type
         std::string RegenCoilName;      // Regen heating coil name
-        bool RegairHeatingCoilFlag;     // local error flag
 
         int TotalArgs = 0;
 
@@ -731,7 +730,7 @@ namespace DesiccantDehumidifiers {
                         ErrorsFoundGeneric = true;
                     }
 
-                    HeatingCoils::SetCoilDesicData(state, desicDehum.RegenCoilNum, RegairHeatingCoilFlag, DesicDehumNum);
+                    HeatingCoils::SetCoilDesicData(state, desicDehum.RegenCoilNum, true, DesicDehumNum);
                 }
                 
             } else if (desicDehum.regenCoilType == HVAC::CoilType::HeatingWater) {
@@ -752,8 +751,7 @@ namespace DesiccantDehumidifiers {
                     desicDehum.RegenCoilInletNode = WaterCoils::GetCoilAirInletNode(state, desicDehum.RegenCoilNum);
                     desicDehum.RegenCoilOutletNode = WaterCoils::GetCoilAirOutletNode(state, desicDehum.RegenCoilNum);
                     
-                    RegairHeatingCoilFlag = true;
-                    WaterCoils::SetWaterCoilData(state, desicDehum.RegenCoilNum, ErrorsFound2, RegairHeatingCoilFlag, DesicDehumNum);
+                    WaterCoils::SetWaterCoilData(state, desicDehum.RegenCoilNum, ErrorsFound2, true, DesicDehumNum);
                     if (ErrorsFound2) {
                         ShowContinueError(state, format("...occurs in {} \"{}\"", desicDehum.DehumType, desicDehum.Name));
                         ErrorsFoundGeneric = true;
@@ -796,8 +794,7 @@ namespace DesiccantDehumidifiers {
                         ErrorsFoundGeneric = true;
                     }
 
-                    RegairHeatingCoilFlag = true;
-                    SteamCoils::SetSteamCoilData(state, desicDehum.RegenCoilNum, ErrorsFound2, RegairHeatingCoilFlag, DesicDehumNum);
+                    SteamCoils::SetSteamCoilData(state, desicDehum.RegenCoilNum, ErrorsFound2, true, DesicDehumNum);
                     if (ErrorsFound2) {
                         ShowContinueError(state, format("...occurs in {} \"{}\"", desicDehum.DehumType, desicDehum.Name));
                         ErrorsFoundGeneric = true;

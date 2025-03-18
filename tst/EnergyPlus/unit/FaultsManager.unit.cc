@@ -672,13 +672,13 @@ TEST_F(EnergyPlusFixture, FaultsManager_FoulingCoil_CoilNotFound)
         "   ** Warning ** ProcessScheduleInput: Schedule:Compact = AVAILSCHED",
         "   **   ~~~   ** Schedule Type Limits Name is empty.",
         "   **   ~~~   ** Schedule will not be validated.",
-        "   ** Severe  ** FaultModel:Fouling:Coil = \"FOULEDHEATINGCOIL\". Referenced Coil named \"NON EXISTENT COOLING COIL\" was not found.",
+        "   ** Severe  ** CheckAndReadFaults: FaultModel:Fouling:Coil = FOULEDHEATINGCOIL",
+        "   **   ~~~   ** Coil Name = NON EXISTENT COOLING COIL, item not found.", 
         "   **  Fatal  ** CheckAndReadFaults: Errors found in getting FaultModel input data. Preceding condition(s) cause termination.",
         "   ...Summary of Errors that led to program termination:",
         "   ..... Reference severe error count=1",
-        "   ..... Last severe error=FaultModel:Fouling:Coil = \"FOULEDHEATINGCOIL\". Referenced Coil named \"NON EXISTENT COOLING COIL\" was not "
-        "found.",
-    });
+        "   ..... Last severe error=CheckAndReadFaults: FaultModel:Fouling:Coil = FOULEDHEATINGCOIL"
+      });
 
     EXPECT_TRUE(compare_err_stream(error_string, true));
 }

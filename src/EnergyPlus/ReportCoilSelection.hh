@@ -590,9 +590,9 @@ public:                                  // data
 
     void writeCoilSelectionOutput2(EnergyPlusData &state);
 
-    int getIndexForOrCreateDataObjFromCoilName(EnergyPlusData &state,
-                                               std::string const &coilName, // user-defined name of the coil
-                                               HVAC::CoilType const coilType  // idf input object class name of coil
+    int getReportIndex(EnergyPlusData &state,
+                       std::string const &coilName, // user-defined name of the coil
+                       HVAC::CoilType const coilType  // idf input object class name of coil
     );
 
     void associateZoneCoilWithParent(EnergyPlusData &state, CoilSelectionData *c);

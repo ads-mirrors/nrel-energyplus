@@ -57,7 +57,7 @@
 #include <nlohmann/json.hpp>
 
 #ifdef _OPENMP
-#include <omp.h>
+#    include <omp.h>
 #endif
 
 #include <array>
@@ -543,12 +543,13 @@ Select one (case insensitive):
 #ifdef _OPENMP
     omp_set_num_threads(number_of_threads);
 
-#pragma omp parallel default(none) shared(files, number_files, fileCount, schema, outputType, outputTypeStr, outputDirectoryPath, convertHVACTemplate)
+#    pragma omp parallel default(none)                                                                                                               \
+        shared(files, number_files, fileCount, schema, outputType, outputTypeStr, outputDirectoryPath, convertHVACTemplate)
     {
-#pragma omp for
+#    pragma omp for
         for (int i = 0; i < number_files; ++i) {
             const bool successful = processInput(files[i], schema, outputType, outputDirectoryPath, outputTypeStr, convertHVACTemplate);
-#pragma omp atomic
+#    pragma omp atomic
             ++fileCount;
             if (successful) {
                 displayMessage(

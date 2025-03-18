@@ -693,7 +693,7 @@ namespace HVACMultiSpeedHeatPump {
                     thisMSHP.HeatCoilAirInletNode = DXCoils::GetCoilAirInletNode(state, thisMSHP.HeatCoilNum); 
                     thisMSHP.HeatCoilAirOutletNode = DXCoils::GetCoilAirOutletNode(state, thisMSHP.HeatCoilNum);
 
-                    thisMSHP.MinOATCompressorHeating = DXCoils::GetMinOATCompressor(state, thisMSHP.HeatCoilNum);
+                    thisMSHP.MinOATCompressorHeating = DXCoils::GetCoilMinOATCompressor(state, thisMSHP.HeatCoilNum);
                     BranchNodeConnections::SetUpCompSets(state,
                                                          state.dataHVACMultiSpdHP->CurrentModuleObject,
                                                          thisMSHP.Name,
@@ -777,7 +777,7 @@ namespace HVACMultiSpeedHeatPump {
             thisMSHP.coolCoilType = static_cast<HVAC::CoilType>(getEnumValue(HVAC::coilTypeNamesUC, Alphas(12)));
             thisMSHP.CoolCoilName = Alphas(13);
 
-            if (thisMSHP.coolCoilType == HVAC::CoilType::HeatingDXMultiSpeed) {
+            if (thisMSHP.coolCoilType == HVAC::CoilType::CoolingDXMultiSpeed) {
               
                 thisMSHP.CoolCoilNum = DXCoils::GetCoilIndex(state, thisMSHP.CoolCoilName);
                 if (thisMSHP.CoolCoilNum == 0) {
@@ -786,7 +786,7 @@ namespace HVACMultiSpeedHeatPump {
                 } else {
                     thisMSHP.CoolCoilAirInletNode = DXCoils::GetCoilAirInletNode(state, thisMSHP.CoolCoilNum);
                     thisMSHP.CoolCoilAirOutletNode = DXCoils::GetCoilAirOutletNode(state, thisMSHP.CoolCoilNum);
-                    thisMSHP.MinOATCompressorCooling = DXCoils::GetMinOATCompressor(state, thisMSHP.CoolCoilNum);
+                    thisMSHP.MinOATCompressorCooling = DXCoils::GetCoilMinOATCompressor(state, thisMSHP.CoolCoilNum);
             
                     BranchNodeConnections::SetUpCompSets(state,
                                                          state.dataHVACMultiSpdHP->CurrentModuleObject,
@@ -809,7 +809,7 @@ namespace HVACMultiSpeedHeatPump {
                 thisMSHP.suppHeatCoilType == HVAC::CoilType::HeatingGasOrOtherFuel) {
               
                 thisMSHP.SuppHeatCoilNum = HeatingCoils::GetCoilIndex(state, thisMSHP.SuppHeatCoilName);
-                if (thisMSHP.SuppHeatCoilNum) {
+                if (thisMSHP.SuppHeatCoilNum == 0) {
                     ShowSevereItemNotFound(state, eoh, cAlphaFields(15), thisMSHP.SuppHeatCoilName);
                     ErrorsFound = true;
                 } else {

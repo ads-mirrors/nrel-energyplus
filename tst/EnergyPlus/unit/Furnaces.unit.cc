@@ -66,6 +66,7 @@
 #include <EnergyPlus/IOFiles.hh>
 #include <EnergyPlus/OutputProcessor.hh>
 #include <EnergyPlus/Plant/DataPlant.hh>
+#include <EnergyPlus/ReportCoilSelection.hh>
 #include <EnergyPlus/ScheduleManager.hh>
 #include <EnergyPlus/SimulationManager.hh>
 #include <EnergyPlus/UtilityRoutines.hh>
@@ -279,38 +280,45 @@ TEST_F(EnergyPlusFixture, SetVSHPAirFlowTest_VSFurnaceFlowTest)
     state->dataFurnaces->Furnaces(FurnaceNum).HeatCoilNum = 2;
     state->dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP.allocate(2);
     state->dataWaterToAirHeatPumpSimple->NumWatertoAirHPs = 2;
-    state->dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(1).Name = "WATERCOOLINGCOIL";
-    state->dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(1).coilPlantType = DataPlant::PlantEquipmentType::CoilWAHPCoolingEquationFit;
-    state->dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(1).coilType = HVAC::CoilType::CoolingWAHPSimple;
-    state->dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(2).Name = "WATERHEATINGCOIL";
-    state->dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(2).coilPlantType = DataPlant::PlantEquipmentType::CoilWAHPHeatingEquationFit;
-    state->dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(2).coilType = HVAC::CoilType::HeatingWAHPSimple;
-    state->dataWaterToAirHeatPumpSimple->SimpleHPTimeStepFlag.allocate(2);
-    state->dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(1).AirInletNodeNum = 1;
-    state->dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(1).AirOutletNodeNum = 3;
-    state->dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(1).WaterInletNodeNum = 5;
-    state->dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(1).WaterOutletNodeNum = 6;
-    state->dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(1).plantLoc.loopNum = 1;
-    state->dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(1).plantLoc.loopSideNum = DataPlant::LoopSideLocation::Demand;
-    state->dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(1).plantLoc.branchNum = 1;
-    state->dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(1).plantLoc.compNum = 1;
-    state->dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(1).RatedCapCoolTotal = 30000.0;
-    state->dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(1).RatedCOPCoolAtRatedCdts = 3.0;
-    state->dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(1).RatedCapHeat = 30000.0;
-    state->dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(1).RatedCOPHeatAtRatedCdts = 3.0;
+    auto &wahp1 = state->dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(1);
+    wahp1.Name = "WATERCOOLINGCOIL";
+    wahp1.coilPlantType = DataPlant::PlantEquipmentType::CoilWAHPCoolingEquationFit;
+    wahp1.coilType = HVAC::CoilType::CoolingWAHPSimple;
+    wahp1.coilReportNum = ReportCoilSelection::getReportIndex(*state, wahp1.Name, wahp1.coilType);
 
-    state->dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(2).AirInletNodeNum = 3;
-    state->dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(2).AirOutletNodeNum = 2;
-    state->dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(2).WaterInletNodeNum = 7;
-    state->dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(2).WaterOutletNodeNum = 8;
-    state->dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(2).plantLoc.loopNum = 2;
-    state->dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(2).plantLoc.loopSideNum = DataPlant::LoopSideLocation::Demand;
-    state->dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(2).plantLoc.branchNum = 1;
-    state->dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(2).plantLoc.compNum = 1;
-    state->dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(2).RatedCapCoolTotal = 30000.0;
-    state->dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(2).RatedCOPCoolAtRatedCdts = 3.0;
-    state->dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(2).RatedCapHeat = 30000.0;
-    state->dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(2).RatedCOPHeatAtRatedCdts = 3.0;
+    auto &wahp2 = state->dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(2);
+    wahp2.Name = "WATERHEATINGCOIL";
+    wahp2.coilPlantType = DataPlant::PlantEquipmentType::CoilWAHPHeatingEquationFit;
+    wahp2.coilType = HVAC::CoilType::HeatingWAHPSimple;
+    wahp2.coilReportNum = ReportCoilSelection::getReportIndex(*state, wahp2.Name, wahp2.coilType);
+
+    state->dataWaterToAirHeatPumpSimple->SimpleHPTimeStepFlag.allocate(2);
+    
+    wahp1.AirInletNodeNum = 1;
+    wahp1.AirOutletNodeNum = 3;
+    wahp1.WaterInletNodeNum = 5;
+    wahp1.WaterOutletNodeNum = 6;
+    wahp1.plantLoc.loopNum = 1;
+    wahp1.plantLoc.loopSideNum = DataPlant::LoopSideLocation::Demand;
+    wahp1.plantLoc.branchNum = 1;
+    wahp1.plantLoc.compNum = 1;
+    wahp1.RatedCapCoolTotal = 30000.0;
+    wahp1.RatedCOPCoolAtRatedCdts = 3.0;
+    wahp1.RatedCapHeat = 30000.0;
+    wahp1.RatedCOPHeatAtRatedCdts = 3.0;
+
+    wahp2.AirInletNodeNum = 3;
+    wahp2.AirOutletNodeNum = 2;
+    wahp2.WaterInletNodeNum = 7;
+    wahp2.WaterOutletNodeNum = 8;
+    wahp2.plantLoc.loopNum = 2;
+    wahp2.plantLoc.loopSideNum = DataPlant::LoopSideLocation::Demand;
+    wahp2.plantLoc.branchNum = 1;
+    wahp2.plantLoc.compNum = 1;
+    wahp2.RatedCapCoolTotal = 30000.0;
+    wahp2.RatedCOPCoolAtRatedCdts = 3.0;
+    wahp2.RatedCapHeat = 30000.0;
+    wahp2.RatedCOPHeatAtRatedCdts = 3.0;
 
     // set up plant loop
     state->dataPlnt->TotNumLoops = 2;
@@ -1219,12 +1227,15 @@ TEST_F(EnergyPlusFixture, UnitaryHeatPumpAirToAir_MaxSuppAirTempTest)
 TEST_F(EnergyPlusFixture, Furnaces_SetMinOATCompressor)
 {
     state->dataFurnaces->Furnaces.allocate(1);
-    state->dataFurnaces->Furnaces(1).CoolCoilNum = 1;
-    state->dataFurnaces->Furnaces(1).HeatCoilNum = 2;
+    auto &furnace = state->dataFurnaces->Furnaces(1);
+    furnace.CoolCoilNum = 1;
+    furnace.HeatCoilNum = 2;
+    state->dataVariableSpeedCoils->NumVarSpeedCoils = 2;
     state->dataVariableSpeedCoils->VarSpeedCoil.allocate(2);
     state->dataVariableSpeedCoils->GetCoilsInputFlag = false;
     state->dataVariableSpeedCoils->VarSpeedCoil(1).MinOATCompressor = 30.0;
     state->dataVariableSpeedCoils->VarSpeedCoil(2).MinOATCompressor = 30.0;
+    state->dataDXCoils->NumDXCoils = 2;
     state->dataDXCoils->DXCoil.allocate(2);
     state->dataDXCoils->GetCoilsInputFlag = false;
     state->dataDXCoils->DXCoil(1).MinOATCompressor = 30.0;
@@ -1244,46 +1255,53 @@ TEST_F(EnergyPlusFixture, Furnaces_SetMinOATCompressor)
     bool ErrFound = false;
 
     // Test HXAsssisted type with new coil
-    state->dataFurnaces->Furnaces(1).coolCoilType = HVAC::CoilType::CoolingDXHXAssisted;
+    furnace.coolCoilType = HVAC::CoilType::CoolingDXHXAssisted;
+    furnace.childCoolCoilName = HXAssistCoil::GetCoilChildCoilName(*state, furnace.CoolCoilNum);
+    furnace.childCoolCoilType = HXAssistCoil::GetCoilChildCoilType(*state, furnace.CoolCoilNum);
+    furnace.childCoolCoilNum = HXAssistCoil::GetCoilChildCoilIndex(*state, furnace.CoolCoilNum);
+
     SetMinOATCompressor(*state, FurnaceNum, cCurModObj, ErrFound);
     EXPECT_FALSE(ErrFound);
-    EXPECT_NEAR(state->dataFurnaces->Furnaces(1).MinOATCompressorCooling, 0.0, 1e-6);
-    EXPECT_NEAR(state->dataFurnaces->Furnaces(1).MinOATCompressorHeating, -1000.0, 1e-6);
+    EXPECT_NEAR(furnace.MinOATCompressorCooling, 0.0, 1e-6);
+    EXPECT_NEAR(furnace.MinOATCompressorHeating, -1000.0, 1e-6);
     // reset once as test
-    state->dataFurnaces->Furnaces(1).MinOATCompressorCooling = -999.0;
-    state->dataFurnaces->Furnaces(1).MinOATCompressorHeating = -999.0;
+    furnace.MinOATCompressorCooling = -999.0;
+    furnace.MinOATCompressorHeating = -999.0;
 
     // Check that each coil type returns correctly
-    state->dataFurnaces->Furnaces(1).coolCoilType = HVAC::CoilType::CoolingDXVariableSpeed;
-    state->dataFurnaces->Furnaces(1).heatCoilType = HVAC::CoilType::HeatingElectric;
+    furnace.coolCoilType = HVAC::CoilType::CoolingDXVariableSpeed;
+    furnace.childCoolCoilType = HVAC::CoilType::Invalid;
+    furnace.childCoolCoilName = "";
+    furnace.childCoolCoilNum = 0;
+    furnace.heatCoilType = HVAC::CoilType::HeatingElectric;
     // Each test should return 30 for cooling coil (limited) and -1000 for heating coil (no limit)
     SetMinOATCompressor(*state, FurnaceNum, cCurModObj, ErrFound);
     EXPECT_FALSE(ErrFound);
-    EXPECT_NEAR(state->dataFurnaces->Furnaces(1).MinOATCompressorCooling, 30.0, 1e-6);
-    EXPECT_NEAR(state->dataFurnaces->Furnaces(1).MinOATCompressorHeating, -1000.0, 1e-6);
+    EXPECT_NEAR(furnace.MinOATCompressorCooling, 30.0, 1e-6);
+    EXPECT_NEAR(furnace.MinOATCompressorHeating, -1000.0, 1e-6);
     // reset once as test
-    state->dataFurnaces->Furnaces(1).MinOATCompressorCooling = -999.0;
-    state->dataFurnaces->Furnaces(1).MinOATCompressorHeating = -999.0;
+    furnace.MinOATCompressorCooling = -999.0;
+    furnace.MinOATCompressorHeating = -999.0;
 
-    state->dataFurnaces->Furnaces(1).coolCoilType = HVAC::CoilType::CoolingDXSingleSpeed;
+    furnace.coolCoilType = HVAC::CoilType::CoolingDXSingleSpeed;
     SetMinOATCompressor(*state, FurnaceNum, cCurModObj, ErrFound);
     EXPECT_FALSE(ErrFound);
-    EXPECT_NEAR(state->dataFurnaces->Furnaces(1).MinOATCompressorCooling, 30.0, 1e-6);
-    EXPECT_NEAR(state->dataFurnaces->Furnaces(1).MinOATCompressorHeating, -1000.0, 1e-6);
+    EXPECT_NEAR(furnace.MinOATCompressorCooling, 30.0, 1e-6);
+    EXPECT_NEAR(furnace.MinOATCompressorHeating, -1000.0, 1e-6);
 
     // check heating coil types
     // should return 30 in each case since cooling and heating coil now have limit
-    state->dataFurnaces->Furnaces(1).heatCoilType = HVAC::CoilType::HeatingDXVariableSpeed;
+    furnace.heatCoilType = HVAC::CoilType::HeatingDXVariableSpeed;
     SetMinOATCompressor(*state, FurnaceNum, cCurModObj, ErrFound);
     EXPECT_FALSE(ErrFound);
-    EXPECT_NEAR(state->dataFurnaces->Furnaces(1).MinOATCompressorCooling, 30.0, 1e-6); // same as above
-    EXPECT_NEAR(state->dataFurnaces->Furnaces(1).MinOATCompressorHeating, 30.0, 1e-6); // now returns 30
+    EXPECT_NEAR(furnace.MinOATCompressorCooling, 30.0, 1e-6); // same as above
+    EXPECT_NEAR(furnace.MinOATCompressorHeating, 30.0, 1e-6); // now returns 30
 
-    state->dataFurnaces->Furnaces(1).heatCoilType = HVAC::CoilType::HeatingDXSingleSpeed;
+    furnace.heatCoilType = HVAC::CoilType::HeatingDXSingleSpeed;
     SetMinOATCompressor(*state, FurnaceNum, cCurModObj, ErrFound);
     EXPECT_FALSE(ErrFound);
-    EXPECT_NEAR(state->dataFurnaces->Furnaces(1).MinOATCompressorCooling, 30.0, 1e-6);
-    EXPECT_NEAR(state->dataFurnaces->Furnaces(1).MinOATCompressorHeating, 30.0, 1e-6);
+    EXPECT_NEAR(furnace.MinOATCompressorCooling, 30.0, 1e-6);
+    EXPECT_NEAR(furnace.MinOATCompressorHeating, 30.0, 1e-6);
 }
 
 } // namespace EnergyPlus

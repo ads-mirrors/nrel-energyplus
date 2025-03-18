@@ -186,7 +186,7 @@ namespace HXAssistCoil {
                                   ObjexxFCL::Optional<Real64 const> LoadSHR                       // Optional CoilSHR pass over
     )
     {
-        assert(coilNum > 0 && coilNum < state.dataHVACAssistedCC->HXAssistedCoils.size());
+        assert(coilNum > 0 && coilNum <= state.dataHVACAssistedCC->HXAssistedCoils.size());
         Real64 AirFlowRatio;   // Ratio of compressor ON air mass flow rate to AVEARAGE over time step
         bool HXUnitOn;         // flag to enable heat exchanger
 
@@ -367,11 +367,11 @@ namespace HXAssistCoil {
                 hxCoil.coilType = HVAC::CoilType::CoolingDXHXAssisted;
                 hxCoil.CoolCoilNum = DXCoils::GetCoilIndex(state, hxCoil.CoolCoilName);
                 if (hxCoil.CoolCoilNum == 0) {
-                    ShowSevereItemNotFound(state, eoh, cAlphaFields(5), AlphArray(5));
+                    ShowSevereItemNotFound(state, eoh, cAlphaFields(5), hxCoil.CoolCoilName);
                     ErrorsFound = true;
                 } else {
+                    hxCoil.DXCoilNumOfSpeeds = DXCoils::GetCoilNumberOfSpeeds(state, hxCoil.CoolCoilNum);
                     hxCoil.Capacity = DXCoils::GetCoilCapacity(state, hxCoil.CoolCoilNum);
-                  
                 }
                 
             } else if (hxCoil.coolCoilType == HVAC::CoilType::CoolingDXVariableSpeed) {
@@ -388,7 +388,6 @@ namespace HXAssistCoil {
                 ShowSevereInvalidKey(state, eoh, cAlphaFields(4), AlphArray(4));
                 ErrorsFound = true;
             }
-
 
             if (hxCoil.coolCoilType == HVAC::CoilType::CoolingDX) {
                 hxCoil.CoolCoilInNodeNum = state.dataCoilCoolingDX->coilCoolingDXs[hxCoil.CoolCoilNum].evapInletNodeIndex;
@@ -823,9 +822,9 @@ namespace HXAssistCoil {
 
         if (hxCoil.coolCoilType == HVAC::CoilType::CoolingDX) {
             //
-            // state.dataCoilCooingDX->coilCoolingDXs[hxCoil.CoolCoilIndex]
+            // state.dataCoilCoolingDX->coilCoolingDXs[thisHXCoil.CoolingCoilIndex]
             //     .outletAirDryBulbTemp = 0.0;
-            // state.dataCoilCooingDX->coilCoolingDXs[hxCoil.CoolCoilIndex].outletAirHumRat =
+            // state.dataCoilCoolingDX->coilCoolingDXs[thisHXCoil.CoolingCoilIndex].outletAirHumRat =
             //     0.0;
         } else if (hxCoil.coolCoilType == HVAC::CoilType::CoolingDXSingleSpeed) {
             state.dataDXCoils->DXCoilFullLoadOutAirTemp(hxCoil.CoolCoilNum) = 0.0;
@@ -927,28 +926,22 @@ namespace HXAssistCoil {
                     coilMode = HVAC::CoilMode::Enhanced;
                 }
 
-                Real64 mCoolingSpeedRatio = 0.0; // used same setting as the original variable speed coil
-                Real64 mCoolCompPartLoadRatio = (compressorOp == HVAC::CompressorOp::On) ? 1.0 : 0.0;
-
-                Real64 CoilPLR;
-                if (mCoolingSpeedNum > 1) {
-                    if (mSingleMode == 0) {
-                        mCoolCompPartLoadRatio = (compressorOp == HVAC::CompressorOp::On) ? 1.0 : 0.0;
-                    } else {
-                        mCoolCompPartLoadRatio = PartLoadRatio * ((compressorOp == HVAC::CompressorOp::On) ? 1.0 : 0.0);
-                        mCoolingSpeedRatio = 1.0;
-                    }
-                    CoilPLR = 1.0;
+                Real64 CoilPLR = 1.0;
+                if (compressorOp == HVAC::CompressorOp::Off) {
+                    mCoolingSpeedNum = 1; // Bypass mixed-speed calculations in called functions
                 } else {
-                    mCoolingSpeedRatio = 1.0;
-                    CoilPLR = PartLoadRatio * ((compressorOp == HVAC::CompressorOp::On) ? 1.0 : 0.0);
+                    if (singleMode) {
+                        CoilPLR =
+                            (mCoolingSpeedNum == 1) ? PartLoadRatio : 0.0; // singleMode allows cycling, but not part load operation at higher speeds
+                    } else {
+                        CoilPLR = PartLoadRatio;
+                    }
                 }
 
                 state.dataCoilCoolingDX->coilCoolingDXs[hxCoil.CoolCoilNum].simulate(state,
                                                                                        coilMode, // partially implemented for HXAssistedCoil
                                                                                        CoilPLR,  // PartLoadRatio,
                                                                                        mCoolingSpeedNum,
-                                                                                       mCoolingSpeedRatio,
                                                                                        fanOp,
                                                                                        singleMode); //
                 
@@ -1191,74 +1184,74 @@ namespace HXAssistCoil {
 
     HVAC::CoilType GetCoilChildCoilType(EnergyPlusData &state, int const coilNum)
     {
-        assert(coilNum > 0 && coilNum < state.dataHVACAssistedCC->HXAssistedCoils.size());
+        assert(coilNum > 0 && coilNum <= state.dataHVACAssistedCC->HXAssistedCoils.size());
         return state.dataHVACAssistedCC->HXAssistedCoils(coilNum).coolCoilType;
     }
 
     std::string GetCoilChildCoilName(EnergyPlusData &state, int const coilNum)
     {
-        assert(coilNum > 0 && coilNum < state.dataHVACAssistedCC->HXAssistedCoils.size());
+        assert(coilNum > 0 && coilNum <= state.dataHVACAssistedCC->HXAssistedCoils.size());
         return state.dataHVACAssistedCC->HXAssistedCoils(coilNum).CoolCoilName;
     }
 
     int GetCoilChildCoilIndex(EnergyPlusData &state, int const coilNum)
     {
-        assert(coilNum > 0 && coilNum < state.dataHVACAssistedCC->HXAssistedCoils.size());
+        assert(coilNum > 0 && coilNum <= state.dataHVACAssistedCC->HXAssistedCoils.size());
         return state.dataHVACAssistedCC->HXAssistedCoils(coilNum).CoolCoilNum;
     }
   
     Real64 GetCoilMaxWaterFlowRate(EnergyPlusData &state, int const coilNum)
     {
-        assert(coilNum > 0 && coilNum < state.dataHVACAssistedCC->HXAssistedCoils.size());
+        assert(coilNum > 0 && coilNum <= state.dataHVACAssistedCC->HXAssistedCoils.size());
         return state.dataHVACAssistedCC->HXAssistedCoils(coilNum).MaxWaterFlowRate;
     }
 
     Real64 GetCoilMaxAirFlowRate(EnergyPlusData &state, int const coilNum)
     {
-        assert(coilNum > 0 && coilNum < state.dataHVACAssistedCC->HXAssistedCoils.size());
+        assert(coilNum > 0 && coilNum <= state.dataHVACAssistedCC->HXAssistedCoils.size());
         return state.dataHVACAssistedCC->HXAssistedCoils(coilNum).MaxAirFlowRate;
     }
   
     Real64 GetCoilCapacity(EnergyPlusData &state, int const coilNum)
     {
-        assert(coilNum > 0 && coilNum < state.dataHVACAssistedCC->HXAssistedCoils.size());
+        assert(coilNum > 0 && coilNum <= state.dataHVACAssistedCC->HXAssistedCoils.size());
         return state.dataHVACAssistedCC->HXAssistedCoils(coilNum).Capacity;
     }
 
     int GetCoilAirInletNode(EnergyPlusData &state, int const coilNum)
     {
-        assert(coilNum > 0 && coilNum < state.dataHVACAssistedCC->HXAssistedCoils.size());
+        assert(coilNum > 0 && coilNum <= state.dataHVACAssistedCC->HXAssistedCoils.size());
         return state.dataHVACAssistedCC->HXAssistedCoils(coilNum).HXCoilInNodeNum;
     }
 
     int GetCoilAirOutletNode(EnergyPlusData &state, int const coilNum)
     {
-        assert(coilNum > 0 && coilNum < state.dataHVACAssistedCC->HXAssistedCoils.size());
+        assert(coilNum > 0 && coilNum <= state.dataHVACAssistedCC->HXAssistedCoils.size());
         return state.dataHVACAssistedCC->HXAssistedCoils(coilNum).HXCoilOutNodeNum;
     }
   
     int GetCoilWaterInletNode(EnergyPlusData &state, int const coilNum)
     {
-        assert(coilNum > 0 && coilNum < state.dataHVACAssistedCC->HXAssistedCoils.size());
+        assert(coilNum > 0 && coilNum <= state.dataHVACAssistedCC->HXAssistedCoils.size());
         return state.dataHVACAssistedCC->HXAssistedCoils(coilNum).CoolCoilWaterInNodeNum;
     }
 
     int GetCoilWaterOutletNode(EnergyPlusData &state, int const coilNum)
     {
-        assert(coilNum > 0 && coilNum < state.dataHVACAssistedCC->HXAssistedCoils.size());
+        assert(coilNum > 0 && coilNum <= state.dataHVACAssistedCC->HXAssistedCoils.size());
         return state.dataHVACAssistedCC->HXAssistedCoils(coilNum).CoolCoilWaterOutNodeNum;
     }
 
     int GetCoilCondenserInletNode(EnergyPlusData &state, int const coilNum)
     {
-        assert(coilNum > 0 && coilNum < state.dataHVACAssistedCC->HXAssistedCoils.size());
+        assert(coilNum > 0 && coilNum <= state.dataHVACAssistedCC->HXAssistedCoils.size());
         return state.dataHVACAssistedCC->HXAssistedCoils(coilNum).CoolCoilCondenserInNodeNum;
     }
 
 
     Real64 GetCoilScheduleValue(EnergyPlusData &state, int const coilNum) 
     {
-        assert(coilNum > 0 && coilNum < state.dataHVACAssistedCC->HXAssistedCoils.size());
+        assert(coilNum > 0 && coilNum <= state.dataHVACAssistedCC->HXAssistedCoils.size());
         return 1.0; // Not scheduled? Always available?
     }
 

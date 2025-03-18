@@ -51,10 +51,10 @@
 #include <EnergyPlus/Data/EnergyPlusData.hh>
 
 #if LINK_WITH_PYTHON
-#ifndef PyObject_HEAD
+#    ifndef PyObject_HEAD
 struct _object;
 using PyObject = _object;
-#endif
+#    endif
 #endif
 
 namespace EnergyPlus {

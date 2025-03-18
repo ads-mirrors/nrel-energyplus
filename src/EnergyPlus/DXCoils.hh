@@ -822,7 +822,7 @@ namespace DXCoils {
 
     HVAC::CoilType GetCoilType(EnergyPlusData &state, int const coilNum);
   
-    Real64 GetMinOATCompressor(EnergyPlusData &state, int const coilNum);
+    Real64 GetCoilMinOATCompressor(EnergyPlusData &state, int const coilNum);
 
     int GetCoilAirInletNode(EnergyPlusData &state, int coilNum);
 

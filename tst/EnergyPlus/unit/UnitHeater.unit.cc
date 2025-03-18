@@ -2443,7 +2443,8 @@ TEST_F(EnergyPlusFixture, UnitHeater_SecondPriorityZoneEquipment)
         "    -1;                      !- Height Above Ground {m}",
     });
     ASSERT_TRUE(process_idf(idf_objects));
-
+    state->init_state(*state);
+    
     // OutputProcessor::TimeValue.allocate(2);
     state->dataGlobal->DDOnlySimulation = true;
 

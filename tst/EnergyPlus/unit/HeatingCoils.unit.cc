@@ -100,11 +100,12 @@ TEST_F(EnergyPlusFixture, HeatingCoils_FuelTypeInputError)
 
     std::string const error_string = delimited_string({
         "   ** Severe  ** <root>[Coil:Heating:Fuel][Furnace Coil][fuel_type] - \"Electricity\" - Failed to match against any enum values.",
-        "   ** Severe  ** GetHeatingCoilInput: Coil:Heating:Fuel: Invalid Fuel Type entered =ELECTRICITY for Name=FURNACE COIL",
+        "   ** Severe  ** GetHeatingCoilInput: Coil:Heating:Fuel = FURNACE COIL",
+        "   **   ~~~   ** Fuel Type = ELECTRICITY, invalid key.",
         "   **  Fatal  ** GetHeatingCoilInput: Errors found in input.  Program terminates.",
         "   ...Summary of Errors that led to program termination:",
         "   ..... Reference severe error count=2",
-        "   ..... Last severe error=GetHeatingCoilInput: Coil:Heating:Fuel: Invalid Fuel Type entered =ELECTRICITY for Name=FURNACE COIL",
+        "   ..... Last severe error=GetHeatingCoilInput: Coil:Heating:Fuel = FURNACE COIL"
     });
 
     EXPECT_TRUE(compare_err_stream(error_string, true));

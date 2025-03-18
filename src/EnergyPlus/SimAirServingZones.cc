@@ -271,7 +271,6 @@ void GetAirPathData(EnergyPlusData &state)
     constexpr std::string_view RoutineName("GetAirPathData: ");
 
     auto &AirLoopControlInfo = state.dataAirLoop->AirLoopControlInfo;
-
     // SUBROUTINE LOCAL VARIABLE DEFINITIONS
     int NumNumbers;                // number of numbers returned by GetObjectItem
     Array1D<Real64> Numbers;       // numbers (REAL(r64)s) returned by GetObjectItem

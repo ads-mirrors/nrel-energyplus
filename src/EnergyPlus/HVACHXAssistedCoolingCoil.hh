@@ -104,7 +104,7 @@ namespace HXAssistCoil {
         int MaxIterCounter = 0;                          // used in warning messages
         int MaxIterIndex = 0;                            // used in warning messages
         int ControllerIndex = 0;                         // index to water coil controller
-        std::string ControllerName = 0;                  // name of water coil controller
+        std::string ControllerName;                      // name of water coil controller
 
         Real64 MaxWaterFlowRate = 0.0;
         Real64 MaxAirFlowRate = 0.0;

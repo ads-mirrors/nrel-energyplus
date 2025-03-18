@@ -1120,8 +1120,21 @@ bool getHPWaterHeaterInput(EnergyPlusData &state)
     // For looking up in IDF/epJSON, you need the index that corresponds to the actual object type (Pumped or Wrapped)
     int HPWaterHeaterNumOfSpecificType;
 
-    auto &s_ipsc = state.dataIPShortCut;
-    
+    std::string cCurrentModuleObject;
+    Array1D<std::string> cAlphaArgs;
+    Array1D<Real64> rNumericArgs;
+    Array1D<bool> lNumericFieldBlanks;
+    Array1D<bool> lAlphaFieldBlanks;
+    Array1D<std::string> cAlphaFieldNames;
+    Array1D<std::string> cNumericFieldNames;
+
+    cAlphaArgs.allocate(30); 
+    cAlphaFieldNames.allocate(30);
+    lAlphaFieldBlanks.allocate(30);
+    rNumericArgs.allocate(11);
+    cNumericFieldNames.allocate(11);
+    lNumericFieldBlanks.allocate(11);
+      
     for (int HPWaterHeaterNum = 1; HPWaterHeaterNum <= state.dataWaterThermalTanks->numHeatPumpWaterHeater; ++HPWaterHeaterNum) {
 
         // Create reference to current HPWH object in array.
@@ -1135,7 +1148,7 @@ bool getHPWaterHeaterInput(EnergyPlusData &state)
 
         if (HPWaterHeaterNum <= NumPumpedCondenser) {
             // Pumped Condenser
-            s_ipsc->cCurrentModuleObject = cHPWHPumpedCondenser;
+            cCurrentModuleObject = cHPWHPumpedCondenser;
             objType = DataLoopNode::ConnectionObjectType::WaterHeaterHeatPumpPumpedCondenser;
             HPWH.HPWHType = DataPlant::PlantEquipmentType::HeatPumpWtrHeaterPumped;
             nNumPossibleAlphaArgs = 29;
@@ -1144,10 +1157,10 @@ bool getHPWaterHeaterInput(EnergyPlusData &state)
             HPWaterHeaterNumOfSpecificType = HPWaterHeaterNum;
         } else {
             // Wrapped Condenser
-            s_ipsc->cCurrentModuleObject = cHPWHWrappedCondenser;
+            cCurrentModuleObject = cHPWHWrappedCondenser;
             objType = DataLoopNode::ConnectionObjectType::WaterHeaterHeatPumpWrappedCondenser;
             HPWH.HPWHType = DataPlant::PlantEquipmentType::HeatPumpWtrHeaterWrapped;
-            nNumPossibleAlphaArgs = 27;
+            nNumPossibleAlphaArgs = 27; // The "Hungarian" 'n' is short for number so 'nNum' is 'numberNum'.
             nNumPossibleNumericArgs = 10;
             // Actual index of Wrapped type
             HPWaterHeaterNumOfSpecificType = HPWaterHeaterNum - NumPumpedCondenser;
@@ -1157,53 +1170,53 @@ bool getHPWaterHeaterInput(EnergyPlusData &state)
         int NumNums;
         int IOStat;
         state.dataInputProcessing->inputProcessor->getObjectItem(state,
-                                                                 s_ipsc->cCurrentModuleObject,
+                                                                 cCurrentModuleObject,
                                                                  HPWaterHeaterNumOfSpecificType,
-                                                                 s_ipsc->cAlphaArgs,
+                                                                 cAlphaArgs,
                                                                  NumAlphas,
-                                                                 s_ipsc->rNumericArgs,
+                                                                 rNumericArgs,
                                                                  NumNums,
                                                                  IOStat,
-                                                                 s_ipsc->lNumericFieldBlanks,
-                                                                 s_ipsc->lAlphaFieldBlanks,
-                                                                 s_ipsc->cAlphaFieldNames,
-                                                                 s_ipsc->cNumericFieldNames);
+                                                                 lNumericFieldBlanks,
+                                                                 lAlphaFieldBlanks,
+                                                                 cAlphaFieldNames,
+                                                                 cNumericFieldNames);
 
-        ErrorObjectHeader eoh{routineName, s_ipsc->cCurrentModuleObject, s_ipsc->cAlphaArgs(1)};
+        ErrorObjectHeader eoh{routineName, cCurrentModuleObject, cAlphaArgs(1)};
 
-        Util::IsNameEmpty(state, s_ipsc->cAlphaArgs(1), s_ipsc->cCurrentModuleObject, ErrorsFound);
+        Util::IsNameEmpty(state, cAlphaArgs(1), cCurrentModuleObject, ErrorsFound);
 
         // Name and type
-        HPWH.Name = s_ipsc->cAlphaArgs(1);
-        HPWH.Type = s_ipsc->cCurrentModuleObject;
+        HPWH.Name = cAlphaArgs(1);
+        HPWH.Type = cCurrentModuleObject;
 
         // Availability Schedule
         // convert schedule name to pointer
-        if (s_ipsc->lAlphaFieldBlanks(2)) {
+        if (lAlphaFieldBlanks(2)) {
             HPWH.availSched = Sched::GetScheduleAlwaysOn(state);
-        } else if ((HPWH.availSched = Sched::GetSchedule(state, s_ipsc->cAlphaArgs(2))) == nullptr) {
-            ShowSevereItemNotFound(state, eoh, s_ipsc->cAlphaFieldNames(2), s_ipsc->cAlphaArgs(2));
+        } else if ((HPWH.availSched = Sched::GetSchedule(state, cAlphaArgs(2))) == nullptr) {
+            ShowSevereItemNotFound(state, eoh, cAlphaFieldNames(2), cAlphaArgs(2));
             ErrorsFound = true;
         }
 
         // Compressor Setpoint Temperature Schedule
         // convert schedule name to pointer
-        if (s_ipsc->lAlphaFieldBlanks(3)) {
-            ShowSevereEmptyField(state, eoh, s_ipsc->cAlphaFieldNames(3));
+        if (lAlphaFieldBlanks(3)) {
+            ShowSevereEmptyField(state, eoh, cAlphaFieldNames(3));
             ErrorsFound = true;
-        } else if ((HPWH.setptTempSched = Sched::GetSchedule(state, s_ipsc->cAlphaArgs(3))) == nullptr) {
-            ShowSevereItemNotFound(state, eoh, s_ipsc->cAlphaFieldNames(3), s_ipsc->cAlphaArgs(3));
+        } else if ((HPWH.setptTempSched = Sched::GetSchedule(state, cAlphaArgs(3))) == nullptr) {
+            ShowSevereItemNotFound(state, eoh, cAlphaFieldNames(3), cAlphaArgs(3));
             ErrorsFound = true;
         }
 
         // Dead Band Temperature Difference
-        HPWH.DeadBandTempDiff = s_ipsc->rNumericArgs(1 + nNumericOffset);
+        HPWH.DeadBandTempDiff = rNumericArgs(1 + nNumericOffset);
         if (HPWH.DeadBandTempDiff <= 0.0 || HPWH.DeadBandTempDiff > 20.0) {
-            ShowSevereError(state, format("{}=\"{}\", ", s_ipsc->cCurrentModuleObject, HPWH.Name));
+            ShowSevereError(state, format("{}=\"{}\", ", cCurrentModuleObject, HPWH.Name));
             ShowContinueError(state,
                               format("{}{}",
-                                     s_ipsc->cNumericFieldNames(1 + nNumericOffset),
-                                     format(" difference must be > 0 and <= 20. Dead band = {:.1T}", s_ipsc->rNumericArgs(1 + nNumericOffset))));
+                                     cNumericFieldNames(1 + nNumericOffset),
+                                     format(" difference must be > 0 and <= 20. Dead band = {:.1T}", rNumericArgs(1 + nNumericOffset))));
             ErrorsFound = true;
         }
 
@@ -1211,7 +1224,7 @@ bool getHPWaterHeaterInput(EnergyPlusData &state)
 
             // Condenser Inlet/Outlet Nodes
             HPWH.CondWaterInletNode = NodeInputManager::GetOnlySingleNode(state,
-                                                                          s_ipsc->cAlphaArgs(4),
+                                                                          cAlphaArgs(4),
                                                                           ErrorsFound,
                                                                           objType,
                                                                           HPWH.Name,
@@ -1219,9 +1232,9 @@ bool getHPWaterHeaterInput(EnergyPlusData &state)
                                                                           DataLoopNode::ConnectionType::Inlet,
                                                                           NodeInputManager::CompFluidStream::Secondary,
                                                                           DataLoopNode::ObjectIsParent);
-            HPWH.InletNodeName1 = s_ipsc->cAlphaArgs(4);
+            HPWH.InletNodeName1 = cAlphaArgs(4);
             HPWH.CondWaterOutletNode = NodeInputManager::GetOnlySingleNode(state,
-                                                                           s_ipsc->cAlphaArgs(5),
+                                                                           cAlphaArgs(5),
                                                                            ErrorsFound,
                                                                            objType,
                                                                            HPWH.Name,
@@ -1229,39 +1242,39 @@ bool getHPWaterHeaterInput(EnergyPlusData &state)
                                                                            DataLoopNode::ConnectionType::Outlet,
                                                                            NodeInputManager::CompFluidStream::Secondary,
                                                                            DataLoopNode::ObjectIsParent);
-            HPWH.OutletNodeName1 = s_ipsc->cAlphaArgs(5);
+            HPWH.OutletNodeName1 = cAlphaArgs(5);
 
             // Condenser Water Flow Rate
-            HPWH.OperatingWaterFlowRate = s_ipsc->rNumericArgs(2);
-            if (HPWH.OperatingWaterFlowRate <= 0.0 && s_ipsc->rNumericArgs(2) != Constant::AutoCalculate) {
-                ShowSevereError(state, format("{}=\"{}\", ", s_ipsc->cCurrentModuleObject, HPWH.Name));
+            HPWH.OperatingWaterFlowRate = rNumericArgs(2);
+            if (HPWH.OperatingWaterFlowRate <= 0.0 && rNumericArgs(2) != Constant::AutoCalculate) {
+                ShowSevereError(state, format("{}=\"{}\", ", cCurrentModuleObject, HPWH.Name));
                 ShowContinueError(state,
-                                  format("{} must be greater than 0. Condenser water flow rate = {:.6T}", s_ipsc->cNumericFieldNames(2), s_ipsc->rNumericArgs(2)));
+                                  format("{} must be greater than 0. Condenser water flow rate = {:.6T}", cNumericFieldNames(2), rNumericArgs(2)));
                 ErrorsFound = true;
             }
 
         } else if (HPWH.HPWHType == DataPlant::PlantEquipmentType::HeatPumpWtrHeaterWrapped) {
 
             // Wrapped Condenser Location
-            HPWH.WrappedCondenserBottomLocation = s_ipsc->rNumericArgs(2 + nNumericOffset);
-            HPWH.WrappedCondenserTopLocation = s_ipsc->rNumericArgs(3 + nNumericOffset);
+            HPWH.WrappedCondenserBottomLocation = rNumericArgs(2 + nNumericOffset);
+            HPWH.WrappedCondenserTopLocation = rNumericArgs(3 + nNumericOffset);
 
             if (HPWH.WrappedCondenserBottomLocation < 0.0) {
-                ShowSevereError(state, format("{}=\"{}\", ", s_ipsc->cCurrentModuleObject, HPWH.Name));
+                ShowSevereError(state, format("{}=\"{}\", ", cCurrentModuleObject, HPWH.Name));
                 ShowContinueError(state,
                                   format("{} must be greater than 0. Condenser bottom location = {:.6T}",
-                                         s_ipsc->cNumericFieldNames(2),
+                                         cNumericFieldNames(2),
                                          HPWH.WrappedCondenserBottomLocation));
                 ErrorsFound = true;
             }
 
             if (HPWH.WrappedCondenserBottomLocation >= HPWH.WrappedCondenserTopLocation) {
-                ShowSevereError(state, format("{}=\"{}\", ", s_ipsc->cCurrentModuleObject, HPWH.Name));
+                ShowSevereError(state, format("{}=\"{}\", ", cCurrentModuleObject, HPWH.Name));
                 ShowContinueError(state,
                                   format("{} ({:.6T}) must be greater than {} ({:.6T}).",
                                          HPWH.WrappedCondenserTopLocation,
-                                         s_ipsc->cNumericFieldNames(2),
-                                         s_ipsc->cNumericFieldNames(3),
+                                         cNumericFieldNames(2),
+                                         cNumericFieldNames(3),
                                          HPWH.WrappedCondenserBottomLocation));
                 ErrorsFound = true;
             }
@@ -1275,40 +1288,40 @@ bool getHPWaterHeaterInput(EnergyPlusData &state)
         }
 
         // Evaporator Air Flow Rate
-        HPWH.OperatingAirFlowRate = s_ipsc->rNumericArgs(3 + nNumericOffset);
-        if (HPWH.OperatingAirFlowRate <= 0.0 && s_ipsc->rNumericArgs(3 + nNumericOffset) != Constant::AutoCalculate) {
-            ShowSevereError(state, format("{}=\"{}\", ", s_ipsc->cCurrentModuleObject, HPWH.Name));
+        HPWH.OperatingAirFlowRate = rNumericArgs(3 + nNumericOffset);
+        if (HPWH.OperatingAirFlowRate <= 0.0 && rNumericArgs(3 + nNumericOffset) != Constant::AutoCalculate) {
+            ShowSevereError(state, format("{}=\"{}\", ", cCurrentModuleObject, HPWH.Name));
             ShowContinueError(state,
                               format("{}{}",
-                                     s_ipsc->cNumericFieldNames(3 + nNumericOffset),
-                                     format(" must be greater than 0. Evaporator air flow rate = {:.6T}", s_ipsc->rNumericArgs(3 + nNumericOffset))));
+                                     cNumericFieldNames(3 + nNumericOffset),
+                                     format(" must be greater than 0. Evaporator air flow rate = {:.6T}", rNumericArgs(3 + nNumericOffset))));
             ErrorsFound = true;
         }
 
         // Inlet Air Configuration
-        HPWH.InletAirConfiguration = static_cast<WTTAmbientTemp>(getEnumValue(HPWHAmbientTempNamesUC, Util::makeUPPER(s_ipsc->cAlphaArgs(6 + nAlphaOffset))));
+        HPWH.InletAirConfiguration = static_cast<WTTAmbientTemp>(getEnumValue(HPWHAmbientTempNamesUC, Util::makeUPPER(cAlphaArgs(6 + nAlphaOffset))));
         switch (HPWH.InletAirConfiguration) {
         case WTTAmbientTemp::Schedule: {
 
             // Inlet Air Temperature Schedule
-            if (s_ipsc->lAlphaFieldBlanks(11 + nAlphaOffset)) {
-                ShowSevereEmptyField(state, eoh, s_ipsc->cAlphaFieldNames(11 + nAlphaOffset));
+            if (lAlphaFieldBlanks(11 + nAlphaOffset)) {
+                ShowSevereEmptyField(state, eoh, cAlphaFieldNames(11 + nAlphaOffset));
                 ErrorsFound = true;
-            } else if ((HPWH.ambientTempSched = Sched::GetSchedule(state, s_ipsc->cAlphaArgs(11 + nAlphaOffset))) == nullptr) {
-                ShowSevereItemNotFound(state, eoh, s_ipsc->cAlphaFieldNames(11 + nAlphaOffset), s_ipsc->cAlphaArgs(11 + nAlphaOffset));
+            } else if ((HPWH.ambientTempSched = Sched::GetSchedule(state, cAlphaArgs(11 + nAlphaOffset))) == nullptr) {
+                ShowSevereItemNotFound(state, eoh, cAlphaFieldNames(11 + nAlphaOffset), cAlphaArgs(11 + nAlphaOffset));
                 ErrorsFound = true;
             }
 
             // Inlet Air Humidity Schedule
-            if (s_ipsc->lAlphaFieldBlanks(12 + nAlphaOffset)) {
-                ShowSevereEmptyField(state, eoh, s_ipsc->cAlphaFieldNames(12 + nAlphaOffset));
+            if (lAlphaFieldBlanks(12 + nAlphaOffset)) {
+                ShowSevereEmptyField(state, eoh, cAlphaFieldNames(12 + nAlphaOffset));
                 ErrorsFound = true;
-            } else if ((HPWH.ambientRHSched = Sched::GetSchedule(state, s_ipsc->cAlphaArgs(12 + nAlphaOffset))) == nullptr) {
-                ShowSevereItemNotFound(state, eoh, s_ipsc->cAlphaFieldNames(12 + nAlphaOffset), s_ipsc->cAlphaArgs(12 + nAlphaOffset));
+            } else if ((HPWH.ambientRHSched = Sched::GetSchedule(state, cAlphaArgs(12 + nAlphaOffset))) == nullptr) {
+                ShowSevereItemNotFound(state, eoh, cAlphaFieldNames(12 + nAlphaOffset), cAlphaArgs(12 + nAlphaOffset));
                 ErrorsFound = true;
             } else if (!HPWH.ambientRHSched->checkMinMaxVals(state, Clusive::In, 0.0, Clusive::In, 1.0)) {
                 Sched::ShowSevereBadMinMax(
-                    state, eoh, s_ipsc->cAlphaFieldNames(12 + nAlphaOffset), s_ipsc->cAlphaArgs(12 + nAlphaOffset), Clusive::In, 0.0, Clusive::In, 1.0);
+                    state, eoh, cAlphaFieldNames(12 + nAlphaOffset), cAlphaArgs(12 + nAlphaOffset), Clusive::In, 0.0, Clusive::In, 1.0);
                 ErrorsFound = true;
             }
         } break;
@@ -1317,16 +1330,16 @@ bool getHPWaterHeaterInput(EnergyPlusData &state)
         case WTTAmbientTemp::TempZone: {
 
             // Inlet Air Zone
-            if (!s_ipsc->lAlphaFieldBlanks(13 + nAlphaOffset)) {
-                HPWH.AmbientTempZone = Util::FindItemInList(s_ipsc->cAlphaArgs(13 + nAlphaOffset), state.dataHeatBal->Zone);
+            if (!lAlphaFieldBlanks(13 + nAlphaOffset)) {
+                HPWH.AmbientTempZone = Util::FindItemInList(cAlphaArgs(13 + nAlphaOffset), state.dataHeatBal->Zone);
                 if (HPWH.AmbientTempZone == 0) {
-                    ShowSevereError(state, format("{}=\"{}\", not found", s_ipsc->cCurrentModuleObject, HPWH.Name));
-                    ShowContinueError(state, format("{}=\"{}\".", s_ipsc->cAlphaFieldNames(13 + nAlphaOffset), s_ipsc->cAlphaArgs(13 + nAlphaOffset)));
+                    ShowSevereError(state, format("{}=\"{}\", not found", cCurrentModuleObject, HPWH.Name));
+                    ShowContinueError(state, format("{}=\"{}\".", cAlphaFieldNames(13 + nAlphaOffset), cAlphaArgs(13 + nAlphaOffset)));
                     ErrorsFound = true;
                 }
             } else {
-                ShowSevereError(state, format("{}=\"{}\", ", s_ipsc->cCurrentModuleObject, HPWH.Name));
-                ShowContinueError(state, format("required {} is blank.", s_ipsc->cAlphaFieldNames(13 + nAlphaOffset)));
+                ShowSevereError(state, format("{}=\"{}\", ", cCurrentModuleObject, HPWH.Name));
+                ShowContinueError(state, format("required {} is blank.", cAlphaFieldNames(13 + nAlphaOffset)));
                 ErrorsFound = true;
             }
             break;
@@ -1336,21 +1349,21 @@ bool getHPWaterHeaterInput(EnergyPlusData &state)
             break;
         }
 
-        // Read air inlet nodes after mixer/splitter nodes have been read in (s_ipsc->cAlphaArgs 7-10),
+        // Read air inlet nodes after mixer/splitter nodes have been read in (cAlphaArgs 7-10),
         // Node_ConnectionType differs for inlet node if mixer/splitter node exists
 
         // Tank Name
         // We will verify this exists and is the right kind of tank later when the tanks are all loaded.
-        HPWH.TankName = s_ipsc->cAlphaArgs(15 + nAlphaOffset);
-        HPWH.TankType = s_ipsc->cAlphaArgs(14 + nAlphaOffset);
+        HPWH.TankName = cAlphaArgs(15 + nAlphaOffset);
+        HPWH.TankType = cAlphaArgs(14 + nAlphaOffset);
 
         // Use Side Inlet/Outlet
         // Get the water heater tank use side inlet node names for HPWHs connected to a plant loop
         // Save the name of the node for use with set up comp sets
-        HPWH.InletNodeName2 = s_ipsc->cAlphaArgs(16 + nAlphaOffset);
-        HPWH.OutletNodeName2 = s_ipsc->cAlphaArgs(17 + nAlphaOffset);
+        HPWH.InletNodeName2 = cAlphaArgs(16 + nAlphaOffset);
+        HPWH.OutletNodeName2 = cAlphaArgs(17 + nAlphaOffset);
 
-        if (!s_ipsc->lAlphaFieldBlanks(16 + nAlphaOffset) && !s_ipsc->lAlphaFieldBlanks(17 + nAlphaOffset)) {
+        if (!lAlphaFieldBlanks(16 + nAlphaOffset) && !lAlphaFieldBlanks(17 + nAlphaOffset)) {
             HPWH.WHUseInletNode = NodeInputManager::GetOnlySingleNode(state,
                                                                       HPWH.InletNodeName2,
                                                                       ErrorsFound,
@@ -1373,8 +1386,8 @@ bool getHPWaterHeaterInput(EnergyPlusData &state)
 
         // DX Coil
         // get Coil:DX:HeatPumpWaterHeater object
-        HPWH.DXCoilName = s_ipsc->cAlphaArgs(19 + nAlphaOffset);
-        HPWH.DXCoilType = static_cast<HVAC::CoilType>(getEnumValue(HVAC::coilTypeNamesUC, s_ipsc->cAlphaArgs(18 + nAlphaOffset)));
+        HPWH.DXCoilName = cAlphaArgs(19 + nAlphaOffset);
+        HPWH.DXCoilType = static_cast<HVAC::CoilType>(getEnumValue(HVAC::coilTypeNamesUC, cAlphaArgs(18 + nAlphaOffset)));
 
         // check that the DX Coil exists
         bool DXCoilErrFlag = false;
@@ -1406,7 +1419,7 @@ bool getHPWaterHeaterInput(EnergyPlusData &state)
         // Make sure that the coil and tank are compatible.
         if (bIsVScoil) {
             if (HPWH.HPWHType != DataPlant::PlantEquipmentType::HeatPumpWtrHeaterPumped) {
-                ShowSevereError(state, format("{}=\"{}\":", s_ipsc->cCurrentModuleObject, HPWH.Name));
+                ShowSevereError(state, format("{}=\"{}\":", cCurrentModuleObject, HPWH.Name));
                 ShowContinueError(state,
                                   "Coil:WaterHeating:AirToWaterHeatPump:VariableSpeed can only be used with a pumped condenser heat pump "
                                   "water heater.");
@@ -1417,7 +1430,7 @@ bool getHPWaterHeaterInput(EnergyPlusData &state)
                    HPWH.HPWHType == DataPlant::PlantEquipmentType::HeatPumpWtrHeaterPumped) ||
                   (HPWH.DXCoilType == HVAC::CoilType::WaterHeatingDXWrapped &&
                    HPWH.HPWHType == DataPlant::PlantEquipmentType::HeatPumpWtrHeaterWrapped))) {
-                ShowSevereError(state, format("{}=\"{}\":", s_ipsc->cCurrentModuleObject, HPWH.Name));
+                ShowSevereError(state, format("{}=\"{}\":", cCurrentModuleObject, HPWH.Name));
                 ShowContinueError(state, format("can only be used with {}", HVAC::coilTypeNames[(int)HPWH.DXCoilType]));
                 ErrorsFound = true;
             }
@@ -1450,14 +1463,14 @@ bool getHPWaterHeaterInput(EnergyPlusData &state)
         }
 
         // Minimum Inlet Air Temperature for Compressor Operation
-        HPWH.MinAirTempForHPOperation = s_ipsc->rNumericArgs(4 + nNumericOffset);
+        HPWH.MinAirTempForHPOperation = rNumericArgs(4 + nNumericOffset);
 
         // Maximum Inlet Air Temperature for Compressor Operation
-        HPWH.MaxAirTempForHPOperation = s_ipsc->rNumericArgs(5 + nNumericOffset);
+        HPWH.MaxAirTempForHPOperation = rNumericArgs(5 + nNumericOffset);
         if (HPWH.MaxAirTempForHPOperation <= HPWH.MinAirTempForHPOperation) {
             ShowWarningError(state,
                              format("{}=\"{}\": maximum inlet air temperature for heat pump compressor operation",
-                                    s_ipsc->cCurrentModuleObject,
+                                    cCurrentModuleObject,
                                     HPWH.Name));
             ShowContinueError(state, "must be greater than the minimum inlet air temperature for heat pump compressor operation.");
             ShowContinueError(state, format("...Minimum inlet air temperature = {:.1T}", HPWH.MinAirTempForHPOperation));
@@ -1466,15 +1479,15 @@ bool getHPWaterHeaterInput(EnergyPlusData &state)
 
         // Compressor Location
         HPWH.CrankcaseTempIndicator =
-            static_cast<CrankcaseHeaterControlTemp>(getEnumValue(CrankcaseHeaterControlTempNamesUC, Util::makeUPPER(s_ipsc->cAlphaArgs(20 + nAlphaOffset))));
+            static_cast<CrankcaseHeaterControlTemp>(getEnumValue(CrankcaseHeaterControlTempNamesUC, Util::makeUPPER(cAlphaArgs(20 + nAlphaOffset))));
 
         switch (HPWH.CrankcaseTempIndicator) {
         case CrankcaseHeaterControlTemp::Schedule: {
-            if (s_ipsc->lAlphaFieldBlanks(21 + nAlphaOffset)) {
-                ShowSevereEmptyField(state, eoh, s_ipsc->cAlphaFieldNames(21 + nAlphaOffset));
+            if (lAlphaFieldBlanks(21 + nAlphaOffset)) {
+                ShowSevereEmptyField(state, eoh, cAlphaFieldNames(21 + nAlphaOffset));
                 ErrorsFound = true;
-            } else if ((HPWH.crankcaseTempSched = Sched::GetSchedule(state, s_ipsc->cAlphaArgs(21 + nAlphaOffset))) == nullptr) {
-                ShowSevereItemNotFound(state, eoh, s_ipsc->cAlphaFieldNames(21 + nAlphaOffset), s_ipsc->cAlphaArgs(21 + nAlphaOffset));
+            } else if ((HPWH.crankcaseTempSched = Sched::GetSchedule(state, cAlphaArgs(21 + nAlphaOffset))) == nullptr) {
+                ShowSevereItemNotFound(state, eoh, cAlphaFieldNames(21 + nAlphaOffset), cAlphaArgs(21 + nAlphaOffset));
                 ErrorsFound = true;
             }
         } break;
@@ -1483,31 +1496,31 @@ bool getHPWaterHeaterInput(EnergyPlusData &state)
             if (HPWH.InletAirConfiguration == WTTAmbientTemp::OutsideAir || HPWH.InletAirConfiguration == WTTAmbientTemp::Schedule) {
                 ShowSevereError(state,
                                 format("{}=\"{}\":  Inlet Air Configuration must be Zone Air Only or Zone And",
-                                       s_ipsc->cCurrentModuleObject,
+                                       cCurrentModuleObject,
                                        HPWH.Name));
                 ShowContinueError(state, " Outdoor Air when compressor location equals ZONE.");
                 ErrorsFound = true;
             }
 
-            if (!s_ipsc->lAlphaFieldBlanks(21 + nAlphaOffset)) {
+            if (!lAlphaFieldBlanks(21 + nAlphaOffset)) {
                 ShowWarningError(state,
                                  format("{}=\"{}\"  {} was provided but will not be used based on compressor location input=\"{}\".",
-                                        s_ipsc->cCurrentModuleObject,
+                                        cCurrentModuleObject,
                                         HPWH.Name,
-                                        s_ipsc->cAlphaFieldNames(21 + nAlphaOffset),
-                                        s_ipsc->cAlphaArgs(20 + nAlphaOffset)));
+                                        cAlphaFieldNames(21 + nAlphaOffset),
+                                        cAlphaArgs(20 + nAlphaOffset)));
             }
             break;
         }
         case CrankcaseHeaterControlTemp::Outdoors: {
-            if (!s_ipsc->lAlphaFieldBlanks(21 + nAlphaOffset)) {
+            if (!lAlphaFieldBlanks(21 + nAlphaOffset)) {
                 ShowWarningError(state,
                                  format("{}=\"{}\"  {} was provided but will not be used based on {}=\"{}\".",
-                                        s_ipsc->cCurrentModuleObject,
+                                        cCurrentModuleObject,
                                         HPWH.Name,
-                                        s_ipsc->cAlphaFieldNames(21 + nAlphaOffset),
-                                        s_ipsc->cAlphaFieldNames(21 + nAlphaOffset),
-                                        s_ipsc->cAlphaArgs(20 + nAlphaOffset)));
+                                        cAlphaFieldNames(21 + nAlphaOffset),
+                                        cAlphaFieldNames(21 + nAlphaOffset),
+                                        cAlphaArgs(20 + nAlphaOffset)));
             }
             break;
         }
@@ -1516,15 +1529,15 @@ bool getHPWaterHeaterInput(EnergyPlusData &state)
         }
 
         // Fan Name
-        HPWH.FanName = s_ipsc->cAlphaArgs(23 + nAlphaOffset);
+        HPWH.FanName = cAlphaArgs(23 + nAlphaOffset);
 
         Real64 FanVolFlow = 0.0;
         bool errFlag(false);
 
-        HPWH.fanType = static_cast<HVAC::FanType>(getEnumValue(HVAC::fanTypeNamesUC, s_ipsc->cAlphaArgs(22 + nAlphaOffset)));
+        HPWH.fanType = static_cast<HVAC::FanType>(getEnumValue(HVAC::fanTypeNamesUC, cAlphaArgs(22 + nAlphaOffset)));
 
         if ((HPWH.FanNum = Fans::GetFanIndex(state, HPWH.FanName)) == 0) {
-            ShowSevereItemNotFound(state, eoh, s_ipsc->cAlphaFieldNames(23 + nAlphaOffset), HPWH.FanName);
+            ShowSevereItemNotFound(state, eoh, cAlphaFieldNames(23 + nAlphaOffset), HPWH.FanName);
             ErrorsFound = true;
         } else {
             assert(HPWH.fanType == state.dataFans->fans(HPWH.FanNum)->type);
@@ -1541,14 +1554,14 @@ bool getHPWaterHeaterInput(EnergyPlusData &state)
         if (errFlag) {
             ErrorsFound = true;
         } else if (HPWH.fanType != HVAC::FanType::OnOff && HPWH.fanType != HVAC::FanType::SystemModel) {
-            ShowSevereError(state, format("{}=\"{}\": illegal fan type specified.", s_ipsc->cCurrentModuleObject, HPWH.Name));
+            ShowSevereError(state, format("{}=\"{}\": illegal fan type specified.", cCurrentModuleObject, HPWH.Name));
             ShowContinueError(
                 state,
                 format(" The fan object ({}) type must be Fan:SystemModel or Fan:OnOff when used with a heat pump water heater.", HPWH.FanName));
             ErrorsFound = true;
         } else if (HPWH.fanType != HVAC::FanType::OnOff && HPWH.fanType != HVAC::FanType::SystemModel) {
-            ShowSevereError(state, format("{}=\"{}\": illegal fan type specified.", s_ipsc->cCurrentModuleObject, HPWH.Name));
-            ShowContinueError(state, format(" The {} must specify that the fan object", s_ipsc->cCurrentModuleObject));
+            ShowSevereError(state, format("{}=\"{}\": illegal fan type specified.", cCurrentModuleObject, HPWH.Name));
+            ShowContinueError(state, format(" The {} must specify that the fan object", cCurrentModuleObject));
             ShowContinueError(state,
                               " is of type FanSystemModel or Fan:OnOff in addition to the fan actually being of that type and defined elsewhere.");
         }
@@ -1557,7 +1570,7 @@ bool getHPWaterHeaterInput(EnergyPlusData &state)
             if (FanVolFlow < HPWH.OperatingAirFlowRate) {
                 ShowSevereError(state,
                                 format("{} - air flow rate = {:.7T} in fan object {} is less than the  HPWHs evaporator air flow rate.",
-                                       s_ipsc->cCurrentModuleObject,
+                                       cCurrentModuleObject,
                                        FanVolFlow,
                                        HPWH.FanName));
                 ShowContinueError(state, " The fan flow rate must be >= to the HPWHs evaporator volumetric air flow rate.");
@@ -1567,9 +1580,9 @@ bool getHPWaterHeaterInput(EnergyPlusData &state)
         }
 
         // Fan Placement
-        HPWH.fanPlace = static_cast<HVAC::FanPlace>(getEnumValue(HVAC::fanPlaceNamesUC, s_ipsc->cAlphaArgs(24 + nAlphaOffset)));
+        HPWH.fanPlace = static_cast<HVAC::FanPlace>(getEnumValue(HVAC::fanPlaceNamesUC, cAlphaArgs(24 + nAlphaOffset)));
         if (HPWH.fanPlace == HVAC::FanPlace::Invalid) {
-            ShowSevereInvalidKey(state, eoh, s_ipsc->cAlphaFieldNames(24 + nAlphaOffset), s_ipsc->cAlphaArgs(24 + nAlphaOffset));
+            ShowSevereInvalidKey(state, eoh, cAlphaFieldNames(24 + nAlphaOffset), cAlphaArgs(24 + nAlphaOffset));
             ErrorsFound = true;
         }
 
@@ -1616,53 +1629,53 @@ bool getHPWaterHeaterInput(EnergyPlusData &state)
         }
 
         // On Cycle Parasitic Electric Load
-        HPWH.OnCycParaLoad = s_ipsc->rNumericArgs(6 + nNumericOffset);
+        HPWH.OnCycParaLoad = rNumericArgs(6 + nNumericOffset);
         if (HPWH.OnCycParaLoad < 0.0) {
-            ShowSevereError(state, format("{}=\"{}\",", s_ipsc->cCurrentModuleObject, HPWH.Name));
+            ShowSevereError(state, format("{}=\"{}\",", cCurrentModuleObject, HPWH.Name));
             ShowContinueError(state,
                               format("{} must be >= 0. {}{}",
-                                     s_ipsc->cNumericFieldNames(6 + nNumericOffset),
-                                     s_ipsc->cNumericFieldNames(6 + nNumericOffset),
-                                     format(" = {:.2T}", s_ipsc->rNumericArgs(6 + nNumericOffset))));
+                                     cNumericFieldNames(6 + nNumericOffset),
+                                     cNumericFieldNames(6 + nNumericOffset),
+                                     format(" = {:.2T}", rNumericArgs(6 + nNumericOffset))));
             ErrorsFound = true;
         }
 
         // Off Cycle Parasitic Electric Load
-        HPWH.OffCycParaLoad = s_ipsc->rNumericArgs(7 + nNumericOffset);
+        HPWH.OffCycParaLoad = rNumericArgs(7 + nNumericOffset);
         if (HPWH.OffCycParaLoad < 0.0) {
-            ShowSevereError(state, format("{}=\"{}\",", s_ipsc->cCurrentModuleObject, HPWH.Name));
+            ShowSevereError(state, format("{}=\"{}\",", cCurrentModuleObject, HPWH.Name));
             ShowContinueError(state,
                               format("{} must be >= 0. {}{}",
-                                     s_ipsc->cNumericFieldNames(7 + nNumericOffset),
-                                     s_ipsc->cNumericFieldNames(2 + nNumericOffset),
-                                     format(" = {:.2T}", s_ipsc->rNumericArgs(7 + nNumericOffset))));
+                                     cNumericFieldNames(7 + nNumericOffset),
+                                     cNumericFieldNames(2 + nNumericOffset),
+                                     format(" = {:.2T}", rNumericArgs(7 + nNumericOffset))));
             ErrorsFound = true;
         }
 
         // Parasitic Heat Rejection Location
-        if (Util::SameString(s_ipsc->cAlphaArgs(25 + nAlphaOffset), "Zone")) {
+        if (Util::SameString(cAlphaArgs(25 + nAlphaOffset), "Zone")) {
             HPWH.ParasiticTempIndicator = WTTAmbientTemp::TempZone;
             if (HPWH.InletAirConfiguration == WTTAmbientTemp::OutsideAir || HPWH.InletAirConfiguration == WTTAmbientTemp::Schedule) {
-                ShowSevereError(state, format("{}=\"{}\",", s_ipsc->cCurrentModuleObject, HPWH.Name));
-                ShowContinueError(state, format("{} must be ZoneAirOnly or ZoneAndOutdoorAir", s_ipsc->cAlphaFieldNames(25 + nAlphaOffset)));
+                ShowSevereError(state, format("{}=\"{}\",", cCurrentModuleObject, HPWH.Name));
+                ShowContinueError(state, format("{} must be ZoneAirOnly or ZoneAndOutdoorAir", cAlphaFieldNames(25 + nAlphaOffset)));
                 ShowContinueError(state, " when parasitic heat rejection location equals Zone.");
                 ErrorsFound = true;
             }
-        } else if (Util::SameString(s_ipsc->cAlphaArgs(25 + nAlphaOffset), "Outdoors")) {
+        } else if (Util::SameString(cAlphaArgs(25 + nAlphaOffset), "Outdoors")) {
             HPWH.ParasiticTempIndicator = WTTAmbientTemp::OutsideAir;
         } else {
-            ShowSevereError(state, format("{}=\"{}\":", s_ipsc->cCurrentModuleObject, HPWH.Name));
+            ShowSevereError(state, format("{}=\"{}\":", cCurrentModuleObject, HPWH.Name));
             ShowContinueError(state, " parasitic heat rejection location must be either Zone or Outdoors.");
             ErrorsFound = true;
         }
 
         // Inlet Air Mixer Node
         // get mixer/splitter nodes only when Inlet Air Configuration is ZoneAndOutdoorAir
-        if (!s_ipsc->lAlphaFieldBlanks(26 + nAlphaOffset)) {
+        if (!lAlphaFieldBlanks(26 + nAlphaOffset)) {
             // For the inlet air mixer node, NodeConnectionType is outlet from the HPWH inlet air node
             if (HPWH.InletAirConfiguration == WTTAmbientTemp::ZoneAndOA) {
                 HPWH.InletAirMixerNode = NodeInputManager::GetOnlySingleNode(state,
-                                                                             s_ipsc->cAlphaArgs(26 + nAlphaOffset),
+                                                                             cAlphaArgs(26 + nAlphaOffset),
                                                                              ErrorsFound,
                                                                              objType,
                                                                              HPWH.Name + "-INLET AIR MIXER",
@@ -1671,23 +1684,23 @@ bool getHPWaterHeaterInput(EnergyPlusData &state)
                                                                              NodeInputManager::CompFluidStream::Primary,
                                                                              DataLoopNode::ObjectIsNotParent);
             } else {
-                ShowWarningError(state, format("{}=\"{}\":", s_ipsc->cCurrentModuleObject, HPWH.Name));
+                ShowWarningError(state, format("{}=\"{}\":", cCurrentModuleObject, HPWH.Name));
                 ShowContinueError(state,
                                   "Inlet air mixer node name specified but only required when Inlet Air Configuration is selected as "
                                   "Zone and OutdoorAir. Node name disregarded and simulation continues.");
             }
-        } else if (s_ipsc->lAlphaFieldBlanks(26 + nAlphaOffset) && HPWH.InletAirConfiguration == WTTAmbientTemp::ZoneAndOA) {
-            ShowSevereError(state, format("{}=\"{}\":", s_ipsc->cCurrentModuleObject, HPWH.Name));
+        } else if (lAlphaFieldBlanks(26 + nAlphaOffset) && HPWH.InletAirConfiguration == WTTAmbientTemp::ZoneAndOA) {
+            ShowSevereError(state, format("{}=\"{}\":", cCurrentModuleObject, HPWH.Name));
             ShowContinueError(state, "Inlet air mixer node name required when Inlet Air Configuration is selected as ZoneAndOutdoorAir.");
             ErrorsFound = true;
         }
 
         // Outlet Air Splitter Node
-        if (!s_ipsc->lAlphaFieldBlanks(27 + nAlphaOffset)) {
+        if (!lAlphaFieldBlanks(27 + nAlphaOffset)) {
             //  For the outlet air splitter node, NodeConnectionType is inlet to the HPWH outlet air node
             if (HPWH.InletAirConfiguration == WTTAmbientTemp::ZoneAndOA) {
                 HPWH.OutletAirSplitterNode = NodeInputManager::GetOnlySingleNode(state,
-                                                                                 s_ipsc->cAlphaArgs(27 + nAlphaOffset),
+                                                                                 cAlphaArgs(27 + nAlphaOffset),
                                                                                  ErrorsFound,
                                                                                  objType,
                                                                                  HPWH.Name + "-OUTLET AIR SPLITTER",
@@ -1696,13 +1709,13 @@ bool getHPWaterHeaterInput(EnergyPlusData &state)
                                                                                  NodeInputManager::CompFluidStream::Primary,
                                                                                  DataLoopNode::ObjectIsNotParent);
             } else {
-                ShowWarningError(state, format("{}=\"{}\":", s_ipsc->cCurrentModuleObject, HPWH.Name));
+                ShowWarningError(state, format("{}=\"{}\":", cCurrentModuleObject, HPWH.Name));
                 ShowContinueError(state,
                                   "Outlet air splitter node name specified but only required when Inlet Air Configuration is selected as "
                                   "ZoneAndOutdoorAir. Node name disregarded and simulation continues.");
             }
-        } else if (s_ipsc->lAlphaFieldBlanks(27 + nAlphaOffset) && HPWH.InletAirConfiguration == WTTAmbientTemp::ZoneAndOA) {
-            ShowSevereError(state, format("{}=\"{}\":", s_ipsc->cCurrentModuleObject, HPWH.Name));
+        } else if (lAlphaFieldBlanks(27 + nAlphaOffset) && HPWH.InletAirConfiguration == WTTAmbientTemp::ZoneAndOA) {
+            ShowSevereError(state, format("{}=\"{}\":", cCurrentModuleObject, HPWH.Name));
             ShowContinueError(state, "Outlet air splitter node name required when Inlet Air Configuration is selected as ZoneAndOutdoorAir.");
             ErrorsFound = true;
         }
@@ -1712,7 +1725,7 @@ bool getHPWaterHeaterInput(EnergyPlusData &state)
             // when mixer/splitter nodes are used the HPWH's inlet/outlet node are set up as DataLoopNode::ObjectIsNotParent
 
             HPWH.HeatPumpAirInletNode = NodeInputManager::GetOnlySingleNode(state,
-                                                                            s_ipsc->cAlphaArgs(7 + nAlphaOffset),
+                                                                            cAlphaArgs(7 + nAlphaOffset),
                                                                             ErrorsFound,
                                                                             objType,
                                                                             HPWH.Name + "-INLET AIR MIXER",
@@ -1722,7 +1735,7 @@ bool getHPWaterHeaterInput(EnergyPlusData &state)
                                                                             DataLoopNode::ObjectIsNotParent);
 
             HPWH.HeatPumpAirOutletNode = NodeInputManager::GetOnlySingleNode(state,
-                                                                             s_ipsc->cAlphaArgs(8 + nAlphaOffset),
+                                                                             cAlphaArgs(8 + nAlphaOffset),
                                                                              ErrorsFound,
                                                                              objType,
                                                                              HPWH.Name + "-OUTLET AIR SPLITTER",
@@ -1732,7 +1745,7 @@ bool getHPWaterHeaterInput(EnergyPlusData &state)
                                                                              DataLoopNode::ObjectIsNotParent);
 
             HPWH.OutsideAirNode = NodeInputManager::GetOnlySingleNode(state,
-                                                                      s_ipsc->cAlphaArgs(9 + nAlphaOffset),
+                                                                      cAlphaArgs(9 + nAlphaOffset),
                                                                       ErrorsFound,
                                                                       objType,
                                                                       HPWH.Name,
@@ -1740,20 +1753,20 @@ bool getHPWaterHeaterInput(EnergyPlusData &state)
                                                                       DataLoopNode::ConnectionType::OutsideAirReference,
                                                                       NodeInputManager::CompFluidStream::Primary,
                                                                       DataLoopNode::ObjectIsParent);
-            if (!s_ipsc->cAlphaArgs(9 + nAlphaOffset).empty()) {
+            if (!cAlphaArgs(9 + nAlphaOffset).empty()) {
                 bool Okay;
                 OutAirNodeManager::CheckAndAddAirNodeNumber(state, HPWH.OutsideAirNode, Okay);
                 if (!Okay) {
                     ShowWarningError(state,
                                      format("{}=\"{}\": Adding outdoor air node={}",
-                                            s_ipsc->cCurrentModuleObject,
+                                            cCurrentModuleObject,
                                             HPWH.Name,
-                                            s_ipsc->cAlphaArgs(9 + nAlphaOffset)));
+                                            cAlphaArgs(9 + nAlphaOffset)));
                 }
             }
 
             HPWH.ExhaustAirNode = NodeInputManager::GetOnlySingleNode(state,
-                                                                      s_ipsc->cAlphaArgs(10 + nAlphaOffset),
+                                                                      cAlphaArgs(10 + nAlphaOffset),
                                                                       ErrorsFound,
                                                                       objType,
                                                                       HPWH.Name,
@@ -1768,7 +1781,7 @@ bool getHPWaterHeaterInput(EnergyPlusData &state)
                 // for scheduled HPWH's the inlet node is not on any branch or parent object, make it an outlet node
                 // to avoid node connection errors
                 HPWH.HeatPumpAirInletNode = NodeInputManager::GetOnlySingleNode(state,
-                                                                                s_ipsc->cAlphaArgs(7 + nAlphaOffset),
+                                                                                cAlphaArgs(7 + nAlphaOffset),
                                                                                 ErrorsFound,
                                                                                 objType,
                                                                                 HPWH.Name,
@@ -1778,7 +1791,7 @@ bool getHPWaterHeaterInput(EnergyPlusData &state)
                                                                                 DataLoopNode::ObjectIsParent);
 
                 HPWH.HeatPumpAirOutletNode = NodeInputManager::GetOnlySingleNode(state,
-                                                                                 s_ipsc->cAlphaArgs(8 + nAlphaOffset),
+                                                                                 cAlphaArgs(8 + nAlphaOffset),
                                                                                  ErrorsFound,
                                                                                  objType,
                                                                                  HPWH.Name,
@@ -1790,7 +1803,7 @@ bool getHPWaterHeaterInput(EnergyPlusData &state)
             } else { // HPWH is connected to a zone with no mixer/splitter nodes
                 if (HPWH.InletAirConfiguration == WTTAmbientTemp::TempZone) {
                     HPWH.HeatPumpAirInletNode = NodeInputManager::GetOnlySingleNode(state,
-                                                                                    s_ipsc->cAlphaArgs(7 + nAlphaOffset),
+                                                                                    cAlphaArgs(7 + nAlphaOffset),
                                                                                     ErrorsFound,
                                                                                     objType,
                                                                                     HPWH.Name,
@@ -1800,7 +1813,7 @@ bool getHPWaterHeaterInput(EnergyPlusData &state)
                                                                                     DataLoopNode::ObjectIsParent);
 
                     HPWH.HeatPumpAirOutletNode = NodeInputManager::GetOnlySingleNode(state,
-                                                                                     s_ipsc->cAlphaArgs(8 + nAlphaOffset),
+                                                                                     cAlphaArgs(8 + nAlphaOffset),
                                                                                      ErrorsFound,
                                                                                      objType,
                                                                                      HPWH.Name,
@@ -1810,7 +1823,7 @@ bool getHPWaterHeaterInput(EnergyPlusData &state)
                                                                                      DataLoopNode::ObjectIsParent);
                 } else { // HPWH is located outdoors
                     HPWH.OutsideAirNode = NodeInputManager::GetOnlySingleNode(state,
-                                                                              s_ipsc->cAlphaArgs(9 + nAlphaOffset),
+                                                                              cAlphaArgs(9 + nAlphaOffset),
                                                                               ErrorsFound,
                                                                               objType,
                                                                               HPWH.Name,
@@ -1818,20 +1831,20 @@ bool getHPWaterHeaterInput(EnergyPlusData &state)
                                                                               DataLoopNode::ConnectionType::OutsideAirReference,
                                                                               NodeInputManager::CompFluidStream::Primary,
                                                                               DataLoopNode::ObjectIsParent);
-                    if (!s_ipsc->lAlphaFieldBlanks(9 + nAlphaOffset)) {
+                    if (!lAlphaFieldBlanks(9 + nAlphaOffset)) {
                         bool Okay;
                         OutAirNodeManager::CheckAndAddAirNodeNumber(state, HPWH.OutsideAirNode, Okay);
                         if (!Okay) {
                             ShowWarningError(state,
                                              format("{}=\"{}\": Adding outdoor air node ={}",
-                                                    s_ipsc->cCurrentModuleObject,
+                                                    cCurrentModuleObject,
                                                     HPWH.Name,
-                                                    s_ipsc->cAlphaArgs(9 + nAlphaOffset)));
+                                                    cAlphaArgs(9 + nAlphaOffset)));
                         }
                     }
 
                     HPWH.ExhaustAirNode = NodeInputManager::GetOnlySingleNode(state,
-                                                                              s_ipsc->cAlphaArgs(10 + nAlphaOffset),
+                                                                              cAlphaArgs(10 + nAlphaOffset),
                                                                               ErrorsFound,
                                                                               objType,
                                                                               HPWH.Name,
@@ -1845,31 +1858,31 @@ bool getHPWaterHeaterInput(EnergyPlusData &state)
         // check that required node names are present
         if (HPWH.InletAirConfiguration == WTTAmbientTemp::Schedule || HPWH.InletAirConfiguration == WTTAmbientTemp::TempZone) {
             if (HPWH.HeatPumpAirInletNode == 0 || HPWH.HeatPumpAirOutletNode == 0) {
-                ShowSevereError(state, format("{}=\"{}\":", s_ipsc->cCurrentModuleObject, HPWH.Name));
-                ShowContinueError(state, format("When {}=\"{}\".", s_ipsc->cAlphaFieldNames(6 + nAlphaOffset), s_ipsc->cAlphaArgs(6 + nAlphaOffset)));
+                ShowSevereError(state, format("{}=\"{}\":", cCurrentModuleObject, HPWH.Name));
+                ShowContinueError(state, format("When {}=\"{}\".", cAlphaFieldNames(6 + nAlphaOffset), cAlphaArgs(6 + nAlphaOffset)));
                 ShowContinueError(
-                    state, format("{} and {} must be specified.", s_ipsc->cAlphaFieldNames(7 + nAlphaOffset), s_ipsc->cAlphaFieldNames(8 + nAlphaOffset)));
+                    state, format("{} and {} must be specified.", cAlphaFieldNames(7 + nAlphaOffset), cAlphaFieldNames(8 + nAlphaOffset)));
                 ErrorsFound = true;
             }
         } else if (HPWH.InletAirConfiguration == WTTAmbientTemp::OutsideAir) {
             if (HPWH.OutsideAirNode == 0 || HPWH.ExhaustAirNode == 0) {
-                ShowSevereError(state, format("{}=\"{}\":", s_ipsc->cCurrentModuleObject, HPWH.Name));
-                ShowContinueError(state, format("When {}=\"{}\".", s_ipsc->cAlphaFieldNames(6 + nAlphaOffset), s_ipsc->cAlphaArgs(6 + nAlphaOffset)));
+                ShowSevereError(state, format("{}=\"{}\":", cCurrentModuleObject, HPWH.Name));
+                ShowContinueError(state, format("When {}=\"{}\".", cAlphaFieldNames(6 + nAlphaOffset), cAlphaArgs(6 + nAlphaOffset)));
                 ShowContinueError(
-                    state, format("{} and {} must be specified.", s_ipsc->cAlphaFieldNames(9 + nAlphaOffset), s_ipsc->cAlphaFieldNames(10 + nAlphaOffset)));
+                    state, format("{} and {} must be specified.", cAlphaFieldNames(9 + nAlphaOffset), cAlphaFieldNames(10 + nAlphaOffset)));
                 ErrorsFound = true;
             }
         } else if (HPWH.InletAirMixerNode > 0 && HPWH.OutletAirSplitterNode > 0 && HPWH.InletAirConfiguration == WTTAmbientTemp::ZoneAndOA) {
             if (HPWH.HeatPumpAirInletNode == 0 || HPWH.HeatPumpAirOutletNode == 0 || HPWH.OutsideAirNode == 0 || HPWH.ExhaustAirNode == 0) {
-                ShowSevereError(state, format("{}=\"{}\":", s_ipsc->cCurrentModuleObject, HPWH.Name));
-                ShowContinueError(state, format("When {}=\"{}\".", s_ipsc->cAlphaFieldNames(6 + nAlphaOffset), s_ipsc->cAlphaArgs(6 + nAlphaOffset)));
+                ShowSevereError(state, format("{}=\"{}\":", cCurrentModuleObject, HPWH.Name));
+                ShowContinueError(state, format("When {}=\"{}\".", cAlphaFieldNames(6 + nAlphaOffset), cAlphaArgs(6 + nAlphaOffset)));
                 if (HPWH.HeatPumpAirInletNode == 0 || HPWH.HeatPumpAirOutletNode == 0) {
                     ShowContinueError(
-                        state, format("{} and {} must be specified.", s_ipsc->cAlphaFieldNames(7 + nAlphaOffset), s_ipsc->cAlphaFieldNames(8 + nAlphaOffset)));
+                        state, format("{} and {} must be specified.", cAlphaFieldNames(7 + nAlphaOffset), cAlphaFieldNames(8 + nAlphaOffset)));
                 }
                 if (HPWH.OutsideAirNode == 0 || HPWH.ExhaustAirNode == 0) {
                     ShowContinueError(
-                        state, format("{} and {} must be specified.", s_ipsc->cAlphaFieldNames(9 + nAlphaOffset), s_ipsc->cAlphaFieldNames(10 + nAlphaOffset)));
+                        state, format("{} and {} must be specified.", cAlphaFieldNames(9 + nAlphaOffset), cAlphaFieldNames(10 + nAlphaOffset)));
                 }
                 ErrorsFound = true;
             }
@@ -1893,26 +1906,26 @@ bool getHPWaterHeaterInput(EnergyPlusData &state)
                         FoundInletNode = true;
                     }
                     if (!FoundInletNode) {
-                        ShowSevereError(state, format("{}=\"{}\":", s_ipsc->cCurrentModuleObject, HPWH.Name));
+                        ShowSevereError(state, format("{}=\"{}\":", cCurrentModuleObject, HPWH.Name));
                         ShowContinueError(state,
-                                          format("The HPWH's air inlet node name = {} was not properly specified ", s_ipsc->cAlphaArgs(7 + nAlphaOffset)));
+                                          format("The HPWH's air inlet node name = {} was not properly specified ", cAlphaArgs(7 + nAlphaOffset)));
                         ShowContinueError(
                             state,
-                            format("as an exhaust air node for zone = {} in a ZoneHVAC:EquipmentConnections object.", s_ipsc->cAlphaArgs(13 + nAlphaOffset)));
+                            format("as an exhaust air node for zone = {} in a ZoneHVAC:EquipmentConnections object.", cAlphaArgs(13 + nAlphaOffset)));
                         ErrorsFound = true;
                     }
                     if (!FoundOutletNode) {
-                        ShowSevereError(state, format("{}=\"{}\":", s_ipsc->cCurrentModuleObject, HPWH.Name));
+                        ShowSevereError(state, format("{}=\"{}\":", cCurrentModuleObject, HPWH.Name));
                         ShowContinueError(state,
-                                          format("The HPWH's air outlet node name = {} was not properly specified ", s_ipsc->cAlphaArgs(8 + nAlphaOffset)));
+                                          format("The HPWH's air outlet node name = {} was not properly specified ", cAlphaArgs(8 + nAlphaOffset)));
                         ShowContinueError(
                             state,
-                            format("as an inlet air node for zone = {} in a ZoneHVAC:EquipmentConnections object.", s_ipsc->cAlphaArgs(13 + nAlphaOffset)));
+                            format("as an inlet air node for zone = {} in a ZoneHVAC:EquipmentConnections object.", cAlphaArgs(13 + nAlphaOffset)));
                         ErrorsFound = true;
                     }
                 }
             } else {
-                ShowSevereError(state, format("{}=\"{}\":", s_ipsc->cCurrentModuleObject, HPWH.Name));
+                ShowSevereError(state, format("{}=\"{}\":", cCurrentModuleObject, HPWH.Name));
                 ShowContinueError(state,
                                   "Heat pump water heater air inlet node name and air outlet node name must be listed in a "
                                   "ZoneHVAC:EquipmentConnections object when Inlet Air Configuration is equal to ZoneAirOnly or "
@@ -1923,17 +1936,17 @@ bool getHPWaterHeaterInput(EnergyPlusData &state)
 
         // only get the inlet air mixer schedule if the inlet air configuration is zone and outdoor air
         if (HPWH.InletAirConfiguration == WTTAmbientTemp::ZoneAndOA) {
-            if (s_ipsc->lAlphaFieldBlanks(28 + nAlphaOffset)) {
-                ShowSevereEmptyField(state, eoh, s_ipsc->cAlphaFieldNames(28 + nAlphaOffset));
+            if (lAlphaFieldBlanks(28 + nAlphaOffset)) {
+                ShowSevereEmptyField(state, eoh, cAlphaFieldNames(28 + nAlphaOffset));
                 ErrorsFound = true;
                 //           set outlet air splitter schedule index equal to inlet air mixer schedule index
                 //           (place holder for when zone pressurization/depressurization is allowed and different schedules can be used)
-            } else if ((HPWH.inletAirMixerSched = HPWH.outletAirSplitterSched = Sched::GetSchedule(state, s_ipsc->cAlphaArgs(28 + nAlphaOffset))) == nullptr) {
-                ShowSevereItemNotFound(state, eoh, s_ipsc->cAlphaFieldNames(28 + nAlphaOffset), s_ipsc->cAlphaArgs(28 + nAlphaOffset));
+            } else if ((HPWH.inletAirMixerSched = HPWH.outletAirSplitterSched = Sched::GetSchedule(state, cAlphaArgs(28 + nAlphaOffset))) == nullptr) {
+                ShowSevereItemNotFound(state, eoh, cAlphaFieldNames(28 + nAlphaOffset), cAlphaArgs(28 + nAlphaOffset));
                 ErrorsFound = true;
             } else if (!HPWH.inletAirMixerSched->checkMinMaxVals(state, Clusive::In, 0.0, Clusive::In, 1.0)) {
                 Sched::ShowSevereBadMinMax(
-                    state, eoh, s_ipsc->cAlphaFieldNames(28 + nAlphaOffset), s_ipsc->cAlphaArgs(28 + nAlphaOffset), Clusive::In, 0.0, Clusive::In, 1.0);
+                    state, eoh, cAlphaFieldNames(28 + nAlphaOffset), cAlphaArgs(28 + nAlphaOffset), Clusive::In, 0.0, Clusive::In, 1.0);
                 ErrorsFound = true;
             }
         }
@@ -1964,7 +1977,7 @@ bool getHPWaterHeaterInput(EnergyPlusData &state)
         int FanOutletNodeNum = state.dataFans->fans(HPWH.FanNum)->outletNodeNum;
 
         if (FanOutletNodeNum != HPWH.FanOutletNode) {
-            ShowSevereError(state, format("{}=\"{}\":", s_ipsc->cCurrentModuleObject, HPWH.Name));
+            ShowSevereError(state, format("{}=\"{}\":", cCurrentModuleObject, HPWH.Name));
             ShowContinueError(state, "Heat pump water heater fan outlet node name does not match next connected component.");
             if (FanOutletNodeNum != 0) {
                 ShowContinueError(state, format("Fan outlet node name = {}", state.dataLoopNodes->NodeID(FanOutletNodeNum)));
@@ -1988,7 +2001,7 @@ bool getHPWaterHeaterInput(EnergyPlusData &state)
         }
         if (HPWH.fanPlace == HVAC::FanPlace::BlowThru) {
             if (FanInletNodeNum != HPWHFanInletNodeNum) {
-                ShowSevereError(state, format("{}=\"{}\":", s_ipsc->cCurrentModuleObject, HPWH.Name));
+                ShowSevereError(state, format("{}=\"{}\":", cCurrentModuleObject, HPWH.Name));
                 ShowContinueError(state, "Heat pump water heater fan inlet node name does not match previous connected component.");
                 if (FanOutletNodeNum != 0) {
                     ShowContinueError(state, format("Fan inlet node name = {}", state.dataLoopNodes->NodeID(FanInletNodeNum)));
@@ -2014,7 +2027,7 @@ bool getHPWaterHeaterInput(EnergyPlusData &state)
         
         if (HPWH.fanPlace == HVAC::FanPlace::DrawThru) {
             if (FanInletNodeNum != DXCoilAirOutletNodeNum) {
-                ShowSevereError(state, format("{}=\"{}\":", s_ipsc->cCurrentModuleObject, HPWH.Name));
+                ShowSevereError(state, format("{}=\"{}\":", cCurrentModuleObject, HPWH.Name));
                 ShowContinueError(state, "Heat pump water heater fan inlet node name does not match previous connected component.");
                 if (FanInletNodeNum != 0) {
                     ShowContinueError(state, format("Fan inlet node name = {}", state.dataLoopNodes->NodeID(FanInletNodeNum)));
@@ -2036,7 +2049,7 @@ bool getHPWaterHeaterInput(EnergyPlusData &state)
                 }
             }
             if (DXCoilAirOutletNodeNum != HPWHCoilOutletNodeNum) {
-                ShowSevereError(state, format("{}=\"{}\":", s_ipsc->cCurrentModuleObject, HPWH.Name));
+                ShowSevereError(state, format("{}=\"{}\":", cCurrentModuleObject, HPWH.Name));
                 ShowContinueError(state, "Heat pump water heater coil outlet node name does not match next connected component.");
                 if (DXCoilAirOutletNodeNum != 0) {
                     ShowContinueError(state, format("Coil outlet node name = {}", state.dataLoopNodes->NodeID(DXCoilAirOutletNodeNum)));
@@ -2055,52 +2068,52 @@ bool getHPWaterHeaterInput(EnergyPlusData &state)
 
         if (HPWH.fanPlace == HVAC::FanPlace::BlowThru) {
             if (HPWH.InletAirMixerNode > 0) {
-                HPWH.FanInletNode_str = s_ipsc->cAlphaArgs(26 + nAlphaOffset);
+                HPWH.FanInletNode_str = cAlphaArgs(26 + nAlphaOffset);
                 HPWH.FanOutletNode_str = "UNDEFINED";
             } else {
                 if (HPWH.OutsideAirNode == 0) {
-                    HPWH.FanInletNode_str = s_ipsc->cAlphaArgs(7 + nAlphaOffset);
+                    HPWH.FanInletNode_str = cAlphaArgs(7 + nAlphaOffset);
                     HPWH.FanOutletNode_str = "UNDEFINED";
                 } else {
-                    HPWH.FanInletNode_str = s_ipsc->cAlphaArgs(9 + nAlphaOffset);
+                    HPWH.FanInletNode_str = cAlphaArgs(9 + nAlphaOffset);
                     HPWH.FanOutletNode_str = "UNDEFINED";
                 }
             }
             if (HPWH.OutletAirSplitterNode > 0) {
                 HPWH.CoilInletNode_str = "UNDEFINED";
-                HPWH.CoilOutletNode_str = s_ipsc->cAlphaArgs(27 + nAlphaOffset);
+                HPWH.CoilOutletNode_str = cAlphaArgs(27 + nAlphaOffset);
             } else {
                 if (HPWH.OutsideAirNode == 0) {
                     HPWH.CoilInletNode_str = "UNDEFINED";
-                    HPWH.CoilOutletNode_str = s_ipsc->cAlphaArgs(8 + nAlphaOffset);
+                    HPWH.CoilOutletNode_str = cAlphaArgs(8 + nAlphaOffset);
                 } else {
                     HPWH.CoilInletNode_str = "UNDEFINED";
-                    HPWH.CoilOutletNode_str = s_ipsc->cAlphaArgs(10 + nAlphaOffset);
+                    HPWH.CoilOutletNode_str = cAlphaArgs(10 + nAlphaOffset);
                 }
             }
         } else {
             if (HPWH.InletAirMixerNode > 0) {
-                HPWH.CoilInletNode_str = s_ipsc->cAlphaArgs(26 + nAlphaOffset);
+                HPWH.CoilInletNode_str = cAlphaArgs(26 + nAlphaOffset);
                 HPWH.CoilOutletNode_str = "UNDEFINED";
             } else {
                 if (HPWH.OutsideAirNode == 0) {
-                    HPWH.CoilInletNode_str = s_ipsc->cAlphaArgs(7 + nAlphaOffset);
+                    HPWH.CoilInletNode_str = cAlphaArgs(7 + nAlphaOffset);
                     HPWH.CoilOutletNode_str = "UNDEFINED";
                 } else {
-                    HPWH.CoilInletNode_str = s_ipsc->cAlphaArgs(9 + nAlphaOffset);
+                    HPWH.CoilInletNode_str = cAlphaArgs(9 + nAlphaOffset);
                     HPWH.CoilOutletNode_str = "UNDEFINED";
                 }
             }
             if (HPWH.OutletAirSplitterNode > 0) {
                 HPWH.FanInletNode_str = "UNDEFINED";
-                HPWH.FanOutletNode_str = s_ipsc->cAlphaArgs(27 + nAlphaOffset);
+                HPWH.FanOutletNode_str = cAlphaArgs(27 + nAlphaOffset);
             } else {
                 if (HPWH.OutsideAirNode == 0) {
                     HPWH.FanInletNode_str = "UNDEFINED";
-                    HPWH.FanOutletNode_str = s_ipsc->cAlphaArgs(8 + nAlphaOffset);
+                    HPWH.FanOutletNode_str = cAlphaArgs(8 + nAlphaOffset);
                 } else {
                     HPWH.FanInletNode_str = "UNDEFINED";
-                    HPWH.FanOutletNode_str = s_ipsc->cAlphaArgs(10 + nAlphaOffset);
+                    HPWH.FanOutletNode_str = cAlphaArgs(10 + nAlphaOffset);
                 }
             }
         }
@@ -2118,31 +2131,31 @@ bool getHPWaterHeaterInput(EnergyPlusData &state)
             state, HPWH.Type, HPWH.Name, HVAC::fanTypeNames[(int)HPWH.fanType], HPWH.FanName, HPWH.FanInletNode_str, HPWH.FanOutletNode_str);
 
         // Control Logic Flag
-        std::string CtrlLogicFlag = s_ipsc->lAlphaFieldBlanks(29 + nAlphaOffset) ? "SIMULTANEOUS" : s_ipsc->cAlphaArgs(29 + nAlphaOffset);
+        std::string CtrlLogicFlag = lAlphaFieldBlanks(29 + nAlphaOffset) ? "SIMULTANEOUS" : cAlphaArgs(29 + nAlphaOffset);
         if (Util::SameString(CtrlLogicFlag, "SIMULTANEOUS")) {
             HPWH.AllowHeatingElementAndHeatPumpToRunAtSameTime = true;
         } else if (Util::SameString(CtrlLogicFlag, "MUTUALLYEXCLUSIVE")) {
             HPWH.AllowHeatingElementAndHeatPumpToRunAtSameTime = false;
         } else {
-            ShowSevereError(state, format("{}=\"{}\":", s_ipsc->cCurrentModuleObject, HPWH.Name));
+            ShowSevereError(state, format("{}=\"{}\":", cCurrentModuleObject, HPWH.Name));
             ShowContinueError(state, format("{} is not a valid value for field Tank Element Control Logic.", CtrlLogicFlag));
             ErrorsFound = true;
         }
 
         // Control Sensor 1 Location In Stratified Tank
-        if (!s_ipsc->lNumericFieldBlanks(8 + nNumericOffset)) {
-            HPWH.ControlSensor1Height = s_ipsc->rNumericArgs(8 + nNumericOffset);
+        if (!lNumericFieldBlanks(8 + nNumericOffset)) {
+            HPWH.ControlSensor1Height = rNumericArgs(8 + nNumericOffset);
         } else {
             // use heater1 location, which we don't know right now
             HPWH.ControlSensor1Height = -1.0;
         }
 
         // Control Sensor 1 Weight
-        HPWH.ControlSensor1Weight = s_ipsc->lNumericFieldBlanks(9 + nNumericOffset) ? 1.0 : s_ipsc->rNumericArgs(9 + nNumericOffset);
+        HPWH.ControlSensor1Weight = lNumericFieldBlanks(9 + nNumericOffset) ? 1.0 : rNumericArgs(9 + nNumericOffset);
 
         // Control Sensor 2 Location In Stratified Tank
-        if (!s_ipsc->lNumericFieldBlanks(10 + nNumericOffset)) {
-            HPWH.ControlSensor2Height = s_ipsc->rNumericArgs(10 + nNumericOffset);
+        if (!lNumericFieldBlanks(10 + nNumericOffset)) {
+            HPWH.ControlSensor2Height = rNumericArgs(10 + nNumericOffset);
         } else {
             HPWH.ControlSensor2Height = -1.0;
         }

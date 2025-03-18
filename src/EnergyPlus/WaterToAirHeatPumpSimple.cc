@@ -316,6 +316,8 @@ namespace WaterToAirHeatPumpSimple {
             simpleWAHP.Name = AlphArray(1);
             simpleWAHP.coilType = HVAC::CoilType::CoolingWAHPSimple;
             simpleWAHP.coilPlantType = DataPlant::PlantEquipmentType::CoilWAHPCoolingEquationFit;
+            simpleWAHP.coilReportNum = ReportCoilSelection::getReportIndex(state, simpleWAHP.Name, simpleWAHP.coilType);
+            
             simpleWAHP.RatedAirVolFlowRate = NumArray(1);
             simpleWAHP.RatedWaterVolFlowRate = NumArray(2);
             simpleWAHP.RatedCapCoolTotal = NumArray(3);
@@ -579,6 +581,8 @@ namespace WaterToAirHeatPumpSimple {
             simpleWAHP.Name = AlphArray(1);
             simpleWAHP.coilType = HVAC::CoilType::HeatingWAHPSimple;
             simpleWAHP.coilPlantType = DataPlant::PlantEquipmentType::CoilWAHPHeatingEquationFit;
+            simpleWAHP.coilReportNum = ReportCoilSelection::getReportIndex(state, simpleWAHP.Name, simpleWAHP.coilType);
+            
             simpleWAHP.RatedAirVolFlowRate = NumArray(1);
             simpleWAHP.RatedWaterVolFlowRate = NumArray(2);
             simpleWAHP.RatedCapHeat = NumArray(3);
@@ -4170,7 +4174,7 @@ namespace WaterToAirHeatPumpSimple {
         // incorrect coil type or name is given, ErrorsFound is returned as true and capacity is returned
         // as negative.
 
-        assert(coilNum > 0 && coilNum < state.dataWaterToAirHeatPumpSimple->NumWatertoAirHPs);
+        assert(coilNum > 0 && coilNum <= state.dataWaterToAirHeatPumpSimple->NumWatertoAirHPs);
         auto &coil = state.dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(coilNum);
 
         if (coil.coilType == HVAC::CoilType::HeatingWAHPSimple) {
@@ -4194,19 +4198,19 @@ namespace WaterToAirHeatPumpSimple {
 
     Real64 GetCoilAirFlowRate(EnergyPlusData &state, int const coilNum)
     {
-        assert(coilNum > 0 && coilNum < state.dataWaterToAirHeatPumpSimple->NumWatertoAirHPs);
+        assert(coilNum > 0 && coilNum <= state.dataWaterToAirHeatPumpSimple->NumWatertoAirHPs);
         return state.dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(coilNum).RatedAirVolFlowRate;
     }
 
     int GetCoilAirInletNode(EnergyPlusData &state, int const coilNum)
     {
-        assert(coilNum > 0 && coilNum < state.dataWaterToAirHeatPumpSimple->NumWatertoAirHPs);
+        assert(coilNum > 0 && coilNum <= state.dataWaterToAirHeatPumpSimple->NumWatertoAirHPs);
         return state.dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(coilNum).AirInletNodeNum;
     }
 
     int GetCoilAirOutletNode(EnergyPlusData &state, int const coilNum)
     {
-        assert(coilNum > 0 && coilNum < state.dataWaterToAirHeatPumpSimple->NumWatertoAirHPs);
+        assert(coilNum > 0 && coilNum <= state.dataWaterToAirHeatPumpSimple->NumWatertoAirHPs);
         return state.dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(coilNum).AirOutletNodeNum;
     }
   

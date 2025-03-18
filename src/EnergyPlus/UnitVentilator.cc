@@ -568,6 +568,7 @@ namespace UnitVentilator {
                             // Could probably remove MaxVolHotSteamFlow here
                             unitVent.MaxVolHotSteamFlow = unitVent.MaxVolHotWaterFlow;
                         }
+
                     } else if (unitVent.heatCoilType == HVAC::CoilType::HeatingSteam) {
                         unitVent.HeatCoilNum = SteamCoils::GetCoilIndex(state, unitVent.HeatCoilName);
                         if (unitVent.HeatCoilNum == 0) {
@@ -580,6 +581,13 @@ namespace UnitVentilator {
                             // unitVent.MaxVolHotWaterFlow =
                             //    SteamCoils::GetCoilMaxWaterFlowRate(state, "Coil:Heating:Steam", unitVent.HCoilName, ErrorsFound);
                             unitVent.MaxVolHotSteamFlow = unitVent.MaxVolHotWaterFlow;
+                        }
+                        
+                    } else if (unitVent.heatCoilType == HVAC::CoilType::HeatingGasOrOtherFuel) {
+                        unitVent.HeatCoilNum = HeatingCoils::GetCoilIndex(state, unitVent.HeatCoilName);
+                        if (unitVent.HeatCoilNum == 0) {
+                            ShowSevereItemNotFound(state, eoh, cAlphaFields(16), unitVent.HeatCoilName);
+                            ErrorsFound = true;
                         }
                     }
 
@@ -2148,9 +2156,22 @@ namespace UnitVentilator {
         }
 
         // set the design air flow rates for the heating and cooling coils
-        int CoolCoilNum = (unitVent.coolCoilType == HVAC::CoilType::CoolingWaterHXAssisted) ? unitVent.ChildCoolCoilNum : unitVent.CoolCoilNum;
-        WaterCoils::SetCoilDesFlow(state, CoolCoilNum, unitVent.MaxAirVolFlow);
-        WaterCoils::SetCoilDesFlow(state, unitVent.HeatCoilNum, unitVent.MaxAirVolFlow);
+        if (unitVent.CoilOption == CoilsUsed::Both || unitVent.CoilOption == CoilsUsed::Cooling) {
+            if (unitVent.coolCoilType == HVAC::CoilType::CoolingWater ||
+                unitVent.coolCoilType == HVAC::CoilType::CoolingWaterDetailed) { 
+                WaterCoils::SetCoilDesFlow(state, unitVent.CoolCoilNum, unitVent.MaxAirVolFlow);
+            } else if (unitVent.coolCoilType == HVAC::CoilType::CoolingWaterHXAssisted) {
+                WaterCoils::SetCoilDesFlow(state, unitVent.CoolCoilNum, unitVent.MaxAirVolFlow);
+            }
+            // No DX coils? 
+        }
+
+        if (unitVent.CoilOption == CoilsUsed::Both || unitVent.CoilOption == CoilsUsed::Heating) {
+            if (unitVent.heatCoilType == HVAC::CoilType::HeatingWater) {
+                WaterCoils::SetCoilDesFlow(state, unitVent.HeatCoilNum, unitVent.MaxAirVolFlow);
+            }
+            // No steam or electric/gas coils?
+        }
 
         if (state.dataSize->CurZoneEqNum > 0) {
             ZoneEqSizing.MaxHWVolFlow = unitVent.MaxVolHotWaterFlow;

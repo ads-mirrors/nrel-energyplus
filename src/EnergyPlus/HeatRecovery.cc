@@ -2607,6 +2607,7 @@ namespace HeatRecovery {
                 HXPartLoadRatio = max(0.0, HXPartLoadRatio);
                 HXPartLoadRatio = min(1.0, HXPartLoadRatio);
 
+
             } else if (companionCoilType != HVAC::CoilType::Invalid && CompanionCoilIndex > -1) {
                 if (companionCoilType == HVAC::CoilType::CoolingDX) {
                     HXPartLoadRatio = state.dataCoilCoolingDX->coilCoolingDXs[CompanionCoilIndex].partLoadRatioReport;

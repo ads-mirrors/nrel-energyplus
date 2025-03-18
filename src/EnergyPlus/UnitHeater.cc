@@ -374,6 +374,7 @@ namespace UnitHeater {
                     } else {
                         unitHeat.HotControlNode = WaterCoils::GetCoilWaterInletNode(state, unitHeat.HeatCoilNum);
                     }
+                    
                 } else if (unitHeat.heatCoilType == HVAC::CoilType::HeatingSteam) {
                     unitHeat.HeatCoilNum = SteamCoils::GetCoilIndex(state, unitHeat.HeatCoilName);
                     if (unitHeat.HeatCoilNum == 0) {
@@ -382,6 +383,14 @@ namespace UnitHeater {
                     } else {
                         unitHeat.HotControlNode = SteamCoils::GetCoilSteamInletNode(state, unitHeat.HeatCoilNum);
                         unitHeat.HeatCoilFluid = Fluid::GetSteam(state);
+                    }
+
+                } else if (unitHeat.heatCoilType == HVAC::CoilType::HeatingElectric ||
+                           unitHeat.heatCoilType == HVAC::CoilType::HeatingGasOrOtherFuel) {
+                    unitHeat.HeatCoilNum = HeatingCoils::GetCoilIndex(state, unitHeat.HeatCoilName);
+                    if (unitHeat.HeatCoilNum == 0) {
+                        ShowSevereItemNotFound(state, eoh, cAlphaFields(8), unitHeat.HeatCoilName);
+                        ErrorsFound = true;
                     }
                 }
             }
@@ -1174,8 +1183,11 @@ namespace UnitHeater {
         }
 
         // set the design air flow rate for the heating coil
-
-        WaterCoils::SetCoilDesFlow(state, unitHeat.HeatCoilNum, unitHeat.MaxAirVolFlow);
+        // This was previously applied to all coil types (I guess it just generated severe errors?)
+        // Why is this not applied to Steam and Heating coils?
+        if (unitHeat.heatCoilType == HVAC::CoilType::HeatingWater) {
+            WaterCoils::SetCoilDesFlow(state, unitHeat.HeatCoilNum, unitHeat.MaxAirVolFlow);
+        }
         
         if (CurZoneEqNum > 0) {
             auto &ZoneEqSizing = state.dataSize->ZoneEqSizing(CurZoneEqNum);

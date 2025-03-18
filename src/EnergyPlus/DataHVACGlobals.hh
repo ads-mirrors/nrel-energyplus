@@ -348,7 +348,7 @@ namespace HVAC {
         "Coil:Cooling:DX:SingleSpeed",
         "Coil:Cooling:DX:TwoSpeed",
         "Coil:Cooling:DX:MultiSpeed",
-        "Coil:Cooling:DX:TwoStageWithHumidityControlMode"
+        "Coil:Cooling:DX:TwoStageWithHumidityControlMode",
         "Coil:Cooling:DX:VariableSpeed",
         "Coil:Cooling:DX",
         "Coil:Cooling:WaterToAirHeatPump:EquationFit"        
@@ -362,7 +362,7 @@ namespace HVAC {
         "COIL:COOLING:DX:SINGLESPEED",
         "COIL:COOLING:DX:TWOSPEED",
         "COIL:COOLING:DX:MULTISPEED",
-        "COIL:COOLING:DX:TWOSTAGEWITHHUMIDITYCONTROLMODE"
+        "COIL:COOLING:DX:TWOSTAGEWITHHUMIDITYCONTROLMODE",
         "COIL:COOLING:DX:VARIABLESPEED",
         "COIL:COOLING:DX",
         "COIL:COOLING:WATERTOAIRHEATPUMP:EQUATIONFIT"

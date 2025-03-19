@@ -281,13 +281,12 @@ sys.argv.append("energyplus")
             cmd += "from os import environ\n";
             cmd += fmt::format("environ[\'TCL_LIBRARY\'] = \"{}/{}\"\n", sPathToPythonPackages, tclConfigDir);
             cmd += fmt::format("environ[\'TK_LIBRARY\'] = \"{}/{}\"\n", sPathToPythonPackages, tkConfigDir);
-            cmd += fmt::format("environ[\'LD_LIBRARY_PATH\'] = \"{}/{}\"\n", sPathToPythonPackages, "lib-dynload");
             cmd += R"python(
 from eplaunch.tk_runner import main_gui
 main_gui()
 )python";
 
-            std::cout << "Trying to execute this python snippet: " << std::endl << cmd << std::endl;
+            // std::cout << "Trying to execute this python snippet: " << std::endl << cmd << std::endl;
             engine.exec(cmd);
             exit(0);
         });
@@ -333,7 +332,6 @@ sys.argv.append("energyplus")
             cmd += "from os import environ\n";
             cmd += fmt::format("environ[\'TCL_LIBRARY\'] = \"{}/{}\"\n", sPathToPythonPackages, tclConfigDir);
             cmd += fmt::format("environ[\'TK_LIBRARY\'] = \"{}/{}\"\n", sPathToPythonPackages, tkConfigDir);
-            cmd += fmt::format("environ[\'LD_LIBRARY_PATH\'] = \"{}/{}\"\n", sPathToPythonPackages, "lib-dynload");
             cmd += R"python(
 from energyplus_transition.runner import main_gui
 main_gui(True)

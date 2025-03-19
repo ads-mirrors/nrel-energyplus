@@ -2,7 +2,7 @@
 Type=Application
 Name=EnergyPlus ENERGYPLUS_VERSION
 Comment=Run EnergyPlus Launch
-Exec=ENERGYPLUS_INSTALL_DIR/energyplus auxiliary eplaunch
+Exec=env LD_LIBRARY_PATH=ENERGYPLUS_INSTALL_DIR/python_lib/lib-dynload ENERGYPLUS_INSTALL_DIR/energyplus auxiliary eplaunch
 Icon=ENERGYPLUS_INSTALL_DIR/favicon.png
 Terminal=false
 Categories=Utility;
@@ -11,8 +11,8 @@ Actions=Launch;VersionUpdater;
 
 [Desktop Action Launch]
 Name=Open EnergyPlus Launch
-Exec=ENERGYPLUS_INSTALL_DIR/energyplus auxiliary eplaunch
+Exec=env LD_LIBRARY_PATH=ENERGYPLUS_INSTALL_DIR/python_lib/lib-dynload ENERGYPLUS_INSTALL_DIR/energyplus auxiliary eplaunch
 
 [Desktop Action VersionUpdater]
 Name=Open IDF Version Updater
-Exec=ENERGYPLUS_INSTALL_DIR/energyplus auxiliary updater
+Exec=env LD_LIBRARY_PATH=ENERGYPLUS_INSTALL_DIR/python_lib/lib-dynload ENERGYPLUS_INSTALL_DIR/energyplus auxiliary updater

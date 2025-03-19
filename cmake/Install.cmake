@@ -767,7 +767,7 @@ cpack_ifw_configure_component(Symlinks SCRIPT cmake/qtifw/install_unix_createsym
 cpack_ifw_configure_component(CreateStartMenu SCRIPT cmake/qtifw/install_win_createstartmenu.qs)
 
 if (PYTHON_CLI)
-  cpack_ifw_configure_component(Unspecified SCRIPT cmake/qtifw/install_unix_desktop_entry.qs)
+  cpack_ifw_configure_component(Unspecified SCRIPT cmake/qtifw/install_auxiliary_python_shortcuts.qs)
 endif()
 
 cpack_ifw_configure_component(RegisterFileType SCRIPT cmake/qtifw/install_registerfiletype.qs REQUIRES_ADMIN_RIGHTS)

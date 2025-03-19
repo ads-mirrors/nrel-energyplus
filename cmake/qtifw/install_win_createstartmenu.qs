@@ -47,12 +47,10 @@ function Component()
 
       component.addOperation("CreateShortcut", "@TargetDir@/Documentation/index.html", target_dir + "/EnergyPlus Documentation.lnk");
       component.addOperation("CreateShortcut", "@TargetDir@/PreProcess/EPDraw/EPDrawGUI.exe", target_dir + "/EPDrawGUI.lnk");
-      component.addOperation("CreateShortcut", "@TargetDir@/windows_gui_launcher.exe", target_dir + "/EP-Launch.lnk", "eplaunch");
       component.addOperation("CreateShortcut", "@TargetDir@/EP-Launch.exe", target_dir + "/EP-Launch-Classic.lnk");
       component.addOperation("CreateShortcut", "@TargetDir@/ExampleFiles/ExampleFiles.html", target_dir + "/Example Files Summary.lnk");
       component.addOperation("CreateShortcut", "@TargetDir@/ExampleFiles/ExampleFiles-ObjectsLink.html", target_dir + "/ExampleFiles Link to Objects.lnk");
       component.addOperation("CreateShortcut", "@TargetDir@/PreProcess/IDFEditor/IDFEditor.exe", target_dir + "/IDFEditor.lnk");
-      component.addOperation("CreateShortcut", "@TargetDir@/windows_gui_launcher.exe", target_dir + "/IDFVersionUpdater.lnk", "updater");
       component.addOperation("CreateShortcut", "@TargetDir@/PreProcess/IDFVersionUpdater/IDFVersionUpdater.exe", target_dir + "/IDFVersionUpdater-Classic.lnk");
       component.addOperation("CreateShortcut", "@TargetDir@/readme.html", target_dir + "/Readme Notes.lnk");
       component.addOperation("CreateShortcut", "@TargetDir@/PreProcess/WeatherConverter/Weather.exe", target_dir + "/Weather Statistics and Conversions.lnk");

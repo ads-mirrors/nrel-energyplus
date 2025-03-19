@@ -995,14 +995,14 @@ if(BUILD_PACKAGE)
     if(PYTHON_CLI)
       if(WIN32)
         # on Windows, with Build Package, and also Link With Python, we can also drop in shortcuts to the new auxiliary CLI
-        # NOTE: The install command COMPONENTS should line up so that they are run at the same packaging step
-        install(CODE "execute_process(COMMAND powershell.exe -ExecutionPolicy Bypass -File ${PROJECT_SOURCE_DIR}/scripts/dev/create_shortcut.ps1 -TargetPath \"$<TARGET_FILE:energyplus>\" -ShortcutPath \"$<TARGET_FILE_DIR:energyplus>/EPLaunchPython.lnk\" -Arguments \"auxiliary eplaunch\")" COMPONENT Auxiliary)
-        install(CODE "execute_process(COMMAND powershell.exe -ExecutionPolicy Bypass -File ${PROJECT_SOURCE_DIR}/scripts/dev/create_shortcut.ps1 -TargetPath \"$<TARGET_FILE:energyplus>\" -ShortcutPath \"$<TARGET_FILE_DIR:energyplus>/IDFVersionUpdater.lnk\" -Arguments \"auxiliary updater\")" COMPONENT Auxiliary)
-        install(FILES $<TARGET_FILE_DIR:energyplus>/EPLaunchPython.lnk DESTINATION "./" COMPONENT Auxiliary)
-        install(FILES $<TARGET_FILE_DIR:energyplus>/IDFVersionUpdater.lnk DESTINATION "./" COMPONENT Auxiliary)
         add_executable(windows_gui_launcher WIN32 WindowsGuiLauncher.cc)
         target_link_options(windows_gui_launcher PRIVATE /SUBSYSTEM:WINDOWS)
-        install(TARGETS windows_gui_launcher DESTINATION ./)
+        install(TARGETS windows_gui_launcher DESTINATION ./ COMPONENT Auxiliary)
+        # NOTE: The install command COMPONENTS should line up so that they are run at the same packaging step
+        install(CODE "execute_process(COMMAND powershell.exe -ExecutionPolicy Bypass -File ${PROJECT_SOURCE_DIR}/scripts/dev/create_shortcut.ps1 -TargetPath \"$<TARGET_FILE_DIR:energyplus>/windows_gui_launcher.exe\" -ShortcutPath \"$<TARGET_FILE_DIR:energyplus>/EP-LaunchPython.lnk\" -Arguments \"auxiliary eplaunch\")" COMPONENT Auxiliary)
+        install(CODE "execute_process(COMMAND powershell.exe -ExecutionPolicy Bypass -File ${PROJECT_SOURCE_DIR}/scripts/dev/create_shortcut.ps1 -TargetPath \"$<TARGET_FILE_DIR:energyplus>/windows_gui_launcher.exe\" -ShortcutPath \"$<TARGET_FILE_DIR:energyplus>/IDFVersionUpdater.lnk\" -Arguments \"auxiliary updater\")" COMPONENT Auxiliary)
+        install(FILES $<TARGET_FILE_DIR:energyplus>/EPLaunchPython.lnk DESTINATION "./" COMPONENT Auxiliary)
+        install(FILES $<TARGET_FILE_DIR:energyplus>/IDFVersionUpdater.lnk DESTINATION "./" COMPONENT Auxiliary)
       elseif(APPLE)
         # Pre-signed and notarized launcher apps
         install(DIRECTORY "${PROJECT_SOURCE_DIR}/bin/PythonApps/EPLaunch.app" DESTINATION "." COMPONENT Auxiliary USE_SOURCE_PERMISSIONS)

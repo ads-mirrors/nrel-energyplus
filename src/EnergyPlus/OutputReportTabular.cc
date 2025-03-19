@@ -6302,8 +6302,8 @@ void FillRemainingPredefinedEntries(EnergyPlusData &state)
                 totalArea += thisZone.FloorArea * zoneMult;
 
                 // minimum dynamic target ventilation Voz-dyn-min
-                PreDefTableEntry(state, state.dataOutRptPredefined->pdchOaMvMinDynTrgVent, thisZone.Name, thisZonePreDefRep.VozMin, 3);
-                totalVozMin += thisZonePreDefRep.VozMin * zoneMult;
+                PreDefTableEntry(state, state.dataOutRptPredefined->pdchOaMvMinDynTrgVent, thisZone.Name, thisZonePreDefRep.VozMin / zoneMult, 3);
+                totalVozMin += thisZonePreDefRep.VozMin;
 
                 // Mechanical ventilation
                 if (thisZone.Volume > 0 && thisZonePreDefRep.TotTimeOcc > 0) {
@@ -6318,8 +6318,9 @@ void FillRemainingPredefinedEntries(EnergyPlusData &state)
                                      thisZonePreDefRep.MechVentVolMin / (thisZone.Volume * zoneMult),
                                      3);
                 }
-                PreDefTableEntry(state, state.dataOutRptPredefined->pdchOaTaBzMechVent, thisZone.Name, thisZonePreDefRep.MechVentVolTotalStdDen);
-                totalMechVentVol += thisZonePreDefRep.MechVentVolTotalStdDen * zoneMult;
+                PreDefTableEntry(
+                    state, state.dataOutRptPredefined->pdchOaTaBzMechVent, thisZone.Name, thisZonePreDefRep.MechVentVolTotalStdDen / zoneMult);
+                totalMechVentVol += thisZonePreDefRep.MechVentVolTotalStdDen;
 
                 // Natural ventilation
                 PreDefTableEntry(state,
@@ -6398,8 +6399,8 @@ void FillRemainingPredefinedEntries(EnergyPlusData &state)
                     Real64 totTimeOccSec = thisZonePreDefRep.TotTimeOcc * Constant::rSecsInHour;
                     // Mechanical ventilation
                     Real64 mechVent = thisZonePreDefRep.MechVentVolTotalOccStdDen / totTimeOccSec;
-                    PreDefTableEntry(state, state.dataOutRptPredefined->pdchOaOccBzMechVent, thisZone.Name, mechVent, 4);
-                    totalMechVentRateOcc += mechVent * zoneMult;
+                    PreDefTableEntry(state, state.dataOutRptPredefined->pdchOaOccBzMechVent, thisZone.Name, mechVent / zoneMult, 4);
+                    totalMechVentRateOcc += mechVent;
 
                     // Natural ventilation
                     Real64 natVent = (thisZonePreDefRep.SimpVentVolTotalOccStdDen + thisZonePreDefRep.AFNVentVolTotalOccStdDen) / totTimeOccSec;
@@ -6407,7 +6408,7 @@ void FillRemainingPredefinedEntries(EnergyPlusData &state)
                     totalNatVentRateOcc += natVent * zoneMult;
 
                     // Total ventilation
-                    PreDefTableEntry(state, state.dataOutRptPredefined->pdchOaOccBzTotVent, thisZone.Name, mechVent + natVent, 4);
+                    PreDefTableEntry(state, state.dataOutRptPredefined->pdchOaOccBzTotVent, thisZone.Name, mechVent / zoneMult + natVent, 4);
 
                     // infiltration
                     Real64 infil = (thisZonePreDefRep.InfilVolTotalOccStdDen + thisZonePreDefRep.AFNInfilVolTotalOccStdDen) / totTimeOccSec;
@@ -6415,10 +6416,11 @@ void FillRemainingPredefinedEntries(EnergyPlusData &state)
                     totalInfilRateOcc += infil * zoneMult;
 
                     // Total ventilation and infiltration
-                    PreDefTableEntry(state, state.dataOutRptPredefined->pdchOaOccBzTotVentInfil, thisZone.Name, mechVent + natVent + infil, 4);
+                    PreDefTableEntry(
+                        state, state.dataOutRptPredefined->pdchOaOccBzTotVentInfil, thisZone.Name, mechVent / zoneMult + natVent + infil, 4);
 
                     // Dynamic target ventilation Voz-dyn
-                    Real64 avgVoz = thisZonePreDefRep.VozTargetTotalOcc / totTimeOccSec;
+                    Real64 avgVoz = thisZonePreDefRep.VozTargetTotalOcc / (zoneMult * totTimeOccSec);
                     PreDefTableEntry(state, state.dataOutRptPredefined->pdchOaOccBzDynTrgVent, thisZone.Name, avgVoz, 4);
                     totalVozDynOcc += avgVoz * zoneMult;
                     PreDefTableEntry(state, state.dataOutRptPredefined->pdchOaOccBzTmBelow, thisZone.Name, thisZonePreDefRep.VozTargetTimeBelowOcc);

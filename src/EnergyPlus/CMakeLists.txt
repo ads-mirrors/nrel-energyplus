@@ -977,11 +977,13 @@ if(LINK_WITH_PYTHON)
   if (PYTHON_CLI)
     add_custom_command(
       TARGET energyplusapi
-      POST_BUILD # TODO: I don't think we want to quote the generator expression
+      POST_BUILD
+      # TODO: It would be nice to set a BYPRODUCTS sentinel to avoid re-running this every time, but BYPRODUCTS cannot include
+      # TODO:  target-specific generator expressions, as they must be known are evaluated at compile time.
+      # BYPRODUCTS "$<TARGET_FILE_DIR:energyplusapi>/python_lib/LICENSE.txt"
       COMMAND ${CMAKE_COMMAND} -E env --unset=PIP_REQUIRE_VIRTUALENV
       ${Python_EXECUTABLE} ${PROJECT_SOURCE_DIR}/cmake/PythonInstallCLITools.py "$<TARGET_FILE_DIR:energyplusapi>/python_lib"
       COMMAND ${Python_EXECUTABLE} "${PROJECT_SOURCE_DIR}/cmake/PythonFixUpTclTk.py" "$<TARGET_FILE_DIR:energyplusapi>/python_lib"
-
     )
   endif()
 endif()
@@ -993,6 +995,7 @@ if(BUILD_PACKAGE)
     # TODO: I don't think we want to quote the generator expression
     install(DIRECTORY "$<TARGET_FILE_DIR:energyplus>/python_lib/" DESTINATION "./python_lib")
     if(PYTHON_CLI)
+      install(FILES "${PROJECT_SOURCE_DIR}/release/VersionUpdater-NEWS.txt" DESTINATION "PreProcess/" COMPONENT Auxiliary)
       if(WIN32)
         # on Windows, with Build Package, and also Link With Python, we can also drop in shortcuts to the new auxiliary CLI
         add_executable(windows_gui_launcher WIN32 WindowsGuiLauncher.cc)

@@ -23,7 +23,7 @@ function Component()
           "else echo 'Error: .desktop template file missing'; fi"
         ],
         "UNDOEXECUTE",
-        "rm " + desktopFilePath
+        "rm", desktopFilePath
       );
     } else if( kernel === "winnt" ) {
       const target_dir = installer.value("StartMenuDir");

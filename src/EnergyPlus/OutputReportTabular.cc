@@ -6333,7 +6333,7 @@ void FillRemainingPredefinedEntries(EnergyPlusData &state)
                 PreDefTableEntry(state,
                                  state.dataOutRptPredefined->pdchOaTaBzTotVent,
                                  thisZone.Name,
-                                 thisZonePreDefRep.MechVentVolTotalStdDen + thisZonePreDefRep.SimpVentVolTotalStdDen +
+                                 thisZonePreDefRep.MechVentVolTotalStdDen / zoneMult + thisZonePreDefRep.SimpVentVolTotalStdDen +
                                      thisZonePreDefRep.AFNVentVolTotalStdDen);
 
                 // infiltration
@@ -6383,13 +6383,13 @@ void FillRemainingPredefinedEntries(EnergyPlusData &state)
                 PreDefTableEntry(state,
                                  state.dataOutRptPredefined->pdchOaTaBzTotVentInfil,
                                  thisZone.Name,
-                                 thisZonePreDefRep.MechVentVolTotalStdDen + thisZonePreDefRep.SimpVentVolTotalStdDen +
+                                 thisZonePreDefRep.MechVentVolTotalStdDen / zoneMult + thisZonePreDefRep.SimpVentVolTotalStdDen +
                                      thisZonePreDefRep.AFNVentVolTotalStdDen + thisZonePreDefRep.AFNInfilVolTotalStdDen +
                                      thisZonePreDefRep.InfilVolTotalStdDen);
 
                 // Dynamic target ventilation Voz-dyn
-                PreDefTableEntry(state, state.dataOutRptPredefined->pdchOaTaBzDynTrgVent, thisZone.Name, thisZonePreDefRep.VozTargetTotal);
-                totalVozDyn += thisZonePreDefRep.VozTargetTotal * zoneMult;
+                PreDefTableEntry(state, state.dataOutRptPredefined->pdchOaTaBzDynTrgVent, thisZone.Name, thisZonePreDefRep.VozTargetTotal / zoneMult);
+                totalVozDyn += thisZonePreDefRep.VozTargetTotal;
                 PreDefTableEntry(state, state.dataOutRptPredefined->pdchOaTaBzTmBelow, thisZone.Name, thisZonePreDefRep.VozTargetTimeBelow);
                 PreDefTableEntry(state, state.dataOutRptPredefined->pdchOaTaBzTmAt, thisZone.Name, thisZonePreDefRep.VozTargetTimeAt);
                 PreDefTableEntry(state, state.dataOutRptPredefined->pdchOaTaBzTmAbove, thisZone.Name, thisZonePreDefRep.VozTargetTimeAbove);
@@ -6420,9 +6420,9 @@ void FillRemainingPredefinedEntries(EnergyPlusData &state)
                         state, state.dataOutRptPredefined->pdchOaOccBzTotVentInfil, thisZone.Name, mechVent / zoneMult + natVent + infil, 4);
 
                     // Dynamic target ventilation Voz-dyn
-                    Real64 avgVoz = thisZonePreDefRep.VozTargetTotalOcc / (zoneMult * totTimeOccSec);
-                    PreDefTableEntry(state, state.dataOutRptPredefined->pdchOaOccBzDynTrgVent, thisZone.Name, avgVoz, 4);
-                    totalVozDynOcc += avgVoz * zoneMult;
+                    Real64 avgVoz = thisZonePreDefRep.VozTargetTotalOcc / totTimeOccSec;
+                    PreDefTableEntry(state, state.dataOutRptPredefined->pdchOaOccBzDynTrgVent, thisZone.Name, avgVoz / zoneMult, 4);
+                    totalVozDynOcc += avgVoz;
                     PreDefTableEntry(state, state.dataOutRptPredefined->pdchOaOccBzTmBelow, thisZone.Name, thisZonePreDefRep.VozTargetTimeBelowOcc);
                     PreDefTableEntry(state, state.dataOutRptPredefined->pdchOaOccBzTmAt, thisZone.Name, thisZonePreDefRep.VozTargetTimeAtOcc);
                     PreDefTableEntry(state, state.dataOutRptPredefined->pdchOaOccBzTmAbove, thisZone.Name, thisZonePreDefRep.VozTargetTimeAboveOcc);

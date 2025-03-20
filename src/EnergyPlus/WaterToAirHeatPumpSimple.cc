@@ -242,7 +242,7 @@ namespace WaterToAirHeatPumpSimple {
         auto const instances = s_ip->epJSON.find(CurrentModuleObject);
 
         int HPNum = 0;
-        if (instances != s_ip->epJSON.end()) { 
+        if (instances != s_ip->epJSON.end()) {
             std::string cFieldName;
             auto const &schemaProps = s_ip->getObjectSchemaProps(state, CurrentModuleObject);
             auto &instancesValue = instances.value();

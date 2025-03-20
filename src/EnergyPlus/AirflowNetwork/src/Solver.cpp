@@ -114,14 +114,15 @@ namespace AirflowNetwork {
 
     // MODULE INFORMATION:
     //       AUTHOR         Lixing Gu, Don Shirey, and Muthusamy V. Swami
-    //       DATE WRITTEN   July 2005
-    //       MODIFIED       na
-    //       RE-ENGINEERED  na
+    //       DATE WRITTEN   Aug. 2003/July 2005
 
     // PURPOSE OF THIS MODULE:
     // This module is used to simulate airflows and pressures. The module is modified to
-    // meet requirements of EnergyPLus based on AIRNET, developed by
-    // National Institute of Standards and Technology (NIST).
+    // meet requirements of EnergyPLus based on AIRNET, developed by National Institute
+    // of Standards and Technology (NIST). This module should contain the information
+    // that is needed to simulate performance of air distribution system, including
+    // pressure, temperature and moisture levels at each node, and airflow and sensible
+    // and latent energy losses at each element
 
     // METHODOLOGY EMPLOYED:
     // An airflow network approach is used. It consists of nodes connected by airflow elements.

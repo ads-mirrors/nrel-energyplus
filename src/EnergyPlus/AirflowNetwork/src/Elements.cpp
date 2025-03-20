@@ -60,18 +60,6 @@ namespace EnergyPlus {
 
 namespace AirflowNetwork {
 
-    // MODULE INFORMATION:
-    //       AUTHOR         Lixing Gu, Don Shirey, and Muthusamy V. Swami
-    //       DATE WRITTEN   Aug. 2003
-    //       MODIFIED       na
-    //       RE-ENGINEERED  na
-
-    // PURPOSE OF THIS MODULE:
-    // This module should contain the information that is needed to simulate
-    // performance of air distribution system, including pressure, temperature
-    // and moisture levels at each node, and airflow and sensible and latent energy losses
-    // at each element
-
     static Real64 square(Real64 x)
     {
         return x * x;

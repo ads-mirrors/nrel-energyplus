@@ -60,6 +60,7 @@
 
 // EnergyPlus Headers
 #include <AirflowNetwork/Elements.hpp>
+#include <AirflowNetwork/Linkages.hpp>
 #include <AirflowNetwork/Properties.hpp>
 #include <EnergyPlus/Data/BaseData.hh>
 #include <EnergyPlus/EPVector.hh>

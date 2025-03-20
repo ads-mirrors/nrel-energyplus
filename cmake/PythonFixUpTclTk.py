@@ -161,7 +161,21 @@ if __name__ == "__main__":
         found_tk_so = Path(tk_candidates[0])
         target_tk_so = lib_dynload_dir / found_tk_so.name
         shutil.copy(found_tk_so, target_tk_so)
-
+        # we also need to find the _tkinter....so file in the python_lib/lib-dynload folder, and fixup the rpath
+        matches = list(lib_dynload_dir.glob("_tkinter*.so"))
+        if len(matches) == 1:
+            file_path = matches[0]
+            print("DEBUG Found:", file_path)
+        else:
+            print("Error: Found", len(matches), "matching files")
+            sys.exit(1)
+        # first we need to make sure we actually can fix it up...is it a stripped executable
+        output = subprocess.check_output(["file", file_path])
+        if b', stripped' in output:
+            subprocess.check_call(["echo", "::warning::_tkinter file is stripped and can't fix up the rpath"])
+        else:
+            subprocess.check_output(["patchelf", "--set-rpath", '$ORIGIN', file_path])
+        # and then grab the tcl and tk config/data folders as well
         tcl_tk_root_dir = Path('/usr/share/tcltk')
         if not tcl_tk_root_dir.exists():
             print(f"TclTk directory not found at expected location: {tcl_tk_root_dir}, make sure it is installed")
@@ -177,4 +191,3 @@ if __name__ == "__main__":
         target_tk_dir = python_dir / found_tk_dir.name
         shutil.copytree(found_tcl_dir, target_tcl_dir, dirs_exist_ok=True)
         shutil.copytree(found_tk_dir, target_tk_dir, dirs_exist_ok=True)
-

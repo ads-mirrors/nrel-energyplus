@@ -1,6 +1,4 @@
 #!/bin/bash
 trap '' HUP
-LD_LIBRARY_PATH="$(dirname "$0")/python_lib/lib-dynload"
-export LD_LIBRARY_PATH
 "$(dirname "$0")/energyplus" auxiliary @ARGUMENT@ &
 trap - HUP

@@ -64,6 +64,7 @@
 #include <EnergyPlus/IOFiles.hh>
 #include <EnergyPlus/MixedAir.hh>
 #include <EnergyPlus/OutputProcessor.hh>
+#include <EnergyPlus/OutputReportPredefined.hh>
 #include <EnergyPlus/Psychrometrics.hh>
 #include <EnergyPlus/ReturnAirPathManager.hh>
 #include <EnergyPlus/ScheduleManager.hh>
@@ -3990,6 +3991,8 @@ TEST_F(EnergyPlusFixture, SizeHeatRecovery)
     state->dataSize->UnitarySysEqSizing(state->dataSize->CurSysNum).CoolingCapacity = false;
     state->dataSize->UnitarySysEqSizing(state->dataSize->CurSysNum).HeatingCapacity = false;
 
+    OutputReportPredefined::SetPredefinedTables(*state);
+
     // calc heat recovery sizing
     state->dataHeatRecovery->ExchCond(ExchNum).size(*state);
 
@@ -4002,6 +4005,22 @@ TEST_F(EnergyPlusFixture, SizeHeatRecovery)
 
     // test autosized face velocity
     EXPECT_EQ(FaceVelocity, state->dataHeatRecovery->BalDesDehumPerfData(BalDesDehumPerfDataIndex).NomProcAirFaceVel); // m/s
+
+    std::string_view const compName = state->dataHeatRecovery->ExchCond(ExchNum).Name;
+    EXPECT_EQ("HeatExchanger:Desiccant:BalancedFlow",
+              OutputReportPredefined::RetrievePreDefTableEntry(*state, state->dataOutRptPredefined->pdchAirHRInputObjType, compName));
+    EXPECT_EQ("Rotary", OutputReportPredefined::RetrievePreDefTableEntry(*state, state->dataOutRptPredefined->pdchAirHRPlateOrRotary, compName));
+    EXPECT_EQ("N/A",
+              OutputReportPredefined::RetrievePreDefTableEntry(*state, state->dataOutRptPredefined->pdchAirHRSenEffAt100PerHeatAirFlow, compName));
+    EXPECT_EQ("N/A",
+              OutputReportPredefined::RetrievePreDefTableEntry(*state, state->dataOutRptPredefined->pdchAirHRSenEffAt100PerCoolAirFlow, compName));
+    EXPECT_EQ("N/A",
+              OutputReportPredefined::RetrievePreDefTableEntry(*state, state->dataOutRptPredefined->pdchAirHRLatEffAt100PerHeatAirFlow, compName));
+    EXPECT_EQ("N/A",
+              OutputReportPredefined::RetrievePreDefTableEntry(*state, state->dataOutRptPredefined->pdchAirHRLatEffAt100PerCoolAirFlow, compName));
+
+    EXPECT_EQ("1.00", OutputReportPredefined::RetrievePreDefTableEntry(*state, state->dataOutRptPredefined->pdchAirHRSupplyAirflow, compName));
+    EXPECT_EQ("1.00", OutputReportPredefined::RetrievePreDefTableEntry(*state, state->dataOutRptPredefined->pdchAirHRExhaustAirflow, compName));
 }
 
 TEST_F(EnergyPlusFixture, HeatRecovery_AirFlowSizing)
@@ -4032,6 +4051,7 @@ TEST_F(EnergyPlusFixture, HeatRecovery_AirFlowSizing)
 
     ASSERT_TRUE(process_idf(idf_objects));
     state->init_state(*state);
+    OutputReportPredefined::SetPredefinedTables(*state);
 
     // get heat recovery heat exchanger generic
     GetHeatRecoveryInput(*state);
@@ -4052,6 +4072,22 @@ TEST_F(EnergyPlusFixture, HeatRecovery_AirFlowSizing)
     // verify the name and autosized supply air flow rate
     EXPECT_EQ(state->dataHeatRecovery->ExchCond(ExchNum).Name, "HEATRECOVERY HX IN ERV");
     EXPECT_EQ(state->dataHeatRecovery->ExchCond(ExchNum).NomSupAirVolFlow, 1.0);
+
+    std::string_view const compName = state->dataHeatRecovery->ExchCond(ExchNum).Name;
+    EXPECT_EQ("HeatExchanger:AirToAir:SensibleAndLatent",
+              OutputReportPredefined::RetrievePreDefTableEntry(*state, state->dataOutRptPredefined->pdchAirHRInputObjType, compName));
+    EXPECT_EQ("Rotary", OutputReportPredefined::RetrievePreDefTableEntry(*state, state->dataOutRptPredefined->pdchAirHRPlateOrRotary, compName));
+    EXPECT_EQ("0.76",
+              OutputReportPredefined::RetrievePreDefTableEntry(*state, state->dataOutRptPredefined->pdchAirHRSenEffAt100PerHeatAirFlow, compName));
+    EXPECT_EQ("0.76",
+              OutputReportPredefined::RetrievePreDefTableEntry(*state, state->dataOutRptPredefined->pdchAirHRSenEffAt100PerCoolAirFlow, compName));
+    EXPECT_EQ("0.68",
+              OutputReportPredefined::RetrievePreDefTableEntry(*state, state->dataOutRptPredefined->pdchAirHRLatEffAt100PerHeatAirFlow, compName));
+    EXPECT_EQ("0.68",
+              OutputReportPredefined::RetrievePreDefTableEntry(*state, state->dataOutRptPredefined->pdchAirHRLatEffAt100PerCoolAirFlow, compName));
+
+    EXPECT_EQ("1.00", OutputReportPredefined::RetrievePreDefTableEntry(*state, state->dataOutRptPredefined->pdchAirHRSupplyAirflow, compName));
+    EXPECT_EQ("1.00", OutputReportPredefined::RetrievePreDefTableEntry(*state, state->dataOutRptPredefined->pdchAirHRExhaustAirflow, compName));
 }
 
 TEST_F(EnergyPlusFixture, HeatRecovery_HeatExchangerGenericCalcTest)

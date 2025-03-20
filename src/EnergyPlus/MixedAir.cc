@@ -755,7 +755,7 @@ void SimOAMixer(EnergyPlusData &state, std::string const &CompName, int &CompInd
 
 void SimOAMixer(EnergyPlusData &state, int const mixerNum)
 {
-    assert(mixerNum > 0 && mixerNum <= state.dataMixedAir->NumOAMixers);
+    assert(mixerNum > 0 && mixerNum <= state.dataMixedAir->OAMixer.size());
     
     auto &mixer = state.dataMixedAir->OAMixer(mixerNum);
 
@@ -1554,6 +1554,15 @@ void GetOAControllerInputs(EnergyPlusData &state)
                         }
                     }
                 }
+            }
+
+            if (MechVentZoneCount <= 0) {
+                ShowSevereError(state,
+                                format("{}{}=\"{}\", invalid input. At least one Zone or ZoneList Name must be entered.",
+                                       RoutineName,
+                                       CurrentModuleObject,
+                                       thisVentilationMechanical.Name));
+                ErrorsFound = true;
             }
 
             //   Overwrite previous number of zones with number that does not include duplicates

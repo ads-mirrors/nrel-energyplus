@@ -10589,6 +10589,44 @@ namespace AirflowNetwork {
                     } else {
                         SetDXCoilAirLoopNumber(m_state, DisSysCompCoilData(i).name, DisSysCompCoilData(i).AirLoopNum);
                     }
+                } else if (SELECT_CASE_var == "COIL:COOLING:WATERTOAIRHEATPUMP:EQUATIONFIT") {
+                    ValidateComponent(m_state,
+                                      "Coil:Cooling:WaterToAirHeatPump:EquationFit",
+                                      DisSysCompCoilData(i).name,
+                                      IsNotOK,
+                                      format(RoutineName) + CurrentModuleObject);
+                    if (IsNotOK) {
+                        ErrorsFound = true;
+                    }
+
+                } else if (SELECT_CASE_var == "COIL:HEATING:WATERTOAIRHEATPUMP:EQUATIONFIT") {
+                    ValidateComponent(m_state,
+                                      "Coil:Heating:WaterToAirHeatPump:EquationFit",
+                                      DisSysCompCoilData(i).name,
+                                      IsNotOK,
+                                      format(RoutineName) + CurrentModuleObject);
+                    if (IsNotOK) {
+                        ErrorsFound = true;
+                    }
+                } else if (SELECT_CASE_var == "COIL:COOLING:WATERTOAIRHEATPUMP:VARIABLESPEEDEQUATIONFIT") {
+                    ValidateComponent(m_state,
+                                      "Coil:Cooling:WaterToAirHeatPump:VariableSpeedEquationFit",
+                                      DisSysCompCoilData(i).name,
+                                      IsNotOK,
+                                      format(RoutineName) + CurrentModuleObject);
+                    if (IsNotOK) {
+                        ErrorsFound = true;
+                    }
+
+                } else if (SELECT_CASE_var == "COIL:HEATING:WATERTOAIRHEATPUMP:VARIABLESPEEDEQUATIONFIT") {
+                    ValidateComponent(m_state,
+                                      "Coil:Heating:WaterToAirHeatPump:VariableSpeedEquationFit",
+                                      DisSysCompCoilData(i).name,
+                                      IsNotOK,
+                                      format(RoutineName) + CurrentModuleObject);
+                    if (IsNotOK) {
+                        ErrorsFound = true;
+                    }
 
                 } else if (SELECT_CASE_var == "COIL:HEATING:DESUPERHEATER") {
                     ValidateComponent(

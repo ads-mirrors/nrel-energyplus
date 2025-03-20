@@ -180,10 +180,9 @@ namespace HVACDXHeatPumpSystem {
         switch (dxhp.dxCoilType) {
         case HVAC::CoilType::HeatingDXSingleSpeed: { // COIL:DX:COOLINGBYPASSFACTOREMPIRICAL
             SimDXCoil(state,
-                      dxhp.DXCoilName,
+                      dxhp.DXCoilNum,
                       HVAC::CompressorOp::On,
                       FirstHVACIteration,
-                      dxhp.DXCoilNum,
                       dxhp.fanOp,
                       dxhp.PartLoadFrac);
         } break;

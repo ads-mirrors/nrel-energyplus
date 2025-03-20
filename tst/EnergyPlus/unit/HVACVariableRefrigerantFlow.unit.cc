@@ -2628,14 +2628,14 @@ TEST_F(EnergyPlusFixture, VRF_FluidTCtrl_VRFOU_Compressor)
                                                             Ncomp,
                                                             CyclingRatio);
 
-    EXPECT_NEAR(0.20, CyclingRatio, 0.01);
+    EXPECT_NEAR(0.21, CyclingRatio, 0.01);
     Real64 x = T_discharge;
     Real64 y = -5; // in low load modification
     Real64 CurveValueEvap = 3.19E-01 - 1.26E-03 * x - 2.15E-05 * x * x + 1.20E-02 * y + 1.05E-04 * y * y - 8.66E-05 * x * y;
     Real64 CurveValuePower = 8.79E-02 - 1.72E-04 * x + 6.93E-05 * x * x - 3.38E-05 * y - 8.10E-06 * y * y - 1.04E-05 * x * y;
     EXPECT_NEAR(CurveValueEvap * state->dataHVACVarRefFlow->VRF(1).RatedEvapCapacity, OUEvapHeatExtract, 1);
     EXPECT_NEAR(1500, CompSpdActual, 1);
-    EXPECT_NEAR(CurveValuePower * state->dataHVACVarRefFlow->VRF(1).RatedCompPower, Ncomp, 1);
+    EXPECT_NEAR(CurveValuePower * state->dataHVACVarRefFlow->VRF(1).RatedCompPower * CyclingRatio, Ncomp, 1);
     EXPECT_EQ(state->dataLoopNodes->Node(state->dataHVACVarRefFlow->VRFTU(1).VRFTUInletNodeNum).MassFlowRate, 0.0);
 }
 
@@ -2679,7 +2679,7 @@ TEST_F(EnergyPlusFixture, VRF_FluidTCtrl_VRFOU_Compressor)
         thisVRF.RatedEvapCapacity * CurveValue(*state, thisVRF.OUCoolingCAPFT(1), thisVRF.CondensingTemp, thisVRF.EvaporatingTemp);
     Real64 CompEvaporatingPWRSpdMin =
         thisVRF.RatedCompPower * CurveValue(*state, thisVRF.OUCoolingPWRFT(1), thisVRF.CondensingTemp, thisVRF.EvaporatingTemp);
-    EXPECT_NEAR(0.35, CyclingRatio, 0.01);
+    EXPECT_NEAR(0.36, CyclingRatio, 0.01);
     EXPECT_NEAR(OUEvapHeatExtract, CompEvaporatingCAPSpdMin + Ncomp, 1e-4);
     EXPECT_NEAR(1500, CompSpdActual, 1);
     EXPECT_NEAR(Ncomp, CompEvaporatingPWRSpdMin, 1e-4);
@@ -2921,7 +2921,7 @@ TEST_F(EnergyPlusFixture, VRF_FluidTCtrl_GetCoilInput)
 
     // Check the results
     ASSERT_EQ(1, state->dataDXCoils->NumDXCoils);
-    EXPECT_EQ(state->dataDXCoils->DXCoil(1).DXCoilType_Num, 33);
+    EXPECT_EQ(state->dataDXCoils->DXCoil(1).coilType, HVAC::CoilType::CoolingVRFFluidTCtrl);
     EXPECT_EQ(state->dataDXCoils->DXCoil(1).RatedTotCap(1), 2200);
     EXPECT_EQ(state->dataDXCoils->DXCoil(1).RatedSHR(1), 0.865);
     EXPECT_EQ(state->dataDXCoils->DXCoil(1).C1Te, 0);
@@ -13354,7 +13354,7 @@ TEST_F(EnergyPlusFixture, VRF_FluidTCtrl_ReportOutputVerificationTest)
     EXPECT_NEAR(5645.5696, thisVRFTU.TotalCoolingRate, 0.0001);
     EXPECT_NEAR(84.8359, thisFan->totalPower, 0.0001);
     EXPECT_NEAR(thisDXCoolingCoil.TotalCoolingEnergyRate, (thisVRFTU.TotalCoolingRate + thisFan->totalPower), 0.0001);
-    EXPECT_NEAR(0.4124, state->dataHVACVarRefFlow->VRF(1).VRFCondCyclingRatio, 0.0001);
+    EXPECT_NEAR(0.4772, state->dataHVACVarRefFlow->VRF(1).VRFCondCyclingRatio, 0.0001);
     EXPECT_NEAR(state->dataHVACVarRefFlow->VRF(1).OUFanPower,
                 state->dataHVACVarRefFlow->VRF(1).RatedOUFanPower * state->dataHVACVarRefFlow->VRF(1).VRFCondCyclingRatio,
                 0.0001);

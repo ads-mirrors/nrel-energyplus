@@ -926,14 +926,15 @@ bool getDesuperHtrInput(EnergyPlusData &state)
                 }
             }
             
-        } else if (DesupHtr.HeatReclaimSourceType == HVAC::HeatReclaimType::CoilCoolDXVariableSpeed) { 
+        } else if (DesupHtr.HeatReclaimSourceType == HVAC::HeatReclaimType::CoilCoolDXVariableSpeed ||
+                   DesupHtr.HeatReclaimSourceType == HVAC::HeatReclaimType::CoilCoolWAHPVariableSpeedEquationFit) { 
             DesupHtr.HeatReclaimSourceNum = VariableSpeedCoils::GetCoilIndex(state, DesupHtr.HeatReclaimSourceName);
             if (DesupHtr.HeatReclaimSourceNum == 0) {
                 ShowSevereItemNotFound(state, eoh, cAlphaFieldNames(10), DesupHtr.HeatReclaimSourceName);
                 ErrorsFound = true;
             } else {
-                if (allocated(state.dataHeatBal->HeatReclaimVS_DXCoil)) {
-                    auto &HeatReclaim = state.dataHeatBal->HeatReclaimVS_DXCoil(DesupHtr.HeatReclaimSourceNum);
+                if (allocated(state.dataHeatBal->HeatReclaimVS_Coil)) {
+                    auto &HeatReclaim = state.dataHeatBal->HeatReclaimVS_Coil(DesupHtr.HeatReclaimSourceNum);
                     if (!allocated(HeatReclaim.WaterHeatingDesuperheaterReclaimedHeat)) {
                         HeatReclaim.WaterHeatingDesuperheaterReclaimedHeat.allocate(state.dataWaterThermalTanks->numWaterHeaterDesuperheater);
                         for (auto &num : HeatReclaim.WaterHeatingDesuperheaterReclaimedHeat)
@@ -1008,7 +1009,7 @@ bool getDesuperHtrInput(EnergyPlusData &state)
             ShowContinueError(state, " desuperheater can only be used with Coil:Cooling:DX:SingleSpeed, ");
             ShowContinueError(state,
                               " Coil:Cooling:DX:TwoSpeed, Coil:Cooling:DX:MultiSpeed, Coil:Cooling:DX:TwoStageWithHumidityControlMode, "
-                              "Coil:Cooling:DX:VariableSpeed, "
+                              "Coil:Cooling:DX:VariableSpeed, Coil:Cooling:WaterToAirHeatPump:VariableSpeedEquationFit, "
                               "Coil:Cooling:WaterToAirHeatPump:EquationFit, Refrigeration:CompressorRack,");
             ShowContinueError(state, " Refrigeration:Condenser:AirCooled ,Refrigeration:Condenser:EvaporativeCooled, ");
             ShowContinueError(state, " or Refrigeration:Condenser:WaterCooled.");
@@ -8365,26 +8366,32 @@ void WaterThermalTankData::CalcDesuperheaterWaterHeater(EnergyPlusData &state, b
             //  appropriate decrement for other waste heat applications is handled differently
             AverageWasteHeat = heatReclaim.AvailCapacity - heatReclaim.HVACDesuperheaterReclaimedHeatTotal;
             DesupHtr.DXSysPLR = 1.0;
+
         } else if (DesupHtr.HeatReclaimSourceType == HVAC::HeatReclaimType::RefrigeratedCaseCondenserAirCooled ||
                    DesupHtr.HeatReclaimSourceType == HVAC::HeatReclaimType::RefrigeratedCaseCondenserWaterCooled ||
                    DesupHtr.HeatReclaimSourceType == HVAC::HeatReclaimType::RefrigeratedCaseCondenserEvaporativeCooled) {
             auto const &heatReclaim = state.dataHeatBal->HeatReclaimRefrigCondenser(DesupHtr.HeatReclaimSourceNum);
             AverageWasteHeat = heatReclaim.AvailCapacity - heatReclaim.HVACDesuperheaterReclaimedHeatTotal;
             DesupHtr.DXSysPLR = 1.0;
+
         } else if (DesupHtr.HeatReclaimSourceType == HVAC::HeatReclaimType::CoilCoolDXSingleSpeed ||
                    DesupHtr.HeatReclaimSourceType == HVAC::HeatReclaimType::CoilCoolDXMultiSpeed ||
                    DesupHtr.HeatReclaimSourceType == HVAC::HeatReclaimType::CoilCoolDXMultiMode) {
             auto const &heatReclaim = state.dataHeatBal->HeatReclaimDXCoil(DesupHtr.HeatReclaimSourceNum);
             AverageWasteHeat = heatReclaim.AvailCapacity - heatReclaim.HVACDesuperheaterReclaimedHeatTotal;
             DesupHtr.DXSysPLR = state.dataDXCoils->DXCoil(DesupHtr.HeatReclaimSourceNum).PartLoadRatio;
-        } else if (DesupHtr.HeatReclaimSourceType == HVAC::HeatReclaimType::CoilCoolDXVariableSpeed) {
-            auto const &heatReclaim = state.dataHeatBal->HeatReclaimVS_DXCoil(DesupHtr.HeatReclaimSourceNum);
+
+        } else if (DesupHtr.HeatReclaimSourceType == HVAC::HeatReclaimType::CoilCoolDXVariableSpeed ||
+                   DesupHtr.HeatReclaimSourceType == HVAC::HeatReclaimType::CoilCoolWAHPVariableSpeedEquationFit) {
+            auto const &heatReclaim = state.dataHeatBal->HeatReclaimVS_Coil(DesupHtr.HeatReclaimSourceNum);
             AverageWasteHeat = heatReclaim.AvailCapacity - heatReclaim.HVACDesuperheaterReclaimedHeatTotal;
             DesupHtr.DXSysPLR = state.dataVariableSpeedCoils->VarSpeedCoil(DesupHtr.HeatReclaimSourceNum).PartLoadRatio;
+
         } else if (DesupHtr.HeatReclaimSourceType == HVAC::HeatReclaimType::CoilCoolWAHPEquationFit) {
             auto const &heatReclaim = state.dataHeatBal->HeatReclaimSimple_WAHPCoil(DesupHtr.HeatReclaimSourceNum);
             AverageWasteHeat = heatReclaim.AvailCapacity - heatReclaim.HVACDesuperheaterReclaimedHeatTotal;
             DesupHtr.DXSysPLR = state.dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(DesupHtr.HeatReclaimSourceNum).PartLoadRatio;
+
         } else if (DesupHtr.HeatReclaimSourceType == HVAC::HeatReclaimType::CoilCoolDX) {
             auto const &heatReclaim = state.dataCoilCoolingDX->coilCoolingDXs[DesupHtr.HeatReclaimSourceNum];
             AverageWasteHeat = heatReclaim.reclaimHeat.AvailCapacity - heatReclaim.reclaimHeat.HVACDesuperheaterReclaimedHeatTotal;
@@ -8724,8 +8731,9 @@ void WaterThermalTankData::CalcDesuperheaterWaterHeater(EnergyPlusData &state, b
             for (Real64 num : heatReclaim.WaterHeatingDesuperheaterReclaimedHeat)
                 heatReclaim.WaterHeatingDesuperheaterReclaimedHeatTotal += num;
             
-        } else if (DesupHtr.HeatReclaimSourceType == HVAC::HeatReclaimType::CoilCoolDXVariableSpeed) {
-            auto &heatReclaim = state.dataHeatBal->HeatReclaimVS_DXCoil(DesupHtr.HeatReclaimSourceNum);
+        } else if (DesupHtr.HeatReclaimSourceType == HVAC::HeatReclaimType::CoilCoolDXVariableSpeed ||
+                   DesupHtr.HeatReclaimSourceType == HVAC::HeatReclaimType::CoilCoolWAHPVariableSpeedEquationFit) {
+            auto &heatReclaim = state.dataHeatBal->HeatReclaimVS_Coil(DesupHtr.HeatReclaimSourceNum);
             heatReclaim.WaterHeatingDesuperheaterReclaimedHeat(DesuperheaterNum) = DesupHtr.HeaterRate;
             heatReclaim.WaterHeatingDesuperheaterReclaimedHeatTotal = 0.0;
             for (Real64 num : heatReclaim.WaterHeatingDesuperheaterReclaimedHeat)

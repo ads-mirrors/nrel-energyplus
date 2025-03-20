@@ -6121,7 +6121,8 @@ void SetCoilDesFlow(EnergyPlusData &state, int const coilNum, Real64 const CoilD
 Real64 GetCoilCapacity(EnergyPlusData &state, int const coilNum)
 {
     assert(coilNum > 0 && coilNum <= state.dataWaterCoils->NumWaterCoils);
-    return state.dataWaterCoils->WaterCoil(coilNum).DesWaterHeatingCoilRate;
+    auto const &waterCoil = state.dataWaterCoils->WaterCoil(coilNum);
+    return (waterCoil.coilType == HVAC::CoilType::HeatingWater) ? waterCoil.DesWaterHeatingCoilRate : waterCoil.DesWaterCoolingCoilRate;
 }
 
 Sched::Schedule *GetCoilAvailSched(EnergyPlusData &state, int const coilNum)

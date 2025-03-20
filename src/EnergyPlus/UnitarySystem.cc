@@ -6360,17 +6360,23 @@ namespace UnitarySystems {
                 if (objNameUC != Util::makeUPPER(objectName) && !state.dataUnitarySystems->getInputOnceFlag) continue;
 
                 int sysNum = getUnitarySystemIndex(state, objNameUC);
-                bool isNewSys = false;
+
+                // TODO: This is not good and needs to be fixed at some
+                // point.  Unitary systems objects are populated in
+                // multiple passes.  This not only involves reading
+                // and processing chunks of the input multiple times
+                // but also copying the entire UnitarySystem object
+                // into a giant local variable and then copying it
+                // back.
+                UnitarySys thisSys;
                 if (sysNum == -1) {
-                    isNewSys = true;
                     ++state.dataUnitarySystems->numUnitarySystems;
-                    sysNum = state.dataUnitarySystems->numUnitarySystems - 1;
-                    ++numCoilSystemDX;
                     state.dataInputProcessing->inputProcessor->markObjectAsUsed(cCurrentModuleObject, objNameUC);
+                } else {
+                    thisSys = state.dataUnitarySystems->unitarySys[sysNum];
                 }
 
                 // get CoilSystem:Cooling:DX object inputs
-                auto &thisSys = state.dataUnitarySystems->unitarySys[sysNum];
                 auto const &fields = instance.value();
 
                 // What is the point of constructing this string-based
@@ -6446,9 +6452,18 @@ namespace UnitarySystems {
                 thisSys.m_LastMode = CoolingMode;
                 thisSys.processInputSpec(state, thisSys.input_specs, sysNum, errorsFound, ZoneEquipment, ZoneOAUnitNum);
 
-                // zone equipment require a 1-n index for access to zone availability managers
-                // although not zone equipment, use same methodology
-                thisSys.m_EquipCompNum = numCoilSystemDX;
+                // TODO: copy entire unitary system object back to the
+                // array on the second initialization pass
+                if (sysNum == -1) {
+                    int thisSysNum = state.dataUnitarySystems->numUnitarySystems - 1;
+                    state.dataUnitarySystems->unitarySys[thisSysNum] = thisSys;
+                    // zone equipment require a 1-n index for access to zone availability managers
+                    // although not zone equipment, use same methodology
+                    ++numCoilSystemDX;
+                    thisSys.m_EquipCompNum = numCoilSystemDX;
+                } else {
+                    state.dataUnitarySystems->unitarySys[sysNum] = thisSys;
+                }
             }
         }
     }
@@ -6486,16 +6501,15 @@ namespace UnitarySystems {
                     if (Util::makeUPPER(objectName) != objNameUC && !state.dataUnitarySystems->getInputOnceFlag) continue;
 
                     int sysNum = getUnitarySystemIndex(state, objNameUC);
-                    bool isNewSys = false;
+                    UnitarySys thisSys;
                     if (sysNum == -1) {
-                        isNewSys = true;
                         ++state.dataUnitarySystems->numUnitarySystems;
-                        sysNum = state.dataUnitarySystems->numUnitarySystems - 1;
                         state.dataInputProcessing->inputProcessor->markObjectAsUsed(cCurrentModuleObject, objName);
-                    } 
+                    } else {
+                        thisSys = state.dataUnitarySystems->unitarySys[sysNum];
+                    }
 
                     // get PackagedTerminal unit object inputs
-                    auto &thisSys = state.dataUnitarySystems->unitarySys[sysNum];
                     auto const &fields = instance.value();
                     thisSys.input_specs.name = objName;
                     thisSys.input_specs.system_type = cCurrentModuleObject;
@@ -6592,7 +6606,7 @@ namespace UnitarySystems {
                     thisSys.m_LastMode = HeatingMode;
                     thisSys.processInputSpec(state, thisSys.input_specs, sysNum, errorsFound, ZoneEquipment, ZoneOAUnitNum);
 
-                    if (isNewSys) {
+                    if (sysNum == -1) {
                         // zone equipment require a 1-n index for access to zone availability managers
                         switch (getPTUnitType) {
                         case 1: // Excuse me?
@@ -6610,6 +6624,10 @@ namespace UnitarySystems {
                         default:
                             assert(true);
                         }
+                        
+                        state.dataUnitarySystems->unitarySys[state.dataUnitarySystems->numUnitarySystems - 1] = thisSys;
+                    } else {
+                        state.dataUnitarySystems->unitarySys[sysNum] = thisSys;
                     }
                 }
             }
@@ -6647,18 +6665,17 @@ namespace UnitarySystems {
                 auto const &objName = instance.key();
                 std::string objNameUC = Util::makeUPPER(objName);
                 
-                if (Util::makeUPPER(CoilSysName) != objName && !state.dataUnitarySystems->getInputOnceFlag) continue;
+                if (Util::makeUPPER(CoilSysName) != objNameUC && !state.dataUnitarySystems->getInputOnceFlag) continue;
                 
                 int sysNum = getUnitarySystemIndex(state, objName);
-                bool isNewSys = false;
+                UnitarySys thisSys;
                 if (sysNum == -1) {
-                    isNewSys = true;
                     ++state.dataUnitarySystems->numUnitarySystems;
-                    sysNum = state.dataUnitarySystems->numUnitarySystems - 1;
                     state.dataInputProcessing->inputProcessor->markObjectAsUsed(cCurrentModuleObject, objName);
+                } else {
+                    thisSys = state.dataUnitarySystems->unitarySys[sysNum];
                 }
-                
-                auto &thisSys = state.dataUnitarySystems->unitarySys[sysNum];
+                              
                 auto const &fields = instance.value();
 
                 thisSys.input_specs.name = objNameUC;
@@ -6754,10 +6771,16 @@ namespace UnitarySystems {
 
                 thisSys.processInputSpec(state, thisSys.input_specs, sysNum, errorsFound, ZoneEquipment, ZoneOAUnitNum);
 
-                if (isNewSys) {
+                if (sysNum == -1) {
+                    state.dataUnitarySystems->unitarySys[state.dataUnitarySystems->numUnitarySystems - 1] = thisSys;
+                    // zone equipment require a 1-n index for access to zone availability managers
+                    // although not zone equipment, use same methodology
                     ++numCoilSystemWater;
                     thisSys.m_EquipCompNum = numCoilSystemWater;
+                } else {
+                    state.dataUnitarySystems->unitarySys[sysNum] = thisSys;
                 }
+                
             }
 
             if (errorsFound) {
@@ -6793,17 +6816,16 @@ namespace UnitarySystems {
                 // when UnitarySystems::getInputOnceFlag is true read all unitary systems, otherwise read just the current object
                 if (Util::makeUPPER(objectName) != objNameUC && !state.dataUnitarySystems->getInputOnceFlag) continue;
 
-                bool isNewSys = false;
                 int sysNum = getUnitarySystemIndex(state, objNameUC);
+                UnitarySys thisSys;
                 if (sysNum == -1) {
-                    isNewSys = true;
                     ++state.dataUnitarySystems->numUnitarySystems;
-                    sysNum = state.dataUnitarySystems->numUnitarySystems - 1;
                     state.dataInputProcessing->inputProcessor->markObjectAsUsed(cCurrentModuleObject, objNameUC);
-                } 
+                } else {
+                    thisSys = state.dataUnitarySystems->unitarySys[sysNum];
+                }
 
                 auto const &fields = instance.value();
-                auto &thisSys = state.dataUnitarySystems->unitarySys[sysNum];
 
                 thisSys.UnitType = cCurrentModuleObject;
                 thisSys.m_sysType = SysType::Unitary;
@@ -6983,7 +7005,7 @@ namespace UnitarySystems {
 
                 thisSys.processInputSpec(state, thisSys.input_specs, sysNum, errorsFound, ZoneEquipment, ZoneOAUnitNum);
 
-                if (isNewSys) {
+                if (sysNum == -1) {
                     ++thisSys.m_UnitarySysNum;
                     if (ZoneEquipment) {
                         // zone equipment require a 1-n index for access to zone availability managers
@@ -6996,6 +7018,10 @@ namespace UnitarySystems {
                         ++airloopUnitaryNum;
                         thisSys.m_EquipCompNum = airloopUnitaryNum;
                     }
+                    
+                    state.dataUnitarySystems->unitarySys[state.dataUnitarySystems->numUnitarySystems - 1] = thisSys;
+                } else {
+                    state.dataUnitarySystems->unitarySys[sysNum] = thisSys;
                 }
             }
         }

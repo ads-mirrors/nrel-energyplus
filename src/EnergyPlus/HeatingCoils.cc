@@ -1047,8 +1047,8 @@ namespace HeatingCoils {
             } else if (heatingCoil.ReclaimHeatSourceType == HVAC::HeatReclaimType::RefrigeratedCaseCompressorRack) {
                 heatingCoil.ReclaimHeatSourceNum = RefrigeratedCase::GetRefrigeratedRackIndex(state, heatingCoil.ReclaimHeatSourceName);
                 if (heatingCoil.ReclaimHeatSourceNum == 0) {
-                  ShowSevereItemNotFound(state, eoh, cAlphaFields(6), heatingCoil.ReclaimHeatSourceName);
-                  ErrorsFound = true;
+                    ShowSevereItemNotFound(state, eoh, cAlphaFields(6), heatingCoil.ReclaimHeatSourceName);
+                    ErrorsFound = true;
                 } else if (allocated(state.dataHeatBal->HeatReclaimRefrigeratedRack)) {
                     auto &HeatReclaim = state.dataHeatBal->HeatReclaimRefrigeratedRack(heatingCoil.ReclaimHeatSourceNum);
                     if (!allocated(HeatReclaim.HVACDesuperheaterReclaimedHeat)) {
@@ -1123,8 +1123,8 @@ namespace HeatingCoils {
                 if (heatingCoil.ReclaimHeatSourceNum == 0) {
                     ShowSevereItemNotFound(state, eoh, cAlphaFields(6), heatingCoil.ReclaimHeatSourceName);
                     ErrorsFound = true;
-                } else if (allocated(state.dataHeatBal->HeatReclaimVS_DXCoil)) {
-                    auto &HeatReclaim = state.dataHeatBal->HeatReclaimVS_DXCoil(heatingCoil.ReclaimHeatSourceNum);
+                } else if (allocated(state.dataHeatBal->HeatReclaimVS_Coil)) {
+                    auto &HeatReclaim = state.dataHeatBal->HeatReclaimVS_Coil(heatingCoil.ReclaimHeatSourceNum);
                     if (!allocated(HeatReclaim.HVACDesuperheaterReclaimedHeat)) {
                         HeatReclaim.HVACDesuperheaterReclaimedHeat.allocate(state.dataHeatingCoils->NumDesuperheaterCoil);
                         std::fill(HeatReclaim.HVACDesuperheaterReclaimedHeat.begin(), HeatReclaim.HVACDesuperheaterReclaimedHeat.end(), 0.0);
@@ -1455,11 +1455,11 @@ namespace HeatingCoils {
             } break;
             case HeatObjTypes::COIL_DX_VARIABLE_COOLING: {
                 for (int DXCoilNum = 1; DXCoilNum <= state.dataVariableSpeedCoils->NumVarSpeedCoils; ++DXCoilNum) {
-                    if (!Util::SameString(state.dataHeatBal->HeatReclaimVS_DXCoil(DXCoilNum).Name, heatingCoil.ReclaimHeatingCoilName)) continue;
+                    if (!Util::SameString(state.dataHeatBal->HeatReclaimVS_Coil(DXCoilNum).Name, heatingCoil.ReclaimHeatingCoilName)) continue;
                     heatingCoil.ReclaimHeatingSourceIndexNum = DXCoilNum;
-                    if (allocated(state.dataHeatBal->HeatReclaimVS_DXCoil)) {
+                    if (allocated(state.dataHeatBal->HeatReclaimVS_Coil)) {
                         DataHeatBalance::HeatReclaimDataBase &HeatReclaim =
-                            state.dataHeatBal->HeatReclaimVS_DXCoil(heatingCoil.ReclaimHeatingSourceIndexNum);
+                            state.dataHeatBal->HeatReclaimVS_Coil(heatingCoil.ReclaimHeatingSourceIndexNum);
                         if (!allocated(HeatReclaim.HVACDesuperheaterReclaimedHeat)) {
                             HeatReclaim.HVACDesuperheaterReclaimedHeat.allocate(state.dataHeatingCoils->NumDesuperheaterCoil);
                             std::fill(HeatReclaim.HVACDesuperheaterReclaimedHeat.begin(), HeatReclaim.HVACDesuperheaterReclaimedHeat.end(), 0.0);
@@ -2585,7 +2585,7 @@ namespace HeatingCoils {
             case HVAC::HeatReclaimType::CoilCoolDXVariableSpeed: {
                 // condenser heat rejection
                 auto const &vsCoil = state.dataVariableSpeedCoils->VarSpeedCoil(heatCoil.ReclaimHeatSourceNum);
-                auto const &reclaimHeat = state.dataHeatBal->HeatReclaimVS_DXCoil(heatCoil.ReclaimHeatSourceNum);
+                auto const &reclaimHeat = state.dataHeatBal->HeatReclaimVS_Coil(heatCoil.ReclaimHeatSourceNum);
                 heatCoil.RTF = vsCoil.RunFrac;
                 heatCoil.NominalCapacity = reclaimHeat.AvailCapacity * Effic - reclaimHeat.WaterHeatingDesuperheaterReclaimedHeatTotal;
             } break;
@@ -2680,7 +2680,7 @@ namespace HeatingCoils {
                 auto &reclaimHeat = state.dataHeatBal->HeatReclaimRefrigeratedRack(heatCoil.ReclaimHeatSourceNum);
                 reclaimHeat.HVACDesuperheaterReclaimedHeat(DesuperheaterNum) = HeatingCoilLoad;
                 reclaimHeat.HVACDesuperheaterReclaimedHeatTotal = 0.0;
-                for (auto const num : reclaimHeat.HVACDesuperheaterReclaimedHeat)
+                for (Real64 num : reclaimHeat.HVACDesuperheaterReclaimedHeat)
                     reclaimHeat.HVACDesuperheaterReclaimedHeatTotal += num;
             } break;
               
@@ -2690,7 +2690,7 @@ namespace HeatingCoils {
                 auto &reclaimHeat = state.dataHeatBal->HeatReclaimRefrigCondenser(heatCoil.ReclaimHeatSourceNum);
                 reclaimHeat.HVACDesuperheaterReclaimedHeat(DesuperheaterNum) = HeatingCoilLoad;
                 reclaimHeat.HVACDesuperheaterReclaimedHeatTotal = 0.0;
-                for (auto const num : reclaimHeat.HVACDesuperheaterReclaimedHeat)
+                for (Real64 num : reclaimHeat.HVACDesuperheaterReclaimedHeat)
                     reclaimHeat.HVACDesuperheaterReclaimedHeatTotal += num;
             } break;
               
@@ -2700,15 +2700,15 @@ namespace HeatingCoils {
                 auto &reclaimHeat = state.dataHeatBal->HeatReclaimDXCoil(heatCoil.ReclaimHeatSourceNum);
                 reclaimHeat.HVACDesuperheaterReclaimedHeat(DesuperheaterNum) = HeatingCoilLoad;
                 reclaimHeat.HVACDesuperheaterReclaimedHeatTotal = 0.0;
-                for (auto const num : reclaimHeat.HVACDesuperheaterReclaimedHeat)
+                for (Real64 num : reclaimHeat.HVACDesuperheaterReclaimedHeat)
                     reclaimHeat.HVACDesuperheaterReclaimedHeatTotal += num;
             } break;
               
             case HVAC::HeatReclaimType::CoilCoolDXVariableSpeed: {
-                auto &reclaimHeat = state.dataHeatBal->HeatReclaimVS_DXCoil(heatCoil.ReclaimHeatSourceNum);
+                auto &reclaimHeat = state.dataHeatBal->HeatReclaimVS_Coil(heatCoil.ReclaimHeatSourceNum);
                 reclaimHeat.HVACDesuperheaterReclaimedHeat(DesuperheaterNum) = HeatingCoilLoad;
                 reclaimHeat.HVACDesuperheaterReclaimedHeatTotal = 0.0;
-                for (auto const num : reclaimHeat.HVACDesuperheaterReclaimedHeat)
+                for (Real64 num : reclaimHeat.HVACDesuperheaterReclaimedHeat)
                     reclaimHeat.HVACDesuperheaterReclaimedHeatTotal += num;
             } break;
 

@@ -66,6 +66,8 @@ void BaseSizer::initializeWithinEP(EnergyPlusData &state,
 {
     this->initialized = true;
     this->compType = _compType;
+    // This is done during the isValidCoilType call.  Why?
+    // this->coilType = static_cast<HVAC::CoilType>(getEnumValue(HVAC::coilTypeNamesUC, Util::makeUPPER(_compType)));
     this->compName = _compName;
     this->isEpJSON = state.dataGlobal->isEpJSON;
     this->printWarningFlag = _printWarningFlag;
@@ -571,7 +573,7 @@ void BaseSizer::select2StgDXHumCtrlSizerOutput(EnergyPlusData &state, bool &erro
 
 bool BaseSizer::isValidCoilType(std::string const &_compType)
 {
-    this->coilType = static_cast<HVAC::CoilType>(getEnumValue(HVAC::coilTypeNamesUC, _compType));
+    this->coilType = static_cast<HVAC::CoilType>(getEnumValue(HVAC::coilTypeNamesUC, Util::makeUPPER(_compType)));
     return this->coilType != HVAC::CoilType::Invalid;
 }
 

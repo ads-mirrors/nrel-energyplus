@@ -235,7 +235,6 @@ protected:
         state->dataDXCoils->DXCoilFanOp.allocate(1);
         state->dataHeatBal->HeatReclaimDXCoil.allocate(1);
 
-        cbvav.CoolCoilName = "MyDXCoolCoil";
         state->dataDXCoils->DXCoil(1).coilType = HVAC::CoilType::CoolingDXSingleSpeed;
         state->dataHeatingCoils->HeatingCoil.allocate(1);
         state->dataHeatingCoils->HeatingCoilNumericFields.allocate(1);
@@ -246,9 +245,12 @@ protected:
         state->dataHeatingCoils->ValidSourceType.dimension(state->dataHeatingCoils->NumHeatingCoils, false);
         state->dataHeatingCoils->GetCoilsInputFlag = false;
         state->dataSize->UnitarySysEqSizing.allocate(1);
-        cbvav.HeatCoilName = "MyHeatingCoil";
+        cbvav.CoolCoilName = "MyDXCoolCoil";
         cbvav.coolCoilType = HVAC::CoilType::CoolingDXSingleSpeed;
+        cbvav.CoolCoilNum = DXCoils::GetCoilIndex(*state, cbvav.CoolCoilName);
+        cbvav.HeatCoilName = "MyHeatingCoil";
         cbvav.heatCoilType = HVAC::CoilType::HeatingElectric;
+        cbvav.HeatCoilNum = HeatingCoils::GetCoilIndex(*state, cbvav.HeatCoilName);
         cbvav.minModeChangeTime = 0.0;
         cbvav.AirInNode = 1;
         cbvav.AirOutNode = 2;
@@ -268,6 +270,8 @@ protected:
         cbvav.ZoneSequenceCoolingNum = 1;
         cbvav.ZoneSequenceHeatingNum = 1;
         cbvav.OAMixName = "MyOAMixer";
+
+        state->dataMixedAir->NumOAMixers = 1;
         state->dataMixedAir->OAMixer.allocate(1);
         state->dataMixedAir->OAMixer(1).Name = "MyOAMixer";
         state->dataMixedAir->OAMixer(1).InletNode = 3;

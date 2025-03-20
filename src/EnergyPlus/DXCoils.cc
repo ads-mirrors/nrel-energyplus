@@ -1309,13 +1309,18 @@ void GetDXCoils(EnergyPlusData &state)
         // A12, \field Crankcase Heater Capacity Function of Outdoor Temperature Curve Name
         if (!lAlphaBlanks(12)) {
             thisDXCoil.CrankcaseHeaterCapacityCurveIndex = Curve::GetCurveIndex(state, Alphas(12));
-            ErrorsFound |= Curve::CheckCurveDims(state,
-                                                 thisDXCoil.CrankcaseHeaterCapacityCurveIndex, // Curve index
-                                                 {1},                                          // Valid dimensions
-                                                 RoutineName,                                  // Routine name
-                                                 CurrentModuleObject,                          // Object Type
-                                                 thisDXCoil.Name,                              // Object Name
-                                                 cAlphaFields(12));                            // Field Name
+            if (thisDXCoil.CrankcaseHeaterCapacityCurveIndex == 0) { // can't find the curve
+                ShowSevereError(state, format("{} = {}:  {} not found = {}", CurrentModuleObject, thisDXCoil.Name, cAlphaFields(12), Alphas(12)));
+                ErrorsFound = true;
+            } else {
+                ErrorsFound |= Curve::CheckCurveDims(state,
+                                                     thisDXCoil.CrankcaseHeaterCapacityCurveIndex, // Curve index
+                                                     {1},                                          // Valid dimensions
+                                                     RoutineName,                                  // Routine name
+                                                     CurrentModuleObject,                          // Object Type
+                                                     thisDXCoil.Name,                              // Object Name
+                                                     cAlphaFields(12));                            // Field Name
+            }
         }
 
         // Get Water System tank connections
@@ -1510,13 +1515,18 @@ void GetDXCoils(EnergyPlusData &state)
         // A5; \field Crankcase Heater Capacity Function of Outdoor Temperature Curve Name
         if (!lAlphaBlanks(5)) {
             thisDXCoil.CrankcaseHeaterCapacityCurveIndex = Curve::GetCurveIndex(state, Alphas(5));
-            ErrorsFound |= Curve::CheckCurveDims(state,
-                                                 thisDXCoil.CrankcaseHeaterCapacityCurveIndex, // Curve index
-                                                 {1},                                          // Valid dimensions
-                                                 RoutineName,                                  // Routine name
-                                                 CurrentModuleObject,                          // Object Type
-                                                 thisDXCoil.Name,                              // Object Name
-                                                 cAlphaFields(5));                             // Field Name
+            if (thisDXCoil.CrankcaseHeaterCapacityCurveIndex == 0) { // can't find the curve
+                ShowSevereError(state, format("{} = {}:  {} not found = {}", CurrentModuleObject, thisDXCoil.Name, cAlphaFields(5), Alphas(5)));
+                ErrorsFound = true;
+            } else {
+                ErrorsFound |= Curve::CheckCurveDims(state,
+                                                     thisDXCoil.CrankcaseHeaterCapacityCurveIndex, // Curve index
+                                                     {1},                                          // Valid dimensions
+                                                     RoutineName,                                  // Routine name
+                                                     CurrentModuleObject,                          // Object Type
+                                                     thisDXCoil.Name,                              // Object Name
+                                                     cAlphaFields(5));                             // Field Name
+            }
         }
 
         // Set crankcase heater capacity
@@ -2260,13 +2270,18 @@ void GetDXCoils(EnergyPlusData &state)
         // A11; \field Crankcase Heater Capacity Function of Outdoor Temperature Curve Name
         if (!lAlphaBlanks(11)) {
             thisDXCoil.CrankcaseHeaterCapacityCurveIndex = Curve::GetCurveIndex(state, Alphas(11));
-            ErrorsFound |= Curve::CheckCurveDims(state,
-                                                 thisDXCoil.CrankcaseHeaterCapacityCurveIndex, // Curve index
-                                                 {1},                                          // Valid dimensions
-                                                 RoutineName,                                  // Routine name
-                                                 CurrentModuleObject,                          // Object Type
-                                                 thisDXCoil.Name,                              // Object Name
-                                                 cAlphaFields(11));                            // Field Name
+            if (thisDXCoil.CrankcaseHeaterCapacityCurveIndex == 0) { // can't find the curve
+                ShowSevereError(state, format("{} = {}:  {} not found = {}", CurrentModuleObject, thisDXCoil.Name, cAlphaFields(11), Alphas(11)));
+                ErrorsFound = true;
+            } else {
+                ErrorsFound |= Curve::CheckCurveDims(state,
+                                                     thisDXCoil.CrankcaseHeaterCapacityCurveIndex, // Curve index
+                                                     {1},                                          // Valid dimensions
+                                                     RoutineName,                                  // Routine name
+                                                     CurrentModuleObject,                          // Object Type
+                                                     thisDXCoil.Name,                              // Object Name
+                                                     cAlphaFields(11));                            // Field Name
+            }
         }
 
         if (Util::SameString(Alphas(12), "ReverseCycle")) {
@@ -3252,13 +3267,18 @@ void GetDXCoils(EnergyPlusData &state)
 
         if (!lAlphaBlanks(9)) {
             thisDXCoil.CrankcaseHeaterCapacityCurveIndex = Curve::GetCurveIndex(state, Alphas(9));
-            ErrorsFound |= Curve::CheckCurveDims(state,
-                                                 thisDXCoil.CrankcaseHeaterCapacityCurveIndex, // Curve index
-                                                 {1},                                          // Valid dimensions
-                                                 RoutineName,                                  // Routine name
-                                                 CurrentModuleObject,                          // Object Type
-                                                 thisDXCoil.Name,                              // Object Name
-                                                 cAlphaFields(9));                             // Field Name
+            if (thisDXCoil.CrankcaseHeaterCapacityCurveIndex == 0) { // can't find the curve
+                ShowSevereError(state, format("{} = {}:  {} not found = {}", CurrentModuleObject, thisDXCoil.Name, cAlphaFields(9), Alphas(9)));
+                ErrorsFound = true;
+            } else {
+                ErrorsFound |= Curve::CheckCurveDims(state,
+                                                     thisDXCoil.CrankcaseHeaterCapacityCurveIndex, // Curve index
+                                                     {1},                                          // Valid dimensions
+                                                     RoutineName,                                  // Routine name
+                                                     CurrentModuleObject,                          // Object Type
+                                                     thisDXCoil.Name,                              // Object Name
+                                                     cAlphaFields(9));                             // Field Name
+            }
         }
 
         thisDXCoil.InletAirTemperatureType = static_cast<HVAC::OATType>(getEnumValue(HVAC::oatTypeNamesUC, Alphas(10)));
@@ -3692,13 +3712,18 @@ void GetDXCoils(EnergyPlusData &state)
         // Coil:WaterHeating:AirToWaterHeatPump:Wrapped
         if (!lAlphaBlanks(5)) {
             thisDXCoil.CrankcaseHeaterCapacityCurveIndex = Curve::GetCurveIndex(state, Alphas(5));
-            ErrorsFound |= Curve::CheckCurveDims(state,
-                                                 thisDXCoil.CrankcaseHeaterCapacityCurveIndex, // Curve index
-                                                 {1},                                          // Valid dimensions
-                                                 RoutineName,                                  // Routine name
-                                                 CurrentModuleObject,                          // Object Type
-                                                 thisDXCoil.Name,                              // Object Name
-                                                 cAlphaFields(5));                             // Field Name
+            if (thisDXCoil.CrankcaseHeaterCapacityCurveIndex == 0) { // can't find the curve
+                ShowSevereError(state, format("{} = {}:  {} not found = {}", CurrentModuleObject, thisDXCoil.Name, cAlphaFields(5), Alphas(5)));
+                ErrorsFound = true;
+            } else {
+                ErrorsFound |= Curve::CheckCurveDims(state,
+                                                     thisDXCoil.CrankcaseHeaterCapacityCurveIndex, // Curve index
+                                                     {1},                                          // Valid dimensions
+                                                     RoutineName,                                  // Routine name
+                                                     CurrentModuleObject,                          // Object Type
+                                                     thisDXCoil.Name,                              // Object Name
+                                                     cAlphaFields(5));                             // Field Name
+            }
         }
 
         if (Util::SameString(Alphas(6), "DryBulbTemperature")) {
@@ -4111,13 +4136,18 @@ void GetDXCoils(EnergyPlusData &state)
 
         if (!lAlphaBlanks(11)) {
             thisDXCoil.CrankcaseHeaterCapacityCurveIndex = Curve::GetCurveIndex(state, Alphas(11));
-            ErrorsFound |= Curve::CheckCurveDims(state,
-                                                 thisDXCoil.CrankcaseHeaterCapacityCurveIndex, // Curve index
-                                                 {1},                                          // Valid dimensions
-                                                 RoutineName,                                  // Routine name
-                                                 CurrentModuleObject,                          // Object Type
-                                                 thisDXCoil.Name,                              // Object Name
-                                                 cAlphaFields(11));                            // Field Name
+            if (thisDXCoil.CrankcaseHeaterCapacityCurveIndex == 0) { // can't find the curve
+                ShowSevereError(state, format("{} = {}:  {} not found = {}", CurrentModuleObject, thisDXCoil.Name, cAlphaFields(11), Alphas(11)));
+                ErrorsFound = true;
+            } else {
+                ErrorsFound |= Curve::CheckCurveDims(state,
+                                                     thisDXCoil.CrankcaseHeaterCapacityCurveIndex, // Curve index
+                                                     {1},                                          // Valid dimensions
+                                                     RoutineName,                                  // Routine name
+                                                     CurrentModuleObject,                          // Object Type
+                                                     thisDXCoil.Name,                              // Object Name
+                                                     cAlphaFields(11));                            // Field Name
+            }
         }
 
         if (!lAlphaBlanks(12)) {
@@ -4551,13 +4581,18 @@ void GetDXCoils(EnergyPlusData &state)
 
         if (!lAlphaBlanks(5)) {
             thisDXCoil.CrankcaseHeaterCapacityCurveIndex = Curve::GetCurveIndex(state, Alphas(5));
-            ErrorsFound |= Curve::CheckCurveDims(state,
-                                                 thisDXCoil.CrankcaseHeaterCapacityCurveIndex, // Curve index
-                                                 {1},                                          // Valid dimensions
-                                                 RoutineName,                                  // Routine name
-                                                 CurrentModuleObject,                          // Object Type
-                                                 thisDXCoil.Name,                              // Object Name
-                                                 cAlphaFields(5));                             // Field Name
+            if (thisDXCoil.CrankcaseHeaterCapacityCurveIndex == 0) { // can't find the curve
+                ShowSevereError(state, format("{} = {}:  {} not found = {}", CurrentModuleObject, thisDXCoil.Name, cAlphaFields(5), Alphas(5)));
+                ErrorsFound = true;
+            } else {
+                ErrorsFound |= Curve::CheckCurveDims(state,
+                                                     thisDXCoil.CrankcaseHeaterCapacityCurveIndex, // Curve index
+                                                     {1},                                          // Valid dimensions
+                                                     RoutineName,                                  // Routine name
+                                                     CurrentModuleObject,                          // Object Type
+                                                     thisDXCoil.Name,                              // Object Name
+                                                     cAlphaFields(5));                             // Field Name
+            }
         }
 
         // Only required for reverse cycle heat pumps
@@ -5754,6 +5789,23 @@ void GetDXCoils(EnergyPlusData &state)
                                     OutputProcessor::StoreType::Average,
                                     thisDXCoil.Name);
             }
+            if (state.dataGlobal->AnyEnergyManagementSystemInModel) {
+                SetupEMSActuator(state,
+                                 HVAC::coilTypeNames[(int)thisDXCoil.coilType],
+                                 thisDXCoil.Name,
+                                 "Frost Heating Capacity Multiplier",
+                                 "[]",
+                                 thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideOn,
+                                 thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideValue);
+
+                SetupEMSActuator(state,
+                                 HVAC::coilTypeNames[(int)thisDXCoil.coilType],
+                                 thisDXCoil.Name,
+                                 "Frost Heating Input Power Multiplier",
+                                 "[]",
+                                 thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideOn,
+                                 thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideValue);
+            }
         }
 
         else if (thisDXCoil.coilType == HVAC::CoilType::CoolingDXTwoSpeed) {
@@ -6356,6 +6408,24 @@ void GetDXCoils(EnergyPlusData &state)
                                     OutputProcessor::StoreType::Average,
                                     thisDXCoil.Name);
             }
+
+            if (state.dataGlobal->AnyEnergyManagementSystemInModel) {
+                SetupEMSActuator(state,
+                                 HVAC::coilTypeNames[(int)thisDXCoil.coilType],
+                                 thisDXCoil.Name,
+                                 "Frost Heating Capacity Multiplier",
+                                 "[]",
+                                 thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideOn,
+                                 thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideValue);
+
+                SetupEMSActuator(state,
+                                 HVAC::coilTypeNames[(int)thisDXCoil.coilType],
+                                 thisDXCoil.Name,
+                                 "Frost Heating Input Power Multiplier",
+                                 "[]",
+                                 thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideOn,
+                                 thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideValue);
+            }
         }
 
         // VRF cooling coil report variables
@@ -6463,6 +6533,24 @@ void GetDXCoils(EnergyPlusData &state)
                                 OutputProcessor::TimeStepType::System,
                                 OutputProcessor::StoreType::Average,
                                 thisDXCoil.Name);
+
+            if (state.dataGlobal->AnyEnergyManagementSystemInModel) {
+                SetupEMSActuator(state,
+                                 HVAC::coilTypeNames[(int)thisDXCoil.coilType],
+                                 thisDXCoil.Name,
+                                 "Frost Heating Capacity Multiplier",
+                                 "[]",
+                                 thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideOn,
+                                 thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideValue);
+
+                SetupEMSActuator(state,
+                                 HVAC::coilTypeNames[(int)thisDXCoil.coilType],
+                                 thisDXCoil.Name,
+                                 "Frost Heating Input Power Multiplier",
+                                 "[]",
+                                 thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideOn,
+                                 thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideValue);
+            }
         }
 
         // VRF cooling coil for FluidTCtrl, report variables
@@ -11052,13 +11140,37 @@ void CalcDXHeatingCoil(EnergyPlusData &state,
             if (thisDXCoil.DefrostControl == StandardRatings::HPdefrostControl::Timed) {
                 FractionalDefrostTime = thisDXCoil.DefrostTime;
                 if (FractionalDefrostTime > 0.0) {
-                    HeatingCapacityMultiplier = 0.909 - 107.33 * OutdoorCoildw;
-                    InputPowerMultiplier = 0.90 - 36.45 * OutdoorCoildw;
+                    if (thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideOn && thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideOn) {
+                        HeatingCapacityMultiplier = thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideValue;
+                        InputPowerMultiplier = thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideValue;
+                    } else {
+                        HeatingCapacityMultiplier = 0.909 - 107.33 * OutdoorCoildw;
+                        InputPowerMultiplier = 0.90 - 36.45 * OutdoorCoildw;
+                        if (thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideOn || thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideOn) {
+                            ShowWarningMessage(state,
+                                               format("The Frost Heating Capacity Multiplier actuator and the Frost Heating Input Power Multiplier "
+                                                      "actuator must be both provided for DX heating coil {}",
+                                                      thisDXCoil.Name));
+                            ShowContinueError(state, "EMS actuators are ignored. Simulation is continuing.");
+                        }
+                    }
                 }
             } else { // else defrost control is on-demand
                 FractionalDefrostTime = 1.0 / (1.0 + 0.01446 / OutdoorCoildw);
-                HeatingCapacityMultiplier = 0.875 * (1.0 - FractionalDefrostTime);
-                InputPowerMultiplier = 0.954 * (1.0 - FractionalDefrostTime);
+                if (thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideOn && thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideOn) {
+                    HeatingCapacityMultiplier = thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideValue;
+                    InputPowerMultiplier = thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideValue;
+                } else {
+                    HeatingCapacityMultiplier = 0.875 * (1.0 - FractionalDefrostTime);
+                    InputPowerMultiplier = 0.954 * (1.0 - FractionalDefrostTime);
+                    if (thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideOn || thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideOn) {
+                        ShowWarningMessage(state,
+                                           format("The Frost Heating Capacity Multiplier actuator and the Frost Heating Input Power Multiplier "
+                                                  "actuator must be both provided for DX heating coil {}",
+                                                  thisDXCoil.Name));
+                        ShowContinueError(state, "EMS actuators are ignored. Simulation is continuing.");
+                    }
+                }
             }
 
             if (FractionalDefrostTime > 0.0) {
@@ -13681,13 +13793,38 @@ void CalcMultiSpeedDXCoilHeating(EnergyPlusData &state,
                 if (thisDXCoil.DefrostControl == StandardRatings::HPdefrostControl::Timed) {
                     FractionalDefrostTime = thisDXCoil.DefrostTime;
                     if (FractionalDefrostTime > 0.0) {
-                        HeatingCapacityMultiplier = 0.909 - 107.33 * OutdoorCoildw;
-                        InputPowerMultiplier = 0.90 - 36.45 * OutdoorCoildw;
+                        if (thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideOn && thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideOn) {
+                            HeatingCapacityMultiplier = thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideValue;
+                            InputPowerMultiplier = thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideValue;
+                        } else {
+                            HeatingCapacityMultiplier = 0.909 - 107.33 * OutdoorCoildw;
+                            InputPowerMultiplier = 0.90 - 36.45 * OutdoorCoildw;
+                            if (thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideOn || thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideOn) {
+                                ShowWarningMessage(
+                                    state,
+                                    format("The Frost Heating Capacity Multiplier actuator and the Frost Heating Input Power Multiplier "
+                                           "actuator must be both provided for DX heating coil {}",
+                                           thisDXCoil.Name));
+                                ShowContinueError(state, "EMS actuators are ignored. Simulation is continuing.");
+                            }
+                        }
                     }
                 } else { // else defrost control is on-demand
                     FractionalDefrostTime = 1.0 / (1.0 + 0.01446 / OutdoorCoildw);
-                    HeatingCapacityMultiplier = 0.875 * (1.0 - FractionalDefrostTime);
-                    InputPowerMultiplier = 0.954 * (1.0 - FractionalDefrostTime);
+                    if (thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideOn && thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideOn) {
+                        HeatingCapacityMultiplier = thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideValue;
+                        InputPowerMultiplier = thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideValue;
+                    } else {
+                        HeatingCapacityMultiplier = 0.875 * (1.0 - FractionalDefrostTime);
+                        InputPowerMultiplier = 0.954 * (1.0 - FractionalDefrostTime);
+                        if (thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideOn || thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideOn) {
+                            ShowWarningMessage(state,
+                                               format("The Frost Heating Capacity Multiplier actuator and the Frost Heating Input Power Multiplier "
+                                                      "actuator must be both provided for DX heating coil {}",
+                                                      thisDXCoil.Name));
+                            ShowContinueError(state, "EMS actuators are ignored. Simulation is continuing.");
+                        }
+                    }
                 }
 
                 if (FractionalDefrostTime > 0.0) {
@@ -13896,13 +14033,38 @@ void CalcMultiSpeedDXCoilHeating(EnergyPlusData &state,
                 if (thisDXCoil.DefrostControl == StandardRatings::HPdefrostControl::Timed) {
                     FractionalDefrostTime = thisDXCoil.DefrostTime;
                     if (FractionalDefrostTime > 0.0) {
-                        HeatingCapacityMultiplier = 0.909 - 107.33 * OutdoorCoildw;
-                        InputPowerMultiplier = 0.90 - 36.45 * OutdoorCoildw;
+                        if (thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideOn && thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideOn) {
+                            HeatingCapacityMultiplier = thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideValue;
+                            InputPowerMultiplier = thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideValue;
+                        } else {
+                            HeatingCapacityMultiplier = 0.909 - 107.33 * OutdoorCoildw;
+                            InputPowerMultiplier = 0.90 - 36.45 * OutdoorCoildw;
+                            if (thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideOn || thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideOn) {
+                                ShowWarningMessage(
+                                    state,
+                                    format("The Frost Heating Capacity Multiplier actuator and the Frost Heating Input Power Multiplier "
+                                           "actuator must be both provided for DX heating coil {}",
+                                           thisDXCoil.Name));
+                                ShowContinueError(state, "EMS actuators are ignored. Simulation is continuing.");
+                            }
+                        }
                     }
                 } else { // else defrost control is on-demand
                     FractionalDefrostTime = 1.0 / (1.0 + 0.01446 / OutdoorCoildw);
-                    HeatingCapacityMultiplier = 0.875 * (1.0 - FractionalDefrostTime);
-                    InputPowerMultiplier = 0.954 * (1.0 - FractionalDefrostTime);
+                    if (thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideOn && thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideOn) {
+                        HeatingCapacityMultiplier = thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideValue;
+                        InputPowerMultiplier = thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideValue;
+                    } else {
+                        HeatingCapacityMultiplier = 0.875 * (1.0 - FractionalDefrostTime);
+                        InputPowerMultiplier = 0.954 * (1.0 - FractionalDefrostTime);
+                        if (thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideOn || thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideOn) {
+                            ShowWarningMessage(state,
+                                               format("The Frost Heating Capacity Multiplier actuator and the Frost Heating Input Power Multiplier "
+                                                      "actuator must be both provided for DX heating coil {}",
+                                                      thisDXCoil.Name));
+                            ShowContinueError(state, "EMS actuators are ignored. Simulation is continuing.");
+                        }
+                    }
                 }
 
                 if (FractionalDefrostTime > 0.0) {
@@ -17958,8 +18120,15 @@ Real64 GetCoilCapacity(EnergyPlusData &state, int const coilNum)
     } break;
 
     default: {
-      assert(false);
-      return -1000.0;
+        return dxCoil.RatedTotCap(dxCoil.NumCapacityStages);
+
+        // This is the difference between GetCoilCapacity and GetCoilCapacityByIndexType() -- Why?
+        
+        // ShowSevereError(state, format("GetCoilCapacity: Could not find Coil, Type=\"{}\" Name=\"{}\"",
+        //                              HVAC::coilTypeNames[(int)dxCoil.coilType], dxCoil.Name));
+        // ShowContinueError(state, "... returning capacity as -1000.");
+        // return -1000.0;
+        
     } break;
     }
 }

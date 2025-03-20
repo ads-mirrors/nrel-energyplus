@@ -337,6 +337,7 @@ namespace HVAC {
         CoilCoolDXVariableSpeed,
         CoilCoolDX,
         CoilCoolWAHPEquationFit,
+        CoilCoolWAHPVariableSpeedEquationFit,
         Num
     };
 
@@ -351,7 +352,8 @@ namespace HVAC {
         "Coil:Cooling:DX:TwoStageWithHumidityControlMode",
         "Coil:Cooling:DX:VariableSpeed",
         "Coil:Cooling:DX",
-        "Coil:Cooling:WaterToAirHeatPump:EquationFit"        
+        "Coil:Cooling:WaterToAirHeatPump:EquationFit",        
+        "Coil:Cooling:WaterToAirHeatPump:VariableSpeedEquationFit"        
     };
 
     constexpr std::array<std::string_view, (int)HeatReclaimType::Num> heatReclaimTypeNamesUC = {
@@ -365,7 +367,8 @@ namespace HVAC {
         "COIL:COOLING:DX:TWOSTAGEWITHHUMIDITYCONTROLMODE",
         "COIL:COOLING:DX:VARIABLESPEED",
         "COIL:COOLING:DX",
-        "COIL:COOLING:WATERTOAIRHEATPUMP:EQUATIONFIT"
+        "COIL:COOLING:WATERTOAIRHEATPUMP:EQUATIONFIT",
+        "COIL:COOLING:WATERTOAIRHEATPUMP:VARIABLESPEEDEQUATIONFIT"
     };
   
     enum class WaterFlow

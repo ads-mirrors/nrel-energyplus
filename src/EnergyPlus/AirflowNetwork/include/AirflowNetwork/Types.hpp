@@ -52,7 +52,7 @@ namespace EnergyPlus {
 
 namespace AirflowNetwork {
 
-    enum VentControlType // TODO: make enum class
+    enum VentControlType
     {
         None = 0,  // Wrong input
         Temp = 1,  // Temperature venting control
@@ -66,67 +66,38 @@ namespace AirflowNetwork {
         AdjEnth = 9    // Enthalpy venting control based on adjacent zone conditions
     };
 
-    enum OpenStatus // TODO: make enum class
+    enum OpenStatus
     {
         FreeOperation = 0,     // Free operation
         MinCheckForceOpen = 1, // Force open when opening elapsed time is less than minimum opening time
         MinCheckForceClose = 2 // Force open when closing elapsed time is less than minimum closing time
     };
 
-    enum ProbabilityCheck // TODO: make enum class
+    enum ProbabilityCheck
     {
         NoAction = 0,    // No action from probability check
         ForceChange = 1, // Force open or close from probability check
         KeepStatus = 2   // Keep status at the previous time step from probability check
     };
 
-    enum class EquivRec
+    enum class EquivRec : int
     {
         Height,          // Effective rectangle polygonal height selection
         BaseAspectRatio, // Effective rectangle base surface aspect ratio selection
         UserAspectRatio  // Effective rectangle user input aspect ratio selection
     };
 
-    enum class DuctLineType
+    enum class DuctLineType : int
     {
         Invalid = -1,
         SupplyTrunk,  // Supply trunk
-        SupplyBranch, // SupplyBrnach
+        SupplyBranch, // Supply branch
         ReturnTrunk,  // Return trunk
-        ReturnBranch, // ReturnBrnach
+        ReturnBranch, // Return branch
     };
 
-    enum class iComponentTypeNum : int
+    enum class AirflowElementType : int
     {
-        Invalid = 0,
-        DOP = 1,  // Detailed large opening component
-        SOP = 2,  // Simple opening component
-        SCR = 3,  // Surface crack component
-        SEL = 4,  // Surface effective leakage ratio component
-        PLR = 5,  // Distribution system crack component
-        DWC = 6,  // Distribution system duct component
-        CVF = 7,  // Distribution system constant volume fan component
-        FAN = 8,  // Distribution system detailed fan component
-        MRR = 9,  // Distribution system multiple curve fit power law resistant flow component
-        DMP = 10, // Distribution system damper component
-        ELR = 11, // Distribution system effective leakage ratio component
-        CPD = 12, // Distribution system constant pressure drop component
-        COI = 13, // Distribution system coil component
-        TMU = 14, // Distribution system terminal unit component
-        EXF = 15, // Zone exhaust fan
-        HEX = 16, // Distribution system heat exchanger
-        HOP = 17, // Horizontal opening component
-        RVD = 18, // Reheat VAV terminal damper
-        OAF = 19, // Distribution system OA
-        REL = 20, // Distribution system relief air
-        SMF = 21, // Specified mass flow component
-        SVF = 22, // Specified volume flow component
-        Num
-    };
-
-    enum class ComponentType
-    {
-        // TODO: enum check
         Invalid = -1,
         DOP = 1, // Detailed large opening component
         SOP,     // Simple opening component
@@ -149,49 +120,44 @@ namespace AirflowNetwork {
         OAF,     // Distribution system OA
         REL,     // Distribution system relief air
         SMF,     // Specified mass flow component
-        SVF,     // Specified volume flow component
-        Num
+        SVF      // Specified volume flow component
     };
 
-    enum class iEPlusComponentType : int
+    enum class EPlusComponentType : int
     {
-        Invalid = 0,
-        SCN = 1, // Supply connection
-        RCN = 2, // Return connection
-        RHT = 3, // Reheat terminal
-        FAN = 4, // Fan
-        COI = 5, // Heating or cooling coil
-        HEX = 6, // Heat exchanger
-        RVD = 7, // Reheat VAV terminal damper
-        Num
+        Invalid = -1,
+        SCN, // Supply connection
+        RCN, // Return connection
+        RHT, // Reheat terminal
+        FAN, // Fan
+        COI, // Heating or cooling coil
+        HEX, // Heat exchanger
+        RVD  // Reheat VAV terminal damper
     };
 
-    enum class iEPlusNodeType : int
+    enum class EPlusNodeType : int
     {
-        Invalid = 0,
-        ZIN = 1,  // Zone inlet node
-        ZOU = 2,  // Zone outlet node
-        SPL = 3,  // Splitter node
-        MIX = 4,  // Mixer node
-        OAN = 5,  // Outside air system node
-        EXT = 6,  // OA system inlet node
-        FIN = 7,  // Fan Inlet node
-        FOU = 8,  // Fan Outlet Node
-        COU = 9,  // Coil Outlet Node
-        HXO = 10, // Heat exchanger Outlet Node
-        DIN = 11, // Damper Inlet node
-        DOU = 12, // Damper Outlet Node
-        SPI = 13, // Splitter inlet Node
-        SPO = 14, // Splitter Outlet Node
-        Num
+        Invalid = -1,
+        ZIN, // Zone inlet node
+        ZOU, // Zone outlet node
+        SPL, // Splitter node
+        MIX, // Mixer node
+        OAN, // Outside air system node
+        EXT, // OA system inlet node
+        FIN, // Fan Inlet node
+        FOU, // Fan Outlet Node
+        COU, // Coil Outlet Node
+        HXO, // Heat exchanger Outlet Node
+        DIN, // Damper Inlet node
+        DOU, // Damper Outlet Node
+        SPI, // Splitter inlet Node
+        SPO  // Splitter Outlet Node
     };
 
-    enum class iWPCCntr : int
+    enum class WindPressureType : int
     {
-        Invalid = 0,
-        Input = 1,
-        SurfAvg = 2,
-        Num
+        Input,
+        SurfAvg
     };
 
     int constexpr PressureCtrlExhaust = 1;

@@ -56,11 +56,9 @@
 // ObjexxFCL Headers
 #include <ObjexxFCL/Array.functions.hh>
 #include <ObjexxFCL/Array2D.hh>
-// #include <ObjexxFCL/Fmath.hh>
 
 // EnergyPlus Headers
 #include <AirflowNetwork/Elements.hpp>
-#include <AirflowNetwork/Solver.hpp>
 #include <EnergyPlus/BranchNodeConnections.hh>
 #include <EnergyPlus/Coils/CoilCoolingDX.hh>
 #include <EnergyPlus/Construction.hh>
@@ -2094,7 +2092,7 @@ namespace AirflowNetwork {
         if (!control_defaulted) {
             bool SimObjectError = false;
             if (Util::SameString(simulation_control.WPCCntr, "Input")) {
-                simulation_control.iWPCCnt = iWPCCntr::Input;
+                simulation_control.iWPCCnt = WindPressureType::Input;
                 if (lAlphaBlanks(4)) {
                     ShowSevereError(m_state, format(RoutineName) + CurrentModuleObject + " object, " + cAlphaFields(3) + " = INPUT.");
                     ShowContinueError(m_state, ".." + cAlphaFields(4) + " was not entered.");
@@ -2113,7 +2111,7 @@ namespace AirflowNetwork {
                     }
                 }
             } else if (Util::SameString(simulation_control.WPCCntr, "SurfaceAverageCalculation")) {
-                simulation_control.iWPCCnt = iWPCCntr::SurfAvg;
+                simulation_control.iWPCCnt = WindPressureType::SurfAvg;
                 if (!(Util::SameString(simulation_control.BldgType, "LowRise") || Util::SameString(simulation_control.BldgType, "HighRise"))) {
                     ShowSevereError(m_state,
                                     format(RoutineName) + CurrentModuleObject + " object, " + cAlphaFields(5) + " = " + Alphas(5) + " is invalid.");
@@ -2499,7 +2497,7 @@ namespace AirflowNetwork {
         }
 
         // *** Read AirflowNetwork external node
-        if (simulation_control.iWPCCnt == iWPCCntr::Input) {
+        if (simulation_control.iWPCCnt == WindPressureType::Input) {
             // Wind coefficient == Surface-Average does not need inputs of external nodes
             AirflowNetworkNumOfExtNode =
                 m_state.dataInputProcessing->inputProcessor->getNumObjectsFound(m_state, "AirflowNetwork:MultiZone:ExternalNode");
@@ -2991,7 +2989,7 @@ namespace AirflowNetwork {
             }
 
             // Outside face environment
-            if (simulation_control.iWPCCnt == iWPCCntr::Input) {
+            if (simulation_control.iWPCCnt == WindPressureType::Input) {
                 n = m_state.dataSurface->Surface(MultizoneSurfaceData(i).SurfNum).ExtBoundCond;
                 if (n == ExternalEnvironment ||
                     (n == OtherSideCoefNoCalcExt && m_state.dataSurface->Surface(MultizoneSurfaceData(i).SurfNum).ExtWind)) {
@@ -3128,7 +3126,7 @@ namespace AirflowNetwork {
         }
 
         // Ensure the number of external node = the number of external surface with HeightOption choice = OpeningHeight
-        if (Util::SameString(simulation_control.HeightOption, "OpeningHeight") && simulation_control.iWPCCnt == iWPCCntr::Input) {
+        if (Util::SameString(simulation_control.HeightOption, "OpeningHeight") && simulation_control.iWPCCnt == WindPressureType::Input) {
             if (AirflowNetworkNumOfExtSurfaces != AirflowNetworkNumOfExtNode) {
                 ShowSevereError(m_state,
                                 format(RoutineName) +
@@ -3181,7 +3179,7 @@ namespace AirflowNetwork {
             auto afe = elements.find(MultizoneSurfaceData(i).OpeningName);
             if (afe != elements.end()) {
                 auto type = afe->second->type();
-                has_Opening = (type == ComponentType::DOP) || (type == ComponentType::SOP) || (type == ComponentType::HOP);
+                has_Opening = (type == AirflowElementType::DOP) || (type == AirflowElementType::SOP) || (type == AirflowElementType::HOP);
             }
             // Obtain schedule number and check surface shape
             if (has_Opening) {
@@ -3504,7 +3502,7 @@ namespace AirflowNetwork {
         ZoneBCCheck.deallocate();
 
         // Validate CP Value number
-        if (simulation_control.iWPCCnt == iWPCCntr::Input) { // Surface-Average does not need inputs of external nodes
+        if (simulation_control.iWPCCnt == WindPressureType::Input) { // Surface-Average does not need inputs of external nodes
             // Ensure different curve is used to avoid a single side boundary condition
             found = false;
             bool differentAngle = false;
@@ -3688,7 +3686,7 @@ namespace AirflowNetwork {
                     if (IntraZoneLinkageData(i).NodeNums[1] > 0) {
                         IntraZoneLinkageData(i).NodeHeights[1] = Zone(MultizoneZoneData(IntraZoneLinkageData(i).NodeNums[1]).ZoneNum).Centroid.z;
                     } else {
-                        if (simulation_control.iWPCCnt == iWPCCntr::Input) { // Surface-Average does not need inputs of external nodes
+                        if (simulation_control.iWPCCnt == WindPressureType::Input) { // Surface-Average does not need inputs of external nodes
                             IntraZoneLinkageData(i).NodeNums[1] = MultizoneSurfaceData(IntraZoneLinkageData(i).LinkNum).NodeNums[1];
                             if (IntraZoneLinkageData(i).NodeNums[1] == 0) {
                                 ShowSevereError(m_state,
@@ -3699,7 +3697,7 @@ namespace AirflowNetwork {
                                 ErrorsFound = true;
                             }
                         }
-                        if (simulation_control.iWPCCnt == iWPCCntr::SurfAvg) {
+                        if (simulation_control.iWPCCnt == WindPressureType::SurfAvg) {
                             if (!lAlphaBlanks(3)) {
                                 ShowWarningError(m_state,
                                                  format(RoutineName) + CurrentModuleObject + "='" + Alphas(1) + " The input of " + cAlphaFields(3) +
@@ -4085,7 +4083,7 @@ namespace AirflowNetwork {
                     bool is_EXF{false};
                     auto afe = elements.find(Alphas(4));
                     if (afe != elements.end()) {
-                        is_EXF = afe->second->type() == ComponentType::EXF;
+                        is_EXF = afe->second->type() == AirflowElementType::EXF;
                     }
                     if (!is_EXF) {
                         ShowSevereError(m_state, format(RoutineName) + CurrentModuleObject + " object, an invalid name is given:");
@@ -4098,7 +4096,7 @@ namespace AirflowNetwork {
                     bool is_REL{false};
                     auto afe = elements.find(Alphas(4));
                     if (afe != elements.end()) {
-                        is_REL = afe->second->type() == ComponentType::REL;
+                        is_REL = afe->second->type() == AirflowElementType::REL;
                     }
                     if (!is_REL) {
                         ShowSevereError(m_state, format(RoutineName) + CurrentModuleObject + " object, an invalid name is given:");
@@ -4123,7 +4121,7 @@ namespace AirflowNetwork {
 
         // Assign numbers of nodes and linkages
         if (simulation_control.type != ControlType::NoMultizoneOrDistribution) {
-            if (simulation_control.iWPCCnt == iWPCCntr::Input) {
+            if (simulation_control.iWPCCnt == WindPressureType::Input) {
                 NumOfNodesMultiZone = AirflowNetworkNumOfZones + AirflowNetworkNumOfExtNode;
             } else {
                 NumOfNodesMultiZone = AirflowNetworkNumOfZones + NumOfExtNodes;
@@ -4148,7 +4146,7 @@ namespace AirflowNetwork {
             AirflowNetworkNodeData(i).NodeHeight = MultizoneZoneData(i).Height;
         }
         // External node
-        if (simulation_control.iWPCCnt == iWPCCntr::Input) {
+        if (simulation_control.iWPCCnt == WindPressureType::Input) {
             for (int i = AirflowNetworkNumOfZones + 1; i <= NumOfNodesMultiZone; ++i) {
                 AirflowNetworkNodeData(i).Name = MultizoneExternalNodeData(i - AirflowNetworkNumOfZones).Name;
                 AirflowNetworkNodeData(i).NodeTypeNum = 1;
@@ -4209,26 +4207,26 @@ namespace AirflowNetwork {
                 AirflowNetworkNodeData(i).EPlusNodeNum = DisSysNodeData(i - NumOfNodesMultiZone).EPlusNodeNum;
                 // Get mixer information
                 if (Util::SameString(DisSysNodeData(i - NumOfNodesMultiZone).EPlusType, "AirLoopHVAC:ZoneMixer")) {
-                    AirflowNetworkNodeData(i).EPlusTypeNum = iEPlusNodeType::MIX;
+                    AirflowNetworkNodeData(i).EPlusTypeNum = EPlusNodeType::MIX;
                 }
                 // Get splitter information
                 if (Util::SameString(DisSysNodeData(i - NumOfNodesMultiZone).EPlusType, "AirLoopHVAC:ZoneSplitter")) {
-                    AirflowNetworkNodeData(i).EPlusTypeNum = iEPlusNodeType::SPL;
+                    AirflowNetworkNodeData(i).EPlusTypeNum = EPlusNodeType::SPL;
                 }
                 // Get outside air system information
                 if (Util::SameString(DisSysNodeData(i - NumOfNodesMultiZone).EPlusType, "AirLoopHVAC:OutdoorAirSystem")) {
-                    AirflowNetworkNodeData(i).EPlusTypeNum = iEPlusNodeType::OAN;
+                    AirflowNetworkNodeData(i).EPlusTypeNum = EPlusNodeType::OAN;
                 }
                 // Get OA system inlet information 'OAMixerOutdoorAirStreamNode' was specified as an outdoor air node implicitly
                 if (Util::SameString(DisSysNodeData(i - NumOfNodesMultiZone).EPlusType, "OAMixerOutdoorAirStreamNode")) {
-                    AirflowNetworkNodeData(i).EPlusTypeNum = iEPlusNodeType::EXT;
+                    AirflowNetworkNodeData(i).EPlusTypeNum = EPlusNodeType::EXT;
                     AirflowNetworkNodeData(i).ExtNodeNum = AirflowNetworkNumOfExtNode + 1;
                     AirflowNetworkNodeData(i).NodeTypeNum = 1;
                 }
                 if (Util::SameString(DisSysNodeData(i - NumOfNodesMultiZone).EPlusType, "OutdoorAir:NodeList") ||
                     Util::SameString(DisSysNodeData(i - NumOfNodesMultiZone).EPlusType, "OutdoorAir:Node")) {
                     if (j > 1) {
-                        AirflowNetworkNodeData(i).EPlusTypeNum = iEPlusNodeType::EXT;
+                        AirflowNetworkNodeData(i).EPlusTypeNum = EPlusNodeType::EXT;
                         AirflowNetworkNodeData(i).ExtNodeNum = AirflowNetworkNumOfExtNode + 1;
                         AirflowNetworkNodeData(i).NodeTypeNum = 1;
                     } else {
@@ -4254,7 +4252,7 @@ namespace AirflowNetwork {
         for (int i = 1; i <= AirflowNetworkNumOfDetOpenings; ++i) { // Detailed opening component
             AirflowNetworkCompData(i).Name = MultizoneCompDetOpeningData(i).name;
             compnum[AirflowNetworkCompData(i).Name] = i;
-            AirflowNetworkCompData(i).CompTypeNum = iComponentTypeNum::DOP;
+            AirflowNetworkCompData(i).CompTypeNum = AirflowElementType::DOP;
             AirflowNetworkCompData(i).TypeNum = i;
             AirflowNetworkCompData(i).EPlusName = "";
             AirflowNetworkCompData(i).EPlusCompName = "";
@@ -4267,7 +4265,7 @@ namespace AirflowNetwork {
             n = i - j;
             AirflowNetworkCompData(i).Name = MultizoneCompSimpleOpeningData(n).name;
             compnum[AirflowNetworkCompData(i).Name] = i;
-            AirflowNetworkCompData(i).CompTypeNum = iComponentTypeNum::SOP;
+            AirflowNetworkCompData(i).CompTypeNum = AirflowElementType::SOP;
             AirflowNetworkCompData(i).TypeNum = n;
             AirflowNetworkCompData(i).EPlusName = "";
             AirflowNetworkCompData(i).EPlusCompName = "";
@@ -4280,7 +4278,7 @@ namespace AirflowNetwork {
             n = i - j;
             AirflowNetworkCompData(i).Name = MultizoneSurfaceCrackData(n).name;
             compnum[AirflowNetworkCompData(i).Name] = i;
-            AirflowNetworkCompData(i).CompTypeNum = iComponentTypeNum::SCR;
+            AirflowNetworkCompData(i).CompTypeNum = AirflowElementType::SCR;
             AirflowNetworkCompData(i).TypeNum = n;
             AirflowNetworkCompData(i).EPlusName = "";
             AirflowNetworkCompData(i).EPlusCompName = "";
@@ -4293,7 +4291,7 @@ namespace AirflowNetwork {
             n = i - j;
             AirflowNetworkCompData(i).Name = MultizoneSurfaceELAData(n).name;
             compnum[AirflowNetworkCompData(i).Name] = i;
-            AirflowNetworkCompData(i).CompTypeNum = iComponentTypeNum::SEL;
+            AirflowNetworkCompData(i).CompTypeNum = AirflowElementType::SEL;
             AirflowNetworkCompData(i).TypeNum = n;
             AirflowNetworkCompData(i).EPlusName = "";
             AirflowNetworkCompData(i).EPlusCompName = "";
@@ -4306,7 +4304,7 @@ namespace AirflowNetwork {
             n = i - j;
             AirflowNetworkCompData(i).Name = MultizoneCompExhaustFanData(n).name;
             compnum[AirflowNetworkCompData(i).Name] = i;
-            AirflowNetworkCompData(i).CompTypeNum = iComponentTypeNum::EXF;
+            AirflowNetworkCompData(i).CompTypeNum = AirflowElementType::EXF;
             AirflowNetworkCompData(i).TypeNum = n;
             AirflowNetworkCompData(i).EPlusName = "";
             AirflowNetworkCompData(i).EPlusCompName = "";
@@ -4319,7 +4317,7 @@ namespace AirflowNetwork {
             n = i - j;
             AirflowNetworkCompData(i).Name = MultizoneCompHorOpeningData(n).name;
             compnum[AirflowNetworkCompData(i).Name] = i;
-            AirflowNetworkCompData(i).CompTypeNum = iComponentTypeNum::HOP;
+            AirflowNetworkCompData(i).CompTypeNum = AirflowElementType::HOP;
             AirflowNetworkCompData(i).TypeNum = n;
             AirflowNetworkCompData(i).EPlusName = "";
             AirflowNetworkCompData(i).EPlusCompName = "";
@@ -4332,7 +4330,7 @@ namespace AirflowNetwork {
             n = i - j;
             AirflowNetworkCompData(i).Name = DisSysCompLeakData(n).name;
             compnum[AirflowNetworkCompData(i).Name] = i;
-            AirflowNetworkCompData(i).CompTypeNum = iComponentTypeNum::PLR;
+            AirflowNetworkCompData(i).CompTypeNum = AirflowElementType::PLR;
             AirflowNetworkCompData(i).TypeNum = n;
             AirflowNetworkCompData(i).EPlusName = "";
             AirflowNetworkCompData(i).EPlusCompName = "";
@@ -4345,7 +4343,7 @@ namespace AirflowNetwork {
             n = i - j;
             AirflowNetworkCompData(i).Name = DisSysCompELRData(n).name;
             compnum[AirflowNetworkCompData(i).Name] = i;
-            AirflowNetworkCompData(i).CompTypeNum = iComponentTypeNum::ELR;
+            AirflowNetworkCompData(i).CompTypeNum = AirflowElementType::ELR;
             AirflowNetworkCompData(i).TypeNum = n;
             AirflowNetworkCompData(i).EPlusName = "";
             AirflowNetworkCompData(i).EPlusCompName = "";
@@ -4358,7 +4356,7 @@ namespace AirflowNetwork {
             n = i - j;
             AirflowNetworkCompData(i).Name = DisSysCompDuctData(n).name;
             compnum[AirflowNetworkCompData(i).Name] = i;
-            AirflowNetworkCompData(i).CompTypeNum = iComponentTypeNum::DWC;
+            AirflowNetworkCompData(i).CompTypeNum = AirflowElementType::DWC;
             AirflowNetworkCompData(i).TypeNum = n;
             AirflowNetworkCompData(i).EPlusName = "";
             AirflowNetworkCompData(i).EPlusCompName = "";
@@ -4371,7 +4369,7 @@ namespace AirflowNetwork {
             n = i - j;
             AirflowNetworkCompData(i).Name = DisSysCompDamperData(n).name;
             compnum[AirflowNetworkCompData(i).Name] = i;
-            AirflowNetworkCompData(i).CompTypeNum = iComponentTypeNum::DMP;
+            AirflowNetworkCompData(i).CompTypeNum = AirflowElementType::DMP;
             AirflowNetworkCompData(i).TypeNum = n;
             AirflowNetworkCompData(i).EPlusName = "";
             AirflowNetworkCompData(i).EPlusCompName = "";
@@ -4384,13 +4382,13 @@ namespace AirflowNetwork {
             n = i - j;
             AirflowNetworkCompData(i).Name = DisSysCompCVFData(n).name;
             compnum[AirflowNetworkCompData(i).Name] = i;
-            AirflowNetworkCompData(i).CompTypeNum = iComponentTypeNum::CVF;
+            AirflowNetworkCompData(i).CompTypeNum = AirflowElementType::CVF;
             AirflowNetworkCompData(i).TypeNum = n;
             AirflowNetworkCompData(i).EPlusName = "";
             AirflowNetworkCompData(i).EPlusCompName = "";
             AirflowNetworkCompData(i).EPlusType = "";
             AirflowNetworkCompData(i).CompNum = i;
-            AirflowNetworkCompData(i).EPlusTypeNum = iEPlusComponentType::FAN;
+            AirflowNetworkCompData(i).EPlusTypeNum = EPlusComponentType::FAN;
         }
 
         j += DisSysNumOfCVFs;
@@ -4398,13 +4396,13 @@ namespace AirflowNetwork {
             n = i - j;
             AirflowNetworkCompData(i).Name = DisSysCompDetFanData(n).name;
             compnum[AirflowNetworkCompData(i).Name] = i;
-            AirflowNetworkCompData(i).CompTypeNum = iComponentTypeNum::FAN;
+            AirflowNetworkCompData(i).CompTypeNum = AirflowElementType::FAN;
             AirflowNetworkCompData(i).TypeNum = n;
             AirflowNetworkCompData(i).EPlusName = "";
             AirflowNetworkCompData(i).EPlusCompName = "";
             AirflowNetworkCompData(i).EPlusType = "";
             AirflowNetworkCompData(i).CompNum = i;
-            AirflowNetworkCompData(i).EPlusTypeNum = iEPlusComponentType::FAN;
+            AirflowNetworkCompData(i).EPlusTypeNum = EPlusComponentType::FAN;
         }
 
         j += DisSysNumOfDetFans;
@@ -4412,7 +4410,7 @@ namespace AirflowNetwork {
             n = i - j;
             AirflowNetworkCompData(i).Name = DisSysCompCPDData(n).name;
             compnum[AirflowNetworkCompData(i).Name] = i;
-            AirflowNetworkCompData(i).CompTypeNum = iComponentTypeNum::CPD;
+            AirflowNetworkCompData(i).CompTypeNum = AirflowElementType::CPD;
             AirflowNetworkCompData(i).TypeNum = n;
             AirflowNetworkCompData(i).EPlusName = "";
             AirflowNetworkCompData(i).EPlusCompName = "";
@@ -4425,13 +4423,13 @@ namespace AirflowNetwork {
             n = i - j;
             AirflowNetworkCompData(i).Name = DisSysCompCoilData(n).name;
             compnum[AirflowNetworkCompData(i).Name] = i;
-            AirflowNetworkCompData(i).CompTypeNum = iComponentTypeNum::COI;
+            AirflowNetworkCompData(i).CompTypeNum = AirflowElementType::COI;
             AirflowNetworkCompData(i).TypeNum = n;
             AirflowNetworkCompData(i).EPlusName = "";
             AirflowNetworkCompData(i).EPlusCompName = "";
             AirflowNetworkCompData(i).EPlusType = "";
             AirflowNetworkCompData(i).CompNum = i;
-            AirflowNetworkCompData(i).EPlusTypeNum = iEPlusComponentType::COI;
+            AirflowNetworkCompData(i).EPlusTypeNum = EPlusComponentType::COI;
         }
 
         j += DisSysNumOfCoils;
@@ -4439,13 +4437,13 @@ namespace AirflowNetwork {
             n = i - j;
             AirflowNetworkCompData(i).Name = DisSysCompTermUnitData(n).name;
             compnum[AirflowNetworkCompData(i).Name] = i;
-            AirflowNetworkCompData(i).CompTypeNum = iComponentTypeNum::TMU;
+            AirflowNetworkCompData(i).CompTypeNum = AirflowElementType::TMU;
             AirflowNetworkCompData(i).TypeNum = n;
             AirflowNetworkCompData(i).EPlusName = "";
             AirflowNetworkCompData(i).EPlusCompName = "";
             AirflowNetworkCompData(i).EPlusType = "";
             AirflowNetworkCompData(i).CompNum = i;
-            AirflowNetworkCompData(i).EPlusTypeNum = iEPlusComponentType::RHT;
+            AirflowNetworkCompData(i).EPlusTypeNum = EPlusComponentType::RHT;
         }
 
         j += DisSysNumOfTermUnits;
@@ -4453,13 +4451,13 @@ namespace AirflowNetwork {
             n = i - j;
             AirflowNetworkCompData(i).Name = DisSysCompHXData(n).name;
             compnum[AirflowNetworkCompData(i).Name] = i;
-            AirflowNetworkCompData(i).CompTypeNum = iComponentTypeNum::HEX;
+            AirflowNetworkCompData(i).CompTypeNum = AirflowElementType::HEX;
             AirflowNetworkCompData(i).TypeNum = n;
             AirflowNetworkCompData(i).EPlusName = "";
             AirflowNetworkCompData(i).EPlusCompName = "";
             AirflowNetworkCompData(i).EPlusType = "";
             AirflowNetworkCompData(i).CompNum = i;
-            AirflowNetworkCompData(i).EPlusTypeNum = iEPlusComponentType::HEX;
+            AirflowNetworkCompData(i).EPlusTypeNum = EPlusComponentType::HEX;
         }
 
         j += DisSysNumOfHXs;
@@ -4467,7 +4465,7 @@ namespace AirflowNetwork {
             n = i - j;
             AirflowNetworkCompData(i).Name = DisSysCompOutdoorAirData(n).name;
             compnum[AirflowNetworkCompData(i).Name] = i;
-            AirflowNetworkCompData(i).CompTypeNum = iComponentTypeNum::OAF;
+            AirflowNetworkCompData(i).CompTypeNum = AirflowElementType::OAF;
             AirflowNetworkCompData(i).TypeNum = n;
             AirflowNetworkCompData(i).EPlusName = "";
             AirflowNetworkCompData(i).EPlusCompName = "";
@@ -4480,7 +4478,7 @@ namespace AirflowNetwork {
             n = i - j;
             AirflowNetworkCompData(i).Name = DisSysCompReliefAirData(n).name;
             compnum[AirflowNetworkCompData(i).Name] = i;
-            AirflowNetworkCompData(i).CompTypeNum = iComponentTypeNum::REL;
+            AirflowNetworkCompData(i).CompTypeNum = AirflowElementType::REL;
             AirflowNetworkCompData(i).TypeNum = n;
             AirflowNetworkCompData(i).EPlusName = "";
             AirflowNetworkCompData(i).EPlusCompName = "";
@@ -4495,7 +4493,7 @@ namespace AirflowNetwork {
         for (auto const &el : SpecifiedMassFlowData) {
             AirflowNetworkCompData(ii).Name = el.name;
             compnum[el.name] = ii;
-            AirflowNetworkCompData(ii).CompTypeNum = iComponentTypeNum::SMF;
+            AirflowNetworkCompData(ii).CompTypeNum = AirflowElementType::SMF;
             AirflowNetworkCompData(ii).TypeNum = type_i;
             AirflowNetworkCompData(ii).EPlusName = "";
             AirflowNetworkCompData(ii).EPlusCompName = "";
@@ -4509,7 +4507,7 @@ namespace AirflowNetwork {
         for (auto const &el : SpecifiedVolumeFlowData) {
             AirflowNetworkCompData(ii).Name = el.name;
             compnum[el.name] = ii;
-            AirflowNetworkCompData(ii).CompTypeNum = iComponentTypeNum::SVF;
+            AirflowNetworkCompData(ii).CompTypeNum = AirflowElementType::SVF;
             AirflowNetworkCompData(ii).TypeNum = type_i;
             AirflowNetworkCompData(ii).EPlusName = "";
             AirflowNetworkCompData(ii).EPlusCompName = "";
@@ -4569,12 +4567,12 @@ namespace AirflowNetwork {
                 auto const &surf = m_state.dataSurface->Surface(MultizoneSurfaceData(count).SurfNum);
 
                 switch (AirflowNetworkLinkageData(count).element->type()) {
-                case ComponentType::DOP: {
+                case AirflowElementType::DOP: {
                     // if (AirflowNetworkLinkageData(count).CompName ==
                     // AirflowNetworkCompData(i).Name) {
                     //    AirflowNetworkLinkageData(count).CompNum = i;
                     //    found = true;
-                    //    if (AirflowNetworkCompData(i).CompTypeNum == iComponentTypeNum::DOP) {
+                    //    if (AirflowNetworkCompData(i).CompTypeNum == AirflowElementType::DOP) {
                     ++j;
                     AirflowNetworkLinkageData(count).DetOpenNum = j;
                     MultizoneSurfaceData(count).Multiplier = surf.Multiplier;
@@ -4604,8 +4602,8 @@ namespace AirflowNetwork {
                         }
                     }
                 } break;
-                case ComponentType::SOP: {
-                    // if (AirflowNetworkCompData(i).CompTypeNum == iComponentTypeNum::SOP) {
+                case AirflowElementType::SOP: {
+                    // if (AirflowNetworkCompData(i).CompTypeNum == AirflowElementType::SOP) {
                     MultizoneSurfaceData(count).Multiplier = surf.Multiplier;
                     if (surf.Tilt < 10.0 || surf.Tilt > 170.0) {
                         ShowSevereError(m_state, "An AirflowNetwork:Multizone:Surface object has an air-flow opening corresponding to");
@@ -4624,8 +4622,8 @@ namespace AirflowNetwork {
                         ErrorsFound = true;
                     }
                 } break;
-                case ComponentType::HOP: {
-                    // if (AirflowNetworkCompData(i).CompTypeNum == iComponentTypeNum::HOP) {
+                case AirflowElementType::HOP: {
+                    // if (AirflowNetworkCompData(i).CompTypeNum == AirflowElementType::HOP) {
                     MultizoneSurfaceData(count).Multiplier = surf.Multiplier;
                     // Get linkage height from upper and lower zones
                     if (MultizoneZoneData(AirflowNetworkLinkageData(count).NodeNums[0]).ZoneNum > 0) {
@@ -4703,8 +4701,8 @@ namespace AirflowNetwork {
                 assert(compnum_iter != compnum.end());
                 int compnum = compnum_iter->second;
                 AirflowNetworkLinkageData(count).CompNum = compnum;
-                if (AirflowNetworkLinkageData(count).element->type() != ComponentType::SCR &&
-                    AirflowNetworkLinkageData(count).element->type() != ComponentType::SEL) {
+                if (AirflowNetworkLinkageData(count).element->type() != AirflowElementType::SCR &&
+                    AirflowNetworkLinkageData(count).element->type() != AirflowElementType::SEL) {
 
                     ShowSevereError(m_state,
                                     format(RoutineName) + AirflowNetworkLinkageData(count).CompName + ": The component is not allowed in " +
@@ -4880,51 +4878,51 @@ namespace AirflowNetwork {
         //        AirflowNetworkCompData(j).Name)) {
         //                    // SurfaceAirflowLeakageNames
         //                    if (i <= 4 && j <= 4) {
-        //                        if (AirflowNetworkCompData(i).CompTypeNum == iComponentTypeNum::DOP)
+        //                        if (AirflowNetworkCompData(i).CompTypeNum == AirflowElementType::DOP)
         //                            CompName(1) = "AirflowNetwork:MultiZone:Component:DetailedOpening";
-        //                        if (AirflowNetworkCompData(i).CompTypeNum == iComponentTypeNum::SOP)
+        //                        if (AirflowNetworkCompData(i).CompTypeNum == AirflowElementType::SOP)
         //                            CompName(1) = "AirflowNetwork:MultiZone:Component:SimpleOpening";
-        //                        if (AirflowNetworkCompData(i).CompTypeNum == iComponentTypeNum::SCR) CompName(1) =
+        //                        if (AirflowNetworkCompData(i).CompTypeNum == AirflowElementType::SCR) CompName(1) =
         //        "AirflowNetwork:MultiZone:Surface:Crack"; if (AirflowNetworkCompData(i).CompTypeNum ==
-        //        iComponentTypeNum::SEL) CompName(1) = "AirflowNetwork:MultiZone:Surface:EffectiveLeakageArea"; if
-        //        (AirflowNetworkCompData(j).CompTypeNum == iComponentTypeNum::DOP) CompName(2) =
+        //        AirflowElementType::SEL) CompName(1) = "AirflowNetwork:MultiZone:Surface:EffectiveLeakageArea"; if
+        //        (AirflowNetworkCompData(j).CompTypeNum == AirflowElementType::DOP) CompName(2) =
         //        "AirflowNetwork:MultiZone:Component:DetailedOpening"; if (AirflowNetworkCompData(j).CompTypeNum ==
-        //        iComponentTypeNum::SOP) CompName(2) = "AirflowNetwork:MultiZone:Component:SimpleOpening"; if
-        //        (AirflowNetworkCompData(j).CompTypeNum == iComponentTypeNum::SCR) CompName(2) =
+        //        AirflowElementType::SOP) CompName(2) = "AirflowNetwork:MultiZone:Component:SimpleOpening"; if
+        //        (AirflowNetworkCompData(j).CompTypeNum == AirflowElementType::SCR) CompName(2) =
         //        "AirflowNetwork:MultiZone:Surface:Crack"; if (AirflowNetworkCompData(j).CompTypeNum ==
-        //        iComponentTypeNum::SEL) CompName(2) = "AirflowNetwork:MultiZone:Surface:EffectiveLeakageArea"; ShowSevereError(m_state, RoutineName
+        //        AirflowElementType::SEL) CompName(2) = "AirflowNetwork:MultiZone:Surface:EffectiveLeakageArea"; ShowSevereError(m_state, RoutineName
         //        + "Duplicated component names are found = " + AirflowNetworkCompData(i).Name); ShowContinueError(m_state,
         //        "A unique component name is required in both objects " + CompName(1) + " and " + CompName(2)); ErrorsFound = true;
         //                    }
         //                    // Distribution component
         //                    if (i > 4 && j > 4) {
-        //                        if (AirflowNetworkCompData(i).CompTypeNum == iComponentTypeNum::PLR) CompName(1) =
+        //                        if (AirflowNetworkCompData(i).CompTypeNum == AirflowElementType::PLR) CompName(1) =
         //        "AirflowNetwork:Distribution:Component:Leak"; if (AirflowNetworkCompData(i).CompTypeNum ==
-        //        iComponentTypeNum::DWC) CompName(1) = "AirflowNetwork:Distribution:Component:Duct"; if
-        //        (AirflowNetworkCompData(i).CompTypeNum == iComponentTypeNum::ELR) CompName(1) =
+        //        AirflowElementType::DWC) CompName(1) = "AirflowNetwork:Distribution:Component:Duct"; if
+        //        (AirflowNetworkCompData(i).CompTypeNum == AirflowElementType::ELR) CompName(1) =
         //        "AirflowNetwork:Distribution:Component:LeakageRatio"; if (AirflowNetworkCompData(i).CompTypeNum ==
-        //        iComponentTypeNum::DMP) CompName(1) = "AIRFLOWNETWORK:DISTRIBUTION:COMPONENT DAMPER"; if
-        //        (AirflowNetworkCompData(i).CompTypeNum == iComponentTypeNum::CVF) CompName(1) =
+        //        AirflowElementType::DMP) CompName(1) = "AIRFLOWNETWORK:DISTRIBUTION:COMPONENT DAMPER"; if
+        //        (AirflowNetworkCompData(i).CompTypeNum == AirflowElementType::CVF) CompName(1) =
         //        "AirflowNetwork:Distribution:Component:Fan"; if (AirflowNetworkCompData(i).CompTypeNum ==
-        //        iComponentTypeNum::CPD) CompName(1) = "AirflowNetwork:Distribution:Component:ConstantPressureDrop"; if
-        //        (AirflowNetworkCompData(i).CompTypeNum == iComponentTypeNum::COI) CompName(1) =
+        //        AirflowElementType::CPD) CompName(1) = "AirflowNetwork:Distribution:Component:ConstantPressureDrop"; if
+        //        (AirflowNetworkCompData(i).CompTypeNum == AirflowElementType::COI) CompName(1) =
         //        "AirflowNetwork:Distribution:Component:Coil"; if (AirflowNetworkCompData(i).CompTypeNum ==
-        //        iComponentTypeNum::TMU) CompName(1) = "AirflowNetwork:Distribution:Component:TerminalUnit"; if
-        //        (AirflowNetworkCompData(i).CompTypeNum == iComponentTypeNum::HEX) CompName(1) =
+        //        AirflowElementType::TMU) CompName(1) = "AirflowNetwork:Distribution:Component:TerminalUnit"; if
+        //        (AirflowNetworkCompData(i).CompTypeNum == AirflowElementType::HEX) CompName(1) =
         //        "AirflowNetwork:Distribution:Component:HeatExchanger"; if (AirflowNetworkCompData(j).CompTypeNum ==
-        //        iComponentTypeNum::PLR) CompName(2) = "AirflowNetwork:Distribution:Component:Leak"; if
-        //        (AirflowNetworkCompData(j).CompTypeNum == iComponentTypeNum::DWC) CompName(2) =
+        //        AirflowElementType::PLR) CompName(2) = "AirflowNetwork:Distribution:Component:Leak"; if
+        //        (AirflowNetworkCompData(j).CompTypeNum == AirflowElementType::DWC) CompName(2) =
         //        "AirflowNetwork:Distribution:Component:Duct"; if (AirflowNetworkCompData(j).CompTypeNum ==
-        //        iComponentTypeNum::ELR) CompName(2) = "AirflowNetwork:Distribution:Component:LeakageRatio"; if
-        //        (AirflowNetworkCompData(j).CompTypeNum == iComponentTypeNum::DMP) CompName(2) =
+        //        AirflowElementType::ELR) CompName(2) = "AirflowNetwork:Distribution:Component:LeakageRatio"; if
+        //        (AirflowNetworkCompData(j).CompTypeNum == AirflowElementType::DMP) CompName(2) =
         //        "AIRFLOWNETWORK:DISTRIBUTION:COMPONENT DAMPER"; if (AirflowNetworkCompData(j).CompTypeNum ==
-        //        iComponentTypeNum::CVF) CompName(2) = "AirflowNetwork:Distribution:Component:Fan"; if
-        //        (AirflowNetworkCompData(j).CompTypeNum == iComponentTypeNum::CPD) CompName(2) =
+        //        AirflowElementType::CVF) CompName(2) = "AirflowNetwork:Distribution:Component:Fan"; if
+        //        (AirflowNetworkCompData(j).CompTypeNum == AirflowElementType::CPD) CompName(2) =
         //        "AirflowNetwork:Distribution:Component:ConstantPressureDrop"; if (AirflowNetworkCompData(j).CompTypeNum
-        //        == iComponentTypeNum::COI) CompName(2) = "AirflowNetwork:Distribution:Component:Coil"; if
-        //        (AirflowNetworkCompData(j).CompTypeNum == iComponentTypeNum::TMU) CompName(2) =
+        //        == AirflowElementType::COI) CompName(2) = "AirflowNetwork:Distribution:Component:Coil"; if
+        //        (AirflowNetworkCompData(j).CompTypeNum == AirflowElementType::TMU) CompName(2) =
         //        "AirflowNetwork:Distribution:Component:TerminalUnit"; if (AirflowNetworkCompData(j).CompTypeNum ==
-        //        iComponentTypeNum::HEX) CompName(2) = "AirflowNetwork:Distribution:Component:HeatExchanger"; ShowSevereError(m_state,
+        //        AirflowElementType::HEX) CompName(2) = "AirflowNetwork:Distribution:Component:HeatExchanger"; ShowSevereError(m_state,
         //        format(RoutineName) + "Duplicated component names are found = " + AirflowNetworkCompData(i).Name);
         //        ShowContinueError(m_state, "A unique component name is required in both objects " + CompName(1) + " and " + CompName(2));
         //        ErrorsFound = true;
@@ -5043,7 +5041,7 @@ namespace AirflowNetwork {
             ErrorsFound = true;
         }
 
-        if (simulation_control.iWPCCnt == iWPCCntr::Input) {
+        if (simulation_control.iWPCCnt == WindPressureType::Input) {
             for (count = 1; count <= AirflowNetworkNumOfSurfaces; ++count) {
                 if (AirflowNetworkLinkageData(count).NodeNums[0] == 0) {
                     ShowSevereError(m_state,
@@ -5067,7 +5065,7 @@ namespace AirflowNetwork {
         //                    AirflowNetworkNodeData(AirflowNetworkLinkageData(count).NodeNums[1]).EPlusZoneNum
         //        > 0 && AirflowNetworkLinkageData(count).CompNum > 0) { if
         //        (AirflowNetworkCompData(AirflowNetworkLinkageData(count).CompNum).CompTypeNum
-        //        == iComponentTypeNum::SOP) {
+        //        == AirflowElementType::SOP) {
         //                    }
         //                }
         //                if
@@ -5076,7 +5074,7 @@ namespace AirflowNetwork {
         //                    AirflowNetworkNodeData(AirflowNetworkLinkageData(count).NodeNums[0]).EPlusZoneNum
         //        > 0 && AirflowNetworkLinkageData(count).CompNum > 0) { if
         //        (AirflowNetworkCompData(AirflowNetworkLinkageData(count).CompNum).CompTypeNum
-        //        == iComponentTypeNum::SOP) {
+        //        == AirflowElementType::SOP) {
         //                    }
         //                }
         //            }
@@ -5122,7 +5120,7 @@ namespace AirflowNetwork {
             j = AirflowNetworkLinkageData(count).NodeNums[0];
             k = AirflowNetworkLinkageData(count).NodeNums[1];
 
-            if (AirflowNetworkCompData(i).CompTypeNum == iComponentTypeNum::OAF) {
+            if (AirflowNetworkCompData(i).CompTypeNum == AirflowElementType::OAF) {
                 if (!Util::SameString(DisSysNodeData(j - NumOfNodesMultiZone).EPlusType, "OAMixerOutdoorAirStreamNode")) {
                     ShowSevereError(m_state,
                                     format(RoutineName) +
@@ -5146,7 +5144,7 @@ namespace AirflowNetwork {
                 }
             }
 
-            if (AirflowNetworkCompData(i).CompTypeNum == iComponentTypeNum::REL) {
+            if (AirflowNetworkCompData(i).CompTypeNum == AirflowElementType::REL) {
                 if (!Util::SameString(DisSysNodeData(j - NumOfNodesMultiZone).EPlusType, "AirLoopHVAC:OutdoorAirSystem")) {
                     ShowSevereError(m_state,
                                     format(RoutineName) +
@@ -5615,9 +5613,9 @@ namespace AirflowNetwork {
                 // This is not great
                 continue;
             }
-            if (AirflowNetworkLinkageData(i).element->type() == ComponentType::DOP ||
-                AirflowNetworkLinkageData(i).element->type() == ComponentType::SOP ||
-                AirflowNetworkLinkageData(i).element->type() == ComponentType::HOP) {
+            if (AirflowNetworkLinkageData(i).element->type() == AirflowElementType::DOP ||
+                AirflowNetworkLinkageData(i).element->type() == AirflowElementType::SOP ||
+                AirflowNetworkLinkageData(i).element->type() == AirflowElementType::HOP) {
                 SurfNum = MultizoneSurfaceData(i).SurfNum;
                 SetupOutputVariable(m_state,
                                     "AFN Surface Venting Window or Door Opening Factor",
@@ -6360,7 +6358,7 @@ namespace AirflowNetwork {
             if (i > AirflowNetworkNumOfSurfaces - NumOfLinksIntraZone) {
                 continue;
             }
-            if (AirflowNetworkLinkageData(i).element->type() == ComponentType::SCR) {
+            if (AirflowNetworkLinkageData(i).element->type() == AirflowElementType::SCR) {
                 AirflowNetworkLinkageData(i).control = MultizoneSurfaceData(i).Factor;
             }
             if (MultizoneSurfaceData(i).OccupantVentilationControlNum == 0) MultizoneSurfaceData(i).OpenFactor = 0.0;
@@ -6389,9 +6387,9 @@ namespace AirflowNetwork {
                     MultizoneSurfaceData(i).OpenFactor = 0.0;
                     if (m_state.dataSurface->SurfWinVentingOpenFactorMultRep(j) > 0.0) m_state.dataSurface->SurfWinVentingOpenFactorMultRep(j) = 0.0;
                 }
-                if (AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum == iComponentTypeNum::DOP ||
-                    AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum == iComponentTypeNum::SOP ||
-                    AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum == iComponentTypeNum::HOP) {
+                if (AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum == AirflowElementType::DOP ||
+                    AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum == AirflowElementType::SOP ||
+                    AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum == AirflowElementType::HOP) {
                     if (AirflowNetworkFanActivated && distribution_simulated && MultizoneSurfaceData(i).OpenFactor > 0.0 &&
                         (m_state.dataSurface->Surface(j).ExtBoundCond == ExternalEnvironment ||
                          (m_state.dataSurface->Surface(MultizoneSurfaceData(i).SurfNum).ExtBoundCond == OtherSideCoefNoCalcExt &&
@@ -7245,13 +7243,12 @@ namespace AirflowNetwork {
         auto &TimeStepSys = m_state.dataHVACGlobal->TimeStepSys;
 
         // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-        int i;
         int LF;
         int LT;
         int CompNum;
         int NF;
         int NT;
-        iComponentTypeNum CompTypeNum;
+        AirflowElementType CompTypeNum;
         int ExtNodeNum;
         Real64 Ei;
         Real64 DirSign;
@@ -7268,7 +7265,7 @@ namespace AirflowNetwork {
         MA = 0.0;
         MV = 0.0;
 
-        for (i = 1; i <= AirflowNetworkNumOfLinks; ++i) {
+        for (int i = 1; i <= AirflowNetworkNumOfLinks; ++i) {
             CompNum = AirflowNetworkLinkageData(i).CompNum;
             CompTypeNum = AirflowNetworkCompData(CompNum).CompTypeNum;
             std::string CompName = AirflowNetworkCompData(CompNum).EPlusName;
@@ -7276,7 +7273,7 @@ namespace AirflowNetwork {
                                  AirflowNetworkNodeSimu(AirflowNetworkLinkageData(i).NodeNums[1]).WZ) /
                                 2.0);
             // Calculate duct conduction loss
-            if (CompTypeNum == iComponentTypeNum::DWC && CompName == std::string()) { // Duct element only
+            if (CompTypeNum == AirflowElementType::DWC && CompName == std::string()) { // Duct element only
                 int TypeNum = AirflowNetworkCompData(CompNum).TypeNum;
                 if (AirflowNetworkLinkSimu(i).FLOW > 0.0) { // flow direction is the same as input from node 1 to node 2
                     LF = AirflowNetworkLinkageData(i).NodeNums[0];
@@ -7487,7 +7484,7 @@ namespace AirflowNetwork {
                     MV(LT) += std::abs(AirflowNetworkLinkSimu(i).FLOW) * Tsurr * (1.0 - Ei) * CpAir;
                 }
             }
-            if (CompTypeNum == iComponentTypeNum::TMU) { // Reheat unit: SINGLE DUCT:CONST VOLUME:REHEAT
+            if (CompTypeNum == AirflowElementType::TMU) { // Reheat unit: SINGLE DUCT:CONST VOLUME:REHEAT
                 int TypeNum = AirflowNetworkCompData(CompNum).TypeNum;
                 if (AirflowNetworkLinkSimu(i).FLOW > 0.0) { // flow direction is the same as input from node 1 to node 2
                     LF = AirflowNetworkLinkageData(i).NodeNums[0];
@@ -7513,7 +7510,7 @@ namespace AirflowNetwork {
                     MV(LT) += std::abs(AirflowNetworkLinkSimu(i).FLOW) * Tamb * (1.0 - Ei) * CpAir;
                 }
             }
-            if (CompTypeNum == iComponentTypeNum::COI) { // heating or cooling coil
+            if (CompTypeNum == AirflowElementType::COI) { // heating or cooling coil
                 // TypeNum = AirflowNetworkCompData(CompNum).TypeNum;
                 if (AirflowNetworkLinkSimu(i).FLOW > 0.0) { // flow direction is the same as input from node 1 to node 2
                     LF = AirflowNetworkLinkageData(i).NodeNums[0];
@@ -7526,7 +7523,7 @@ namespace AirflowNetwork {
                 }
             }
             // Calculate temp in a constant pressure drop element
-            if (CompTypeNum == iComponentTypeNum::CPD && CompName == std::string()) { // constant pressure element only
+            if (CompTypeNum == AirflowElementType::CPD && CompName == std::string()) { // constant pressure element only
                 if (AirflowNetworkLinkSimu(i).FLOW > 0.0) {                           // flow direction is the same as input from node 1 to node 2
                     LF = AirflowNetworkLinkageData(i).NodeNums[0];
                     LT = AirflowNetworkLinkageData(i).NodeNums[1];
@@ -7544,7 +7541,7 @@ namespace AirflowNetwork {
                 MV(LT) = 0.0;
             }
             // Calculate return leak
-            if ((CompTypeNum == iComponentTypeNum::PLR || CompTypeNum == iComponentTypeNum::ELR) && CompName == std::string()) {
+            if ((CompTypeNum == AirflowElementType::PLR || CompTypeNum == AirflowElementType::ELR) && CompName == std::string()) {
                 // Return leak element only
                 if ((AirflowNetworkNodeData(AirflowNetworkLinkageData(i).NodeNums[0]).EPlusZoneNum > 0) &&
                     (AirflowNetworkNodeData(AirflowNetworkLinkageData(i).NodeNums[1]).EPlusZoneNum == 0) && (AirflowNetworkLinkSimu(i).FLOW > 0.0)) {
@@ -7576,7 +7573,7 @@ namespace AirflowNetwork {
                 }
             }
             // Check reheat unit or coil
-            if (AirflowNetworkCompData(CompNum).EPlusTypeNum == iEPlusComponentType::RHT && (!AirflowNetworkLinkageData(i).VAVTermDamper)) {
+            if (AirflowNetworkCompData(CompNum).EPlusTypeNum == EPlusComponentType::RHT && (!AirflowNetworkLinkageData(i).VAVTermDamper)) {
                 NF = 0;
                 NT = 0;
                 if (AirflowNetworkNodeData(AirflowNetworkLinkageData(i).NodeNums[0]).EPlusNodeNum > 0) {
@@ -7605,45 +7602,45 @@ namespace AirflowNetwork {
         }
 
         // Prescribe temperature for EPlus nodes
-        for (i = 1; i <= AirflowNetworkNumOfNodes; ++i) {
+        for (int i = 1; i <= AirflowNetworkNumOfNodes; ++i) {
             bool found = false;
             bool OANode = false;
             for (int j = 1; j <= AirflowNetworkNumOfLinks; ++j) {
                 if (AirflowNetworkLinkageData(j).NodeNums[0] == i || AirflowNetworkLinkageData(j).NodeNums[1] == i) {
                     CompNum = AirflowNetworkLinkageData(j).CompNum;
-                    if (AirflowNetworkCompData(CompNum).EPlusTypeNum == iEPlusComponentType::RHT && (!AirflowNetworkLinkageData(j).VAVTermDamper)) {
+                    if (AirflowNetworkCompData(CompNum).EPlusTypeNum == EPlusComponentType::RHT && (!AirflowNetworkLinkageData(j).VAVTermDamper)) {
                         found = true;
                         break;
                     }
                     // Overwrite fan outlet node
-                    if (AirflowNetworkCompData(CompNum).EPlusTypeNum == iEPlusComponentType::FAN && AirflowNetworkLinkageData(j).NodeNums[1] == i) {
+                    if (AirflowNetworkCompData(CompNum).EPlusTypeNum == EPlusComponentType::FAN && AirflowNetworkLinkageData(j).NodeNums[1] == i) {
                         found = false;
                         break;
                     }
                     // Overwrite return connection outlet
-                    if (AirflowNetworkLinkageData(j).ConnectionFlag == iEPlusComponentType::RCN) { // Modified on 9/2/09
+                    if (AirflowNetworkLinkageData(j).ConnectionFlag == EPlusComponentType::RCN) { // Modified on 9/2/09
                         found = true;
                         break;
                     }
-                    if (AirflowNetworkLinkageData(j).ConnectionFlag == iEPlusComponentType::SCN &&
+                    if (AirflowNetworkLinkageData(j).ConnectionFlag == EPlusComponentType::SCN &&
                         AirflowNetworkLinkageData(j).NodeNums[1] == i) { // Modified on 9/2/09
                         found = true;
                         break;
                     }
                 }
                 if (AirflowNetworkLinkageData(j).NodeNums[1] == i &&
-                    AirflowNetworkNodeData(AirflowNetworkLinkageData(j).NodeNums[0]).EPlusTypeNum == iEPlusNodeType::OAN) {
+                    AirflowNetworkNodeData(AirflowNetworkLinkageData(j).NodeNums[0]).EPlusTypeNum == EPlusNodeType::OAN) {
                     OANode = true;
                     break;
                 }
             }
             if (found) continue;
-            if (AirflowNetworkNodeData(i).EPlusZoneNum == 0 && AirflowNetworkNodeData(i).EPlusTypeNum == iEPlusNodeType::ZIN) continue;
+            if (AirflowNetworkNodeData(i).EPlusZoneNum == 0 && AirflowNetworkNodeData(i).EPlusTypeNum == EPlusNodeType::ZIN) continue;
             int j = AirflowNetworkNodeData(i).EPlusNodeNum;
 
             if (j > 0 &&
-                (AirflowNetworkNodeData(i).EPlusZoneNum > 0 || AirflowNetworkNodeData(i).EPlusTypeNum == iEPlusNodeType::FOU ||
-                 AirflowNetworkNodeData(i).EPlusTypeNum == iEPlusNodeType::COU || AirflowNetworkNodeData(i).EPlusTypeNum == iEPlusNodeType::HXO)) {
+                (AirflowNetworkNodeData(i).EPlusZoneNum > 0 || AirflowNetworkNodeData(i).EPlusTypeNum == EPlusNodeType::FOU ||
+                 AirflowNetworkNodeData(i).EPlusTypeNum == EPlusNodeType::COU || AirflowNetworkNodeData(i).EPlusTypeNum == EPlusNodeType::HXO)) {
                 MA((i - 1) * AirflowNetworkNumOfNodes + i) = 1.0e10;
                 MV(i) = Node(j).Temp * 1.0e10;
             }
@@ -7674,7 +7671,7 @@ namespace AirflowNetwork {
         }
 
         // Assign node value to distribution nodes with fan off
-        for (i = 1 + NumOfNodesMultiZone; i <= AirflowNetworkNumOfNodes; ++i) {
+        for (int i = 1 + NumOfNodesMultiZone; i <= AirflowNetworkNumOfNodes; ++i) {
             int j = AirflowNetworkNodeData(i).EPlusNodeNum;
             if (j > 0 && !LoopOnOffFlag(AirflowNetworkNodeData(i).AirLoopNum) && MA((i - 1) * AirflowNetworkNumOfNodes + i) < 1.0e9) {
                 MA((i - 1) * AirflowNetworkNumOfNodes + i) = 1.0e10;
@@ -7687,7 +7684,7 @@ namespace AirflowNetwork {
         }
 
         // Check singularity
-        for (i = 1; i <= AirflowNetworkNumOfNodes; ++i) {
+        for (int i = 1; i <= AirflowNetworkNumOfNodes; ++i) {
             if (MA((i - 1) * AirflowNetworkNumOfNodes + i) < 1.0e-6) {
                 if (i > NumOfNodesMultiZone && !LoopOnOffFlag(AirflowNetworkNodeData(i).AirLoopNum)) {
                     MA((i - 1) * AirflowNetworkNumOfNodes + i) = 1.0e10;
@@ -7704,7 +7701,7 @@ namespace AirflowNetwork {
         mrxinv(AirflowNetworkNumOfNodes);
 
         // Calculate node temperatures
-        for (i = 1; i <= AirflowNetworkNumOfNodes; ++i) {
+        for (int i = 1; i <= AirflowNetworkNumOfNodes; ++i) {
             TZON = 0.0;
             for (int j = 1; j <= AirflowNetworkNumOfNodes; ++j) {
                 TZON += MA((i - 1) * AirflowNetworkNumOfNodes + j) * MV(j);
@@ -7725,14 +7722,12 @@ namespace AirflowNetwork {
         // This subroutine performs AirflowNetwork moisture simulations.
 
         // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-        int i;
-        int j;
         int LF;
         int LT;
         int CompNum;
         int NF;
         int NT;
-        iComponentTypeNum CompTypeNum;
+        AirflowElementType CompTypeNum;
         int TypeNum;
         Real64 Ei;
         Real64 DirSign;
@@ -7745,12 +7740,12 @@ namespace AirflowNetwork {
 
         MA = 0.0;
         MV = 0.0;
-        for (i = 1; i <= AirflowNetworkNumOfLinks; ++i) {
+        for (int i = 1; i <= AirflowNetworkNumOfLinks; ++i) {
             CompNum = AirflowNetworkLinkageData(i).CompNum;
             CompTypeNum = AirflowNetworkCompData(CompNum).CompTypeNum;
             std::string CompName = AirflowNetworkCompData(CompNum).EPlusName;
             // Calculate duct moisture diffusion loss
-            if (CompTypeNum == iComponentTypeNum::DWC && CompName == std::string()) { // Duct component only
+            if (CompTypeNum == AirflowElementType::DWC && CompName == std::string()) { // Duct component only
                 TypeNum = AirflowNetworkCompData(CompNum).TypeNum;
                 if (AirflowNetworkLinkSimu(i).FLOW > 0.0) { // flow direction is the same as input from node 1 to node 2
                     LF = AirflowNetworkLinkageData(i).NodeNums[0];
@@ -7784,7 +7779,7 @@ namespace AirflowNetwork {
                     MV(LT) += std::abs(AirflowNetworkLinkSimu(i).FLOW) * Wamb * (1.0 - Ei);
                 }
             }
-            if (CompTypeNum == iComponentTypeNum::TMU) { // Reheat unit: SINGLE DUCT:CONST VOLUME:REHEAT
+            if (CompTypeNum == AirflowElementType::TMU) { // Reheat unit: SINGLE DUCT:CONST VOLUME:REHEAT
                 TypeNum = AirflowNetworkCompData(CompNum).TypeNum;
                 if (AirflowNetworkLinkSimu(i).FLOW > 0.0) { // flow direction is the same as input from node 1 to node 2
                     LF = AirflowNetworkLinkageData(i).NodeNums[0];
@@ -7812,7 +7807,7 @@ namespace AirflowNetwork {
                     MV(LT) += std::abs(AirflowNetworkLinkSimu(i).FLOW) * Wamb * (1.0 - Ei);
                 }
             }
-            if (CompTypeNum == iComponentTypeNum::COI) { // heating or cooling coil
+            if (CompTypeNum == AirflowElementType::COI) { // heating or cooling coil
                 TypeNum = AirflowNetworkCompData(CompNum).TypeNum;
                 if (AirflowNetworkLinkSimu(i).FLOW > 0.0) { // flow direction is the same as input from node 1 to node 2
                     LF = AirflowNetworkLinkageData(i).NodeNums[0];
@@ -7825,7 +7820,7 @@ namespace AirflowNetwork {
                 }
             }
             // Calculate temp in a constant pressure drop component
-            if (CompTypeNum == iComponentTypeNum::CPD && CompName == std::string()) { // constant pressure element only
+            if (CompTypeNum == AirflowElementType::CPD && CompName == std::string()) { // constant pressure element only
                 if (AirflowNetworkLinkSimu(i).FLOW > 0.0) {                           // flow direction is the same as input from node 1 to node 2
                     LF = AirflowNetworkLinkageData(i).NodeNums[0];
                     LT = AirflowNetworkLinkageData(i).NodeNums[1];
@@ -7843,7 +7838,7 @@ namespace AirflowNetwork {
                 MV(LT) = 0.0;
             }
             // Calculate return leak
-            if ((CompTypeNum == iComponentTypeNum::PLR || CompTypeNum == iComponentTypeNum::ELR) && CompName == std::string()) {
+            if ((CompTypeNum == AirflowElementType::PLR || CompTypeNum == AirflowElementType::ELR) && CompName == std::string()) {
                 // Return leak component only
                 if ((AirflowNetworkNodeData(AirflowNetworkLinkageData(i).NodeNums[0]).EPlusZoneNum > 0) &&
                     (AirflowNetworkNodeData(AirflowNetworkLinkageData(i).NodeNums[1]).EPlusZoneNum == 0) && (AirflowNetworkLinkSimu(i).FLOW > 0.0)) {
@@ -7875,7 +7870,7 @@ namespace AirflowNetwork {
                 }
             }
             // Check reheat unit
-            if (AirflowNetworkCompData(CompNum).EPlusTypeNum == iEPlusComponentType::RHT && (!AirflowNetworkLinkageData(i).VAVTermDamper)) {
+            if (AirflowNetworkCompData(CompNum).EPlusTypeNum == EPlusComponentType::RHT && (!AirflowNetworkLinkageData(i).VAVTermDamper)) {
                 NF = 0;
                 NT = 0;
                 if (AirflowNetworkNodeData(AirflowNetworkLinkageData(i).NodeNums[0]).EPlusNodeNum > 0) {
@@ -7903,44 +7898,44 @@ namespace AirflowNetwork {
         }
 
         // Prescribe temperature for EPlus nodes
-        for (i = 1; i <= AirflowNetworkNumOfNodes; ++i) {
+        for (int i = 1; i <= AirflowNetworkNumOfNodes; ++i) {
             bool found = false;
             bool OANode = false;
-            for (j = 1; j <= AirflowNetworkNumOfLinks; ++j) {
+            for (int j = 1; j <= AirflowNetworkNumOfLinks; ++j) {
                 if (AirflowNetworkLinkageData(j).NodeNums[0] == i || AirflowNetworkLinkageData(j).NodeNums[1] == i) {
                     CompNum = AirflowNetworkLinkageData(j).CompNum;
-                    if (AirflowNetworkCompData(CompNum).EPlusTypeNum == iEPlusComponentType::RHT && (!AirflowNetworkLinkageData(j).VAVTermDamper)) {
+                    if (AirflowNetworkCompData(CompNum).EPlusTypeNum == EPlusComponentType::RHT && (!AirflowNetworkLinkageData(j).VAVTermDamper)) {
                         found = true;
                         break;
                     }
                     // Overwrite fan outlet node
-                    if (AirflowNetworkCompData(CompNum).EPlusTypeNum == iEPlusComponentType::FAN && AirflowNetworkLinkageData(j).NodeNums[1] == i) {
+                    if (AirflowNetworkCompData(CompNum).EPlusTypeNum == EPlusComponentType::FAN && AirflowNetworkLinkageData(j).NodeNums[1] == i) {
                         found = false;
                         break;
                     }
                     // Overwrite return connection outlet
-                    if (AirflowNetworkLinkageData(j).ConnectionFlag == iEPlusComponentType::RCN) { // Modified on 9/2/09
+                    if (AirflowNetworkLinkageData(j).ConnectionFlag == EPlusComponentType::RCN) { // Modified on 9/2/09
                         found = true;
                         break;
                     }
-                    if (AirflowNetworkLinkageData(j).ConnectionFlag == iEPlusComponentType::SCN &&
+                    if (AirflowNetworkLinkageData(j).ConnectionFlag == EPlusComponentType::SCN &&
                         AirflowNetworkLinkageData(j).NodeNums[1] == i) { // Modified on 9/2/09
                         found = true;
                         break;
                     }
                 }
                 if (AirflowNetworkLinkageData(j).NodeNums[1] == i &&
-                    AirflowNetworkNodeData(AirflowNetworkLinkageData(j).NodeNums[0]).EPlusTypeNum == iEPlusNodeType::OAN) {
+                    AirflowNetworkNodeData(AirflowNetworkLinkageData(j).NodeNums[0]).EPlusTypeNum == EPlusNodeType::OAN) {
                     OANode = true;
                     break;
                 }
             }
             if (found) continue;
-            if (AirflowNetworkNodeData(i).EPlusZoneNum == 0 && AirflowNetworkNodeData(i).EPlusTypeNum == iEPlusNodeType::ZIN) continue;
-            j = AirflowNetworkNodeData(i).EPlusNodeNum;
+            if (AirflowNetworkNodeData(i).EPlusZoneNum == 0 && AirflowNetworkNodeData(i).EPlusTypeNum == EPlusNodeType::ZIN) continue;
+            int j = AirflowNetworkNodeData(i).EPlusNodeNum;
             if (j > 0 &&
-                (AirflowNetworkNodeData(i).EPlusZoneNum > 0 || AirflowNetworkNodeData(i).EPlusTypeNum == iEPlusNodeType::FOU ||
-                 AirflowNetworkNodeData(i).EPlusTypeNum == iEPlusNodeType::COU || AirflowNetworkNodeData(i).EPlusTypeNum == iEPlusNodeType::HXO)) {
+                (AirflowNetworkNodeData(i).EPlusZoneNum > 0 || AirflowNetworkNodeData(i).EPlusTypeNum == EPlusNodeType::FOU ||
+                 AirflowNetworkNodeData(i).EPlusTypeNum == EPlusNodeType::COU || AirflowNetworkNodeData(i).EPlusTypeNum == EPlusNodeType::HXO)) {
                 MA((i - 1) * AirflowNetworkNumOfNodes + i) = 1.0e10;
                 MV(i) = Node(j).HumRat * 1.0e10;
             }
@@ -7967,8 +7962,8 @@ namespace AirflowNetwork {
         }
 
         // Assign node value to distribution nodes with fan off
-        for (i = 1; i <= AirflowNetworkNumOfNodes; ++i) {
-            j = AirflowNetworkNodeData(i).EPlusNodeNum;
+        for (int i = 1; i <= AirflowNetworkNumOfNodes; ++i) {
+            int j = AirflowNetworkNodeData(i).EPlusNodeNum;
             if (j > 0 && !LoopOnOffFlag(AirflowNetworkNodeData(i).AirLoopNum) && MA((i - 1) * AirflowNetworkNumOfNodes + i) < 1.0e9) {
                 MA((i - 1) * AirflowNetworkNumOfNodes + i) = 1.0e10;
                 MV(i) = Node(j).HumRat * 1.0e10;
@@ -7980,7 +7975,7 @@ namespace AirflowNetwork {
         }
 
         // Check singularity
-        for (i = 1; i <= AirflowNetworkNumOfNodes; ++i) {
+        for (int i = 1; i <= AirflowNetworkNumOfNodes; ++i) {
             if (MA((i - 1) * AirflowNetworkNumOfNodes + i) < 1.0e-8) {
                 ShowFatalError(m_state,
                                "CalcAirflowNetworkMoisBalance: A diagonal entity is zero in AirflowNetwork matrix at node " +
@@ -7992,9 +7987,9 @@ namespace AirflowNetwork {
         mrxinv(AirflowNetworkNumOfNodes);
 
         // Calculate node temperatures
-        for (i = 1; i <= AirflowNetworkNumOfNodes; ++i) {
+        for (int i = 1; i <= AirflowNetworkNumOfNodes; ++i) {
             WZON = 0.0;
-            for (j = 1; j <= AirflowNetworkNumOfNodes; ++j) {
+            for (int j = 1; j <= AirflowNetworkNumOfNodes; ++j) {
                 WZON += MA((i - 1) * AirflowNetworkNumOfNodes + j) * MV(j);
             }
             AirflowNetworkNodeSimu(i).WZ = WZON;
@@ -8013,24 +8008,22 @@ namespace AirflowNetwork {
         // This subroutine performs AirflowNetwork CO2 simulations.
 
         // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-        int i;
-        int j;
         int LF;
         int LT;
         int CompNum;
-        iComponentTypeNum CompTypeNum;
+        AirflowElementType CompTypeNum;
         Real64 DirSign;
         Real64 COZN;
         int ZoneNum;
 
         MA = 0.0;
         MV = 0.0;
-        for (i = 1; i <= AirflowNetworkNumOfLinks; ++i) {
+        for (int i = 1; i <= AirflowNetworkNumOfLinks; ++i) {
             CompNum = AirflowNetworkLinkageData(i).CompNum;
             CompTypeNum = AirflowNetworkCompData(CompNum).CompTypeNum;
             std::string CompName = AirflowNetworkCompData(CompNum).EPlusName;
             // Calculate duct moisture diffusion loss
-            if (CompTypeNum == iComponentTypeNum::DWC && CompName == std::string()) { // Duct component only
+            if (CompTypeNum == AirflowElementType::DWC && CompName == std::string()) { // Duct component only
                 // TypeNum = AirflowNetworkCompData(CompNum).TypeNum;
                 if (AirflowNetworkLinkSimu(i).FLOW > 0.0) { // flow direction is the same as input from node 1 to node 2
                     LF = AirflowNetworkLinkageData(i).NodeNums[0];
@@ -8044,7 +8037,7 @@ namespace AirflowNetwork {
                 MA((LT - 1) * AirflowNetworkNumOfNodes + LT) += std::abs(AirflowNetworkLinkSimu(i).FLOW);
                 MA((LT - 1) * AirflowNetworkNumOfNodes + LF) = -std::abs(AirflowNetworkLinkSimu(i).FLOW);
             }
-            if (CompTypeNum == iComponentTypeNum::TMU) { // Reheat unit: SINGLE DUCT:CONST VOLUME:REHEAT
+            if (CompTypeNum == AirflowElementType::TMU) { // Reheat unit: SINGLE DUCT:CONST VOLUME:REHEAT
                 // TypeNum = AirflowNetworkCompData(CompNum).TypeNum;
                 if (AirflowNetworkLinkSimu(i).FLOW > 0.0) { // flow direction is the same as input from node 1 to node 2
                     LF = AirflowNetworkLinkageData(i).NodeNums[0];
@@ -8058,7 +8051,7 @@ namespace AirflowNetwork {
                 MA((LT - 1) * AirflowNetworkNumOfNodes + LT) += std::abs(AirflowNetworkLinkSimu(i).FLOW);
                 MA((LT - 1) * AirflowNetworkNumOfNodes + LF) = -std::abs(AirflowNetworkLinkSimu(i).FLOW);
             }
-            if (CompTypeNum == iComponentTypeNum::COI) { // heating or cooling coil
+            if (CompTypeNum == AirflowElementType::COI) { // heating or cooling coil
                 // TypeNum = AirflowNetworkCompData(CompNum).TypeNum;
                 if (AirflowNetworkLinkSimu(i).FLOW > 0.0) { // flow direction is the same as input from node 1 to node 2
                     LF = AirflowNetworkLinkageData(i).NodeNums[0];
@@ -8071,7 +8064,7 @@ namespace AirflowNetwork {
                 }
             }
             // Calculate temp in a constant pressure drop component
-            if (CompTypeNum == iComponentTypeNum::CPD && CompName == std::string()) { // constant pressure element only
+            if (CompTypeNum == AirflowElementType::CPD && CompName == std::string()) { // constant pressure element only
                 if (AirflowNetworkLinkSimu(i).FLOW > 0.0) {                           // flow direction is the same as input from node 1 to node 2
                     LF = AirflowNetworkLinkageData(i).NodeNums[0];
                     LT = AirflowNetworkLinkageData(i).NodeNums[1];
@@ -8084,7 +8077,7 @@ namespace AirflowNetwork {
                 MV(LT) = 0.0;
             }
             // Calculate return leak
-            if ((CompTypeNum == iComponentTypeNum::PLR || CompTypeNum == iComponentTypeNum::ELR) && CompName == std::string()) {
+            if ((CompTypeNum == AirflowElementType::PLR || CompTypeNum == AirflowElementType::ELR) && CompName == std::string()) {
                 // Return leak component only
                 if ((AirflowNetworkNodeData(AirflowNetworkLinkageData(i).NodeNums[0]).EPlusZoneNum > 0) &&
                     (AirflowNetworkNodeData(AirflowNetworkLinkageData(i).NodeNums[1]).EPlusZoneNum == 0) && (AirflowNetworkLinkSimu(i).FLOW > 0.0)) {
@@ -8118,44 +8111,44 @@ namespace AirflowNetwork {
         }
 
         // Prescribe temperature for EPlus nodes
-        for (i = 1; i <= AirflowNetworkNumOfNodes; ++i) {
+        for (int i = 1; i <= AirflowNetworkNumOfNodes; ++i) {
             bool found = false;
             bool OANode = false;
-            for (j = 1; j <= AirflowNetworkNumOfLinks; ++j) {
+            for (int j = 1; j <= AirflowNetworkNumOfLinks; ++j) {
                 if (AirflowNetworkLinkageData(j).NodeNums[0] == i || AirflowNetworkLinkageData(j).NodeNums[1] == i) {
                     CompNum = AirflowNetworkLinkageData(j).CompNum;
-                    if (AirflowNetworkCompData(CompNum).EPlusTypeNum == iEPlusComponentType::RHT && (!AirflowNetworkLinkageData(j).VAVTermDamper)) {
+                    if (AirflowNetworkCompData(CompNum).EPlusTypeNum == EPlusComponentType::RHT && (!AirflowNetworkLinkageData(j).VAVTermDamper)) {
                         found = true;
                         break;
                     }
                     // Overwrite fan outlet node
-                    if (AirflowNetworkCompData(CompNum).EPlusTypeNum == iEPlusComponentType::FAN && AirflowNetworkLinkageData(j).NodeNums[1] == i) {
+                    if (AirflowNetworkCompData(CompNum).EPlusTypeNum == EPlusComponentType::FAN && AirflowNetworkLinkageData(j).NodeNums[1] == i) {
                         found = false;
                         break;
                     }
                     // Overwrite return connection outlet
-                    if (AirflowNetworkLinkageData(j).ConnectionFlag == iEPlusComponentType::RCN) { // Modified on 9/2/09
+                    if (AirflowNetworkLinkageData(j).ConnectionFlag == EPlusComponentType::RCN) { // Modified on 9/2/09
                         found = true;
                         break;
                     }
-                    if (AirflowNetworkLinkageData(j).ConnectionFlag == iEPlusComponentType::SCN &&
+                    if (AirflowNetworkLinkageData(j).ConnectionFlag == EPlusComponentType::SCN &&
                         AirflowNetworkLinkageData(j).NodeNums[1] == i) { // Modified on 9/2/09
                         found = true;
                         break;
                     }
                 }
                 if (AirflowNetworkLinkageData(j).NodeNums[1] == i &&
-                    AirflowNetworkNodeData(AirflowNetworkLinkageData(j).NodeNums[0]).EPlusTypeNum == iEPlusNodeType::OAN) {
+                    AirflowNetworkNodeData(AirflowNetworkLinkageData(j).NodeNums[0]).EPlusTypeNum == EPlusNodeType::OAN) {
                     OANode = true;
                     break;
                 }
             }
             if (found) continue;
-            if (AirflowNetworkNodeData(i).EPlusZoneNum == 0 && AirflowNetworkNodeData(i).EPlusTypeNum == iEPlusNodeType::ZIN) continue;
-            j = AirflowNetworkNodeData(i).EPlusNodeNum;
+            if (AirflowNetworkNodeData(i).EPlusZoneNum == 0 && AirflowNetworkNodeData(i).EPlusTypeNum == EPlusNodeType::ZIN) continue;
+            int j = AirflowNetworkNodeData(i).EPlusNodeNum;
             if (j > 0 &&
-                (AirflowNetworkNodeData(i).EPlusZoneNum > 0 || AirflowNetworkNodeData(i).EPlusTypeNum == iEPlusNodeType::FOU ||
-                 AirflowNetworkNodeData(i).EPlusTypeNum == iEPlusNodeType::COU || AirflowNetworkNodeData(i).EPlusTypeNum == iEPlusNodeType::HXO)) {
+                (AirflowNetworkNodeData(i).EPlusZoneNum > 0 || AirflowNetworkNodeData(i).EPlusTypeNum == EPlusNodeType::FOU ||
+                 AirflowNetworkNodeData(i).EPlusTypeNum == EPlusNodeType::COU || AirflowNetworkNodeData(i).EPlusTypeNum == EPlusNodeType::HXO)) {
                 MA((i - 1) * AirflowNetworkNumOfNodes + i) = 1.0e10;
                 MV(i) = m_state.dataLoopNodes->Node(j).CO2 * 1.0e10;
             }
@@ -8175,8 +8168,8 @@ namespace AirflowNetwork {
         }
 
         // Assign node value to distribution nodes with fan off
-        for (i = 1; i <= AirflowNetworkNumOfNodes; ++i) {
-            j = AirflowNetworkNodeData(i).EPlusNodeNum;
+        for (int i = 1; i <= AirflowNetworkNumOfNodes; ++i) {
+            int j = AirflowNetworkNodeData(i).EPlusNodeNum;
             if (j > 0 && !LoopOnOffFlag(AirflowNetworkNodeData(i).AirLoopNum) && MA((i - 1) * AirflowNetworkNumOfNodes + i) < 1.0e9) {
                 MA((i - 1) * AirflowNetworkNumOfNodes + i) = 1.0e10;
                 MV(i) = m_state.dataLoopNodes->Node(j).CO2 * 1.0e10;
@@ -8188,7 +8181,7 @@ namespace AirflowNetwork {
         }
 
         // Check singularity
-        for (i = 1; i <= AirflowNetworkNumOfNodes; ++i) {
+        for (int i = 1; i <= AirflowNetworkNumOfNodes; ++i) {
             if (MA((i - 1) * AirflowNetworkNumOfNodes + i) < 1.0e-6) {
                 ShowFatalError(m_state,
                                "CalcAirflowNetworkCO2Balance: A diagonal entity is zero in AirflowNetwork matrix at node " +
@@ -8200,9 +8193,9 @@ namespace AirflowNetwork {
         mrxinv(AirflowNetworkNumOfNodes);
 
         // Calculate node temperatures
-        for (i = 1; i <= AirflowNetworkNumOfNodes; ++i) {
+        for (int i = 1; i <= AirflowNetworkNumOfNodes; ++i) {
             COZN = 0.0;
-            for (j = 1; j <= AirflowNetworkNumOfNodes; ++j) {
+            for (int j = 1; j <= AirflowNetworkNumOfNodes; ++j) {
                 COZN += MA((i - 1) * AirflowNetworkNumOfNodes + j) * MV(j);
             }
             AirflowNetworkNodeSimu(i).CO2Z = COZN;
@@ -8221,24 +8214,22 @@ namespace AirflowNetwork {
         // This subroutine performs AirflowNetwork generic contaminant simulations.
 
         // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-        int i;
-        int j;
         int LF;
         int LT;
         int CompNum;
-        iComponentTypeNum CompTypeNum;
+        AirflowElementType CompTypeNum;
         Real64 DirSign;
         Real64 COZN;
         int ZoneNum;
 
         MA = 0.0;
         MV = 0.0;
-        for (i = 1; i <= AirflowNetworkNumOfLinks; ++i) {
+        for (int i = 1; i <= AirflowNetworkNumOfLinks; ++i) {
             CompNum = AirflowNetworkLinkageData(i).CompNum;
             CompTypeNum = AirflowNetworkCompData(CompNum).CompTypeNum;
             std::string_view CompName = AirflowNetworkCompData(CompNum).EPlusName;
             // Calculate duct moisture diffusion loss
-            if (CompTypeNum == iComponentTypeNum::DWC && CompName.empty()) { // Duct component only
+            if (CompTypeNum == AirflowElementType::DWC && CompName.empty()) { // Duct component only
                 // TypeNum = AirflowNetworkCompData(CompNum).TypeNum;
                 if (AirflowNetworkLinkSimu(i).FLOW > 0.0) { // flow direction is the same as input from node 1 to node 2
                     LF = AirflowNetworkLinkageData(i).NodeNums[0];
@@ -8252,7 +8243,7 @@ namespace AirflowNetwork {
                 MA((LT - 1) * AirflowNetworkNumOfNodes + LT) += std::abs(AirflowNetworkLinkSimu(i).FLOW);
                 MA((LT - 1) * AirflowNetworkNumOfNodes + LF) = -std::abs(AirflowNetworkLinkSimu(i).FLOW);
             }
-            if (CompTypeNum == iComponentTypeNum::TMU) { // Reheat unit: SINGLE DUCT:CONST VOLUME:REHEAT
+            if (CompTypeNum == AirflowElementType::TMU) { // Reheat unit: SINGLE DUCT:CONST VOLUME:REHEAT
                 // TypeNum = AirflowNetworkCompData(CompNum).TypeNum;
                 if (AirflowNetworkLinkSimu(i).FLOW > 0.0) { // flow direction is the same as input from node 1 to node 2
                     LF = AirflowNetworkLinkageData(i).NodeNums[0];
@@ -8266,7 +8257,7 @@ namespace AirflowNetwork {
                 MA((LT - 1) * AirflowNetworkNumOfNodes + LT) += std::abs(AirflowNetworkLinkSimu(i).FLOW);
                 MA((LT - 1) * AirflowNetworkNumOfNodes + LF) = -std::abs(AirflowNetworkLinkSimu(i).FLOW);
             }
-            if (CompTypeNum == iComponentTypeNum::COI) { // heating or cooling coil
+            if (CompTypeNum == AirflowElementType::COI) { // heating or cooling coil
                 // TypeNum = AirflowNetworkCompData(CompNum).TypeNum;
                 if (AirflowNetworkLinkSimu(i).FLOW > 0.0) { // flow direction is the same as input from node 1 to node 2
                     LF = AirflowNetworkLinkageData(i).NodeNums[0];
@@ -8279,7 +8270,7 @@ namespace AirflowNetwork {
                 }
             }
             // Calculate temp in a constant pressure drop component
-            if (CompTypeNum == iComponentTypeNum::CPD && CompName == std::string()) { // constant pressure element only
+            if (CompTypeNum == AirflowElementType::CPD && CompName == std::string()) { // constant pressure element only
                 if (AirflowNetworkLinkSimu(i).FLOW > 0.0) {                           // flow direction is the same as input from node 1 to node 2
                     LF = AirflowNetworkLinkageData(i).NodeNums[0];
                     LT = AirflowNetworkLinkageData(i).NodeNums[1];
@@ -8292,7 +8283,7 @@ namespace AirflowNetwork {
                 MV(LT) = 0.0;
             }
             // Calculate return leak
-            if ((CompTypeNum == iComponentTypeNum::PLR || CompTypeNum == iComponentTypeNum::ELR) && CompName == std::string()) {
+            if ((CompTypeNum == AirflowElementType::PLR || CompTypeNum == AirflowElementType::ELR) && CompName == std::string()) {
                 // Return leak component only
                 if ((AirflowNetworkNodeData(AirflowNetworkLinkageData(i).NodeNums[0]).EPlusZoneNum > 0) &&
                     (AirflowNetworkNodeData(AirflowNetworkLinkageData(i).NodeNums[1]).EPlusZoneNum == 0) && (AirflowNetworkLinkSimu(i).FLOW > 0.0)) {
@@ -8326,44 +8317,44 @@ namespace AirflowNetwork {
         }
 
         // Prescribe temperature for EPlus nodes
-        for (i = 1; i <= AirflowNetworkNumOfNodes; ++i) {
+        for (int i = 1; i <= AirflowNetworkNumOfNodes; ++i) {
             bool found = false;
             bool OANode = false;
-            for (j = 1; j <= AirflowNetworkNumOfLinks; ++j) {
+            for (int j = 1; j <= AirflowNetworkNumOfLinks; ++j) {
                 if (AirflowNetworkLinkageData(j).NodeNums[0] == i || AirflowNetworkLinkageData(j).NodeNums[1] == i) {
                     CompNum = AirflowNetworkLinkageData(j).CompNum;
-                    if (AirflowNetworkCompData(CompNum).EPlusTypeNum == iEPlusComponentType::RHT && (!AirflowNetworkLinkageData(j).VAVTermDamper)) {
+                    if (AirflowNetworkCompData(CompNum).EPlusTypeNum == EPlusComponentType::RHT && (!AirflowNetworkLinkageData(j).VAVTermDamper)) {
                         found = true;
                         break;
                     }
                     // Overwrite fan outlet node
-                    if (AirflowNetworkCompData(CompNum).EPlusTypeNum == iEPlusComponentType::FAN && AirflowNetworkLinkageData(j).NodeNums[1] == i) {
+                    if (AirflowNetworkCompData(CompNum).EPlusTypeNum == EPlusComponentType::FAN && AirflowNetworkLinkageData(j).NodeNums[1] == i) {
                         found = false;
                         break;
                     }
                     // Overwrite return connection outlet
-                    if (AirflowNetworkLinkageData(j).ConnectionFlag == iEPlusComponentType::RCN) { // Modified on 9/2/09
+                    if (AirflowNetworkLinkageData(j).ConnectionFlag == EPlusComponentType::RCN) { // Modified on 9/2/09
                         found = true;
                         break;
                     }
-                    if (AirflowNetworkLinkageData(j).ConnectionFlag == iEPlusComponentType::SCN &&
+                    if (AirflowNetworkLinkageData(j).ConnectionFlag == EPlusComponentType::SCN &&
                         AirflowNetworkLinkageData(j).NodeNums[1] == i) { // Modified on 9/2/09
                         found = true;
                         break;
                     }
                 }
                 if (AirflowNetworkLinkageData(j).NodeNums[1] == i &&
-                    AirflowNetworkNodeData(AirflowNetworkLinkageData(j).NodeNums[0]).EPlusTypeNum == iEPlusNodeType::OAN) {
+                    AirflowNetworkNodeData(AirflowNetworkLinkageData(j).NodeNums[0]).EPlusTypeNum == EPlusNodeType::OAN) {
                     OANode = true;
                     break;
                 }
             }
             if (found) continue;
-            if (AirflowNetworkNodeData(i).EPlusZoneNum == 0 && AirflowNetworkNodeData(i).EPlusTypeNum == iEPlusNodeType::ZIN) continue;
-            j = AirflowNetworkNodeData(i).EPlusNodeNum;
+            if (AirflowNetworkNodeData(i).EPlusZoneNum == 0 && AirflowNetworkNodeData(i).EPlusTypeNum == EPlusNodeType::ZIN) continue;
+            int j = AirflowNetworkNodeData(i).EPlusNodeNum;
             if (j > 0 &&
-                (AirflowNetworkNodeData(i).EPlusZoneNum > 0 || AirflowNetworkNodeData(i).EPlusTypeNum == iEPlusNodeType::FOU ||
-                 AirflowNetworkNodeData(i).EPlusTypeNum == iEPlusNodeType::COU || AirflowNetworkNodeData(i).EPlusTypeNum == iEPlusNodeType::HXO)) {
+                (AirflowNetworkNodeData(i).EPlusZoneNum > 0 || AirflowNetworkNodeData(i).EPlusTypeNum == EPlusNodeType::FOU ||
+                 AirflowNetworkNodeData(i).EPlusTypeNum == EPlusNodeType::COU || AirflowNetworkNodeData(i).EPlusTypeNum == EPlusNodeType::HXO)) {
                 MA((i - 1) * AirflowNetworkNumOfNodes + i) = 1.0e10;
                 MV(i) = m_state.dataLoopNodes->Node(j).GenContam * 1.0e10;
             }
@@ -8383,8 +8374,8 @@ namespace AirflowNetwork {
         }
 
         // Assign node value to distribution nodes with fan off
-        for (i = 1; i <= AirflowNetworkNumOfNodes; ++i) {
-            j = AirflowNetworkNodeData(i).EPlusNodeNum;
+        for (int i = 1; i <= AirflowNetworkNumOfNodes; ++i) {
+            int j = AirflowNetworkNodeData(i).EPlusNodeNum;
             if (j > 0 && !LoopOnOffFlag(AirflowNetworkNodeData(i).AirLoopNum) && MA((i - 1) * AirflowNetworkNumOfNodes + i) < 1.0e9) {
                 MA((i - 1) * AirflowNetworkNumOfNodes + i) = 1.0e10;
                 MV(i) = m_state.dataLoopNodes->Node(j).GenContam * 1.0e10;
@@ -8396,7 +8387,7 @@ namespace AirflowNetwork {
         }
 
         // Check singularity
-        for (i = 1; i <= AirflowNetworkNumOfNodes; ++i) {
+        for (int i = 1; i <= AirflowNetworkNumOfNodes; ++i) {
             if (MA((i - 1) * AirflowNetworkNumOfNodes + i) < 1.0e-6) {
                 ShowFatalError(m_state,
                                "CalcAirflowNetworkGCBalance: A diagonal entity is zero in AirflowNetwork matrix at node " +
@@ -8408,9 +8399,9 @@ namespace AirflowNetwork {
         mrxinv(AirflowNetworkNumOfNodes);
 
         // Calculate node temperatures
-        for (i = 1; i <= AirflowNetworkNumOfNodes; ++i) {
+        for (int i = 1; i <= AirflowNetworkNumOfNodes; ++i) {
             COZN = 0.0;
-            for (j = 1; j <= AirflowNetworkNumOfNodes; ++j) {
+            for (int j = 1; j <= AirflowNetworkNumOfNodes; ++j) {
                 COZN += MA((i - 1) * AirflowNetworkNumOfNodes + j) * MV(j);
             }
             AirflowNetworkNodeSimu(i).GCZ = COZN;
@@ -8617,8 +8608,8 @@ namespace AirflowNetwork {
                     }
                     hg = Psychrometrics::PsyHgAirFnWTdb(zn1HB.airHumRat, zn1HB.MAT);
 
-                    if (AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum == iComponentTypeNum::SCR ||
-                        AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum == iComponentTypeNum::SEL) {
+                    if (AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum == AirflowElementType::SCR ||
+                        AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum == AirflowElementType::SEL) {
                         if (Tamb > zn1HB.MAT) {
                             AirflowNetworkReportData(ZN1).MultiZoneInfiSenGainW += (AirflowNetworkLinkSimu(i).FLOW2 * CpAir * (Tamb - zn1HB.MAT));
                             AirflowNetworkReportData(ZN1).MultiZoneInfiSenGainJ +=
@@ -8676,8 +8667,8 @@ namespace AirflowNetwork {
                     }
                     hg = Psychrometrics::PsyHgAirFnWTdb(zn2HB.airHumRat, zn2HB.MAT);
 
-                    if (AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum == iComponentTypeNum::SCR ||
-                        AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum == iComponentTypeNum::SEL) {
+                    if (AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum == AirflowElementType::SCR ||
+                        AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum == AirflowElementType::SEL) {
                         if (Tamb > zn2HB.MAT) {
                             AirflowNetworkReportData(ZN2).MultiZoneInfiSenGainW += (AirflowNetworkLinkSimu(i).FLOW * CpAir * (Tamb - zn2HB.MAT));
                             AirflowNetworkReportData(ZN2).MultiZoneInfiSenGainJ +=
@@ -8906,8 +8897,8 @@ namespace AirflowNetwork {
                         ReportingFraction = (1.0 - RepOnOffFanRunTimeFraction);
                         Tamb = Zone(ZN1).OutDryBulbTemp;
                         CpAir = PsyCpAirFnW(m_state.dataEnvrn->OutHumRat);
-                        if (AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum == iComponentTypeNum::SCR ||
-                            AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum == iComponentTypeNum::SEL) {
+                        if (AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum == AirflowElementType::SCR ||
+                            AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum == AirflowElementType::SEL) {
                             if (Tamb > zn1HB.MAT) {
                                 AirflowNetworkReportData(ZN1).MultiZoneInfiSenGainW +=
                                     (linkReport1(i).FLOW2OFF * CpAir * (Tamb - zn1HB.MAT)) * (1.0 - RepOnOffFanRunTimeFraction);
@@ -8975,8 +8966,8 @@ namespace AirflowNetwork {
                         ReportingFraction = (1.0 - RepOnOffFanRunTimeFraction);
                         Tamb = Zone(ZN2).OutDryBulbTemp;
                         CpAir = PsyCpAirFnW(m_state.dataEnvrn->OutHumRat);
-                        if (AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum == iComponentTypeNum::SCR ||
-                            AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum == iComponentTypeNum::SEL) {
+                        if (AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum == AirflowElementType::SCR ||
+                            AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum == AirflowElementType::SEL) {
                             if (Tamb > zn2HB.MAT) {
                                 AirflowNetworkReportData(ZN2).MultiZoneInfiSenGainW +=
                                     (linkReport1(i).FLOWOFF * CpAir * (Tamb - zn2HB.MAT)) * ReportingFraction;
@@ -9275,8 +9266,8 @@ namespace AirflowNetwork {
                     // Find a linkage from outdoors to this zone
                     Tamb = Zone(ZN1).OutDryBulbTemp;
                     CpAir = PsyCpAirFnW(m_state.dataEnvrn->OutHumRat);
-                    if (AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum == iComponentTypeNum::SCR ||
-                        AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum == iComponentTypeNum::SEL) {
+                    if (AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum == AirflowElementType::SCR ||
+                        AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum == AirflowElementType::SEL) {
                         exchangeData(ZN1).SumMCp += AirflowNetworkLinkSimu(i).FLOW2 * CpAir;
                         exchangeData(ZN1).SumMCpT += AirflowNetworkLinkSimu(i).FLOW2 * CpAir * Tamb;
                     } else {
@@ -9296,8 +9287,8 @@ namespace AirflowNetwork {
                     // Find a linkage from outdoors to this zone
                     Tamb = Zone(ZN2).OutDryBulbTemp;
                     CpAir = PsyCpAirFnW(m_state.dataEnvrn->OutHumRat);
-                    if (AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum == iComponentTypeNum::SCR ||
-                        AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum == iComponentTypeNum::SEL) {
+                    if (AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum == AirflowElementType::SCR ||
+                        AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum == AirflowElementType::SEL) {
                         exchangeData(ZN2).SumMCp += AirflowNetworkLinkSimu(i).FLOW * CpAir;
                         exchangeData(ZN2).SumMCpT += AirflowNetworkLinkSimu(i).FLOW * CpAir * Tamb;
                     } else {
@@ -9544,17 +9535,17 @@ namespace AirflowNetwork {
                 for (int i = 1; i <= AirflowNetworkNumOfLinks; ++i) {
                     Node1 = AirflowNetworkLinkageData(i).NodeNums[0];
                     Node2 = AirflowNetworkLinkageData(i).NodeNums[1];
-                    if (AirflowNetworkNodeData(Node1).EPlusTypeNum == iEPlusNodeType::SPI ||
-                        AirflowNetworkNodeData(Node2).EPlusTypeNum == iEPlusNodeType::SPO ||
-                        AirflowNetworkNodeData(Node2).EPlusTypeNum == iEPlusNodeType::ZIN) {
+                    if (AirflowNetworkNodeData(Node1).EPlusTypeNum == EPlusNodeType::SPI ||
+                        AirflowNetworkNodeData(Node2).EPlusTypeNum == EPlusNodeType::SPO ||
+                        AirflowNetworkNodeData(Node2).EPlusTypeNum == EPlusNodeType::ZIN) {
                         int Node3;
-                        if (AirflowNetworkNodeData(Node1).EPlusTypeNum == iEPlusNodeType::SPI) {
+                        if (AirflowNetworkNodeData(Node1).EPlusTypeNum == EPlusNodeType::SPI) {
                             Node3 = Node1;
                         } else {
                             Node3 = Node2;
                         }
-                        if (AirflowNetworkNodeData(Node2).EPlusTypeNum == iEPlusNodeType::ZIN) {
-                            if (AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).EPlusTypeNum == iEPlusComponentType::Invalid) continue;
+                        if (AirflowNetworkNodeData(Node2).EPlusTypeNum == EPlusNodeType::ZIN) {
+                            if (AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).EPlusTypeNum == EPlusComponentType::Invalid) continue;
                         }
                         NodeMass = Node(AirflowNetworkNodeData(Node3).EPlusNodeNum).MassFlowRate;
                         AFNMass = AirflowNetworkLinkSimu(i).FLOW;
@@ -9583,7 +9574,7 @@ namespace AirflowNetwork {
 
         // Assign airflows to EPLus nodes
         for (int i = 1; i <= AirflowNetworkNumOfLinks; ++i) {
-            if (AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum == iComponentTypeNum::DWC ||
+            if (AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum == AirflowElementType::DWC ||
                 AirflowNetworkLinkageData(i).VAVTermDamper) {
                 // Exclude envelope leakage Crack element
                 Node1 = AirflowNetworkLinkageData(i).NodeNums[0];
@@ -9593,8 +9584,8 @@ namespace AirflowNetwork {
                 if (j > 0 && AirflowNetworkNodeData(Node1).EPlusZoneNum == 0) {
                     Node(j).MassFlowRate = AirflowNetworkLinkSimu(i).FLOW * LoopPartLoadRatio(AirflowNetworkNodeData(Node1).AirLoopNum);
                     if (!LoopOnOffFlag(AirflowNetworkLinkageData(i).AirLoopNum)) Node(j).MassFlowRate = 0.0;
-                    if (!(AirflowNetworkNodeData(Node1).EPlusTypeNum == iEPlusNodeType::DIN ||
-                          AirflowNetworkNodeData(Node1).EPlusTypeNum == iEPlusNodeType::DOU)) {
+                    if (!(AirflowNetworkNodeData(Node1).EPlusTypeNum == EPlusNodeType::DIN ||
+                          AirflowNetworkNodeData(Node1).EPlusTypeNum == EPlusNodeType::DOU)) {
                         Node(j).MassFlowRateMaxAvail = AirflowNetworkLinkSimu(i).FLOW * LoopPartLoadRatio(AirflowNetworkNodeData(Node1).AirLoopNum);
                         Node(j).MassFlowRateMax = AirflowNetworkLinkSimu(i).FLOW;
                     }
@@ -9604,8 +9595,8 @@ namespace AirflowNetwork {
                 if (j > 0) {
                     Node(j).MassFlowRate = AirflowNetworkLinkSimu(i).FLOW * LoopPartLoadRatio(AirflowNetworkNodeData(Node2).AirLoopNum);
                     if (!LoopOnOffFlag(AirflowNetworkLinkageData(i).AirLoopNum)) Node(j).MassFlowRate = 0.0;
-                    if (!(AirflowNetworkNodeData(Node2).EPlusTypeNum == iEPlusNodeType::DIN ||
-                          AirflowNetworkNodeData(Node2).EPlusTypeNum == iEPlusNodeType::DOU)) {
+                    if (!(AirflowNetworkNodeData(Node2).EPlusTypeNum == EPlusNodeType::DIN ||
+                          AirflowNetworkNodeData(Node2).EPlusTypeNum == EPlusNodeType::DOU)) {
                         Node(j).MassFlowRateMaxAvail = AirflowNetworkLinkSimu(i).FLOW * LoopPartLoadRatio(AirflowNetworkNodeData(Node2).AirLoopNum);
                         Node(j).MassFlowRateMax = AirflowNetworkLinkSimu(i).FLOW;
                     }
@@ -9636,7 +9627,7 @@ namespace AirflowNetwork {
             CpAir = PsyCpAirFnW((AirflowNetworkNodeSimu(Node1).WZ + AirflowNetworkNodeSimu(Node2).WZ) / 2.0);
             // Calculate sensible loads from duct conduction losses and loads from duct radiation
             if (AirflowNetworkLinkageData(i).ZoneNum > 0 &&
-                AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum == iComponentTypeNum::DWC) {
+                AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum == AirflowElementType::DWC) {
                 Qsen = AirflowNetworkLinkSimu(i).FLOW * CpAir * (AirflowNetworkNodeSimu(Node2).TZ - AirflowNetworkNodeSimu(Node1).TZ);
                 if (AirflowNetworkLinkageData(i).LinkageViewFactorObjectNum != 0) {
                     auto const &DuctRadObj(AirflowNetworkLinkageViewFactorData(AirflowNetworkLinkageData(i).LinkageViewFactorObjectNum));
@@ -9648,8 +9639,8 @@ namespace AirflowNetwork {
                 exchangeData(AirflowNetworkLinkageData(i).ZoneNum).CondSen -= Qsen;
             }
             // Calculate sensible leakage losses
-            if (AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum == iComponentTypeNum::PLR ||
-                AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum == iComponentTypeNum::ELR) {
+            if (AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum == AirflowElementType::PLR ||
+                AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum == AirflowElementType::ELR) {
                 // Calculate supply leak sensible losses
                 if ((AirflowNetworkNodeData(Node2).EPlusZoneNum > 0) && (AirflowNetworkNodeData(Node1).EPlusNodeNum == 0) &&
                     (AirflowNetworkLinkSimu(i).FLOW > 0.0)) {
@@ -9674,14 +9665,14 @@ namespace AirflowNetwork {
             Node2 = AirflowNetworkLinkageData(i).NodeNums[1];
             // Calculate latent loads from duct conduction losses
             if (AirflowNetworkLinkageData(i).ZoneNum > 0 &&
-                AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum == iComponentTypeNum::DWC) {
+                AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum == AirflowElementType::DWC) {
                 Qlat = AirflowNetworkLinkSimu(i).FLOW * (AirflowNetworkNodeSimu(Node2).WZ - AirflowNetworkNodeSimu(Node1).WZ);
                 if (!LoopOnOffFlag(AirflowNetworkLinkageData(i).AirLoopNum)) Qlat = 0.0;
                 exchangeData(AirflowNetworkLinkageData(i).ZoneNum).DiffLat -= Qlat;
             }
             // Calculate latent leakage losses
-            if (AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum == iComponentTypeNum::PLR ||
-                AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum == iComponentTypeNum::ELR) {
+            if (AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum == AirflowElementType::PLR ||
+                AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum == AirflowElementType::ELR) {
                 // Calculate supply leak latent losses
                 if ((AirflowNetworkNodeData(Node2).EPlusZoneNum > 0) && (AirflowNetworkNodeData(Node1).EPlusNodeNum == 0) &&
                     (AirflowNetworkLinkSimu(i).FLOW > 0.0)) {
@@ -10158,7 +10149,7 @@ namespace AirflowNetwork {
             for (int j = 1; j <= m_state.dataZoneEquip->ZoneEquipConfig(i).NumInletNodes; ++j) {
                 for (int k = 1; k <= AirflowNetworkNumOfNodes; ++k) {
                     if (m_state.dataZoneEquip->ZoneEquipConfig(i).InletNode(j) == AirflowNetworkNodeData(k).EPlusNodeNum) {
-                        AirflowNetworkNodeData(k).EPlusTypeNum = iEPlusNodeType::ZIN;
+                        AirflowNetworkNodeData(k).EPlusTypeNum = EPlusNodeType::ZIN;
                         break;
                     }
                 }
@@ -10166,7 +10157,7 @@ namespace AirflowNetwork {
             for (int j = 1; j <= m_state.dataZoneEquip->ZoneEquipConfig(i).NumReturnNodes; ++j) {
                 for (int k = 1; k <= AirflowNetworkNumOfNodes; ++k) {
                     if (m_state.dataZoneEquip->ZoneEquipConfig(i).ReturnNode(j) == AirflowNetworkNodeData(k).EPlusNodeNum) {
-                        AirflowNetworkNodeData(k).EPlusTypeNum = iEPlusNodeType::ZOU;
+                        AirflowNetworkNodeData(k).EPlusTypeNum = EPlusNodeType::ZOU;
                         break;
                     }
                 }
@@ -10441,7 +10432,7 @@ namespace AirflowNetwork {
                 ErrorsFound = true;
             }
             // Set AirLoopNum to fans and coils
-            if (AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).EPlusTypeNum == iEPlusComponentType::FAN) {
+            if (AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).EPlusTypeNum == EPlusComponentType::FAN) {
                 n = m_state.afn->DisSysCompCVFData(AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).TypeNum).FanIndex;
                 m_state.afn->DisSysCompCVFData(AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).TypeNum).AirLoopNum =
                     AirflowNetworkLinkageData(i).AirLoopNum;
@@ -10459,7 +10450,7 @@ namespace AirflowNetwork {
                     m_state.dataFans->fans(n)->isAFNFan = true;
                 }
             }
-            if (AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).EPlusTypeNum == iEPlusComponentType::COI) {
+            if (AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).EPlusTypeNum == EPlusComponentType::COI) {
                 m_state.afn->DisSysCompCoilData(AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).TypeNum).AirLoopNum =
                     AirflowNetworkLinkageData(i).AirLoopNum;
             }
@@ -10769,10 +10760,10 @@ namespace AirflowNetwork {
             }
             for (int i = 1; i <= AirflowNetworkNumOfLinks; ++i) {
                 if (AirflowNetworkLinkageData(i).NodeNums[0] == R1 && AirflowNetworkLinkageData(i).NodeNums[1] == R2) {
-                    AirflowNetworkLinkageData(i).ConnectionFlag = iEPlusComponentType::RCN;
+                    AirflowNetworkLinkageData(i).ConnectionFlag = EPlusComponentType::RCN;
                 }
                 if (AirflowNetworkLinkageData(i).NodeNums[0] == S1 && AirflowNetworkLinkageData(i).NodeNums[1] == S2) {
-                    AirflowNetworkLinkageData(i).ConnectionFlag = iEPlusComponentType::SCN;
+                    AirflowNetworkLinkageData(i).ConnectionFlag = EPlusComponentType::SCN;
                 }
             }
         }
@@ -10780,25 +10771,25 @@ namespace AirflowNetwork {
         // Assign fan inlet and outlet node, and coil outlet
         for (int i = 1; i <= AirflowNetworkNumOfLinks; ++i) {
             int j = AirflowNetworkLinkageData(i).CompNum;
-            if (AirflowNetworkCompData(j).CompTypeNum == iComponentTypeNum::CVF) {
-                if (AirflowNetworkNodeData(AirflowNetworkLinkageData(i).NodeNums[0]).EPlusTypeNum == iEPlusNodeType::Invalid)
-                    AirflowNetworkNodeData(AirflowNetworkLinkageData(i).NodeNums[0]).EPlusTypeNum = iEPlusNodeType::FIN;
-                AirflowNetworkNodeData(AirflowNetworkLinkageData(i).NodeNums[1]).EPlusTypeNum = iEPlusNodeType::FOU;
+            if (AirflowNetworkCompData(j).CompTypeNum == AirflowElementType::CVF) {
+                if (AirflowNetworkNodeData(AirflowNetworkLinkageData(i).NodeNums[0]).EPlusTypeNum == EPlusNodeType::Invalid)
+                    AirflowNetworkNodeData(AirflowNetworkLinkageData(i).NodeNums[0]).EPlusTypeNum = EPlusNodeType::FIN;
+                AirflowNetworkNodeData(AirflowNetworkLinkageData(i).NodeNums[1]).EPlusTypeNum = EPlusNodeType::FOU;
             }
-            if (AirflowNetworkCompData(j).EPlusTypeNum == iEPlusComponentType::COI) {
-                AirflowNetworkNodeData(AirflowNetworkLinkageData(i).NodeNums[1]).EPlusTypeNum = iEPlusNodeType::COU;
+            if (AirflowNetworkCompData(j).EPlusTypeNum == EPlusComponentType::COI) {
+                AirflowNetworkNodeData(AirflowNetworkLinkageData(i).NodeNums[1]).EPlusTypeNum = EPlusNodeType::COU;
             }
-            if (AirflowNetworkCompData(j).EPlusTypeNum == iEPlusComponentType::HEX) {
-                AirflowNetworkNodeData(AirflowNetworkLinkageData(i).NodeNums[1]).EPlusTypeNum = iEPlusNodeType::HXO;
+            if (AirflowNetworkCompData(j).EPlusTypeNum == EPlusComponentType::HEX) {
+                AirflowNetworkNodeData(AirflowNetworkLinkageData(i).NodeNums[1]).EPlusTypeNum = EPlusNodeType::HXO;
             }
-            if (AirflowNetworkCompData(j).CompTypeNum == iComponentTypeNum::TMU) {
+            if (AirflowNetworkCompData(j).CompTypeNum == AirflowElementType::TMU) {
                 if (DisSysCompTermUnitData(AirflowNetworkCompData(j).TypeNum).DamperInletNode > 0) {
                     if (AirflowNetworkNodeData(AirflowNetworkLinkageData(i).NodeNums[0]).EPlusNodeNum ==
                             DisSysCompTermUnitData(AirflowNetworkCompData(j).TypeNum).DamperInletNode &&
                         AirflowNetworkNodeData(AirflowNetworkLinkageData(i).NodeNums[1]).EPlusNodeNum ==
                             DisSysCompTermUnitData(AirflowNetworkCompData(j).TypeNum).DamperOutletNode) {
-                        AirflowNetworkNodeData(AirflowNetworkLinkageData(i).NodeNums[0]).EPlusTypeNum = iEPlusNodeType::DIN;
-                        AirflowNetworkNodeData(AirflowNetworkLinkageData(i).NodeNums[1]).EPlusTypeNum = iEPlusNodeType::DOU;
+                        AirflowNetworkNodeData(AirflowNetworkLinkageData(i).NodeNums[0]).EPlusTypeNum = EPlusNodeType::DIN;
+                        AirflowNetworkNodeData(AirflowNetworkLinkageData(i).NodeNums[1]).EPlusTypeNum = EPlusNodeType::DOU;
                         AirflowNetworkLinkageData(i).VAVTermDamper = true;
                     }
                 }
@@ -10808,10 +10799,10 @@ namespace AirflowNetwork {
         // Validate the position of constant pressure drop component
         CurrentModuleObject = "AirflowNetwork:Distribution:Component:ConstantPressureDrop";
         for (int i = 1; i <= AirflowNetworkNumOfLinks; ++i) {
-            if (AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum == iComponentTypeNum::CPD) {
+            if (AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum == AirflowElementType::CPD) {
                 for (int j = 1; j <= AirflowNetworkNumOfLinks; ++j) {
                     if (AirflowNetworkLinkageData(i).NodeNums[0] == AirflowNetworkLinkageData(j).NodeNums[1]) {
-                        if (AirflowNetworkCompData(AirflowNetworkLinkageData(j).CompNum).CompTypeNum != iComponentTypeNum::DWC) {
+                        if (AirflowNetworkCompData(AirflowNetworkLinkageData(j).CompNum).CompTypeNum != AirflowElementType::DWC) {
                             ShowSevereError(m_state,
                                             format(RoutineName) + "An " + CurrentModuleObject + " object (" + AirflowNetworkLinkageData(i).CompName +
                                                 ')');
@@ -10820,7 +10811,7 @@ namespace AirflowNetwork {
                         }
                     }
                 }
-                if (AirflowNetworkNodeData(AirflowNetworkLinkageData(i).NodeNums[0]).EPlusTypeNum == iEPlusNodeType::SPL) {
+                if (AirflowNetworkNodeData(AirflowNetworkLinkageData(i).NodeNums[0]).EPlusTypeNum == EPlusNodeType::SPL) {
                     ShowSevereError(m_state,
                                     format(RoutineName) + "An " + CurrentModuleObject + " object (" + AirflowNetworkLinkageData(i).CompName + ')');
                     ShowContinueError(m_state,
@@ -10828,7 +10819,7 @@ namespace AirflowNetwork {
                                           AirflowNetworkNodeData(AirflowNetworkLinkageData(i).NodeNums[0]).Name);
                     ErrorsFound = true;
                 }
-                if (AirflowNetworkNodeData(AirflowNetworkLinkageData(i).NodeNums[1]).EPlusTypeNum == iEPlusNodeType::SPL) {
+                if (AirflowNetworkNodeData(AirflowNetworkLinkageData(i).NodeNums[1]).EPlusTypeNum == EPlusNodeType::SPL) {
                     ShowSevereError(m_state,
                                     format(RoutineName) + "An " + CurrentModuleObject + " object (" + AirflowNetworkLinkageData(i).CompName + ')');
                     ShowContinueError(m_state,
@@ -10836,7 +10827,7 @@ namespace AirflowNetwork {
                                           AirflowNetworkNodeData(AirflowNetworkLinkageData(i).NodeNums[1]).Name);
                     ErrorsFound = true;
                 }
-                if (AirflowNetworkNodeData(AirflowNetworkLinkageData(i).NodeNums[0]).EPlusTypeNum == iEPlusNodeType::MIX) {
+                if (AirflowNetworkNodeData(AirflowNetworkLinkageData(i).NodeNums[0]).EPlusTypeNum == EPlusNodeType::MIX) {
                     ShowSevereError(m_state,
                                     format(RoutineName) + "An " + CurrentModuleObject + " object (" + AirflowNetworkLinkageData(i).CompName + ')');
                     ShowContinueError(m_state,
@@ -10844,7 +10835,7 @@ namespace AirflowNetwork {
                                           AirflowNetworkNodeData(AirflowNetworkLinkageData(i).NodeNums[0]).Name);
                     ErrorsFound = true;
                 }
-                if (AirflowNetworkNodeData(AirflowNetworkLinkageData(i).NodeNums[1]).EPlusTypeNum == iEPlusNodeType::MIX) {
+                if (AirflowNetworkNodeData(AirflowNetworkLinkageData(i).NodeNums[1]).EPlusTypeNum == EPlusNodeType::MIX) {
                     ShowSevereError(m_state,
                                     format(RoutineName) + "An " + CurrentModuleObject + " object (" + AirflowNetworkLinkageData(i).CompName + ')');
                     ShowContinueError(m_state,
@@ -10888,7 +10879,7 @@ namespace AirflowNetwork {
         }
 
         for (int i = NumOfNodesMultiZone + 1; i <= AirflowNetworkNumOfNodes; ++i) {
-            if (AirflowNetworkNodeData(i).EPlusTypeNum == iEPlusNodeType::SPL) {
+            if (AirflowNetworkNodeData(i).EPlusTypeNum == EPlusNodeType::SPL) {
                 LocalError = false;
                 int j = GetSplitterOutletNumber(m_state, "", 1, LocalError);
                 SplitterNodeNumbers.allocate(j + 2);
@@ -10900,12 +10891,12 @@ namespace AirflowNetwork {
         // Assigning inlet and outlet nodes for a splitter
         for (int i = 1; i <= AirflowNetworkNumOfNodes; ++i) {
             if (AirflowNetworkNodeData(i).EPlusNodeNum == SplitterNodeNumbers(1)) {
-                if (AirflowNetworkNodeData(i).EPlusTypeNum == iEPlusNodeType::Invalid) AirflowNetworkNodeData(i).EPlusTypeNum = iEPlusNodeType::SPI;
+                if (AirflowNetworkNodeData(i).EPlusTypeNum == EPlusNodeType::Invalid) AirflowNetworkNodeData(i).EPlusTypeNum = EPlusNodeType::SPI;
             }
             for (int j = 1; j <= SplitterNodeNumbers(2); ++j) {
                 if (AirflowNetworkNodeData(i).EPlusNodeNum == SplitterNodeNumbers(j + 2)) {
-                    if (AirflowNetworkNodeData(i).EPlusTypeNum == iEPlusNodeType::Invalid)
-                        AirflowNetworkNodeData(i).EPlusTypeNum = iEPlusNodeType::SPO;
+                    if (AirflowNetworkNodeData(i).EPlusTypeNum == EPlusNodeType::Invalid)
+                        AirflowNetworkNodeData(i).EPlusTypeNum = EPlusNodeType::SPO;
                 }
             }
         }
@@ -11119,16 +11110,16 @@ namespace AirflowNetwork {
         // Catch a fan flow rate from EPlus input file and add a flag for VAV terminal damper
         for (int i = 1; i <= AirflowNetworkNumOfLinks; ++i) {
             switch (AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum) {
-            case iComponentTypeNum::CVF: { // 'CVF'
+            case AirflowElementType::CVF: { // 'CVF'
                 int typeNum = AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).TypeNum;
                 if (DisSysCompCVFData(typeNum).fanType == HVAC::FanType::VAV) {
                     DisSysCompCVFData(typeNum).MaxAirMassFlowRate =
                         m_state.dataFans->fans(DisSysCompCVFData(typeNum).FanIndex)->maxAirFlowRate * m_state.dataEnvrn->StdRhoAir;
                 }
             } break;
-            case iComponentTypeNum::FAN:
-            case iComponentTypeNum::SOP:
-            case iComponentTypeNum::TMU:
+            case AirflowElementType::FAN:
+            case AirflowElementType::SOP:
+            case AirflowElementType::TMU:
                 break;
             default:
                 break;
@@ -11423,7 +11414,7 @@ namespace AirflowNetwork {
             std::string ZoneName; // EnergyPlus zone name
             int facadeNum;
             int curve;                     // wind pressure coefficient curve index
-            iComponentTypeNum CompTypeNum; // Opening type (detailed, simple, etc.)
+            AirflowElementType CompTypeNum; // Opening type (detailed, simple, etc.)
             Real64 NodeHeight;             // Elevation of the opening node
             Real64 OpeningArea;            // Opening area (=Height*Width)
             Real64 Height;                 // Opening height = MultizoneSurfaceData()%Height
@@ -11432,7 +11423,7 @@ namespace AirflowNetwork {
 
             // Default Constructor
             AFNExtSurfacesProp()
-                : SurfNum(0), MSDNum(0), ZoneNum(0), MZDZoneNum(0), ExtNodeNum(0), facadeNum(0), curve(0), CompTypeNum(iComponentTypeNum::Invalid),
+                : SurfNum(0), MSDNum(0), ZoneNum(0), MZDZoneNum(0), ExtNodeNum(0), facadeNum(0), curve(0), CompTypeNum(AirflowElementType::Invalid),
                   NodeHeight(0.0), OpeningArea(0.0), Height(0.0), Width(0.0), DischCoeff(0.0)
             {
             }
@@ -11457,10 +11448,10 @@ namespace AirflowNetwork {
                             auto afe = elements.find(MultizoneSurfaceData(SrfNum).OpeningName);
                             if (afe != elements.end()) {
                                 auto type = afe->second->type();
-                                if (type == ComponentType::DOP) {
+                                if (type == AirflowElementType::DOP) {
                                     ++AFNNumOfExtOpenings;
                                     ++NumofExtSurfInZone(AFNZnNum);
-                                } else if (type == ComponentType::SOP) {
+                                } else if (type == AirflowElementType::SOP) {
                                     ++AFNNumOfExtOpenings;
                                     ++NumofExtSurfInZone(AFNZnNum);
                                 }
@@ -11530,9 +11521,9 @@ namespace AirflowNetwork {
                     auto afe = elements.find(MultizoneSurfaceData(SrfNum).OpeningName);
                     if (afe != elements.end()) {
                         auto type = afe->second->type();
-                        if (type == ComponentType::DOP) {
+                        if (type == AirflowElementType::DOP) {
                             ++AFNNumOfExtOpenings;
-                        } else if (type == ComponentType::SOP) {
+                        } else if (type == AirflowElementType::SOP) {
                             ++AFNNumOfExtOpenings;
                         }
                     }
@@ -11559,7 +11550,7 @@ namespace AirflowNetwork {
                             AFNExtSurfaces(ExtOpenNum).ZoneName = m_state.dataSurface->Surface(MultizoneSurfaceData(SrfNum).SurfNum).ZoneName;
                             AFNExtSurfaces(ExtOpenNum).MZDZoneNum =
                                 Util::FindItemInList(AFNExtSurfaces(ExtOpenNum).ZoneName, MultizoneZoneData, &MultizoneZoneProp::ZoneName);
-                            AFNExtSurfaces(ExtOpenNum).CompTypeNum = iComponentTypeNum::DOP;
+                            AFNExtSurfaces(ExtOpenNum).CompTypeNum = AirflowElementType::DOP;
                             AFNExtSurfaces(ExtOpenNum).Height = MultizoneSurfaceData(SrfNum).Height;
                             AFNExtSurfaces(ExtOpenNum).Width = MultizoneSurfaceData(SrfNum).Width;
                             AFNExtSurfaces(ExtOpenNum).OpeningArea =
@@ -11584,7 +11575,7 @@ namespace AirflowNetwork {
                         AFNExtSurfaces(ExtOpenNum).ZoneName = m_state.dataSurface->Surface(MultizoneSurfaceData(SrfNum).SurfNum).ZoneName;
                         AFNExtSurfaces(ExtOpenNum).MZDZoneNum =
                             Util::FindItemInList(AFNExtSurfaces(ExtOpenNum).ZoneName, MultizoneZoneData, &MultizoneZoneProp::ZoneName);
-                        AFNExtSurfaces(ExtOpenNum).CompTypeNum = iComponentTypeNum::SOP;
+                        AFNExtSurfaces(ExtOpenNum).CompTypeNum = AirflowElementType::SOP;
                         AFNExtSurfaces(ExtOpenNum).Height = MultizoneSurfaceData(SrfNum).Height;
                         AFNExtSurfaces(ExtOpenNum).Width = MultizoneSurfaceData(SrfNum).Width;
                         AFNExtSurfaces(ExtOpenNum).OpeningArea =
@@ -12114,7 +12105,7 @@ namespace AirflowNetwork {
             ShowContinueError(m_state, format("The number of controlled zone is {}", NumOfCtrlZones));
             ShowContinueError(m_state, "..Duct sizing is not performed");
             simulation_control.autosize_ducts = false;
-            simulation_control.iWPCCnt = iWPCCntr::Input;
+            simulation_control.iWPCCnt = WindPressureType::Input;
             simulation_control.allow_unsupported_zone_equipment = false;
         }
         Real64 factor = simulation_control.ductSizing.factor;
@@ -12122,17 +12113,17 @@ namespace AirflowNetwork {
         NodeLoopSupply = m_state.dataAirLoop->AirToZoneNodeInfo(1).ZoneEquipSupplyNodeNum(1);
         NodeLoopReturn = m_state.dataAirLoop->AirToZoneNodeInfo(1).ZoneEquipReturnNodeNum(1);
         for (AFNNodeNum = 1; AFNNodeNum <= AirflowNetworkNumOfNodes; AFNNodeNum++) {
-            if (AirflowNetworkNodeData(AFNNodeNum).EPlusTypeNum == iEPlusNodeType::SPL) {
+            if (AirflowNetworkNodeData(AFNNodeNum).EPlusTypeNum == EPlusNodeType::SPL) {
                 NodeSplitter = AFNNodeNum;
-            } else if (AirflowNetworkNodeData(AFNNodeNum).EPlusTypeNum == iEPlusNodeType::MIX) {
+            } else if (AirflowNetworkNodeData(AFNNodeNum).EPlusTypeNum == EPlusNodeType::MIX) {
                 NodeMixer = AFNNodeNum;
             } else if (AirflowNetworkNodeData(AFNNodeNum).EPlusNodeNum == m_state.dataAirLoop->AirToZoneNodeInfo(1).ZoneEquipSupplyNodeNum(1)) {
                 NodeLoopSupply = AFNNodeNum;
             } else if (AirflowNetworkNodeData(AFNNodeNum).EPlusNodeNum == m_state.dataAirLoop->AirToZoneNodeInfo(1).ZoneEquipReturnNodeNum(1)) {
                 NodeLoopReturn = AFNNodeNum;
-            } else if (AirflowNetworkNodeData(AFNNodeNum).EPlusTypeNum == iEPlusNodeType::ZIN) {
+            } else if (AirflowNetworkNodeData(AFNNodeNum).EPlusTypeNum == EPlusNodeType::ZIN) {
                 NodeZoneIntlet = AFNNodeNum;
-            } else if (AirflowNetworkNodeData(AFNNodeNum).EPlusTypeNum == iEPlusNodeType::ZOU) {
+            } else if (AirflowNetworkNodeData(AFNNodeNum).EPlusTypeNum == EPlusNodeType::ZOU) {
                 NodeZoneReturn = AFNNodeNum;
             }
         }
@@ -12145,7 +12136,7 @@ namespace AirflowNetwork {
 
         for (AFNLinkNum = 1; AFNLinkNum <= AirflowNetworkNumOfLinks; AFNLinkNum++) {
             CompNum = AirflowNetworkLinkageData(AFNLinkNum).CompNum;
-            iComponentTypeNum CompTypeNum = AirflowNetworkCompData(CompNum).CompTypeNum;
+            AirflowElementType CompTypeNum = AirflowNetworkCompData(CompNum).CompTypeNum;
             SumLength = 0.0;
             DynamicLoss = 0.0;
             MaxRough = 0.0;
@@ -12153,7 +12144,7 @@ namespace AirflowNetwork {
             if (AirflowNetworkLinkageData(AFNLinkNum).NodeNums[0] == NodeLoopSupply) {
                 if (AirflowNetworkLinkageData(AFNLinkNum).NodeNums[1] == NodeSplitter) {
                     // A single trunk duct
-                    if (CompTypeNum == iComponentTypeNum::DWC && AirflowNetworkLinkageData(AFNLinkNum).ZoneNum > 0) {
+                    if (CompTypeNum == AirflowElementType::DWC && AirflowNetworkLinkageData(AFNLinkNum).ZoneNum > 0) {
                         AirflowNetworkLinkageData(AFNLinkNum).ductLineType = DuctLineType::SupplyTrunk;
                         TypeNum = AirflowNetworkCompData(CompNum).TypeNum;
                         auto const &disSysCompDuct = DisSysCompDuctData(TypeNum);
@@ -12165,10 +12156,10 @@ namespace AirflowNetwork {
                 } else {
                     int NodeNum1 = AirflowNetworkLinkageData(AFNLinkNum).NodeNums[1];
                     int CompNum1;
-                    iComponentTypeNum CompTypeNum1;
+                    AirflowElementType CompTypeNum1;
                     CompNum1 = AirflowNetworkLinkageData(AFNLinkNum).CompNum;
                     CompTypeNum1 = AirflowNetworkCompData(CompNum1).CompTypeNum;
-                    if (CompTypeNum1 == iComponentTypeNum::DWC) {
+                    if (CompTypeNum1 == AirflowElementType::DWC) {
                         AirflowNetworkLinkageData(AFNLinkNum).ductLineType = DuctLineType::SupplyTrunk;
                         TypeNum = AirflowNetworkCompData(CompNum1).TypeNum;
                         auto const &disSysCompDuct = DisSysCompDuctData(TypeNum);
@@ -12181,12 +12172,12 @@ namespace AirflowNetwork {
                     while (NodeNum1 != NodeSplitter) {
                         for (AFNLinkNum1 = 1; AFNLinkNum1 <= AirflowNetworkNumOfLinks; AFNLinkNum1++) {
                             if (NodeNum1 != AirflowNetworkLinkageData(AFNLinkNum1).NodeNums[0]) continue;
-                            if (AirflowNetworkCompData(AirflowNetworkLinkageData(AFNLinkNum1).CompNum).CompTypeNum != iComponentTypeNum::DWC)
+                            if (AirflowNetworkCompData(AirflowNetworkLinkageData(AFNLinkNum1).CompNum).CompTypeNum != AirflowElementType::DWC)
                                 continue;
                             if (NodeNum1 == AirflowNetworkLinkageData(AFNLinkNum1).NodeNums[0]) {
                                 CompNum1 = AirflowNetworkLinkageData(AFNLinkNum1).CompNum;
                                 CompTypeNum1 = AirflowNetworkCompData(CompNum1).CompTypeNum;
-                                if (CompTypeNum1 == iComponentTypeNum::DWC) {
+                                if (CompTypeNum1 == AirflowElementType::DWC) {
                                     AirflowNetworkLinkageData(AFNLinkNum1).ductLineType = DuctLineType::SupplyTrunk;
                                     TypeNum = AirflowNetworkCompData(CompNum1).TypeNum;
                                     auto const &disSysCompDuct = DisSysCompDuctData(TypeNum);
@@ -12272,7 +12263,7 @@ namespace AirflowNetwork {
                 MaxRough = 0.0;
                 if (AirflowNetworkLinkageData(AFNLinkNum).NodeNums[0] == NodeSplitter) {
                     // A single branch duct
-                    if (CompTypeNum == iComponentTypeNum::DWC && AirflowNetworkLinkageData(AFNLinkNum).ZoneNum > 0) {
+                    if (CompTypeNum == AirflowElementType::DWC && AirflowNetworkLinkageData(AFNLinkNum).ZoneNum > 0) {
                         AirflowNetworkLinkageData(AFNLinkNum).ductLineType = DuctLineType::SupplyTrunk;
                         TypeNum = AirflowNetworkCompData(CompNum).TypeNum;
                         auto const &disSysCompDuct = DisSysCompDuctData(TypeNum);
@@ -12284,10 +12275,10 @@ namespace AirflowNetwork {
                 } else {
                     int NodeNum1 = AirflowNetworkLinkageData(AFNLinkNum).NodeNums[0];
                     int CompNum1;
-                    iComponentTypeNum CompTypeNum1;
+                    AirflowElementType CompTypeNum1;
                     CompNum1 = AirflowNetworkLinkageData(AFNLinkNum).CompNum;
                     CompTypeNum1 = AirflowNetworkCompData(CompNum1).CompTypeNum;
-                    if (CompTypeNum1 == iComponentTypeNum::DWC) {
+                    if (CompTypeNum1 == AirflowElementType::DWC) {
                         AirflowNetworkLinkageData(AFNLinkNum).ductLineType = DuctLineType::SupplyBranch;
                         TypeNum = AirflowNetworkCompData(CompNum1).TypeNum;
                         auto const &disSysCompDuct = DisSysCompDuctData(TypeNum);
@@ -12299,12 +12290,12 @@ namespace AirflowNetwork {
                     while (NodeNum1 != NodeSplitter) {
                         for (AFNLinkNum1 = 1; AFNLinkNum1 <= AirflowNetworkNumOfLinks; AFNLinkNum1++) {
                             if (NodeNum1 != AirflowNetworkLinkageData(AFNLinkNum1).NodeNums[1]) continue;
-                            if (AirflowNetworkCompData(AirflowNetworkLinkageData(AFNLinkNum1).CompNum).CompTypeNum != iComponentTypeNum::DWC)
+                            if (AirflowNetworkCompData(AirflowNetworkLinkageData(AFNLinkNum1).CompNum).CompTypeNum != AirflowElementType::DWC)
                                 continue;
                             if (NodeNum1 == AirflowNetworkLinkageData(AFNLinkNum1).NodeNums[1]) {
                                 CompNum1 = AirflowNetworkLinkageData(AFNLinkNum1).CompNum;
                                 CompTypeNum1 = AirflowNetworkCompData(CompNum1).CompTypeNum;
-                                if (CompTypeNum1 == iComponentTypeNum::DWC) {
+                                if (CompTypeNum1 == AirflowElementType::DWC) {
                                     AirflowNetworkLinkageData(AFNLinkNum1).ductLineType = DuctLineType::SupplyBranch;
                                     TypeNum = AirflowNetworkCompData(CompNum1).TypeNum;
                                     auto const &disSysCompDuct = DisSysCompDuctData(TypeNum);
@@ -12394,7 +12385,7 @@ namespace AirflowNetwork {
                 MaxRough = 0.0;
                 if (AirflowNetworkLinkageData(AFNLinkNum).NodeNums[0] == NodeMixer) {
                     // A single branch duct
-                    if (CompTypeNum == iComponentTypeNum::DWC && AirflowNetworkLinkageData(AFNLinkNum).ZoneNum > 0) {
+                    if (CompTypeNum == AirflowElementType::DWC && AirflowNetworkLinkageData(AFNLinkNum).ZoneNum > 0) {
                         AirflowNetworkLinkageData(AFNLinkNum).ductLineType = DuctLineType::ReturnTrunk;
                         TypeNum = AirflowNetworkCompData(CompNum).TypeNum;
                         auto const &disSysCompDuct = DisSysCompDuctData(TypeNum);
@@ -12406,10 +12397,10 @@ namespace AirflowNetwork {
                 } else {
                     int NodeNum1 = AirflowNetworkLinkageData(AFNLinkNum).NodeNums[0];
                     int CompNum1;
-                    iComponentTypeNum CompTypeNum1;
+                    AirflowElementType CompTypeNum1;
                     CompNum1 = AirflowNetworkLinkageData(AFNLinkNum).CompNum;
                     CompTypeNum1 = AirflowNetworkCompData(CompNum1).CompTypeNum;
-                    if (CompTypeNum1 == iComponentTypeNum::DWC) {
+                    if (CompTypeNum1 == AirflowElementType::DWC) {
                         AirflowNetworkLinkageData(AFNLinkNum).ductLineType = DuctLineType::ReturnTrunk;
                         TypeNum = AirflowNetworkCompData(CompNum1).TypeNum;
                         auto const &disSysCompDuct = DisSysCompDuctData(TypeNum);
@@ -12421,12 +12412,12 @@ namespace AirflowNetwork {
                     while (NodeNum1 != NodeMixer) {
                         for (AFNLinkNum1 = 1; AFNLinkNum1 <= AirflowNetworkNumOfLinks; AFNLinkNum1++) {
                             if (NodeNum1 != AirflowNetworkLinkageData(AFNLinkNum1).NodeNums[1]) continue;
-                            if (AirflowNetworkCompData(AirflowNetworkLinkageData(AFNLinkNum1).CompNum).CompTypeNum != iComponentTypeNum::DWC)
+                            if (AirflowNetworkCompData(AirflowNetworkLinkageData(AFNLinkNum1).CompNum).CompTypeNum != AirflowElementType::DWC)
                                 continue;
                             if (NodeNum1 == AirflowNetworkLinkageData(AFNLinkNum1).NodeNums[1]) {
                                 CompNum1 = AirflowNetworkLinkageData(AFNLinkNum1).CompNum;
                                 CompTypeNum1 = AirflowNetworkCompData(CompNum1).CompTypeNum;
-                                if (CompTypeNum1 == iComponentTypeNum::DWC) {
+                                if (CompTypeNum1 == AirflowElementType::DWC) {
                                     AirflowNetworkLinkageData(AFNLinkNum1).ductLineType = DuctLineType::ReturnTrunk;
                                     TypeNum = AirflowNetworkCompData(CompNum1).TypeNum;
                                     auto const &disSysCompDuct = DisSysCompDuctData(TypeNum);
@@ -12514,7 +12505,7 @@ namespace AirflowNetwork {
                 MaxRough = 0.0;
                 if (AirflowNetworkLinkageData(AFNLinkNum).NodeNums[1] == NodeMixer) {
                     // A single trunk duct
-                    if (CompTypeNum == iComponentTypeNum::DWC && AirflowNetworkLinkageData(AFNLinkNum).ZoneNum > 0) {
+                    if (CompTypeNum == AirflowElementType::DWC && AirflowNetworkLinkageData(AFNLinkNum).ZoneNum > 0) {
                         AirflowNetworkLinkageData(AFNLinkNum).ductLineType = DuctLineType::ReturnBranch;
                         TypeNum = AirflowNetworkCompData(CompNum).TypeNum;
                         auto const &disSysCompDuct = DisSysCompDuctData(TypeNum);
@@ -12526,10 +12517,10 @@ namespace AirflowNetwork {
                 } else {
                     int NodeNum1 = AirflowNetworkLinkageData(AFNLinkNum).NodeNums[1];
                     int CompNum1;
-                    iComponentTypeNum CompTypeNum1;
+                    AirflowElementType CompTypeNum1;
                     CompNum1 = AirflowNetworkLinkageData(AFNLinkNum).CompNum;
                     CompTypeNum1 = AirflowNetworkCompData(CompNum1).CompTypeNum;
-                    if (CompTypeNum1 == iComponentTypeNum::DWC) {
+                    if (CompTypeNum1 == AirflowElementType::DWC) {
                         AirflowNetworkLinkageData(AFNLinkNum).ductLineType = DuctLineType::ReturnBranch;
                         TypeNum = AirflowNetworkCompData(CompNum1).TypeNum;
                         auto const &disSysCompDuct = DisSysCompDuctData(TypeNum);
@@ -12541,12 +12532,12 @@ namespace AirflowNetwork {
                     while (NodeNum1 != NodeMixer) {
                         for (AFNLinkNum1 = 1; AFNLinkNum1 <= AirflowNetworkNumOfLinks; AFNLinkNum1++) {
                             if (NodeNum1 != AirflowNetworkLinkageData(AFNLinkNum1).NodeNums[0]) continue;
-                            if (AirflowNetworkCompData(AirflowNetworkLinkageData(AFNLinkNum1).CompNum).CompTypeNum != iComponentTypeNum::DWC)
+                            if (AirflowNetworkCompData(AirflowNetworkLinkageData(AFNLinkNum1).CompNum).CompTypeNum != AirflowElementType::DWC)
                                 continue;
                             if (NodeNum1 == AirflowNetworkLinkageData(AFNLinkNum1).NodeNums[0]) {
                                 CompNum1 = AirflowNetworkLinkageData(AFNLinkNum1).CompNum;
                                 CompTypeNum1 = AirflowNetworkCompData(CompNum1).CompTypeNum;
-                                if (CompTypeNum1 == iComponentTypeNum::DWC) {
+                                if (CompTypeNum1 == AirflowElementType::DWC) {
                                     AirflowNetworkLinkageData(AFNLinkNum1).ductLineType = DuctLineType::ReturnBranch;
                                     TypeNum = AirflowNetworkCompData(CompNum1).TypeNum;
                                     auto const &disSysCompDuct = DisSysCompDuctData(TypeNum);
@@ -12973,7 +12964,7 @@ namespace AirflowNetwork {
 
         // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
         int i;
-        iComponentTypeNum j;
+        AirflowElementType j;
         int n;
 
         // Formats
@@ -13016,7 +13007,7 @@ namespace AirflowNetwork {
         n = 0;
         for (i = 1; i <= AirflowNetworkNumOfLinks; ++i) {
             j = AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum;
-            if (j == iComponentTypeNum::DOP) {
+            if (j == AirflowElementType::DOP) {
                 ++n;
             }
         }
@@ -13345,7 +13336,7 @@ namespace AirflowNetwork {
             // if (LIST >= 1) {
             //    gio::write(outputFile, Format_901) << "Flow: " << i << n << m << AirflowNetworkLinkSimu(i).DP << AFLOW(i) << AFLOW2(i);
             //}
-            if (AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum == iComponentTypeNum::HOP) {
+            if (AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum == AirflowElementType::HOP) {
                 SUMAF(n) = SUMAF(n) - AFLOW(i);
                 SUMAF(m) += AFLOW(i);
             } else {
@@ -13367,7 +13358,7 @@ namespace AirflowNetwork {
                 AirflowNetworkLinkSimu(i).FLOW = 0.0;
                 AirflowNetworkLinkSimu(i).FLOW2 = -AFLOW(i);
             }
-            if (AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum == iComponentTypeNum::HOP) {
+            if (AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum == AirflowElementType::HOP) {
                 if (AFLOW(i) > 0.0) {
                     AirflowNetworkLinkSimu(i).FLOW = AFLOW(i) + AFLOW2(i);
                     AirflowNetworkLinkSimu(i).FLOW2 = AFLOW2(i);
@@ -13382,7 +13373,7 @@ namespace AirflowNetwork {
                     AirflowNetworkLinkSimu(i).FLOW2 = AFLOW2(i);
                 }
             }
-            if (AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum == iComponentTypeNum::SOP && AFLOW2(i) != 0.0) {
+            if (AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum == AirflowElementType::SOP && AFLOW2(i) != 0.0) {
                 if (AFLOW(i) >= 0.0) {
                     AirflowNetworkLinkSimu(i).FLOW = AFLOW(i);
                     AirflowNetworkLinkSimu(i).FLOW2 = std::abs(AFLOW2(i));
@@ -13706,14 +13697,14 @@ namespace AirflowNetwork {
             j = AirflowNetworkLinkageData(i).CompNum;
 
             NF = AirflowNetworkLinkageData(i).element->calculate(m_state, LFLAG, DP, i, multiplier, control, node_states[n], node_states[m], F, DF);
-            if (AirflowNetworkLinkageData(i).element->type() == ComponentType::CPD && DP != 0.0) {
+            if (AirflowNetworkLinkageData(i).element->type() == AirflowElementType::CPD && DP != 0.0) {
                 DP = DisSysCompCPDData(AirflowNetworkCompData(j).TypeNum).DP;
             }
 
             AirflowNetworkLinkSimu(i).DP = DP;
             AFLOW(i) = F[0];
             AFLOW2(i) = 0.0;
-            if (AirflowNetworkCompData(j).CompTypeNum == iComponentTypeNum::DOP) {
+            if (AirflowNetworkCompData(j).CompTypeNum == AirflowElementType::DOP) {
                 AFLOW2(i) = F[1];
             }
             // if (LIST >= 3) ObjexxFCL::gio::write(outputFile, Format_901) << " NRi:" << i << n << M << AirflowNetworkLinkSimu(i).DP << F[0] <<

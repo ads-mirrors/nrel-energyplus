@@ -163,7 +163,7 @@ namespace AirflowNetwork {
             return 1;
         }
 
-        virtual ComponentType type() = 0;
+        virtual AirflowElementType type() = 0;
     };
 
     int constexpr NrInt = 20; // Number of intervals for a large opening
@@ -289,9 +289,9 @@ namespace AirflowNetwork {
                       std::array<Real64, 2> &DF                 // Partial derivative:  DF/DP
         );
 
-        virtual ComponentType type()
+        virtual AirflowElementType type()
         {
-            return ComponentType::DOP;
+            return AirflowElementType::DOP;
         }
     };
 
@@ -321,9 +321,9 @@ namespace AirflowNetwork {
                       std::array<Real64, 2> &DF                 // Partial derivative:  DF/DP
         );
 
-        virtual ComponentType type()
+        virtual AirflowElementType type()
         {
-            return ComponentType::SOP;
+            return AirflowElementType::SOP;
         }
     };
 
@@ -352,9 +352,9 @@ namespace AirflowNetwork {
                       std::array<Real64, 2> &DF                 // Partial derivative:  DF/DP
         );
 
-        virtual ComponentType type()
+        virtual AirflowElementType type()
         {
-            return ComponentType::HOP;
+            return AirflowElementType::HOP;
         }
     };
 
@@ -380,9 +380,9 @@ namespace AirflowNetwork {
                       std::array<Real64, 2> &DF               // Partial derivative:  DF/DP
         );
 
-        virtual ComponentType type()
+        virtual AirflowElementType type()
         {
-            return ComponentType::SMF;
+            return AirflowElementType::SMF;
         }
     };
 
@@ -408,9 +408,9 @@ namespace AirflowNetwork {
                       std::array<Real64, 2> &DF            // Partial derivative:  DF/DP
         );
 
-        virtual ComponentType type()
+        virtual AirflowElementType type()
         {
-            return ComponentType::SVF;
+            return AirflowElementType::SVF;
         }
     };
 
@@ -470,9 +470,9 @@ namespace AirflowNetwork {
                               std::array<Real64, 2> &DF // Partial derivative:  DF/DP
         );
 
-        virtual ComponentType type()
+        virtual AirflowElementType type()
         {
-            return ComponentType::SCR;
+            return AirflowElementType::SCR;
         }
     };
 
@@ -513,9 +513,9 @@ namespace AirflowNetwork {
                       std::array<Real64, 2> &DF                 // Partial derivative:  DF/DP
         );
 
-        virtual ComponentType type()
+        virtual AirflowElementType type()
         {
-            return ComponentType::SEL;
+            return AirflowElementType::SEL;
         }
     };
 
@@ -563,9 +563,9 @@ namespace AirflowNetwork {
                       std::array<Real64, 2> &DF                 // Partial derivative:  DF/DP
         );
 
-        virtual ComponentType type()
+        virtual AirflowElementType type()
         {
-            return ComponentType::EXF;
+            return AirflowElementType::EXF;
         }
     };
 
@@ -665,9 +665,9 @@ namespace AirflowNetwork {
                       std::array<Real64, 2> &DF                 // Partial derivative:  DF/DP
         );
 
-        virtual ComponentType type()
+        virtual AirflowElementType type()
         {
-            return ComponentType::PLR;
+            return AirflowElementType::PLR;
         }
     };
 
@@ -706,9 +706,9 @@ namespace AirflowNetwork {
                       std::array<Real64, 2> &DF                 // Partial derivative:  DF/DP
         );
 
-        virtual ComponentType type()
+        virtual AirflowElementType type()
         {
-            return ComponentType::ELR;
+            return AirflowElementType::ELR;
         }
     };
 
@@ -764,9 +764,9 @@ namespace AirflowNetwork {
                       std::array<Real64, 2> &DF                 // Partial derivative:  DF/DP
         );
 
-        virtual ComponentType type()
+        virtual AirflowElementType type()
         {
-            return ComponentType::DWC;
+            return AirflowElementType::DWC;
         }
     };
 
@@ -811,9 +811,9 @@ namespace AirflowNetwork {
                       std::array<Real64, 2> &DF                 // Partial derivative:  DF/DP
         );
 
-        virtual ComponentType type()
+        virtual AirflowElementType type()
         {
-            return ComponentType::DMP;
+            return AirflowElementType::DMP;
         }
     };
 
@@ -849,9 +849,9 @@ namespace AirflowNetwork {
                       std::array<Real64, 2> &DF                 // Partial derivative:  DF/DP
         );
 
-        virtual ComponentType type()
+        virtual AirflowElementType type()
         {
-            return ComponentType::CVF;
+            return AirflowElementType::CVF;
         }
     };
 
@@ -895,9 +895,9 @@ namespace AirflowNetwork {
                       std::array<Real64, 2> &DF                 // Partial derivative:  DF/DP
         );
 
-        virtual ComponentType type()
+        virtual AirflowElementType type()
         {
-            return ComponentType::FAN;
+            return AirflowElementType::FAN;
         }
     };
 
@@ -936,9 +936,9 @@ namespace AirflowNetwork {
                       std::array<Real64, 2> &DF                 // Partial derivative:  DF/DP
         );
 
-        virtual ComponentType type()
+        virtual AirflowElementType type()
         {
-            return ComponentType::COI;
+            return AirflowElementType::COI;
         }
     };
 
@@ -977,9 +977,9 @@ namespace AirflowNetwork {
                       std::array<Real64, 2> &DF                 // Partial derivative:  DF/DP
         );
 
-        virtual ComponentType type()
+        virtual AirflowElementType type()
         {
-            return ComponentType::HEX;
+            return AirflowElementType::HEX;
         }
     };
 
@@ -1010,9 +1010,9 @@ namespace AirflowNetwork {
                       std::array<Real64, 2> &DF                 // Partial derivative:  DF/DP
         );
 
-        virtual ComponentType type()
+        virtual AirflowElementType type()
         {
-            return ComponentType::TMU;
+            return AirflowElementType::TMU;
         }
     };
 
@@ -1039,9 +1039,9 @@ namespace AirflowNetwork {
                       std::array<Real64, 2> &DF                 // Partial derivative:  DF/DP
         );
 
-        virtual ComponentType type()
+        virtual AirflowElementType type()
         {
-            return ComponentType::CPD;
+            return AirflowElementType::CPD;
         }
     };
 
@@ -1060,7 +1060,7 @@ namespace AirflowNetwork {
         int EPlusNodeNum;
         int ExtNodeNum;
         int OutAirNodeNum;
-        iEPlusNodeType EPlusTypeNum;
+        EPlusNodeType EPlusTypeNum;
         int RAFNNodeNum; // RoomAir model node number
         int NumOfLinks;  // Number of links for RoomAir model
         int AirLoopNum;  // AirLoop number
@@ -1068,7 +1068,7 @@ namespace AirflowNetwork {
         // Default Constructor
         AirflowNetworkNodeProp()
             : NodeHeight(0.0), NodeNum(0), NodeTypeNum(0), EPlusZoneNum(0), EPlusNodeNum(0), ExtNodeNum(0), OutAirNodeNum(0),
-              EPlusTypeNum(iEPlusNodeType::Invalid), RAFNNodeNum(0), NumOfLinks(0), AirLoopNum(0)
+              EPlusTypeNum(EPlusNodeType::Invalid), RAFNNodeNum(0), NumOfLinks(0), AirLoopNum(0)
         {
         }
     };
@@ -1077,16 +1077,16 @@ namespace AirflowNetwork {
     {
         // Members
         std::string Name;                 // Provide a unique element name
-        iComponentTypeNum CompTypeNum;    // Provide numeric equivalent for AirflowNetworkCompType
+        AirflowElementType CompTypeNum;    // Provide numeric equivalent for AirflowNetworkCompType
         int TypeNum;                      // Component number under same component type
         int CompNum;                      // General component number
         std::string EPlusName;            // Provide a unique element name
         std::string EPlusCompName;        // Provide EPlus component name or Other
         std::string EPlusType;            // Provide EPlus type, such as terminal reheat, coil, etc. 9/30/03 or Other
-        iEPlusComponentType EPlusTypeNum; // Provide EPlus component type
+        EPlusComponentType EPlusTypeNum; // Provide EPlus component type
 
         // Default Constructor
-        AirflowNetworkCompProp() : CompTypeNum(iComponentTypeNum::Invalid), TypeNum(0), CompNum(0), EPlusTypeNum(iEPlusComponentType::Invalid)
+        AirflowNetworkCompProp() : CompTypeNum(AirflowElementType::Invalid), TypeNum(0), CompNum(0), EPlusTypeNum(EPlusComponentType::Invalid)
         {
         }
     };
@@ -1151,9 +1151,9 @@ namespace AirflowNetwork {
                               std::array<Real64, 2> &DF                 // Partial derivative:  DF/DP
         );
 
-        virtual ComponentType type()
+        virtual AirflowElementType type()
         {
-            return ComponentType::OAF;
+            return AirflowElementType::OAF;
         }
     };
 
@@ -1177,9 +1177,9 @@ namespace AirflowNetwork {
                               std::array<Real64, 2> &DF                 // Partial derivative:  DF/DP
         );
 
-        virtual ComponentType type()
+        virtual AirflowElementType type()
         {
-            return ComponentType::REL;
+            return AirflowElementType::REL;
         }
     };
 

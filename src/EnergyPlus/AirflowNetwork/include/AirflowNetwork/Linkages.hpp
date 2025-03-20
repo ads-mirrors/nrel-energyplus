@@ -83,14 +83,10 @@ namespace AirflowNetwork {
         Real64 CHeight;               // Surface central height in z direction
         std::string VentControl;      // Ventilation Control Mode: TEMPERATURE, ENTHALPIC, CONSTANT, ZONELEVEL or NOVENT
         Real64 ModulateFactor;        // Limit Value on Multiplier for Modulating Venting Open Factor
-        Real64 LowValueTemp;          // Lower Value on Inside/Outside Temperature Difference for
-        // Modulating the Venting Open Factor with temp control
-        Real64 UpValueTemp; // Upper Value on Inside/Outside Temperature Difference for
-        // Modulating the Venting Open Factor with temp control
-        Real64 LowValueEnth; // Lower Value on Inside/Outside Temperature Difference for
-        // Modulating the Venting Open Factor with Enthalpic control
-        Real64 UpValueEnth; // Upper Value on Inside/Outside Temperature Difference for
-        // Modulating the Venting Open Factor with Enthalpic control
+        Real64 LowValueTemp;          // Lower Value on Inside/Outside Temperature Difference for Modulating the Venting Open Factor with temp control
+        Real64 UpValueTemp; // Upper Value on Inside/Outside Temperature Difference for Modulating the Venting Open Factor with temp control
+        Real64 LowValueEnth; // Lower Value on Inside/Outside Temperature Difference for Modulating the Venting Open Factor with Enthalpic control
+        Real64 UpValueEnth; // Upper Value on Inside/Outside Temperature Difference for Modulating the Venting Open Factor with Enthalpic control
         std::string VentTempControlSchName;              // Name of ventilation temperature control schedule
         Sched::Schedule *ventTempControlSched = nullptr; // Ventilation temperature control schedule
         VentControlType VentSurfCtrNum;                  // Ventilation control mode number: 1 "Temperature", 2 "ENTHALPIC", 3 "CONSTANT", 4 "NOVENT"
@@ -186,7 +182,7 @@ namespace AirflowNetwork {
         std::string ZoneName;               // Name of zone
         int ZoneNum;                        // Zone Number
         int DetOpenNum;                     // Large Opening number
-        iEPlusComponentType ConnectionFlag; // Return and supply connection flag
+        EPlusComponentType ConnectionFlag; // Return and supply connection flag
         bool VAVTermDamper;                 // True if this component is a damper for a VAV terminal
         int LinkageViewFactorObjectNum;
         int AirLoopNum; // Airloop number
@@ -194,7 +190,7 @@ namespace AirflowNetwork {
 
         // Default Constructor
         AirflowNetworkLinkageProp()
-            : AirflowNetworkLinkage(), ZoneNum(0), DetOpenNum(0), ConnectionFlag(iEPlusComponentType::Invalid), VAVTermDamper(false),
+            : AirflowNetworkLinkage(), ZoneNum(0), DetOpenNum(0), ConnectionFlag(EPlusComponentType::Invalid), VAVTermDamper(false),
               LinkageViewFactorObjectNum(0), AirLoopNum(0), ductLineType(DuctLineType::Invalid)
         {
         }

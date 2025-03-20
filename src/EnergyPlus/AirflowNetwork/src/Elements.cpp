@@ -736,7 +736,7 @@ namespace AirflowNetwork {
                         SumTermFlow += state.dataLoopNodes->Node(k1).MassFlowRate;
                     }
                 }
-                if (state.afn->AirflowNetworkCompData(state.afn->AirflowNetworkLinkageData(k).CompNum).CompTypeNum == iComponentTypeNum::ELR) {
+                if (state.afn->AirflowNetworkCompData(state.afn->AirflowNetworkLinkageData(k).CompNum).CompTypeNum == AirflowElementType::ELR) {
                     // Calculate supply leak sensible losses
                     Node1 = state.afn->AirflowNetworkLinkageData(k).NodeNums[0];
                     Node2 = state.afn->AirflowNetworkLinkageData(k).NodeNums[1];
@@ -3931,7 +3931,7 @@ namespace AirflowNetwork {
         Real64 RhoStd;
         int Fromz;
         int Toz;
-        iComponentTypeNum Ltyp;
+        AirflowElementType Ltyp;
         int i;
         int ll;
         int Pprof;
@@ -3973,7 +3973,7 @@ namespace AirflowNetwork {
             }
 
             Ltyp = state.afn->AirflowNetworkCompData(state.afn->AirflowNetworkLinkageData(i).CompNum).CompTypeNum;
-            if (Ltyp == iComponentTypeNum::DOP) {
+            if (Ltyp == AirflowElementType::DOP) {
                 ActLh = state.afn->MultizoneSurfaceData(i).Height;
                 ActLOwnh = ActLh * 1.0;
             } else {
@@ -4155,7 +4155,7 @@ namespace AirflowNetwork {
             DpP = -psz(Pref, RhoLd(2), 0.0, 0.0, -H, G);
             DpL(i, 2) = (DpF(1) - DpT(1) + DpP);
 
-            if (Ltyp == iComponentTypeNum::DOP) {
+            if (Ltyp == AirflowElementType::DOP) {
                 Pprof = OpenNum * (NrInt + 2);
                 presprofile(state, i, Pprof, G, DpF, DpT, BetaStF, BetaStT, RhoStF, RhoStT, From, To, ActLh, Hfl(i));
                 ++OpenNum;

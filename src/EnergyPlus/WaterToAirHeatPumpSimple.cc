@@ -224,8 +224,10 @@ namespace WaterToAirHeatPumpSimple {
         bool ErrorsFound(false);         // If errors detected in input
         std::string CurrentModuleObject; // for ease in getting objects
 
-        int NumCool = state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, "Coil:Cooling:WaterToAirHeatPump:EquationFit");
-        int NumHeat = state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, "Coil:Heating:WaterToAirHeatPump:EquationFit");
+        auto &s_ip = state.dataInputProcessing->inputProcessor;
+
+        int NumCool = s_ip->getNumObjectsFound(state, "Coil:Cooling:WaterToAirHeatPump:EquationFit");
+        int NumHeat = s_ip->getNumObjectsFound(state, "Coil:Heating:WaterToAirHeatPump:EquationFit");
         int numSimpleWatertoAirHP = NumCool + NumHeat;
         state.dataWaterToAirHeatPumpSimple->NumWatertoAirHPs = numSimpleWatertoAirHP;
         // allocate arrays
@@ -237,18 +239,17 @@ namespace WaterToAirHeatPumpSimple {
 
         // Get the data for cooling coil
         CurrentModuleObject = "Coil:Cooling:WaterToAirHeatPump:EquationFit";
-        auto const instances = state.dataInputProcessing->inputProcessor->epJSON.find(CurrentModuleObject);
+        auto const instances = s_ip->epJSON.find(CurrentModuleObject);
 
         int HPNum = 0;
-        if (instances != state.dataInputProcessing->inputProcessor->epJSON.end()) {
-
+        if (instances != s_ip->epJSON.end()) { 
             std::string cFieldName;
+            auto const &schemaProps = s_ip->getObjectSchemaProps(state, CurrentModuleObject);
             auto &instancesValue = instances.value();
             for (auto instance = instancesValue.begin(); instance != instancesValue.end(); ++instance) {
-
                 auto const &fields = instance.value();
                 std::string const &thisObjectName = instance.key();
-                state.dataInputProcessing->inputProcessor->markObjectAsUsed(CurrentModuleObject, thisObjectName);
+                s_ip->markObjectAsUsed(CurrentModuleObject, thisObjectName);
                 ++HPNum;
 
                 auto &simpleWAHP = state.dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(HPNum);
@@ -274,13 +275,13 @@ namespace WaterToAirHeatPumpSimple {
                 simpleWAHP.RatedCapCoolSens =
                     (sCap.type() == nlohmann::detail::value_t::string && Util::SameString(sCap.get<std::string>(), "Autosize")) ? DataSizing::AutoSize
                                                                                                                                 : sCap.get<Real64>();
-                simpleWAHP.RatedCOPCoolAtRatedCdts = fields.at("gross_rated_cooling_cop").get<Real64>();
-                simpleWAHP.RatedEntWaterTemp = fields.at("rated_entering_water_temperature").get<Real64>();
-                simpleWAHP.RatedEntAirDrybulbTemp = fields.at("rated_entering_air_dry_bulb_temperature").get<Real64>();
-                simpleWAHP.RatedEntAirWetbulbTemp = fields.at("rated_entering_air_wet_bulb_temperature").get<Real64>();
+                simpleWAHP.RatedCOPCoolAtRatedCdts = s_ip->getRealFieldValue(fields, schemaProps, "gross_rated_cooling_cop");
+                simpleWAHP.RatedEntWaterTemp = s_ip->getRealFieldValue(fields, schemaProps, "rated_entering_water_temperature");
+                simpleWAHP.RatedEntAirDrybulbTemp = s_ip->getRealFieldValue(fields, schemaProps, "rated_entering_air_dry_bulb_temperature");
+                simpleWAHP.RatedEntAirWetbulbTemp = s_ip->getRealFieldValue(fields, schemaProps, "rated_entering_air_wet_bulb_temperature");
 
                 cFieldName = "Total Cooling Capacity Curve Name";
-                std::string const totCoolCapCurveName = Util::makeUPPER(fields.at("total_cooling_capacity_curve_name").get<std::string>());
+                std::string const totCoolCapCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, "total_cooling_capacity_curve_name");
                 simpleWAHP.TotalCoolCapCurveIndex = Curve::GetCurveIndex(state, totCoolCapCurveName);
                 if (simpleWAHP.TotalCoolCapCurveIndex == 0) {
                     if (totCoolCapCurveName.empty()) {
@@ -297,7 +298,7 @@ namespace WaterToAirHeatPumpSimple {
                 }
 
                 cFieldName = "Sensible Cooling Capacity Curve Name";
-                std::string const senCoolCapCurveName = Util::makeUPPER(fields.at("sensible_cooling_capacity_curve_name").get<std::string>());
+                std::string const senCoolCapCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, "sensible_cooling_capacity_curve_name");
                 simpleWAHP.SensCoolCapCurveIndex = Curve::GetCurveIndex(state, senCoolCapCurveName);
                 if (simpleWAHP.SensCoolCapCurveIndex == 0) {
                     if (senCoolCapCurveName.empty()) {
@@ -312,9 +313,8 @@ namespace WaterToAirHeatPumpSimple {
                     ErrorsFound |= Curve::CheckCurveDims(
                         state, simpleWAHP.SensCoolCapCurveIndex, {5}, RoutineName, CurrentModuleObject, simpleWAHP.Name, cFieldName);
                 }
-
                 cFieldName = "Cooling Power Consumption Curve Name";
-                std::string const coolPowerCurveName = Util::makeUPPER(fields.at("cooling_power_consumption_curve_name").get<std::string>());
+                std::string const coolPowerCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, "cooling_power_consumption_curve_name");
                 simpleWAHP.CoolPowCurveIndex = Curve::GetCurveIndex(state, coolPowerCurveName);
                 if (simpleWAHP.CoolPowCurveIndex == 0) {
                     if (coolPowerCurveName.empty()) {
@@ -329,9 +329,8 @@ namespace WaterToAirHeatPumpSimple {
                     ErrorsFound |= Curve::CheckCurveDims(
                         state, simpleWAHP.CoolPowCurveIndex, {4}, RoutineName, CurrentModuleObject, simpleWAHP.Name, cFieldName);
                 }
-
                 cFieldName = "Part Load Fraction Correlation Curve Name";
-                std::string const coolPLFCurveName = Util::makeUPPER(fields.at("part_load_fraction_correlation_curve_name").get<std::string>());
+                std::string const coolPLFCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, "part_load_fraction_correlation_curve_name");
                 simpleWAHP.PLFCurveIndex = Curve::GetCurveIndex(state, coolPLFCurveName);
                 if (simpleWAHP.PLFCurveIndex == 0) {
                     if (coolPLFCurveName.empty()) {
@@ -392,19 +391,18 @@ namespace WaterToAirHeatPumpSimple {
 
                 CheckSimpleWAHPRatedCurvesOutputs(state, simpleWAHP.Name);
 
-                simpleWAHP.Twet_Rated = fields.at("nominal_time_for_condensate_removal_to_begin").get<Real64>();
-                simpleWAHP.Gamma_Rated = fields.at("ratio_of_initial_moisture_evaporation_rate_and_steady_state_latent_capacity").get<Real64>();
-                simpleWAHP.MaxONOFFCyclesperHour = fields.at("maximum_cycling_rate").get<Real64>();
-                simpleWAHP.LatentCapacityTimeConstant = fields.at("latent_capacity_time_constant").get<Real64>();
-                simpleWAHP.FanDelayTime = fields.at("fan_delay_time").get<Real64>();
-
+                simpleWAHP.Twet_Rated = s_ip->getRealFieldValue(fields, schemaProps, "nominal_time_for_condensate_removal_to_begin");
+                simpleWAHP.Gamma_Rated =
+                    s_ip->getRealFieldValue(fields, schemaProps, "ratio_of_initial_moisture_evaporation_rate_and_steady_state_latent_capacity");
+                simpleWAHP.MaxONOFFCyclesperHour = s_ip->getRealFieldValue(fields, schemaProps, "maximum_cycling_rate");
+                simpleWAHP.LatentCapacityTimeConstant = s_ip->getRealFieldValue(fields, schemaProps, "latent_capacity_time_constant");
+                simpleWAHP.FanDelayTime = s_ip->getRealFieldValue(fields, schemaProps, "fan_delay_time");
                 state.dataHeatBal->HeatReclaimSimple_WAHPCoil(HPNum).Name = simpleWAHP.Name;
                 state.dataHeatBal->HeatReclaimSimple_WAHPCoil(HPNum).SourceType = CurrentModuleObject;
-
-                std::string waterInletNodeName = Util::makeUPPER(fields.at("water_inlet_node_name").get<std::string>());
-                std::string waterOutletNodeName = Util::makeUPPER(fields.at("water_outlet_node_name").get<std::string>());
-                std::string airInletNodeName = Util::makeUPPER(fields.at("air_inlet_node_name").get<std::string>());
-                std::string airOutletNodeName = Util::makeUPPER(fields.at("air_outlet_node_name").get<std::string>());
+                std::string waterInletNodeName = s_ip->getAlphaFieldValue(fields, schemaProps, "water_inlet_node_name");
+                std::string waterOutletNodeName = s_ip->getAlphaFieldValue(fields, schemaProps, "water_outlet_node_name");
+                std::string airInletNodeName = s_ip->getAlphaFieldValue(fields, schemaProps, "air_inlet_node_name");
+                std::string airOutletNodeName = s_ip->getAlphaFieldValue(fields, schemaProps, "air_outlet_node_name");
 
                 simpleWAHP.WaterInletNodeNum = GetOnlySingleNode(state,
                                                                  waterInletNodeName,
@@ -514,18 +512,19 @@ namespace WaterToAirHeatPumpSimple {
         }
 
         CurrentModuleObject = "Coil:Heating:WaterToAirHeatPump:EquationFit";
-        auto const instances_heat = state.dataInputProcessing->inputProcessor->epJSON.find(CurrentModuleObject);
+        auto const instances_heat = s_ip->epJSON.find(CurrentModuleObject);
 
-        if (instances_heat != state.dataInputProcessing->inputProcessor->epJSON.end()) {
+        if (instances_heat != s_ip->epJSON.end()) {
 
             bool errorsFound(false);
             std::string cFieldName;
+            auto const &schemaProps = s_ip->getObjectSchemaProps(state, CurrentModuleObject);
             auto &instancesValue = instances_heat.value();
             for (auto instance = instancesValue.begin(); instance != instancesValue.end(); ++instance) {
 
                 auto const &fields = instance.value();
                 std::string const &thisObjectName = instance.key();
-                state.dataInputProcessing->inputProcessor->markObjectAsUsed(CurrentModuleObject, thisObjectName);
+                s_ip->markObjectAsUsed(CurrentModuleObject, thisObjectName);
                 ++HPNum;
 
                 auto &simpleWAHP = state.dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(HPNum);
@@ -548,14 +547,15 @@ namespace WaterToAirHeatPumpSimple {
                                               ? DataSizing::AutoSize
                                               : hCap.get<Real64>();
 
-                simpleWAHP.RatedCOPHeatAtRatedCdts = fields.at("gross_rated_heating_cop").get<Real64>();
-                simpleWAHP.RatedEntWaterTemp = fields.at("rated_entering_water_temperature").get<Real64>();
-                simpleWAHP.RatedEntAirDrybulbTemp = fields.at("rated_entering_air_dry_bulb_temperature").get<Real64>();
-                simpleWAHP.RatioRatedHeatRatedTotCoolCap = fields.at("ratio_of_rated_heating_capacity_to_rated_cooling_capacity").get<Real64>();
+                simpleWAHP.RatedCOPHeatAtRatedCdts = s_ip->getRealFieldValue(fields, schemaProps, "gross_rated_heating_cop");
+                simpleWAHP.RatedEntWaterTemp = s_ip->getRealFieldValue(fields, schemaProps, "rated_entering_water_temperature");
+                simpleWAHP.RatedEntAirDrybulbTemp = s_ip->getRealFieldValue(fields, schemaProps, "rated_entering_air_dry_bulb_temperature");
+                simpleWAHP.RatioRatedHeatRatedTotCoolCap =
+                    s_ip->getRealFieldValue(fields, schemaProps, "ratio_of_rated_heating_capacity_to_rated_cooling_capacity");
 
                 // std::string availability_schedule_name;
                 cFieldName = "Heating Capacity Curve Name";
-                std::string const heatCapCurveName = Util::makeUPPER(fields.at("heating_capacity_curve_name").get<std::string>());
+                std::string const heatCapCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, "heating_capacity_curve_name");
                 simpleWAHP.HeatCapCurveIndex = Curve::GetCurveIndex(state, heatCapCurveName);
                 if (simpleWAHP.HeatCapCurveIndex == 0) {
                     if (heatCapCurveName.empty()) {
@@ -570,9 +570,8 @@ namespace WaterToAirHeatPumpSimple {
                     ErrorsFound |= Curve::CheckCurveDims(
                         state, simpleWAHP.HeatCapCurveIndex, {4}, RoutineName, CurrentModuleObject, simpleWAHP.Name, cFieldName);
                 }
-
                 cFieldName = "Heating Power Consumption Curve Name";
-                std::string const heatPowerCurveName = Util::makeUPPER(fields.at("heating_power_consumption_curve_name").get<std::string>());
+                std::string const heatPowerCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, "heating_power_consumption_curve_name");
                 simpleWAHP.HeatPowCurveIndex = Curve::GetCurveIndex(state, heatPowerCurveName);
                 if (simpleWAHP.HeatPowCurveIndex == 0) {
                     if (heatPowerCurveName.empty()) {
@@ -587,9 +586,8 @@ namespace WaterToAirHeatPumpSimple {
                     ErrorsFound |= Curve::CheckCurveDims(
                         state, simpleWAHP.HeatPowCurveIndex, {4}, RoutineName, CurrentModuleObject, simpleWAHP.Name, cFieldName);
                 }
-
                 cFieldName = "Part Load Fraction Correlation Curve Name";
-                std::string const heatPLFCurveName = Util::makeUPPER(fields.at("part_load_fraction_correlation_curve_name").get<std::string>());
+                std::string const heatPLFCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, "part_load_fraction_correlation_curve_name");
                 simpleWAHP.PLFCurveIndex = Curve::GetCurveIndex(state, heatPLFCurveName);
                 if (simpleWAHP.PLFCurveIndex == 0) {
                     if (heatPLFCurveName.empty()) {
@@ -653,10 +651,10 @@ namespace WaterToAirHeatPumpSimple {
                 state.dataHeatBal->HeatReclaimSimple_WAHPCoil(HPNum).Name = simpleWAHP.Name;
                 state.dataHeatBal->HeatReclaimSimple_WAHPCoil(HPNum).SourceType = CurrentModuleObject;
 
-                std::string waterInletNodeName = Util::makeUPPER(fields.at("water_inlet_node_name").get<std::string>());
-                std::string waterOutletNodeName = Util::makeUPPER(fields.at("water_outlet_node_name").get<std::string>());
-                std::string airInletNodeName = Util::makeUPPER(fields.at("air_inlet_node_name").get<std::string>());
-                std::string airOutletNodeName = Util::makeUPPER(fields.at("air_outlet_node_name").get<std::string>());
+                std::string waterInletNodeName = s_ip->getAlphaFieldValue(fields, schemaProps, "water_inlet_node_name");
+                std::string waterOutletNodeName = s_ip->getAlphaFieldValue(fields, schemaProps, "water_outlet_node_name");
+                std::string airInletNodeName = s_ip->getAlphaFieldValue(fields, schemaProps, "air_inlet_node_name");
+                std::string airOutletNodeName = s_ip->getAlphaFieldValue(fields, schemaProps, "air_outlet_node_name");
 
                 simpleWAHP.WaterInletNodeNum = GetOnlySingleNode(state,
                                                                  waterInletNodeName,

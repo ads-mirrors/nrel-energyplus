@@ -1,0 +1,12 @@
+Big news!  As of EnergyPLus 25.1.0, the classic IDF Version Updater tool is being deprecated.
+
+A brand-new version updater tool has been developed, and is now packaged up on all platforms.
+This new tool was written in Python, and leverages the Python interpreter embedded inside
+EnergyPlus.  If you'd like to give it a try, just click the VersionUpdater shortcut in the
+EnergyPlus installation root folder (one folder up), or launch from the Windows start menu (if
+you installed start menu shortcuts), or the Apps menu on Linux.
+
+*Linux note*: if you try to launch the VersionUpdater program from the default files app, it
+may launch in a text editor (since it is a shell script). Just right click and ask to "Run as a Program".
+
+The classic version updater is included with this version on Windows and Mac, but will be removed in the future.

@@ -977,9 +977,12 @@ if(LINK_WITH_PYTHON)
   if (PYTHON_CLI)
     add_custom_command(
       TARGET energyplusapi
-      POST_BUILD # TODO: I don't think we want to quote the generator expression
+      POST_BUILD
+      # TODO: It would be nice to set a BYPRODUCTS sentinel to avoid re-running this every time, but BYPRODUCTS cannot include
+      # TODO:  target-specific generator expressions, as they must be known are evaluated at compile time.
+      # BYPRODUCTS "$<TARGET_FILE_DIR:energyplusapi>/python_lib/LICENSE.txt"
       COMMAND ${CMAKE_COMMAND} -E env --unset=PIP_REQUIRE_VIRTUALENV
-      ${Python_EXECUTABLE} -m pip install --target="$<TARGET_FILE_DIR:energyplusapi>/python_lib" --upgrade energyplus-launch==3.7.2
+      ${Python_EXECUTABLE} ${PROJECT_SOURCE_DIR}/cmake/PythonInstallCLITools.py "$<TARGET_FILE_DIR:energyplusapi>/python_lib"
       COMMAND ${Python_EXECUTABLE} "${PROJECT_SOURCE_DIR}/cmake/PythonFixUpTclTk.py" "$<TARGET_FILE_DIR:energyplusapi>/python_lib"
     )
   endif()
@@ -991,11 +994,38 @@ if(BUILD_PACKAGE)
     # we'll want to grab the standard lib for python plugins
     # TODO: I don't think we want to quote the generator expression
     install(DIRECTORY "$<TARGET_FILE_DIR:energyplus>/python_lib/" DESTINATION "./python_lib")
-    if(WIN32 AND PYTHON_CLI)
-      # on Windows, with Build Package, and also Link With Python, we can also drop in shortcuts to the new auxiliary CLI
-      # NOTE: The install command COMPONENTS should line up so that they are run at the same packaging step
-      install(CODE "execute_process(COMMAND powershell.exe -ExecutionPolicy Bypass -File ${PROJECT_SOURCE_DIR}/scripts/dev/create_shortcut.ps1 -TargetPath \"$<TARGET_FILE:energyplus>\" -ShortcutPath \"$<TARGET_FILE_DIR:energyplus>/EPLaunchPython.lnk\" -Arguments \"auxiliary eplaunch\")" COMPONENT Auxiliary)
-      install(FILES $<TARGET_FILE_DIR:energyplus>/EPLaunchPython.lnk DESTINATION "./" COMPONENT Auxiliary)
+    if(PYTHON_CLI)
+      install(FILES "${PROJECT_SOURCE_DIR}/release/VersionUpdater-NEWS.txt" DESTINATION "PreProcess/" COMPONENT Auxiliary)
+      if(WIN32)
+        # on Windows, with Build Package, and also Link With Python, we can also drop in shortcuts to the new auxiliary CLI
+        add_executable(windows_gui_launcher WIN32 WindowsGuiLauncher.cc)
+        target_link_options(windows_gui_launcher PRIVATE /SUBSYSTEM:WINDOWS)
+        install(TARGETS windows_gui_launcher DESTINATION ./ COMPONENT Auxiliary)
+        # NOTE: The install command COMPONENTS should line up so that they are run at the same packaging step
+        install(CODE "execute_process(COMMAND powershell.exe -ExecutionPolicy Bypass -File ${PROJECT_SOURCE_DIR}/scripts/dev/create_shortcut.ps1 -TargetPath \"$<TARGET_FILE_DIR:energyplus>/windows_gui_launcher.exe\" -ShortcutPath \"$<TARGET_FILE_DIR:energyplus>/EPLaunch.lnk\" -Arguments \"eplaunch\")" COMPONENT Auxiliary)
+        install(CODE "execute_process(COMMAND powershell.exe -ExecutionPolicy Bypass -File ${PROJECT_SOURCE_DIR}/scripts/dev/create_shortcut.ps1 -TargetPath \"$<TARGET_FILE_DIR:energyplus>/windows_gui_launcher.exe\" -ShortcutPath \"$<TARGET_FILE_DIR:energyplus>/VersionUpdater.lnk\" -Arguments \"updater\")" COMPONENT Auxiliary)
+        install(FILES $<TARGET_FILE_DIR:energyplus>/EPLaunch.lnk DESTINATION "./" COMPONENT Auxiliary)
+        install(FILES $<TARGET_FILE_DIR:energyplus>/VersionUpdater.lnk DESTINATION "./" COMPONENT Auxiliary)
+      elseif(APPLE)
+        # Pre-signed and notarized launcher apps
+        install(DIRECTORY "${PROJECT_SOURCE_DIR}/bin/PythonApps/EPLaunch.app" DESTINATION "." COMPONENT Auxiliary USE_SOURCE_PERMISSIONS)
+        install(DIRECTORY "${PROJECT_SOURCE_DIR}/bin/PythonApps/VersionUpdater.app" DESTINATION "." COMPONENT Auxiliary USE_SOURCE_PERMISSIONS)
+      elseif(LINUX)
+        set(ARGUMENT eplaunch)
+        configure_file(${PROJECT_SOURCE_DIR}/cmake/auxiliary.sh.in ${PROJECT_BINARY_DIR}/EPLaunch)
+        install(FILES ${PROJECT_BINARY_DIR}/EPLaunch
+                DESTINATION "."
+                PERMISSIONS OWNER_EXECUTE OWNER_READ OWNER_WRITE)
+        set(ARGUMENT updater)
+        configure_file(${PROJECT_SOURCE_DIR}/cmake/auxiliary.sh.in ${PROJECT_BINARY_DIR}/VersionUpdater)
+        install(FILES ${PROJECT_BINARY_DIR}/VersionUpdater
+                DESTINATION "."
+                PERMISSIONS OWNER_EXECUTE OWNER_READ OWNER_WRITE)
+        install(
+                FILES ${PROJECT_SOURCE_DIR}/cmake/energyplus.desktop.in
+                DESTINATION share/applications
+        )
+      endif()
     endif()
   endif()
   # we'll want to always provide the C API headers
@@ -1033,14 +1063,14 @@ if(BUILD_TESTING)
   # target_compile_options(TestAPI_Runtime_C PRIVATE -Wall -Wextra -Wno-unused)
   add_test(NAME "API.TestRuntimeC" COMMAND TestAPI_Runtime_C -d "${TEST_DIR}" -w "${EPW_FILE}" -D "${IDF_FILE}")
 
-  set(TEST_DIR "${PROJECT_BINARY_DIR}/tst/api/runtimeresetpython")
+  set(TEST_DIR "${PROJECT_BINARY_DIR}/tst/api/runtime_resetstate")
   file(MAKE_DIRECTORY ${TEST_DIR})
   add_executable(TestAPI_RuntimeResetState_C ${PROJECT_SOURCE_DIR}/tst/EnergyPlus/api/TestRuntimeResetState.c)
   target_link_libraries(TestAPI_RuntimeResetState_C PRIVATE energyplusapi project_options project_fp_options)
   # target_compile_options(TestAPI_RuntimeResetPython_C PRIVATE -Wall -Wextra -Wno-unused)
   add_test(NAME "API.TestRuntimeResetStateC" COMMAND TestAPI_RuntimeResetState_C -d "${TEST_DIR}" -w "${EPW_FILE}" -D "${IDF_FILE}")
 
-  set(TEST_DIR "${PROJECT_BINARY_DIR}/tst/api/runtimedeletepython")
+  set(TEST_DIR "${PROJECT_BINARY_DIR}/tst/api/runtime_deletestate")
   file(MAKE_DIRECTORY ${TEST_DIR})
   add_executable(TestAPI_RuntimeDeleteState_C ${PROJECT_SOURCE_DIR}/tst/EnergyPlus/api/TestRuntimeDeleteState.c)
   target_link_libraries(TestAPI_RuntimeDeleteState_C PRIVATE energyplusapi project_options project_fp_options)

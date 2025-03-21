@@ -536,25 +536,6 @@ elseif(UNIX)
       "/usr/local/${CMAKE_PROJECT_NAME}-${CPACK_PACKAGE_VERSION_MAJOR}-${CPACK_PACKAGE_VERSION_MINOR}-${CPACK_PACKAGE_VERSION_PATCH}")
 
   install(FILES "${PROJECT_SOURCE_DIR}/bin/EP-Compare/readme.txt" DESTINATION "PostProcess/EP-Compare/")
-  install(FILES "${PROJECT_SOURCE_DIR}/bin/IDFVersionUpdater/Run-Linux/IDFVersionUpdater Libs/libRBAppearancePak64.so"
-          DESTINATION "PreProcess/IDFVersionUpdater/IDFVersionUpdater Libs/")
-  install(FILES "${PROJECT_SOURCE_DIR}/bin/IDFVersionUpdater/Run-Linux/IDFVersionUpdater Libs/libRBCrypto64.so"
-          DESTINATION "PreProcess/IDFVersionUpdater/IDFVersionUpdater Libs/")
-  install(FILES "${PROJECT_SOURCE_DIR}/bin/IDFVersionUpdater/Run-Linux/IDFVersionUpdater Libs/libRBInternetEncodings64.so"
-          DESTINATION "PreProcess/IDFVersionUpdater/IDFVersionUpdater Libs/")
-  install(FILES "${PROJECT_SOURCE_DIR}/bin/IDFVersionUpdater/Run-Linux/IDFVersionUpdater Libs/libRBShell64.so"
-          DESTINATION "PreProcess/IDFVersionUpdater/IDFVersionUpdater Libs/")
-  install(FILES "${PROJECT_SOURCE_DIR}/bin/IDFVersionUpdater/Run-Linux/IDFVersionUpdater Libs/XojoGUIFramework64.so"
-          DESTINATION "PreProcess/IDFVersionUpdater/IDFVersionUpdater Libs/")
-  install(FILES "${PROJECT_SOURCE_DIR}/bin/IDFVersionUpdater/Run-Linux/IDFVersionUpdater Libs/libc++.so.1"
-          DESTINATION "PreProcess/IDFVersionUpdater/IDFVersionUpdater Libs/")
-  install(FILES "${PROJECT_SOURCE_DIR}/bin/IDFVersionUpdater/Run-Linux/IDFVersionUpdater Libs/libGZip64.so"
-          DESTINATION "PreProcess/IDFVersionUpdater/IDFVersionUpdater Libs/")
-  install(FILES "${PROJECT_SOURCE_DIR}/bin/IDFVersionUpdater/Run-Linux/IDFVersionUpdater Libs/libRBRegEx64.so"
-          DESTINATION "PreProcess/IDFVersionUpdater/IDFVersionUpdater Libs/")
-  install(FILES "${PROJECT_SOURCE_DIR}/bin/IDFVersionUpdater/Run-Linux/IDFVersionUpdater Resources/appicon_48.png"
-          DESTINATION "PreProcess/IDFVersionUpdater/IDFVersionUpdater Resources/")
-  install(PROGRAMS "${PROJECT_SOURCE_DIR}/bin/IDFVersionUpdater/Run-Linux/IDFVersionUpdater" DESTINATION "PreProcess/IDFVersionUpdater/")
 
   install(PROGRAMS "${PROJECT_SOURCE_DIR}/bin/EPMacro/Linux/EPMacro" DESTINATION "./")
 
@@ -614,11 +595,7 @@ if(BUILD_DOCS)
             COMPONENT Documentation)
   endif()
 
-  install(FILES "${PROJECT_BINARY_DIR}/doc/pdf/Acknowledgments.pdf" DESTINATION "./Documentation" COMPONENT Documentation)
-  install(FILES "${PROJECT_BINARY_DIR}/doc/pdf/AuxiliaryPrograms.pdf" DESTINATION "./Documentation" COMPONENT Documentation)
-  install(FILES "${PROJECT_BINARY_DIR}/doc/pdf/EMSApplicationGuide.pdf" DESTINATION "./Documentation" COMPONENT Documentation)
   install(FILES "${PROJECT_BINARY_DIR}/doc/pdf/EngineeringReference.pdf" DESTINATION "./Documentation" COMPONENT Documentation)
-  install(FILES "${PROJECT_BINARY_DIR}/doc/pdf/EnergyPlusEssentials.pdf" DESTINATION "./Documentation" COMPONENT Documentation)
   install(FILES "${PROJECT_BINARY_DIR}/doc/pdf/ExternalInterfacesApplicationGuide.pdf" DESTINATION "./Documentation" COMPONENT Documentation)
   install(FILES "${PROJECT_BINARY_DIR}/doc/pdf/GettingStarted.pdf" DESTINATION "./Documentation" COMPONENT Documentation)
   install(FILES "${PROJECT_BINARY_DIR}/doc/pdf/InputOutputReference.pdf" DESTINATION "./Documentation" COMPONENT Documentation)
@@ -769,6 +746,10 @@ cpack_ifw_configure_component(Unspecified SCRIPT cmake/qtifw/install_operations.
 cpack_ifw_configure_component(Symlinks SCRIPT cmake/qtifw/install_unix_createsymlinks.qs REQUIRES_ADMIN_RIGHTS)
 
 cpack_ifw_configure_component(CreateStartMenu SCRIPT cmake/qtifw/install_win_createstartmenu.qs)
+
+if (PYTHON_CLI)
+  cpack_ifw_configure_component(Unspecified SCRIPT cmake/qtifw/install_auxiliary_python_shortcuts.qs)
+endif()
 
 cpack_ifw_configure_component(RegisterFileType SCRIPT cmake/qtifw/install_registerfiletype.qs REQUIRES_ADMIN_RIGHTS)
 

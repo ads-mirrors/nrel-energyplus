@@ -350,6 +350,7 @@ TEST_F(AirloopUnitarySysTest, MultipleWaterCoolingCoilSizing)
     state->dataWaterCoils->WaterCoil(CoilNum).WaterPlantLoc.loopSideNum = DataPlant::LoopSideLocation::Demand;
     state->dataWaterCoils->WaterCoil(CoilNum).WaterPlantLoc.branchNum = 1;
     state->dataWaterCoils->WaterCoil(CoilNum).WaterPlantLoc.compNum = 1;
+    state->dataWaterCoils->WaterCoil(CoilNum).coilType = HVAC::CoilType::CoolingWater;
     state->dataWaterCoils->WaterCoil(CoilNum).coilPlantType = DataPlant::PlantEquipmentType::CoilWaterCooling;
     state->dataWaterCoils->WaterCoil(CoilNum).RequestingAutoSize = true;
     state->dataWaterCoils->WaterCoil(CoilNum).DesAirVolFlowRate = DataSizing::AutoSize;
@@ -419,6 +420,7 @@ TEST_F(AirloopUnitarySysTest, MultipleWaterCoolingCoilSizing)
     state->dataWaterCoils->WaterCoil(CoilNum).WaterPlantLoc.branchNum = 1;
     state->dataWaterCoils->WaterCoil(CoilNum).WaterPlantLoc.compNum = 1;
     state->dataWaterCoils->WaterCoil(CoilNum).coilPlantType = DataPlant::PlantEquipmentType::CoilWaterSimpleHeating;
+    state->dataWaterCoils->WaterCoil(CoilNum).coilType = HVAC::CoilType::HeatingWater;
     state->dataWaterCoils->WaterCoil(CoilNum).RequestingAutoSize = true;
     state->dataWaterCoils->WaterCoil(CoilNum).DesAirVolFlowRate = DataSizing::AutoSize;
     state->dataWaterCoils->WaterCoil(CoilNum).DesInletAirTemp = DataSizing::AutoSize;

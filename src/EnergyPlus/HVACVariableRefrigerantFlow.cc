@@ -12250,8 +12250,8 @@ Real64 VRFTerminalUnitEquipment::CalVRFTUAirFlowRate_FluidTCtrl(EnergyPlusData &
     }
 
     // minimum airflow rate
-    if (state.dataDXCoils->DXCoil(vrfTU.HeatCoilNum).RatedAirMassFlowRate(Mode) > 0.0) {
-        FanSpdRatioMin = min(state.dataHVACVarRefFlow->OACompOnMassFlow / state.dataDXCoils->DXCoil(vrfTU.HeatCoilNum).RatedAirMassFlowRate(Mode), 1.0);
+    if (state.dataDXCoils->DXCoil(DXCoilNum).RatedAirMassFlowRate(Mode) > 0.0) {
+        FanSpdRatioMin = min(state.dataHVACVarRefFlow->OACompOnMassFlow / state.dataDXCoils->DXCoil(DXCoilNum).RatedAirMassFlowRate(Mode), 1.0);
     } else {
         // VRF terminal unit is off
         QCoilAct = 0.0;

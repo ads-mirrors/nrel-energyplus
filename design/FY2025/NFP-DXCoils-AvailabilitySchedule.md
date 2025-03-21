@@ -4,17 +4,16 @@ Add Availability Schedule Input Fields to DX Coils
 **Bereket Nigusse, Florida Solar Energy Center**
 
  - First draft: March 6, 2025
- - Modified Date: NA
+ - Modified Date: March 20, 2025
 
 ## Justification for New Feature ##
 
 Add an availability schedule input field to DX Coil objects that currently lack one. Eleven DX Coils that don’t have an availability schedule were identified, so turning them On or Off when desired is impossible. The availability schedule allows turning the coils On or Off regardless of load. Plans are to add availability schedule input fields to all eleven DX coils identified; however, the implementation scope could be limited depending on the budget.
 
-**- this feature is intended for use with exterior surfaces only **
-`
+
 ## E-mail and  Conference Call Conclusions ##
 
-NA
+** Put the availability schedule name input field as the second input field for all the seven DX coils **
 
 ## Overview ##
 
@@ -33,7 +32,7 @@ EnergyPlus code will be modified to add availability schedule input field to DX 
 |4	|Coil:Heating:WaterToAirHeatPump:VariableSpeedEquationFit| VariableSpeedCoils | 1 |
 |5	|Coil:WaterHeating:AirToWaterHeatPump:VariableSpeed| VariableSpeedCoils | 1 |
 |6	|Coil:Cooling:WaterToAirHeatPump:ParameterEstimation| WaterToAirHeatPump | 1 |
-|7	|Coil:Heating:WaterToAirHeatPump: ParameterEstimation| WaterToAirHeatPump | 1 |
+|7	|Coil:Heating:WaterToAirHeatPump:ParameterEstimation| WaterToAirHeatPump | 1 |
 |8	|Coil:Cooling:WaterToAirHeatPump:EquationFit| WaterToAirHeatPumpSimple|	1 |
 |9	|Coil:Heating:WaterToAirHeatPump:EquationFit| WaterToAirHeatPumpSimple|	1 |
 |10	|Coil:WaterHeating:AirToWaterHeatPump:Pumped| DXCoils |	2 |
@@ -91,31 +90,28 @@ Coil:Cooling:DX:VariableSpeed,
         \memo wet coil when compressor cycles off with continuous fan operation. Requires two to
         \memo ten sets of performance data and will interpolate between speeds. Modeled as a
         \memo single coil with variable-speed compressor.
-        \min-fields 36
+        \min-fields 35
    A1,  \field Name
         \required-field
         \type alpha
         \reference CoolingCoilsDXVariableSpeed
         \reference DesuperHeatingCoilSources
-   A2,  \field Indoor Air Inlet Node Name
-        \required-field
-        \type node
-   A3,  \field Indoor Air Outlet Node Name
-        \required-field
-        \type node
 ```
 
-   ** Add new input field: Availability Schedule Name *
+   ** Add new input field A2: Availability Schedule Name *
 
 ```
-   A4 , \field Availability Schedule Name
+   A3,  \field Indoor Air Inlet Node Name
+        \required-field
+        \type node
+   A4,  \field Indoor Air Outlet Node Name
+        \required-field
+        \type node
+   A5 , \field Availability Schedule Name
         \note Availability schedule name for this DX coil. Schedule value > 0 means the DX coil is available.
         \note If this field is blank, the system is always available.
         \type object-list
         \object-list ScheduleNames
-```	
-
-```
    N1,  \field Number of Speeds
         \units dimensionless
         \type integer
@@ -126,13 +122,13 @@ Coil:Cooling:DX:VariableSpeed,
     ...
 	
 
-   A50, \field Speed 10 Energy Input Ratio Function of Temperature Curve Name
+   A49, \field Speed 10 Energy Input Ratio Function of Temperature Curve Name
         \type object-list
         \object-list BivariateFunctions
         \note curve = a + b*wb + c*wb**2 + d*odb + e*odb**2 + f*wb*odb
         \note wb = entering wet-bulb temperature (C)
         \note odb = air entering temperature seen by the condenser (C)
-   A51; \field Speed 10 Energy Input Ratio Function of Air Flow Fraction Curve Name
+   A50; \field Speed 10 Energy Input Ratio Function of Air Flow Fraction Curve Name
         \type object-list
         \object-list UnivariateFunctions
         \note quadratic curve = a + b*ffa + c*ffa**2
@@ -148,31 +144,27 @@ Coil:Heating:DX:VariableSpeed,
         \memo (includes electric compressor and outdoor fan), variable-speed, with defrost
         \memo controls. Requires two to ten sets of performance data and will interpolate between
         \memo speeds.
-        \min-fields 27
+        \min-fields 26
    A1,  \field Name
         \required-field
         \type alpha
         \reference HeatingCoilsDXVariableSpeed
-   A2,  \field Indoor Air Inlet Node Name
+```
+
+   ** Add new input field A2: Availability Schedule Name *
+
+```
+   A3,  \field Indoor Air Inlet Node Name
         \required-field
         \type node
-   A3,  \field Indoor Air Outlet Node Name
+   A4,  \field Indoor Air Outlet Node Name
         \required-field
         \type node
-```
-
-   ** Add new input field: Availability Schedule Name *
-
-```
-   A4 , \field Availability Schedule Name
-       \note Availability schedule name for this DX coil. Schedule value > 0 means the DX coil is available.
-       \note If this field is blank, the system is always available.
-       \type object-list
-       \object-list ScheduleNames
-```	
-
-```
-
+   A5 , \field Availability Schedule Name
+        \note Availability schedule name for this DX coil. Schedule value > 0 means the DX coil is available.
+        \note If this field is blank, the system is always available.
+        \type object-list
+        \object-list ScheduleNames
    N1,  \field Number of Speeds
         \units dimensionless
         \type integer
@@ -182,13 +174,13 @@ Coil:Heating:DX:VariableSpeed,
 
         ...    
  
-   A48, \field Speed 10 Energy Input Ratio Function of Temperature Curve Name
+   A47, \field Speed 10 Energy Input Ratio Function of Temperature Curve Name
         \type object-list
         \object-list BivariateFunctions
         \note curve = a + b*db + c*db**2 + d*oat + e*oat**2 + f*db*oat
         \note db = entering air dry-bulb temperature (C)
         \note oat = air entering temperature seen by the evaporator (C)
-   A49; \field Speed 10 Energy Input Ratio Function of Air Flow Fraction Curve Name
+   A48; \field Speed 10 Energy Input Ratio Function of Air Flow Fraction Curve Name
         \type object-list
         \object-list UnivariateFunctions
         \note quadratic curve = a + b*ffa + c*ffa**2
@@ -206,7 +198,7 @@ Coil:Cooling:WaterToAirHeatPump:VariableSpeedEquationFit,
         \memo Equation-fit model uses normalized curves to describe the heat pump performance.
         \memo Requires two to ten sets of performance data and will interpolate between speeds.
         \memo Modeled as a single coil with variable-speed compressor.
-        \min-fields 31
+        \min-fields 30
    A1,  \field Name
         \required-field
         \type alpha
@@ -224,18 +216,12 @@ Coil:Cooling:WaterToAirHeatPump:VariableSpeedEquationFit,
         \type node
    A5,  \field Indoor Air Outlet Node Name
         \required-field
-        \type node
-		
-```
-
-   ** Add new input field: Availability Schedule Name *
-
-```
+        \type node	
    A6 , \field Availability Schedule Name
-       \note Availability schedule name for this DX coil. Schedule value > 0 means the DX coil is available.
-       \note If this field is blank, the system is always available.
-       \type object-list
-       \object-list ScheduleNames
+        \note Availability schedule name for this DX coil. Schedule value > 0 means the DX coil is available.
+        \note If this field is blank, the system is always available.
+        \type object-list
+        \object-list ScheduleNames
 ```	
 
 ```
@@ -252,7 +238,7 @@ Coil:Cooling:WaterToAirHeatPump:VariableSpeedEquationFit,
         \units dimensionless
         \type real
         \minimum 0
-   A77; \field Speed 10 Waste Heat Function of Temperature Curve Name
+   A76; \field Speed 10 Waste Heat Function of Temperature Curve Name
         \note optional
         \type object-list
         \object-list BivariateFunctions
@@ -267,7 +253,7 @@ Coil:Heating:WaterToAirHeatPump:VariableSpeedEquationFit,
         \memo compressor), variable-speed, equation-fit model. Equation-fit model uses normalized
         \memo curves to describe the heat pump performance. Requires two to ten sets of performance
         \memo data and will interpolate between speeds.
-        \min-fields 24
+        \min-fields 23
    A1,  \field Name
         \required-field
         \type alpha
@@ -286,22 +272,17 @@ Coil:Heating:WaterToAirHeatPump:VariableSpeedEquationFit,
    A5,  \field Indoor Air Outlet Node Name
         \required-field
         \type node
-```
-
-   ** Add new input field: Availability Schedule Name *
-
-```
    A6 , \field Availability Schedule Name
-       \note Availability schedule name for this DX coil. Schedule value > 0 means the DX coil is available.
-       \note If this field is blank, the system is always available.
-       \type object-list
-       \object-list ScheduleNames
+        \note Availability schedule name for this DX coil. Schedule value > 0 means the DX coil is available.
+        \note If this field is blank, the system is always available.
+        \type object-list
+        \object-list ScheduleNames
 ```	
 
 ```
    N1,  \field Number of Speeds
         \units dimensionless
-       \type integer
+        \type integer
         \minimum 1
         \maximum 10
         \default 2
@@ -312,7 +293,7 @@ Coil:Heating:WaterToAirHeatPump:VariableSpeedEquationFit,
         \units dimensionless
         \type real
         \minimum 0
-   A77; \field Speed 10 Waste Heat Function of Temperature Curve Name
+   A76; \field Speed 10 Waste Heat Function of Temperature Curve Name
         \note optional
         \type object-list
         \object-list BivariateFunctions
@@ -326,7 +307,7 @@ Coil:WaterHeating:AirToWaterHeatPump:VariableSpeed,
        \memo variable-speed Heat pump water heater (VSHPWH) heating coil, air-to-water direct-expansion (DX)
        \memo system which includes a variable-speed water heating coil, evaporator air coil, evaporator
        \memo fan, electric compressor, and water pump. Part of a WaterHeater:HeatPump system.
-       \min-fields 35
+       \min-fields 34
   A1 , \field Name
        \required-field
        \type alpha
@@ -334,10 +315,10 @@ Coil:WaterHeating:AirToWaterHeatPump:VariableSpeed,
        \note Unique name for this instance of a variable-speed heat pump water heater DX coil.
 ```
 
-   ** Add new input field: Availability Schedule Name *
+   ** Add new input field A2: Availability Schedule Name *
 
 ```
-   A2 , \field Availability Schedule Name
+  A2 , \field Availability Schedule Name
        \note Availability schedule name for this DX coil. Schedule value > 0 means the DX coil is available.
        \note If this field is blank, the system is always available.
        \type object-list
@@ -354,14 +335,14 @@ Coil:WaterHeating:AirToWaterHeatPump:VariableSpeed,
 
     ...
 
-  A71, \field Speed 10 COP Function of Air Flow Fraction Curve Name
+  A70, \field Speed 10 COP Function of Air Flow Fraction Curve Name
        \type object-list
        \object-list UnivariateFunctions
        \note Table:Lookup object can also be used
        \note quadratic curve = a + b*ffa + c*ffa**2
        \note cubic curve = a + b*ffa + c*ffa**2 + d*ffa**3
        \note ffa = Fraction of the full load Air Flow
-  A72; \field Speed 10 COP Function of Water Flow Fraction Curve Name
+  A71; \field Speed 10 COP Function of Water Flow Fraction Curve Name
        \type object-list
        \object-list UnivariateFunctions
        \note Table:Lookup object can also be used
@@ -386,7 +367,7 @@ Coil:Cooling:WaterToAirHeatPump:ParameterEstimation,
         \reference validBranchEquipmentNames
 ```
 
-   ** Add new input field: Availability Schedule Name *
+   ** Add new input field A2: Availability Schedule Name *
 
 ```
    A2 , \field Availability Schedule Name
@@ -441,7 +422,7 @@ Coil:Heating:WaterToAirHeatPump:ParameterEstimation,
         \reference validBranchEquipmentNames
 ```
 
-   ** Add new input field: Availability Schedule Name *
+   ** Add new input field A2: Availability Schedule Name *
 
 ```
    A2 , \field Availability Schedule Name
@@ -496,7 +477,7 @@ Coil:Cooling:WaterToAirHeatPump:EquationFit,
         \reference DesuperHeatingWaterOnlySources
 ```
 
-   ** Add new input field: Availability Schedule Name *
+   ** Add new input field A2: Availability Schedule Name *
 
 ```
    A2 , \field Availability Schedule Name
@@ -559,7 +540,7 @@ Coil:Heating:WaterToAirHeatPump:EquationFit,
         \reference validBranchEquipmentNames
 ```
 
-   ** Add new input field: Availability Schedule Name *
+   ** Add new input field A2: Availability Schedule Name *
 
 ```
    A2 , \field Availability Schedule Name
@@ -618,7 +599,7 @@ Coil:WaterHeating:AirToWaterHeatPump:Pumped,
        \note Unique name for this instance of a heat pump water heater DX coil.
 ```
 
-  ** Add new input field: Availability Schedule Name *
+   ** Add new input field A2: Availability Schedule Name *
 
 ```
   A2 , \field Availability Schedule Name
@@ -673,7 +654,7 @@ Coil:WaterHeating:AirToWaterHeatPump:Wrapped,
        \note Unique name for this instance of a heat pump water heater DX coil.
 ```
 
-   ** Add new input field: Availability Schedule Name *
+   ** Add new input field A2: Availability Schedule Name *
 
 ```
   A2 , \field Availability Schedule Name

@@ -41,9 +41,15 @@ following are some commercial AWHP products from one manufacturer. The AWHP can
 provide heating, cooling, and hot water at up to 60C (140F). The unit has
 variable speed control (inverter).
 
+<img src="awhp-figure-1.png" alt="awhp-figure-1" width="400px">
+</img>
+
 Figure 1. Schematic diagram of an AWHP system
 
-
+<img src="awhp-table-1-1.png" alt="awhp-table-1-1" width="400px">
+</img>
+<img src="awhp-table-1-2.png" alt="awhp-table-1-2" width="400px">
+</img>
 
 Table 1. A sample air-to-water heat pump product from Daikin (EWYT-CZ series) [2].
 
@@ -1212,7 +1218,7 @@ Capacity_{cooling,k}=Capacity_{cooling,rated} \times CAPFT_{cooling,k}(T_{amb},T
 $$
 
 Where $Capacity_{cooling,k}$ is the cooling capacity at speed level k.
-$Capacity_{cooling,rated}$ is the rated capacity for cooling. $T_amb$ is the ambient air
+$Capacity_{cooling,rated}$ is the rated capacity for cooling. $T_{amb}$ is the ambient air
 temperature. $T_leaving$ is the load side leaving water temperature $CAPFT_{cooling,k}$
 is a normalized bivariate function characterizing the relationship between
 capacity and two temperature inputs: the ambient air temperature and the leaving
@@ -1270,6 +1276,7 @@ fracDefrostTime =1.0 / (1.0 + 0.01446 / OutdoorCoildw)                  (6)
 $$
 
 Where
+
 $$
 OutdoorCoildw=HumidityRatio_{outdoor} - HumidityRatio_{saturated}              (7)
 $$
@@ -1322,14 +1329,14 @@ $$
 The cycling ratio of the (a+1)th compressor will be calculated
 
 $$
-CyclingRatio = (Demand_plantLoop - \sum_{i=1}^{a} Capacity_{avail,heating,i}) / Capacity_{avail,heating,a+1} (11)
+CyclingRatio = (Demand_{plantLoop} - \sum_{i=1}^{a} Capacity_{avail,heating,i}) / Capacity_{avail,heating,a+1} (11)
 $$
 
 When the plant loop demand does not exceed the available capacity, load-side
 actual heat transfer just equals the plant loop demand.
 
 $$
-Qload=Demand_{plantLoop}                                                                                       (12)
+Q_{load}=Demand_{plantLoop}                                                                                       (12)
 $$
 
 When the plant loop demand is larger than the available capacity, then the actual load transfer is
@@ -1360,7 +1367,7 @@ $$
 The source-side outlet temperature is thus
 
 $$
-T_{out,source}=T_{in,source}-Q_{source}/(m_{source}C_{source})                                                  (16)
+T_{out,source} = T_{in,source}-Q_{source}/(m_{source}C_{source})                                                  (16)
 $$
 
 For a variable-speed compressor, the available capacity for the speed level k
@@ -1370,7 +1377,7 @@ $Capacity_{avail,heating,a+1}$ such that
 $Capacity_{avail,heating,a} < Demand_{plantLoop} \leq Capacity_{avail,heating,a+1}$
 
 When the plant loop demand is larger than the available capacity, then the
-actual load transfer is $Q_load=Capacity_{avail,heating,maxSpeedLevel$. The
+actual load transfer is $Q_{load}=Capacity_{avail,heating,maxSpeedLevel}$. The
 other calculations are the same as the fixed-speed compressors.
 
 #### Cooling mode ####
@@ -1384,7 +1391,7 @@ $$
 The appropriate number of fixed-speed compressors, a, is selected such that
 
 $$
-i=1aCapacityavail,cooling,i<DemandplantLoopi=1a+1Capacityavail,cooling,i                              (18)
+\sum_{i=1}^{a}Capacity_{avail,cooling,i} < Demand_{plantLoop} \leq \sum_{i=1}^{a+1}Capacity_{avail,cooling,i}     (18)
 $$
 
 The cyclingCycling ratio of the a+1 stage compressor will be calculated

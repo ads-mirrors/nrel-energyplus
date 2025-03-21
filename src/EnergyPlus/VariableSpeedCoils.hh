@@ -372,6 +372,7 @@ namespace VariableSpeedCoils {
                           int const DXCoilNum,            // Current DXCoilNum under simulation
                           Real64 const SensLoad,          // Control zone sensible load[W]
                           Real64 const LatentLoad,        // Control zone latent load[W]
+                          Real64 const PartLoadRatio,
                           HVAC::FanOp const fanOp,        // fan operating mode
                           Real64 const OnOffAirFlowRatio, // ratio of compressor on flow to average flow over time step
                           Real64 const SpeedRatio,        // compressor speed ratio

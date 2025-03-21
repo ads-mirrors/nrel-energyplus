@@ -149,6 +149,8 @@ void SetComponentFlowRate(EnergyPlusData &state,
     Real64 const MdotOldRequest = state.dataLoopNodes->Node(InletNode).MassFlowRateRequest;
     auto &loop_side = state.dataPlnt->PlantLoop(plantLoc.loopNum).LoopSide(plantLoc.loopSideNum);
     auto const &comp = loop_side.Branch(plantLoc.branchNum).Comp(plantLoc.compNum);
+    auto const &inletNode = state.dataLoopNodes->Node(InletNode);
+    auto const &outletNode = state.dataLoopNodes->Node(OutletNode);
 
     if (comp.CurOpSchemeType == DataPlant::OpScheme::Demand) {
         // store flow request on inlet node

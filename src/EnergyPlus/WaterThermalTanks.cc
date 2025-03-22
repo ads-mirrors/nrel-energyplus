@@ -1404,6 +1404,7 @@ bool getHPWaterHeaterInput(EnergyPlusData &state)
             }
         // Then IHP
         } else if ((HPWH.DXCoilNum = IntegratedHeatPump::GetIHPIndex(state, HPWH.DXCoilName)) != 0) {
+            bIsVScoil = true; // IHPs use variable speed coils
             HPWH.bIsIHP = true;
             HPWH.DXCoilType = HVAC::CoilType::IHPAirSource;
         // Finally VariableSpeedCoil

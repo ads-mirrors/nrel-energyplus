@@ -583,7 +583,8 @@ namespace UnitVentilator {
                             unitVent.MaxVolHotSteamFlow = unitVent.MaxVolHotWaterFlow;
                         }
                         
-                    } else if (unitVent.heatCoilType == HVAC::CoilType::HeatingGasOrOtherFuel) {
+                    } else if (unitVent.heatCoilType == HVAC::CoilType::HeatingElectric ||
+                               unitVent.heatCoilType == HVAC::CoilType::HeatingGasOrOtherFuel) {
                         unitVent.HeatCoilNum = HeatingCoils::GetCoilIndex(state, unitVent.HeatCoilName);
                         if (unitVent.HeatCoilNum == 0) {
                             ShowSevereItemNotFound(state, eoh, cAlphaFields(16), unitVent.HeatCoilName);

@@ -2296,10 +2296,13 @@ namespace VentilatedSlab {
             }
         }
 
-
-        int coolCoilNum = (ventSlab.coolCoilType == HVAC::CoilType::CoolingDXHXAssisted) ? ventSlab.childCoolCoilNum : ventSlab.coolCoilNum;
-        WaterCoils::SetCoilDesFlow(state, coolCoilNum, ventSlab.MaxAirVolFlow);
-        WaterCoils::SetCoilDesFlow(state, ventSlab.heatCoilNum, ventSlab.MaxAirVolFlow);
+        if (ventSlab.coolCoilPresent) {
+            int coolCoilNum = (ventSlab.coolCoilType == HVAC::CoilType::CoolingDXHXAssisted) ? ventSlab.childCoolCoilNum : ventSlab.coolCoilNum;
+            WaterCoils::SetCoilDesFlow(state, coolCoilNum, ventSlab.MaxAirVolFlow);
+        }
+        if (ventSlab.heatCoilPresent) {
+            WaterCoils::SetCoilDesFlow(state, ventSlab.heatCoilNum, ventSlab.MaxAirVolFlow);
+        }
 
         if (CurZoneEqNum > 0) {
             auto &zoneEqSizing = state.dataSize->ZoneEqSizing(CurZoneEqNum);

@@ -2287,7 +2287,7 @@ namespace Furnaces {
                         ShowSevereItemNotFound(state, eoh, cAlphaFields(11), furnace.ihpName);
                         ErrorsFound = true;
                     } else {
-                        furnace.CoolCoilName = state.dataIntegratedHP->IntegratedHeatPumps(furnace.CoolCoilNum).SCCoilName;
+                        furnace.CoolCoilName = state.dataIntegratedHP->IntegratedHeatPumps(furnace.ihpNum).SCCoilName;
                         furnace.CoolCoilNum = VariableSpeedCoils::GetCoilIndex(state, furnace.CoolCoilName);
                         if (furnace.CoolCoilNum == 0) {
                             ShowSevereItemNotFound(state, eoh, format("{}.SCCoilName", furnace.ihpName), furnace.CoolCoilName);

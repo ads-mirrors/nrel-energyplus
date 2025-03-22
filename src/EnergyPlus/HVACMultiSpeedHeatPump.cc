@@ -3189,17 +3189,17 @@ namespace HVACMultiSpeedHeatPump {
         auto &s_node = state.dataLoopNodes;
         auto &mshp = state.dataHVACMultiSpdHP->MSHeatPump(MSHeatPumpNum);
 
-        if (mshp.HeatCoilNum > 0) {
-            if (state.dataDXCoils->DXCoil(mshp.HeatCoilNum).IsSecondaryDXCoilInZone) {
-                OutsideDryBulbTemp =
-                    state.dataZoneTempPredictorCorrector->zoneHeatBalance(state.dataDXCoils->DXCoil(mshp.HeatCoilNum).SecZonePtr).ZT;
+        if (mshp.heatCoilType == HVAC::CoilType::HeatingDXMultiSpeed && mshp.HeatCoilNum > 0) {
+            auto const &dxCoil = state.dataDXCoils->DXCoil(mshp.HeatCoilNum);
+            if (dxCoil.IsSecondaryDXCoilInZone) {
+                OutsideDryBulbTemp = state.dataZoneTempPredictorCorrector->zoneHeatBalance(dxCoil.SecZonePtr).ZT;
             } else {
                 OutsideDryBulbTemp = state.dataEnvrn->OutDryBulbTemp;
             }
-        } else if (mshp.CoolCoilNum > 0) {
-            if (state.dataDXCoils->DXCoil(mshp.CoolCoilNum).IsSecondaryDXCoilInZone) {
-                OutsideDryBulbTemp =
-                    state.dataZoneTempPredictorCorrector->zoneHeatBalance(state.dataDXCoils->DXCoil(mshp.CoolCoilNum).SecZonePtr).ZT;
+        } else if (mshp.coolCoilType == HVAC::CoilType::CoolingDXMultiSpeed && mshp.CoolCoilNum > 0) {
+            auto const &dxCoil = state.dataDXCoils->DXCoil(mshp.CoolCoilNum);
+            if (dxCoil.IsSecondaryDXCoilInZone) {
+                OutsideDryBulbTemp = state.dataZoneTempPredictorCorrector->zoneHeatBalance(dxCoil.SecZonePtr).ZT;
             } else {
                 OutsideDryBulbTemp = state.dataEnvrn->OutDryBulbTemp;
             }

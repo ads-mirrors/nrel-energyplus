@@ -940,7 +940,7 @@ namespace AirLoopHVACDOAS {
                 }
                 else if (Util::SameString(CompType, "COIL:COOLING:WATER") || 
                          Util::SameString(CompType, "COIL:COOLING:WATER:DETAILEDGEOMETRY")) {
-                    WaterCoils::SimulateWaterCoilComponents(state, this->m_CoolCoilNum, FirstHVACIteration);
+                    WaterCoils::SimulateWaterCoilComponents(state, CompName, FirstHVACIteration, this->m_CoolCoilNum);
                     Real64 CoilMaxVolFlowRate = WaterCoils::GetCoilMaxWaterFlowRate(state, this->m_CoolCoilNum);
                     rho = state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).glycol->getDensity(state, Constant::CWInitConvTemp, RoutineName);
                     PlantUtilities::InitComponentNodes(state,

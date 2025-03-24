@@ -187,7 +187,7 @@ This new feature proposes to create a new input object, HeatPump:AirToWater.
         \type alpha
         \note Enter a unique name for this air-to-water heat pump
       A2 , \field Availability Schedule Name
-                \type object-list
+        \type object-list
         \object-list ScheduleNames
         \note Enter the name of a schedule that defines the availability of the unit
         \note Schedule values of 0 denote the unit is off. All other values denote the unit is available
@@ -211,13 +211,13 @@ This new feature proposes to create a new input object, HeatPump:AirToWater.
         \note Heating capacity at the rated inlet air temperatures, rated condenser inlet
         \note water temperature, rated air flow rate, and rated water flow rate.
         \note Can optionally include condenser pump heat.
-      N2,  \field Reference COP for heating
-                \type real
-                \minimum> 0.0
-                \units W/W
-                \default 3.0
+      N2, \field Reference COP for heating
+        \type real
+        \minimum> 0.0
+        \units W/W
+        \default 3.0
       N3 , \field Rated Inlet Air Temperature in Heating Mode
-                \type real
+        \type real
         \units C
         \minimum> 5
         \default 8
@@ -227,8 +227,8 @@ This new feature proposes to create a new input object, HeatPump:AirToWater.
         \type real
         \units m3/s
         \minimum> 0
-                \autosizable
-                \default autosize
+        \autosizable
+        \default autosize
         \note air flow rate corresponding to rated heat pump performance
         \note (capacity, COP, and SHR).
       N5 , \field Rated Leaving Water Temperature in Heating Mode
@@ -243,8 +243,8 @@ This new feature proposes to create a new input object, HeatPump:AirToWater.
         \units m3/s
         \ip-units gal/min
         \minimum> 0
-                \autosizable
-                \default autosize
+        \autosizable
+        \default autosize
         \note Condenser water flow rate corresponding to rated heat pump performance
         \note (capacity, COP and SHR).
       N7, \field Minimum Outdoor Air Temperature in Heating Mode
@@ -259,61 +259,71 @@ This new feature proposes to create a new input object, HeatPump:AirToWater.
         \default 16
         \note Enter the maximum outdoor temperature allowed for heating operation
         \note Heating is disabled below this temperature
-      N9 , \field Rated Cooling Capacity
+      N9, \field Sizing Factor for Heating
+        \note Multiplies the autosized capacity and flow rates
+        \type real
+        \minimum> 0.0
+        \default 1.0
+      N10 , \field Rated Cooling Capacity
         \required-field
         \type real
         \units W
         \minimum> 0
         \note Cooling capacity at the rated inlet air temperatures, rated condenser inlet
         \note water temperature, rated air flow rate, and rated water flow rate.
-      N10,  \field Reference COP for cooling
-                \type real
-                \minimum> 0.0
-                \units W/W
-                \default 3.0
-    N11,     \field Rated Inlet Air Temperature in Cooling Mode
-                \type real
+      N11, \field Reference COP for cooling
+        \type real
+        \minimum> 0.0
+        \units W/W
+        \default 3.0
+    N12, \field Rated Inlet Air Temperature in Cooling Mode
+        \type real
         \units C
         \minimum> 5
         \default 30
         \note inlet air dry-bulb temperature corresponding to rated coil performance
         \note (capacity, COP, and SHR).
-      N12 , \field Rated Air Flow Rate in Cooling Mode
+      N13 , \field Rated Air Flow Rate in Cooling Mode
         \type real
         \units m3/s
         \minimum> 0
-                \autosizable
-                \default autosize
+        \autosizable
+        \default autosize
         \note air flow rate corresponding to rated heat pump performance
         \note (capacity, COP, and SHR).
-      N13 , \field Rated Leaving Water Temperature in Cooling Mode
+      N14 , \field Rated Leaving Water Temperature in Cooling Mode
         \type real
         \units C
         \minimum> 0
         \default 8
         \note inlet water temperature corresponding to rated coil performance
         \note (heating capacity, COP, and SHR).
-      N14 , \field Rated Water Flow Rate in Cooling Mode
+      N15 , \field Rated Water Flow Rate in Cooling Mode
         \type real
         \units m3/s
         \ip-units gal/min
         \minimum> 0
-                \autosizable
-                \default autosize
+        \autosizable
+        \default autosize
         \note Condenser water flow rate corresponding to rated heat pump performance
         \note (capacity, COP, and SHR).
-      N15 , \field Minimum Outdoor Air Temperature in Cooling Mode
+      N16 , \field Minimum Outdoor Air Temperature in Cooling Mode
         \type real
         \units C
         \default -6.0
-                \note Enter the minimum outdoor temperature allowed for cooling operation
+        \note Enter the minimum outdoor temperature allowed for cooling operation
         \note Cooling is disabled below this temperature
-      N16, \field Maximum Outdoor Air Temperature in Cooling Mode
+      N17, \field Maximum Outdoor Air Temperature in Cooling Mode
         \type real
         \units C
         \default 43.0
         \note Enter the maximum outdoor temperature allowed for cooling operation
         \note Cooling is disabled above this temperature
+      N18, \field Sizing Factor for Heating
+        \note Multiplies the autosized capacity and flow rates
+        \type real
+        \minimum> 0.0
+        \default 1.0
       A5 , \field Air Inlet Node Name
         \required-field
         \type node
@@ -331,51 +341,51 @@ This new feature proposes to create a new input object, HeatPump:AirToWater.
         \type node
         \note The node connects to the chilled water loop, hot water loop,  domestic hot water loop, or condenser water loop
       A10, \field Defrost Strategy
-              \type choice
-              \key ReverseCycle
-              \key Resistive
-              \default ReverseCycle
+        \type choice
+        \key ReverseCycle
+        \key Resistive
+        \default ReverseCycle
       A11, \field Defrost Control
-              \type choice
-              \key Timed
-              \key OnDemand
-              \key TimedEmpirical
-              \default Timed
-      N17,  \field Defrost Time Period Fraction
-              \type real
-              \minimum 0.0
-              \default 0.058333
-              \note Fraction of time in defrost mode
-              \note only applicable if timed defrost control is specified
-      N18,  \field Resistive Defrost Heater Capacity
-              \type real
-              \minimum 0.0
-              \default 0.0
-              \autosizable
-              \units W
-              \note only applicable if resistive defrost strategy is specified
-              \ip-units W
+        \type choice
+        \key Timed
+        \key OnDemand
+        \key TimedEmpirical
+        \default Timed
+      N19, \field Defrost Time Period Fraction
+        \type real
+        \minimum 0.0
+        \default 0.058333
+        \note Fraction of time in defrost mode
+        \note only applicable if timed defrost control is specified
+      N20, \field Resistive Defrost Heater Capacity
+        \type real
+        \minimum 0.0
+        \default 0.0
+        \autosizable
+        \units W
+        \note only applicable if resistive defrost strategy is specified
+        \ip-units W
       A12, \field Defrost Energy Input Ratio Function of Temperature Curve Name
-              \type object-list
-              \object-list BivariateFunctions
-              \note univariate curve = a + b*OAT is typical, other univariate curves may be used
-              \note bivariate curve = a + b*WB + c*WB**2 + d*OAT + e*OAT**2 + f*WB*OAT
-              \note OAT = outdoor air dry-bulb temperature (C)
-              \note WB = wet-bulb temperature (C) of air entering the indoor coil
-              \note only required if Timed or OnDemand defrost strategy is specified
+        \type object-list
+        \object-list BivariateFunctions
+        \note univariate curve = a + b*OAT is typical, other univariate curves may be used
+        \note bivariate curve = a + b*WB + c*WB**2 + d*OAT + e*OAT**2 + f*WB*OAT
+        \note OAT = outdoor air dry-bulb temperature (C)
+        \note WB = wet-bulb temperature (C) of air entering the indoor coil
+        \note only required if Timed or OnDemand defrost strategy is specified
       A13, \field Defrost Capacity Ratio Function of Temperature Curve Name
-              \type object-list
-              \object-list BivariateFunctions
-              \note defrost capacity could degrade with extreme temperature. This field adjusts the defrost capacity according to air and water temperature.
-      N19, Compressor Multiplier
-              \type integer
-              \default 1
-              \note intend to model modular compressors
-    A14, \field Control Type
-                \type choice
-                \key Fixed-speed
-                \key Variable-speed
-    N20, \field Crankcase Heater Capacity
+        \type object-list
+        \object-list BivariateFunctions
+        \note defrost capacity could degrade with extreme temperature. This field adjusts the defrost capacity according to air and water temperature.
+      N21, Compressor Multiplier
+        \type integer
+        \default 1
+        \note intend to model modular compressors
+      A14, \field Control Type
+        \type choice
+        \key Fixed-speed
+        \key Variable-speed
+      N22, \field Crankcase Heater Capacity
         \type real
         \minimum 0
         \default 0
@@ -390,7 +400,7 @@ This new feature proposes to create a new input object, HeatPump:AirToWater.
         \note missing or empty, constant crankcase heater capacity will be assumed.
         \type object-list
         \object-list UnivariateFunctions
-      N21, \field Maximum Ambient Temperature for Crankcase Heater Operation
+      N23, \field Maximum Ambient Temperature for Crankcase Heater Operation
         \type real
         \minimum 0
         \default 10
@@ -398,11 +408,11 @@ This new feature proposes to create a new input object, HeatPump:AirToWater.
         \note The compressor crankcase heater only operates when the dry-bulb temperature of air
         \note surrounding the compressor is below the Maximum Outdoor Temperature for Crankcase
         \note Heater Operation and the unit is off.
-      N22,     \field Number of Speeds for Heating
-                \type integer
-                \note the number of speed levels in heating mode
-                \maximum 10
-                \default 1
+      N24, \field Number of Speeds for Heating
+        \type integer
+        \note the number of speed levels in heating mode
+        \maximum 10
+        \default 1
       A16, \field Normalized Heating Capacity Function of Temperature Curve Name at Speed 1
         \required-field
         \type object-list
@@ -493,11 +503,11 @@ This new feature proposes to create a new input object, HeatPump:AirToWater.
         \object-list UnivariateFunctions
         \note EIRFPLR - Fuel Energy Input Ratio Function of Part Load Ratio(PLR) Curve Name,
         \note which is a cubic curve or a lookup table.
-      N23,     \field Number of Speeds for Cooling
-                \type integer
-                \maximum 10
-                \default 1
-                \note the number of speed levels in cooling mode
+      N25, \field Number of Speeds for Cooling
+        \type integer
+        \maximum 10
+        \default 1
+        \note the number of speed levels in cooling mode
       A31, \field Normalized Cooling Capacity Function of Temperature Curve Name at Speed 1
         \required-field
         \type object-list
@@ -552,7 +562,7 @@ This new feature proposes to create a new input object, HeatPump:AirToWater.
         \object-list UnivariateFunctions
         \note EIRFPLR - Fuel Energy Input Ratio Function of Part Load Ratio(PLR) Curve Name,
         \note which is a cubic curve or a lookup table. 
-    A40, \field Normalized Cooling Capacity Function of Temperature Curve Name at Speed 4
+      A40, \field Normalized Cooling Capacity Function of Temperature Curve Name at Speed 4
         \required-field
         \type object-list
         \object-list BivariateFunctions

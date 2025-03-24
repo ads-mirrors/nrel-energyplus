@@ -1353,6 +1353,9 @@ Begin VB.Form eplUI
       Begin VB.Menu mnuHelpAuxProgs 
          Caption         =   "EnergyPlus Auxiliary Programs"
       End
+      Begin VB.Menu mnuHelpTips 
+         Caption         =   "EnergyPlus Tips and Tricks"
+      End
       Begin VB.Menu mnuHelpAcknowledge 
          Caption         =   "EnergyPlus Acknowledgments"
       End
@@ -1775,6 +1778,7 @@ Public Function ShortName(LongPath As String) As String
         ShortName = Left$(ShortPath, Ret)
     End If
 End Function
+
 
 
 
@@ -2264,7 +2268,8 @@ Private Sub mnuHelpEPDocs_Click()
 Call viewWebPage(appPath & "Documentation\index.html")
 End Sub
 Private Sub mnuHelpEssentials_Click()
-Call startAcrobat("EnergyPlusEssentials.pdf")
+'Call startAcrobat("EnergyPlusEssentials.pdf")
+Call viewWebPage("https://energyplus.readthedocs.io/en/latest/essentials/essentials.html")
 End Sub
 Private Sub mnuHelpGettingStarted_Click()
 Call startAcrobat("GettingStarted.pdf")
@@ -2280,7 +2285,8 @@ Call startAcrobat("OutputDetailsAndExamples.pdf")
 End Sub
 Private Sub mnuHelpAuxProgs_Click()
 'Call startAcrobat("OtherInformation.pdf") change for 1.09 version on Dec 12, 2002
-Call startAcrobat("AuxiliaryPrograms.pdf")
+'Call startAcrobat("AuxiliaryPrograms.pdf")
+Call viewWebPage("https://energyplus.readthedocs.io/en/latest/auxiliary-programs/auxiliary-programs.html")
 End Sub
 Private Sub mnuHelpCompliance_Click()
 Call startAcrobat("UsingEnergyPlusForCompliance.pdf")
@@ -2289,16 +2295,19 @@ Private Sub mnuHelpPlantAppl_Click()
 Call startAcrobat("PlantApplicationGuide.pdf")
 End Sub
 Private Sub mnuHelpEMS_Click()
-Call startAcrobat("EMSApplicationGuide.pdf")
+'Call startAcrobat("EMSApplicationGuide.pdf")
+Call viewWebPage("https://energyplus.readthedocs.io/en/latest/ems-application-guide/ems-application-guide.html")
 End Sub
 Private Sub mnuHelpExtInterface_Click()
 Call startAcrobat("ExternalInterfacesApplicationGuide.pdf")
 End Sub
 Private Sub mnuHelpTips_Click()
-Call startAcrobat("TipsAndTricksUsingEnergyPlus.pdf")
+'Call startAcrobat("TipsAndTricksUsingEnergyPlus.pdf")
+Call viewWebPage("https://energyplus.readthedocs.io/en/latest/tips_and_tricks/tips_and_tricks.html")
 End Sub
 Private Sub mnuHelpAcknowledge_Click()
-Call startAcrobat("Acknowledgments.pdf")
+'Call startAcrobat("Acknowledgments.pdf")
+Call viewWebPage("https://energyplus.readthedocs.io/en/latest/acknowledgments/acknowledgments.html")
 End Sub
 Private Sub mnuHelpCheckUpdates_Click()
 Call checkForUpdatesNow(True)

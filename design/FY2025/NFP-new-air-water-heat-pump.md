@@ -951,11 +951,11 @@ In the EquipmentSummary report in the html output table
   - Rated heating (cooling) COP
   - SEER
   - HSPF
-  - Ambient air temperature at rated condition
-  - Entering water temperature at rated condition
-  - Leaving water temperature at rated condition
-  - Rated air flow rate
-  - Rated water flow rate
+  - Ambient air temperature at rated condition in heating (cooling) mode
+  - Entering water temperature at rated condition in heating (cooling) mode
+  - Leaving water temperature at rated condition in heating (cooling) mode
+  - Rated air flow rate in heating (cooling) mode
+  - Rated water flow rate in heating (cooling) mode
   - Plantloop names
   - Branch names
 

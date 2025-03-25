@@ -941,6 +941,24 @@ The following output variables will be produced
 - HVAC,Average,Heat Pump Crankcase Heater Electricity Rate \[W\]
 - HVAC,Sum,Heat Pump Crankcase Heater Electricity Energy \[J\]
 
+In the EquipmentSummary report in the html output table
+
+- An entry will be added to the "central plant" table to display the overall
+  capacity, efficiency, and IPLV of the air-to-water heat pump.
+- A table showing the following rating information of the air-to-water heat pump
+  - Type (fixed-speed, variable-speed)
+  - Rated heating (cooling) capacity
+  - Rated heating (cooling) COP
+  - SEER
+  - HSPF
+  - Ambient air temperature at rated condition
+  - Entering water temperature at rated condition
+  - Leaving water temperature at rated condition
+  - Rated air flow rate
+  - Rated water flow rate
+  - Plantloop names
+  - Branch names
+
 ### Notes on Selecting the Appropriate Object ###
 
 To model an air-to-water heat pump in EnergyPlus, there are a few approaches to consider:

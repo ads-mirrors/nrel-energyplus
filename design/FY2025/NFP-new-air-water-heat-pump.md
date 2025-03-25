@@ -941,6 +941,33 @@ The following output variables will be produced
 - HVAC,Average,Heat Pump Crankcase Heater Electricity Rate \[W\]
 - HVAC,Sum,Heat Pump Crankcase Heater Electricity Energy \[J\]
 
+### Notes on Selecting the Appropriate Object ###
+
+To model an air-to-water heat pump in EnergyPlus, there are a few approaches to consider:
+
+- Using the proposed HeatPump:AirToWater
+- Using HeatPump:PlantLoop:EIR:Heating and HeatPump:PlantLoop:EIR:Cooling
+- Using a heat pump water heater indirectly
+
+*Approach 1: HeatPump:AirToWater*
+
+This approach is preferred when the target heat pump product is variable-speed
+or multi-speed, or when the system includes multiple copies of the same
+compressors to provide larger capacities in a modular fashion. Additionally,
+this approach offers a list of defrost-related actuators to enable more complex
+defrost controls.
+
+*Approach 2: HeatPump:PlantLoop:EIR:Heating and HeatPump:PlantLoop:EIR:Cooling*
+
+This approach should be selected if heat recovery modeling is required, as
+Approach 1 does not currently support this feature (though it will be added in
+the future). For users needing to model heat recovery, Approach 2 is the
+recommended choice.
+
+*Approach 3: Indirect Use of a Heat Pump Water Heater*
+
+This approach is generally not recommended due to its complexity and the higher
+likelihood of configuration errors.
 
 ## Testing/Validation/Data Source(s) ##
 

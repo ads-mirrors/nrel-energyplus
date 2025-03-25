@@ -1004,10 +1004,11 @@ if(BUILD_PACKAGE)
         add_executable(windows_gui_launcher WIN32 WindowsGuiLauncher.cc ${RESOURCE_FILE})
         install(TARGETS windows_gui_launcher DESTINATION ./ COMPONENT Auxiliary)
         # NOTE: The install command COMPONENTS should line up so that they are run at the same packaging step
+        # TODO: Just move these shortcut creation steps over to the install_auxiliary_python_shortcuts.qs file?  And remove create_shortcut.ps1?
         install(CODE "execute_process(COMMAND powershell.exe -ExecutionPolicy Bypass -File ${PROJECT_SOURCE_DIR}/scripts/dev/create_shortcut.ps1 -TargetPath \"$<TARGET_FILE_DIR:energyplus>/windows_gui_launcher.exe\" -ShortcutPath \"$<TARGET_FILE_DIR:energyplus>/EPLaunch_Python.lnk\" -Arguments \"eplaunch\")" COMPONENT Auxiliary)
         install(CODE "execute_process(COMMAND powershell.exe -ExecutionPolicy Bypass -File ${PROJECT_SOURCE_DIR}/scripts/dev/create_shortcut.ps1 -TargetPath \"$<TARGET_FILE_DIR:energyplus>/windows_gui_launcher.exe\" -ShortcutPath \"$<TARGET_FILE_DIR:energyplus>/VersionUpdater_Python.lnk\" -Arguments \"updater\")" COMPONENT Auxiliary)
-        install(FILES $<TARGET_FILE_DIR:energyplus>/EPLaunch.lnk DESTINATION "./" COMPONENT Auxiliary)
-        install(FILES $<TARGET_FILE_DIR:energyplus>/VersionUpdater.lnk DESTINATION "./" COMPONENT Auxiliary)
+        install(FILES $<TARGET_FILE_DIR:energyplus>/EPLaunch_Python.lnk DESTINATION "./" COMPONENT Auxiliary)
+        install(FILES $<TARGET_FILE_DIR:energyplus>/VersionUpdater_Python.lnk DESTINATION "./" COMPONENT Auxiliary)
       elseif(APPLE)
         # Pre-signed and notarized launcher apps
         install(DIRECTORY "${PROJECT_SOURCE_DIR}/bin/PythonApps/EPLaunch.app" DESTINATION "." COMPONENT Auxiliary USE_SOURCE_PERMISSIONS)

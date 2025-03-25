@@ -911,6 +911,37 @@ capacity". If "Crankcase Heater Capacity Function of Temperature Curve Name" is
 defined, a multiplier is applied to adjust the crankcase heater capacity based
 on the ambient temperature condition.
 
+### Outputs ###
+
+The following output variables will be produced
+- HVAC,Average,Heat Pump Operating Mode \[\]
+- HVAC,Average,Heat Pump Total Cooling Rate \[W\]
+- HVAC,Average,Heat Pump Total Heating Rate \[W\]
+- HVAC,Average,Heat Pump Cooling COP \[\]
+- HVAC,Average,Heat Pump Heating COP \[\]
+- HVAC,Average,Heat Pump COP \[\]
+- HVAC,Average,Heat Pump Part Load Ratio  \[\]
+- HVAC,Average,Heat Pump Cycling Ratio  \[\]
+- HVAC,Average,Heat Pump Electricity Rate \[W\]
+- HVAC,Sum,Heat Pump Electricity Energy \[J\]
+- HVAC,Average,Heat Pump Load Side Heat Transfer Rate \[W\]
+- HVAC,Sum,Heat Pump Load Side Heat Transfer Energy \[J\]
+- HVAC,Average,Heat Pump Source Side Heat Transfer Rate \[W\]
+- HVAC,Sum,Heat Pump Source Side Heat Transfer Energy \[J\]
+- HVAC,Average,Heat Pump Load Side Inlet Temperature \[$^\circ$C\]
+- HVAC,Average,Heat Pump Load Side Outlet Temperature \[$^\circ$C\]
+- HVAC,Average,Heat Pump Source Side Inlet Temperature \[$^\circ$C\]
+- HVAC,Average,Heat Pump Source Side Outlet Temperature \[$^\circ$C\]
+- HVAC,Average,Heat Pump Load Side Mass Flow Rate \[kg/s\]
+- HVAC,Average,Heat Pump Source Side Mass Flow Rate \[kg/s\]
+- HVAC,Average,Heat Pump Load Due To Defrost  \[W\]
+- HVAC,Average,Heat Pump Fractional Defrost Time  \[hr\]
+- HVAC,Average,Heat Pump Defrost Electricity Rate  \[W\]
+- HVAC,Average,Heat Pump Defrost Electricity Energy  \[J\]
+- HVAC,Average,Heat Pump Crankcase Heater Electricity Rate \[W\]
+- HVAC,Sum,Heat Pump Crankcase Heater Electricity Energy \[J\]
+
+
 ## Testing/Validation/Data Source(s) ##
 
 The feature will be tested and demonstrated with a test file derived from

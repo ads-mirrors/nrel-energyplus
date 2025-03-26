@@ -251,7 +251,7 @@ Built on Platform: {}
             std::string cmd = Python::PythonEngine::getTclPreppedPreamble(python_fwd_args);
             cmd += R"python(
 from eplaunch.tk_runner import main_gui
-main_gui()
+main_gui(True)
 )python";
             engine.exec(cmd);
             exit(0);

@@ -3023,7 +3023,7 @@ namespace AirflowNetwork {
         // This entire thing needs to be moved up to where the surfaces are read in. Everything here should be known then as well.
         CurrentModuleObject = "AirflowNetwork:MultiZone:Surface";
         for (int i = 1; i <= AirflowNetworkNumOfSurfaces; ++i) {
-            if (MultizoneSurfaceData(i).surface_number == 0) continue;
+            if (MultizoneSurfaceData(i).surface_number == 0) continue; // This should trigger a fatal error above.
             bool has_Opening{false};
 
             ErrorObjectHeader eoh{RoutineName, CurrentModuleObject, MultizoneSurfaceData(i).surface_name};
@@ -4394,7 +4394,20 @@ namespace AirflowNetwork {
         // Assign Multizone linkage based on surfaces, by assuming every surface has a crack or opening
         j = 0;
         for (count = 1; count <= AirflowNetworkNumOfSurfaces; ++count) {
-            if (MultizoneSurfaceData(count).surface_number == 0) continue;
+            if (MultizoneSurfaceData(count).surface_number == 0) continue; // This should trigger a fatal error above.
+
+            // Handle the control schedule
+            if (MultizoneSurfaceData(count).control_schedule_name.empty()) {
+
+                AirflowNetworkLinkageData(count).control_schedule = Sched::GetSchedule(m_state, MultizoneSurfaceData(count).control_schedule_name);
+                if (AirflowNetworkLinkageData(count).control_schedule == nullptr) {
+                    // Severe error here
+                }
+            }
+            if (AirflowNetworkLinkageData(count).control_schedule == nullptr) {
+                AirflowNetworkLinkageData(count).control_schedule = Sched::GetScheduleAlwaysOn(m_state);
+            }
+            // And now the rest
             AirflowNetworkLinkageData(count).Name = MultizoneSurfaceData(count).surface_name;
             AirflowNetworkLinkageData(count).NodeNums[0] = MultizoneSurfaceData(count).NodeNums[0];
             AirflowNetworkLinkageData(count).NodeNums[1] = MultizoneSurfaceData(count).NodeNums[1];
@@ -4553,6 +4566,7 @@ namespace AirflowNetwork {
             AirflowNetworkLinkageData(count).LinkNum = count;
             AirflowNetworkLinkageData(count).NodeHeights[0] = IntraZoneLinkageData(count - AirflowNetworkNumOfSurfaces).NodeHeights[0];
             AirflowNetworkLinkageData(count).NodeHeights[1] = IntraZoneLinkageData(count - AirflowNetworkNumOfSurfaces).NodeHeights[1];
+            AirflowNetworkLinkageData(count).control_schedule = Sched::GetScheduleAlwaysOn(m_state);
             // Find component number
             auto afe = elements.find(AirflowNetworkLinkageData(count).CompName);
             if (afe != elements.end()) {
@@ -4654,6 +4668,7 @@ namespace AirflowNetwork {
                 AirflowNetworkLinkageData(count).CompName = Alphas(4);
                 AirflowNetworkLinkageData(count).ZoneName = Alphas(5);
                 AirflowNetworkLinkageData(count).LinkNum = count;
+                AirflowNetworkLinkageData(count).control_schedule = Sched::GetScheduleAlwaysOn(m_state);
 
                 for (int i = 1; i <= DisSysNumOfDuctViewFactors; ++i) {
                     if (AirflowNetworkLinkageData(count).Name == AirflowNetworkLinkageViewFactorData(i).LinkageName) {
@@ -5027,6 +5042,20 @@ namespace AirflowNetwork {
                         m_state, "the component type in the second node should be OAMixerOutdoorAirStreamNode at " + AirflowNetworkNodeData(k).Name);
                     ErrorsFound = true;
                 }
+            }
+        }
+
+        // Final linkage validation
+        for (auto& linkage : AirflowNetworkLinkageData)
+        {
+            if (linkage.control_schedule == nullptr){
+                // Nope
+                ErrorsFound = true;
+            }
+
+            if (linkage.element == nullptr) {
+                // NOPE
+                ErrorsFound = true;
             }
         }
 
@@ -6220,7 +6249,7 @@ namespace AirflowNetwork {
                 continue;
             }
             if (AirflowNetworkLinkageData(i).element->type() == AirflowElementType::SCR) {
-                AirflowNetworkLinkageData(i).control = MultizoneSurfaceData(i).factor;
+                AirflowNetworkLinkageData(i).control_value = MultizoneSurfaceData(i).factor;
             }
             if (MultizoneSurfaceData(i).occupant_control_number == 0) MultizoneSurfaceData(i).OpenFactor = 0.0;
             j = MultizoneSurfaceData(i).surface_number;
@@ -13503,7 +13532,6 @@ namespace AirflowNetwork {
         // DF      - partial derivatives:  DF/DP.
         // NF      - number of flows, 1 or 2.
         int i;
-        int j;
         int n;
         int FLAG;
         int NF;
@@ -13553,19 +13581,17 @@ namespace AirflowNetwork {
                 DP = PZ(n) - PZ(m) + dos.DpL(i, 1) + PW(i);
             }
             Real64 multiplier = 1.0;
-            Real64 control = AirflowNetworkLinkageData(i).control;
-            // if (LIST >= 4) ObjexxFCL::gio::write(outputFile, Format_901) << "PS:" << i << n << M << PS(i) << PW(i) << AirflowNetworkLinkSimu(i).DP;
-            j = AirflowNetworkLinkageData(i).CompNum;
+            Real64 control = AirflowNetworkLinkageData(i).control_value * AirflowNetworkLinkageData(i).control_schedule->getCurrentVal();
 
             NF = AirflowNetworkLinkageData(i).element->calculate(m_state, LFLAG, DP, i, multiplier, control, node_states[n], node_states[m], F, DF);
             if (AirflowNetworkLinkageData(i).element->type() == AirflowElementType::CPD && DP != 0.0) {
-                DP = DisSysCompCPDData(AirflowNetworkCompData(j).TypeNum).DP;
+                DP = static_cast <AirflowNetwork::ConstantPressureDrop*>(AirflowNetworkLinkageData(i).element)->DP;
             }
 
             AirflowNetworkLinkSimu(i).DP = DP;
             AFLOW(i) = F[0];
             AFLOW2(i) = 0.0;
-            if (AirflowNetworkCompData(j).CompTypeNum == AirflowElementType::DOP) {
+            if (AirflowNetworkLinkageData(i).element->type() == AirflowElementType::DOP) {
                 AFLOW2(i) = F[1];
             }
             // if (LIST >= 3) ObjexxFCL::gio::write(outputFile, Format_901) << " NRi:" << i << n << M << AirflowNetworkLinkSimu(i).DP << F[0] <<

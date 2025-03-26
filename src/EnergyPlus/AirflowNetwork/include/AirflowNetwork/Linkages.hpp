@@ -168,10 +168,11 @@ namespace AirflowNetwork {
         std::array<int, 2> NodeNums;          // Node numbers
         int LinkNum;                          // Linkage number
         AirflowElement *element;              // Pointer to airflow element
-        Real64 control;                       // Control value
+        Real64 control_value;                 // Control value
+        Sched::Schedule *control_schedule;     // Control schedule
 
         // Default Constructor
-        AirflowNetworkLinkage() : NodeHeights{{0.0, 0.0}}, CompNum(0), NodeNums{{0, 0}}, LinkNum(0), element(nullptr), control(1.0)
+        AirflowNetworkLinkage() : NodeHeights{{0.0, 0.0}}, CompNum(0), NodeNums{{0, 0}}, LinkNum(0), element(nullptr), control_value(1.0),  control_schedule(nullptr)
         {
         }
 

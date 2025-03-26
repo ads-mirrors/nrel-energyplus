@@ -114,6 +114,9 @@ namespace AirflowNetwork {
         EquivRec equivalent_rectangle_method; // Equivalent Rectangle Method input: 1 Height; 2 Base surface aspect ratio; 3 User input aspect ratio
         Real64 user_aspect_ratio;       // user input value when EquivRecMethod = 3
 
+        // Linkage control schedule
+        std::string control_schedule_name;
+
         Real64 Multiplier = 1.0;       // Window multiplier
 
         // Hybrid ventilation variables
@@ -144,11 +147,12 @@ namespace AirflowNetwork {
         MultizoneSurfaceProp(const std::string &SurfName, const int SurfNum, Real64 Height, Real64 Width, Real64 CHeight, const std::string &OpeningName,
             const std::string &ExternalNodeName, Real64 Factor, VentControlType VentControl, Real64 ModulateFactor, Real64 LowValueTemp, Real64 UpValueTemp,
             Real64 LowValueEnth, Real64 UpValueEnth, const std::string &VentTempControlSchName, const std::string &VentAvailSchName, int OccupantVentilationControlNum,
-            bool NonRectangular, EquivRec EquivRectMethod, Real64 UserAspectRatio) : surface_name(SurfName), surface_number(SurfNum),
+            bool NonRectangular, EquivRec EquivRectMethod, Real64 UserAspectRatio, const std::string &control_schedule_name) : surface_name(SurfName), surface_number(SurfNum),
             height(Height), width(Width), centroid_height(CHeight), opening_name(OpeningName), external_node_name(ExternalNodeName), factor(Factor),
             ventilation_control_type(VentControl), open_factor_limit(ModulateFactor), temperature_lower_limit(LowValueTemp), temperature_upper_limit(UpValueTemp), 
             enthalpy_lower_limit(LowValueEnth), enthalpy_upper_limit(UpValueEnth), VentTempControlSchName(VentTempControlSchName),
-            VentAvailSchName(VentAvailSchName), occupant_control_number(OccupantVentilationControlNum), nonrectangular(NonRectangular), equivalent_rectangle_method(EquivRectMethod), user_aspect_ratio(UserAspectRatio)
+            VentAvailSchName(VentAvailSchName), occupant_control_number(OccupantVentilationControlNum), nonrectangular(NonRectangular), equivalent_rectangle_method(EquivRectMethod),
+            user_aspect_ratio(UserAspectRatio), control_schedule_name(control_schedule_name)
 
         {}
     };

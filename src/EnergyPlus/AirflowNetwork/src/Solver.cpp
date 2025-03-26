@@ -2747,9 +2747,12 @@ namespace AirflowNetwork {
                                                    m_state.dataGlobal->DisplayExtraWarnings ? &m_state : nullptr);
                 }
 
+                // Control Schedule Name
+                auto const control_schedule_name{ip->getAlphaFieldValue(fields, props, "venting_availability_schedule_name")};
+
                 MultizoneSurfaceData.emplace_back(surface_name, surface_number, height, width, central_height, Util::makeUPPER(opening_name), external_node_name, factor,
                     ventilation_control_type, modulate_factor, low_value_temp, up_value_temp, low_value_enth, up_value_enth, setpoint_schedule_name,
-                    availability_schedule_name, occupant_ventilation_control_num, nonrectangular, equivrec, aspect_ratio);
+                    availability_schedule_name, occupant_ventilation_control_num, nonrectangular, equivrec, aspect_ratio, control_schedule_name);
             }
         }
         AirflowNetworkNumOfSurfaces = MultizoneSurfaceData.isize();

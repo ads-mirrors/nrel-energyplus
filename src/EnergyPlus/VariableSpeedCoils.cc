@@ -2150,13 +2150,13 @@ namespace VariableSpeedCoils {
 
                 std::string cAlphaFieldName = "Evaporator Fan Power Included in Rated COP";
                 std::string fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "evaporator_fan_power_included_in_rated_cop");
-                if (Util::SameString(fieldValue, "Yes") || Util::SameString(fieldValue, "No")) {
-                    //  initialized to TRUE on allocate
-                    if (Util::SameString(fieldValue, "No"))
-                        varSpeedCoil.FanPowerIncludedInCOP = false;
-                    else
-                        varSpeedCoil.FanPowerIncludedInCOP = true;
-                } else {
+                BooleanSwitch fanPowerIncluded = static_cast<BooleanSwitch>(getYesNoValue(Util::makeUPPER(fieldValue)));
+                switch (fanPowerIncluded) {
+                case BooleanSwitch::Yes:
+                case BooleanSwitch::No:
+                    varSpeedCoil.FanPowerIncludedInCOP = static_cast<bool>(fanPowerIncluded);
+                    break;
+                default:
                     ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
                     ShowContinueError(state, format(",,,invalid choice for {}.  Entered choice = {}", cAlphaFieldName, fieldValue));
                     ShowContinueError(state, "Valid choices are Yes or No.");
@@ -2165,28 +2165,29 @@ namespace VariableSpeedCoils {
 
                 cAlphaFieldName = "Condenser Pump Power Included in Rated COP";
                 fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "condenser_pump_power_included_in_rated_cop");
-                if (Util::SameString(fieldValue, "Yes") || Util::SameString(fieldValue, "No")) {
-                    //  initialized to FALSE on allocate
-                    if (Util::SameString(fieldValue, "Yes"))
-                        varSpeedCoil.CondPumpPowerInCOP = true;
-                    else
-                        varSpeedCoil.CondPumpPowerInCOP = false;
-                } else {
+                BooleanSwitch pumpPowerIncluded = static_cast<BooleanSwitch>(getYesNoValue(Util::makeUPPER(fieldValue)));
+                switch (pumpPowerIncluded) {
+                case BooleanSwitch::Yes:
+                case BooleanSwitch::No:
+                    varSpeedCoil.CondPumpPowerInCOP = static_cast<bool>(pumpPowerIncluded);
+                    break;
+                default:
                     ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                    ShowContinueError(state, format(",,,invalid choice for {}.  Entered choice = {}", fieldValue, fieldValue));
+                    ShowContinueError(state, format(",,,invalid choice for {}.  Entered choice = {}", cAlphaFieldName, fieldValue));
                     ShowContinueError(state, "Valid choices are Yes or No.");
                     ErrorsFound = true;
                 }
 
                 cAlphaFieldName = "Condenser Pump Heat Included in Rated Heating Capacity and Rated COP";
-                fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "condenser_pump_heat_included_in_rated_heating_capacity_and_rated_cop");
-                if (Util::SameString(fieldValue, "Yes") || Util::SameString(fieldValue, "No")) {
-                    //  initialized to FALSE on allocate
-                    if (Util::SameString(fieldValue, "Yes"))
-                        varSpeedCoil.CondPumpHeatInCapacity = true;
-                    else
-                        varSpeedCoil.CondPumpHeatInCapacity = false;
-                } else {
+                fieldValue = s_ip->getAlphaFieldValue(
+                    fields, schemaProps, "condenser_pump_heat_included_in_rated_heating_capacity_and_rated_cop"); // Alphas(4)
+                BooleanSwitch pumpHeatIncludedInCapAndCOP = static_cast<BooleanSwitch>(getYesNoValue(Util::makeUPPER(fieldValue)));
+                switch (pumpHeatIncludedInCapAndCOP) {
+                case BooleanSwitch::Yes:
+                case BooleanSwitch::No:
+                    varSpeedCoil.CondPumpHeatInCapacity = static_cast<bool>(pumpHeatIncludedInCapAndCOP);
+                    break;
+                default:
                     ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
                     ShowContinueError(state, format(",,,invalid choice for {}.  Entered choice = {}", cAlphaFieldName, fieldValue));
                     ShowContinueError(state, "Valid choices are Yes or No.");
@@ -2304,11 +2305,8 @@ namespace VariableSpeedCoils {
 
                 cAlphaFieldName = "Evaporator Air Temperature Type for Curve Objects";
                 fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "evaporator_air_temperature_type_for_curve_objects");
-                if (Util::SameString(fieldValue, "DryBulbTemperature")) {
-                    varSpeedCoil.InletAirTemperatureType = HVAC::OATType::DryBulb;
-                } else if (Util::SameString(fieldValue, "WetBulbTemperature")) {
-                    varSpeedCoil.InletAirTemperatureType = HVAC::OATType::WetBulb;
-                } else {
+                varSpeedCoil.InletAirTemperatureType = static_cast<HVAC::OATType>(getEnumValue(HVAC::oatTypeNamesUC, Util::makeUPPER(fieldValue)));
+                if (varSpeedCoil.InletAirTemperatureType == HVAC::OATType::Invalid) {
                     //   wrong temperature type selection
                     ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
                     ShowContinueError(state, format("...{} must be DryBulbTemperature or WetBulbTemperature.", cAlphaFieldName));

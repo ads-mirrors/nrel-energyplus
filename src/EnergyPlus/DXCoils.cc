@@ -3048,8 +3048,8 @@ void GetDXCoils(EnergyPlusData &state)
                 ErrorsFound = true;
             }
 
-            cFieldName = "Rated Condenser Water Temperature";
-            thisDXCoil.RatedInletWaterTemp = s_ip->getRealFieldValue(fields, schemaProps, "rated_condenser_water_temperature"); // Numbers(6);
+            cFieldName = "Rated Condenser Inlet Water Temperature";
+            thisDXCoil.RatedInletWaterTemp = s_ip->getRealFieldValue(fields, schemaProps, "rated_condenser_inlet_water_temperature"); // Numbers(6);
             if (thisDXCoil.RatedInletWaterTemp <= 25.0) {
                 ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, thisDXCoil.Name));
                 ShowContinueError(state, format("...{} must be > 25 {{C}}.  entered value=[{:.1T}].", cFieldName, thisDXCoil.RatedInletWaterTemp));
@@ -3091,10 +3091,13 @@ void GetDXCoils(EnergyPlusData &state)
 
             cFieldName = "Evaporator Fan Power Included in Rated COP";
             std::string fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "evaporator_fan_power_included_in_rated_cop"); // Alphas(2)
-            if (Util::SameString(fieldValue, "Yes") || Util::SameString(fieldValue, "No")) {
-                //  initialized to TRUE on allocate
-                if (Util::SameString(fieldValue, "No")) thisDXCoil.FanPowerIncludedInCOP = false;
-            } else {
+            BooleanSwitch fanPowerIncluded = static_cast<BooleanSwitch>(getYesNoValue(Util::makeUPPER(fieldValue)));
+            switch (fanPowerIncluded) {
+            case BooleanSwitch::Yes:
+            case BooleanSwitch::No:
+                thisDXCoil.FanPowerIncludedInCOP = static_cast<bool>(fanPowerIncluded);
+                break;
+            default:
                 ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, thisDXCoil.Name));
                 ShowContinueError(state, format(",,,invalid choice for {}.  Entered choice = {}", cFieldName, fieldValue));
                 ShowContinueError(state, "Valid choices are Yes or No.");
@@ -3103,10 +3106,13 @@ void GetDXCoils(EnergyPlusData &state)
 
             cFieldName = "Condenser Pump Power Included in Rated COP";
             fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "condenser_pump_power_included_in_rated_cop"); // Alphas(3)
-            if (Util::SameString(fieldValue, "Yes") || Util::SameString(fieldValue, "No")) {
-                //  initialized to FALSE on allocate
-                if (Util::SameString(fieldValue, "Yes")) thisDXCoil.CondPumpPowerInCOP = true;
-            } else {
+            BooleanSwitch pumpPowerIncluded = static_cast<BooleanSwitch>(getYesNoValue(Util::makeUPPER(fieldValue)));
+            switch (pumpPowerIncluded) {
+            case BooleanSwitch::Yes:
+            case BooleanSwitch::No:
+                thisDXCoil.CondPumpPowerInCOP = static_cast<bool>(pumpPowerIncluded);
+                break;
+            default:
                 ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, thisDXCoil.Name));
                 ShowContinueError(state, format(",,,invalid choice for {}.  Entered choice = {}", cFieldName, fieldValue));
                 ShowContinueError(state, "Valid choices are Yes or No.");
@@ -3115,10 +3121,13 @@ void GetDXCoils(EnergyPlusData &state)
 
             cFieldName = "Condenser Pump Heat Included in Rated Heating Capacity and Rated COP";
             fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "condenser_pump_heat_included_in_rated_heating_capacity_and_rated_cop"); // Alphas(4)
-            if (Util::SameString(fieldValue, "Yes") || Util::SameString(fieldValue, "No")) {
-                //  initialized to FALSE on allocate
-                if (Util::SameString(fieldValue, "Yes")) thisDXCoil.CondPumpHeatInCapacity = true;
-            } else {
+            BooleanSwitch pumpHeatIncludedInCapAndCOP = static_cast<BooleanSwitch>(getYesNoValue(Util::makeUPPER(fieldValue)));
+            switch (pumpHeatIncludedInCapAndCOP) {
+            case BooleanSwitch::Yes:
+            case BooleanSwitch::No:
+                thisDXCoil.CondPumpHeatInCapacity = static_cast<bool>(pumpHeatIncludedInCapAndCOP);
+                break;
+            default:
                 ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, thisDXCoil.Name));
                 ShowContinueError(state, format(",,,invalid choice for {}.  Entered choice = {}", cFieldName, fieldValue));
                 ShowContinueError(state, "Valid choices are Yes or No.");
@@ -3216,7 +3225,7 @@ void GetDXCoils(EnergyPlusData &state)
             std::string const whPLFCurveName =
                 s_ip->getAlphaFieldValue(fields, schemaProps, "crankcase_heater_capacity_function_of_temperature_curve_name");
             // Coil:WaterHeating:AirToWaterHeatPump:Wrapped
-            if (!cFieldName.empty()) {
+            if (!whPLFCurveName.empty()) {
                 thisDXCoil.CrankcaseHeaterCapacityCurveIndex = Curve::GetCurveIndex(state, whPLFCurveName);
                 if (thisDXCoil.CrankcaseHeaterCapacityCurveIndex == 0) { // can't find the curve
                     ShowSevereError(state, format("{} = {}:  {} not found = {}", CurrentModuleObject, thisDXCoil.Name, cFieldName, whPLFCurveName));
@@ -3234,18 +3243,14 @@ void GetDXCoils(EnergyPlusData &state)
 
             cFieldName = "Evaporator Air Temperature Type for Curve Objects"; // Alphas(10)
             fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "evaporator_air_temperature_type_for_curve_objects");
-            if (Util::SameString(fieldValue, "DryBulbTemperature")) {
-                thisDXCoil.InletAirTemperatureType = HVAC::OATType::DryBulb;
-            } else if (Util::SameString(fieldValue, "WetBulbTemperature")) {
-                thisDXCoil.InletAirTemperatureType = HVAC::OATType::WetBulb;
-            } else {
+            thisDXCoil.InletAirTemperatureType = static_cast<HVAC::OATType>(getEnumValue(HVAC::oatTypeNamesUC, Util::makeUPPER(fieldValue)));
+            if (thisDXCoil.InletAirTemperatureType == HVAC::OATType::Invalid) {
                 //   wrong temperature type selection
                 ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, thisDXCoil.Name));
                 ShowContinueError(state, format("...{} must be DryBulbTemperature or WetBulbTemperature.", cFieldName));
                 ShowContinueError(state, format("...entered value=\"{}\".", fieldValue));
                 ErrorsFound = true;
             }
-
             // set rated inlet air temperature for curve object verification
             if (thisDXCoil.InletAirTemperatureType == HVAC::OATType::WetBulb) {
                 InletAirTemp = thisDXCoil.RatedInletWBTemp;
@@ -3617,10 +3622,13 @@ void GetDXCoils(EnergyPlusData &state)
 
             cFieldName = "Evaporator Fan Power Included in Rated COP";
             std::string fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "evaporator_fan_power_included_in_rated_cop"); // Alphas(2)
-            if (Util::SameString(fieldValue, "Yes") || Util::SameString(fieldValue, "No")) {
-                //  initialized to TRUE on allocate
-                if (Util::SameString(fieldValue, "No")) thisDXCoil.FanPowerIncludedInCOP = false;
-            } else {
+            BooleanSwitch fanPowerIncluded = static_cast<BooleanSwitch>(getYesNoValue(Util::makeUPPER(fieldValue)));
+            switch (fanPowerIncluded) {
+            case BooleanSwitch::Yes:
+            case BooleanSwitch::No:
+                thisDXCoil.FanPowerIncludedInCOP = static_cast<bool>(fanPowerIncluded);
+                break;
+            default:
                 ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, thisDXCoil.Name));
                 ShowContinueError(state, format(",,,invalid choice for {}.  Entered choice = {}", cFieldName, fieldValue));
                 ShowContinueError(state, "Valid choices are Yes or No.");
@@ -3719,11 +3727,8 @@ void GetDXCoils(EnergyPlusData &state)
 
             cFieldName = "Evaporator Air Temperature Type for Curve Objects"; // Alphas(6)
             fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "evaporator_air_temperature_type_for_curve_objects");
-            if (Util::SameString(fieldValue, "DryBulbTemperature")) {
-                thisDXCoil.InletAirTemperatureType = HVAC::OATType::DryBulb;
-            } else if (Util::SameString(fieldValue, "WetBulbTemperature")) {
-                thisDXCoil.InletAirTemperatureType = HVAC::OATType::WetBulb;
-            } else {
+            thisDXCoil.InletAirTemperatureType = static_cast<HVAC::OATType>(getEnumValue(HVAC::oatTypeNamesUC, Util::makeUPPER(fieldValue)));
+            if (thisDXCoil.InletAirTemperatureType == HVAC::OATType::Invalid) {
                 //   wrong temperature type selection
                 ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, thisDXCoil.Name));
                 ShowContinueError(state, format("...{} must be DryBulbTemperature or WetBulbTemperature.", cFieldName));

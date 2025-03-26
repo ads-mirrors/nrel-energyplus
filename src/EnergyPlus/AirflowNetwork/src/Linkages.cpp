@@ -51,6 +51,100 @@ namespace EnergyPlus {
 
 namespace AirflowNetwork {
 
+void handle_nonrectangular_surfaces(EquivRec equivalent_rectangle_method, EPVector<DataSurfaces::SurfaceData> Surface, const std::string &surface_name, int surface_number,
+    Real64 &height, Real64 &width, Real64 user_aspect_ratio, EnergyPlusData *state)
+{
+    if (equivalent_rectangle_method == EquivRec::Height) {
+        if (Surface(surface_number).Tilt < 1.0 || Surface(surface_number).Tilt > 179.0) { // horizontal surface
+            // check base surface shape
+            if (Surface(Surface(surface_number).BaseSurf).Sides == 4) {
+                Real64 baseratio = Surface(Surface(surface_number).BaseSurf).Width / Surface(Surface(surface_number).BaseSurf).Height;
+                width = sqrt(Surface(surface_number).Area * baseratio);
+                height = Surface(surface_number).Area / width;
+                if (state != nullptr) {
+                    // Going to lie about the source of the error
+                    ShowWarningError(*state, "AirflowNetwork::Solver::get_input: AirflowNetwork:MultiZone:Surface object = " + surface_name);
+                    ShowContinueError(*state,
+                                        "The entered choice of Equivalent Rectangle Method is PolygonHeight. This choice is not valid for "
+                                        "a horizontal surface.");
+                    ShowContinueError(*state, "The BaseSurfaceAspectRatio choice is used. Simulation continues.");
+                }
+            } else {
+                width = sqrt(Surface(surface_number).Area * user_aspect_ratio);
+                height = Surface(surface_number).Area / width;
+                // add warning
+                if (state != nullptr) {
+                    // Going to lie about the source of the error
+                    ShowWarningError(*state, "AirflowNetwork::Solver::get_input: AirflowNetwork:MultiZone:Surface object = " + surface_name);
+                    ShowContinueError(*state,
+                                        "The entered choice of Equivalent Rectangle Method is PolygonHeight. This choice is not valid for "
+                                        "a horizontal surface with a polygonal base surface.");
+                    ShowContinueError(*state, "The default aspect ratio at 1 is used. Simulation continues.");
+                }
+            }
+        } else {
+            Real64 minHeight = min(Surface(surface_number).Vertex(1).z, Surface(surface_number).Vertex(2).z);
+            Real64 maxHeight = max(Surface(surface_number).Vertex(1).z, Surface(surface_number).Vertex(2).z);
+            for (int j = 3; j <= Surface(surface_number).Sides; ++j) {
+                minHeight = min(minHeight,
+                                min(Surface(surface_number).Vertex(j - 1).z, Surface(surface_number).Vertex(j).z));
+                maxHeight = max(maxHeight,
+                                max(Surface(surface_number).Vertex(j - 1).z, Surface(surface_number).Vertex(j).z));
+            }
+            if (maxHeight > minHeight) {
+                height = maxHeight - minHeight;
+                width = Surface(surface_number).Area / (maxHeight - minHeight);
+            }
+            // There's no else here, this is a fall-through. This appears to agree with the original intent, which defaults the height and width to the surface values.
+        }
+    } else if (equivalent_rectangle_method == EquivRec::BaseAspectRatio) {
+
+        if (Surface(Surface(surface_number).BaseSurf).Sides == 4) {
+            Real64 baseratio = Surface(Surface(surface_number).BaseSurf).Width / Surface(Surface(surface_number).BaseSurf).Height;
+            width = sqrt(Surface(surface_number).Area * baseratio);
+            height = Surface(surface_number).Area / width;
+        } else {
+            Real64 minHeight = min(Surface(surface_number).Vertex(1).z, Surface(surface_number).Vertex(2).z);
+            Real64 maxHeight = max(Surface(surface_number).Vertex(1).z, Surface(surface_number).Vertex(2).z);
+            for (int j = 3; j <= Surface(surface_number).Sides; ++j) {
+                minHeight = min(minHeight, min(Surface(surface_number).Vertex(j - 1).z, Surface(surface_number).Vertex(j).z));
+                maxHeight = max(maxHeight, max(Surface(surface_number).Vertex(j - 1).z, Surface(surface_number).Vertex(j).z));
+            }
+            if (maxHeight > minHeight) {
+                height = maxHeight - minHeight;
+                width = Surface(surface_number).Area / (maxHeight - minHeight);
+                // add warning
+                if (state != nullptr) {
+                    // Going to lie about the source of the error
+                    ShowWarningError(*state,
+                                     "AirflowNetwork::Solver::get_input: AirflowNetwork:MultiZone:Surface object = " +
+                                         surface_name);
+                    ShowContinueError(*state,
+                                      "The entered choice of Equivalent Rectangle Method is BaseSurfaceAspectRatio. This choice is not "
+                                      "valid for a polygonal base surface.");
+                    ShowContinueError(*state, "The PolygonHeight choice is used. Simulation continues.");
+                }
+            } else {
+                width = sqrt(Surface(surface_number).Area * user_aspect_ratio);
+                height = Surface(surface_number).Area / width;
+                // add warning
+                if (state != nullptr) {
+                    // Going to lie about the source of the error
+                    ShowWarningError(*state, "AirflowNetwork::Solver::get_input: AirflowNetwork:MultiZone:Surface object = " + surface_name);
+                    ShowContinueError(*state,
+                                      "The entered choice of Equivalent Rectangle Method is BaseSurfaceAspectRatio. This choice is not "
+                                      "valid for a horizontal surface with a polygonal base surface.");
+                    ShowContinueError(*state, "The default aspect ratio at 1 is used. Simulation continues.");
+                }
+            }
+        }
+    } else if (equivalent_rectangle_method == EquivRec::UserAspectRatio) {
+        width = sqrt(Surface(surface_number).Area * user_aspect_ratio);
+        height = Surface(surface_number).Area / width;
+    }
+    // end of handle_nonrectangular_surfaces
+}
+
 } // namespace AirflowNetwork
 
 } // namespace EnergyPlus

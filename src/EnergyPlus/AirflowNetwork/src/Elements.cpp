@@ -1379,8 +1379,8 @@ namespace AirflowNetwork {
 
         // Get component properties
         DifLim = 1.0e-4;
-        Width = state.afn->MultizoneSurfaceData(IL).Width;
-        Height = state.afn->MultizoneSurfaceData(IL).Height;
+        Width = state.afn->MultizoneSurfaceData(IL).width;
+        Height = state.afn->MultizoneSurfaceData(IL).height;
         Fact = state.afn->MultizoneSurfaceData(IL).OpenFactor;
         Loc = (state.afn->AirflowNetworkLinkageData(IL).DetOpenNum - 1) * (NrInt + 2);
         iNum = NumFac;
@@ -1444,12 +1444,12 @@ namespace AirflowNetwork {
 
         // Get opening data based on the opening factor
         if (Fact == 0) {
-            ActLw = state.afn->MultizoneSurfaceData(IL).Width;
-            ActLh = state.afn->MultizoneSurfaceData(IL).Height;
+            ActLw = state.afn->MultizoneSurfaceData(IL).width;
+            ActLh = state.afn->MultizoneSurfaceData(IL).height;
             Cfact = 0.0;
         } else {
-            ActLw = state.afn->MultizoneSurfaceData(IL).Width * WFact;
-            ActLh = state.afn->MultizoneSurfaceData(IL).Height * HFact;
+            ActLw = state.afn->MultizoneSurfaceData(IL).width * WFact;
+            ActLh = state.afn->MultizoneSurfaceData(IL).height * HFact;
             ActCD = Cfact;
         }
 
@@ -1462,8 +1462,8 @@ namespace AirflowNetwork {
         } else if (Type == 2) {
             Lextra = 0.0;
             Axishght = LVOValue;
-            ActLw = state.afn->MultizoneSurfaceData(IL).Width;
-            ActLh = state.afn->MultizoneSurfaceData(IL).Height;
+            ActLw = state.afn->MultizoneSurfaceData(IL).width;
+            ActLh = state.afn->MultizoneSurfaceData(IL).height;
         }
 
         // Add window multiplier with window close
@@ -1778,14 +1778,14 @@ namespace AirflowNetwork {
         // static gio::Fmt Format_900("(A5,9X,4E16.7)");
         // static gio::Fmt Format_903("(A5,3I3,4E16.7)");
 
-        Width = state.afn->MultizoneSurfaceData(i).Width;
-        Height = state.afn->MultizoneSurfaceData(i).Height;
+        Width = state.afn->MultizoneSurfaceData(i).width;
+        Height = state.afn->MultizoneSurfaceData(i).height;
         coeff = FlowCoef * 2.0 * (Width + Height);
         OpenFactor = state.afn->MultizoneSurfaceData(i).OpenFactor;
         if (OpenFactor > 0.0) {
             Width *= OpenFactor;
-            if (state.dataSurface->Surface(state.afn->MultizoneSurfaceData(i).SurfNum).Tilt < 90.0) {
-                Height *= state.dataSurface->Surface(state.afn->MultizoneSurfaceData(i).SurfNum).SinTilt;
+            if (state.dataSurface->Surface(state.afn->MultizoneSurfaceData(i).surface_number).Tilt < 90.0) {
+                Height *= state.dataSurface->Surface(state.afn->MultizoneSurfaceData(i).surface_number).SinTilt;
             }
         }
 
@@ -2863,7 +2863,7 @@ namespace AirflowNetwork {
         } else {
             // Treat the component as a surface crack
             // Crack standard condition from given inputs
-            Corr = state.afn->MultizoneSurfaceData(i).Factor;
+            Corr = state.afn->MultizoneSurfaceData(i).factor;
             RhozNorm = state.afn->properties.density(StandardP, StandardT, StandardW);
             VisczNorm = 1.71432e-5 + 4.828e-8 * StandardT;
 
@@ -3089,8 +3089,8 @@ namespace AirflowNetwork {
 
         // Get information on the horizontal opening
         RhozAver = (propN.density + propM.density) / 2.0;
-        Width = state.afn->MultizoneSurfaceData(i).Width;
-        Height = state.afn->MultizoneSurfaceData(i).Height;
+        Width = state.afn->MultizoneSurfaceData(i).width;
+        Height = state.afn->MultizoneSurfaceData(i).height;
         Fact = state.afn->MultizoneSurfaceData(i).OpenFactor;
         expn = FlowExpo;
         coef = FlowCoef;
@@ -3957,8 +3957,8 @@ namespace AirflowNetwork {
             // Check surface tilt
             if (i <= Nl - state.afn->NumOfLinksIntraZone) { // Revised by L.Gu, on 9 / 29 / 10
                 if (state.afn->AirflowNetworkLinkageData(i).DetOpenNum > 0 &&
-                    state.dataSurface->Surface(state.afn->MultizoneSurfaceData(i).SurfNum).Tilt < 90) {
-                    Hfl(i) = state.dataSurface->Surface(state.afn->MultizoneSurfaceData(i).SurfNum).SinTilt;
+                    state.dataSurface->Surface(state.afn->MultizoneSurfaceData(i).surface_number).Tilt < 90) {
+                    Hfl(i) = state.dataSurface->Surface(state.afn->MultizoneSurfaceData(i).surface_number).SinTilt;
                 }
             }
             // Initialisation
@@ -3974,7 +3974,7 @@ namespace AirflowNetwork {
 
             Ltyp = state.afn->AirflowNetworkCompData(state.afn->AirflowNetworkLinkageData(i).CompNum).CompTypeNum;
             if (Ltyp == AirflowElementType::DOP) {
-                ActLh = state.afn->MultizoneSurfaceData(i).Height;
+                ActLh = state.afn->MultizoneSurfaceData(i).height;
                 ActLOwnh = ActLh * 1.0;
             } else {
                 ActLh = 0.0;

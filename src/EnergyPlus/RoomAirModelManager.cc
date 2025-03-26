@@ -1037,7 +1037,7 @@ namespace RoomAir {
                 auto const &mzSurfaceData = state.afn->MultizoneSurfaceData(iLink);
                 int nodeNum1 = mzSurfaceData.NodeNums[0];
                 int nodeNum2 = mzSurfaceData.NodeNums[1];
-                if (state.dataSurface->Surface(mzSurfaceData.SurfNum).Zone == zoneCV.ZonePtr ||
+                if (state.dataSurface->Surface(mzSurfaceData.surface_number).Zone == zoneCV.ZonePtr ||
                     (state.afn->AirflowNetworkNodeData(nodeNum2).EPlusZoneNum == zoneCV.ZonePtr &&
                      state.afn->AirflowNetworkNodeData(nodeNum1).EPlusZoneNum > 0) ||
                     (state.afn->AirflowNetworkNodeData(nodeNum2).EPlusZoneNum > 0 &&
@@ -1913,11 +1913,11 @@ namespace RoomAir {
 
             // calculate maximum number of airflow network surfaces in each zone
             for (int iMzLink = 1; iMzLink <= state.afn->NumOfLinksMultiZone; ++iMzLink) {
-                auto const &mzSurf = state.dataSurface->Surface(state.afn->MultizoneSurfaceData(iMzLink).SurfNum);
+                auto const &mzSurf = state.dataSurface->Surface(state.afn->MultizoneSurfaceData(iMzLink).surface_number);
                 ++AuxSurf(mzSurf.Zone);
                 ++state.dataRoomAir->CrossVentNumAFNSurfaces;
                 // Check if this is an interzone airflow network surface
-                if (mzSurf.ExtBoundCond > 0 && (state.afn->MultizoneSurfaceData(iMzLink).SurfNum != mzSurf.ExtBoundCond)) {
+                if (mzSurf.ExtBoundCond > 0 && (state.afn->MultizoneSurfaceData(iMzLink).surface_number != mzSurf.ExtBoundCond)) {
                     ++AuxSurf(state.dataSurface->Surface(mzSurf.ExtBoundCond).Zone);
                     ++state.dataRoomAir->CrossVentNumAFNSurfaces;
                 }
@@ -1951,7 +1951,7 @@ namespace RoomAir {
                 int SurfNum = 1;
 
                 for (int iMzLink = 1; iMzLink <= state.afn->NumOfLinksMultiZone; ++iMzLink) {
-                    auto const &mzSurf = state.dataSurface->Surface(state.afn->MultizoneSurfaceData(iMzLink).SurfNum);
+                    auto const &mzSurf = state.dataSurface->Surface(state.afn->MultizoneSurfaceData(iMzLink).surface_number);
                     auto &surfParams = state.dataRoomAir->SurfParametersCrossDispVent(iMzLink);
 
                     if (mzSurf.Zone == iZone) {
@@ -2516,7 +2516,7 @@ namespace RoomAir {
                                                 state.dataRoomAir->CrossVentJetRecFlows(i, iZone).Ujet,
                                                 OutputProcessor::TimeStepType::Zone,
                                                 OutputProcessor::StoreType::Average,
-                                                state.afn->MultizoneSurfaceData(i).SurfName);
+                                                state.afn->MultizoneSurfaceData(i).surface_name);
                         }
                     }
                 } // for (iZone)

@@ -84,9 +84,9 @@ TEST_F(EnergyPlusFixture, CrossVentMgr_EvolveParaUCSDCV_Test)
     state->dataRoomAir->AFNSurfaceCrossVent(0, 2) = 2;
 
     state->afn->MultizoneSurfaceData.allocate(MaxSurf);
-    state->afn->MultizoneSurfaceData(1).SurfNum = 6;
+    state->afn->MultizoneSurfaceData(1).surface_number = 6;
     state->afn->MultizoneSurfaceData(1).OpenFactor = 1.;
-    state->afn->MultizoneSurfaceData(2).SurfNum = 9;
+    state->afn->MultizoneSurfaceData(2).surface_number = 9;
     state->afn->MultizoneSurfaceData(2).OpenFactor = 1.;
 
     state->dataSurface->Surface.allocate(10);

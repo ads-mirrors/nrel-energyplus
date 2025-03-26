@@ -353,7 +353,7 @@ namespace RoomAir {
 
         // Identify the dominant aperture:
         MaxSurf = state.dataRoomAir->AFNSurfaceCrossVent(1, ZoneNum);
-        int const surfNum = state.afn->MultizoneSurfaceData(MaxSurf).SurfNum;
+        int const surfNum = state.afn->MultizoneSurfaceData(MaxSurf).surface_number;
         auto const &thisSurface = state.dataSurface->Surface(surfNum);
 
         int afnSurfNum1 = state.dataRoomAir->AFNSurfaceCrossVent(1, ZoneNum);
@@ -370,7 +370,7 @@ namespace RoomAir {
 
         for (int Ctd2 = 2; Ctd2 <= state.dataRoomAir->AFNSurfaceCrossVent(0, ZoneNum); ++Ctd2) {
             int afnSurfNum = state.dataRoomAir->AFNSurfaceCrossVent(Ctd2, ZoneNum);
-            if (state.dataSurface->Surface(state.afn->MultizoneSurfaceData(afnSurfNum).SurfNum).Zone == ZoneNum) {
+            if (state.dataSurface->Surface(state.afn->MultizoneSurfaceData(afnSurfNum).surface_number).Zone == ZoneNum) {
                 if (state.afn->AirflowNetworkLinkSimu(afnSurfNum).VolFLOW2 > MaxFlux) {
                     MaxFlux = state.afn->AirflowNetworkLinkSimu(afnSurfNum).VolFLOW2;
                     MaxSurf = afnSurfNum;
@@ -495,7 +495,7 @@ namespace RoomAir {
         // Calculate inflow velocity (%Uin) for each aperture in the zone
         for (int Ctd = 1; Ctd <= state.dataRoomAir->AFNSurfaceCrossVent(0, ZoneNum); ++Ctd) {
             auto &jetRecFlows = state.dataRoomAir->CrossVentJetRecFlows(Ctd, ZoneNum);
-            if (state.dataSurface->Surface(state.afn->MultizoneSurfaceData(Ctd).SurfNum).Zone == ZoneNum) {
+            if (state.dataSurface->Surface(state.afn->MultizoneSurfaceData(Ctd).surface_number).Zone == ZoneNum) {
                 // this is a direct airflow network aperture
                 jetRecFlows.Fin = state.afn->AirflowNetworkLinkSimu(state.dataRoomAir->AFNSurfaceCrossVent(Ctd, ZoneNum)).VolFLOW2;
             } else {

@@ -50,9 +50,11 @@
 
 #include "AirflowNetwork/Properties.hpp"
 #include "AirflowNetwork/Types.hpp"
-#include <EnergyPlus/DataHVACGlobals.hh>
-#include <EnergyPlus/EPVector.hh>
-#include <EnergyPlus/ScheduleManager.hh>
+#include "EnergyPlus/DataHVACGlobals.hh"
+#include "EnergyPlus/EPVector.hh"
+#include "EnergyPlus/ScheduleManager.hh"
+#include "EnergyPlus/DataSurfaces.hh"
+#include <string>
 
 namespace EnergyPlus {
 
@@ -68,66 +70,87 @@ namespace AirflowNetwork {
     struct MultizoneSurfaceProp // Surface information
     {
         // Members
-        std::string SurfName;         // Name of Associated EnergyPlus surface
-        std::string OpeningName;      // Name of opening component, either simple or detailed large opening
-        std::string ExternalNodeName; // Name of external node, but not used at WPC="INPUT"
-        Real64 Factor;                // Crack Actual Value or Window Open Factor for Ventilation
-        int SurfNum;                  // Surface number
-        std::array<int, 2> NodeNums;  // Positive: Zone numbers; 0: External
-        Real64 OpenFactor;            // Surface factor
-        Real64 OpenFactorLast;        // Surface factor at previous time step
-        bool EMSOpenFactorActuated;   // True if EMS actuation is on
-        Real64 EMSOpenFactor;         // Surface factor value from EMS for override
-        Real64 Height;                // Surface Height
-        Real64 Width;                 // Surface width
-        Real64 CHeight;               // Surface central height in z direction
-        std::string VentControl;      // Ventilation Control Mode: TEMPERATURE, ENTHALPIC, CONSTANT, ZONELEVEL or NOVENT
-        Real64 ModulateFactor;        // Limit Value on Multiplier for Modulating Venting Open Factor
-        Real64 LowValueTemp;          // Lower Value on Inside/Outside Temperature Difference for Modulating the Venting Open Factor with temp control
-        Real64 UpValueTemp; // Upper Value on Inside/Outside Temperature Difference for Modulating the Venting Open Factor with temp control
-        Real64 LowValueEnth; // Lower Value on Inside/Outside Temperature Difference for Modulating the Venting Open Factor with Enthalpic control
-        Real64 UpValueEnth; // Upper Value on Inside/Outside Temperature Difference for Modulating the Venting Open Factor with Enthalpic control
+        std::string surface_name; // Name of associated EnergyPlus surface
+        int surface_number;       // Surface number associated EnergyPlus surface
+        Real64 height;            // Surface height
+        Real64 width;             // Surface width
+        Real64 centroid_height;   // Surface central height in z direction
+
+        std::string opening_name;      // Name of opening component, either simple or detailed large opening TO BE REMOVED
+        std::string external_node_name;  // Name of external node, but not used at WPC="INPUT" TO BE REMOVED
+        Real64 factor;                // Crack Actual Value or Window Open Factor for Ventilation
+        
+        // Ventilation Control - needs to be broken into a separate object or objects
+        VentControlType ventilation_control_type; // Ventilation control mode number: 1 "Temperature", 2 "ENTHALPIC", 3 "CONSTANT", 4 "NOVENT"
+        Real64 open_factor_limit;                 // Limit Value on Multiplier for Modulating Venting Open Factor
+        Real64 temperature_lower_limit;           // Lower Value on Inside/Outside Temperature Difference for Modulating the Venting Open Factor with temp control
+        Real64 temperature_upper_limit;           // Upper Value on Inside/Outside Temperature Difference for Modulating the Venting Open Factor with temp control
+        Real64 enthalpy_lower_limit;              // Lower Value on Inside/Outside Temperature Difference for Modulating the Venting Open Factor with Enthalpic control
+        Real64 enthalpy_upper_limit;              // Upper Value on Inside/Outside Temperature Difference for Modulating the Venting Open Factor with Enthalpic control
         std::string VentTempControlSchName;              // Name of ventilation temperature control schedule
         Sched::Schedule *ventTempControlSched = nullptr; // Ventilation temperature control schedule
-        VentControlType VentSurfCtrNum;                  // Ventilation control mode number: 1 "Temperature", 2 "ENTHALPIC", 3 "CONSTANT", 4 "NOVENT"
         std::string VentAvailSchName;                    // Ventilation availability schedule
         Sched::Schedule *ventAvailSched = nullptr;       // Ventilation availability schedule
-        int ZonePtr;                                     // Pointer to inside face zone
-        bool IndVentControl;                             // Individual surface venting control
-        int ExtLargeOpeningErrCount;                     // Exterior large opening error count during HVAC system operation
-        int ExtLargeOpeningErrIndex;                     // Exterior large opening error index during HVAC system operation
-        int OpenFactorErrCount;                          // Large opening error count at Open factor > 1.0
-        int OpenFactorErrIndex;                          // Large opening error error index at Open factor > 1.0
-        Real64 Multiplier;                               // Window multiplier
-        bool HybridVentClose;                            // Hybrid ventilation window close control logical
-        bool HybridCtrlGlobal;                           // Hybrid ventilation global control logical
-        bool HybridCtrlMaster;                           // Hybrid ventilation global control master
-        Real64 WindModifier;                             // Wind modifier from hybrid ventilation control
-        std::string OccupantVentilationControlName;      // Occupant ventilation control name
-        int OccupantVentilationControlNum;               // Occupant ventilation control number
-        int OpeningStatus;                               // Open status at current time step
-        int PrevOpeningstatus;                           // Open status at previous time step
-        Real64 CloseElapsedTime;                         // Elapsed time during closing (min)
-        Real64 OpenElapsedTime;                          // Elapsed time during closing (min)
-        int ClosingProbStatus;                           // Closing probability status
-        int OpeningProbStatus;                           // Opening probability status
-        bool RAFNflag;                                   // True if this surface is used in AirflowNetwork:IntraZone:Linkage
-        bool NonRectangular;                             // True if this surface is not rectangular
-        EquivRec EquivRecMethod;        // Equivalent Rectangle Method input: 1 Height; 2 Base surface aspect ratio; 3 User input aspect ratio
-        Real64 EquivRecUserAspectRatio; // user input value when EquivRecMethod = 3
+        int ZonePtr{0};                                  // Pointer to inside face zone
+        bool IndVentControl{false};                      // Individual surface venting control
 
-        // Default Constructor
+        std::array<int, 2> NodeNums = {0, 0}; // Positive: Zone numbers; 0: External
+        Real64 OpenFactor = 0.0;              // Surface factor
+        Real64 OpenFactorLast = 0.0;          // Surface factor at previous time step
+        bool EMSOpenFactorActuated = false;   // True if EMS actuation is on
+        Real64 EMSOpenFactor = 0.0;           // Surface factor value from EMS for override
+
+        // Occupant Ventilation Control
+        int occupant_control_number;               // Occupant ventilation control number
+        int OpeningStatus = OpenStatus::FreeOperation;         // Open status at current time step
+        int PrevOpeningstatus = OpenStatus::FreeOperation;     // Open status at previous time step
+        Real64 CloseElapsedTime = 0.0;                         // Elapsed time during closing (min)
+        Real64 OpenElapsedTime = 0.0;                          // Elapsed time during closing (min)
+        int ClosingProbStatus = ProbabilityCheck::NoAction;    // Closing probability status
+        int OpeningProbStatus = ProbabilityCheck::NoAction;    // Opening probability status
+
+        // Non-rectangular geometry parameters
+        bool nonrectangular;                  // True if this surface is not rectangular
+        EquivRec equivalent_rectangle_method; // Equivalent Rectangle Method input: 1 Height; 2 Base surface aspect ratio; 3 User input aspect ratio
+        Real64 user_aspect_ratio;       // user input value when EquivRecMethod = 3
+
+        Real64 Multiplier = 1.0;       // Window multiplier
+
+        // Hybrid ventilation variables
+        bool HybridVentClose = false;  // Hybrid ventilation window close control logical
+        bool HybridCtrlGlobal = false; // Hybrid ventilation global control logical
+        bool HybridCtrlMaster = false; // Hybrid ventilation global control master
+        Real64 WindModifier = 1.0;     // Wind modifier from hybrid ventilation control
+
+        bool RAFNflag = false; // True if this surface is used in AirflowNetwork:IntraZone:Linkage
+
+        // Error counters
+        int ExtLargeOpeningErrCount = 0; // Exterior large opening error count during HVAC system operation
+        int ExtLargeOpeningErrIndex = 0; // Exterior large opening error index during HVAC system operation
+        int OpenFactorErrCount = 0;      // Large opening error count at Open factor > 1.0
+        int OpenFactorErrIndex = 0;      // Large opening error error index at Open factor > 1.0
+
         MultizoneSurfaceProp()
-            : Factor(0.0), SurfNum(0), NodeNums{{0, 0}}, OpenFactor(0.0), OpenFactorLast(0.0), EMSOpenFactorActuated(false), EMSOpenFactor(0.0),
-              Height(0.0), Width(0.0), CHeight(0.0), VentControl("ZONELEVEL"), ModulateFactor(0.0), LowValueTemp(0.0), UpValueTemp(100.0),
-              LowValueEnth(0.0), UpValueEnth(300000.0), VentSurfCtrNum(VentControlType::None), ZonePtr(0), IndVentControl(false),
+            : factor(0.0), surface_number(0), NodeNums{{0, 0}}, OpenFactor(0.0), OpenFactorLast(0.0), EMSOpenFactorActuated(false), EMSOpenFactor(0.0),
+              height(0.0), width(0.0), centroid_height(0.0), open_factor_limit(0.0), temperature_lower_limit(0.0), temperature_upper_limit(100.0),
+              enthalpy_lower_limit(0.0), enthalpy_upper_limit(300000.0), ventilation_control_type(VentControlType::None), ZonePtr(0), IndVentControl(false),
               ExtLargeOpeningErrCount(0), ExtLargeOpeningErrIndex(0), OpenFactorErrCount(0), OpenFactorErrIndex(0), Multiplier(1.0),
-              HybridVentClose(false), HybridCtrlGlobal(false), HybridCtrlMaster(false), WindModifier(1.0), OccupantVentilationControlNum(0),
+              HybridVentClose(false), HybridCtrlGlobal(false), HybridCtrlMaster(false), WindModifier(1.0), occupant_control_number(0),
               OpeningStatus(OpenStatus::FreeOperation), PrevOpeningstatus(OpenStatus::FreeOperation), CloseElapsedTime(0.0), OpenElapsedTime(0.0),
-              ClosingProbStatus(ProbabilityCheck::NoAction), OpeningProbStatus(ProbabilityCheck::NoAction), RAFNflag(false), NonRectangular(false),
-              EquivRecMethod(EquivRec::Height), EquivRecUserAspectRatio(1.0)
+              ClosingProbStatus(ProbabilityCheck::NoAction), OpeningProbStatus(ProbabilityCheck::NoAction), RAFNflag(false), nonrectangular(false),
+              equivalent_rectangle_method(EquivRec::Height), user_aspect_ratio(1.0)
         {
         }
+        MultizoneSurfaceProp(const std::string &SurfName, const int SurfNum, Real64 Height, Real64 Width, Real64 CHeight, const std::string &OpeningName,
+            const std::string &ExternalNodeName, Real64 Factor, VentControlType VentControl, Real64 ModulateFactor, Real64 LowValueTemp, Real64 UpValueTemp,
+            Real64 LowValueEnth, Real64 UpValueEnth, const std::string &VentTempControlSchName, const std::string &VentAvailSchName, int OccupantVentilationControlNum,
+            bool NonRectangular, EquivRec EquivRectMethod, Real64 UserAspectRatio) : surface_name(SurfName), surface_number(SurfNum),
+            height(Height), width(Width), centroid_height(CHeight), opening_name(OpeningName), external_node_name(ExternalNodeName), factor(Factor),
+            ventilation_control_type(VentControl), open_factor_limit(ModulateFactor), temperature_lower_limit(LowValueTemp), temperature_upper_limit(UpValueTemp), 
+            enthalpy_lower_limit(LowValueEnth), enthalpy_upper_limit(UpValueEnth), VentTempControlSchName(VentTempControlSchName),
+            VentAvailSchName(VentAvailSchName), occupant_control_number(OccupantVentilationControlNum), nonrectangular(NonRectangular), equivalent_rectangle_method(EquivRectMethod), user_aspect_ratio(UserAspectRatio)
+
+        {}
     };
 
     struct AirflowNetworkLinkage // AirflowNetwork linkage data base class
@@ -265,6 +288,9 @@ namespace AirflowNetwork {
         {
         }
     };
+
+    void handle_nonrectangular_surfaces(EquivRec equivalent_rectangle_method, EPVector<DataSurfaces::SurfaceData> Surface, const std::string &surface_name, int surface_number,
+    Real64 &height, Real64 &width, Real64 user_aspect_ratio, EnergyPlusData *state = nullptr);
 
 } // namespace AirflowNetwork
 

@@ -11068,7 +11068,7 @@ TEST_F(EnergyPlusFixture, AirflowNetwork_TestZoneVentingAirBoundary)
          "   ** Warning ** AirflowNetwork::Solver::get_input: AirflowNetwork:MultiZone:Surface=\"AIR WALL AULA 2\" is an air boundary surface.",
          "   **   ~~~   ** Ventilation Control Mode = TEMPERATURE is not valid. Resetting to Constant.",
          "   ** Warning ** AirflowNetwork::Solver::get_input: : AirflowNetwork:MultiZone:Surface = AIR WALL AULA 2",
-         "   **   ~~~   ** Venting Availbility Schedule is not empty.",
+         "   **   ~~~   ** Venting Availability Schedule is not empty.",
          "   **   ~~~   ** Venting is always available for air-boundary surfaces."});
     EXPECT_TRUE(compare_err_stream(expectedErrString, true));
 
@@ -11076,12 +11076,12 @@ TEST_F(EnergyPlusFixture, AirflowNetwork_TestZoneVentingAirBoundary)
     // venting schedule should be non-zero and venting method should be ZoneLevel
     auto *ventingSched = Sched::GetSchedule(*state, state->afn->MultizoneSurfaceData(1).VentAvailSchName);
     EXPECT_EQ(ventingSched, state->afn->MultizoneSurfaceData(1).ventAvailSched);
-    EXPECT_ENUM_EQ(state->afn->MultizoneSurfaceData(1).VentSurfCtrNum, AirflowNetwork::VentControlType::Temp);
+    EXPECT_ENUM_EQ(state->afn->MultizoneSurfaceData(1).ventilation_control_type, AirflowNetwork::VentControlType::Temp);
 
     // MultizoneSurfaceData(2) is connected to an air boundary surface
     // venting schedule should be zero and venting method should be Constant
     EXPECT_EQ(state->afn->MultizoneSurfaceData(2).ventAvailSched, Sched::GetScheduleAlwaysOn(*state));
-    EXPECT_ENUM_EQ(state->afn->MultizoneSurfaceData(2).VentSurfCtrNum, AirflowNetwork::VentControlType::Const);
+    EXPECT_ENUM_EQ(state->afn->MultizoneSurfaceData(2).ventilation_control_type, AirflowNetwork::VentControlType::Const);
 }
 
 TEST_F(EnergyPlusFixture, AirflowNetwork_TestNoZoneEqpSupportZoneERV)

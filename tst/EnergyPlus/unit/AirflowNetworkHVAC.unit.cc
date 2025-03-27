@@ -6035,9 +6035,23 @@ TEST_F(EnergyPlusFixture, AirflowNetwork_MultiAirLoopTest)
     EXPECT_NEAR(state->afn->AirflowNetworkReportData(1).MultiZoneInfiSenLossW, 95.89575, 0.001);
     EXPECT_NEAR(state->afn->AirflowNetworkReportData(1).MultiZoneInfiLatLossW, 0.969147, 0.001);
 
-    state->afn->AirflowNetworkCompData(state->afn->AirflowNetworkLinkageData(2).CompNum).CompTypeNum = AirflowNetwork::AirflowElementType::DOP;
-    state->afn->report();
+    for (int i = 1; i <= state->afn->AirflowNetworkLinkageData.isize(); ++i) {
+        std::cerr << i << ' ' << state->afn->AirflowNetworkCompData(state->afn->AirflowNetworkLinkageData(i).CompNum).CompTypeNum << std::endl;
+        EXPECT_EQ(state->afn->AirflowNetworkCompData(state->afn->AirflowNetworkLinkageData(i).CompNum).CompTypeNum,
+                  state->afn->AirflowNetworkLinkageData(i).element->type());
+    }
 
+    // The original test was changing the CompTypeNum, as that goes away it's necessaey to actually
+    // switch out the elements. This is probably an unwise approach.
+    state->afn->AirflowNetworkCompData(state->afn->AirflowNetworkLinkageData(2).CompNum).CompTypeNum = AirflowNetwork::AirflowElementType::DOP;
+    auto const ye_olde_element = state->afn->AirflowNetworkLinkageData(2).element;
+    AirflowNetwork::DetailedOpening dop;
+    for (auto &link : state->afn->AirflowNetworkLinkageData) {
+        if (link.element == ye_olde_element) {
+            link.element = &dop;
+        }
+    }
+    state->afn->report();
     EXPECT_NEAR(state->afn->AirflowNetworkReportData(1).MultiZoneVentSenLossW, 95.89575, 0.001);
     EXPECT_NEAR(state->afn->AirflowNetworkReportData(1).MultiZoneVentLatLossW, 0.969147, 0.001);
     // #8475
@@ -6053,6 +6067,12 @@ TEST_F(EnergyPlusFixture, AirflowNetwork_MultiAirLoopTest)
     EXPECT_NEAR(state->afn->AirflowNetworkZnRpt(1).VentilAirChangeRate, 0.2438, 0.001);
     EXPECT_NEAR(state->afn->AirflowNetworkZnRpt(1).VentilMass, 0.85114, 0.001);
     // Infiltration
+    // Switch the element back
+    for (auto &link : state->afn->AirflowNetworkLinkageData) {
+        if (link.element == &dop) {
+            link.element = ye_olde_element;
+        }
+    }
     state->afn->AirflowNetworkCompData(state->afn->AirflowNetworkLinkageData(2).CompNum).CompTypeNum = AirflowNetwork::AirflowElementType::SCR;
     state->afn->update();
     state->afn->report();

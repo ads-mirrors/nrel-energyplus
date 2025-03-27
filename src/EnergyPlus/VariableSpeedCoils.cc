@@ -4174,7 +4174,7 @@ namespace VariableSpeedCoils {
 
                 PlantUtilities::InitComponentNodes(state,
                                                    0.0,
-                                                   vsCoil.DesignWaterMassFlowRate,
+                                                   vsCoil.MSRatedWaterMassFlowRate(vsCoil.NumOfSpeeds),
                                                    vsCoil.WaterInletNodeNum,
                                                    vsCoil.WaterOutletNodeNum);
 

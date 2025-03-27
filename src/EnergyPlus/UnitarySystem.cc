@@ -6371,7 +6371,7 @@ namespace UnitarySystems {
                 UnitarySys thisSys;
                 if (sysNum == -1) {
                     ++state.dataUnitarySystems->numUnitarySystems;
-                    state.dataInputProcessing->inputProcessor->markObjectAsUsed(cCurrentModuleObject, objNameUC);
+                    state.dataInputProcessing->inputProcessor->markObjectAsUsed(cCurrentModuleObject, objName);
                 } else {
                     thisSys = state.dataUnitarySystems->unitarySys[sysNum];
                 }
@@ -6820,7 +6820,7 @@ namespace UnitarySystems {
                 UnitarySys thisSys;
                 if (sysNum == -1) {
                     ++state.dataUnitarySystems->numUnitarySystems;
-                    state.dataInputProcessing->inputProcessor->markObjectAsUsed(cCurrentModuleObject, objNameUC);
+                    state.dataInputProcessing->inputProcessor->markObjectAsUsed(cCurrentModuleObject, objName);
                 } else {
                     thisSys = state.dataUnitarySystems->unitarySys[sysNum];
                 }

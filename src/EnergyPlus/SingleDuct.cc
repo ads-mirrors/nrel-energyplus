@@ -371,18 +371,6 @@ void GetSysInput(EnergyPlusData &state)
         }
 
         sdAirTerm.ReheatCoilName = Alphas(8);
-        ValidateComponent(state,
-                          HVAC::coilTypeNames[(int)sdAirTerm.reheatCoilType],
-                          sdAirTerm.ReheatCoilName,
-                          IsNotOK,
-                          sdAirTerm.sysType);
-        if (IsNotOK) {
-            ShowContinueError(state,
-                              format("In {} = {}",
-                                     sdAirTerm.sysType,
-                                     sdAirTerm.SysName));
-            ErrorsFound = true;
-        }
 
         if (lAlphaBlanks(2)) {
             sdAirTerm.availSched = Sched::GetScheduleAlwaysOn(state);
@@ -673,15 +661,6 @@ void GetSysInput(EnergyPlusData &state)
             ErrorsFound = true;
         }
 
-        ValidateComponent(state, Alphas(7), Alphas(8), IsNotOK, sdAirTerm.sysType);
-        if (IsNotOK) {
-            ShowContinueError(state,
-                              format("In {} = {}",
-                                     sdAirTerm.sysType,
-                                     sdAirTerm.SysName));
-            ErrorsFound = true;
-        }
-
         // Add reheat coil to component sets array
         SetUpCompSets(state,
                       sdAirTerm.sysType,
@@ -749,20 +728,6 @@ void GetSysInput(EnergyPlusData &state)
             ErrorsFound = true;
         }
         
-        sdAirTerm.ReheatCoilName = Alphas(6);
-        ValidateComponent(state,
-                          HVAC::coilTypeNames[(int)sdAirTerm.reheatCoilType],
-                          sdAirTerm.ReheatCoilName,
-                          IsNotOK,
-                          sdAirTerm.sysType);
-        if (IsNotOK) {
-            ShowContinueError(state,
-                              format("In {} = {}",
-                                     sdAirTerm.sysType,
-                                     sdAirTerm.SysName));
-            ErrorsFound = true;
-        }
-
         if (lAlphaBlanks(2)) {
             sdAirTerm.availSched = Sched::GetScheduleAlwaysOn(state);
         } else if ((sdAirTerm.availSched = Sched::GetSchedule(state, Alphas(2))) == nullptr) {
@@ -815,6 +780,7 @@ void GetSysInput(EnergyPlusData &state)
         }
         // The reheat coil control node is necessary for hot water and steam reheat, but not necessary for
         // electric or gas reheat.
+        sdAirTerm.ReheatCoilName = Alphas(6);
         if (sdAirTerm.reheatCoilType == HVAC::CoilType::HeatingGasOrOtherFuel ||
             sdAirTerm.reheatCoilType == HVAC::CoilType::HeatingElectric) {
             sdAirTerm.ReheatCoilNum = HeatingCoils::GetCoilIndex(state, sdAirTerm.ReheatCoilName);
@@ -946,15 +912,6 @@ void GetSysInput(EnergyPlusData &state)
             sdAirTerm.MaxReheatTempSetByUser = false;
         }
 
-        ValidateComponent(state, Alphas(5), Alphas(6), IsNotOK, sdAirTerm.sysType);
-        if (IsNotOK) {
-            ShowContinueError(state,
-                              format("In {} = {}",
-                                     sdAirTerm.sysType,
-                                     sdAirTerm.SysName));
-            ErrorsFound = true;
-        }
-
         if (lAlphaBlanks(8)) {
             sdAirTerm.ZoneTurndownMinAirFrac = 1.0;
         } else if ((sdAirTerm.zoneTurndownMinAirFracSched = Sched::GetSchedule(state, Alphas(8))) == nullptr) {
@@ -1034,19 +991,7 @@ void GetSysInput(EnergyPlusData &state)
         }
 
         sdAirTerm.ReheatCoilName = Alphas(6);
-        ValidateComponent(state,
-                          HVAC::coilTypeNames[(int)sdAirTerm.reheatCoilType],
-                          sdAirTerm.ReheatCoilName,
-                          IsNotOK,
-                          sdAirTerm.sysType);
-        if (IsNotOK) {
-            ShowContinueError(state,
-                              format("In {} = {}",
-                                     sdAirTerm.sysType,
-                                     sdAirTerm.SysName));
-            ErrorsFound = true;
-        }
-        
+
         sdAirTerm.OutletNodeNum =
             GetOnlySingleNode(state,
                               Alphas(3),
@@ -1092,7 +1037,7 @@ void GetSysInput(EnergyPlusData &state)
         } else if (sdAirTerm.reheatCoilType == HVAC::CoilType::HeatingWater) {
             sdAirTerm.ReheatCoilNum = WaterCoils::GetCoilIndex(state, sdAirTerm.ReheatCoilName);
             if (sdAirTerm.ReheatCoilNum == 0) {
-                ShowSevereItemNotFound(state, eoh, cAlphaFields(6), Alphas(6));
+                ShowSevereItemNotFound(state, eoh, cAlphaFields(6), sdAirTerm.ReheatCoilName);
                 ErrorsFound = true;
             } else {
                 sdAirTerm.ReheatControlNode = WaterCoils::GetCoilWaterInletNode(state, sdAirTerm.ReheatCoilNum);
@@ -1191,15 +1136,6 @@ void GetSysInput(EnergyPlusData &state)
                     }
                 }
             }
-        }
-
-        ValidateComponent(state, Alphas(5), Alphas(6), IsNotOK, sdAirTerm.sysType);
-        if (IsNotOK) {
-            ShowContinueError(state,
-                              format("In {} = {}",
-                                     sdAirTerm.sysType,
-                                     sdAirTerm.SysName));
-            ErrorsFound = true;
         }
 
         // Add reheat coil to component sets array
@@ -1412,10 +1348,11 @@ void GetSysInput(EnergyPlusData &state)
 
     } // End Number of Sys Loop
 
+    CurrentModuleObject = "AirTerminal:SingleDuct:VAV:NoReheat";
+    
     for (state.dataSingleDuct->SysIndexGSI = 1; state.dataSingleDuct->SysIndexGSI <= state.dataSingleDuct->NumNoRHVAVSysGSI;
          ++state.dataSingleDuct->SysIndexGSI) {
 
-        CurrentModuleObject = "AirTerminal:SingleDuct:VAV:NoReheat";
 
         state.dataInputProcessing->inputProcessor->getObjectItem(state,
                                                                  CurrentModuleObject,
@@ -1879,19 +1816,6 @@ void GetSysInput(EnergyPlusData &state)
             ErrorsFound = true;
         }
         
-        ValidateComponent(state,
-                          HVAC::coilTypeNames[(int)sdAirTerm.reheatCoilType],
-                          sdAirTerm.ReheatCoilName,
-                          IsNotOK,
-                          sdAirTerm.sysType);
-        if (IsNotOK) {
-            ShowContinueError(state,
-                              format("In {} = {}",
-                                     sdAirTerm.sysType,
-                                     sdAirTerm.SysName));
-            ErrorsFound = true;
-        }
-
         sdAirTerm.fanType = static_cast<HVAC::FanType>(getEnumValue(HVAC::fanTypeNamesUC, Alphas(5)));
 
         if (sdAirTerm.fanType != HVAC::FanType::VAV && sdAirTerm.fanType != HVAC::FanType::SystemModel) {
@@ -5432,9 +5356,9 @@ void AirTerminalMixerData::InitATMixer(EnergyPlusData &state, bool const FirstHV
 {
     // Purpose: Initialize the AirTerminalMixers data structure with node data
     if (this->OneTimeInitFlag) {
-        {
+        { // Why is this a new scope?
             auto &thisADU(state.dataDefineEquipment->AirDistUnit(this->ADUNum));
-            {
+            { // Why is this a new scope?
                 auto &thisZoneEqConfig(state.dataZoneEquip->ZoneEquipConfig(thisADU.ZoneEqNum));
                 for (int SupAirIn = 1; SupAirIn <= thisZoneEqConfig.NumInletNodes; ++SupAirIn) {
                     if (this->ZoneInletNode == thisZoneEqConfig.InletNode(SupAirIn)) {
@@ -5444,13 +5368,13 @@ void AirTerminalMixerData::InitATMixer(EnergyPlusData &state, bool const FirstHV
                         thisZoneEqConfig.AirDistUnitHeat(SupAirIn).OutNode = this->MixedAirOutNode;
                         thisADU.TermUnitSizingNum = thisZoneEqConfig.AirDistUnitCool(SupAirIn).TermUnitSizingIndex;
                         this->CtrlZoneInNodeIndex = SupAirIn;
-                        {
+                        { // Why is this a new scope?
                             auto &thisTermUnitSizingData(state.dataSize->TermUnitSizing(thisADU.TermUnitSizingNum));
                             thisTermUnitSizingData.ADUName = thisADU.Name;
                             // Fill TermUnitSizing with specs from DesignSpecification:AirTerminal:Sizing if there is one attached to this
                             // terminal unit
                             if (thisADU.AirTerminalSizingSpecIndex > 0) {
-                                {
+                                { // Why is this a new scope?
                                     auto const &thisAirTermSizingSpec(state.dataSize->AirTerminalSizingSpec(thisADU.AirTerminalSizingSpecIndex));
                                     thisTermUnitSizingData.SpecDesCoolSATRatio = thisAirTermSizingSpec.DesCoolSATRatio;
                                     thisTermUnitSizingData.SpecDesHeatSATRatio = thisAirTermSizingSpec.DesHeatSATRatio;
@@ -5913,7 +5837,9 @@ void SingleDuctAirTerminal::reportTerminalUnit(EnergyPlusData &state)
         if (minOASched != nullptr) schName = minOASched->Name;
     }
     OutputReportPredefined::PreDefTableEntry(state, orp->pdchAirTermMinOAflowSch, adu.Name, schName);
-    OutputReportPredefined::PreDefTableEntry(state, orp->pdchAirTermHeatCoilType, adu.Name, HVAC::coilTypeNames[(int)this->reheatCoilType]);
+    // Should this be n/a for consistency?
+    OutputReportPredefined::PreDefTableEntry(state, orp->pdchAirTermHeatCoilType, adu.Name,
+                                             (this->reheatCoilType == HVAC::CoilType::Invalid) ? "" : HVAC::coilTypeNames[(int)this->reheatCoilType]);
     OutputReportPredefined::PreDefTableEntry(state, orp->pdchAirTermCoolCoilType, adu.Name, "n/a");
     if (this->fanType != HVAC::FanType::Invalid) {
         OutputReportPredefined::PreDefTableEntry(state, orp->pdchAirTermFanType, adu.Name, HVAC::fanTypeNames[(int)this->fanType]);

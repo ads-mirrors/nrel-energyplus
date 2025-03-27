@@ -220,8 +220,6 @@ namespace VariableSpeedCoils {
         static constexpr std::string_view routineName = "GetVarSpeedCoilInput";
 
         // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-        int IOStat;
-        // int AlfaFieldIncre;              // increment number of Alfa field
         bool ErrorsFound(false);         // If errors detected in input
         Real64 CurveVal;                 // Used to verify modifier curves equal 1 at rated conditions
         Real64 WHInletAirTemp;           // Used to pass proper inlet air temp to HPWH DX coil performance curves

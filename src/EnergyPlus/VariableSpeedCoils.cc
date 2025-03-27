@@ -63,6 +63,7 @@
 #include <EnergyPlus/DataHeatBalance.hh>
 #include <EnergyPlus/DataSizing.hh>
 #include <EnergyPlus/DataWater.hh>
+#include <EnergyPlus/EMSManager.hh>
 #include <EnergyPlus/Fans.hh>
 #include <EnergyPlus/FluidProperties.hh>
 #include <EnergyPlus/General.hh>
@@ -245,7 +246,7 @@ namespace VariableSpeedCoils {
         // Allocate Arrays
         if (state.dataVariableSpeedCoils->NumVarSpeedCoils > 0) {
             state.dataVariableSpeedCoils->VarSpeedCoil.allocate(state.dataVariableSpeedCoils->NumVarSpeedCoils);
-            state.dataHeatBal->HeatReclaimVS_DXCoil.allocate(state.dataVariableSpeedCoils->NumVarSpeedCoils);
+            state.dataHeatBal->HeatReclaimVS_Coil.allocate(state.dataVariableSpeedCoils->NumVarSpeedCoils);
         }
 
         // Get the data for cooling coil, WATER SOURCE
@@ -725,8 +726,8 @@ namespace VariableSpeedCoils {
                 GlobalNames::VerifyUniqueCoilName(state, CurrentModuleObject, varSpeedCoil.Name, ErrorsFound, CurrentModuleObject + " Name");
 
                 // Initialize DataHeatBalance heat reclaim variable name for use by heat reclaim coils
-                state.dataHeatBal->HeatReclaimVS_DXCoil(DXCoilNum).Name = varSpeedCoil.Name;
-                state.dataHeatBal->HeatReclaimVS_DXCoil(DXCoilNum).SourceType = CurrentModuleObject;
+                state.dataHeatBal->HeatReclaimVS_Coil(DXCoilNum).Name = varSpeedCoil.Name;
+                state.dataHeatBal->HeatReclaimVS_Coil(DXCoilNum).SourceType = CurrentModuleObject;
 
                 varSpeedCoil.CoolHeatType = "COOLING";
                 varSpeedCoil.VSCoilType = HVAC::Coil_CoolingAirToAirVariableSpeed;
@@ -2978,6 +2979,24 @@ namespace VariableSpeedCoils {
                                         Constant::eResource::Electricity,
                                         OutputProcessor::Group::HVAC,
                                         OutputProcessor::EndUseCat::Heating);
+
+                    if (state.dataGlobal->AnyEnergyManagementSystemInModel) {
+                        SetupEMSActuator(state,
+                                         varSpeedCoil.VarSpeedCoilType,
+                                         varSpeedCoil.Name,
+                                         "Frost Heating Capacity Multiplier",
+                                         "[]",
+                                         varSpeedCoil.FrostHeatingCapacityMultiplierEMSOverrideOn,
+                                         varSpeedCoil.FrostHeatingCapacityMultiplierEMSOverrideValue);
+
+                        SetupEMSActuator(state,
+                                         varSpeedCoil.VarSpeedCoilType,
+                                         varSpeedCoil.Name,
+                                         "Frost Heating Input Power Multiplier",
+                                         "[]",
+                                         varSpeedCoil.FrostHeatingInputPowerMultiplierEMSOverrideOn,
+                                         varSpeedCoil.FrostHeatingInputPowerMultiplierEMSOverrideValue);
+                    }
                 }
             } else {
 
@@ -3792,7 +3811,7 @@ namespace VariableSpeedCoils {
             }
 
             varSpeedCoil.SimFlag = true;
-            state.dataHeatBal->HeatReclaimVS_DXCoil(DXCoilNum).AvailCapacity = 0.0;
+            state.dataHeatBal->HeatReclaimVS_Coil(DXCoilNum).AvailCapacity = 0.0;
 
             state.dataVariableSpeedCoils->MyEnvrnFlag(DXCoilNum) = false;
 
@@ -3811,7 +3830,6 @@ namespace VariableSpeedCoils {
         WaterInletNode = varSpeedCoil.WaterInletNodeNum;
 
         if ((SensLoad != 0.0 || LatentLoad != 0.0) && (state.dataLoopNodes->Node(AirInletNode).MassFlowRate > 0.0)) {
-
             if (varSpeedCoil.MSRatedWaterMassFlowRate(varSpeedCoil.NormSpedLevel) > 0.0) {
                 WaterFlowScale = varSpeedCoil.RatedWaterMassFlowRate / varSpeedCoil.MSRatedWaterMassFlowRate(varSpeedCoil.NormSpedLevel);
                 varSpeedCoil.WaterMassFlowRate = varSpeedCoil.DesignWaterMassFlowRate * WaterFlowScale;
@@ -3909,7 +3927,7 @@ namespace VariableSpeedCoils {
         state.dataVariableSpeedCoils->VSHPWHHeatingCapacity = 0.0; // Used by Heat Pump:Water Heater object as total water heating capacity [W]
         state.dataVariableSpeedCoils->VSHPWHHeatingCOP = 0.0;      // Used by Heat Pump:Water Heater object as water heating COP [W/W]
         varSpeedCoil.OutletWaterTemp = varSpeedCoil.InletWaterTemp;
-        state.dataHeatBal->HeatReclaimVS_DXCoil(DXCoilNum).AvailCapacity = 0.0;
+        state.dataHeatBal->HeatReclaimVS_Coil(DXCoilNum).AvailCapacity = 0.0;
     }
 
     void SizeVarSpeedCoil(EnergyPlusData &state, int const DXCoilNum, bool &ErrorsFound)
@@ -5841,7 +5859,7 @@ namespace VariableSpeedCoils {
         varSpeedCoil.QLoadTotal = state.dataVariableSpeedCoils->QLoadTotal;
         varSpeedCoil.QSensible = state.dataVariableSpeedCoils->QSensible;
         varSpeedCoil.QLatent = state.dataVariableSpeedCoils->QLoadTotal - state.dataVariableSpeedCoils->QSensible;
-        varSpeedCoil.QSource = state.dataVariableSpeedCoils->QSource;
+
         varSpeedCoil.Energy = state.dataVariableSpeedCoils->Winput * TimeStepSysSec;
         varSpeedCoil.EnergyLoadTotal = state.dataVariableSpeedCoils->QLoadTotal * TimeStepSysSec;
         varSpeedCoil.EnergySensible = state.dataVariableSpeedCoils->QSensible * TimeStepSysSec;
@@ -5853,7 +5871,7 @@ namespace VariableSpeedCoils {
         varSpeedCoil.EvapCondPumpElecConsumption = varSpeedCoil.EvapCondPumpElecPower * TimeStepSysSec;
         if (varSpeedCoil.RunFrac == 0.0) {
             varSpeedCoil.COP = 0.0;
-        } else {
+        } else {												   
             varSpeedCoil.COP = state.dataVariableSpeedCoils->QLoadTotal / state.dataVariableSpeedCoils->Winput;
         }
         varSpeedCoil.PartLoadRatio = PartLoadRatio;
@@ -5872,14 +5890,21 @@ namespace VariableSpeedCoils {
             varSpeedCoil.WaterMassFlowRate = 0.0;
             varSpeedCoil.OutletWaterTemp = 0.0;
             varSpeedCoil.OutletWaterEnthalpy = 0.0;
-            state.dataHeatBal->HeatReclaimVS_DXCoil(DXCoilNum).AvailCapacity = state.dataVariableSpeedCoils->QSource;
+            state.dataHeatBal->HeatReclaimVS_Coil(DXCoilNum).AvailCapacity = state.dataVariableSpeedCoils->QSource;
+            if (state.dataHeatBal->HeatReclaimVS_Coil(DXCoilNum).WaterHeatingDesuperheaterReclaimedHeatTotal > 0.0)
+                state.dataVariableSpeedCoils->QSource -= state.dataHeatBal->HeatReclaimVS_Coil(DXCoilNum).WaterHeatingDesuperheaterReclaimedHeatTotal;
         } else {
             varSpeedCoil.WaterMassFlowRate = state.dataVariableSpeedCoils->SourceSideMassFlowRate;
             varSpeedCoil.OutletWaterTemp = state.dataVariableSpeedCoils->SourceSideInletTemp +
                                            state.dataVariableSpeedCoils->QSource / (state.dataVariableSpeedCoils->SourceSideMassFlowRate * CpSource);
             varSpeedCoil.OutletWaterEnthalpy = state.dataVariableSpeedCoils->SourceSideInletEnth +
                                                state.dataVariableSpeedCoils->QSource / state.dataVariableSpeedCoils->SourceSideMassFlowRate;
+            state.dataHeatBal->HeatReclaimVS_Coil(DXCoilNum).AvailCapacity = state.dataVariableSpeedCoils->QSource;																									   
+            if (state.dataHeatBal->HeatReclaimVS_Coil(DXCoilNum).WaterHeatingDesuperheaterReclaimedHeatTotal > 0.0)
+                state.dataVariableSpeedCoils->QSource -= state.dataHeatBal->HeatReclaimVS_Coil(DXCoilNum).WaterHeatingDesuperheaterReclaimedHeatTotal;																												  																																					  
         }
+        varSpeedCoil.QSource = state.dataVariableSpeedCoils->QSource;
+        varSpeedCoil.EnergySource = state.dataVariableSpeedCoils->QSource * TimeStepSysSec;
 
         varSpeedCoil.QWasteHeat = QWasteHeat;
 
@@ -6745,13 +6770,46 @@ namespace VariableSpeedCoils {
                 if (varSpeedCoil.DefrostControl == Timed) {
                     state.dataVariableSpeedCoils->FractionalDefrostTime = varSpeedCoil.DefrostTime;
                     if (state.dataVariableSpeedCoils->FractionalDefrostTime > 0.0) {
-                        state.dataVariableSpeedCoils->HeatingCapacityMultiplier = 0.909 - 107.33 * state.dataVariableSpeedCoils->OutdoorCoildw;
-                        state.dataVariableSpeedCoils->InputPowerMultiplier = 0.90 - 36.45 * state.dataVariableSpeedCoils->OutdoorCoildw;
+                        if (varSpeedCoil.FrostHeatingCapacityMultiplierEMSOverrideOn &&
+                            varSpeedCoil.FrostHeatingInputPowerMultiplierEMSOverrideOn) {
+                            state.dataVariableSpeedCoils->HeatingCapacityMultiplier =
+                                varSpeedCoil.FrostHeatingCapacityMultiplierEMSOverrideValue;
+                            state.dataVariableSpeedCoils->InputPowerMultiplier =
+                                varSpeedCoil.FrostHeatingInputPowerMultiplierEMSOverrideValue;
+                        } else {
+                            state.dataVariableSpeedCoils->HeatingCapacityMultiplier = 0.909 - 107.33 * state.dataVariableSpeedCoils->OutdoorCoildw;
+                            state.dataVariableSpeedCoils->InputPowerMultiplier = 0.90 - 36.45 * state.dataVariableSpeedCoils->OutdoorCoildw;
+                            if (varSpeedCoil.FrostHeatingCapacityMultiplierEMSOverrideOn ||
+                                varSpeedCoil.FrostHeatingInputPowerMultiplierEMSOverrideOn) {
+                                ShowWarningMessage(
+                                    state,
+                                    format("The Frost Heating Capacity Multiplier actuator and the Frost Heating Input Power Multiplier "
+                                           "actuator must be both provided for DX heating coil {}",
+                                           varSpeedCoil.Name));
+                                ShowContinueError(state, "EMS actuators are ignored. Simulation is continuing.");
+                            }
+                        }
                     }
                 } else { // else defrost control is on-demand
                     state.dataVariableSpeedCoils->FractionalDefrostTime = 1.0 / (1.0 + 0.01446 / state.dataVariableSpeedCoils->OutdoorCoildw);
-                    state.dataVariableSpeedCoils->HeatingCapacityMultiplier = 0.875 * (1.0 - state.dataVariableSpeedCoils->FractionalDefrostTime);
-                    state.dataVariableSpeedCoils->InputPowerMultiplier = 0.954 * (1.0 - state.dataVariableSpeedCoils->FractionalDefrostTime);
+                    if (varSpeedCoil.FrostHeatingCapacityMultiplierEMSOverrideOn &&
+                        varSpeedCoil.FrostHeatingInputPowerMultiplierEMSOverrideOn) {
+                        state.dataVariableSpeedCoils->HeatingCapacityMultiplier =
+                            varSpeedCoil.FrostHeatingCapacityMultiplierEMSOverrideValue;
+                        state.dataVariableSpeedCoils->InputPowerMultiplier =
+                            varSpeedCoil.FrostHeatingInputPowerMultiplierEMSOverrideValue;
+                    } else {
+                        state.dataVariableSpeedCoils->HeatingCapacityMultiplier = 0.875 * (1.0 - state.dataVariableSpeedCoils->FractionalDefrostTime);
+                        state.dataVariableSpeedCoils->InputPowerMultiplier = 0.954 * (1.0 - state.dataVariableSpeedCoils->FractionalDefrostTime);
+                        if (varSpeedCoil.FrostHeatingCapacityMultiplierEMSOverrideOn ||
+                            varSpeedCoil.FrostHeatingInputPowerMultiplierEMSOverrideOn) {
+                            ShowWarningMessage(state,
+                                               format("The Frost Heating Capacity Multiplier actuator and the Frost Heating Input Power Multiplier "
+                                                      "actuator must be both provided for DX heating coil {}",
+                                                      varSpeedCoil.Name));
+                            ShowContinueError(state, "EMS actuators are ignored. Simulation is continuing.");
+                        }
+                    }
                 }
                 // correction fractional defrost time shorten by runtime fraction
                 state.dataVariableSpeedCoils->FractionalDefrostTime *= varSpeedCoil.RunFrac;

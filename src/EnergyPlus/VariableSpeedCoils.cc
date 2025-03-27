@@ -269,6 +269,9 @@ namespace VariableSpeedCoils {
                 GlobalNames::VerifyUniqueCoilName(state, CurrentModuleObject, varSpeedCoil.Name, ErrorsFound, CurrentModuleObject + " Name");
 
                 varSpeedCoil.CoolHeatType = "COOLING";
+                // Initialize DataHeatBalance heat reclaim variable name for use by heat reclaim coils
+                state.dataHeatBal->HeatReclaimVS_Coil(DXCoilNum).Name = varSpeedCoil.Name;
+                state.dataHeatBal->HeatReclaimVS_Coil(DXCoilNum).SourceType = CurrentModuleObject;
                 varSpeedCoil.VSCoilType = HVAC::Coil_CoolingWaterToAirHPVSEquationFit;
                 varSpeedCoil.VarSpeedCoilType = HVAC::cAllCoilTypes(varSpeedCoil.VSCoilType);
                 varSpeedCoil.NumOfSpeeds = s_ip->getIntFieldValue(fields, schemaProps, "number_of_speeds");
@@ -990,8 +993,14 @@ namespace VariableSpeedCoils {
                     varSpeedCoil.MSRatedEvaporatorFanPowerPerVolumeFlowRate2017(I) = s_ip->getRealFieldValue(fields, schemaProps, fieldName);
                     fieldName = "2023_speed_" + std::to_string(I) + "_rated_evaporator_fan_power_per_volume_flow_rate";
                     varSpeedCoil.MSRatedEvaporatorFanPowerPerVolumeFlowRate2023(I) = s_ip->getRealFieldValue(fields, schemaProps, fieldName);
-                    fieldName = "speed_" + std::to_string(I) + "_reference_unit_rated_condenser_air_flow_rate";
+                    if (I < 6) {
+                        fieldName = "speed_" + std::to_string(I) + "_reference_unit_rated_condenser_air_flow_rate";
+                    } else {
+                        fieldName = "speed_" + std::to_string(I) + "_reference_unit_condenser_air_flow_rate";
+                        if (I == 7) fieldName = "speed_" + std::to_string(I) + "_reference_unit_condenser_flow_rate";
+                    }
                     varSpeedCoil.EvapCondAirFlow(I) = s_ip->getRealFieldValue(fields, schemaProps, fieldName);
+                    
                     fieldName = "speed_" + std::to_string(I) + "_reference_unit_rated_pad_effectiveness_of_evap_precooling";
                     varSpeedCoil.EvapCondEffect(I) = s_ip->getRealFieldValue(fields, schemaProps, fieldName);
                     if (varSpeedCoil.EvapCondEffect(I) < 0.0 || varSpeedCoil.EvapCondEffect(I) > 1.0) {
@@ -1872,9 +1881,9 @@ namespace VariableSpeedCoils {
                     varSpeedCoil.MSRatedCOP(I) = s_ip->getRealFieldValue(fields, schemaProps, fieldName);
                     fieldName = "speed_" + std::to_string(I) + "_reference_unit_rated_air_flow_rate";
                     varSpeedCoil.MSRatedAirVolFlowRate(I) = s_ip->getRealFieldValue(fields, schemaProps, fieldName);
-                    fieldName = "2017_speed_" + std::to_string(I) + "_rated_evaporator_fan_power_per_volume_flow_rate";
+                    fieldName = "2017_speed_" + std::to_string(I) + "_rated_supply_air_fan_power_per_volume_flow_rate";
                     varSpeedCoil.MSRatedEvaporatorFanPowerPerVolumeFlowRate2017(I) = s_ip->getRealFieldValue(fields, schemaProps, fieldName);
-                    fieldName = "2023_speed_" + std::to_string(I) + "_rated_evaporator_fan_power_per_volume_flow_rate";
+                    fieldName = "2023_speed_" + std::to_string(I) + "_rated_supply_air_fan_power_per_volume_flow_rate";
                     varSpeedCoil.MSRatedEvaporatorFanPowerPerVolumeFlowRate2023(I) = s_ip->getRealFieldValue(fields, schemaProps, fieldName);
 
                     // Speed 1 Reference Unit Gross Rated Total Cooling Capacity

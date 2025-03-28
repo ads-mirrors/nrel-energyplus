@@ -3,6 +3,11 @@ An Improved Duct Model for a Single AirLoop
 
 **Lixing Gu**
 
+ - 2/26/25
+ - Third revision after coding
+ - Add a new field A7 in the object Duct:Loss:Conduction to have scheduled W for mositure calculation
+ - Specify leakage locations for trunks and braches
+ - Remove supply leak calculation, because no T and W are changed. The leakage losses will be added as a part of system loads.
  - 2/11/25
  - Second revision after discussion with Jason DeGraw
  - 1/8/25
@@ -110,7 +115,7 @@ Environment type is the environment in which the duct is placed. It can be eithe
 If specified as Zone, a zone name must be specified in the next field. If specified as Schedule, the Ambient
 Temperature Zone can be left blank, while a schedule must be specified for the temperature.
 
-\subsubsection{Field: Ambient Temperature Zone Name}\label{ambienttemperaturezonename}
+\subsubsection{Field: Ambient Zone Name}\label{ambienttemperaturezonename}
 
 If Zone is specified as the environment type, this field is used to specify the name of the zone in which
 the duct is located. The zone temperature is used to calculate the heat transfer rate from the duct.
@@ -121,6 +126,12 @@ If Schedule is specified as the environment type, this field is used to specify 
 temperature schedule that gives the ambient air temperature surrounding the duct. This temperature is
 used as the outside boundary condition to calculate heat transfer from the duct.
 
+\subsubsection{Field: Ambient Humidity Ratio Schedule Name}\label{ambienttemperatureschedulename}
+
+If Schedule is specified as the environment type, this field is used to specify the name of the
+humidity ratio schedule that gives the ambient air humidity ratio surrounding the duct. This humidity ratio is
+used as the outside boundary condition to calculate moisture transfer from the duct.
+
 An IDF example is provided below:
 
 \begin{lstlisting}
@@ -130,8 +141,9 @@ An IDF example is provided below:
       Main AirLoopHVAC,    !- AirLoopHAVC Name
    	  Mail Duct Linkage,   !- AirflowNetwork:Distribution:Linkage Name
       Zone,         !- Environment Type
-   	  Zone 1,       !- Ambient Temperature Zone Name
-      ;             !- Ambient Temperature Schedule Name
+   	  Zone 1,       !- Ambient Zone Name
+      ,             !- Ambient Temperature Schedule Name
+      ;             !- Ambient Humidity Ratio Schedule Name
 
 \end{lstlisting}
 
@@ -221,10 +233,13 @@ Three new objects has been proposed. Each object represents each loss type expli
         \key Zone
         \key Schedule
         \default Zone
-   	A5,  \field Ambient Temperature Zone Name
+   	A5,  \field Ambient Zone Name
         \type object-list
         \object-list ZoneNames
-   	A6;  \field Ambient Temperature Schedule Name
+   	A6,  \field Ambient Temperature Schedule Name
+        \type object-list
+        \object-list ScheduleNames
+   	A7;  \field Ambient Humidity Ratio Schedule Name
         \type object-list
         \object-list ScheduleNames
 
@@ -365,9 +380,11 @@ If duct conduction loss is simulated, the selected Component Name (A4) should be
 
 If duct leakage loss is simulated, the selected Component Name should be AirflowNetwork:Distribution:Component:LeakageRatio. The input of Effective Leakage Ratio field should be a fraction of mass flow rate of the AirLoopHVAC. The other field inputs are not used. One of nodes should be either zone name or outdoor air node name.
 
-If a supply leak is defined, Node 1 name should be an air node, Node 2 name should be either a zone name or an outdoor air node name.
+If a supply leak is defined, Node 1 name should be either an air node of zone inlet node for supply branch leak or a splitter for supply trunk leak, Node 2 name should be either a zone name or an outdoor air node name.
 
-If a return leak is defined, Node 1 name should be either a zone name or an outdoor air node name, Node 2 name should be an air node.
+If a return leak is defined, Node 1 name should be either a zone name or an outdoor air node name, Node 2 name should be either an air node of zone outlet for return branch leak or a zone mixer for return trunk leak.
+
+The above specification to define supply and retunr leaks is used to catch mass flow rate in either trunks or branches.
 
 3. Restriction
 
@@ -684,53 +701,7 @@ The schmetic of supply leak is shown below.
 
 ![Supply Leaks](SupplyLeaks.PNG)
 
-Assumption:
-
-No mass flow rate in the Airloop will be changed. Instead, the equivalent temperature and humidity ratio at the outlet will be calculated as follows
-
-Energy balance for a supply leak
-
-m<sub>1</sub>h<sub>1</sub> = m<sub>2</sub> h<sub>2</sub> + m<sub>3</sub> h<sub>3</sub>
-
-Mass balance
-
-m<sub>1</sub> = m<sub>2</sub> + m<sub>3</sub> 
-
-Assumption:
-
-When a supply leak occurs, it assumes to be at the outlet of the duct. The reality is that the outlet enthalpy remains the same, and supply mass flow rate is changed. However, if we assume the same mass flow rate in the Airloop and keep energy balanced, the equivalent ourlet temperature and humidity will be calculated. 
-
-Based on EnergyPlus psychrometric functions, the enthalpy may be calculayed as follows:
-
-h = 1.00484e3 * TDB + max(dW, 1.0e-5) * (2.50094e6 + 1.85895e3 * TDB); // enthalpy {J/kg}   
-
-where TDB is dry bulb temperature with units of C.
-
-The above equation may be simplified as
-
-h = a\*T + W *(b+c\*T)
-
-where a, b, and c are constants.
-
-The energy balance equation can be re-written using the same mass flow rate at the outlet:
-
-m<sub>1</sub>h<sub>1</sub> = m<sub>2</sub> h<sub>2</sub> + m<sub>3</sub> h<sub>3</sub> = m<sub>1</sub> h<sub>4</sub> + m<sub>3</sub> h<sub>3</sub>
-
-where 
-
-h<sub>4</sub> = [(m<sub>1</sub> - m<sub>3</sub>) \*h<sub>1</sub>]/m<sub>1</sub> = h<sub>1</sub>*( 1 - m<sub>3</sub>/m<sub>1</sub> )
-
-By substituting E+ enthalpy equation, the energy balance equation can be written as:
-
-h<sub>4</sub> = h<sub>1</sub>*( 1 - m<sub>3</sub>/m<sub>1</sub> )
-
-[a\*T<sub>4</sub> + W<sub>4</sub> *(b+c\*T<sub>4</sub>)] = [a\*T<sub>1</sub> + W<sub>1</sub> *(b+c\*T<sub>1</sub>)] *( 1 - m<sub>3</sub>/m<sub>1</sub> ) 
-
-Since there are two variables, one set of possible solutions can be
-
-T<sub>4</sub> = T<sub>1</sub> *( 1 - m<sub>3</sub>/m<sub>1</sub> )
-
-W<sub>4</sub> = [W<sub>1</sub> \*(b+c\*T<sub>1</sub>)] \*( 1 - m<sub>3</sub>/m<sub>1</sub> ) / [b+c\*T<sub>1</sub>*( 1 - m<sub>3</sub>/m<sub>1</sub> )]
+The proposed equivelant temperature and humidity ratio are not necessary.
 
 #### Return leaks ####
 

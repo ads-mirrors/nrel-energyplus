@@ -1033,9 +1033,12 @@ namespace HVACSingleDuctInduc {
             termUnitSizing.DesHeatingLoad = indUnit.DesHeatingLoad;
             // save the induction ratio for use in subsequent sizing calcs
             termUnitSizing.InducRat = indUnit.InducRatio;
-            if (indUnit.heatCoilType == HVAC::CoilType::CoolingWater ||
-                indUnit.heatCoilType == HVAC::CoilType::CoolingWaterDetailed) {
+            if (indUnit.heatCoilType == HVAC::CoilType::HeatingWater) {
                 WaterCoils::SetCoilDesFlow(state, indUnit.heatCoilNum, termUnitSizing.AirVolFlow);
+            }
+            if (indUnit.coolCoilType == HVAC::CoilType::CoolingWater ||
+                indUnit.coolCoilType == HVAC::CoilType::CoolingWaterDetailed) {
+                WaterCoils::SetCoilDesFlow(state, indUnit.coolCoilNum, termUnitSizing.AirVolFlow);
             }
         }
     }

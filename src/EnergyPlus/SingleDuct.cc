@@ -2507,9 +2507,12 @@ void SingleDuctAirTerminal::SizeSys(EnergyPlusData &state)
     if (this->MaxHeatAirVolFlowRate == AutoSize) {
         IsAutoSize = true;
     }
+
+    Real64 UserInputMaxHeatAirVolFlowRate = 0.0;
+    
     if (state.dataSize->CurTermUnitSizingNum > 0) {
         if (!IsAutoSize && !state.dataSize->ZoneSizingRunDone) { // simulation should continue
-            state.dataSingleDuct->UserInputMaxHeatAirVolFlowRateSS = this->MaxHeatAirVolFlowRate;
+            UserInputMaxHeatAirVolFlowRate = this->MaxHeatAirVolFlowRate;
             if (this->MaxHeatAirVolFlowRate > 0.0) {
                 BaseSizer::reportSizerOutput(
                     state, this->sysType, this->SysName, "User-Specified Maximum Heating Air Flow Rate [m3/s]", this->MaxHeatAirVolFlowRate);
@@ -2528,13 +2531,13 @@ void SingleDuctAirTerminal::SizeSys(EnergyPlusData &state)
             }
             if (IsAutoSize) {
                 this->MaxHeatAirVolFlowRate = MaxHeatAirVolFlowRateDes;
-                state.dataSingleDuct->UserInputMaxHeatAirVolFlowRateSS = 0.0;
+                UserInputMaxHeatAirVolFlowRate = 0.0;
                 BaseSizer::reportSizerOutput(
                     state, this->sysType, this->SysName, "Design Size Maximum Heating Air Flow Rate [m3/s]", MaxHeatAirVolFlowRateDes);
             } else { // Hard-size with sizing data
                 if (this->MaxHeatAirVolFlowRate > 0.0 && MaxHeatAirVolFlowRateDes > 0.0) {
                     MaxHeatAirVolFlowRateUser = this->MaxHeatAirVolFlowRate;
-                    state.dataSingleDuct->UserInputMaxHeatAirVolFlowRateSS = this->MaxHeatAirVolFlowRate;
+                    UserInputMaxHeatAirVolFlowRate = this->MaxHeatAirVolFlowRate;
                     BaseSizer::reportSizerOutput(state,
                                                  this->sysType,
                                                  this->SysName,
@@ -3003,7 +3006,7 @@ void SingleDuctAirTerminal::SizeSys(EnergyPlusData &state)
             // set air flow rate used to size heating coils, ZoneTurndownMinAirFrac defaults to 1 for those TU types that do not use it
             if (this->SysType_Num == SysType::SingleDuctVAVReheatVSFan) {
                 TermUnitSizing(state.dataSize->CurTermUnitSizingNum).AirVolFlow =
-                    max(state.dataSingleDuct->UserInputMaxHeatAirVolFlowRateSS,
+                    max(UserInputMaxHeatAirVolFlowRate,
                         state.dataSize->TermUnitFinalZoneSizing(state.dataSize->CurTermUnitSizingNum).NonAirSysDesHeatVolFlow,
                         this->MaxAirVolFlowRate * this->ZoneMinAirFracDes * this->ZoneTurndownMinAirFrac);
             } else if (this->SysType_Num == SysType::SingleDuctConstVolReheat || this->SysType_Num == SysType::SingleDuctConstVolNoReheat) {
@@ -3084,6 +3087,9 @@ void SingleDuctAirTerminal::SizeSys(EnergyPlusData &state)
     if (this->MaxReheatWaterVolFlow == AutoSize) {
         IsAutoSize = true;
     }
+
+    Real64 DesCoilLoad = 0.0;
+    
     if (state.dataSize->CurTermUnitSizingNum > 0) {
         if (!IsAutoSize && !state.dataSize->ZoneSizingRunDone) {
             if (this->MaxReheatWaterVolFlow > 0.0) {
@@ -3093,35 +3099,29 @@ void SingleDuctAirTerminal::SizeSys(EnergyPlusData &state)
         } else {
             CheckZoneSizing(state, this->sysType, this->SysName);
             if (this->reheatCoilType == HVAC::CoilType::HeatingWater) {
-                state.dataSingleDuct->CoilWaterInletNodeSS = WaterCoils::GetCoilWaterInletNode(state, this->ReheatCoilNum);
-                state.dataSingleDuct->CoilWaterOutletNodeSS = WaterCoils::GetCoilWaterOutletNode(state, this->ReheatCoilNum);
+                int CoilWaterInletNode = WaterCoils::GetCoilWaterInletNode(state, this->ReheatCoilNum);
+                int CoilWaterOutletNode = WaterCoils::GetCoilWaterOutletNode(state, this->ReheatCoilNum);
                 if (IsAutoSize) {
                     PlantSizingErrorsFound = false;
                     PltSizHeatNum = MyPlantSizingIndex(state,
                                                        "Coil:Heating:Water",
                                                        this->ReheatCoilName,
-                                                       state.dataSingleDuct->CoilWaterInletNodeSS,
-                                                       state.dataSingleDuct->CoilWaterOutletNodeSS,
+                                                       CoilWaterInletNode,
+                                                       CoilWaterOutletNode,
                                                        PlantSizingErrorsFound);
                     if (PlantSizingErrorsFound) {
                         ShowContinueError(state, format("...Occurs in {}:{}", this->sysType, this->SysName));
                         ErrorsFound = true;
                     }
                     if (PltSizHeatNum > 0) {
-                        state.dataSingleDuct->CoilInTempSS =
-                            state.dataSize->TermUnitFinalZoneSizing(state.dataSize->CurTermUnitSizingNum).DesHeatCoilInTempTU;
+                        Real64 CoilInTemp = state.dataSize->TermUnitFinalZoneSizing(state.dataSize->CurTermUnitSizingNum).DesHeatCoilInTempTU;
                         DesMassFlow = state.dataEnvrn->StdRhoAir * TermUnitSizing(state.dataSize->CurTermUnitSizingNum).AirVolFlow;
-                        state.dataSingleDuct->DesZoneHeatLoadSS =
-                            state.dataSize->TermUnitFinalZoneSizing(state.dataSize->CurTermUnitSizingNum).NonAirSysDesHeatLoad;
-                        state.dataSingleDuct->ZoneDesTempSS =
-                            state.dataSize->TermUnitFinalZoneSizing(state.dataSize->CurTermUnitSizingNum).ZoneTempAtHeatPeak;
-                        state.dataSingleDuct->ZoneDesHumRatSS =
-                            state.dataSize->TermUnitFinalZoneSizing(state.dataSize->CurTermUnitSizingNum).ZoneHumRatAtHeatPeak;
+                        Real64 DesZoneHeatLoad = state.dataSize->TermUnitFinalZoneSizing(state.dataSize->CurTermUnitSizingNum).NonAirSysDesHeatLoad;
+                        Real64 ZoneDesTemp = state.dataSize->TermUnitFinalZoneSizing(state.dataSize->CurTermUnitSizingNum).ZoneTempAtHeatPeak;
+                        Real64 ZoneDesHumRat = state.dataSize->TermUnitFinalZoneSizing(state.dataSize->CurTermUnitSizingNum).ZoneHumRatAtHeatPeak;
                         // the coil load is the zone design heating load plus (or minus!) the reheat load
-                        state.dataSingleDuct->DesCoilLoadSS =
-                            state.dataSingleDuct->DesZoneHeatLoadSS + PsyCpAirFnW(state.dataSingleDuct->ZoneDesHumRatSS) * DesMassFlow *
-                                                                          (state.dataSingleDuct->ZoneDesTempSS - state.dataSingleDuct->CoilInTempSS);
-                        if (state.dataSingleDuct->DesCoilLoadSS >= SmallLoad) {
+                        DesCoilLoad = DesZoneHeatLoad + PsyCpAirFnW(ZoneDesHumRat) * DesMassFlow * (ZoneDesTemp - CoilInTemp);
+                        if (DesCoilLoad >= SmallLoad) {
 
                             rho =
                                 state.dataPlnt->PlantLoop(this->HWplantLoc.loopNum).glycol->getDensity(state, Constant::HWInitConvTemp, RoutineName);
@@ -3129,8 +3129,7 @@ void SingleDuctAirTerminal::SizeSys(EnergyPlusData &state)
                             Cp = state.dataPlnt->PlantLoop(this->HWplantLoc.loopNum)
                                      .glycol->getSpecificHeat(state, Constant::HWInitConvTemp, RoutineName);
 
-                            MaxReheatWaterVolFlowDes =
-                                state.dataSingleDuct->DesCoilLoadSS / (state.dataSize->PlantSizData(PltSizHeatNum).DeltaT * Cp * rho);
+                            MaxReheatWaterVolFlowDes = DesCoilLoad / (state.dataSize->PlantSizData(PltSizHeatNum).DeltaT * Cp * rho);
                         } else {
                             MaxReheatWaterVolFlowDes = 0.0;
                         }
@@ -3205,35 +3204,29 @@ void SingleDuctAirTerminal::SizeSys(EnergyPlusData &state)
             CheckZoneSizing(state, this->sysType, this->SysName);
             if (this->reheatCoilType == HVAC::CoilType::HeatingSteam) {
                 // Why are these state variables?
-                state.dataSingleDuct->CoilSteamInletNodeSS = SteamCoils::GetCoilSteamInletNode(state, this->ReheatCoilNum);
-                state.dataSingleDuct->CoilSteamOutletNodeSS = SteamCoils::GetCoilSteamOutletNode(state, this->ReheatCoilNum);
+                int CoilSteamInletNode = SteamCoils::GetCoilSteamInletNode(state, this->ReheatCoilNum);
+                int CoilSteamOutletNode = SteamCoils::GetCoilSteamOutletNode(state, this->ReheatCoilNum);
                 if (IsAutoSize) {
                     PlantSizingErrorsFound = false;
                     PltSizHeatNum = MyPlantSizingIndex(state,
                                                        HVAC::coilTypeNames[(int)this->reheatCoilType],
                                                        this->ReheatCoilName,
-                                                       state.dataSingleDuct->CoilSteamInletNodeSS,
-                                                       state.dataSingleDuct->CoilSteamOutletNodeSS,
+                                                       CoilSteamInletNode,
+                                                       CoilSteamOutletNode,
                                                        PlantSizingErrorsFound);
                     if (PlantSizingErrorsFound) {
                         ShowContinueError(state, format("...Occurs in {}:{}", this->sysType, this->SysName));
                         ErrorsFound = true;
                     }
                     if (PltSizHeatNum > 0) {
-                        state.dataSingleDuct->CoilInTempSS =
-                            state.dataSize->TermUnitFinalZoneSizing(state.dataSize->CurTermUnitSizingNum).DesHeatCoilInTempTU;
+                        Real64 CoilInTemp = state.dataSize->TermUnitFinalZoneSizing(state.dataSize->CurTermUnitSizingNum).DesHeatCoilInTempTU;
                         DesMassFlow = state.dataEnvrn->StdRhoAir * TermUnitSizing(state.dataSize->CurTermUnitSizingNum).AirVolFlow;
-                        state.dataSingleDuct->DesZoneHeatLoadSS =
-                            state.dataSize->TermUnitFinalZoneSizing(state.dataSize->CurTermUnitSizingNum).NonAirSysDesHeatLoad;
-                        state.dataSingleDuct->ZoneDesTempSS =
-                            state.dataSize->TermUnitFinalZoneSizing(state.dataSize->CurTermUnitSizingNum).ZoneTempAtHeatPeak;
-                        state.dataSingleDuct->ZoneDesHumRatSS =
-                            state.dataSize->TermUnitFinalZoneSizing(state.dataSize->CurTermUnitSizingNum).ZoneHumRatAtHeatPeak;
+                        Real64 DesZoneHeatLoad = state.dataSize->TermUnitFinalZoneSizing(state.dataSize->CurTermUnitSizingNum).NonAirSysDesHeatLoad;
+                        Real64 ZoneDesTemp = state.dataSize->TermUnitFinalZoneSizing(state.dataSize->CurTermUnitSizingNum).ZoneTempAtHeatPeak;
+                        Real64 ZoneDesHumRat = state.dataSize->TermUnitFinalZoneSizing(state.dataSize->CurTermUnitSizingNum).ZoneHumRatAtHeatPeak;
                         // the coil load is the zone design heating load plus (or minus!) the reheat load
-                        state.dataSingleDuct->DesCoilLoadSS =
-                            state.dataSingleDuct->DesZoneHeatLoadSS + PsyCpAirFnW(state.dataSingleDuct->ZoneDesHumRatSS) * DesMassFlow *
-                                                                          (state.dataSingleDuct->ZoneDesTempSS - state.dataSingleDuct->CoilInTempSS);
-                        if (state.dataSingleDuct->DesCoilLoadSS >= SmallLoad) {
+                        DesCoilLoad = DesZoneHeatLoad + PsyCpAirFnW(ZoneDesHumRat) * DesMassFlow * (ZoneDesTemp - CoilInTemp);
+                        if (DesCoilLoad >= SmallLoad) {
                             TempSteamIn = 100.00;
                             auto *steam = Fluid::GetSteam(state);
                             EnthSteamInDry = steam->getSatEnthalpy(state, TempSteamIn, 1.0, RoutineNameFull);
@@ -3242,7 +3235,7 @@ void SingleDuctAirTerminal::SizeSys(EnergyPlusData &state)
                             SteamDensity = steam->getSatDensity(state, TempSteamIn, 1.0, RoutineNameFull);
 
                             Cp = Fluid::GetWater(state)->getSpecificHeat(state, state.dataSize->PlantSizData(PltSizHeatNum).ExitTemp, RoutineName);
-                            MaxReheatSteamVolFlowDes = state.dataSingleDuct->DesCoilLoadSS /
+                            MaxReheatSteamVolFlowDes = DesCoilLoad /
                                                        (SteamDensity * (LatentHeatSteam + state.dataSize->PlantSizData(PltSizHeatNum).DeltaT * Cp));
                         } else {
                             MaxReheatSteamVolFlowDes = 0.0;
@@ -3293,7 +3286,7 @@ void SingleDuctAirTerminal::SizeSys(EnergyPlusData &state)
         TermUnitSizing(state.dataSize->CurTermUnitSizingNum).MinPriFlowFrac = this->ZoneMinAirFracDes * this->ZoneTurndownMinAirFrac;
         TermUnitSizing(state.dataSize->CurTermUnitSizingNum).MaxHWVolFlow = this->MaxReheatWaterVolFlow;
         TermUnitSizing(state.dataSize->CurTermUnitSizingNum).MaxSTVolFlow = this->MaxReheatSteamVolFlow;
-        TermUnitSizing(state.dataSize->CurTermUnitSizingNum).DesHeatingLoad = state.dataSingleDuct->DesCoilLoadSS; // Coil Summary report
+        TermUnitSizing(state.dataSize->CurTermUnitSizingNum).DesHeatingLoad = DesCoilLoad; // Coil Summary report
         if (this->reheatCoilType == HVAC::CoilType::HeatingWater) {
             if (this->DamperHeatingAction == Action::Normal) {
                 WaterCoils::SetCoilDesFlow(state, this->ReheatCoilNum, this->ZoneMinAirFracDes * this->MaxAirVolFlowRate);
@@ -5449,55 +5442,46 @@ void CalcATMixer(EnergyPlusData &state, int const SysNum)
 
     // Using/Aliasing
     using Psychrometrics::PsyTdbFnHW;
+    auto &atMixer = state.dataSingleDuct->SysATMixer(SysNum);
+    auto &priInNode = state.dataLoopNodes->Node(atMixer.PriInNode);
+    auto &secInNode = state.dataLoopNodes->Node(atMixer.SecInNode);
+    auto &mixedAirOutNode = state.dataLoopNodes->Node(atMixer.MixedAirOutNode);
 
-    state.dataSingleDuct->PriEnthalpyCATM = state.dataLoopNodes->Node(state.dataSingleDuct->SysATMixer(SysNum).PriInNode).Enthalpy;
-    state.dataSingleDuct->PriHumRatCATM = state.dataLoopNodes->Node(state.dataSingleDuct->SysATMixer(SysNum).PriInNode).HumRat;
-    state.dataSingleDuct->PriTempCATM = state.dataLoopNodes->Node(state.dataSingleDuct->SysATMixer(SysNum).PriInNode).Temp;
-    state.dataSingleDuct->PriMassFlowRateCATM = state.dataLoopNodes->Node(state.dataSingleDuct->SysATMixer(SysNum).PriInNode).MassFlowRate;
+    Real64 MixedAirMassFlowRate = 0.0;
+    Real64 MixedAirEnthalpy = 0.0;
+    Real64 MixedAirHumRat = 0.0;
+    Real64 MixedAirTemp = 0.0;
 
-    state.dataSingleDuct->SecAirMassFlowRateCATM = state.dataLoopNodes->Node(state.dataSingleDuct->SysATMixer(SysNum).SecInNode).MassFlowRate;
-    state.dataSingleDuct->SecAirEnthalpyCATM = state.dataLoopNodes->Node(state.dataSingleDuct->SysATMixer(SysNum).SecInNode).Enthalpy;
-    state.dataSingleDuct->SecAirHumRatCATM = state.dataLoopNodes->Node(state.dataSingleDuct->SysATMixer(SysNum).SecInNode).HumRat;
-    state.dataSingleDuct->SecAirTempCATM = state.dataLoopNodes->Node(state.dataSingleDuct->SysATMixer(SysNum).SecInNode).Temp;
-
-    if (state.dataSingleDuct->SysATMixer(SysNum).type == HVAC::MixerType::SupplySide) {
-        state.dataSingleDuct->MixedAirMassFlowRateCATM = state.dataSingleDuct->SecAirMassFlowRateCATM + state.dataSingleDuct->PriMassFlowRateCATM;
+    if (atMixer.type == HVAC::MixerType::SupplySide) {
+        MixedAirMassFlowRate = secInNode.MassFlowRate + priInNode.MassFlowRate;
     } else {
         // for inlet side mixer, the mixed air flow has been set, but we don't know the secondary flow
-        state.dataSingleDuct->MixedAirMassFlowRateCATM =
-            state.dataLoopNodes->Node(state.dataSingleDuct->SysATMixer(SysNum).MixedAirOutNode).MassFlowRate;
-        state.dataSingleDuct->SecAirMassFlowRateCATM =
-            max(state.dataSingleDuct->MixedAirMassFlowRateCATM - state.dataSingleDuct->PriMassFlowRateCATM, 0.0);
-        state.dataLoopNodes->Node(state.dataSingleDuct->SysATMixer(SysNum).SecInNode).MassFlowRate = state.dataSingleDuct->SecAirMassFlowRateCATM;
-        if (std::abs(state.dataSingleDuct->PriMassFlowRateCATM + state.dataSingleDuct->SecAirMassFlowRateCATM -
-                     state.dataSingleDuct->MixedAirMassFlowRateCATM) > SmallMassFlow) {
+        MixedAirMassFlowRate = mixedAirOutNode.MassFlowRate;
+        secInNode.MassFlowRate = max(MixedAirMassFlowRate - priInNode.MassFlowRate, 0.0);
+        if (std::abs(priInNode.MassFlowRate + secInNode.MassFlowRate - MixedAirMassFlowRate) > SmallMassFlow) {
             ShowSevereError(
                 state,
-                format("CalcATMixer: Invalid mass flow rates in AirTerminal:SingleDuct:Mixer={}", state.dataSingleDuct->SysATMixer(SysNum).Name));
+                format("CalcATMixer: Invalid mass flow rates in AirTerminal:SingleDuct:Mixer={}", atMixer.Name));
             ShowContinueErrorTimeStamp(state,
                                        format("Primary mass flow rate={:.6R}Secondary mass flow rate={:.6R}Mixed mass flow rate={:.6R}",
-                                              state.dataSingleDuct->PriMassFlowRateCATM,
-                                              state.dataSingleDuct->SecAirMassFlowRateCATM,
-                                              state.dataSingleDuct->MixedAirMassFlowRateCATM));
+                                              priInNode.MassFlowRate,
+                                              secInNode.MassFlowRate,
+                                              MixedAirMassFlowRate));
             ShowFatalError(state, "Simulation terminates.");
         }
     }
     // now calculate the mixed (outlet) conditions
-    if (state.dataSingleDuct->MixedAirMassFlowRateCATM > 0.0) {
-        state.dataSingleDuct->MixedAirEnthalpyCATM = (state.dataSingleDuct->SecAirMassFlowRateCATM * state.dataSingleDuct->SecAirEnthalpyCATM +
-                                                      state.dataSingleDuct->PriMassFlowRateCATM * state.dataSingleDuct->PriEnthalpyCATM) /
-                                                     state.dataSingleDuct->MixedAirMassFlowRateCATM;
-        state.dataSingleDuct->MixedAirHumRatCATM = (state.dataSingleDuct->SecAirMassFlowRateCATM * state.dataSingleDuct->SecAirHumRatCATM +
-                                                    state.dataSingleDuct->PriMassFlowRateCATM * state.dataSingleDuct->PriHumRatCATM) /
-                                                   state.dataSingleDuct->MixedAirMassFlowRateCATM;
+    if (MixedAirMassFlowRate > 0.0) {
+        MixedAirEnthalpy = (secInNode.MassFlowRate * secInNode.Enthalpy + priInNode.MassFlowRate * priInNode.Enthalpy) / MixedAirMassFlowRate;
+        MixedAirHumRat = (secInNode.MassFlowRate * secInNode.HumRat + priInNode.MassFlowRate * priInNode.HumRat) / MixedAirMassFlowRate;
         // Mixed air temperature is calculated from the mixed air enthalpy and humidity ratio.
-        state.dataSingleDuct->MixedAirTempCATM = PsyTdbFnHW(state.dataSingleDuct->MixedAirEnthalpyCATM, state.dataSingleDuct->MixedAirHumRatCATM);
+        MixedAirTemp = PsyTdbFnHW(MixedAirEnthalpy, MixedAirHumRat);
     }
 
-    state.dataSingleDuct->SysATMixer(SysNum).MixedAirMassFlowRate = state.dataSingleDuct->MixedAirMassFlowRateCATM;
-    state.dataSingleDuct->SysATMixer(SysNum).MixedAirEnthalpy = state.dataSingleDuct->MixedAirEnthalpyCATM;
-    state.dataSingleDuct->SysATMixer(SysNum).MixedAirHumRat = state.dataSingleDuct->MixedAirHumRatCATM;
-    state.dataSingleDuct->SysATMixer(SysNum).MixedAirTemp = state.dataSingleDuct->MixedAirTempCATM;
+    atMixer.MixedAirMassFlowRate = MixedAirMassFlowRate;
+    atMixer.MixedAirEnthalpy = MixedAirEnthalpy;
+    atMixer.MixedAirHumRat = MixedAirHumRat;
+    atMixer.MixedAirTemp = MixedAirTemp;
 }
 
 void UpdateATMixer(EnergyPlusData &state, int const SysNum)
@@ -5512,45 +5496,41 @@ void UpdateATMixer(EnergyPlusData &state, int const SysNum)
     // Using/Aliasing
     using namespace DataLoopNode;
 
-    // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-    int PriInNode = state.dataSingleDuct->SysATMixer(SysNum).PriInNode;
-    int SecInNode = state.dataSingleDuct->SysATMixer(SysNum).SecInNode;
-    int MixedAirOutNode = state.dataSingleDuct->SysATMixer(SysNum).MixedAirOutNode;
+    auto &atMixer = state.dataSingleDuct->SysATMixer(SysNum);
 
+    auto &priInNode = state.dataLoopNodes->Node(atMixer.PriInNode);
+    auto &secInNode = state.dataLoopNodes->Node(atMixer.SecInNode);
+    auto &mixedAirOutNode = state.dataLoopNodes->Node(atMixer.MixedAirOutNode);
     // mixed air data
-    state.dataLoopNodes->Node(MixedAirOutNode).Temp = state.dataSingleDuct->SysATMixer(SysNum).MixedAirTemp;
-    state.dataLoopNodes->Node(MixedAirOutNode).HumRat = state.dataSingleDuct->SysATMixer(SysNum).MixedAirHumRat;
-    state.dataLoopNodes->Node(MixedAirOutNode).Enthalpy = state.dataSingleDuct->SysATMixer(SysNum).MixedAirEnthalpy;
-    state.dataLoopNodes->Node(MixedAirOutNode).Press = state.dataSingleDuct->SysATMixer(SysNum).MixedAirPressure;
-    state.dataLoopNodes->Node(MixedAirOutNode).MassFlowRate = state.dataSingleDuct->SysATMixer(SysNum).MixedAirMassFlowRate;
+    mixedAirOutNode.Temp = atMixer.MixedAirTemp;
+    mixedAirOutNode.HumRat = atMixer.MixedAirHumRat;
+    mixedAirOutNode.Enthalpy = atMixer.MixedAirEnthalpy;
+    mixedAirOutNode.Press = atMixer.MixedAirPressure;
+    mixedAirOutNode.MassFlowRate = atMixer.MixedAirMassFlowRate;
 
     if (state.dataContaminantBalance->Contaminant.CO2Simulation) {
-        if (state.dataSingleDuct->SysATMixer(SysNum).MixedAirMassFlowRate <= HVAC::VerySmallMassFlow) {
-            state.dataLoopNodes->Node(MixedAirOutNode).CO2 = state.dataLoopNodes->Node(PriInNode).CO2;
+        if (atMixer.MixedAirMassFlowRate <= HVAC::VerySmallMassFlow) {
+            mixedAirOutNode.CO2 = priInNode.CO2;
         } else {
-            state.dataLoopNodes->Node(MixedAirOutNode).CO2 =
-                (state.dataLoopNodes->Node(SecInNode).MassFlowRate * state.dataLoopNodes->Node(SecInNode).CO2 +
-                 state.dataLoopNodes->Node(PriInNode).MassFlowRate * state.dataLoopNodes->Node(PriInNode).CO2) /
-                state.dataLoopNodes->Node(MixedAirOutNode).MassFlowRate;
+            mixedAirOutNode.CO2 =
+                (secInNode.MassFlowRate * secInNode.CO2 + priInNode.MassFlowRate * priInNode.CO2) / mixedAirOutNode.MassFlowRate;
         }
     }
 
     if (state.dataContaminantBalance->Contaminant.GenericContamSimulation) {
-        if (state.dataSingleDuct->SysATMixer(SysNum).MixedAirMassFlowRate <= HVAC::VerySmallMassFlow) {
-            state.dataLoopNodes->Node(MixedAirOutNode).GenContam = state.dataLoopNodes->Node(PriInNode).GenContam;
+        if (atMixer.MixedAirMassFlowRate <= HVAC::VerySmallMassFlow) {
+            mixedAirOutNode.GenContam = priInNode.GenContam;
         } else {
-            state.dataLoopNodes->Node(MixedAirOutNode).GenContam =
-                (state.dataLoopNodes->Node(SecInNode).MassFlowRate * state.dataLoopNodes->Node(SecInNode).GenContam +
-                 state.dataLoopNodes->Node(PriInNode).MassFlowRate * state.dataLoopNodes->Node(PriInNode).GenContam) /
-                state.dataLoopNodes->Node(MixedAirOutNode).MassFlowRate;
+            mixedAirOutNode.GenContam =
+                (secInNode.MassFlowRate * secInNode.GenContam + priInNode.MassFlowRate * priInNode.GenContam) / mixedAirOutNode.MassFlowRate;
         }
     }
 
     // update ADU flow data - because SimATMixer is called from the various zone equipment so the updates in SimZoneAirLoopEquipment won't work
-    int aduNum = state.dataSingleDuct->SysATMixer(SysNum).ADUNum;
-    state.dataDefineEquipment->AirDistUnit(aduNum).MassFlowRateTU = state.dataLoopNodes->Node(PriInNode).MassFlowRate;
-    state.dataDefineEquipment->AirDistUnit(aduNum).MassFlowRateZSup = state.dataLoopNodes->Node(PriInNode).MassFlowRate;
-    state.dataDefineEquipment->AirDistUnit(aduNum).MassFlowRateSup = state.dataLoopNodes->Node(PriInNode).MassFlowRate;
+    int aduNum = atMixer.ADUNum;
+    state.dataDefineEquipment->AirDistUnit(aduNum).MassFlowRateTU = priInNode.MassFlowRate;
+    state.dataDefineEquipment->AirDistUnit(aduNum).MassFlowRateZSup = priInNode.MassFlowRate;
+    state.dataDefineEquipment->AirDistUnit(aduNum).MassFlowRateSup = priInNode.MassFlowRate;
 }
 
 void GetATMixer(EnergyPlusData &state,

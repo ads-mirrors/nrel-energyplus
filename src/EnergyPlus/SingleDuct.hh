@@ -369,17 +369,7 @@ struct SingleDuctData : BaseGlobalStruct
     int MaxNumsGSI = 0;   // Maximum number of numeric input fields
     int MaxAlphasGSI = 0; // Maximum number of alpha input fields
     int TotalArgsGSI = 0; // Total number of alpha and numeric arguments  = max for a
-    Real64 CoilInTempSS = 0.0;
-    Real64 DesCoilLoadSS = 0.0;
-    Real64 DesZoneHeatLoadSS = 0.0;
-    Real64 ZoneDesTempSS = 0.0;
-    Real64 ZoneDesHumRatSS = 0.0;
-    int CoilWaterInletNodeSS = 0;
-    int CoilWaterOutletNodeSS = 0;
-    int CoilSteamInletNodeSS = 0;
-    int CoilSteamOutletNodeSS = 0;
     Fluid::GlycolProps *water = nullptr;
-    Real64 UserInputMaxHeatAirVolFlowRateSS = 0.0; // user input for MaxHeatAirVolFlowRate
     Real64 MinAirMassFlowRevActSVAV = 0.0;         // minimum air mass flow rate used in "reverse action" air mass flow rate calculation
     Real64 MaxAirMassFlowRevActSVAV = 0.0;         // maximum air mass flow rate used in "reverse action" air mass flow rate calculation
     Real64 ZoneTempSCBVAV = 0.0;                   // zone air temperature [C]
@@ -396,20 +386,6 @@ struct SingleDuctData : BaseGlobalStruct
     Real64 ZoneTempSCV = 0.0;                      // Zone temperature [C]
     Real64 QMax2SCV = 0.0;
     int SysNumSATM = 0;
-    Real64 PriMassFlowRateCATM = 0.0;
-    Real64 PriEnthalpyCATM = 0.0;
-    Real64 PriHumRatCATM = 0.0;
-    Real64 PriTempCATM = 0.0;
-
-    Real64 SecAirMassFlowRateCATM = 0.0;
-    Real64 SecAirEnthalpyCATM = 0.0;
-    Real64 SecAirHumRatCATM = 0.0;
-    Real64 SecAirTempCATM = 0.0;
-
-    Real64 MixedAirMassFlowRateCATM = 0.0;
-    Real64 MixedAirEnthalpyCATM = 0.0;
-    Real64 MixedAirHumRatCATM = 0.0;
-    Real64 MixedAirTempCATM = 0.0;
 
     Real64 ZoneTempSDAT = 0.0;                      // zone air temperature [C]
     Real64 MaxHeatTempSDAT = 0.0;                   // maximum supply air temperature [C]

@@ -3278,7 +3278,7 @@ namespace Fluid {
             ReturnValue = this->getSatEnthalpy(state, Temperature, 1.0, fmt::format("{}:{}", routineName, CalledFrom));
             // send warning
             if (!state.dataGlobal->WarmupFlag) {
-                this->errors[(int)RefrigError::SatSupEnthalpy].count += df->SatErrCountGetSupHeatEnthalpyRefrig;
+                this->errors[(int)RefrigError::SatSupEnthalpy].count++;
                 // send warning
                 if (this->errors[(int)RefrigError::SatTempDensity].count <= df->RefrigErrorLimitTest) {
                     ShowWarningMessage(
@@ -3885,7 +3885,7 @@ namespace Fluid {
         } else { // All data is at zero: we are completely inside the saturation dome. Best thing we can do is return saturation value
             ++df->SatErrCountGetSupHeatDensityRefrig;
             // send warning
-            this->errors[(int)RefrigError::SatSupDensity].count += df->SatErrCountGetSupHeatDensityRefrig;
+            this->errors[(int)RefrigError::SatSupDensity].count++;
             // send warning
             if (this->errors[(int)RefrigError::SatSupDensity].count <= df->RefrigErrorLimitTest) {
                 ShowWarningMessage(
@@ -4195,7 +4195,7 @@ namespace Fluid {
 
         // Error handling
         if (error != GlycolError::Invalid && !state.dataGlobal->WarmupFlag) {
-            df->glycolErrorLimits[(int)error] = this->errors[(int)error].count;
+            df->glycolErrorLimits[(int)error] = ++this->errors[(int)error].count;
 
             if (error == GlycolError::DensityLow) {
                 if (df->glycolErrorLimits[(int)error] <= df->GlycolErrorLimitTest) {
@@ -4327,7 +4327,7 @@ namespace Fluid {
 
         // Error handling
         if (!state.dataGlobal->WarmupFlag && error != GlycolError::Invalid) {
-            df->glycolErrorLimits[(int)error] = this->errors[(int)error].count;
+            df->glycolErrorLimits[(int)error] = ++this->errors[(int)error].count;
 
             if (error == GlycolError::ConductivityLow) {
                 if (df->glycolErrorLimits[(int)error] <= df->GlycolErrorLimitTest) {

@@ -1854,12 +1854,14 @@ namespace FanCoilUnits {
             WaterCoils::SetCoilDesFlow(state,
                                        fanCoil.CoolCoilNum,
                                        state.dataSize->FinalZoneSizing(state.dataSize->CurZoneEqNum).DesCoolVolFlow);
-            WaterCoils::SetCoilDesFlow(state,
-                                       fanCoil.HeatCoilNum,
-                                       state.dataSize->FinalZoneSizing(state.dataSize->CurZoneEqNum).DesHeatVolFlow);
+            if (fanCoil.heatCoilType == HVAC::CoilType::HeatingWater) { 
+                WaterCoils::SetCoilDesFlow(state, fanCoil.HeatCoilNum, state.dataSize->FinalZoneSizing(state.dataSize->CurZoneEqNum).DesHeatVolFlow);
+            }
         } else {
             WaterCoils::SetCoilDesFlow(state, fanCoil.CoolCoilNum, fanCoil.MaxAirVolFlow);
-            WaterCoils::SetCoilDesFlow(state, fanCoil.HeatCoilNum, fanCoil.MaxAirVolFlow);
+            if (fanCoil.heatCoilType == HVAC::CoilType::HeatingWater) { 
+                WaterCoils::SetCoilDesFlow(state, fanCoil.HeatCoilNum, fanCoil.MaxAirVolFlow);
+            }
         }
         if (state.dataSize->CurZoneEqNum > 0) {
             zoneEqSizing.MaxHWVolFlow = fanCoil.MaxHotWaterVolFlow;

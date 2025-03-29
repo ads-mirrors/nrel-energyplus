@@ -719,7 +719,11 @@ void GetWaterCoilInput(EnergyPlusData &state)
         waterCoil.MaxWaterVolFlowRate = NumArray(1); // Liquid mass flow rate at Design  kg/s
         if (waterCoil.MaxWaterVolFlowRate == DataSizing::AutoSize) waterCoil.RequestingAutoSize = true;
         waterCoil.DesAirVolFlowRate = NumArray(2); // Dry air mass flow rate at Design (kg/s)
-        if (waterCoil.DesAirVolFlowRate == DataSizing::AutoSize) waterCoil.RequestingAutoSize = true;
+        if (waterCoil.DesAirVolFlowRate == DataSizing::AutoSize) {
+            waterCoil.RequestingAutoSize = true;
+        } else {
+            waterCoil.DesAirVolFlowRateIsAutosized = false;
+        }
         waterCoil.DesInletWaterTemp = NumArray(3); // Entering water temperature at Design C
         if (waterCoil.DesInletWaterTemp == DataSizing::AutoSize) waterCoil.RequestingAutoSize = true;
         waterCoil.DesInletAirTemp = NumArray(4); // Entering air dry bulb temperature at Design(C)
@@ -2222,6 +2226,12 @@ void SizeWaterCoil(EnergyPlusData &state, int const CoilNum)
             } else {
                 bPRINT = true;
             }
+            if (waterCoil.DesAirVolFlowRateIsAutosized && waterCoil.DesAirVolFlowRate > 0.0) {
+                state.dataSize->DataConstantUsedForSizing = 1.0;
+                state.dataSize->DataFractionUsedForSizing = waterCoil.DesAirVolFlowRate;
+                waterCoil.DesAirVolFlowRate = DataSizing::AutoSize;
+            } else {
+            }
             TempSize = waterCoil.DesAirVolFlowRate;
             CoolingAirFlowSizer sizingCoolingAirFlow2;
             std::string stringOverride = "Design Air Flow Rate [m3/s]";
@@ -2231,6 +2241,8 @@ void SizeWaterCoil(EnergyPlusData &state, int const CoilNum)
             sizingCoolingAirFlow2.initializeWithinEP(state, HVAC::coilTypeNames[(int)waterCoil.coilType], CompName, bPRINT, RoutineName);
             waterCoil.DesAirVolFlowRate = sizingCoolingAirFlow2.size(state, TempSize, ErrorsFound);
             waterCoil.DesAirMassFlowRate = waterCoil.DesAirVolFlowRate * state.dataEnvrn->StdRhoAir;
+            state.dataSize->DataConstantUsedForSizing = 0.0;
+            state.dataSize->DataFractionUsedForSizing = 0.0;
 
             if (waterCoil.DesAirVolFlowRate <= 0.0) {
                 waterCoil.DesAirVolFlowRate = 0.0;

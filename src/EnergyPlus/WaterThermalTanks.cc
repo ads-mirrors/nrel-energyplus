@@ -8838,7 +8838,7 @@ void WaterThermalTankData::CalcHeatPumpWaterHeater(EnergyPlusData &state, bool c
         }
         //   pass node info and simulate crankcase heater
         if (MaxSpeedNum > 0) {
-            int VSCoilNum = (HeatPump.bIsIHP) ? state.dataIntegratedHP->IntegratedHeatPumps(VSCoilNum).SCWHCoilNum : HeatPump.DXCoilNum;
+            int VSCoilNum = (HeatPump.bIsIHP) ? state.dataIntegratedHP->IntegratedHeatPumps(HeatPump.DXCoilNum).SCWHCoilNum : HeatPump.DXCoilNum;
 
             // set the SCWH mode
             Real64 SpeedRatio = 1.0; // speed ratio for interpolating between two speed levels

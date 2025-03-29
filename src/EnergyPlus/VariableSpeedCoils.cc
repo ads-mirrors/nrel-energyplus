@@ -395,21 +395,21 @@ namespace VariableSpeedCoils {
 
                 std::string fieldName;
                 for (int I = 1; I <= varSpeedCoil.NumOfSpeeds; ++I) {
-                    fieldName = "speed_" + std::to_string(I) + "_reference_unit_gross_rated_total_cooling_capacity";
+                    fieldName = format("speed_{}{}", std::to_string(I), "_reference_unit_gross_rated_total_cooling_capacity");
                     varSpeedCoil.MSRatedTotCap(I) = s_ip->getRealFieldValue(fields, schemaProps, fieldName);
-                    fieldName = "speed_" + std::to_string(I) + "_reference_unit_gross_rated_sensible_heat_ratio";
+                    fieldName = format("speed_{}{}", std::to_string(I), "_reference_unit_gross_rated_sensible_heat_ratio");
                     varSpeedCoil.MSRatedSHR(I) = s_ip->getRealFieldValue(fields, schemaProps, fieldName);
-                    fieldName = "speed_" + std::to_string(I) + "_reference_unit_gross_rated_cooling_cop";
+                    fieldName = format("speed_{}{}", std::to_string(I), "_reference_unit_gross_rated_cooling_cop");
                     varSpeedCoil.MSRatedCOP(I) = s_ip->getRealFieldValue(fields, schemaProps, fieldName);
-                    fieldName = "speed_" + std::to_string(I) + "_reference_unit_rated_air_flow_rate";
+                    fieldName = format("speed_{}{}", std::to_string(I), "_reference_unit_rated_air_flow_rate");
                     varSpeedCoil.MSRatedAirVolFlowRate(I) = s_ip->getRealFieldValue(fields, schemaProps, fieldName);
-                    fieldName = "speed_" + std::to_string(I) + "_reference_unit_rated_water_flow_rate";
+                    fieldName = format("speed_{}{}", std::to_string(I), "_reference_unit_rated_water_flow_rate");
                     varSpeedCoil.MSRatedWaterVolFlowRate(I) = s_ip->getRealFieldValue(fields, schemaProps, fieldName);
-                    fieldName = "speed_" + std::to_string(I) + "_reference_unit_waste_heat_fraction_of_input_power_at_rated_conditions";
+                    fieldName = format("speed_{}{}", std::to_string(I), "_reference_unit_waste_heat_fraction_of_input_power_at_rated_conditions");
                     varSpeedCoil.MSWasteHeatFrac(I) = s_ip->getRealFieldValue(fields, schemaProps, fieldName);
 
-                    std::string fieldValue = "speed_" + std::to_string(I) + "_total_cooling_capacity_function_of_temperature_curve_name";
-                    std::string cFieldName = "Speed " + std::to_string(I) + " Total Cooling Capacity Function of Temperature Curve Name";
+                    std::string fieldValue = format("speed_{}{}", std::to_string(I), "_total_cooling_capacity_function_of_temperature_curve_name");
+                    std::string cFieldName = format("Speed_{}{}", std::to_string(I), " Total Cooling Capacity Function of Temperature Curve Name");
                     std::string const coolCapFTCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
                     varSpeedCoil.MSCCapFTemp(I) = Curve::GetCurveIndex(state, coolCapFTCurveName); // convert curve name to number
                     if (varSpeedCoil.MSCCapFTemp(I) == 0) {
@@ -440,8 +440,8 @@ namespace VariableSpeedCoils {
                         }
                     }
 
-                    fieldValue = "speed_" + std::to_string(I) + "_total_cooling_capacity_function_of_air_flow_fraction_curve_name";
-                    cFieldName = "Speed " + std::to_string(I) + " Total Cooling Capacity Function of Air Flow Fraction Curve Name";
+                    fieldValue = format("speed_{}{}", std::to_string(I), "_total_cooling_capacity_function_of_air_flow_fraction_curve_name");
+                    cFieldName = format("Speed_{}{}", std::to_string(I), " Total Cooling Capacity Function of Air Flow Fraction Curve Name");
                     std::string const coolCapFFCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
                     varSpeedCoil.MSCCapAirFFlow(I) = Curve::GetCurveIndex(state, coolCapFFCurveName); // convert curve name to number
                     if (varSpeedCoil.MSCCapAirFFlow(I) == 0) {
@@ -472,8 +472,8 @@ namespace VariableSpeedCoils {
                         }
                     }
 
-                    fieldValue = "speed_" + std::to_string(I) + "_total_cooling_capacity_function_of_water_flow_fraction_curve_name";
-                    cFieldName = "Speed " + std::to_string(I) + " Total Cooling Capacity Function of Water Flow Fraction Curve Name";
+                    fieldValue = format("speed_{}{}", std::to_string(I), "_total_cooling_capacity_function_of_water_flow_fraction_curve_name");
+                    cFieldName = format("Speed_{}{}", std::to_string(I), " Total Cooling Capacity Function of Water Flow Fraction Curve Name");
                     std::string const coolCapWFFCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
                     varSpeedCoil.MSCCapWaterFFlow(I) = Curve::GetCurveIndex(state, coolCapWFFCurveName); // convert curve name to number
                     if (varSpeedCoil.MSCCapWaterFFlow(I) == 0) {
@@ -504,8 +504,8 @@ namespace VariableSpeedCoils {
                         }
                     }
 
-                    fieldValue = "speed_" + std::to_string(I) + "_energy_input_ratio_function_of_temperature_curve_name";
-                    cFieldName = "Speed " + std::to_string(I) + " Energy Input Ratio Function of Temperature Curve Name";
+                    fieldValue = format("speed_{}{}", std::to_string(I), "_energy_input_ratio_function_of_temperature_curve_name");
+                    cFieldName = format("Speed_{}{}", std::to_string(I), " Energy Input Ratio Function of Temperature Curve Name");
                     std::string const coolEIRFTCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
                     varSpeedCoil.MSEIRFTemp(I) = Curve::GetCurveIndex(state, coolEIRFTCurveName); // convert curve name to number
                     if (varSpeedCoil.MSEIRFTemp(I) == 0) {
@@ -536,8 +536,8 @@ namespace VariableSpeedCoils {
                         }
                     }
 
-                    fieldValue = "speed_" + std::to_string(I) + "_energy_input_ratio_function_of_air_flow_fraction_curve_name";
-                    cFieldName = "Speed " + std::to_string(I) + " Energy Input Ratio Function of Air Flow Fraction Curve Name";
+                    fieldValue = format("speed_{}{}", std::to_string(I), "_energy_input_ratio_function_of_air_flow_fraction_curve_name");
+                    cFieldName = format("Speed_{}{}", std::to_string(I), " Energy Input Ratio Function of Air Flow Fraction Curve Name");
                     std::string const coolEIRFFFCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
                     varSpeedCoil.MSEIRAirFFlow(I) = Curve::GetCurveIndex(state, coolEIRFFFCurveName); // convert curve name to number
                     if (varSpeedCoil.MSEIRAirFFlow(I) == 0) {
@@ -568,8 +568,8 @@ namespace VariableSpeedCoils {
                         }
                     }
 
-                    fieldValue = "speed_" + std::to_string(I) + "_energy_input_ratio_function_of_water_flow_fraction_curve_name";
-                    cFieldName = "Speed " + std::to_string(I) + " Energy Input Ratio Function of Water Flow Fraction Curve Name";
+                    fieldValue = format("speed_{}{}", std::to_string(I), "_energy_input_ratio_function_of_water_flow_fraction_curve_name");
+                    cFieldName = format("Speed_{}{}", std::to_string(I), " Energy Input Ratio Function of Water Flow Fraction Curve Name");
                     std::string const coolEIRWFFCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
                     varSpeedCoil.MSEIRWaterFFlow(I) = Curve::GetCurveIndex(state, coolEIRWFFCurveName); // convert curve name to number
                     if (varSpeedCoil.MSEIRWaterFFlow(I) == 0) {
@@ -600,8 +600,8 @@ namespace VariableSpeedCoils {
                         }
                     }
                     // Read waste heat modifier curve name
-                    fieldValue = "speed_" + std::to_string(I) + "_waste_heat_function_of_temperature_curve_name";
-                    cFieldName = "Speed " + std::to_string(I) + " Waste Heat Function of Temperature Curve Name";
+                    fieldValue = format("speed_{}{}", std::to_string(I), "_waste_heat_function_of_temperature_curve_name");
+                    cFieldName = format("Speed_{}{}", std::to_string(I), " Waste Heat Function of Temperature Curve Name");
                     std::string const wasteHFTCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
                     varSpeedCoil.MSWasteHeat(I) = Curve::GetCurveIndex(state, wasteHFTCurveName); // convert curve name to number
                     if (varSpeedCoil.MSWasteHeat(I) == 0) {
@@ -967,39 +967,39 @@ namespace VariableSpeedCoils {
 
                 std::string fieldName;
                 for (int I = 1; I <= varSpeedCoil.NumOfSpeeds; ++I) {
-
-                    fieldName = "speed_" + std::to_string(I) + "_reference_unit_gross_rated_total_cooling_capacity";
+                    fieldName = format("speed_{}{}", std::to_string(I), "_reference_unit_gross_rated_total_cooling_capacity");
                     varSpeedCoil.MSRatedTotCap(I) = s_ip->getRealFieldValue(fields, schemaProps, fieldName);
-                    fieldName = "speed_" + std::to_string(I) + "_reference_unit_gross_rated_sensible_heat_ratio";
+                    fieldName = format("speed_{}{}", std::to_string(I), "_reference_unit_gross_rated_sensible_heat_ratio");
                     varSpeedCoil.MSRatedSHR(I) = s_ip->getRealFieldValue(fields, schemaProps, fieldName);
-                    fieldName = "speed_" + std::to_string(I) + "_reference_unit_gross_rated_cooling_cop";
+                    fieldName = format("speed_{}{}", std::to_string(I), "_reference_unit_gross_rated_cooling_cop");
                     varSpeedCoil.MSRatedCOP(I) = s_ip->getRealFieldValue(fields, schemaProps, fieldName);
-                    fieldName = "speed_" + std::to_string(I) + "_reference_unit_rated_air_flow_rate";
+                    fieldName = format("speed_{}{}", std::to_string(I), "_reference_unit_rated_air_flow_rate");
                     varSpeedCoil.MSRatedAirVolFlowRate(I) = s_ip->getRealFieldValue(fields, schemaProps, fieldName);
-                    fieldName = "2017_speed_" + std::to_string(I) + "_rated_evaporator_fan_power_per_volume_flow_rate";
+                    fieldName = fieldName = format("2017_speed_{}{}", std::to_string(I), "_rated_evaporator_fan_power_per_volume_flow_rate");
                     varSpeedCoil.MSRatedEvaporatorFanPowerPerVolumeFlowRate2017(I) = s_ip->getRealFieldValue(fields, schemaProps, fieldName);
-                    fieldName = "2023_speed_" + std::to_string(I) + "_rated_evaporator_fan_power_per_volume_flow_rate";
+                    fieldName = format("2023_speed_{}{}", std::to_string(I), "_rated_evaporator_fan_power_per_volume_flow_rate");
                     varSpeedCoil.MSRatedEvaporatorFanPowerPerVolumeFlowRate2023(I) = s_ip->getRealFieldValue(fields, schemaProps, fieldName);
                     if (I < 6) {
-                        fieldName = "speed_" + std::to_string(I) + "_reference_unit_rated_condenser_air_flow_rate";
+                        fieldName = format("speed_{}{}", std::to_string(I), "_reference_unit_rated_condenser_air_flow_rate");
                     } else {
-                        fieldName = "speed_" + std::to_string(I) + "_reference_unit_condenser_air_flow_rate";
-                        if (I == 7) fieldName = "speed_" + std::to_string(I) + "_reference_unit_condenser_flow_rate";
+                        fieldName = format("speed_{}{}", std::to_string(I), "_reference_unit_condenser_air_flow_rate");
+                        if (I == 7) fieldName = format("Speed_{}{}", std::to_string(I), "_reference_unit_condenser_flow_rate");
                     }
                     varSpeedCoil.EvapCondAirFlow(I) = s_ip->getRealFieldValue(fields, schemaProps, fieldName);
 
-                    fieldName = "speed_" + std::to_string(I) + "_reference_unit_rated_pad_effectiveness_of_evap_precooling";
+                    fieldName = format("speed_{}{}", std::to_string(I), "_reference_unit_rated_pad_effectiveness_of_evap_precooling");
                     varSpeedCoil.EvapCondEffect(I) = s_ip->getRealFieldValue(fields, schemaProps, fieldName);
                     if (varSpeedCoil.EvapCondEffect(I) < 0.0 || varSpeedCoil.EvapCondEffect(I) > 1.0) {
-                        std::string const FieldName = "Speed_" + std::to_string(I) + " Reference Unit Rated Pad Effectiveness of Evap Precooling";
+                        std::string const FieldName =
+                            format("Speed_{}{}", std::to_string(I), " Reference Unit Rated Pad Effectiveness of Evap Precooling");
                         ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
                         ShowContinueError(state, format("...{} cannot be < 0.0 or > 1.0.", FieldName));
                         ShowContinueError(state, format("...entered value=[{:.2T}].", varSpeedCoil.EvapCondEffect(I)));
                         ErrorsFound = true;
                     }
 
-                    std::string fieldValue = "speed_" + std::to_string(I) + "_total_cooling_capacity_function_of_temperature_curve_name";
-                    std::string cFieldName = "Speed " + std::to_string(I) + " Reference Unit Gross Rated Total Cooling Capacity";
+                    std::string fieldValue = format("speed_{}{}", std::to_string(I), "_total_cooling_capacity_function_of_temperature_curve_name");
+                    std::string cFieldName = format("Speed_{}{}", std::to_string(I), " Reference Unit Gross Rated Total Cooling Capacity");
                     std::string const cCapFTCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
                     varSpeedCoil.MSCCapFTemp(I) = Curve::GetCurveIndex(state, cCapFTCurveName); // convert curve name to number
                     if (varSpeedCoil.MSCCapFTemp(I) == 0) {
@@ -1030,8 +1030,8 @@ namespace VariableSpeedCoils {
                         }
                     }
 
-                    fieldValue = "speed_" + std::to_string(I) + "_total_cooling_capacity_function_of_air_flow_fraction_curve_name";
-                    cFieldName = "Speed " + std::to_string(I) + " Total Cooling Capacity Function of Air Flow Fraction Curve Name";
+                    fieldValue = format("speed_{}{}", std::to_string(I), "_total_cooling_capacity_function_of_air_flow_fraction_curve_name");
+                    cFieldName = format("Speed_{}{}", std::to_string(I), " Total Cooling Capacity Function of Air Flow Fraction Curve Name");
                     std::string const cCapFFFCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
                     varSpeedCoil.MSCCapAirFFlow(I) = Curve::GetCurveIndex(state, cCapFFFCurveName); // convert curve name to number
                     if (varSpeedCoil.MSCCapAirFFlow(I) == 0) {
@@ -1062,8 +1062,8 @@ namespace VariableSpeedCoils {
                         }
                     }
 
-                    fieldValue = "speed_" + std::to_string(I) + "_energy_input_ratio_function_of_temperature_curve_name";
-                    cFieldName = "Speed " + std::to_string(I) + " Energy Input Ratio Function of Temperature Curve Name";
+                    fieldValue = format("speed_{}{}", std::to_string(I), "_energy_input_ratio_function_of_temperature_curve_name");
+                    cFieldName = format("Speed_{}{}", std::to_string(I), " Energy Input Ratio Function of Temperature Curve Name");
                     std::string const cEIRFTCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
                     varSpeedCoil.MSEIRFTemp(I) = Curve::GetCurveIndex(state, cEIRFTCurveName); // convert curve name to number
                     if (varSpeedCoil.MSEIRFTemp(I) == 0) {
@@ -1094,8 +1094,8 @@ namespace VariableSpeedCoils {
                         }
                     }
 
-                    fieldValue = "speed_" + std::to_string(I) + "_energy_input_ratio_function_of_air_flow_fraction_curve_name";
-                    cFieldName = "Speed " + std::to_string(I) + " Energy Input Ratio Function of Air Flow Fraction Curve Name";
+                    fieldValue = format("speed_{}{}", std::to_string(I), "_energy_input_ratio_function_of_air_flow_fraction_curve_name");
+                    cFieldName = format("Speed_{}{}", std::to_string(I), " Energy Input Ratio Function of Air Flow Fraction Curve Name");
                     std::string const cEIRFFFCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
                     varSpeedCoil.MSEIRAirFFlow(I) = Curve::GetCurveIndex(state, cEIRFFFCurveName); // convert curve name to number
                     if (varSpeedCoil.MSEIRAirFFlow(I) == 0) {
@@ -1316,25 +1316,27 @@ namespace VariableSpeedCoils {
                     }
                 }
 
+                std::string cFieldName;
                 std::string fieldName;
+                std::string fieldValue;
                 for (int I = 1; I <= varSpeedCoil.NumOfSpeeds; ++I) {
-                    fieldName = "speed_" + std::to_string(I) + "_reference_unit_gross_rated_heating_capacity";
+                    fieldName = format("speed_{}{}", std::to_string(I), "_reference_unit_gross_rated_heating_capacity");
                     varSpeedCoil.MSRatedTotCap(I) = s_ip->getRealFieldValue(fields, schemaProps, fieldName);
-                    fieldName = "speed_" + std::to_string(I) + "_reference_unit_gross_rated_heating_cop";
+                    fieldName = format("speed_{}{}", std::to_string(I), "_reference_unit_gross_rated_heating_cop");
                     varSpeedCoil.MSRatedCOP(I) = s_ip->getRealFieldValue(fields, schemaProps, fieldName);
                     if (I == 1) {
-                        fieldName = "speed_" + std::to_string(I) + "_reference_unit_rated_air_flow";
+                        fieldName = format("speed_{}{}", std::to_string(I), "_reference_unit_rated_air_flow");
                     } else {
-                        fieldName = "speed_" + std::to_string(I) + "_reference_unit_rated_air_flow_rate";
+                        fieldName = format("speed_{}{}", std::to_string(I), "_reference_unit_rated_air_flow_rate");
                     }
                     varSpeedCoil.MSRatedAirVolFlowRate(I) = s_ip->getRealFieldValue(fields, schemaProps, fieldName);
-                    fieldName = "speed_" + std::to_string(I) + "_reference_unit_rated_water_flow_rate";
+                    fieldName = format("speed_{}{}", std::to_string(I), "_reference_unit_rated_water_flow_rate");
                     varSpeedCoil.MSRatedWaterVolFlowRate(I) = s_ip->getRealFieldValue(fields, schemaProps, fieldName);
-                    fieldName = "speed_" + std::to_string(I) + "_reference_unit_waste_heat_fraction_of_input_power_at_rated_conditions";
+                    fieldName = format("speed_{}{}", std::to_string(I), "_reference_unit_waste_heat_fraction_of_input_power_at_rated_conditions");
                     varSpeedCoil.MSWasteHeatFrac(I) = s_ip->getRealFieldValue(fields, schemaProps, fieldName);
 
-                    std::string fieldValue = "speed_" + std::to_string(I) + "_heating_capacity_function_of_temperature_curve_name";
-                    std::string cFieldName = "Speed " + std::to_string(I) + " Heating Capacity Function of Temperature Curve Name";
+                    fieldValue = format("speed_{}{}", std::to_string(I), "_heating_capacity_function_of_temperature_curve_name");
+                    cFieldName = format("Speed_{}{}", std::to_string(I), " Heating Capacity Function of Temperature Curve Name");
                     std::string const heatCapFTCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
                     varSpeedCoil.MSCCapFTemp(I) = Curve::GetCurveIndex(state, heatCapFTCurveName); // convert curve name to number
                     if (varSpeedCoil.MSCCapFTemp(I) == 0) {
@@ -1365,8 +1367,8 @@ namespace VariableSpeedCoils {
                         }
                     }
 
-                    fieldValue = "speed_" + std::to_string(I) + "_total_heating_capacity_function_of_air_flow_fraction_curve_name";
-                    cFieldName = "Speed " + std::to_string(I) + " Heating Capacity Function of Temperature Curve Name";
+                    fieldValue = format("speed_{}{}", std::to_string(I), "_total_heating_capacity_function_of_air_flow_fraction_curve_name");
+                    cFieldName = format("Speed_{}{}", std::to_string(I), " Heating Capacity Function of Temperature Curve Name");
                     std::string const heatCapFFFCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
                     varSpeedCoil.MSCCapAirFFlow(I) = Curve::GetCurveIndex(state, heatCapFFFCurveName); // convert curve name to number
                     if (varSpeedCoil.MSCCapAirFFlow(I) == 0) {
@@ -1397,8 +1399,8 @@ namespace VariableSpeedCoils {
                         }
                     }
 
-                    fieldValue = "speed_" + std::to_string(I) + "_heating_capacity_function_of_water_flow_fraction_curve_name";
-                    cFieldName = "Speed " + std::to_string(I) + " Heating Capacity Function of Water Flow Fraction Curve Name";
+                    fieldValue = format("speed_{}{}", std::to_string(I), "_heating_capacity_function_of_water_flow_fraction_curve_name");
+                    cFieldName = format("Speed_{}{}", std::to_string(I), " Heating Capacity Function of Water Flow Fraction Curve Name");
                     std::string const heatCapWFFCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
                     varSpeedCoil.MSCCapWaterFFlow(I) = Curve::GetCurveIndex(state, heatCapWFFCurveName); // convert curve name to number
                     if (varSpeedCoil.MSCCapWaterFFlow(I) == 0) {
@@ -1429,8 +1431,8 @@ namespace VariableSpeedCoils {
                         }
                     }
 
-                    fieldValue = "speed_" + std::to_string(I) + "_energy_input_ratio_function_of_temperature_curve_name";
-                    cFieldName = "Speed " + std::to_string(I) + " Energy Input Ratio Function of Temperature Curve Name";
+                    fieldValue = format("speed_{}{}", std::to_string(I), "_energy_input_ratio_function_of_temperature_curve_name");
+                    cFieldName = format("Speed_{}{}", std::to_string(I), " Energy Input Ratio Function of Temperature Curve Name");
                     std::string const heatEIRFTCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
                     varSpeedCoil.MSEIRFTemp(I) = Curve::GetCurveIndex(state, heatEIRFTCurveName); // convert curve name to number
                     if (varSpeedCoil.MSEIRFTemp(I) == 0) {
@@ -1461,8 +1463,8 @@ namespace VariableSpeedCoils {
                         }
                     }
 
-                    fieldValue = "speed_" + std::to_string(I) + "_energy_input_ratio_function_of_air_flow_fraction_curve_name";
-                    cFieldName = "Speed " + std::to_string(I) + " Energy Input Ratio Function of Air Flow Fraction Curve Name";
+                    fieldValue = format("speed_{}{}", std::to_string(I), "_energy_input_ratio_function_of_air_flow_fraction_curve_name");
+                    cFieldName = format("Speed_{}{}", std::to_string(I), " Energy Input Ratio Function of Air Flow Fraction Curve Name");
                     std::string const heatEIRFFFCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
                     varSpeedCoil.MSEIRAirFFlow(I) = Curve::GetCurveIndex(state, heatEIRFFFCurveName); // convert curve name to number
                     if (varSpeedCoil.MSEIRAirFFlow(I) == 0) {
@@ -1493,8 +1495,8 @@ namespace VariableSpeedCoils {
                         }
                     }
 
-                    fieldValue = "speed_" + std::to_string(I) + "_energy_input_ratio_function_of_water_flow_fraction_curve_name";
-                    cFieldName = "Speed " + std::to_string(I) + " Energy Input Ratio Function of Water Flow Fraction Curve Name";
+                    fieldValue = format("speed_{}{}", std::to_string(I), "_energy_input_ratio_function_of_water_flow_fraction_curve_name");
+                    cFieldName = format("Speed_{}{}", std::to_string(I), " Energy Input Ratio Function of Water Flow Fraction Curve Name");
                     std::string const heatEIRWFFCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
                     varSpeedCoil.MSEIRWaterFFlow(I) = Curve::GetCurveIndex(state, heatEIRWFFCurveName); // convert curve name to number
                     if (varSpeedCoil.MSEIRWaterFFlow(I) == 0) {
@@ -1526,8 +1528,8 @@ namespace VariableSpeedCoils {
                     }
 
                     // Read waste heat modifier curve name
-                    fieldValue = "speed_" + std::to_string(I) + "_waste_heat_function_of_temperature_curve_name";
-                    cFieldName = "Speed " + std::to_string(I) + " Waste Heat Function of Temperature Curve Name";
+                    fieldValue = format("speed_{}{}", std::to_string(I), "_waste_heat_function_of_temperature_curve_name");
+                    cFieldName = format("speed_{}{}", std::to_string(I), " Waste Heat Function of Temperature Curve Name");
                     std::string const heatWHFTCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
                     varSpeedCoil.MSWasteHeat(I) = Curve::GetCurveIndex(state, heatWHFTCurveName); // convert curve name to number
                     if (varSpeedCoil.MSWasteHeat(I) == 0) {
@@ -1828,28 +1830,29 @@ namespace VariableSpeedCoils {
                 }
 
                 std::string cFieldName = "";
+                std::string fieldValue = "";
                 std::string fieldName = "";
                 for (int I = 1; I <= varSpeedCoil.NumOfSpeeds; ++I) {
-                    fieldName = "speed_" + std::to_string(I) + "_reference_unit_gross_rated_heating_capacity";
+                    fieldName = format("speed_{}{}", std::to_string(I), "_reference_unit_gross_rated_heating_capacity");
                     varSpeedCoil.MSRatedTotCap(I) = s_ip->getRealFieldValue(fields, schemaProps, fieldName);
                     if (varSpeedCoil.MSRatedTotCap(I) < 1.e-10) {
-                        cFieldName = "Speed " + std::to_string(I) + " Reference Unit Gross Rated Heating Capacity";
+                        cFieldName = format("Speed_{}{}", std::to_string(I), " Reference Unit Gross Rated Heating Capacity");
                         ShowSevereError(state, format("{}{}=\"{}\", invalid value", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
                         ShowContinueError(state, format("...too small {}=[{:.2R}].", cFieldName, varSpeedCoil.MSRatedTotCap(I)));
                         ErrorsFound = true;
                     }
-                    fieldName = "speed_" + std::to_string(I) + "_reference_unit_gross_rated_heating_cop";
+                    fieldName = format("speed_{}{}", std::to_string(I), "_reference_unit_gross_rated_heating_cop");
                     varSpeedCoil.MSRatedCOP(I) = s_ip->getRealFieldValue(fields, schemaProps, fieldName);
-                    fieldName = "speed_" + std::to_string(I) + "_reference_unit_rated_air_flow_rate";
+                    fieldName = format("speed_{}{}", std::to_string(I), "_reference_unit_rated_air_flow_rate");
                     varSpeedCoil.MSRatedAirVolFlowRate(I) = s_ip->getRealFieldValue(fields, schemaProps, fieldName);
-                    fieldName = "2017_speed_" + std::to_string(I) + "_rated_supply_air_fan_power_per_volume_flow_rate";
+                    fieldName = format("2017_speed_{}{}", std::to_string(I), "_rated_supply_air_fan_power_per_volume_flow_rate");
                     varSpeedCoil.MSRatedEvaporatorFanPowerPerVolumeFlowRate2017(I) = s_ip->getRealFieldValue(fields, schemaProps, fieldName);
-                    fieldName = "2023_speed_" + std::to_string(I) + "_rated_supply_air_fan_power_per_volume_flow_rate";
+                    fieldName = format("2023_speed_{}{}", std::to_string(I), "_rated_supply_air_fan_power_per_volume_flow_rate");
                     varSpeedCoil.MSRatedEvaporatorFanPowerPerVolumeFlowRate2023(I) = s_ip->getRealFieldValue(fields, schemaProps, fieldName);
 
                     // Speed 1 Reference Unit Gross Rated Total Cooling Capacity
-                    std::string fieldValue = "speed_" + std::to_string(I) + "_heating_capacity_function_of_temperature_curve_name";
-                    std::string cFieldName = "Speed " + std::to_string(I) + " Heating Capacity Function of Temperature Curve Name";
+                    fieldValue = format("speed_{}{}", std::to_string(I), "_heating_capacity_function_of_temperature_curve_name");
+                    cFieldName = format("Speed_{}{}", std::to_string(I), " Heating Capacity Function of Temperature Curve Name");
                     std::string const hCapFTCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
                     varSpeedCoil.MSCCapFTemp(I) = Curve::GetCurveIndex(state, hCapFTCurveName); // convert curve name to number
                     if (varSpeedCoil.MSCCapFTemp(I) == 0) {
@@ -1882,11 +1885,11 @@ namespace VariableSpeedCoils {
 
                     // Speed 1 Total  Heating Capacity Function of Air Flow Fraction Curve Name
                     if (I < 4) {
-                        fieldValue = "speed_" + std::to_string(I) + "_total_heating_capacity_function_of_air_flow_fraction_curve_name";
-                        cFieldName = "Speed " + std::to_string(I) + " Total  Heating Capacity Function of Air Flow Fraction Curve Name";
+                        fieldValue = format("speed_{}{}", std::to_string(I), "_total_heating_capacity_function_of_air_flow_fraction_curve_name");
+                        cFieldName = format("Speed_{}{}", std::to_string(I), " Total  Heating Capacity Function of Air Flow Fraction Curve Name");
                     } else {
-                        fieldValue = "speed_" + std::to_string(I) + "_heating_capacity_function_of_air_flow_fraction_curve_name";
-                        cFieldName = "Speed " + std::to_string(I) + " Heating Capacity Function of Air Flow Fraction Curve Name";
+                        fieldValue = format("speed_{}{}", std::to_string(I), "_heating_capacity_function_of_air_flow_fraction_curve_name");
+                        cFieldName = format("Speed_{}{}", std::to_string(I), " Heating Capacity Function of Air Flow Fraction Curve Name");
                     }
                     std::string const hCapFFFCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
                     varSpeedCoil.MSCCapAirFFlow(I) = Curve::GetCurveIndex(state, hCapFFFCurveName); // convert curve name to number
@@ -1919,8 +1922,8 @@ namespace VariableSpeedCoils {
                     }
 
                     // Speed 1 Energy Input Ratio Function of Temperature Curve Name
-                    fieldValue = "speed_" + std::to_string(I) + "_energy_input_ratio_function_of_temperature_curve_name";
-                    cFieldName = "Speed " + std::to_string(I) + " Energy Input Ratio Function of Temperature Curve Name";
+                    fieldValue = format("speed_{}{}", std::to_string(I), "_energy_input_ratio_function_of_temperature_curve_name");
+                    cFieldName = format("Speed_{}{}", std::to_string(I), " Energy Input Ratio Function of Temperature Curve Name");
                     std::string const hEIRFTCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
                     varSpeedCoil.MSEIRFTemp(I) = Curve::GetCurveIndex(state, hEIRFTCurveName); // convert curve name to number
                     if (varSpeedCoil.MSEIRFTemp(I) == 0) {
@@ -1952,8 +1955,8 @@ namespace VariableSpeedCoils {
                     }
 
                     // Speed 1 Energy Input Ratio Function of Air Flow Fraction Curve Name
-                    fieldValue = "speed_" + std::to_string(I) + "_energy_input_ratio_function_of_air_flow_fraction_curve_name";
-                    cFieldName = "Speed " + std::to_string(I) + " Energy Input Ratio Function of Air Flow Fraction Curve Name";
+                    fieldValue = format("speed_{}{}", std::to_string(I), "_energy_input_ratio_function_of_air_flow_fraction_curve_name");
+                    cFieldName = format("Speed_{}{}", std::to_string(I), " Energy Input Ratio Function of Air Flow Fraction Curve Name");
                     std::string const hEIRFFFCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
                     varSpeedCoil.MSEIRAirFFlow(I) = Curve::GetCurveIndex(state, hEIRFFFCurveName); // convert curve name to number
                     if (varSpeedCoil.MSEIRAirFFlow(I) == 0) {
@@ -2290,21 +2293,21 @@ namespace VariableSpeedCoils {
 
                 std::string jfieldName;
                 for (int I = 1; I <= varSpeedCoil.NumOfSpeeds; ++I) {
-                    jfieldName = "rated_water_heating_capacity_at_speed_" + std::to_string(I);
+                    jfieldName = format("{}{}", "rated_water_heating_capacity_at_speed_", std::to_string(I));
                     varSpeedCoil.MSRatedTotCap(I) = s_ip->getRealFieldValue(fields, schemaProps, jfieldName);
-                    jfieldName = "rated_water_heating_cop_at_speed_" + std::to_string(I);
+                    jfieldName = format("{}{}", "rated_water_heating_cop_at_speed_", std::to_string(I));
                     varSpeedCoil.MSRatedCOP(I) = s_ip->getRealFieldValue(fields, schemaProps, jfieldName);
-                    jfieldName = "rated_sensible_heat_ratio_at_speed_" + std::to_string(I);
+                    jfieldName = format("{}{}", "rated_sensible_heat_ratio_at_speed_", std::to_string(I));
                     varSpeedCoil.MSRatedSHR(I) = s_ip->getRealFieldValue(fields, schemaProps, jfieldName);
-                    jfieldName = "speed_" + std::to_string(I) + "_reference_unit_rated_air_flow_rate";
+                    jfieldName = format("speed_{}{}", std::to_string(I), "_reference_unit_rated_air_flow_rate");
                     varSpeedCoil.MSRatedAirVolFlowRate(I) = s_ip->getRealFieldValue(fields, schemaProps, jfieldName);
-                    jfieldName = "speed_" + std::to_string(I) + "_reference_unit_rated_water_flow_rate";
+                    jfieldName = format("speed_{}{}", std::to_string(I), "_reference_unit_rated_water_flow_rate");
                     varSpeedCoil.MSRatedWaterVolFlowRate(I) = s_ip->getRealFieldValue(fields, schemaProps, jfieldName);
-                    jfieldName = "speed_" + std::to_string(I) + "_reference_unit_water_pump_input_power_at_rated_conditions";
+                    jfieldName = format("speed_{}{}", std::to_string(I), "_reference_unit_water_pump_input_power_at_rated_conditions");
                     varSpeedCoil.MSWHPumpPower(I) = s_ip->getRealFieldValue(fields, schemaProps, jfieldName);
 
-                    cFieldName = "Speed " + std::to_string(I) + " Total WH Capacity Function of Temperature Curve Name";
-                    jfieldName = jfieldName = "speed_" + std::to_string(I) + "_total_wh_capacity_function_of_temperature_curve_name";
+                    cFieldName = format("Speed_{}{}", std::to_string(I), " Total WH Capacity Function of Temperature Curve Name");
+                    jfieldName = format("speed_{}{}", std::to_string(I), "_total_wh_capacity_function_of_temperature_curve_name");
                     fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, jfieldName);
                     varSpeedCoil.MSCCapFTemp(I) = Curve::GetCurveIndex(state, fieldValue); // convert curve name to number
                     if (varSpeedCoil.MSCCapFTemp(I) == 0) {
@@ -2335,8 +2338,8 @@ namespace VariableSpeedCoils {
                         }
                     }
 
-                    cFieldName = "Speed " + std::to_string(I) + " Total WH Capacity Function of Air Flow Fraction Curve Name";
-                    jfieldName = jfieldName = "speed_" + std::to_string(I) + "_total_wh_capacity_function_of_air_flow_fraction_curve_name";
+                    cFieldName = format("Speed_{}{}", std::to_string(I), " Total WH Capacity Function of Air Flow Fraction Curve Name");
+                    jfieldName = format("speed_{}{}", std::to_string(I), "_total_wh_capacity_function_of_air_flow_fraction_curve_name");
                     fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, jfieldName);
                     varSpeedCoil.MSCCapAirFFlow(I) = Curve::GetCurveIndex(state, fieldValue); // convert curve name to number
                     if (varSpeedCoil.MSCCapAirFFlow(I) == 0) {
@@ -2367,8 +2370,8 @@ namespace VariableSpeedCoils {
                         }
                     }
 
-                    cFieldName = "Speed " + std::to_string(I) + " Total WH Capacity Function of Water Flow Fraction Curve Name";
-                    jfieldName = jfieldName = "speed_" + std::to_string(I) + "_total_wh_capacity_function_of_water_flow_fraction_curve_name";
+                    cFieldName = format("Speed_{}{}", std::to_string(I), " Total WH Capacity Function of Water Flow Fraction Curve Name");
+                    jfieldName = format("speed_{}{}", std::to_string(I), "_total_wh_capacity_function_of_water_flow_fraction_curve_name");
                     fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, jfieldName);
                     varSpeedCoil.MSCCapWaterFFlow(I) = Curve::GetCurveIndex(state, fieldValue); // convert curve name to number
                     if (varSpeedCoil.MSCCapWaterFFlow(I) == 0) {
@@ -2399,8 +2402,8 @@ namespace VariableSpeedCoils {
                         }
                     }
 
-                    cFieldName = "Speed " + std::to_string(I) + " COP Function of Temperature Curve Name";
-                    jfieldName = jfieldName = "speed_" + std::to_string(I) + "_cop_function_of_temperature_curve_name";
+                    cFieldName = format("Speed_{}{}", std::to_string(I), " COP Function of Temperature Curve Name");
+                    jfieldName = format("speed_{}{}", std::to_string(I), "_cop_function_of_temperature_curve_name");
                     fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, jfieldName);
                     varSpeedCoil.MSEIRFTemp(I) = Curve::GetCurveIndex(state, fieldValue); // convert curve name to number
                     if (varSpeedCoil.MSEIRFTemp(I) == 0) {
@@ -2431,8 +2434,8 @@ namespace VariableSpeedCoils {
                         }
                     }
 
-                    cFieldName = "Speed " + std::to_string(I) + " COP Function of Air Flow Fraction Curve Name";
-                    jfieldName = jfieldName = "speed_" + std::to_string(I) + "_cop_function_of_air_flow_fraction_curve_name";
+                    cFieldName = format("Speed_{}{}", std::to_string(I), " COP Function of Air Flow Fraction Curve Name");
+                    jfieldName = format("speed_{}{}", std::to_string(I), "_cop_function_of_air_flow_fraction_curve_name");
                     fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, jfieldName);
                     varSpeedCoil.MSEIRAirFFlow(I) = Curve::GetCurveIndex(state, fieldValue); // convert curve name to number
                     if (varSpeedCoil.MSEIRAirFFlow(I) == 0) {
@@ -2463,8 +2466,8 @@ namespace VariableSpeedCoils {
                         }
                     }
 
-                    cFieldName = "Speed " + std::to_string(I) + " COP Function of Water Flow Fraction Curve Name";
-                    jfieldName = jfieldName = "speed_" + std::to_string(I) + "_cop_function_of_water_flow_fraction_curve_name";
+                    cFieldName = format("Speed_{}{}", std::to_string(I), " COP Function of Water Flow Fraction Curve Name");
+                    jfieldName = format("speed_{}{}", std::to_string(I), "_cop_function_of_water_flow_fraction_curve_name");
                     fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, jfieldName);
                     varSpeedCoil.MSEIRWaterFFlow(I) = Curve::GetCurveIndex(state, fieldValue); // convert curve name to number
                     if (varSpeedCoil.MSEIRWaterFFlow(I) == 0) {

@@ -176,8 +176,6 @@ namespace WaterToAirHeatPumpSimple {
 
     void GetSimpleWatertoAirHPInput(EnergyPlusData &state);
 
-    //static int factory(EnergyPlusData &state, std::string const &objectName);
-
     // Beginning Initialization Section of the Module
     //******************************************************************************
 

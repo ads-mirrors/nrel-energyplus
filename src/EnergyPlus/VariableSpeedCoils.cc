@@ -5120,12 +5120,11 @@ namespace VariableSpeedCoils {
         switch (varSpeedCoil.VSCoilType) {
         case HVAC::Coil_CoolingAirToAirVariableSpeed:
             CondenserType.push_back(varSpeedCoil.CondenserType);
-            switch (varSpeedCoil.DefrostControl) // defrost control; 1=timed, 2=on-demand
-            {
-            case 2:
+            switch (varSpeedCoil.DefrostControl) {
+            case StandardRatings::HPdefrostControl::OnDemand:
                 DefrostControl = StandardRatings::HPdefrostControl::OnDemand;
                 break;
-            case 1:
+            case StandardRatings::HPdefrostControl::Timed:
             default:
                 DefrostControl = StandardRatings::HPdefrostControl::Timed;
                 break;

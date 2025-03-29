@@ -265,6 +265,8 @@ namespace VariableSpeedCoils {
                 varSpeedCoil.bIsDesuperheater = false;
                 varSpeedCoil.Name = Util::makeUPPER(thisObjectName);
 
+                ErrorObjectHeader eoh{routineName, CurrentModuleObject, varSpeedCoil.Name};
+
                 // ErrorsFound will be set to True if problem was found, left untouched otherwise
                 GlobalNames::VerifyUniqueCoilName(state, CurrentModuleObject, varSpeedCoil.Name, ErrorsFound, CurrentModuleObject + " Name");
 
@@ -379,8 +381,7 @@ namespace VariableSpeedCoils {
                         ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
                         ShowContinueError(state, format("...required {} is blank.", cFieldName));
                     } else {
-                        ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                        ShowContinueError(state, format("...not found {}=\"{}\".", cFieldName, coolPLFCurveName));
+                        ShowSevereItemNotFound(state, eoh, cFieldName, coolPLFCurveName);
                     }
                     ErrorsFound = true;
                 } else {
@@ -408,16 +409,15 @@ namespace VariableSpeedCoils {
                     varSpeedCoil.MSWasteHeatFrac(I) = s_ip->getRealFieldValue(fields, schemaProps, fieldName);
 
                     std::string fieldValue = "speed_" + std::to_string(I) + "_total_cooling_capacity_function_of_temperature_curve_name";
-                    std::string cAlphaFieldName = "Speed " + std::to_string(I) + " Total Cooling Capacity Function of Temperature Curve Name";
+                    std::string cFieldName = "Speed " + std::to_string(I) + " Total Cooling Capacity Function of Temperature Curve Name";
                     std::string const coolCapFTCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
                     varSpeedCoil.MSCCapFTemp(I) = Curve::GetCurveIndex(state, coolCapFTCurveName); // convert curve name to number
                     if (varSpeedCoil.MSCCapFTemp(I) == 0) {
                         if (coolCapFTCurveName.empty()) {
                             ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...required {} is blank.", cAlphaFieldName));
+                            ShowContinueError(state, format("...required {} is blank.", cFieldName));
                         } else {
-                            ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...not found {}=\"{}\".", cAlphaFieldName, coolCapFTCurveName));
+                            ShowSevereItemNotFound(state, eoh, cFieldName, coolCapFTCurveName);
                         }
                         ErrorsFound = true;
                     } else {
@@ -428,30 +428,29 @@ namespace VariableSpeedCoils {
                                                              RoutineName,                 // Routine name
                                                              CurrentModuleObject,         // Object Type
                                                              varSpeedCoil.Name,           // Object Name
-                                                             cAlphaFieldName);            // Field Name
+                                                             cFieldName);            // Field Name
 
                         if (!ErrorsFound) {
                             CurveVal = Curve::CurveValue(state, varSpeedCoil.MSCCapFTemp(I), RatedInletWetBulbTemp, RatedInletWaterTemp);
                             if (CurveVal > 1.10 || CurveVal < 0.90) {
                                 ShowWarningError(state, format("{}{}=\"{}\", curve values", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
                                 ShowContinueError(state,
-                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cAlphaFieldName));
+                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
                                 ShowContinueError(state, format("...Curve output at rated conditions = {:.3T}", CurveVal));
                             }
                         }
                     }
 
                     fieldValue = "speed_" + std::to_string(I) + "_total_cooling_capacity_function_of_air_flow_fraction_curve_name";
-                    cAlphaFieldName = "Speed " + std::to_string(I) + " Total Cooling Capacity Function of Air Flow Fraction Curve Name";
+                    cFieldName = "Speed " + std::to_string(I) + " Total Cooling Capacity Function of Air Flow Fraction Curve Name";
                     std::string const coolCapFFCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
                     varSpeedCoil.MSCCapAirFFlow(I) = Curve::GetCurveIndex(state, coolCapFFCurveName); // convert curve name to number
                     if (varSpeedCoil.MSCCapAirFFlow(I) == 0) {
                         if (coolCapFFCurveName.empty()) {
                             ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...required {} is blank.", cAlphaFieldName));
+                            ShowContinueError(state, format("...required {} is blank.", cFieldName));
                         } else {
-                            ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...not found {}=\"{}\".", cAlphaFieldName, coolCapFFCurveName));
+                            ShowSevereItemNotFound(state, eoh, cFieldName, coolCapFFCurveName);
                         }
                         ErrorsFound = true;
                     } else {
@@ -462,30 +461,29 @@ namespace VariableSpeedCoils {
                                                              RoutineName,                    // Routine name
                                                              CurrentModuleObject,            // Object Type
                                                              varSpeedCoil.Name,              // Object Name
-                                                             cAlphaFieldName);               // Field Name
+                                                             cFieldName);               // Field Name
 
                         if (!ErrorsFound) {
                             CurveVal = Curve::CurveValue(state, varSpeedCoil.MSCCapAirFFlow(I), 1.0);
                             if (CurveVal > 1.10 || CurveVal < 0.90) {
                                 ShowWarningError(state, format("{}{}=\"{}\", curve values", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
                                 ShowContinueError(state,
-                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cAlphaFieldName));
+                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
                                 ShowContinueError(state, format("...Curve output at rated conditions = {:.3T}", CurveVal));
                             }
                         }
                     }
 
                     fieldValue = "speed_" + std::to_string(I) + "_total_cooling_capacity_function_of_water_flow_fraction_curve_name";
-                    cAlphaFieldName = "Speed " + std::to_string(I) + " Total Cooling Capacity Function of Water Flow Fraction Curve Name";
+                    cFieldName = "Speed " + std::to_string(I) + " Total Cooling Capacity Function of Water Flow Fraction Curve Name";
                     std::string const coolCapWFFCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
                     varSpeedCoil.MSCCapWaterFFlow(I) = Curve::GetCurveIndex(state, coolCapWFFCurveName); // convert curve name to number
                     if (varSpeedCoil.MSCCapWaterFFlow(I) == 0) {
                         if (coolCapWFFCurveName.empty()) {
                             ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...required {} is blank.", cAlphaFieldName));
+                            ShowContinueError(state, format("...required {} is blank.", cFieldName));
                         } else {
-                            ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...not found {}=\"{}\".", cAlphaFieldName, coolCapWFFCurveName));
+                            ShowSevereItemNotFound(state, eoh, cFieldName, coolCapWFFCurveName);
                         }
                         ErrorsFound = true;
                     } else {
@@ -496,30 +494,29 @@ namespace VariableSpeedCoils {
                                                              RoutineName,                      // Routine name
                                                              CurrentModuleObject,              // Object Type
                                                              varSpeedCoil.Name,                // Object Name
-                                                             cAlphaFieldName);                 // Field Name
+                                                             cFieldName);                 // Field Name
 
                         if (!ErrorsFound) {
                             CurveVal = Curve::CurveValue(state, varSpeedCoil.MSCCapWaterFFlow(I), 1.0);
                             if (CurveVal > 1.10 || CurveVal < 0.90) {
                                 ShowWarningError(state, format("{}{}=\"{}\", curve values", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
                                 ShowContinueError(state,
-                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cAlphaFieldName));
+                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
                                 ShowContinueError(state, format("...Curve output at rated conditions = {:.3T}", CurveVal));
                             }
                         }
                     }
 
                     fieldValue = "speed_" + std::to_string(I) + "_energy_input_ratio_function_of_temperature_curve_name";
-                    cAlphaFieldName = "Speed " + std::to_string(I) + " Energy Input Ratio Function of Temperature Curve Name";
+                    cFieldName = "Speed " + std::to_string(I) + " Energy Input Ratio Function of Temperature Curve Name";
                     std::string const coolEIRFTCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
                     varSpeedCoil.MSEIRFTemp(I) = Curve::GetCurveIndex(state, coolEIRFTCurveName); // convert curve name to number
                     if (varSpeedCoil.MSEIRFTemp(I) == 0) {
                         if (coolEIRFTCurveName.empty()) {
                             ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...required {} is blank.", cAlphaFieldName));
+                            ShowContinueError(state, format("...required {} is blank.", cFieldName));
                         } else {
-                            ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...not found {}=\"{}\".", cAlphaFieldName, coolEIRFTCurveName));
+                            ShowSevereItemNotFound(state, eoh, cFieldName, coolEIRFTCurveName);
                         }
                         ErrorsFound = true;
                     } else {
@@ -530,30 +527,29 @@ namespace VariableSpeedCoils {
                                                              RoutineName,                // Routine name
                                                              CurrentModuleObject,        // Object Type
                                                              varSpeedCoil.Name,          // Object Name
-                                                             cAlphaFieldName);           // Field Name
+                                                             cFieldName);           // Field Name
 
                         if (!ErrorsFound) {
                             CurveVal = Curve::CurveValue(state, varSpeedCoil.MSEIRFTemp(I), RatedInletWetBulbTemp, RatedInletWaterTemp);
                             if (CurveVal > 1.10 || CurveVal < 0.90) {
                                 ShowWarningError(state, format("{}{}=\"{}\", curve values", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
                                 ShowContinueError(state,
-                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cAlphaFieldName));
+                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
                                 ShowContinueError(state, format("...Curve output at rated conditions = {:.3T}", CurveVal));
                             }
                         }
                     }
 
                     fieldValue = "speed_" + std::to_string(I) + "_energy_input_ratio_function_of_air_flow_fraction_curve_name";
-                    cAlphaFieldName = "Speed " + std::to_string(I) + " Energy Input Ratio Function of Air Flow Fraction Curve Name";
+                    cFieldName = "Speed " + std::to_string(I) + " Energy Input Ratio Function of Air Flow Fraction Curve Name";
                     std::string const coolEIRFFFCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
                     varSpeedCoil.MSEIRAirFFlow(I) = Curve::GetCurveIndex(state, coolEIRFFFCurveName); // convert curve name to number
                     if (varSpeedCoil.MSEIRAirFFlow(I) == 0) {
                         if (coolEIRFFFCurveName.empty()) {
                             ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...required {} is blank.", cAlphaFieldName));
+                            ShowContinueError(state, format("...required {} is blank.", cFieldName));
                         } else {
-                            ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...not found {}=\"{}\".", cAlphaFieldName, coolEIRFFFCurveName));
+                            ShowSevereItemNotFound(state, eoh, cFieldName, coolEIRFFFCurveName);
                         }
                         ErrorsFound = true;
                     } else {
@@ -564,30 +560,29 @@ namespace VariableSpeedCoils {
                                                              RoutineName,                   // Routine name
                                                              CurrentModuleObject,           // Object Type
                                                              varSpeedCoil.Name,             // Object Name
-                                                             cAlphaFieldName);              // Field Name
+                                                             cFieldName);              // Field Name
 
                         if (!ErrorsFound) {
                             CurveVal = Curve::CurveValue(state, varSpeedCoil.MSEIRAirFFlow(I), 1.0);
                             if (CurveVal > 1.10 || CurveVal < 0.90) {
                                 ShowWarningError(state, format("{}{}=\"{}\", curve values", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
                                 ShowContinueError(state,
-                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cAlphaFieldName));
+                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
                                 ShowContinueError(state, format("...Curve output at rated conditions = {:.3T}", CurveVal));
                             }
                         }
                     }
 
                     fieldValue = "speed_" + std::to_string(I) + "_energy_input_ratio_function_of_water_flow_fraction_curve_name";
-                    cAlphaFieldName = "Speed " + std::to_string(I) + " Energy Input Ratio Function of Water Flow Fraction Curve Name";
+                    cFieldName = "Speed " + std::to_string(I) + " Energy Input Ratio Function of Water Flow Fraction Curve Name";
                     std::string const coolEIRWFFCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
                     varSpeedCoil.MSEIRWaterFFlow(I) = Curve::GetCurveIndex(state, coolEIRWFFCurveName); // convert curve name to number
                     if (varSpeedCoil.MSEIRWaterFFlow(I) == 0) {
                         if (coolEIRWFFCurveName.empty()) {
                             ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...required {} is blank.", cAlphaFieldName));
+                            ShowContinueError(state, format("...required {} is blank.", cFieldName));
                         } else {
-                            ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...not found {}=\"{}\".", cAlphaFieldName, coolEIRWFFCurveName));
+                            ShowSevereItemNotFound(state, eoh, cFieldName, coolEIRWFFCurveName);
                         }
                         ErrorsFound = true;
                     } else {
@@ -598,30 +593,29 @@ namespace VariableSpeedCoils {
                                                              RoutineName,                     // Routine name
                                                              CurrentModuleObject,             // Object Type
                                                              varSpeedCoil.Name,               // Object Name
-                                                             cAlphaFieldName);                // Field Name
+                                                             cFieldName);                // Field Name
 
                         if (!ErrorsFound) {
                             CurveVal = Curve::CurveValue(state, varSpeedCoil.MSEIRWaterFFlow(I), 1.0);
                             if (CurveVal > 1.10 || CurveVal < 0.90) {
                                 ShowWarningError(state, format("{}{}=\"{}\", curve values", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
                                 ShowContinueError(state,
-                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cAlphaFieldName));
+                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
                                 ShowContinueError(state, format("...Curve output at rated conditions = {:.3T}", CurveVal));
                             }
                         }
                     }
                     // Read waste heat modifier curve name
                     fieldValue = "speed_" + std::to_string(I) + "_waste_heat_function_of_temperature_curve_name";
-                    cAlphaFieldName = "Speed " + std::to_string(I) + " Waste Heat Function of Temperature Curve Name";
+                    cFieldName = "Speed " + std::to_string(I) + " Waste Heat Function of Temperature Curve Name";
                     std::string const wasteHFTCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
                     varSpeedCoil.MSWasteHeat(I) = Curve::GetCurveIndex(state, wasteHFTCurveName); // convert curve name to number
                     if (varSpeedCoil.MSWasteHeat(I) == 0) {
                         if (wasteHFTCurveName.empty()) {
                             ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...required {} is blank.", cAlphaFieldName));
+                            ShowContinueError(state, format("...required {} is blank.", cFieldName));
                         } else {
-                            ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...not found {}=\"{}\".", cAlphaFieldName, wasteHFTCurveName));
+                            ShowSevereItemNotFound(state, eoh, cFieldName, wasteHFTCurveName);
                         }
                         ErrorsFound = true;
                     } else {
@@ -632,14 +626,14 @@ namespace VariableSpeedCoils {
                                                              RoutineName,                 // Routine name
                                                              CurrentModuleObject,         // Object Type
                                                              varSpeedCoil.Name,           // Object Name
-                                                             cAlphaFieldName);            // Field Name
+                                                             cFieldName);            // Field Name
 
                         if (!ErrorsFound) {
                             CurveVal = Curve::CurveValue(state, varSpeedCoil.MSWasteHeat(I), RatedInletWaterTemp, RatedInletAirTemp);
                             if (CurveVal > 1.10 || CurveVal < 0.90) {
                                 ShowWarningError(state, format("{}{}=\"{}\", curve values", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
                                 ShowContinueError(state,
-                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cAlphaFieldName));
+                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
                                 ShowContinueError(state, format("...Curve output at rated conditions = {:.3T}", CurveVal));
                             }
                         }
@@ -1012,16 +1006,15 @@ namespace VariableSpeedCoils {
                     }
 
                     std::string fieldValue = "speed_" + std::to_string(I) + "_total_cooling_capacity_function_of_temperature_curve_name";
-                    std::string cAlphaFieldName = "Speed " + std::to_string(I) + " Reference Unit Gross Rated Total Cooling Capacity";
+                    std::string cFieldName = "Speed " + std::to_string(I) + " Reference Unit Gross Rated Total Cooling Capacity";
                     std::string const cCapFTCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
                     varSpeedCoil.MSCCapFTemp(I) = Curve::GetCurveIndex(state, cCapFTCurveName); // convert curve name to number
                     if (varSpeedCoil.MSCCapFTemp(I) == 0) {
                         if (cCapFTCurveName.empty()) {
                             ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...required {} is blank.", cAlphaFieldName));
+                            ShowContinueError(state, format("...required {} is blank.", cFieldName));
                         } else {
-                            ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...not found {}=\"{}\".", cAlphaFieldName, cCapFTCurveName));
+                            ShowSevereItemNotFound(state, eoh, cFieldName, cCapFTCurveName);
                         }
                         ErrorsFound = true;
                     } else {
@@ -1032,30 +1025,29 @@ namespace VariableSpeedCoils {
                                                              RoutineName,                 // Routine name
                                                              CurrentModuleObject,         // Object Type
                                                              varSpeedCoil.Name,           // Object Name
-                                                             cAlphaFieldName);            // Field Name
+                                                             cFieldName);            // Field Name
 
                         if (!ErrorsFound) {
                             CurveVal = Curve::CurveValue(state, varSpeedCoil.MSCCapFTemp(I), RatedInletWetBulbTemp, RatedAmbAirTemp);
                             if (CurveVal > 1.10 || CurveVal < 0.90) {
                                 ShowWarningError(state, format("{}{}=\"{}\", curve values", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
                                 ShowContinueError(state,
-                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cAlphaFieldName));
+                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
                                 ShowContinueError(state, format("...Curve output at rated conditions = {:.3T}", CurveVal));
                             }
                         }
                     }
 
                     fieldValue = "speed_" + std::to_string(I) + "_total_cooling_capacity_function_of_air_flow_fraction_curve_name";
-                    cAlphaFieldName = "Speed " + std::to_string(I) + " Total Cooling Capacity Function of Air Flow Fraction Curve Name";
+                    cFieldName = "Speed " + std::to_string(I) + " Total Cooling Capacity Function of Air Flow Fraction Curve Name";
                     std::string const cCapFFFCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
                     varSpeedCoil.MSCCapAirFFlow(I) = Curve::GetCurveIndex(state, cCapFFFCurveName); // convert curve name to number
                     if (varSpeedCoil.MSCCapAirFFlow(I) == 0) {
                         if (cCapFFFCurveName.empty()) {
                             ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...required {} is blank.", cAlphaFieldName));
+                            ShowContinueError(state, format("...required {} is blank.", cFieldName));
                         } else {
-                            ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...not found {}=\"{}\".", cAlphaFieldName, cCapFFFCurveName));
+                            ShowSevereItemNotFound(state, eoh, cFieldName, cCapFFFCurveName);
                         }
                         ErrorsFound = true;
                     } else {
@@ -1066,30 +1058,29 @@ namespace VariableSpeedCoils {
                                                              RoutineName,                    // Routine name
                                                              CurrentModuleObject,            // Object Type
                                                              varSpeedCoil.Name,              // Object Name
-                                                             cAlphaFieldName);               // Field Name
+                                                             cFieldName);               // Field Name
 
                         if (!ErrorsFound) {
                             CurveVal = Curve::CurveValue(state, varSpeedCoil.MSCCapAirFFlow(I), 1.0);
                             if (CurveVal > 1.10 || CurveVal < 0.90) {
                                 ShowWarningError(state, format("{}{}=\"{}\", curve values", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
                                 ShowContinueError(state,
-                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cAlphaFieldName));
+                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
                                 ShowContinueError(state, format("...Curve output at rated conditions = {:.3T}", CurveVal));
                             }
                         }
                     }
 
                     fieldValue = "speed_" + std::to_string(I) + "_energy_input_ratio_function_of_temperature_curve_name";
-                    cAlphaFieldName = "Speed " + std::to_string(I) + " Energy Input Ratio Function of Temperature Curve Name";
+                    cFieldName = "Speed " + std::to_string(I) + " Energy Input Ratio Function of Temperature Curve Name";
                     std::string const cEIRFTCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
                     varSpeedCoil.MSEIRFTemp(I) = Curve::GetCurveIndex(state, cEIRFTCurveName); // convert curve name to number
                     if (varSpeedCoil.MSEIRFTemp(I) == 0) {
                         if (cEIRFTCurveName.empty()) {
                             ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...required {} is blank.", cAlphaFieldName));
+                            ShowContinueError(state, format("...required {} is blank.", cFieldName));
                         } else {
-                            ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...not found {}=\"{}\".", cAlphaFieldName, cEIRFTCurveName));
+                            ShowSevereItemNotFound(state, eoh, cFieldName, cEIRFTCurveName);
                         }
                         ErrorsFound = true;
                     } else {
@@ -1100,30 +1091,29 @@ namespace VariableSpeedCoils {
                                                              RoutineName,                // Routine name
                                                              CurrentModuleObject,        // Object Type
                                                              varSpeedCoil.Name,          // Object Name
-                                                             cAlphaFieldName);           // Field Name
+                                                             cFieldName);           // Field Name
 
                         if (!ErrorsFound) {
                             CurveVal = Curve::CurveValue(state, varSpeedCoil.MSEIRFTemp(I), RatedInletWetBulbTemp, RatedAmbAirTemp);
                             if (CurveVal > 1.10 || CurveVal < 0.90) {
                                 ShowWarningError(state, format("{}{}=\"{}\", curve values", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
                                 ShowContinueError(state,
-                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cAlphaFieldName));
+                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
                                 ShowContinueError(state, format("...Curve output at rated conditions = {:.3T}", CurveVal));
                             }
                         }
                     }
 
                     fieldValue = "speed_" + std::to_string(I) + "_energy_input_ratio_function_of_air_flow_fraction_curve_name";
-                    cAlphaFieldName = "Speed " + std::to_string(I) + " Energy Input Ratio Function of Air Flow Fraction Curve Name";
+                    cFieldName = "Speed " + std::to_string(I) + " Energy Input Ratio Function of Air Flow Fraction Curve Name";
                     std::string const cEIRFFFCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
                     varSpeedCoil.MSEIRAirFFlow(I) = Curve::GetCurveIndex(state, cEIRFFFCurveName); // convert curve name to number
                     if (varSpeedCoil.MSEIRAirFFlow(I) == 0) {
                         if (cEIRFFFCurveName.empty()) {
                             ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...required {} is blank.", cAlphaFieldName));
+                            ShowContinueError(state, format("...required {} is blank.", cFieldName));
                         } else {
-                            ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...not found {}=\"{}\".", cAlphaFieldName, cEIRFFFCurveName));
+                            ShowSevereItemNotFound(state, eoh, cFieldName, cEIRFFFCurveName);
                         }
                         ErrorsFound = true;
                     } else {
@@ -1134,14 +1124,14 @@ namespace VariableSpeedCoils {
                                                              RoutineName,                   // Routine name
                                                              CurrentModuleObject,           // Object Type
                                                              varSpeedCoil.Name,             // Object Name
-                                                             cAlphaFieldName);              // Field Name
+                                                             cFieldName);              // Field Name
 
                         if (!ErrorsFound) {
                             CurveVal = Curve::CurveValue(state, varSpeedCoil.MSEIRAirFFlow(I), 1.0);
                             if (CurveVal > 1.10 || CurveVal < 0.90) {
                                 ShowWarningError(state, format("{}{}=\"{}\", curve values", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
                                 ShowContinueError(state,
-                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cAlphaFieldName));
+                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
                                 ShowContinueError(state, format("...Curve output at rated conditions = {:.3T}", CurveVal));
                             }
                         }
@@ -1218,6 +1208,9 @@ namespace VariableSpeedCoils {
                 auto &varSpeedCoil = state.dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum);
                 varSpeedCoil.bIsDesuperheater = false;
                 varSpeedCoil.Name = Util::makeUPPER(thisObjectName);
+
+                ErrorObjectHeader eoh{routineName, CurrentModuleObject, varSpeedCoil.Name};
+
                 // ErrorsFound will be set to True if problem was found, left untouched otherwise
                 GlobalNames::VerifyUniqueCoilName(state, CurrentModuleObject, varSpeedCoil.Name, ErrorsFound, CurrentModuleObject + " Name");
                 varSpeedCoil.CoolHeatType = "HEATING";
@@ -1322,8 +1315,7 @@ namespace VariableSpeedCoils {
                         ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
                         ShowContinueError(state, format("...required {} is blank.", cFieldName));
                     } else {
-                        ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                        ShowContinueError(state, format("...not found {}=\"{}\".", cFieldName, heatPLFCurveName));
+                        ShowSevereItemNotFound(state, eoh, cFieldName, heatPLFCurveName);
                     }
                     ErrorsFound = true;
                 } else {
@@ -1353,16 +1345,15 @@ namespace VariableSpeedCoils {
                     varSpeedCoil.MSWasteHeatFrac(I) = s_ip->getRealFieldValue(fields, schemaProps, fieldName);
 
                     std::string fieldValue = "speed_" + std::to_string(I) + "_heating_capacity_function_of_temperature_curve_name";
-                    std::string cAlphaFieldName = "Speed " + std::to_string(I) + " Heating Capacity Function of Temperature Curve Name";
+                    std::string cFieldName = "Speed " + std::to_string(I) + " Heating Capacity Function of Temperature Curve Name";
                     std::string const heatCapFTCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
                     varSpeedCoil.MSCCapFTemp(I) = Curve::GetCurveIndex(state, heatCapFTCurveName); // convert curve name to number
                     if (varSpeedCoil.MSCCapFTemp(I) == 0) {
                         if (heatCapFTCurveName.empty()) {
                             ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...required {} is blank.", cAlphaFieldName));
+                            ShowContinueError(state, format("...required {} is blank.", cFieldName));
                         } else {
-                            ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...not found {}=\"{}\".", cAlphaFieldName, heatCapFTCurveName));
+                            ShowSevereInvalidBool(state, eoh, cFieldName, heatCapFTCurveName);
                         }
                         ErrorsFound = true;
                     } else {
@@ -1373,30 +1364,29 @@ namespace VariableSpeedCoils {
                                                              RoutineName,                 // Routine name
                                                              CurrentModuleObject,         // Object Type
                                                              varSpeedCoil.Name,           // Object Name
-                                                             cAlphaFieldName);            // Field Name
+                                                             cFieldName);            // Field Name
 
                         if (!ErrorsFound) {
                             CurveVal = Curve::CurveValue(state, varSpeedCoil.MSCCapFTemp(I), RatedInletAirTempHeat, RatedInletWaterTempHeat);
                             if (CurveVal > 1.10 || CurveVal < 0.90) {
                                 ShowWarningError(state, format("{}{}=\"{}\", curve values", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
                                 ShowContinueError(state,
-                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cAlphaFieldName));
+                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
                                 ShowContinueError(state, format("...Curve output at rated conditions = {:.3T}", CurveVal));
                             }
                         }
                     }
 
                     fieldValue = "speed_" + std::to_string(I) + "_total_heating_capacity_function_of_air_flow_fraction_curve_name";
-                    cAlphaFieldName = "Speed " + std::to_string(I) + " Heating Capacity Function of Temperature Curve Name";
+                    cFieldName = "Speed " + std::to_string(I) + " Heating Capacity Function of Temperature Curve Name";
                     std::string const heatCapFFFCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
                     varSpeedCoil.MSCCapAirFFlow(I) = Curve::GetCurveIndex(state, heatCapFFFCurveName); // convert curve name to number
                     if (varSpeedCoil.MSCCapAirFFlow(I) == 0) {
                         if (heatCapFFFCurveName.empty()) {
                             ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...required {} is blank.", cAlphaFieldName));
+                            ShowContinueError(state, format("...required {} is blank.", cFieldName));
                         } else {
-                            ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...not found {}=\"{}\".", cAlphaFieldName, heatCapFFFCurveName));
+                            ShowSevereInvalidBool(state, eoh, cFieldName, heatCapFFFCurveName);
                         }
                         ErrorsFound = true;
                     } else {
@@ -1407,30 +1397,29 @@ namespace VariableSpeedCoils {
                                                              RoutineName,                    // Routine name
                                                              CurrentModuleObject,            // Object Type
                                                              varSpeedCoil.Name,              // Object Name
-                                                             cAlphaFieldName);               // Field Name
+                                                             cFieldName);               // Field Name
 
                         if (!ErrorsFound) {
                             CurveVal = Curve::CurveValue(state, varSpeedCoil.MSCCapAirFFlow(I), 1.0);
                             if (CurveVal > 1.10 || CurveVal < 0.90) {
                                 ShowWarningError(state, format("{}{}=\"{}\", curve values", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
                                 ShowContinueError(state,
-                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cAlphaFieldName));
+                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
                                 ShowContinueError(state, format("...Curve output at rated conditions = {:.3T}", CurveVal));
                             }
                         }
                     }
 
                     fieldValue = "speed_" + std::to_string(I) + "_heating_capacity_function_of_water_flow_fraction_curve_name";
-                    cAlphaFieldName = "Speed " + std::to_string(I) + " Heating Capacity Function of Water Flow Fraction Curve Name";
+                    cFieldName = "Speed " + std::to_string(I) + " Heating Capacity Function of Water Flow Fraction Curve Name";
                     std::string const heatCapWFFCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
                     varSpeedCoil.MSCCapWaterFFlow(I) = Curve::GetCurveIndex(state, heatCapWFFCurveName); // convert curve name to number
                     if (varSpeedCoil.MSCCapWaterFFlow(I) == 0) {
                         if (heatCapWFFCurveName.empty()) {
                             ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...required {} is blank.", cAlphaFieldName));
+                            ShowContinueError(state, format("...required {} is blank.", cFieldName));
                         } else {
-                            ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...not found {}=\"{}\".", cAlphaFieldName, heatCapWFFCurveName));
+                            ShowSevereInvalidBool(state, eoh, cFieldName, heatCapWFFCurveName);
                         }
                         ErrorsFound = true;
                     } else {
@@ -1441,30 +1430,29 @@ namespace VariableSpeedCoils {
                                                              RoutineName,                      // Routine name
                                                              CurrentModuleObject,              // Object Type
                                                              varSpeedCoil.Name,                // Object Name
-                                                             cAlphaFieldName);                 // Field Name
+                                                             cFieldName);                 // Field Name
 
                         if (!ErrorsFound) {
                             CurveVal = Curve::CurveValue(state, varSpeedCoil.MSCCapWaterFFlow(I), 1.0);
                             if (CurveVal > 1.10 || CurveVal < 0.90) {
                                 ShowWarningError(state, format("{}{}=\"{}\", curve values", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
                                 ShowContinueError(state,
-                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cAlphaFieldName));
+                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
                                 ShowContinueError(state, format("...Curve output at rated conditions = {:.3T}", CurveVal));
                             }
                         }
                     }
 
                     fieldValue = "speed_" + std::to_string(I) + "_energy_input_ratio_function_of_temperature_curve_name";
-                    cAlphaFieldName = "Speed " + std::to_string(I) + " Energy Input Ratio Function of Temperature Curve Name";
+                    cFieldName = "Speed " + std::to_string(I) + " Energy Input Ratio Function of Temperature Curve Name";
                     std::string const heatEIRFTCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
                     varSpeedCoil.MSEIRFTemp(I) = Curve::GetCurveIndex(state, heatEIRFTCurveName); // convert curve name to number
                     if (varSpeedCoil.MSEIRFTemp(I) == 0) {
                         if (heatEIRFTCurveName.empty()) {
                             ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...required {} is blank.", cAlphaFieldName));
+                            ShowContinueError(state, format("...required {} is blank.", cFieldName));
                         } else {
-                            ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...not found {}=\"{}\".", cAlphaFieldName, heatEIRFTCurveName));
+                            ShowSevereInvalidBool(state, eoh, cFieldName, heatEIRFTCurveName);
                         }
                         ErrorsFound = true;
                     } else {
@@ -1475,30 +1463,29 @@ namespace VariableSpeedCoils {
                                                              RoutineName,                // Routine name
                                                              CurrentModuleObject,        // Object Type
                                                              varSpeedCoil.Name,          // Object Name
-                                                             cAlphaFieldName);           // Field Name
+                                                             cFieldName);           // Field Name
 
                         if (!ErrorsFound) {
                             CurveVal = Curve::CurveValue(state, varSpeedCoil.MSEIRFTemp(I), RatedInletAirTempHeat, RatedInletWaterTempHeat);
                             if (CurveVal > 1.10 || CurveVal < 0.90) {
                                 ShowWarningError(state, format("{}{}=\"{}\", curve values", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
                                 ShowContinueError(state,
-                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cAlphaFieldName));
+                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
                                 ShowContinueError(state, format("...Curve output at rated conditions = {:.3T}", CurveVal));
                             }
                         }
                     }
 
                     fieldValue = "speed_" + std::to_string(I) + "_energy_input_ratio_function_of_air_flow_fraction_curve_name";
-                    cAlphaFieldName = "Speed " + std::to_string(I) + " Energy Input Ratio Function of Air Flow Fraction Curve Name";
+                    cFieldName = "Speed " + std::to_string(I) + " Energy Input Ratio Function of Air Flow Fraction Curve Name";
                     std::string const heatEIRFFFCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
                     varSpeedCoil.MSEIRAirFFlow(I) = Curve::GetCurveIndex(state, heatEIRFFFCurveName); // convert curve name to number
                     if (varSpeedCoil.MSEIRAirFFlow(I) == 0) {
                         if (heatEIRFFFCurveName.empty()) {
                             ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...required {} is blank.", cAlphaFieldName));
+                            ShowContinueError(state, format("...required {} is blank.", cFieldName));
                         } else {
-                            ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...not found {}=\"{}\".", cAlphaFieldName, heatEIRFFFCurveName));
+                            ShowSevereInvalidBool(state, eoh, cFieldName, heatEIRFFFCurveName);
                         }
                         ErrorsFound = true;
                     } else {
@@ -1509,30 +1496,29 @@ namespace VariableSpeedCoils {
                                                              RoutineName,                   // Routine name
                                                              CurrentModuleObject,           // Object Type
                                                              varSpeedCoil.Name,             // Object Name
-                                                             cAlphaFieldName);              // Field Name
+                                                             cFieldName);              // Field Name
 
                         if (!ErrorsFound) {
                             CurveVal = Curve::CurveValue(state, varSpeedCoil.MSEIRAirFFlow(I), 1.0);
                             if (CurveVal > 1.10 || CurveVal < 0.90) {
                                 ShowWarningError(state, format("{}{}=\"{}\", curve values", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
                                 ShowContinueError(state,
-                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cAlphaFieldName));
+                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
                                 ShowContinueError(state, format("...Curve output at rated conditions = {:.3T}", CurveVal));
                             }
                         }
                     }
 
                     fieldValue = "speed_" + std::to_string(I) + "_energy_input_ratio_function_of_water_flow_fraction_curve_name";
-                    cAlphaFieldName = "Speed " + std::to_string(I) + " Energy Input Ratio Function of Water Flow Fraction Curve Name";
+                    cFieldName = "Speed " + std::to_string(I) + " Energy Input Ratio Function of Water Flow Fraction Curve Name";
                     std::string const heatEIRWFFCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
                     varSpeedCoil.MSEIRWaterFFlow(I) = Curve::GetCurveIndex(state, heatEIRWFFCurveName); // convert curve name to number
                     if (varSpeedCoil.MSEIRWaterFFlow(I) == 0) {
                         if (heatEIRWFFCurveName.empty()) {
                             ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...required {} is blank.", cAlphaFieldName));
+                            ShowContinueError(state, format("...required {} is blank.", cFieldName));
                         } else {
-                            ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...not found {}=\"{}\".", cAlphaFieldName, heatEIRWFFCurveName));
+                            ShowSevereInvalidBool(state, eoh, cFieldName, heatEIRWFFCurveName);
                         }
                         ErrorsFound = true;
                     } else {
@@ -1543,14 +1529,14 @@ namespace VariableSpeedCoils {
                                                              RoutineName,                     // Routine name
                                                              CurrentModuleObject,             // Object Type
                                                              varSpeedCoil.Name,               // Object Name
-                                                             cAlphaFieldName);                // Field Name
+                                                             cFieldName);                // Field Name
 
                         if (!ErrorsFound) {
                             CurveVal = Curve::CurveValue(state, varSpeedCoil.MSEIRWaterFFlow(I), 1.0);
                             if (CurveVal > 1.10 || CurveVal < 0.90) {
                                 ShowWarningError(state, format("{}{}=\"{}\", curve values", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
                                 ShowContinueError(state,
-                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cAlphaFieldName));
+                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
                                 ShowContinueError(state, format("...Curve output at rated conditions = {:.3T}", CurveVal));
                             }
                         }
@@ -1558,16 +1544,15 @@ namespace VariableSpeedCoils {
 
                     // Read waste heat modifier curve name
                     fieldValue = "speed_" + std::to_string(I) + "_waste_heat_function_of_temperature_curve_name";
-                    cAlphaFieldName = "Speed " + std::to_string(I) + " Waste Heat Function of Temperature Curve Name";
+                    cFieldName = "Speed " + std::to_string(I) + " Waste Heat Function of Temperature Curve Name";
                     std::string const heatWHFTCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
                     varSpeedCoil.MSWasteHeat(I) = Curve::GetCurveIndex(state, heatWHFTCurveName); // convert curve name to number
                     if (varSpeedCoil.MSWasteHeat(I) == 0) {
                         if (heatWHFTCurveName.empty()) {
                             ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...required {} is blank.", cAlphaFieldName));
+                            ShowContinueError(state, format("...required {} is blank.", cFieldName));
                         } else {
-                            ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...not found {}=\"{}\".", cAlphaFieldName, heatWHFTCurveName));
+                            ShowSevereInvalidBool(state, eoh, cFieldName, heatWHFTCurveName);
                         }
                         ErrorsFound = true;
                     } else {
@@ -1578,14 +1563,14 @@ namespace VariableSpeedCoils {
                                                              RoutineName,                 // Routine name
                                                              CurrentModuleObject,         // Object Type
                                                              varSpeedCoil.Name,           // Object Name
-                                                             cAlphaFieldName);            // Field Name
+                                                             cFieldName);            // Field Name
 
                         if (!ErrorsFound) {
                             CurveVal = Curve::CurveValue(state, varSpeedCoil.MSWasteHeat(I), RatedInletAirTempHeat, RatedInletWaterTempHeat);
                             if (CurveVal > 1.10 || CurveVal < 0.90) {
                                 ShowWarningError(state, format("{}{}=\"{}\", curve values", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
                                 ShowContinueError(state,
-                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cAlphaFieldName));
+                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
                                 ShowContinueError(state, format("...Curve output at rated conditions = {:.3T}", CurveVal));
                             }
                         }
@@ -1737,8 +1722,7 @@ namespace VariableSpeedCoils {
                         ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
                         ShowContinueError(state, format("...required {} is blank.", cFieldName));
                     } else {
-                        ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                        ShowContinueError(state, format("...not found {}=\"{}\".", cFieldName, heatPLFCurveName));
+                        ShowSevereInvalidBool(state, eoh, cFieldName, heatPLFCurveName);
                     }
                     ErrorsFound = true;
                 } else {
@@ -1786,8 +1770,7 @@ namespace VariableSpeedCoils {
                             ShowContinueError(state, format("...required {} is blank.", defrostEIRFTFieldName));
                             ShowContinueError(state, format("...field is required because {} is \"ReverseCycle\".", cFieldName));
                         } else {
-                            ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...not found {}=\"{}\".", defrostEIRFTFieldName, defrostEIRFTCurveName));
+                            ShowSevereInvalidBool(state, eoh, cFieldName, defrostEIRFTCurveName);
                         }
                         ErrorsFound = true;
                     } else {
@@ -1888,16 +1871,15 @@ namespace VariableSpeedCoils {
 
                     // Speed 1 Reference Unit Gross Rated Total Cooling Capacity
                     std::string fieldValue = "speed_" + std::to_string(I) + "_heating_capacity_function_of_temperature_curve_name";
-                    std::string cAlphaFieldName = "Speed " + std::to_string(I) + " Heating Capacity Function of Temperature Curve Name";
+                    std::string cFieldName = "Speed " + std::to_string(I) + " Heating Capacity Function of Temperature Curve Name";
                     std::string const hCapFTCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
                     varSpeedCoil.MSCCapFTemp(I) = Curve::GetCurveIndex(state, hCapFTCurveName); // convert curve name to number
                     if (varSpeedCoil.MSCCapFTemp(I) == 0) {
                         if (hCapFTCurveName.empty()) {
                             ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...required {} is blank.", cAlphaFieldName));
+                            ShowContinueError(state, format("...required {} is blank.", cFieldName));
                         } else {
-                            ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...not found {}=\"{}\".", cAlphaFieldName, hCapFTCurveName));
+                            ShowSevereInvalidBool(state, eoh, cFieldName, hCapFTCurveName);
                         }
                         ErrorsFound = true;
                     } else {
@@ -1908,14 +1890,14 @@ namespace VariableSpeedCoils {
                                                              RoutineName,                 // Routine name
                                                              CurrentModuleObject,         // Object Type
                                                              varSpeedCoil.Name,           // Object Name
-                                                             cAlphaFieldName);            // Field Name
+                                                             cFieldName);            // Field Name
 
                         if (!ErrorsFound) {
                             CurveVal = Curve::CurveValue(state, varSpeedCoil.MSCCapFTemp(I), RatedInletAirTempHeat, RatedAmbAirTempHeat);
                             if (CurveVal > 1.10 || CurveVal < 0.90) {
                                 ShowWarningError(state, format("{}{}=\"{}\", curve values", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
                                 ShowContinueError(state,
-                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cAlphaFieldName));
+                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
                                 ShowContinueError(state, format("...Curve output at rated conditions = {:.3T}", CurveVal));
                             }
                         }
@@ -1924,20 +1906,19 @@ namespace VariableSpeedCoils {
                     // Speed 1 Total  Heating Capacity Function of Air Flow Fraction Curve Name
                     if (I < 4) {
                         fieldValue = "speed_" + std::to_string(I) + "_total_heating_capacity_function_of_air_flow_fraction_curve_name";
-                        cAlphaFieldName = "Speed " + std::to_string(I) + " Total  Heating Capacity Function of Air Flow Fraction Curve Name";
+                        cFieldName = "Speed " + std::to_string(I) + " Total  Heating Capacity Function of Air Flow Fraction Curve Name";
                     } else {
                         fieldValue = "speed_" + std::to_string(I) + "_heating_capacity_function_of_air_flow_fraction_curve_name";
-                        cAlphaFieldName = "Speed " + std::to_string(I) + " Heating Capacity Function of Air Flow Fraction Curve Name";
+                        cFieldName = "Speed " + std::to_string(I) + " Heating Capacity Function of Air Flow Fraction Curve Name";
                     }
                     std::string const hCapFFFCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
                     varSpeedCoil.MSCCapAirFFlow(I) = Curve::GetCurveIndex(state, hCapFFFCurveName); // convert curve name to number
                     if (varSpeedCoil.MSCCapAirFFlow(I) == 0) {
                         if (hCapFFFCurveName.empty()) {
                             ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...required {} is blank.", cAlphaFieldName));
+                            ShowContinueError(state, format("...required {} is blank.", cFieldName));
                         } else {
-                            ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...not found {}=\"{}\".", cAlphaFieldName, hCapFFFCurveName));
+                            ShowSevereInvalidBool(state, eoh, cFieldName, hCapFFFCurveName);
                         }
                         ErrorsFound = true;
                     } else {
@@ -1948,14 +1929,14 @@ namespace VariableSpeedCoils {
                                                              RoutineName,                    // Routine name
                                                              CurrentModuleObject,            // Object Type
                                                              varSpeedCoil.Name,              // Object Name
-                                                             cAlphaFieldName);               // Field Name
+                                                             cFieldName);               // Field Name
 
                         if (!ErrorsFound) {
                             CurveVal = Curve::CurveValue(state, varSpeedCoil.MSCCapAirFFlow(I), 1.0);
                             if (CurveVal > 1.10 || CurveVal < 0.90) {
                                 ShowWarningError(state, format("{}{}=\"{}\", curve values", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
                                 ShowContinueError(state,
-                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cAlphaFieldName));
+                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
                                 ShowContinueError(state, format("...Curve output at rated conditions = {:.3T}", CurveVal));
                             }
                         }
@@ -1963,16 +1944,15 @@ namespace VariableSpeedCoils {
 
                     // Speed 1 Energy Input Ratio Function of Temperature Curve Name
                     fieldValue = "speed_" + std::to_string(I) + "_energy_input_ratio_function_of_temperature_curve_name";
-                    cAlphaFieldName = "Speed " + std::to_string(I) + " Energy Input Ratio Function of Temperature Curve Name";
+                    cFieldName = "Speed " + std::to_string(I) + " Energy Input Ratio Function of Temperature Curve Name";
                     std::string const hEIRFTCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
                     varSpeedCoil.MSEIRFTemp(I) = Curve::GetCurveIndex(state, hEIRFTCurveName); // convert curve name to number
                     if (varSpeedCoil.MSEIRFTemp(I) == 0) {
                         if (hEIRFTCurveName.empty()) {
                             ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...required {} is blank.", cAlphaFieldName));
+                            ShowContinueError(state, format("...required {} is blank.", cFieldName));
                         } else {
-                            ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...not found {}=\"{}\".", cAlphaFieldName, hEIRFTCurveName));
+                            ShowSevereInvalidBool(state, eoh, cFieldName, hEIRFTCurveName);
                         }
                         ErrorsFound = true;
                     } else {
@@ -1983,14 +1963,14 @@ namespace VariableSpeedCoils {
                                                              RoutineName,                // Routine name
                                                              CurrentModuleObject,        // Object Type
                                                              varSpeedCoil.Name,          // Object Name
-                                                             cAlphaFieldName);           // Field Name
+                                                             cFieldName);           // Field Name
 
                         if (!ErrorsFound) {
                             CurveVal = Curve::CurveValue(state, varSpeedCoil.MSEIRFTemp(I), RatedInletAirTempHeat, RatedAmbAirTempHeat);
                             if (CurveVal > 1.10 || CurveVal < 0.90) {
                                 ShowWarningError(state, format("{}{}=\"{}\", curve values", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
                                 ShowContinueError(state,
-                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cAlphaFieldName));
+                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
                                 ShowContinueError(state, format("...Curve output at rated conditions = {:.3T}", CurveVal));
                             }
                         }
@@ -1998,16 +1978,15 @@ namespace VariableSpeedCoils {
 
                     // Speed 1 Energy Input Ratio Function of Air Flow Fraction Curve Name
                     fieldValue = "speed_" + std::to_string(I) + "_energy_input_ratio_function_of_air_flow_fraction_curve_name";
-                    cAlphaFieldName = "Speed " + std::to_string(I) + " Energy Input Ratio Function of Air Flow Fraction Curve Name";
+                    cFieldName = "Speed " + std::to_string(I) + " Energy Input Ratio Function of Air Flow Fraction Curve Name";
                     std::string const hEIRFFFCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
                     varSpeedCoil.MSEIRAirFFlow(I) = Curve::GetCurveIndex(state, hEIRFFFCurveName); // convert curve name to number
                     if (varSpeedCoil.MSEIRAirFFlow(I) == 0) {
                         if (hEIRFFFCurveName.empty()) {
                             ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...required {} is blank.", cAlphaFieldName));
+                            ShowContinueError(state, format("...required {} is blank.", cFieldName));
                         } else {
-                            ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...not found {}=\"{}\".", cAlphaFieldName, hEIRFFFCurveName));
+                            ShowSevereInvalidBool(state, eoh, cFieldName, hEIRFFFCurveName);
                         }
                         ErrorsFound = true;
                     } else {
@@ -2018,14 +1997,14 @@ namespace VariableSpeedCoils {
                                                              RoutineName,                   // Routine name
                                                              CurrentModuleObject,           // Object Type
                                                              varSpeedCoil.Name,             // Object Name
-                                                             cAlphaFieldName);              // Field Name
+                                                             cFieldName);              // Field Name
 
                         if (!ErrorsFound) {
                             CurveVal = Curve::CurveValue(state, varSpeedCoil.MSEIRAirFFlow(I), 1.0);
                             if (CurveVal > 1.10 || CurveVal < 0.90) {
                                 ShowWarningError(state, format("{}{}=\"{}\", curve values", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
                                 ShowContinueError(state,
-                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cAlphaFieldName));
+                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
                                 ShowContinueError(state, format("...Curve output at rated conditions = {:.3T}", CurveVal));
                             }
                         }
@@ -2158,7 +2137,7 @@ namespace VariableSpeedCoils {
                     }
                 }
 
-                std::string cAlphaFieldName = "Evaporator Fan Power Included in Rated COP";
+                std::string cFieldName = "Evaporator Fan Power Included in Rated COP";
                 std::string fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "evaporator_fan_power_included_in_rated_cop");
                 BooleanSwitch fanPowerIncluded = static_cast<BooleanSwitch>(getYesNoValue(Util::makeUPPER(fieldValue)));
                 if (fanPowerIncluded != BooleanSwitch::Invalid) {
@@ -2167,7 +2146,7 @@ namespace VariableSpeedCoils {
                     ShowSevereInvalidBool(state, eoh, cFieldName, fieldValue);
                     ErrorsFound = true;
                 }
-                cAlphaFieldName = "Condenser Pump Power Included in Rated COP";
+                cFieldName = "Condenser Pump Power Included in Rated COP";
                 fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "condenser_pump_power_included_in_rated_cop");
                 BooleanSwitch pumpPowerIncluded = static_cast<BooleanSwitch>(getYesNoValue(Util::makeUPPER(fieldValue)));
                 if (pumpPowerIncluded != BooleanSwitch::Invalid) {
@@ -2176,7 +2155,7 @@ namespace VariableSpeedCoils {
                     ShowSevereInvalidBool(state, eoh, cFieldName, fieldValue);
                     ErrorsFound = true;
                 }
-                cAlphaFieldName = "Condenser Pump Heat Included in Rated Heating Capacity and Rated COP";
+                cFieldName = "Condenser Pump Heat Included in Rated Heating Capacity and Rated COP";
                 fieldValue = s_ip->getAlphaFieldValue(
                     fields, schemaProps, "condenser_pump_heat_included_in_rated_heating_capacity_and_rated_cop"); // Alphas(4)
                 BooleanSwitch pumpHeatIncludedInCapAndCOP = static_cast<BooleanSwitch>(getYesNoValue(Util::makeUPPER(fieldValue)));
@@ -2276,13 +2255,12 @@ namespace VariableSpeedCoils {
                     ErrorsFound = true;
                 }
 
-                cAlphaFieldName = "Crankcase Heater Capacity Function of Temperature Curve Name";
+                cFieldName = "Crankcase Heater Capacity Function of Temperature Curve Name";
                 fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "crankcase_heater_capacity_function_of_temperature_curve_name");
                 if (!fieldValue.empty()) {
                     varSpeedCoil.CrankcaseHeaterCapacityCurveIndex = Curve::GetCurveIndex(state, fieldValue);
                     if (varSpeedCoil.CrankcaseHeaterCapacityCurveIndex == 0) { // can't find the curve
-                        ShowSevereError(state,
-                                        format("{} = {}:  {} not found = {}", CurrentModuleObject, varSpeedCoil.Name, cAlphaFieldName, fieldValue));
+                        ShowSevereItemNotFound(state, eoh, cFieldName, fieldValue);
                         ErrorsFound = true;
                     } else {
                         ErrorsFound |= Curve::CheckCurveDims(state,
@@ -2291,17 +2269,17 @@ namespace VariableSpeedCoils {
                                                              RoutineName,                                    // Routine name
                                                              CurrentModuleObject,                            // Object Type
                                                              varSpeedCoil.Name,                              // Object Name
-                                                             cAlphaFieldName);                               // Field Name
+                                                             cFieldName);                               // Field Name
                     }
                 }
 
-                cAlphaFieldName = "Evaporator Air Temperature Type for Curve Objects";
+                cFieldName = "Evaporator Air Temperature Type for Curve Objects";
                 fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "evaporator_air_temperature_type_for_curve_objects");
                 varSpeedCoil.InletAirTemperatureType = static_cast<HVAC::OATType>(getEnumValue(HVAC::oatTypeNamesUC, Util::makeUPPER(fieldValue)));
                 if (varSpeedCoil.InletAirTemperatureType == HVAC::OATType::Invalid) {
                     //   wrong temperature type selection
                     ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                    ShowContinueError(state, format("...{} must be DryBulbTemperature or WetBulbTemperature.", cAlphaFieldName));
+                    ShowContinueError(state, format("...{} must be DryBulbTemperature or WetBulbTemperature.", cFieldName));
                     ShowContinueError(state, format("...entered value=\"{}\".", fieldValue));
                     ErrorsFound = true;
                 }
@@ -2316,23 +2294,22 @@ namespace VariableSpeedCoils {
                 WHInletWaterTemp = varSpeedCoil.WHRatedInletWaterTemp;
 
                 // part load curve
-                cAlphaFieldName = "Part Load Fraction Correlation Curve Name";
+                cFieldName = "Part Load Fraction Correlation Curve Name";
                 fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "part_load_fraction_correlation_curve_name");
                 varSpeedCoil.PLFFPLR = Curve::GetCurveIndex(state, fieldValue); // convert curve name to number
                 if (varSpeedCoil.PLFFPLR == 0) {
-                    if (cAlphaFieldName.empty()) {
+                    if (cFieldName.empty()) {
                         ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                        ShowContinueError(state, format("...required {} is blank.", cAlphaFieldName));
+                        ShowContinueError(state, format("...required {} is blank.", cFieldName));
                     } else {
-                        ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                        ShowContinueError(state, format("...not found {}=\"{}\".", cAlphaFieldName, fieldValue));
+                        ShowSevereItemNotFound(state, eoh, cFieldName, fieldValue);
                     }
                     ErrorsFound = true;
                 } else {
                     CurveVal = Curve::CurveValue(state, varSpeedCoil.PLFFPLR, 1.0);
                     if (CurveVal > 1.10 || CurveVal < 0.90) {
                         ShowWarningError(state, format("{}{}=\"{}\", curve values", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                        ShowContinueError(state, format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cAlphaFieldName));
+                        ShowContinueError(state, format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
                         ShowContinueError(state, format("...Curve output at rated conditions = {:.3T}", CurveVal));
                     }
                 }
@@ -2352,17 +2329,16 @@ namespace VariableSpeedCoils {
                     jfieldName = "speed_" + std::to_string(I) + "_reference_unit_water_pump_input_power_at_rated_conditions";
                     varSpeedCoil.MSWHPumpPower(I) = s_ip->getRealFieldValue(fields, schemaProps, jfieldName);
 
-                    cAlphaFieldName = "Speed " + std::to_string(I) + " Total WH Capacity Function of Temperature Curve Name";
+                    cFieldName = "Speed " + std::to_string(I) + " Total WH Capacity Function of Temperature Curve Name";
                     jfieldName = jfieldName = "speed_" + std::to_string(I) + "_total_wh_capacity_function_of_temperature_curve_name";
                     fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, jfieldName);
                     varSpeedCoil.MSCCapFTemp(I) = Curve::GetCurveIndex(state, fieldValue); // convert curve name to number
                     if (varSpeedCoil.MSCCapFTemp(I) == 0) {
                         if (fieldValue.empty()) {
                             ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...required {} is blank.", cAlphaFieldName));
+                            ShowContinueError(state, format("...required {} is blank.", cFieldName));
                         } else {
-                            ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...not found {}=\"{}\".", cAlphaFieldName, fieldValue));
+                            ShowSevereItemNotFound(state, eoh, cFieldName, fieldValue);
                         }
                         ErrorsFound = true;
                     } else {
@@ -2373,30 +2349,29 @@ namespace VariableSpeedCoils {
                                                              RoutineName,                 // Routine name
                                                              CurrentModuleObject,         // Object Type
                                                              varSpeedCoil.Name,           // Object Name
-                                                             cAlphaFieldName);            // Field Name
+                                                             cFieldName);            // Field Name
 
                         if (!ErrorsFound) {
                             CurveVal = Curve::CurveValue(state, varSpeedCoil.MSCCapFTemp(I), WHInletAirTemp, WHInletWaterTemp);
                             if (CurveVal > 1.10 || CurveVal < 0.90) {
                                 ShowWarningError(state, format("{}{}=\"{}\", curve values", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
                                 ShowContinueError(state,
-                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cAlphaFieldName));
+                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
                                 ShowContinueError(state, format("...Curve output at rated conditions = {:.3T}", CurveVal));
                             }
                         }
                     }
 
-                    cAlphaFieldName = "Speed " + std::to_string(I) + " Total WH Capacity Function of Air Flow Fraction Curve Name";
+                    cFieldName = "Speed " + std::to_string(I) + " Total WH Capacity Function of Air Flow Fraction Curve Name";
                     jfieldName = jfieldName = "speed_" + std::to_string(I) + "_total_wh_capacity_function_of_air_flow_fraction_curve_name";
                     fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, jfieldName);
                     varSpeedCoil.MSCCapAirFFlow(I) = Curve::GetCurveIndex(state, fieldValue); // convert curve name to number
                     if (varSpeedCoil.MSCCapAirFFlow(I) == 0) {
                         if (fieldValue.empty()) {
                             ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...required {} is blank.", cAlphaFieldName));
+                            ShowContinueError(state, format("...required {} is blank.", cFieldName));
                         } else {
-                            ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...not found {}=\"{}\".", cAlphaFieldName, fieldValue));
+                            ShowSevereItemNotFound(state, eoh, cFieldName, fieldValue);
                         }
                         ErrorsFound = true;
                     } else {
@@ -2407,30 +2382,29 @@ namespace VariableSpeedCoils {
                                                              RoutineName,                    // Routine name
                                                              CurrentModuleObject,            // Object Type
                                                              varSpeedCoil.Name,              // Object Name
-                                                             cAlphaFieldName);               // Field Name
+                                                             cFieldName);               // Field Name
 
                         if (!ErrorsFound) {
                             CurveVal = Curve::CurveValue(state, varSpeedCoil.MSCCapAirFFlow(I), 1.0);
                             if (CurveVal > 1.10 || CurveVal < 0.90) {
                                 ShowWarningError(state, format("{}{}=\"{}\", curve values", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
                                 ShowContinueError(state,
-                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cAlphaFieldName));
+                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
                                 ShowContinueError(state, format("...Curve output at rated conditions = {:.3T}", CurveVal));
                             }
                         }
                     }
 
-                    cAlphaFieldName = "Speed " + std::to_string(I) + " Total WH Capacity Function of Water Flow Fraction Curve Name";
+                    cFieldName = "Speed " + std::to_string(I) + " Total WH Capacity Function of Water Flow Fraction Curve Name";
                     jfieldName = jfieldName = "speed_" + std::to_string(I) + "_total_wh_capacity_function_of_water_flow_fraction_curve_name";
                     fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, jfieldName);
                     varSpeedCoil.MSCCapWaterFFlow(I) = Curve::GetCurveIndex(state, fieldValue); // convert curve name to number
                     if (varSpeedCoil.MSCCapWaterFFlow(I) == 0) {
                         if (fieldValue.empty()) {
                             ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...required {} is blank.", cAlphaFieldName));
+                            ShowContinueError(state, format("...required {} is blank.", cFieldName));
                         } else {
-                            ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...not found {}=\"{}\".", cAlphaFieldName, fieldValue));
+                            ShowSevereItemNotFound(state, eoh, cFieldName, fieldValue);
                         }
                         ErrorsFound = true;
                     } else {
@@ -2441,30 +2415,29 @@ namespace VariableSpeedCoils {
                                                              RoutineName,                      // Routine name
                                                              CurrentModuleObject,              // Object Type
                                                              varSpeedCoil.Name,                // Object Name
-                                                             cAlphaFieldName);                 // Field Name
+                                                             cFieldName);                 // Field Name
 
                         if (!ErrorsFound) {
                             CurveVal = Curve::CurveValue(state, varSpeedCoil.MSCCapWaterFFlow(I), 1.0);
                             if (CurveVal > 1.10 || CurveVal < 0.90) {
                                 ShowWarningError(state, format("{}{}=\"{}\", curve values", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
                                 ShowContinueError(state,
-                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cAlphaFieldName));
+                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
                                 ShowContinueError(state, format("...Curve output at rated conditions = {:.3T}", CurveVal));
                             }
                         }
                     }
 
-                    cAlphaFieldName = "Speed " + std::to_string(I) + " COP Function of Temperature Curve Name";
+                    cFieldName = "Speed " + std::to_string(I) + " COP Function of Temperature Curve Name";
                     jfieldName = jfieldName = "speed_" + std::to_string(I) + "_cop_function_of_temperature_curve_name";
                     fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, jfieldName);
                     varSpeedCoil.MSEIRFTemp(I) = Curve::GetCurveIndex(state, fieldValue); // convert curve name to number
                     if (varSpeedCoil.MSEIRFTemp(I) == 0) {
                         if (fieldValue.empty()) {
                             ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...required {} is blank.", cAlphaFieldName));
+                            ShowContinueError(state, format("...required {} is blank.", cFieldName));
                         } else {
-                            ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...not found {}=\"{}\".", cAlphaFieldName, fieldValue));
+                            ShowSevereItemNotFound(state, eoh, cFieldName, fieldValue);
                         }
                         ErrorsFound = true;
                     } else {
@@ -2475,30 +2448,29 @@ namespace VariableSpeedCoils {
                                                              RoutineName,                // Routine name
                                                              CurrentModuleObject,        // Object Type
                                                              varSpeedCoil.Name,          // Object Name
-                                                             cAlphaFieldName);           // Field Name
+                                                             cFieldName);           // Field Name
 
                         if (!ErrorsFound) {
                             CurveVal = Curve::CurveValue(state, varSpeedCoil.MSEIRFTemp(I), WHInletAirTemp, WHInletWaterTemp);
                             if (CurveVal > 1.10 || CurveVal < 0.90) {
                                 ShowWarningError(state, format("{}{}=\"{}\", curve values", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
                                 ShowContinueError(state,
-                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cAlphaFieldName));
+                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
                                 ShowContinueError(state, format("...Curve output at rated conditions = {:.3T}", CurveVal));
                             }
                         }
                     }
 
-                    cAlphaFieldName = "Speed " + std::to_string(I) + " COP Function of Air Flow Fraction Curve Name";
+                    cFieldName = "Speed " + std::to_string(I) + " COP Function of Air Flow Fraction Curve Name";
                     jfieldName = jfieldName = "speed_" + std::to_string(I) + "_cop_function_of_air_flow_fraction_curve_name";
                     fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, jfieldName);
                     varSpeedCoil.MSEIRAirFFlow(I) = Curve::GetCurveIndex(state, fieldValue); // convert curve name to number
                     if (varSpeedCoil.MSEIRAirFFlow(I) == 0) {
                         if (fieldValue.empty()) {
                             ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...required {} is blank.", cAlphaFieldName));
+                            ShowContinueError(state, format("...required {} is blank.", cFieldName));
                         } else {
-                            ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...not found {}=\"{}\".", cAlphaFieldName, fieldValue));
+                            ShowSevereItemNotFound(state, eoh, cFieldName, fieldValue);
                         }
                         ErrorsFound = true;
                     } else {
@@ -2509,30 +2481,29 @@ namespace VariableSpeedCoils {
                                                              RoutineName,                   // Routine name
                                                              CurrentModuleObject,           // Object Type
                                                              varSpeedCoil.Name,             // Object Name
-                                                             cAlphaFieldName);              // Field Name
+                                                             cFieldName);              // Field Name
 
                         if (!ErrorsFound) {
                             CurveVal = Curve::CurveValue(state, varSpeedCoil.MSEIRAirFFlow(I), 1.0);
                             if (CurveVal > 1.10 || CurveVal < 0.90) {
                                 ShowWarningError(state, format("{}{}=\"{}\", curve values", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
                                 ShowContinueError(state,
-                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cAlphaFieldName));
+                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
                                 ShowContinueError(state, format("...Curve output at rated conditions = {:.3T}", CurveVal));
                             }
                         }
                     }
 
-                    cAlphaFieldName = "Speed " + std::to_string(I) + " COP Function of Water Flow Fraction Curve Name";
+                    cFieldName = "Speed " + std::to_string(I) + " COP Function of Water Flow Fraction Curve Name";
                     jfieldName = jfieldName = "speed_" + std::to_string(I) + "_cop_function_of_water_flow_fraction_curve_name";
                     fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, jfieldName);
                     varSpeedCoil.MSEIRWaterFFlow(I) = Curve::GetCurveIndex(state, fieldValue); // convert curve name to number
                     if (varSpeedCoil.MSEIRWaterFFlow(I) == 0) {
                         if (fieldValue.empty()) {
                             ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...required {} is blank.", cAlphaFieldName));
+                            ShowContinueError(state, format("...required {} is blank.", cFieldName));
                         } else {
-                            ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...not found {}=\"{}\".", cAlphaFieldName, fieldValue));
+                            ShowSevereItemNotFound(state, eoh, cFieldName, fieldValue);
                         }
                         ErrorsFound = true;
                     } else {
@@ -2543,14 +2514,14 @@ namespace VariableSpeedCoils {
                                                              RoutineName,                     // Routine name
                                                              CurrentModuleObject,             // Object Type
                                                              varSpeedCoil.Name,               // Object Name
-                                                             cAlphaFieldName);                // Field Name
+                                                             cFieldName);                // Field Name
 
                         if (!ErrorsFound) {
                             CurveVal = Curve::CurveValue(state, varSpeedCoil.MSEIRWaterFFlow(I), 1.0);
                             if (CurveVal > 1.10 || CurveVal < 0.90) {
                                 ShowWarningError(state, format("{}{}=\"{}\", curve values", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
                                 ShowContinueError(state,
-                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cAlphaFieldName));
+                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
                                 ShowContinueError(state, format("...Curve output at rated conditions = {:.3T}", CurveVal));
                             }
                         }

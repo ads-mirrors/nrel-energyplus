@@ -3212,7 +3212,7 @@ void GetDXCoils(EnergyPlusData &state)
             if (!whPLFCurveName.empty()) {
                 thisDXCoil.CrankcaseHeaterCapacityCurveIndex = Curve::GetCurveIndex(state, whPLFCurveName);
                 if (thisDXCoil.CrankcaseHeaterCapacityCurveIndex == 0) { // can't find the curve
-                    ShowSevereError(state, format("{} = {}:  {} not found = {}", CurrentModuleObject, thisDXCoil.Name, cFieldName, whPLFCurveName));
+                    ShowSevereItemNotFound(state, eoh, cFieldName, whPLFCurveName);
                     ErrorsFound = true;
                 } else {
                     ErrorsFound |= Curve::CheckCurveDims(state,
@@ -3249,8 +3249,7 @@ void GetDXCoils(EnergyPlusData &state)
             if (!fieldValue.empty()) {
                 thisDXCoil.HCapFTemp = GetCurveIndex(state, fieldValue);
                 if (thisDXCoil.HCapFTemp == 0) {
-                    ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, thisDXCoil.Name));
-                    ShowContinueError(state, format("...not found {}=\"{}\".", cFieldName, fieldValue));
+                    ShowSevereItemNotFound(state, eoh, cFieldName, fieldValue);
                     ErrorsFound = true;
                 } else {
                     // Verify Curve Object, only legal types are BiQuadratic or Cubic
@@ -3290,8 +3289,7 @@ void GetDXCoils(EnergyPlusData &state)
             if (!fieldValue.empty()) {
                 thisDXCoil.HCapFAirFlow = GetCurveIndex(state, fieldValue);
                 if (thisDXCoil.HCapFAirFlow == 0) {
-                    ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, thisDXCoil.Name));
-                    ShowContinueError(state, format("...not found {}=\"{}\".", cFieldName, fieldValue));
+                    ShowSevereItemNotFound(state, eoh, cFieldName, fieldValue);
                     ErrorsFound = true;
                 } else {
                     // Verify Curve Object, only legal types are Cubic or Quadratic
@@ -3320,8 +3318,7 @@ void GetDXCoils(EnergyPlusData &state)
             if (!fieldValue.empty()) {
                 thisDXCoil.HCapFWaterFlow = GetCurveIndex(state, fieldValue);
                 if (thisDXCoil.HCapFWaterFlow == 0) {
-                    ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, thisDXCoil.Name));
-                    ShowContinueError(state, format("...not found {}=\"{}\".", cFieldName, fieldValue));
+                    ShowSevereItemNotFound(state, eoh, cFieldName, fieldValue);
                     ErrorsFound = true;
                 } else {
                     // Verify Curve Object, only legal types are Cubic or Quadratic
@@ -3350,8 +3347,7 @@ void GetDXCoils(EnergyPlusData &state)
             if (!fieldValue.empty()) {
                 thisDXCoil.HCOPFTemp = GetCurveIndex(state, fieldValue);
                 if (thisDXCoil.HCOPFTemp == 0) {
-                    ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, thisDXCoil.Name));
-                    ShowContinueError(state, format("...not found {}=\"{}\".", cFieldName, fieldValue));
+                    ShowSevereItemNotFound(state, eoh, cFieldName, fieldValue);
                     ErrorsFound = true;
                 } else {
                     // Verify Curve Object, only legal types are BiQuadratic or Cubic
@@ -3391,8 +3387,7 @@ void GetDXCoils(EnergyPlusData &state)
             if (!fieldValue.empty()) {
                 thisDXCoil.HCOPFAirFlow = GetCurveIndex(state, fieldValue);
                 if (thisDXCoil.HCOPFAirFlow == 0) {
-                    ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, thisDXCoil.Name));
-                    ShowContinueError(state, format("...not found {}=\"{}\".", cFieldName, fieldValue));
+                    ShowSevereItemNotFound(state, eoh, cFieldName, fieldValue);
                     ErrorsFound = true;
                 } else {
                     // Verify Curve Object, only legal types are Cubic or Quadratic
@@ -3421,8 +3416,7 @@ void GetDXCoils(EnergyPlusData &state)
             if (!fieldValue.empty()) {
                 thisDXCoil.HCOPFWaterFlow = GetCurveIndex(state, fieldValue);
                 if (thisDXCoil.HCOPFWaterFlow == 0) {
-                    ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, thisDXCoil.Name));
-                    ShowContinueError(state, format("...not found {}=\"{}\".", cFieldName, fieldValue));
+                    ShowSevereItemNotFound(state, eoh, cFieldName, fieldValue);
                     ErrorsFound = true;
                 } else {
                     // Verify Curve Object, only legal types are Cubic or Quadratic
@@ -3451,8 +3445,7 @@ void GetDXCoils(EnergyPlusData &state)
             if (!fieldValue.empty()) {
                 thisDXCoil.PLFFPLR(1) = GetCurveIndex(state, fieldValue);
                 if (thisDXCoil.PLFFPLR(1) == 0) {
-                    ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, thisDXCoil.Name));
-                    ShowContinueError(state, format("...not found {}=\"{}\".", cFieldName, fieldValue));
+                    ShowSevereItemNotFound(state, eoh, cFieldName, fieldValue);
                     ErrorsFound = true;
                 } else {
                     // Verify Curve Object, only legal types are Cubic or Quadratic
@@ -3730,8 +3723,7 @@ void GetDXCoils(EnergyPlusData &state)
             if (!fieldValue.empty()) {
                 thisDXCoil.HCapFTemp = GetCurveIndex(state, fieldValue);
                 if (thisDXCoil.HCapFTemp == 0) {
-                    ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, thisDXCoil.Name));
-                    ShowContinueError(state, format("...not found {}=\"{}\".", cFieldName, fieldValue));
+                    ShowSevereItemNotFound(state, eoh, cFieldName, fieldValue);
                     ErrorsFound = true;
                 } else {
                     // Verify Curve Object, only legal types are BiQuadratic or Cubic
@@ -3771,8 +3763,7 @@ void GetDXCoils(EnergyPlusData &state)
             if (!fieldValue.empty()) {
                 thisDXCoil.HCapFAirFlow = GetCurveIndex(state, fieldValue);
                 if (thisDXCoil.HCapFAirFlow == 0) {
-                    ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, thisDXCoil.Name));
-                    ShowContinueError(state, format("...not found {}=\"{}\".", cFieldName, fieldValue));
+                    ShowSevereItemNotFound(state, eoh, cFieldName, fieldValue);
                     ErrorsFound = true;
                 } else {
                     // Verify Curve Object, only legal types are Cubic or Quadratic
@@ -3801,8 +3792,7 @@ void GetDXCoils(EnergyPlusData &state)
             if (!fieldValue.empty()) {
                 thisDXCoil.HCOPFTemp = GetCurveIndex(state, fieldValue);
                 if (thisDXCoil.HCOPFTemp == 0) {
-                    ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, thisDXCoil.Name));
-                    ShowContinueError(state, format("...not found {}=\"{}\".", cFieldName, fieldValue));
+                    ShowSevereItemNotFound(state, eoh, cFieldName, fieldValue);
                     ErrorsFound = true;
                 } else {
                     // Verify Curve Object, only legal types are BiQuadratic or Cubic
@@ -3842,8 +3832,7 @@ void GetDXCoils(EnergyPlusData &state)
             if (!fieldValue.empty()) {
                 thisDXCoil.HCOPFAirFlow = GetCurveIndex(state, fieldValue);
                 if (thisDXCoil.HCOPFAirFlow == 0) {
-                    ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, thisDXCoil.Name));
-                    ShowContinueError(state, format("...not found {}=\"{}\".", cFieldName, fieldValue));
+                    ShowSevereItemNotFound(state, eoh, cFieldName, fieldValue);
                     ErrorsFound = true;
                 } else {
                     // Verify Curve Object, only legal types are Cubic or Quadratic
@@ -3872,8 +3861,7 @@ void GetDXCoils(EnergyPlusData &state)
             if (!fieldValue.empty()) {
                 thisDXCoil.PLFFPLR(1) = GetCurveIndex(state, fieldValue);
                 if (thisDXCoil.PLFFPLR(1) == 0) {
-                    ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, thisDXCoil.Name));
-                    ShowContinueError(state, format("...not found {}=\"{}\".", cFieldName, fieldValue));
+                    ShowSevereItemNotFound(state, eoh, cFieldName, fieldValue);
                     ErrorsFound = true;
                 } else {
                     // Verify Curve Object, only legal types are Cubic or Quadratic

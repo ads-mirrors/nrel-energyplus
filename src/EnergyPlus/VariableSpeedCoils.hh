@@ -198,12 +198,12 @@ namespace VariableSpeedCoils {
         //----------------------------------------------------------------
         // added variables and arrays for variable speed air-source heat pump
         // defrosting
-        int DefrostStrategy;       // defrost strategy; 1=reverse-cycle, 2=resistive
-        int DefrostControl;        // defrost control; 1=timed, 2=on-demand
-        int EIRFPLR;               // index of energy input ratio vs part-load ratio curve
-        int DefrostEIRFT;          // index of defrost mode total cooling capacity for reverse cycle heat pump
-        Real64 MinOATCompressor;   // Minimum OAT for heat pump compressor operation
-        Real64 OATempCompressorOn; // The outdoor tempearture when the compressor is automatically turned back on,
+        StandardRatings::DefrostStrat DefrostStrategy;    // defrost strategy; 1=reverse-cycle, 2=resistive
+        StandardRatings::HPdefrostControl DefrostControl; // defrost control; 1=timed, 2=on-demand
+        int EIRFPLR;                                      // index of energy input ratio vs part-load ratio curve
+        int DefrostEIRFT;                                 // index of defrost mode total cooling capacity for reverse cycle heat pump
+        Real64 MinOATCompressor;                          // Minimum OAT for heat pump compressor operation
+        Real64 OATempCompressorOn;                        // The outdoor tempearture when the compressor is automatically turned back on,
         // if applicable, following automatic shut off. This field is used only for
         // HSPF calculation.
         Real64 MaxOATDefrost;           // Maximum OAT for defrost operation
@@ -311,11 +311,12 @@ namespace VariableSpeedCoils {
               MSCCapFTemp(HVAC::MaxSpeedLevels, 0), MSCCapAirFFlow(HVAC::MaxSpeedLevels, 0), MSCCapWaterFFlow(HVAC::MaxSpeedLevels, 0),
               MSEIRFTemp(HVAC::MaxSpeedLevels, 0), MSEIRAirFFlow(HVAC::MaxSpeedLevels, 0), MSEIRWaterFFlow(HVAC::MaxSpeedLevels, 0),
               MSWasteHeat(HVAC::MaxSpeedLevels, 0), MSWasteHeatFrac(HVAC::MaxSpeedLevels, 0.0), MSWHPumpPower(HVAC::MaxSpeedLevels, 0.0),
-              MSWHPumpPowerPerRatedTotCap(HVAC::MaxSpeedLevels, 0.0), SpeedNumReport(0.0), SpeedRatioReport(0.0), DefrostStrategy(0),
-              DefrostControl(0), EIRFPLR(0), DefrostEIRFT(0), MinOATCompressor(0.0), OATempCompressorOn(0.0), MaxOATDefrost(0.0), DefrostTime(0.0),
-              DefrostCapacity(0.0), HPCompressorRuntime(0.0), HPCompressorRuntimeLast(0.0), TimeLeftToDefrost(0.0), DefrostPower(0.0),
-              DefrostConsumption(0.0), ReportCoolingCoilCrankcasePower(true), CrankcaseHeaterCapacity(0.0), CrankcaseHeaterPower(0.0),
-              CrankcaseHeaterCapacityCurveIndex(0), MaxOATCrankcaseHeater(0.0), CrankcaseHeaterConsumption(0.0), CondenserInletNodeNum(0),
+              MSWHPumpPowerPerRatedTotCap(HVAC::MaxSpeedLevels, 0.0), SpeedNumReport(0.0), SpeedRatioReport(0.0),
+              DefrostStrategy(StandardRatings::DefrostStrat::Invalid), DefrostControl(StandardRatings::HPdefrostControl::Invalid), EIRFPLR(0),
+              DefrostEIRFT(0), MinOATCompressor(0.0), OATempCompressorOn(0.0), MaxOATDefrost(0.0), DefrostTime(0.0), DefrostCapacity(0.0),
+              HPCompressorRuntime(0.0), HPCompressorRuntimeLast(0.0), TimeLeftToDefrost(0.0), DefrostPower(0.0), DefrostConsumption(0.0),
+              ReportCoolingCoilCrankcasePower(true), CrankcaseHeaterCapacity(0.0), CrankcaseHeaterPower(0.0), CrankcaseHeaterCapacityCurveIndex(0),
+              MaxOATCrankcaseHeater(0.0), CrankcaseHeaterConsumption(0.0), CondenserInletNodeNum(0),
               CondenserType(DataHeatBalance::RefrigCondenserType::Air), ReportEvapCondVars(false), EvapCondPumpElecNomPower(0.0),
               EvapCondPumpElecPower(0.0), EvapWaterConsumpRate(0.0), EvapCondPumpElecConsumption(0.0), EvapWaterConsump(0.0),
               BasinHeaterConsumption(0.0), BasinHeaterPowerFTempDiff(0.0), BasinHeaterSetPointTemp(0.0), BasinHeaterPower(0.0),

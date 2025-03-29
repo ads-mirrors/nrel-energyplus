@@ -428,14 +428,13 @@ namespace VariableSpeedCoils {
                                                              RoutineName,                 // Routine name
                                                              CurrentModuleObject,         // Object Type
                                                              varSpeedCoil.Name,           // Object Name
-                                                             cFieldName);            // Field Name
+                                                             cFieldName);                 // Field Name
 
                         if (!ErrorsFound) {
                             CurveVal = Curve::CurveValue(state, varSpeedCoil.MSCCapFTemp(I), RatedInletWetBulbTemp, RatedInletWaterTemp);
                             if (CurveVal > 1.10 || CurveVal < 0.90) {
                                 ShowWarningError(state, format("{}{}=\"{}\", curve values", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                                ShowContinueError(state,
-                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
+                                ShowContinueError(state, format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
                                 ShowContinueError(state, format("...Curve output at rated conditions = {:.3T}", CurveVal));
                             }
                         }
@@ -461,14 +460,13 @@ namespace VariableSpeedCoils {
                                                              RoutineName,                    // Routine name
                                                              CurrentModuleObject,            // Object Type
                                                              varSpeedCoil.Name,              // Object Name
-                                                             cFieldName);               // Field Name
+                                                             cFieldName);                    // Field Name
 
                         if (!ErrorsFound) {
                             CurveVal = Curve::CurveValue(state, varSpeedCoil.MSCCapAirFFlow(I), 1.0);
                             if (CurveVal > 1.10 || CurveVal < 0.90) {
                                 ShowWarningError(state, format("{}{}=\"{}\", curve values", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                                ShowContinueError(state,
-                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
+                                ShowContinueError(state, format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
                                 ShowContinueError(state, format("...Curve output at rated conditions = {:.3T}", CurveVal));
                             }
                         }
@@ -494,14 +492,13 @@ namespace VariableSpeedCoils {
                                                              RoutineName,                      // Routine name
                                                              CurrentModuleObject,              // Object Type
                                                              varSpeedCoil.Name,                // Object Name
-                                                             cFieldName);                 // Field Name
+                                                             cFieldName);                      // Field Name
 
                         if (!ErrorsFound) {
                             CurveVal = Curve::CurveValue(state, varSpeedCoil.MSCCapWaterFFlow(I), 1.0);
                             if (CurveVal > 1.10 || CurveVal < 0.90) {
                                 ShowWarningError(state, format("{}{}=\"{}\", curve values", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                                ShowContinueError(state,
-                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
+                                ShowContinueError(state, format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
                                 ShowContinueError(state, format("...Curve output at rated conditions = {:.3T}", CurveVal));
                             }
                         }
@@ -527,14 +524,13 @@ namespace VariableSpeedCoils {
                                                              RoutineName,                // Routine name
                                                              CurrentModuleObject,        // Object Type
                                                              varSpeedCoil.Name,          // Object Name
-                                                             cFieldName);           // Field Name
+                                                             cFieldName);                // Field Name
 
                         if (!ErrorsFound) {
                             CurveVal = Curve::CurveValue(state, varSpeedCoil.MSEIRFTemp(I), RatedInletWetBulbTemp, RatedInletWaterTemp);
                             if (CurveVal > 1.10 || CurveVal < 0.90) {
                                 ShowWarningError(state, format("{}{}=\"{}\", curve values", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                                ShowContinueError(state,
-                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
+                                ShowContinueError(state, format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
                                 ShowContinueError(state, format("...Curve output at rated conditions = {:.3T}", CurveVal));
                             }
                         }
@@ -560,14 +556,13 @@ namespace VariableSpeedCoils {
                                                              RoutineName,                   // Routine name
                                                              CurrentModuleObject,           // Object Type
                                                              varSpeedCoil.Name,             // Object Name
-                                                             cFieldName);              // Field Name
+                                                             cFieldName);                   // Field Name
 
                         if (!ErrorsFound) {
                             CurveVal = Curve::CurveValue(state, varSpeedCoil.MSEIRAirFFlow(I), 1.0);
                             if (CurveVal > 1.10 || CurveVal < 0.90) {
                                 ShowWarningError(state, format("{}{}=\"{}\", curve values", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                                ShowContinueError(state,
-                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
+                                ShowContinueError(state, format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
                                 ShowContinueError(state, format("...Curve output at rated conditions = {:.3T}", CurveVal));
                             }
                         }
@@ -593,14 +588,13 @@ namespace VariableSpeedCoils {
                                                              RoutineName,                     // Routine name
                                                              CurrentModuleObject,             // Object Type
                                                              varSpeedCoil.Name,               // Object Name
-                                                             cFieldName);                // Field Name
+                                                             cFieldName);                     // Field Name
 
                         if (!ErrorsFound) {
                             CurveVal = Curve::CurveValue(state, varSpeedCoil.MSEIRWaterFFlow(I), 1.0);
                             if (CurveVal > 1.10 || CurveVal < 0.90) {
                                 ShowWarningError(state, format("{}{}=\"{}\", curve values", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                                ShowContinueError(state,
-                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
+                                ShowContinueError(state, format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
                                 ShowContinueError(state, format("...Curve output at rated conditions = {:.3T}", CurveVal));
                             }
                         }
@@ -626,14 +620,13 @@ namespace VariableSpeedCoils {
                                                              RoutineName,                 // Routine name
                                                              CurrentModuleObject,         // Object Type
                                                              varSpeedCoil.Name,           // Object Name
-                                                             cFieldName);            // Field Name
+                                                             cFieldName);                 // Field Name
 
                         if (!ErrorsFound) {
                             CurveVal = Curve::CurveValue(state, varSpeedCoil.MSWasteHeat(I), RatedInletWaterTemp, RatedInletAirTemp);
                             if (CurveVal > 1.10 || CurveVal < 0.90) {
                                 ShowWarningError(state, format("{}{}=\"{}\", curve values", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                                ShowContinueError(state,
-                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
+                                ShowContinueError(state, format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
                                 ShowContinueError(state, format("...Curve output at rated conditions = {:.3T}", CurveVal));
                             }
                         }
@@ -994,7 +987,7 @@ namespace VariableSpeedCoils {
                         if (I == 7) fieldName = "speed_" + std::to_string(I) + "_reference_unit_condenser_flow_rate";
                     }
                     varSpeedCoil.EvapCondAirFlow(I) = s_ip->getRealFieldValue(fields, schemaProps, fieldName);
-                    
+
                     fieldName = "speed_" + std::to_string(I) + "_reference_unit_rated_pad_effectiveness_of_evap_precooling";
                     varSpeedCoil.EvapCondEffect(I) = s_ip->getRealFieldValue(fields, schemaProps, fieldName);
                     if (varSpeedCoil.EvapCondEffect(I) < 0.0 || varSpeedCoil.EvapCondEffect(I) > 1.0) {
@@ -1025,14 +1018,13 @@ namespace VariableSpeedCoils {
                                                              RoutineName,                 // Routine name
                                                              CurrentModuleObject,         // Object Type
                                                              varSpeedCoil.Name,           // Object Name
-                                                             cFieldName);            // Field Name
+                                                             cFieldName);                 // Field Name
 
                         if (!ErrorsFound) {
                             CurveVal = Curve::CurveValue(state, varSpeedCoil.MSCCapFTemp(I), RatedInletWetBulbTemp, RatedAmbAirTemp);
                             if (CurveVal > 1.10 || CurveVal < 0.90) {
                                 ShowWarningError(state, format("{}{}=\"{}\", curve values", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                                ShowContinueError(state,
-                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
+                                ShowContinueError(state, format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
                                 ShowContinueError(state, format("...Curve output at rated conditions = {:.3T}", CurveVal));
                             }
                         }
@@ -1058,14 +1050,13 @@ namespace VariableSpeedCoils {
                                                              RoutineName,                    // Routine name
                                                              CurrentModuleObject,            // Object Type
                                                              varSpeedCoil.Name,              // Object Name
-                                                             cFieldName);               // Field Name
+                                                             cFieldName);                    // Field Name
 
                         if (!ErrorsFound) {
                             CurveVal = Curve::CurveValue(state, varSpeedCoil.MSCCapAirFFlow(I), 1.0);
                             if (CurveVal > 1.10 || CurveVal < 0.90) {
                                 ShowWarningError(state, format("{}{}=\"{}\", curve values", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                                ShowContinueError(state,
-                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
+                                ShowContinueError(state, format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
                                 ShowContinueError(state, format("...Curve output at rated conditions = {:.3T}", CurveVal));
                             }
                         }
@@ -1091,14 +1082,13 @@ namespace VariableSpeedCoils {
                                                              RoutineName,                // Routine name
                                                              CurrentModuleObject,        // Object Type
                                                              varSpeedCoil.Name,          // Object Name
-                                                             cFieldName);           // Field Name
+                                                             cFieldName);                // Field Name
 
                         if (!ErrorsFound) {
                             CurveVal = Curve::CurveValue(state, varSpeedCoil.MSEIRFTemp(I), RatedInletWetBulbTemp, RatedAmbAirTemp);
                             if (CurveVal > 1.10 || CurveVal < 0.90) {
                                 ShowWarningError(state, format("{}{}=\"{}\", curve values", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                                ShowContinueError(state,
-                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
+                                ShowContinueError(state, format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
                                 ShowContinueError(state, format("...Curve output at rated conditions = {:.3T}", CurveVal));
                             }
                         }
@@ -1124,14 +1114,13 @@ namespace VariableSpeedCoils {
                                                              RoutineName,                   // Routine name
                                                              CurrentModuleObject,           // Object Type
                                                              varSpeedCoil.Name,             // Object Name
-                                                             cFieldName);              // Field Name
+                                                             cFieldName);                   // Field Name
 
                         if (!ErrorsFound) {
                             CurveVal = Curve::CurveValue(state, varSpeedCoil.MSEIRAirFFlow(I), 1.0);
                             if (CurveVal > 1.10 || CurveVal < 0.90) {
                                 ShowWarningError(state, format("{}{}=\"{}\", curve values", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                                ShowContinueError(state,
-                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
+                                ShowContinueError(state, format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
                                 ShowContinueError(state, format("...Curve output at rated conditions = {:.3T}", CurveVal));
                             }
                         }
@@ -1364,14 +1353,13 @@ namespace VariableSpeedCoils {
                                                              RoutineName,                 // Routine name
                                                              CurrentModuleObject,         // Object Type
                                                              varSpeedCoil.Name,           // Object Name
-                                                             cFieldName);            // Field Name
+                                                             cFieldName);                 // Field Name
 
                         if (!ErrorsFound) {
                             CurveVal = Curve::CurveValue(state, varSpeedCoil.MSCCapFTemp(I), RatedInletAirTempHeat, RatedInletWaterTempHeat);
                             if (CurveVal > 1.10 || CurveVal < 0.90) {
                                 ShowWarningError(state, format("{}{}=\"{}\", curve values", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                                ShowContinueError(state,
-                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
+                                ShowContinueError(state, format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
                                 ShowContinueError(state, format("...Curve output at rated conditions = {:.3T}", CurveVal));
                             }
                         }
@@ -1397,14 +1385,13 @@ namespace VariableSpeedCoils {
                                                              RoutineName,                    // Routine name
                                                              CurrentModuleObject,            // Object Type
                                                              varSpeedCoil.Name,              // Object Name
-                                                             cFieldName);               // Field Name
+                                                             cFieldName);                    // Field Name
 
                         if (!ErrorsFound) {
                             CurveVal = Curve::CurveValue(state, varSpeedCoil.MSCCapAirFFlow(I), 1.0);
                             if (CurveVal > 1.10 || CurveVal < 0.90) {
                                 ShowWarningError(state, format("{}{}=\"{}\", curve values", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                                ShowContinueError(state,
-                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
+                                ShowContinueError(state, format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
                                 ShowContinueError(state, format("...Curve output at rated conditions = {:.3T}", CurveVal));
                             }
                         }
@@ -1430,14 +1417,13 @@ namespace VariableSpeedCoils {
                                                              RoutineName,                      // Routine name
                                                              CurrentModuleObject,              // Object Type
                                                              varSpeedCoil.Name,                // Object Name
-                                                             cFieldName);                 // Field Name
+                                                             cFieldName);                      // Field Name
 
                         if (!ErrorsFound) {
                             CurveVal = Curve::CurveValue(state, varSpeedCoil.MSCCapWaterFFlow(I), 1.0);
                             if (CurveVal > 1.10 || CurveVal < 0.90) {
                                 ShowWarningError(state, format("{}{}=\"{}\", curve values", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                                ShowContinueError(state,
-                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
+                                ShowContinueError(state, format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
                                 ShowContinueError(state, format("...Curve output at rated conditions = {:.3T}", CurveVal));
                             }
                         }
@@ -1463,14 +1449,13 @@ namespace VariableSpeedCoils {
                                                              RoutineName,                // Routine name
                                                              CurrentModuleObject,        // Object Type
                                                              varSpeedCoil.Name,          // Object Name
-                                                             cFieldName);           // Field Name
+                                                             cFieldName);                // Field Name
 
                         if (!ErrorsFound) {
                             CurveVal = Curve::CurveValue(state, varSpeedCoil.MSEIRFTemp(I), RatedInletAirTempHeat, RatedInletWaterTempHeat);
                             if (CurveVal > 1.10 || CurveVal < 0.90) {
                                 ShowWarningError(state, format("{}{}=\"{}\", curve values", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                                ShowContinueError(state,
-                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
+                                ShowContinueError(state, format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
                                 ShowContinueError(state, format("...Curve output at rated conditions = {:.3T}", CurveVal));
                             }
                         }
@@ -1496,14 +1481,13 @@ namespace VariableSpeedCoils {
                                                              RoutineName,                   // Routine name
                                                              CurrentModuleObject,           // Object Type
                                                              varSpeedCoil.Name,             // Object Name
-                                                             cFieldName);              // Field Name
+                                                             cFieldName);                   // Field Name
 
                         if (!ErrorsFound) {
                             CurveVal = Curve::CurveValue(state, varSpeedCoil.MSEIRAirFFlow(I), 1.0);
                             if (CurveVal > 1.10 || CurveVal < 0.90) {
                                 ShowWarningError(state, format("{}{}=\"{}\", curve values", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                                ShowContinueError(state,
-                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
+                                ShowContinueError(state, format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
                                 ShowContinueError(state, format("...Curve output at rated conditions = {:.3T}", CurveVal));
                             }
                         }
@@ -1529,14 +1513,13 @@ namespace VariableSpeedCoils {
                                                              RoutineName,                     // Routine name
                                                              CurrentModuleObject,             // Object Type
                                                              varSpeedCoil.Name,               // Object Name
-                                                             cFieldName);                // Field Name
+                                                             cFieldName);                     // Field Name
 
                         if (!ErrorsFound) {
                             CurveVal = Curve::CurveValue(state, varSpeedCoil.MSEIRWaterFFlow(I), 1.0);
                             if (CurveVal > 1.10 || CurveVal < 0.90) {
                                 ShowWarningError(state, format("{}{}=\"{}\", curve values", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                                ShowContinueError(state,
-                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
+                                ShowContinueError(state, format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
                                 ShowContinueError(state, format("...Curve output at rated conditions = {:.3T}", CurveVal));
                             }
                         }
@@ -1563,14 +1546,13 @@ namespace VariableSpeedCoils {
                                                              RoutineName,                 // Routine name
                                                              CurrentModuleObject,         // Object Type
                                                              varSpeedCoil.Name,           // Object Name
-                                                             cFieldName);            // Field Name
+                                                             cFieldName);                 // Field Name
 
                         if (!ErrorsFound) {
                             CurveVal = Curve::CurveValue(state, varSpeedCoil.MSWasteHeat(I), RatedInletAirTempHeat, RatedInletWaterTempHeat);
                             if (CurveVal > 1.10 || CurveVal < 0.90) {
                                 ShowWarningError(state, format("{}{}=\"{}\", curve values", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                                ShowContinueError(state,
-                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
+                                ShowContinueError(state, format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
                                 ShowContinueError(state, format("...Curve output at rated conditions = {:.3T}", CurveVal));
                             }
                         }
@@ -1763,7 +1745,9 @@ namespace VariableSpeedCoils {
 
                 cFieldName = "Defrost Strategy"; // cAlphaFields(7)
                 std::string defrostStrategy = s_ip->getAlphaFieldValue(fields, schemaProps, "defrost_strategy");
-                if (Util::SameString(defrostStrategy, "ReverseCycle")) {
+                varSpeedCoil.DefrostStrategy =
+                    static_cast<StandardRatings::DefrostStrat>(getEnumValue(StandardRatings::DefrostStratUC, Util::makeUPPER(defrostStrategy)));
+                if (varSpeedCoil.DefrostStrategy == StandardRatings::DefrostStrat::ReverseCycle) {
                     if (varSpeedCoil.DefrostEIRFT == 0) {
                         if (defrostEIRFTCurveName.empty()) {
                             ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
@@ -1785,24 +1769,18 @@ namespace VariableSpeedCoils {
                     }
                 }
 
-                if (Util::SameString(defrostStrategy, "ReverseCycle")) varSpeedCoil.DefrostStrategy = ReverseCycle;
-                if (Util::SameString(defrostStrategy, "Resistive")) varSpeedCoil.DefrostStrategy = Resistive;
-                if (varSpeedCoil.DefrostStrategy == 0) {
-                    ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                    ShowContinueError(state, format("...illegal {}=\"{}\".", cFieldName, defrostStrategy));
-                    ShowContinueError(state, "...valid values for this field are ReverseCycle or Resistive.");
+                if (varSpeedCoil.DefrostStrategy == StandardRatings::DefrostStrat::Invalid) {
+                    ShowSevereInvalidKey(state, eoh, cFieldName, defrostStrategy, "...valid values for this field are ReverseCycle or Resistive.");
                     ErrorsFound = true;
                 }
 
                 //"defrost_control",
                 cFieldName = "Defrost Control"; // cAlphaFields(8)
                 std::string defrostControl = s_ip->getAlphaFieldValue(fields, schemaProps, "defrost_control");
-                if (Util::SameString(defrostControl, "Timed")) varSpeedCoil.DefrostControl = Timed;
-                if (Util::SameString(defrostControl, "OnDemand")) varSpeedCoil.DefrostControl = OnDemand;
-                if (varSpeedCoil.DefrostControl == 0) {
-                    ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                    ShowContinueError(state, format("...illegal {}=\"{}\".", cFieldName, defrostStrategy));
-                    ShowContinueError(state, "...valid values for this field are Timed or OnDemand.");
+                varSpeedCoil.DefrostControl = static_cast<StandardRatings::HPdefrostControl>(
+                    getEnumValue(StandardRatings::HPdefrostControlUC, Util::makeUPPER(defrostControl)));
+                if (varSpeedCoil.DefrostControl == StandardRatings::HPdefrostControl::Invalid) {
+                    ShowSevereInvalidKey(state, eoh, cFieldName, defrostControl, "...valid values for this field are Timed or OnDemand.");
                     ErrorsFound = true;
                 }
 
@@ -1830,7 +1808,7 @@ namespace VariableSpeedCoils {
                 // Set defrost time period
                 cFieldName = "Defrost Time Period Fraction"; // cNumericFields(10)
                 varSpeedCoil.DefrostTime = s_ip->getRealFieldValue(fields, schemaProps, "defrost_time_period_fraction");
-                if (varSpeedCoil.DefrostTime == 0.0 && varSpeedCoil.DefrostControl == 1) {
+                if (varSpeedCoil.DefrostTime == 0.0 && varSpeedCoil.DefrostControl == StandardRatings::HPdefrostControl::Timed) {
                     ShowWarningError(state, format("{}{}=\"{}\", ", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
                     ShowContinueError(state, format("...{} = 0.0 for defrost control = TIMED.", cFieldName));
                 }
@@ -1844,7 +1822,7 @@ namespace VariableSpeedCoils {
                             ? DataSizing::AutoSize
                             : dCap.get<Real64>();
                 }
-                if (varSpeedCoil.DefrostCapacity == 0.0 && varSpeedCoil.DefrostStrategy == 2) {
+                if (varSpeedCoil.DefrostCapacity == 0.0 && varSpeedCoil.DefrostStrategy == StandardRatings::DefrostStrat::Resistive) {
                     ShowWarningError(state, format("{}{}=\"{}\", ", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
                     ShowContinueError(state, format("...{} = 0.0 for defrost strategy = RESISTIVE.", cFieldName));
                 }
@@ -1890,14 +1868,13 @@ namespace VariableSpeedCoils {
                                                              RoutineName,                 // Routine name
                                                              CurrentModuleObject,         // Object Type
                                                              varSpeedCoil.Name,           // Object Name
-                                                             cFieldName);            // Field Name
+                                                             cFieldName);                 // Field Name
 
                         if (!ErrorsFound) {
                             CurveVal = Curve::CurveValue(state, varSpeedCoil.MSCCapFTemp(I), RatedInletAirTempHeat, RatedAmbAirTempHeat);
                             if (CurveVal > 1.10 || CurveVal < 0.90) {
                                 ShowWarningError(state, format("{}{}=\"{}\", curve values", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                                ShowContinueError(state,
-                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
+                                ShowContinueError(state, format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
                                 ShowContinueError(state, format("...Curve output at rated conditions = {:.3T}", CurveVal));
                             }
                         }
@@ -1929,14 +1906,13 @@ namespace VariableSpeedCoils {
                                                              RoutineName,                    // Routine name
                                                              CurrentModuleObject,            // Object Type
                                                              varSpeedCoil.Name,              // Object Name
-                                                             cFieldName);               // Field Name
+                                                             cFieldName);                    // Field Name
 
                         if (!ErrorsFound) {
                             CurveVal = Curve::CurveValue(state, varSpeedCoil.MSCCapAirFFlow(I), 1.0);
                             if (CurveVal > 1.10 || CurveVal < 0.90) {
                                 ShowWarningError(state, format("{}{}=\"{}\", curve values", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                                ShowContinueError(state,
-                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
+                                ShowContinueError(state, format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
                                 ShowContinueError(state, format("...Curve output at rated conditions = {:.3T}", CurveVal));
                             }
                         }
@@ -1963,14 +1939,13 @@ namespace VariableSpeedCoils {
                                                              RoutineName,                // Routine name
                                                              CurrentModuleObject,        // Object Type
                                                              varSpeedCoil.Name,          // Object Name
-                                                             cFieldName);           // Field Name
+                                                             cFieldName);                // Field Name
 
                         if (!ErrorsFound) {
                             CurveVal = Curve::CurveValue(state, varSpeedCoil.MSEIRFTemp(I), RatedInletAirTempHeat, RatedAmbAirTempHeat);
                             if (CurveVal > 1.10 || CurveVal < 0.90) {
                                 ShowWarningError(state, format("{}{}=\"{}\", curve values", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                                ShowContinueError(state,
-                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
+                                ShowContinueError(state, format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
                                 ShowContinueError(state, format("...Curve output at rated conditions = {:.3T}", CurveVal));
                             }
                         }
@@ -1997,14 +1972,13 @@ namespace VariableSpeedCoils {
                                                              RoutineName,                   // Routine name
                                                              CurrentModuleObject,           // Object Type
                                                              varSpeedCoil.Name,             // Object Name
-                                                             cFieldName);              // Field Name
+                                                             cFieldName);                   // Field Name
 
                         if (!ErrorsFound) {
                             CurveVal = Curve::CurveValue(state, varSpeedCoil.MSEIRAirFFlow(I), 1.0);
                             if (CurveVal > 1.10 || CurveVal < 0.90) {
                                 ShowWarningError(state, format("{}{}=\"{}\", curve values", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                                ShowContinueError(state,
-                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
+                                ShowContinueError(state, format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
                                 ShowContinueError(state, format("...Curve output at rated conditions = {:.3T}", CurveVal));
                             }
                         }
@@ -2269,7 +2243,7 @@ namespace VariableSpeedCoils {
                                                              RoutineName,                                    // Routine name
                                                              CurrentModuleObject,                            // Object Type
                                                              varSpeedCoil.Name,                              // Object Name
-                                                             cFieldName);                               // Field Name
+                                                             cFieldName);                                    // Field Name
                     }
                 }
 
@@ -2349,14 +2323,13 @@ namespace VariableSpeedCoils {
                                                              RoutineName,                 // Routine name
                                                              CurrentModuleObject,         // Object Type
                                                              varSpeedCoil.Name,           // Object Name
-                                                             cFieldName);            // Field Name
+                                                             cFieldName);                 // Field Name
 
                         if (!ErrorsFound) {
                             CurveVal = Curve::CurveValue(state, varSpeedCoil.MSCCapFTemp(I), WHInletAirTemp, WHInletWaterTemp);
                             if (CurveVal > 1.10 || CurveVal < 0.90) {
                                 ShowWarningError(state, format("{}{}=\"{}\", curve values", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                                ShowContinueError(state,
-                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
+                                ShowContinueError(state, format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
                                 ShowContinueError(state, format("...Curve output at rated conditions = {:.3T}", CurveVal));
                             }
                         }
@@ -2382,14 +2355,13 @@ namespace VariableSpeedCoils {
                                                              RoutineName,                    // Routine name
                                                              CurrentModuleObject,            // Object Type
                                                              varSpeedCoil.Name,              // Object Name
-                                                             cFieldName);               // Field Name
+                                                             cFieldName);                    // Field Name
 
                         if (!ErrorsFound) {
                             CurveVal = Curve::CurveValue(state, varSpeedCoil.MSCCapAirFFlow(I), 1.0);
                             if (CurveVal > 1.10 || CurveVal < 0.90) {
                                 ShowWarningError(state, format("{}{}=\"{}\", curve values", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                                ShowContinueError(state,
-                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
+                                ShowContinueError(state, format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
                                 ShowContinueError(state, format("...Curve output at rated conditions = {:.3T}", CurveVal));
                             }
                         }
@@ -2415,14 +2387,13 @@ namespace VariableSpeedCoils {
                                                              RoutineName,                      // Routine name
                                                              CurrentModuleObject,              // Object Type
                                                              varSpeedCoil.Name,                // Object Name
-                                                             cFieldName);                 // Field Name
+                                                             cFieldName);                      // Field Name
 
                         if (!ErrorsFound) {
                             CurveVal = Curve::CurveValue(state, varSpeedCoil.MSCCapWaterFFlow(I), 1.0);
                             if (CurveVal > 1.10 || CurveVal < 0.90) {
                                 ShowWarningError(state, format("{}{}=\"{}\", curve values", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                                ShowContinueError(state,
-                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
+                                ShowContinueError(state, format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
                                 ShowContinueError(state, format("...Curve output at rated conditions = {:.3T}", CurveVal));
                             }
                         }
@@ -2448,14 +2419,13 @@ namespace VariableSpeedCoils {
                                                              RoutineName,                // Routine name
                                                              CurrentModuleObject,        // Object Type
                                                              varSpeedCoil.Name,          // Object Name
-                                                             cFieldName);           // Field Name
+                                                             cFieldName);                // Field Name
 
                         if (!ErrorsFound) {
                             CurveVal = Curve::CurveValue(state, varSpeedCoil.MSEIRFTemp(I), WHInletAirTemp, WHInletWaterTemp);
                             if (CurveVal > 1.10 || CurveVal < 0.90) {
                                 ShowWarningError(state, format("{}{}=\"{}\", curve values", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                                ShowContinueError(state,
-                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
+                                ShowContinueError(state, format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
                                 ShowContinueError(state, format("...Curve output at rated conditions = {:.3T}", CurveVal));
                             }
                         }
@@ -2481,14 +2451,13 @@ namespace VariableSpeedCoils {
                                                              RoutineName,                   // Routine name
                                                              CurrentModuleObject,           // Object Type
                                                              varSpeedCoil.Name,             // Object Name
-                                                             cFieldName);              // Field Name
+                                                             cFieldName);                   // Field Name
 
                         if (!ErrorsFound) {
                             CurveVal = Curve::CurveValue(state, varSpeedCoil.MSEIRAirFFlow(I), 1.0);
                             if (CurveVal > 1.10 || CurveVal < 0.90) {
                                 ShowWarningError(state, format("{}{}=\"{}\", curve values", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                                ShowContinueError(state,
-                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
+                                ShowContinueError(state, format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
                                 ShowContinueError(state, format("...Curve output at rated conditions = {:.3T}", CurveVal));
                             }
                         }
@@ -2514,14 +2483,13 @@ namespace VariableSpeedCoils {
                                                              RoutineName,                     // Routine name
                                                              CurrentModuleObject,             // Object Type
                                                              varSpeedCoil.Name,               // Object Name
-                                                             cFieldName);                // Field Name
+                                                             cFieldName);                     // Field Name
 
                         if (!ErrorsFound) {
                             CurveVal = Curve::CurveValue(state, varSpeedCoil.MSEIRWaterFFlow(I), 1.0);
                             if (CurveVal > 1.10 || CurveVal < 0.90) {
                                 ShowWarningError(state, format("{}{}=\"{}\", curve values", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                                ShowContinueError(state,
-                                                  format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
+                                ShowContinueError(state, format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
                                 ShowContinueError(state, format("...Curve output at rated conditions = {:.3T}", CurveVal));
                             }
                         }
@@ -5057,7 +5025,7 @@ namespace VariableSpeedCoils {
             if (varSpeedCoil.DefrostCapacity == DataSizing::AutoSize) {
                 IsAutoSize = true;
             }
-            if (varSpeedCoil.DefrostStrategy == Resistive) {
+            if (varSpeedCoil.DefrostStrategy == StandardRatings::DefrostStrat::Resistive) {
                 DefrostCapacityDes = varSpeedCoil.RatedCapHeat;
             } else {
                 DefrostCapacityDes = 0.0;
@@ -5833,7 +5801,7 @@ namespace VariableSpeedCoils {
         varSpeedCoil.EvapCondPumpElecConsumption = varSpeedCoil.EvapCondPumpElecPower * TimeStepSysSec;
         if (varSpeedCoil.RunFrac == 0.0) {
             varSpeedCoil.COP = 0.0;
-        } else {												   
+        } else {
             varSpeedCoil.COP = state.dataVariableSpeedCoils->QLoadTotal / state.dataVariableSpeedCoils->Winput;
         }
         varSpeedCoil.PartLoadRatio = PartLoadRatio;
@@ -5861,9 +5829,9 @@ namespace VariableSpeedCoils {
                                            state.dataVariableSpeedCoils->QSource / (state.dataVariableSpeedCoils->SourceSideMassFlowRate * CpSource);
             varSpeedCoil.OutletWaterEnthalpy = state.dataVariableSpeedCoils->SourceSideInletEnth +
                                                state.dataVariableSpeedCoils->QSource / state.dataVariableSpeedCoils->SourceSideMassFlowRate;
-            state.dataHeatBal->HeatReclaimVS_Coil(DXCoilNum).AvailCapacity = state.dataVariableSpeedCoils->QSource;																									   
+            state.dataHeatBal->HeatReclaimVS_Coil(DXCoilNum).AvailCapacity = state.dataVariableSpeedCoils->QSource;
             if (state.dataHeatBal->HeatReclaimVS_Coil(DXCoilNum).WaterHeatingDesuperheaterReclaimedHeatTotal > 0.0)
-                state.dataVariableSpeedCoils->QSource -= state.dataHeatBal->HeatReclaimVS_Coil(DXCoilNum).WaterHeatingDesuperheaterReclaimedHeatTotal;																												  																																					  
+                state.dataVariableSpeedCoils->QSource -= state.dataHeatBal->HeatReclaimVS_Coil(DXCoilNum).WaterHeatingDesuperheaterReclaimedHeatTotal;
         }
         varSpeedCoil.QSource = state.dataVariableSpeedCoils->QSource;
         varSpeedCoil.EnergySource = state.dataVariableSpeedCoils->QSource * TimeStepSysSec;
@@ -6729,15 +6697,12 @@ namespace VariableSpeedCoils {
             // Check outdoor temperature to determine of defrost is active
             if (state.dataVariableSpeedCoils->OutdoorDryBulb <= varSpeedCoil.MaxOATDefrost) {
                 // Calculate defrost adjustment factors depending on defrost control type
-                if (varSpeedCoil.DefrostControl == Timed) {
+                if (varSpeedCoil.DefrostControl == StandardRatings::HPdefrostControl::Timed) {
                     state.dataVariableSpeedCoils->FractionalDefrostTime = varSpeedCoil.DefrostTime;
                     if (state.dataVariableSpeedCoils->FractionalDefrostTime > 0.0) {
-                        if (varSpeedCoil.FrostHeatingCapacityMultiplierEMSOverrideOn &&
-                            varSpeedCoil.FrostHeatingInputPowerMultiplierEMSOverrideOn) {
-                            state.dataVariableSpeedCoils->HeatingCapacityMultiplier =
-                                varSpeedCoil.FrostHeatingCapacityMultiplierEMSOverrideValue;
-                            state.dataVariableSpeedCoils->InputPowerMultiplier =
-                                varSpeedCoil.FrostHeatingInputPowerMultiplierEMSOverrideValue;
+                        if (varSpeedCoil.FrostHeatingCapacityMultiplierEMSOverrideOn && varSpeedCoil.FrostHeatingInputPowerMultiplierEMSOverrideOn) {
+                            state.dataVariableSpeedCoils->HeatingCapacityMultiplier = varSpeedCoil.FrostHeatingCapacityMultiplierEMSOverrideValue;
+                            state.dataVariableSpeedCoils->InputPowerMultiplier = varSpeedCoil.FrostHeatingInputPowerMultiplierEMSOverrideValue;
                         } else {
                             state.dataVariableSpeedCoils->HeatingCapacityMultiplier = 0.909 - 107.33 * state.dataVariableSpeedCoils->OutdoorCoildw;
                             state.dataVariableSpeedCoils->InputPowerMultiplier = 0.90 - 36.45 * state.dataVariableSpeedCoils->OutdoorCoildw;
@@ -6754,17 +6719,13 @@ namespace VariableSpeedCoils {
                     }
                 } else { // else defrost control is on-demand
                     state.dataVariableSpeedCoils->FractionalDefrostTime = 1.0 / (1.0 + 0.01446 / state.dataVariableSpeedCoils->OutdoorCoildw);
-                    if (varSpeedCoil.FrostHeatingCapacityMultiplierEMSOverrideOn &&
-                        varSpeedCoil.FrostHeatingInputPowerMultiplierEMSOverrideOn) {
-                        state.dataVariableSpeedCoils->HeatingCapacityMultiplier =
-                            varSpeedCoil.FrostHeatingCapacityMultiplierEMSOverrideValue;
-                        state.dataVariableSpeedCoils->InputPowerMultiplier =
-                            varSpeedCoil.FrostHeatingInputPowerMultiplierEMSOverrideValue;
+                    if (varSpeedCoil.FrostHeatingCapacityMultiplierEMSOverrideOn && varSpeedCoil.FrostHeatingInputPowerMultiplierEMSOverrideOn) {
+                        state.dataVariableSpeedCoils->HeatingCapacityMultiplier = varSpeedCoil.FrostHeatingCapacityMultiplierEMSOverrideValue;
+                        state.dataVariableSpeedCoils->InputPowerMultiplier = varSpeedCoil.FrostHeatingInputPowerMultiplierEMSOverrideValue;
                     } else {
                         state.dataVariableSpeedCoils->HeatingCapacityMultiplier = 0.875 * (1.0 - state.dataVariableSpeedCoils->FractionalDefrostTime);
                         state.dataVariableSpeedCoils->InputPowerMultiplier = 0.954 * (1.0 - state.dataVariableSpeedCoils->FractionalDefrostTime);
-                        if (varSpeedCoil.FrostHeatingCapacityMultiplierEMSOverrideOn ||
-                            varSpeedCoil.FrostHeatingInputPowerMultiplierEMSOverrideOn) {
+                        if (varSpeedCoil.FrostHeatingCapacityMultiplierEMSOverrideOn || varSpeedCoil.FrostHeatingInputPowerMultiplierEMSOverrideOn) {
                             ShowWarningMessage(state,
                                                format("The Frost Heating Capacity Multiplier actuator and the Frost Heating Input Power Multiplier "
                                                       "actuator must be both provided for DX heating coil {}",
@@ -6778,7 +6739,7 @@ namespace VariableSpeedCoils {
 
                 if (state.dataVariableSpeedCoils->FractionalDefrostTime > 0.0) {
                     // Calculate defrost adjustment factors depending on defrost control strategy
-                    if (varSpeedCoil.DefrostStrategy == ReverseCycle) {
+                    if (varSpeedCoil.DefrostStrategy == StandardRatings::DefrostStrat::ReverseCycle) {
                         state.dataVariableSpeedCoils->LoadDueToDefrost = (0.01 * state.dataVariableSpeedCoils->FractionalDefrostTime) *
                                                                          (7.222 - state.dataVariableSpeedCoils->OutdoorDryBulb) *
                                                                          (state.dataVariableSpeedCoils->TotRatedCapacity / 1.01667);

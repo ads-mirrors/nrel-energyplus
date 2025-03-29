@@ -1857,7 +1857,7 @@ void GetDXCoils(EnergyPlusData &state)
                     } // end of valid performance object check
                     AlphaIndex += 2;
                 } // end of sufficient number of fields entered check
-            }     // End of multimode DX capacity stages loop
+            } // End of multimode DX capacity stages loop
             // Warn if inputs entered for unused capacity stages
             for (CapacityStageNum = (thisDXCoil.NumCapacityStages + 1); CapacityStageNum <= MaxCapacityStages; ++CapacityStageNum) {
                 if ((AlphaIndex <= NumAlphas) && ((!Alphas(AlphaIndex).empty()) || (!Alphas(AlphaIndex + 1).empty()))) {
@@ -1867,7 +1867,7 @@ void GetDXCoils(EnergyPlusData &state)
                 }
                 AlphaIndex += 2;
             } // End of unused capacity stages loop
-        }     // End of multimode DX dehumidification modes loo
+        } // End of multimode DX dehumidification modes loo
 
         // Get Water System tank connections
         //  A14, \field Name of Water Storage Tank for Supply
@@ -3110,7 +3110,8 @@ void GetDXCoils(EnergyPlusData &state)
                 ErrorsFound = true;
             }
             cFieldName = "Condenser Pump Heat Included in Rated Heating Capacity and Rated COP";
-            fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "condenser_pump_heat_included_in_rated_heating_capacity_and_rated_cop"); // Alphas(4)
+            fieldValue =
+                s_ip->getAlphaFieldValue(fields, schemaProps, "condenser_pump_heat_included_in_rated_heating_capacity_and_rated_cop"); // Alphas(4)
             BooleanSwitch pumpHeatIncludedInCapAndCOP = static_cast<BooleanSwitch>(getYesNoValue(Util::makeUPPER(fieldValue)));
             if (pumpHeatIncludedInCapAndCOP != BooleanSwitch::Invalid) {
                 thisDXCoil.CondPumpHeatInCapacity = static_cast<bool>(pumpHeatIncludedInCapAndCOP);
@@ -3127,7 +3128,8 @@ void GetDXCoils(EnergyPlusData &state)
             }
 
             cFieldName = "Fraction of Condenser Pump Heat to Water";
-            thisDXCoil.HPWHCondPumpFracToWater = s_ip->getRealFieldValue(fields, schemaProps, "fraction_of_condenser_pump_heat_to_water"); // Numbers(10);
+            thisDXCoil.HPWHCondPumpFracToWater =
+                s_ip->getRealFieldValue(fields, schemaProps, "fraction_of_condenser_pump_heat_to_water"); // Numbers(10);
             if (thisDXCoil.HPWHCondPumpFracToWater <= 0.0 || thisDXCoil.HPWHCondPumpFracToWater > 1.0) {
                 ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, thisDXCoil.Name));
                 ShowContinueError(state,
@@ -3340,7 +3342,7 @@ void GetDXCoils(EnergyPlusData &state)
                                                     1.0);
                     }
                 }
-            }             
+            }
 
             cFieldName = "Heating COP Function of Temperature Curve Name"; // Alphas(14)
             fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "heating_cop_function_of_temperature_curve_name");
@@ -3500,7 +3502,6 @@ void GetDXCoils(EnergyPlusData &state)
 
             // set condenser type as HPWH
             thisDXCoil.CondenserType(1) = DataHeatBalance::RefrigCondenserType::WaterHeater;
-
         }
     }
     //} // end of the DX water heater coil loop
@@ -3717,7 +3718,7 @@ void GetDXCoils(EnergyPlusData &state)
             }
             // set rated water temperature for curve object verification
             InletWaterTemp = thisDXCoil.RatedInletWaterTemp;
-            
+
             cFieldName = "Heating Capacity Function of Temperature Curve Name"; // Alphas(7)
             fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "heating_capacity_function_of_temperature_curve_name");
             if (!fieldValue.empty()) {
@@ -3757,7 +3758,7 @@ void GetDXCoils(EnergyPlusData &state)
                     }
                 }
             }
-            
+
             cFieldName = "Heating Capacity Function of Air Flow Fraction Curve Name"; // Alphas(8)
             fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "heating_capacity_function_of_air_flow_fraction_curve_name");
             if (!fieldValue.empty()) {
@@ -3786,7 +3787,7 @@ void GetDXCoils(EnergyPlusData &state)
                     }
                 }
             }
-                   
+
             cFieldName = "Heating COP Function of Temperature Curve Name"; // Alphas(9)
             fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "heating_cop_function_of_temperature_curve_name");
             if (!fieldValue.empty()) {
@@ -3826,7 +3827,7 @@ void GetDXCoils(EnergyPlusData &state)
                     }
                 }
             }
-            
+
             cFieldName = "Heating COP Function of Air Flow Fraction Curve Name"; // Alphas(10)
             fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "heating_cop_function_of_air_flow_fraction_curve_name");
             if (!fieldValue.empty()) {
@@ -3855,7 +3856,7 @@ void GetDXCoils(EnergyPlusData &state)
                     }
                 }
             }
-            
+
             cFieldName = "Part Load Fraction Correlation Curve Name"; // Alphas(11)
             fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "part_load_fraction_correlation_curve_name");
             if (!fieldValue.empty()) {
@@ -6875,7 +6876,7 @@ void InitDXCoil(EnergyPlusData &state, int const DXCoilNum) // number of the cur
             }
             state.dataDXCoils->CrankcaseHeaterReportVarFlag = false;
         } //(AirLoopInputsFilled)THEN
-    }     //(CrankcaseHeaterReportVarFlag)THEN
+    } //(CrankcaseHeaterReportVarFlag)THEN
 
     if (!state.dataGlobal->SysSizingCalc && state.dataDXCoils->MySizeFlag(DXCoilNum)) {
         // for each coil, do the sizing once.
@@ -7050,7 +7051,7 @@ void InitDXCoil(EnergyPlusData &state, int const DXCoilNum) // number of the cur
                                                         thisDXCoil.RatedAirVolFlowRate(Mode),
                                                         thisDXCoil.RatedSHR(Mode));
                 } // End capacity stages loop
-            }     // End dehumidification modes loop
+            } // End dehumidification modes loop
         }
 
         if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_HeatingEmpirical || thisDXCoil.DXCoilType_Num == HVAC::CoilVRF_Heating ||
@@ -7955,7 +7956,7 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
             }
 
         } // End capacity stages loop
-    }     // End dehumidification modes loop
+    } // End dehumidification modes loop
 
     // Autosizing for multispeed cooling coil
     if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_MultiSpeedCooling) {
@@ -15059,8 +15060,7 @@ void GetFanIndexForTwoSpeedCoil(
                         break;
                     }
                     // these are specified in SimAirServingZones and need to be moved to a Data* file. UnitarySystem=19
-                } else if (comp.CompType_Num == SimAirServingZones::CompType::UnitarySystemModel)
-                    {
+                } else if (comp.CompType_Num == SimAirServingZones::CompType::UnitarySystemModel) {
 
                     if (Util::SameString(comp.Name, thisDXCoil.CoilSystemName)) {
                         FoundBranch = BranchNum;

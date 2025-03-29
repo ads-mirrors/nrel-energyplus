@@ -3002,10 +3002,12 @@ void GetDXCoils(EnergyPlusData &state)
             thisDXCoil.DXCoilType_Num = HVAC::CoilDX_HeatPumpWaterHeaterPumped;
             thisDXCoil.availSched = Sched::GetScheduleAlwaysOff(state); // heat pump water heater DX coil has no schedule
 
+            ErrorObjectHeader eoh{routineName, CurrentModuleObject, thisDXCoil.Name};
+
             // ErrorsFound will be set to True if problem was found, left untouched otherwise
             VerifyUniqueCoilName(state, CurrentModuleObject, thisDXCoil.Name, ErrorsFound, CurrentModuleObject + " Name");
 
-            std::string const cRatedHeatingCapFieldName = "Rated Heating Capacity";
+            constexpr std::string_view cRatedHeatingCapFieldName = "Rated Heating Capacity";
             thisDXCoil.RatedTotCap2 = s_ip->getRealFieldValue(fields, schemaProps, "rated_heating_capacity"); // Numbers(1);
             if (thisDXCoil.RatedTotCap2 <= 0.0) {
                 ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, thisDXCoil.Name));
@@ -3092,48 +3094,30 @@ void GetDXCoils(EnergyPlusData &state)
             cFieldName = "Evaporator Fan Power Included in Rated COP";
             std::string fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "evaporator_fan_power_included_in_rated_cop"); // Alphas(2)
             BooleanSwitch fanPowerIncluded = static_cast<BooleanSwitch>(getYesNoValue(Util::makeUPPER(fieldValue)));
-            switch (fanPowerIncluded) {
-            case BooleanSwitch::Yes:
-            case BooleanSwitch::No:
+            if (fanPowerIncluded != BooleanSwitch::Invalid) {
                 thisDXCoil.FanPowerIncludedInCOP = static_cast<bool>(fanPowerIncluded);
-                break;
-            default:
-                ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, thisDXCoil.Name));
-                ShowContinueError(state, format(",,,invalid choice for {}.  Entered choice = {}", cFieldName, fieldValue));
-                ShowContinueError(state, "Valid choices are Yes or No.");
+            } else {
+                ShowSevereInvalidBool(state, eoh, cFieldName, fieldValue);
                 ErrorsFound = true;
             }
-
             cFieldName = "Condenser Pump Power Included in Rated COP";
             fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "condenser_pump_power_included_in_rated_cop"); // Alphas(3)
             BooleanSwitch pumpPowerIncluded = static_cast<BooleanSwitch>(getYesNoValue(Util::makeUPPER(fieldValue)));
-            switch (pumpPowerIncluded) {
-            case BooleanSwitch::Yes:
-            case BooleanSwitch::No:
+            if (pumpPowerIncluded != BooleanSwitch::Invalid) {
                 thisDXCoil.CondPumpPowerInCOP = static_cast<bool>(pumpPowerIncluded);
-                break;
-            default:
-                ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, thisDXCoil.Name));
-                ShowContinueError(state, format(",,,invalid choice for {}.  Entered choice = {}", cFieldName, fieldValue));
-                ShowContinueError(state, "Valid choices are Yes or No.");
+            } else {
+                ShowSevereInvalidBool(state, eoh, cFieldName, fieldValue);
                 ErrorsFound = true;
             }
-
             cFieldName = "Condenser Pump Heat Included in Rated Heating Capacity and Rated COP";
             fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "condenser_pump_heat_included_in_rated_heating_capacity_and_rated_cop"); // Alphas(4)
             BooleanSwitch pumpHeatIncludedInCapAndCOP = static_cast<BooleanSwitch>(getYesNoValue(Util::makeUPPER(fieldValue)));
-            switch (pumpHeatIncludedInCapAndCOP) {
-            case BooleanSwitch::Yes:
-            case BooleanSwitch::No:
+            if (pumpHeatIncludedInCapAndCOP != BooleanSwitch::Invalid) {
                 thisDXCoil.CondPumpHeatInCapacity = static_cast<bool>(pumpHeatIncludedInCapAndCOP);
-                break;
-            default:
-                ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, thisDXCoil.Name));
-                ShowContinueError(state, format(",,,invalid choice for {}.  Entered choice = {}", cFieldName, fieldValue));
-                ShowContinueError(state, "Valid choices are Yes or No.");
+            } else {
+                ShowSevereInvalidBool(state, eoh, cFieldName, fieldValue);
                 ErrorsFound = true;
             }
-
             cFieldName = "Condenser Water Pump Power";
             thisDXCoil.HPWHCondPumpElecNomPower = s_ip->getRealFieldValue(fields, schemaProps, "condenser_water_pump_power"); // Numbers(9);
             if (thisDXCoil.HPWHCondPumpElecNomPower < 0.0) {
@@ -3556,6 +3540,8 @@ void GetDXCoils(EnergyPlusData &state)
             thisDXCoil.DXCoilType_Num = HVAC::CoilDX_HeatPumpWaterHeaterWrapped;
             thisDXCoil.availSched = Sched::GetScheduleAlwaysOff(state); // heat pump water heater DX coil has no schedule
 
+            ErrorObjectHeader eoh{routineName, CurrentModuleObject, thisDXCoil.Name};
+
             // ErrorsFound will be set to True if problem was found, left untouched otherwise
             VerifyUniqueCoilName(state, CurrentModuleObject, thisDXCoil.Name, ErrorsFound, CurrentModuleObject + " Name");
 
@@ -3623,18 +3609,12 @@ void GetDXCoils(EnergyPlusData &state)
             cFieldName = "Evaporator Fan Power Included in Rated COP";
             std::string fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "evaporator_fan_power_included_in_rated_cop"); // Alphas(2)
             BooleanSwitch fanPowerIncluded = static_cast<BooleanSwitch>(getYesNoValue(Util::makeUPPER(fieldValue)));
-            switch (fanPowerIncluded) {
-            case BooleanSwitch::Yes:
-            case BooleanSwitch::No:
+            if (fanPowerIncluded != BooleanSwitch::Invalid) {
                 thisDXCoil.FanPowerIncludedInCOP = static_cast<bool>(fanPowerIncluded);
-                break;
-            default:
-                ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, thisDXCoil.Name));
-                ShowContinueError(state, format(",,,invalid choice for {}.  Entered choice = {}", cFieldName, fieldValue));
-                ShowContinueError(state, "Valid choices are Yes or No.");
+            } else {
+                ShowSevereInvalidBool(state, eoh, cFieldName, fieldValue);
                 ErrorsFound = true;
             }
-
             std::string evapAirInletNodeName = s_ip->getAlphaFieldValue(fields, schemaProps, "evaporator_air_inlet_node_name");
             std::string evapAirOutletNodeName = s_ip->getAlphaFieldValue(fields, schemaProps, "evaporator_air_outlet_node_name");
 

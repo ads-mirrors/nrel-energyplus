@@ -2099,6 +2099,8 @@ namespace VariableSpeedCoils {
                 varSpeedCoil.VSCoilType = HVAC::CoilDX_HeatPumpWaterHeaterVariableSpeed;
                 varSpeedCoil.VarSpeedCoilType = HVAC::cAllCoilTypes(HVAC::CoilDX_HeatPumpWaterHeaterVariableSpeed);
 
+                ErrorObjectHeader eoh{routineName, CurrentModuleObject, varSpeedCoil.Name};
+
                 // ErrorsFound will be set to True if problem was found, left untouched otherwise
                 GlobalNames::VerifyUniqueCoilName(state, CurrentModuleObject, varSpeedCoil.Name, ErrorsFound, CurrentModuleObject + " Name");
 
@@ -2159,49 +2161,31 @@ namespace VariableSpeedCoils {
                 std::string cAlphaFieldName = "Evaporator Fan Power Included in Rated COP";
                 std::string fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "evaporator_fan_power_included_in_rated_cop");
                 BooleanSwitch fanPowerIncluded = static_cast<BooleanSwitch>(getYesNoValue(Util::makeUPPER(fieldValue)));
-                switch (fanPowerIncluded) {
-                case BooleanSwitch::Yes:
-                case BooleanSwitch::No:
+                if (fanPowerIncluded != BooleanSwitch::Invalid) {
                     varSpeedCoil.FanPowerIncludedInCOP = static_cast<bool>(fanPowerIncluded);
-                    break;
-                default:
-                    ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                    ShowContinueError(state, format(",,,invalid choice for {}.  Entered choice = {}", cAlphaFieldName, fieldValue));
-                    ShowContinueError(state, "Valid choices are Yes or No.");
+                } else {
+                    ShowSevereInvalidBool(state, eoh, cFieldName, fieldValue);
                     ErrorsFound = true;
                 }
-
                 cAlphaFieldName = "Condenser Pump Power Included in Rated COP";
                 fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "condenser_pump_power_included_in_rated_cop");
                 BooleanSwitch pumpPowerIncluded = static_cast<BooleanSwitch>(getYesNoValue(Util::makeUPPER(fieldValue)));
-                switch (pumpPowerIncluded) {
-                case BooleanSwitch::Yes:
-                case BooleanSwitch::No:
+                if (pumpPowerIncluded != BooleanSwitch::Invalid) {
                     varSpeedCoil.CondPumpPowerInCOP = static_cast<bool>(pumpPowerIncluded);
-                    break;
-                default:
-                    ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                    ShowContinueError(state, format(",,,invalid choice for {}.  Entered choice = {}", cAlphaFieldName, fieldValue));
-                    ShowContinueError(state, "Valid choices are Yes or No.");
+                } else {
+                    ShowSevereInvalidBool(state, eoh, cFieldName, fieldValue);
                     ErrorsFound = true;
                 }
-
                 cAlphaFieldName = "Condenser Pump Heat Included in Rated Heating Capacity and Rated COP";
                 fieldValue = s_ip->getAlphaFieldValue(
                     fields, schemaProps, "condenser_pump_heat_included_in_rated_heating_capacity_and_rated_cop"); // Alphas(4)
                 BooleanSwitch pumpHeatIncludedInCapAndCOP = static_cast<BooleanSwitch>(getYesNoValue(Util::makeUPPER(fieldValue)));
-                switch (pumpHeatIncludedInCapAndCOP) {
-                case BooleanSwitch::Yes:
-                case BooleanSwitch::No:
+                if (pumpHeatIncludedInCapAndCOP != BooleanSwitch::Invalid) {
                     varSpeedCoil.CondPumpHeatInCapacity = static_cast<bool>(pumpHeatIncludedInCapAndCOP);
-                    break;
-                default:
-                    ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                    ShowContinueError(state, format(",,,invalid choice for {}.  Entered choice = {}", cAlphaFieldName, fieldValue));
-                    ShowContinueError(state, "Valid choices are Yes or No.");
+                } else {
+                    ShowSevereInvalidBool(state, eoh, cFieldName, fieldValue);
                     ErrorsFound = true;
                 }
-
                 cFieldName = "Fraction of Condenser Pump Heat to Water";
                 varSpeedCoil.HPWHCondPumpFracToWater =
                     s_ip->getRealFieldValue(fields, schemaProps, "fraction_of_condenser_pump_heat_to_water"); // NumArray(9);

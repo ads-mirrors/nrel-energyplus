@@ -5116,19 +5116,9 @@ namespace VariableSpeedCoils {
         }
 
         Array1D<DataHeatBalance::RefrigCondenserType> CondenserType;
-        StandardRatings::HPdefrostControl DefrostControl;
         switch (varSpeedCoil.VSCoilType) {
         case HVAC::Coil_CoolingAirToAirVariableSpeed:
             CondenserType.push_back(varSpeedCoil.CondenserType);
-            switch (varSpeedCoil.DefrostControl) {
-            case StandardRatings::HPdefrostControl::OnDemand:
-                DefrostControl = StandardRatings::HPdefrostControl::OnDemand;
-                break;
-            case StandardRatings::HPdefrostControl::Timed:
-            default:
-                DefrostControl = StandardRatings::HPdefrostControl::Timed;
-                break;
-            }
             if (varSpeedCoil.RatedCapCoolTotal > 0.0) {
                 StandardRatings::CalcDXCoilStandardRating(state,
                                                           varSpeedCoil.Name,
@@ -5150,7 +5140,7 @@ namespace VariableSpeedCoils {
                                                           varSpeedCoil.MinOATCompressor,
                                                           varSpeedCoil.OATempCompressorOn,
                                                           false, // varSpeedCoil.OATempCompressorOnOffBlank, // ??
-                                                          DefrostControl,
+                                                          varSpeedCoil.DefrostControl,
                                                           ObjexxFCL::Optional_bool_const(),
                                                           varSpeedCoil.RatedCapCoolTotal,
                                                           varSpeedCoil.RatedAirVolFlowRate);

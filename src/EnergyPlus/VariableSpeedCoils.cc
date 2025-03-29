@@ -983,7 +983,7 @@ namespace VariableSpeedCoils {
                         fieldName = format("speed_{}{}", std::to_string(I), "_reference_unit_rated_condenser_air_flow_rate");
                     } else {
                         fieldName = format("speed_{}{}", std::to_string(I), "_reference_unit_condenser_air_flow_rate");
-                        if (I == 7) fieldName = format("Speed_{}{}", std::to_string(I), "_reference_unit_condenser_flow_rate");
+                        if (I == 7) fieldName = format("speed_{}{}", std::to_string(I), "_reference_unit_condenser_flow_rate");
                     }
                     varSpeedCoil.EvapCondAirFlow(I) = s_ip->getRealFieldValue(fields, schemaProps, fieldName);
 
@@ -1529,7 +1529,7 @@ namespace VariableSpeedCoils {
 
                     // Read waste heat modifier curve name
                     fieldValue = format("speed_{}{}", std::to_string(I), "_waste_heat_function_of_temperature_curve_name");
-                    cFieldName = format("speed_{}{}", std::to_string(I), " Waste Heat Function of Temperature Curve Name");
+                    cFieldName = format("Speed_{}{}", std::to_string(I), " Waste Heat Function of Temperature Curve Name");
                     std::string const heatWHFTCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
                     varSpeedCoil.MSWasteHeat(I) = Curve::GetCurveIndex(state, heatWHFTCurveName); // convert curve name to number
                     if (varSpeedCoil.MSWasteHeat(I) == 0) {

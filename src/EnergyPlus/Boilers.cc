@@ -254,7 +254,7 @@ void GetBoilerInput(EnergyPlusData &state)
                                                  state.dataIPShortCut->cAlphaFieldNames(4)); // Field Name
 
             // if curve uses temperature, make sure water temp mode has been set
-            if (state.dataCurveManager->PerfCurve(thisBoiler.EfficiencyCurvePtr)->numDims == 2) { // curve uses water temperature
+            if (state.dataCurveManager->curves(thisBoiler.EfficiencyCurvePtr)->numDims == 2) { // curve uses water temperature
                 if (thisBoiler.CurveTempMode == TempMode::NOTSET) {                               // throw error
                     if (!state.dataIPShortCut->lAlphaFieldBlanks(3)) {
                         ShowSevereError(
@@ -265,7 +265,7 @@ void GetBoilerInput(EnergyPlusData &state)
                         ShowContinueError(
                             state,
                             format("boilers.Boiler using curve type of {} must specify {}",
-                                   Curve::objectNames[static_cast<int>(state.dataCurveManager->PerfCurve(thisBoiler.EfficiencyCurvePtr)->curveType)],
+                                   Curve::objectNames[static_cast<int>(state.dataCurveManager->curves(thisBoiler.EfficiencyCurvePtr)->curveType)],
                                    state.dataIPShortCut->cAlphaFieldNames(3)));
                         ShowContinueError(state, "Available choices are EnteringBoiler or LeavingBoiler");
                     } else {
@@ -277,7 +277,7 @@ void GetBoilerInput(EnergyPlusData &state)
                             state,
                             format(
                                 "boilers.Boiler using curve type of {} must specify either EnteringBoiler or LeavingBoiler",
-                                Curve::objectNames[static_cast<int>(state.dataCurveManager->PerfCurve(thisBoiler.EfficiencyCurvePtr)->curveType)]));
+                                Curve::objectNames[static_cast<int>(state.dataCurveManager->curves(thisBoiler.EfficiencyCurvePtr)->curveType)]));
                     }
                     ErrorsFound = true;
                 }
@@ -901,7 +901,7 @@ void BoilerSpecs::CalcBoilerModel(EnergyPlusData &state,
 
     // calculate normalized efficiency based on curve object type
     if (this->EfficiencyCurvePtr > 0) {
-        if (state.dataCurveManager->PerfCurve(this->EfficiencyCurvePtr)->numDims == 2) {
+        if (state.dataCurveManager->curves(this->EfficiencyCurvePtr)->numDims == 2) {
             if (this->CurveTempMode == TempMode::ENTERINGBOILERTEMP) {
                 EffCurveOutput = Curve::CurveValue(state, this->EfficiencyCurvePtr, this->BoilerPLR, state.dataLoopNodes->Node(BoilerInletNode).Temp);
             } else if (this->CurveTempMode == TempMode::LEAVINGBOILERTEMP) {
@@ -921,7 +921,7 @@ void BoilerSpecs::CalcBoilerModel(EnergyPlusData &state,
                 ShowWarningError(state, format("Boiler:HotWater \"{}\"", this->Name));
                 ShowContinueError(state, "...Normalized Boiler Efficiency Curve output is less than or equal to 0.");
                 ShowContinueError(state, format("...Curve input x value (PLR)     = {:.5T}", this->BoilerPLR));
-                if (state.dataCurveManager->PerfCurve(this->EfficiencyCurvePtr)->numDims == 2) {
+                if (state.dataCurveManager->curves(this->EfficiencyCurvePtr)->numDims == 2) {
                     if (this->CurveTempMode == TempMode::ENTERINGBOILERTEMP) {
                         ShowContinueError(state, format("...Curve input y value (Tinlet) = {:.2T}", state.dataLoopNodes->Node(BoilerInletNode).Temp));
                     } else if (this->CurveTempMode == TempMode::LEAVINGBOILERTEMP) {
@@ -956,7 +956,7 @@ void BoilerSpecs::CalcBoilerModel(EnergyPlusData &state,
                 ShowContinueError(state, "...Calculated Boiler Efficiency is greater than 1.1.");
                 ShowContinueError(state, "...Boiler Efficiency calculations shown below.");
                 ShowContinueError(state, format("...Curve input x value (PLR)     = {:.5T}", this->BoilerPLR));
-                if (state.dataCurveManager->PerfCurve(this->EfficiencyCurvePtr)->numDims == 2) {
+                if (state.dataCurveManager->curves(this->EfficiencyCurvePtr)->numDims == 2) {
                     if (this->CurveTempMode == TempMode::ENTERINGBOILERTEMP) {
                         ShowContinueError(state, format("...Curve input y value (Tinlet) = {:.2T}", state.dataLoopNodes->Node(BoilerInletNode).Temp));
                     } else if (this->CurveTempMode == TempMode::LEAVINGBOILERTEMP) {

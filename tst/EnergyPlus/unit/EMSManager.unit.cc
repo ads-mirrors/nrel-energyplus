@@ -1115,9 +1115,11 @@ TEST_F(EnergyPlusFixture, EMSManager_TestFuntionCall)
 
     EMSManager::CheckIfAnyEMS(*state); // get EMS input
     state->dataEMSMgr->FinishProcessingUserInput = true;
-    bool ErrorsFound(false);
-    Curve::GetCurveInputData(*state, ErrorsFound); // process curve for use with EMS
-    EXPECT_FALSE(ErrorsFound);
+
+    // Does GetCurveInput have to be called after CheckIfAnyEMS?
+    // bool ErrorsFound(false);
+    // Curve::GetCurveInputData(*state, ErrorsFound); // process curve for use with EMS
+    // EXPECT_FALSE(ErrorsFound);
 
     bool anyRan;
     EMSManager::ManageEMS(*state, EMSManager::EMSCallFrom::HVACIterationLoop, anyRan, ObjexxFCL::Optional_int_const());

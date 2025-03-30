@@ -2458,7 +2458,7 @@ ErlValueType EvaluateExpression(EnergyPlusData &state, int const ExpressionNum, 
                                                                                                                 // independent | 5th independent
                 } else if (Operand(4).Type == Value::Null && Operand(5).Type == Value::Null && Operand(6).Type == Value::Null) {
                     Real64 curveVal = 0.0;
-                    switch (state.dataCurveManager->PerfCurve(std::floor(Operand(1).Number))->numDims) {
+                    switch (state.dataCurveManager->curves(std::floor(Operand(1).Number))->numDims) {
                     case 1:
                         curveVal = CurveValue(state, std::floor(Operand(1).Number), Operand(2).Number);
                         break;
@@ -2469,7 +2469,7 @@ ErlValueType EvaluateExpression(EnergyPlusData &state, int const ExpressionNum, 
                     ReturnValue = SetErlValueNumber(curveVal);
                 } else if (Operand(5).Type == Value::Null && Operand(6).Type == Value::Null) {
                     Real64 curveVal = 0.0;
-                    switch (state.dataCurveManager->PerfCurve(std::floor(Operand(1).Number))->numDims) {
+                    switch (state.dataCurveManager->curves(std::floor(Operand(1).Number))->numDims) {
                     case 1:
                         curveVal = CurveValue(state, std::floor(Operand(1).Number), Operand(2).Number);
                         break;
@@ -2483,7 +2483,7 @@ ErlValueType EvaluateExpression(EnergyPlusData &state, int const ExpressionNum, 
                     ReturnValue = SetErlValueNumber(curveVal);
                 } else if (Operand(6).Type == Value::Null) {
                     Real64 curveVal = 0.0;
-                    switch (state.dataCurveManager->PerfCurve(std::floor(Operand(1).Number))->numDims) {
+                    switch (state.dataCurveManager->curves(std::floor(Operand(1).Number))->numDims) {
                     case 1:
                         curveVal = CurveValue(state, std::floor(Operand(1).Number), Operand(2).Number);
                         break;
@@ -2501,7 +2501,7 @@ ErlValueType EvaluateExpression(EnergyPlusData &state, int const ExpressionNum, 
                     ReturnValue = SetErlValueNumber(curveVal);
                 } else {
                     Real64 curveVal = 0.0;
-                    switch (state.dataCurveManager->PerfCurve(std::floor(Operand(1).Number))->numDims) {
+                    switch (state.dataCurveManager->curves(std::floor(Operand(1).Number))->numDims) {
                     case 1:
                         curveVal = CurveValue(state, std::floor(Operand(1).Number), Operand(2).Number);
                         break;

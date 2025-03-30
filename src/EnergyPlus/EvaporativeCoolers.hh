@@ -52,6 +52,7 @@
 #include <ObjexxFCL/Array1D.hh>
 
 // EnergyPlus Headers
+#include <EnergyPlus/CurveManager.hh>
 #include <EnergyPlus/Data/BaseData.hh>
 #include <EnergyPlus/DataGlobals.hh>
 #include <EnergyPlus/DataHVACGlobals.hh>
@@ -192,10 +193,10 @@ namespace EvaporativeCoolers {
         Real64 FanSizingSpecificPower;       // secondary fan sizing specific power in W/(m3/s)
         Real64 RecircPumpSizingFactor;       // water pump power sizing factor W/(m3/s) air
         Real64 IndirectVolFlowScalingFactor; // secondary air flow sizing Factor
-        int WetbulbEffecCurveIndex;          // wetbulb effectiveness modifier curve name as a function of flow fraction
-        int DrybulbEffecCurveIndex;          // drybulb effectiveness modifier curve name as a function of flow fraction
-        int FanPowerModifierCurveIndex;      // secondary fan power modifier curve name as a function of flow fraction
-        int PumpPowerModifierCurveIndex;     // recirculating pump power modifier curve name as a function of flow fraction
+        Curve::Curve *WetbulbEffecCurve = nullptr;  // wetbulb effectiveness modifier curve name as a function of flow fraction
+        Curve::Curve *DrybulbEffecCurve = nullptr;  // drybulb effectiveness modifier curve name as a function of flow fraction
+        Curve::Curve *FanPowerModifierCurve = nullptr;      // secondary fan power modifier curve name as a function of flow fraction
+        Curve::Curve *PumpPowerModifierCurve = nullptr;     // recirculating pump power modifier curve name as a function of flow fraction
         int IECOperatingStatus;              // operating mode status of indirect evaporative cooler research special (0: Off, 1: Dry, 2: Wet)
         int IterationLimit;                  // used for Used for RegulaFalsi recurring error message error -1
         int IterationFailed;                 // Used for RegulaFalsi recurring error message error -2
@@ -224,8 +225,8 @@ namespace EvaporativeCoolers {
               SatEff(0.0), StageEff(0.0), DPBoundFactor(0.0), EvapControlNodeNum(0), DesiredOutletTemp(0.0), PartLoadFract(0.0), DewPointBoundFlag(0),
               MinOATDBEvapCooler(0.0), MaxOATDBEvapCooler(0.0), EvapCoolerOperationControlFlag(false), MaxOATWBEvapCooler(0.0),
               DryCoilMaxEfficiency(0.0), IndirectFanPower(0.0), FanSizingSpecificPower(0.0), RecircPumpSizingFactor(0.0),
-              IndirectVolFlowScalingFactor(0.0), WetbulbEffecCurveIndex(0), DrybulbEffecCurveIndex(0), FanPowerModifierCurveIndex(0),
-              PumpPowerModifierCurveIndex(0), IECOperatingStatus(0), IterationLimit(0), IterationFailed(0),
+              IndirectVolFlowScalingFactor(0.0), 
+              IECOperatingStatus(0), IterationLimit(0), IterationFailed(0),
               EvapCoolerRDDOperatingMode(OperatingMode::Invalid), FaultyEvapCoolerFoulingFlag(false), FaultyEvapCoolerFoulingIndex(0),
               FaultyEvapCoolerFoulingFactor(1.0), MySizeFlag(true)
         {

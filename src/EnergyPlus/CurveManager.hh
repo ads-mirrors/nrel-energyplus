@@ -105,6 +105,8 @@ namespace Curve {
         QuintLinear,
         CubicLinear,
         ChillerPartLoadWithLift,
+        BtwxtTableLookup,
+        BtwxtAFNPressure,
         Num
     };
 
@@ -129,15 +131,9 @@ namespace Curve {
         "Curve:QuintLinear",
         "Curve:CubicLinear",
         "Curve:ChillerPartLoadWithLift",
+        "Table:Lookup",
+        "AirflowNetwork:MultiZone:WindPressureCoefficientValues"
     }; // namespace Curve
-
-    enum class InterpType
-    {
-        Invalid = -1,
-        EvaluateCurveToLimits,
-        BtwxtMethod,
-        Num
-    };
 
     struct Limits
     {
@@ -151,12 +147,15 @@ namespace Curve {
     {
         // Basic data
         std::string Name;                         // Curve Name
+        int Num = 0;
+      
         CurveType curveType = CurveType::Invalid; // Curve type (see parameter definitions above)
         // Table data stuff
-        InterpType interpolationType = InterpType::Invalid; // Table interpolation method
         int TableIndex = 0;     // Index to tabular data (0 if a standard curve object) OR Index of RGI for new Table:Lookup
         int numDims = 0;        // Number of dimensions (AKA, independent variables)
         int GridValueIndex = 0; // Index of output within RGI for new Table:Lookup
+        std::string contextString; // For passing to callback
+      
         // input coefficients
         std::array<Real64, 27> coeff = {0.0}; // curve coefficients
         // independent variables
@@ -168,6 +167,9 @@ namespace Curve {
         // EMS override
         bool EMSOverrideOn = false;         // if TRUE, then EMS is calling to override curve value
         Real64 EMSOverrideCurveValue = 0.0; // Value of curve result EMS is directing to use
+
+        bool checkDims(EnergyPlusData &state, std::vector<int> const &validDims);
+      
         Real64 value(EnergyPlusData &state, Real64 V1);
         Real64 value(EnergyPlusData &state, Real64 V1, Real64 V2);
         Real64 value(EnergyPlusData &state, Real64 V1, Real64 V2, Real64 V3);
@@ -317,7 +319,7 @@ namespace Curve {
                             ErrorObjectHeader const &eoh,
                             std::string_view fieldName,
                             std::string_view curveName,
-                            std::string_view validDims,
+                            std::vector<int> const &validDims,
                             int dim);
 
     bool CheckCurveDims(EnergyPlusData &state,
@@ -334,6 +336,10 @@ namespace Curve {
 
     int GetCurveIndex(EnergyPlusData &state, std::string const &CurveName); // name of the curve
 
+    Curve *GetCurve(EnergyPlusData &state, std::string const &curveName);
+
+    Curve *AddCurve(EnergyPlusData &state, std::string const &curveName);
+  
     // This utility function grabs a curve index and performs the
     // error checking
 
@@ -453,36 +459,29 @@ namespace Curve {
 
 struct CurveManagerData : BaseGlobalStruct
 {
-    int NumCurves = 0;
-    bool GetCurvesInputFlag = true;
     bool CurveValueMyBeginTimeStepFlag = false;
     bool FrictionFactorErrorHasOccurred = false;
     bool showFallbackMessage = true;
-    EPVector<Curve::Curve *> PerfCurve;
+    Array1D<Curve::Curve *> curves;
+    std::map<std::string, int> curveMap;
+  
     Curve::BtwxtManager btwxtManager;
-    std::unordered_map<std::string, std::string> UniqueCurveNames;
-
-    void allocateCurveVector(int const count)
-    {
-        this->NumCurves = count;
-        for (int curveIndex = 1; curveIndex <= count; curveIndex++)
-            this->PerfCurve.push_back(new EnergyPlus::Curve::Curve);
-    }
 
     void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
     {
     }
 
-    void init_state([[maybe_unused]] EnergyPlusData &state) override
+    void init_state(EnergyPlusData &state) override
     {
+        Curve::GetCurveInput(state);
+        Curve::GetPressureSystemInput(state);
     }
 
     void clear_state() override
     {
-        for (Curve::Curve *p : PerfCurve) {
-            delete p;
-        }
-        new (this) CurveManagerData();
+        for (Curve::Curve *c : curves) delete c;
+        curves.clear();
+        curveMap.clear();
     }
 };
 

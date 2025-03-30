@@ -4595,6 +4595,7 @@ TEST_F(EnergyPlusFixture, GAHP_HeatingSimulate_AirSource_with_Defrost)
                                                       "  1;"});
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     state->dataHVACGlobal->TimeStepSys = 0.25;
     state->dataHVACGlobal->TimeStepSysSec = state->dataHVACGlobal->TimeStepSys * Constant::rSecsInHour;
@@ -5717,7 +5718,8 @@ TEST_F(EnergyPlusFixture, GAHP_AirSource_CurveEval)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
-
+    state->init_state(*state);
+    
     // set up the plant loops
     // first the load side
     state->dataPlnt->TotNumLoops = 1;
@@ -5808,7 +5810,7 @@ TEST_F(EnergyPlusFixture, GAHP_AirSource_CurveEval)
         EXPECT_NEAR(curLoad, thisHeatingPLHP->loadSideHeatTransfer, 0.001);
         {
             ASSERT_GT(thisHeatingPLHP->capFuncTempCurveIndex, 0);
-            auto const *thisCurve = state->dataCurveManager->PerfCurve(thisHeatingPLHP->capFuncTempCurveIndex);
+            auto const *thisCurve = state->dataCurveManager->curves(thisHeatingPLHP->capFuncTempCurveIndex);
             Real64 const waterTempforCurve = thisCurve->inputs[0];
             Real64 const oaTempforCurve = thisCurve->inputs[1];
             EXPECT_EQ(calculatedLoadInletTemp, waterTempforCurve);
@@ -5816,7 +5818,7 @@ TEST_F(EnergyPlusFixture, GAHP_AirSource_CurveEval)
         }
         {
             ASSERT_GT(thisHeatingPLHP->powerRatioFuncTempCurveIndex, 0);
-            auto const *thisCurve = state->dataCurveManager->PerfCurve(thisHeatingPLHP->powerRatioFuncTempCurveIndex);
+            auto const *thisCurve = state->dataCurveManager->curves(thisHeatingPLHP->powerRatioFuncTempCurveIndex);
             Real64 const waterTempforCurve = thisCurve->inputs[0];
             Real64 const oaTempforCurve = thisCurve->inputs[1];
             EXPECT_EQ(calculatedLoadInletTemp, waterTempforCurve);
@@ -5824,7 +5826,7 @@ TEST_F(EnergyPlusFixture, GAHP_AirSource_CurveEval)
         }
         {
             ASSERT_GT(thisHeatingPLHP->defrostEIRCurveIndex, 0);
-            auto const *thisCurve = state->dataCurveManager->PerfCurve(thisHeatingPLHP->defrostEIRCurveIndex);
+            auto const *thisCurve = state->dataCurveManager->curves(thisHeatingPLHP->defrostEIRCurveIndex);
             Real64 const oaTempforCurve = thisCurve->inputs[0];
             EXPECT_EQ(oaTemp, oaTempforCurve);
         }
@@ -5851,7 +5853,7 @@ TEST_F(EnergyPlusFixture, GAHP_AirSource_CurveEval)
         EXPECT_NEAR(isLoadSideHeatTransferNegativeForCooling ? curLoad : -curLoad, thisCoolingPLHP->loadSideHeatTransfer, 0.001);
         {
             ASSERT_GT(thisCoolingPLHP->powerRatioFuncTempCurveIndex, 0);
-            auto const *thisCurve = state->dataCurveManager->PerfCurve(thisCoolingPLHP->capFuncTempCurveIndex);
+            auto const *thisCurve = state->dataCurveManager->curves(thisCoolingPLHP->capFuncTempCurveIndex);
             Real64 const waterTempforCurve = thisCurve->inputs[0];
             Real64 const oaTempforCurve = thisCurve->inputs[1];
             EXPECT_EQ(calculatedLoadInletTemp, waterTempforCurve);
@@ -5859,7 +5861,7 @@ TEST_F(EnergyPlusFixture, GAHP_AirSource_CurveEval)
         }
         {
             ASSERT_GT(thisCoolingPLHP->powerRatioFuncTempCurveIndex, 0);
-            auto const *thisCurve = state->dataCurveManager->PerfCurve(thisCoolingPLHP->powerRatioFuncTempCurveIndex);
+            auto const *thisCurve = state->dataCurveManager->curves(thisCoolingPLHP->powerRatioFuncTempCurveIndex);
             Real64 const waterTempforCurve = thisCurve->inputs[0];
             Real64 const oaTempforCurve = thisCurve->inputs[1];
             EXPECT_EQ(calculatedLoadInletTemp, waterTempforCurve);
@@ -5894,7 +5896,7 @@ TEST_F(EnergyPlusFixture, GAHP_AirSource_CurveEval)
         EXPECT_NEAR(curLoad, thisHeatingPLHP->loadSideHeatTransfer, 0.001);
         {
             ASSERT_GT(thisHeatingPLHP->capFuncTempCurveIndex, 0);
-            auto const *thisCurve = state->dataCurveManager->PerfCurve(thisHeatingPLHP->capFuncTempCurveIndex);
+            auto const *thisCurve = state->dataCurveManager->curves(thisHeatingPLHP->capFuncTempCurveIndex);
             Real64 const waterTempforCurve = thisCurve->inputs[0];
             Real64 const oaTempforCurve = thisCurve->inputs[1];
             EXPECT_EQ(ori_loadSideOutletTemp, waterTempforCurve);
@@ -5902,7 +5904,7 @@ TEST_F(EnergyPlusFixture, GAHP_AirSource_CurveEval)
         }
         {
             ASSERT_GT(thisHeatingPLHP->powerRatioFuncTempCurveIndex, 0);
-            auto const *thisCurve = state->dataCurveManager->PerfCurve(thisHeatingPLHP->powerRatioFuncTempCurveIndex);
+            auto const *thisCurve = state->dataCurveManager->curves(thisHeatingPLHP->powerRatioFuncTempCurveIndex);
             Real64 const waterTempforCurve = thisCurve->inputs[0];
             Real64 const oaTempforCurve = thisCurve->inputs[1];
             EXPECT_EQ(ori_loadSideOutletTemp, waterTempforCurve);
@@ -5910,7 +5912,7 @@ TEST_F(EnergyPlusFixture, GAHP_AirSource_CurveEval)
         }
         {
             ASSERT_GT(thisHeatingPLHP->defrostEIRCurveIndex, 0);
-            auto const *thisCurve = state->dataCurveManager->PerfCurve(thisHeatingPLHP->defrostEIRCurveIndex);
+            auto const *thisCurve = state->dataCurveManager->curves(thisHeatingPLHP->defrostEIRCurveIndex);
             Real64 const oaTempforCurve = thisCurve->inputs[0];
             EXPECT_EQ(oaWetbulb, oaTempforCurve);
         }
@@ -5936,7 +5938,7 @@ TEST_F(EnergyPlusFixture, GAHP_AirSource_CurveEval)
         EXPECT_NEAR(isLoadSideHeatTransferNegativeForCooling ? curLoad : -curLoad, thisCoolingPLHP->loadSideHeatTransfer, 0.001);
         {
             ASSERT_GT(thisCoolingPLHP->powerRatioFuncTempCurveIndex, 0);
-            auto const *thisCurve = state->dataCurveManager->PerfCurve(thisCoolingPLHP->capFuncTempCurveIndex);
+            auto const *thisCurve = state->dataCurveManager->curves(thisCoolingPLHP->capFuncTempCurveIndex);
             Real64 const waterTempforCurve = thisCurve->inputs[0];
             Real64 const oaTempforCurve = thisCurve->inputs[1];
             EXPECT_EQ(ori_loadSideOutletTemp, waterTempforCurve);
@@ -5944,7 +5946,7 @@ TEST_F(EnergyPlusFixture, GAHP_AirSource_CurveEval)
         }
         {
             ASSERT_GT(thisCoolingPLHP->powerRatioFuncTempCurveIndex, 0);
-            auto const *thisCurve = state->dataCurveManager->PerfCurve(thisCoolingPLHP->powerRatioFuncTempCurveIndex);
+            auto const *thisCurve = state->dataCurveManager->curves(thisCoolingPLHP->powerRatioFuncTempCurveIndex);
             Real64 const waterTempforCurve = thisCurve->inputs[0];
             Real64 const oaTempforCurve = thisCurve->inputs[1];
             EXPECT_EQ(ori_loadSideOutletTemp, waterTempforCurve);

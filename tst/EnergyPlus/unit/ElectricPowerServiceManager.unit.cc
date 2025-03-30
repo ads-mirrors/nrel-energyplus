@@ -1240,9 +1240,6 @@ TEST_F(EnergyPlusFixture, Battery_checkChargeDischargeVoltageCurves)
     ASSERT_TRUE(process_idf(idf_objects));
     state->init_state(*state);
 
-    Curve::GetCurveInput(*state);
-    state->dataCurveManager->GetCurvesInputFlag = false;
-
     // Test 1: Curves which do not produce errors
     e0c = 13.0;
     e0d = 11.0;

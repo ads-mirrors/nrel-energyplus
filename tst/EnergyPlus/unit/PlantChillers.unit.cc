@@ -233,6 +233,8 @@ TEST_F(EnergyPlusFixture, EngineDrivenChiller_Fueltype)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
+    
     EngineDrivenChillerSpecs::getInput(*state);
 
     EXPECT_EQ(1, state->dataPlantChillers->NumEngineDrivenChillers);
@@ -302,6 +304,8 @@ TEST_F(EnergyPlusFixture, CombustionTurbineChiller_Fueltype)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
+    
     GTChillerSpecs::getInput(*state);
 
     EXPECT_EQ(1, state->dataPlantChillers->NumGTChillers);

@@ -53,6 +53,7 @@
 #include <ObjexxFCL/Optional.hh>
 
 // EnergyPlus Headers
+#include <EnergyPlus/CurveManager.hh>
 #include <EnergyPlus/Data/BaseData.hh>
 #include <EnergyPlus/DataGlobals.hh>
 #include <EnergyPlus/DataHVACGlobals.hh>
@@ -127,12 +128,12 @@ namespace WaterToAirHeatPumpSimple {
         Real64 RatedEntAirWetbulbTemp = 0.0;         // Rated Entering Air Wetbulb Temperature [C]
         Real64 RatedEntAirDrybulbTemp = 0.0;         // Rated Entering Air Drybulb Temperature [C]
         Real64 RatioRatedHeatRatedTotCoolCap = 0.0;  // Ratio of Rated Heating Capacity to Rated Cooling Capacity [-]
-        int HeatCapCurveIndex = 0;                   // Index of the heating capacity performance curve
-        int HeatPowCurveIndex = 0;                   // Index of the heating power consumption curve
-        int TotalCoolCapCurveIndex = 0;              // Index of the Total Cooling capacity performance curve
-        int SensCoolCapCurveIndex = 0;               // Index of the Sensible Cooling capacity performance curve
-        int CoolPowCurveIndex = 0;                   // Index of the Cooling power consumption curve
-        int PLFCurveIndex = 0;                       // Index of the Part Load Factor curve
+        Curve::Curve *HeatCapCurve = nullptr;                   // Index of the heating capacity performance curve
+        Curve::Curve *HeatPowCurve = nullptr;                   // Index of the heating power consumption curve
+        Curve::Curve *TotalCoolCapCurve = nullptr;              // Index of the Total Cooling capacity performance curve
+        Curve::Curve *SensCoolCapCurve = nullptr;               // Index of the Sensible Cooling capacity performance curve
+        Curve::Curve *CoolPowCurve = nullptr;                   // Index of the Cooling power consumption curve
+        Curve::Curve *PLFCurve = nullptr;                       // Index of the Part Load Factor curve
         int AirInletNodeNum = 0;                     // Node Number of the Air Inlet
         int AirOutletNodeNum = 0;                    // Node Number of the Air Outlet
         int WaterInletNodeNum = 0;                   // Node Number of the Water Onlet

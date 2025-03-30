@@ -6875,9 +6875,9 @@ namespace Window {
                             if (matGlass->windowOpticalData == Window::OpticalDataModel::Spectral) {
                                 SpectralDataName = s_mat->SpectralData(matGlass->GlassSpectralDataPtr).Name;
                             } else if (matGlass->windowOpticalData == Window::OpticalDataModel::SpectralAndAngle) {
-                                SpectralDataName = state.dataCurveManager->PerfCurve(matGlass->GlassSpecAngTransDataPtr)->Name + ", " +
-                                                   state.dataCurveManager->PerfCurve(matGlass->GlassSpecAngFRefleDataPtr)->Name + ", " +
-                                                   state.dataCurveManager->PerfCurve(matGlass->GlassSpecAngBRefleDataPtr)->Name;
+                                SpectralDataName = state.dataCurveManager->curves(matGlass->GlassSpecAngTransDataPtr)->Name + ", " +
+                                                   state.dataCurveManager->curves(matGlass->GlassSpecAngFRefleDataPtr)->Name + ", " +
+                                                   state.dataCurveManager->curves(matGlass->GlassSpecAngBRefleDataPtr)->Name;
                             } else {
                                 SpectralDataName = "";
                             }

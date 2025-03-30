@@ -1592,7 +1592,7 @@ void FanComponent::set_size(EnergyPlusData &state)
         if (!fault.CheckFaultyAirFilterFanCurve(state)) {
             ShowSevereError(state, format("FaultModel:Fouling:AirFilter = \"{}\"", fault.Name));
             ShowContinueError(state,
-                              format("Invalid Fan Curve Name = \"{}\" does not cover ", state.dataCurveManager->PerfCurve(fault.fanCurveNum)->Name));
+                              format("Invalid Fan Curve Name = \"{}\" does not cover ", state.dataCurveManager->curves(fault.fanCurveNum)->Name));
             ShowContinueError(state, format("the operational point of Fan {}", Name));
             ShowFatalError(state, format("SizeFan: Invalid FaultModel:Fouling:AirFilter={}", fault.Name));
         }
@@ -2421,7 +2421,7 @@ Real64 CalFaultyFanAirFlowReduction(EnergyPlusData &state,
         FanCalDeltaPresstemp = Curve::CurveValue(state, FanCurvePtr, FanFaultyAirFlowRate);
 
         if ((FanCalDeltaPresstemp <= FanCalDeltaPress) ||
-            (FanFaultyAirFlowRate <= state.dataCurveManager->PerfCurve(FanCurvePtr)->inputLimits[0].min)) {
+            (FanFaultyAirFlowRate <= state.dataCurveManager->curves(FanCurvePtr)->inputLimits[0].min)) {
             // The new operational point of the fan go beyond the fan selection range
             ShowWarningError(state, format("The operational point of the fan {} may go beyond the fan selection ", FanName));
             ShowContinueError(state, "range in the faulty fouling air filter cases");

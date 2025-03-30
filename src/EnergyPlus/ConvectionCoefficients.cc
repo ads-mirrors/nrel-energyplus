@@ -772,10 +772,10 @@ void GetUserConvCoeffs(EnergyPlusData &state)
                 ShowSevereItemNotFound(state, eoh, ipsc->cAlphaFieldNames(3), ipsc->cAlphaArgs(3));
                 ErrorsFound = true;
             } else { // check type
-                auto const *curve = state.dataCurveManager->PerfCurve(intConvUserCurve.hcFnTempDiffCurveNum);
+                auto const *curve = state.dataCurveManager->curves(intConvUserCurve.hcFnTempDiffCurveNum);
                 if (curve->numDims != 1) {
                     ErrorsFound = true;
-                    Curve::ShowErrorCurveDims(state, eoh, ipsc->cAlphaFieldNames(3), curve->Name, "1", curve->numDims);
+                    Curve::ShowErrorCurveDims(state, eoh, ipsc->cAlphaFieldNames(3), curve->Name, {1}, curve->numDims);
                 }
             }
         } else {
@@ -788,10 +788,10 @@ void GetUserConvCoeffs(EnergyPlusData &state)
                 ShowSevereItemNotFound(state, eoh, ipsc->cAlphaFieldNames(4), ipsc->cAlphaArgs(4));
                 ErrorsFound = true;
             } else { // check type
-                auto const *curve = state.dataCurveManager->PerfCurve(intConvUserCurve.hcFnTempDiffDivHeightCurveNum);
+                auto const *curve = state.dataCurveManager->curves(intConvUserCurve.hcFnTempDiffDivHeightCurveNum);
                 if (curve->numDims != 1) {
                     ErrorsFound = true;
-                    Curve::ShowErrorCurveDims(state, eoh, ipsc->cAlphaFieldNames(4), curve->Name, "1", curve->numDims);
+                    Curve::ShowErrorCurveDims(state, eoh, ipsc->cAlphaFieldNames(4), curve->Name, {1}, curve->numDims);
                 }
             }
         } else {
@@ -804,10 +804,10 @@ void GetUserConvCoeffs(EnergyPlusData &state)
                 ShowSevereItemNotFound(state, eoh, ipsc->cAlphaFieldNames(5), ipsc->cAlphaArgs(5));
                 ErrorsFound = true;
             } else { // check type
-                auto const *curve = state.dataCurveManager->PerfCurve(intConvUserCurve.hcFnACHCurveNum);
+                auto const *curve = state.dataCurveManager->curves(intConvUserCurve.hcFnACHCurveNum);
                 if (curve->numDims != 1) {
                     ErrorsFound = true;
-                    Curve::ShowErrorCurveDims(state, eoh, ipsc->cAlphaFieldNames(5), curve->Name, "1", curve->numDims);
+                    Curve::ShowErrorCurveDims(state, eoh, ipsc->cAlphaFieldNames(5), curve->Name, {1}, curve->numDims);
                 }
             }
         } else {
@@ -820,10 +820,10 @@ void GetUserConvCoeffs(EnergyPlusData &state)
                 ShowSevereItemNotFound(state, eoh, ipsc->cAlphaFieldNames(6), ipsc->cAlphaArgs(6));
                 ErrorsFound = true;
             } else { // check type
-                auto const *curve = state.dataCurveManager->PerfCurve(intConvUserCurve.hcFnACHDivPerimLengthCurveNum);
+                auto const *curve = state.dataCurveManager->curves(intConvUserCurve.hcFnACHDivPerimLengthCurveNum);
                 if (curve->numDims != 1) {
                     ErrorsFound = true;
-                    Curve::ShowErrorCurveDims(state, eoh, ipsc->cAlphaFieldNames(6), curve->Name, "1", curve->numDims);
+                    Curve::ShowErrorCurveDims(state, eoh, ipsc->cAlphaFieldNames(6), curve->Name, {1}, curve->numDims);
                 }
             }
         } else {
@@ -867,10 +867,10 @@ void GetUserConvCoeffs(EnergyPlusData &state)
                 ShowSevereItemNotFound(state, eoh, ipsc->cAlphaFieldNames(3), ipsc->cAlphaArgs(3));
                 ErrorsFound = true;
             } else { // check type
-                auto const *curve = state.dataCurveManager->PerfCurve(extConvUserCurve.hfFnWindSpeedCurveNum);
+                auto const *curve = state.dataCurveManager->curves(extConvUserCurve.hfFnWindSpeedCurveNum);
                 if (curve->numDims != 1) {
                     ErrorsFound = true;
-                    Curve::ShowErrorCurveDims(state, eoh, ipsc->cAlphaFieldNames(3), curve->Name, "1", curve->numDims);
+                    Curve::ShowErrorCurveDims(state, eoh, ipsc->cAlphaFieldNames(3), curve->Name, {1}, curve->numDims);
                 }
             }
         } else {
@@ -884,10 +884,10 @@ void GetUserConvCoeffs(EnergyPlusData &state)
                 ShowSevereItemNotFound(state, eoh, ipsc->cAlphaFieldNames(4), ipsc->cAlphaArgs(4));
                 ErrorsFound = true;
             } else { // check type
-                auto const *curve = state.dataCurveManager->PerfCurve(extConvUserCurve.hnFnTempDiffCurveNum);
+                auto const *curve = state.dataCurveManager->curves(extConvUserCurve.hnFnTempDiffCurveNum);
                 if (curve->numDims != 1) {
                     ErrorsFound = true;
-                    Curve::ShowErrorCurveDims(state, eoh, ipsc->cAlphaFieldNames(4), curve->Name, "1", curve->numDims);
+                    Curve::ShowErrorCurveDims(state, eoh, ipsc->cAlphaFieldNames(4), curve->Name, {1}, curve->numDims);
                 }
             }
         } else {
@@ -901,10 +901,10 @@ void GetUserConvCoeffs(EnergyPlusData &state)
                 ShowSevereItemNotFound(state, eoh, ipsc->cAlphaFieldNames(5), ipsc->cAlphaArgs(5));
                 ErrorsFound = true;
             } else { // check type
-                auto const *curve = state.dataCurveManager->PerfCurve(extConvUserCurve.hnFnTempDiffDivHeightCurveNum);
+                auto const *curve = state.dataCurveManager->curves(extConvUserCurve.hnFnTempDiffDivHeightCurveNum);
                 if (curve->numDims != 1) {
                     ErrorsFound = true;
-                    Curve::ShowErrorCurveDims(state, eoh, ipsc->cAlphaFieldNames(5), curve->Name, "1", curve->numDims);
+                    Curve::ShowErrorCurveDims(state, eoh, ipsc->cAlphaFieldNames(5), curve->Name, {1}, curve->numDims);
                 }
             }
         } else {

@@ -52,6 +52,7 @@
 #include <ObjexxFCL/Array1D.hh>
 
 // EnergyPlus Headers
+#include <EnergyPlus/CurveManager.hh> // Should we start using .fwd.hh for forward declarations?
 #include <EnergyPlus/Data/BaseData.hh>
 #include <EnergyPlus/DataGlobalConstants.hh>
 #include <EnergyPlus/DataGlobals.hh>
@@ -108,16 +109,16 @@ namespace ChillerGasAbsorption {
         Real64 HeatVolFlowRate = 0.0;             // m**3/s - design nominal water volumetric flow rate through the heater side
         bool HeatVolFlowRateWasAutoSized = false; // true if hot water flow rate was autosize on input
         Real64 SizFac = 0.0;                      // sizing factor
-        int CoolCapFTCurve = 0;                   // cooling capacity as a function of temperature curve (chilled water temp,
+        Curve::Curve *CoolCapFTCurve = nullptr;   // cooling capacity as a function of temperature curve (chilled water temp,
         // condenser water temp)
-        int FuelCoolFTCurve = 0; // Fuel-Input-to cooling output Ratio Function of Temperature Curve (chilled
+        Curve::Curve *FuelCoolFTCurve = nullptr; // Fuel-Input-to cooling output Ratio Function of Temperature Curve (chilled
         // water temp, condenser water temp)
-        int FuelCoolFPLRCurve = 0; // Fuel-Input-to cooling output Ratio Function of Part Load Ratio Curve
-        int ElecCoolFTCurve = 0;   // Electric-Input-to cooling output Ratio Function of Temperature Curve
+        Curve::Curve *FuelCoolFPLRCurve = nullptr; // Fuel-Input-to cooling output Ratio Function of Part Load Ratio Curve
+        Curve::Curve *ElecCoolFTCurve = nullptr;   // Electric-Input-to cooling output Ratio Function of Temperature Curve
         // (chilled water temp, condenser water temp)
-        int ElecCoolFPLRCurve = 0;       // Electric-Input-to cooling output Ratio Function of Part Load Ratio Curve
-        int HeatCapFCoolCurve = 0;       // Heating Capacity Function of Cooling Capacity Curve
-        int FuelHeatFHPLRCurve = 0;      // Fuel Input to heat output ratio during heating only function
+        Curve::Curve *ElecCoolFPLRCurve = nullptr;       // Electric-Input-to cooling output Ratio Function of Part Load Ratio Curve
+        Curve::Curve *HeatCapFCoolCurve = nullptr;       // Heating Capacity Function of Cooling Capacity Curve
+        Curve::Curve *FuelHeatFHPLRCurve = nullptr;      // Fuel Input to heat output ratio during heating only function
         bool isEnterCondensTemp = false; // if using entering conderser water temperature is TRUE, exiting is FALSE
         bool isWaterCooled = false;      // if water cooled it is TRUE
         Real64 CHWLowLimitTemp = 0.0;    // Chilled Water Lower Limit Temperature

@@ -608,9 +608,9 @@ namespace Window {
                         for (int ILam = 1; ILam <= (int)wm->wle.size(); ++ILam) {
                             Real64 lam = wm->wle[ILam - 1];
                             wlt[IGlass - 1][ILam - 1] = lam;
-                            t[IGlass - 1][ILam - 1] = Curve::CurveValue(state, matGlass->GlassSpecAngTransDataPtr, 0.0, lam);
-                            rff[IGlass - 1][ILam - 1] = Curve::CurveValue(state, matGlass->GlassSpecAngFRefleDataPtr, 0.0, lam);
-                            rbb[IGlass - 1][ILam - 1] = Curve::CurveValue(state, matGlass->GlassSpecAngBRefleDataPtr, 0.0, lam);
+                            t[IGlass - 1][ILam - 1] = matGlass->GlassSpecAngTransCurve->value(state, 0.0, lam);
+                            rff[IGlass - 1][ILam - 1] = matGlass->GlassSpecAngFReflCurve->value(state, 0.0, lam);
+                            rbb[IGlass - 1][ILam - 1] = matGlass->GlassSpecAngBReflCurve->value(state, 0.0, lam);
                         }
                         wm->tmpTrans = solarSpectrumAverage(state, t[0]);
                         wm->tmpReflectSolBeamFront = solarSpectrumAverage(state, rff[0]);
@@ -676,9 +676,9 @@ namespace Window {
                         for (int ILam = 1; ILam <= (int)wm->wle.size(); ++ILam) {
                             Real64 lam = wm->wle[ILam - 1];
                             wlt[IGlass - 1][ILam - 1] = lam;
-                            tPhi[IGlass - 1][ILam - 1] = Curve::CurveValue(state, matGlass->GlassSpecAngTransDataPtr, iPhi * dPhiDeg, lam);
-                            rfPhi[IGlass - 1][ILam - 1] = Curve::CurveValue(state, matGlass->GlassSpecAngFRefleDataPtr, iPhi * dPhiDeg, lam);
-                            rbPhi[IGlass - 1][ILam - 1] = Curve::CurveValue(state, matGlass->GlassSpecAngBRefleDataPtr, iPhi * dPhiDeg, lam);
+                            tPhi[IGlass - 1][ILam - 1] = matGlass->GlassSpecAngTransCurve->value(state, iPhi * dPhiDeg, lam);
+                            rfPhi[IGlass - 1][ILam - 1] = matGlass->GlassSpecAngFReflCurve->value(state, iPhi * dPhiDeg, lam);
+                            rbPhi[IGlass - 1][ILam - 1] = matGlass->GlassSpecAngBReflCurve->value(state, iPhi * dPhiDeg, lam);
                         }
                     }
                     // For use with between-glass shade/blind, save angular properties of isolated glass
@@ -884,9 +884,9 @@ namespace Window {
                         for (int ILam = 1; ILam <= (int)wm->wle.size(); ++ILam) {
                             Real64 lam = wm->wle[ILam - 1];
                             wlt[IGlass - 1][ILam - 1] = lam;
-                            tPhi[IGlass - 1][ILam - 1] = Curve::CurveValue(state, matGlass->GlassSpecAngTransDataPtr, iPhi * dPhiDeg, lam);
-                            rfPhi[IGlass - 1][ILam - 1] = Curve::CurveValue(state, matGlass->GlassSpecAngFRefleDataPtr, iPhi * dPhiDeg, lam);
-                            rbPhi[IGlass - 1][ILam - 1] = Curve::CurveValue(state, matGlass->GlassSpecAngBRefleDataPtr, iPhi * dPhiDeg, lam);
+                            tPhi[IGlass - 1][ILam - 1] = matGlass->GlassSpecAngTransCurve->value(state, iPhi * dPhiDeg, lam);
+                            rfPhi[IGlass - 1][ILam - 1] = matGlass->GlassSpecAngFReflCurve->value(state, iPhi * dPhiDeg, lam);
+                            rbPhi[IGlass - 1][ILam - 1] = matGlass->GlassSpecAngBReflCurve->value(state, iPhi * dPhiDeg, lam);
                         }
                     }
                 }
@@ -6875,9 +6875,10 @@ namespace Window {
                             if (matGlass->windowOpticalData == Window::OpticalDataModel::Spectral) {
                                 SpectralDataName = s_mat->SpectralData(matGlass->GlassSpectralDataPtr).Name;
                             } else if (matGlass->windowOpticalData == Window::OpticalDataModel::SpectralAndAngle) {
-                                SpectralDataName = state.dataCurveManager->curves(matGlass->GlassSpecAngTransDataPtr)->Name + ", " +
-                                                   state.dataCurveManager->curves(matGlass->GlassSpecAngFRefleDataPtr)->Name + ", " +
-                                                   state.dataCurveManager->curves(matGlass->GlassSpecAngBRefleDataPtr)->Name;
+                                SpectralDataName = format("{}, {}, {}",
+                                                          matGlass->GlassSpecAngTransCurve->Name,
+                                                          matGlass->GlassSpecAngFReflCurve->Name,
+                                                          matGlass->GlassSpecAngBReflCurve->Name);
                             } else {
                                 SpectralDataName = "";
                             }

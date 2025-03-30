@@ -3123,33 +3123,6 @@ namespace Curve {
         return (curveNum == 0) ? nullptr : state.dataCurveManager->curves(curveNum);
     }
 
-    // This utility function grabs a curve index and performs the
-    // error checking
-
-    int GetCurveCheck(EnergyPlusData &state,
-                      std::string const &alph, // curve name
-                      bool &errFlag,
-                      std::string const &ObjName // parent object of curve
-    )
-    {
-
-        // FUNCTION INFORMATION:
-        //       AUTHOR         Jason Glazer
-        //       DATE WRITTEN   March 2001
-        //       MODIFIED       na
-        //       RE-ENGINEERED  na
-
-        // PURPOSE OF THIS FUNCTION:
-        // This function provides a simple call to both return a curve index as well
-        // as check for validity and produce an error message.
-        int GetCurveCheckOut = GetCurveIndex(state, alph); // convert curve name to pointer
-        if (GetCurveCheckOut == 0) {
-            ShowSevereError(state, format("Curve Not Found for Object=\"{}\" :: {}", ObjName, alph));
-            errFlag = true;
-        }
-        return GetCurveCheckOut;
-    }
-
     void GetCurveMinMaxValues(EnergyPlusData &state,
                               int const CurveIndex, // index of curve in curve array
                               Real64 &Var1Min,      // Minimum values of 1st independent variable

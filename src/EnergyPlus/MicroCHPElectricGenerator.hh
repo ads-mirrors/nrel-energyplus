@@ -71,12 +71,12 @@ namespace MicroCHPElectricGenerator {
         Real64 MinElecPower;      // net electric power [W]
         Real64 MinWaterMdot;      // minimum cooling water flow [kg/s]
         Real64 MaxWaterTemp;      // limit temp for inlet cooling water [C]
-        int ElecEffCurveID;       // index for TriQuadratic for electrical efficiency
-        int ThermalEffCurveID;    // index for TriQuadric for thermal efficiency
+        Curve::Curve *ElecEffCurve = nullptr;       // index for TriQuadratic for electrical efficiency
+        Curve::Curve *ThermalEffCurve = nullptr;    // index for TriQuadric for thermal efficiency
         bool InternalFlowControl; // Plant or Internal Flow rate control?
         bool PlantFlowControl;    // default is plant control
-        int WaterFlowCurveID;     // index for BiQuadratic for water flow rate internal control
-        int AirFlowCurveID;       // index for Quadratic for generator air flow
+        Curve::Curve *WaterFlowCurve = nullptr;     // index for BiQuadratic for water flow rate internal control
+        Curve::Curve *AirFlowCurve = nullptr;       // index for Quadratic for generator air flow
         Real64 DeltaPelMax;       // max rate of change in net electric power [W/s}
         Real64 DeltaFuelMdotMax;  // Maximum Rate of change in fuel flow rate [kmol/s2]
         Real64 UAhx;              // heat exchanger UA [W/K]
@@ -142,8 +142,8 @@ namespace MicroCHPElectricGenerator {
 
         // Default Constructor
         MicroCHPParamsNonNormalized()
-            : MaxElecPower(0.0), MinElecPower(0.0), MinWaterMdot(0.0), MaxWaterTemp(0.0), ElecEffCurveID(0), ThermalEffCurveID(0),
-              InternalFlowControl(false), PlantFlowControl(true), WaterFlowCurveID(0), AirFlowCurveID(0), DeltaPelMax(0.0), DeltaFuelMdotMax(0.0),
+            : MaxElecPower(0.0), MinElecPower(0.0), MinWaterMdot(0.0), MaxWaterTemp(0.0), 
+              InternalFlowControl(false), PlantFlowControl(true), DeltaPelMax(0.0), DeltaFuelMdotMax(0.0),
               UAhx(0.0), UAskin(0.0), RadiativeFraction(0.0), MCeng(0.0), MCcw(0.0), Pstandby(0.0), WarmUpByTimeDelay(false),
               WarmUpByEngineTemp(true), kf(0.0), TnomEngOp(0.0), kp(0.0), Rfuelwarmup(0.0), WarmUpDelay(0.0), PcoolDown(0.0), CoolDownDelay(0.0),
               MandatoryFullCoolDown(false), WarmRestartOkay(true), TimeElapsed(0.0), OpMode(DataGenerators::OperatingMode::Invalid), OffModeTime(0.0),

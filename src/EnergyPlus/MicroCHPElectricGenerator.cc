@@ -199,7 +199,7 @@ void GetMicroCHPGeneratorInput(EnergyPlusData &state)
             if (s_ipsc->lAlphaFieldBlanks(3)) {
                 ShowSevereEmptyField(state, eoh, s_ipsc->cAlphaFieldNames(3));
                 ErrorsFound = true;
-            } else if ((microCHPParams.ThermalEffCurve = Curve::GetCurve(state, AlphArray(2))) == nullptr) {
+            } else if ((microCHPParams.ThermalEffCurve = Curve::GetCurve(state, AlphArray(3))) == nullptr) {
                 ShowSevereItemNotFound(state, eoh, s_ipsc->cAlphaFieldNames(3), AlphArray(3));
                 ErrorsFound = true;
             }

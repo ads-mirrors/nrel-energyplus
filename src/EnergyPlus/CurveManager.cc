@@ -145,6 +145,9 @@ namespace Curve {
 
     Real64 Curve::value(EnergyPlusData &state, Real64 V1)
     {
+        commonEnvironInit(state);
+        this->inputs[0] = V1;
+        
         V1 = max(min(V1, this->inputLimits[0].max), this->inputLimits[0].min);
 
         Real64 Val = 0.0;
@@ -219,11 +222,17 @@ namespace Curve {
         if (this->outputLimits.minPresent) Val = max(Val, this->outputLimits.min);
         if (this->outputLimits.maxPresent) Val = min(Val, this->outputLimits.max);
         if (this->EMSOverrideOn) Val = this->EMSOverrideCurveValue;
+
+        this->output = Val;
         return Val;
     }
 
     Real64 Curve::value(EnergyPlusData &state, Real64 V1, Real64 V2)
     {
+        commonEnvironInit(state);
+        this->inputs[0] = V1;
+        this->inputs[1] = V2;
+        
         V1 = max(min(V1, this->inputLimits[0].max), this->inputLimits[0].min);
         V2 = max(min(V2, this->inputLimits[1].max), this->inputLimits[1].min);
 
@@ -267,11 +276,18 @@ namespace Curve {
         if (this->outputLimits.minPresent) Val = max(Val, this->outputLimits.min);
         if (this->outputLimits.maxPresent) Val = min(Val, this->outputLimits.max);
         if (this->EMSOverrideOn) Val = this->EMSOverrideCurveValue;
+
+        this->output = Val;
         return Val;
     }
 
     Real64 Curve::value(EnergyPlusData &state, Real64 V1, Real64 V2, Real64 V3)
     {
+        commonEnvironInit(state);
+        this->inputs[0] = V1;
+        this->inputs[1] = V2;
+        this->inputs[2] = V3;
+        
         V1 = max(min(V1, this->inputLimits[0].max), this->inputLimits[0].min);
         V2 = max(min(V2, this->inputLimits[1].max), this->inputLimits[1].min);
         V3 = max(min(V3, this->inputLimits[2].max), this->inputLimits[2].min);
@@ -310,11 +326,19 @@ namespace Curve {
         if (this->outputLimits.minPresent) Val = max(Val, this->outputLimits.min);
         if (this->outputLimits.maxPresent) Val = min(Val, this->outputLimits.max);
         if (this->EMSOverrideOn) Val = this->EMSOverrideCurveValue;
+
+        this->output = Val;
         return Val;
     }
 
     Real64 Curve::value(EnergyPlusData &state, Real64 V1, Real64 V2, Real64 V3, Real64 V4)
     {
+        commonEnvironInit(state);
+        this->inputs[0] = V1;
+        this->inputs[1] = V2;
+        this->inputs[2] = V3;
+        this->inputs[3] = V4;
+        
         V1 = max(min(V1, this->inputLimits[0].max), this->inputLimits[0].min);
         V2 = max(min(V2, this->inputLimits[1].max), this->inputLimits[1].min);
         V3 = max(min(V3, this->inputLimits[2].max), this->inputLimits[2].min);
@@ -341,11 +365,19 @@ namespace Curve {
         if (this->outputLimits.maxPresent) Val = min(Val, this->outputLimits.max);
         if (this->EMSOverrideOn) Val = this->EMSOverrideCurveValue;
 
+        this->output = Val;
         return Val;
     }
 
     Real64 Curve::value(EnergyPlusData &state, Real64 V1, Real64 V2, Real64 V3, Real64 V4, Real64 V5)
     {
+        commonEnvironInit(state);
+        this->inputs[0] = V1;
+        this->inputs[1] = V2;
+        this->inputs[2] = V3;
+        this->inputs[3] = V4;
+        this->inputs[4] = V5;
+        
         V1 = max(min(V1, this->inputLimits[0].max), this->inputLimits[0].min);
         V2 = max(min(V2, this->inputLimits[1].max), this->inputLimits[1].min);
         V3 = max(min(V3, this->inputLimits[2].max), this->inputLimits[2].min);
@@ -372,11 +404,21 @@ namespace Curve {
         if (this->outputLimits.minPresent) Val = max(Val, this->outputLimits.min);
         if (this->outputLimits.maxPresent) Val = min(Val, this->outputLimits.max);
         if (this->EMSOverrideOn) Val = this->EMSOverrideCurveValue;
+
+        this->output = Val;
         return Val;
     }
 
     Real64 Curve::value(EnergyPlusData &state, Real64 V1, Real64 V2, Real64 V3, Real64 V4, Real64 V5, Real64 V6)
     {
+        commonEnvironInit(state);
+        this->inputs[0] = V1;
+        this->inputs[1] = V2;
+        this->inputs[2] = V3;
+        this->inputs[3] = V4;
+        this->inputs[4] = V5;
+        this->inputs[5] = V6;
+
         V1 = max(min(V1, this->inputLimits[0].max), this->inputLimits[0].min);
         V2 = max(min(V2, this->inputLimits[1].max), this->inputLimits[1].min);
         V3 = max(min(V3, this->inputLimits[2].max), this->inputLimits[2].min);
@@ -390,6 +432,8 @@ namespace Curve {
         if (this->outputLimits.minPresent) Val = max(Val, this->outputLimits.min);
         if (this->outputLimits.maxPresent) Val = min(Val, this->outputLimits.max);
         if (this->EMSOverrideOn) Val = this->EMSOverrideCurveValue;
+
+        this->output = Val;
         return Val;
     }
 
@@ -398,140 +442,62 @@ namespace Curve {
                       Real64 const Var1     // 1st independent variable
     )
     {
-        commonEnvironInit(state);
-        Curve *thisCurve = state.dataCurveManager->curves(CurveIndex);
-        //        Real64 const V1 = std::clamp(Var1, thisCurve->inputLimits[0].min, thisCurve->inputLimits[0].max);
-        Real64 CurveValue = thisCurve->value(state, Var1);
-        thisCurve->output = CurveValue;
-        thisCurve->inputs[0] = Var1;
-        return CurveValue;
+        return state.dataCurveManager->curves(CurveIndex)->value(state, Var1);
     }
 
     Real64 CurveValue(EnergyPlusData &state,
                       int const CurveIndex, // index of curve in curve array
                       Real64 const Var1,    // 1st independent variable
-                      Real64 const Var2     // 1st independent variable
+                      Real64 const Var2     // 2nd independent variable
     )
     {
-        commonEnvironInit(state);
-        Curve *thisCurve = state.dataCurveManager->curves(CurveIndex);
-        //        Real64 const V1 = std::clamp(Var1, thisCurve->inputLimits[0].min, thisCurve->inputLimits[0].max);
-        //        Real64 const V2 = std::clamp(Var2, thisCurve->inputLimits[1].min, thisCurve->inputLimits[1].max);
-        Real64 CurveValue = thisCurve->value(state, Var1, Var2);
-
-        thisCurve->output = CurveValue;
-        thisCurve->inputs[0] = Var1;
-        thisCurve->inputs[1] = Var2;
-
-        return CurveValue;
+        return state.dataCurveManager->curves(CurveIndex)->value(state, Var1, Var2);
     }
 
     Real64 CurveValue(EnergyPlusData &state,
                       int const CurveIndex, // index of curve in curve array
                       Real64 const Var1,    // 1st independent variable
-                      Real64 const Var2,    // 1st independent variable
-                      Real64 const Var3     // 1st independent variable
+                      Real64 const Var2,    // 2nd independent variable
+                      Real64 const Var3     // 3rd independent variable
     )
     {
-        commonEnvironInit(state);
-        Curve *thisCurve = state.dataCurveManager->curves(CurveIndex);
-        Real64 CurveValue = thisCurve->value(state, Var1, Var2, Var3);
-
-        thisCurve->output = CurveValue;
-        thisCurve->inputs[0] = Var1;
-        thisCurve->inputs[1] = Var2;
-        thisCurve->inputs[2] = Var3;
-
-        return CurveValue;
+        return state.dataCurveManager->curves(CurveIndex)->value(state, Var1, Var2, Var3);
     }
 
     Real64 CurveValue(EnergyPlusData &state,
                       int const CurveIndex, // index of curve in curve array
                       Real64 const Var1,    // 1st independent variable
-                      Real64 const Var2,    // 1st independent variable
-                      Real64 const Var3,    // 1st independent variable
-                      Real64 const Var4     // 1st independent variable
+                      Real64 const Var2,    // 2nd independent variable
+                      Real64 const Var3,    // 3rd independent variable
+                      Real64 const Var4     // 4th independent variable
     )
     {
-        commonEnvironInit(state);
-        Curve *thisCurve = state.dataCurveManager->curves(CurveIndex);
-        Real64 CurveValue = thisCurve->value(state, Var1, Var2, Var3, Var4);
-
-        thisCurve->output = CurveValue;
-        thisCurve->inputs[0] = Var1;
-        thisCurve->inputs[1] = Var2;
-        thisCurve->inputs[2] = Var3;
-        thisCurve->inputs[3] = Var4;
-
-        return CurveValue;
+        return state.dataCurveManager->curves(CurveIndex)->value(state, Var1, Var2, Var3, Var4);
     }
 
     Real64 CurveValue(EnergyPlusData &state,
                       int const CurveIndex, // index of curve in curve array
                       Real64 const Var1,    // 1st independent variable
-                      Real64 const Var2,    // 1st independent variable
-                      Real64 const Var3,    // 1st independent variable
-                      Real64 const Var4,    // 1st independent variable
-                      Real64 const Var5     // 1st independent variable
+                      Real64 const Var2,    // 2nd independent variable
+                      Real64 const Var3,    // 3rd independent variable
+                      Real64 const Var4,    // 4th independent variable
+                      Real64 const Var5     // 5th independent variable
     )
     {
-        commonEnvironInit(state);
-
-        Curve *thisCurve = state.dataCurveManager->curves(CurveIndex);
-        Real64 CurveValue = thisCurve->value(state, Var1, Var2, Var3, Var4, Var5);
-
-        thisCurve->output = CurveValue;
-        thisCurve->inputs[0] = Var1;
-        thisCurve->inputs[1] = Var2;
-        thisCurve->inputs[2] = Var3;
-        thisCurve->inputs[3] = Var4;
-        thisCurve->inputs[4] = Var5;
-
-        return CurveValue;
+        return state.dataCurveManager->curves(CurveIndex)->value(state, Var1, Var2, Var3, Var4, Var5);
     }
 
     Real64 CurveValue(EnergyPlusData &state,
                       int const CurveIndex, // index of curve in curve array
                       Real64 const Var1,    // 1st independent variable
-                      Real64 const Var2,    // 1st independent variable
-                      Real64 const Var3,    // 1st independent variable
-                      Real64 const Var4,    // 1st independent variable
-                      Real64 const Var5,    // 1st independent variable
-                      Real64 const Var6     // 1st independent variable
+                      Real64 const Var2,    // 2nd independent variable
+                      Real64 const Var3,    // 3rd independent variable
+                      Real64 const Var4,    // 4th independent variable
+                      Real64 const Var5,    // 5th independent variable
+                      Real64 const Var6     // 6th independent variable
     )
     {
-
-        commonEnvironInit(state);
-        Real64 CurveValue(0.0);
-        Curve *thisCurve = state.dataCurveManager->curves(CurveIndex);
-        //        Real64 const V1 = std::clamp(Var1, thisCurve->inputLimits[0].min, thisCurve->inputLimits[0].max);
-        //        Real64 const V2 = std::clamp(Var2, thisCurve->inputLimits[1].min, thisCurve->inputLimits[1].max);
-        //        Real64 const V3 = std::clamp(Var3, thisCurve->inputLimits[2].min, thisCurve->inputLimits[2].max);
-        //        Real64 const V4 = std::clamp(Var4, thisCurve->inputLimits[3].min, thisCurve->inputLimits[3].max);
-        //        Real64 const V5 = std::clamp(Var5, thisCurve->inputLimits[4].min, thisCurve->inputLimits[4].max);
-        //        Real64 const V6 = std::clamp(Var6, thisCurve->inputLimits[5].min, thisCurve->inputLimits[5].max);
-        Real64 const V1(max(min(Var1, thisCurve->inputLimits[0].max), thisCurve->inputLimits[0].min));
-        Real64 const V2(max(min(Var2, thisCurve->inputLimits[1].max), thisCurve->inputLimits[1].min));
-        Real64 const V3(max(min(Var3, thisCurve->inputLimits[2].max), thisCurve->inputLimits[2].min));
-        Real64 const V4(max(min(Var4, thisCurve->inputLimits[3].max), thisCurve->inputLimits[3].min));
-        Real64 const V5(max(min(Var5, thisCurve->inputLimits[4].max), thisCurve->inputLimits[4].min));
-        Real64 const V6(max(min(Var6, thisCurve->inputLimits[5].max), thisCurve->inputLimits[5].min));
-        CurveValue = thisCurve->value(state, V1, V2, V3, V4, V5, V6);
-
-        if (thisCurve->outputLimits.minPresent) CurveValue = max(CurveValue, thisCurve->outputLimits.min);
-        if (thisCurve->outputLimits.maxPresent) CurveValue = min(CurveValue, thisCurve->outputLimits.max);
-
-        if (thisCurve->EMSOverrideOn) CurveValue = thisCurve->EMSOverrideCurveValue;
-
-        thisCurve->output = CurveValue;
-        thisCurve->inputs[0] = Var1;
-        thisCurve->inputs[1] = Var2;
-        thisCurve->inputs[2] = Var3;
-        thisCurve->inputs[3] = Var4;
-        thisCurve->inputs[4] = Var5;
-        thisCurve->inputs[5] = Var6;
-
-        return CurveValue;
+        return state.dataCurveManager->curves(CurveIndex)->value(state, Var1, Var2, Var3, Var4, Var5, Var6);
     }
 
     Real64 Curve::valueFallback(EnergyPlusData &state, Real64 V1, Real64 V2, Real64 V3, Real64 V4, Real64 V5)

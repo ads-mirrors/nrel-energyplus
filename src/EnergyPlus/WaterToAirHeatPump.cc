@@ -358,63 +358,45 @@ namespace WaterToAirHeatPump {
                 heatPump.SourceSideHTR2 = s_ip->getRealFieldValue(fields, schemaProps, "source_side_heat_transfer_resistance2");
                 cFieldName = "Part Load Fraction Correlation Curve Name";
                 std::string const coolPLFCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, "part_load_fraction_correlation_curve_name");
-                heatPump.PLFCurveIndex = Curve::GetCurveIndex(state, coolPLFCurveName); // // convert curve name to number
-                if (heatPump.PLFCurveIndex == 0) {
-                    if (coolPLFCurveName.empty()) {
-                        ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, heatPump.Name));
-                        ShowContinueError(state, format("...required {} is blank.", cFieldName));
-                    } else {
-                        ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, heatPump.Name));
-                        ShowContinueError(state, format("...not found {}=\"{}\".", cFieldName, coolPLFCurveName));
-                    }
+                if (coolPLFCurveName.empty()) {
+                    ShowWarningEmptyField(state, eoh, cFieldName, "Required field is blank.");
+                    ErrorsFound = true;
+                } else if ((heatPump.PLFCurveIndex = Curve::GetCurveIndex(state, coolPLFCurveName)) == 0) {
+                    ShowSevereItemNotFound(state, eoh, cFieldName, coolPLFCurveName);
+                    ErrorsFound = true;
+                } else if (Curve::CheckCurveDims(state, heatPump.PLFCurveIndex, {1}, RoutineName, CurrentModuleObject, heatPump.Name, cFieldName)) {
+                    ShowSevereCustomField(state, eoh, cFieldName, coolPLFCurveName, "Illegal curve dimension.");
                     ErrorsFound = true;
                 } else {
-                    // Verify Curve Object, only legal types are Quadratic or Cubic
-                    ErrorsFound |= Curve::CheckCurveDims(state,
-                                                         heatPump.PLFCurveIndex, // Curve index
-                                                         {1},                    // Valid dimensions
-                                                         RoutineName,            // Routine name
-                                                         CurrentModuleObject,    // Object Type
-                                                         heatPump.Name,          // Object Name
-                                                         cFieldName);            // Field Name
+                    // Process curve data
+                    // Test PLF curve minimum and maximum. Cap if less than 0.7 or greater than 1.0.
+                    Real64 MinCurveVal = 999.0;
+                    Real64 MaxCurveVal = -999.0;
+                    Real64 CurveInput = 0.0;
+                    Real64 MinCurvePLR{0.0};
+                    Real64 MaxCurvePLR{0.0};
 
-                    if (!ErrorsFound) {
-                        //     Test PLF curve minimum and maximum. Cap if less than 0.7 or greater than 1.0.
-                        Real64 MinCurveVal = 999.0;
-                        Real64 MaxCurveVal = -999.0;
-                        Real64 CurveInput = 0.0;
-                        Real64 MinCurvePLR{0.0};
-                        Real64 MaxCurvePLR{0.0};
-
-                        while (CurveInput <= 1.0) {
-                            Real64 CurveVal = Curve::CurveValue(state, heatPump.PLFCurveIndex, CurveInput);
-                            if (CurveVal < MinCurveVal) {
-                                MinCurveVal = CurveVal;
-                                MinCurvePLR = CurveInput;
-                            }
-                            if (CurveVal > MaxCurveVal) {
-                                MaxCurveVal = CurveVal;
-                                MaxCurvePLR = CurveInput;
-                            }
-                            CurveInput += 0.01;
+                    while (CurveInput <= 1.0) {
+                        Real64 CurveVal = Curve::CurveValue(state, heatPump.PLFCurveIndex, CurveInput);
+                        if (CurveVal < MinCurveVal) {
+                            MinCurveVal = CurveVal;
+                            MinCurvePLR = CurveInput;
                         }
-                        if (MinCurveVal < 0.7) {
-                            ShowWarningError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, heatPump.Name));
-                            ShowContinueError(state, format("...{}=\"{}\" has out of range values.", cFieldName, coolPLFCurveName));
-                            ShowContinueError(
-                                state, format("...Curve minimum must be >= 0.7, curve min at PLR = {:.2T} is {:.3T}", MinCurvePLR, MinCurveVal));
-                            ShowContinueError(state, "...Setting curve minimum to 0.7 and simulation continues.");
-                            Curve::SetCurveOutputMinValue(state, heatPump.PLFCurveIndex, ErrorsFound, 0.7);
+                        if (CurveVal > MaxCurveVal) {
+                            MaxCurveVal = CurveVal;
+                            MaxCurvePLR = CurveInput;
                         }
-
-                        if (MaxCurveVal > 1.0) {
-                            ShowWarningError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, heatPump.Name));
-                            ShowContinueError(state, format("...{} = {} has out of range value.", cFieldName, coolPLFCurveName));
-                            ShowContinueError(
-                                state, format("...Curve maximum must be <= 1.0, curve max at PLR = {:.2T} is {:.3T}", MaxCurvePLR, MaxCurveVal));
-                            ShowContinueError(state, "...Setting curve maximum to 1.0 and simulation continues.");
-                            Curve::SetCurveOutputMaxValue(state, heatPump.PLFCurveIndex, ErrorsFound, 1.0);
-                        }
+                        CurveInput += 0.01;
+                    }
+                    if (MinCurveVal < 0.7) {
+                        ShowSevereBadMin(
+                            state, eoh, cFieldName, MinCurveVal, Clusive::In, 0.7, "Setting curve minimum to 0.7 and simulation continues.");
+                        Curve::SetCurveOutputMinValue(state, heatPump.PLFCurveIndex, ErrorsFound, 0.7);
+                    }
+                    if (MaxCurveVal > 1.0) {
+                        ShowSevereBadMax(
+                            state, eoh, cFieldName, MaxCurveVal, Clusive::In, 1.0, "Setting curve maximum to 1.0 and simulation continues.");
+                        Curve::SetCurveOutputMaxValue(state, heatPump.PLFCurveIndex, ErrorsFound, 1.0);
                     }
                 }
 
@@ -607,63 +589,45 @@ namespace WaterToAirHeatPump {
                 heatPump.SourceSideHTR2 = s_ip->getRealFieldValue(fields, schemaProps, "source_side_heat_transfer_resistance2");
                 cFieldName = "Part Load Fraction Correlation Curve Name";
                 std::string const coolPLFCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, "part_load_fraction_correlation_curve_name");
-                heatPump.PLFCurveIndex = Curve::GetCurveIndex(state, coolPLFCurveName); // // convert curve name to number
-                if (heatPump.PLFCurveIndex == 0) {
-                    if (coolPLFCurveName.empty()) {
-                        ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, heatPump.Name));
-                        ShowContinueError(state, format("...required {} is blank.", cFieldName));
-                    } else {
-                        ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, heatPump.Name));
-                        ShowContinueError(state, format("...not found {}=\"{}\".", cFieldName, coolPLFCurveName));
-                    }
+                if (coolPLFCurveName.empty()) {
+                    ShowWarningEmptyField(state, eoh, cFieldName, "Required field is blank.");
+                    ErrorsFound = true;
+                } else if ((heatPump.PLFCurveIndex = Curve::GetCurveIndex(state, coolPLFCurveName)) == 0) {
+                    ShowSevereItemNotFound(state, eoh, cFieldName, coolPLFCurveName);
+                    ErrorsFound = true;
+                } else if (Curve::CheckCurveDims(state, heatPump.PLFCurveIndex, {1}, RoutineName, CurrentModuleObject, heatPump.Name, cFieldName)) {
+                    ShowSevereCustomField(state, eoh, cFieldName, coolPLFCurveName, "Illegal curve dimension.");
                     ErrorsFound = true;
                 } else {
-                    // Verify Curve Object, only legal types are Quadratic or Cubic
-                    ErrorsFound |= Curve::CheckCurveDims(state,
-                                                         heatPump.PLFCurveIndex, // Curve index
-                                                         {1},                    // Valid dimensions
-                                                         RoutineName,            // Routine name
-                                                         CurrentModuleObject,    // Object Type
-                                                         heatPump.Name,          // Object Name
-                                                         cFieldName);            // Field Name
+                    // Process curve data
+                    // Test PLF curve minimum and maximum. Cap if less than 0.7 or greater than 1.0.
+                    Real64 MinCurveVal = 999.0;
+                    Real64 MaxCurveVal = -999.0;
+                    Real64 CurveInput = 0.0;
+                    Real64 MinCurvePLR{0.0};
+                    Real64 MaxCurvePLR{0.0};
 
-                    if (!ErrorsFound) {
-                        //     Test PLF curve minimum and maximum. Cap if less than 0.7 or greater than 1.0.
-                        Real64 MinCurveVal = 999.0;
-                        Real64 MaxCurveVal = -999.0;
-                        Real64 CurveInput = 0.0;
-                        Real64 MinCurvePLR{0.0};
-                        Real64 MaxCurvePLR{0.0};
-
-                        while (CurveInput <= 1.0) {
-                            Real64 CurveVal = Curve::CurveValue(state, heatPump.PLFCurveIndex, CurveInput);
-                            if (CurveVal < MinCurveVal) {
-                                MinCurveVal = CurveVal;
-                                MinCurvePLR = CurveInput;
-                            }
-                            if (CurveVal > MaxCurveVal) {
-                                MaxCurveVal = CurveVal;
-                                MaxCurvePLR = CurveInput;
-                            }
-                            CurveInput += 0.01;
+                    while (CurveInput <= 1.0) {
+                        Real64 CurveVal = Curve::CurveValue(state, heatPump.PLFCurveIndex, CurveInput);
+                        if (CurveVal < MinCurveVal) {
+                            MinCurveVal = CurveVal;
+                            MinCurvePLR = CurveInput;
                         }
-                        if (MinCurveVal < 0.7) {
-                            ShowWarningError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, heatPump.Name));
-                            ShowContinueError(state, format("...{}=\"{}\" has out of range values.", cFieldName, coolPLFCurveName));
-                            ShowContinueError(
-                                state, format("...Curve minimum must be >= 0.7, curve min at PLR = {:.2T} is {:.3T}", MinCurvePLR, MinCurveVal));
-                            ShowContinueError(state, "...Setting curve minimum to 0.7 and simulation continues.");
-                            Curve::SetCurveOutputMinValue(state, heatPump.PLFCurveIndex, ErrorsFound, 0.7);
+                        if (CurveVal > MaxCurveVal) {
+                            MaxCurveVal = CurveVal;
+                            MaxCurvePLR = CurveInput;
                         }
-
-                        if (MaxCurveVal > 1.0) {
-                            ShowWarningError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, heatPump.Name));
-                            ShowContinueError(state, format("...{} = {} has out of range value.", cFieldName, coolPLFCurveName));
-                            ShowContinueError(
-                                state, format("...Curve maximum must be <= 1.0, curve max at PLR = {:.2T} is {:.3T}", MaxCurvePLR, MaxCurveVal));
-                            ShowContinueError(state, "...Setting curve maximum to 1.0 and simulation continues.");
-                            Curve::SetCurveOutputMaxValue(state, heatPump.PLFCurveIndex, ErrorsFound, 1.0);
-                        }
+                        CurveInput += 0.01;
+                    }
+                    if (MinCurveVal < 0.7) {
+                        ShowSevereBadMin(
+                            state, eoh, cFieldName, MinCurveVal, Clusive::In, 0.7, "Setting curve minimum to 0.7 and simulation continues.");
+                        Curve::SetCurveOutputMinValue(state, heatPump.PLFCurveIndex, ErrorsFound, 0.7);
+                    }
+                    if (MaxCurveVal > 1.0) {
+                        ShowSevereBadMax(
+                            state, eoh, cFieldName, MaxCurveVal, Clusive::In, 1.0, "Setting curve maximum to 1.0 and simulation continues.");
+                        Curve::SetCurveOutputMaxValue(state, heatPump.PLFCurveIndex, ErrorsFound, 1.0);
                     }
                 }
 

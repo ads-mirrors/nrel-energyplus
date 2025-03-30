@@ -4743,10 +4743,10 @@ namespace Furnaces {
                    furnace.coolCoilType == HVAC::CoilType::CoolingDXVariableSpeed) {
             auto const &vsCoil = state.dataVariableSpeedCoils->VarSpeedCoil(furnace.CoolCoilNum);
             furnace.NumOfSpeedCooling = vsCoil.NumOfSpeeds;
-            MulSpeedFlowScale = vsCoil.RatedAirVolFlowRate / vsCoil.MSRatedAirVolFlowRate(vsCoil.NormSpedLevel);
             
             if (furnace.isIHP) {
                 IntegratedHeatPump::SizeIHP(state, furnace.ihpNum);
+                MulSpeedFlowScale = vsCoil.RatedAirVolFlowRate / vsCoil.MSRatedAirVolFlowRate(vsCoil.NormSpedLevel);
                 state.dataIntegratedHP->IntegratedHeatPumps(furnace.ihpNum).CoolVolFlowScale = MulSpeedFlowScale;
             } else {
                 VariableSpeedCoils::SimVariableSpeedCoils(state,
@@ -4760,6 +4760,7 @@ namespace Furnaces {
                                                           0.0,
                                                           0.0,
                                                           0.0); // conduct the sizing operation in the VS WSHP
+                MulSpeedFlowScale = vsCoil.RatedAirVolFlowRate / vsCoil.MSRatedAirVolFlowRate(vsCoil.NormSpedLevel);
             }
 
             for (Iter = 1; Iter <= furnace.NumOfSpeedCooling; ++Iter) {
@@ -4776,10 +4777,10 @@ namespace Furnaces {
                 // IHP object.
                 auto &vsCoil = state.dataVariableSpeedCoils->VarSpeedCoil(furnace.HeatCoilNum);
                 furnace.NumOfSpeedHeating = vsCoil.NumOfSpeeds;
-                MulSpeedFlowScale = vsCoil.RatedAirVolFlowRate / vsCoil.MSRatedAirVolFlowRate(vsCoil.NormSpedLevel);
                 
                 if (furnace.isIHP) {
                     IntegratedHeatPump::SizeIHP(state, furnace.ihpNum);
+                    MulSpeedFlowScale = vsCoil.RatedAirVolFlowRate / vsCoil.MSRatedAirVolFlowRate(vsCoil.NormSpedLevel);
                     state.dataIntegratedHP->IntegratedHeatPumps(furnace.ihpNum).HeatVolFlowScale = MulSpeedFlowScale;
                 } else {
                     VariableSpeedCoils::SimVariableSpeedCoils(state,
@@ -4793,6 +4794,7 @@ namespace Furnaces {
                                                               0.0,
                                                               0.0,
                                                               0.0); // conduct the sizing operation in the VS WSHP
+                    MulSpeedFlowScale = vsCoil.RatedAirVolFlowRate / vsCoil.MSRatedAirVolFlowRate(vsCoil.NormSpedLevel);
                 }
 
                 for (Iter = 1; Iter <= furnace.NumOfSpeedHeating; ++Iter) {

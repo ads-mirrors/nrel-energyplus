@@ -3497,7 +3497,7 @@ void GetVRFInputData(EnergyPlusData &state, bool &ErrorsFound)
                         DXCoils::SetCoilCondenserType(state, vrfTU.CoolCoilNum, vrfCondenser.CondenserType);
                         DXCoils::SetCoilCondenserInletNode(state, vrfTU.CoolCoilNum, vrfCondenser.CondenserNodeNum);
                         DXCoils::SetCoilMaxOATCrankcaseHeater(state, vrfTU.CoolCoilNum, vrfCondenser.MaxOATCCHeater);
-                        DXCoils::SetCoilOATCoolingInfo(state, vrfTU.CoolCoilNum, vrfCondenser.MinOATCooling, vrfCondenser.MinOATCooling);
+                        DXCoils::SetCoilOATCoolingInfo(state, vrfTU.CoolCoilNum, vrfCondenser.MinOATCooling, vrfCondenser.MaxOATCooling);
                     }
                 }
             }

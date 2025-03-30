@@ -2230,7 +2230,6 @@ void SizeWaterCoil(EnergyPlusData &state, int const CoilNum)
                 state.dataSize->DataConstantUsedForSizing = 1.0;
                 state.dataSize->DataFractionUsedForSizing = waterCoil.DesAirVolFlowRate;
                 waterCoil.DesAirVolFlowRate = DataSizing::AutoSize;
-            } else {
             }
             TempSize = waterCoil.DesAirVolFlowRate;
             CoolingAirFlowSizer sizingCoolingAirFlow2;

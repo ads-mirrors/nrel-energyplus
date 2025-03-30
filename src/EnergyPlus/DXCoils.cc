@@ -10498,7 +10498,7 @@ void CalcVRFCoolingCoil(EnergyPlusData &state,
             }
             ShowRecurringWarningErrorAtEnd(
                 state,
-                format("{}=\"{}\" - Air volume flow rate per watt of rated total cooling capacity is out of range error continues...",
+                format("{} \"{}\" - Air volume flow rate per watt of rated total cooling capacity is out of range error continues...",
                        HVAC::coilTypeNames[(int)thisDXCoil.coilType], thisDXCoil.Name),
                 thisDXCoil.ErrIndex1,
                 VolFlowperRatedTotCap,
@@ -11051,7 +11051,7 @@ void CalcDXHeatingCoil(EnergyPlusData &state,
             }
             ShowRecurringWarningErrorAtEnd(
                 state,
-                format("{}=\"{}\" - Air volume flow rate per watt of rated total heating capacity is out of range error continues...",
+                format("{} \"{}\" - Air volume flow rate per watt of rated total heating capacity is out of range error continues...",
                        HVAC::coilTypeNames[(int)thisDXCoil.coilType], thisDXCoil.Name),
                 thisDXCoil.ErrIndex1,
                 VolFlowperRatedTotCap,
@@ -13991,7 +13991,7 @@ void CalcMultiSpeedDXCoilHeating(EnergyPlusData &state,
                 }
                 ShowRecurringWarningErrorAtEnd(
                     state,
-                    format("{}=\"{}\" - Air volume flow rate per watt of rated total heating capacity is out of range error continues at speed 1...",
+                    format("{} \"{}\" - Air volume flow rate per watt of rated total heating capacity is out of range error continues at speed 1...",
                            HVAC::coilTypeNames[(int)thisDXCoil.coilType], thisDXCoil.Name),
 
                     thisDXCoil.ErrIndex1,

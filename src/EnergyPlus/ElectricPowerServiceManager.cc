@@ -3255,7 +3255,7 @@ ElectricStorage::ElectricStorage( // main constructor
 
             if (s_ipsc->lAlphaFieldBlanks(6)) {
                 lifeCalculation_ = false;
-            } else if (BooleanSwitch bs = getYesNoValue(s_ipsc->cAlphaArgs(6)); bs == BooleanSwitch::Invalid) {
+            } else if (BooleanSwitch bs = getYesNoValue(s_ipsc->cAlphaArgs(6)); bs != BooleanSwitch::Invalid) {
                 lifeCalculation_ = static_cast<bool>(bs);
             } else {
                 ShowWarningInvalidBool(state, eoh, s_ipsc->cAlphaFieldNames(6), s_ipsc->cAlphaArgs(6), "No");

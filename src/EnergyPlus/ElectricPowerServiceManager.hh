@@ -178,7 +178,7 @@ private:               // data
     Real64 zoneRadFract_;                      // radiative fraction for thermal losses to zone
     Real64 nominalVoltage_;                    // CEC lookup table model
     std::vector<Real64> nomVoltEfficiencyARR_; // eff at 10, 20, 30, 50, 75, & 100% CEC lookup table model
-    int curveNum_;                             // curve index for eff as func of power
+    Curve::Curve *effCurve_ = nullptr;         // curve for eff as func of power
     Real64 ratedPower_;                        // rated, max continuous power output level for inverter
     Real64 minPower_;
     Real64 maxPower_;
@@ -240,7 +240,7 @@ private: // data
     Real64 ancillACuseEnergy_;
     Sched::Schedule *availSched_ = nullptr; // number for availability schedule.
     ConverterModelType modelType_;          // type of inverter model used
-    int curveNum_;                          // performance curve or table index
+    Curve::Curve *effCurve_ = nullptr;      // performance curve or table index
     ThermalLossDestination heatLossesDestination_;
     int zoneNum_;         // destination zone for heat losses from inverter.
     Real64 zoneRadFract_; // radiative fraction for thermal losses to zone
@@ -295,7 +295,7 @@ public: // methods
                                              Real64 &curVolt,
                                              Real64 const Pw,
                                              Real64 const q0,
-                                             int const CurveNum,
+                                             Curve::Curve *curve,
                                              Real64 const k,
                                              Real64 const c,
                                              Real64 const qmax,
@@ -354,14 +354,6 @@ private: // data
         Num
     };
 
-    enum class BatteryDegradationModelType
-    {
-        Invalid = -1,
-        LifeCalculationYes,
-        LifeCalculationNo,
-        Num
-    };
-
     std::string name_;               // name of this electrical storage module
     Real64 storedPower_;             // [W]
     Real64 storedEnergy_;            // [J]
@@ -384,8 +376,8 @@ private: // data
     int parallelNum_;                              // [ ] number of battery modules in parallel
     int seriesNum_;                                // [ ] number of battery modules in series
     int numBattery_;                               // total number of batteries all together
-    int chargeCurveNum_;                           // [ ] voltage change curve index number for charging
-    int dischargeCurveNum_;                        // [ ] voltage change curve index number for discharging
+    Curve::Curve *chargeCurve_ = nullptr;          // [ ] voltage change curve for charging
+    Curve::Curve *dischargeCurve_ = nullptr;       // [ ] voltage change curve for discharging
     int cycleBinNum_;                              // [ ] number of cycle bins
     Real64 startingSOC_;                           // [ ] initial fractional state of charge
     Real64 maxAhCapacity_;                         // [Ah]maximum capacity
@@ -397,8 +389,8 @@ private: // data
     Real64 maxDischargeI_;                         // [A] maximum discharging current
     Real64 cutoffV_;                               // [V] cut-off voltage
     Real64 maxChargeRate_;                         // [1/h] charge rate limit
-    BatteryDegradationModelType lifeCalculation_;  // [ ] battery life calculation: Yes or No
-    int lifeCurveNum_;                             // [ ] battery life curve name index number
+    bool lifeCalculation_;                         // [ ] battery life calculation: Yes or No
+    Curve::Curve *lifeCurve_ = nullptr;            // [ ] battery life curve 
     Real64 liIon_dcToDcChargingEff_;               // [ ] DC to DC Charging Efficiency (Li-ion NMC model)
     Real64 liIon_mass_;                            // [kg] mass of battery (Li-ion NMC model)
     Real64 liIon_surfaceArea_;                     // [m2] battery surface area (Li-ion NMC model)
@@ -820,7 +812,7 @@ void createFacilityElectricPowerServiceObject(const EnergyPlusData &state);
 Real64 checkUserEfficiencyInput(EnergyPlusData &state, Real64 userInputValue, std::string whichType, std::string deviceName, bool &errorsFound);
 
 void checkChargeDischargeVoltageCurves(
-    EnergyPlusData &state, std::string_view nameBatt, Real64 const E0c, Real64 const E0d, int const chargeIndex, int const dischargeIndex);
+    EnergyPlusData &state, std::string_view nameBatt, Real64 const E0c, Real64 const E0d, Curve::Curve *chargeCurve, Curve::Curve *dischargeCurve);
 
 struct ElectPwrSvcMgrData : BaseGlobalStruct
 {

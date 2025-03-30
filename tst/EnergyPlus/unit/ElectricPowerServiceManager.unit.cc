@@ -188,7 +188,7 @@ TEST_F(EnergyPlusFixture, ManageElectricPowerTest_BatteryDischargeTest)
     createFacilityElectricPowerServiceObject(*state);
     state->dataElectPwrSvcMgr->facilityElectricServiceObj->elecLoadCenterObjs.emplace_back(new ElectPowerLoadCenter(*state, 1));
 
-    int CurveNum1 = 1;
+    Curve::Curve *curve1 = state->dataCurveManager->curves(1);
     Real64 k = 0.5874;
     Real64 c = 0.37;
     Real64 qmax = 86.1;
@@ -202,7 +202,7 @@ TEST_F(EnergyPlusFixture, ManageElectricPowerTest_BatteryDischargeTest)
     Real64 q0 = 60.2;
 
     EXPECT_TRUE(state->dataElectPwrSvcMgr->facilityElectricServiceObj->elecLoadCenterObjs[0]->storageObj->determineCurrentForBatteryDischarge(
-        *state, I0, T0, Volt, Pw, q0, CurveNum1, k, c, qmax, E0c, InternalR));
+        *state, I0, T0, Volt, Pw, q0, curve1, k, c, qmax, E0c, InternalR));
 
     I0 = -222.7;
     T0 = -0.145;
@@ -211,7 +211,7 @@ TEST_F(EnergyPlusFixture, ManageElectricPowerTest_BatteryDischargeTest)
     q0 = 0;
 
     EXPECT_FALSE(state->dataElectPwrSvcMgr->facilityElectricServiceObj->elecLoadCenterObjs[0]->storageObj->determineCurrentForBatteryDischarge(
-        *state, I0, T0, Volt, Pw, q0, CurveNum1, k, c, qmax, E0c, InternalR));
+        *state, I0, T0, Volt, Pw, q0, curve1, k, c, qmax, E0c, InternalR));
 }
 
 TEST_F(EnergyPlusFixture, ManageElectricPowerTest_UpdateLoadCenterRecords_Case1)
@@ -1184,8 +1184,8 @@ TEST_F(EnergyPlusFixture, Battery_checkChargeDischargeVoltageCurves)
 {
     Real64 e0c;
     Real64 e0d;
-    int chaCurveIndex;
-    int disCurveIndex;
+    Curve::Curve *chaCurve;
+    Curve::Curve *disCurve;
 
     std::string const idf_objects = delimited_string({
         "Curve:RectangularHyperbola2,",
@@ -1243,20 +1243,20 @@ TEST_F(EnergyPlusFixture, Battery_checkChargeDischargeVoltageCurves)
     // Test 1: Curves which do not produce errors
     e0c = 13.0;
     e0d = 11.0;
-    chaCurveIndex = 1;
-    disCurveIndex = 2;
+    chaCurve = Curve::GetCurve(*state, "CHARGING1");
+    disCurve = Curve::GetCurve(*state, "DISCHARGING1");
 
-    checkChargeDischargeVoltageCurves(*state, "Battery for Test 1", e0c, e0d, chaCurveIndex, disCurveIndex);
+    checkChargeDischargeVoltageCurves(*state, "Battery for Test 1", e0c, e0d, chaCurve, disCurve);
 
     EXPECT_TRUE(compare_err_stream(""));
 
     // Test 2: Curves from ShopwithPVBattery.idf as of 7/2023
     e0c = 12.6;
     e0d = 12.4;
-    chaCurveIndex = 3;
-    disCurveIndex = 4;
+    chaCurve = Curve::GetCurve(*state, "CHARGING2");
+    disCurve = Curve::GetCurve(*state, "DISCHARGING2");
 
-    checkChargeDischargeVoltageCurves(*state, "Battery for Test 2", e0c, e0d, chaCurveIndex, disCurveIndex);
+    checkChargeDischargeVoltageCurves(*state, "Battery for Test 2", e0c, e0d, chaCurve, disCurve);
 
     std::string const error_string2 = delimited_string({
         "   ** Warning ** Kinetic Battery Model: Battery for Test 2 has a charging/discharging voltage curve conflict.",

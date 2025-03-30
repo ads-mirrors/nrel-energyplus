@@ -3060,21 +3060,22 @@ namespace Curve {
         if (std::find(validDims.begin(), validDims.end(), curveDim) != validDims.end()) return false;
 
         ErrorObjectHeader eoh{routineName, objectType, objectName};
-        ShowErrorCurveDims(state, eoh, curveFieldText, thisCurve->Name, validDims, curveDim);
+
+        std::string validDimsString = fmt::to_string(validDims[0]);
+        for (std::size_t i = 1; i < validDims.size(); i++)
+            validDimsString += format(" or {}", validDims[i]);
+
+        ShowSevereCurveDims(state, eoh, curveFieldText, thisCurve->Name, validDimsString, curveDim);
         return true;
     }
 
-    void ShowErrorCurveDims(EnergyPlusData &state,
-                            ErrorObjectHeader const &eoh,
-                            std::string_view fieldName,
-                            std::string_view curveName,
-                            std::vector<int> const &validDims,
-                            int dim)
+    void ShowSevereCurveDims(EnergyPlusData &state,
+                             ErrorObjectHeader const &eoh,
+                             std::string_view const fieldName,
+                             std::string_view const curveName,
+                             std::string_view const validDims,
+                             int dim)
     {
-        std::string validString = fmt::to_string(validDims[0]);
-        for (std::size_t i = 1; i < validDims.size(); i++)
-            validString += format(" or {}", validDims[i]);
-
         ShowSevereError(state, fmt::format("{}: {}=\"{}\"", eoh.routineName, eoh.objectType, eoh.objectName));
         ShowContinueError(state, format("...Invalid curve for {}.", fieldName));
         ShowContinueError(state, format("...Input curve=\"{}\" has dimension {}.", curveName, dim));

@@ -52,6 +52,7 @@
 #include <ObjexxFCL/Array1D.hh>
 
 // EnergyPlus Headers
+#include <EnergyPlus/CurveManager.hh>
 #include <EnergyPlus/Data/BaseData.hh>
 #include <EnergyPlus/DataGlobalConstants.hh>
 #include <EnergyPlus/DataGlobals.hh>
@@ -82,16 +83,16 @@ namespace CTElectricGenerator {
         Real64 OptPartLoadRat = 0.0;    // (CT BEST) optimal operating frac full load
         Real64 FuelEnergyUseRate = 0.0; // (EFUEL) rate of Fuel Energy Required to run COMBUSTION turbine (W)
         Real64 FuelEnergy = 0.0;        // Amount of Fuel Energy Required to run COMBUSTION turbine (J)
-        int PLBasedFuelInputCurve = 0;  // (FUL1GC) Curve Index for Part Load Ratio Based Fuel Input
+        Curve::Curve *PLBasedFuelInputCurve = nullptr;  // (FUL1GC) Curve for Part Load Ratio Based Fuel Input
         // Coefficients Poly Fit
-        int TempBasedFuelInputCurve = 0; // (FUL2GC) Curve Index for Ambient Temperature Based Fuel Input
+        Curve::Curve *TempBasedFuelInputCurve = nullptr; // (FUL2GC) Curve for Ambient Temperature Based Fuel Input
         // Coeff Poly Fit
         Real64 ExhaustFlow = 0.0;        // (FEX) Exhaust Gas Flow Rate cubic meters per second???
-        int ExhaustFlowCurve = 0;        // (FEXGC) Curve Index for Exhaust Gas Flow Rate Input Coef Poly Fit
+        Curve::Curve *ExhaustFlowCurve = nullptr;        // (FEXGC) Curve for Exhaust Gas Flow Rate Input Coef Poly Fit
         Real64 ExhaustTemp = 0.0;        // (TEX) Exhaust Gas Temperature in C
-        int PLBasedExhaustTempCurve = 0; // (TEX1GC) Curve Index for Part Load Ratio Based Exhaust Temp Input
+        Curve::Curve *PLBasedExhaustTempCurve = nullptr; // (TEX1GC) Curve for Part Load Ratio Based Exhaust Temp Input
         // Coeffs Poly Fit
-        int TempBasedExhaustTempCurve = 0; // (TEX2GC) Curve Index for Ambient Temperature Based Exhaust Gas Temp to
+        Curve::Curve *TempBasedExhaustTempCurve = nullptr; // (TEX2GC) Curve for Ambient Temperature Based Exhaust Gas Temp to
         // Fuel Energy Input Coeffs Poly Fit
         Real64 QLubeOilRecovered = 0.0;         // (ELUBE) Recovered Lube Oil Energy (W)
         Real64 QExhaustRecovered = 0.0;         // (EEX) Recovered Exhaust heat  (W)
@@ -99,7 +100,7 @@ namespace CTElectricGenerator {
         Real64 LubeOilEnergyRec = 0.0;          // Recovered Lube Oil Energy (J)
         Real64 ExhaustEnergyRec = 0.0;          // Recovered Exhaust heat  (J)
         Real64 TotalHeatEnergyRec = 0.0;        // total heat recovered (J)
-        int QLubeOilRecoveredCurve = 0;         // (ELUBEGC) Curve Index for Recoverable Lube Oil heat Input Coef Poly Fit
+        Curve::Curve *QLubeOilRecoveredCurve = nullptr;         // (ELUBEGC) Curve for Recoverable Lube Oil heat Input Coef Poly Fit
         Real64 UA = 0.0;                        // (UACGC) exhaust gas Heat Exchanger UA
         std::array<Real64, 2> UACoef = {0.0};   // Heat Exchanger UA  Coeffs Poly Fit
         Real64 MaxExhaustperCTPower = 0.0;      // MAX EXHAUST FLOW PER W POWER OUTPUT COEFF

@@ -8535,8 +8535,8 @@ TEST_F(EnergyPlusFixture, HeatBalanceSurfaceManager_TestUpdateVariableAbsorptanc
     mat1->Name = "WALL_1";
     mat1->group = Material::Group::Regular;
     mat1->absorpVarCtrlSignal = Material::VariableAbsCtrlSignal::SurfaceTemperature;
-    mat1->absorpThermalVarFuncIdx = 2;
-    mat1->absorpSolarVarFuncIdx = 1;
+    mat1->absorpThermalVarCurve = Curve::GetCurve(*state, "THERMAL_ABSORPTANCE_TABLE");
+    mat1->absorpSolarVarCurve = Curve::GetCurve(*state, "SOLAR_ABSORPTANCE_CURVE");
     s_mat->materials.push_back(mat1);
 
     auto *mat2 = new Material::MaterialBase;

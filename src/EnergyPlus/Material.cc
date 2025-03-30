@@ -615,29 +615,27 @@ void GetMaterialData(EnergyPlusData &state, bool &ErrorsFound) // set to true if
             if (s_ipsc->lAlphaFieldBlanks(5)) {
                 ErrorsFound = true;
                 ShowSevereEmptyField(state, eoh, s_ipsc->cAlphaFieldNames(5), s_ipsc->cAlphaFieldNames(2), "SpectralAndAngle");
-            } else if ((mat->GlassSpecAngTransDataPtr = Curve::GetCurveIndex(state, s_ipsc->cAlphaArgs(5))) == 0) {
+            } else if ((mat->GlassSpecAngTransCurve = Curve::GetCurve(state, s_ipsc->cAlphaArgs(5))) == nullptr) {
                 ErrorsFound = true;
                 ShowSevereItemNotFound(state, eoh, s_ipsc->cAlphaFieldNames(5), s_ipsc->cAlphaArgs(5));
+            } else if (mat->GlassSpecAngTransCurve->numDims != 2) {
+                Curve::ShowSevereCurveDims(state, eoh, s_ipsc->cAlphaFieldNames(5), s_ipsc->cAlphaArgs(5), "2", mat->GlassSpecAngTransCurve->numDims);
+                ErrorsFound = true;
             } else {
-                ErrorsFound |= Curve::CheckCurveDims(state,
-                                                     mat->GlassSpecAngTransDataPtr, // Curve index
-                                                     {2},                           // Valid dimensions
-                                                     routineName,                   // Routine name
-                                                     s_ipsc->cCurrentModuleObject,  // Object Type
-                                                     mat->Name,                     // Object Name
-                                                     s_ipsc->cAlphaFieldNames(5));  // Field Name
+                Real64 minAng = mat->GlassSpecAngTransCurve->inputLimits[0].min;
+                Real64 maxAng = mat->GlassSpecAngTransCurve->inputLimits[0].max;
+                Real64 minLam = mat->GlassSpecAngTransCurve->inputLimits[1].min;
+                Real64 maxLam = mat->GlassSpecAngTransCurve->inputLimits[1].max;
 
-                GetCurveMinMaxValues(state, mat->GlassSpecAngTransDataPtr, minAngValue, maxAngValue, minLamValue, maxLamValue);
-                if (minAngValue > 1.0e-6) {
+                if (minAng > 1.0e-6) {
                     ErrorsFound = true;
                     ShowSevereCustom(state,
                                      eoh,
-                                     format("{} requires the minumum value = 0.0 in the entered table name={}",
-                                            s_ipsc->cAlphaFieldNames(5),
-                                            s_ipsc->cAlphaArgs(5)));
+                                     format("{} requires the minimum value = 0.0 in the entered table name={}",
+                                            s_ipsc->cAlphaFieldNames(5), s_ipsc->cAlphaArgs(5)));
                 }
 
-                if (std::abs(maxAngValue - 90.0) > 1.0e-6) {
+                if (std::abs(maxAng - 90.0) > 1.0e-6) {
                     ErrorsFound = true;
                     ShowSevereCustom(state,
                                      eoh,
@@ -646,7 +644,7 @@ void GetMaterialData(EnergyPlusData &state, bool &ErrorsFound) // set to true if
                                             s_ipsc->cAlphaArgs(5)));
                 }
 
-                if (minLamValue < 0.1) {
+                if (minLam < 0.1) {
                     ErrorsFound = true;
                     ShowSevereCustom(state,
                                      eoh,
@@ -655,7 +653,7 @@ void GetMaterialData(EnergyPlusData &state, bool &ErrorsFound) // set to true if
                                             s_ipsc->cAlphaArgs(5)));
                 }
 
-                if (maxLamValue > 4.0) {
+                if (maxLam > 4.0) {
                     ErrorsFound = true;
                     ShowSevereCustom(state,
                                      eoh,
@@ -668,20 +666,18 @@ void GetMaterialData(EnergyPlusData &state, bool &ErrorsFound) // set to true if
             if (s_ipsc->lAlphaFieldBlanks(6)) {
                 ErrorsFound = true;
                 ShowSevereEmptyField(state, eoh, s_ipsc->cAlphaFieldNames(6), s_ipsc->cAlphaFieldNames(2), "SpectralAndAngle");
-            } else if ((mat->GlassSpecAngFRefleDataPtr = Curve::GetCurveIndex(state, s_ipsc->cAlphaArgs(6))) == 0) {
+            } else if ((mat->GlassSpecAngFReflCurve = Curve::GetCurve(state, s_ipsc->cAlphaArgs(6))) == nullptr) {
                 ErrorsFound = true;
                 ShowSevereItemNotFound(state, eoh, s_ipsc->cAlphaFieldNames(6), s_ipsc->cAlphaArgs(6));
+            } else if (mat->GlassSpecAngFReflCurve->numDims != 2) {
+                Curve::ShowSevereCurveDims(state, eoh, s_ipsc->cAlphaFieldNames(6), s_ipsc->cAlphaArgs(6), "2", mat->GlassSpecAngFReflCurve->numDims);
+                ErrorsFound = true;
             } else {
-                ErrorsFound |= Curve::CheckCurveDims(state,
-                                                     mat->GlassSpecAngFRefleDataPtr, // Curve index
-                                                     {2},                            // Valid dimensions
-                                                     routineName,                    // Routine name
-                                                     s_ipsc->cCurrentModuleObject,   // Object Type
-                                                     mat->Name,                      // Object Name
-                                                     s_ipsc->cAlphaFieldNames(6));   // Field Name
-
-                GetCurveMinMaxValues(state, mat->GlassSpecAngFRefleDataPtr, minAngValue, maxAngValue, minLamValue, maxLamValue);
-                if (minAngValue > 1.0e-6) {
+                Real64 minAng = mat->GlassSpecAngFReflCurve->inputLimits[0].min;
+                Real64 maxAng = mat->GlassSpecAngFReflCurve->inputLimits[0].max;
+                Real64 minLam = mat->GlassSpecAngFReflCurve->inputLimits[1].min;
+                Real64 maxLam = mat->GlassSpecAngFReflCurve->inputLimits[1].max;
+                if (minAng > 1.0e-6) {
                     ErrorsFound = true;
                     ShowSevereCustom(state,
                                      eoh,
@@ -689,7 +685,7 @@ void GetMaterialData(EnergyPlusData &state, bool &ErrorsFound) // set to true if
                                             s_ipsc->cAlphaFieldNames(5),
                                             s_ipsc->cAlphaArgs(5)));
                 }
-                if (std::abs(maxAngValue - 90.0) > 1.0e-6) {
+                if (std::abs(maxAng - 90.0) > 1.0e-6) {
                     ErrorsFound = true;
                     ShowSevereCustom(state,
                                      eoh,
@@ -697,7 +693,7 @@ void GetMaterialData(EnergyPlusData &state, bool &ErrorsFound) // set to true if
                                             s_ipsc->cAlphaFieldNames(5),
                                             s_ipsc->cAlphaArgs(5)));
                 }
-                if (minLamValue < 0.1) {
+                if (minLam < 0.1) {
                     ErrorsFound = true;
                     ShowSevereCustom(state,
                                      eoh,
@@ -705,7 +701,7 @@ void GetMaterialData(EnergyPlusData &state, bool &ErrorsFound) // set to true if
                                             s_ipsc->cAlphaFieldNames(5),
                                             s_ipsc->cAlphaArgs(5)));
                 }
-                if (maxLamValue > 4.0) {
+                if (maxLam > 4.0) {
                     ErrorsFound = true;
                     ShowSevereCustom(state,
                                      eoh,
@@ -718,20 +714,18 @@ void GetMaterialData(EnergyPlusData &state, bool &ErrorsFound) // set to true if
             if (s_ipsc->lAlphaFieldBlanks(7)) {
                 ErrorsFound = true;
                 ShowSevereEmptyField(state, eoh, s_ipsc->cAlphaFieldNames(7), s_ipsc->cAlphaFieldNames(2), "SpectralAndAngle");
-            } else if ((mat->GlassSpecAngBRefleDataPtr = Curve::GetCurveIndex(state, s_ipsc->cAlphaArgs(7))) == 0) {
+            } else if ((mat->GlassSpecAngBReflCurve = Curve::GetCurve(state, s_ipsc->cAlphaArgs(7))) == nullptr) {
                 ErrorsFound = true;
                 ShowSevereItemNotFound(state, eoh, s_ipsc->cAlphaFieldNames(7), s_ipsc->cAlphaArgs(7));
+            } else if (mat->GlassSpecAngBReflCurve->numDims != 2) { 
+                Curve::ShowSevereCurveDims(state, eoh, s_ipsc->cAlphaFieldNames(7), s_ipsc->cAlphaArgs(7), "2", mat->GlassSpecAngBReflCurve->numDims);
+                ErrorsFound = true;
             } else {
-                ErrorsFound |= Curve::CheckCurveDims(state,
-                                                     mat->GlassSpecAngBRefleDataPtr, // Curve index
-                                                     {2},                            // Valid dimensions
-                                                     routineName,                    // Routine name
-                                                     s_ipsc->cCurrentModuleObject,   // Object Type
-                                                     mat->Name,                      // Object Name
-                                                     s_ipsc->cAlphaFieldNames(7));   // Field Name
-
-                GetCurveMinMaxValues(state, mat->GlassSpecAngBRefleDataPtr, minAngValue, maxAngValue, minLamValue, maxLamValue);
-                if (minAngValue > 1.0e-6) {
+                Real64 minAng = mat->GlassSpecAngFReflCurve->inputLimits[0].min;
+                Real64 maxAng = mat->GlassSpecAngFReflCurve->inputLimits[0].max;
+                Real64 minLam = mat->GlassSpecAngFReflCurve->inputLimits[1].min;
+                Real64 maxLam = mat->GlassSpecAngFReflCurve->inputLimits[1].max;
+                if (minAng > 1.0e-6) {
                     ErrorsFound = true;
                     ShowSevereCustom(state,
                                      eoh,
@@ -739,7 +733,7 @@ void GetMaterialData(EnergyPlusData &state, bool &ErrorsFound) // set to true if
                                             s_ipsc->cAlphaFieldNames(5),
                                             s_ipsc->cAlphaArgs(5)));
                 }
-                if (std::abs(maxAngValue - 90.0) > 1.0e-6) {
+                if (std::abs(maxAng - 90.0) > 1.0e-6) {
                     ErrorsFound = true;
                     ShowSevereCustom(state,
                                      eoh,
@@ -747,7 +741,7 @@ void GetMaterialData(EnergyPlusData &state, bool &ErrorsFound) // set to true if
                                             s_ipsc->cAlphaFieldNames(5),
                                             s_ipsc->cAlphaArgs(5)));
                 }
-                if (minLamValue < 0.1) {
+                if (minLam < 0.1) {
                     ErrorsFound = true;
                     ShowSevereCustom(state,
                                      eoh,
@@ -755,7 +749,7 @@ void GetMaterialData(EnergyPlusData &state, bool &ErrorsFound) // set to true if
                                             s_ipsc->cAlphaFieldNames(5),
                                             s_ipsc->cAlphaArgs(5)));
                 }
-                if (maxLamValue > 4.0) {
+                if (maxLam > 4.0) {
                     ErrorsFound = true;
                     ShowSevereCustom(state,
                                      eoh,

@@ -342,13 +342,6 @@ namespace Curve {
   
     // This utility function grabs a curve index and performs the
     // error checking
-
-    int GetCurveCheck(EnergyPlusData &state,
-                      std::string const &alph, // curve name
-                      bool &errFlag,
-                      std::string const &ObjName // parent object of curve
-    );
-
     void GetCurveMinMaxValues(EnergyPlusData &state,
                               int const CurveIndex, // index of curve in curve array
                               Real64 &Var1Min,      // Minimum values of 1st independent variable

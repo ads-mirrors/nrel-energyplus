@@ -996,7 +996,7 @@ namespace HXAssistCoil {
                 ShowContinueErrorTimeStamp(state, "");
             } else {
                 ShowRecurringWarningErrorAtEnd(state,
-                                               format("{}=\"{}\" -- Exceeded max iterations error continues...",
+                                               format("{} \"{}\" -- Exceeded max iterations error continues...",
                                                       HVAC::coilTypeNames[(int)hxCoil.coilType],
                                                       hxCoil.Name),
                                                hxCoil.MaxIterIndex);

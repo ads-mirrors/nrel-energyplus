@@ -54,6 +54,7 @@
 #include <ObjexxFCL/Array1D.hh>
 
 // EnergyPlus Headers
+#include <EnergyPlus/CurveManager.hh>
 #include <EnergyPlus/Data/BaseData.hh>
 #include <EnergyPlus/DataBranchAirLoopPlant.hh>
 #include <EnergyPlus/DataGlobalConstants.hh>
@@ -108,7 +109,7 @@ namespace Boilers {
         Real64 OptPartLoadRat = 0.0;                                 // Optimal operating part load ratio
         Real64 OperPartLoadRat = 0.0;                                // Actual operating part load ratio
         TempMode CurveTempMode = TempMode::NOTSET;                   // water temp to use in curve, switch between entering and leaving
-        int EfficiencyCurvePtr = 0;                                  // Index to efficiency curve
+        Curve::Curve *EfficiencyCurve = nullptr;                     // Efficiency curve
         Real64 TempUpLimitBoilerOut = 0.0;                           // C - Boiler outlet maximum temperature limit
         Real64 ParasiticElecLoad = 0.0;                              // W - Parasitic electric power (e.g. forced draft fan)
         Real64 ParasiticFuelConsumption = 0.0; // parasitic fuel consumption associated with the boiler (standing pilot light) [J]

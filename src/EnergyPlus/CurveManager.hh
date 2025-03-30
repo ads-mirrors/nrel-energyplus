@@ -315,12 +315,12 @@ namespace Curve {
 
     bool IsCurveOutputTypeValid(std::string const &InOutputType); // index of curve in curve array
 
-    void ShowErrorCurveDims(EnergyPlusData &state,
-                            ErrorObjectHeader const &eoh,
-                            std::string_view fieldName,
-                            std::string_view curveName,
-                            std::vector<int> const &validDims,
-                            int dim);
+    void ShowSevereCurveDims(EnergyPlusData &state,
+                             ErrorObjectHeader const &eoh,
+                             std::string_view const fieldName,
+                             std::string_view const curveName,
+                             std::string_view const validDims,
+                             int dim);
 
     bool CheckCurveDims(EnergyPlusData &state,
                         int CurveIndex,

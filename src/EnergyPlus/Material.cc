@@ -2842,9 +2842,9 @@ void GetVariableAbsorptanceInput(EnergyPlusData &state, bool &errorsFound)
         mat->absorpVarCtrlSignal = VariableAbsCtrlSignal::SurfaceTemperature; // default value
         mat->absorpVarCtrlSignal = static_cast<VariableAbsCtrlSignal>(getEnumValue(variableAbsCtrlSignalNamesUC, s_ipsc->cAlphaArgs(3)));
 
-        mat->absorpThermalVarFuncIdx = Curve::GetCurveIndex(state, s_ipsc->cAlphaArgs(4));
+        mat->absorpThermalVarCurve = Curve::GetCurve(state, s_ipsc->cAlphaArgs(4));
         mat->absorpThermalVarSched = Sched::GetSchedule(state, s_ipsc->cAlphaArgs(5));
-        mat->absorpSolarVarFuncIdx = Curve::GetCurveIndex(state, s_ipsc->cAlphaArgs(6));
+        mat->absorpSolarVarCurve = Curve::GetCurve(state, s_ipsc->cAlphaArgs(6));
         mat->absorpSolarVarSched = Sched::GetSchedule(state, s_ipsc->cAlphaArgs(7));
         if (mat->absorpVarCtrlSignal == VariableAbsCtrlSignal::Scheduled) {
             if ((mat->absorpThermalVarSched == nullptr) && (mat->absorpSolarVarSched == nullptr)) {
@@ -2856,7 +2856,7 @@ void GetVariableAbsorptanceInput(EnergyPlusData &state, bool &errorsFound)
                 errorsFound = true;
                 return;
             }
-            if ((mat->absorpThermalVarFuncIdx > 0) || (mat->absorpSolarVarFuncIdx > 0)) {
+            if ((mat->absorpThermalVarCurve != nullptr) || (mat->absorpSolarVarCurve != nullptr)) {
                 ShowWarningError(state,
                                  format("{}: Control signal \"Scheduled\" is chosen. Thermal or solar absorptance function name is going to be "
                                         "ignored, for object {}",
@@ -2865,8 +2865,9 @@ void GetVariableAbsorptanceInput(EnergyPlusData &state, bool &errorsFound)
                 errorsFound = true;
                 return;
             }
+            
         } else { // controlled by performance table or curve
-            if ((mat->absorpThermalVarFuncIdx == 0) && (mat->absorpSolarVarFuncIdx == 0)) {
+            if ((mat->absorpThermalVarCurve == nullptr) && (mat->absorpSolarVarCurve == nullptr)) {
                 ShowSevereError(state,
                                 format("{}: Non-schedule control signal is chosen but both thermal and solar absorptance table or curve are "
                                        "undefined, for object {}",

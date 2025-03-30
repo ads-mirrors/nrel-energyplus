@@ -314,8 +314,8 @@ namespace WaterToAirHeatPumpSimple {
             } else if ((simpleWAHP.TotalCoolCapCurve = Curve::GetCurve(state, AlphArray(6))) == nullptr) {
                 ShowSevereItemNotFound(state, eoh, cAlphaFields(6), AlphArray(6));
                 ErrorsFound = true;
-            } else if (!simpleWAHP.TotalCoolCapCurve->checkDims(state, {4})) {
-                Curve::ShowErrorCurveDims(state, eoh, cAlphaFields(6), AlphArray(6), {4}, simpleWAHP.TotalCoolCapCurve->numDims);
+            } else if (simpleWAHP.TotalCoolCapCurve->numDims != 4) {
+                Curve::ShowSevereCurveDims(state, eoh, cAlphaFields(6), AlphArray(6), "4", simpleWAHP.TotalCoolCapCurve->numDims);
                 ErrorsFound = true;
             }
             
@@ -325,8 +325,8 @@ namespace WaterToAirHeatPumpSimple {
             } else if ((simpleWAHP.SensCoolCapCurve = Curve::GetCurve(state, AlphArray(7))) == nullptr) { 
                 ShowSevereItemNotFound(state, eoh, cAlphaFields(7), AlphArray(7));
                 ErrorsFound = true;
-            } else if (!simpleWAHP.SensCoolCapCurve->checkDims(state, {5})) {
-                Curve::ShowErrorCurveDims(state, eoh, cAlphaFields(7), AlphArray(7), {5}, simpleWAHP.SensCoolCapCurve->numDims);
+            } else if (simpleWAHP.SensCoolCapCurve->numDims != 5) {
+                Curve::ShowSevereCurveDims(state, eoh, cAlphaFields(7), AlphArray(7), "5", simpleWAHP.SensCoolCapCurve->numDims);
                 ErrorsFound = true;
             }
             
@@ -336,8 +336,8 @@ namespace WaterToAirHeatPumpSimple {
             } else if ((simpleWAHP.CoolPowCurve = Curve::GetCurve(state, AlphArray(8))) == nullptr) {
                 ShowSevereItemNotFound(state, eoh, cAlphaFields(8), AlphArray(8));
                 ErrorsFound = true;
-            } else if (!simpleWAHP.CoolPowCurve->checkDims(state, {4})) { 
-                Curve::ShowErrorCurveDims(state, eoh, cAlphaFields(8), AlphArray(8), {4}, simpleWAHP.CoolPowCurve->numDims);
+            } else if (simpleWAHP.CoolPowCurve->numDims != 4) { 
+                Curve::ShowSevereCurveDims(state, eoh, cAlphaFields(8), AlphArray(8), "4", simpleWAHP.CoolPowCurve->numDims);
                 ErrorsFound = true;
             }
             
@@ -347,8 +347,8 @@ namespace WaterToAirHeatPumpSimple {
             } else if ((simpleWAHP.PLFCurve = Curve::GetCurve(state, AlphArray(9))) == nullptr) {
                 ShowSevereItemNotFound(state, eoh, cAlphaFields(9), AlphArray(9));
                 ErrorsFound = true;
-            } else if (!simpleWAHP.PLFCurve->checkDims(state, {1})) {
-                Curve::ShowErrorCurveDims(state, eoh, cAlphaFields(9), AlphArray(9), {1}, simpleWAHP.PLFCurve->numDims);
+            } else if (simpleWAHP.PLFCurve->numDims != 1) {
+                Curve::ShowSevereCurveDims(state, eoh, cAlphaFields(9), AlphArray(9), "1", simpleWAHP.PLFCurve->numDims);
                 ErrorsFound = true;
             } else {
 
@@ -544,8 +544,8 @@ namespace WaterToAirHeatPumpSimple {
             } else if ((simpleWAHP.HeatCapCurve = Curve::GetCurve(state, AlphArray(6))) == nullptr) { 
                 ShowSevereItemNotFound(state, eoh, cAlphaFields(6), AlphArray(6));
                 ErrorsFound = true;
-            } else if (!simpleWAHP.HeatCapCurve->checkDims(state, {4})) {
-                Curve::ShowErrorCurveDims(state, eoh, cAlphaFields(6), AlphArray(6), {4}, simpleWAHP.HeatCapCurve->numDims);
+            } else if (simpleWAHP.HeatCapCurve->numDims != 4) {
+                Curve::ShowSevereCurveDims(state, eoh, cAlphaFields(6), AlphArray(6), "4", simpleWAHP.HeatCapCurve->numDims);
                 ErrorsFound = true;
             }
             
@@ -555,8 +555,8 @@ namespace WaterToAirHeatPumpSimple {
             } else if ((simpleWAHP.HeatPowCurve = Curve::GetCurve(state, AlphArray(7))) == nullptr) { 
                 ShowSevereItemNotFound(state, eoh, cAlphaFields(7), AlphArray(7));
                 ErrorsFound = true;
-            } else if (!simpleWAHP.HeatPowCurve->checkDims(state, {4})) {
-                Curve::ShowErrorCurveDims(state, eoh, cAlphaFields(7), AlphArray(7), {4}, simpleWAHP.HeatPowCurve->numDims);
+            } else if (simpleWAHP.HeatPowCurve->numDims != 4) {
+                Curve::ShowSevereCurveDims(state, eoh, cAlphaFields(7), AlphArray(7), "4", simpleWAHP.HeatPowCurve->numDims);
                 ErrorsFound = true;
             }
 
@@ -568,8 +568,8 @@ namespace WaterToAirHeatPumpSimple {
             } else if ((simpleWAHP.PLFCurve = Curve::GetCurve(state, AlphArray(8))) == nullptr) {
                 ShowSevereItemNotFound(state, eoh, cAlphaFields(8), AlphArray(8));
                 ErrorsFound = true;
-            } else if (!simpleWAHP.PLFCurve->checkDims(state, {1})) {
-                Curve::ShowErrorCurveDims(state, eoh, cAlphaFields(8), AlphArray(8), {1}, simpleWAHP.PLFCurve->numDims);
+            } else if (simpleWAHP.PLFCurve->numDims != 1) {
+                Curve::ShowSevereCurveDims(state, eoh, cAlphaFields(8), AlphArray(8), "1", simpleWAHP.PLFCurve->numDims);
                 ErrorsFound = true;
             } else {
                 //     Test PLF curve minimum and maximum. Cap if less than 0.7 or greater than 1.0.

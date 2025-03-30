@@ -49,6 +49,7 @@
 #define Material_hh_INCLUDED
 
 // EnergyPlus Headers
+#include <EnergyPlus/CurveManager.hh>
 #include <EnergyPlus/Data/BaseData.hh>
 #include <EnergyPlus/DataWindowEquivalentLayer.hh>
 #include <EnergyPlus/EnergyPlus.hh>
@@ -257,9 +258,9 @@ namespace Material {
         // dynamic thermal and solar absorptance coating parameters
         VariableAbsCtrlSignal absorpVarCtrlSignal = VariableAbsCtrlSignal::Invalid;
         Sched::Schedule *absorpThermalVarSched = nullptr;
-        int absorpThermalVarFuncIdx = 0;
+        Curve::Curve *absorpThermalVarCurve = nullptr;
         Sched::Schedule *absorpSolarVarSched = nullptr;
-        int absorpSolarVarFuncIdx = 0;
+        Curve::Curve *absorpSolarVarCurve = nullptr;
 
         bool hasEMPD = false;
         bool hasHAMT = false;

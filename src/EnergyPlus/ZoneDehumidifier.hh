@@ -52,6 +52,7 @@
 #include <ObjexxFCL/Array1D.hh>
 
 // EnergyPlus Headers
+#include <EnergyPlus/CurveManager.hh>
 #include <EnergyPlus/Data/BaseData.hh>
 #include <EnergyPlus/DataGlobals.hh>
 #include <EnergyPlus/EnergyPlus.hh>
@@ -89,13 +90,13 @@ namespace ZoneDehumidifier {
         Real64 OffCycleParasiticLoad = 0.0;                                   // Off Cycle Parasitic Load, user input [W]
         int AirInletNodeNum = 0;                                              // Inlet air node number
         int AirOutletNodeNum = 0;                                             // Outlet air node number
-        int WaterRemovalCurveIndex = 0;                                       // Index for water removal curve
+        Curve::Curve *WaterRemovalCurve = nullptr;                            // Water removal curve
         int WaterRemovalCurveErrorCount = 0;                                  // Count number of times water removal curve returns a negative value
         int WaterRemovalCurveErrorIndex = 0;                                  // Index for negative value water removal factor recurring messages
-        int EnergyFactorCurveIndex = 0;                                       // Index for energy factor curve
+        Curve::Curve *EnergyFactorCurve = nullptr;                            // Energy factor curve
         int EnergyFactorCurveErrorCount = 0;                                  // Count number of times energy factor curve returns negative value
         int EnergyFactorCurveErrorIndex = 0;                                  // Index for negative value energy factor recurring messages
-        int PartLoadCurveIndex = 0;                                           // Index for part load curve
+        Curve::Curve *PartLoadCurve = nullptr;                                           // Index for part load curve
         int LowPLFErrorCount = 0;                                             // Count number of times PLF < 0.7
         int LowPLFErrorIndex = 0;                                             // Index for PLF < 0.7 recurring warning messages
         int HighPLFErrorCount = 0;                                            // Count number of times PLF > 1.0

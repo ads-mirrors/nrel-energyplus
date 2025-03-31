@@ -65,6 +65,10 @@ namespace EnergyPlus {
 // Forward declarations
 struct EnergyPlusData;
 
+namespace Curve {
+    struct Curve;
+}
+  
 namespace ICEngineElectricGenerator {
 
     Real64 constexpr ReferenceTemp(25.0); // Reference temperature by which lower heating
@@ -84,18 +88,18 @@ namespace ICEngineElectricGenerator {
         Real64 MaxPartLoadRat;      // (IC ENGINE MAX) max allowed operating frac full load
         Real64 OptPartLoadRat;      // (IC ENGINE BEST) optimal operating frac full load
         Real64 ElecOutputFuelRat;   // (RELDC) Ratio of Generator output to Fuel Energy Input
-        int ElecOutputFuelCurve;    // Curve Index for generator output to Fuel Energy Input Coeff Poly Fit
+        Curve::Curve *ElecOutputFuelCurve = nullptr;    // Curve for generator output to Fuel Energy Input Coeff Poly Fit
         Real64 RecJacHeattoFuelRat; // (RJACDC) Ratio of Recoverable Jacket Heat to Fuel Energy Input
-        int RecJacHeattoFuelCurve;  // Curve Index for Ratio of Recoverable Jacket Heat to
+        Curve::Curve *RecJacHeattoFuelCurve = nullptr;  // Curve for Ratio of Recoverable Jacket Heat to
         // Fuel Energy Input Coeff Poly Fit
         Real64 RecLubeHeattoFuelRat; // (RLUBDC) Ratio of Recoverable Lube Oil Heat to Fuel Energy Input
-        int RecLubeHeattoFuelCurve;  // Curve Index for Ratio of Recoverable Lube Oil Heat to
+        Curve::Curve *RecLubeHeattoFuelCurve = nullptr;  // Curve for Ratio of Recoverable Lube Oil Heat to
         // Fuel Energy Input Coef Poly Fit
         Real64 TotExhausttoFuelRat; // (REXDC) Total Exhaust heat Input to Fuel Energy Input
-        int TotExhausttoFuelCurve;  // Curve Index for Total Exhaust heat Input to Fuel Energy Input
+        Curve::Curve *TotExhausttoFuelCurve = nullptr;  // Curve for Total Exhaust heat Input to Fuel Energy Input
         // Coeffs Poly Fit
         Real64 ExhaustTemp;               // (TEXDC) Exhaust Gas Temp to Fuel Energy Input
-        int ExhaustTempCurve;             // Curve Index for Exhaust Gas Temp to Fuel Energy Input Coeffs Poly Fit
+        Curve::Curve *ExhaustTempCurve = nullptr; // Curve for Exhaust Gas Temp to Fuel Energy Input Coeffs Poly Fit
         int ErrExhaustTempIndex;          // error index for temp curve
         Real64 UA;                        // (UACDC) exhaust gas Heat Exchanger UA to Capacity
         Array1D<Real64> UACoef;           // Heat Exchanger UA Coeffs Poly Fit
@@ -136,9 +140,9 @@ namespace ICEngineElectricGenerator {
         // Default Constructor
         ICEngineGeneratorSpecs()
             : TypeOf("Generator:InternalCombustionEngine"), CompType_Num(GeneratorType::ICEngine), RatedPowerOutput(0.0), ElectricCircuitNode(0),
-              MinPartLoadRat(0.0), MaxPartLoadRat(0.0), OptPartLoadRat(0.0), ElecOutputFuelRat(0.0), ElecOutputFuelCurve(0), RecJacHeattoFuelRat(0.0),
-              RecJacHeattoFuelCurve(0), RecLubeHeattoFuelRat(0.0), RecLubeHeattoFuelCurve(0), TotExhausttoFuelRat(0.0), TotExhausttoFuelCurve(0),
-              ExhaustTemp(0.0), ExhaustTempCurve(0), ErrExhaustTempIndex(0), UA(0.0), UACoef(2, 0.0), MaxExhaustperPowerOutput(0.0),
+              MinPartLoadRat(0.0), MaxPartLoadRat(0.0), OptPartLoadRat(0.0), ElecOutputFuelRat(0.0), RecJacHeattoFuelRat(0.0),
+              RecLubeHeattoFuelRat(0.0), TotExhausttoFuelRat(0.0),
+              ExhaustTemp(0.0), ErrExhaustTempIndex(0), UA(0.0), UACoef(2, 0.0), MaxExhaustperPowerOutput(0.0),
               DesignMinExitGasTemp(0.0), FuelHeatingValue(0.0), DesignHeatRecVolFlowRate(0.0), DesignHeatRecMassFlowRate(0.0), HeatRecActive(false),
               HeatRecInletNodeNum(0), HeatRecOutletNodeNum(0), HeatRecInletTemp(0.0), HeatRecOutletTemp(0.0), HeatRecMdotDesign(0.0),
               HeatRecMdotActual(0.0), QTotalHeatRecovered(0.0), QJacketRecovered(0.0), QLubeOilRecovered(0.0), QExhaustRecovered(0.0),

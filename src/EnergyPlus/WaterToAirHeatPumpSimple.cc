@@ -254,6 +254,7 @@ namespace WaterToAirHeatPumpSimple {
 
                 auto &simpleWAHP = state.dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(HPNum);
                 simpleWAHP.Name = Util::makeUPPER(thisObjectName);
+                ErrorObjectHeader eoh{RoutineName, CurrentModuleObject, simpleWAHP.Name};
                 GlobalNames::VerifyUniqueCoilName(state, CurrentModuleObject, simpleWAHP.Name, ErrorsFound, format("{} Name", CurrentModuleObject));
                 simpleWAHP.WAHPType = WatertoAirHP::Cooling;
                 simpleWAHP.WAHPPlantType = DataPlant::PlantEquipmentType::CoilWAHPCoolingEquationFit;
@@ -282,110 +283,85 @@ namespace WaterToAirHeatPumpSimple {
 
                 cFieldName = "Total Cooling Capacity Curve Name";
                 std::string const totCoolCapCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, "total_cooling_capacity_curve_name");
-                simpleWAHP.TotalCoolCapCurveIndex = Curve::GetCurveIndex(state, totCoolCapCurveName);
-                if (simpleWAHP.TotalCoolCapCurveIndex == 0) {
-                    if (totCoolCapCurveName.empty()) {
-                        ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, simpleWAHP.Name));
-                        ShowContinueError(state, format("...required {} is blank.", cFieldName));
-                    } else {
-                        ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, simpleWAHP.Name));
-                        ShowContinueError(state, format("...not found {}=\"{}\"", cFieldName, totCoolCapCurveName));
-                    }
+                if (totCoolCapCurveName.empty()) {
+                    ShowWarningEmptyField(state, eoh, cFieldName, "Required field is blank.");
                     ErrorsFound = true;
-                } else {
-                    ErrorsFound |= Curve::CheckCurveDims(
-                        state, simpleWAHP.TotalCoolCapCurveIndex, {4}, RoutineName, CurrentModuleObject, simpleWAHP.Name, cFieldName);
+                } else if ((simpleWAHP.TotalCoolCapCurveIndex = Curve::GetCurveIndex(state, totCoolCapCurveName)) == 0) {
+                    ShowSevereItemNotFound(state, eoh, cFieldName, totCoolCapCurveName);
+                    ErrorsFound = true;
+                } else if (Curve::CheckCurveDims(
+                               state, simpleWAHP.TotalCoolCapCurveIndex, {4}, RoutineName, CurrentModuleObject, simpleWAHP.Name, cFieldName)) {
+                    ShowSevereCustomField(state, eoh, cFieldName, totCoolCapCurveName, "Illegal curve dimension.");
+                    ErrorsFound = true;
                 }
-
                 cFieldName = "Sensible Cooling Capacity Curve Name";
                 std::string const senCoolCapCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, "sensible_cooling_capacity_curve_name");
-                simpleWAHP.SensCoolCapCurveIndex = Curve::GetCurveIndex(state, senCoolCapCurveName);
-                if (simpleWAHP.SensCoolCapCurveIndex == 0) {
-                    if (senCoolCapCurveName.empty()) {
-                        ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, simpleWAHP.Name));
-                        ShowContinueError(state, format("...required {} is blank.", cFieldName));
-                    } else {
-                        ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, simpleWAHP.Name));
-                        ShowContinueError(state, format("...not found {}=\"{}\"", cFieldName, senCoolCapCurveName));
-                    }
+                if (senCoolCapCurveName.empty()) {
+                    ShowWarningEmptyField(state, eoh, cFieldName, "Required field is blank.");
                     ErrorsFound = true;
-                } else {
-                    ErrorsFound |= Curve::CheckCurveDims(
-                        state, simpleWAHP.SensCoolCapCurveIndex, {5}, RoutineName, CurrentModuleObject, simpleWAHP.Name, cFieldName);
+                } else if ((simpleWAHP.SensCoolCapCurveIndex = Curve::GetCurveIndex(state, senCoolCapCurveName)) == 0) {
+                    ShowSevereItemNotFound(state, eoh, cFieldName, senCoolCapCurveName);
+                    ErrorsFound = true;
+                } else if (Curve::CheckCurveDims(
+                               state, simpleWAHP.SensCoolCapCurveIndex, {5}, RoutineName, CurrentModuleObject, simpleWAHP.Name, cFieldName)) {
+                    ShowSevereCustomField(state, eoh, cFieldName, senCoolCapCurveName, "Illegal curve dimension.");
+                    ErrorsFound = true;
                 }
                 cFieldName = "Cooling Power Consumption Curve Name";
                 std::string const coolPowerCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, "cooling_power_consumption_curve_name");
-                simpleWAHP.CoolPowCurveIndex = Curve::GetCurveIndex(state, coolPowerCurveName);
-                if (simpleWAHP.CoolPowCurveIndex == 0) {
-                    if (coolPowerCurveName.empty()) {
-                        ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, simpleWAHP.Name));
-                        ShowContinueError(state, format("...required {} is blank.", cFieldName));
-                    } else {
-                        ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, simpleWAHP.Name));
-                        ShowContinueError(state, format("...not found {}=\"{}\"", cFieldName, coolPowerCurveName));
-                    }
+                if (senCoolCapCurveName.empty()) {
+                    ShowWarningEmptyField(state, eoh, cFieldName, "Required field is blank.");
                     ErrorsFound = true;
-                } else {
-                    ErrorsFound |= Curve::CheckCurveDims(
-                        state, simpleWAHP.CoolPowCurveIndex, {4}, RoutineName, CurrentModuleObject, simpleWAHP.Name, cFieldName);
+                } else if ((simpleWAHP.CoolPowCurveIndex = Curve::GetCurveIndex(state, coolPowerCurveName)) == 0) {
+                    ShowSevereItemNotFound(state, eoh, cFieldName, coolPowerCurveName);
+                    ErrorsFound = true;
+                } else if (Curve::CheckCurveDims(
+                               state, simpleWAHP.CoolPowCurveIndex, {4}, RoutineName, CurrentModuleObject, simpleWAHP.Name, cFieldName)) {
+                    ShowSevereCustomField(state, eoh, cFieldName, coolPowerCurveName, "Illegal curve dimension.");
+                    ErrorsFound = true;
                 }
                 cFieldName = "Part Load Fraction Correlation Curve Name";
                 std::string const coolPLFCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, "part_load_fraction_correlation_curve_name");
-                simpleWAHP.PLFCurveIndex = Curve::GetCurveIndex(state, coolPLFCurveName);
-                if (simpleWAHP.PLFCurveIndex == 0) {
-                    if (coolPLFCurveName.empty()) {
-                        ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, simpleWAHP.Name));
-                        ShowContinueError(state, format("...required {} is blank.", cFieldName));
-                    } else {
-                        ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, simpleWAHP.Name));
-                        ShowContinueError(state, format("...not found {}=\"{}\".", cFieldName, coolPLFCurveName));
-                    }
+                if (coolPLFCurveName.empty()) {
+                    ShowWarningEmptyField(state, eoh, cFieldName, "Required field is blank.");
+                    ErrorsFound = true;
+                } else if ((simpleWAHP.PLFCurveIndex = Curve::GetCurveIndex(state, coolPLFCurveName)) == 0) {
+                    ShowSevereItemNotFound(state, eoh, cFieldName, coolPLFCurveName);
+                    ErrorsFound = true;
+                } else if (Curve::CheckCurveDims(
+                               state, simpleWAHP.PLFCurveIndex, {1}, RoutineName, CurrentModuleObject, simpleWAHP.Name, cFieldName)) {
+                    ShowSevereCustomField(state, eoh, cFieldName, coolPLFCurveName, "Illegal curve dimension.");
                     ErrorsFound = true;
                 } else {
-                    // Verify Curve Object, only legal types are Quadratic or Cubic
-                    ErrorsFound |=
-                        Curve::CheckCurveDims(state, simpleWAHP.PLFCurveIndex, {1}, RoutineName, CurrentModuleObject, simpleWAHP.Name, cFieldName);
+                    // Process curve data
+                    // Test PLF curve minimum and maximum. Cap if less than 0.7 or greater than 1.0.
+                    Real64 MinCurveVal = 999.0;
+                    Real64 MaxCurveVal = -999.0;
+                    Real64 CurveInput = 0.0;
+                    Real64 MinCurvePLR{0.0};
+                    Real64 MaxCurvePLR{0.0};
 
-                    if (!ErrorsFound) {
-                        //     Test PLF curve minimum and maximum. Cap if less than 0.7 or greater than 1.0.
-                        Real64 MinCurveVal = 999.0;
-                        Real64 MaxCurveVal = -999.0;
-                        Real64 CurveInput = 0.0;
-                        Real64 MinCurvePLR{0.0};
-                        Real64 MaxCurvePLR{0.0};
-
-                        while (CurveInput <= 1.0) {
-                            Real64 CurveVal = Curve::CurveValue(state, simpleWAHP.PLFCurveIndex, CurveInput);
-                            if (CurveVal < MinCurveVal) {
-                                MinCurveVal = CurveVal;
-                                MinCurvePLR = CurveInput;
-                            }
-                            if (CurveVal > MaxCurveVal) {
-                                MaxCurveVal = CurveVal;
-                                MaxCurvePLR = CurveInput;
-                            }
-                            CurveInput += 0.01;
+                    while (CurveInput <= 1.0) {
+                        Real64 CurveVal = Curve::CurveValue(state, simpleWAHP.PLFCurveIndex, CurveInput);
+                        if (CurveVal < MinCurveVal) {
+                            MinCurveVal = CurveVal;
+                            MinCurvePLR = CurveInput;
                         }
-                        if (MinCurveVal < 0.7) {
-                            ShowWarningError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, simpleWAHP.Name));
-                            ShowContinueError(
-                                state,
-                                format("...{}=\"{}\" has out of range values.", "Part Load Fraction Correlation Curve Name", coolPLFCurveName));
-                            ShowContinueError(
-                                state, format("...Curve minimum must be >= 0.7, curve min at PLR = {:.2T} is {:.3T}", MinCurvePLR, MinCurveVal));
-                            ShowContinueError(state, "...Setting curve minimum to 0.7 and simulation continues.");
-                            Curve::SetCurveOutputMinValue(state, simpleWAHP.PLFCurveIndex, ErrorsFound, 0.7);
+                        if (CurveVal > MaxCurveVal) {
+                            MaxCurveVal = CurveVal;
+                            MaxCurvePLR = CurveInput;
                         }
-
-                        if (MaxCurveVal > 1.0) {
-                            ShowWarningError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, simpleWAHP.Name));
-                            ShowContinueError(
-                                state, format("...{} = {} has out of range value.", "Part Load Fraction Correlation Curve Name", coolPLFCurveName));
-                            ShowContinueError(
-                                state, format("...Curve maximum must be <= 1.0, curve max at PLR = {:.2T} is {:.3T}", MaxCurvePLR, MaxCurveVal));
-                            ShowContinueError(state, "...Setting curve maximum to 1.0 and simulation continues.");
-                            Curve::SetCurveOutputMaxValue(state, simpleWAHP.PLFCurveIndex, ErrorsFound, 1.0);
-                        }
+                        CurveInput += 0.01;
+                    }
+                    if (MinCurveVal < 0.7) {
+                        ShowSevereBadMin(
+                            state, eoh, cFieldName, MinCurveVal, Clusive::In, 0.7, "Setting curve minimum to 0.7 and simulation continues.");
+                        Curve::SetCurveOutputMinValue(state, simpleWAHP.PLFCurveIndex, ErrorsFound, 0.7);
+                    }
+                    if (MaxCurveVal > 1.0) {
+                        ShowSevereBadMax(
+                            state, eoh, cFieldName, MaxCurveVal, Clusive::In, 1.0, "Setting curve maximum to 1.0 and simulation continues.");
+                        Curve::SetCurveOutputMaxValue(state, simpleWAHP.PLFCurveIndex, ErrorsFound, 1.0);
                     }
                 }
 
@@ -529,6 +505,7 @@ namespace WaterToAirHeatPumpSimple {
 
                 auto &simpleWAHP = state.dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(HPNum);
                 simpleWAHP.Name = Util::makeUPPER(thisObjectName);
+                ErrorObjectHeader eoh{RoutineName, CurrentModuleObject, simpleWAHP.Name};
                 simpleWAHP.WAHPType = WatertoAirHP::Heating;
                 simpleWAHP.WAHPPlantType = DataPlant::PlantEquipmentType::CoilWAHPHeatingEquationFit;
 
@@ -556,93 +533,72 @@ namespace WaterToAirHeatPumpSimple {
                 // std::string availability_schedule_name;
                 cFieldName = "Heating Capacity Curve Name";
                 std::string const heatCapCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, "heating_capacity_curve_name");
-                simpleWAHP.HeatCapCurveIndex = Curve::GetCurveIndex(state, heatCapCurveName);
-                if (simpleWAHP.HeatCapCurveIndex == 0) {
-                    if (heatCapCurveName.empty()) {
-                        ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, simpleWAHP.Name));
-                        ShowContinueError(state, format("...required {} is blank.", cFieldName));
-                    } else {
-                        ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, simpleWAHP.Name));
-                        ShowContinueError(state, format("...not found {}=\"{}\"", cFieldName, heatCapCurveName));
-                    }
+                if (heatCapCurveName.empty()) {
+                    ShowWarningEmptyField(state, eoh, cFieldName, "Required field is blank.");
                     ErrorsFound = true;
-                } else {
-                    ErrorsFound |= Curve::CheckCurveDims(
-                        state, simpleWAHP.HeatCapCurveIndex, {4}, RoutineName, CurrentModuleObject, simpleWAHP.Name, cFieldName);
+                } else if ((simpleWAHP.HeatCapCurveIndex = Curve::GetCurveIndex(state, heatCapCurveName)) == 0) {
+                    ShowSevereItemNotFound(state, eoh, cFieldName, heatCapCurveName);
+                    ErrorsFound = true;
+                } else if (Curve::CheckCurveDims(
+                               state, simpleWAHP.HeatCapCurveIndex, {4}, RoutineName, CurrentModuleObject, simpleWAHP.Name, cFieldName)) {
+                    ShowSevereCustomField(state, eoh, cFieldName, heatCapCurveName, "Illegal curve dimension.");
+                    ErrorsFound = true;
                 }
                 cFieldName = "Heating Power Consumption Curve Name";
                 std::string const heatPowerCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, "heating_power_consumption_curve_name");
-                simpleWAHP.HeatPowCurveIndex = Curve::GetCurveIndex(state, heatPowerCurveName);
-                if (simpleWAHP.HeatPowCurveIndex == 0) {
-                    if (heatPowerCurveName.empty()) {
-                        ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, simpleWAHP.Name));
-                        ShowContinueError(state, format("...required {} is blank.", cFieldName));
-                    } else {
-                        ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, simpleWAHP.Name));
-                        ShowContinueError(state, format("...not found {}=\"{}\"", cFieldName, heatPowerCurveName));
-                    }
+                if (heatPowerCurveName.empty()) {
+                    ShowWarningEmptyField(state, eoh, cFieldName, "Required field is blank.");
                     ErrorsFound = true;
-                } else {
-                    ErrorsFound |= Curve::CheckCurveDims(
-                        state, simpleWAHP.HeatPowCurveIndex, {4}, RoutineName, CurrentModuleObject, simpleWAHP.Name, cFieldName);
+                } else if ((simpleWAHP.HeatPowCurveIndex = Curve::GetCurveIndex(state, heatPowerCurveName)) == 0) {
+                    ShowSevereItemNotFound(state, eoh, cFieldName, heatPowerCurveName);
+                    ErrorsFound = true;
+                } else if (Curve::CheckCurveDims(
+                               state, simpleWAHP.HeatPowCurveIndex, {4}, RoutineName, CurrentModuleObject, simpleWAHP.Name, cFieldName)) {
+                    ShowSevereCustomField(state, eoh, cFieldName, heatPowerCurveName, "Illegal curve dimension.");
+                    ErrorsFound = true;
                 }
                 cFieldName = "Part Load Fraction Correlation Curve Name";
                 std::string const heatPLFCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, "part_load_fraction_correlation_curve_name");
-                simpleWAHP.PLFCurveIndex = Curve::GetCurveIndex(state, heatPLFCurveName);
-                if (simpleWAHP.PLFCurveIndex == 0) {
-                    if (heatPLFCurveName.empty()) {
-                        ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, simpleWAHP.Name));
-                        ShowContinueError(state, format("...required {} is blank.", cFieldName));
-                    } else {
-                        ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, simpleWAHP.Name));
-                        ShowContinueError(state, format("...not found {}=\"{}\".", cFieldName, heatPLFCurveName));
-                    }
+                if (heatPLFCurveName.empty()) {
+                    ShowWarningEmptyField(state, eoh, cFieldName, "Required field is blank.");
+                    ErrorsFound = true;
+                } else if ((simpleWAHP.PLFCurveIndex = Curve::GetCurveIndex(state, heatPLFCurveName)) == 0) {
+                    ShowSevereItemNotFound(state, eoh, cFieldName, heatPLFCurveName);
+                    ErrorsFound = true;
+                } else if (Curve::CheckCurveDims(
+                               state, simpleWAHP.PLFCurveIndex, {1}, RoutineName, CurrentModuleObject, simpleWAHP.Name, cFieldName)) {
+                    ShowSevereCustomField(state, eoh, cFieldName, heatPLFCurveName, "Illegal curve dimension.");
                     ErrorsFound = true;
                 } else {
-                    // Verify Curve Object, only legal types are Quadratic or Cubic
-                    ErrorsFound |=
-                        Curve::CheckCurveDims(state, simpleWAHP.PLFCurveIndex, {1}, RoutineName, CurrentModuleObject, simpleWAHP.Name, cFieldName);
+                    // Process curve data
+                    // Test PLF curve minimum and maximum. Cap if less than 0.7 or greater than 1.0.
+                    Real64 MinCurveVal = 999.0;
+                    Real64 MaxCurveVal = -999.0;
+                    Real64 CurveInput = 0.0;
+                    Real64 MinCurvePLR{0.0};
+                    Real64 MaxCurvePLR{0.0};
 
-                    if (!ErrorsFound) {
-                        //     Test PLF curve minimum and maximum. Cap if less than 0.7 or greater than 1.0.
-                        Real64 MinCurveVal = 999.0;
-                        Real64 MaxCurveVal = -999.0;
-                        Real64 CurveInput = 0.0;
-                        Real64 MinCurvePLR{0.0};
-                        Real64 MaxCurvePLR{0.0};
-
-                        while (CurveInput <= 1.0) {
-                            Real64 CurveVal = Curve::CurveValue(state, simpleWAHP.PLFCurveIndex, CurveInput);
-                            if (CurveVal < MinCurveVal) {
-                                MinCurveVal = CurveVal;
-                                MinCurvePLR = CurveInput;
-                            }
-                            if (CurveVal > MaxCurveVal) {
-                                MaxCurveVal = CurveVal;
-                                MaxCurvePLR = CurveInput;
-                            }
-                            CurveInput += 0.01;
+                    while (CurveInput <= 1.0) {
+                        Real64 CurveVal = Curve::CurveValue(state, simpleWAHP.PLFCurveIndex, CurveInput);
+                        if (CurveVal < MinCurveVal) {
+                            MinCurveVal = CurveVal;
+                            MinCurvePLR = CurveInput;
                         }
-                        if (MinCurveVal < 0.7) {
-                            ShowWarningError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, simpleWAHP.Name));
-                            ShowContinueError(
-                                state,
-                                format("...{}=\"{}\" has out of range values.", "Part Load Fraction Correlation Curve Name", heatPLFCurveName));
-                            ShowContinueError(
-                                state, format("...Curve minimum must be >= 0.7, curve min at PLR = {:.2T} is {:.3T}", MinCurvePLR, MinCurveVal));
-                            ShowContinueError(state, "...Setting curve minimum to 0.7 and simulation continues.");
-                            Curve::SetCurveOutputMinValue(state, simpleWAHP.PLFCurveIndex, ErrorsFound, 0.7);
+                        if (CurveVal > MaxCurveVal) {
+                            MaxCurveVal = CurveVal;
+                            MaxCurvePLR = CurveInput;
                         }
-
-                        if (MaxCurveVal > 1.0) {
-                            ShowWarningError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, simpleWAHP.Name));
-                            ShowContinueError(
-                                state, format("...{} = {} has out of range value.", "Part Load Fraction Correlation Curve Name", heatPLFCurveName));
-                            ShowContinueError(
-                                state, format("...Curve maximum must be <= 1.0, curve max at PLR = {:.2T} is {:.3T}", MaxCurvePLR, MaxCurveVal));
-                            ShowContinueError(state, "...Setting curve maximum to 1.0 and simulation continues.");
-                            Curve::SetCurveOutputMaxValue(state, simpleWAHP.PLFCurveIndex, ErrorsFound, 1.0);
-                        }
+                        CurveInput += 0.01;
+                    }
+                    if (MinCurveVal < 0.7) {
+                        ShowSevereBadMin(
+                            state, eoh, cFieldName, MinCurveVal, Clusive::In, 0.7, "Setting curve minimum to 0.7 and simulation continues.");
+                        Curve::SetCurveOutputMinValue(state, simpleWAHP.PLFCurveIndex, ErrorsFound, 0.7);
+                    }
+                    if (MaxCurveVal > 1.0) {
+                        ShowSevereBadMax(
+                            state, eoh, cFieldName, MaxCurveVal, Clusive::In, 1.0, "Setting curve maximum to 1.0 and simulation continues.");
+                        Curve::SetCurveOutputMaxValue(state, simpleWAHP.PLFCurveIndex, ErrorsFound, 1.0);
                     }
                 }
 

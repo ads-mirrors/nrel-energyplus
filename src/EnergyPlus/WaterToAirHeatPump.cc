@@ -346,9 +346,7 @@ namespace WaterToAirHeatPump {
                     break;
                 }
                 default: {
-                    ShowSevereError(
-                        state,
-                        format("{}Invalid {} ({}) entered. {}={}", RoutineName, "Compressor Type", compType, CurrentModuleObject, heatPump.Name));
+                    ShowSevereInvalidKey(state, eoh, "Compressor Type", compType);
                     ErrorsFound = true;
                     break;
                 }
@@ -577,9 +575,7 @@ namespace WaterToAirHeatPump {
                     break;
                 }
                 default: {
-                    ShowSevereError(
-                        state,
-                        format("{}Invalid {} ({}) entered. {}={}", RoutineName, "Compressor Type", compType, CurrentModuleObject, heatPump.Name));
+                    ShowSevereInvalidKey(state, eoh, "Compressor Type", compType);
                     ErrorsFound = true;
                     break;
                 }

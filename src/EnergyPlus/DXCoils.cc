@@ -3249,8 +3249,7 @@ void GetDXCoils(EnergyPlusData &state)
             cFieldName = "Heating Capacity Function of Temperature Curve Name"; // Alphas(11)
             fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "heating_capacity_function_of_temperature_curve_name");
             if (!fieldValue.empty()) {
-                thisDXCoil.HCapFTemp = GetCurveIndex(state, fieldValue);
-                if (thisDXCoil.HCapFTemp == 0) {
+                if ((thisDXCoil.HCapFTemp = Curve::GetCurveIndex(state, fieldValue)) == 0) {
                     ShowSevereItemNotFound(state, eoh, cFieldName, fieldValue);
                     ErrorsFound = true;
                 } else {
@@ -3289,8 +3288,7 @@ void GetDXCoils(EnergyPlusData &state)
             cFieldName = "Heating Capacity Function of Air Flow Fraction Curve Name"; // Alphas(12)
             fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "heating_capacity_function_of_air_flow_fraction_curve_name");
             if (!fieldValue.empty()) {
-                thisDXCoil.HCapFAirFlow = GetCurveIndex(state, fieldValue);
-                if (thisDXCoil.HCapFAirFlow == 0) {
+                if ((thisDXCoil.HCapFAirFlow = Curve::GetCurveIndex(state, fieldValue)) == 0) {
                     ShowSevereItemNotFound(state, eoh, cFieldName, fieldValue);
                     ErrorsFound = true;
                 } else {
@@ -3318,8 +3316,7 @@ void GetDXCoils(EnergyPlusData &state)
             cFieldName = "Heating Capacity Function of Water Flow Fraction Curve Name"; // Alphas(13)
             fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "heating_capacity_function_of_water_flow_fraction_curve_name");
             if (!fieldValue.empty()) {
-                thisDXCoil.HCapFWaterFlow = GetCurveIndex(state, fieldValue);
-                if (thisDXCoil.HCapFWaterFlow == 0) {
+                if ((thisDXCoil.HCapFWaterFlow = Curve::GetCurveIndex(state, fieldValue)) == 0) {
                     ShowSevereItemNotFound(state, eoh, cFieldName, fieldValue);
                     ErrorsFound = true;
                 } else {
@@ -3347,8 +3344,7 @@ void GetDXCoils(EnergyPlusData &state)
             cFieldName = "Heating COP Function of Temperature Curve Name"; // Alphas(14)
             fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "heating_cop_function_of_temperature_curve_name");
             if (!fieldValue.empty()) {
-                thisDXCoil.HCOPFTemp = GetCurveIndex(state, fieldValue);
-                if (thisDXCoil.HCOPFTemp == 0) {
+                if ((thisDXCoil.HCOPFTemp = Curve::GetCurveIndex(state, fieldValue)) == 0) {
                     ShowSevereItemNotFound(state, eoh, cFieldName, fieldValue);
                     ErrorsFound = true;
                 } else {
@@ -3387,8 +3383,7 @@ void GetDXCoils(EnergyPlusData &state)
             cFieldName = "Heating COP Function of Air Flow Fraction Curve Name"; // Alphas(15)
             fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "heating_cop_function_of_air_flow_fraction_curve_name");
             if (!fieldValue.empty()) {
-                thisDXCoil.HCOPFAirFlow = GetCurveIndex(state, fieldValue);
-                if (thisDXCoil.HCOPFAirFlow == 0) {
+                if ((thisDXCoil.HCOPFAirFlow = Curve::GetCurveIndex(state, fieldValue)) == 0) {
                     ShowSevereItemNotFound(state, eoh, cFieldName, fieldValue);
                     ErrorsFound = true;
                 } else {
@@ -3416,8 +3411,7 @@ void GetDXCoils(EnergyPlusData &state)
             cFieldName = "Heating COP Function of Water Flow Fraction Curve Name"; // Alphas(16)
             fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "heating_cop_function_of_water_flow_fraction_curve_name");
             if (!fieldValue.empty()) {
-                thisDXCoil.HCOPFWaterFlow = GetCurveIndex(state, fieldValue);
-                if (thisDXCoil.HCOPFWaterFlow == 0) {
+                if ((thisDXCoil.HCOPFWaterFlow = Curve::GetCurveIndex(state, fieldValue)) == 0) {
                     ShowSevereItemNotFound(state, eoh, cFieldName, fieldValue);
                     ErrorsFound = true;
                 } else {
@@ -3445,8 +3439,7 @@ void GetDXCoils(EnergyPlusData &state)
             cFieldName = "Part Load Fraction Correlation Curve Name"; // Alphas(17)
             fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "part_load_fraction_correlation_curve_name");
             if (!fieldValue.empty()) {
-                thisDXCoil.PLFFPLR(1) = GetCurveIndex(state, fieldValue);
-                if (thisDXCoil.PLFFPLR(1) == 0) {
+                if ((thisDXCoil.PLFFPLR(1) = Curve::GetCurveIndex(state, fieldValue)) == 0) {
                     ShowSevereItemNotFound(state, eoh, cFieldName, fieldValue);
                     ErrorsFound = true;
                 } else {
@@ -3460,7 +3453,7 @@ void GetDXCoils(EnergyPlusData &state)
                                                          cFieldName);           // Field Name
 
                     if (!ErrorsFound) {
-                        //       Test PLF curve minimum and maximum. Cap if less than 0.7 or greater than 1.0.
+                        // Test PLF curve minimum and maximum. Cap if less than 0.7 or greater than 1.0.
                         MinCurveVal = 999.0;
                         MaxCurveVal = -999.0;
                         CurveInput = 0.0;
@@ -3477,20 +3470,13 @@ void GetDXCoils(EnergyPlusData &state)
                             CurveInput += 0.01;
                         }
                         if (MinCurveVal < 0.7) {
-                            ShowWarningError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, thisDXCoil.Name));
-                            ShowContinueError(state, format("...{} = {} has out of range value.", cFieldName, fieldValue));
-                            ShowContinueError(
-                                state, format("...Curve minimum must be >= 0.7, curve min at PLR = {:.2T} is {:.3T}", MinCurvePLR, MinCurveVal));
-                            ShowContinueError(state, "...Setting curve minimum to 0.7 and simulation continues.");
+                            ShowSevereBadMin(
+                                state, eoh, cFieldName, MinCurveVal, Clusive::In, 0.7, "Setting curve minimum to 0.7 and simulation continues.");
                             Curve::SetCurveOutputMinValue(state, thisDXCoil.PLFFPLR(1), ErrorsFound, 0.7);
                         }
-
                         if (MaxCurveVal > 1.0) {
-                            ShowWarningError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, thisDXCoil.Name));
-                            ShowContinueError(state, format("...{} = {} has out of range value.", cFieldName, fieldValue));
-                            ShowContinueError(
-                                state, format("...Curve maximum must be <= 1.0, curve max at PLR = {:.2T} is {:.3T}", MaxCurvePLR, MaxCurveVal));
-                            ShowContinueError(state, "...Setting curve maximum to 1.0 and simulation continues.");
+                            ShowSevereBadMax(
+                                state, eoh, cFieldName, MaxCurveVal, Clusive::In, 1.0, "Setting curve maximum to 1.0 and simulation continues.");
                             Curve::SetCurveOutputMaxValue(state, thisDXCoil.PLFFPLR(1), ErrorsFound, 1.0);
                         }
                     }
@@ -3722,8 +3708,7 @@ void GetDXCoils(EnergyPlusData &state)
             cFieldName = "Heating Capacity Function of Temperature Curve Name"; // Alphas(7)
             fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "heating_capacity_function_of_temperature_curve_name");
             if (!fieldValue.empty()) {
-                thisDXCoil.HCapFTemp = GetCurveIndex(state, fieldValue);
-                if (thisDXCoil.HCapFTemp == 0) {
+                if ((thisDXCoil.HCapFTemp = Curve::GetCurveIndex(state, fieldValue)) == 0) {
                     ShowSevereItemNotFound(state, eoh, cFieldName, fieldValue);
                     ErrorsFound = true;
                 } else {
@@ -3762,8 +3747,7 @@ void GetDXCoils(EnergyPlusData &state)
             cFieldName = "Heating Capacity Function of Air Flow Fraction Curve Name"; // Alphas(8)
             fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "heating_capacity_function_of_air_flow_fraction_curve_name");
             if (!fieldValue.empty()) {
-                thisDXCoil.HCapFAirFlow = GetCurveIndex(state, fieldValue);
-                if (thisDXCoil.HCapFAirFlow == 0) {
+                if ((thisDXCoil.HCapFAirFlow = Curve::GetCurveIndex(state, fieldValue)) == 0) {
                     ShowSevereItemNotFound(state, eoh, cFieldName, fieldValue);
                     ErrorsFound = true;
                 } else {
@@ -3791,8 +3775,7 @@ void GetDXCoils(EnergyPlusData &state)
             cFieldName = "Heating COP Function of Temperature Curve Name"; // Alphas(9)
             fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "heating_cop_function_of_temperature_curve_name");
             if (!fieldValue.empty()) {
-                thisDXCoil.HCOPFTemp = GetCurveIndex(state, fieldValue);
-                if (thisDXCoil.HCOPFTemp == 0) {
+                if ((thisDXCoil.HCOPFTemp = Curve::GetCurveIndex(state, fieldValue)) == 0) {
                     ShowSevereItemNotFound(state, eoh, cFieldName, fieldValue);
                     ErrorsFound = true;
                 } else {
@@ -3831,8 +3814,7 @@ void GetDXCoils(EnergyPlusData &state)
             cFieldName = "Heating COP Function of Air Flow Fraction Curve Name"; // Alphas(10)
             fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "heating_cop_function_of_air_flow_fraction_curve_name");
             if (!fieldValue.empty()) {
-                thisDXCoil.HCOPFAirFlow = GetCurveIndex(state, fieldValue);
-                if (thisDXCoil.HCOPFAirFlow == 0) {
+                if ((thisDXCoil.HCOPFAirFlow = Curve::GetCurveIndex(state, fieldValue)) == 0) {
                     ShowSevereItemNotFound(state, eoh, cFieldName, fieldValue);
                     ErrorsFound = true;
                 } else {
@@ -3860,8 +3842,7 @@ void GetDXCoils(EnergyPlusData &state)
             cFieldName = "Part Load Fraction Correlation Curve Name"; // Alphas(11)
             fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "part_load_fraction_correlation_curve_name");
             if (!fieldValue.empty()) {
-                thisDXCoil.PLFFPLR(1) = GetCurveIndex(state, fieldValue);
-                if (thisDXCoil.PLFFPLR(1) == 0) {
+                if ((thisDXCoil.PLFFPLR(1) = Curve::GetCurveIndex(state, fieldValue)) == 0) {
                     ShowSevereItemNotFound(state, eoh, cFieldName, fieldValue);
                     ErrorsFound = true;
                 } else {
@@ -3875,7 +3856,7 @@ void GetDXCoils(EnergyPlusData &state)
                                                          cFieldName);           // Field Name
 
                     if (!ErrorsFound) {
-                        //       Test PLF curve minimum and maximum. Cap if less than 0.7 or greater than 1.0.
+                        // Test PLF curve minimum and maximum. Cap if less than 0.7 or greater than 1.0.
                         MinCurveVal = 999.0;
                         MaxCurveVal = -999.0;
                         CurveInput = 0.0;
@@ -3892,20 +3873,13 @@ void GetDXCoils(EnergyPlusData &state)
                             CurveInput += 0.01;
                         }
                         if (MinCurveVal < 0.7) {
-                            ShowWarningError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, thisDXCoil.Name));
-                            ShowContinueError(state, format("...{} = {} has out of range value.", cFieldName, fieldValue));
-                            ShowContinueError(
-                                state, format("...Curve minimum must be >= 0.7, curve min at PLR = {:.2T} is {:.3T}", MinCurvePLR, MinCurveVal));
-                            ShowContinueError(state, "...Setting curve minimum to 0.7 and simulation continues.");
+                            ShowSevereBadMin(
+                                state, eoh, cFieldName, MinCurveVal, Clusive::In, 0.7, "Setting curve minimum to 0.7 and simulation continues.");
                             Curve::SetCurveOutputMinValue(state, thisDXCoil.PLFFPLR(1), ErrorsFound, 0.7);
                         }
-
                         if (MaxCurveVal > 1.0) {
-                            ShowWarningError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, thisDXCoil.Name));
-                            ShowContinueError(state, format("...{} = {} has out of range value.", cFieldName, fieldValue));
-                            ShowContinueError(
-                                state, format("...Curve maximum must be <= 1.0, curve max at PLR = {:.2T} is {:.3T}", MaxCurvePLR, MaxCurveVal));
-                            ShowContinueError(state, "...Setting curve maximum to 1.0 and simulation continues.");
+                            ShowSevereBadMax(
+                                state, eoh, cFieldName, MaxCurveVal, Clusive::In, 1.0, "Setting curve maximum to 1.0 and simulation continues.");
                             Curve::SetCurveOutputMaxValue(state, thisDXCoil.PLFFPLR(1), ErrorsFound, 1.0);
                         }
                     }

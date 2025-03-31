@@ -52,14 +52,27 @@
 
 namespace EnergyPlus {
 
+// Forward declarations
+namespace DataPlant {
+    struct PlantLoopData;
+    struct HalfLoopData;
+    struct BranchData;
+    struct CompData;
+}
+
 struct PlantLocation
 {
     // Members
-    int loopNum;
+    int loopNum = -1;
     DataPlant::LoopSideLocation loopSideNum;
-    int branchNum;
-    int compNum;
+    int branchNum = -1;
+    int compNum = -1;
 
+    DataPlant::PlantLoopData *loop = nullptr;
+    DataPlant::HalfLoopData *side = nullptr;
+    DataPlant::BranchData *branch = nullptr;
+    DataPlant::CompData *comp = nullptr;
+  
     // Overload operator== for PlantLocation
     friend bool operator==(PlantLocation const &lhsPlantLoc, PlantLocation const &rhsPlantLoc)
     {

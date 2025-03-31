@@ -1661,6 +1661,11 @@ void ScanPlantLoopsForObject(EnergyPlusData &state,
                                         plantLoc.loopSideNum = LoopSideCtr;
                                         plantLoc.branchNum = BranchCtr;
                                         plantLoc.compNum = CompCtr;
+
+                                        plantLoc.loop = &this_loop;
+                                        plantLoc.side = &this_loop_side;
+                                        plantLoc.branch = &this_branch;
+                                        plantLoc.comp = &this_component;
                                     }
                                 }
                             } else {
@@ -1670,6 +1675,11 @@ void ScanPlantLoopsForObject(EnergyPlusData &state,
                                 plantLoc.loopSideNum = LoopSideCtr;
                                 plantLoc.branchNum = BranchCtr;
                                 plantLoc.compNum = CompCtr;
+
+                                plantLoc.loop = &this_loop;
+                                plantLoc.side = &this_loop_side;
+                                plantLoc.branch = &this_branch;
+                                plantLoc.comp = &this_component;                                
                             }
                             if (present(LowLimitTemp)) {
                                 this_component.MinOutletTemp = LowLimitTemp;
@@ -1730,7 +1740,7 @@ void ScanPlantLoopsForObject(EnergyPlusData &state,
 void ScanPlantLoopsForNodeNum(EnergyPlusData &state,
                               std::string_view const CallerName, // really used for error messages
                               int const NodeNum,                 // index in Node structure of node to be scanned
-                              PlantLocation &pLantLoc,           // return value for location
+                              PlantLocation &plantLoc,           // return value for location
                               ObjexxFCL::Optional_int CompNum)
 {
 
@@ -1768,23 +1778,33 @@ void ScanPlantLoopsForNodeNum(EnergyPlusData &state,
             for (BranchCtr = 1; BranchCtr <= this_loop_side.TotalBranches; ++BranchCtr) {
                 auto &this_branch = this_loop_side.Branch(BranchCtr);
                 for (CompCtr = 1; CompCtr <= this_branch.TotalComponents; ++CompCtr) {
-                    auto const &this_comp = this_branch.Comp(CompCtr);
+                    auto &this_comp = this_branch.Comp(CompCtr);
                     if (NodeNum == this_comp.NodeNumIn) {
                         FoundNode = true;
                         ++inFoundCount;
-                        pLantLoc.loopNum = LoopCtr;
-                        pLantLoc.loopSideNum = LoopSideCtr;
-                        pLantLoc.branchNum = BranchCtr;
+                        plantLoc.loopNum = LoopCtr;
+                        plantLoc.loopSideNum = LoopSideCtr;
+                        plantLoc.branchNum = BranchCtr;
+
                         if (present(CompNum)) {
-                            CompNum = CompCtr;
+                            CompNum = CompCtr; // What is this? This is an input
                         }
+                        plantLoc.loop = &this_loop;
+                        plantLoc.side = &this_loop_side;
+                        plantLoc.branch = &this_branch;
+                        plantLoc.comp = &this_comp;                        
                     }
 
                     if (NodeNum == this_comp.NodeNumOut) {
                         ++outFoundCount;
-                        pLantLoc.loopNum = LoopCtr;
-                        pLantLoc.loopSideNum = LoopSideCtr;
-                        pLantLoc.branchNum = BranchCtr;
+                        plantLoc.loopNum = LoopCtr;
+                        plantLoc.loopSideNum = LoopSideCtr;
+                        plantLoc.branchNum = BranchCtr;
+
+                        plantLoc.loop = &this_loop;
+                        plantLoc.side = &this_loop_side;
+                        plantLoc.branch = &this_branch;
+                        plantLoc.comp = &this_comp;                        
                     }
                 }
             }
@@ -1989,9 +2009,9 @@ MinFlowIfBranchHasVSPump(EnergyPlusData &state, PlantLocation const &plantLoc, b
 {
     Real64 branchPumpMinFlowLimit = 0.0;
 
-    int NumCompsOnThisBranch = state.dataPlnt->PlantLoop(plantLoc.loopNum).LoopSide(plantLoc.loopSideNum).Branch(plantLoc.branchNum).TotalComponents;
+    int NumCompsOnThisBranch = plantLoc.branch->TotalComponents;
     for (int CompCounter = 1; CompCounter <= NumCompsOnThisBranch; ++CompCounter) {
-        auto &component(state.dataPlnt->PlantLoop(plantLoc.loopNum).LoopSide(plantLoc.loopSideNum).Branch(plantLoc.branchNum).Comp(CompCounter));
+        auto &component = plantLoc.branch->Comp(CompCounter);
         if (component.Type == DataPlant::PlantEquipmentType::PumpVariableSpeed ||
             component.Type == DataPlant::PlantEquipmentType::PumpBankVariableSpeed) {
             foundBranchPump = true;
@@ -2002,12 +2022,10 @@ MinFlowIfBranchHasVSPump(EnergyPlusData &state, PlantLocation const &plantLoc, b
 
     if (!foundBranchPump) {
         // second, if no branch pump, search for variable speed pump on inlet branch of supply side of this loop
-        if (state.dataPlnt->PlantLoop(plantLoc.loopNum).LoopSide(DataPlant::LoopSideLocation::Supply).TotalBranches > 1) {
-            int NumCompsOnInletBranch =
-                state.dataPlnt->PlantLoop(plantLoc.loopNum).LoopSide(DataPlant::LoopSideLocation::Supply).Branch(1).TotalComponents;
+        if (plantLoc.loop->LoopSide(DataPlant::LoopSideLocation::Supply).TotalBranches > 1) {
+            int NumCompsOnInletBranch = plantLoc.loop->LoopSide(DataPlant::LoopSideLocation::Supply).Branch(1).TotalComponents;
             for (int CompCounter = 1; CompCounter <= NumCompsOnInletBranch; ++CompCounter) {
-                auto &component(
-                    state.dataPlnt->PlantLoop(plantLoc.loopNum).LoopSide(DataPlant::LoopSideLocation::Supply).Branch(1).Comp(CompCounter));
+                auto &component = plantLoc.loop->LoopSide(DataPlant::LoopSideLocation::Supply).Branch(1).Comp(CompCounter);
                 if (component.Type == DataPlant::PlantEquipmentType::PumpVariableSpeed ||
                     component.Type == DataPlant::PlantEquipmentType::PumpBankVariableSpeed) {
                     foundLoopPump = true;
@@ -2020,17 +2038,9 @@ MinFlowIfBranchHasVSPump(EnergyPlusData &state, PlantLocation const &plantLoc, b
 
     if (setFlowStatus) {
         if (branchPumpMinFlowLimit > 0.0 && foundBranchPump) {
-            state.dataPlnt->PlantLoop(plantLoc.loopNum)
-                .LoopSide(plantLoc.loopSideNum)
-                .Branch(plantLoc.branchNum)
-                .Comp(plantLoc.compNum)
-                .FlowPriority = DataPlant::LoopFlowStatus::NeedyIfLoopOn;
+            plantLoc.comp->FlowPriority = DataPlant::LoopFlowStatus::NeedyIfLoopOn;
         } else {
-            state.dataPlnt->PlantLoop(plantLoc.loopNum)
-                .LoopSide(plantLoc.loopSideNum)
-                .Branch(plantLoc.branchNum)
-                .Comp(plantLoc.compNum)
-                .FlowPriority = DataPlant::LoopFlowStatus::TakesWhatGets;
+            plantLoc.comp->FlowPriority = DataPlant::LoopFlowStatus::TakesWhatGets;
         }
     }
 

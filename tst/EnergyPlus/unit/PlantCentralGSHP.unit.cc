@@ -126,6 +126,7 @@ TEST_F(EnergyPlusFixture, ChillerHeater_Autosize)
     state->dataSize->PlantSizData(PltSizNum).LoopType = DataSizing::TypeOfPlantLoop::Cooling;
     // Assign to the wrapper
     state->dataPlantCentralGSHP->Wrapper(1).CWPlantLoc.loopNum = PltSizNum;
+    state->dataPlantCentralGSHP->Wrapper(1).CWPlantLoc.loop = &state->dataPlnt->PlantLoop(PltSizNum);
 
     // Condenser Loop
     int PltSizCondNum = 2;
@@ -136,6 +137,7 @@ TEST_F(EnergyPlusFixture, ChillerHeater_Autosize)
     state->dataSize->PlantSizData(PltSizCondNum).LoopType = DataSizing::TypeOfPlantLoop::Condenser;
     // Assign to the wrapper
     state->dataPlantCentralGSHP->Wrapper(1).GLHEPlantLoc.loopNum = PltSizCondNum;
+    state->dataPlantCentralGSHP->Wrapper(1).GLHEPlantLoc.loop = &state->dataPlnt->PlantLoop(PltSizCondNum);
 
     // Calculate expected values
     Real64 rho_evap = state->dataPlnt->PlantLoop(PltSizNum).glycol->getDensity(*state, Constant::CWInitConvTemp, "ChillerHeater_Autosize_TEST");
@@ -364,6 +366,7 @@ TEST_F(EnergyPlusFixture, Test_CentralHeatPumpSystem_adjustChillerHeaterCondFlow
     state->dataPlnt->PlantLoop(1).FluidName = "WATER";
     state->dataPlnt->PlantLoop(1).glycol = Fluid::GetWater(*state);
     thisWrap.HWPlantLoc.loopNum = 1;
+    thisWrap.HWPlantLoc.loop = &state->dataPlnt->PlantLoop(1);
 
     Real64 qCondenser;
     Real64 condMassFlowRate;
@@ -448,6 +451,7 @@ TEST_F(EnergyPlusFixture, Test_CentralHeatPumpSystem_adjustChillerHeaterEvapFlow
     state->dataPlnt->PlantLoop(1).FluidName = "WATER";
     state->dataPlnt->PlantLoop(1).glycol = Fluid::GetWater(*state);
     thisWrap.HWPlantLoc.loopNum = 1;
+    thisWrap.HWPlantLoc.loop = &state->dataPlnt->PlantLoop(1);
 
     Real64 qEvaporator;
     Real64 evapMassFlowRate;

@@ -375,14 +375,11 @@ namespace VariableSpeedCoils {
                 // part load curve
                 cFieldName = "Energy Part Load Fraction Curve Name"; // cAlphaFields(6)
                 std::string const coolPLFCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, "energy_part_load_fraction_curve_name");
-                varSpeedCoil.PLFFPLR = Curve::GetCurveIndex(state, coolPLFCurveName); // convert curve name to number
-                if (varSpeedCoil.PLFFPLR == 0) {
-                    if (coolPLFCurveName.empty()) {
-                        ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                        ShowContinueError(state, format("...required {} is blank.", cFieldName));
-                    } else {
-                        ShowSevereItemNotFound(state, eoh, cFieldName, coolPLFCurveName);
-                    }
+                if (coolPLFCurveName.empty()) {
+                    ShowWarningEmptyField(state, eoh, cFieldName, "Required field is blank.");
+                    ErrorsFound = true;
+                } else if ((varSpeedCoil.PLFFPLR = Curve::GetCurveIndex(state, coolPLFCurveName)) == 0) {
+                    ShowSevereItemNotFound(state, eoh, cFieldName, coolPLFCurveName);
                     ErrorsFound = true;
                 } else {
                     CurveVal = Curve::CurveValue(state, varSpeedCoil.PLFFPLR, 1.0);
@@ -411,14 +408,11 @@ namespace VariableSpeedCoils {
                     std::string fieldValue = format("speed_{}{}", std::to_string(I), "_total_cooling_capacity_function_of_temperature_curve_name");
                     std::string cFieldName = format("Speed_{}{}", std::to_string(I), " Total Cooling Capacity Function of Temperature Curve Name");
                     std::string const coolCapFTCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
-                    varSpeedCoil.MSCCapFTemp(I) = Curve::GetCurveIndex(state, coolCapFTCurveName); // convert curve name to number
-                    if (varSpeedCoil.MSCCapFTemp(I) == 0) {
-                        if (coolCapFTCurveName.empty()) {
-                            ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...required {} is blank.", cFieldName));
-                        } else {
-                            ShowSevereItemNotFound(state, eoh, cFieldName, coolCapFTCurveName);
-                        }
+                    if (coolCapFTCurveName.empty()) {
+                        ShowWarningEmptyField(state, eoh, cFieldName, "Required field is blank.");
+                        ErrorsFound = true;
+                    } else if ((varSpeedCoil.MSCCapFTemp(I) = Curve::GetCurveIndex(state, coolCapFTCurveName)) == 0) {
+                        ShowSevereItemNotFound(state, eoh, cFieldName, coolCapFTCurveName);
                         ErrorsFound = true;
                     } else {
                         // Verify Curve Object, only legal type is BiQuadratic
@@ -443,14 +437,11 @@ namespace VariableSpeedCoils {
                     fieldValue = format("speed_{}{}", std::to_string(I), "_total_cooling_capacity_function_of_air_flow_fraction_curve_name");
                     cFieldName = format("Speed_{}{}", std::to_string(I), " Total Cooling Capacity Function of Air Flow Fraction Curve Name");
                     std::string const coolCapFFCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
-                    varSpeedCoil.MSCCapAirFFlow(I) = Curve::GetCurveIndex(state, coolCapFFCurveName); // convert curve name to number
-                    if (varSpeedCoil.MSCCapAirFFlow(I) == 0) {
-                        if (coolCapFFCurveName.empty()) {
-                            ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...required {} is blank.", cFieldName));
-                        } else {
-                            ShowSevereItemNotFound(state, eoh, cFieldName, coolCapFFCurveName);
-                        }
+                    if (coolCapFFCurveName.empty()) {
+                        ShowWarningEmptyField(state, eoh, cFieldName, "Required field is blank.");
+                        ErrorsFound = true;
+                    } else if ((varSpeedCoil.MSCCapAirFFlow(I) = Curve::GetCurveIndex(state, coolCapFFCurveName)) == 0) {
+                        ShowSevereItemNotFound(state, eoh, cFieldName, coolCapFFCurveName);
                         ErrorsFound = true;
                     } else {
                         // Verify Curve Object, only legal type is Quadratic
@@ -475,17 +466,14 @@ namespace VariableSpeedCoils {
                     fieldValue = format("speed_{}{}", std::to_string(I), "_total_cooling_capacity_function_of_water_flow_fraction_curve_name");
                     cFieldName = format("Speed_{}{}", std::to_string(I), " Total Cooling Capacity Function of Water Flow Fraction Curve Name");
                     std::string const coolCapWFFCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
-                    varSpeedCoil.MSCCapWaterFFlow(I) = Curve::GetCurveIndex(state, coolCapWFFCurveName); // convert curve name to number
-                    if (varSpeedCoil.MSCCapWaterFFlow(I) == 0) {
-                        if (coolCapWFFCurveName.empty()) {
-                            ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...required {} is blank.", cFieldName));
-                        } else {
-                            ShowSevereItemNotFound(state, eoh, cFieldName, coolCapWFFCurveName);
-                        }
+                    if (coolCapWFFCurveName.empty()) {
+                        ShowWarningEmptyField(state, eoh, cFieldName, "Required field is blank.");
+                        ErrorsFound = true;
+                    } else if ((varSpeedCoil.MSCCapWaterFFlow(I) = Curve::GetCurveIndex(state, coolCapWFFCurveName)) == 0) {
+                        ShowSevereItemNotFound(state, eoh, cFieldName, coolCapWFFCurveName);
                         ErrorsFound = true;
                     } else {
-                        // Verify Curve Object, only legal type is Quadratic
+                        // Verify Curve Object, only legal type is BiQuadratic
                         ErrorsFound |= Curve::CheckCurveDims(state,
                                                              varSpeedCoil.MSCCapWaterFFlow(I), // Curve index
                                                              {1},                              // Valid dimensions
@@ -507,14 +495,11 @@ namespace VariableSpeedCoils {
                     fieldValue = format("speed_{}{}", std::to_string(I), "_energy_input_ratio_function_of_temperature_curve_name");
                     cFieldName = format("Speed_{}{}", std::to_string(I), " Energy Input Ratio Function of Temperature Curve Name");
                     std::string const coolEIRFTCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
-                    varSpeedCoil.MSEIRFTemp(I) = Curve::GetCurveIndex(state, coolEIRFTCurveName); // convert curve name to number
-                    if (varSpeedCoil.MSEIRFTemp(I) == 0) {
-                        if (coolEIRFTCurveName.empty()) {
-                            ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...required {} is blank.", cFieldName));
-                        } else {
-                            ShowSevereItemNotFound(state, eoh, cFieldName, coolEIRFTCurveName);
-                        }
+                    if (coolEIRFTCurveName.empty()) {
+                        ShowWarningEmptyField(state, eoh, cFieldName, "Required field is blank.");
+                        ErrorsFound = true;
+                    } else if ((varSpeedCoil.MSEIRFTemp(I) = Curve::GetCurveIndex(state, coolEIRFTCurveName)) == 0) {
+                        ShowSevereInvalidBool(state, eoh, cFieldName, coolEIRFTCurveName);
                         ErrorsFound = true;
                     } else {
                         // Verify Curve Object, only legal type is BiQuadratic
@@ -539,14 +524,11 @@ namespace VariableSpeedCoils {
                     fieldValue = format("speed_{}{}", std::to_string(I), "_energy_input_ratio_function_of_air_flow_fraction_curve_name");
                     cFieldName = format("Speed_{}{}", std::to_string(I), " Energy Input Ratio Function of Air Flow Fraction Curve Name");
                     std::string const coolEIRFFFCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
-                    varSpeedCoil.MSEIRAirFFlow(I) = Curve::GetCurveIndex(state, coolEIRFFFCurveName); // convert curve name to number
-                    if (varSpeedCoil.MSEIRAirFFlow(I) == 0) {
-                        if (coolEIRFFFCurveName.empty()) {
-                            ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...required {} is blank.", cFieldName));
-                        } else {
-                            ShowSevereItemNotFound(state, eoh, cFieldName, coolEIRFFFCurveName);
-                        }
+                    if (coolEIRFFFCurveName.empty()) {
+                        ShowWarningEmptyField(state, eoh, cFieldName, "Required field is blank.");
+                        ErrorsFound = true;
+                    } else if ((varSpeedCoil.MSEIRAirFFlow(I) = Curve::GetCurveIndex(state, coolEIRFFFCurveName)) == 0) {
+                        ShowSevereItemNotFound(state, eoh, cFieldName, coolEIRFFFCurveName);
                         ErrorsFound = true;
                     } else {
                         // Verify Curve Object, only legal type is Quadratic
@@ -571,14 +553,11 @@ namespace VariableSpeedCoils {
                     fieldValue = format("speed_{}{}", std::to_string(I), "_energy_input_ratio_function_of_water_flow_fraction_curve_name");
                     cFieldName = format("Speed_{}{}", std::to_string(I), " Energy Input Ratio Function of Water Flow Fraction Curve Name");
                     std::string const coolEIRWFFCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
-                    varSpeedCoil.MSEIRWaterFFlow(I) = Curve::GetCurveIndex(state, coolEIRWFFCurveName); // convert curve name to number
-                    if (varSpeedCoil.MSEIRWaterFFlow(I) == 0) {
-                        if (coolEIRWFFCurveName.empty()) {
-                            ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...required {} is blank.", cFieldName));
-                        } else {
-                            ShowSevereItemNotFound(state, eoh, cFieldName, coolEIRWFFCurveName);
-                        }
+                    if (coolEIRWFFCurveName.empty()) {
+                        ShowWarningEmptyField(state, eoh, cFieldName, "Required field is blank.");
+                        ErrorsFound = true;
+                    } else if ((varSpeedCoil.MSEIRWaterFFlow(I) = Curve::GetCurveIndex(state, coolEIRWFFCurveName)) == 0) {
+                        ShowSevereItemNotFound(state, eoh, cFieldName, coolEIRWFFCurveName);
                         ErrorsFound = true;
                     } else {
                         // Verify Curve Object, only legal type is Quadratic
@@ -599,18 +578,16 @@ namespace VariableSpeedCoils {
                             }
                         }
                     }
+
                     // Read waste heat modifier curve name
                     fieldValue = format("speed_{}{}", std::to_string(I), "_waste_heat_function_of_temperature_curve_name");
                     cFieldName = format("Speed_{}{}", std::to_string(I), " Waste Heat Function of Temperature Curve Name");
                     std::string const wasteHFTCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
-                    varSpeedCoil.MSWasteHeat(I) = Curve::GetCurveIndex(state, wasteHFTCurveName); // convert curve name to number
-                    if (varSpeedCoil.MSWasteHeat(I) == 0) {
-                        if (wasteHFTCurveName.empty()) {
-                            ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...required {} is blank.", cFieldName));
-                        } else {
-                            ShowSevereItemNotFound(state, eoh, cFieldName, wasteHFTCurveName);
-                        }
+                    if (wasteHFTCurveName.empty()) {
+                        ShowWarningEmptyField(state, eoh, cFieldName, "Required field is blank.");
+                        ErrorsFound = true;
+                    } else if ((varSpeedCoil.MSWasteHeat(I) = Curve::GetCurveIndex(state, wasteHFTCurveName)) == 0) {
+                        ShowSevereItemNotFound(state, eoh, cFieldName, wasteHFTCurveName);
                         ErrorsFound = true;
                     } else {
                         // Verify Curve Object, only legal types are BiQuadratic
@@ -786,15 +763,11 @@ namespace VariableSpeedCoils {
                 // part load curve
                 cFieldName = "Energy Part Load Fraction Curve Name"; // cAlphaFields(4)
                 std::string const coolPLFCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, "energy_part_load_fraction_curve_name");
-                varSpeedCoil.PLFFPLR = Curve::GetCurveIndex(state, coolPLFCurveName); // convert curve name to number
-                if (varSpeedCoil.PLFFPLR == 0) {
-                    if (coolPLFCurveName.empty()) {
-                        ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                        ShowContinueError(state, format("...required {} is blank.", cFieldName));
-                    } else {
-                        ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                        ShowContinueError(state, format("...not found {}=\"{}\".", cFieldName, coolPLFCurveName));
-                    }
+                if (coolPLFCurveName.empty()) {
+                    ShowWarningEmptyField(state, eoh, cFieldName, "Required field is blank.");
+                    ErrorsFound = true;
+                } else if ((varSpeedCoil.PLFFPLR = Curve::GetCurveIndex(state, coolPLFCurveName)) == 0) {
+                    ShowSevereItemNotFound(state, eoh, cFieldName, coolPLFCurveName);
                     ErrorsFound = true;
                 } else {
                     CurveVal = Curve::CurveValue(state, varSpeedCoil.PLFFPLR, 1.0);
@@ -1001,14 +974,11 @@ namespace VariableSpeedCoils {
                     std::string fieldValue = format("speed_{}{}", std::to_string(I), "_total_cooling_capacity_function_of_temperature_curve_name");
                     std::string cFieldName = format("Speed_{}{}", std::to_string(I), " Reference Unit Gross Rated Total Cooling Capacity");
                     std::string const cCapFTCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
-                    varSpeedCoil.MSCCapFTemp(I) = Curve::GetCurveIndex(state, cCapFTCurveName); // convert curve name to number
-                    if (varSpeedCoil.MSCCapFTemp(I) == 0) {
-                        if (cCapFTCurveName.empty()) {
-                            ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...required {} is blank.", cFieldName));
-                        } else {
-                            ShowSevereItemNotFound(state, eoh, cFieldName, cCapFTCurveName);
-                        }
+                    if (cCapFTCurveName.empty()) {
+                        ShowWarningEmptyField(state, eoh, cFieldName, "Required field is blank.");
+                        ErrorsFound = true;
+                    } else if ((varSpeedCoil.MSCCapFTemp(I) = Curve::GetCurveIndex(state, cCapFTCurveName)) == 0) {
+                        ShowSevereItemNotFound(state, eoh, cFieldName, cCapFTCurveName);
                         ErrorsFound = true;
                     } else {
                         // Verify Curve Object, only legal type is BiQuadratic
@@ -1033,14 +1003,11 @@ namespace VariableSpeedCoils {
                     fieldValue = format("speed_{}{}", std::to_string(I), "_total_cooling_capacity_function_of_air_flow_fraction_curve_name");
                     cFieldName = format("Speed_{}{}", std::to_string(I), " Total Cooling Capacity Function of Air Flow Fraction Curve Name");
                     std::string const cCapFFFCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
-                    varSpeedCoil.MSCCapAirFFlow(I) = Curve::GetCurveIndex(state, cCapFFFCurveName); // convert curve name to number
-                    if (varSpeedCoil.MSCCapAirFFlow(I) == 0) {
-                        if (cCapFFFCurveName.empty()) {
-                            ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...required {} is blank.", cFieldName));
-                        } else {
-                            ShowSevereItemNotFound(state, eoh, cFieldName, cCapFFFCurveName);
-                        }
+                    if (cCapFFFCurveName.empty()) {
+                        ShowWarningEmptyField(state, eoh, cFieldName, "Required field is blank.");
+                        ErrorsFound = true;
+                    } else if ((varSpeedCoil.MSCCapAirFFlow(I) = Curve::GetCurveIndex(state, cCapFFFCurveName)) == 0) {
+                        ShowSevereItemNotFound(state, eoh, cFieldName, cCapFFFCurveName);
                         ErrorsFound = true;
                     } else {
                         // Verify Curve Object, only legal type is Quadratic
@@ -1065,14 +1032,11 @@ namespace VariableSpeedCoils {
                     fieldValue = format("speed_{}{}", std::to_string(I), "_energy_input_ratio_function_of_temperature_curve_name");
                     cFieldName = format("Speed_{}{}", std::to_string(I), " Energy Input Ratio Function of Temperature Curve Name");
                     std::string const cEIRFTCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
-                    varSpeedCoil.MSEIRFTemp(I) = Curve::GetCurveIndex(state, cEIRFTCurveName); // convert curve name to number
-                    if (varSpeedCoil.MSEIRFTemp(I) == 0) {
-                        if (cEIRFTCurveName.empty()) {
-                            ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...required {} is blank.", cFieldName));
-                        } else {
-                            ShowSevereItemNotFound(state, eoh, cFieldName, cEIRFTCurveName);
-                        }
+                    if (cEIRFTCurveName.empty()) {
+                        ShowWarningEmptyField(state, eoh, cFieldName, "Required field is blank.");
+                        ErrorsFound = true;
+                    } else if ((varSpeedCoil.MSEIRFTemp(I) = Curve::GetCurveIndex(state, cEIRFTCurveName)) == 0) {
+                        ShowSevereInvalidBool(state, eoh, cFieldName, cEIRFTCurveName);
                         ErrorsFound = true;
                     } else {
                         // Verify Curve Object, only legal type is BiQuadratic
@@ -1097,14 +1061,11 @@ namespace VariableSpeedCoils {
                     fieldValue = format("speed_{}{}", std::to_string(I), "_energy_input_ratio_function_of_air_flow_fraction_curve_name");
                     cFieldName = format("Speed_{}{}", std::to_string(I), " Energy Input Ratio Function of Air Flow Fraction Curve Name");
                     std::string const cEIRFFFCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
-                    varSpeedCoil.MSEIRAirFFlow(I) = Curve::GetCurveIndex(state, cEIRFFFCurveName); // convert curve name to number
-                    if (varSpeedCoil.MSEIRAirFFlow(I) == 0) {
-                        if (cEIRFFFCurveName.empty()) {
-                            ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...required {} is blank.", cFieldName));
-                        } else {
-                            ShowSevereItemNotFound(state, eoh, cFieldName, cEIRFFFCurveName);
-                        }
+                    if (cEIRFFFCurveName.empty()) {
+                        ShowWarningEmptyField(state, eoh, cFieldName, "Required field is blank.");
+                        ErrorsFound = true;
+                    } else if ((varSpeedCoil.MSEIRAirFFlow(I) = Curve::GetCurveIndex(state, cEIRFFFCurveName)) == 0) {
+                        ShowSevereItemNotFound(state, eoh, cFieldName, cEIRFFFCurveName);
                         ErrorsFound = true;
                     } else {
                         // Verify Curve Object, only legal type is Quadratic
@@ -1298,14 +1259,11 @@ namespace VariableSpeedCoils {
                 // part load curve
                 cFieldName = "Energy Part Load Fraction Curve Name"; // cAlphaFields(6)
                 std::string const heatPLFCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, "energy_part_load_fraction_curve_name");
-                varSpeedCoil.PLFFPLR = Curve::GetCurveIndex(state, heatPLFCurveName); // convert curve name to number
-                if (varSpeedCoil.PLFFPLR == 0) {
-                    if (heatPLFCurveName.empty()) {
-                        ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                        ShowContinueError(state, format("...required {} is blank.", cFieldName));
-                    } else {
-                        ShowSevereItemNotFound(state, eoh, cFieldName, heatPLFCurveName);
-                    }
+                if (heatPLFCurveName.empty()) {
+                    ShowWarningEmptyField(state, eoh, cFieldName, "Required field is blank.");
+                    ErrorsFound = true;
+                } else if ((varSpeedCoil.PLFFPLR = Curve::GetCurveIndex(state, heatPLFCurveName)) == 0) {
+                    ShowSevereItemNotFound(state, eoh, cFieldName, heatPLFCurveName);
                     ErrorsFound = true;
                 } else {
                     CurveVal = Curve::CurveValue(state, varSpeedCoil.PLFFPLR, 1.0);
@@ -1338,14 +1296,11 @@ namespace VariableSpeedCoils {
                     fieldValue = format("speed_{}{}", std::to_string(I), "_heating_capacity_function_of_temperature_curve_name");
                     cFieldName = format("Speed_{}{}", std::to_string(I), " Heating Capacity Function of Temperature Curve Name");
                     std::string const heatCapFTCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
-                    varSpeedCoil.MSCCapFTemp(I) = Curve::GetCurveIndex(state, heatCapFTCurveName); // convert curve name to number
-                    if (varSpeedCoil.MSCCapFTemp(I) == 0) {
-                        if (heatCapFTCurveName.empty()) {
-                            ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...required {} is blank.", cFieldName));
-                        } else {
-                            ShowSevereInvalidBool(state, eoh, cFieldName, heatCapFTCurveName);
-                        }
+                    if (heatCapFTCurveName.empty()) {
+                        ShowWarningEmptyField(state, eoh, cFieldName, "Required field is blank.");
+                        ErrorsFound = true;
+                    } else if ((varSpeedCoil.MSCCapFTemp(I) = Curve::GetCurveIndex(state, heatCapFTCurveName)) == 0) {
+                        ShowSevereItemNotFound(state, eoh, cFieldName, heatCapFTCurveName);
                         ErrorsFound = true;
                     } else {
                         // Verify Curve Object, only legal type is BiQuadratic
@@ -1370,14 +1325,11 @@ namespace VariableSpeedCoils {
                     fieldValue = format("speed_{}{}", std::to_string(I), "_total_heating_capacity_function_of_air_flow_fraction_curve_name");
                     cFieldName = format("Speed_{}{}", std::to_string(I), " Heating Capacity Function of Temperature Curve Name");
                     std::string const heatCapFFFCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
-                    varSpeedCoil.MSCCapAirFFlow(I) = Curve::GetCurveIndex(state, heatCapFFFCurveName); // convert curve name to number
-                    if (varSpeedCoil.MSCCapAirFFlow(I) == 0) {
-                        if (heatCapFFFCurveName.empty()) {
-                            ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...required {} is blank.", cFieldName));
-                        } else {
-                            ShowSevereInvalidBool(state, eoh, cFieldName, heatCapFFFCurveName);
-                        }
+                    if (heatCapFFFCurveName.empty()) {
+                        ShowWarningEmptyField(state, eoh, cFieldName, "Required field is blank.");
+                        ErrorsFound = true;
+                    } else if ((varSpeedCoil.MSCCapAirFFlow(I) = Curve::GetCurveIndex(state, heatCapFFFCurveName)) == 0) {
+                        ShowSevereItemNotFound(state, eoh, cFieldName, heatCapFFFCurveName);
                         ErrorsFound = true;
                     } else {
                         // Verify Curve Object, only legal type is Quadratic
@@ -1402,17 +1354,14 @@ namespace VariableSpeedCoils {
                     fieldValue = format("speed_{}{}", std::to_string(I), "_heating_capacity_function_of_water_flow_fraction_curve_name");
                     cFieldName = format("Speed_{}{}", std::to_string(I), " Heating Capacity Function of Water Flow Fraction Curve Name");
                     std::string const heatCapWFFCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
-                    varSpeedCoil.MSCCapWaterFFlow(I) = Curve::GetCurveIndex(state, heatCapWFFCurveName); // convert curve name to number
-                    if (varSpeedCoil.MSCCapWaterFFlow(I) == 0) {
-                        if (heatCapWFFCurveName.empty()) {
-                            ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...required {} is blank.", cFieldName));
-                        } else {
-                            ShowSevereInvalidBool(state, eoh, cFieldName, heatCapWFFCurveName);
-                        }
+                    if (heatCapWFFCurveName.empty()) {
+                        ShowWarningEmptyField(state, eoh, cFieldName, "Required field is blank.");
+                        ErrorsFound = true;
+                    } else if ((varSpeedCoil.MSCCapWaterFFlow(I) = Curve::GetCurveIndex(state, heatCapWFFCurveName)) == 0) {
+                        ShowSevereItemNotFound(state, eoh, cFieldName, heatCapWFFCurveName);
                         ErrorsFound = true;
                     } else {
-                        // Verify Curve Object, only legal type is Quadratic
+                        // Verify Curve Object, only legal type is BiQuadratic
                         ErrorsFound |= Curve::CheckCurveDims(state,
                                                              varSpeedCoil.MSCCapWaterFFlow(I), // Curve index
                                                              {1},                              // Valid dimensions
@@ -1434,14 +1383,11 @@ namespace VariableSpeedCoils {
                     fieldValue = format("speed_{}{}", std::to_string(I), "_energy_input_ratio_function_of_temperature_curve_name");
                     cFieldName = format("Speed_{}{}", std::to_string(I), " Energy Input Ratio Function of Temperature Curve Name");
                     std::string const heatEIRFTCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
-                    varSpeedCoil.MSEIRFTemp(I) = Curve::GetCurveIndex(state, heatEIRFTCurveName); // convert curve name to number
-                    if (varSpeedCoil.MSEIRFTemp(I) == 0) {
-                        if (heatEIRFTCurveName.empty()) {
-                            ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...required {} is blank.", cFieldName));
-                        } else {
-                            ShowSevereInvalidBool(state, eoh, cFieldName, heatEIRFTCurveName);
-                        }
+                    if (heatEIRFTCurveName.empty()) {
+                        ShowWarningEmptyField(state, eoh, cFieldName, "Required field is blank.");
+                        ErrorsFound = true;
+                    } else if ((varSpeedCoil.MSEIRFTemp(I) = Curve::GetCurveIndex(state, heatEIRFTCurveName)) == 0) {
+                        ShowSevereInvalidBool(state, eoh, cFieldName, heatEIRFTCurveName);
                         ErrorsFound = true;
                     } else {
                         // Verify Curve Object, only legal type is BiQuadratic
@@ -1466,14 +1412,11 @@ namespace VariableSpeedCoils {
                     fieldValue = format("speed_{}{}", std::to_string(I), "_energy_input_ratio_function_of_air_flow_fraction_curve_name");
                     cFieldName = format("Speed_{}{}", std::to_string(I), " Energy Input Ratio Function of Air Flow Fraction Curve Name");
                     std::string const heatEIRFFFCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
-                    varSpeedCoil.MSEIRAirFFlow(I) = Curve::GetCurveIndex(state, heatEIRFFFCurveName); // convert curve name to number
-                    if (varSpeedCoil.MSEIRAirFFlow(I) == 0) {
-                        if (heatEIRFFFCurveName.empty()) {
-                            ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...required {} is blank.", cFieldName));
-                        } else {
-                            ShowSevereInvalidBool(state, eoh, cFieldName, heatEIRFFFCurveName);
-                        }
+                    if (heatEIRFFFCurveName.empty()) {
+                        ShowWarningEmptyField(state, eoh, cFieldName, "Required field is blank.");
+                        ErrorsFound = true;
+                    } else if ((varSpeedCoil.MSEIRAirFFlow(I) = Curve::GetCurveIndex(state, heatEIRFFFCurveName)) == 0) {
+                        ShowSevereItemNotFound(state, eoh, cFieldName, heatEIRFFFCurveName);
                         ErrorsFound = true;
                     } else {
                         // Verify Curve Object, only legal type is Quadratic
@@ -1498,14 +1441,11 @@ namespace VariableSpeedCoils {
                     fieldValue = format("speed_{}{}", std::to_string(I), "_energy_input_ratio_function_of_water_flow_fraction_curve_name");
                     cFieldName = format("Speed_{}{}", std::to_string(I), " Energy Input Ratio Function of Water Flow Fraction Curve Name");
                     std::string const heatEIRWFFCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
-                    varSpeedCoil.MSEIRWaterFFlow(I) = Curve::GetCurveIndex(state, heatEIRWFFCurveName); // convert curve name to number
-                    if (varSpeedCoil.MSEIRWaterFFlow(I) == 0) {
-                        if (heatEIRWFFCurveName.empty()) {
-                            ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...required {} is blank.", cFieldName));
-                        } else {
-                            ShowSevereInvalidBool(state, eoh, cFieldName, heatEIRWFFCurveName);
-                        }
+                    if (heatEIRWFFCurveName.empty()) {
+                        ShowWarningEmptyField(state, eoh, cFieldName, "Required field is blank.");
+                        ErrorsFound = true;
+                    } else if ((varSpeedCoil.MSEIRWaterFFlow(I) = Curve::GetCurveIndex(state, heatEIRWFFCurveName)) == 0) {
+                        ShowSevereItemNotFound(state, eoh, cFieldName, heatEIRWFFCurveName);
                         ErrorsFound = true;
                     } else {
                         // Verify Curve Object, only legal type is Quadratic
@@ -1531,14 +1471,11 @@ namespace VariableSpeedCoils {
                     fieldValue = format("speed_{}{}", std::to_string(I), "_waste_heat_function_of_temperature_curve_name");
                     cFieldName = format("Speed_{}{}", std::to_string(I), " Waste Heat Function of Temperature Curve Name");
                     std::string const heatWHFTCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
-                    varSpeedCoil.MSWasteHeat(I) = Curve::GetCurveIndex(state, heatWHFTCurveName); // convert curve name to number
-                    if (varSpeedCoil.MSWasteHeat(I) == 0) {
-                        if (heatWHFTCurveName.empty()) {
-                            ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...required {} is blank.", cFieldName));
-                        } else {
-                            ShowSevereInvalidBool(state, eoh, cFieldName, heatWHFTCurveName);
-                        }
+                    if (heatWHFTCurveName.empty()) {
+                        ShowWarningEmptyField(state, eoh, cFieldName, "Required field is blank.");
+                        ErrorsFound = true;
+                    } else if ((varSpeedCoil.MSWasteHeat(I) = Curve::GetCurveIndex(state, heatWHFTCurveName)) == 0) {
+                        ShowSevereItemNotFound(state, eoh, cFieldName, heatWHFTCurveName);
                         ErrorsFound = true;
                     } else {
                         // Verify Curve Object, only legal types are BiQuadratic
@@ -1551,7 +1488,7 @@ namespace VariableSpeedCoils {
                                                              cFieldName);                 // Field Name
 
                         if (!ErrorsFound) {
-                            CurveVal = Curve::CurveValue(state, varSpeedCoil.MSWasteHeat(I), RatedInletAirTempHeat, RatedInletWaterTempHeat);
+                            CurveVal = Curve::CurveValue(state, varSpeedCoil.MSWasteHeat(I), RatedInletWaterTemp, RatedInletAirTemp);
                             if (CurveVal > 1.10 || CurveVal < 0.90) {
                                 ShowWarningError(state, format("{}{}=\"{}\", curve values", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
                                 ShowContinueError(state, format("...{} output is not equal to 1.0 (+ or - 10%) at rated conditions.", cFieldName));
@@ -1700,14 +1637,11 @@ namespace VariableSpeedCoils {
                 // part load curve
                 cFieldName = "Energy Part Load Fraction Curve Name"; // cAlphaFields(4)
                 std::string const heatPLFCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, "energy_part_load_fraction_curve_name");
-                varSpeedCoil.PLFFPLR = Curve::GetCurveIndex(state, heatPLFCurveName); // convert curve name to number
-                if (varSpeedCoil.PLFFPLR == 0) {
-                    if (heatPLFCurveName.empty()) {
-                        ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                        ShowContinueError(state, format("...required {} is blank.", cFieldName));
-                    } else {
-                        ShowSevereInvalidBool(state, eoh, cFieldName, heatPLFCurveName);
-                    }
+                if (heatPLFCurveName.empty()) {
+                    ShowWarningEmptyField(state, eoh, cFieldName, "Required field is blank.");
+                    ErrorsFound = true;
+                } else if ((varSpeedCoil.PLFFPLR = Curve::GetCurveIndex(state, heatPLFCurveName)) == 0) {
+                    ShowSevereItemNotFound(state, eoh, cFieldName, heatPLFCurveName);
                     ErrorsFound = true;
                 } else {
                     CurveVal = Curve::CurveValue(state, varSpeedCoil.PLFFPLR, 1.0);
@@ -1854,14 +1788,11 @@ namespace VariableSpeedCoils {
                     fieldValue = format("speed_{}{}", std::to_string(I), "_heating_capacity_function_of_temperature_curve_name");
                     cFieldName = format("Speed_{}{}", std::to_string(I), " Heating Capacity Function of Temperature Curve Name");
                     std::string const hCapFTCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
-                    varSpeedCoil.MSCCapFTemp(I) = Curve::GetCurveIndex(state, hCapFTCurveName); // convert curve name to number
-                    if (varSpeedCoil.MSCCapFTemp(I) == 0) {
-                        if (hCapFTCurveName.empty()) {
-                            ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...required {} is blank.", cFieldName));
-                        } else {
-                            ShowSevereInvalidBool(state, eoh, cFieldName, hCapFTCurveName);
-                        }
+                    if (hCapFTCurveName.empty()) {
+                        ShowWarningEmptyField(state, eoh, cFieldName, "Required field is blank.");
+                        ErrorsFound = true;
+                    } else if ((varSpeedCoil.MSCCapFTemp(I) = Curve::GetCurveIndex(state, hCapFTCurveName)) == 0) {
+                        ShowSevereItemNotFound(state, eoh, cFieldName, hCapFTCurveName);
                         ErrorsFound = true;
                     } else {
                         // Verify Curve Object, only legal type is BiQuadratic
@@ -1892,14 +1823,11 @@ namespace VariableSpeedCoils {
                         cFieldName = format("Speed_{}{}", std::to_string(I), " Heating Capacity Function of Air Flow Fraction Curve Name");
                     }
                     std::string const hCapFFFCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
-                    varSpeedCoil.MSCCapAirFFlow(I) = Curve::GetCurveIndex(state, hCapFFFCurveName); // convert curve name to number
-                    if (varSpeedCoil.MSCCapAirFFlow(I) == 0) {
-                        if (hCapFFFCurveName.empty()) {
-                            ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...required {} is blank.", cFieldName));
-                        } else {
-                            ShowSevereInvalidBool(state, eoh, cFieldName, hCapFFFCurveName);
-                        }
+                    if (hCapFFFCurveName.empty()) {
+                        ShowWarningEmptyField(state, eoh, cFieldName, "Required field is blank.");
+                        ErrorsFound = true;
+                    } else if ((varSpeedCoil.MSCCapAirFFlow(I) = Curve::GetCurveIndex(state, hCapFFFCurveName)) == 0) {
+                        ShowSevereItemNotFound(state, eoh, cFieldName, hCapFFFCurveName);
                         ErrorsFound = true;
                     } else {
                         // Verify Curve Object, only legal type is Quadratic
@@ -1925,14 +1853,11 @@ namespace VariableSpeedCoils {
                     fieldValue = format("speed_{}{}", std::to_string(I), "_energy_input_ratio_function_of_temperature_curve_name");
                     cFieldName = format("Speed_{}{}", std::to_string(I), " Energy Input Ratio Function of Temperature Curve Name");
                     std::string const hEIRFTCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
-                    varSpeedCoil.MSEIRFTemp(I) = Curve::GetCurveIndex(state, hEIRFTCurveName); // convert curve name to number
-                    if (varSpeedCoil.MSEIRFTemp(I) == 0) {
-                        if (hEIRFTCurveName.empty()) {
-                            ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...required {} is blank.", cFieldName));
-                        } else {
-                            ShowSevereInvalidBool(state, eoh, cFieldName, hEIRFTCurveName);
-                        }
+                    if (hEIRFTCurveName.empty()) {
+                        ShowWarningEmptyField(state, eoh, cFieldName, "Required field is blank.");
+                        ErrorsFound = true;
+                    } else if ((varSpeedCoil.MSEIRFTemp(I) = Curve::GetCurveIndex(state, hEIRFTCurveName)) == 0) {
+                        ShowSevereInvalidBool(state, eoh, cFieldName, hEIRFTCurveName);
                         ErrorsFound = true;
                     } else {
                         // Verify Curve Object, only legal type is BiQuadratic
@@ -1958,14 +1883,11 @@ namespace VariableSpeedCoils {
                     fieldValue = format("speed_{}{}", std::to_string(I), "_energy_input_ratio_function_of_air_flow_fraction_curve_name");
                     cFieldName = format("Speed_{}{}", std::to_string(I), " Energy Input Ratio Function of Air Flow Fraction Curve Name");
                     std::string const hEIRFFFCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
-                    varSpeedCoil.MSEIRAirFFlow(I) = Curve::GetCurveIndex(state, hEIRFFFCurveName); // convert curve name to number
-                    if (varSpeedCoil.MSEIRAirFFlow(I) == 0) {
-                        if (hEIRFFFCurveName.empty()) {
-                            ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...required {} is blank.", cFieldName));
-                        } else {
-                            ShowSevereInvalidBool(state, eoh, cFieldName, hEIRFFFCurveName);
-                        }
+                    if (hEIRFFFCurveName.empty()) {
+                        ShowWarningEmptyField(state, eoh, cFieldName, "Required field is blank.");
+                        ErrorsFound = true;
+                    } else if ((varSpeedCoil.MSEIRAirFFlow(I) = Curve::GetCurveIndex(state, hEIRFFFCurveName)) == 0) {
+                        ShowSevereItemNotFound(state, eoh, cFieldName, hEIRFFFCurveName);
                         ErrorsFound = true;
                     } else {
                         // Verify Curve Object, only legal type is Quadratic
@@ -2273,14 +2195,11 @@ namespace VariableSpeedCoils {
                 // part load curve
                 cFieldName = "Part Load Fraction Correlation Curve Name";
                 fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "part_load_fraction_correlation_curve_name");
-                varSpeedCoil.PLFFPLR = Curve::GetCurveIndex(state, fieldValue); // convert curve name to number
-                if (varSpeedCoil.PLFFPLR == 0) {
-                    if (cFieldName.empty()) {
-                        ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                        ShowContinueError(state, format("...required {} is blank.", cFieldName));
-                    } else {
-                        ShowSevereItemNotFound(state, eoh, cFieldName, fieldValue);
-                    }
+                if (fieldValue.empty()) {
+                    ShowWarningEmptyField(state, eoh, cFieldName, "Required field is blank.");
+                    ErrorsFound = true;
+                } else if ((varSpeedCoil.PLFFPLR = Curve::GetCurveIndex(state, fieldValue)) == 0) {
+                    ShowSevereItemNotFound(state, eoh, cFieldName, fieldValue);
                     ErrorsFound = true;
                 } else {
                     CurveVal = Curve::CurveValue(state, varSpeedCoil.PLFFPLR, 1.0);
@@ -2309,14 +2228,11 @@ namespace VariableSpeedCoils {
                     cFieldName = format("Speed_{}{}", std::to_string(I), " Total WH Capacity Function of Temperature Curve Name");
                     jfieldName = format("speed_{}{}", std::to_string(I), "_total_wh_capacity_function_of_temperature_curve_name");
                     fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, jfieldName);
-                    varSpeedCoil.MSCCapFTemp(I) = Curve::GetCurveIndex(state, fieldValue); // convert curve name to number
-                    if (varSpeedCoil.MSCCapFTemp(I) == 0) {
-                        if (fieldValue.empty()) {
-                            ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...required {} is blank.", cFieldName));
-                        } else {
-                            ShowSevereItemNotFound(state, eoh, cFieldName, fieldValue);
-                        }
+                    if (fieldValue.empty()) {
+                        ShowWarningEmptyField(state, eoh, cFieldName, "Required field is blank.");
+                        ErrorsFound = true;
+                    } else if ((varSpeedCoil.MSCCapFTemp(I) = Curve::GetCurveIndex(state, fieldValue)) == 0) {
+                        ShowSevereItemNotFound(state, eoh, cFieldName, fieldValue);
                         ErrorsFound = true;
                     } else {
                         // Verify Curve Object, only legal type is BiQuadratic
@@ -2341,14 +2257,11 @@ namespace VariableSpeedCoils {
                     cFieldName = format("Speed_{}{}", std::to_string(I), " Total WH Capacity Function of Air Flow Fraction Curve Name");
                     jfieldName = format("speed_{}{}", std::to_string(I), "_total_wh_capacity_function_of_air_flow_fraction_curve_name");
                     fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, jfieldName);
-                    varSpeedCoil.MSCCapAirFFlow(I) = Curve::GetCurveIndex(state, fieldValue); // convert curve name to number
-                    if (varSpeedCoil.MSCCapAirFFlow(I) == 0) {
-                        if (fieldValue.empty()) {
-                            ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...required {} is blank.", cFieldName));
-                        } else {
-                            ShowSevereItemNotFound(state, eoh, cFieldName, fieldValue);
-                        }
+                    if (fieldValue.empty()) {
+                        ShowWarningEmptyField(state, eoh, cFieldName, "Required field is blank.");
+                        ErrorsFound = true;
+                    } else if ((varSpeedCoil.MSCCapAirFFlow(I) = Curve::GetCurveIndex(state, fieldValue)) == 0) {
+                        ShowSevereItemNotFound(state, eoh, cFieldName, fieldValue);
                         ErrorsFound = true;
                     } else {
                         // Verify Curve Object, only legal type is Quadratic
@@ -2373,17 +2286,14 @@ namespace VariableSpeedCoils {
                     cFieldName = format("Speed_{}{}", std::to_string(I), " Total WH Capacity Function of Water Flow Fraction Curve Name");
                     jfieldName = format("speed_{}{}", std::to_string(I), "_total_wh_capacity_function_of_water_flow_fraction_curve_name");
                     fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, jfieldName);
-                    varSpeedCoil.MSCCapWaterFFlow(I) = Curve::GetCurveIndex(state, fieldValue); // convert curve name to number
-                    if (varSpeedCoil.MSCCapWaterFFlow(I) == 0) {
-                        if (fieldValue.empty()) {
-                            ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...required {} is blank.", cFieldName));
-                        } else {
-                            ShowSevereItemNotFound(state, eoh, cFieldName, fieldValue);
-                        }
+                    if (fieldValue.empty()) {
+                        ShowWarningEmptyField(state, eoh, cFieldName, "Required field is blank.");
+                        ErrorsFound = true;
+                    } else if ((varSpeedCoil.MSCCapWaterFFlow(I) = Curve::GetCurveIndex(state, fieldValue)) == 0) {
+                        ShowSevereItemNotFound(state, eoh, cFieldName, fieldValue);
                         ErrorsFound = true;
                     } else {
-                        // Verify Curve Object, only legal type is Quadratic
+                        // Verify Curve Object, only legal type is BiQuadratic
                         ErrorsFound |= Curve::CheckCurveDims(state,
                                                              varSpeedCoil.MSCCapWaterFFlow(I), // Curve index
                                                              {1},                              // Valid dimensions
@@ -2405,14 +2315,11 @@ namespace VariableSpeedCoils {
                     cFieldName = format("Speed_{}{}", std::to_string(I), " COP Function of Temperature Curve Name");
                     jfieldName = format("speed_{}{}", std::to_string(I), "_cop_function_of_temperature_curve_name");
                     fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, jfieldName);
-                    varSpeedCoil.MSEIRFTemp(I) = Curve::GetCurveIndex(state, fieldValue); // convert curve name to number
-                    if (varSpeedCoil.MSEIRFTemp(I) == 0) {
-                        if (fieldValue.empty()) {
-                            ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...required {} is blank.", cFieldName));
-                        } else {
-                            ShowSevereItemNotFound(state, eoh, cFieldName, fieldValue);
-                        }
+                    if (fieldValue.empty()) {
+                        ShowWarningEmptyField(state, eoh, cFieldName, "Required field is blank.");
+                        ErrorsFound = true;
+                    } else if ((varSpeedCoil.MSEIRFTemp(I) = Curve::GetCurveIndex(state, fieldValue)) == 0) {
+                        ShowSevereInvalidBool(state, eoh, cFieldName, fieldValue);
                         ErrorsFound = true;
                     } else {
                         // Verify Curve Object, only legal type is BiQuadratic
@@ -2437,14 +2344,11 @@ namespace VariableSpeedCoils {
                     cFieldName = format("Speed_{}{}", std::to_string(I), " COP Function of Air Flow Fraction Curve Name");
                     jfieldName = format("speed_{}{}", std::to_string(I), "_cop_function_of_air_flow_fraction_curve_name");
                     fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, jfieldName);
-                    varSpeedCoil.MSEIRAirFFlow(I) = Curve::GetCurveIndex(state, fieldValue); // convert curve name to number
-                    if (varSpeedCoil.MSEIRAirFFlow(I) == 0) {
-                        if (fieldValue.empty()) {
-                            ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...required {} is blank.", cFieldName));
-                        } else {
-                            ShowSevereItemNotFound(state, eoh, cFieldName, fieldValue);
-                        }
+                    if (fieldValue.empty()) {
+                        ShowWarningEmptyField(state, eoh, cFieldName, "Required field is blank.");
+                        ErrorsFound = true;
+                    } else if ((varSpeedCoil.MSEIRAirFFlow(I) = Curve::GetCurveIndex(state, fieldValue)) == 0) {
+                        ShowSevereItemNotFound(state, eoh, cFieldName, fieldValue);
                         ErrorsFound = true;
                     } else {
                         // Verify Curve Object, only legal type is Quadratic
@@ -2469,14 +2373,11 @@ namespace VariableSpeedCoils {
                     cFieldName = format("Speed_{}{}", std::to_string(I), " COP Function of Water Flow Fraction Curve Name");
                     jfieldName = format("speed_{}{}", std::to_string(I), "_cop_function_of_water_flow_fraction_curve_name");
                     fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, jfieldName);
-                    varSpeedCoil.MSEIRWaterFFlow(I) = Curve::GetCurveIndex(state, fieldValue); // convert curve name to number
-                    if (varSpeedCoil.MSEIRWaterFFlow(I) == 0) {
-                        if (fieldValue.empty()) {
-                            ShowSevereError(state, format("{}{}=\"{}\", missing", RoutineName, CurrentModuleObject, varSpeedCoil.Name));
-                            ShowContinueError(state, format("...required {} is blank.", cFieldName));
-                        } else {
-                            ShowSevereItemNotFound(state, eoh, cFieldName, fieldValue);
-                        }
+                    if (fieldValue.empty()) {
+                        ShowWarningEmptyField(state, eoh, cFieldName, "Required field is blank.");
+                        ErrorsFound = true;
+                    } else if ((varSpeedCoil.MSEIRWaterFFlow(I) = Curve::GetCurveIndex(state, fieldValue)) == 0) {
+                        ShowSevereItemNotFound(state, eoh, cFieldName, fieldValue);
                         ErrorsFound = true;
                     } else {
                         // Verify Curve Object, only legal type is Quadratic

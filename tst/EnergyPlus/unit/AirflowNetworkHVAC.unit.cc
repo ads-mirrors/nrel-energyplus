@@ -6043,7 +6043,6 @@ TEST_F(EnergyPlusFixture, AirflowNetwork_MultiAirLoopTest)
 
     // The original test was changing the CompTypeNum, as that goes away it's necessaey to actually
     // switch out the elements. This is probably an unwise approach.
-    state->afn->AirflowNetworkCompData(state->afn->AirflowNetworkLinkageData(2).CompNum).CompTypeNum = AirflowNetwork::AirflowElementType::DOP;
     auto const ye_olde_element = state->afn->AirflowNetworkLinkageData(2).element;
     AirflowNetwork::DetailedOpening dop;
     for (auto &link : state->afn->AirflowNetworkLinkageData) {
@@ -6073,7 +6072,6 @@ TEST_F(EnergyPlusFixture, AirflowNetwork_MultiAirLoopTest)
             link.element = ye_olde_element;
         }
     }
-    state->afn->AirflowNetworkCompData(state->afn->AirflowNetworkLinkageData(2).CompNum).CompTypeNum = AirflowNetwork::AirflowElementType::SCR;
     state->afn->update();
     state->afn->report();
     EXPECT_NEAR(state->afn->exchangeData(1).SumMCp, 2.38012, 0.001);

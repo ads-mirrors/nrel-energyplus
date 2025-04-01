@@ -9426,7 +9426,7 @@ namespace AirflowNetwork {
             CpAir = PsyCpAirFnW((AirflowNetworkNodeSimu(Node1).WZ + AirflowNetworkNodeSimu(Node2).WZ) / 2.0);
             // Calculate sensible loads from duct conduction losses and loads from duct radiation
             if (AirflowNetworkLinkageData(i).ZoneNum > 0 &&
-                AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum == AirflowElementType::DWC) {
+                AirflowNetworkLinkageData(i).element->type() == AirflowElementType::DWC) {
                 Qsen = AirflowNetworkLinkSimu(i).FLOW * CpAir * (AirflowNetworkNodeSimu(Node2).TZ - AirflowNetworkNodeSimu(Node1).TZ);
                 if (AirflowNetworkLinkageData(i).LinkageViewFactorObjectNum != 0) {
                     auto const &DuctRadObj(AirflowNetworkLinkageViewFactorData(AirflowNetworkLinkageData(i).LinkageViewFactorObjectNum));
@@ -9464,7 +9464,7 @@ namespace AirflowNetwork {
             Node2 = AirflowNetworkLinkageData(i).NodeNums[1];
             // Calculate latent loads from duct conduction losses
             if (AirflowNetworkLinkageData(i).ZoneNum > 0 &&
-                AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum == AirflowElementType::DWC) {
+                AirflowNetworkLinkageData(i).element->type() == AirflowElementType::DWC) {
                 Qlat = AirflowNetworkLinkSimu(i).FLOW * (AirflowNetworkNodeSimu(Node2).WZ - AirflowNetworkNodeSimu(Node1).WZ);
                 if (!LoopOnOffFlag(AirflowNetworkLinkageData(i).AirLoopNum)) Qlat = 0.0;
                 exchangeData(AirflowNetworkLinkageData(i).ZoneNum).DiffLat -= Qlat;
@@ -10570,7 +10570,7 @@ namespace AirflowNetwork {
         // Assign fan inlet and outlet node, and coil outlet
         for (int i = 1; i <= AirflowNetworkNumOfLinks; ++i) {
             int j = AirflowNetworkLinkageData(i).CompNum;
-            if (AirflowNetworkCompData(j).CompTypeNum == AirflowElementType::CVF) {
+            if (AirflowNetworkLinkageData(i).element->type() == AirflowElementType::CVF) {
                 if (AirflowNetworkNodeData(AirflowNetworkLinkageData(i).NodeNums[0]).EPlusTypeNum == EPlusNodeType::Invalid)
                     AirflowNetworkNodeData(AirflowNetworkLinkageData(i).NodeNums[0]).EPlusTypeNum = EPlusNodeType::FIN;
                 AirflowNetworkNodeData(AirflowNetworkLinkageData(i).NodeNums[1]).EPlusTypeNum = EPlusNodeType::FOU;
@@ -10581,7 +10581,7 @@ namespace AirflowNetwork {
             if (AirflowNetworkCompData(j).EPlusTypeNum == EPlusComponentType::HEX) {
                 AirflowNetworkNodeData(AirflowNetworkLinkageData(i).NodeNums[1]).EPlusTypeNum = EPlusNodeType::HXO;
             }
-            if (AirflowNetworkCompData(j).CompTypeNum == AirflowElementType::TMU) {
+            if (AirflowNetworkLinkageData(i).element->type() == AirflowElementType::TMU) {
                 if (DisSysCompTermUnitData(AirflowNetworkCompData(j).TypeNum).DamperInletNode > 0) {
                     if (AirflowNetworkNodeData(AirflowNetworkLinkageData(i).NodeNums[0]).EPlusNodeNum ==
                             DisSysCompTermUnitData(AirflowNetworkCompData(j).TypeNum).DamperInletNode &&
@@ -10598,10 +10598,10 @@ namespace AirflowNetwork {
         // Validate the position of constant pressure drop component
         CurrentModuleObject = "AirflowNetwork:Distribution:Component:ConstantPressureDrop";
         for (int i = 1; i <= AirflowNetworkNumOfLinks; ++i) {
-            if (AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum == AirflowElementType::CPD) {
+            if (AirflowNetworkLinkageData(i).element->type() == AirflowElementType::CPD) {
                 for (int j = 1; j <= AirflowNetworkNumOfLinks; ++j) {
                     if (AirflowNetworkLinkageData(i).NodeNums[0] == AirflowNetworkLinkageData(j).NodeNums[1]) {
-                        if (AirflowNetworkCompData(AirflowNetworkLinkageData(j).CompNum).CompTypeNum != AirflowElementType::DWC) {
+                        if (AirflowNetworkLinkageData(j).element->type() != AirflowElementType::DWC) {
                             ShowSevereError(m_state,
                                             format(RoutineName) + "An " + CurrentModuleObject + " object (" + AirflowNetworkLinkageData(i).CompName +
                                                 ')');
@@ -10908,7 +10908,7 @@ namespace AirflowNetwork {
 
         // Catch a fan flow rate from EPlus input file and add a flag for VAV terminal damper
         for (int i = 1; i <= AirflowNetworkNumOfLinks; ++i) {
-            switch (AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum) {
+            switch (AirflowNetworkLinkageData(i).element->type()) {
             case AirflowElementType::CVF: { // 'CVF'
                 int typeNum = AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).TypeNum;
                 if (DisSysCompCVFData(typeNum).fanType == HVAC::FanType::VAV) {
@@ -11935,7 +11935,7 @@ namespace AirflowNetwork {
 
         for (AFNLinkNum = 1; AFNLinkNum <= AirflowNetworkNumOfLinks; AFNLinkNum++) {
             CompNum = AirflowNetworkLinkageData(AFNLinkNum).CompNum;
-            AirflowElementType CompTypeNum = AirflowNetworkCompData(CompNum).CompTypeNum;
+            AirflowElementType CompTypeNum = AirflowNetworkLinkageData(AFNLinkNum).element->type();
             SumLength = 0.0;
             DynamicLoss = 0.0;
             MaxRough = 0.0;
@@ -11957,7 +11957,7 @@ namespace AirflowNetwork {
                     int CompNum1;
                     AirflowElementType CompTypeNum1;
                     CompNum1 = AirflowNetworkLinkageData(AFNLinkNum).CompNum;
-                    CompTypeNum1 = AirflowNetworkCompData(CompNum1).CompTypeNum;
+                    CompTypeNum1 = AirflowNetworkLinkageData(AFNLinkNum).element->type();
                     if (CompTypeNum1 == AirflowElementType::DWC) {
                         AirflowNetworkLinkageData(AFNLinkNum).ductLineType = DuctLineType::SupplyTrunk;
                         TypeNum = AirflowNetworkCompData(CompNum1).TypeNum;
@@ -11971,11 +11971,11 @@ namespace AirflowNetwork {
                     while (NodeNum1 != NodeSplitter) {
                         for (AFNLinkNum1 = 1; AFNLinkNum1 <= AirflowNetworkNumOfLinks; AFNLinkNum1++) {
                             if (NodeNum1 != AirflowNetworkLinkageData(AFNLinkNum1).NodeNums[0]) continue;
-                            if (AirflowNetworkCompData(AirflowNetworkLinkageData(AFNLinkNum1).CompNum).CompTypeNum != AirflowElementType::DWC)
+                            if (AirflowNetworkLinkageData(AFNLinkNum1).element->type() != AirflowElementType::DWC)
                                 continue;
                             if (NodeNum1 == AirflowNetworkLinkageData(AFNLinkNum1).NodeNums[0]) {
                                 CompNum1 = AirflowNetworkLinkageData(AFNLinkNum1).CompNum;
-                                CompTypeNum1 = AirflowNetworkCompData(CompNum1).CompTypeNum;
+                                CompTypeNum1 = AirflowNetworkLinkageData(AFNLinkNum1).element->type();
                                 if (CompTypeNum1 == AirflowElementType::DWC) {
                                     AirflowNetworkLinkageData(AFNLinkNum1).ductLineType = DuctLineType::SupplyTrunk;
                                     TypeNum = AirflowNetworkCompData(CompNum1).TypeNum;
@@ -12076,7 +12076,7 @@ namespace AirflowNetwork {
                     int CompNum1;
                     AirflowElementType CompTypeNum1;
                     CompNum1 = AirflowNetworkLinkageData(AFNLinkNum).CompNum;
-                    CompTypeNum1 = AirflowNetworkCompData(CompNum1).CompTypeNum;
+                    CompTypeNum1 = AirflowNetworkLinkageData(AFNLinkNum).element->type();
                     if (CompTypeNum1 == AirflowElementType::DWC) {
                         AirflowNetworkLinkageData(AFNLinkNum).ductLineType = DuctLineType::SupplyBranch;
                         TypeNum = AirflowNetworkCompData(CompNum1).TypeNum;
@@ -12089,11 +12089,11 @@ namespace AirflowNetwork {
                     while (NodeNum1 != NodeSplitter) {
                         for (AFNLinkNum1 = 1; AFNLinkNum1 <= AirflowNetworkNumOfLinks; AFNLinkNum1++) {
                             if (NodeNum1 != AirflowNetworkLinkageData(AFNLinkNum1).NodeNums[1]) continue;
-                            if (AirflowNetworkCompData(AirflowNetworkLinkageData(AFNLinkNum1).CompNum).CompTypeNum != AirflowElementType::DWC)
+                            if (AirflowNetworkLinkageData(AFNLinkNum1).element->type() != AirflowElementType::DWC)
                                 continue;
                             if (NodeNum1 == AirflowNetworkLinkageData(AFNLinkNum1).NodeNums[1]) {
                                 CompNum1 = AirflowNetworkLinkageData(AFNLinkNum1).CompNum;
-                                CompTypeNum1 = AirflowNetworkCompData(CompNum1).CompTypeNum;
+                                CompTypeNum1 = AirflowNetworkLinkageData(AFNLinkNum1).element->type();
                                 if (CompTypeNum1 == AirflowElementType::DWC) {
                                     AirflowNetworkLinkageData(AFNLinkNum1).ductLineType = DuctLineType::SupplyBranch;
                                     TypeNum = AirflowNetworkCompData(CompNum1).TypeNum;
@@ -12198,7 +12198,7 @@ namespace AirflowNetwork {
                     int CompNum1;
                     AirflowElementType CompTypeNum1;
                     CompNum1 = AirflowNetworkLinkageData(AFNLinkNum).CompNum;
-                    CompTypeNum1 = AirflowNetworkCompData(CompNum1).CompTypeNum;
+                    CompTypeNum1 = AirflowNetworkLinkageData(AFNLinkNum).element->type();
                     if (CompTypeNum1 == AirflowElementType::DWC) {
                         AirflowNetworkLinkageData(AFNLinkNum).ductLineType = DuctLineType::ReturnTrunk;
                         TypeNum = AirflowNetworkCompData(CompNum1).TypeNum;
@@ -12211,11 +12211,11 @@ namespace AirflowNetwork {
                     while (NodeNum1 != NodeMixer) {
                         for (AFNLinkNum1 = 1; AFNLinkNum1 <= AirflowNetworkNumOfLinks; AFNLinkNum1++) {
                             if (NodeNum1 != AirflowNetworkLinkageData(AFNLinkNum1).NodeNums[1]) continue;
-                            if (AirflowNetworkCompData(AirflowNetworkLinkageData(AFNLinkNum1).CompNum).CompTypeNum != AirflowElementType::DWC)
+                            if (AirflowNetworkLinkageData(AFNLinkNum1).element->type() != AirflowElementType::DWC)
                                 continue;
                             if (NodeNum1 == AirflowNetworkLinkageData(AFNLinkNum1).NodeNums[1]) {
                                 CompNum1 = AirflowNetworkLinkageData(AFNLinkNum1).CompNum;
-                                CompTypeNum1 = AirflowNetworkCompData(CompNum1).CompTypeNum;
+                                CompTypeNum1 = AirflowNetworkLinkageData(AFNLinkNum1).element->type();
                                 if (CompTypeNum1 == AirflowElementType::DWC) {
                                     AirflowNetworkLinkageData(AFNLinkNum1).ductLineType = DuctLineType::ReturnTrunk;
                                     TypeNum = AirflowNetworkCompData(CompNum1).TypeNum;
@@ -12318,7 +12318,7 @@ namespace AirflowNetwork {
                     int CompNum1;
                     AirflowElementType CompTypeNum1;
                     CompNum1 = AirflowNetworkLinkageData(AFNLinkNum).CompNum;
-                    CompTypeNum1 = AirflowNetworkCompData(CompNum1).CompTypeNum;
+                    CompTypeNum1 = AirflowNetworkLinkageData(AFNLinkNum).element->type();
                     if (CompTypeNum1 == AirflowElementType::DWC) {
                         AirflowNetworkLinkageData(AFNLinkNum).ductLineType = DuctLineType::ReturnBranch;
                         TypeNum = AirflowNetworkCompData(CompNum1).TypeNum;
@@ -12331,11 +12331,11 @@ namespace AirflowNetwork {
                     while (NodeNum1 != NodeMixer) {
                         for (AFNLinkNum1 = 1; AFNLinkNum1 <= AirflowNetworkNumOfLinks; AFNLinkNum1++) {
                             if (NodeNum1 != AirflowNetworkLinkageData(AFNLinkNum1).NodeNums[0]) continue;
-                            if (AirflowNetworkCompData(AirflowNetworkLinkageData(AFNLinkNum1).CompNum).CompTypeNum != AirflowElementType::DWC)
+                            if (AirflowNetworkLinkageData(AFNLinkNum1).element->type() != AirflowElementType::DWC)
                                 continue;
                             if (NodeNum1 == AirflowNetworkLinkageData(AFNLinkNum1).NodeNums[0]) {
                                 CompNum1 = AirflowNetworkLinkageData(AFNLinkNum1).CompNum;
-                                CompTypeNum1 = AirflowNetworkCompData(CompNum1).CompTypeNum;
+                                CompTypeNum1 = AirflowNetworkLinkageData(AFNLinkNum1).element->type();
                                 if (CompTypeNum1 == AirflowElementType::DWC) {
                                     AirflowNetworkLinkageData(AFNLinkNum1).ductLineType = DuctLineType::ReturnBranch;
                                     TypeNum = AirflowNetworkCompData(CompNum1).TypeNum;
@@ -13135,7 +13135,7 @@ namespace AirflowNetwork {
             // if (LIST >= 1) {
             //    gio::write(outputFile, Format_901) << "Flow: " << i << n << m << AirflowNetworkLinkSimu(i).DP << AFLOW(i) << AFLOW2(i);
             //}
-            if (AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum == AirflowElementType::HOP) {
+            if (AirflowNetworkLinkageData(i).element->type() == AirflowElementType::HOP) {
                 SUMAF(n) = SUMAF(n) - AFLOW(i);
                 SUMAF(m) += AFLOW(i);
             } else {
@@ -13157,7 +13157,7 @@ namespace AirflowNetwork {
                 AirflowNetworkLinkSimu(i).FLOW = 0.0;
                 AirflowNetworkLinkSimu(i).FLOW2 = -AFLOW(i);
             }
-            if (AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum == AirflowElementType::HOP) {
+            if (AirflowNetworkLinkageData(i).element->type() == AirflowElementType::HOP) {
                 if (AFLOW(i) > 0.0) {
                     AirflowNetworkLinkSimu(i).FLOW = AFLOW(i) + AFLOW2(i);
                     AirflowNetworkLinkSimu(i).FLOW2 = AFLOW2(i);
@@ -13172,7 +13172,7 @@ namespace AirflowNetwork {
                     AirflowNetworkLinkSimu(i).FLOW2 = AFLOW2(i);
                 }
             }
-            if (AirflowNetworkCompData(AirflowNetworkLinkageData(i).CompNum).CompTypeNum == AirflowElementType::SOP && AFLOW2(i) != 0.0) {
+            if (AirflowNetworkLinkageData(i).element->type() == AirflowElementType::SOP && AFLOW2(i) != 0.0) {
                 if (AFLOW(i) >= 0.0) {
                     AirflowNetworkLinkSimu(i).FLOW = AFLOW(i);
                     AirflowNetworkLinkSimu(i).FLOW2 = std::abs(AFLOW2(i));

@@ -276,6 +276,12 @@ namespace VariableSpeedCoils {
                 state.dataHeatBal->HeatReclaimVS_Coil(DXCoilNum).SourceType = CurrentModuleObject;
                 varSpeedCoil.VSCoilType = HVAC::Coil_CoolingWaterToAirHPVSEquationFit;
                 varSpeedCoil.VarSpeedCoilType = HVAC::cAllCoilTypes(varSpeedCoil.VSCoilType);
+                std::string const availSchedName = s_ip->getAlphaFieldValue(fields, schemaProps, "availability_schedule_name");
+                if (availSchedName.empty()) {
+                    varSpeedCoil.availSched = Sched::GetScheduleAlwaysOn(state);
+                } else if ((varSpeedCoil.availSched = Sched::GetSchedule(state, availSchedName)) == nullptr) {
+                    ShowSevereItemNotFound(state, eoh, "Availability Schedule Name", availSchedName);
+                }
                 varSpeedCoil.NumOfSpeeds = s_ip->getIntFieldValue(fields, schemaProps, "number_of_speeds");
                 varSpeedCoil.NormSpedLevel = s_ip->getIntFieldValue(fields, schemaProps, "nominal_speed_level");
 
@@ -1167,6 +1173,12 @@ namespace VariableSpeedCoils {
                 varSpeedCoil.VSCoilType = HVAC::Coil_HeatingWaterToAirHPVSEquationFit;
                 varSpeedCoil.VarSpeedCoilType = HVAC::cAllCoilTypes(varSpeedCoil.VSCoilType);
                 varSpeedCoil.CondenserType = DataHeatBalance::RefrigCondenserType::Water;
+                std::string const availSchedName = s_ip->getAlphaFieldValue(fields, schemaProps, "availability_schedule_name");
+                if (availSchedName.empty()) {
+                    varSpeedCoil.availSched = Sched::GetScheduleAlwaysOn(state);
+                } else if ((varSpeedCoil.availSched = Sched::GetSchedule(state, availSchedName)) == nullptr) {
+                    ShowSevereItemNotFound(state, eoh, "Availability Schedule Name", availSchedName);
+                }
                 varSpeedCoil.NumOfSpeeds = s_ip->getIntFieldValue(fields, schemaProps, "number_of_speeds");
                 varSpeedCoil.NormSpedLevel = s_ip->getIntFieldValue(fields, schemaProps, "nominal_speed_level");
                 auto &hCap = fields.at("rated_heating_capacity_at_selected_nominal_speed_level");

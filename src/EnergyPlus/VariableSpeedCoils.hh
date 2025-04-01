@@ -72,9 +72,10 @@ namespace VariableSpeedCoils {
     struct VariableSpeedCoilData // variable speed coil
     {
         // Members
-        std::string Name;              // Name of the  Coil
-        std::string VarSpeedCoilType;  // type of coil
-        int NumOfSpeeds;               // Number of speeds
+        std::string Name;                      // Name of the  Coil
+        Sched::Schedule *availSched = nullptr; // availability schedule
+        std::string VarSpeedCoilType;          // type of coil
+        int NumOfSpeeds;                       // Number of speeds
         int NormSpedLevel;             // Nominal speed level
         Real64 RatedWaterVolFlowRate;  // Rated/Ref Water Volumetric Flow Rate [m3/s]
         Real64 RatedWaterMassFlowRate; // Rated/Ref Water Volumetric Flow Rate [m3/s]

@@ -52,7 +52,6 @@
 #include <ObjexxFCL/Array1D.hh>
 
 // EnergyPlus Headers
-#include <EnergyPlus/CurveManager.hh> // Should we start using .fwd.hh for forward declarations?
 #include <EnergyPlus/Data/BaseData.hh>
 #include <EnergyPlus/DataGlobalConstants.hh>
 #include <EnergyPlus/DataGlobals.hh>
@@ -66,6 +65,10 @@ namespace EnergyPlus {
 
 // Forward declarations
 struct EnergyPlusData;
+
+namespace Curve {
+    struct Curve;
+}
 
 namespace ChillerGasAbsorption {
 

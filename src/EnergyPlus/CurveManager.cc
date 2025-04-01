@@ -2780,7 +2780,7 @@ namespace Curve {
         // from the getinput.
 
         // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-        for (auto &thisCurve : state.dataCurveManager->curves) {
+        for (auto *thisCurve : state.dataCurveManager->curves) {
             for (int dim = 1; dim <= thisCurve->numDims; ++dim) {
                 std::string numStr = fmt::to_string(dim);
                 SetupOutputVariable(state,
@@ -2833,7 +2833,7 @@ namespace Curve {
         }
 
         if (state.dataGlobal->AnyEnergyManagementSystemInModel) { // provide hook for possible EMS control
-            for (auto &thisCurve : state.dataCurveManager->curves) {
+            for (auto *thisCurve : state.dataCurveManager->curves) {
                 SetupEMSActuator(
                     state, "Curve", thisCurve->Name, "Curve Result", "[unknown]", thisCurve->EMSOverrideOn, thisCurve->EMSOverrideCurveValue);
             } // All performance curves
@@ -3007,11 +3007,6 @@ namespace Curve {
         return found != CurveOutputType::Invalid;
     }
 
-    bool Curve::checkDims(EnergyPlusData &state, std::vector<int> const &validDims)
-    {
-        return std::find(validDims.begin(), validDims.end(), numDims) != validDims.end();
-    }
-  
     bool CheckCurveDims(EnergyPlusData &state,
                         int const CurveIndex,
                         std::vector<int> const &validDims,

@@ -168,8 +168,6 @@ namespace Curve {
         bool EMSOverrideOn = false;         // if TRUE, then EMS is calling to override curve value
         Real64 EMSOverrideCurveValue = 0.0; // Value of curve result EMS is directing to use
 
-        bool checkDims(EnergyPlusData &state, std::vector<int> const &validDims);
-      
         Real64 value(EnergyPlusData &state, Real64 V1);
         Real64 value(EnergyPlusData &state, Real64 V1, Real64 V2);
         Real64 value(EnergyPlusData &state, Real64 V1, Real64 V2, Real64 V3);

@@ -52,7 +52,6 @@
 #include <ObjexxFCL/Array1D.hh>
 
 // EnergyPlus Headers
-#include <EnergyPlus/CurveManager.hh>
 #include <EnergyPlus/Data/BaseData.hh>
 #include <EnergyPlus/DataGlobals.hh>
 #include <EnergyPlus/DataHVACGlobals.hh>
@@ -63,6 +62,10 @@ namespace EnergyPlus {
 
 // Forward declarations
 struct EnergyPlusData;
+
+namespace Curve {
+    struct Curve;
+}
 
 namespace EvaporativeCoolers {
 

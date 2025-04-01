@@ -52,7 +52,6 @@
 #include <ObjexxFCL/Array1D.hh>
 
 // EnergyPlus Headers
-#include <EnergyPlus/CurveManager.hh> // Should we use forward declarations for struct Curve?
 #include <EnergyPlus/Data/BaseData.hh>
 #include <EnergyPlus/DataGenerators.hh>
 #include <EnergyPlus/EnergyPlus.hh>
@@ -61,6 +60,11 @@
 
 namespace EnergyPlus {
 
+// Forward declarations  
+namespace Curve {
+    struct Curve;
+}
+  
 namespace FuelCellElectricGenerator {
 
     enum class GasID

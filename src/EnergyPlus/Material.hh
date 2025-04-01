@@ -49,7 +49,6 @@
 #define Material_hh_INCLUDED
 
 // EnergyPlus Headers
-#include <EnergyPlus/CurveManager.hh>
 #include <EnergyPlus/Data/BaseData.hh>
 #include <EnergyPlus/DataWindowEquivalentLayer.hh>
 #include <EnergyPlus/EnergyPlus.hh>
@@ -61,6 +60,11 @@
 
 namespace EnergyPlus {
 
+// Forward declarations
+namespace Curve {
+    struct Curve;
+}
+  
 namespace Material {
 
     // Parameters to indicate material group type for use with the Material

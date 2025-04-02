@@ -703,6 +703,12 @@ namespace VariableSpeedCoils {
                 varSpeedCoil.CoolHeatType = "COOLING";
                 varSpeedCoil.VSCoilType = HVAC::Coil_CoolingAirToAirVariableSpeed;
                 varSpeedCoil.VarSpeedCoilType = HVAC::cAllCoilTypes(varSpeedCoil.VSCoilType);
+                std::string const availSchedName = s_ip->getAlphaFieldValue(fields, schemaProps, "availability_schedule_name");
+                if (availSchedName.empty()) {
+                    varSpeedCoil.availSched = Sched::GetScheduleAlwaysOn(state);
+                } else if ((varSpeedCoil.availSched = Sched::GetSchedule(state, availSchedName)) == nullptr) {
+                    ShowSevereItemNotFound(state, eoh, "Availability Schedule Name", availSchedName);
+                }
                 varSpeedCoil.NumOfSpeeds = s_ip->getIntFieldValue(fields, schemaProps, "number_of_speeds");
                 varSpeedCoil.NormSpedLevel = s_ip->getIntFieldValue(fields, schemaProps, "nominal_speed_level");
 
@@ -1583,6 +1589,12 @@ namespace VariableSpeedCoils {
                 varSpeedCoil.CoolHeatType = "HEATING";
                 varSpeedCoil.VSCoilType = HVAC::Coil_HeatingAirToAirVariableSpeed;
                 varSpeedCoil.VarSpeedCoilType = HVAC::cAllCoilTypes(HVAC::Coil_HeatingAirToAirVariableSpeed);
+                std::string const availSchedName = s_ip->getAlphaFieldValue(fields, schemaProps, "availability_schedule_name");
+                if (availSchedName.empty()) {
+                    varSpeedCoil.availSched = Sched::GetScheduleAlwaysOn(state);
+                } else if ((varSpeedCoil.availSched = Sched::GetSchedule(state, availSchedName)) == nullptr) {
+                    ShowSevereItemNotFound(state, eoh, "Availability Schedule Name", availSchedName);
+                }
                 varSpeedCoil.NumOfSpeeds = s_ip->getIntFieldValue(fields, schemaProps, "number_of_speeds");
                 varSpeedCoil.NormSpedLevel = s_ip->getIntFieldValue(fields, schemaProps, "nominal_speed_level");
 

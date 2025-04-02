@@ -3675,7 +3675,8 @@ namespace VariableSpeedCoils {
 
         WaterInletNode = varSpeedCoil.WaterInletNodeNum;
 
-        if ((SensLoad != 0.0 || LatentLoad != 0.0) && (state.dataLoopNodes->Node(AirInletNode).MassFlowRate > 0.0)) {
+        if ((SensLoad != 0.0 || LatentLoad != 0.0) && (state.dataLoopNodes->Node(AirInletNode).MassFlowRate > 0.0) &&
+            (varSpeedCoil.availSched->getCurrentVal() > 0.0)) {
             if (varSpeedCoil.MSRatedWaterMassFlowRate(varSpeedCoil.NormSpedLevel) > 0.0) {
                 WaterFlowScale = varSpeedCoil.RatedWaterMassFlowRate / varSpeedCoil.MSRatedWaterMassFlowRate(varSpeedCoil.NormSpedLevel);
                 varSpeedCoil.WaterMassFlowRate = varSpeedCoil.DesignWaterMassFlowRate * WaterFlowScale;
@@ -5169,6 +5170,12 @@ namespace VariableSpeedCoils {
                                            RoutineName);
 
         auto &varSpeedCoil = state.dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum);
+
+        if (varSpeedCoil.availSched->getCurrentVal() <= 0.0) {
+            varSpeedCoil.SimFlag = false;
+            return;
+        }
+
         MaxSpeed = varSpeedCoil.NumOfSpeeds;
 
         // must be placed inside the loop, otherwise cause bug in release mode, need to be present at two places
@@ -6333,6 +6340,12 @@ namespace VariableSpeedCoils {
         Real64 rhoair(0.0);         // entering air density
 
         auto &varSpeedCoil = state.dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum);
+
+        if (varSpeedCoil.availSched->getCurrentVal() <= 0.0) {
+            varSpeedCoil.SimFlag = false;
+            return;
+        }
+
         // ADDED VARIABLES FOR air source coil
         int MaxSpeed = varSpeedCoil.NumOfSpeeds;
 

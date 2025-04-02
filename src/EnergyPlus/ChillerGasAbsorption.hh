@@ -119,12 +119,12 @@ namespace ChillerGasAbsorption {
         Curve::Curve *FuelCoolFPLRCurve = nullptr; // Fuel-Input-to cooling output Ratio Function of Part Load Ratio Curve
         Curve::Curve *ElecCoolFTCurve = nullptr;   // Electric-Input-to cooling output Ratio Function of Temperature Curve
         // (chilled water temp, condenser water temp)
-        Curve::Curve *ElecCoolFPLRCurve = nullptr;       // Electric-Input-to cooling output Ratio Function of Part Load Ratio Curve
-        Curve::Curve *HeatCapFCoolCurve = nullptr;       // Heating Capacity Function of Cooling Capacity Curve
-        Curve::Curve *FuelHeatFHPLRCurve = nullptr;      // Fuel Input to heat output ratio during heating only function
-        bool isEnterCondensTemp = false; // if using entering conderser water temperature is TRUE, exiting is FALSE
-        bool isWaterCooled = false;      // if water cooled it is TRUE
-        Real64 CHWLowLimitTemp = 0.0;    // Chilled Water Lower Limit Temperature
+        Curve::Curve *ElecCoolFPLRCurve = nullptr;  // Electric-Input-to cooling output Ratio Function of Part Load Ratio Curve
+        Curve::Curve *HeatCapFCoolCurve = nullptr;  // Heating Capacity Function of Cooling Capacity Curve
+        Curve::Curve *FuelHeatFHPLRCurve = nullptr; // Fuel Input to heat output ratio during heating only function
+        bool isEnterCondensTemp = false;            // if using entering conderser water temperature is TRUE, exiting is FALSE
+        bool isWaterCooled = false;                 // if water cooled it is TRUE
+        Real64 CHWLowLimitTemp = 0.0;               // Chilled Water Lower Limit Temperature
         Real64 FuelHeatingValue = 0.0;
         // Calculated design values
         Real64 DesCondMassFlowRate = 0.0; // design nominal mass flow rate of water through the condenser [kg/s]

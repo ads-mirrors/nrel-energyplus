@@ -259,6 +259,12 @@ namespace WaterToAirHeatPumpSimple {
                 GlobalNames::VerifyUniqueCoilName(state, CurrentModuleObject, simpleWAHP.Name, ErrorsFound, format("{} Name", CurrentModuleObject));
                 simpleWAHP.WAHPType = WatertoAirHP::Cooling;
                 simpleWAHP.WAHPPlantType = DataPlant::PlantEquipmentType::CoilWAHPCoolingEquationFit;
+                std::string const availSchedName = s_ip->getAlphaFieldValue(fields, schemaProps, "availability_schedule_name");
+                if (availSchedName.empty()) {
+                    simpleWAHP.availSched = Sched::GetScheduleAlwaysOn(state);
+                } else if ((simpleWAHP.availSched = Sched::GetSchedule(state, availSchedName)) == nullptr) {
+                    ShowSevereItemNotFound(state, eoh, "Availability Schedule Name", availSchedName);
+                }
                 auto &aVdot = fields.at("rated_air_flow_rate");
                 simpleWAHP.RatedAirVolFlowRate =
                     (aVdot.type() == nlohmann::detail::value_t::string && Util::SameString(aVdot.get<std::string>(), "Autosize"))
@@ -511,7 +517,12 @@ namespace WaterToAirHeatPumpSimple {
                 GlobalNames::VerifyUniqueCoilName(state, CurrentModuleObject, simpleWAHP.Name, ErrorsFound, format("{} Name", CurrentModuleObject));
                 simpleWAHP.WAHPType = WatertoAirHP::Heating;
                 simpleWAHP.WAHPPlantType = DataPlant::PlantEquipmentType::CoilWAHPHeatingEquationFit;
-
+                std::string const availSchedName = s_ip->getAlphaFieldValue(fields, schemaProps, "availability_schedule_name");
+                if (availSchedName.empty()) {
+                    simpleWAHP.availSched = Sched::GetScheduleAlwaysOn(state);
+                } else if ((simpleWAHP.availSched = Sched::GetSchedule(state, availSchedName)) == nullptr) {
+                    ShowSevereItemNotFound(state, eoh, "Availability Schedule Name", availSchedName);
+                }
                 auto &aVdot = fields.at("rated_air_flow_rate");
                 simpleWAHP.RatedAirVolFlowRate =
                     (aVdot.type() == nlohmann::detail::value_t::string && Util::SameString(aVdot.get<std::string>(), "Autosize"))
@@ -1117,7 +1128,8 @@ namespace WaterToAirHeatPumpSimple {
         AirInletNode = simpleWatertoAirHP.AirInletNodeNum;
         WaterInletNode = simpleWatertoAirHP.WaterInletNodeNum;
 
-        if ((SensLoad != 0.0 || LatentLoad != 0.0) && (state.dataLoopNodes->Node(AirInletNode).MassFlowRate > 0.0)) {
+        if ((SensLoad != 0.0 || LatentLoad != 0.0) && (state.dataLoopNodes->Node(AirInletNode).MassFlowRate > 0.0) &&
+            (simpleWatertoAirHP.availSched->getCurrentVal() > 0.0)) {
             simpleWatertoAirHP.WaterMassFlowRate = simpleWatertoAirHP.DesignWaterMassFlowRate;
 
             simpleWatertoAirHP.AirMassFlowRate = state.dataLoopNodes->Node(AirInletNode).MassFlowRate;
@@ -2996,6 +3008,8 @@ namespace WaterToAirHeatPumpSimple {
         Real64 LoadSideInletEnth_Unit;   // calc conditions for unit
         Real64 CpAir_Unit;               // calc conditions for unit
 
+        auto &simpleWatertoAirHP = state.dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(HPNum);
+
         if (state.dataWaterToAirHeatPumpSimple->firstTime) {
             // Set indoor air conditions to the rated condition
             state.dataWaterToAirHeatPumpSimple->LoadSideInletDBTemp_Init = 26.7;
@@ -3013,9 +3027,11 @@ namespace WaterToAirHeatPumpSimple {
                                            state.dataEnvrn->OutBaroPress,
                                            RoutineName);
 
+        if (simpleWatertoAirHP.availSched->getCurrentVal() <= 0.0) {
+            simpleWatertoAirHP.SimFlag = false;
+            return;
+        }
         //  LOAD LOCAL VARIABLES FROM DATA STRUCTURE (for code readability)
-
-        auto &simpleWatertoAirHP = state.dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(HPNum);
 
         TotalCapRated = simpleWatertoAirHP.RatedCapCoolTotal;
         SensCapRated = simpleWatertoAirHP.RatedCapCoolSens;

@@ -2006,6 +2006,12 @@ namespace VariableSpeedCoils {
                 // ErrorsFound will be set to True if problem was found, left untouched otherwise
                 GlobalNames::VerifyUniqueCoilName(state, CurrentModuleObject, varSpeedCoil.Name, ErrorsFound, CurrentModuleObject + " Name");
 
+                std::string const availSchedName = s_ip->getAlphaFieldValue(fields, schemaProps, "availability_schedule_name");
+                if (availSchedName.empty()) {
+                    varSpeedCoil.availSched = Sched::GetScheduleAlwaysOn(state);
+                } else if ((varSpeedCoil.availSched = Sched::GetSchedule(state, availSchedName)) == nullptr) {
+                    ShowSevereItemNotFound(state, eoh, "Availability Schedule Name", availSchedName);
+                }
                 varSpeedCoil.NumOfSpeeds = s_ip->getIntFieldValue(fields, schemaProps, "number_of_speeds");
                 varSpeedCoil.NormSpedLevel = s_ip->getIntFieldValue(fields, schemaProps, "nominal_speed_level");
                 cFieldName = "Number of Speeds";
@@ -5858,8 +5864,9 @@ namespace VariableSpeedCoils {
         int CondInletNode = varSpeedCoil.WaterInletNodeNum;
         int CondOutletNode = varSpeedCoil.WaterOutletNodeNum;
         // If heat pump water heater is OFF, set outlet to inlet and RETURN
-        if (PartLoadRatio == 0.0) {
+        if (PartLoadRatio == 0.0 || varSpeedCoil.availSched->getCurrentVal() <= 0.0) {
             state.dataLoopNodes->Node(CondOutletNode) = state.dataLoopNodes->Node(CondInletNode);
+            varSpeedCoil.SimFlag = false;
             return;
         } else {
             EvapInletNode = varSpeedCoil.AirInletNodeNum;

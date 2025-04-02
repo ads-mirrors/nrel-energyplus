@@ -248,38 +248,28 @@ Built on Platform: {}
         epLaunchSubCommand->callback([&state, &python_fwd_args] {
             EnergyPlus::Python::PythonEngine engine(state);
             // There's probably better to be done, like instantiating the pythonEngine with the argc/argv then calling PyRun_SimpleFile but whatever
-            std::string cmd = R"python(import sys
-sys.argv.clear()
-sys.argv.append("energyplus")
-)python";
-            for (const auto &arg : python_fwd_args) {
-                cmd += fmt::format("sys.argv.append(\"{}\")\n", arg);
-            }
-
-            fs::path programDir = FileSystem::getParentDirectoryPath(FileSystem::getAbsolutePath(FileSystem::getProgramPath()));
-            fs::path const pathToPythonPackages = programDir / "python_lib";
-            std::string sPathToPythonPackages = std::string(pathToPythonPackages.string());
-            std::replace(sPathToPythonPackages.begin(), sPathToPythonPackages.end(), '\\', '/');
-            cmd += fmt::format("sys.path.insert(0, \"{}\")\n", sPathToPythonPackages);
-
-            std::string tclConfigDir = "";
-            for (auto &p : std::filesystem::directory_iterator(pathToPythonPackages)) {
-                if (p.is_directory()) {
-                    std::string dirName = p.path().filename().string();
-                    if (dirName.find("tcl", 0) == 0 && dirName.find(".", 0) > 0) {
-                        tclConfigDir = dirName;
-                        break;
-                    }
-                }
-            }
-            cmd += "from os import environ\n";
-            cmd += fmt::format("environ[\'TCL_LIBRARY\'] = \"{}/{}\"\n", sPathToPythonPackages, tclConfigDir);
-
+            std::string cmd = Python::PythonEngine::getTclPreppedPreamble(python_fwd_args);
             cmd += R"python(
 from eplaunch.tk_runner import main_gui
-main_gui()
+main_gui(True)
 )python";
-            // std::cout << "Trying to execute this python snippet: " << std::endl << cmd << std::endl;
+            engine.exec(cmd);
+            exit(0);
+        });
+
+        auto *updaterSubCommand = auxiliaryToolsSubcommand->add_subcommand("updater", "IDF Version Updater");
+        updaterSubCommand->add_option("args", python_fwd_args, "Extra Arguments forwarded to IDF Version Updater")->option_text("ARG ...");
+        updaterSubCommand->positionals_at_end(true);
+        updaterSubCommand->footer("You can pass extra arguments after the updater keyword, they will be forwarded to IDF Version Updater.");
+
+        updaterSubCommand->callback([&state, &python_fwd_args] {
+            EnergyPlus::Python::PythonEngine engine(state);
+            // There's probably better to be done, like instantiating the pythonEngine with the argc/argv then calling PyRun_SimpleFile but whatever
+            std::string cmd = Python::PythonEngine::getTclPreppedPreamble(python_fwd_args);
+            cmd += R"python(
+from energyplus_transition.runner import main_gui
+main_gui(True)
+)python";
             engine.exec(cmd);
             exit(0);
         });

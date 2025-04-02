@@ -693,19 +693,17 @@ namespace StandardRatings {
                         ShowContinueError(state, format(" Check the chiller reference or rated COP specified. Specified COP = {:.2R}", RefCOP));
                     }
                     if (ChillerCapFT <= 0.0) {
-                        ShowContinueError(
-                            state,
-                            format(" Check limits in Cooling Capacity Function of Temperature Curve, Curve Type = {}, Curve Name = {}.",
-                                   Curve::objectNames[static_cast<int>(state.dataCurveManager->curves(CapFTempCurveIndex)->curveType)],
-                                   GetCurveName(state, CapFTempCurveIndex)));
+                        ShowContinueError(state,
+                                          format(" Check limits in Cooling Capacity Function of Temperature Curve, Curve Type = {}, Curve Name = {}.",
+                                                 Curve::objectNames[static_cast<int>(state.dataCurveManager->curves(CapFTempCurveIndex)->curveType)],
+                                                 GetCurveName(state, CapFTempCurveIndex)));
                         ShowContinueError(state, format(" ..ChillerCapFT value at standard test condition = {:.2R}", ChillerCapFT));
                     }
                     if (ChillerEIRFT <= 0.0) {
-                        ShowContinueError(
-                            state,
-                            format(" Check limits in EIR Function of Temperature Curve, Curve Type = {}, Curve Name = {}.",
-                                   Curve::objectNames[static_cast<int>(state.dataCurveManager->curves(EIRFTempCurveIndex)->curveType)],
-                                   GetCurveName(state, EIRFTempCurveIndex)));
+                        ShowContinueError(state,
+                                          format(" Check limits in EIR Function of Temperature Curve, Curve Type = {}, Curve Name = {}.",
+                                                 Curve::objectNames[static_cast<int>(state.dataCurveManager->curves(EIRFTempCurveIndex)->curveType)],
+                                                 GetCurveName(state, EIRFTempCurveIndex)));
                         ShowContinueError(state, format(" ..ChillerEIRFT value at standard test condition = {:.2R}", ChillerEIRFT));
                     }
                     IPLV = 0.0;
@@ -7473,11 +7471,10 @@ namespace StandardRatings {
                                    GetCurveName(state, CapFTempCurveIndex)));
                     }
                     if (HeatingEIRCurveHSPFLimitsExceeded) {
-                        ShowContinueError(
-                            state,
-                            format(" Check limits in EIR Function of Temperature Curve, Curve Type = {}, Curve Name = {}",
-                                   Curve::objectNames[static_cast<int>(state.dataCurveManager->curves(EIRFTempCurveIndex)->curveType)],
-                                   GetCurveName(state, EIRFTempCurveIndex)));
+                        ShowContinueError(state,
+                                          format(" Check limits in EIR Function of Temperature Curve, Curve Type = {}, Curve Name = {}",
+                                                 Curve::objectNames[static_cast<int>(state.dataCurveManager->curves(EIRFTempCurveIndex)->curveType)],
+                                                 GetCurveName(state, EIRFTempCurveIndex)));
                     }
                 }
             }
@@ -7705,11 +7702,10 @@ namespace StandardRatings {
                                    GetCurveName(state, CapFTempCurveIndex)));
                     }
                     if (HeatingEIRCurveHSPFLimitsExceeded) {
-                        ShowContinueError(
-                            state,
-                            format(" Check limits in EIR Function of Temperature Curve, Curve Type = {}, Curve Name = {}",
-                                   Curve::objectNames[static_cast<int>(state.dataCurveManager->curves(EIRFTempCurveIndex)->curveType)],
-                                   GetCurveName(state, EIRFTempCurveIndex)));
+                        ShowContinueError(state,
+                                          format(" Check limits in EIR Function of Temperature Curve, Curve Type = {}, Curve Name = {}",
+                                                 Curve::objectNames[static_cast<int>(state.dataCurveManager->curves(EIRFTempCurveIndex)->curveType)],
+                                                 GetCurveName(state, EIRFTempCurveIndex)));
                     }
                 }
             }

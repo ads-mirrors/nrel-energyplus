@@ -435,7 +435,7 @@ TEST_F(EnergyPlusFixture, EvaporativeCoolers_IndEvapCoolerPower)
 
     auto *curve = AddCurve(*state, "Curve1");
     EvapCond(EvapCoolNum).FanPowerModifierCurve = curve;
-    
+
     curve->curveType = CurveType::Quadratic;
     curve->coeff[0] = 0.0;
     curve->coeff[1] = 1.0;

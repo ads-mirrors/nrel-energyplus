@@ -133,7 +133,7 @@ TEST_F(EnergyPlusFixture, GetMaterialDataReadVarAbsorptance)
 
     auto *curve1 = Curve::AddCurve(*state, "THERMAL_ABSORPTANCE_TABLE");
     auto *curve2 = Curve::AddCurve(*state, "SOLAR_ABSORPTANCE_CURVE");
-    
+
     bool errors_found(false);
     Material::GetVariableAbsorptanceInput(*state, errors_found);
     EXPECT_ENUM_EQ(mat1->absorpVarCtrlSignal, Material::VariableAbsCtrlSignal::SurfaceTemperature);

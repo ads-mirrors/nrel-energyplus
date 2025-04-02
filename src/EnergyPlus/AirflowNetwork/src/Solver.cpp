@@ -6709,8 +6709,8 @@ namespace AirflowNetwork {
 
         curve->numDims = 1;
 
-        curve->curveType = Curve::CurveType::BtwxtTableLookup;
-        
+        curve->curveType = Curve::CurveType::BtwxtAFNPressure;
+
         curve->inputLimits[0].min = 0.0;
         curve->inputLimits[0].minPresent = true;
         curve->inputLimits[0].max = 360.0;

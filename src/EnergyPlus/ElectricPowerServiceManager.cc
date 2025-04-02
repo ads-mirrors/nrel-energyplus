@@ -2359,8 +2359,8 @@ DCtoACInverter::DCtoACInverter(EnergyPlusData &state, std::string const &objectN
     : aCPowerOut_(0.0), aCEnergyOut_(0.0), efficiency_(0.0), dCPowerIn_(0.0), dCEnergyIn_(0.0), conversionLossPower_(0.0), conversionLossEnergy_(0.0),
       conversionLossEnergyDecrement_(0.0), thermLossRate_(0.0), thermLossEnergy_(0.0), qdotConvZone_(0.0), qdotRadZone_(0.0), ancillACuseRate_(0.0),
       ancillACuseEnergy_(0.0), modelType_(InverterModelType::Invalid), heatLossesDestination_(ThermalLossDestination::Invalid), zoneNum_(0),
-      zoneRadFract_(0.0), nominalVoltage_(0.0), nomVoltEfficiencyARR_(6, 0.0), ratedPower_(0.0), minPower_(0.0), maxPower_(0.0),
-      minEfficiency_(0.0), maxEfficiency_(0.0), standbyPower_(0.0)
+      zoneRadFract_(0.0), nominalVoltage_(0.0), nomVoltEfficiencyARR_(6, 0.0), ratedPower_(0.0), minPower_(0.0), maxPower_(0.0), minEfficiency_(0.0),
+      maxEfficiency_(0.0), standbyPower_(0.0)
 {
     // initialize
     nomVoltEfficiencyARR_.resize(6, 0.0);
@@ -2753,14 +2753,14 @@ void DCtoACInverter::calcEfficiency(EnergyPlusData &state)
         efficiency_ = max(efficiency_, 0.0);
         efficiency_ = min(efficiency_, 1.0);
     } break;
-      
+
     case InverterModelType::CurveFuncOfPower: {
         Real64 normalizedPower = dCPowerIn_ / ratedPower_;
         efficiency_ = effCurve_->value(state, normalizedPower);
         efficiency_ = max(efficiency_, minEfficiency_);
         efficiency_ = min(efficiency_, maxEfficiency_);
     } break;
-      
+
     case InverterModelType::PVWatts: {
         // This code is lifted from ssc cmod_pvwatts5.cpp:powerout() method.
         // It was easier to do this calculation here because we have a many to one relationship between inverter
@@ -3132,16 +3132,15 @@ ElectricStorage::ElectricStorage( // main constructor
     : storedPower_(0.0), storedEnergy_(0.0), drawnPower_(0.0), drawnEnergy_(0.0), decrementedEnergyStored_(0.0), maxRainflowArrayBounds_(100),
       myWarmUpFlag_(false), storageModelMode_(StorageModelType::Invalid), heatLossesDestination_(ThermalLossDestination::Invalid), zoneNum_(0),
       zoneRadFract_(0.0), startingEnergyStored_(0.0), energeticEfficCharge_(0.0), energeticEfficDischarge_(0.0), maxPowerDraw_(0.0),
-      maxPowerStore_(0.0), maxEnergyCapacity_(0.0), parallelNum_(0), seriesNum_(0), numBattery_(0), 
-      cycleBinNum_(0), startingSOC_(0.0), maxAhCapacity_(0.0), availableFrac_(0.0), chargeConversionRate_(0.0), chargedOCV_(0.0), dischargedOCV_(0.0),
-      internalR_(0.0), maxDischargeI_(0.0), cutoffV_(0.0), maxChargeRate_(0.0), lifeCalculation_(false),
-      liIon_dcToDcChargingEff_(0.0), liIon_mass_(0.0), liIon_surfaceArea_(0.0), liIon_Cp_(0.0), liIon_heatTransferCoef_(0.0),
-      liIon_Vfull_(0.0), liIon_Vexp_(0.0), liIon_Vnom_(0.0), liIon_Vnom_default_(0.0), liIon_Qfull_(0.0), liIon_Qexp_(0.0), liIon_Qnom_(0.0),
-      liIon_C_rate_(0.0), thisTimeStepStateOfCharge_(0.0), lastTimeStepStateOfCharge_(0.0), pelNeedFromStorage_(0.0), pelFromStorage_(0.0),
-      pelIntoStorage_(0.0), qdotConvZone_(0.0), qdotRadZone_(0.0), timeElapsed_(0.0), thisTimeStepAvailable_(0.0), thisTimeStepBound_(0.0),
-      lastTimeStepAvailable_(0.0), lastTimeStepBound_(0.0), lastTwoTimeStepAvailable_(0.0), lastTwoTimeStepBound_(0.0), count0_(0),
-      electEnergyinStorage_(0.0), thermLossRate_(0.0), thermLossEnergy_(0.0), storageMode_(0), absoluteSOC_(0.0), fractionSOC_(0.0),
-      batteryCurrent_(0.0), batteryVoltage_(0.0), batteryDamage_(0.0), batteryTemperature_(0.0)
+      maxPowerStore_(0.0), maxEnergyCapacity_(0.0), parallelNum_(0), seriesNum_(0), numBattery_(0), cycleBinNum_(0), startingSOC_(0.0),
+      maxAhCapacity_(0.0), availableFrac_(0.0), chargeConversionRate_(0.0), chargedOCV_(0.0), dischargedOCV_(0.0), internalR_(0.0),
+      maxDischargeI_(0.0), cutoffV_(0.0), maxChargeRate_(0.0), lifeCalculation_(false), liIon_dcToDcChargingEff_(0.0), liIon_mass_(0.0),
+      liIon_surfaceArea_(0.0), liIon_Cp_(0.0), liIon_heatTransferCoef_(0.0), liIon_Vfull_(0.0), liIon_Vexp_(0.0), liIon_Vnom_(0.0),
+      liIon_Vnom_default_(0.0), liIon_Qfull_(0.0), liIon_Qexp_(0.0), liIon_Qnom_(0.0), liIon_C_rate_(0.0), thisTimeStepStateOfCharge_(0.0),
+      lastTimeStepStateOfCharge_(0.0), pelNeedFromStorage_(0.0), pelFromStorage_(0.0), pelIntoStorage_(0.0), qdotConvZone_(0.0), qdotRadZone_(0.0),
+      timeElapsed_(0.0), thisTimeStepAvailable_(0.0), thisTimeStepBound_(0.0), lastTimeStepAvailable_(0.0), lastTimeStepBound_(0.0),
+      lastTwoTimeStepAvailable_(0.0), lastTwoTimeStepBound_(0.0), count0_(0), electEnergyinStorage_(0.0), thermLossRate_(0.0), thermLossEnergy_(0.0),
+      storageMode_(0), absoluteSOC_(0.0), fractionSOC_(0.0), batteryCurrent_(0.0), batteryVoltage_(0.0), batteryDamage_(0.0), batteryTemperature_(0.0)
 {
 
     static constexpr std::string_view routineName = "ElectricStorage constructor ";
@@ -3241,7 +3240,7 @@ ElectricStorage::ElectricStorage( // main constructor
                 Curve::ShowSevereCurveDims(state, eoh, s_ipsc->cAlphaFieldNames(4), s_ipsc->cAlphaArgs(4), "1", chargeCurve_->numDims);
                 errorsFound = true;
             }
-          
+
             if (s_ipsc->lAlphaFieldBlanks(5)) {
                 ShowSevereEmptyField(state, eoh, s_ipsc->cAlphaFieldNames(5));
                 errorsFound = true;
@@ -3622,8 +3621,8 @@ void checkChargeDischargeVoltageCurves(
     // will give the appearance that the energy in Joules being removed from the battery exceeds what was stored.  This
     // checks to make sure that voltage for charging is always higher than discharging at the same fraction charged.
     for (int loop = 1; loop <= numChecks + 1; ++loop) {
-        Real64 xfc = float(loop - 1) / float(numChecks);                               // = q0/qmax
-        Real64 xfd = 1.0 - xfc;                                                        // = (qmax-q0)/qmax = 1 - xfc
+        Real64 xfc = float(loop - 1) / float(numChecks);                   // = q0/qmax
+        Real64 xfd = 1.0 - xfc;                                            // = (qmax-q0)/qmax = 1 - xfc
         Real64 chargeVoltage = E0d + chargeCurve->value(state, xfc);       // E0d+Ac*xfc+Cc*xfc/(Dc-xfc)
         Real64 dischargeVoltage = E0c + dischargeCurve->value(state, xfd); // E0c+Ad*xfd+Cd*xfd/(Dd-xfd)
         if (dischargeVoltage > chargeVoltage) {
@@ -3638,8 +3637,8 @@ void checkChargeDischargeVoltageCurves(
         ShowContinueError(state, "Check the charging and discharging curves to make sure that the charging voltage is greater than discharging.");
         ShowContinueError(state, "Also check the charging and discharging energy outputs to find any discrepancies.");
         for (int loop = 1; loop <= numReports + 1; ++loop) {
-            Real64 xfc = float(loop - 1) / float(numReports);                              // = q0/qmax
-            Real64 xfd = 1.0 - xfc;                                                        // = (qmax-q0)/qmax = 1 - xfc
+            Real64 xfc = float(loop - 1) / float(numReports);                  // = q0/qmax
+            Real64 xfd = 1.0 - xfc;                                            // = (qmax-q0)/qmax = 1 - xfc
             Real64 chargeVoltage = E0d + chargeCurve->value(state, xfc);       // E0d+Ac*xfc+Cc*xfc/(Dc-xfc)
             Real64 dischargeVoltage = E0c + dischargeCurve->value(state, xfd); // E0c+Ad*xfd+Cd*xfd/(Dd-xfd)
             ShowContinueError(

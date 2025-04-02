@@ -24352,7 +24352,7 @@ TEST_F(ZoneUnitarySysTest, ZeroCoolingSpeedTest)
 
     EXPECT_TRUE(process_idf(idf_objects, false));
     state->init_state(*state);
-    
+
     bool zoneEquipment = true;
     state->dataZoneEquip->ZoneEquipInputsFilled = true;
     bool ErrorsFound(false);

@@ -64,7 +64,7 @@ namespace EnergyPlus {
 namespace Curve {
     struct Curve;
 }
-  
+
 namespace Material {
 
     // Parameters to indicate material group type for use with the Material
@@ -844,9 +844,9 @@ namespace Material {
         Real64 PoissonsRatio = 0.0; // Poisson's ratio - used in window deflection calculations
 
         // Added 12/22/2008 for thermochromic window glazing material
-        Real64 SpecTemp = 0.0;        // Temperature corresponding to the specified material properties
-        int TCParentMatNum = 0;       // Reference to the parent object WindowMaterial:Glazing:Thermochromic
-        int GlassSpectralDataPtr = 0; // Number of a spectral data set associated with a window glass material
+        Real64 SpecTemp = 0.0;                          // Temperature corresponding to the specified material properties
+        int TCParentMatNum = 0;                         // Reference to the parent object WindowMaterial:Glazing:Thermochromic
+        int GlassSpectralDataPtr = 0;                   // Number of a spectral data set associated with a window glass material
         Curve::Curve *GlassSpecAngTransCurve = nullptr; // Transmittance as a function of spectral and angle associated with a glass material
         Curve::Curve *GlassSpecAngFReflCurve = nullptr; // Front reflectance as a function of spectral and angle associated with a glass material
         Curve::Curve *GlassSpecAngBReflCurve = nullptr; // Back reflectance as a function of spectral and angle associated with a glass material

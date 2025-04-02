@@ -146,7 +146,7 @@ namespace CTElectricGenerator {
         // This routine will get the input
         // required by the CT Generator models.
         static constexpr std::string_view routineName = "GetCTGeneratorInput";
-      
+
         int NumAlphas;                // Number of elements in the alpha array
         int NumNums;                  // Number of elements in the numeric array
         int IOStat;                   // IO Status when calling get input subroutine
@@ -181,7 +181,7 @@ namespace CTElectricGenerator {
                                                                      state.dataIPShortCut->cNumericFieldNames);
 
             ErrorObjectHeader eoh{routineName, state.dataIPShortCut->cCurrentModuleObject, AlphArray(1)};
-            
+
             state.dataCTElectricGenerator->CTGenerator(genNum).Name = AlphArray(1);
 
             state.dataCTElectricGenerator->CTGenerator(genNum).RatedPowerOutput = NumArray(1);
@@ -209,19 +209,19 @@ namespace CTElectricGenerator {
 
             // Load Special CT Generator Input
 
-            state.dataCTElectricGenerator->CTGenerator(genNum).PLBasedFuelInputCurve = Curve::GetCurve(state, AlphArray(3)); 
+            state.dataCTElectricGenerator->CTGenerator(genNum).PLBasedFuelInputCurve = Curve::GetCurve(state, AlphArray(3));
             if (state.dataCTElectricGenerator->CTGenerator(genNum).PLBasedFuelInputCurve == 0) {
                 ShowSevereItemNotFound(state, eoh, state.dataIPShortCut->cAlphaFieldNames(3), AlphArray(3));
                 ErrorsFound = true;
             }
 
-            state.dataCTElectricGenerator->CTGenerator(genNum).TempBasedFuelInputCurve = Curve::GetCurve(state, AlphArray(4)); 
+            state.dataCTElectricGenerator->CTGenerator(genNum).TempBasedFuelInputCurve = Curve::GetCurve(state, AlphArray(4));
             if (state.dataCTElectricGenerator->CTGenerator(genNum).TempBasedFuelInputCurve == nullptr) {
                 ShowSevereItemNotFound(state, eoh, state.dataIPShortCut->cAlphaFieldNames(4), AlphArray(4));
                 ErrorsFound = true;
             }
 
-            state.dataCTElectricGenerator->CTGenerator(genNum).ExhaustFlowCurve = Curve::GetCurve(state, AlphArray(5)); 
+            state.dataCTElectricGenerator->CTGenerator(genNum).ExhaustFlowCurve = Curve::GetCurve(state, AlphArray(5));
             if (state.dataCTElectricGenerator->CTGenerator(genNum).ExhaustFlowCurve == nullptr) {
                 ShowSevereItemNotFound(state, eoh, state.dataIPShortCut->cAlphaFieldNames(5), AlphArray(5));
                 ErrorsFound = true;
@@ -233,13 +233,13 @@ namespace CTElectricGenerator {
                 ErrorsFound = true;
             }
 
-            state.dataCTElectricGenerator->CTGenerator(genNum).TempBasedExhaustTempCurve = Curve::GetCurve(state, AlphArray(7)); 
+            state.dataCTElectricGenerator->CTGenerator(genNum).TempBasedExhaustTempCurve = Curve::GetCurve(state, AlphArray(7));
             if (state.dataCTElectricGenerator->CTGenerator(genNum).TempBasedExhaustTempCurve == nullptr) {
                 ShowSevereItemNotFound(state, eoh, state.dataIPShortCut->cAlphaFieldNames(7), AlphArray(7));
                 ErrorsFound = true;
             }
 
-            state.dataCTElectricGenerator->CTGenerator(genNum).QLubeOilRecoveredCurve = Curve::GetCurve(state, AlphArray(8)); 
+            state.dataCTElectricGenerator->CTGenerator(genNum).QLubeOilRecoveredCurve = Curve::GetCurve(state, AlphArray(8));
             if (state.dataCTElectricGenerator->CTGenerator(genNum).QLubeOilRecoveredCurve == nullptr) {
                 ShowSevereItemNotFound(state, eoh, state.dataIPShortCut->cAlphaFieldNames(8), AlphArray(8));
                 ErrorsFound = true;
@@ -602,8 +602,8 @@ namespace CTElectricGenerator {
         // The TempBasedFuelInputCurve is a correction based on deviation from design inlet air temperature conditions.
         // The first coefficient of this fit should be 1.0 to ensure that no correction is made at design conditions.
         // (EFUEL) rate of Fuel Energy Required to run COMBUSTION turbine (W)
-        Real64 FuelUseRate = elecPowerGenerated * this->PLBasedFuelInputCurve->value(state, PLR) *
-                             this->TempBasedFuelInputCurve->value(state, ambientDeltaT);
+        Real64 FuelUseRate =
+            elecPowerGenerated * this->PLBasedFuelInputCurve->value(state, PLR) * this->TempBasedFuelInputCurve->value(state, ambientDeltaT);
 
         // Use Curve fit to determine Exhaust Flow.  This curve shows the ratio of exhaust gas flow (kg/s) to electric power
         // output (J/s).  The units on ExhaustFlowCurve are (kg/J).  When multiplied by the rated power of the unit,
@@ -620,8 +620,7 @@ namespace CTElectricGenerator {
         if ((PLR > 0.0) && ((exhaustFlow > 0.0) || (maxExhaustperCTPower > 0.0))) {
 
             // (TEX) Exhaust Gas Temperature in C
-            Real64 exhaustTemp = this->PLBasedExhaustTempCurve->value(state, PLR) *
-                                 this->TempBasedExhaustTempCurve->value(state, ambientDeltaT);
+            Real64 exhaustTemp = this->PLBasedExhaustTempCurve->value(state, PLR) * this->TempBasedExhaustTempCurve->value(state, ambientDeltaT);
 
             // (UACGC) Heat Exchanger UA to Capacity
             Real64 UA_loc = this->UACoef[0] * std::pow(ratedPowerOutput, this->UACoef[1]);

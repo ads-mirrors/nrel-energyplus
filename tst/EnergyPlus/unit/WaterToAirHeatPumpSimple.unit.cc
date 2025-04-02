@@ -1395,7 +1395,7 @@ TEST_F(EnergyPlusFixture, WaterToAirHeatPumpSimpleTest_SizeHVACWaterToAirRatedCo
     curve3->inputLimits[3].min = 0;
     curve3->inputLimits[3].max = 38;
 
-    auto *curve4 = AddCurve(*state, "Curve4"); 
+    auto *curve4 = AddCurve(*state, "Curve4");
     curve4->curveType = CurveType::QuadLinear;
     curve4->coeff[0] = -1.30782327125798;
     curve4->coeff[1] = -2.37467612404102;

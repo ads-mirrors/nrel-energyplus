@@ -175,10 +175,10 @@ namespace FuelCellElectricGenerator {
         int IOStat;                    // IO Status when calling get input subroutine
         Array1D_string AlphArray(25);  // character string data
         Array1D<Real64> NumArray(200); // numeric data TODO deal with allocatable for extensible
-        bool ErrorsFound(false); // error flag
+        bool ErrorsFound(false);       // error flag
 
         auto &s_ipsc = state.dataIPShortCut;
-        
+
         s_ipsc->cCurrentModuleObject = "Generator:FuelCell";
         state.dataFuelCellElectGen->NumFuelCellGenerators =
             state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, s_ipsc->cCurrentModuleObject);
@@ -243,12 +243,12 @@ namespace FuelCellElectricGenerator {
                                                                      s_ipsc->cNumericFieldNames);
 
             ErrorObjectHeader eoh{routineName, s_ipsc->cCurrentModuleObject, AlphArray(1)};
-            
+
             int fuelCellNum = Util::FindItemInList(AlphArray(1), state.dataFuelCellElectGen->FuelCell, &FCDataStruct::NameFCPM);
             if (fuelCellNum > 0) {
 
                 auto &fuelCell = state.dataFuelCellElectGen->FuelCell(fuelCellNum);
-              
+
                 fuelCell.FCPM.Name = AlphArray(1);
                 if (Util::SameString(AlphArray(2), "ANNEX42"))
                     fuelCell.FCPM.EffMode = DataGenerators::CurveMode::Direct;
@@ -299,7 +299,7 @@ namespace FuelCellElectricGenerator {
                     ShowContinueError(state, format("Entered in {}={}", s_ipsc->cCurrentModuleObject, AlphArray(1)));
                     ErrorsFound = true;
                 }
-                
+
                 fuelCell.FCPM.ZoneName = AlphArray(5);
                 fuelCell.FCPM.ZoneID = Util::FindItemInList(fuelCell.FCPM.ZoneName, state.dataHeatBal->Zone);
                 if (fuelCell.FCPM.ZoneID == 0 && !s_ipsc->lAlphaFieldBlanks(5)) {
@@ -408,7 +408,7 @@ namespace FuelCellElectricGenerator {
                                                                      s_ipsc->cNumericFieldNames);
 
             ErrorObjectHeader eoh{routineName, s_ipsc->cCurrentModuleObject, AlphArray(1)};
-            
+
             int fuelCellNum = Util::FindItemInList(AlphArray(1), state.dataFuelCellElectGen->FuelCell, &FCDataStruct::NameFCAirSup);
 
             if (fuelCellNum > 0) {
@@ -418,21 +418,20 @@ namespace FuelCellElectricGenerator {
                 fuelCell.AirSup.NodeName = AlphArray(2);
 
                 // check the node connections
-                fuelCell.AirSup.SupNodeNum =
-                    NodeInputManager::GetOnlySingleNode(state,
-                                                        AlphArray(2),
-                                                        ErrorsFound,
-                                                        DataLoopNode::ConnectionObjectType::GeneratorFuelCellAirSupply,
-                                                        AlphArray(1),
-                                                        DataLoopNode::NodeFluidType::Air,
-                                                        DataLoopNode::ConnectionType::Inlet,
-                                                        NodeInputManager::CompFluidStream::Primary,
-                                                        DataLoopNode::ObjectIsNotParent);
+                fuelCell.AirSup.SupNodeNum = NodeInputManager::GetOnlySingleNode(state,
+                                                                                 AlphArray(2),
+                                                                                 ErrorsFound,
+                                                                                 DataLoopNode::ConnectionObjectType::GeneratorFuelCellAirSupply,
+                                                                                 AlphArray(1),
+                                                                                 DataLoopNode::NodeFluidType::Air,
+                                                                                 DataLoopNode::ConnectionType::Inlet,
+                                                                                 NodeInputManager::CompFluidStream::Primary,
+                                                                                 DataLoopNode::ObjectIsNotParent);
 
                 if (s_ipsc->lAlphaFieldBlanks(3)) {
                     ShowSevereEmptyField(state, eoh, s_ipsc->cAlphaFieldNames(3));
                     ErrorsFound = true;
-                } else if ((fuelCell.AirSup.BlowerPowerCurve = Curve::GetCurve(state, AlphArray(3))) == nullptr) { 
+                } else if ((fuelCell.AirSup.BlowerPowerCurve = Curve::GetCurve(state, AlphArray(3))) == nullptr) {
                     ShowSevereItemNotFound(state, eoh, s_ipsc->cAlphaFieldNames(3), AlphArray(3));
                     ErrorsFound = true;
                 }
@@ -471,13 +470,12 @@ namespace FuelCellElectricGenerator {
                         ShowSevereEmptyField(state, eoh, s_ipsc->cAlphaFieldNames(6));
                         ErrorsFound = true;
                     }
-                } else if ((fuelCell.AirSup.AirFuncNdotCurve = Curve::GetCurve(state, AlphArray(6))) == nullptr) { 
+                } else if ((fuelCell.AirSup.AirFuncNdotCurve = Curve::GetCurve(state, AlphArray(6))) == nullptr) {
                     if (fuelCell.AirSup.AirSupRateMode == DataGenerators::AirSupRateMode::QuadraticFuncofNdot) {
                         ShowSevereItemNotFound(state, eoh, s_ipsc->cAlphaFieldNames(6), AlphArray(6));
                         ErrorsFound = true;
                     }
                 }
-                
 
                 if (Util::SameString("RecoverBurnerInverterStorage", AlphArray(7))) {
                     fuelCell.AirSup.IntakeRecoveryMode = DataGenerators::RecoverMode::RecoverBurnInvertBatt;
@@ -500,8 +498,7 @@ namespace FuelCellElectricGenerator {
                 if (Util::SameString("AmbientAir", AlphArray(8))) {
                     fuelCell.AirSup.ConstituentMode = DataGenerators::ConstituentMode::RegularAir;
                 } else if (Util::SameString("UserDefinedConstituents", AlphArray(8))) {
-                    fuelCell.AirSup.ConstituentMode =
-                        DataGenerators::ConstituentMode::UserDefinedConstituents;
+                    fuelCell.AirSup.ConstituentMode = DataGenerators::ConstituentMode::UserDefinedConstituents;
                 } else {
                     ShowSevereError(state, format("Invalid, {} = {}", s_ipsc->cAlphaFieldNames(8), AlphArray(8)));
                     ShowContinueError(state, format("Entered in {}={}", s_ipsc->cCurrentModuleObject, AlphArray(1)));
@@ -510,8 +507,7 @@ namespace FuelCellElectricGenerator {
 
                 int NumAirConstit;
 
-                if (fuelCell.AirSup.ConstituentMode ==
-                    DataGenerators::ConstituentMode::UserDefinedConstituents) {
+                if (fuelCell.AirSup.ConstituentMode == DataGenerators::ConstituentMode::UserDefinedConstituents) {
                     NumAirConstit = NumArray(4);
                     fuelCell.AirSup.NumConstituents = NumAirConstit;
 
@@ -552,8 +548,7 @@ namespace FuelCellElectricGenerator {
                 if (std::abs(sum(fuelCell.AirSup.ConstitMolalFract) - 1.0) > 0.0001) {
 
                     ShowSevereError(state, format("{} molar fractions do not sum to 1.0", s_ipsc->cCurrentModuleObject));
-                    ShowContinueError(state,
-                                      format("..Sum was={:.1R}", sum(fuelCell.AirSup.ConstitMolalFract)));
+                    ShowContinueError(state, format("..Sum was={:.1R}", sum(fuelCell.AirSup.ConstitMolalFract)));
                     ShowContinueError(state, format("Entered in {} = {}", s_ipsc->cCurrentModuleObject, AlphArray(1)));
                     ErrorsFound = true;
                 }
@@ -625,9 +620,9 @@ namespace FuelCellElectricGenerator {
             int fuelCellNum = Util::FindItemInList(AlphArray(1), state.dataFuelCellElectGen->FuelCell, &FCDataStruct::NameFCWaterSup);
 
             if (fuelCellNum > 0) {
-              
+
                 auto &fuelCell = state.dataFuelCellElectGen->FuelCell(fuelCellNum);
-                
+
                 //  this is only the first instance of a FuelCell generator using this type of Water supply module
                 fuelCell.WaterSup.Name = AlphArray(1);
 
@@ -642,7 +637,7 @@ namespace FuelCellElectricGenerator {
                 if (s_ipsc->lAlphaFieldBlanks(3)) {
                     ShowSevereEmptyField(state, eoh, s_ipsc->cAlphaFieldNames(2));
                     ErrorsFound = true;
-                } else if ((fuelCell.WaterSup.PmpPowerCurve = Curve::GetCurve(state, AlphArray(3))) == nullptr) { 
+                } else if ((fuelCell.WaterSup.PmpPowerCurve = Curve::GetCurve(state, AlphArray(3))) == nullptr) {
                     ShowSevereItemNotFound(state, eoh, s_ipsc->cAlphaFieldNames(3), AlphArray(3));
                     ErrorsFound = true;
                 }
@@ -653,40 +648,35 @@ namespace FuelCellElectricGenerator {
                     fuelCell.WaterSup.WaterTempMode = DataGenerators::WaterTemperatureMode::WaterInReformAirNode;
 
                     fuelCell.WaterSup.NodeName = AlphArray(5);
-                    fuelCell.WaterSup.NodeNum =
-                        NodeInputManager::GetOnlySingleNode(state,
-                                                            AlphArray(5),
-                                                            ErrorsFound,
-                                                            DataLoopNode::ConnectionObjectType::GeneratorFuelCellWaterSupply,
-                                                            AlphArray(1),
-                                                            DataLoopNode::NodeFluidType::Air,
-                                                            DataLoopNode::ConnectionType::Sensor,
-                                                            NodeInputManager::CompFluidStream::Primary,
-                                                            DataLoopNode::ObjectIsNotParent);
+                    fuelCell.WaterSup.NodeNum = NodeInputManager::GetOnlySingleNode(state,
+                                                                                    AlphArray(5),
+                                                                                    ErrorsFound,
+                                                                                    DataLoopNode::ConnectionObjectType::GeneratorFuelCellWaterSupply,
+                                                                                    AlphArray(1),
+                                                                                    DataLoopNode::NodeFluidType::Air,
+                                                                                    DataLoopNode::ConnectionType::Sensor,
+                                                                                    NodeInputManager::CompFluidStream::Primary,
+                                                                                    DataLoopNode::ObjectIsNotParent);
 
                 } else if (Util::SameString("TemperatureFromWaterNode", AlphArray(4))) {
-                    fuelCell.WaterSup.WaterTempMode =
-                        DataGenerators::WaterTemperatureMode::WaterInReformWaterNode;
+                    fuelCell.WaterSup.WaterTempMode = DataGenerators::WaterTemperatureMode::WaterInReformWaterNode;
 
                     fuelCell.WaterSup.NodeName = AlphArray(5);
-                    fuelCell.WaterSup.NodeNum =
-                        NodeInputManager::GetOnlySingleNode(state,
-                                                            AlphArray(5),
-                                                            ErrorsFound,
-                                                            DataLoopNode::ConnectionObjectType::GeneratorFuelCellWaterSupply,
-                                                            AlphArray(1),
-                                                            DataLoopNode::NodeFluidType::Water,
-                                                            DataLoopNode::ConnectionType::Sensor,
-                                                            NodeInputManager::CompFluidStream::Primary,
-                                                            DataLoopNode::ObjectIsNotParent);
+                    fuelCell.WaterSup.NodeNum = NodeInputManager::GetOnlySingleNode(state,
+                                                                                    AlphArray(5),
+                                                                                    ErrorsFound,
+                                                                                    DataLoopNode::ConnectionObjectType::GeneratorFuelCellWaterSupply,
+                                                                                    AlphArray(1),
+                                                                                    DataLoopNode::NodeFluidType::Water,
+                                                                                    DataLoopNode::ConnectionType::Sensor,
+                                                                                    NodeInputManager::CompFluidStream::Primary,
+                                                                                    DataLoopNode::ObjectIsNotParent);
 
                 } else if (Util::SameString("MainsWaterTemperature", AlphArray(4))) {
-                    fuelCell.WaterSup.WaterTempMode =
-                        DataGenerators::WaterTemperatureMode::WaterInReformMains;
+                    fuelCell.WaterSup.WaterTempMode = DataGenerators::WaterTemperatureMode::WaterInReformMains;
 
                 } else if (Util::SameString("TemperatureFromSchedule", AlphArray(4))) {
-                    fuelCell.WaterSup.WaterTempMode =
-                        DataGenerators::WaterTemperatureMode::WaterInReformSchedule;
+                    fuelCell.WaterSup.WaterTempMode = DataGenerators::WaterTemperatureMode::WaterInReformSchedule;
                 } else {
                     ShowSevereError(state, format("Invalid, {} = {}", s_ipsc->cAlphaFieldNames(4), AlphArray(4)));
                     ShowContinueError(state, format("Entered in {}={}", s_ipsc->cCurrentModuleObject, AlphArray(1)));
@@ -695,8 +685,7 @@ namespace FuelCellElectricGenerator {
 
                 fuelCell.WaterSup.sched = Sched::GetSchedule(state, AlphArray(6));
                 if ((fuelCell.WaterSup.sched == nullptr) &&
-                    (fuelCell.WaterSup.WaterTempMode ==
-                     DataGenerators::WaterTemperatureMode::WaterInReformSchedule)) {
+                    (fuelCell.WaterSup.WaterTempMode == DataGenerators::WaterTemperatureMode::WaterInReformSchedule)) {
                     ShowSevereItemNotFound(state, eoh, s_ipsc->cAlphaFieldNames(6), AlphArray(6));
                     ErrorsFound = true;
                 }
@@ -715,8 +704,7 @@ namespace FuelCellElectricGenerator {
         }
 
         s_ipsc->cCurrentModuleObject = "Generator:FuelCell:AuxiliaryHeater";
-        int NumFuelCellAuxilHeaters =
-            state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, s_ipsc->cCurrentModuleObject);
+        int NumFuelCellAuxilHeaters = state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, s_ipsc->cCurrentModuleObject);
 
         if (NumFuelCellAuxilHeaters <= 0) {
             ShowSevereError(state, format("No {} equipment specified in input file", s_ipsc->cCurrentModuleObject));
@@ -738,12 +726,12 @@ namespace FuelCellElectricGenerator {
                                                                      s_ipsc->cNumericFieldNames);
 
             ErrorObjectHeader eoh{routineName, s_ipsc->cCurrentModuleObject, AlphArray(1)};
-            
+
             int fuelCellNum = Util::FindItemInList(AlphArray(1), state.dataFuelCellElectGen->FuelCell, &FCDataStruct::NameFCAuxilHeat);
 
             if (fuelCellNum > 0) {
                 auto &fuelCell = state.dataFuelCellElectGen->FuelCell(fuelCellNum);
-                
+
                 fuelCell.AuxilHeat.Name = AlphArray(1);
                 fuelCell.AuxilHeat.ExcessAirRAT = NumArray(1);
                 fuelCell.AuxilHeat.ANC0 = NumArray(2);
@@ -770,7 +758,7 @@ namespace FuelCellElectricGenerator {
                         ErrorsFound = true;
                     }
                 }
-                
+
                 fuelCell.AuxilHeat.MaxPowerW = NumArray(5);
                 fuelCell.AuxilHeat.MinPowerW = NumArray(6);
                 fuelCell.AuxilHeat.MaxPowerkmolperSec = NumArray(7);
@@ -815,12 +803,12 @@ namespace FuelCellElectricGenerator {
                                                                      s_ipsc->cNumericFieldNames);
 
             ErrorObjectHeader eoh{routineName, s_ipsc->cCurrentModuleObject, AlphArray(1)};
-            
+
             int fuelCellNum = Util::FindItemInList(AlphArray(1), state.dataFuelCellElectGen->FuelCell, &FCDataStruct::NameExhaustHX);
 
             if (fuelCellNum > 0) {
                 auto &fuelCell = state.dataFuelCellElectGen->FuelCell(fuelCellNum);
-                
+
                 fuelCell.Type = DataPlant::PlantEquipmentType::Generator_FCExhaust;
                 fuelCell.ExhaustHX.Name = AlphArray(1);
                 fuelCell.ExhaustHX.WaterInNodeName = AlphArray(2);
@@ -895,9 +883,7 @@ namespace FuelCellElectricGenerator {
                 fuelCell.ExhaustHX.CondensationThresholdTemp = NumArray(19);
 
                 // store cooling water volume flow rate for autosizing system
-                PlantUtilities::RegisterPlantCompDesignFlow(state,
-                                                            fuelCell.ExhaustHX.WaterInNode,
-                                                            fuelCell.ExhaustHX.WaterVolumeFlowMax);
+                PlantUtilities::RegisterPlantCompDesignFlow(state, fuelCell.ExhaustHX.WaterInNode, fuelCell.ExhaustHX.WaterVolumeFlowMax);
             } else {
                 ShowSevereError(state, format("Invalid, {} = {}", s_ipsc->cAlphaFieldNames(1), AlphArray(1)));
                 ShowContinueError(state, format("Entered in {}={}", s_ipsc->cCurrentModuleObject, AlphArray(1)));
@@ -929,7 +915,7 @@ namespace FuelCellElectricGenerator {
                                                                      s_ipsc->cNumericFieldNames);
 
             ErrorObjectHeader eoh{routineName, s_ipsc->cCurrentModuleObject, AlphArray(1)};
-            
+
             int fuelCellNum = Util::FindItemInList(AlphArray(1), state.dataFuelCellElectGen->FuelCell, &FCDataStruct::NameElecStorage);
 
             if (fuelCellNum > 0) {
@@ -954,8 +940,7 @@ namespace FuelCellElectricGenerator {
                 // check for other FuelCell using the same Electrical Storage and fill
                 for (int otherFuelCell = fuelCellNum + 1; otherFuelCell <= state.dataFuelCellElectGen->NumFuelCellGenerators; ++otherFuelCell) {
                     if (Util::SameString(state.dataFuelCellElectGen->FuelCell(otherFuelCell).ElecStorage.Name, fuelCell.ElecStorage.Name)) {
-                        state.dataFuelCellElectGen->FuelCell(otherFuelCell).ElecStorage =
-                            fuelCell.ElecStorage;
+                        state.dataFuelCellElectGen->FuelCell(otherFuelCell).ElecStorage = fuelCell.ElecStorage;
                     }
                 }
             } else {
@@ -990,17 +975,15 @@ namespace FuelCellElectricGenerator {
                                                                      s_ipsc->cNumericFieldNames);
 
             ErrorObjectHeader eoh{routineName, s_ipsc->cCurrentModuleObject, AlphArray(1)};
-            
+
             int fuelCellNum = Util::FindItemInList(AlphArray(1), state.dataFuelCellElectGen->FuelCell, &FCDataStruct::NameInverter);
 
             if (fuelCellNum > 0) {
                 auto &fuelCell = state.dataFuelCellElectGen->FuelCell(fuelCellNum);
                 fuelCell.Inverter.Name = AlphArray(1);
 
-                if (Util::SameString(AlphArray(2), "QUADRATIC"))
-                    fuelCell.Inverter.EffMode = DataGenerators::InverterEfficiencyMode::Quadratic;
-                if (Util::SameString(AlphArray(2), "Constant"))
-                    fuelCell.Inverter.EffMode = DataGenerators::InverterEfficiencyMode::Constant;
+                if (Util::SameString(AlphArray(2), "QUADRATIC")) fuelCell.Inverter.EffMode = DataGenerators::InverterEfficiencyMode::Quadratic;
+                if (Util::SameString(AlphArray(2), "Constant")) fuelCell.Inverter.EffMode = DataGenerators::InverterEfficiencyMode::Constant;
                 if (fuelCell.Inverter.EffMode == DataGenerators::InverterEfficiencyMode::Invalid) {
                     ShowSevereError(state, format("Invalid, {} = {}", s_ipsc->cAlphaFieldNames(2), AlphArray(2)));
                     ShowContinueError(state, format("Entered in {}={}", s_ipsc->cCurrentModuleObject, AlphArray(1)));
@@ -1020,11 +1003,10 @@ namespace FuelCellElectricGenerator {
                         ErrorsFound = true;
                     }
                 }
-                    
+
                 // check for other FuelCell using the same Inverter and fill
                 for (int otherFuelCell = fuelCellNum + 1; otherFuelCell <= state.dataFuelCellElectGen->NumFuelCellGenerators; ++otherFuelCell) {
-                    if (Util::SameString(state.dataFuelCellElectGen->FuelCell(otherFuelCell).Inverter.Name,
-                                         fuelCell.Inverter.Name)) {
+                    if (Util::SameString(state.dataFuelCellElectGen->FuelCell(otherFuelCell).Inverter.Name, fuelCell.Inverter.Name)) {
                         state.dataFuelCellElectGen->FuelCell(otherFuelCell).Inverter = fuelCell.Inverter;
                     }
                 }
@@ -1054,7 +1036,7 @@ namespace FuelCellElectricGenerator {
                                                                          s_ipsc->cNumericFieldNames);
 
                 ErrorObjectHeader eoh{routineName, s_ipsc->cCurrentModuleObject, AlphArray(1)};
-                
+
                 int fuelCellNum = Util::FindItemInList(AlphArray(1), state.dataFuelCellElectGen->FuelCell, &FCDataStruct::NameStackCooler);
 
                 if (fuelCellNum > 0) {
@@ -1774,8 +1756,8 @@ namespace FuelCellElectricGenerator {
                 this->FCPM.NdotAir = this->AirSup.AirFuncPelCurve->value(state, Pel) * (1 + this->AirSup.AirTempCoeff * this->AirSup.TairIntoFCPM);
 
             } else if (this->AirSup.AirSupRateMode == DataGenerators::AirSupRateMode::QuadraticFuncofNdot) { // method 3
-                this->FCPM.NdotAir = this->AirSup.AirFuncNdotCurve->value(state, this->FCPM.NdotFuel) *
-                                     (1 + this->AirSup.AirTempCoeff * this->AirSup.TairIntoFCPM);
+                this->FCPM.NdotAir =
+                    this->AirSup.AirFuncNdotCurve->value(state, this->FCPM.NdotFuel) * (1 + this->AirSup.AirTempCoeff * this->AirSup.TairIntoFCPM);
             }
 
             // Calculation Step 4. fuel compressor power
@@ -2912,8 +2894,8 @@ namespace FuelCellElectricGenerator {
         if (this->Inverter.EffMode == DataGenerators::InverterEfficiencyMode::Quadratic) {
 
             // first use Pdemand instead of Pel to get initial estimate
-            Real64 lastPpcuLosses = Pdemand * (1.0 - this->Inverter.EffQuadraticCurve->value(state, Pdemand)) /
-                                    this->Inverter.EffQuadraticCurve->value(state, Pdemand);
+            Real64 lastPpcuLosses =
+                Pdemand * (1.0 - this->Inverter.EffQuadraticCurve->value(state, Pdemand)) / this->Inverter.EffQuadraticCurve->value(state, Pdemand);
 
             for (int iter = 1; iter <= 20; ++iter) { // seems like need to iterate (??) Need to investigate number and convergence success here
 

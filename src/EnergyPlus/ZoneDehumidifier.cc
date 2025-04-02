@@ -262,28 +262,26 @@ namespace ZoneDehumidifier {
             }
 
             // A3 , \field Air Inlet Node Name
-            dehumid.AirInletNodeNum =
-                GetOnlySingleNode(state,
-                                  Alphas(3),
-                                  ErrorsFound,
-                                  DataLoopNode::ConnectionObjectType::ZoneHVACDehumidifierDX,
-                                  Alphas(1),
-                                  DataLoopNode::NodeFluidType::Air,
-                                  DataLoopNode::ConnectionType::Inlet,
-                                  NodeInputManager::CompFluidStream::Primary,
-                                  ObjectIsNotParent);
+            dehumid.AirInletNodeNum = GetOnlySingleNode(state,
+                                                        Alphas(3),
+                                                        ErrorsFound,
+                                                        DataLoopNode::ConnectionObjectType::ZoneHVACDehumidifierDX,
+                                                        Alphas(1),
+                                                        DataLoopNode::NodeFluidType::Air,
+                                                        DataLoopNode::ConnectionType::Inlet,
+                                                        NodeInputManager::CompFluidStream::Primary,
+                                                        ObjectIsNotParent);
 
             // A4 , \field Air Outlet Node Name
-            dehumid.AirOutletNodeNum =
-                GetOnlySingleNode(state,
-                                  Alphas(4),
-                                  ErrorsFound,
-                                  DataLoopNode::ConnectionObjectType::ZoneHVACDehumidifierDX,
-                                  Alphas(1),
-                                  DataLoopNode::NodeFluidType::Air,
-                                  DataLoopNode::ConnectionType::Outlet,
-                                  NodeInputManager::CompFluidStream::Primary,
-                                  ObjectIsNotParent);
+            dehumid.AirOutletNodeNum = GetOnlySingleNode(state,
+                                                         Alphas(4),
+                                                         ErrorsFound,
+                                                         DataLoopNode::ConnectionObjectType::ZoneHVACDehumidifierDX,
+                                                         Alphas(1),
+                                                         DataLoopNode::NodeFluidType::Air,
+                                                         DataLoopNode::ConnectionType::Outlet,
+                                                         NodeInputManager::CompFluidStream::Primary,
+                                                         ObjectIsNotParent);
 
             // N1,  \field Rated Water Removal
             dehumid.RatedWaterRemoval = Numbers(1);
@@ -354,7 +352,7 @@ namespace ZoneDehumidifier {
             if (lAlphaBlanks(7)) {
                 ShowSevereEmptyField(state, eoh, cAlphaFields(7));
                 ErrorsFound = true;
-            } else if ((dehumid.PartLoadCurve = Curve::GetCurve(state, Alphas(7))) == nullptr) { 
+            } else if ((dehumid.PartLoadCurve = Curve::GetCurve(state, Alphas(7))) == nullptr) {
                 ShowSevereItemNotFound(state, eoh, cAlphaFields(7), Alphas(7));
                 ErrorsFound = true;
             } else if (dehumid.PartLoadCurve->numDims != 1) {
@@ -552,9 +550,7 @@ namespace ZoneDehumidifier {
         // Need to check all dehumidifiers to see if they are on Zone Equipment List or issue warning
         if (!dehumid.ZoneEquipmentListChecked && state.dataZoneEquip->ZoneEquipInputsFilled) {
             dehumid.ZoneEquipmentListChecked = true;
-            if (!CheckZoneEquipmentList(state,
-                                        dehumid.UnitType,
-                                        dehumid.Name)) {
+            if (!CheckZoneEquipmentList(state, dehumid.UnitType, dehumid.Name)) {
                 ShowSevereError(
                     state,
                     format("InitZoneDehumidifier: Zone Dehumidifier=\"{},{}\" is not on any ZoneHVAC:EquipmentList.  It will not be simulated.",
@@ -573,8 +569,7 @@ namespace ZoneDehumidifier {
             RatedAirRH = 0.6;         // 60% RH
             RatedAirHumrat = PsyWFnTdbRhPb(state, RatedAirDBTemp, RatedAirRH, state.dataEnvrn->StdBaroPress, RoutineName);
             dehumid.RatedAirMassFlow =
-                PsyRhoAirFnPbTdbW(state, state.dataEnvrn->StdBaroPress, RatedAirDBTemp, RatedAirHumrat, RoutineName) *
-                dehumid.RatedAirVolFlow;
+                PsyRhoAirFnPbTdbW(state, state.dataEnvrn->StdBaroPress, RatedAirDBTemp, RatedAirHumrat, RoutineName) * dehumid.RatedAirVolFlow;
 
             // Set the node max and min mass flow rates on inlet node... outlet node gets updated in UPDATE subroutine
             state.dataLoopNodes->Node(AirInletNode).MassFlowRateMax = dehumid.RatedAirMassFlow;
@@ -593,18 +588,18 @@ namespace ZoneDehumidifier {
         state.dataLoopNodes->Node(AirInletNode).MassFlowRate = dehumid.RatedAirMassFlow;
 
         // Zero out the report variables
-        dehumid.SensHeatingRate = 0.0;   // Zone Dehumidifier Sensible Heating Rate [W]
-        dehumid.SensHeatingEnergy = 0.0; // Zone Dehumidifier Sensible Heating Energy [J]
-        dehumid.WaterRemovalRate = 0.0;  // Zone Dehumidifier Water Removal Rate [kg/s]
-        dehumid.WaterRemoved = 0.0;      // Zone Dehumidifier Water Removed [kg]
-        dehumid.ElecPower = 0.0;         // Zone Dehumidifier Electric Power [W]
-        dehumid.ElecConsumption = 0.0;   // Zone Dehumidifier Electric Consumption [J]
-        dehumid.DehumidPLR = 0.0;        // Zone Dehumidifier Part-Load Ratio [-]
-        dehumid.DehumidRTF = 0.0;        // Zone Dehumidifier Runtime Fraction [-]
-        dehumid.OffCycleParasiticElecPower = 0.0; // Zone Dehumidifier Off-Cycle Parasitic Electric Power [W]
-        dehumid.OffCycleParasiticElecCons = 0.0; // Zone Dehumidifier Off-Cycle Parasitic Electric Consumption [J]
-        dehumid.DehumidCondVolFlowRate = 0.0; // Zone Dehumidifier Condensate Volumetric Flow Rate [m3/s]
-        dehumid.DehumidCondVol = 0.0; // Zone Dehumidifier Condensate Volume [m3]
+        dehumid.SensHeatingRate = 0.0;                                        // Zone Dehumidifier Sensible Heating Rate [W]
+        dehumid.SensHeatingEnergy = 0.0;                                      // Zone Dehumidifier Sensible Heating Energy [J]
+        dehumid.WaterRemovalRate = 0.0;                                       // Zone Dehumidifier Water Removal Rate [kg/s]
+        dehumid.WaterRemoved = 0.0;                                           // Zone Dehumidifier Water Removed [kg]
+        dehumid.ElecPower = 0.0;                                              // Zone Dehumidifier Electric Power [W]
+        dehumid.ElecConsumption = 0.0;                                        // Zone Dehumidifier Electric Consumption [J]
+        dehumid.DehumidPLR = 0.0;                                             // Zone Dehumidifier Part-Load Ratio [-]
+        dehumid.DehumidRTF = 0.0;                                             // Zone Dehumidifier Runtime Fraction [-]
+        dehumid.OffCycleParasiticElecPower = 0.0;                             // Zone Dehumidifier Off-Cycle Parasitic Electric Power [W]
+        dehumid.OffCycleParasiticElecCons = 0.0;                              // Zone Dehumidifier Off-Cycle Parasitic Electric Consumption [J]
+        dehumid.DehumidCondVolFlowRate = 0.0;                                 // Zone Dehumidifier Condensate Volumetric Flow Rate [m3/s]
+        dehumid.DehumidCondVol = 0.0;                                         // Zone Dehumidifier Condensate Volume [m3]
         dehumid.OutletAirTemp = state.dataLoopNodes->Node(AirInletNode).Temp; // Zone Dehumidifier Outlet Air Temperature [C]
     }
 
@@ -675,7 +670,7 @@ namespace ZoneDehumidifier {
         int AirInletNodeNum(0);        // Node number for the inlet air to the dehumidifier
 
         auto &dehumid = state.dataZoneDehumidifier->ZoneDehumid(ZoneDehumNum);
-        
+
         SensibleOutput = 0.0;
         LatentOutput = 0.0;
         WaterRemovalRateFactor = 0.0;
@@ -693,8 +688,7 @@ namespace ZoneDehumidifier {
         InletAirHumRat = state.dataLoopNodes->Node(AirInletNodeNum).HumRat;
         InletAirRH = 100.0 * PsyRhFnTdbWPb(state, InletAirTemp, InletAirHumRat, state.dataEnvrn->OutBaroPress, RoutineName); // RH in percent (%)
 
-        if (QZnDehumidReq < 0.0 && dehumid.availSched->getCurrentVal() > 0.0 &&
-            InletAirTemp >= dehumid.MinInletAirTemp &&
+        if (QZnDehumidReq < 0.0 && dehumid.availSched->getCurrentVal() > 0.0 && InletAirTemp >= dehumid.MinInletAirTemp &&
             InletAirTemp <= dehumid.MaxInletAirTemp) {
             // A dehumidification load is being requested and dehumidifier is available (schedule value > 0)
             //  and the inlet air temperature is within the min/max values specified by user input
@@ -715,8 +709,7 @@ namespace ZoneDehumidifier {
                     ShowContinueErrorTimeStamp(state, " Dehumidifier turned off for this time step but simulation continues.");
                 } else {
                     ShowRecurringWarningErrorAtEnd(state,
-                                                   dehumid.UnitType + " \"" +
-                                                       dehumid.Name +
+                                                   dehumid.UnitType + " \"" + dehumid.Name +
                                                        "\": Water Removal Rate Curve output is <= 0.0 warning continues...",
                                                    dehumid.WaterRemovalCurveErrorIndex,
                                                    WaterRemovalRateFactor,
@@ -755,8 +748,7 @@ namespace ZoneDehumidifier {
                     ShowContinueErrorTimeStamp(state, " Dehumidifier turned off for this time step but simulation continues.");
                 } else {
                     ShowRecurringWarningErrorAtEnd(state,
-                                                   dehumid.UnitType + " \"" +
-                                                       dehumid.Name +
+                                                   dehumid.UnitType + " \"" + dehumid.Name +
                                                        "\": Energy Factor Curve output is <= 0.0 warning continues...",
                                                    dehumid.EnergyFactorCurveErrorIndex,
                                                    EnergyFactorAdjFactor,
@@ -785,8 +777,7 @@ namespace ZoneDehumidifier {
                                                    " PLF curve values must be >= 0.7.  PLF has been reset to 0.7 and simulation is continuing.");
                     } else {
                         ShowRecurringWarningErrorAtEnd(state,
-                                                       dehumid.UnitType + " \"" +
-                                                           dehumid.Name +
+                                                       dehumid.UnitType + " \"" + dehumid.Name +
                                                            "\": Part Load Fraction Correlation Curve output < 0.7 warning continues...",
                                                        dehumid.LowPLFErrorIndex,
                                                        PLF,
@@ -806,7 +797,8 @@ namespace ZoneDehumidifier {
                     } else {
                         ShowRecurringWarningErrorAtEnd(state,
                                                        format("{} \"{}\": Part Load Fraction Correlation Curve output > 1.0 warning continues...",
-                                                              dehumid.UnitType, dehumid.Name),
+                                                              dehumid.UnitType,
+                                                              dehumid.Name),
                                                        dehumid.HighPLFErrorIndex,
                                                        PLF,
                                                        PLF);
@@ -829,8 +821,7 @@ namespace ZoneDehumidifier {
                         ShowContinueErrorTimeStamp(state, "");
                     } else {
                         ShowRecurringWarningErrorAtEnd(state,
-                                                       dehumid.UnitType + " \"" +
-                                                           dehumid.Name +
+                                                       dehumid.UnitType + " \"" + dehumid.Name +
                                                            "\": Part load fraction less than part load ratio warning continues...",
                                                        dehumid.PLFPLRErrorIndex);
                     }
@@ -846,8 +837,7 @@ namespace ZoneDehumidifier {
                         ShowContinueErrorTimeStamp(state, "");
                     } else {
                         ShowRecurringWarningErrorAtEnd(state,
-                                                       dehumid.UnitType + " \"" +
-                                                           dehumid.Name +
+                                                       dehumid.UnitType + " \"" + dehumid.Name +
                                                            "\": Runtime fraction for zone dehumidifier exceeded 1.0 warning continues...",
                                                        dehumid.HighRTFErrorIndex,
                                                        RunTimeFraction,
@@ -905,8 +895,8 @@ namespace ZoneDehumidifier {
         dehumid.OutletAirEnthalpy = PsyHFnTdbW(InletAirTemp, OutletAirHumRat);
 
         dehumid.SensHeatingRate = SensibleOutput; // Report variable update, W,  avg sens output when unit is 'on'
-        dehumid.WaterRemovalRate = LatentOutput; // Report variable update, kg/s
-        LatentOutput = -LatentOutput; // change sign... negative is dehumidification in zone air balance
+        dehumid.WaterRemovalRate = LatentOutput;  // Report variable update, kg/s
+        LatentOutput = -LatentOutput;             // change sign... negative is dehumidification in zone air balance
 
         dehumid.OffCycleParasiticElecPower = (1.0 - RunTimeFraction) * dehumid.OffCycleParasiticLoad;
         dehumid.ElecPower = ElectricPowerAvg;
@@ -925,7 +915,7 @@ namespace ZoneDehumidifier {
 
         // PURPOSE OF THIS SUBROUTINE:
         // This subroutine is for passing results to the outlet air node.
-      
+
         auto &dehumid = state.dataZoneDehumidifier->ZoneDehumid(ZoneDehumNum);
         auto &airInletNode = state.dataLoopNodes->Node(dehumid.AirInletNodeNum);
         auto &airOutletNode = state.dataLoopNodes->Node(dehumid.AirOutletNodeNum);
@@ -974,7 +964,7 @@ namespace ZoneDehumidifier {
         // na
 
         auto &dehumid = state.dataZoneDehumidifier->ZoneDehumid(DehumidNum);
-        
+
         dehumid.SensHeatingEnergy = dehumid.SensHeatingRate * TimeStepSysSec;
         dehumid.WaterRemoved = dehumid.WaterRemovalRate * TimeStepSysSec;
         dehumid.ElecConsumption = dehumid.ElecPower * TimeStepSysSec;
@@ -996,8 +986,8 @@ namespace ZoneDehumidifier {
 
             dehumid.DehumidCondVol = dehumid.DehumidCondVolFlowRate * TimeStepSysSec;
 
-            state.dataWaterData->WaterStorage(dehumid.CondensateTankID)
-                .VdotAvailSupply(dehumid.CondensateTankSupplyARRID) = dehumid.DehumidCondVolFlowRate;
+            state.dataWaterData->WaterStorage(dehumid.CondensateTankID).VdotAvailSupply(dehumid.CondensateTankSupplyARRID) =
+                dehumid.DehumidCondVolFlowRate;
             // Assume water outlet temp = air outlet temp.... same assumption in other places in code (e.g., water coil component)
             state.dataWaterData->WaterStorage(dehumid.CondensateTankID).TwaterSupply(dehumid.CondensateTankSupplyARRID) = OutletAirTemp;
         }

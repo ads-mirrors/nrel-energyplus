@@ -132,8 +132,7 @@ namespace Curve {
         "Curve:CubicLinear",
         "Curve:ChillerPartLoadWithLift",
         "Table:Lookup",
-        "AirflowNetwork:MultiZone:WindPressureCoefficientValues"
-    }; // namespace Curve
+        "AirflowNetwork:MultiZone:WindPressureCoefficientValues"}; // namespace Curve
 
     struct Limits
     {
@@ -146,16 +145,16 @@ namespace Curve {
     struct Curve
     {
         // Basic data
-        std::string Name;                         // Curve Name
+        std::string Name; // Curve Name
         int Num = 0;
-      
+
         CurveType curveType = CurveType::Invalid; // Curve type (see parameter definitions above)
         // Table data stuff
-        int TableIndex = 0;     // Index to tabular data (0 if a standard curve object) OR Index of RGI for new Table:Lookup
-        int numDims = 0;        // Number of dimensions (AKA, independent variables)
-        int GridValueIndex = 0; // Index of output within RGI for new Table:Lookup
+        int TableIndex = 0;        // Index to tabular data (0 if a standard curve object) OR Index of RGI for new Table:Lookup
+        int numDims = 0;           // Number of dimensions (AKA, independent variables)
+        int GridValueIndex = 0;    // Index of output within RGI for new Table:Lookup
         std::string contextString; // For passing to callback
-      
+
         // input coefficients
         std::array<Real64, 27> coeff = {0.0}; // curve coefficients
         // independent variables
@@ -337,7 +336,7 @@ namespace Curve {
     Curve *GetCurve(EnergyPlusData &state, std::string const &curveName);
 
     Curve *AddCurve(EnergyPlusData &state, std::string const &curveName);
-  
+
     // This utility function grabs a curve index and performs the
     // error checking
     void GetCurveMinMaxValues(EnergyPlusData &state,
@@ -455,7 +454,7 @@ struct CurveManagerData : BaseGlobalStruct
     bool showFallbackMessage = true;
     Array1D<Curve::Curve *> curves;
     std::map<std::string, int> curveMap;
-  
+
     Curve::BtwxtManager btwxtManager;
 
     void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
@@ -470,7 +469,8 @@ struct CurveManagerData : BaseGlobalStruct
 
     void clear_state() override
     {
-        for (Curve::Curve *c : curves) delete c;
+        for (Curve::Curve *c : curves)
+            delete c;
         curves.clear();
         curveMap.clear();
     }

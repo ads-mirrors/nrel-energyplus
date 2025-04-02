@@ -2559,11 +2559,10 @@ void GetVRFInputData(EnergyPlusData &state, bool &ErrorsFound)
 
                 } else {
                     ShowSevereError(state, std::string{RoutineName} + cCurrentModuleObject + "=\"" + thisVrfFluidCtrl.Name + "\", invalid");
-                    ShowContinueError(
-                        state,
-                        format("...illegal {} type for this object = {}",
-                               cAlphaFieldNames(6),
-                               Curve::objectNames[static_cast<int>(state.dataCurveManager->curves(indexOUEvapTempCurve)->curveType)]));
+                    ShowContinueError(state,
+                                      format("...illegal {} type for this object = {}",
+                                             cAlphaFieldNames(6),
+                                             Curve::objectNames[static_cast<int>(state.dataCurveManager->curves(indexOUEvapTempCurve)->curveType)]));
                     ShowContinueError(state, "... Curve type must be Quadratic.");
                     ErrorsFound = true;
                 }
@@ -2591,11 +2590,10 @@ void GetVRFInputData(EnergyPlusData &state, bool &ErrorsFound)
 
                 } else {
                     ShowSevereError(state, std::string{RoutineName} + cCurrentModuleObject + "=\"" + thisVrfFluidCtrl.Name + "\", invalid");
-                    ShowContinueError(
-                        state,
-                        format("...illegal {} type for this object = {}",
-                               cAlphaFieldNames(7),
-                               Curve::objectNames[static_cast<int>(state.dataCurveManager->curves(indexOUCondTempCurve)->curveType)]));
+                    ShowContinueError(state,
+                                      format("...illegal {} type for this object = {}",
+                                             cAlphaFieldNames(7),
+                                             Curve::objectNames[static_cast<int>(state.dataCurveManager->curves(indexOUCondTempCurve)->curveType)]));
                     ShowContinueError(state, "... Curve type must be Quadratic.");
                     ErrorsFound = true;
                 }

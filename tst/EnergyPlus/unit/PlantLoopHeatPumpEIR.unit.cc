@@ -5711,7 +5711,7 @@ TEST_F(EnergyPlusFixture, GAHP_AirSource_CurveEval)
 
     ASSERT_TRUE(process_idf(idf_objects));
     state->init_state(*state);
-    
+
     // set up the plant loops
     // first the load side
     state->dataPlnt->TotNumLoops = 1;

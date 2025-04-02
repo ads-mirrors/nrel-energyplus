@@ -284,7 +284,7 @@ void GetGasAbsorberInput(EnergyPlusData &state)
     // required by the Direct Fired Absorption chiller model in the object ChillerHeater:Absorption:DirectFired
 
     static constexpr std::string_view routineName = "GetGasAbsorptionInput";
-  
+
     int NumAlphas; // Number of elements in the alpha array
     int NumNums;   // Number of elements in the numeric array
     int IOStat;    // IO Status when calling get input subroutine
@@ -293,7 +293,7 @@ void GetGasAbsorberInput(EnergyPlusData &state)
     int NumGasAbsorbers(0); // number of Absorption Chillers specified in input
 
     auto &s_ipsc = state.dataIPShortCut;
-    
+
     s_ipsc->cCurrentModuleObject = "ChillerHeater:Absorption:DirectFired";
     NumGasAbsorbers = state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, s_ipsc->cCurrentModuleObject);
 
@@ -324,7 +324,7 @@ void GetGasAbsorberInput(EnergyPlusData &state)
                                                                  s_ipsc->cNumericFieldNames);
 
         ErrorObjectHeader eoh{routineName, s_ipsc->cCurrentModuleObject, s_ipsc->cAlphaArgs(1)};
-        
+
         // Get_ErrorsFound will be set to True if problem was found, left untouched otherwise
         GlobalNames::VerifyUniqueChillerName(
             state, s_ipsc->cCurrentModuleObject, s_ipsc->cAlphaArgs(1), Get_ErrorsFound, s_ipsc->cCurrentModuleObject + " Name");
@@ -364,12 +364,8 @@ void GetGasAbsorberInput(EnergyPlusData &state)
                                                                              DataLoopNode::ConnectionType::Outlet,
                                                                              NodeInputManager::CompFluidStream::Primary,
                                                                              DataLoopNode::ObjectIsNotParent);
-        BranchNodeConnections::TestCompSet(state,
-                                           s_ipsc->cCurrentModuleObject,
-                                           s_ipsc->cAlphaArgs(1),
-                                           s_ipsc->cAlphaArgs(2),
-                                           s_ipsc->cAlphaArgs(3),
-                                           "Chilled Water Nodes");
+        BranchNodeConnections::TestCompSet(
+            state, s_ipsc->cCurrentModuleObject, s_ipsc->cAlphaArgs(1), s_ipsc->cAlphaArgs(2), s_ipsc->cAlphaArgs(3), "Chilled Water Nodes");
         // Condenser node processing depends on condenser type, see below
         thisChiller.HeatReturnNodeNum = NodeInputManager::GetOnlySingleNode(state,
                                                                             s_ipsc->cAlphaArgs(6),
@@ -389,15 +385,10 @@ void GetGasAbsorberInput(EnergyPlusData &state)
                                                                             DataLoopNode::ConnectionType::Outlet,
                                                                             NodeInputManager::CompFluidStream::Tertiary,
                                                                             DataLoopNode::ObjectIsNotParent);
-        BranchNodeConnections::TestCompSet(state,
-                                           s_ipsc->cCurrentModuleObject,
-                                           s_ipsc->cAlphaArgs(1),
-                                           s_ipsc->cAlphaArgs(6),
-                                           s_ipsc->cAlphaArgs(7),
-                                           "Hot Water Nodes");
+        BranchNodeConnections::TestCompSet(
+            state, s_ipsc->cCurrentModuleObject, s_ipsc->cAlphaArgs(1), s_ipsc->cAlphaArgs(6), s_ipsc->cAlphaArgs(7), "Hot Water Nodes");
         if (Get_ErrorsFound) {
-            ShowFatalError(state,
-                           format("Errors found in processing node input for {}={}", s_ipsc->cCurrentModuleObject, s_ipsc->cAlphaArgs(1)));
+            ShowFatalError(state, format("Errors found in processing node input for {}={}", s_ipsc->cCurrentModuleObject, s_ipsc->cAlphaArgs(1)));
             Get_ErrorsFound = false;
         }
 
@@ -480,12 +471,12 @@ void GetGasAbsorberInput(EnergyPlusData &state)
             ShowSevereItemNotFound(state, eoh, s_ipsc->cAlphaFieldNames(14), s_ipsc->cAlphaArgs(14));
             Get_ErrorsFound = true;
         }
-        
+
         if (Get_ErrorsFound) {
             ShowFatalError(state, format("Errors found in processing curve input for {}={}", s_ipsc->cCurrentModuleObject, s_ipsc->cAlphaArgs(1)));
             Get_ErrorsFound = false;
         }
-        
+
         if (Util::SameString(s_ipsc->cAlphaArgs(15), "LeavingCondenser")) {
             thisChiller.isEnterCondensTemp = false;
         } else if (Util::SameString(s_ipsc->cAlphaArgs(15), "EnteringCondenser")) {
@@ -539,12 +530,8 @@ void GetGasAbsorberInput(EnergyPlusData &state)
                                                     DataLoopNode::ConnectionType::Outlet,
                                                     NodeInputManager::CompFluidStream::Secondary,
                                                     DataLoopNode::ObjectIsNotParent);
-            BranchNodeConnections::TestCompSet(state,
-                                               s_ipsc->cCurrentModuleObject,
-                                               s_ipsc->cAlphaArgs(1),
-                                               s_ipsc->cAlphaArgs(4),
-                                               s_ipsc->cAlphaArgs(5),
-                                               "Condenser Water Nodes");
+            BranchNodeConnections::TestCompSet(
+                state, s_ipsc->cCurrentModuleObject, s_ipsc->cAlphaArgs(1), s_ipsc->cAlphaArgs(4), s_ipsc->cAlphaArgs(5), "Condenser Water Nodes");
         } else {
             thisChiller.CondReturnNodeNum =
                 NodeInputManager::GetOnlySingleNode(state,

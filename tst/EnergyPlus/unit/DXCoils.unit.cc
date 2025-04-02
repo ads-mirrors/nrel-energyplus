@@ -146,7 +146,7 @@ void createFlatCurves(EnergyPlusData *state)
         curve->inputLimits[1].max = 100.0;
     }
 }
-  
+
 void createSpeedsWithDefaults(DXCoils::DXCoilData &thisDXCoil)
 {
     int const numSpeeds = thisDXCoil.NumOfSpeeds;
@@ -446,7 +446,7 @@ TEST_F(EnergyPlusFixture, TestMultiSpeedDefrostCOP)
     int DXCoilNum;
 
     // state->init_state(*state); // Why is this being called when there is no IDF file?
-    
+
     // Set up heating coil and curves.
     state->dataDXCoils->NumDXCoils = 1;
     DXCoilNum = 1;
@@ -7238,7 +7238,7 @@ TEST_F(EnergyPlusFixture, MultiSpeedDXHeatingCoilsHSPF2Test)
 
     ASSERT_TRUE(process_idf(idf_objects));
     state->init_state(*state);
-    
+
     // get input
     GetDXCoils(*state);
     SetPredefinedTables(*state);
@@ -7498,7 +7498,7 @@ TEST_F(EnergyPlusFixture, MultiSpeedDXHeatingCoilsHSPF2Test1)
 
     ASSERT_TRUE(process_idf(idf_objects));
     state->init_state(*state);
-    
+
     // get input
     GetDXCoils(*state);
     SetPredefinedTables(*state);
@@ -7760,7 +7760,7 @@ TEST_F(EnergyPlusFixture, MultiSpeedDXHeatingCoilsHSPF2Test2)
 
     ASSERT_TRUE(process_idf(idf_objects));
     state->init_state(*state);
-    
+
     // get input
     GetDXCoils(*state);
     SetPredefinedTables(*state);

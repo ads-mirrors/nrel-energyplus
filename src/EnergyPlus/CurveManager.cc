@@ -266,7 +266,7 @@ namespace Curve {
         case CurveType::BtwxtTableLookup: {
             Val = BtwxtTableInterpolation(state, V1, V2);
         } break;
-          
+
         default: {
             Val = this->valueFallback(state, V1, V2, 0.0, 0.0, 0.0);
         } break;

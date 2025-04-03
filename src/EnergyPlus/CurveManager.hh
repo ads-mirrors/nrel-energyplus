@@ -106,7 +106,6 @@ namespace Curve {
         CubicLinear,
         ChillerPartLoadWithLift,
         BtwxtTableLookup,
-        BtwxtAFNPressure,
         Num
     };
 
@@ -131,8 +130,7 @@ namespace Curve {
         "Curve:QuintLinear",
         "Curve:CubicLinear",
         "Curve:ChillerPartLoadWithLift",
-        "Table:Lookup",
-        "AirflowNetwork:MultiZone:WindPressureCoefficientValues"
+        "Table:Lookup"
     }; // namespace Curve
 
     struct Limits

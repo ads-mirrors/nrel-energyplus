@@ -62,6 +62,7 @@
 #include <EnergyPlus/OutputReportPredefined.hh>
 #include <EnergyPlus/Plant/DataPlant.hh>
 #include <EnergyPlus/Plant/Enums.hh>
+#include <EnergyPlus/PlantUtilities.hh>
 #include <EnergyPlus/Psychrometrics.hh>
 
 #include "Fixtures/EnergyPlusFixture.hh"
@@ -124,9 +125,9 @@ TEST_F(EnergyPlusFixture, ElectricEIRChiller_HeatRecoveryAutosizeTest)
     thisEIR.HeatRecActive = true;
     thisEIR.CondenserType = DataPlant::CondenserType::WaterCooled;
     thisEIR.CWPlantLoc.loopNum = 1;
-    thisEIR.CWPlantLoc.loop = &state->dataPlnt->PlantLoop(thisEIR.CWPlantLoc.loopNum);
+    PlantUtilities::SetPlantLocationLinks(*state, thisEIR.CWPlantLoc);
     thisEIR.CDPlantLoc.loopNum = 2;
-    thisEIR.CDPlantLoc.loop = &state->dataPlnt->PlantLoop(thisEIR.CDPlantLoc.loopNum);
+    PlantUtilities::SetPlantLocationLinks(*state, thisEIR.CDPlantLoc);
     thisEIR.EvapVolFlowRate = 1.0;
     thisEIR.CondVolFlowRate = 1.0;
     thisEIR.RefCap = 10000;

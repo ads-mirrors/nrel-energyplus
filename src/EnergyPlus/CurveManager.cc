@@ -209,8 +209,7 @@ namespace Curve {
             Val = this->coeff[0] + this->coeff[1] * std::exp(this->coeff[2] * V1) + this->coeff[3] * std::exp(this->coeff[4] * V1);
         } break;
 
-        case CurveType::BtwxtTableLookup:
-        case CurveType::BtwxtAFNPressure: {
+        case CurveType::BtwxtTableLookup: {
             Val = BtwxtTableInterpolation(state, V1);
         } break;
 
@@ -264,10 +263,10 @@ namespace Curve {
                   V1 * V2 * V2 * this->coeff[9];
         } break;
           
-        case CurveType::BtwxtTableLookup:
-        case CurveType::BtwxtAFNPressure: {
+        case CurveType::BtwxtTableLookup: {
             Val = BtwxtTableInterpolation(state, V1, V2);
         } break;
+          
         default: {
             Val = this->valueFallback(state, V1, V2, 0.0, 0.0, 0.0);
         } break;
@@ -313,8 +312,7 @@ namespace Curve {
                   c[26] * V1 * V2 * V3;
         } break;
 
-        case CurveType::BtwxtTableLookup:
-        case CurveType::BtwxtAFNPressure: {
+        case CurveType::BtwxtTableLookup: {
             Val = BtwxtTableInterpolation(state, V1, V2, V3);
         } break;
 
@@ -351,8 +349,7 @@ namespace Curve {
             Val = this->coeff[0] + V1 * this->coeff[1] + V2 * this->coeff[2] + V3 * this->coeff[3] + V4 * this->coeff[4];
         } break;
 
-        case CurveType::BtwxtTableLookup:
-        case CurveType::BtwxtAFNPressure: {
+        case CurveType::BtwxtTableLookup: {
             Val = BtwxtTableInterpolation(state, V1, V2, V3, V4);
         } break;
 
@@ -391,8 +388,7 @@ namespace Curve {
             Val = this->coeff[0] + V1 * this->coeff[1] + V2 * this->coeff[2] + V3 * this->coeff[3] + V4 * this->coeff[4] + V5 * this->coeff[5];
         } break;
 
-        case CurveType::BtwxtTableLookup:
-        case CurveType::BtwxtAFNPressure: {
+        case CurveType::BtwxtTableLookup: {
             Val = BtwxtTableInterpolation(state, V1, V2, V3, V4, V5);
         } break;
           
@@ -2249,7 +2245,7 @@ namespace Curve {
 
                     thisCurve->numDims = 1;
 
-                    thisCurve->curveType = CurveType::BtwxtAFNPressure;
+                    thisCurve->curveType = CurveType::BtwxtTableLookup;
 
                     thisCurve->contextString = format("Table:Lookup \"{}\"", Alphas(1));
                     std::pair<EnergyPlusData *, std::string> callbackPair{&state, thisCurve->contextString};

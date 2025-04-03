@@ -262,11 +262,11 @@ namespace Curve {
                   V1 * V2 * this->coeff[5] + V1 * V1 * V1 * this->coeff[6] + V2 * V2 * V2 * this->coeff[7] + V1 * V1 * V2 * this->coeff[8] +
                   V1 * V2 * V2 * this->coeff[9];
         } break;
-          
+
         case CurveType::BtwxtTableLookup: {
             Val = BtwxtTableInterpolation(state, V1, V2);
         } break;
-          
+
         default: {
             Val = this->valueFallback(state, V1, V2, 0.0, 0.0, 0.0);
         } break;

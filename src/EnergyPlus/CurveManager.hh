@@ -109,29 +109,27 @@ namespace Curve {
         Num
     };
 
-    constexpr std::array<std::string_view, static_cast<int>(CurveType::Num)> objectNames = {
-        "Curve:Linear",
-        "Curve:Quadratic",
-        "Curve:Biquadratic",
-        "Curve:Cubic",
-        "Curve:QuadLinear",
-        "Curve:Bicubic",
-        "Curve:Triquadratic",
-        "Curve:Exponent",
-        "Curve:Quartic",
-        "Curve:FanPressureRise",
-        "Curve:ExponentialSkewNormal",
-        "Curve:Sigmoid",
-        "Curve:RectangularHyperbola1",
-        "Curve:RectangularHyperbola2",
-        "Curve:ExponentialDecay",
-        "Curve:DoubleExponentialDecay",
-        "Curve:QuadraticLinear",
-        "Curve:QuintLinear",
-        "Curve:CubicLinear",
-        "Curve:ChillerPartLoadWithLift",
-        "Table:Lookup"
-    }; // namespace Curve
+    constexpr std::array<std::string_view, static_cast<int>(CurveType::Num)> objectNames = {"Curve:Linear",
+                                                                                            "Curve:Quadratic",
+                                                                                            "Curve:Biquadratic",
+                                                                                            "Curve:Cubic",
+                                                                                            "Curve:QuadLinear",
+                                                                                            "Curve:Bicubic",
+                                                                                            "Curve:Triquadratic",
+                                                                                            "Curve:Exponent",
+                                                                                            "Curve:Quartic",
+                                                                                            "Curve:FanPressureRise",
+                                                                                            "Curve:ExponentialSkewNormal",
+                                                                                            "Curve:Sigmoid",
+                                                                                            "Curve:RectangularHyperbola1",
+                                                                                            "Curve:RectangularHyperbola2",
+                                                                                            "Curve:ExponentialDecay",
+                                                                                            "Curve:DoubleExponentialDecay",
+                                                                                            "Curve:QuadraticLinear",
+                                                                                            "Curve:QuintLinear",
+                                                                                            "Curve:CubicLinear",
+                                                                                            "Curve:ChillerPartLoadWithLift",
+                                                                                            "Table:Lookup"}; // namespace Curve
 
     struct Limits
     {

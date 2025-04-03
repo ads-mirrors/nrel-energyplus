@@ -56,6 +56,7 @@
 #include <EnergyPlus/DataSizing.hh>
 #include <EnergyPlus/Plant/DataPlant.hh>
 #include <EnergyPlus/PlantChillers.hh>
+#include <EnergyPlus/PlantUtilities.hh>
 
 using namespace EnergyPlus;
 using namespace PlantChillers;
@@ -83,9 +84,9 @@ TEST_F(EnergyPlusFixture, GTChiller_HeatRecoveryAutosizeTest)
     state->dataPlantChillers->GTChiller(1).HeatRecActive = true;
     state->dataPlantChillers->GTChiller(1).CondenserType = DataPlant::CondenserType::WaterCooled;
     state->dataPlantChillers->GTChiller(1).CWPlantLoc.loopNum = 1;
-    state->dataPlantChillers->GTChiller(1).CWPlantLoc.loop = &state->dataPlnt->PlantLoop(1);
+    PlantUtilities::SetPlantLocationLinks(*state, state->dataPlantChillers->GTChiller(1).CWPlantLoc);
     state->dataPlantChillers->GTChiller(1).CDPlantLoc.loopNum = 2;
-    state->dataPlantChillers->GTChiller(1).CDPlantLoc.loop = &state->dataPlnt->PlantLoop(2);
+    PlantUtilities::SetPlantLocationLinks(*state, state->dataPlantChillers->GTChiller(1).CDPlantLoc);
     state->dataPlantChillers->GTChiller(1).EvapVolFlowRate = 1.0;
     state->dataPlantChillers->GTChiller(1).CondVolFlowRate = 1.0;
     state->dataPlantChillers->GTChiller(1).NomCap = 10000;
@@ -124,9 +125,9 @@ TEST_F(EnergyPlusFixture, EngineDrivenChiller_HeatRecoveryAutosizeTest)
     state->dataPlantChillers->EngineDrivenChiller(1).HeatRecActive = true;
     state->dataPlantChillers->EngineDrivenChiller(1).CondenserType = DataPlant::CondenserType::WaterCooled;
     state->dataPlantChillers->EngineDrivenChiller(1).CWPlantLoc.loopNum = 1;
-    state->dataPlantChillers->EngineDrivenChiller(1).CWPlantLoc.loop = &state->dataPlnt->PlantLoop(1);
+    PlantUtilities::SetPlantLocationLinks(*state, state->dataPlantChillers->EngineDrivenChiller(1).CWPlantLoc);
     state->dataPlantChillers->EngineDrivenChiller(1).CDPlantLoc.loopNum = 2;
-    state->dataPlantChillers->EngineDrivenChiller(1).CDPlantLoc.loop = &state->dataPlnt->PlantLoop(2);
+    PlantUtilities::SetPlantLocationLinks(*state, state->dataPlantChillers->EngineDrivenChiller(1).CDPlantLoc);
     state->dataPlantChillers->EngineDrivenChiller(1).EvapVolFlowRate = 1.0;
     state->dataPlantChillers->EngineDrivenChiller(1).CondVolFlowRate = 1.0;
     state->dataPlantChillers->EngineDrivenChiller(1).NomCap = 10000;

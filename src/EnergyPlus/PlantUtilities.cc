@@ -147,10 +147,8 @@ void SetComponentFlowRate(EnergyPlusData &state,
     }
 
     Real64 const MdotOldRequest = state.dataLoopNodes->Node(InletNode).MassFlowRateRequest;
-    auto &loop_side = state.dataPlnt->PlantLoop(plantLoc.loopNum).LoopSide(plantLoc.loopSideNum);
-    auto const &comp = loop_side.Branch(plantLoc.branchNum).Comp(plantLoc.compNum);
 
-    if (comp.CurOpSchemeType == DataPlant::OpScheme::Demand) {
+    if (plantLoc.comp->CurOpSchemeType == DataPlant::OpScheme::Demand) {
         // store flow request on inlet node
         state.dataLoopNodes->Node(InletNode).MassFlowRateRequest = CompFlow;
         state.dataLoopNodes->Node(OutletNode).MassFlowRateMinAvail =
@@ -184,12 +182,12 @@ void SetComponentFlowRate(EnergyPlusData &state,
     }
 
     // Set loop flow rate
-    if (loop_side.FlowLock == DataPlant::FlowLock::Unlocked) {
-        if (state.dataPlnt->PlantLoop(plantLoc.loopNum).MaxVolFlowRate == DataSizing::AutoSize) { // still haven't sized the plant loop
+    if (plantLoc.side->FlowLock == DataPlant::FlowLock::Unlocked) {
+        if (plantLoc.loop->MaxVolFlowRate == DataSizing::AutoSize) { // still haven't sized the plant loop
             state.dataLoopNodes->Node(OutletNode).MassFlowRate = CompFlow;
             state.dataLoopNodes->Node(InletNode).MassFlowRate = state.dataLoopNodes->Node(OutletNode).MassFlowRate;
         } else { // bound the flow by Min/Max available and hardware limits
-            if (comp.FlowCtrl == DataBranchAirLoopPlant::ControlType::SeriesActive) {
+            if (plantLoc.comp->FlowCtrl == DataBranchAirLoopPlant::ControlType::SeriesActive) {
                 // determine highest flow request for all the components on the branch
                 Real64 SeriesBranchHighFlowRequest = 0.0;
                 Real64 SeriesBranchHardwareMaxLim = state.dataLoopNodes->Node(InletNode).MassFlowRateMax;
@@ -201,8 +199,8 @@ void SetComponentFlowRate(EnergyPlusData &state,
                 // action here means EMS will not impact the FlowLock == FlowLocked condition (which should still show EMS intent)
                 bool EMSLoadOverride = false;
 
-                for (int CompNum = 1; CompNum <= loop_side.Branch(plantLoc.branchNum).TotalComponents; ++CompNum) {
-                    auto const &thisComp = loop_side.Branch(plantLoc.branchNum).Comp(CompNum);
+                for (int CompNum = 1; CompNum <= plantLoc.branch->TotalComponents; ++CompNum) {
+                    auto const &thisComp = plantLoc.branch->Comp(CompNum);
                     int const CompInletNodeNum = thisComp.NodeNumIn;
                     auto const &thisInletNode = state.dataLoopNodes->Node(CompInletNodeNum);
                     SeriesBranchHighFlowRequest = max(thisInletNode.MassFlowRateRequest, SeriesBranchHighFlowRequest);
@@ -230,8 +228,8 @@ void SetComponentFlowRate(EnergyPlusData &state,
                 if (CompFlow < DataBranchAirLoopPlant::MassFlowTolerance) CompFlow = 0.0;
                 state.dataLoopNodes->Node(OutletNode).MassFlowRate = CompFlow;
                 state.dataLoopNodes->Node(InletNode).MassFlowRate = state.dataLoopNodes->Node(OutletNode).MassFlowRate;
-                for (int CompNum = 1; CompNum <= loop_side.Branch(plantLoc.branchNum).TotalComponents; ++CompNum) {
-                    auto const &thisComp = loop_side.Branch(plantLoc.branchNum).Comp(CompNum);
+                for (int CompNum = 1; CompNum <= plantLoc.branch->TotalComponents; ++CompNum) {
+                    auto const &thisComp = plantLoc.branch->Comp(CompNum);
                     int const CompInletNodeNum = thisComp.NodeNumIn;
                     int const CompOutletNodeNum = thisComp.NodeNumOut;
                     state.dataLoopNodes->Node(CompInletNodeNum).MassFlowRate = state.dataLoopNodes->Node(OutletNode).MassFlowRate;
@@ -251,9 +249,9 @@ void SetComponentFlowRate(EnergyPlusData &state,
                 // action here means EMS will not impact the FlowLock == FlowLocked condition (which should still show EMS intent)
                 bool EMSLoadOverride = false;
 
-                for (int CompNum = 1; CompNum <= loop_side.Branch(plantLoc.branchNum).TotalComponents; ++CompNum) {
+                for (int CompNum = 1; CompNum <= plantLoc.branch->TotalComponents; ++CompNum) {
                     // check to see if any component on branch uses EMS On/Off Supervisory control to shut down flow
-                    auto const &thisComp = loop_side.Branch(plantLoc.branchNum).Comp(CompNum);
+                    auto const &thisComp = plantLoc.branch->Comp(CompNum);
                     if (thisComp.EMSLoadOverrideOn && thisComp.EMSLoadOverrideValue == 0.0) EMSLoadOverride = true;
                 }
 
@@ -267,18 +265,18 @@ void SetComponentFlowRate(EnergyPlusData &state,
                 state.dataLoopNodes->Node(InletNode).MassFlowRate = state.dataLoopNodes->Node(OutletNode).MassFlowRate;
             }
         }
-    } else if (loop_side.FlowLock == DataPlant::FlowLock::Locked) {
+    } else if (plantLoc.side->FlowLock == DataPlant::FlowLock::Locked) {
         state.dataLoopNodes->Node(OutletNode).MassFlowRate = state.dataLoopNodes->Node(InletNode).MassFlowRate;
         CompFlow = state.dataLoopNodes->Node(OutletNode).MassFlowRate;
     } else {
         ShowFatalError(state, "SetComponentFlowRate: Flow lock out of range"); // DEBUG error...should never get here LCOV_EXCL_LINE
     }
 
-    if (comp.CurOpSchemeType == DataPlant::OpScheme::Demand) {
+    if (plantLoc.comp->CurOpSchemeType == DataPlant::OpScheme::Demand) {
         if ((MdotOldRequest > 0.0) && (CompFlow > 0.0)) { // sure that not coming back from a no flow reset
             if (std::abs(MdotOldRequest - state.dataLoopNodes->Node(InletNode).MassFlowRateRequest) >
                 DataBranchAirLoopPlant::MassFlowTolerance) { // demand comp changed its flow request
-                loop_side.SimLoopSideNeeded = true;
+                plantLoc.side->SimLoopSideNeeded = true;
             }
         }
     }
@@ -1825,6 +1823,20 @@ void ScanPlantLoopsForNodeNum(EnergyPlusData &state,
     }
 }
 
+// Utility function, mostly for unit tests.  
+void SetPlantLocationLinks(EnergyPlusData &state,
+                           PlantLocation &plantLoc)
+{
+    if (plantLoc.loopNum == 0) return;
+    plantLoc.loop = &state.dataPlnt->PlantLoop(plantLoc.loopNum);
+    if (plantLoc.loopSideNum == DataPlant::LoopSideLocation::Invalid) return;
+    plantLoc.side = &plantLoc.loop->LoopSide(plantLoc.loopSideNum);
+    if (plantLoc.branchNum == 0) return;
+    plantLoc.branch = &plantLoc.side->Branch(plantLoc.branchNum);
+    if (plantLoc.compNum == 0) return;
+    plantLoc.comp = &plantLoc.branch->Comp(plantLoc.compNum);
+}
+  
 bool AnyPlantLoopSidesNeedSim(EnergyPlusData &state)
 {
 

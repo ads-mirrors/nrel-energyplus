@@ -52,6 +52,7 @@
 
 namespace EnergyPlus {
 
+  
 // Forward declarations
 namespace DataPlant {
     struct PlantLoopData;

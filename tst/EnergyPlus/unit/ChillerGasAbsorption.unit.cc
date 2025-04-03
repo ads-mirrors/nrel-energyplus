@@ -55,6 +55,7 @@
 #include <EnergyPlus/ChillerGasAbsorption.hh>
 #include <EnergyPlus/Data/EnergyPlusData.hh>
 #include <EnergyPlus/Plant/DataPlant.hh>
+#include <EnergyPlus/PlantUtilities.hh>
 
 #include "Fixtures/EnergyPlusFixture.hh"
 
@@ -203,10 +204,7 @@ TEST_F(EnergyPlusFixture, GasAbsorption_getDesignCapacities_Test)
     thisChillerHeater.CondReturnNodeNum = 333;
 
     PlantLocation loc_1 = PlantLocation(1, DataPlant::LoopSideLocation::Demand, 1, 1);
-    loc_1.loop = &state->dataPlnt->PlantLoop(loc_1.loopNum);
-    loc_1.side = &loc_1.loop->LoopSide(loc_1.loopSideNum);
-    loc_1.branch = &loc_1.side->Branch(loc_1.branchNum);
-    loc_1.comp = &loc_1.branch->Comp(loc_1.compNum);
+    PlantUtilities::SetPlantLocationLinks(*state, loc_1);
     
     Real64 maxload(-1.0);
     Real64 minload(-1.0);
@@ -226,10 +224,7 @@ TEST_F(EnergyPlusFixture, GasAbsorption_getDesignCapacities_Test)
 
     thisChillerHeater.NomHeatCoolRatio = 0.9;
     PlantLocation loc_2 = PlantLocation(2, DataPlant::LoopSideLocation::Demand, 1, 1);
-    loc_2.loop = &state->dataPlnt->PlantLoop(loc_2.loopNum);
-    loc_2.side = &loc_2.loop->LoopSide(loc_2.loopSideNum);
-    loc_2.branch = &loc_2.side->Branch(loc_2.branchNum);
-    loc_2.comp = &loc_2.branch->Comp(loc_2.compNum);
+    PlantUtilities::SetPlantLocationLinks(*state, loc_2);
 
     // Heater
     thisChillerHeater.getDesignCapacities(*state, loc_2, maxload, minload, optload);
@@ -239,10 +234,7 @@ TEST_F(EnergyPlusFixture, GasAbsorption_getDesignCapacities_Test)
     EXPECT_NEAR(optload, 72000.0, 0.001);
 
     PlantLocation loc_3 = PlantLocation(3, DataPlant::LoopSideLocation::Demand, 1, 1);
-    loc_3.loop = &state->dataPlnt->PlantLoop(loc_3.loopNum);
-    loc_3.side = &loc_3.loop->LoopSide(loc_3.loopSideNum);
-    loc_3.branch = &loc_3.side->Branch(loc_3.branchNum);
-    loc_3.comp = &loc_3.branch->Comp(loc_3.compNum);
+    PlantUtilities::SetPlantLocationLinks(*state, loc_3);
 
     // Condenser
     thisChillerHeater.getDesignCapacities(*state, loc_3, maxload, minload, optload);
@@ -347,9 +339,8 @@ TEST_F(EnergyPlusFixture, GasAbsorption_calculateHeater_Fix_Test)
     state->dataPlnt->PlantLoop.allocate(state->dataPlnt->TotNumLoops);
 
     thisChillerHeater.HWplantLoc.loopNum = 1;
-    thisChillerHeater.HWplantLoc.loop = &state->dataPlnt->PlantLoop(thisChillerHeater.HWplantLoc.loopNum);
     thisChillerHeater.HWplantLoc.loopSideNum = DataPlant::LoopSideLocation::Demand;
-    thisChillerHeater.HWplantLoc.side = &thisChillerHeater.HWplantLoc.loop->LoopSide(thisChillerHeater.HWplantLoc.loopSideNum);
+    PlantUtilities::SetPlantLocationLinks(*state, thisChillerHeater.HWplantLoc);
     
     state->dataPlnt->PlantLoop(1).FluidName = "WATER";
     state->dataPlnt->PlantLoop(1).glycol = Fluid::GetWater(*state);

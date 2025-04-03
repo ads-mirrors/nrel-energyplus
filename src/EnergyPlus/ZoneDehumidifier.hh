@@ -99,7 +99,7 @@ namespace ZoneDehumidifier {
         Curve::Curve *EnergyFactorCurve = nullptr;                            // Energy factor curve
         int EnergyFactorCurveErrorCount = 0;                                  // Count number of times energy factor curve returns negative value
         int EnergyFactorCurveErrorIndex = 0;                                  // Index for negative value energy factor recurring messages
-        Curve::Curve *PartLoadCurve = nullptr;                                           // Index for part load curve
+        Curve::Curve *PartLoadCurve = nullptr;                                // Index for part load curve
         int LowPLFErrorCount = 0;                                             // Count number of times PLF < 0.7
         int LowPLFErrorIndex = 0;                                             // Index for PLF < 0.7 recurring warning messages
         int HighPLFErrorCount = 0;                                            // Count number of times PLF > 1.0

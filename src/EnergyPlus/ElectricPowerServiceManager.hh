@@ -390,7 +390,7 @@ private: // data
     Real64 cutoffV_;                               // [V] cut-off voltage
     Real64 maxChargeRate_;                         // [1/h] charge rate limit
     bool lifeCalculation_;                         // [ ] battery life calculation: Yes or No
-    Curve::Curve *lifeCurve_ = nullptr;            // [ ] battery life curve 
+    Curve::Curve *lifeCurve_ = nullptr;            // [ ] battery life curve
     Real64 liIon_dcToDcChargingEff_;               // [ ] DC to DC Charging Efficiency (Li-ion NMC model)
     Real64 liIon_mass_;                            // [kg] mass of battery (Li-ion NMC model)
     Real64 liIon_surfaceArea_;                     // [m2] battery surface area (Li-ion NMC model)

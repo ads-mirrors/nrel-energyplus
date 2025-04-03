@@ -62,7 +62,7 @@ TEST_F(CoilCoolingDXTest, CoilCoolingDXCurveFitSpeedInput)
     std::string idf_objects = this->getSpeedObjectString("speed1");
     EXPECT_TRUE(process_idf(idf_objects, false));
     state->init_state(*state);
-    
+
     CoilCoolingDXCurveFitSpeed thisSpeed(*state, "speed1");
     EXPECT_EQ("SPEED1", thisSpeed.name);
 }
@@ -72,7 +72,7 @@ TEST_F(CoilCoolingDXTest, CoilCoolingDXCurveFitSpeedTest)
     std::string idf_objects = this->getSpeedObjectString("speed1");
     EXPECT_TRUE(process_idf(idf_objects, false));
     state->init_state(*state);
-    
+
     CoilCoolingDXCurveFitSpeed thisSpeed(*state, "speed1");
     EXPECT_EQ("SPEED1", thisSpeed.name);
 

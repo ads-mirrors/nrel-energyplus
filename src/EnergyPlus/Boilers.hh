@@ -70,7 +70,7 @@ struct EnergyPlusData;
 
 namespace Curve {
     struct Curve;
-}  
+}
 
 namespace Boilers {
 

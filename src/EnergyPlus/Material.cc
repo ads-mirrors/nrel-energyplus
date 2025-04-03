@@ -632,7 +632,8 @@ void GetMaterialData(EnergyPlusData &state, bool &ErrorsFound) // set to true if
                     ShowSevereCustom(state,
                                      eoh,
                                      format("{} requires the minimum value = 0.0 in the entered table name={}",
-                                            s_ipsc->cAlphaFieldNames(5), s_ipsc->cAlphaArgs(5)));
+                                            s_ipsc->cAlphaFieldNames(5),
+                                            s_ipsc->cAlphaArgs(5)));
                 }
 
                 if (std::abs(maxAng - 90.0) > 1.0e-6) {
@@ -717,7 +718,7 @@ void GetMaterialData(EnergyPlusData &state, bool &ErrorsFound) // set to true if
             } else if ((mat->GlassSpecAngBReflCurve = Curve::GetCurve(state, s_ipsc->cAlphaArgs(7))) == nullptr) {
                 ErrorsFound = true;
                 ShowSevereItemNotFound(state, eoh, s_ipsc->cAlphaFieldNames(7), s_ipsc->cAlphaArgs(7));
-            } else if (mat->GlassSpecAngBReflCurve->numDims != 2) { 
+            } else if (mat->GlassSpecAngBReflCurve->numDims != 2) {
                 Curve::ShowSevereCurveDims(state, eoh, s_ipsc->cAlphaFieldNames(7), s_ipsc->cAlphaArgs(7), "2", mat->GlassSpecAngBReflCurve->numDims);
                 ErrorsFound = true;
             } else {
@@ -2859,7 +2860,7 @@ void GetVariableAbsorptanceInput(EnergyPlusData &state, bool &errorsFound)
                 errorsFound = true;
                 return;
             }
-            
+
         } else { // controlled by performance table or curve
             if ((mat->absorpThermalVarCurve == nullptr) && (mat->absorpSolarVarCurve == nullptr)) {
                 ShowSevereError(state,

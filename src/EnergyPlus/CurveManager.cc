@@ -147,7 +147,7 @@ namespace Curve {
     {
         commonEnvironInit(state);
         this->inputs[0] = V1;
-        
+
         V1 = max(min(V1, this->inputLimits[0].max), this->inputLimits[0].min);
 
         Real64 Val = 0.0;
@@ -231,7 +231,7 @@ namespace Curve {
         commonEnvironInit(state);
         this->inputs[0] = V1;
         this->inputs[1] = V2;
-        
+
         V1 = max(min(V1, this->inputLimits[0].max), this->inputLimits[0].min);
         V2 = max(min(V2, this->inputLimits[1].max), this->inputLimits[1].min);
 
@@ -241,20 +241,20 @@ namespace Curve {
         case CurveType::FanPressureRise: {
             return V1 * (this->coeff[0] * V1 + this->coeff[1] + this->coeff[2] * std::sqrt(V2)) + this->coeff[3] * V2;
         } break;
-          
+
         case CurveType::BiQuadratic: {
-            Val = this->coeff[0] + V1 * (this->coeff[1] + V1 * this->coeff[2]) + V2 * (this->coeff[3] + V2 * this->coeff[4]) +
-                  V1 * V2 * this->coeff[5];
+            Val =
+                this->coeff[0] + V1 * (this->coeff[1] + V1 * this->coeff[2]) + V2 * (this->coeff[3] + V2 * this->coeff[4]) + V1 * V2 * this->coeff[5];
         } break;
-          
+
         case CurveType::QuadraticLinear: {
-            Val = (this->coeff[0] + V1 * (this->coeff[1] + V1 * this->coeff[2])) +
-                  (this->coeff[3] + V1 * (this->coeff[4] + V1 * this->coeff[5])) * V2;
+            Val =
+                (this->coeff[0] + V1 * (this->coeff[1] + V1 * this->coeff[2])) + (this->coeff[3] + V1 * (this->coeff[4] + V1 * this->coeff[5])) * V2;
         } break;
 
         case CurveType::CubicLinear: {
-            Val = (this->coeff[0] + V1 * (this->coeff[1] + V1 * (this->coeff[2] + V1 * this->coeff[3]))) +
-                  (this->coeff[4] + V1 * this->coeff[5]) * V2;
+            Val =
+                (this->coeff[0] + V1 * (this->coeff[1] + V1 * (this->coeff[2] + V1 * this->coeff[3]))) + (this->coeff[4] + V1 * this->coeff[5]) * V2;
         } break;
 
         case CurveType::BiCubic: {
@@ -271,7 +271,7 @@ namespace Curve {
             Val = this->valueFallback(state, V1, V2, 0.0, 0.0, 0.0);
         } break;
         }
-        
+
         if (this->outputLimits.minPresent) Val = max(Val, this->outputLimits.min);
         if (this->outputLimits.maxPresent) Val = min(Val, this->outputLimits.max);
         if (this->EMSOverrideOn) Val = this->EMSOverrideCurveValue;
@@ -286,30 +286,29 @@ namespace Curve {
         this->inputs[0] = V1;
         this->inputs[1] = V2;
         this->inputs[2] = V3;
-        
+
         V1 = max(min(V1, this->inputLimits[0].max), this->inputLimits[0].min);
         V2 = max(min(V2, this->inputLimits[1].max), this->inputLimits[1].min);
         V3 = max(min(V3, this->inputLimits[2].max), this->inputLimits[2].min);
 
         Real64 Val = 0.0;
-        
+
         switch (this->curveType) {
         case CurveType::ChillerPartLoadWithLift: {
             Val = this->coeff[0] + this->coeff[1] * V1 + this->coeff[2] * V1 * V1 + this->coeff[3] * V2 + this->coeff[4] * V2 * V2 +
                   this->coeff[5] * V1 * V2 + this->coeff[6] * V1 * V1 * V1 + this->coeff[7] * V2 * V2 * V2 + this->coeff[8] * V1 * V1 * V2 +
                   this->coeff[9] * V1 * V2 * V2 + this->coeff[10] * V1 * V1 * V2 * V2 + this->coeff[11] * V3 * V2 * V2 * V2;
         } break;
-          
+
         case CurveType::TriQuadratic: {
             auto const &c = this->coeff;
             Real64 const V1s = V1 * V1;
             Real64 const V2s = V2 * V2;
             Real64 const V3s = V3 * V3;
             Val = c[0] + c[1] * V1s + c[2] * V1 + c[3] * V2s + c[4] * V2 + c[5] * V3s + c[6] * V3 + c[7] * V1s * V2s + c[8] * V1 * V2 +
-                  c[9] * V1 * V2s + c[10] * V1s * V2 + c[11] * V1s * V3s + c[12] * V1 * V3 + c[13] * V1 * V3s + c[14] * V1s * V3 +
-                  c[15] * V2s * V3s + c[16] * V2 * V3 + c[17] * V2 * V3s + c[18] * V2s * V3 + c[19] * V1s * V2s * V3s + c[20] * V1s * V2s * V3 +
-                  c[21] * V1s * V2 * V3s + c[22] * V1 * V2s * V3s + c[23] * V1s * V2 * V3 + c[24] * V1 * V2s * V3 + c[25] * V1 * V2 * V3s +
-                  c[26] * V1 * V2 * V3;
+                  c[9] * V1 * V2s + c[10] * V1s * V2 + c[11] * V1s * V3s + c[12] * V1 * V3 + c[13] * V1 * V3s + c[14] * V1s * V3 + c[15] * V2s * V3s +
+                  c[16] * V2 * V3 + c[17] * V2 * V3s + c[18] * V2s * V3 + c[19] * V1s * V2s * V3s + c[20] * V1s * V2s * V3 + c[21] * V1s * V2 * V3s +
+                  c[22] * V1 * V2s * V3s + c[23] * V1s * V2 * V3 + c[24] * V1 * V2s * V3 + c[25] * V1 * V2 * V3s + c[26] * V1 * V2 * V3;
         } break;
 
         case CurveType::BtwxtTableLookup: {
@@ -336,14 +335,14 @@ namespace Curve {
         this->inputs[1] = V2;
         this->inputs[2] = V3;
         this->inputs[3] = V4;
-        
+
         V1 = max(min(V1, this->inputLimits[0].max), this->inputLimits[0].min);
         V2 = max(min(V2, this->inputLimits[1].max), this->inputLimits[1].min);
         V3 = max(min(V3, this->inputLimits[2].max), this->inputLimits[2].min);
         V4 = max(min(V4, this->inputLimits[3].max), this->inputLimits[3].min);
 
         Real64 Val = 0.0;
-        
+
         switch (this->curveType) {
         case CurveType::QuadLinear: {
             Val = this->coeff[0] + V1 * this->coeff[1] + V2 * this->coeff[2] + V3 * this->coeff[3] + V4 * this->coeff[4];
@@ -357,7 +356,7 @@ namespace Curve {
             Val = this->valueFallback(state, V1, V2, V3, V4, 0.0);
         } break;
         }
-        
+
         if (this->outputLimits.minPresent) Val = max(Val, this->outputLimits.min);
         if (this->outputLimits.maxPresent) Val = min(Val, this->outputLimits.max);
         if (this->EMSOverrideOn) Val = this->EMSOverrideCurveValue;
@@ -374,7 +373,7 @@ namespace Curve {
         this->inputs[2] = V3;
         this->inputs[3] = V4;
         this->inputs[4] = V5;
-        
+
         V1 = max(min(V1, this->inputLimits[0].max), this->inputLimits[0].min);
         V2 = max(min(V2, this->inputLimits[1].max), this->inputLimits[1].min);
         V3 = max(min(V3, this->inputLimits[2].max), this->inputLimits[2].min);
@@ -382,7 +381,7 @@ namespace Curve {
         V5 = max(min(V5, this->inputLimits[4].max), this->inputLimits[4].min);
 
         Real64 Val = 0.0;
-        
+
         switch (this->curveType) {
         case CurveType::QuintLinear: {
             Val = this->coeff[0] + V1 * this->coeff[1] + V2 * this->coeff[2] + V3 * this->coeff[3] + V4 * this->coeff[4] + V5 * this->coeff[5];
@@ -391,12 +390,12 @@ namespace Curve {
         case CurveType::BtwxtTableLookup: {
             Val = BtwxtTableInterpolation(state, V1, V2, V3, V4, V5);
         } break;
-          
+
         default: {
             Val = this->valueFallback(state, V1, V2, V3, V4, V5);
         }
         }
-        
+
         if (this->outputLimits.minPresent) Val = max(Val, this->outputLimits.min);
         if (this->outputLimits.maxPresent) Val = min(Val, this->outputLimits.max);
         if (this->EMSOverrideOn) Val = this->EMSOverrideCurveValue;
@@ -602,7 +601,8 @@ namespace Curve {
         }
     }
 
-    Curve *AddCurve(EnergyPlusData &state, std::string const &name) {
+    Curve *AddCurve(EnergyPlusData &state, std::string const &name)
+    {
         auto *curve = new Curve;
         curve->Name = name;
         state.dataCurveManager->curves.push_back(curve);
@@ -649,7 +649,7 @@ namespace Curve {
 
         // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
         constexpr std::string_view routineName = "GetCurveInputData";
-      
+
         Array1D_string Alphas(14);       // Alpha items for object
         Array1D<Real64> Numbers(10000);  // Numeric items for object
         int NumAlphas;                   // Number of Alphas for each GetObjectItem call
@@ -686,9 +686,8 @@ namespace Curve {
             state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, "AirflowNetwork:MultiZone:WindPressureCoefficientValues");
 
         // state.dataCurveManager->NumCurves = NumBiQuad + NumCubic + NumQuad + NumQuadLinear + NumCubicLinear + NumLinear + NumBicubic + NumTriQuad +
-                                            NumExponent + NumQuartic + NumTableLookup + NumFanPressRise + NumExpSkewNorm + NumSigmoid +
-                                            NumRectHyper1 + NumRectHyper2 + NumExpDecay + NumDoubleExpDecay + NumQLinear + NumQuintLinear +
-                                            NumChillerPartLoadWithLift + NumWPCValTab;
+        NumExponent + NumQuartic + NumTableLookup + NumFanPressRise + NumExpSkewNorm + NumSigmoid + NumRectHyper1 + NumRectHyper2 + NumExpDecay +
+            NumDoubleExpDecay + NumQLinear + NumQuintLinear + NumChillerPartLoadWithLift + NumWPCValTab;
 
         // Loop over biquadratic curves and load data
         CurrentModuleObject = "Curve:Biquadratic";
@@ -897,7 +896,7 @@ namespace Curve {
             }
 
             auto *thisCurve = AddCurve(state, Alphas(1));
-            
+
             thisCurve->curveType = CurveType::Cubic;
             thisCurve->numDims = 1;
             for (int in = 0; in < 4; ++in) {
@@ -2229,7 +2228,7 @@ namespace Curve {
                         ShowSevereDuplicateName(state, eoh);
                         ErrorsFound = true;
                     }
-                    
+
                     auto *thisCurve = AddCurve(state, Alphas(1));
 
                     // Ensure the CP array name should be the same as the name of AirflowNetwork:MultiZone:WindPressureCoefficientArray
@@ -2462,12 +2461,12 @@ namespace Curve {
                 state.dataInputProcessing->inputProcessor->markObjectAsUsed("Table:Lookup", thisObjectName);
 
                 ErrorObjectHeader eoh{routineName, "Table:Lookup", thisObjectName};
-                
+
                 if (state.dataCurveManager->curveMap.find(objNameUC) != state.dataCurveManager->curveMap.end()) {
                     ShowSevereDuplicateName(state, eoh);
                     ErrorsFound = true;
                 }
-                
+
                 auto *thisCurve = AddCurve(state, objNameUC);
                 thisCurve->curveType = CurveType::BtwxtTableLookup;
 
@@ -2567,7 +2566,8 @@ namespace Curve {
                         ErrorsFound = true;
                     }
                     if (!fields.count("external_file_starting_row_number")) {
-                        ShowSevereError(state, format("{}: No starting row number defined for external file \"{}\"", thisCurve->contextString, filePath));
+                        ShowSevereError(state,
+                                        format("{}: No starting row number defined for external file \"{}\"", thisCurve->contextString, filePath));
                         ErrorsFound = true;
                     }
 
@@ -3323,9 +3323,10 @@ namespace Curve {
             thisCurve->outputLimits.max = CurveMax;
             thisCurve->outputLimits.maxPresent = true;
         } else {
-            ShowSevereError(
-                state,
-                format("SetCurveOutputMinMaxValues: CurveIndex=[{}] not in range of curves=[1:{}].", CurveIndex, state.dataCurveManager->curves.size()));
+            ShowSevereError(state,
+                            format("SetCurveOutputMinMaxValues: CurveIndex=[{}] not in range of curves=[1:{}].",
+                                   CurveIndex,
+                                   state.dataCurveManager->curves.size()));
             ErrorsFound = true;
         }
     }

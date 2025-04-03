@@ -284,7 +284,7 @@ void GetExhaustAbsorberInput(EnergyPlusData &state)
     // METHODOLOGY EMPLOYED:
     // EnergyPlus input processor
     static constexpr std::string_view routineName = "GetExhaustAbsorberInput";
-  
+
     // LOCAL VARIABLES
     int NumAlphas; // Number of elements in the alpha array
     int NumNums;   // Number of elements in the numeric array
@@ -293,7 +293,7 @@ void GetExhaustAbsorberInput(EnergyPlusData &state)
     bool Get_ErrorsFound(false);
 
     auto &s_ipsc = state.dataIPShortCut;
-    
+
     std::string_view cCurrentModuleObject = "ChillerHeater:Absorption:DoubleEffect";
     int NumExhaustAbsorbers = state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, cCurrentModuleObject);
 
@@ -364,12 +364,8 @@ void GetExhaustAbsorberInput(EnergyPlusData &state)
                                                                              DataLoopNode::ConnectionType::Outlet,
                                                                              NodeInputManager::CompFluidStream::Primary,
                                                                              DataLoopNode::ObjectIsNotParent);
-        BranchNodeConnections::TestCompSet(state,
-                                           cCurrentModuleObject,
-                                           s_ipsc->cAlphaArgs(1),
-                                           s_ipsc->cAlphaArgs(2),
-                                           s_ipsc->cAlphaArgs(3),
-                                           "Chilled Water Nodes");
+        BranchNodeConnections::TestCompSet(
+            state, cCurrentModuleObject, s_ipsc->cAlphaArgs(1), s_ipsc->cAlphaArgs(2), s_ipsc->cAlphaArgs(3), "Chilled Water Nodes");
         // Condenser node processing depends on condenser type, see below
         thisChiller.HeatReturnNodeNum = NodeInputManager::GetOnlySingleNode(state,
                                                                             s_ipsc->cAlphaArgs(6),
@@ -389,15 +385,10 @@ void GetExhaustAbsorberInput(EnergyPlusData &state)
                                                                             DataLoopNode::ConnectionType::Outlet,
                                                                             NodeInputManager::CompFluidStream::Tertiary,
                                                                             DataLoopNode::ObjectIsNotParent);
-        BranchNodeConnections::TestCompSet(state,
-                                           cCurrentModuleObject,
-                                           s_ipsc->cAlphaArgs(1),
-                                           s_ipsc->cAlphaArgs(6),
-                                           s_ipsc->cAlphaArgs(7),
-                                           "Hot Water Nodes");
+        BranchNodeConnections::TestCompSet(
+            state, cCurrentModuleObject, s_ipsc->cAlphaArgs(1), s_ipsc->cAlphaArgs(6), s_ipsc->cAlphaArgs(7), "Hot Water Nodes");
         if (Get_ErrorsFound) {
-            ShowFatalError(state,
-                           format("Errors found in processing node input for {}={}", cCurrentModuleObject, s_ipsc->cAlphaArgs(1)));
+            ShowFatalError(state, format("Errors found in processing node input for {}={}", cCurrentModuleObject, s_ipsc->cAlphaArgs(1)));
             Get_ErrorsFound = false;
         }
 
@@ -482,8 +473,7 @@ void GetExhaustAbsorberInput(EnergyPlusData &state)
         }
 
         if (Get_ErrorsFound) {
-            ShowFatalError(state,
-                           format("Errors found in processing curve input for {}={}", cCurrentModuleObject, s_ipsc->cAlphaArgs(1)));
+            ShowFatalError(state, format("Errors found in processing curve input for {}={}", cCurrentModuleObject, s_ipsc->cAlphaArgs(1)));
             Get_ErrorsFound = false;
         }
         if (Util::SameString(s_ipsc->cAlphaArgs(15), "LeavingCondenser")) {
@@ -539,12 +529,8 @@ void GetExhaustAbsorberInput(EnergyPlusData &state)
                                                     DataLoopNode::ConnectionType::Outlet,
                                                     NodeInputManager::CompFluidStream::Secondary,
                                                     DataLoopNode::ObjectIsNotParent);
-            BranchNodeConnections::TestCompSet(state,
-                                               cCurrentModuleObject,
-                                               s_ipsc->cAlphaArgs(1),
-                                               s_ipsc->cAlphaArgs(4),
-                                               s_ipsc->cAlphaArgs(5),
-                                               "Condenser Water Nodes");
+            BranchNodeConnections::TestCompSet(
+                state, cCurrentModuleObject, s_ipsc->cAlphaArgs(1), s_ipsc->cAlphaArgs(4), s_ipsc->cAlphaArgs(5), "Condenser Water Nodes");
         } else {
             thisChiller.CondReturnNodeNum =
                 NodeInputManager::GetOnlySingleNode(state,
@@ -1536,8 +1522,8 @@ void ExhaustAbsorberSpecs::calcChiller(EnergyPlusData &state, Real64 &MyLoad)
     Real64 lElecCoolRatio = this->ElecCoolRatio;                   // ratio of electricity input to cooling output
     Real64 lMinPartLoadRat = this->MinPartLoadRat;                 // min allowed operating frac full load
     Real64 lMaxPartLoadRat = this->MaxPartLoadRat;                 // max allowed operating frac full load
-    bool lIsEnterCondensTemp = this->isEnterCondensTemp; // if using entering condenser water temperature is TRUE, exiting is FALSE
-    bool lIsWaterCooled = this->isWaterCooled;           // if water cooled it is TRUE
+    bool lIsEnterCondensTemp = this->isEnterCondensTemp;           // if using entering condenser water temperature is TRUE, exiting is FALSE
+    bool lIsWaterCooled = this->isWaterCooled;                     // if water cooled it is TRUE
     Real64 lCHWLowLimitTemp = this->CHWLowLimitTemp;
     Real64 lHeatElectricPower = this->HeatElectricPower;               // parasitic electric power used  for heating
     Real64 lHeatThermalEnergyUseRate = this->HeatThermalEnergyUseRate; // instantaneous use of exhaust for period for heating
@@ -1921,8 +1907,8 @@ void ExhaustAbsorberSpecs::calcHeater(EnergyPlusData &state, Real64 &MyLoad, boo
         Real64 const Cp_HW = hwPlantLoop.glycol->getSpecificHeat(state, heatReturnNode.Temp, RoutineName);
 
         // Determine available heating capacity using the current cooling load
-        lAvailableHeatingCapacity = this->NomHeatCoolRatio * this->NomCoolingCap *
-                                    this->HeatCapFCoolCurve->value(state, (this->CoolingLoad / this->NomCoolingCap));
+        lAvailableHeatingCapacity =
+            this->NomHeatCoolRatio * this->NomCoolingCap * this->HeatCapFCoolCurve->value(state, (this->CoolingLoad / this->NomCoolingCap));
 
         // Calculate current load for heating
         MyLoad = sign(max(std::abs(MyLoad), this->HeatingCapacity * this->MinPartLoadRat), MyLoad);
@@ -1969,8 +1955,8 @@ void ExhaustAbsorberSpecs::calcHeater(EnergyPlusData &state, Real64 &MyLoad, boo
 
         // Calculate ThermalEnergy consumption for heating
         // ThermalEnergy used for heating availCap * HIR * HIR-FT * HIR-FPLR
-        lHeatThermalEnergyUseRate = lAvailableHeatingCapacity * this->ThermalEnergyHeatRatio *
-                                    this->ThermalEnergyHeatFHPLRCurve->value(state, lHeatPartLoadRatio);
+        lHeatThermalEnergyUseRate =
+            lAvailableHeatingCapacity * this->ThermalEnergyHeatRatio * this->ThermalEnergyHeatFHPLRCurve->value(state, lHeatPartLoadRatio);
 
         // calculate the fraction of the time period that the chiller would be running
         // use maximum from heating and cooling sides

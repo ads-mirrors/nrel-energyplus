@@ -130,8 +130,7 @@ TEST_F(EnergyPlusFixture, SingleSpeedHeatingCoilCurveTest)
     auto *curve1 = Curve::AddCurve(*state, "PTHPHeatingCAPFT");
     curve1->curveType = CurveType::Cubic;
     curve1->numDims = 1;
-    curve1->Name = 
-    curve1->coeff[0] = 0.876825;
+    curve1->Name = curve1->coeff[0] = 0.876825;
     curve1->coeff[1] = -0.002955;
     curve1->coeff[2] = 5.8e-005;
     curve1->coeff[3] = 0.025335;
@@ -144,8 +143,7 @@ TEST_F(EnergyPlusFixture, SingleSpeedHeatingCoilCurveTest)
     auto *curve2 = Curve::AddCurve(*state, "HPHeatCapfFF");
     curve2->curveType = CurveType::Quadratic;
     curve2->numDims = 1;
-    curve2->Name = 
-    curve2->coeff[0] = 1;
+    curve2->Name = curve2->coeff[0] = 1;
     curve2->coeff[1] = 0;
     curve2->coeff[2] = 0;
     curve2->inputLimits[0].min = 0;

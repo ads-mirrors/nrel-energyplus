@@ -252,6 +252,12 @@ namespace WaterToAirHeatPump {
                 heatPump.WAHPType = DataPlant::PlantEquipmentType::CoilWAHPCoolingParamEst;
                 ErrorObjectHeader eoh{routineName, CurrentModuleObject, heatPump.Name};
                 GlobalNames::VerifyUniqueCoilName(state, CurrentModuleObject, heatPump.Name, ErrorsFound, format("{} Name", CurrentModuleObject));
+                std::string const availSchedName = s_ip->getAlphaFieldValue(fields, schemaProps, "availability_schedule_name");
+                if (availSchedName.empty()) {
+                    heatPump.availSched = Sched::GetScheduleAlwaysOn(state);
+                } else if ((heatPump.availSched = Sched::GetSchedule(state, availSchedName)) == nullptr) {
+                    ShowSevereItemNotFound(state, eoh, "Availability Schedule Name", availSchedName);
+                }
                 cFieldName = "Refrigerant Type";
                 heatPump.Refrigerant = s_ip->getAlphaFieldValue(fields, schemaProps, "refrigerant_type"); // AlphArray(3);
                 if (heatPump.Refrigerant.empty()) {
@@ -484,6 +490,12 @@ namespace WaterToAirHeatPump {
                 heatPump.WAHPType = DataPlant::PlantEquipmentType::CoilWAHPHeatingParamEst;
                 ErrorObjectHeader eoh{routineName, CurrentModuleObject, heatPump.Name};
                 GlobalNames::VerifyUniqueCoilName(state, CurrentModuleObject, heatPump.Name, ErrorsFound, format("{} Name", CurrentModuleObject));
+                std::string const availSchedName = s_ip->getAlphaFieldValue(fields, schemaProps, "availability_schedule_name");
+                if (availSchedName.empty()) {
+                    heatPump.availSched = Sched::GetScheduleAlwaysOn(state);
+                } else if ((heatPump.availSched = Sched::GetSchedule(state, availSchedName)) == nullptr) {
+                    ShowSevereItemNotFound(state, eoh, "Availability Schedule Name", availSchedName);
+                }
                 cFieldName = "Refrigerant Type";
                 heatPump.Refrigerant = s_ip->getAlphaFieldValue(fields, schemaProps, "refrigerant_type"); // AlphArray(3);
                 if (heatPump.Refrigerant.empty()) {
@@ -1081,7 +1093,7 @@ namespace WaterToAirHeatPump {
         //  ENDIF
 
         if (((SensLoad != 0.0 || LatentLoad != 0.0) || (SensLoad == 0.0 && InitFlag)) && state.dataLoopNodes->Node(AirInletNode).MassFlowRate > 0.0 &&
-            PartLoadRatio > 0.0) {
+            PartLoadRatio > 0.0 && (heatPump.availSched->getCurrentVal() > 0.0)) {
             // set the water side flow rate to the design flow rate unless constrained by
             // the demand side manager (MIN/MAX available). now done by call to setcomponentFlowRate
             heatPump.InletWaterMassFlowRate = heatPump.DesignWaterMassFlowRate;
@@ -1253,7 +1265,8 @@ namespace WaterToAirHeatPump {
         StillSimulatingFlag = true;
 
         // If heat pump is not operating, return
-        if (SensDemand == 0.0 || heatPump.InletAirMassFlowRate <= 0.0 || heatPump.InletWaterMassFlowRate <= 0.0) {
+        if (SensDemand == 0.0 || heatPump.InletAirMassFlowRate <= 0.0 || heatPump.InletWaterMassFlowRate <= 0.0 ||
+            (heatPump.availSched->getCurrentVal() <= 0.0)) {
             heatPump.SimFlag = false;
             return;
         } else {
@@ -1741,7 +1754,8 @@ namespace WaterToAirHeatPump {
             state.dataPlnt->PlantLoop(heatPump.plantLoc.loopNum).glycol->getDensity(state, heatPump.InletWaterTemp, RoutineNameSourceSideInletTemp);
 
         // If heat pump is not operating, return
-        if (SensDemand == 0.0 || heatPump.InletAirMassFlowRate <= 0.0 || heatPump.InletWaterMassFlowRate <= 0.0) {
+        if (SensDemand == 0.0 || heatPump.InletAirMassFlowRate <= 0.0 || heatPump.InletWaterMassFlowRate <= 0.0 ||
+            (heatPump.availSched->getCurrentVal() <= 0.0)) {
             heatPump.SimFlag = false;
             return;
         } else {

@@ -3027,10 +3027,6 @@ namespace WaterToAirHeatPumpSimple {
                                            state.dataEnvrn->OutBaroPress,
                                            RoutineName);
 
-        if (simpleWatertoAirHP.availSched->getCurrentVal() <= 0.0) {
-            simpleWatertoAirHP.SimFlag = false;
-            return;
-        }
         //  LOAD LOCAL VARIABLES FROM DATA STRUCTURE (for code readability)
 
         TotalCapRated = simpleWatertoAirHP.RatedCapCoolTotal;
@@ -3059,7 +3055,8 @@ namespace WaterToAirHeatPumpSimple {
                       .glycol->getSpecificHeat(state, state.dataWaterToAirHeatPumpSimple->SourceSideInletTemp, RoutineNameSourceSideInletTemp);
 
         // Check for flows, do not perform simulation if no flow in load side or source side.
-        if (state.dataWaterToAirHeatPumpSimple->SourceSideMassFlowRate <= 0.0 || LoadSideFullMassFlowRate <= 0.0) {
+        if (state.dataWaterToAirHeatPumpSimple->SourceSideMassFlowRate <= 0.0 || LoadSideFullMassFlowRate <= 0.0 ||
+            (simpleWatertoAirHP.availSched->getCurrentVal() <= 0.0)) {
             simpleWatertoAirHP.SimFlag = false;
             return;
         } else {
@@ -3358,7 +3355,8 @@ namespace WaterToAirHeatPumpSimple {
                       .glycol->getSpecificHeat(state, state.dataWaterToAirHeatPumpSimple->SourceSideInletTemp, RoutineNameSourceSideInletTemp);
 
         // Check for flows, do not perform simulation if no flow in load side or source side.
-        if (state.dataWaterToAirHeatPumpSimple->SourceSideMassFlowRate <= 0.0 || LoadSideFullMassFlowRate <= 0.0) {
+        if (state.dataWaterToAirHeatPumpSimple->SourceSideMassFlowRate <= 0.0 || LoadSideFullMassFlowRate <= 0.0 ||
+            (simpleWatertoAirHP.availSched->getCurrentVal() <= 0.0)) {
             simpleWatertoAirHP.SimFlag = false;
             return;
         } else {

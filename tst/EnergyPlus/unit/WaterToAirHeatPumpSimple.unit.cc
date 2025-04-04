@@ -1308,7 +1308,7 @@ TEST_F(EnergyPlusFixture, WaterToAirHeatPumpSimpleTest_SizeHVACWaterToAirRatedCo
                 0.0,
                 0.00001);
     EXPECT_TRUE(state->dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(1).RatedWaterVolFlowRate > 0.0);
-    Real64 waterVolFlowRate = max(((1 + 1 / state->dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(2).RatedCOPHeatAtRatedCdts) *
+    Real64 waterVolFlowRate = max(((1 - 1 / state->dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(2).RatedCOPHeatAtRatedCdts) *
                                    state->dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(2).RatedCapHeat),
                                   ((1 + 1 / state->dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(1).RatedCOPCoolAtRatedCdts) *
                                    state->dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(1).RatedCapCoolTotal)) /

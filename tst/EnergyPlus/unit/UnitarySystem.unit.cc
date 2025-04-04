@@ -23953,7 +23953,7 @@ TEST_F(EnergyPlusFixture, UnitarySystemModel_MultiSpeedFanWSHP_Test)
                      latOut);
     // first speed heating
     EXPECT_NEAR(thisSys.m_SpeedRatio, 0.0, 0.0001);
-    EXPECT_NEAR(thisSys.m_CycRatio, 0.81277830, 0.0001);
+    EXPECT_NEAR(thisSys.m_CycRatio, 0.81291658, 0.0001);
     EXPECT_EQ(thisSys.m_SpeedNum, 1);
     EXPECT_NEAR(sensOut, 2000.0, 0.5);
 
@@ -23972,7 +23972,7 @@ TEST_F(EnergyPlusFixture, UnitarySystemModel_MultiSpeedFanWSHP_Test)
                      ZoneEquipment,
                      sensOut,
                      latOut);
-    EXPECT_NEAR(thisSys.m_SpeedRatio, 0.69017154, 0.0001);
+    EXPECT_NEAR(thisSys.m_SpeedRatio, 0.690289, 0.0001);
     EXPECT_NEAR(thisSys.m_CycRatio, 1.0, 0.0001);
     EXPECT_EQ(thisSys.m_SpeedNum, 2);
     EXPECT_NEAR(sensOut, 3000.0, 2);
@@ -23997,7 +23997,7 @@ TEST_F(EnergyPlusFixture, UnitarySystemModel_MultiSpeedFanWSHP_Test)
                      sensOut,
                      latOut);
     EXPECT_NEAR(thisSys.m_SpeedRatio, 0.0, 0.0001);
-    EXPECT_NEAR(thisSys.m_CycRatio, 0.811085, 0.0001);
+    EXPECT_NEAR(thisSys.m_CycRatio, 0.810993, 0.0001);
     EXPECT_EQ(thisSys.m_SpeedNum, 1);
     EXPECT_NEAR(sensOut, -800.0, 2);
     state->dataZoneEnergyDemand->ZoneSysEnergyDemand[0].RemainingOutputRequired = -1500.0;
@@ -24016,7 +24016,7 @@ TEST_F(EnergyPlusFixture, UnitarySystemModel_MultiSpeedFanWSHP_Test)
                      ZoneEquipment,
                      sensOut,
                      latOut);
-    EXPECT_NEAR(thisSys.m_SpeedRatio, 0.279750, 0.0001);
+    EXPECT_NEAR(thisSys.m_SpeedRatio, 0.279719, 0.0001);
     EXPECT_NEAR(thisSys.m_CycRatio, 1.0, 0.0001);
     EXPECT_EQ(thisSys.m_SpeedNum, 2);
     EXPECT_NEAR(sensOut, -1501.3, 2);
@@ -24043,7 +24043,7 @@ TEST_F(EnergyPlusFixture, UnitarySystemModel_MultiSpeedFanWSHP_Test)
                       latOut);
     // first speed cooling
     EXPECT_NEAR(thisSys1.m_SpeedRatio, 0.0, 0.0001);
-    EXPECT_NEAR(thisSys1.m_CycRatio, 0.511067, 0.0001);
+    EXPECT_NEAR(thisSys1.m_CycRatio, 0.511026, 0.0001);
     EXPECT_EQ(thisSys1.m_SpeedNum, 1);
     EXPECT_NEAR(sensOut, -100.0, 2);
 
@@ -24063,7 +24063,7 @@ TEST_F(EnergyPlusFixture, UnitarySystemModel_MultiSpeedFanWSHP_Test)
                       sensOut,
                       latOut);
     // Sixth speed cooling
-    EXPECT_NEAR(thisSys1.m_SpeedRatio, 0.399668, 0.0001);
+    EXPECT_NEAR(thisSys1.m_SpeedRatio, 0.399223, 0.0001);
     EXPECT_NEAR(thisSys1.m_CycRatio, 1.0, 0.0001);
     EXPECT_EQ(thisSys1.m_SpeedNum, 6);
     EXPECT_NEAR(sensOut, -500.0, 2);
@@ -24089,7 +24089,7 @@ TEST_F(EnergyPlusFixture, UnitarySystemModel_MultiSpeedFanWSHP_Test)
                       latOut);
     // First speed heating
     EXPECT_NEAR(thisSys1.m_SpeedRatio, 0.0, 0.0001);
-    EXPECT_NEAR(thisSys1.m_CycRatio, 0.244953, 0.0001);
+    EXPECT_NEAR(thisSys1.m_CycRatio, 0.244995, 0.0001);
     EXPECT_EQ(thisSys1.m_SpeedNum, 1);
     EXPECT_NEAR(sensOut, 100.0, 2);
     state->dataZoneEnergyDemand->ZoneSysEnergyDemand[1].RemainingOutputRequired = 500.0;
@@ -24108,7 +24108,7 @@ TEST_F(EnergyPlusFixture, UnitarySystemModel_MultiSpeedFanWSHP_Test)
                       sensOut,
                       latOut);
     // Second speed heating
-    EXPECT_NEAR(thisSys1.m_SpeedRatio, 0.932433, 0.0001);
+    EXPECT_NEAR(thisSys1.m_SpeedRatio, 0.933306, 0.0001);
     EXPECT_NEAR(thisSys1.m_CycRatio, 1.0, 0.0001);
     EXPECT_EQ(thisSys1.m_SpeedNum, 2);
     EXPECT_NEAR(sensOut, 500.0, 2);

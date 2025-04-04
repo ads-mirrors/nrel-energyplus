@@ -2872,7 +2872,7 @@ namespace WaterToAirHeatPumpSimple {
 
                 if (simpleWatertoAirHP.WAHPType == WatertoAirHP::Heating) {
                     RatedWaterVolFlowRateDes =
-                        (1 + 1 / RatedHeatCOP) * simpleWatertoAirHP.RatedCapHeat / (state.dataSize->PlantSizData(PltSizNum).DeltaT * Cp * rho);
+                        (1 - 1 / RatedHeatCOP) * simpleWatertoAirHP.RatedCapHeat / (state.dataSize->PlantSizData(PltSizNum).DeltaT * Cp * rho);
                     if (simpleWatertoAirHP.CompanionCoolingCoilNum > 0) {
                         auto const &companionCoolingCoil =
                             state.dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(simpleWatertoAirHP.CompanionCoolingCoilNum);

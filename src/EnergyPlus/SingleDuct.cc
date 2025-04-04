@@ -5369,7 +5369,7 @@ void CalcATMixer(EnergyPlusData &state, int const SysNum)
         }
     }
     // now calculate the mixed (outlet) conditions
-    if (MixedAirMassFlowRate > 0.0) {
+    if ((atMixer.MixedAirMassFlowRate = MixedAirMassFlowRate) > 0.0) {
         Real64 MixedAirEnthalpy = (secInNode.MassFlowRate * secInNode.Enthalpy + priInNode.MassFlowRate * priInNode.Enthalpy) / MixedAirMassFlowRate;
         Real64 MixedAirHumRat = (secInNode.MassFlowRate * secInNode.HumRat + priInNode.MassFlowRate * priInNode.HumRat) / MixedAirMassFlowRate;
         // Mixed air temperature is calculated from the mixed air enthalpy and humidity ratio.
@@ -5381,7 +5381,6 @@ void CalcATMixer(EnergyPlusData &state, int const SysNum)
         atMixer.MixedAirHumRat = priInNode.HumRat;
         atMixer.MixedAirTemp = priInNode.Temp;
     }
-    atMixer.MixedAirMassFlowRate = MixedAirMassFlowRate;
 }
 
 void UpdateATMixer(EnergyPlusData &state, int const SysNum)

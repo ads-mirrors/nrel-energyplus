@@ -2876,9 +2876,18 @@ namespace WaterToAirHeatPumpSimple {
                     if (simpleWatertoAirHP.CompanionCoolingCoilNum > 0) {
                         auto const &companionCoolingCoil =
                             state.dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(simpleWatertoAirHP.CompanionCoolingCoilNum);
+                        int PltSizNumCompanionCoil = 0;
+                        PltSizNumCompanionCoil = PlantUtilities::MyPlantSizingIndex(
+                            state,
+                            format("COIL:{}:WATERTOAIRHEATPUMP:EQUATIONFIT", WatertoAirHPNamesUC[static_cast<int>(companionCoolingCoil.WAHPType)]),
+                            companionCoolingCoil.Name,
+                            companionCoolingCoil.WaterInletNodeNum,
+                            companionCoolingCoil.WaterOutletNodeNum,
+                            ErrorsFound,
+                            false);
                         RatedWaterVolFlowRateDes = max(RatedWaterVolFlowRateDes,
                                                        (1 + 1 / RatedCoolCOP) * companionCoolingCoil.RatedCapCoolTotal /
-                                                           (state.dataSize->PlantSizData(PltSizNum).DeltaT * Cp * rho));
+                                                           (state.dataSize->PlantSizData(PltSizNumCompanionCoil).DeltaT * Cp * rho));
                     }
                 } else if (simpleWatertoAirHP.WAHPType == WatertoAirHP::Cooling) {
                     //       use companion heating coil capacity to calculate volumetric flow rate

@@ -5633,6 +5633,7 @@ TEST_F(EnergyPlusFixture, VariableSpeedCooling_01_Speed_7200W_SEER2_2023_ValueTe
     std::string const idf_objects = delimited_string({
         "Coil:Cooling:DX:VariableSpeed,",
         "    Zone1PTHPDXCoolCoil,     !- Name",
+        "    ,                        !- Availability Schedule Name",
         "    Zone1PTHPFanOutletNode,  !- Indoor Air Inlet Node Name",
         "    Zone1PTHPDXCoolCoilOutletNode,  !- Indoor Air Outlet Node Name",
         "    1,                       !- Number of Speeds {dimensionless}",
@@ -5853,6 +5854,7 @@ TEST_F(EnergyPlusFixture, VariableSpeedCooling_02_Speed_7200W_SEER2_2023_ValueTe
     std::string const idf_objects = delimited_string({
         "Coil:Cooling:DX:VariableSpeed,",
         "    Zone1PTHPDXCoolCoil,     !- Name",
+        "    ,                        !- Availability Schedule Name",
         "    Zone1PTHPFanOutletNode,  !- Indoor Air Inlet Node Name",
         "    Zone1PTHPDXCoolCoilOutletNode,  !- Indoor Air Outlet Node Name",
         "    2,                       !- Number of Speeds {dimensionless}",
@@ -6086,6 +6088,7 @@ TEST_F(EnergyPlusFixture, VariableSpeedCooling_03_Speed_7200W_SEER2_2023_ValueTe
     std::string const idf_objects = delimited_string({
         "Coil:Cooling:DX:VariableSpeed,",
         "    Zone1PTHPDXCoolCoil,     !- Name",
+        "    ,                        !- Availability Schedule Name",
         "    Zone1PTHPFanOutletNode,  !- Indoor Air Inlet Node Name",
         "    Zone1PTHPDXCoolCoilOutletNode,  !- Indoor Air Outlet Node Name",
         "    3,                       !- Number of Speeds {dimensionless}",
@@ -6327,6 +6330,7 @@ TEST_F(EnergyPlusFixture, VariableSpeedCooling_04_Speed_7200W_SEER2_2023_ValueTe
     std::string const idf_objects = delimited_string({
         "Coil:Cooling:DX:VariableSpeed,",
         "    Zone1PTHPDXCoolCoil,     !- Name",
+        "    ,                        !- Availability Schedule Name",
         "    Zone1PTHPFanOutletNode,  !- Indoor Air Inlet Node Name",
         "    Zone1PTHPDXCoolCoilOutletNode,  !- Indoor Air Outlet Node Name",
         "    4,                       !- Number of Speeds {dimensionless}",
@@ -6581,6 +6585,7 @@ TEST_F(EnergyPlusFixture, VariableSpeedCooling_07_Speed_7200W_SEER2_2023_ValueTe
     std::string const idf_objects = delimited_string({
         "Coil:Cooling:DX:VariableSpeed,",
         "    Zone1PTHPDXCoolCoil,     !- Name",
+        "    ,                        !- Availability Schedule Name",
         "    Zone1PTHPFanOutletNode,  !- Indoor Air Inlet Node Name",
         "    Zone1PTHPDXCoolCoilOutletNode,  !- Indoor Air Outlet Node Name",
         "    7,                       !- Number of Speeds {dimensionless}",
@@ -6874,6 +6879,7 @@ TEST_F(EnergyPlusFixture, VariableSpeedCooling_07_Speed_14400W_SEER2_2023_ValueT
     std::string const idf_objects = delimited_string({
         "Coil:Cooling:DX:VariableSpeed,",
         "    Zone1PTHPDXCoolCoil,     !- Name",
+        "    ,                        !- Availability Schedule Name",
         "    Zone1PTHPFanOutletNode,  !- Indoor Air Inlet Node Name",
         "    Zone1PTHPDXCoolCoilOutletNode,  !- Indoor Air Outlet Node Name",
         "    7,                       !- Number of Speeds {dimensionless}",
@@ -7166,6 +7172,7 @@ TEST_F(EnergyPlusFixture, VariableSpeedCooling_10_Speed_7200W_SEER2_2023_ValueTe
     std::string const idf_objects = delimited_string({
         "  Coil:Cooling:DX:VariableSpeed,",
         "    Zone1PTHPDXCoolCoil,     !- Name",
+        "    ,                        !- Availability Schedule Name",
         "    Zone1PTHPFanOutletNode,  !- Indoor Air Inlet Node Name",
         "    Zone1PTHPDXCoolCoilOutletNode,  !- Indoor Air Outlet Node Name",
         "    10.0,                    !- Number of Speeds {dimensionless}",
@@ -7495,6 +7502,7 @@ TEST_F(EnergyPlusFixture, VariableSpeedCooling_10_Speed_14400W_SEER2_2023_ValueT
     std::string const idf_objects = delimited_string({
         "  Coil:Cooling:DX:VariableSpeed,",
         "    Zone1PTHPDXCoolCoil,     !- Name",
+        "    ,                        !- Availability Schedule Name",
         "    Zone1PTHPFanOutletNode,  !- Indoor Air Inlet Node Name",
         "    Zone1PTHPDXCoolCoilOutletNode,  !- Indoor Air Outlet Node Name",
         "    10.0,                    !- Number of Speeds {dimensionless}",
@@ -7823,6 +7831,7 @@ TEST_F(EnergyPlusFixture, VariableSpeedCooling_01_Speed_22000W_IEER_2022_ValueTe
     std::string const idf_objects = delimited_string({
         "Coil:Cooling:DX:VariableSpeed,",
         "    Desiccant DXSystem VS Cooling Coil,  !- Name",
+        "    ,                        !- Availability Schedule Name",
         "    Desiccant DXSystem Mixed Air Node,  !- Indoor Air Inlet Node Name",
         "    HX Process Inlet Node,   !- Indoor Air Outlet Node Name",
         "    1.0,                     !- Number of Speeds {dimensionless}",
@@ -8029,6 +8038,7 @@ TEST_F(EnergyPlusFixture, VariableSpeedCooling_02_Speed_36000W_IEER_2022_ValueTe
     std::string const idf_objects = delimited_string({
         "Coil:Cooling:DX:VariableSpeed,",
         "            Heat Pump ACDXCoil 1,    !- Name,",
+        "            ,                        !- Availability Schedule Name",
         "            DX Cooling Coil Air Inlet Node,  !- Indoor Air Inlet Node Name,",
         "            Heating Coil Air Inlet Node,  !- Indoor Air Outlet Node Name,",
         "            2.0,                     !- Number of Speeds {dimensionless},",
@@ -8288,6 +8298,7 @@ TEST_F(EnergyPlusFixture, VariableSpeedCooling_03_Speed_36000W_IEER_2022_ValueTe
     std::string const idf_objects = delimited_string({
         "Coil:Cooling:DX:VariableSpeed,",
         "    Heat Pump ACDXCoil 1,    !- Name",
+        "    ,                        !- Availability Schedule Name",
         "    DX Cooling Coil Air Inlet Node,  !- Indoor Air Inlet Node Name",
         "    Heating Coil Air Inlet Node,  !- Indoor Air Outlet Node Name",
         "    3.0,                     !- Number of Speeds {dimensionless}",
@@ -8589,6 +8600,7 @@ TEST_F(EnergyPlusFixture, VariableSpeedCooling_04_Speed_36000W_IEER_2022_ValueTe
     std::string const idf_objects = delimited_string({
         "Coil:Cooling:DX:VariableSpeed,",
         "    Sys 4 Heat Pump Air Source Cooling Coil,  !- Name",
+        "    ,                        !- Availability Schedule Name",
         "    Sys 4 Heat Pump Air Source Supply Fan Outlet,  !- Indoor Air Inlet Node Name",
         "    Sys 4 Heat Pump Air Source Cooling Coil Outlet,  !- Indoor Air Outlet Node Name",
         "    4,                       !- Number of Speeds {dimensionless}",
@@ -8857,6 +8869,7 @@ TEST_F(EnergyPlusFixture, VariableSpeedCooling_07_Speed_25001W_IEER_2022_ValueTe
     std::string const idf_objects = delimited_string({
         "Coil:Cooling:DX:VariableSpeed,",
         "    Zone1PTHPDXCoolCoil,     !- Name",
+        "    ,                        !- Availability Schedule Name",
         "    Zone1PTHPFanOutletNode,  !- Indoor Air Inlet Node Name",
         "    Zone1PTHPDXCoolCoilOutletNode,  !- Indoor Air Outlet Node Name",
         "    7.0,                    !- Number of Speeds {dimensionless}",
@@ -9152,6 +9165,7 @@ TEST_F(EnergyPlusFixture, VariableSpeedCooling_10_Speed_34582W_IEER_2022_ValueTe
     std::string const idf_objects = delimited_string({
         "Coil:Cooling:DX:VariableSpeed,",
         "    Zone1PTHPDXCoolCoil,     !- Name",
+        "    ,                        !- Availability Schedule Name",
         "    Zone1PTHPFanOutletNode,  !- Indoor Air Inlet Node Name",
         "    Zone1PTHPDXCoolCoilOutletNode,  !- Indoor Air Outlet Node Name",
         "    10.0,                    !- Number of Speeds {dimensionless}",
@@ -9489,6 +9503,7 @@ TEST_F(EnergyPlusFixture, VariableSpeedCooling_10_Speed_32000W_IEER_2022_ValueTe
     std::string const idf_objects = delimited_string({
         "Coil:Cooling:DX:VariableSpeed,",
         "    Zone1PTHPDXCoolCoil,     !- Name",
+        "    ,                        !- Availability Schedule Name",
         "    Zone1PTHPFanOutletNode,  !- Indoor Air Inlet Node Name",
         "    Zone1PTHPDXCoolCoilOutletNode,  !- Indoor Air Outlet Node Name",
         "    10.0,                    !- Number of Speeds {dimensionless}",
@@ -9822,6 +9837,7 @@ TEST_F(EnergyPlusFixture, VariableSpeedCooling_04_Speed_AutoSize_IEER_2022_Value
     std::string const idf_objects = delimited_string({
         "Coil:Cooling:DX:VariableSpeed,",
         "    Heat Pump ACDXCoil 1,    !- Name",
+        "    ,                        !- Availability Schedule Name",
         "    DX Cooling Coil Air Inlet Node,  !- Indoor Air Inlet Node Name",
         "    Heating Coil Air Inlet Node,  !- Indoor Air Outlet Node Name",
         "    4.0,                     !- Number of Speeds {dimensionless}",

@@ -230,6 +230,7 @@ TEST_F(EnergyPlusFixture, WaterToAirHeatPumpSimple_TestAirFlow)
 
         " Coil:Cooling:WaterToAirHeatPump:EquationFit,",
         "   Sys 5 Heat Pump Cooling Mode,  !- Name",
+        "   ,                              !- Availability Schedule Name",
         "   Sys 5 Water to Air Heat Pump Source Side1 Inlet Node,  !- Water Inlet Node Name",
         "   Sys 5 Water to Air Heat Pump Source Side1 Outlet Node,  !- Water Outlet Node Name",
         "   Sys 5 Cooling Coil Air Inlet Node,  !- Air Inlet Node Name",
@@ -251,6 +252,7 @@ TEST_F(EnergyPlusFixture, WaterToAirHeatPumpSimple_TestAirFlow)
 
         " Coil:Heating:WaterToAirHeatPump:EquationFit,",
         "  Sys 5 Heat Pump Heating Mode,  !- Name",
+        "  ,                              !- Availability Schedule Name",
         "  Sys 5 Water to Air Heat Pump Source Side2 Inlet Node,  !- Water Inlet Node Name",
         "  Sys 5 Water to Air Heat Pump Source Side2 Outlet Node,  !- Water Outlet Node Name",
         "  Sys 5 Heating Coil Air Inlet Node,  !- Air Inlet Node Name",
@@ -583,6 +585,7 @@ TEST_F(EnergyPlusFixture, WaterToAirHeatPumpSimple_TestWaterFlowControl)
 
         " Coil:Cooling:WaterToAirHeatPump:EquationFit,",
         "   Sys 5 Heat Pump Cooling Mode,  !- Name",
+        "   ,                              !- Availability Schedule Name",
         "   Sys 5 Water to Air Heat Pump Source Side1 Inlet Node,  !- Water Inlet Node Name",
         "   Sys 5 Water to Air Heat Pump Source Side1 Outlet Node,  !- Water Outlet Node Name",
         "   Sys 5 Cooling Coil Air Inlet Node,  !- Air Inlet Node Name",
@@ -604,6 +607,7 @@ TEST_F(EnergyPlusFixture, WaterToAirHeatPumpSimple_TestWaterFlowControl)
 
         " Coil:Heating:WaterToAirHeatPump:EquationFit,",
         "  Sys 5 Heat Pump Heating Mode,  !- Name",
+        "  ,                              !- Availability Schedule Name",
         "  Sys 5 Water to Air Heat Pump Source Side2 Inlet Node,  !- Water Inlet Node Name",
         "  Sys 5 Water to Air Heat Pump Source Side2 Outlet Node,  !- Water Outlet Node Name",
         "  Sys 5 Heating Coil Air Inlet Node,  !- Air Inlet Node Name",
@@ -1104,6 +1108,7 @@ TEST_F(EnergyPlusFixture, WaterToAirHeatPumpSimpleTest_SizeHVACWaterToAirRatedCo
     state->dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(1).RatedEntAirDrybulbTemp = 27.0;
     state->dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(1).CompanionHeatingCoilNum = 2;
     state->dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(1).WAHPPlantType = DataPlant::PlantEquipmentType::CoilWAHPCoolingEquationFit;
+    state->dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(1).availSched = Sched::GetScheduleAlwaysOn(*state);
 
     state->dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(2).WAHPType = WatertoAirHP::Heating;
     state->dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(2).RatedAirVolFlowRate = AutoSize;
@@ -1116,6 +1121,7 @@ TEST_F(EnergyPlusFixture, WaterToAirHeatPumpSimpleTest_SizeHVACWaterToAirRatedCo
     state->dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(2).CompanionCoolingCoilNum = 1;
     state->dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(2).WAHPPlantType = DataPlant::PlantEquipmentType::CoilWAHPHeatingEquationFit;
     state->dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(2).RatioRatedHeatRatedTotCoolCap = 1.23;
+    state->dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(2).availSched = Sched::GetScheduleAlwaysOn(*state);
 
     state->dataSize->FinalZoneSizing(state->dataSize->CurZoneEqNum).DesCoolVolFlow = 0.20;
     state->dataSize->FinalZoneSizing(state->dataSize->CurZoneEqNum).DesHeatVolFlow = 0.20;
@@ -1521,6 +1527,7 @@ TEST_F(EnergyPlusFixture, EquationFit_Initialization)
 
         " Coil:Cooling:WaterToAirHeatPump:EquationFit,",
         "   Sys 5 Heat Pump Cooling Mode,  !- Name",
+        "   ,                              !- Availability Schedule Name",
         "   Sys 5 Water to Air Heat Pump Source Side1 Inlet Node,  !- Water Inlet Node Name",
         "   Sys 5 Water to Air Heat Pump Source Side1 Outlet Node,  !- Water Outlet Node Name",
         "   Sys 5 Cooling Coil Air Inlet Node,  !- Air Inlet Node Name",
@@ -1614,8 +1621,8 @@ TEST_F(EnergyPlusFixture, EquationFit_Initialization)
     int NumAlphas = 0;
     int NumNumbers = 0;
     state->dataInputProcessing->inputProcessor->getObjectDefMaxArgs(*state, CurrentModuleObject, TotalArgs, NumAlphas, NumNumbers);
-    EXPECT_EQ(TotalArgs, 22);
-    EXPECT_EQ(NumAlphas, 9);
+    EXPECT_EQ(TotalArgs, 23);
+    EXPECT_EQ(NumAlphas, 10);
     EXPECT_EQ(NumNumbers, 13);
 
     GetCurveInput(*state);

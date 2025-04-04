@@ -68,6 +68,7 @@ TEST_F(EnergyPlusFixture, VariableSpeedCoils_mixedCoilTypesInput)
     std::string const idf_objects = delimited_string(
         {"  Coil:Cooling:DX:VariableSpeed,",
          "    PSZ-AC_1:5_CoolC Standard 4-compressor IPAK,  !- Name",
+         "    ,                        !- Availability Schedule Name",
          "    PSZ-AC_1:5_OA-PSZ-AC_1:5_CoolCNode,  !- Air Inlet Node Name",
          "    PSZ-AC_1:5_CoolC-PSZ-AC_1:5_HeatCNode,  !- Air Outlet Node Name",
          "    5,                      !- Number of Speeds {dimensionless}",
@@ -190,6 +191,7 @@ TEST_F(EnergyPlusFixture, VariableSpeedCoils_mixedCoilTypesInput)
 
          "  Coil:Cooling:WaterToAirHeatPump:VariableSpeedEquationFit,",
          "    Lobby_ZN_1_FLR_2 WSHP Cooling Mode,  !- Name",
+         "    ,                                    !- Availability Schedule Name",
          "    Lobby_ZN_1_FLR_2 WSHP Cooling Source Side Inlet Node,  !- Water-to-Refrigerant HX Water Inlet Node Name",
          "    Lobby_ZN_1_FLR_2 WSHP Cooling Source Side Outlet Node,  !- Water-to-Refrigerant HX Water Outlet Node Name",
          "    Lobby_ZN_1_FLR_2 WSHP Cooling Coil Air Inlet Node,  !- Indoor Air Inlet Node Name",
@@ -326,6 +328,7 @@ TEST_F(EnergyPlusFixture, VariableSpeedCoils_mixedCoilTypesInput)
 
          "  Coil:Heating:WaterToAirHeatPump:VariableSpeedEquationFit,",
          "    Lobby_ZN_1_FLR_2 WSHP Heating Mode,  !- Name",
+         "    ,                                    !- Availability Schedule Name",
          "    Lobby_ZN_1_FLR_2 WSHP Heating Source Side Inlet Node,  !- Water-to-Refrigerant HX Water Inlet Node Name",
          "    Lobby_ZN_1_FLR_2 WSHP Heating Source Side Outlet Node,  !- Water-to-Refrigerant HX Water Outlet Node Name",
          "    Lobby_ZN_1_FLR_2 WSHP Heating Coil Air Inlet Node,  !- Indoor Air Inlet Node Name",
@@ -2584,6 +2587,7 @@ TEST_F(EnergyPlusFixture, CoilHeatingDXVariableSpeed_MinOADBTempCompOperLimit)
 
         "  Coil:Heating:DX:VariableSpeed,",
         "    Heating Coil VariableSpeed,     !- Name",
+        "    ,                        !- Availability Schedule Name",
         "    Zone1PTHPDXCoolCoilOutletNode,  !- Indoor Air Inlet Node Name",
         "    Zone1PTHPDXHeatCoilOutletNode,  !- Indoor Air Outlet Node Name",
         "    10,                      !- Number of Speeds {dimensionless}",
@@ -2708,6 +2712,7 @@ TEST_F(EnergyPlusFixture, VariableSpeedCoils_Test_CalcTotCap_VSWSHP)
     std::string const idf_objects = delimited_string({
         "  Coil:Cooling:DX:VariableSpeed,",
         "    PSZ-AC_1:5_CoolC Standard 4-compressor IPAK,  !- Name",
+        "    ,                        !- Availability Schedule Name",
         "    PSZ-AC_1:5_OA-PSZ-AC_1:5_CoolCNode,           !- Air Inlet Node Name",
         "    PSZ-AC_1:5_CoolC-PSZ-AC_1:5_HeatCNode,        !- Air Outlet Node Name",
         "    5,                       !- Number of Speeds {dimensionless}",
@@ -2889,6 +2894,7 @@ TEST_F(EnergyPlusFixture, VariableSpeedCoils_ContFanCycCoil_Test)
     std::string const idf_objects = delimited_string({
         "  Coil:Cooling:DX:VariableSpeed,",
         "    VS DXCOIL,               !- Name",
+        "    ,                        !- Availability Schedule Name",
         "    VS DXCOIL_CoolCNode,     !- Air Inlet Node Name",
         "    VS DXCOIL_HeatCNode,     !- Air Outlet Node Name",
         "    5,                       !- Number of Speeds {dimensionless}",
@@ -3065,6 +3071,7 @@ TEST_F(EnergyPlusFixture, VariableSpeedCoils_RatedSource_Temp_ASHP_Cooling)
     std::string const idf_objects = delimited_string({
         "  Coil:Cooling:DX:VariableSpeed,",
         "    VS DXCOIL,               !- Name",
+        ",                            !- Availability Schedule Name",
         "    VS DXCOIL_CoolCNode,     !- Air Inlet Node Name",
         "    VS DXCOIL_HeatCNode,     !- Air Outlet Node Name",
         "    5,                       !- Number of Speeds {dimensionless}",
@@ -3172,6 +3179,7 @@ TEST_F(EnergyPlusFixture, VariableSpeedCoils_RatedSource_Temp_ASHP_Heating)
     std::string const idf_objects = delimited_string({
         "  Coil:Heating:DX:VariableSpeed,",
         "    Heat Pump DX Heating Coil 1,  !- Name",
+        "    ,                        !- Availability Schedule Name",
         "    Heating Coil Air Inlet Node,  !- Indoor Air Inlet Node Name",
         "    SuppHeating Coil Air Inlet Node,  !- Indoor Air Outlet Node Name",
         "    10,                      !- Number of Speeds {dimensionless}",
@@ -3302,6 +3310,7 @@ TEST_F(EnergyPlusFixture, VariableSpeedCoils_RatedSource_Temp_AWHP)
     std::string const idf_objects = delimited_string({
         "  Coil:WaterHeating:AirToWaterHeatPump:VariableSpeed,",
         "    HPWHOutdoorDXCoilVS,     !- Name",
+        "    ,                        !- Availability Schedule Name",
         "    10,                      !- Number of Speeds {dimensionless}",
         "    10,                      !- Nominal Speed Level {dimensionless}",
         "    4000.0,                  !- Rated Water Heating Capacity {W}",
@@ -3504,6 +3513,7 @@ TEST_F(EnergyPlusFixture, VariableSpeedCoils_RatedSource_Temp_WSHP_Cooling)
     std::string const idf_objects = delimited_string({
         "  Coil:Cooling:WaterToAirHeatPump:VariableSpeedEquationFit,",
         "    Sys 1 Heat Pump Cooling Mode,  !- Name",
+        "    ,                              !- Availability Schedule Name",
         "    Sys 1 Water to Air Heat Pump Source Side1 Inlet Node,  !- Water-to-Refrigerant HX Water Inlet Node Name",
         "    Sys 1 Water to Air Heat Pump Source Side1 Outlet Node,  !- Water-to-Refrigerant HX Water Outlet Node Name",
         "    Sys 1 Cooling Coil Air Inlet Node,  !- Indoor Air Inlet Node Name",
@@ -3733,6 +3743,7 @@ TEST_F(EnergyPlusFixture, VariableSpeedCoils_RatedSource_Temp_WSHP_Heating)
     std::string const idf_objects = delimited_string({
         "  Coil:Heating:WaterToAirHeatPump:VariableSpeedEquationFit,",
         "    Sys 1 Heat Pump Heating Mode,  !- Name",
+        "    ,                              !- Availability Schedule Name",
         "    Sys 1 Water to Air Heat Pump Source Side2 Inlet Node,  !- Water-to-Refrigerant HX Water Inlet Node Name",
         "    Sys 1 Water to Air Heat Pump Source Side2 Outlet Node,  !- Water-to-Refrigerant HX Water Outlet Node Name",
         "    Sys 1 Heating Coil Air Inlet Node,  !- Indoor Air Inlet Node Name",
@@ -3946,6 +3957,7 @@ TEST_F(EnergyPlusFixture, VariableSpeedCooling_Initialization)
     std::string const idf_objects = delimited_string({
         "Coil:Cooling:DX:VariableSpeed,",
         "    Zone1PTHPDXCoolCoil,     !- Name",
+        "    ,                        !- Availability Schedule Name",
         "    Zone1PTHPFanOutletNode,  !- Indoor Air Inlet Node Name",
         "    Zone1PTHPDXCoolCoilOutletNode,  !- Indoor Air Outlet Node Name",
         "    10.0,                    !- Number of Speeds {dimensionless}",
@@ -4159,8 +4171,8 @@ TEST_F(EnergyPlusFixture, VariableSpeedCooling_Initialization)
     int NumAlphas = 0;
     int NumNumbers = 0;
     state->dataInputProcessing->inputProcessor->getObjectDefMaxArgs(*state, CurrentModuleObject, TotalArgs, NumAlphas, NumNumbers);
-    EXPECT_EQ(TotalArgs, 145);
-    EXPECT_EQ(NumAlphas, 50);
+    EXPECT_EQ(TotalArgs, 146);
+    EXPECT_EQ(NumAlphas, 51);
     EXPECT_EQ(NumNumbers, 95);
     // get coil inputs
     EnergyPlus::VariableSpeedCoils::GetVarSpeedCoilInput(*state);
@@ -4178,6 +4190,7 @@ TEST_F(EnergyPlusFixture, VariableSpeedHeating_Initialization)
     std::string const idf_objects =
         delimited_string({"    Coil:Heating:DX:VariableSpeed,",
                           "    Zone1PTHPDXHeatCoil,     !- Name",
+                          "    ,                        !- Availability Schedule Name",
                           "    Zone1PTHPDXCoolCoilOutletNode,  !- Indoor Air Inlet Node Name",
                           "    Zone1PTHPDXHeatCoilOutletNode,  !- Indoor Air Outlet Node Name",
                           "    10.0,                    !- Number of Speeds {dimensionless}",
@@ -4370,6 +4383,7 @@ TEST_F(EnergyPlusFixture, CoolingVariableSpeedEquationFit_Initialization)
 
         "  Coil:Cooling:WaterToAirHeatPump:VariableSpeedEquationFit,",
         "    Lobby_ZN_1_FLR_2 WSHP Cooling Mode,  !- Name",
+        "    ,                                    !- Availability Schedule Name",
         "    Lobby_ZN_1_FLR_2 WSHP Cooling Source Side Inlet Node,  !- Water-to-Refrigerant HX Water Inlet Node Name",
         "    Lobby_ZN_1_FLR_2 WSHP Cooling Source Side Outlet Node,  !- Water-to-Refrigerant HX Water Outlet Node Name",
         "    Lobby_ZN_1_FLR_2 WSHP Cooling Coil Air Inlet Node,  !- Indoor Air Inlet Node Name",
@@ -4506,6 +4520,7 @@ TEST_F(EnergyPlusFixture, CoolingVariableSpeedEquationFit_Initialization)
 
         "  Coil:Heating:WaterToAirHeatPump:VariableSpeedEquationFit,",
         "    Lobby_ZN_1_FLR_2 WSHP Heating Mode,  !- Name",
+        "    ,                                    !- Availability Schedule Name",
         "    Lobby_ZN_1_FLR_2 WSHP Heating Source Side Inlet Node,  !- Water-to-Refrigerant HX Water Inlet Node Name",
         "    Lobby_ZN_1_FLR_2 WSHP Heating Source Side Outlet Node,  !- Water-to-Refrigerant HX Water Outlet Node Name",
         "    Lobby_ZN_1_FLR_2 WSHP Heating Coil Air Inlet Node,  !- Indoor Air Inlet Node Name",
@@ -6696,8 +6711,8 @@ TEST_F(EnergyPlusFixture, CoolingVariableSpeedEquationFit_Initialization)
     int NumAlphas = 0;
     int NumNumbers = 0;
     state->dataInputProcessing->inputProcessor->getObjectDefMaxArgs(*state, CurrentModuleObject, TotalArgs, NumAlphas, NumNumbers);
-    EXPECT_EQ(TotalArgs, 147);
-    EXPECT_EQ(NumAlphas, 76);
+    EXPECT_EQ(TotalArgs, 148);
+    EXPECT_EQ(NumAlphas, 77);
     EXPECT_EQ(NumNumbers, 71);
     // get coil inputs
     EnergyPlus::VariableSpeedCoils::GetVarSpeedCoilInput(*state);
@@ -6779,6 +6794,7 @@ TEST_F(EnergyPlusFixture, VariableSpeedCoils_Coil_Defrost_Power_Fix_Test)
 
         "  Coil:Heating:DX:VariableSpeed,",
         "    Heating Coil VariableSpeed,     !- Name",
+        "    ,                        !- Availability Schedule Name",
         "    Zone1PTHPDXCoolCoilOutletNode,  !- Indoor Air Inlet Node Name",
         "    Zone1PTHPDXHeatCoilOutletNode,  !- Indoor Air Outlet Node Name",
         "    10,                      !- Number of Speeds {dimensionless}",
@@ -7031,6 +7047,7 @@ TEST_F(EnergyPlusFixture, VariableSpeedCoils_ZeroRatedCoolingCapacity_Test)
     std::string const idf_objects = delimited_string({
         "  Coil:Cooling:DX:VariableSpeed,",
         "    VS DXCOIL,               !- Name",
+        "    ,                        !- Availability Schedule Name",
         "    VS DXCOIL_CoolCNode,     !- Air Inlet Node Name",
         "    VS DXCOIL_HeatCNode,     !- Air Outlet Node Name",
         "    5,                       !- Number of Speeds {dimensionless}",
@@ -7186,6 +7203,7 @@ TEST_F(EnergyPlusFixture, VariableSpeedCoolingCoils_AutosizePumpPower)
     std::string const idf_objects = delimited_string(
         {"Coil:Cooling:DX:VariableSpeed,",
          "Main Cooling Coil 1,     !- Name",
+         "    ,                        !- Availability Schedule Name",
          "    Heat Recovery Supply Outlet,  !- Indoor Air Inlet Node Name",
          "    Heat Recovery Exhuast Inlet Node,  !- Indoor Air Outlet Node Name",
          "    1.0,                     !- Number of Speeds {dimensionless}",

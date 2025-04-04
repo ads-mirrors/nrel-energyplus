@@ -2570,6 +2570,7 @@ TEST_F(EnergyPlusFixture, StratifiedTank_GSHP_DesuperheaterSourceHeat)
 
         "Coil:Cooling:WaterToAirHeatPump:EquationFit,",
         "    GSHP_COIL1,       !- Name",
+        "    ,                        !- Availability Schedule Name",
         "    Node 42,                 !- Water Inlet Node Name",
         "    Node 43,                 !- Water Outlet Node Name",
         "    res gshp clg unitary system Fan - Cooling Coil Node,  !- Air Inlet Node Name",
@@ -3238,6 +3239,7 @@ TEST_F(EnergyPlusFixture, Desuperheater_WAHP_VSEQ_Coil_Test)
 
         "Coil:Cooling:WaterToAirHeatPump:VariableSpeedEquationFit,",
         "  VarSpeed_WAHP_COIL,                        !- Name",
+        "  ,                                          !- Availability Schedule Name",
         "  Node 11,          !-Water -  to - Refrigerant HX Water Inlet Node Name",
         "  Node 12,          !-Water - to - Refrigerant HX Water Outlet Node Name",
         "  ground source heat pump unitary system Fan - Cooling Coil Node,  !-Indoor Air Inlet Node Name ",

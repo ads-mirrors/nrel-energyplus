@@ -3826,7 +3826,7 @@ TEST_F(InputProcessorFixture, getObjectItem_coil_cooling_dx_variable_speed)
                                                              "COOLEIRFFF"}),
                                    Alphas));
     EXPECT_TRUE(compare_containers(
-        std::vector<bool>({false, true, false, false, false, true,  false, false, true,  true,  true,  false, false, false, false, false, false,
+        std::vector<bool>({false, true,  false, false, false, true,  false, false, true,  true,  true,  false, false, false, false, false, false,
                            false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,
                            false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false}),
         lAlphaBlanks));

@@ -3000,9 +3000,15 @@ void GetDXCoils(EnergyPlusData &state)
             thisDXCoil.Name = Util::makeUPPER(thisObjectName);
             thisDXCoil.DXCoilType = CurrentModuleObject;
             thisDXCoil.DXCoilType_Num = HVAC::CoilDX_HeatPumpWaterHeaterPumped;
-            thisDXCoil.availSched = Sched::GetScheduleAlwaysOff(state); // heat pump water heater DX coil has no schedule
 
             ErrorObjectHeader eoh{routineName, CurrentModuleObject, thisDXCoil.Name};
+
+            std::string const availSchedName = s_ip->getAlphaFieldValue(fields, schemaProps, "availability_schedule_name");
+            if (availSchedName.empty()) {
+                thisDXCoil.availSched = Sched::GetScheduleAlwaysOn(state);
+            } else if ((thisDXCoil.availSched = Sched::GetSchedule(state, availSchedName)) == nullptr) {
+                ShowSevereItemNotFound(state, eoh, "Availability Schedule Name", availSchedName);
+            }
 
             // ErrorsFound will be set to True if problem was found, left untouched otherwise
             VerifyUniqueCoilName(state, CurrentModuleObject, thisDXCoil.Name, ErrorsFound, CurrentModuleObject + " Name");
@@ -3518,10 +3524,15 @@ void GetDXCoils(EnergyPlusData &state)
             thisDXCoil.Name = Util::makeUPPER(thisObjectName);
             thisDXCoil.DXCoilType = CurrentModuleObject;
             thisDXCoil.DXCoilType_Num = HVAC::CoilDX_HeatPumpWaterHeaterWrapped;
-            thisDXCoil.availSched = Sched::GetScheduleAlwaysOff(state); // heat pump water heater DX coil has no schedule
 
             ErrorObjectHeader eoh{routineName, CurrentModuleObject, thisDXCoil.Name};
 
+            std::string const availSchedName = s_ip->getAlphaFieldValue(fields, schemaProps, "availability_schedule_name");
+            if (availSchedName.empty()) {
+                thisDXCoil.availSched = Sched::GetScheduleAlwaysOn(state);
+            } else if ((thisDXCoil.availSched = Sched::GetSchedule(state, availSchedName)) == nullptr) {
+                ShowSevereItemNotFound(state, eoh, "Availability Schedule Name", availSchedName);
+            }
             // ErrorsFound will be set to True if problem was found, left untouched otherwise
             VerifyUniqueCoilName(state, CurrentModuleObject, thisDXCoil.Name, ErrorsFound, CurrentModuleObject + " Name");
 
@@ -9369,10 +9380,7 @@ void CalcDoe2DXCoil(EnergyPlusData &state,
     thisDXCoil.PrintLowAmbMessage = false;
     thisDXCoil.PrintLowOutTempMessage = false;
 
-    if ((AirMassFlow > 0.0) &&
-        (thisDXCoil.availSched->getCurrentVal() > 0.0 || thisDXCoil.DXCoilType_Num == HVAC::CoilDX_HeatPumpWaterHeaterPumped ||
-         thisDXCoil.DXCoilType_Num == HVAC::CoilDX_HeatPumpWaterHeaterWrapped) &&
-        (PartLoadRatio > 0.0) && (compressorOp == HVAC::CompressorOp::On) &&
+    if ((AirMassFlow > 0.0) && (thisDXCoil.availSched->getCurrentVal() > 0.0) && (PartLoadRatio > 0.0) && (compressorOp == HVAC::CompressorOp::On) &&
         CompAmbTemp > thisDXCoil.MinOATCompressor) { // criteria for coil operation
         if (fanOp == HVAC::FanOp::Cycling) {
             AirMassFlow /= (PartLoadRatio / DXcoolToHeatPLRRatio);

@@ -67,28 +67,28 @@ namespace PurchasedAirManager {
     enum class LimitType
     {
         Invalid = -1,
-        NoLimit,
-        LimitFlowRate,
-        LimitCapacity,
-        LimitFlowRateAndCapacity,
+        None,
+        FlowRate,
+        Capacity,
+        FlowRateAndCapacity,
         Num
     };
-    constexpr const char *cLimitType(LimitType l)
-    {
-        switch (l) {
-        case LimitType::NoLimit:
-            return "NoLimit";
-        case LimitType::LimitFlowRate:
-            return "LimitFlowRate";
-        case LimitType::LimitCapacity:
-            return "LimitCapacity";
-        case LimitType::LimitFlowRateAndCapacity:
-            return "LimitFlowRateAndCapacity";
-        default:
-            return "UNKNOWN!";
-        }
-    }
+ 
+    constexpr std::array<std::string_view, (int)LimitType::Num> limitTypeNames = {
+        "NoLimit",
+        "LimitFlowRate",
+        "LimitCapacity",
+        "LimitFlowRateAndCapacity"
+    };
 
+    constexpr std::array<std::string_view, (int)LimitType::Num> limitTypeNamesUC = {
+        "NOLIMIT",
+        "LIMITFLOWRATE",
+        "LIMITCAPACITY",
+        "LIMITFLOWRATEANDCAPACITY"
+    };
+
+ 
     // Dehumidification and Humidification control type parameters
     enum class HumControl
     {
@@ -100,6 +100,20 @@ namespace PurchasedAirManager {
         Num
     };
 
+    constexpr std::array<std::string_view, (int)HumControl::Num> humControlNames = {
+        "None",
+        "ConstantSensibleHeatRatio",
+        "Humidistat",
+        "ConstantSupplyHumidityRatio"
+    };
+
+    constexpr std::array<std::string_view, (int)HumControl::Num> humControlNamesUC = {
+        "NONE",
+        "CONSTANTSENSIBLEHEATRATIO",
+        "HUMIDISTAT",
+        "CONSTANTSUPPLYHUMIDITYRATIO"
+    };
+  
     // Demand controlled ventilation type parameters
     enum class DCV
     {
@@ -110,6 +124,18 @@ namespace PurchasedAirManager {
         Num
     };
 
+    constexpr std::array<std::string_view, (int)DCV::Num> dcvNames = {
+        "None",
+        "OccupancySchedule",
+        "CO2SetPoint"
+    };
+
+    constexpr std::array<std::string_view, (int)DCV::Num> dcvNamesUC = {
+        "NONE",
+        "OCCUPANCYSCHEDULE",
+        "CO2SETPOINT"
+    };
+  
     // Outdoor air economizer type parameters
     enum class Econ
     {
@@ -120,6 +146,18 @@ namespace PurchasedAirManager {
         Num
     };
 
+    constexpr std::array<std::string_view, (int)Econ::Num> econNames = {
+        "NoEconomizer", 
+        "DifferentialDryBulb", 
+        "DifferentialEnthalpy"
+    };
+
+    constexpr std::array<std::string_view, (int)Econ::Num> econNamesUC = {
+        "NOECONOMIZER", 
+        "DIFFERENTIALDRYBULB", 
+        "DIFFERENTIALENTHALPY"
+    };
+    
     // Heat recovery type parameters
     enum class HeatRecovery
     {
@@ -130,6 +168,18 @@ namespace PurchasedAirManager {
         Num
     };
 
+    constexpr std::array<std::string_view, (int)HeatRecovery::Num> heatRecoveryNames = {
+        "None",
+        "Sensible",
+        "Enthalpy"
+    };
+
+    constexpr std::array<std::string_view, (int)HeatRecovery::Num> heatRecoveryNamesUC = {
+        "NONE",
+        "SENSIBLE",
+        "ENTHALPY"
+    };
+  
     // Operating mode parameters
     enum class OpMode
     {

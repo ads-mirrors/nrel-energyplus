@@ -202,26 +202,26 @@ TEST_F(EnergyPlusFixture, EconomicTariff_GetInput_Test)
     EXPECT_EQ(1, state->dataEconTariff->numQualify);
     EXPECT_FALSE(state->dataEconTariff->qualify(1).isMaximum);
     EXPECT_EQ(12, state->dataEconTariff->qualify(1).thresholdVal);
-    EXPECT_EQ(seasonAnnual, state->dataEconTariff->qualify(1).season);
+    EXPECT_ENUM_EQ(Season::Annual, state->dataEconTariff->qualify(1).season);
     EXPECT_FALSE(state->dataEconTariff->qualify(1).isConsecutive);
     EXPECT_EQ(2, state->dataEconTariff->qualify(1).numberOfMonths);
 
     // ChargeSimple
     EXPECT_EQ(3, state->dataEconTariff->numChargeSimple);
-    EXPECT_EQ(seasonWinter, state->dataEconTariff->chargeSimple(3).season);
+    EXPECT_ENUM_EQ(Season::Winter, state->dataEconTariff->chargeSimple(3).season);
     EXPECT_EQ(0.02420, state->dataEconTariff->chargeSimple(3).costPerVal);
 
     // ChargeBlock
     EXPECT_EQ(1, state->dataEconTariff->numChargeBlock);
-    EXPECT_EQ(seasonWinter, state->dataEconTariff->chargeBlock(1).season);
+    EXPECT_ENUM_EQ(Season::Winter, state->dataEconTariff->chargeBlock(1).season);
     EXPECT_EQ(3, state->dataEconTariff->chargeBlock(1).numBlk);
     EXPECT_EQ(350, state->dataEconTariff->chargeBlock(1).blkSzVal(2));
     EXPECT_EQ(0.03763, state->dataEconTariff->chargeBlock(1).blkCostVal(2));
 
     // Ratchet
     EXPECT_EQ(1, state->dataEconTariff->numRatchet);
-    EXPECT_EQ(seasonSummer, state->dataEconTariff->ratchet(1).seasonFrom);
-    EXPECT_EQ(seasonAnnual, state->dataEconTariff->ratchet(1).seasonTo);
+    EXPECT_ENUM_EQ(Season::Summer, state->dataEconTariff->ratchet(1).seasonFrom);
+    EXPECT_ENUM_EQ(Season::Annual, state->dataEconTariff->ratchet(1).seasonTo);
     EXPECT_EQ(0.80, state->dataEconTariff->ratchet(1).multiplierVal);
     EXPECT_EQ(0.0, state->dataEconTariff->ratchet(1).offsetVal);
 
@@ -616,17 +616,17 @@ TEST_F(EnergyPlusFixture, EconomicTariff_GatherForEconomics)
     // Two Simple Charges
     EXPECT_EQ(2, state->dataEconTariff->numChargeSimple);
 
-    EXPECT_EQ(seasonWinter, state->dataEconTariff->chargeSimple(1).season);
+    EXPECT_ENUM_EQ(Season::Winter, state->dataEconTariff->chargeSimple(1).season);
     EXPECT_EQ(0.02, state->dataEconTariff->chargeSimple(1).costPerVal);
 
-    EXPECT_EQ(EconomicTariff::seasonSummer, state->dataEconTariff->chargeSimple(2).season);
+    EXPECT_ENUM_EQ(Season::Summer, state->dataEconTariff->chargeSimple(2).season);
     EXPECT_EQ(0.04, state->dataEconTariff->chargeSimple(2).costPerVal);
 
     state->dataGlobal->KindOfSim = Constant::KindOfSim::RunPeriodWeather; // fake a weather run
 
     // Unitialized: default initialized to 0
-    EXPECT_EQ(0, state->dataEconTariff->tariff(1).seasonForMonth(5));
-    EXPECT_EQ(0, state->dataEconTariff->tariff(1).seasonForMonth(6));
+    EXPECT_ENUM_EQ(Season::Invalid, state->dataEconTariff->tariff(1).seasonForMonth(5));
+    EXPECT_ENUM_EQ(Season::Invalid, state->dataEconTariff->tariff(1).seasonForMonth(6));
 
     state->dataEnvrn->Month = 5;
     state->dataEnvrn->DayOfMonth = 31;
@@ -656,8 +656,8 @@ TEST_F(EnergyPlusFixture, EconomicTariff_GatherForEconomics)
     state->dataGlobal->DoOutputReporting = true;
     EconomicTariff::UpdateUtilityBills(*state);
     ;
-    EXPECT_EQ(1, state->dataEconTariff->tariff(1).seasonForMonth(5));
-    EXPECT_EQ(0, state->dataEconTariff->tariff(1).seasonForMonth(6));
+    EXPECT_ENUM_EQ(Season::Winter, state->dataEconTariff->tariff(1).seasonForMonth(5));
+    EXPECT_ENUM_EQ(Season::Invalid, state->dataEconTariff->tariff(1).seasonForMonth(6));
 
     state->dataEnvrn->Month = 5;
     state->dataEnvrn->DayOfMonth = 31;
@@ -682,8 +682,8 @@ TEST_F(EnergyPlusFixture, EconomicTariff_GatherForEconomics)
     // This Should now call GatherForEconomics
     EconomicTariff::UpdateUtilityBills(*state);
     ;
-    EXPECT_EQ(1, state->dataEconTariff->tariff(1).seasonForMonth(5));
-    EXPECT_EQ(3, state->dataEconTariff->tariff(1).seasonForMonth(6));
+    EXPECT_ENUM_EQ(Season::Winter, state->dataEconTariff->tariff(1).seasonForMonth(5));
+    EXPECT_ENUM_EQ(Season::Summer, state->dataEconTariff->tariff(1).seasonForMonth(6));
 }
 
 TEST_F(EnergyPlusFixture, EconomicTariff_GatherForEconomics_ZeroMeterIndex)
@@ -839,7 +839,7 @@ TEST_F(EnergyPlusFixture, EconomicTariff_evaluateChargeSimple)
     state->dataEconTariff->chargeSimple(curSimpChg).tariffIndx = curTariff;
     state->dataEconTariff->chargeSimple(curSimpChg).sourcePt = sourceEconVar;
     state->dataEconTariff->chargeSimple(curSimpChg).costPerPt = costPerEconVar;
-    state->dataEconTariff->chargeSimple(curSimpChg).season = seasonAnnual;
+    state->dataEconTariff->chargeSimple(curSimpChg).season = Season::Annual;
 
     evaluateChargeSimple(*state, curEconVar);
     results = state->dataEconTariff->econVar(curEconVar).values;
@@ -876,7 +876,7 @@ TEST_F(EnergyPlusFixture, EconomicTariff_evaluateChargeSimple)
     EXPECT_NEAR(results(11), 320 * 0.15, 0.01);
     EXPECT_NEAR(results(12), 310 * 0.15, 0.01);
 
-    state->dataEconTariff->chargeSimple(curSimpChg).season = seasonSummer;
+    state->dataEconTariff->chargeSimple(curSimpChg).season = Season::Summer;
     int summerEconVar = 2;
     Array1D<Real64> summerMonths(MaxNumMonths);
     costPerMonths = {0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0};
@@ -923,7 +923,7 @@ TEST_F(EnergyPlusFixture, EconomicTariff_evaluateChargeBlock)
     state->dataEconTariff->chargeBlock(curChgBlk).namePt = curEconVar;
     state->dataEconTariff->chargeBlock(curChgBlk).tariffIndx = curTariff;
     state->dataEconTariff->chargeBlock(curChgBlk).sourcePt = sourceEconVar;
-    state->dataEconTariff->chargeBlock(curChgBlk).season = seasonAnnual;
+    state->dataEconTariff->chargeBlock(curChgBlk).season = Season::Annual;
     state->dataEconTariff->chargeBlock(curChgBlk).blkSzMultPt = 0;
     state->dataEconTariff->chargeBlock(curChgBlk).blkSzMultVal = 1;
 

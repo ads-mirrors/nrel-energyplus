@@ -592,30 +592,30 @@ void GetInputEconomicsTariff(EnergyPlusData &state, bool &ErrorsFound) // true i
         // group name for separate distribution and transmission rates
         tariff(iInObj).groupName = s_ipsc->cAlphaArgs(12);
         // buy or sell option
-        if (Util::SameString(s_ipsc->cAlphaArgs(13), "BuyFromUtility")) {
-            tariff(iInObj).buyOrSell = buyFromUtility;
-        } else if (Util::SameString(s_ipsc->cAlphaArgs(13), "SellToUtility")) {
-            tariff(iInObj).buyOrSell = sellToUtility;
-        } else if (Util::SameString(s_ipsc->cAlphaArgs(13), "NetMetering")) {
-            tariff(iInObj).buyOrSell = netMetering;
-        } else {
-            tariff(iInObj).buyOrSell = buyFromUtility;
+
+        if (s_ipsc->lAlphaFieldBlanks(13)) {
+            tariff(iInObj).buyOrSell = BuySell::BuyFromUtility;
+        } else if ((tariff(iInObj).buyOrSell = static_cast<BuySell>(getEnumValue(buySellNamesUC, s_ipsc->cAlphaArgs(13)))) == BuySell::Invalid) {
+            ShowSevereInvalidKey(state, eoh, s_ipsc->cAlphaFieldNames(13), s_ipsc->cAlphaArgs(13));
+            ErrorsFound = true;
         }
+        
         // check if meter is consistent with buy or sell option
-        if ((tariff(iInObj).buyOrSell == sellToUtility) && (!Util::SameString(tariff(iInObj).reportMeter, "ELECTRICITYSURPLUSSOLD:FACILITY"))) {
-            ShowWarningError(state, format("{}{}=\"{}\" atypical meter", RoutineName, CurrentModuleObject, s_ipsc->cAlphaArgs(1)));
-            ShowContinueError(state,
-                              format("The meter chosen \"{}\" is not typically used with the sellToUtility option.", tariff(iInObj).reportMeter));
-            ShowContinueError(state, "Usually the ElectricitySurplusSold:Facility meter is selected when the sellToUtility option is used.");
-        }
-        if ((tariff(iInObj).buyOrSell == netMetering) && (!Util::SameString(tariff(iInObj).reportMeter, "ELECTRICITYNET:FACILITY"))) {
-            ShowWarningError(state, format("{}{}=\"{}\" atypical meter", RoutineName, CurrentModuleObject, s_ipsc->cAlphaArgs(1)));
-            ShowContinueError(state,
-                              format("The meter chosen \"{}\" is not typically used with the netMetering option.", tariff(iInObj).reportMeter));
-            ShowContinueError(state, "Usually the ElectricityNet:Facility meter is selected when the netMetering option is used.");
-        }
-        // also test the buy option for electricity
-        if (tariff(iInObj).buyOrSell == buyFromUtility) {
+        if (tariff(iInObj).buyOrSell == BuySell::SellToUtility) {
+            if (!Util::SameString(tariff(iInObj).reportMeter, "ELECTRICITYSURPLUSSOLD:FACILITY")) {
+                ShowWarningError(state, format("{}{}=\"{}\" atypical meter", RoutineName, CurrentModuleObject, s_ipsc->cAlphaArgs(1)));
+                ShowContinueError(state,
+                                  format("The meter chosen \"{}\" is not typically used with the sellToUtility option.", tariff(iInObj).reportMeter));
+                ShowContinueError(state, "Usually the ElectricitySurplusSold:Facility meter is selected when the sellToUtility option is used.");
+            }
+        } else if (tariff(iInObj).buyOrSell == BuySell::NetMetering) {
+            if (!Util::SameString(tariff(iInObj).reportMeter, "ELECTRICITYNET:FACILITY")) {
+                ShowWarningError(state, format("{}{}=\"{}\" atypical meter", RoutineName, CurrentModuleObject, s_ipsc->cAlphaArgs(1)));
+                ShowContinueError(state,
+                                  format("The meter chosen \"{}\" is not typically used with the netMetering option.", tariff(iInObj).reportMeter));
+                ShowContinueError(state, "Usually the ElectricityNet:Facility meter is selected when the netMetering option is used.");
+            }
+        } else if (tariff(iInObj).buyOrSell == BuySell::BuyFromUtility) {
             if (hasi(tariff(iInObj).reportMeter, "Elec")) { // test if electric meter
                 if (!(Util::SameString(tariff(iInObj).reportMeter, "Electricity:Facility") ||
                       Util::SameString(tariff(iInObj).reportMeter, "ElectricityPurchased:Facility"))) {
@@ -629,7 +629,7 @@ void GetInputEconomicsTariff(EnergyPlusData &state, bool &ErrorsFound) // true i
             }
         }
         // initialize gathering arrays
-        tariff(iInObj).seasonForMonth = 0;
+        tariff(iInObj).seasonForMonth = Season::Invalid;
         tariff(iInObj).gatherEnergy = 0.0;
         tariff(iInObj).gatherDemand = 0.0;
         // assume that the tariff is qualified
@@ -657,6 +657,7 @@ void GetInputEconomicsQualify(EnergyPlusData &state, bool &ErrorsFound) // true 
     //    Read the input file for "Economics:Qualify" objects.
 
     static constexpr std::string_view RoutineName("GetInputEconomicsQualify: ");
+    static constexpr std::string_view routineName = "GetInputEconomicsQualify";
 
     int iInObj;    // loop index variable for reading in objects
     int NumAlphas; // Number of elements in the alpha array
@@ -686,6 +687,8 @@ void GetInputEconomicsQualify(EnergyPlusData &state, bool &ErrorsFound) // true 
                                                                  s_ipsc->cAlphaFieldNames,
                                                                  s_ipsc->cNumericFieldNames);
 
+        ErrorObjectHeader eoh{routineName, s_ipsc->cCurrentModuleObject, s_ipsc->cAlphaArgs(1)};
+        
         // check to make sure none of the values are another economic object
         for (jFld = 1; jFld <= NumAlphas; ++jFld) {
             if (hasi(s_ipsc->cAlphaArgs(jFld), "UtilityCost:")) {
@@ -717,7 +720,11 @@ void GetInputEconomicsQualify(EnergyPlusData &state, bool &ErrorsFound) // true 
         qualify(iInObj).thresholdPt = AssignVariablePt(
             state, s_ipsc->cAlphaArgs(5), isNotNumeric, varIsArgument, varNotYetDefined, ObjType::Invalid, 0, qualify(iInObj).tariffIndx);
         // enumerated list of the kind of season
-        qualify(iInObj).season = LookUpSeason(state, s_ipsc->cAlphaArgs(6), s_ipsc->cAlphaArgs(1));
+        if ((qualify(iInObj).season = static_cast<Season>(getEnumValue(seasonNamesUC, s_ipsc->cAlphaArgs(6)))) == Season::Invalid) {
+            ShowWarningInvalidKey(state, eoh, s_ipsc->cAlphaFieldNames(6), s_ipsc->cAlphaArgs(6), "Annual");
+            qualify(iInObj).season = Season::Annual;
+        }
+        
         // indicator if consecutive months otherwise count
         if (Util::SameString(s_ipsc->cAlphaArgs(7), "Count")) {
             qualify(iInObj).isConsecutive = false;
@@ -742,6 +749,7 @@ void GetInputEconomicsChargeSimple(EnergyPlusData &state, bool &ErrorsFound) // 
     //    Read the input file for "Economics:Charge:Simple" objects.
 
     static constexpr std::string_view RoutineName("GetInputEconomicsChargeSimple: ");
+    static constexpr std::string_view routineName = "GetInputEconomicsChargeSimple";
     int NumAlphas; // Number of elements in the alpha array
     int NumNums;   // Number of elements in the numeric array
     int IOStat;    // IO Status when calling get input subroutine
@@ -766,6 +774,9 @@ void GetInputEconomicsChargeSimple(EnergyPlusData &state, bool &ErrorsFound) // 
                                                                  s_ipsc->lAlphaFieldBlanks,
                                                                  s_ipsc->cAlphaFieldNames,
                                                                  s_ipsc->cNumericFieldNames);
+
+        ErrorObjectHeader eoh{routineName, s_ipsc->cCurrentModuleObject, s_ipsc->cAlphaArgs(1)};
+        
         // check to make sure none of the values are another economic object
         for (int jFld = 1; jFld <= NumAlphas; ++jFld) {
             if (hasi(s_ipsc->cAlphaArgs(jFld), "UtilityCost:")) {
@@ -782,9 +793,14 @@ void GetInputEconomicsChargeSimple(EnergyPlusData &state, bool &ErrorsFound) // 
         chargeSimple.sourcePt =
             AssignVariablePt(state, s_ipsc->cAlphaArgs(3), true, varIsArgument, varNotYetDefined, ObjType::Invalid, 0, chargeSimple.tariffIndx);
         // enumerated list of the kind of season
-        chargeSimple.season = LookUpSeason(state, s_ipsc->cAlphaArgs(4), s_ipsc->cAlphaArgs(1));
+        chargeSimple.season = static_cast<Season>(getEnumValue(seasonNamesUC, s_ipsc->cAlphaArgs(4)));
+        if (chargeSimple.season == Season::Invalid) {
+            ShowWarningInvalidKey(state, eoh, s_ipsc->cAlphaFieldNames(4), s_ipsc->cAlphaArgs(4), "Annual");
+            chargeSimple.season = Season::Annual;
+        }
+        
         // check to make sure a seasonal schedule is specified if the season is not annual
-        if (chargeSimple.season != seasonAnnual) {
+        if (chargeSimple.season != Season::Annual) {
             if (chargeSimple.tariffIndx != 0) {
                 if (state.dataEconTariff->tariff(chargeSimple.tariffIndx).seasonSched == nullptr) {
                     ShowWarningError(state, format("{}{}=\"{}\" invalid data", RoutineName, s_ipsc->cCurrentModuleObject, s_ipsc->cAlphaArgs(1)));
@@ -812,6 +828,8 @@ void GetInputEconomicsChargeBlock(EnergyPlusData &state, bool &ErrorsFound) // t
     //    Read the input file for "Economics:Charge:Block" objects.
 
     static constexpr std::string_view RoutineName("GetInputEconomicsChargeBlock: ");
+    static constexpr std::string_view routineName = "GetInputEconomicsChargeBlock";
+    
     int NumAlphas; // Number of elements in the alpha array
     int NumNums;   // Number of elements in the numeric array
     int IOStat;    // IO Status when calling get input subroutine
@@ -839,6 +857,9 @@ void GetInputEconomicsChargeBlock(EnergyPlusData &state, bool &ErrorsFound) // t
                                                                  s_ipsc->lAlphaFieldBlanks,
                                                                  s_ipsc->cAlphaFieldNames,
                                                                  s_ipsc->cNumericFieldNames);
+
+        ErrorObjectHeader eoh{routineName, s_ipsc->cCurrentModuleObject, s_ipsc->cAlphaArgs(1)};
+        
         // check to make sure none of the values are another economic object
         for (int jFld = 1; jFld <= NumAlphas; ++jFld) {
             if (hasi(s_ipsc->cAlphaArgs(jFld), "UtilityCost:")) {
@@ -855,9 +876,14 @@ void GetInputEconomicsChargeBlock(EnergyPlusData &state, bool &ErrorsFound) // t
         chargeBlock.sourcePt =
             AssignVariablePt(state, s_ipsc->cAlphaArgs(3), true, varIsArgument, varNotYetDefined, ObjType::Invalid, 0, chargeBlock.tariffIndx);
         // enumerated list of the kind of season
-        chargeBlock.season = LookUpSeason(state, s_ipsc->cAlphaArgs(4), s_ipsc->cAlphaArgs(1));
+        chargeBlock.season = static_cast<Season>(getEnumValue(seasonNamesUC, s_ipsc->cAlphaArgs(4)));
+        if (chargeBlock.season == Season::Invalid) {
+            ShowWarningInvalidKey(state, eoh, s_ipsc->cAlphaFieldNames(4), s_ipsc->cAlphaArgs(4), "Annual");
+            chargeBlock.season = Season::Annual;
+        }
+                                                 
         // check to make sure a seasonal schedule is specified if the season is not annual
-        if (chargeBlock.season != seasonAnnual) {
+        if (chargeBlock.season != Season::Annual) {
             if (chargeBlock.tariffIndx != 0) {
                 if (state.dataEconTariff->tariff(chargeBlock.tariffIndx).seasonSched == nullptr) {
                     ShowWarningError(state, format("{}{}=\"{}\" invalid data", RoutineName, s_ipsc->cCurrentModuleObject, s_ipsc->cAlphaArgs(1)));
@@ -925,6 +951,7 @@ void GetInputEconomicsRatchet(EnergyPlusData &state, bool &ErrorsFound) // true 
     //    Read the input file for "Economics:Ratchet" objects.
 
     static constexpr std::string_view RoutineName("GetInputEconomicsRatchet: ");
+    static constexpr std::string_view routineName = "GetInputEconomicsRatchet";
 
     int NumAlphas; // Number of elements in the alpha array
     int NumNums;   // Number of elements in the numeric array
@@ -951,6 +978,9 @@ void GetInputEconomicsRatchet(EnergyPlusData &state, bool &ErrorsFound) // true 
                                                                  s_ipsc->lAlphaFieldBlanks,
                                                                  s_ipsc->cAlphaFieldNames,
                                                                  s_ipsc->cNumericFieldNames);
+
+        ErrorObjectHeader eoh{routineName, s_ipsc->cCurrentModuleObject, s_ipsc->cAlphaArgs(1)};
+        
         // check to make sure none of the values are another economic object
         for (int jFld = 1; jFld <= NumAlphas; ++jFld) {
             if (hasi(s_ipsc->cAlphaArgs(jFld), "UtilityCost:")) {
@@ -970,8 +1000,17 @@ void GetInputEconomicsRatchet(EnergyPlusData &state, bool &ErrorsFound) // true 
         ratchet.adjustmentPt =
             AssignVariablePt(state, s_ipsc->cAlphaArgs(4), true, varIsArgument, varNotYetDefined, ObjType::Ratchet, iInObj, ratchet.tariffIndx);
         // seasons to and from
-        ratchet.seasonFrom = LookUpSeason(state, s_ipsc->cAlphaArgs(5), s_ipsc->cAlphaArgs(1));
-        ratchet.seasonTo = LookUpSeason(state, s_ipsc->cAlphaArgs(6), s_ipsc->cAlphaArgs(1));
+        ratchet.seasonFrom = static_cast<Season>(getEnumValue(seasonNamesUC, s_ipsc->cAlphaArgs(5)));
+        if (ratchet.seasonFrom == Season::Invalid) {
+            ShowWarningInvalidKey(state, eoh, s_ipsc->cAlphaFieldNames(5), s_ipsc->cAlphaArgs(5), "Annual");
+            ratchet.seasonFrom = Season::Annual;
+        }
+        ratchet.seasonTo = static_cast<Season>(getEnumValue(seasonNamesUC, s_ipsc->cAlphaArgs(6)));
+        if (ratchet.seasonTo == Season::Invalid) {
+            ShowWarningInvalidKey(state, eoh, s_ipsc->cAlphaFieldNames(6), s_ipsc->cAlphaArgs(56), "Annual");
+            ratchet.seasonTo = Season::Annual;
+        }
+
         // ratchet multiplier
         ratchet.multiplierVal = Util::ProcessNumber(s_ipsc->cAlphaArgs(7), isNotNumeric);
         ratchet.multiplierPt =
@@ -1645,34 +1684,6 @@ void initializeMonetaryUnit(EnergyPlusData &state)
     state.dataCostEstimateManager->monetaryUnit(109).html = "&#xfdfc;";
     state.dataCostEstimateManager->monetaryUnit(110).html = "R";
     state.dataCostEstimateManager->monetaryUnit(111).html = "Z$";
-}
-
-int LookUpSeason(EnergyPlusData &state, std::string const &nameOfSeason, std::string const &nameOfReferingObj)
-{
-    //    AUTHOR         Jason Glazer of GARD Analytics, Inc.
-    //    DATE WRITTEN   May 2004
-
-    //    Find the index for the season string provided or else
-    //    raise a warning.
-
-    int LookUpSeason;
-
-    if (Util::SameString(nameOfSeason, "Summer")) {
-        LookUpSeason = seasonSummer;
-    } else if (Util::SameString(nameOfSeason, "Winter")) {
-        LookUpSeason = seasonWinter;
-    } else if (Util::SameString(nameOfSeason, "Spring")) {
-        LookUpSeason = seasonSpring;
-    } else if (Util::SameString(nameOfSeason, "Fall")) {
-        LookUpSeason = seasonFall;
-    } else if (Util::SameString(nameOfSeason, "Annual")) {
-        LookUpSeason = seasonAnnual;
-    } else {
-        ShowWarningError(state, format("UtilityCost: Invalid season name {} in: {}", nameOfSeason, nameOfReferingObj));
-        ShowContinueError(state, "  Defaulting to Annual");
-        LookUpSeason = seasonAnnual;
-    }
-    return LookUpSeason;
 }
 
 int FindTariffIndex(
@@ -2553,7 +2564,8 @@ void GatherForEconomics(EnergyPlusData &state)
                 curEnergy = tariff.energyConv * tariff.collectEnergy;
                 // get the schedule values
                 // remember no confirmation of schedule values occurs prior to now
-                int curSeason = (tariff.seasonSched != nullptr) ? tariff.seasonSched->getCurrentVal() : 1;
+                // The season schedule 
+                Season curSeason = (tariff.seasonSched != nullptr) ? static_cast<Season>(tariff.seasonSched->getCurrentVal()) : Season::Winter;
                 int curPeriod = (tariff.periodSched != nullptr) ? tariff.periodSched->getCurrentVal() : 1;
 
                 int curMonth =
@@ -2564,7 +2576,8 @@ void GatherForEconomics(EnergyPlusData &state)
                                                                                                                   : state.dataEnvrn->MonthTomorrow);
 
                 bool isGood = false;
-                if (isWithinRange(state, curSeason, 1, 5)) {
+                if (curSeason == Season::Winter || curSeason == Season::Spring || curSeason == Season::Summer ||
+                    curSeason == Season::Fall || curSeason == Season::Annual) {
                     if (isWithinRange(state, curPeriod, 1, 4)) {
                         if (isWithinRange(state, curMonth, 1, 12)) {
                             isGood = true;
@@ -3170,20 +3183,18 @@ void evaluateChargeSimple(EnergyPlusData &state, int const usingVariable)
         costPer = chargeSimple.costPerVal;
     }
     // find proper season mask
-    {
-        int const SELECT_CASE_var(chargeSimple.season);
-        if (SELECT_CASE_var == seasonSummer) {
-            seasonMask = state.dataEconTariff->econVar(tariff.nativeIsSummer).values;
-        } else if (SELECT_CASE_var == seasonWinter) {
-            seasonMask = state.dataEconTariff->econVar(tariff.nativeIsWinter).values;
-        } else if (SELECT_CASE_var == seasonSpring) {
-            seasonMask = state.dataEconTariff->econVar(tariff.nativeIsSpring).values;
-        } else if (SELECT_CASE_var == seasonFall) {
-            seasonMask = state.dataEconTariff->econVar(tariff.nativeIsAutumn).values;
-        } else if (SELECT_CASE_var == seasonAnnual) {
-            seasonMask = 1.0; // all months are 1
-        }
+    if (chargeSimple.season == Season::Summer) {
+        seasonMask = state.dataEconTariff->econVar(tariff.nativeIsSummer).values;
+    } else if (chargeSimple.season == Season::Winter) {
+        seasonMask = state.dataEconTariff->econVar(tariff.nativeIsWinter).values;
+    } else if (chargeSimple.season == Season::Spring) {
+        seasonMask = state.dataEconTariff->econVar(tariff.nativeIsSpring).values;
+    } else if (chargeSimple.season == Season::Fall) {
+        seasonMask = state.dataEconTariff->econVar(tariff.nativeIsAutumn).values;
+    } else if (chargeSimple.season == Season::Annual) {
+        seasonMask = 1.0; // all months are 1
     }
+    
     // finally perform calculations
     resultChg = sourceVals * costPer * seasonMask;
     // store the cost in the name of the variable
@@ -3225,19 +3236,17 @@ void evaluateChargeBlock(EnergyPlusData &state, int const usingVariable)
     // data from the chargeBlock
     sourceVals = state.dataEconTariff->econVar(chargeBlock.sourcePt).values;
     // find proper season mask
-    {
-        int const SELECT_CASE_var(chargeBlock.season);
-        if (SELECT_CASE_var == seasonSummer) {
-            seasonMask = state.dataEconTariff->econVar(tariff.nativeIsSummer).values;
-        } else if (SELECT_CASE_var == seasonWinter) {
-            seasonMask = state.dataEconTariff->econVar(tariff.nativeIsWinter).values;
-        } else if (SELECT_CASE_var == seasonSpring) {
-            seasonMask = state.dataEconTariff->econVar(tariff.nativeIsSpring).values;
-        } else if (SELECT_CASE_var == seasonFall) {
-            seasonMask = state.dataEconTariff->econVar(tariff.nativeIsAutumn).values;
-        } else if (SELECT_CASE_var == seasonAnnual) {
-            seasonMask = 1.0; // all months are 1
-        }
+
+    if (chargeBlock.season == Season::Summer) {
+        seasonMask = state.dataEconTariff->econVar(tariff.nativeIsSummer).values;
+    } else if (chargeBlock.season == Season::Winter) {
+        seasonMask = state.dataEconTariff->econVar(tariff.nativeIsWinter).values;
+    } else if (chargeBlock.season == Season::Spring) {
+        seasonMask = state.dataEconTariff->econVar(tariff.nativeIsSpring).values;
+    } else if (chargeBlock.season == Season::Fall) {
+        seasonMask = state.dataEconTariff->econVar(tariff.nativeIsAutumn).values;
+    } else if (chargeBlock.season == Season::Annual) {
+        seasonMask = 1.0; // all months are 1
     }
     // get block size multiplier
     if (chargeBlock.blkSzMultPt != 0) {
@@ -3352,44 +3361,39 @@ void evaluateRatchet(EnergyPlusData &state, int const usingVariable)
         offsetVals = ratchet.offsetVal;
     }
     // find proper season from mask
-    {
-        int const SELECT_CASE_var(ratchet.seasonFrom);
-        if (SELECT_CASE_var == seasonSummer) {
-            seasonFromMask = state.dataEconTariff->econVar(tariff.nativeIsSummer).values;
-            isMonthly = false;
-        } else if (SELECT_CASE_var == seasonWinter) {
-            seasonFromMask = state.dataEconTariff->econVar(tariff.nativeIsWinter).values;
-            isMonthly = false;
-        } else if (SELECT_CASE_var == seasonSpring) {
-            seasonFromMask = state.dataEconTariff->econVar(tariff.nativeIsSpring).values;
-            isMonthly = false;
-        } else if (SELECT_CASE_var == seasonFall) {
-            seasonFromMask = state.dataEconTariff->econVar(tariff.nativeIsAutumn).values;
-            isMonthly = false;
-        } else if (SELECT_CASE_var == seasonAnnual) {
-            seasonFromMask = 1.0; // all months are 1
-            isMonthly = false;
-        } else if (SELECT_CASE_var == seasonMonthly) {
-            seasonFromMask = 1.0; // all months are 1
-            isMonthly = true;
-        } else {
-            assert(false);
-        }
+    if (ratchet.seasonFrom == Season::Summer) {
+        seasonFromMask = state.dataEconTariff->econVar(tariff.nativeIsSummer).values;
+        isMonthly = false;
+    } else if (ratchet.seasonFrom == Season::Winter) {
+        seasonFromMask = state.dataEconTariff->econVar(tariff.nativeIsWinter).values;
+        isMonthly = false;
+    } else if (ratchet.seasonFrom == Season::Spring) {
+        seasonFromMask = state.dataEconTariff->econVar(tariff.nativeIsSpring).values;
+        isMonthly = false;
+    } else if (ratchet.seasonFrom == Season::Fall) {
+        seasonFromMask = state.dataEconTariff->econVar(tariff.nativeIsAutumn).values;
+        isMonthly = false;
+    } else if (ratchet.seasonFrom == Season::Annual) {
+        seasonFromMask = 1.0; // all months are 1
+        isMonthly = false;
+    } else if (ratchet.seasonFrom == Season::Monthly) {
+        seasonFromMask = 1.0; // all months are 1
+        isMonthly = true;
+    } else {
+        assert(false);
     }
+    
     // find proper season to mask
-    {
-        int const SELECT_CASE_var(ratchet.seasonTo);
-        if (SELECT_CASE_var == seasonSummer) {
-            seasonToMask = state.dataEconTariff->econVar(tariff.nativeIsSummer).values;
-        } else if (SELECT_CASE_var == seasonWinter) {
-            seasonToMask = state.dataEconTariff->econVar(tariff.nativeIsWinter).values;
-        } else if (SELECT_CASE_var == seasonSpring) {
-            seasonToMask = state.dataEconTariff->econVar(tariff.nativeIsSpring).values;
-        } else if (SELECT_CASE_var == seasonFall) {
-            seasonToMask = state.dataEconTariff->econVar(tariff.nativeIsAutumn).values;
-        } else if (SELECT_CASE_var == seasonAnnual) {
-            seasonToMask = 1.0; // all months are 1
-        }
+    if (ratchet.seasonTo == Season::Summer) {
+        seasonToMask = state.dataEconTariff->econVar(tariff.nativeIsSummer).values;
+    } else if (ratchet.seasonTo == Season::Winter) {
+        seasonToMask = state.dataEconTariff->econVar(tariff.nativeIsWinter).values;
+    } else if (ratchet.seasonTo == Season::Spring) {
+        seasonToMask = state.dataEconTariff->econVar(tariff.nativeIsSpring).values;
+    } else if (ratchet.seasonTo == Season::Fall) {
+        seasonToMask = state.dataEconTariff->econVar(tariff.nativeIsAutumn).values;
+    } else if (ratchet.seasonTo == Season::Annual) {
+        seasonToMask = 1.0; // all months are 1
     }
     // finally perform calculations
     if (isMonthly) {
@@ -3469,20 +3473,19 @@ void evaluateQualify(EnergyPlusData &state, int const usingVariable)
         thresholdVals = qualify.thresholdVal;
     }
     // find proper season mask
-    {
-        int const SELECT_CASE_var(qualify.season);
-        if (SELECT_CASE_var == seasonSummer) {
-            seasonMask = state.dataEconTariff->econVar(tariff.nativeIsSummer).values;
-        } else if (SELECT_CASE_var == seasonWinter) {
-            seasonMask = state.dataEconTariff->econVar(tariff.nativeIsWinter).values;
-        } else if (SELECT_CASE_var == seasonSpring) {
-            seasonMask = state.dataEconTariff->econVar(tariff.nativeIsSpring).values;
-        } else if (SELECT_CASE_var == seasonFall) {
-            seasonMask = state.dataEconTariff->econVar(tariff.nativeIsAutumn).values;
-        } else if (SELECT_CASE_var == seasonAnnual) {
-            seasonMask = 1.0; // all months are 1
-        }
+
+    if (qualify.season == Season::Summer) {
+        seasonMask = state.dataEconTariff->econVar(tariff.nativeIsSummer).values;
+    } else if (qualify.season == Season::Winter) {
+        seasonMask = state.dataEconTariff->econVar(tariff.nativeIsWinter).values;
+    } else if (qualify.season == Season::Spring) {
+        seasonMask = state.dataEconTariff->econVar(tariff.nativeIsSpring).values;
+    } else if (qualify.season == Season::Fall) {
+        seasonMask = state.dataEconTariff->econVar(tariff.nativeIsAutumn).values;
+    } else if (qualify.season == Season::Annual) {
+        seasonMask = 1.0; // all months are 1
     }
+    
     // any months with no energy use are excluded from the qualification process
     for (int iMonth = 1; iMonth <= MaxNumMonths; ++iMonth) {
         if (state.dataEconTariff->econVar(tariff.nativeTotalEnergy).values(iMonth) == 0) {
@@ -3722,7 +3725,7 @@ void setNativeVariables(EnergyPlusData &state)
             }
             // nativeIsWinter
             // nativeIsNotWinter
-            if (tariff.seasonForMonth(kMonth) == seasonWinter) {
+            if (tariff.seasonForMonth(kMonth) == Season::Winter) {
                 state.dataEconTariff->econVar(tariff.nativeIsWinter).values(kMonth) = 1.0;
                 state.dataEconTariff->econVar(tariff.nativeIsNotWinter).values(kMonth) = 0.0;
             } else {
@@ -3731,7 +3734,7 @@ void setNativeVariables(EnergyPlusData &state)
             }
             // nativeIsSpring
             // nativeIsNotSpring
-            if (tariff.seasonForMonth(kMonth) == seasonSpring) {
+            if (tariff.seasonForMonth(kMonth) == Season::Spring) {
                 state.dataEconTariff->econVar(tariff.nativeIsSpring).values(kMonth) = 1.0;
                 state.dataEconTariff->econVar(tariff.nativeIsNotSpring).values(kMonth) = 0.0;
             } else {
@@ -3740,7 +3743,7 @@ void setNativeVariables(EnergyPlusData &state)
             }
             // nativeIsSummer
             // nativeIsNotSummer
-            if (tariff.seasonForMonth(kMonth) == seasonSummer) {
+            if (tariff.seasonForMonth(kMonth) == Season::Summer) {
                 state.dataEconTariff->econVar(tariff.nativeIsSummer).values(kMonth) = 1.0;
                 state.dataEconTariff->econVar(tariff.nativeIsNotSummer).values(kMonth) = 0.0;
             } else {
@@ -3749,7 +3752,7 @@ void setNativeVariables(EnergyPlusData &state)
             }
             // nativeIsAutumn
             // nativeIsNotAutumn
-            if (tariff.seasonForMonth(kMonth) == seasonFall) {
+            if (tariff.seasonForMonth(kMonth) == Season::Fall) {
                 state.dataEconTariff->econVar(tariff.nativeIsAutumn).values(kMonth) = 1.0;
                 state.dataEconTariff->econVar(tariff.nativeIsNotAutumn).values(kMonth) = 0.0;
             } else {
@@ -3838,6 +3841,8 @@ void LEEDtariffReporting(EnergyPlusData &state)
     DemandWindow distHeatSteamDemWindowUnits;
     DemandWindow othrDemWindowUnits;
 
+    auto &s_orp = state.dataOutRptPredefined;
+    
     auto const &tariff = state.dataEconTariff->tariff;
 
     if (state.dataEconTariff->numTariff > 0) {
@@ -3914,91 +3919,91 @@ void LEEDtariffReporting(EnergyPlusData &state)
             }
         }
         // names of the rates
-        OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchLeedEtsRtNm, "Electricity", elecTariffNames);
-        OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchLeedEtsRtNm, "Natural Gas", gasTariffNames);
+        OutputReportPredefined::PreDefTableEntry(state, s_orp->pdchLeedEtsRtNm, "Electricity", elecTariffNames);
+        OutputReportPredefined::PreDefTableEntry(state, s_orp->pdchLeedEtsRtNm, "Natural Gas", gasTariffNames);
         if (distCoolTotalEne != 0)
-            OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchLeedEtsRtNm, "District Cooling", distCoolTariffNames);
+            OutputReportPredefined::PreDefTableEntry(state, s_orp->pdchLeedEtsRtNm, "District Cooling", distCoolTariffNames);
         if (distHeatWaterTotalEne != 0)
             OutputReportPredefined::PreDefTableEntry(
-                state, state.dataOutRptPredefined->pdchLeedEtsRtNm, "District Heating Water", distHeatWaterTariffNames);
+                state, s_orp->pdchLeedEtsRtNm, "District Heating Water", distHeatWaterTariffNames);
         if (distHeatSteamTotalEne != 0)
             OutputReportPredefined::PreDefTableEntry(
-                state, state.dataOutRptPredefined->pdchLeedEtsRtNm, "District Heating Steam", distHeatSteamTariffNames);
-        OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchLeedEtsRtNm, "Other", othrTariffNames);
+                state, s_orp->pdchLeedEtsRtNm, "District Heating Steam", distHeatSteamTariffNames);
+        OutputReportPredefined::PreDefTableEntry(state, s_orp->pdchLeedEtsRtNm, "Other", othrTariffNames);
         // virtual rate
         if (elecTotalEne != 0)
             OutputReportPredefined::PreDefTableEntry(
-                state, state.dataOutRptPredefined->pdchLeedEtsVirt, "Electricity", elecTotalCost / elecTotalEne, 3);
+                state, s_orp->pdchLeedEtsVirt, "Electricity", elecTotalCost / elecTotalEne, 3);
         if (gasTotalEne != 0)
             OutputReportPredefined::PreDefTableEntry(
-                state, state.dataOutRptPredefined->pdchLeedEtsVirt, "Natural Gas", gasTotalCost / gasTotalEne, 3);
+                state, s_orp->pdchLeedEtsVirt, "Natural Gas", gasTotalCost / gasTotalEne, 3);
         if (otherTotalEne != 0)
-            OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchLeedEtsVirt, "Other", otherTotalCost / otherTotalEne, 3);
+            OutputReportPredefined::PreDefTableEntry(state, s_orp->pdchLeedEtsVirt, "Other", otherTotalCost / otherTotalEne, 3);
         // units
         OutputReportPredefined::PreDefTableEntry(
-            state, state.dataOutRptPredefined->pdchLeedEtsEneUnt, "Electricity", format("{}", convEneStrings(elecUnits)));
+            state, s_orp->pdchLeedEtsEneUnt, "Electricity", format("{}", convEnergyStrings[(int)elecUnits]));
         OutputReportPredefined::PreDefTableEntry(
-            state, state.dataOutRptPredefined->pdchLeedEtsEneUnt, "Natural Gas", format("{}", convEneStrings(gasUnits)));
+            state, s_orp->pdchLeedEtsEneUnt, "Natural Gas", format("{}", convEnergyStrings[(int)gasUnits]));
         OutputReportPredefined::PreDefTableEntry(
-            state, state.dataOutRptPredefined->pdchLeedEtsEneUnt, "Other", format("{}", convEneStrings(othrUnits)));
+            state, s_orp->pdchLeedEtsEneUnt, "Other", format("{}", convEnergyStrings[(int)othrUnits]));
         OutputReportPredefined::PreDefTableEntry(
-            state, state.dataOutRptPredefined->pdchLeedEtsDemUnt, "Electricity", format("{}", convDemStrings(elecUnits)));
+            state, s_orp->pdchLeedEtsDemUnt, "Electricity", format("{}", convDemandStrings[(int)elecUnits]));
         OutputReportPredefined::PreDefTableEntry(state,
-                                                 state.dataOutRptPredefined->pdchLeedEtsDemUnt,
+                                                 s_orp->pdchLeedEtsDemUnt,
                                                  "Natural Gas",
-                                                 format("{}{}", convDemStrings(gasUnits), demWindowStrings(gasDemWindowUnits)));
+                                                 format("{}{}", convDemandStrings[(int)gasUnits], demandWindowStrings[(int)gasDemWindowUnits]));
         OutputReportPredefined::PreDefTableEntry(state,
-                                                 state.dataOutRptPredefined->pdchLeedEtsDemUnt,
+                                                 s_orp->pdchLeedEtsDemUnt,
                                                  "Other",
-                                                 format("{}{}", convDemStrings(othrUnits), demWindowStrings(othrDemWindowUnits)));
+                                                 format("{}{}", convDemandStrings[(int)othrUnits], demandWindowStrings[(int)othrDemWindowUnits]));
         // total cost
-        OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchLeedEcsTotal, "Electricity", elecTotalCost, 2);
-        OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchLeedEcsTotal, "Natural Gas", gasTotalCost, 2);
-        OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchLeedEcsTotal, "Other", otherTotalCost, 2);
+        OutputReportPredefined::PreDefTableEntry(state, s_orp->pdchLeedEcsTotal, "Electricity", elecTotalCost, 2);
+        OutputReportPredefined::PreDefTableEntry(state, s_orp->pdchLeedEcsTotal, "Natural Gas", gasTotalCost, 2);
+        OutputReportPredefined::PreDefTableEntry(state, s_orp->pdchLeedEcsTotal, "Other", otherTotalCost, 2);
         // show district energy if used
         if (distCoolTotalEne != 0) {
             OutputReportPredefined::PreDefTableEntry(
-                state, state.dataOutRptPredefined->pdchLeedEtsVirt, "District Cooling", distCoolTotalCost / distCoolTotalEne, 3);
+                state, s_orp->pdchLeedEtsVirt, "District Cooling", distCoolTotalCost / distCoolTotalEne, 3);
             OutputReportPredefined::PreDefTableEntry(
-                state, state.dataOutRptPredefined->pdchLeedEtsEneUnt, "District Cooling", format("{}", convEneStrings(distCoolUnits)));
+                state, s_orp->pdchLeedEtsEneUnt, "District Cooling", format("{}", convEnergyStrings[(int)distCoolUnits]));
             OutputReportPredefined::PreDefTableEntry(state,
-                                                     state.dataOutRptPredefined->pdchLeedEtsDemUnt,
+                                                     s_orp->pdchLeedEtsDemUnt,
                                                      "District Cooling",
-                                                     format("{}{}", convDemStrings(distCoolUnits), demWindowStrings(distCoolDemWindowUnits)));
-            OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchLeedEcsTotal, "District Cooling", distCoolTotalCost, 2);
+                                                     format("{}{}", convDemandStrings[(int)distCoolUnits], demandWindowStrings[(int)distCoolDemWindowUnits]));
+            OutputReportPredefined::PreDefTableEntry(state, s_orp->pdchLeedEcsTotal, "District Cooling", distCoolTotalCost, 2);
         }
         if (distHeatWaterTotalEne != 0) {
             OutputReportPredefined::PreDefTableEntry(
-                state, state.dataOutRptPredefined->pdchLeedEtsVirt, "District Heating Water", distHeatWaterTotalCost / distHeatWaterTotalEne, 3);
+                state, s_orp->pdchLeedEtsVirt, "District Heating Water", distHeatWaterTotalCost / distHeatWaterTotalEne, 3);
             OutputReportPredefined::PreDefTableEntry(
-                state, state.dataOutRptPredefined->pdchLeedEtsEneUnt, "District Heating Water", format("{}", convEneStrings(distHeatWaterUnits)));
+                state, s_orp->pdchLeedEtsEneUnt, "District Heating Water", format("{}", convEnergyStrings[(int)distHeatWaterUnits]));
             OutputReportPredefined::PreDefTableEntry(
                 state,
-                state.dataOutRptPredefined->pdchLeedEtsDemUnt,
+                s_orp->pdchLeedEtsDemUnt,
                 "District Heating Water",
-                format("{}{}", convDemStrings(distHeatWaterUnits), demWindowStrings(distHeatWaterDemWindowUnits)));
+                format("{}{}", convDemandStrings[(int)distHeatWaterUnits], demandWindowStrings[(int)distHeatWaterDemWindowUnits]));
             OutputReportPredefined::PreDefTableEntry(
-                state, state.dataOutRptPredefined->pdchLeedEcsTotal, "District Heating Water", distHeatWaterTotalCost, 2);
+                state, s_orp->pdchLeedEcsTotal, "District Heating Water", distHeatWaterTotalCost, 2);
         }
         if (distHeatSteamTotalEne != 0) {
             OutputReportPredefined::PreDefTableEntry(
-                state, state.dataOutRptPredefined->pdchLeedEtsVirt, "District Heating Steam", distHeatSteamTotalCost / distHeatSteamTotalEne, 3);
+                state, s_orp->pdchLeedEtsVirt, "District Heating Steam", distHeatSteamTotalCost / distHeatSteamTotalEne, 3);
             OutputReportPredefined::PreDefTableEntry(
-                state, state.dataOutRptPredefined->pdchLeedEtsEneUnt, "District Heating Steam", format("{}", convEneStrings(distHeatSteamUnits)));
+                state, s_orp->pdchLeedEtsEneUnt, "District Heating Steam", format("{}", convEnergyStrings[(int)distHeatSteamUnits]));
             OutputReportPredefined::PreDefTableEntry(
                 state,
-                state.dataOutRptPredefined->pdchLeedEtsDemUnt,
+                s_orp->pdchLeedEtsDemUnt,
                 "District Heating Steam",
-                format("{}{}", convDemStrings(distHeatSteamUnits), demWindowStrings(distHeatSteamDemWindowUnits)));
+                format("{}{}", convDemandStrings[(int)distHeatSteamUnits], demandWindowStrings[(int)distHeatSteamDemWindowUnits]));
             OutputReportPredefined::PreDefTableEntry(
-                state, state.dataOutRptPredefined->pdchLeedEcsTotal, "District Heating Steam", distHeatSteamTotalCost, 2);
+                state, s_orp->pdchLeedEcsTotal, "District Heating Steam", distHeatSteamTotalCost, 2);
         }
         // save the total costs for later to compute process fraction
-        state.dataOutRptPredefined->LEEDelecCostTotal = elecTotalCost;
-        state.dataOutRptPredefined->LEEDgasCostTotal = gasTotalCost;
-        state.dataOutRptPredefined->LEEDothrCostTotal = distCoolTotalCost + distHeatWaterTotalCost + distHeatSteamTotalCost + otherTotalCost;
+        s_orp->LEEDelecCostTotal = elecTotalCost;
+        s_orp->LEEDgasCostTotal = gasTotalCost;
+        s_orp->LEEDothrCostTotal = distCoolTotalCost + distHeatWaterTotalCost + distHeatSteamTotalCost + otherTotalCost;
         OutputReportPredefined::PreDefTableEntry(state,
-                                                 state.dataOutRptPredefined->pdchLeedEcsTotal,
+                                                 s_orp->pdchLeedEcsTotal,
                                                  "Total",
                                                  elecTotalCost + gasTotalCost + distCoolTotalCost + distHeatWaterTotalCost + distHeatSteamTotalCost +
                                                      otherTotalCost,
@@ -4168,27 +4173,19 @@ void WriteTabularTariffReports(EnergyPlusData &state)
             for (int iTariff = 1; iTariff <= state.dataEconTariff->numTariff; ++iTariff) {
                 auto const &tariff = state.dataEconTariff->tariff(iTariff);
                 rowHead(iTariff) = tariff.tariffName;
-                if (tariff.isSelected) {
-                    tableBody(1, iTariff) = "Yes";
-                } else {
-                    tableBody(1, iTariff) = "No";
-                }
-                if (tariff.isQualified) {
-                    tableBody(2, iTariff) = "Yes";
-                } else {
-                    tableBody(2, iTariff) = "No";
-                }
+                tableBody(1, iTariff) = yesNoNames[(int)tariff.isSelected];
+                tableBody(2, iTariff) = yesNoNames[(int)tariff.isQualified];
+
                 tableBody(3, iTariff) = tariff.reportMeter;
-                {
-                    int const SELECT_CASE_var(tariff.buyOrSell);
-                    if (SELECT_CASE_var == buyFromUtility) {
-                        tableBody(4, iTariff) = "Buy";
-                    } else if (SELECT_CASE_var == sellToUtility) {
-                        tableBody(4, iTariff) = "Sell";
-                    } else if (SELECT_CASE_var == netMetering) {
-                        tableBody(4, iTariff) = "Net";
-                    }
+
+                if (tariff.buyOrSell == BuySell::BuyFromUtility) {
+                    tableBody(4, iTariff) = "Buy";
+                } else if (tariff.buyOrSell == BuySell::SellToUtility) {
+                    tableBody(4, iTariff) = "Sell";
+                } else if (tariff.buyOrSell == BuySell::NetMetering) {
+                    tableBody(4, iTariff) = "Net";
                 }
+
                 if (tariff.groupName == "") {
                     tableBody(5, iTariff) = "(none)";
                 } else {
@@ -4483,13 +4480,12 @@ void showWarningsBasedOnTotal(EnergyPlusData &state)
     for (int iTariff = 1; iTariff <= state.dataEconTariff->numTariff; ++iTariff) {
         auto const &tariff = state.dataEconTariff->tariff(iTariff);
         {
-            int const SELECT_CASE_var(tariff.buyOrSell);
-            if (SELECT_CASE_var == buyFromUtility) {
+            if (tariff.buyOrSell == BuySell::BuyFromUtility) {
                 if (tariff.totalAnnualCost < 0) {
                     ShowWarningError(state, "UtilityCost:Tariff: A negative annual total cost when buying electricity from a utility is unusual. ");
                     ShowContinueError(state, format("  In UtilityCost:Tariff named {}", tariff.tariffName));
                 }
-            } else if (SELECT_CASE_var == sellToUtility) {
+            } else if (tariff.buyOrSell == BuySell::SellToUtility) {
                 if (tariff.totalAnnualCost > 0) {
                     ShowWarningError(state, "UtilityCost:Tariff: A positive annual total cost when selling electricity to a utility is unusual. ");
                     ShowContinueError(state, format("  In UtilityCost:Tariff named {}", tariff.tariffName));

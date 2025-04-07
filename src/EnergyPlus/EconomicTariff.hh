@@ -126,69 +126,6 @@ namespace EconomicTariff {
         "gal",
         "kgal"
     };
-#ifdef GET_OUT  
-    constexpr std::string_view convEneStrings(EconConv &e)
-    {
-        switch (e) {
-        case EconConv::USERDEF:
-            return "";
-        case EconConv::KWH:
-            return "kWh";
-        case EconConv::THERM:
-            return "Therm";
-        case EconConv::MMBTU:
-            return "MMBtu";
-        case EconConv::MJ:
-            return "MJ";
-        case EconConv::KBTU:
-            return "kBtu";
-        case EconConv::MCF:
-            return "MCF";
-        case EconConv::CCF:
-            return "CCF";
-        case EconConv::M3:
-            return "m3";
-        case EconConv::GAL:
-            return "gal";
-        case EconConv::KGAL:
-            return "kgal";
-        default:
-            assert(false);
-            return "";
-        }
-    }
-
-    constexpr std::string_view convDemStrings(EconConv &e)
-    {
-        switch (e) {
-        case EconConv::USERDEF:
-            return "";
-        case EconConv::KWH:
-            return "kW";
-        case EconConv::THERM:
-            return "Therm";
-        case EconConv::MMBTU:
-            return "MMBtu";
-        case EconConv::MJ:
-            return "MJ";
-        case EconConv::KBTU:
-            return "kBtu";
-        case EconConv::MCF:
-            return "MCF";
-        case EconConv::CCF:
-            return "CCF";
-        case EconConv::M3:
-            return "m3";
-        case EconConv::GAL:
-            return "gal";
-        case EconConv::KGAL:
-            return "kgal";
-        default:
-            assert(false);
-            return "";
-        }
-    }
-#endif 
     enum class DemandWindow
     {
         Invalid = -1,
@@ -337,32 +274,47 @@ namespace EconomicTariff {
     int constexpr nativeAboveCustomerBaseEnergy(136);
     int constexpr nativeBelowCustomerBaseEnergy(137);
 
-    int constexpr countPeriod(4);
-    int constexpr MaxNumMonths(12);
+    int constexpr NumMonths(12);
     int constexpr maxNumBlk(15);
 
-    int constexpr periodPeak(1);
-    int constexpr periodShoulder(2);
-    int constexpr periodOffPeak(3);
-    int constexpr periodMidPeak(4);
+    enum class Period
+    {
+        Invalid = -1,
+        Peak,
+        Shoulder,
+        OffPeak,
+        MidPeak,
+        Num
+    };
 
-    int constexpr kindMeterNotElectric(0); // must be zero because testing of >0 done later.
-    int constexpr kindMeterElecSimple(1);
-    int constexpr kindMeterElecProduced(2);
-    int constexpr kindMeterElecPurchased(3);
-    int constexpr kindMeterElecSurplusSold(4);
-    int constexpr kindMeterElecNet(5);
+    enum class MeterType
+    {
+        Invalid = -1,
+        ElecSimple,
+        ElecProduced,
+        ElecPurchased,
+        ElecSurplusSold,
+        ElecNet,
+        Water,
+        Gas,
+        Other,
+        Num
+    };
+  
+    enum class VarUnitType
+      {
+        Invalid = -1,
+        Energy,
+        Demand,
+        Dimensionless,
+        Currency,
+        Num
+      };
 
-    int constexpr kindMeterNotWater(0);
-    int constexpr kindMeterWater(1);
-
-    int constexpr kindMeterNotGas(0);
-    int constexpr kindMeterGas(1);
-
-    int constexpr varUnitTypeEnergy(1);
-    int constexpr varUnitTypeDemand(2);
-    int constexpr varUnitTypeDimensionless(3);
-    int constexpr varUnitTypeCurrency(4);
+    constexpr std::array<std::string_view, (int)VarUnitType::Num> varUnitTypeNames = {
+        "Energy", "Demand", "Dimensionless", "Currency" };
+    constexpr std::array<std::string_view, (int)VarUnitType::Num> varUnitTypeNamesUC = {
+        "ENERGY", "DEMAND", "DIMENSIONLESS", "CURRENCY" };
 
     // Types
 
@@ -388,12 +340,12 @@ namespace EconomicTariff {
         bool isEvaluated;  // flag if the economics object that results in this variable
         // has already been evaulated
         bool isReported; // flag if the econVar has been reported in the output file
-        int varUnitType; // variable unit type: energy, demand, dimensionless, currency
+        VarUnitType varUnitType = VarUnitType::Invalid; // variable unit type: energy, demand, dimensionless, currency
 
         // Default Constructor
         EconVarType()
-            : tariffIndx(0), kindOfObj(ObjType::Invalid), index(0), values(MaxNumMonths, 0.0), isArgument(false), isAssigned(false), specific(0),
-              cntMeDependOn(0), Operator(0), firstOperand(0), lastOperand(0), activeNow(false), isEvaluated(false), isReported(false), varUnitType(0)
+            : tariffIndx(0), kindOfObj(ObjType::Invalid), index(0), values(NumMonths, 0.0), isArgument(false), isAssigned(false), specific(0),
+              cntMeDependOn(0), Operator(0), firstOperand(0), lastOperand(0), activeNow(false), isEvaluated(false), isReported(false) 
         {
         }
     };
@@ -404,9 +356,7 @@ namespace EconomicTariff {
         std::string tariffName;                                      // name of the tariff
         std::string reportMeter;                                     // name of the report meter
         int reportMeterIndx;                                         // index of the report meter
-        int kindElectricMtr;                                         // kind of electric meter - see enumerated list above, 0 is not electric
-        int kindWaterMtr;                                            // kind of water meter - 0 (default) is not water, 1 is water
-        int kindGasMtr;                                              // kind of gas meter - 0 (default) is not gas, 1 is gas
+        MeterType kindMtr = MeterType::Invalid;                      // kind of electric meter - see enumerated list above, 0 is not electric
         Constant::eResource resource = Constant::eResource::Invalid; // based on list of DataGlobalConstants
         EconConv convChoice;                                         // enumerated choice index of the conversion factor
         Real64 energyConv;                                           // energy conversion factor
@@ -484,8 +434,8 @@ namespace EconomicTariff {
         int nativeAboveCustomerBaseEnergy;
         int nativeBelowCustomerBaseEnergy;
         // arrays for holding gathered values
-        Array2D<Real64> gatherEnergy;
-        Array2D<Real64> gatherDemand;
+        Array1D<std::array<Real64, (int)Period::Num>> gatherEnergy;
+        Array1D<std::array<Real64, (int)Period::Num>> gatherDemand;
         Real64 collectTime;
         Real64 collectEnergy;
         // arryas for holding real time pricing gathered values
@@ -505,7 +455,7 @@ namespace EconomicTariff {
 
         // Default Constructor
         TariffType()
-            : reportMeterIndx(0), kindElectricMtr(0), kindWaterMtr(0), kindGasMtr(0), convChoice(EconConv::USERDEF), energyConv(0.0), demandConv(0.0),
+            : reportMeterIndx(0), convChoice(EconConv::USERDEF), energyConv(0.0), demandConv(0.0),
               demandWindow(DemandWindow::Invalid), demWinTime(0.0), monthChgVal(0.0), monthChgPt(0), minMonthChgVal(0.0), minMonthChgPt(0),
               firstCategory(0), lastCategory(0), ptEnergyCharges(0), ptDemandCharges(0), ptServiceCharges(0), ptBasis(0),
               ptAdjustment(0), ptSurcharge(0), ptSubtotal(0), ptTaxes(0), ptTotal(0), ptNotIncluded(0), firstNative(0), lastNative(0),
@@ -517,9 +467,9 @@ namespace EconomicTariff {
               nativePeakAndMidPeakEnergy(0), nativePeakAndMidPeakDemand(0), nativeShoulderAndOffPeakEnergy(0), nativeShoulderAndOffPeakDemand(0),
               nativePeakAndOffPeakEnergy(0), nativePeakAndOffPeakDemand(0), nativeRealTimePriceCosts(0), nativeAboveCustomerBaseCosts(0),
               nativeBelowCustomerBaseCosts(0), nativeAboveCustomerBaseEnergy(0), nativeBelowCustomerBaseEnergy(0),
-              gatherEnergy(MaxNumMonths, countPeriod, 0.0), gatherDemand(MaxNumMonths, countPeriod, 0.0), collectTime(0.0), collectEnergy(0.0),
-              RTPcost(MaxNumMonths, 0.0), RTPaboveBaseCost(MaxNumMonths, 0.0), RTPbelowBaseCost(MaxNumMonths, 0.0),
-              RTPaboveBaseEnergy(MaxNumMonths, 0.0), RTPbelowBaseEnergy(MaxNumMonths, 0.0), seasonForMonth(MaxNumMonths, Season::Invalid), isQualified(false),
+              gatherEnergy(NumMonths, {0.0,0.0,0.0,0.0}), gatherDemand(NumMonths, {0.0,0.0,0.0,0.0}), collectTime(0.0), collectEnergy(0.0),
+              RTPcost(NumMonths, 0.0), RTPaboveBaseCost(NumMonths, 0.0), RTPbelowBaseCost(NumMonths, 0.0),
+              RTPaboveBaseEnergy(NumMonths, 0.0), RTPbelowBaseEnergy(NumMonths, 0.0), seasonForMonth(NumMonths, Season::Invalid), isQualified(false),
               ptDisqualifier(0), isSelected(false), totalAnnualCost(0.0), totalAnnualEnergy(0.0)
         {
         }
@@ -627,11 +577,10 @@ namespace EconomicTariff {
     struct StackType
     {
         // Members
-        int varPt;              // pointer to item in specific array
+        int varPt = 0.0;              // pointer to item in specific array
         Array1D<Real64> values; // values
 
-        // Default Constructor
-        StackType() : varPt(0), values(MaxNumMonths, 0.0)
+        StackType() : varPt(0.0), values(NumMonths, 0.0)
         {
         }
     };

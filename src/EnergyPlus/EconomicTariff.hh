@@ -100,7 +100,7 @@ namespace EconomicTariff {
     };
 
     constexpr std::array<std::string_view, (int)EconConv::Num> convEnergyStrings = {
-        "",
+        "Userdefined",
         "kWh",
         "Therm",
         "MMBtu",
@@ -112,10 +112,12 @@ namespace EconomicTariff {
         "gal",
         "kgal"
     };
+    constexpr std::array<std::string_view, (int)EconConv::Num> econConvNamesUC = {
+        "USERDEFINED", "KWH", "THERM", "MMBTU", "MJ", "KBTU", "MCF", "CCF", "M3", "GAL", "KGAL" };
 
     constexpr std::array<std::string_view, (int)EconConv::Num> convDemandStrings = {
         "",
-        "kWh",
+        "kW",
         "Therm",
         "MMBtu",
         "MJ",
@@ -218,9 +220,51 @@ namespace EconomicTariff {
 
     // not predefined variable (user defined name - many variables and all objects)
     // used in econvar%specific
-    int constexpr varUserDefined(1);
-    int constexpr varNotYetDefined(2);
+    int constexpr varUserDefined(-1);
+    int constexpr varNotYetDefined(-2);
 
+    enum class Cat
+    {
+        Invalid = -1,
+        EnergyCharges,
+        DemandCharges,
+        ServiceCharges,
+        Basis,
+        Adjustment,
+        Surcharge,
+        Subtotal,
+        Taxes,
+        Total,
+        NotIncluded,
+        Num
+    };
+
+    constexpr std::array<std::string_view, (int)Cat::Num> catNames = {
+        "EnergyCharges",
+        "DemandCharges",
+        "ServiceCharges",
+        "Basis",
+        "Adjustment",
+        "Surcharge",
+        "Subtotal",
+        "Taxes",
+        "Total",
+        "NotIncluded"
+    };
+    constexpr std::array<std::string_view, (int)Cat::Num> catNamesUC = {
+        "ENERGYCHARGES",
+        "DEMANDCHARGES",
+        "SERVICECHARGES",
+        "BASIS",
+        "ADJUSTMENT",
+        "SURCHARGE",
+        "SUBTOTAL",
+        "TAXES",
+        "TOTAL",
+        "NOTINCLUDED"
+    };
+
+#ifdef GET_OUT  
     // category variables (used in econvar%specific)
     int constexpr catEnergyCharges(11);
     int constexpr catDemandCharges(12);
@@ -232,7 +276,130 @@ namespace EconomicTariff {
     int constexpr catTaxes(18);
     int constexpr catTotal(19);
     int constexpr catNotIncluded(20);
-
+#endif // GET_OUT
+  
+    enum class Native
+    {
+        Invalid = -1,
+        TotalEnergy, 
+        TotalDemand, 
+        PeakEnergy, 
+        PeakDemand, 
+        ShoulderEnergy, 
+        ShoulderDemand, 
+        OffPeakEnergy, 
+        OffPeakDemand, 
+        MidPeakEnergy, 
+        MidPeakDemand, 
+        PeakExceedsOffPeak, 
+        OffPeakExceedsPeak, 
+        PeakExceedsMidPeak, 
+        MidPeakExceedsPeak, 
+        PeakExceedsShoulder, 
+        ShoulderExceedsPeak, 
+        IsWinter, 
+        IsNotWinter, 
+        IsSpring, 
+        IsNotSpring, 
+        IsSummer, 
+        IsNotSummer, 
+        IsAutumn, 
+        IsNotAutumn, 
+        PeakAndShoulderEnergy, 
+        PeakAndShoulderDemand, 
+        PeakAndMidPeakEnergy, 
+        PeakAndMidPeakDemand,
+        ShoulderAndOffPeakEnergy, 
+        ShoulderAndOffPeakDemand, 
+        PeakAndOffPeakEnergy, 
+        PeakAndOffPeakDemand,
+        RealTimePriceCosts, 
+        AboveCustomerBaseCosts,
+        BelowCustomerBaseCosts, 
+        AboveCustomerBaseEnergy,
+        BelowCustomerBaseEnergy,
+        Num
+    };
+  
+    constexpr std::array<std::string_view, (int)Native::Num> nativeNames = {
+        "TotalEnergy", 
+        "TotalDemand", 
+        "PeakEnergy", 
+        "PeakDemand", 
+        "ShoulderEnergy", 
+        "ShoulderDemand", 
+        "OffPeakEnergy", 
+        "OffPeakDemand", 
+        "MidPeakEnergy", 
+        "MidPeakDemand", 
+        "PeakExceedsOffPeak", 
+        "OffPeakExceedsPeak", 
+        "PeakExceedsMidPeak", 
+        "MidPeakExceedsPeak", 
+        "PeakExceedsShoulder", 
+        "ShoulderExceedsPeak", 
+        "IsWinter", 
+        "IsNotWinter", 
+        "IsSpring", 
+        "IsNotSpring", 
+        "IsSummer", 
+        "IsNotSummer", 
+        "IsAutumn", 
+        "IsNotAutumn", 
+        "PeakAndShoulderEnergy", 
+        "PeakAndShoulderDemand", 
+        "PeakAndMidPeakEnergy", 
+        "PeakAndMidPeakDemand",
+        "ShoulderAndOffPeakEnergy", 
+        "ShoulderAndOffPeakDemand", 
+        "PeakAndOffPeakEnergy", 
+        "PeakAndOffPeakDemand",
+        "RealTimePriceCosts", 
+        "AboveCustomerBaseCosts",
+        "BelowCustomerBaseCosts", 
+        "AboveCustomerBaseEnergy",
+        "BelowCustomerBaseEnergy"
+    };
+    constexpr std::array<std::string_view, (int)Native::Num> nativeNamesUC = {
+        "TOTALENERGY", 
+        "TOTALDEMAND", 
+        "PEAKENERGY", 
+        "PEAKDEMAND", 
+        "SHOULDERENERGY", 
+        "SHOULDERDEMAND", 
+        "OFFPEAKENERGY", 
+        "OFFPEAKDEMAND", 
+        "MIDPEAKENERGY", 
+        "MIDPEAKDEMAND", 
+        "PEAKEXCEEDSOFFPEAK", 
+        "OFFPEAKEXCEEDSPEAK", 
+        "PEAKEXCEEDSMIDPEAK", 
+        "MIDPEAKEXCEEDSPEAK", 
+        "PEAKEXCEEDSSHOULDER", 
+        "SHOULDEREXCEEDSPEAK", 
+        "ISWINTER", 
+        "ISNOTWINTER", 
+        "ISSPRING", 
+        "ISNOTSPRING", 
+        "ISSUMMER", 
+        "ISNOTSUMMER", 
+        "ISAUTUMN", 
+        "ISNOTAUTUMN", 
+        "PEAKANDSHOULDERENERGY", 
+        "PEAKANDSHOULDERDEMAND", 
+        "PEAKANDMIDPEAKENERGY", 
+        "PEAKANDMIDPEAKDEMAND",
+        "SHOULDERANDOFFPEAKENERGY", 
+        "SHOULDERANDOFFPEAKDEMAND", 
+        "PEAKANDOFFPEAKENERGY", 
+        "PEAKANDOFFPEAKDEMAND",
+        "REALTIMEPRICECOSTS", 
+        "ABOVECUSTOMERBASECOSTS",
+        "BELOWCUSTOMERBASECOSTS", 
+        "ABOVECUSTOMERBASEENERGY",
+        "BELOWCUSTOMERBASEENERGY"
+    };
+#ifdef GET_OUT  
     // native variables (based on energy and demands from the simulation) used in econvar%specific
     int constexpr nativeTotalEnergy(101);
     int constexpr nativeTotalDemand(102);
@@ -273,7 +440,8 @@ namespace EconomicTariff {
     int constexpr nativeBelowCustomerBaseCosts(135);
     int constexpr nativeAboveCustomerBaseEnergy(136);
     int constexpr nativeBelowCustomerBaseEnergy(137);
-
+#endif // GET_OUT
+  
     int constexpr NumMonths(12);
     int constexpr maxNumBlk(15);
 
@@ -381,6 +549,8 @@ namespace EconomicTariff {
         int firstCategory; // first category referenced
         int lastCategory;  // last category referenced
         // pointers to econ variables for categories
+        std::array<int, (int)Cat::Num> cats;
+#ifdef GET_OUT
         int ptEnergyCharges;
         int ptDemandCharges;
         int ptServiceCharges;
@@ -391,10 +561,13 @@ namespace EconomicTariff {
         int ptTaxes;
         int ptTotal;
         int ptNotIncluded;
+#endif // GET_OUT      
         // index to the first and last native variables (energies and demands from the simulation)
         int firstNative;
         int lastNative;
         // native variables (based on energy and demands from the simulation)
+        std::array<int, (int)Native::Num> natives = {0};
+#ifdef GET_OUT      
         int nativeTotalEnergy;
         int nativeTotalDemand;
         int nativePeakEnergy;
@@ -433,6 +606,7 @@ namespace EconomicTariff {
         int nativeBelowCustomerBaseCosts;
         int nativeAboveCustomerBaseEnergy;
         int nativeBelowCustomerBaseEnergy;
+#endif //       
         // arrays for holding gathered values
         Array1D<std::array<Real64, (int)Period::Num>> gatherEnergy;
         Array1D<std::array<Real64, (int)Period::Num>> gatherDemand;
@@ -457,8 +631,13 @@ namespace EconomicTariff {
         TariffType()
             : reportMeterIndx(0), convChoice(EconConv::USERDEF), energyConv(0.0), demandConv(0.0),
               demandWindow(DemandWindow::Invalid), demWinTime(0.0), monthChgVal(0.0), monthChgPt(0), minMonthChgVal(0.0), minMonthChgPt(0),
-              firstCategory(0), lastCategory(0), ptEnergyCharges(0), ptDemandCharges(0), ptServiceCharges(0), ptBasis(0),
-              ptAdjustment(0), ptSurcharge(0), ptSubtotal(0), ptTaxes(0), ptTotal(0), ptNotIncluded(0), firstNative(0), lastNative(0),
+              firstCategory(0), lastCategory(0),
+#ifdef GET_OUT
+              ptEnergyCharges(0), ptDemandCharges(0), ptServiceCharges(0), ptBasis(0),
+              ptAdjustment(0), ptSurcharge(0), ptSubtotal(0), ptTaxes(0), ptTotal(0), ptNotIncluded(0),
+#endif // GET_OUT
+              firstNative(0), lastNative(0),
+#ifdef GET_OUT
               nativeTotalEnergy(0), nativeTotalDemand(0), nativePeakEnergy(0), nativePeakDemand(0), nativeShoulderEnergy(0), nativeShoulderDemand(0),
               nativeOffPeakEnergy(0), nativeOffPeakDemand(0), nativeMidPeakEnergy(0), nativeMidPeakDemand(0), nativePeakExceedsOffPeak(0),
               nativeOffPeakExceedsPeak(0), nativePeakExceedsMidPeak(0), nativeMidPeakExceedsPeak(0), nativePeakExceedsShoulder(0),
@@ -467,6 +646,7 @@ namespace EconomicTariff {
               nativePeakAndMidPeakEnergy(0), nativePeakAndMidPeakDemand(0), nativeShoulderAndOffPeakEnergy(0), nativeShoulderAndOffPeakDemand(0),
               nativePeakAndOffPeakEnergy(0), nativePeakAndOffPeakDemand(0), nativeRealTimePriceCosts(0), nativeAboveCustomerBaseCosts(0),
               nativeBelowCustomerBaseCosts(0), nativeAboveCustomerBaseEnergy(0), nativeBelowCustomerBaseEnergy(0),
+#endif // GET_OUT              
               gatherEnergy(NumMonths, {0.0,0.0,0.0,0.0}), gatherDemand(NumMonths, {0.0,0.0,0.0,0.0}), collectTime(0.0), collectEnergy(0.0),
               RTPcost(NumMonths, 0.0), RTPaboveBaseCost(NumMonths, 0.0), RTPbelowBaseCost(NumMonths, 0.0),
               RTPaboveBaseEnergy(NumMonths, 0.0), RTPbelowBaseEnergy(NumMonths, 0.0), seasonForMonth(NumMonths, Season::Invalid), isQualified(false),
@@ -627,7 +807,7 @@ namespace EconomicTariff {
         EnergyPlusData &state, std::string const &objName, int const curTariffIndex, bool &ErrorsFound, std::string const &curobjName);
 
     int AssignVariablePt(EnergyPlusData &state,
-                         std::string const &stringIn,
+                         std::string_view const stringIn,
                          bool const flagIfNotNumeric,
                          int const useOfVar,
                          int const varSpecific,
@@ -639,7 +819,7 @@ namespace EconomicTariff {
 
     void incrementSteps(EnergyPlusData &state);
 
-    std::string RemoveSpaces(EnergyPlusData &state, std::string const &StringIn);
+    std::string RemoveSpaces(EnergyPlusData &state, std::string_view const StringIn);
 
     void CreateCategoryNativeVariables(EnergyPlusData &state);
 

@@ -546,6 +546,9 @@ namespace OutputReportPredefined {
         s->pdchPLCLProvCool = newPreDefColumn(state, s->pdstPLCL, "Provides Cooling");
         s->pdchPLCLMaxLoopFlowRate = newPreDefColumn(state, s->pdstPLCL, "Maximum Loop Flow Rate [m3/s]");
         s->pdchPLCLMinLoopFlowRate = newPreDefColumn(state, s->pdstPLCL, "Minimum Loop Flow Rate [m3/s]");
+        s->pdchPLCLSupTemp = newPreDefColumn(state, s->pdstPLCL, "Design Supply Temperature [C]");
+        s->pdchPLCLRetTemp = newPreDefColumn(state, s->pdstPLCL, "Design Return Temperature [C]");
+        s->pdchPLCLDesCap = newPreDefColumn(state, s->pdstPLCL, "Design Capacity [W]");
 
         // Std 229 Air Terminal Table in Equipment Summary
         s->pdstAirTerm = newPreDefSubTable(state, s->pdrEquip, "Air Terminals");

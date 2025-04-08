@@ -443,6 +443,10 @@ struct OutputReportPredefinedData : BaseGlobalStruct
     int pdchPLCLProvCool = 0;        // provides cooling
     int pdchPLCLMaxLoopFlowRate = 0; // Maximum Loop Flow Rate
     int pdchPLCLMinLoopFlowRate = 0; // Minimum Loop Flow Rate
+    int pdchPLCLSupTemp = 0;         // "Design Supply Temperature [C]");
+    int pdchPLCLRetTemp = 0;         // "Design Return Temperature [C]");
+    int pdchPLCLDesCap = 0;          // "Design Capacity [W]");
+
 
     // Std 229 Air Terminal Table in Equipment Summary
     int pdstAirTerm = 0;

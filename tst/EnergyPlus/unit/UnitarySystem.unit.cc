@@ -287,7 +287,7 @@ public:
         state->dataAirSystemsData->PrimaryAirSystems.allocate(1);
         state->dataAirLoop->AirLoopControlInfo.allocate(1);
         state->dataLoopNodes->Node.allocate(30);
-        state->dataHeatBal->HeatReclaimVS_DXCoil.allocate(4);
+        state->dataHeatBal->HeatReclaimVS_Coil.allocate(4);
     }
 
     virtual void TearDown()

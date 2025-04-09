@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -189,13 +189,13 @@ TEST_F(EnergyPlusFixture, EconomicTariff_GetInput_Test)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
-
+    state->init_state(*state);
     UpdateUtilityBills(*state);
 
     // tariff
     EXPECT_EQ(1, state->dataEconTariff->numTariff);
     EXPECT_EQ("EXAMPLEFMC", state->dataEconTariff->tariff(1).tariffName);
-    EXPECT_TRUE(compare_enums(EconConv::KWH, state->dataEconTariff->tariff(1).convChoice));
+    EXPECT_ENUM_EQ(EconConv::KWH, state->dataEconTariff->tariff(1).convChoice);
     EXPECT_EQ(37.75, state->dataEconTariff->tariff(1).monthChgVal);
 
     // qualify
@@ -255,6 +255,7 @@ TEST_F(EnergyPlusFixture, EconomicTariff_Water_DefaultConv_Test)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     // Create a water meter, can't use AddMeter because we would need to create a variable for that
     OutputProcessor::Meter *meter = new OutputProcessor::Meter("WATER:FACILITY");
@@ -274,7 +275,7 @@ TEST_F(EnergyPlusFixture, EconomicTariff_Water_DefaultConv_Test)
     EXPECT_EQ(kindMeterNotGas, state->dataEconTariff->tariff(1).kindGasMtr);
 
     // Check that if defaults the conversion choice correctly
-    EXPECT_TRUE(compare_enums(EconConv::M3, state->dataEconTariff->tariff(1).convChoice));
+    EXPECT_ENUM_EQ(EconConv::M3, state->dataEconTariff->tariff(1).convChoice);
     EXPECT_EQ(1, state->dataEconTariff->tariff(1).energyConv);
     EXPECT_EQ(3600, state->dataEconTariff->tariff(1).demandConv);
     EXPECT_EQ(10, state->dataEconTariff->tariff(1).monthChgVal);
@@ -298,6 +299,7 @@ TEST_F(EnergyPlusFixture, EconomicTariff_Water_CCF_Test)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     // Create a water meter
     OutputProcessor::Meter *meter = new Meter("WATER:FACILITY");
@@ -316,7 +318,7 @@ TEST_F(EnergyPlusFixture, EconomicTariff_Water_CCF_Test)
     EXPECT_EQ(kindMeterNotGas, state->dataEconTariff->tariff(1).kindGasMtr);
 
     // Check conversion choice
-    EXPECT_TRUE(compare_enums(EconConv::CCF, state->dataEconTariff->tariff(1).convChoice));
+    EXPECT_ENUM_EQ(EconConv::CCF, state->dataEconTariff->tariff(1).convChoice);
     ASSERT_DOUBLE_EQ(0.35314666721488586, state->dataEconTariff->tariff(1).energyConv);
 }
 
@@ -338,6 +340,7 @@ TEST_F(EnergyPlusFixture, EconomicTariff_Gas_CCF_Test)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     // Create a water meter
     OutputProcessor::Meter *meter = new Meter("NATURALGAS:FACILITY");
@@ -358,7 +361,7 @@ TEST_F(EnergyPlusFixture, EconomicTariff_Gas_CCF_Test)
 
     // Check conversion choice
 
-    EXPECT_TRUE(compare_enums(EconConv::CCF, state->dataEconTariff->tariff(1).convChoice));
+    EXPECT_ENUM_EQ(EconConv::CCF, state->dataEconTariff->tariff(1).convChoice);
     ASSERT_DOUBLE_EQ(9.4781712e-9, state->dataEconTariff->tariff(1).energyConv);
 }
 
@@ -380,6 +383,7 @@ TEST_F(EnergyPlusFixture, EconomicTariff_Electric_CCF_Test)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     // Create a water meter
     OutputProcessor::Meter *meter = new Meter("ELECTRICITY:FACILITY");
@@ -400,13 +404,14 @@ TEST_F(EnergyPlusFixture, EconomicTariff_Electric_CCF_Test)
     EXPECT_EQ(kindMeterNotGas, state->dataEconTariff->tariff(1).kindGasMtr);
 
     // Check conversion choice, should force back to kWh
-    EXPECT_TRUE(compare_enums(EconConv::KWH, state->dataEconTariff->tariff(1).convChoice));
+    EXPECT_ENUM_EQ(EconConv::KWH, state->dataEconTariff->tariff(1).convChoice);
     ASSERT_DOUBLE_EQ(0.0000002778, state->dataEconTariff->tariff(1).energyConv);
     ASSERT_DOUBLE_EQ(0.001, state->dataEconTariff->tariff(1).demandConv);
 }
 
 TEST_F(EnergyPlusFixture, EconomicTariff_LEEDtariffReporting_Test)
 {
+    state->init_state(*state);
     state->dataOutputProcessor->meters.push_back(new Meter("ELECTRICITY:FACILITY"));
     state->dataOutputProcessor->meterMap.insert_or_assign("ELECTRICITY:FACILITY", state->dataOutputProcessor->meters.size() - 1);
     state->dataOutputProcessor->meters.push_back(new Meter("NATURALGAS:FACILITY"));
@@ -587,12 +592,12 @@ TEST_F(EnergyPlusFixture, EconomicTariff_GatherForEconomics)
 
     ASSERT_TRUE(process_idf(idf_objects));
 
-    state->dataGlobal->NumOfTimeStepInHour = 4; // must initialize this to get schedules initialized
-    state->dataGlobal->MinutesPerTimeStep = 15; // must initialize this to get schedules initialized
+    state->dataGlobal->TimeStepsInHour = 4;    // must initialize this to get schedules initialized
+    state->dataGlobal->MinutesInTimeStep = 15; // must initialize this to get schedules initialized
     state->dataGlobal->TimeStepZone = 0.25;
-    state->dataGlobal->TimeStepZoneSec = state->dataGlobal->TimeStepZone * Constant::SecInHour;
+    state->dataGlobal->TimeStepZoneSec = state->dataGlobal->TimeStepZone * Constant::rSecsInHour;
 
-    ScheduleManager::ProcessScheduleInput(*state); // read schedules
+    state->init_state(*state);
     ExteriorEnergyUse::ManageExteriorEnergyUse(*state);
     EXPECT_EQ(1, state->dataExteriorEnergyUse->NumExteriorLights);
     EXPECT_EQ(1000, state->dataExteriorEnergyUse->ExteriorLights(1).DesignLevel);
@@ -604,13 +609,9 @@ TEST_F(EnergyPlusFixture, EconomicTariff_GatherForEconomics)
     // tariff
     EXPECT_EQ(1, state->dataEconTariff->numTariff);
     EXPECT_EQ("SEASONAL_TARIFF", state->dataEconTariff->tariff(1).tariffName);
-    EXPECT_TRUE(compare_enums(EconConv::KWH, state->dataEconTariff->tariff(1).convChoice));
+    EXPECT_ENUM_EQ(EconConv::KWH, state->dataEconTariff->tariff(1).convChoice);
     EXPECT_EQ(0, state->dataEconTariff->tariff(1).monthChgVal);
-    EXPECT_EQ("ELECTRICITY SEASON SCHEDULE", state->dataEconTariff->tariff(1).seasonSchedule);
-
-    int seasonSchPtr = state->dataEconTariff->tariff(1).seasonSchIndex;
-    EXPECT_GT(seasonSchPtr, 0);
-    EXPECT_EQ("ELECTRICITY SEASON SCHEDULE", state->dataScheduleMgr->Schedule(seasonSchPtr).Name);
+    EXPECT_EQ("ELECTRICITY SEASON SCHEDULE", state->dataEconTariff->tariff(1).seasonSched->Name);
 
     // Two Simple Charges
     EXPECT_EQ(2, state->dataEconTariff->numChargeSimple);
@@ -638,10 +639,9 @@ TEST_F(EnergyPlusFixture, EconomicTariff_GatherForEconomics)
     state->dataGlobal->TimeStep = 4;
     state->dataEnvrn->DayOfYear_Schedule = General::OrdinalDay(state->dataEnvrn->Month, state->dataEnvrn->DayOfMonth, 1);
 
-    ScheduleManager::UpdateScheduleValues(*state);
-    EXPECT_EQ(1.0, ScheduleManager::LookUpScheduleValue(*state, 1, state->dataGlobal->HourOfDay, state->dataGlobal->TimeStep));
-    EXPECT_EQ(1.0, ScheduleManager::GetCurrentScheduleValue(*state, state->dataEconTariff->tariff(1).seasonSchIndex));
-    EXPECT_EQ(1.0, state->dataScheduleMgr->Schedule(seasonSchPtr).CurrentValue);
+    Sched::UpdateScheduleVals(*state);
+    EXPECT_EQ(1.0, Sched::GetSchedule(*state, "ALWAYS ON DISCRETE")->getHrTsVal(*state, state->dataGlobal->HourOfDay, state->dataGlobal->TimeStep));
+    EXPECT_EQ(1.0, state->dataEconTariff->tariff(1).seasonSched->getCurrentVal());
 
     ExteriorEnergyUse::ManageExteriorEnergyUse(*state);
 
@@ -670,8 +670,8 @@ TEST_F(EnergyPlusFixture, EconomicTariff_GatherForEconomics)
     state->dataGlobal->TimeStep = 1;
     state->dataEnvrn->DayOfYear_Schedule = General::OrdinalDay(state->dataEnvrn->Month, state->dataEnvrn->DayOfMonth, 1);
 
-    ScheduleManager::UpdateScheduleValues(*state);
-    EXPECT_EQ(3.0, ScheduleManager::GetCurrentScheduleValue(*state, state->dataEconTariff->tariff(1).seasonSchIndex));
+    Sched::UpdateScheduleVals(*state);
+    EXPECT_EQ(3.0, state->dataEconTariff->tariff(1).seasonSched->getCurrentVal());
 
     ExteriorEnergyUse::ManageExteriorEnergyUse(*state);
 
@@ -684,6 +684,286 @@ TEST_F(EnergyPlusFixture, EconomicTariff_GatherForEconomics)
     ;
     EXPECT_EQ(1, state->dataEconTariff->tariff(1).seasonForMonth(5));
     EXPECT_EQ(3, state->dataEconTariff->tariff(1).seasonForMonth(6));
+}
+
+TEST_F(EnergyPlusFixture, EconomicTariff_GatherForEconomics_ZeroMeterIndex)
+{
+    state->init_state(*state);
+    // Test for PR #10521 and Issue #10519
+    state->dataEconTariff->numTariff = 1;
+    state->dataEconTariff->tariff.allocate(state->dataEconTariff->numTariff);
+    state->dataEconTariff->tariff(1).reportMeterIndx = 0;
+    state->dataEconTariff->tariff(1).demWinTime = 1.;
+    state->dataEconTariff->tariff(1).energyConv = 1.;
+
+    state->dataGlobal->TimeStepZoneSec = 3600;
+    state->dataEnvrn->Month = 1;
+
+    Meter *meter = nullptr;
+    meter = new Meter("FacElec");
+    meter->CurTSValue = 100;
+    state->dataOutputProcessor->meters.push_back(meter);
+
+    GatherForEconomics(*state);
+    EXPECT_EQ(100, state->dataEconTariff->tariff(1).gatherEnergy(1, 1));
+}
+
+TEST_F(EnergyPlusFixture, EconomicTariff_PushPopStack)
+{
+    state->init_state(*state);
+    state->dataEconTariff->numTariff = 1;
+    state->dataEconTariff->tariff.allocate(state->dataEconTariff->numTariff);
+
+    Array1D<Real64> aMonths(MaxNumMonths);
+    int aVarPt;
+
+    Array1D<Real64> bMonths(MaxNumMonths);
+    int bVarPt;
+
+    Array1D<Real64> cMonths(MaxNumMonths);
+    int cVarPt;
+
+    aMonths = {1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6};
+    aVarPt = 0;
+
+    pushStack(*state, aMonths, aVarPt);
+
+    EXPECT_EQ(1, state->dataEconTariff->topOfStack);
+    EXPECT_EQ(0, state->dataEconTariff->stack(1).varPt);
+    EXPECT_EQ(aMonths(1), state->dataEconTariff->stack(1).values(1));
+    EXPECT_EQ(aMonths(2), state->dataEconTariff->stack(1).values(2));
+    EXPECT_EQ(aMonths(3), state->dataEconTariff->stack(1).values(3));
+    EXPECT_EQ(aMonths(4), state->dataEconTariff->stack(1).values(4));
+    EXPECT_EQ(aMonths(5), state->dataEconTariff->stack(1).values(5));
+    EXPECT_EQ(aMonths(6), state->dataEconTariff->stack(1).values(6));
+
+    bMonths = {2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6};
+    bVarPt = 0;
+
+    pushStack(*state, bMonths, bVarPt);
+
+    EXPECT_EQ(2, state->dataEconTariff->topOfStack);
+    EXPECT_EQ(0, state->dataEconTariff->stack(1).varPt);
+    EXPECT_EQ(aMonths(1), state->dataEconTariff->stack(1).values(1));
+    EXPECT_EQ(aMonths(2), state->dataEconTariff->stack(1).values(2));
+    EXPECT_EQ(aMonths(3), state->dataEconTariff->stack(1).values(3));
+    EXPECT_EQ(aMonths(4), state->dataEconTariff->stack(1).values(4));
+    EXPECT_EQ(aMonths(5), state->dataEconTariff->stack(1).values(5));
+    EXPECT_EQ(aMonths(6), state->dataEconTariff->stack(1).values(6));
+    EXPECT_EQ(0, state->dataEconTariff->stack(2).varPt);
+    EXPECT_EQ(bMonths(1), state->dataEconTariff->stack(2).values(1));
+    EXPECT_EQ(bMonths(2), state->dataEconTariff->stack(2).values(2));
+    EXPECT_EQ(bMonths(3), state->dataEconTariff->stack(2).values(3));
+    EXPECT_EQ(bMonths(4), state->dataEconTariff->stack(2).values(4));
+    EXPECT_EQ(bMonths(5), state->dataEconTariff->stack(2).values(5));
+    EXPECT_EQ(bMonths(6), state->dataEconTariff->stack(2).values(6));
+
+    popStack(*state, cMonths, cVarPt);
+    EXPECT_EQ(1, state->dataEconTariff->topOfStack);
+    EXPECT_EQ(0, state->dataEconTariff->stack(1).varPt);
+    EXPECT_EQ(aMonths(1), state->dataEconTariff->stack(1).values(1));
+    EXPECT_EQ(aMonths(2), state->dataEconTariff->stack(1).values(2));
+    EXPECT_EQ(aMonths(3), state->dataEconTariff->stack(1).values(3));
+    EXPECT_EQ(aMonths(4), state->dataEconTariff->stack(1).values(4));
+    EXPECT_EQ(aMonths(5), state->dataEconTariff->stack(1).values(5));
+    EXPECT_EQ(aMonths(6), state->dataEconTariff->stack(1).values(6));
+    EXPECT_EQ(bMonths(1), cMonths(1));
+    EXPECT_EQ(bMonths(2), cMonths(2));
+    EXPECT_EQ(bMonths(3), cMonths(3));
+    EXPECT_EQ(bMonths(4), cMonths(4));
+    EXPECT_EQ(bMonths(5), cMonths(5));
+    EXPECT_EQ(bMonths(6), cMonths(6));
+    EXPECT_EQ(bVarPt, cVarPt);
+
+    popStack(*state, cMonths, cVarPt);
+    EXPECT_EQ(0, state->dataEconTariff->topOfStack);
+    EXPECT_EQ(aMonths(1), cMonths(1));
+    EXPECT_EQ(aMonths(2), cMonths(2));
+    EXPECT_EQ(aMonths(3), cMonths(3));
+    EXPECT_EQ(aMonths(4), cMonths(4));
+    EXPECT_EQ(aMonths(5), cMonths(5));
+    EXPECT_EQ(aMonths(6), cMonths(6));
+    EXPECT_EQ(aVarPt, cVarPt);
+
+    state->dataEconTariff->econVar.allocate(10);
+    state->dataEconTariff->econVar(1).isEvaluated = false;
+    state->dataEconTariff->econVar(1).kindOfObj = ObjType::Variable;
+
+    // test getting econ variable
+    Array1D<Real64> dMonths(MaxNumMonths);
+    int dVarPt;
+
+    dMonths = {3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6};
+    dVarPt = 1;
+
+    state->dataEconTariff->econVar(dVarPt).values = dMonths;
+
+    pushStack(*state, aMonths, dVarPt); // note the aMonths should not be used
+    popStack(*state, cMonths, cVarPt);
+    EXPECT_EQ(0, state->dataEconTariff->topOfStack);
+    EXPECT_EQ(dMonths(1), cMonths(1));
+    EXPECT_EQ(dMonths(2), cMonths(2));
+    EXPECT_EQ(dMonths(3), cMonths(3));
+    EXPECT_EQ(dMonths(4), cMonths(4));
+    EXPECT_EQ(dMonths(5), cMonths(5));
+    EXPECT_EQ(dMonths(6), cMonths(6));
+    EXPECT_EQ(dVarPt, cVarPt);
+}
+
+TEST_F(EnergyPlusFixture, EconomicTariff_evaluateChargeSimple)
+{
+    state->init_state(*state);
+    int curTariff = 6;
+    state->dataEconTariff->tariff.allocate(curTariff);
+
+    int curEconVar = 7;
+    state->dataEconTariff->econVar.allocate(curEconVar);
+    state->dataEconTariff->econVar(curEconVar).tariffIndx = curTariff;
+    state->dataEconTariff->econVar(curEconVar).kindOfObj = ObjType::Variable;
+    Array1D<Real64> results(MaxNumMonths);
+
+    int sourceEconVar = 4;
+    Array1D<Real64> sourceMonths(MaxNumMonths);
+    sourceMonths = {310, 320, 330, 340, 350, 360, 360, 350, 340, 330, 320, 310};
+    state->dataEconTariff->econVar(sourceEconVar).values = sourceMonths;
+
+    int costPerEconVar = 6;
+    Array1D<Real64> costPerMonths(MaxNumMonths);
+    costPerMonths = {0.1, 0.1, 0.1, 0.2, 0.2, 0.2, 0.2, 0.2, 0.1, 0.1, 0.1, 0.1};
+    state->dataEconTariff->econVar(costPerEconVar).values = costPerMonths;
+
+    int curSimpChg = 3;
+    state->dataEconTariff->econVar(curEconVar).index = curSimpChg;
+    state->dataEconTariff->chargeSimple.allocate(curSimpChg);
+    state->dataEconTariff->chargeSimple(curSimpChg).namePt = curEconVar;
+    state->dataEconTariff->chargeSimple(curSimpChg).tariffIndx = curTariff;
+    state->dataEconTariff->chargeSimple(curSimpChg).sourcePt = sourceEconVar;
+    state->dataEconTariff->chargeSimple(curSimpChg).costPerPt = costPerEconVar;
+    state->dataEconTariff->chargeSimple(curSimpChg).season = seasonAnnual;
+
+    evaluateChargeSimple(*state, curEconVar);
+    results = state->dataEconTariff->econVar(curEconVar).values;
+
+    EXPECT_NEAR(results(1), 310 * 0.1, 0.01);
+    EXPECT_NEAR(results(2), 320 * 0.1, 0.01);
+    EXPECT_NEAR(results(3), 330 * 0.1, 0.01);
+    EXPECT_NEAR(results(4), 340 * 0.2, 0.01);
+    EXPECT_NEAR(results(5), 350 * 0.2, 0.01);
+    EXPECT_NEAR(results(6), 360 * 0.2, 0.01);
+    EXPECT_NEAR(results(7), 360 * 0.2, 0.01);
+    EXPECT_NEAR(results(8), 350 * 0.2, 0.01);
+    EXPECT_NEAR(results(9), 340 * 0.1, 0.01);
+    EXPECT_NEAR(results(10), 330 * 0.1, 0.01);
+    EXPECT_NEAR(results(11), 320 * 0.1, 0.01);
+    EXPECT_NEAR(results(12), 310 * 0.1, 0.01);
+
+    state->dataEconTariff->chargeSimple(curSimpChg).costPerPt = 0;
+    state->dataEconTariff->chargeSimple(curSimpChg).costPerVal = 0.15;
+
+    evaluateChargeSimple(*state, curEconVar);
+    results = state->dataEconTariff->econVar(curEconVar).values;
+
+    EXPECT_NEAR(results(1), 310 * 0.15, 0.01);
+    EXPECT_NEAR(results(2), 320 * 0.15, 0.01);
+    EXPECT_NEAR(results(3), 330 * 0.15, 0.01);
+    EXPECT_NEAR(results(4), 340 * 0.15, 0.01);
+    EXPECT_NEAR(results(5), 350 * 0.15, 0.01);
+    EXPECT_NEAR(results(6), 360 * 0.15, 0.01);
+    EXPECT_NEAR(results(7), 360 * 0.15, 0.01);
+    EXPECT_NEAR(results(8), 350 * 0.15, 0.01);
+    EXPECT_NEAR(results(9), 340 * 0.15, 0.01);
+    EXPECT_NEAR(results(10), 330 * 0.15, 0.01);
+    EXPECT_NEAR(results(11), 320 * 0.15, 0.01);
+    EXPECT_NEAR(results(12), 310 * 0.15, 0.01);
+
+    state->dataEconTariff->chargeSimple(curSimpChg).season = seasonSummer;
+    int summerEconVar = 2;
+    Array1D<Real64> summerMonths(MaxNumMonths);
+    costPerMonths = {0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0};
+    state->dataEconTariff->econVar(summerEconVar).values = costPerMonths;
+    state->dataEconTariff->tariff(curTariff).nativeIsSummer = summerEconVar;
+
+    evaluateChargeSimple(*state, curEconVar);
+    results = state->dataEconTariff->econVar(curEconVar).values;
+
+    EXPECT_NEAR(results(1), 0., 0.01);
+    EXPECT_NEAR(results(2), 0., 0.01);
+    EXPECT_NEAR(results(3), 0., 0.01);
+    EXPECT_NEAR(results(4), 0., 0.01);
+    EXPECT_NEAR(results(5), 350 * 0.15, 0.01);
+    EXPECT_NEAR(results(6), 360 * 0.15, 0.01);
+    EXPECT_NEAR(results(7), 360 * 0.15, 0.01);
+    EXPECT_NEAR(results(8), 350 * 0.15, 0.01);
+    EXPECT_NEAR(results(9), 340 * 0.15, 0.01);
+    EXPECT_NEAR(results(10), 0., 0.01);
+    EXPECT_NEAR(results(11), 0., 0.01);
+    EXPECT_NEAR(results(12), 0., 0.01);
+}
+
+TEST_F(EnergyPlusFixture, EconomicTariff_evaluateChargeBlock)
+{
+    state->init_state(*state);
+    int curTariff = 8;
+    state->dataEconTariff->tariff.allocate(curTariff);
+
+    int curEconVar = 11;
+    state->dataEconTariff->econVar.allocate(curEconVar);
+    state->dataEconTariff->econVar(curEconVar).tariffIndx = curTariff;
+    state->dataEconTariff->econVar(curEconVar).kindOfObj = ObjType::Variable;
+    Array1D<Real64> results(MaxNumMonths);
+
+    int sourceEconVar = 4;
+    Array1D<Real64> sourceMonths(MaxNumMonths);
+    sourceMonths = {450, 650, 950, 1350, 1850, 2850, 500, 1000, 1500, 501, 1001, 1501};
+    state->dataEconTariff->econVar(sourceEconVar).values = sourceMonths;
+
+    int curChgBlk = 3;
+    state->dataEconTariff->econVar(curEconVar).index = curChgBlk;
+    state->dataEconTariff->chargeBlock.allocate(curChgBlk);
+    state->dataEconTariff->chargeBlock(curChgBlk).namePt = curEconVar;
+    state->dataEconTariff->chargeBlock(curChgBlk).tariffIndx = curTariff;
+    state->dataEconTariff->chargeBlock(curChgBlk).sourcePt = sourceEconVar;
+    state->dataEconTariff->chargeBlock(curChgBlk).season = seasonAnnual;
+    state->dataEconTariff->chargeBlock(curChgBlk).blkSzMultPt = 0;
+    state->dataEconTariff->chargeBlock(curChgBlk).blkSzMultVal = 1;
+
+    int numBlocks = 3;
+    state->dataEconTariff->chargeBlock(curChgBlk).numBlk = numBlocks;
+    state->dataEconTariff->chargeBlock(curChgBlk).blkSzPt.allocate(numBlocks);
+    state->dataEconTariff->chargeBlock(curChgBlk).blkSzVal.allocate(numBlocks);
+    state->dataEconTariff->chargeBlock(curChgBlk).blkCostPt.allocate(numBlocks);
+    state->dataEconTariff->chargeBlock(curChgBlk).blkCostVal.allocate(numBlocks);
+
+    state->dataEconTariff->chargeBlock(curChgBlk).blkSzPt(1) = 0;
+    state->dataEconTariff->chargeBlock(curChgBlk).blkSzVal(1) = 500;
+    state->dataEconTariff->chargeBlock(curChgBlk).blkCostPt(1) = 0;
+    state->dataEconTariff->chargeBlock(curChgBlk).blkCostVal(1) = 0.15;
+
+    state->dataEconTariff->chargeBlock(curChgBlk).blkSzPt(2) = 0;
+    state->dataEconTariff->chargeBlock(curChgBlk).blkSzVal(2) = 1000;
+    state->dataEconTariff->chargeBlock(curChgBlk).blkCostPt(2) = 0;
+    state->dataEconTariff->chargeBlock(curChgBlk).blkCostVal(2) = 0.12;
+
+    state->dataEconTariff->chargeBlock(curChgBlk).blkSzPt(3) = 0;
+    state->dataEconTariff->chargeBlock(curChgBlk).blkSzVal(3) = 999999999; // a big number
+    state->dataEconTariff->chargeBlock(curChgBlk).blkCostPt(3) = 0;
+    state->dataEconTariff->chargeBlock(curChgBlk).blkCostVal(3) = 0.10;
+
+    evaluateChargeBlock(*state, curEconVar);
+    results = state->dataEconTariff->econVar(curEconVar).values;
+
+    EXPECT_NEAR(results(1), 450 * 0.15, 0.01);
+    EXPECT_NEAR(results(2), 500 * 0.15 + 150 * 0.12, 0.01);
+    EXPECT_NEAR(results(3), 500 * 0.15 + 450 * 0.12, 0.01);
+    EXPECT_NEAR(results(4), 500 * 0.15 + 850 * 0.12, 0.01);
+    EXPECT_NEAR(results(5), 500 * 0.15 + 1000 * 0.12 + 350 * 0.10, 0.01);
+    EXPECT_NEAR(results(6), 500 * 0.15 + 1000 * 0.12 + 1350 * 0.10, 0.01);
+    EXPECT_NEAR(results(7), 500 * 0.15, 0.01);
+    EXPECT_NEAR(results(8), 500 * 0.15 + 500 * 0.12, 0.01);
+    EXPECT_NEAR(results(9), 500 * 0.15 + 1000 * 0.12, 0.01);
+    EXPECT_NEAR(results(10), 500 * 0.15 + 1 * 0.12, 0.01);
+    EXPECT_NEAR(results(11), 500 * 0.15 + 501 * 0.12, 0.01);
+    EXPECT_NEAR(results(12), 500 * 0.15 + 1000 * 0.12 + 1 * 0.10, 0.01);
 }
 
 TEST_F(EnergyPlusFixture, InputEconomics_UtilityCost_Variable_Test0)
@@ -746,6 +1026,7 @@ TEST_F(EnergyPlusFixture, InputEconomics_UtilityCost_Variable_Test0)
     bool ErrorsFound = false;
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     GetInputEconomicsVariable(*state, ErrorsFound);
 
@@ -827,6 +1108,7 @@ TEST_F(EnergyPlusFixture, InputEconomics_UtilityCost_Variable_Test1)
     bool ErrorsFound = false;
 
     ASSERT_TRUE(process_idf(idf_objects1));
+    state->init_state(*state);
     GetInputEconomicsVariable(*state, ErrorsFound);
 
     // Make sure variable input type "Energy" is processed as expected
@@ -905,6 +1187,7 @@ TEST_F(EnergyPlusFixture, InputEconomics_UtilityCost_Variable_Test2)
 
     bool ErrorsFound = false;
     ASSERT_TRUE(process_idf(idf_objects2));
+    state->init_state(*state);
     GetInputEconomicsVariable(*state, ErrorsFound);
 
     // Make sure variable input type "Dimensionless" is processed as expected
@@ -983,6 +1266,7 @@ TEST_F(EnergyPlusFixture, InputEconomics_UtilityCost_Variable_Test3)
 
     bool ErrorsFound = false;
     ASSERT_TRUE(process_idf(idf_objects3));
+    state->init_state(*state);
     GetInputEconomicsVariable(*state, ErrorsFound);
 
     // Make sure variable input type "Currency" is processed as expected
@@ -1129,12 +1413,12 @@ TEST_F(SQLiteFixture, WriteEconomicTariffTable_DualUnits)
 
     ASSERT_TRUE(process_idf(idf_objects));
 
-    state->dataGlobal->NumOfTimeStepInHour = 4;
-    state->dataGlobal->MinutesPerTimeStep = 15;
+    state->dataGlobal->TimeStepsInHour = 4;
+    state->dataGlobal->MinutesInTimeStep = 15;
     state->dataGlobal->TimeStepZone = 0.25;
-    state->dataGlobal->TimeStepZoneSec = state->dataGlobal->TimeStepZone * Constant::SecInHour;
+    state->dataGlobal->TimeStepZoneSec = state->dataGlobal->TimeStepZone * Constant::rSecsInHour;
 
-    ScheduleManager::ProcessScheduleInput(*state);
+    state->init_state(*state);
     ExteriorEnergyUse::ManageExteriorEnergyUse(*state);
 
     state->dataSQLiteProcedures->sqlite->createSQLiteSimulationsRecord(1, "EnergyPlus Version", "Current Time");
@@ -1166,7 +1450,7 @@ TEST_F(SQLiteFixture, WriteEconomicTariffTable_DualUnits)
     state->dataGlobal->TimeStep = 4;
     state->dataEnvrn->DayOfYear_Schedule = General::OrdinalDay(state->dataEnvrn->Month, state->dataEnvrn->DayOfMonth, 1);
 
-    ScheduleManager::UpdateScheduleValues(*state);
+    Sched::UpdateScheduleVals(*state);
     ExteriorEnergyUse::ManageExteriorEnergyUse(*state);
 
     state->dataGlobal->DoOutputReporting = true;
@@ -1390,6 +1674,7 @@ TEST_F(EnergyPlusFixture, EconomicTariff_LEEDtariff_with_Custom_Meter)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     bool errors_found = false;
 

@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -481,17 +481,18 @@ void GetControllerInput(EnergyPlusData &state)
             controllerProps.ControlVar = static_cast<EnergyPlus::HVACControllers::CtrlVarType>(getEnumValue(ctrlVarNamesUC, AlphArray(2)));
             if (controllerProps.ControlVar == HVACControllers::CtrlVarType::Invalid) {
                 ShowSevereError(state, format("{}{}=\"{}\".", RoutineName, CurrentModuleObject, AlphArray(1)));
-                ShowSevereError(state,
-                                format("...Invalid {}=\"{}\", must be Temperature, HumidityRatio, or TemperatureAndHumidityRatio.",
-                                       cAlphaFields(2),
-                                       AlphArray(2)));
+                ShowContinueError(state,
+                                  format("...Invalid {}=\"{}\", must be Temperature, HumidityRatio, or TemperatureAndHumidityRatio.",
+                                         cAlphaFields(2),
+                                         AlphArray(2)));
                 ErrorsFound = true;
             }
 
             controllerProps.Action = static_cast<ControllerAction>(getEnumValue(actionNamesUC, AlphArray(3)));
             if (controllerProps.Action == ControllerAction::Invalid) {
                 ShowSevereError(state, format("{}{}=\"{}\".", RoutineName, CurrentModuleObject, AlphArray(1)));
-                ShowSevereError(state, format("...Invalid {}=\"{}{}", cAlphaFields(3), AlphArray(3), R"(", must be "Normal", "Reverse" or blank.)"));
+                ShowContinueError(state,
+                                  format("...Invalid {}=\"{}{}", cAlphaFields(3), AlphArray(3), R"(", must be "Normal", "Reverse" or blank.)"));
                 ErrorsFound = true;
             }
 
@@ -550,11 +551,10 @@ void GetControllerInput(EnergyPlusData &state)
                     bool EMSSetPointErrorFlag = false;
                     switch (controllerProps.ControlVar) {
                     case HVACControllers::CtrlVarType::Temperature: {
-                        EMSManager::CheckIfNodeSetPointManagedByEMS(
-                            state, controllerProps.SensedNode, EMSManager::SPControlType::TemperatureSetPoint, EMSSetPointErrorFlag);
+                        EMSManager::CheckIfNodeSetPointManagedByEMS(state, controllerProps.SensedNode, HVAC::CtrlVarType::Temp, EMSSetPointErrorFlag);
                         state.dataLoopNodes->NodeSetpointCheck(controllerProps.SensedNode).needsSetpointChecking = false;
                         if (EMSSetPointErrorFlag) {
-                            if (!SetPointManager::NodeHasSPMCtrlVarType(state, controllerProps.SensedNode, SetPointManager::CtrlVarType::Temp)) {
+                            if (!SetPointManager::NodeHasSPMCtrlVarType(state, controllerProps.SensedNode, HVAC::CtrlVarType::Temp)) {
                                 ShowContinueError(state, " ..Temperature setpoint not found on coil air outlet node.");
                                 ShowContinueError(
                                     state, " ..The setpoint may have been placed on a node downstream of the coil or on an airloop outlet node.");
@@ -564,10 +564,10 @@ void GetControllerInput(EnergyPlusData &state)
                     } break;
                     case HVACControllers::CtrlVarType::HumidityRatio: {
                         EMSManager::CheckIfNodeSetPointManagedByEMS(
-                            state, controllerProps.SensedNode, EMSManager::SPControlType::HumidityRatioMaxSetPoint, EMSSetPointErrorFlag);
+                            state, controllerProps.SensedNode, HVAC::CtrlVarType::MaxHumRat, EMSSetPointErrorFlag);
                         state.dataLoopNodes->NodeSetpointCheck(controllerProps.SensedNode).needsSetpointChecking = false;
                         if (EMSSetPointErrorFlag) {
-                            if (!SetPointManager::NodeHasSPMCtrlVarType(state, controllerProps.SensedNode, SetPointManager::CtrlVarType::MaxHumRat)) {
+                            if (!SetPointManager::NodeHasSPMCtrlVarType(state, controllerProps.SensedNode, HVAC::CtrlVarType::MaxHumRat)) {
                                 ShowContinueError(state, " ..Humidity ratio setpoint not found on coil air outlet node.");
                                 ShowContinueError(
                                     state, " ..The setpoint may have been placed on a node downstream of the coil or on an airloop outlet node.");
@@ -576,11 +576,10 @@ void GetControllerInput(EnergyPlusData &state)
                         }
                     } break;
                     case HVACControllers::CtrlVarType::TemperatureAndHumidityRatio: {
-                        EMSManager::CheckIfNodeSetPointManagedByEMS(
-                            state, controllerProps.SensedNode, EMSManager::SPControlType::TemperatureSetPoint, EMSSetPointErrorFlag);
+                        EMSManager::CheckIfNodeSetPointManagedByEMS(state, controllerProps.SensedNode, HVAC::CtrlVarType::Temp, EMSSetPointErrorFlag);
                         state.dataLoopNodes->NodeSetpointCheck(controllerProps.SensedNode).needsSetpointChecking = false;
                         if (EMSSetPointErrorFlag) {
-                            if (!SetPointManager::NodeHasSPMCtrlVarType(state, controllerProps.SensedNode, SetPointManager::CtrlVarType::Temp)) {
+                            if (!SetPointManager::NodeHasSPMCtrlVarType(state, controllerProps.SensedNode, HVAC::CtrlVarType::Temp)) {
                                 ShowContinueError(state, " ..Temperature setpoint not found on coil air outlet node.");
                                 ShowContinueError(
                                     state, " ..The setpoint may have been placed on a node downstream of the coil or on an airloop outlet node.");
@@ -589,10 +588,10 @@ void GetControllerInput(EnergyPlusData &state)
                         }
                         EMSSetPointErrorFlag = false;
                         EMSManager::CheckIfNodeSetPointManagedByEMS(
-                            state, controllerProps.SensedNode, EMSManager::SPControlType::HumidityRatioMaxSetPoint, EMSSetPointErrorFlag);
+                            state, controllerProps.SensedNode, HVAC::CtrlVarType::MaxHumRat, EMSSetPointErrorFlag);
                         state.dataLoopNodes->NodeSetpointCheck(controllerProps.SensedNode).needsSetpointChecking = false;
                         if (EMSSetPointErrorFlag) {
-                            if (!SetPointManager::NodeHasSPMCtrlVarType(state, controllerProps.SensedNode, SetPointManager::CtrlVarType::MaxHumRat)) {
+                            if (!SetPointManager::NodeHasSPMCtrlVarType(state, controllerProps.SensedNode, HVAC::CtrlVarType::MaxHumRat)) {
                                 ShowContinueError(state, " ..Humidity ratio setpoint not found on coil air outlet node.");
                                 ShowContinueError(
                                     state, " ..The setpoint may have been placed on a node downstream of the coil or on an airloop outlet node.");
@@ -791,7 +790,7 @@ void InitController(EnergyPlusData &state, int const ControlNum, bool &IsConverg
                     } else {
                         // call to check node is actuated by EMS
                         EMSManager::CheckIfNodeSetPointManagedByEMS(
-                            state, SensedNode, EMSManager::SPControlType::TemperatureSetPoint, state.dataHVACGlobal->SetPointErrorFlag);
+                            state, SensedNode, HVAC::CtrlVarType::Temp, state.dataHVACGlobal->SetPointErrorFlag);
                         if (state.dataHVACGlobal->SetPointErrorFlag) {
                             ShowSevereError(state,
                                             format("HVACControllers: Missing temperature setpoint for controller type={} Name=\"{}\"",
@@ -823,9 +822,9 @@ void InitController(EnergyPlusData &state, int const ControlNum, bool &IsConverg
             } break;
             case HVACControllers::CtrlVarType::HumidityRatio: { // 'HumidityRatio'
                 controllerProps.HumRatCntrlType = SetPointManager::GetHumidityRatioVariableType(state, SensedNode);
-                if ((thisController.HumRatCntrlType == SetPointManager::CtrlVarType::HumRat &&
+                if ((thisController.HumRatCntrlType == HVAC::CtrlVarType::HumRat &&
                      state.dataLoopNodes->Node(SensedNode).HumRatSetPoint == DataLoopNode::SensedNodeFlagValue) ||
-                    (thisController.HumRatCntrlType == SetPointManager::CtrlVarType::MaxHumRat &&
+                    (thisController.HumRatCntrlType == HVAC::CtrlVarType::MaxHumRat &&
                      state.dataLoopNodes->Node(SensedNode).HumRatMax == DataLoopNode::SensedNodeFlagValue)) {
                     if (!state.dataGlobal->AnyEnergyManagementSystemInModel) {
                         ShowSevereError(state,
@@ -839,7 +838,7 @@ void InitController(EnergyPlusData &state, int const ControlNum, bool &IsConverg
                         state.dataHVACGlobal->SetPointErrorFlag = true;
                     } else {
                         EMSManager::CheckIfNodeSetPointManagedByEMS(
-                            state, SensedNode, EMSManager::SPControlType::HumidityRatioSetPoint, state.dataHVACGlobal->SetPointErrorFlag);
+                            state, SensedNode, HVAC::CtrlVarType::HumRat, state.dataHVACGlobal->SetPointErrorFlag);
                         if (state.dataHVACGlobal->SetPointErrorFlag) {
                             ShowSevereError(state,
                                             format("HVACControllers: Missing humidity ratio setpoint for controller type={} Name=\"{}\"",
@@ -853,7 +852,7 @@ void InitController(EnergyPlusData &state, int const ControlNum, bool &IsConverg
                         }
                     }
 
-                } else if (thisController.HumRatCntrlType == SetPointManager::CtrlVarType::MinHumRat) {
+                } else if (thisController.HumRatCntrlType == HVAC::CtrlVarType::MinHumRat) {
                     ShowSevereError(state,
                                     format("HVACControllers: incorrect humidity ratio setpoint for controller type={} Name=\"{}\"",
                                            controllerProps.ControllerType,
@@ -880,7 +879,7 @@ void InitController(EnergyPlusData &state, int const ControlNum, bool &IsConverg
                     } else {
                         // call to check node is actuated by EMS
                         EMSManager::CheckIfNodeSetPointManagedByEMS(
-                            state, SensedNode, EMSManager::SPControlType::TemperatureSetPoint, state.dataHVACGlobal->SetPointErrorFlag);
+                            state, SensedNode, HVAC::CtrlVarType::Temp, state.dataHVACGlobal->SetPointErrorFlag);
                         if (state.dataHVACGlobal->SetPointErrorFlag) {
                             ShowSevereError(state,
                                             format("HVACControllers: Missing temperature setpoint for controller type={} Name=\"{}\"",
@@ -908,7 +907,7 @@ void InitController(EnergyPlusData &state, int const ControlNum, bool &IsConverg
                     } else {
                         // call to check node is actuated by EMS
                         EMSManager::CheckIfNodeSetPointManagedByEMS(
-                            state, SensedNode, EMSManager::SPControlType::HumidityRatioMaxSetPoint, state.dataHVACGlobal->SetPointErrorFlag);
+                            state, SensedNode, HVAC::CtrlVarType::MaxHumRat, state.dataHVACGlobal->SetPointErrorFlag);
                         if (state.dataHVACGlobal->SetPointErrorFlag) {
                             ShowSevereError(state,
                                             format("HVACControllers: Missing maximum humidity ratio setpoint for controller type={} Name=\"{}\"",
@@ -938,7 +937,7 @@ void InitController(EnergyPlusData &state, int const ControlNum, bool &IsConverg
                     } else {
                         // call to check node is actuated by EMS
                         EMSManager::CheckIfNodeSetPointManagedByEMS(
-                            state, SensedNode, EMSManager::SPControlType::MassFlowRateSetPoint, state.dataHVACGlobal->SetPointErrorFlag);
+                            state, SensedNode, HVAC::CtrlVarType::MassFlowRate, state.dataHVACGlobal->SetPointErrorFlag);
                         if (state.dataHVACGlobal->SetPointErrorFlag) {
                             ShowSevereError(state,
                                             format("HVACControllers: Missing mass flow rate setpoint for controller type={} Name=\"{}\"",
@@ -1023,11 +1022,8 @@ void InitController(EnergyPlusData &state, int const ControlNum, bool &IsConverg
     // Do the Begin Environment initializations
     if (state.dataGlobal->BeginEnvrnFlag && MyEnvrnFlag(ControlNum)) {
 
-        Real64 rho = FluidProperties::GetDensityGlycol(state,
-                                                       state.dataPlnt->PlantLoop(thisController.ActuatedNodePlantLoc.loopNum).FluidName,
-                                                       Constant::CWInitConvTemp,
-                                                       state.dataPlnt->PlantLoop(thisController.ActuatedNodePlantLoc.loopNum).FluidIndex,
-                                                       RoutineName);
+        Real64 rho =
+            state.dataPlnt->PlantLoop(thisController.ActuatedNodePlantLoc.loopNum).glycol->getDensity(state, Constant::CWInitConvTemp, RoutineName);
 
         thisController.MinActuated = rho * thisController.MinVolFlowActuated;
         thisController.MaxActuated = rho * thisController.MaxVolFlowActuated;
@@ -1099,7 +1095,7 @@ void InitController(EnergyPlusData &state, int const ControlNum, bool &IsConverg
         // Done once per HVAC step
         if (!thisController.IsSetPointDefinedFlag) {
             switch (thisController.HumRatCntrlType) {
-            case SetPointManager::CtrlVarType::MaxHumRat: {
+            case HVAC::CtrlVarType::MaxHumRat: {
                 thisController.SetPointValue = state.dataLoopNodes->Node(SensedNode).HumRatMax;
             } break;
             default: {
@@ -2474,7 +2470,7 @@ Real64 GetCurrentHVACTime(const EnergyPlusData &state)
     // as real.
     Real64 const CurrentHVACTime =
         (state.dataGlobal->CurrentTime - state.dataGlobal->TimeStepZone) + state.dataHVACGlobal->SysTimeElapsed + state.dataHVACGlobal->TimeStepSys;
-    return CurrentHVACTime * Constant::SecInHour;
+    return CurrentHVACTime * Constant::rSecsInHour;
 }
 
 Real64 GetPreviousHVACTime(const EnergyPlusData &state)
@@ -2489,7 +2485,7 @@ Real64 GetPreviousHVACTime(const EnergyPlusData &state)
     // This is the correct formula that does not use MinutesPerSystemTimeStep, which would
     // erronously truncate all sub-minute system time steps down to the closest full minute.
     Real64 const PreviousHVACTime = (state.dataGlobal->CurrentTime - state.dataGlobal->TimeStepZone) + state.dataHVACGlobal->SysTimeElapsed;
-    return PreviousHVACTime * Constant::SecInHour;
+    return PreviousHVACTime * Constant::rSecsInHour;
 }
 
 std::string CreateHVACTimeString(const EnergyPlusData &state)

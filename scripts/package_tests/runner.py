@@ -1,4 +1,4 @@
-# EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University
+# EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University
 # of Illinois, The Regents of the University of California, through Lawrence
 # Berkeley National Laboratory (subject to receipt of any required approvals
 # from the U.S. Dept. of Energy), Oak Ridge National Laboratory, managed by UT-
@@ -86,14 +86,20 @@ CONFIGURATIONS = {
     'ubuntu2204': {
         'os': OS.Linux, 'bitness': 'x64', 'asset_pattern': 'Linux-Ubuntu22.04-x86_64.tar.gz', 'os_version': '22.04'
     },
+    'ubuntu2404': {
+        'os': OS.Linux, 'bitness': 'x64', 'asset_pattern': 'Linux-Ubuntu24.04-x86_64.tar.gz', 'os_version': '24.04'
+    },
+    'ubuntu2204-arm64': {
+        'os': OS.Linux, 'bitness': 'arm64', 'asset_pattern': 'Linux-Ubuntu22.04-arm64.tar.gz', 'os_version': '22.04'
+    },
+    'ubuntu2404-arm64': {
+        'os': OS.Linux, 'bitness': 'arm64', 'asset_pattern': 'Linux-Ubuntu24.04-arm64.tar.gz', 'os_version': '24.04'
+    },
     'mac11': {
         'os': OS.Mac, 'bitness': 'x64', 'asset_pattern': 'Darwin-macOS11.6-x86_64.tar.gz', 'os_version': '11.6'
     },
     'mac12': {
         'os': OS.Mac, 'bitness': 'x64', 'asset_pattern': 'Darwin-macOS12.1-x86_64.tar.gz', 'os_version': '12.1'
-    },
-    'mac12-arm64': {
-        'os': OS.Mac, 'bitness': 'arm64', 'asset_pattern': 'Darwin-macOS12.1-arm64.tar.gz', 'os_version': '12'
     },
     'mac13-arm64': {
         'os': OS.Mac, 'bitness': 'arm64', 'asset_pattern': 'Darwin-macOS13-arm64.tar.gz', 'os_version': '13'

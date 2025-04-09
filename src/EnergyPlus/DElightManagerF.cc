@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -233,8 +233,8 @@ namespace DElightManagerF {
               state.dataEnvrn->TimeZoneNumber);
 
         // Calc cos and sin of Building Relative North values for later use in transforming Reference Point coordinates
-        CosBldgRelNorth = std::cos(-state.dataHeatBal->BuildingAzimuth * Constant::DegToRadians);
-        SinBldgRelNorth = std::sin(-state.dataHeatBal->BuildingAzimuth * Constant::DegToRadians);
+        CosBldgRelNorth = std::cos(-state.dataHeatBal->BuildingAzimuth * Constant::DegToRad);
+        SinBldgRelNorth = std::sin(-state.dataHeatBal->BuildingAzimuth * Constant::DegToRad);
 
         // Loop through the Daylighting:Controls objects that use DElight checking for a host Zone
         for (auto &znDayl : state.dataDayltg->daylightControl) {
@@ -309,8 +309,8 @@ namespace DElightManagerF {
                           znDayl.DElightGriddingResolution * M22FT2);
 
                     // Calc cos and sin of Zone Relative North values for later use in transforming Reference Point coordinates
-                    CosZoneRelNorth = std::cos(-zn.RelNorth * Constant::DegToRadians);
-                    SinZoneRelNorth = std::sin(-zn.RelNorth * Constant::DegToRadians);
+                    CosZoneRelNorth = std::cos(-zn.RelNorth * Constant::DegToRad);
+                    SinZoneRelNorth = std::sin(-zn.RelNorth * Constant::DegToRad);
 
                     // Zone Lighting Schedule Data Section
                     // NOTE: Schedules are not required since hourly values are retrieved from EnergyPlus as needed
@@ -333,7 +333,7 @@ namespace DElightManagerF {
 
                     // Write each opaque bounding Surface to the DElight input file
                     for (int spaceNum : zn.spaceIndexes) {
-                        auto &thisSpace = state.dataHeatBal->space(spaceNum);
+                        auto const &thisSpace = state.dataHeatBal->space(spaceNum);
                         int const iSurfaceFirst = thisSpace.HTSurfaceFirst;
                         int const iSurfaceLast = thisSpace.HTSurfaceLast;
                         for (int isurf = iSurfaceFirst; isurf <= iSurfaceLast; ++isurf) {
@@ -352,10 +352,7 @@ namespace DElightManagerF {
                                     iMatlLayer = state.dataConstruction->Construct(iconstruct).LayerPoint(1);
                                     // Get the outside visible reflectance of this material layer
                                     // (since Construct(iconstruct)%ReflectVisDiffFront always appears to == 0.0)
-                                    auto const *thisMaterial =
-                                        dynamic_cast<const Material::MaterialChild *>(state.dataMaterial->Material(iMatlLayer));
-                                    assert(thisMaterial != nullptr);
-                                    rExtVisRefl = 1.0 - thisMaterial->AbsorpVisible;
+                                    rExtVisRefl = 1.0 - state.dataMaterial->materials(iMatlLayer)->AbsorpVisible;
                                 } else {
                                     rExtVisRefl = 0.0;
                                 }
@@ -604,34 +601,34 @@ namespace DElightManagerF {
 
                                 // Validate that Reference Point coordinates are within the host Zone
                                 if (RefPt_WCS_Coord.x < thisZone.MinimumX || RefPt_WCS_Coord.x > thisZone.MaximumX) {
-                                    ShowWarningError(
-                                        state, format("DElightInputGenerator:Reference point X Value outside Zone Min/Max X, Zone={}", zn.Name));
                                     ShowSevereError(state,
-                                                    format("...X Reference Point= {:.2R}, Zone Minimum X= {:.2R}, Zone Maximum X= {:.2R}",
-                                                           thisZone.MinimumX,
-                                                           RefPt_WCS_Coord.x,
-                                                           thisZone.MaximumX));
+                                                    format("DElightInputGenerator:Reference point X Value outside Zone Min/Max X, Zone={}", zn.Name));
+                                    ShowContinueError(state,
+                                                      format("...X Reference Point= {:.2R}, Zone Minimum X= {:.2R}, Zone Maximum X= {:.2R}",
+                                                             thisZone.MinimumX,
+                                                             RefPt_WCS_Coord.x,
+                                                             thisZone.MaximumX));
                                     ErrorsFound = true;
                                 }
                                 if (RefPt_WCS_Coord.y < thisZone.MinimumY || RefPt_WCS_Coord.y > thisZone.MaximumY) {
-                                    ShowWarningError(
-                                        state, format("DElightInputGenerator:Reference point Y Value outside Zone Min/Max Y, Zone={}", zn.Name));
                                     ShowSevereError(state,
-                                                    format("...Y Reference Point= {:.2R}, Zone Minimum Y= {:.2R}, Zone Maximum Y= {:.2R}",
-                                                           thisZone.MinimumY,
-                                                           RefPt_WCS_Coord.y,
-                                                           thisZone.MaximumY));
+                                                    format("DElightInputGenerator:Reference point Y Value outside Zone Min/Max Y, Zone={}", zn.Name));
+                                    ShowContinueError(state,
+                                                      format("...Y Reference Point= {:.2R}, Zone Minimum Y= {:.2R}, Zone Maximum Y= {:.2R}",
+                                                             thisZone.MinimumY,
+                                                             RefPt_WCS_Coord.y,
+                                                             thisZone.MaximumY));
                                     ErrorsFound = true;
                                 }
                                 if (RefPt_WCS_Coord.z < state.dataHeatBal->Zone(izone).MinimumZ || RefPt_WCS_Coord.z > thisZone.MaximumZ) {
-                                    ShowWarningError(
+                                    ShowSevereError(
                                         state,
                                         format("DElightInputGenerator:Reference point Z Value outside Zone Min/Max Z, Zone={}", thisZone.Name));
-                                    ShowSevereError(state,
-                                                    format("...Z Reference Point= {:.2R}, Zone Minimum Z= {:.2R}, Zone Maximum Z= {:.2R}",
-                                                           thisZone.MinimumZ,
-                                                           RefPt_WCS_Coord.z,
-                                                           thisZone.MaximumZ));
+                                    ShowContinueError(state,
+                                                      format("...Z Reference Point= {:.2R}, Zone Minimum Z= {:.2R}, Zone Maximum Z= {:.2R}",
+                                                             thisZone.MinimumZ,
+                                                             RefPt_WCS_Coord.z,
+                                                             thisZone.MaximumZ));
                                     ErrorsFound = true;
                                 }
 
@@ -690,12 +687,12 @@ namespace DElightManagerF {
                   iWndoConstIndexes(iconst) + 10000,
                   state.dataConstruction->Construct(iWndoConstIndexes(iconst)).TransDiffVis,
                   state.dataConstruction->Construct(iWndoConstIndexes(iconst)).ReflectVisDiffBack,
-                  state.dataConstruction->Construct(iWndoConstIndexes(iconst)).TransVisBeamCoef(1),
-                  state.dataConstruction->Construct(iWndoConstIndexes(iconst)).TransVisBeamCoef(2),
-                  state.dataConstruction->Construct(iWndoConstIndexes(iconst)).TransVisBeamCoef(3),
-                  state.dataConstruction->Construct(iWndoConstIndexes(iconst)).TransVisBeamCoef(4),
-                  state.dataConstruction->Construct(iWndoConstIndexes(iconst)).TransVisBeamCoef(5),
-                  state.dataConstruction->Construct(iWndoConstIndexes(iconst)).TransVisBeamCoef(6));
+                  state.dataConstruction->Construct(iWndoConstIndexes(iconst)).TransVisBeamCoef[0],
+                  state.dataConstruction->Construct(iWndoConstIndexes(iconst)).TransVisBeamCoef[1],
+                  state.dataConstruction->Construct(iWndoConstIndexes(iconst)).TransVisBeamCoef[2],
+                  state.dataConstruction->Construct(iWndoConstIndexes(iconst)).TransVisBeamCoef[3],
+                  state.dataConstruction->Construct(iWndoConstIndexes(iconst)).TransVisBeamCoef[4],
+                  state.dataConstruction->Construct(iWndoConstIndexes(iconst)).TransVisBeamCoef[5]);
 
         } // Glass Type loop
 

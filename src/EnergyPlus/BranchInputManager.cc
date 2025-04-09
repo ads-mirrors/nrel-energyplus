@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -1026,7 +1026,6 @@ namespace BranchInputManager {
                 int NumNumbers; // Used to retrieve numbers from IDF
                 int NumAlphas;  // Used to retrieve names from IDF
                 int NumParams;
-                bool ErrFound = false;
                 state.dataInputProcessing->inputProcessor->getObjectDefMaxArgs(state, "NodeList", NumParams, NumAlphas, NumNumbers);
                 NodeNums.dimension(NumParams, 0);
                 state.dataInputProcessing->inputProcessor->getObjectDefMaxArgs(state, CurrentModuleObject, NumParams, NumAlphas, NumNumbers);
@@ -1063,12 +1062,6 @@ namespace BranchInputManager {
                 cNumericFields.deallocate();
                 lAlphaBlanks.deallocate();
                 lNumericBlanks.deallocate();
-                if (ErrFound) {
-                    ShowSevereError(
-                        state,
-                        format("{} Invalid {} Input, preceding condition(s) will likely cause termination.", RoutineName, CurrentModuleObject));
-                    state.dataBranchInputManager->InvalidBranchDefinitions = true;
-                }
                 TestInletOutletNodes(state);
                 state.dataBranchInputManager->GetBranchInputOneTimeFlag = false;
             }
@@ -1329,7 +1322,7 @@ namespace BranchInputManager {
             } else {
                 state.dataBranchInputManager->BranchList(BCount).BranchNames({1, NumAlphas - 1}) = Alphas({2, NumAlphas});
                 for (Loop = 1; Loop <= state.dataBranchInputManager->BranchList(BCount).NumOfBranchNames; ++Loop) {
-                    // If NumOfBranches = 0 then Branches havent been read yet.
+                    // If NumOfBranches = 0 then Branches haven't been read yet.
                     if ((int)state.dataBranchInputManager->Branch.size() == 0) {
                         GetBranchInput(state);
                     }
@@ -2258,7 +2251,7 @@ namespace BranchInputManager {
         //       DATE WRITTEN   February 2008
 
         // PURPOSE OF THIS SUBROUTINE:
-        // An auxiliary routine locate a Airenser loop and type from a BranchListName
+        // An auxiliary routine to locate a Air condenser loop and type from a BranchListName
 
         // METHODOLOGY EMPLOYED:
         // calls GetObject for PRIMARY AIR LOOP

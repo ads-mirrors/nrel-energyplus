@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -66,6 +66,21 @@ namespace HVAC {
     // -only module should be available to other modules and routines.
     // Thus, all variables in this module must be PUBLIC.
 
+    enum class CtrlVarType
+    {
+        Invalid = -1,
+        Temp,
+        MaxTemp,
+        MinTemp,
+        HumRat,
+        MaxHumRat,
+        MinHumRat,
+        MassFlowRate,
+        MaxMassFlowRate,
+        MinMassFlowRate,
+        Num
+    };
+
     // MODULE PARAMETER DEFINITIONS:
 
     Real64 constexpr SmallHumRatDiff(1.0E-7);
@@ -94,16 +109,22 @@ namespace HVAC {
     int constexpr AutoCalculateSizing(25);                // identifies an autocalulate input
 
     // The following parameters describe the setpoint types in TempControlType(ActualZoneNum)
-    enum class ThermostatType
+    enum class SetptType
     {
         Invalid = -1,
         Uncontrolled,
-        SingleHeating,
-        SingleCooling,
+        SingleHeat,
+        SingleCool,
         SingleHeatCool,
-        DualSetPointWithDeadBand,
+        DualHeatCool,
         Num
     };
+
+    static constexpr std::array<SetptType, (int)SetptType::Num> setptTypes = {
+        SetptType::SingleHeat, SetptType::SingleCool, SetptType::SingleHeatCool, SetptType::DualHeatCool};
+
+    static constexpr std::array<std::string_view, (int)SetptType::Num> setptTypeNames = {
+        "Uncontrolled", "SingleHeating", "SingleCooling", "SingleHeatCool", "DualSetPointWithDeadBand"};
 
     enum class AirDuctType
     // parameters describing air duct type
@@ -116,6 +137,9 @@ namespace HVAC {
         RAB,
         Num
     };
+
+    static constexpr std::array<std::string_view, static_cast<int>(AirDuctType::Num)> airDuctTypeNames = {
+        "Main", "Cooling", "Heating", "Other", "Return Air Bypass"};
 
     int constexpr Cooling(2);
     int constexpr Heating(3);
@@ -411,7 +435,6 @@ namespace HVAC {
 
     int constexpr MaxSpeedLevels = 10;
 
-    // extern Array1D_string const cFanTypes;
     extern Array1D_string const cAllCoilTypes;
     extern Array1D_string const cCoolingCoilTypes;
     extern Array1D_string const cHeatingCoilTypes;
@@ -510,7 +533,17 @@ struct HVACGlobalsData : BaseGlobalStruct
     bool StandardRatingsMyOneTimeFlag = true;
     bool StandardRatingsMyCoolOneTimeFlag = true;
     bool StandardRatingsMyCoolOneTimeFlag2 = true;
+    bool StandardRatingsMyCoolOneTimeFlag3 = true;
     bool StandardRatingsMyHeatOneTimeFlag = true;
+    bool StandardRatingsMyHeatOneTimeFlag2 = true;
+
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
+
+    void init_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
 
     void clear_state() override
     {

@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -626,15 +626,14 @@ TEST_F(EnergyPlusFixture, SolarShadingTest_FigureSolarBeamAtTimestep)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
-    SimulationManager::GetProjectData(*state);
     bool FoundError = false;
 
-    HeatBalanceManager::GetProjectControlData(*state, FoundError); // read project control data
-    EXPECT_FALSE(FoundError);                                      // expect no errors
+    HeatBalanceManager::GetProjectControlData(*state, FoundError);
+    EXPECT_FALSE(FoundError);
 
     HeatBalanceManager::SetPreConstructionInputParameters(*state);
-    ScheduleManager::ProcessScheduleInput(*state); // read schedules
 
     Material::GetMaterialData(*state, FoundError);
     EXPECT_FALSE(FoundError);
@@ -653,8 +652,8 @@ TEST_F(EnergyPlusFixture, SolarShadingTest_FigureSolarBeamAtTimestep)
     state->dataSurfaceGeometry->CosZoneRelNorth.allocate(1);
     state->dataSurfaceGeometry->SinZoneRelNorth.allocate(1);
 
-    state->dataSurfaceGeometry->CosZoneRelNorth(1) = std::cos(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRadians);
-    state->dataSurfaceGeometry->SinZoneRelNorth(1) = std::sin(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRadians);
+    state->dataSurfaceGeometry->CosZoneRelNorth(1) = std::cos(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRad);
+    state->dataSurfaceGeometry->SinZoneRelNorth(1) = std::sin(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRad);
     state->dataSurfaceGeometry->CosBldgRelNorth = 1.0;
     state->dataSurfaceGeometry->SinBldgRelNorth = 0.0;
 
@@ -1030,15 +1029,14 @@ TEST_F(EnergyPlusFixture, SolarShadingTest_ExternalShadingIO)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
-    SimulationManager::GetProjectData(*state);
     bool FoundError = false;
 
     HeatBalanceManager::GetProjectControlData(*state, FoundError); // read project control data
     EXPECT_FALSE(FoundError);                                      // expect no errors
 
     HeatBalanceManager::SetPreConstructionInputParameters(*state);
-    ScheduleManager::ProcessScheduleInput(*state); // read schedules
 
     Material::GetMaterialData(*state, FoundError);
     EXPECT_FALSE(FoundError);
@@ -1057,8 +1055,8 @@ TEST_F(EnergyPlusFixture, SolarShadingTest_ExternalShadingIO)
     state->dataSurfaceGeometry->CosZoneRelNorth.allocate(1);
     state->dataSurfaceGeometry->SinZoneRelNorth.allocate(1);
 
-    state->dataSurfaceGeometry->CosZoneRelNorth(1) = std::cos(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRadians);
-    state->dataSurfaceGeometry->SinZoneRelNorth(1) = std::sin(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRadians);
+    state->dataSurfaceGeometry->CosZoneRelNorth(1) = std::cos(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRad);
+    state->dataSurfaceGeometry->SinZoneRelNorth(1) = std::sin(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRad);
     state->dataSurfaceGeometry->CosBldgRelNorth = 1.0;
     state->dataSurfaceGeometry->SinBldgRelNorth = 0.0;
 
@@ -1087,14 +1085,14 @@ TEST_F(EnergyPlusFixture, SolarShadingTest_ExternalShadingIO)
     SolarShading::SkyDifSolarShading(*state);
     state->dataSolarShading->CalcSkyDifShading = false;
 
-    ScheduleManager::UpdateScheduleValues(*state);
+    Sched::UpdateScheduleVals(*state);
     state->dataBSDFWindow->SUNCOSTS(4, 9)(1) = 0.1;
     state->dataBSDFWindow->SUNCOSTS(4, 9)(2) = 0.1;
     state->dataBSDFWindow->SUNCOSTS(4, 9)(3) = 0.1;
     FigureSolarBeamAtTimestep(*state, state->dataGlobal->HourOfDay, state->dataGlobal->TimeStep);
 
     EXPECT_TRUE(state->dataSysVars->shadingMethod == DataSystemVariables::ShadingMethod::Scheduled);
-    EXPECT_DOUBLE_EQ(0.5432, ScheduleManager::LookUpScheduleValue(*state, 2, 9, 4));
+    EXPECT_DOUBLE_EQ(0.5432, Sched::GetSchedule(*state, "EXTSHADINGSCH:ZN001:ROOF")->getHrTsVal(*state, 9, 4));
     EXPECT_FALSE(state->dataSolarShading->SUNCOS(3) < 0.00001);
     EXPECT_DOUBLE_EQ(0.00001, DataEnvironment::SunIsUpValue);
 
@@ -1443,15 +1441,11 @@ TEST_F(EnergyPlusFixture, SolarShadingTest_DisableGroupSelfShading)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
-    SimulationManager::GetProjectData(*state);
     bool FoundError = false;
-
     HeatBalanceManager::GetProjectControlData(*state, FoundError); // read project control data
-    EXPECT_FALSE(FoundError);                                      // expect no errors
-
     HeatBalanceManager::SetPreConstructionInputParameters(*state);
-    ScheduleManager::ProcessScheduleInput(*state); // read schedules
 
     Material::GetMaterialData(*state, FoundError);
     EXPECT_FALSE(FoundError);
@@ -1460,6 +1454,8 @@ TEST_F(EnergyPlusFixture, SolarShadingTest_DisableGroupSelfShading)
 
     HeatBalanceManager::GetConstructData(*state, FoundError);
     EXPECT_FALSE(FoundError);
+
+    SolarShading::GetShadowingInput(*state);
 
     HeatBalanceManager::GetZoneData(*state, FoundError); // Read Zone data from input file
     EXPECT_FALSE(FoundError);
@@ -1472,8 +1468,8 @@ TEST_F(EnergyPlusFixture, SolarShadingTest_DisableGroupSelfShading)
     state->dataSurfaceGeometry->CosZoneRelNorth.allocate(1);
     state->dataSurfaceGeometry->SinZoneRelNorth.allocate(1);
 
-    state->dataSurfaceGeometry->CosZoneRelNorth(1) = std::cos(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRadians);
-    state->dataSurfaceGeometry->SinZoneRelNorth(1) = std::sin(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRadians);
+    state->dataSurfaceGeometry->CosZoneRelNorth(1) = std::cos(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRad);
+    state->dataSurfaceGeometry->SinZoneRelNorth(1) = std::sin(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRad);
     state->dataSurfaceGeometry->CosBldgRelNorth = 1.0;
     state->dataSurfaceGeometry->SinBldgRelNorth = 0.0;
 
@@ -1483,7 +1479,7 @@ TEST_F(EnergyPlusFixture, SolarShadingTest_DisableGroupSelfShading)
 
     compare_err_stream(""); // just for debugging
 
-    SolarShading::GetShadowingInput(*state);
+    SolarShading::processShadowingInput(*state);
 
     for (int SurfNum = 1; SurfNum <= state->dataSurface->TotSurfaces; SurfNum++) {
         if (state->dataSurface->Surface(SurfNum).ExtBoundCond == 0 && state->dataSurface->Surface(SurfNum).Zone != 0) {
@@ -1818,15 +1814,12 @@ TEST_F(EnergyPlusFixture, SolarShadingTest_PolygonClippingDirect)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
-    SimulationManager::GetProjectData(*state);
     bool FoundError = false;
 
     HeatBalanceManager::GetProjectControlData(*state, FoundError); // read project control data
-    EXPECT_FALSE(FoundError);                                      // expect no errors
-
     HeatBalanceManager::SetPreConstructionInputParameters(*state);
-    ScheduleManager::ProcessScheduleInput(*state); // read schedules
 
     Material::GetMaterialData(*state, FoundError);
     EXPECT_FALSE(FoundError);
@@ -1845,8 +1838,8 @@ TEST_F(EnergyPlusFixture, SolarShadingTest_PolygonClippingDirect)
     state->dataSurfaceGeometry->CosZoneRelNorth.allocate(1);
     state->dataSurfaceGeometry->SinZoneRelNorth.allocate(1);
 
-    state->dataSurfaceGeometry->CosZoneRelNorth(1) = std::cos(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRadians);
-    state->dataSurfaceGeometry->SinZoneRelNorth(1) = std::sin(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRadians);
+    state->dataSurfaceGeometry->CosZoneRelNorth(1) = std::cos(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRad);
+    state->dataSurfaceGeometry->SinZoneRelNorth(1) = std::sin(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRad);
     state->dataSurfaceGeometry->CosBldgRelNorth = 1.0;
     state->dataSurfaceGeometry->SinBldgRelNorth = 0.0;
 
@@ -1877,6 +1870,10 @@ TEST_F(EnergyPlusFixture, SolarShadingTest_PolygonClippingDirect)
     SolarShading::InitSolarCalculations(*state);
     SolarShading::SkyDifSolarShading(*state);
     state->dataSolarShading->CalcSkyDifShading = false;
+
+    state->dataBSDFWindow->SUNCOSTS(state->dataGlobal->TimeStep, state->dataGlobal->HourOfDay)(1) = 0.20531446332266728;
+    state->dataBSDFWindow->SUNCOSTS(state->dataGlobal->TimeStep, state->dataGlobal->HourOfDay)(2) = -0.84761109808931534;
+    state->dataBSDFWindow->SUNCOSTS(state->dataGlobal->TimeStep, state->dataGlobal->HourOfDay)(3) = 0.48928662105799514;
 
     FigureSolarBeamAtTimestep(*state, state->dataGlobal->HourOfDay, state->dataGlobal->TimeStep);
     int surfNum = Util::FindItemInList("ZN001:WALL-SOUTH:WIN001", state->dataSurface->Surface);
@@ -2233,15 +2230,14 @@ WindowMaterial:SimpleGlazingSystem,
 )IDF";
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
-    SimulationManager::GetProjectData(*state);
     bool FoundError = false;
 
     HeatBalanceManager::GetProjectControlData(*state, FoundError); // read project control data
     EXPECT_FALSE(FoundError);                                      // expect no errors
 
     HeatBalanceManager::SetPreConstructionInputParameters(*state);
-    ScheduleManager::ProcessScheduleInput(*state); // read schedules
 
     Material::GetMaterialData(*state, FoundError);
     EXPECT_FALSE(FoundError);
@@ -2260,8 +2256,8 @@ WindowMaterial:SimpleGlazingSystem,
     state->dataSurfaceGeometry->CosZoneRelNorth.allocate(1);
     state->dataSurfaceGeometry->SinZoneRelNorth.allocate(1);
 
-    state->dataSurfaceGeometry->CosZoneRelNorth(1) = std::cos(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRadians);
-    state->dataSurfaceGeometry->SinZoneRelNorth(1) = std::sin(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRadians);
+    state->dataSurfaceGeometry->CosZoneRelNorth(1) = std::cos(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRad);
+    state->dataSurfaceGeometry->SinZoneRelNorth(1) = std::sin(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRad);
     state->dataSurfaceGeometry->CosBldgRelNorth = 1.0;
     state->dataSurfaceGeometry->SinBldgRelNorth = 0.0;
 
@@ -2552,15 +2548,14 @@ WindowMaterial:SimpleGlazingSystem,
 )IDF";
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
-    SimulationManager::GetProjectData(*state);
     bool FoundError = false;
 
     HeatBalanceManager::GetProjectControlData(*state, FoundError); // read project control data
     EXPECT_FALSE(FoundError);                                      // expect no errors
 
     HeatBalanceManager::SetPreConstructionInputParameters(*state);
-    ScheduleManager::ProcessScheduleInput(*state); // read schedules
 
     Material::GetMaterialData(*state, FoundError);
     EXPECT_FALSE(FoundError);
@@ -2579,8 +2574,8 @@ WindowMaterial:SimpleGlazingSystem,
     state->dataSurfaceGeometry->CosZoneRelNorth.allocate(1);
     state->dataSurfaceGeometry->SinZoneRelNorth.allocate(1);
 
-    state->dataSurfaceGeometry->CosZoneRelNorth(1) = std::cos(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRadians);
-    state->dataSurfaceGeometry->SinZoneRelNorth(1) = std::sin(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRadians);
+    state->dataSurfaceGeometry->CosZoneRelNorth(1) = std::cos(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRad);
+    state->dataSurfaceGeometry->SinZoneRelNorth(1) = std::sin(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRad);
     state->dataSurfaceGeometry->CosBldgRelNorth = 1.0;
     state->dataSurfaceGeometry->SinBldgRelNorth = 0.0;
 
@@ -2631,30 +2626,29 @@ TEST_F(EnergyPlusFixture, SolarShadingTest_selectActiveWindowShadingControl)
     state->dataSurface->Surface(curSurface).windowShadingControlList.push_back(3);
 
     state->dataSurface->WindowShadingControl.allocate(3);
-    state->dataSurface->WindowShadingControl(1).Schedule = 1;
-    state->dataSurface->WindowShadingControl(2).Schedule = 2;
-    state->dataSurface->WindowShadingControl(3).Schedule = 3;
+    auto *sch1 = state->dataSurface->WindowShadingControl(1).sched = Sched::AddScheduleConstant(*state, "SCHED-1");
+    auto *sch2 = state->dataSurface->WindowShadingControl(2).sched = Sched::AddScheduleConstant(*state, "SCHED-2");
+    auto *sch3 = state->dataSurface->WindowShadingControl(3).sched = Sched::AddScheduleConstant(*state, "SCHED-3");
 
-    state->dataScheduleMgr->Schedule.allocate(3);
-    state->dataScheduleMgr->Schedule(1).CurrentValue = 0;
-    state->dataScheduleMgr->Schedule(2).CurrentValue = 0;
-    state->dataScheduleMgr->Schedule(3).CurrentValue = 1;
+    sch1->currentVal = 0;
+    sch2->currentVal = 0;
+    sch3->currentVal = 1;
 
     curIndexActiveWindowShadingControl = selectActiveWindowShadingControlIndex(*state, curSurface);
     activeWindowShadingControl = state->dataSurface->Surface(curSurface).windowShadingControlList[curIndexActiveWindowShadingControl];
     EXPECT_EQ(activeWindowShadingControl, 3);
 
-    state->dataScheduleMgr->Schedule(1).CurrentValue = 0;
-    state->dataScheduleMgr->Schedule(2).CurrentValue = 1;
-    state->dataScheduleMgr->Schedule(3).CurrentValue = 0;
+    sch1->currentVal = 0;
+    sch2->currentVal = 1;
+    sch3->currentVal = 0;
 
     curIndexActiveWindowShadingControl = selectActiveWindowShadingControlIndex(*state, curSurface);
     activeWindowShadingControl = state->dataSurface->Surface(curSurface).windowShadingControlList[curIndexActiveWindowShadingControl];
     EXPECT_EQ(activeWindowShadingControl, 2);
 
-    state->dataScheduleMgr->Schedule(1).CurrentValue = 1;
-    state->dataScheduleMgr->Schedule(2).CurrentValue = 0;
-    state->dataScheduleMgr->Schedule(3).CurrentValue = 0;
+    sch1->currentVal = 1;
+    sch2->currentVal = 0;
+    sch3->currentVal = 0;
 
     curIndexActiveWindowShadingControl = selectActiveWindowShadingControlIndex(*state, curSurface);
     activeWindowShadingControl = state->dataSurface->Surface(curSurface).windowShadingControlList[curIndexActiveWindowShadingControl];
@@ -2665,6 +2659,7 @@ TEST_F(EnergyPlusFixture, WindowShadingManager_Lum_Test)
 {
     state->dataSurface->Surface.allocate(2);
     state->dataSurface->SurfaceWindow.allocate(2);
+    state->dataSurface->surfShades.allocate(2);
 
     EnergyPlus::SurfaceGeometry::AllocateSurfaceWindows(*state, 2);
     state->dataConstruction->Construct.allocate(1);
@@ -2732,7 +2727,7 @@ TEST_F(EnergyPlusFixture, WindowShadingManager_Lum_Test)
     state->dataEnvrn->SOLCOS = 0.5;
     state->dataGlobal->TimeStep = 1;
     state->dataGlobal->HourOfDay = 10;
-    state->dataGlobal->NumOfTimeStepInHour = NumTimeSteps;
+    state->dataGlobal->TimeStepsInHour = NumTimeSteps;
     state->dataHeatBal->SurfSunlitFrac.allocate(HoursInDay, NumTimeSteps, state->dataSurface->TotSurfaces);
     state->dataHeatBal->SurfCosIncAng.allocate(HoursInDay, NumTimeSteps, state->dataSurface->TotSurfaces);
     state->dataHeatBal->SurfCosIncAng = 45;
@@ -2741,10 +2736,10 @@ TEST_F(EnergyPlusFixture, WindowShadingManager_Lum_Test)
     SolarShading::WindowShadingManager(*state);
 
     // solar below setpoint, shading expected to be conditionally off
-    EXPECT_TRUE(compare_enums(state->dataSurface->SurfWinShadingFlag(1), WinShadingType::IntShadeConditionallyOff));
+    EXPECT_ENUM_EQ(state->dataSurface->SurfWinShadingFlag(1), WinShadingType::IntShadeConditionallyOff);
 
     // solar above setpoint, shading expcted to be on
-    EXPECT_TRUE(compare_enums(state->dataSurface->SurfWinShadingFlag(2), WinShadingType::ExtShade));
+    EXPECT_ENUM_EQ(state->dataSurface->SurfWinShadingFlag(2), WinShadingType::ExtShade);
 }
 
 TEST_F(EnergyPlusFixture, SolarShadingTest_ShadingFlagTest)
@@ -3108,15 +3103,14 @@ TEST_F(EnergyPlusFixture, SolarShading_TestSurfsPropertyViewFactor)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
-    SimulationManager::GetProjectData(*state);
     bool FoundError = false;
 
     HeatBalanceManager::GetProjectControlData(*state, FoundError); // read project control data
     EXPECT_FALSE(FoundError);                                      // expect no errors
 
     HeatBalanceManager::SetPreConstructionInputParameters(*state);
-    ScheduleManager::ProcessScheduleInput(*state); // read schedules
 
     Material::GetMaterialData(*state, FoundError);
     EXPECT_FALSE(FoundError);
@@ -3135,8 +3129,8 @@ TEST_F(EnergyPlusFixture, SolarShading_TestSurfsPropertyViewFactor)
     state->dataSurfaceGeometry->CosZoneRelNorth.allocate(1);
     state->dataSurfaceGeometry->SinZoneRelNorth.allocate(1);
 
-    state->dataSurfaceGeometry->CosZoneRelNorth(1) = std::cos(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRadians);
-    state->dataSurfaceGeometry->SinZoneRelNorth(1) = std::sin(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRadians);
+    state->dataSurfaceGeometry->CosZoneRelNorth(1) = std::cos(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRad);
+    state->dataSurfaceGeometry->SinZoneRelNorth(1) = std::sin(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRad);
     state->dataSurfaceGeometry->CosBldgRelNorth = 1.0;
     state->dataSurfaceGeometry->SinBldgRelNorth = 0.0;
 
@@ -3397,6 +3391,7 @@ TEST_F(EnergyPlusFixture, SolarShadingTest_CTRANS)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     bool ErrorsFound = false;
 
@@ -3444,9 +3439,16 @@ TEST_F(EnergyPlusFixture, SolarShadingTest_CTRANS)
     Vector expected_lcsy(0.96592582628906831, 0.25881904510252079, -0.0);
     Vector expected_lcsz(0.0, 0.0, 1.0);
 
-    EXPECT_EQ(expected_lcsx, lcsx);
-    EXPECT_EQ(expected_lcsy, lcsy);
-    EXPECT_EQ(expected_lcsz, lcsz);
+    auto compare_double_vectors = [](Vector const &exp, Vector const &actual) {
+        ASSERT_EQ(exp.size(), actual.size());
+        for (size_t i = 0; i < exp.size(); ++i) {
+            EXPECT_NEAR(exp[i], actual[i], 0.0000000000000001) << "Failed at index " << i;
+        }
+    };
+
+    compare_double_vectors(expected_lcsx, lcsx);
+    compare_double_vectors(expected_lcsy, lcsy);
+    compare_double_vectors(expected_lcsz, lcsz);
 
     Array1D<Real64> xs(4, 0.0);
     Array1D<Real64> ys(4, 0.0);
@@ -3842,15 +3844,14 @@ TEST_F(EnergyPlusFixture, SolarShadingTest_Warn_Pixel_Count_and_TM_Schedule)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
-    SimulationManager::GetProjectData(*state);
     bool FoundError = false;
 
     HeatBalanceManager::GetProjectControlData(*state, FoundError);
     EXPECT_FALSE(FoundError);
 
     HeatBalanceManager::SetPreConstructionInputParameters(*state);
-    ScheduleManager::ProcessScheduleInput(*state);
 
     Material::GetMaterialData(*state, FoundError);
     EXPECT_FALSE(FoundError);
@@ -3859,6 +3860,8 @@ TEST_F(EnergyPlusFixture, SolarShadingTest_Warn_Pixel_Count_and_TM_Schedule)
 
     HeatBalanceManager::GetConstructData(*state, FoundError);
     EXPECT_FALSE(FoundError);
+
+    SolarShading::GetShadowingInput(*state);
 
     HeatBalanceManager::GetZoneData(*state, FoundError);
     EXPECT_FALSE(FoundError);
@@ -3869,8 +3872,8 @@ TEST_F(EnergyPlusFixture, SolarShadingTest_Warn_Pixel_Count_and_TM_Schedule)
     state->dataSurfaceGeometry->CosZoneRelNorth.allocate(1);
     state->dataSurfaceGeometry->SinZoneRelNorth.allocate(1);
 
-    state->dataSurfaceGeometry->CosZoneRelNorth(1) = std::cos(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRadians);
-    state->dataSurfaceGeometry->SinZoneRelNorth(1) = std::sin(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRadians);
+    state->dataSurfaceGeometry->CosZoneRelNorth(1) = std::cos(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRad);
+    state->dataSurfaceGeometry->SinZoneRelNorth(1) = std::sin(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRad);
     state->dataSurfaceGeometry->CosBldgRelNorth = 1.0;
     state->dataSurfaceGeometry->SinBldgRelNorth = 0.0;
 
@@ -3881,27 +3884,36 @@ TEST_F(EnergyPlusFixture, SolarShadingTest_Warn_Pixel_Count_and_TM_Schedule)
 
     EXPECT_EQ(state->dataSolarShading->anyScheduledShadingSurface, true);
 
+#ifdef EP_NO_OPENGL
     EXPECT_EQ(state->dataErrTracking->AskForSurfacesReport, true);
-    EXPECT_EQ(state->dataErrTracking->TotalWarningErrors, 0);
-    // Expect no severe errors at this point
+    EXPECT_EQ(state->dataErrTracking->TotalWarningErrors, 2);
     EXPECT_EQ(state->dataErrTracking->TotalSevereErrors, 0);
+#else
+    if (!Penumbra::Penumbra::is_valid_context()) {
+        EXPECT_EQ(state->dataErrTracking->AskForSurfacesReport, true);
+        EXPECT_EQ(state->dataErrTracking->TotalWarningErrors, 2);
+        EXPECT_EQ(state->dataErrTracking->TotalSevereErrors, 0);
+    } else {
+        EXPECT_EQ(state->dataErrTracking->AskForSurfacesReport, true);
+        EXPECT_EQ(state->dataErrTracking->TotalWarningErrors, 1);
+        EXPECT_EQ(state->dataErrTracking->TotalSevereErrors, 0);
+    }
+#endif
 
-    SolarShading::GetShadowingInput(*state);
+    SolarShading::processShadowingInput(*state);
 
 #ifdef EP_NO_OPENGL
-    EXPECT_EQ(state->dataErrTracking->TotalWarningErrors, 1);
+    EXPECT_EQ(state->dataErrTracking->TotalWarningErrors, 2);
     EXPECT_EQ(state->dataErrTracking->TotalSevereErrors, 0);
     EXPECT_EQ(state->dataErrTracking->LastSevereError, "");
 #else
     if (!Penumbra::Penumbra::is_valid_context()) {
-        EXPECT_EQ(state->dataErrTracking->TotalWarningErrors, 1);
+        EXPECT_EQ(state->dataErrTracking->TotalWarningErrors, 2);
         EXPECT_EQ(state->dataErrTracking->TotalSevereErrors, 0);
         EXPECT_EQ(state->dataErrTracking->LastSevereError, "");
     } else {
-        EXPECT_EQ(state->dataErrTracking->TotalWarningErrors, 0);
-        // Now expect one severe error from GetShadowInput()
+        EXPECT_EQ(state->dataErrTracking->TotalWarningErrors, 1);
         EXPECT_EQ(state->dataErrTracking->TotalSevereErrors, 1);
-        // There should be a severe warning reported about the PixelCounting and the scheduled shading surface tm values > 0.0 combination.
         EXPECT_EQ(state->dataErrTracking->LastSevereError, "The Shading Calculation Method of choice is \"PixelCounting\"; ");
     }
 #endif
@@ -3942,15 +3954,15 @@ TEST_F(EnergyPlusFixture, ShadowCalculation_CSV)
     state->dataGlobal->BeginDayFlag = true;
     state->dataGlobal->WarmupFlag = false;
     state->dataGlobal->KindOfSim = Constant::KindOfSim::RunPeriodWeather;
-    state->dataGlobal->NumOfTimeStepInHour = NumTimeSteps;
+    state->dataGlobal->TimeStepsInHour = NumTimeSteps;
     state->dataEnvrn->Month = 1;
     state->dataEnvrn->DayOfMonth = 25;
 
     state->dataHeatBal->SurfSunlitFrac.allocate(HoursInDay, NumTimeSteps, state->dataSurface->TotSurfaces);
 
     for (int iHour = 1; iHour <= 24; ++iHour) { // Do for all hours.
-        for (int TS = 1; TS <= state->dataGlobal->NumOfTimeStepInHour; ++TS) {
-            if (TS == state->dataGlobal->NumOfTimeStepInHour) {
+        for (int TS = 1; TS <= state->dataGlobal->TimeStepsInHour; ++TS) {
+            if (TS == state->dataGlobal->TimeStepsInHour) {
                 expected_values += fmt::format(" 01/25 {:02}:00,", iHour);
             } else {
                 expected_values += fmt::format(" 01/25 {:02}:30,", iHour - 1);
@@ -3969,7 +3981,7 @@ TEST_F(EnergyPlusFixture, ShadowCalculation_CSV)
     state->dataConstruction->Construct(1).TypeIsWindow = false;
     state->dataSurface->SurfWinSolarDiffusing.allocate(state->dataSurface->TotSurfaces);
     SurfaceGeometry::AllocateSurfaceWindows(*state, state->dataSurface->TotSurfaces);
-    WindowManager::initWindowModel(*state);
+    Window::initWindowModel(*state);
 
     state->dataSolarShading->GetInputFlag = false;
     state->dataSolarShading->ShadowingCalcFrequency = 20; // Default IDD
@@ -4153,15 +4165,14 @@ TEST_F(EnergyPlusFixture, SolarShadingTest_PolygonOverlap)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
-    SimulationManager::GetProjectData(*state);
     bool FoundError = false;
 
     HeatBalanceManager::GetProjectControlData(*state, FoundError); // read project control data
     EXPECT_FALSE(FoundError);                                      // expect no errors
 
     HeatBalanceManager::SetPreConstructionInputParameters(*state);
-    ScheduleManager::ProcessScheduleInput(*state); // read schedules
 
     Material::GetMaterialData(*state, FoundError);
     EXPECT_FALSE(FoundError);
@@ -4170,6 +4181,8 @@ TEST_F(EnergyPlusFixture, SolarShadingTest_PolygonOverlap)
 
     HeatBalanceManager::GetConstructData(*state, FoundError);
     EXPECT_FALSE(FoundError);
+
+    SolarShading::GetShadowingInput(*state);
 
     HeatBalanceManager::GetZoneData(*state, FoundError); // Read Zone data from input file
     EXPECT_FALSE(FoundError);
@@ -4185,13 +4198,15 @@ TEST_F(EnergyPlusFixture, SolarShadingTest_PolygonOverlap)
     state->dataSurfaceGeometry->CosZoneRelNorth.allocate(1);
     state->dataSurfaceGeometry->SinZoneRelNorth.allocate(1);
 
-    state->dataSurfaceGeometry->CosZoneRelNorth(1) = std::cos(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRadians);
-    state->dataSurfaceGeometry->SinZoneRelNorth(1) = std::sin(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRadians);
+    state->dataSurfaceGeometry->CosZoneRelNorth(1) = std::cos(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRad);
+    state->dataSurfaceGeometry->SinZoneRelNorth(1) = std::sin(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRad);
     state->dataSurfaceGeometry->CosBldgRelNorth = 1.0;
     state->dataSurfaceGeometry->SinBldgRelNorth = 0.0;
 
     SurfaceGeometry::GetSurfaceData(*state, FoundError); // setup zone geometry and get zone data
     EXPECT_FALSE(FoundError);                            // expect no errors
+
+    SolarShading::processShadowingInput(*state);
 
     //	compare_err_stream( "" ); // just for debugging
 
@@ -4230,20 +4245,14 @@ TEST_F(EnergyPlusFixture, SolarShadingTest_PolygonOverlap)
     int treeSurfNum = Util::FindItemInList("ZN001:WALL-SOUTH:TREE", state->dataSurface->Surface);
 
     // Get shading surface schedule indexes
-    int overhangSchedNum = state->dataSurface->Surface(overhangSurfNum).SchedShadowSurfIndex;
-    int treeSchedNum = state->dataSurface->Surface(treeSurfNum).SchedShadowSurfIndex;
-
-    // Use EMS to turn shading surfaces on and off
-    auto &overhangSchedEMSOn = state->dataScheduleMgr->Schedule(overhangSchedNum).EMSActuatedOn;
-    auto &treeSchedEMSOn = state->dataScheduleMgr->Schedule(treeSchedNum).EMSActuatedOn;
-    auto &overhangSchedEMSValue = state->dataScheduleMgr->Schedule(overhangSchedNum).EMSValue;
-    auto &treeSchedEMSValue = state->dataScheduleMgr->Schedule(treeSchedNum).EMSValue;
+    auto *overhangSched = dynamic_cast<Sched::ScheduleDetailed *>(state->dataSurface->Surface(overhangSurfNum).shadowSurfSched);
+    auto *treeSched = dynamic_cast<Sched::ScheduleDetailed *>(state->dataSurface->Surface(treeSurfNum).shadowSurfSched);
 
     // Overhang transparent, Tree transparent
-    overhangSchedEMSOn = true;
-    treeSchedEMSOn = true;
-    overhangSchedEMSValue = 1.0;
-    treeSchedEMSValue = 1.0;
+    overhangSched->EMSActuatedOn = true;
+    treeSched->EMSActuatedOn = true;
+    overhangSched->EMSVal = 1.0;
+    treeSched->EMSVal = 1.0;
     FigureSolarBeamAtTimestep(*state, state->dataGlobal->HourOfDay, state->dataGlobal->TimeStep);
     ReportSurfaceShading(*state);
 
@@ -4251,10 +4260,10 @@ TEST_F(EnergyPlusFixture, SolarShadingTest_PolygonOverlap)
     EXPECT_NEAR(1.0, state->dataSurface->SurfSunlitFrac(winSurfNum), 0.0001);
 
     // Overhang opaque, Tree transparent
-    overhangSchedEMSOn = true;
-    treeSchedEMSOn = true;
-    overhangSchedEMSValue = 0.0;
-    treeSchedEMSValue = 1.0;
+    overhangSched->EMSActuatedOn = true;
+    treeSched->EMSActuatedOn = true;
+    overhangSched->EMSVal = 0.0;
+    treeSched->EMSVal = 1.0;
     FigureSolarBeamAtTimestep(*state, state->dataGlobal->HourOfDay, state->dataGlobal->TimeStep);
     ReportSurfaceShading(*state);
 
@@ -4264,10 +4273,10 @@ TEST_F(EnergyPlusFixture, SolarShadingTest_PolygonOverlap)
     EXPECT_NEAR(0.76955, winSunLitFracOverhangOnly, 0.0001);
 
     // Overhang tranparent, Tree opaque
-    overhangSchedEMSOn = true;
-    treeSchedEMSOn = true;
-    overhangSchedEMSValue = 1.0;
-    treeSchedEMSValue = 0.0;
+    overhangSched->EMSActuatedOn = true;
+    treeSched->EMSActuatedOn = true;
+    overhangSched->EMSVal = 1.0;
+    treeSched->EMSVal = 0.0;
     FigureSolarBeamAtTimestep(*state, state->dataGlobal->HourOfDay, state->dataGlobal->TimeStep);
     ReportSurfaceShading(*state);
 
@@ -4277,10 +4286,10 @@ TEST_F(EnergyPlusFixture, SolarShadingTest_PolygonOverlap)
     EXPECT_NEAR(0.05484, winSunLitFracTreeOnly, 0.0001);
 
     // Overhang opaque, Tree opaque
-    overhangSchedEMSOn = true;
-    treeSchedEMSOn = true;
-    overhangSchedEMSValue = 0.0;
-    treeSchedEMSValue = 0.0;
+    overhangSched->EMSActuatedOn = true;
+    treeSched->EMSActuatedOn = true;
+    overhangSched->EMSVal = 0.0;
+    treeSched->EMSVal = 0.0;
     FigureSolarBeamAtTimestep(*state, state->dataGlobal->HourOfDay, state->dataGlobal->TimeStep);
     ReportSurfaceShading(*state);
 
@@ -4291,8 +4300,8 @@ TEST_F(EnergyPlusFixture, SolarShadingTest_PolygonOverlap)
 
     // Use the base transmittance schedules (no EMS override)
     // Overhang transmittance = 0.5, Tree transmittance = 0.8
-    overhangSchedEMSOn = false;
-    treeSchedEMSOn = false;
+    overhangSched->EMSActuatedOn = false;
+    treeSched->EMSActuatedOn = false;
     FigureSolarBeamAtTimestep(*state, state->dataGlobal->HourOfDay, state->dataGlobal->TimeStep);
     ReportSurfaceShading(*state);
 
@@ -4331,10 +4340,10 @@ TEST_F(EnergyPlusFixture, SolarShadingTest_PolygonOverlap)
     state->dataSolarShading->CalcSkyDifShading = false;
 
     // Overhang transparent, Tree transparent
-    overhangSchedEMSOn = true;
-    treeSchedEMSOn = true;
-    overhangSchedEMSValue = 1.0;
-    treeSchedEMSValue = 1.0;
+    overhangSched->EMSActuatedOn = true;
+    treeSched->EMSActuatedOn = true;
+    overhangSched->EMSVal = 1.0;
+    treeSched->EMSVal = 1.0;
     FigureSolarBeamAtTimestep(*state, state->dataGlobal->HourOfDay, state->dataGlobal->TimeStep);
     ReportSurfaceShading(*state);
 
@@ -4342,10 +4351,10 @@ TEST_F(EnergyPlusFixture, SolarShadingTest_PolygonOverlap)
     EXPECT_NEAR(1.0, state->dataSurface->SurfSunlitFrac(winSurfNum), 0.0001);
 
     // Overhang opaque, Tree transparent
-    overhangSchedEMSOn = true;
-    treeSchedEMSOn = true;
-    overhangSchedEMSValue = 0.0;
-    treeSchedEMSValue = 1.0;
+    overhangSched->EMSActuatedOn = true;
+    treeSched->EMSActuatedOn = true;
+    overhangSched->EMSVal = 0.0;
+    treeSched->EMSVal = 1.0;
     FigureSolarBeamAtTimestep(*state, state->dataGlobal->HourOfDay, state->dataGlobal->TimeStep);
     ReportSurfaceShading(*state);
 
@@ -4355,10 +4364,10 @@ TEST_F(EnergyPlusFixture, SolarShadingTest_PolygonOverlap)
     EXPECT_NEAR(0.08560, winSunLitFracOverhangOnly, 0.0001);
 
     // Overhang tranparent, Tree opaque
-    overhangSchedEMSOn = true;
-    treeSchedEMSOn = true;
-    overhangSchedEMSValue = 1.0;
-    treeSchedEMSValue = 0.0;
+    overhangSched->EMSActuatedOn = true;
+    treeSched->EMSActuatedOn = true;
+    overhangSched->EMSVal = 1.0;
+    treeSched->EMSVal = 0.0;
     FigureSolarBeamAtTimestep(*state, state->dataGlobal->HourOfDay, state->dataGlobal->TimeStep);
     ReportSurfaceShading(*state);
 
@@ -4368,10 +4377,10 @@ TEST_F(EnergyPlusFixture, SolarShadingTest_PolygonOverlap)
     EXPECT_NEAR(0.60655, winSunLitFracTreeOnly, 0.0001);
 
     // Overhang opaque, Tree opaque
-    overhangSchedEMSOn = true;
-    treeSchedEMSOn = true;
-    overhangSchedEMSValue = 0.0;
-    treeSchedEMSValue = 0.0;
+    overhangSched->EMSActuatedOn = true;
+    treeSched->EMSActuatedOn = true;
+    overhangSched->EMSVal = 0.0;
+    treeSched->EMSVal = 0.0;
     FigureSolarBeamAtTimestep(*state, state->dataGlobal->HourOfDay, state->dataGlobal->TimeStep);
     ReportSurfaceShading(*state);
     wallSunLitFracOverhangTree = state->dataSurface->SurfSunlitFrac(wallSurfNum);
@@ -4382,8 +4391,8 @@ TEST_F(EnergyPlusFixture, SolarShadingTest_PolygonOverlap)
 
     // Use the base transmittance schedules (no EMS override)
     // Overhang transmittance = 0.5, Tree transmittance = 0.8
-    overhangSchedEMSOn = false;
-    treeSchedEMSOn = false;
+    overhangSched->EMSActuatedOn = false;
+    treeSched->EMSActuatedOn = false;
     FigureSolarBeamAtTimestep(*state, state->dataGlobal->HourOfDay, state->dataGlobal->TimeStep);
     ReportSurfaceShading(*state);
 
@@ -4582,15 +4591,14 @@ TEST_F(EnergyPlusFixture, SolarShadingTest_PolygonOverlap2)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
-    SimulationManager::GetProjectData(*state);
     bool FoundError = false;
 
     HeatBalanceManager::GetProjectControlData(*state, FoundError); // read project control data
     EXPECT_FALSE(FoundError);                                      // expect no errors
 
     HeatBalanceManager::SetPreConstructionInputParameters(*state);
-    ScheduleManager::ProcessScheduleInput(*state); // read schedules
 
     Material::GetMaterialData(*state, FoundError);
     EXPECT_FALSE(FoundError);
@@ -4614,8 +4622,8 @@ TEST_F(EnergyPlusFixture, SolarShadingTest_PolygonOverlap2)
     state->dataSurfaceGeometry->CosZoneRelNorth.allocate(1);
     state->dataSurfaceGeometry->SinZoneRelNorth.allocate(1);
 
-    state->dataSurfaceGeometry->CosZoneRelNorth(1) = std::cos(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRadians);
-    state->dataSurfaceGeometry->SinZoneRelNorth(1) = std::sin(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRadians);
+    state->dataSurfaceGeometry->CosZoneRelNorth(1) = std::cos(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRad);
+    state->dataSurfaceGeometry->SinZoneRelNorth(1) = std::sin(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRad);
     state->dataSurfaceGeometry->CosBldgRelNorth = 1.0;
     state->dataSurfaceGeometry->SinBldgRelNorth = 0.0;
 
@@ -4650,6 +4658,7 @@ TEST_F(EnergyPlusFixture, SolarShadingTest_PolygonOverlap2)
     state->dataGlobal->BeginSimFlag = false;
     state->dataGlobal->BeginEnvrnFlag = false;
     HeatBalanceIntRadExchange::InitSolarViewFactors(*state); // prevents crash in GetDaylightingParametersInput
+    state->dataSolarShading->ShadowingDaysLeft = 20;
     SolarShading::PerformSolarCalculations(*state);
 
     // Get surface nums
@@ -4659,20 +4668,19 @@ TEST_F(EnergyPlusFixture, SolarShadingTest_PolygonOverlap2)
     int shade2SurfNum = Util::FindItemInList("ZN001:WALL-SOUTH:SHADE2", state->dataSurface->Surface);
 
     // Get shading surface schedule indexes
-    int shade1SchedNum = state->dataSurface->Surface(shade1SurfNum).SchedShadowSurfIndex;
-    int shade2SchedNum = state->dataSurface->Surface(shade2SurfNum).SchedShadowSurfIndex;
-
-    // Use EMS to turn shading surfaces on and off
-    auto &shade1SchedEMSOn = state->dataScheduleMgr->Schedule(shade1SchedNum).EMSActuatedOn;
-    auto &shade2SchedEMSOn = state->dataScheduleMgr->Schedule(shade2SchedNum).EMSActuatedOn;
-    auto &shade1SchedEMSValue = state->dataScheduleMgr->Schedule(shade1SchedNum).EMSValue;
-    auto &shade2SchedEMSValue = state->dataScheduleMgr->Schedule(shade2SchedNum).EMSValue;
+    auto *shade1Sched = state->dataSurface->Surface(shade1SurfNum).shadowSurfSched;
+    auto *shade2Sched = state->dataSurface->Surface(shade2SurfNum).shadowSurfSched;
 
     // shade1 transparent, shade2 transparent
-    shade1SchedEMSOn = true;
-    shade2SchedEMSOn = true;
-    shade1SchedEMSValue = 1.0;
-    shade2SchedEMSValue = 1.0;
+    shade1Sched->EMSActuatedOn = true;
+    shade2Sched->EMSActuatedOn = true;
+    shade1Sched->EMSVal = 1.0;
+    shade2Sched->EMSVal = 1.0;
+
+    // Gotten from running 1ZoneUncontrolled.idf with chicago weather on Jan 1 at 12
+    state->dataBSDFWindow->SUNCOSTS(state->dataGlobal->TimeStep, state->dataGlobal->HourOfDay)(1) = 0.20531446332266728;
+    state->dataBSDFWindow->SUNCOSTS(state->dataGlobal->TimeStep, state->dataGlobal->HourOfDay)(2) = -0.84761109808931534;
+    state->dataBSDFWindow->SUNCOSTS(state->dataGlobal->TimeStep, state->dataGlobal->HourOfDay)(3) = 0.48928662105799514;
     FigureSolarBeamAtTimestep(*state, state->dataGlobal->HourOfDay, state->dataGlobal->TimeStep);
     ReportSurfaceShading(*state);
 
@@ -4680,10 +4688,10 @@ TEST_F(EnergyPlusFixture, SolarShadingTest_PolygonOverlap2)
     EXPECT_NEAR(1.0, state->dataSurface->SurfSunlitFrac(winSurfNum), 0.0001);
 
     // shade1 opaque, shade2 transparent
-    shade1SchedEMSOn = true;
-    shade2SchedEMSOn = true;
-    shade1SchedEMSValue = 0.0;
-    shade2SchedEMSValue = 1.0;
+    shade1Sched->EMSActuatedOn = true;
+    shade2Sched->EMSActuatedOn = true;
+    shade1Sched->EMSVal = 0.0;
+    shade2Sched->EMSVal = 1.0;
     FigureSolarBeamAtTimestep(*state, state->dataGlobal->HourOfDay, state->dataGlobal->TimeStep);
     ReportSurfaceShading(*state);
 
@@ -4693,10 +4701,10 @@ TEST_F(EnergyPlusFixture, SolarShadingTest_PolygonOverlap2)
     EXPECT_NEAR(0.0, winSunLitFracShade1Only, 0.0001);
 
     // shade1 transparent, shade2 opaque
-    shade1SchedEMSOn = true;
-    shade2SchedEMSOn = true;
-    shade1SchedEMSValue = 1.0;
-    shade2SchedEMSValue = 0.0;
+    shade1Sched->EMSActuatedOn = true;
+    shade2Sched->EMSActuatedOn = true;
+    shade1Sched->EMSVal = 1.0;
+    shade2Sched->EMSVal = 0.0;
     FigureSolarBeamAtTimestep(*state, state->dataGlobal->HourOfDay, state->dataGlobal->TimeStep);
     ReportSurfaceShading(*state);
 
@@ -4706,10 +4714,10 @@ TEST_F(EnergyPlusFixture, SolarShadingTest_PolygonOverlap2)
     EXPECT_NEAR(0.0, winSunLitFracShade2Only, 0.0001);
 
     // shade1 opaque, shade2 opaque
-    shade1SchedEMSOn = true;
-    shade2SchedEMSOn = true;
-    shade1SchedEMSValue = 0.0;
-    shade2SchedEMSValue = 0.0;
+    shade1Sched->EMSActuatedOn = true;
+    shade2Sched->EMSActuatedOn = true;
+    shade1Sched->EMSVal = 0.0;
+    shade2Sched->EMSVal = 0.0;
     FigureSolarBeamAtTimestep(*state, state->dataGlobal->HourOfDay, state->dataGlobal->TimeStep);
     ReportSurfaceShading(*state);
 
@@ -4720,8 +4728,8 @@ TEST_F(EnergyPlusFixture, SolarShadingTest_PolygonOverlap2)
 
     // Use the base transmittance schedules (no EMS override)
     // shade1 transmittance = 0.5, shade2 transmittance = 0.8
-    shade1SchedEMSOn = false;
-    shade2SchedEMSOn = false;
+    shade1Sched->EMSActuatedOn = false;
+    shade2Sched->EMSActuatedOn = false;
     FigureSolarBeamAtTimestep(*state, state->dataGlobal->HourOfDay, state->dataGlobal->TimeStep);
     ReportSurfaceShading(*state);
 
@@ -4943,15 +4951,14 @@ TEST_F(EnergyPlusFixture, SolarShadingTest_PolygonOverlap3)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
-    SimulationManager::GetProjectData(*state);
     bool FoundError = false;
 
     HeatBalanceManager::GetProjectControlData(*state, FoundError); // read project control data
     EXPECT_FALSE(FoundError);                                      // expect no errors
 
     HeatBalanceManager::SetPreConstructionInputParameters(*state);
-    ScheduleManager::ProcessScheduleInput(*state); // read schedules
 
     Material::GetMaterialData(*state, FoundError);
     EXPECT_FALSE(FoundError);
@@ -4975,8 +4982,8 @@ TEST_F(EnergyPlusFixture, SolarShadingTest_PolygonOverlap3)
     state->dataSurfaceGeometry->CosZoneRelNorth.allocate(1);
     state->dataSurfaceGeometry->SinZoneRelNorth.allocate(1);
 
-    state->dataSurfaceGeometry->CosZoneRelNorth(1) = std::cos(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRadians);
-    state->dataSurfaceGeometry->SinZoneRelNorth(1) = std::sin(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRadians);
+    state->dataSurfaceGeometry->CosZoneRelNorth(1) = std::cos(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRad);
+    state->dataSurfaceGeometry->SinZoneRelNorth(1) = std::sin(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRad);
     state->dataSurfaceGeometry->CosBldgRelNorth = 1.0;
     state->dataSurfaceGeometry->SinBldgRelNorth = 0.0;
 
@@ -5011,6 +5018,7 @@ TEST_F(EnergyPlusFixture, SolarShadingTest_PolygonOverlap3)
     state->dataGlobal->BeginSimFlag = false;
     state->dataGlobal->BeginEnvrnFlag = false;
     HeatBalanceIntRadExchange::InitSolarViewFactors(*state); // prevents crash in GetDaylightingParametersInput
+    state->dataSolarShading->ShadowingDaysLeft = 20;
     SolarShading::PerformSolarCalculations(*state);
 
     // Get surface nums
@@ -5019,6 +5027,9 @@ TEST_F(EnergyPlusFixture, SolarShadingTest_PolygonOverlap3)
 
     // Use the base transmittance schedules (no EMS override)
     // shade1 transmittance = 0.5, shade2 transmittance = 0.8
+    state->dataBSDFWindow->SUNCOSTS(state->dataGlobal->TimeStep, state->dataGlobal->HourOfDay)(1) = 0.20531446332266728;
+    state->dataBSDFWindow->SUNCOSTS(state->dataGlobal->TimeStep, state->dataGlobal->HourOfDay)(2) = -0.84761109808931534;
+    state->dataBSDFWindow->SUNCOSTS(state->dataGlobal->TimeStep, state->dataGlobal->HourOfDay)(3) = 0.48928662105799514;
     FigureSolarBeamAtTimestep(*state, state->dataGlobal->HourOfDay, state->dataGlobal->TimeStep);
     ReportSurfaceShading(*state);
 
@@ -5071,7 +5082,7 @@ TEST_F(EnergyPlusFixture, SolarShadingTest_checkScheduledSurfacePresent)
 }
 TEST_F(EnergyPlusFixture, SolarShadingTest_CalcBeamSolarOnWinRevealSurface)
 {
-    state->dataGlobal->NumOfTimeStepInHour = 6;
+    state->dataGlobal->TimeStepsInHour = 6;
 
     state->dataSurface->FrameDivider.allocate(2);
     auto &frameDivider1 = state->dataSurface->FrameDivider(1);
@@ -5133,7 +5144,7 @@ TEST_F(EnergyPlusFixture, SolarShadingTest_CalcBeamSolarOnWinRevealSurface)
     state->dataSurface->Surface.allocate(NumSurf);
     state->dataSurface->SurfaceWindow.allocate(NumSurf);
     EnergyPlus::SurfaceGeometry::AllocateSurfaceWindows(*state, NumSurf);
-    WindowManager::initWindowModel(*state);
+    Window::initWindowModel(*state);
     SolarShading::AllocateModuleArrays(*state);
 
     auto &surf1 = state->dataSurface->Surface(1);
@@ -5168,6 +5179,10 @@ TEST_F(EnergyPlusFixture, SolarShadingTest_CalcBeamSolarOnWinRevealSurface)
     surf2.SinTilt = 1.0;
     surf1.CosTilt = 0.0;
     surf2.CosTilt = 0.0;
+    surf1.Area = 2.0;
+    surf2.Area = 2.0;
+    state->dataSurface->SurfWinFrameArea(1) = 0.64;
+    state->dataSurface->SurfWinFrameArea(2) = 0.64;
 
     state->dataSurface->SurfActiveConstruction(1) = 1;
     state->dataSurface->SurfActiveConstruction(2) = 1;
@@ -5180,15 +5195,16 @@ TEST_F(EnergyPlusFixture, SolarShadingTest_CalcBeamSolarOnWinRevealSurface)
     construct1.LayerPoint(1) = 1;
     construct1.Name = "Construction1";
     construct1.TotGlassLayers = 1;
-    construct1.TransSolBeamCoef(1) = 0.9;
+    construct1.TransSolBeamCoef[0] = 0.9;
 
-    state->dataMaterial->TotMaterials = 1;
-    for (int i = 1; i <= state->dataMaterial->TotMaterials; i++) {
-        Material::MaterialChild *p = new Material::MaterialChild;
-        state->dataMaterial->Material.push_back(p);
-    }
-    state->dataMaterial->Material(1)->Name = "GLASS";
-    state->dataMaterial->Material(1)->group = Material::Group::WindowGlass;
+    auto &s_mat = state->dataMaterial;
+
+    auto *mat1 = new Material::MaterialGlass;
+    mat1->Name = "GLASS";
+    mat1->group = Material::Group::Glass;
+    s_mat->materials.push_back(mat1);
+    mat1->Num = s_mat->materials.isize();
+    s_mat->materialMap.insert_or_assign(mat1->Name, mat1->Num);
 
     state->dataGlobal->NumOfZones = 1;
     state->dataHeatBal->Zone.allocate(1);
@@ -5205,8 +5221,8 @@ TEST_F(EnergyPlusFixture, SolarShadingTest_CalcBeamSolarOnWinRevealSurface)
     state->dataHeatBal->SurfSunlitFracWithoutReveal(state->dataGlobal->HourOfDay, state->dataGlobal->TimeStep, 1) = 1.0;
     state->dataHeatBal->SurfSunlitFracWithoutReveal(state->dataGlobal->HourOfDay, state->dataGlobal->TimeStep, 2) = 1.0;
 
-    WindowManager::W5InitGlassParameters(*state);
-    construct1.TransSolBeamCoef(1) = 0.9;
+    Window::W5InitGlassParameters(*state);
+    construct1.TransSolBeamCoef[0] = 0.9;
     state->dataSurface->SurfWinTanProfileAngVert(1) = 10.0;
     state->dataSurface->SurfWinTanProfileAngVert(2) = 10.0;
     state->dataSurface->SurfWinTanProfileAngHor(1) = 10.0;
@@ -5501,22 +5517,21 @@ TEST_F(EnergyPlusFixture, SolarShadingTest_CalcInteriorSolarDistribution_Detaile
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
-    SimulationManager::GetProjectData(*state);
     bool FoundError = false;
 
     HeatBalanceManager::GetProjectControlData(*state, FoundError); // read project control data
     EXPECT_FALSE(FoundError);                                      // expect no errors
 
     HeatBalanceManager::SetPreConstructionInputParameters(*state);
-    ScheduleManager::ProcessScheduleInput(*state); // read schedules
     HeatBalanceManager::GetHeatBalanceInput(*state);
 
     state->dataSurfaceGeometry->CosZoneRelNorth.allocate(1);
     state->dataSurfaceGeometry->SinZoneRelNorth.allocate(1);
 
-    state->dataSurfaceGeometry->CosZoneRelNorth(1) = std::cos(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRadians);
-    state->dataSurfaceGeometry->SinZoneRelNorth(1) = std::sin(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRadians);
+    state->dataSurfaceGeometry->CosZoneRelNorth(1) = std::cos(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRad);
+    state->dataSurfaceGeometry->SinZoneRelNorth(1) = std::sin(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRad);
     state->dataSurfaceGeometry->CosBldgRelNorth = 1.0;
     state->dataSurfaceGeometry->SinBldgRelNorth = 0.0;
 
@@ -5873,22 +5888,21 @@ TEST_F(EnergyPlusFixture, SolarShadingTest_CalcInteriorSolarDistribution_EQL)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
-    SimulationManager::GetProjectData(*state);
     bool FoundError = false;
 
     HeatBalanceManager::GetProjectControlData(*state, FoundError); // read project control data
     EXPECT_FALSE(FoundError);                                      // expect no errors
 
     HeatBalanceManager::SetPreConstructionInputParameters(*state);
-    ScheduleManager::ProcessScheduleInput(*state); // read schedules
     HeatBalanceManager::GetHeatBalanceInput(*state);
 
     state->dataSurfaceGeometry->CosZoneRelNorth.allocate(1);
     state->dataSurfaceGeometry->SinZoneRelNorth.allocate(1);
 
-    state->dataSurfaceGeometry->CosZoneRelNorth(1) = std::cos(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRadians);
-    state->dataSurfaceGeometry->SinZoneRelNorth(1) = std::sin(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRadians);
+    state->dataSurfaceGeometry->CosZoneRelNorth(1) = std::cos(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRad);
+    state->dataSurfaceGeometry->SinZoneRelNorth(1) = std::sin(-state->dataHeatBal->Zone(1).RelNorth * Constant::DegToRad);
     state->dataSurfaceGeometry->CosBldgRelNorth = 1.0;
     state->dataSurfaceGeometry->SinBldgRelNorth = 0.0;
 
@@ -5939,4 +5953,526 @@ TEST_F(EnergyPlusFixture, SolarShadingTest_CalcInteriorSolarDistribution_EQL)
     EXPECT_NEAR(0.0, state->dataHeatBalSurf->SurfWinInitialBeamSolInTrans(windowSurfNum2), 0.01);
     EXPECT_NEAR(0.0, state->dataHeatBalSurf->SurfWinInitialDifSolInTrans(windowSurfNum), 0.01);
     EXPECT_NEAR(1.4736, state->dataHeatBalSurf->SurfWinInitialDifSolInTrans(windowSurfNum2), 0.01);
+}
+
+TEST_F(EnergyPlusFixture, SolarShadingTest_GetShadowingInputTest1)
+{
+    // Tests for Defect #10299: Test GetShadowingInput for various combinations of input
+    // with a focus put on the correct setting of variables associated with calculation
+    // method and polygon clipping algorithm
+    std::string const idf_objects = delimited_string({
+        "  ShadowCalculation,",
+        "    PolygonClipping,             !- Shading Calculation Method",
+        "    Timestep,                    !- Shading Calculation Update Frequency Method",
+        "    1,                           !- Shading Calculation Update Frequency",
+        "    200,                         !- Maximum Figures in Shadow Overlap Calculations",
+        "    ConvexWeilerAtherton,        !- Polygon Clipping Algorithm",
+        "    512.0,                       !- Pixel Counting Resolution",
+        "    DetailedSkyDiffuseModeling;  !- Sky Diffuse Modeling Algorithm",
+    });
+
+    ASSERT_TRUE(process_idf(idf_objects));
+
+    state->dataSolarShading->anyScheduledShadingSurface = false;
+
+    // Test 1 of 6: Polygon Clipping and ConvexWeilerAtherton
+    SolarShading::GetShadowingInput(*state);
+    int expectedFrequency = 1;
+    int expectedOverlaps = 200;
+    EXPECT_TRUE(state->dataSysVars->DetailedSkyDiffuseAlgorithm);
+    EXPECT_TRUE(state->dataSysVars->DetailedSolarTimestepIntegration);
+    EXPECT_EQ(expectedFrequency, state->dataSolarShading->ShadowingCalcFrequency);
+    EXPECT_EQ(expectedOverlaps, state->dataSolarShading->MaxHCS);
+    EXPECT_FALSE(state->dataSysVars->SutherlandHodgman);
+    EXPECT_FALSE(state->dataSysVars->SlaterBarsky);
+    EXPECT_ENUM_EQ(state->dataSysVars->shadingMethod, ShadingMethod::PolygonClipping);
+}
+
+TEST_F(EnergyPlusFixture, SolarShadingTest_GetShadowingInputTest2)
+{
+    // Tests for Defect #10299: Test GetShadowingInput for various combinations of input
+    // with a focus put on the correct setting of variables associated with calculation
+    // method and polygon clipping algorithm
+    std::string const idf_objects = delimited_string({
+        "  ShadowCalculation,",
+        "    PolygonClipping,           !- Shading Calculation Method",
+        "    Periodic,                  !- Shading Calculation Update Frequency Method",
+        "    10,                        !- Shading Calculation Update Frequency",
+        "    2000,                      !- Maximum Figures in Shadow Overlap Calculations",
+        "    SutherlandHodgman,         !- Polygon Clipping Algorithm",
+        "    512.0,                     !- Pixel Counting Resolution",
+        "    SimpleSkyDiffuseModeling;  !- Sky Diffuse Modeling Algorithm",
+    });
+
+    ASSERT_TRUE(process_idf(idf_objects));
+
+    state->dataSolarShading->anyScheduledShadingSurface = false;
+
+    // Test 2 of 6: Polygon Clipping and SutherlandHodgman
+    SolarShading::GetShadowingInput(*state);
+    int expectedFrequency = 10;
+    int expectedOverlaps = 2000;
+    EXPECT_FALSE(state->dataSysVars->DetailedSkyDiffuseAlgorithm);
+    EXPECT_FALSE(state->dataSysVars->DetailedSolarTimestepIntegration);
+    EXPECT_EQ(expectedFrequency, state->dataSolarShading->ShadowingCalcFrequency);
+    EXPECT_EQ(expectedOverlaps, state->dataSolarShading->MaxHCS);
+    EXPECT_TRUE(state->dataSysVars->SutherlandHodgman);
+    EXPECT_FALSE(state->dataSysVars->SlaterBarsky);
+    EXPECT_ENUM_EQ(state->dataSysVars->shadingMethod, ShadingMethod::PolygonClipping);
+}
+
+TEST_F(EnergyPlusFixture, SolarShadingTest_GetShadowingInputTest3)
+{
+    // Tests for Defect #10299: Test GetShadowingInput for various combinations of input
+    // with a focus put on the correct setting of variables associated with calculation
+    // method and polygon clipping algorithm
+    std::string const idf_objects = delimited_string({
+        "  ShadowCalculation,",
+        "    PolygonClipping,                   !- Shading Calculation Method",
+        "    Timestep,                          !- Shading Calculation Update Frequency Method",
+        "    30,                                !- Shading Calculation Update Frequency",
+        "    15000,                             !- Maximum Figures in Shadow Overlap Calculations",
+        "    SlaterBarskyandSutherlandHodgman,  !- Polygon Clipping Algorithm",
+        "    512.0,                             !- Pixel Counting Resolution",
+        "    DetailedSkyDiffuseModeling;        !- Sky Diffuse Modeling Algorithm",
+    });
+
+    ASSERT_TRUE(process_idf(idf_objects));
+    state->dataSolarShading->anyScheduledShadingSurface = false;
+
+    // Test 3 of 6: Polygon Clipping and SlaterBarskyandSutherlandHodgman
+    SolarShading::GetShadowingInput(*state);
+    int expectedFrequency = 30;
+    int expectedOverlaps = 15000;
+    EXPECT_TRUE(state->dataSysVars->DetailedSkyDiffuseAlgorithm);
+    EXPECT_TRUE(state->dataSysVars->DetailedSolarTimestepIntegration);
+    EXPECT_EQ(expectedFrequency, state->dataSolarShading->ShadowingCalcFrequency);
+    EXPECT_EQ(expectedOverlaps, state->dataSolarShading->MaxHCS);
+    EXPECT_TRUE(state->dataSysVars->SutherlandHodgman);
+    EXPECT_TRUE(state->dataSysVars->SlaterBarsky);
+    EXPECT_ENUM_EQ(state->dataSysVars->shadingMethod, ShadingMethod::PolygonClipping);
+}
+
+TEST_F(EnergyPlusFixture, SolarShadingTest_GetShadowingInputTest4)
+{
+    // Tests for Defect #10299: Test GetShadowingInput for various combinations of input
+    // with a focus put on the correct setting of variables associated with calculation
+    // method and polygon clipping algorithm
+    std::string const idf_objects = delimited_string({
+        "  ShadowCalculation,",
+        "    PixelCounting,               !- Shading Calculation Method",
+        "    Periodic,                    !- Shading Calculation Update Frequency Method",
+        "    1,                           !- Shading Calculation Update Frequency",
+        "    200,                         !- Maximum Figures in Shadow Overlap Calculations",
+        "    ConvexWeilerAtherton,        !- Polygon Clipping Algorithm",
+        "    512.0,                       !- Pixel Counting Resolution",
+        "    DetailedSkyDiffuseModeling;  !- Sky Diffuse Modeling Algorithm",
+    });
+
+    ASSERT_TRUE(process_idf(idf_objects));
+    state->dataSolarShading->anyScheduledShadingSurface = false;
+
+    // Test 4 of 6: Pixel Counting and ConvexWeilerAtherton
+    SolarShading::GetShadowingInput(*state);
+    int expectedFrequency = 1;
+    int expectedOverlaps = 200;
+    EXPECT_TRUE(state->dataSysVars->DetailedSkyDiffuseAlgorithm);
+    EXPECT_FALSE(state->dataSysVars->DetailedSolarTimestepIntegration);
+    EXPECT_EQ(expectedFrequency, state->dataSolarShading->ShadowingCalcFrequency);
+    EXPECT_EQ(expectedOverlaps, state->dataSolarShading->MaxHCS);
+    EXPECT_FALSE(state->dataSysVars->SutherlandHodgman);
+    EXPECT_FALSE(state->dataSysVars->SlaterBarsky);
+
+#ifdef EP_NO_OPENGL
+    EXPECT_ENUM_EQ(state->dataSysVars->shadingMethod, ShadingMethod::PolygonClipping);
+#else
+    if (!Penumbra::Penumbra::is_valid_context()) {
+        EXPECT_ENUM_EQ(state->dataSysVars->shadingMethod, ShadingMethod::PolygonClipping);
+    } else {
+        EXPECT_ENUM_EQ(state->dataSysVars->shadingMethod, ShadingMethod::PixelCounting);
+    }
+#endif
+}
+
+TEST_F(EnergyPlusFixture, SolarShadingTest_GetShadowingInputTest5)
+{
+    // Tests for Defect #10299: Test GetShadowingInput for various combinations of input
+    // with a focus put on the correct setting of variables associated with calculation
+    // method and polygon clipping algorithm
+    std::string const idf_objects = delimited_string({
+        "  ShadowCalculation,",
+        "    PixelCounting,               !- Shading Calculation Method",
+        "    Periodic,                    !- Shading Calculation Update Frequency Method",
+        "    10,                          !- Shading Calculation Update Frequency",
+        "    2000,                        !- Maximum Figures in Shadow Overlap Calculations",
+        "    SutherlandHodgman,           !- Polygon Clipping Algorithm",
+        "    512.0,                       !- Pixel Counting Resolution",
+        "    DetailedSkyDiffuseModeling;  !- Sky Diffuse Modeling Algorithm",
+    });
+
+    ASSERT_TRUE(process_idf(idf_objects));
+    state->dataSolarShading->anyScheduledShadingSurface = false;
+
+    // Test 5 of 6: Pixel Counting and SutherlandHodgman
+    SolarShading::GetShadowingInput(*state);
+    int expectedFrequency = 10;
+    int expectedOverlaps = 2000;
+    EXPECT_TRUE(state->dataSysVars->DetailedSkyDiffuseAlgorithm);
+    EXPECT_FALSE(state->dataSysVars->DetailedSolarTimestepIntegration);
+    EXPECT_EQ(expectedFrequency, state->dataSolarShading->ShadowingCalcFrequency);
+    EXPECT_EQ(expectedOverlaps, state->dataSolarShading->MaxHCS);
+    EXPECT_TRUE(state->dataSysVars->SutherlandHodgman);
+    EXPECT_FALSE(state->dataSysVars->SlaterBarsky);
+
+#ifdef EP_NO_OPENGL
+    EXPECT_ENUM_EQ(state->dataSysVars->shadingMethod, ShadingMethod::PolygonClipping);
+#else
+    if (!Penumbra::Penumbra::is_valid_context()) {
+        EXPECT_ENUM_EQ(state->dataSysVars->shadingMethod, ShadingMethod::PolygonClipping);
+    } else {
+        EXPECT_ENUM_EQ(state->dataSysVars->shadingMethod, ShadingMethod::PixelCounting);
+    }
+#endif
+}
+
+TEST_F(EnergyPlusFixture, SolarShadingTest_GetShadowingInputTest6)
+{
+    // Tests for Defect #10299: Test GetShadowingInput for various combinations of input
+    // with a focus put on the correct setting of variables associated with calculation
+    // method and polygon clipping algorithm
+    std::string const idf_objects = delimited_string({
+        "  ShadowCalculation,",
+        "    PixelCounting,                     !- Shading Calculation Method",
+        "    Periodic,                          !- Shading Calculation Update Frequency Method",
+        "    56,                                !- Shading Calculation Update Frequency",
+        "    1234,                              !- Maximum Figures in Shadow Overlap Calculations",
+        "    SlaterBarskyandSutherlandHodgman,  !- Polygon Clipping Algorithm",
+        "    512.0,                             !- Pixel Counting Resolution",
+        "    SimpleSkyDiffuseModeling;          !- Sky Diffuse Modeling Algorithm",
+    });
+
+    ASSERT_TRUE(process_idf(idf_objects));
+
+    state->dataSolarShading->anyScheduledShadingSurface = false;
+
+    // Test 36of 6: Pixel Counting and SlaterBarskyandSutherlandHodgman
+    SolarShading::GetShadowingInput(*state);
+
+    int expectedFrequency = 56;
+    int expectedOverlaps = 1234;
+    EXPECT_FALSE(state->dataSysVars->DetailedSkyDiffuseAlgorithm);
+    EXPECT_FALSE(state->dataSysVars->DetailedSolarTimestepIntegration);
+    EXPECT_EQ(expectedFrequency, state->dataSolarShading->ShadowingCalcFrequency);
+    EXPECT_EQ(expectedOverlaps, state->dataSolarShading->MaxHCS);
+    EXPECT_TRUE(state->dataSysVars->SutherlandHodgman);
+    EXPECT_TRUE(state->dataSysVars->SlaterBarsky);
+
+#ifdef EP_NO_OPENGL
+    std::string const error_string =
+        delimited_string({"   ** Warning ** ShadowCalculation: suspect Shading Calculation Update Frequency",
+                          "   **   ~~~   ** Value entered=[56], Shadowing Calculations will be inaccurate.",
+                          "   ** Warning ** ShadowCalculation: invalid Shading Calculation Method",
+                          "   **   ~~~   ** Value entered=\"PixelCounting\"",
+                          "   **   ~~~   ** This version of EnergyPlus was not compiled to use OpenGL (required for PixelCounting)",
+                          "   **   ~~~   ** PolygonClipping will be used instead"});
+    EXPECT_TRUE(compare_err_stream(error_string, true));
+    EXPECT_ENUM_EQ(state->dataSysVars->shadingMethod, ShadingMethod::PolygonClipping);
+
+#else
+    if (!Penumbra::Penumbra::is_valid_context()) {
+        std::string const error_string = delimited_string({"   ** Warning ** ShadowCalculation: suspect Shading Calculation Update Frequency",
+                                                           "   **   ~~~   ** Value entered=[56], Shadowing Calculations will be inaccurate.",
+                                                           "   ** Warning ** No GPU found (required for PixelCounting)",
+                                                           "   **   ~~~   ** PolygonClipping will be used instead"});
+        EXPECT_TRUE(compare_err_stream(error_string, true));
+        EXPECT_ENUM_EQ(state->dataSysVars->shadingMethod, ShadingMethod::PolygonClipping);
+    } else {
+        std::string const error_string = delimited_string({"   ** Warning ** ShadowCalculation: suspect Shading Calculation Update Frequency",
+                                                           "   **   ~~~   ** Value entered=[56], Shadowing Calculations will be inaccurate."});
+        EXPECT_TRUE(compare_err_stream(error_string, true));
+        EXPECT_ENUM_EQ(state->dataSysVars->shadingMethod, ShadingMethod::PixelCounting);
+    }
+#endif
+}
+
+TEST_F(EnergyPlusFixture, CLIPLINE_Throw)
+{
+    Real64 constexpr minX = 2.0;
+    Real64 constexpr maxX = 8.0;
+    Real64 constexpr minY = 3.0;
+    Real64 constexpr maxY = 6.0;
+
+    Real64 x0 = maxX;
+    Real64 x1 = maxX;
+    Real64 y0 = 4.5;
+    Real64 y1 = 1.0;
+    bool visible = false;
+
+    EXPECT_NO_THROW(CLIPLINE(x0, x1, y0, y1, maxX, minX, maxY, minY, visible));
+
+    EXPECT_DOUBLE_EQ(maxX, x0);
+    EXPECT_DOUBLE_EQ(4.5, y0);
+    EXPECT_DOUBLE_EQ(maxX, x1);
+    EXPECT_DOUBLE_EQ(minY, y1); // This is NaN
+}
+
+TEST_F(EnergyPlusFixture, CLIPLINE_Full)
+{
+    Real64 constexpr minX = 2.0;
+    Real64 constexpr maxX = 8.0;
+    Real64 constexpr minY = 3.0;
+    Real64 constexpr maxY = 6.0;
+
+    Real64 constexpr below_x = 0.0;
+    Real64 constexpr center_x = 5.0;
+    Real64 constexpr greater_x = 10.0;
+
+    Real64 constexpr below_y = 1.0;
+    Real64 constexpr center_y = 4.5;
+    Real64 constexpr greater_y = 9.0;
+
+    struct Point
+    {
+        Real64 x = 0.0;
+        Real64 y = 0.0;
+    };
+
+    struct Line
+    {
+        Point p0{};
+        Point p1{};
+    };
+
+    struct TestCase
+    {
+        Line line_ori;
+        bool visible = false;
+        Line line_new{}; // Only defined if visible
+    };
+
+    auto testclipline = [&maxX, &minX, &maxY, &minY](const TestCase &t) {
+        Real64 x0 = t.line_ori.p0.x;
+        Real64 y0 = t.line_ori.p0.y;
+
+        Real64 x1 = t.line_ori.p1.x;
+        Real64 y1 = t.line_ori.p1.y;
+        bool is_rev = x0 > x1;
+
+        std::string const msg = fmt::format("From ({}, {}) to ({}, {})", t.line_ori.p0.x, t.line_ori.p0.y, t.line_ori.p1.x, t.line_ori.p1.y);
+
+        bool visible = false;
+        CLIPLINE(x0, x1, y0, y1, maxX, minX, maxY, minY, visible);
+        if (t.visible) {
+            EXPECT_TRUE(visible) << msg;
+            EXPECT_DOUBLE_EQ(t.line_new.p0.x, x0) << msg;
+            EXPECT_DOUBLE_EQ(t.line_new.p0.y, y0) << msg;
+            EXPECT_DOUBLE_EQ(t.line_new.p1.x, x1) << msg;
+            EXPECT_DOUBLE_EQ(t.line_new.p1.y, y1) << msg;
+        } else {
+            EXPECT_FALSE(visible) << msg;
+            if (is_rev) {
+                std::swap(x0, x1);
+                std::swap(y0, y1);
+            }
+            EXPECT_DOUBLE_EQ(t.line_ori.p0.x, x0) << msg;
+            EXPECT_DOUBLE_EQ(t.line_ori.p0.y, y0) << msg;
+            EXPECT_DOUBLE_EQ(t.line_ori.p1.x, x1) << msg;
+            EXPECT_DOUBLE_EQ(t.line_ori.p1.y, y1) << msg;
+        }
+    };
+
+    constexpr std::array<TestCase, 72> test_cases{{
+        // From 0 to 3
+        TestCase{Line{Point{below_x, below_y}, Point{below_x, center_y}}, false},
+        // From 0 to 6
+        TestCase{Line{Point{below_x, below_y}, Point{below_x, greater_y}}, false},
+        // From 0 to 1
+        TestCase{Line{Point{below_x, below_y}, Point{center_x, below_y}}, false},
+        // From 0 to 4
+        TestCase{Line{Point{below_x, below_y}, Point{center_x, center_y}}, true, Line{Point{2.8571428571428568, minY}, Point{center_x, center_y}}},
+        // From 0 to 7
+        TestCase{Line{Point{below_x, below_y}, Point{center_x, greater_y}}, true, Line{Point{minX, 4.2}, Point{3.125, maxY}}},
+        // From 0 to 2
+        TestCase{Line{Point{below_x, below_y}, Point{greater_x, below_y}}, false},
+        // From 0 to 5
+        TestCase{
+            Line{Point{below_x, below_y}, Point{greater_x, center_y}}, true, Line{Point{5.7142857142857135, minY}, Point{maxX, 3.8000000000000003}}},
+        // From 0 to 8
+        TestCase{Line{Point{below_x, below_y}, Point{greater_x, greater_y}}, true, Line{Point{2.5, minY}, Point{6.25, maxY}}},
+        // From 3 to 0
+        TestCase{Line{Point{below_x, center_y}, Point{below_x, below_y}}, false},
+        // From 3 to 6
+        TestCase{Line{Point{below_x, center_y}, Point{below_x, greater_y}}, false},
+        // From 3 to 1
+        TestCase{
+            Line{Point{below_x, center_y}, Point{center_x, below_y}}, true, Line{Point{minX, 3.0999999999999996}, Point{2.142857142857143, minY}}},
+        // From 3 to 4
+        TestCase{Line{Point{below_x, center_y}, Point{center_x, center_y}}, true, Line{Point{minX, center_y}, Point{center_x, center_y}}},
+        // From 3 to 7
+        TestCase{Line{Point{below_x, center_y}, Point{center_x, greater_y}}, false},
+        // From 3 to 2
+        TestCase{Line{Point{below_x, center_y}, Point{greater_x, below_y}}, true, Line{Point{minX, 3.8}, Point{4.285714285714286, minY}}},
+        // From 3 to 5
+        TestCase{Line{Point{below_x, center_y}, Point{greater_x, center_y}}, true, Line{Point{minX, center_y}, Point{maxX, center_y}}},
+        // From 3 to 8
+        TestCase{Line{Point{below_x, center_y}, Point{greater_x, greater_y}}, true, Line{Point{minX, 5.4}, Point{3.333333333333333, maxY}}},
+        // From 6 to 0
+        TestCase{Line{Point{below_x, greater_y}, Point{below_x, below_y}}, false},
+        // From 6 to 3
+        TestCase{Line{Point{below_x, greater_y}, Point{below_x, center_y}}, false},
+        // From 6 to 1
+        TestCase{Line{Point{below_x, greater_y}, Point{center_x, below_y}}, true, Line{Point{minX, 5.8}, Point{3.75, minY}}},
+        // From 6 to 4
+        TestCase{Line{Point{below_x, greater_y}, Point{center_x, center_y}}, true, Line{Point{3.333333333333333, maxY}, Point{center_x, center_y}}},
+        // From 6 to 7
+        TestCase{Line{Point{below_x, greater_y}, Point{center_x, greater_y}}, false},
+        // From 6 to 2
+        TestCase{Line{Point{below_x, greater_y}, Point{greater_x, below_y}}, true, Line{Point{3.75, maxY}, Point{7.5, minY}}},
+        // From 6 to 5
+        TestCase{Line{Point{below_x, greater_y}, Point{greater_x, center_y}}, true, Line{Point{6.666666666666666, maxY}, Point{maxX, 5.4}}},
+        // From 6 to 8
+        TestCase{Line{Point{below_x, greater_y}, Point{greater_x, greater_y}}, false},
+        // From 1 to 0
+        TestCase{Line{Point{center_x, below_y}, Point{below_x, below_y}}, false},
+        // From 1 to 3
+        TestCase{Line{Point{center_x, below_y}, Point{below_x, center_y}}, true, Line{Point{2.1428571428571432, minY}, Point{minX, 3.1}}},
+        // From 1 to 6
+        TestCase{Line{Point{center_x, below_y}, Point{below_x, greater_y}}, true, Line{Point{3.75, minY}, Point{minX, 5.8}}},
+        // From 1 to 4
+        TestCase{Line{Point{center_x, below_y}, Point{center_x, center_y}}, true, Line{Point{center_x, minY}, Point{center_x, center_y}}},
+        // From 1 to 7
+        TestCase{Line{Point{center_x, below_y}, Point{center_x, greater_y}}, true, Line{Point{center_x, minY}, Point{center_x, maxY}}},
+        // From 1 to 2
+        TestCase{Line{Point{center_x, below_y}, Point{greater_x, below_y}}, false},
+        // From 1 to 5
+        TestCase{Line{Point{center_x, below_y}, Point{greater_x, center_y}}, true, Line{Point{7.857142857142857, minY}, Point{maxX, 3.1}}},
+        // From 1 to 8
+        TestCase{Line{Point{center_x, below_y}, Point{greater_x, greater_y}}, true, Line{Point{6.25, minY}, Point{maxX, 5.8}}},
+        // From 4 to 0
+        TestCase{Line{Point{center_x, center_y}, Point{below_x, below_y}}, true, Line{Point{center_x, center_y}, Point{2.857142857142857, minY}}},
+        // From 4 to 3
+        TestCase{Line{Point{center_x, center_y}, Point{below_x, center_y}}, true, Line{Point{center_x, center_y}, Point{minX, center_y}}},
+        // From 4 to 6
+        TestCase{Line{Point{center_x, center_y}, Point{below_x, greater_y}}, true, Line{Point{center_x, center_y}, Point{3.3333333333333335, maxY}}},
+        // From 4 to 1
+        TestCase{Line{Point{center_x, center_y}, Point{center_x, below_y}}, true, Line{Point{center_x, center_y}, Point{center_x, minY}}},
+        // From 4 to 7
+        TestCase{Line{Point{center_x, center_y}, Point{center_x, greater_y}}, true, Line{Point{center_x, center_y}, Point{center_x, maxY}}},
+        // From 4 to 2
+        TestCase{Line{Point{center_x, center_y}, Point{greater_x, below_y}}, true, Line{Point{center_x, center_y}, Point{7.142857142857142, minY}}},
+        // From 4 to 5
+        TestCase{Line{Point{center_x, center_y}, Point{greater_x, center_y}}, true, Line{Point{center_x, center_y}, Point{maxX, center_y}}},
+        // From 4 to 8
+        TestCase{Line{Point{center_x, center_y}, Point{greater_x, greater_y}}, true, Line{Point{center_x, center_y}, Point{6.666666666666666, maxY}}},
+        // From 7 to 0
+        TestCase{Line{Point{center_x, greater_y}, Point{below_x, below_y}}, true, Line{Point{3.125, maxY}, Point{minX, 4.2}}},
+        // From 7 to 3
+        TestCase{Line{Point{center_x, greater_y}, Point{below_x, center_y}}, false},
+        // From 7 to 6
+        TestCase{Line{Point{center_x, greater_y}, Point{below_x, greater_y}}, false},
+        // From 7 to 1
+        TestCase{Line{Point{center_x, greater_y}, Point{center_x, below_y}}, true, Line{Point{center_x, maxY}, Point{center_x, minY}}},
+        // From 7 to 4
+        TestCase{Line{Point{center_x, greater_y}, Point{center_x, center_y}}, true, Line{Point{center_x, maxY}, Point{center_x, center_y}}},
+        // From 7 to 2
+        TestCase{Line{Point{center_x, greater_y}, Point{greater_x, below_y}}, true, Line{Point{6.875, maxY}, Point{maxX, 4.2}}},
+        // From 7 to 5
+        TestCase{Line{Point{center_x, greater_y}, Point{greater_x, center_y}}, false},
+        // From 7 to 8
+        TestCase{Line{Point{center_x, greater_y}, Point{greater_x, greater_y}}, false},
+        // From 2 to 0
+        TestCase{Line{Point{greater_x, below_y}, Point{below_x, below_y}}, false},
+        // From 2 to 3
+        TestCase{
+            Line{Point{greater_x, below_y}, Point{below_x, center_y}}, true, Line{Point{4.2857142857142865, minY}, Point{minX, 3.8000000000000003}}},
+        // From 2 to 6
+        TestCase{Line{Point{greater_x, below_y}, Point{below_x, greater_y}}, true, Line{Point{7.5, minY}, Point{3.75, maxY}}},
+        // From 2 to 1
+        TestCase{Line{Point{greater_x, below_y}, Point{center_x, below_y}}, false},
+        // From 2 to 4
+        TestCase{Line{Point{greater_x, below_y}, Point{center_x, center_y}}, true, Line{Point{7.142857142857143, minY}, Point{center_x, center_y}}},
+        // From 2 to 7
+        TestCase{Line{Point{greater_x, below_y}, Point{center_x, greater_y}}, true, Line{Point{maxX, 4.2}, Point{6.875, maxY}}},
+        // From 2 to 5
+        TestCase{Line{Point{greater_x, below_y}, Point{greater_x, center_y}}, false},
+        // From 2 to 8
+        TestCase{Line{Point{greater_x, below_y}, Point{greater_x, greater_y}}, false},
+        // From 5 to 0
+        TestCase{Line{Point{greater_x, center_y}, Point{below_x, below_y}}, true, Line{Point{maxX, 3.8}, Point{5.714285714285714, minY}}},
+        // From 5 to 3
+        TestCase{Line{Point{greater_x, center_y}, Point{below_x, center_y}}, true, Line{Point{maxX, center_y}, Point{minX, center_y}}},
+        // From 5 to 6
+        TestCase{Line{Point{greater_x, center_y}, Point{below_x, greater_y}}, true, Line{Point{maxX, 5.4}, Point{6.666666666666667, maxY}}},
+        // From 5 to 1
+        TestCase{
+            Line{Point{greater_x, center_y}, Point{center_x, below_y}}, true, Line{Point{maxX, 3.0999999999999996}, Point{7.857142857142858, minY}}},
+        // From 5 to 4
+        TestCase{Line{Point{greater_x, center_y}, Point{center_x, center_y}}, true, Line{Point{maxX, center_y}, Point{center_x, center_y}}},
+        // From 5 to 7
+        TestCase{Line{Point{greater_x, center_y}, Point{center_x, greater_y}}, false},
+        // From 5 to 2
+        TestCase{Line{Point{greater_x, center_y}, Point{greater_x, below_y}}, false},
+        // From 5 to 8
+        TestCase{Line{Point{greater_x, center_y}, Point{greater_x, greater_y}}, false},
+        // From 8 to 0
+        TestCase{Line{Point{greater_x, greater_y}, Point{below_x, below_y}}, true, Line{Point{6.25, maxY}, Point{2.5, minY}}},
+        // From 8 to 3
+        TestCase{Line{Point{greater_x, greater_y}, Point{below_x, center_y}}, true, Line{Point{3.333333333333334, maxY}, Point{minX, 5.4}}},
+        // From 8 to 6
+        TestCase{Line{Point{greater_x, greater_y}, Point{below_x, greater_y}}, false},
+        // From 8 to 1
+        TestCase{Line{Point{greater_x, greater_y}, Point{center_x, below_y}}, true, Line{Point{maxX, 5.8}, Point{6.25, minY}}},
+        // From 8 to 4
+        TestCase{Line{Point{greater_x, greater_y}, Point{center_x, center_y}}, true, Line{Point{6.666666666666667, maxY}, Point{center_x, center_y}}},
+        // From 8 to 7
+        TestCase{Line{Point{greater_x, greater_y}, Point{center_x, greater_y}}, false},
+        // From 8 to 2
+        TestCase{Line{Point{greater_x, greater_y}, Point{greater_x, below_y}}, false},
+        // From 8 to 5
+        TestCase{Line{Point{greater_x, greater_y}, Point{greater_x, center_y}}, false},
+    }};
+
+    size_t i = 0;
+    for (const auto &t : test_cases) {
+        ++i;
+        std::string const msg =
+            fmt::format("test_case {}: From ({}, {}) to ({}, {})", i, t.line_ori.p0.x, t.line_ori.p0.y, t.line_ori.p1.x, t.line_ori.p1.y);
+        SCOPED_TRACE(msg);
+        testclipline(t);
+    }
+
+    constexpr std::array<TestCase, 24> boundary_lines{
+        TestCase{Line{Point{minX, below_y}, Point{minX, center_y}}, true, Line{Point{minX, minY}, Point{minX, center_y}}},
+        TestCase{Line{Point{minX, below_y}, Point{minX, greater_y}}, true, Line{Point{minX, minY}, Point{minX, maxY}}},
+        TestCase{Line{Point{minX, center_y}, Point{minX, below_y}}, true, Line{Point{minX, center_y}, Point{minX, minY}}},
+        TestCase{Line{Point{minX, center_y}, Point{minX, greater_y}}, true, Line{Point{minX, center_y}, Point{minX, maxY}}},
+        TestCase{Line{Point{minX, greater_y}, Point{minX, below_y}}, true, Line{Point{minX, maxY}, Point{minX, minY}}},
+        TestCase{Line{Point{minX, greater_y}, Point{minX, center_y}}, true, Line{Point{minX, maxY}, Point{minX, center_y}}},
+        TestCase{Line{Point{maxX, below_y}, Point{maxX, center_y}}, true, Line{Point{maxX, minY}, Point{maxX, center_y}}},
+        TestCase{Line{Point{maxX, below_y}, Point{maxX, greater_y}}, true, Line{Point{maxX, minY}, Point{maxX, maxY}}},
+        TestCase{Line{Point{maxX, center_y}, Point{maxX, below_y}}, true, Line{Point{maxX, center_y}, Point{maxX, minY}}},
+        TestCase{Line{Point{maxX, center_y}, Point{maxX, greater_y}}, true, Line{Point{maxX, center_y}, Point{maxX, maxY}}},
+        TestCase{Line{Point{maxX, greater_y}, Point{maxX, below_y}}, true, Line{Point{maxX, maxY}, Point{maxX, minY}}},
+        TestCase{Line{Point{maxX, greater_y}, Point{maxX, center_y}}, true, Line{Point{maxX, maxY}, Point{maxX, center_y}}},
+        TestCase{Line{Point{below_x, minY}, Point{center_x, minY}}, true, Line{Point{minX, minY}, Point{center_x, minY}}},
+        TestCase{Line{Point{below_x, minY}, Point{greater_x, minY}}, true, Line{Point{minX, minY}, Point{maxX, minY}}},
+        TestCase{Line{Point{center_x, minY}, Point{below_x, minY}}, true, Line{Point{center_x, minY}, Point{minX, minY}}},
+        TestCase{Line{Point{center_x, minY}, Point{greater_x, minY}}, true, Line{Point{center_x, minY}, Point{maxX, minY}}},
+        TestCase{Line{Point{greater_x, minY}, Point{below_x, minY}}, true, Line{Point{maxX, minY}, Point{minX, minY}}},
+        TestCase{Line{Point{greater_x, minY}, Point{center_x, minY}}, true, Line{Point{maxX, minY}, Point{center_x, minY}}},
+        TestCase{Line{Point{below_x, maxY}, Point{center_x, maxY}}, true, Line{Point{minX, maxY}, Point{center_x, maxY}}},
+        TestCase{Line{Point{below_x, maxY}, Point{greater_x, maxY}}, true, Line{Point{minX, maxY}, Point{maxX, maxY}}},
+        TestCase{Line{Point{center_x, maxY}, Point{below_x, maxY}}, true, Line{Point{center_x, maxY}, Point{minX, maxY}}},
+        TestCase{Line{Point{center_x, maxY}, Point{greater_x, maxY}}, true, Line{Point{center_x, maxY}, Point{maxX, maxY}}},
+        TestCase{Line{Point{greater_x, maxY}, Point{below_x, maxY}}, true, Line{Point{maxX, maxY}, Point{minX, maxY}}},
+        TestCase{Line{Point{greater_x, maxY}, Point{center_x, maxY}}, true, Line{Point{maxX, maxY}, Point{center_x, maxY}}},
+    };
+    i = 0;
+    for (const auto &t : boundary_lines) {
+        ++i;
+        std::string const msg =
+            fmt::format("Boundary Line {}: From ({}, {}) to ({}, {})", i, t.line_ori.p0.x, t.line_ori.p0.y, t.line_ori.p1.x, t.line_ori.p1.y);
+        SCOPED_TRACE(msg);
+        testclipline(t);
+    }
 }

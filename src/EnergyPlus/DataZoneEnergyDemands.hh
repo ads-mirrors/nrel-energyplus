@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -71,6 +71,8 @@ namespace DataZoneEnergyDemands {
         // zone maximum outdoor air fraction
         int StageNum = 0; // The stage number when staged thermostate is used:
         // 0 no load, >0 Heating stage, <0 Cooling stage
+
+        virtual ~ZoneSystemDemandData() = default;
 
         virtual void beginEnvironmentInit() = 0;
 
@@ -169,6 +171,14 @@ struct DataZoneEnergyDemandsData : BaseGlobalStruct
     EPVector<DataZoneEnergyDemands::ZoneSystemMoistureDemand> ZoneSysMoistureDemand;
     EPVector<DataZoneEnergyDemands::ZoneSystemSensibleDemand> spaceSysEnergyDemand;
     EPVector<DataZoneEnergyDemands::ZoneSystemMoistureDemand> spaceSysMoistureDemand;
+
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
+
+    void init_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
 
     void clear_state() override
     {

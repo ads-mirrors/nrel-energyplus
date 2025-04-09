@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -659,14 +659,13 @@ std::string IdfParser::parse_string(std::string_view idf, size_t &index)
     eat_whitespace(idf, index);
 
     std::string str;
-    char c;
 
     while (true) {
         if (index == idf_size) {
             break;
         }
 
-        c = idf[index];
+        char c = idf[index];
         increment_both_index(index, index_into_cur_line);
         if (c == ',' || c == ';' || c == '!') {
             decrement_both_index(index, index_into_cur_line);

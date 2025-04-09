@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -46,6 +46,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 // C++ headers
+#include <ios>
 #include <memory>
 #include <sstream>
 #include <stdexcept>
@@ -58,6 +59,7 @@
 #include <EnergyPlus/DataHeatBalance.hh>
 #include <EnergyPlus/DataRoomAirModel.hh>
 #include <EnergyPlus/DataStringGlobals.hh>
+#include <EnergyPlus/FileSystem.hh>
 #include <EnergyPlus/General.hh>
 #include <EnergyPlus/InputProcessing/InputProcessor.hh>
 #include <EnergyPlus/Material.hh>
@@ -102,8 +104,6 @@ bool ParseSQLiteInput(EnergyPlusData &state, bool &writeOutputToSQLite, bool &wr
             return input;
         };
 
-        auto &sql_ort = state.dataOutRptTab;
-
         // There can only be 1 "Output:SQLite"
         auto const instance = instances.value().begin();
         auto const &fields = instance.value();
@@ -121,6 +121,8 @@ bool ParseSQLiteInput(EnergyPlusData &state, bool &writeOutputToSQLite, bool &wr
         }
         { // "unit_conversion_for_tabular_data"
             std::string tabularDataUnitConversion = find_input(fields, "unit_conversion_for_tabular_data");
+            auto const &sql_ort = state.dataOutRptTab;
+
             if ("UseOutputControlTableStyles" == tabularDataUnitConversion) {
                 // Jan 2021 Note: Since here we do not know weather sql_ort->unitsStyle has been processed or not,
                 // the value "NotFound" is used for the option "UseOutputControlTableStyles" at this point;
@@ -182,21 +184,20 @@ void CreateSQLiteZoneExtendedOutput(EnergyPlusData &state)
         for (int groupNum = 1; groupNum <= state.dataHeatBal->NumOfZoneGroups; ++groupNum) {
             state.dataSQLiteProcedures->sqlite->addZoneGroupData(groupNum, state.dataHeatBal->ZoneGroup(groupNum));
         }
-        for (int scheduleNumber = 1, numberOfSchedules = ScheduleManager::GetNumberOfSchedules(state); scheduleNumber <= numberOfSchedules;
-             ++scheduleNumber) {
-            state.dataSQLiteProcedures->sqlite->addScheduleData(scheduleNumber,
-                                                                ScheduleManager::GetScheduleName(state, scheduleNumber),
-                                                                ScheduleManager::GetScheduleType(state, scheduleNumber),
-                                                                ScheduleManager::GetScheduleMinValue(state, scheduleNumber),
-                                                                ScheduleManager::GetScheduleMaxValue(state, scheduleNumber));
+        for (auto *sched : state.dataSched->schedules) {
+            state.dataSQLiteProcedures->sqlite->addScheduleData(
+                sched->Num,
+                sched->Name,
+                (sched->schedTypeNum == -1) ? "" : state.dataSched->scheduleTypes[sched->schedTypeNum]->Name,
+                sched->getMinVal(state),
+                sched->getMaxVal(state));
         }
         for (int surfaceNumber = 1; surfaceNumber <= state.dataSurface->TotSurfaces; ++surfaceNumber) {
             auto const &surface = state.dataSurface->Surface(surfaceNumber);
             state.dataSQLiteProcedures->sqlite->addSurfaceData(surfaceNumber, surface, DataSurfaces::cSurfaceClass(surface.Class));
         }
-        for (int materialNum = 1; materialNum <= state.dataMaterial->TotMaterials; ++materialNum) {
-            auto const *thisMaterial = state.dataMaterial->Material(materialNum);
-            state.dataSQLiteProcedures->sqlite->addMaterialData(materialNum, thisMaterial);
+        for (int materialNum = 1; materialNum <= state.dataMaterial->materials.isize(); ++materialNum) {
+            state.dataSQLiteProcedures->sqlite->addMaterialData(materialNum, state.dataMaterial->materials(materialNum));
         }
         for (int constructNum = 1; constructNum <= state.dataHeatBal->TotConstructs; ++constructNum) {
             auto const &construction = state.dataConstruction->Construct(constructNum);
@@ -1576,7 +1577,6 @@ void SQLite::createSQLiteTimeIndexRecord(OutputProcessor::ReportFreq const repor
                                          bool const warmupFlag)
 {
     if (m_writeOutputToSQLite) {
-        int intStartMinute = 0;
         int intervalInMinutes = 60;
 
         static std::vector<int> lastDayOfMonth = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
@@ -1594,7 +1594,7 @@ void SQLite::createSQLiteTimeIndexRecord(OutputProcessor::ReportFreq const repor
             ++m_sqlDBTimeIndex;
 
             int intEndMinute = static_cast<int>(endMinute + 0.5);
-            intStartMinute = static_cast<int>(startMinute + 0.5);
+            int intStartMinute = static_cast<int>(startMinute + 0.5);
             int t_hour = hour;
             intervalInMinutes = intEndMinute - intStartMinute;
             adjustReportingHourAndMinutes(t_hour, intEndMinute);
@@ -2156,8 +2156,7 @@ void SQLite::addZoneGroupData(int const number, DataHeatBalance::ZoneGroupData c
 
 void SQLite::addMaterialData(int const number, EnergyPlus::Material::MaterialBase const *materialData)
 {
-    materials.push_back(
-        std::make_unique<Material>(m_errorStream, m_db, number, dynamic_cast<const EnergyPlus::Material::MaterialChild *>(materialData)));
+    materials.push_back(std::make_unique<Material>(m_errorStream, m_db, number, materialData));
 }
 void SQLite::addConstructionData(int const number,
                                  EnergyPlus::Construction::ConstructionProps const &constructionData,
@@ -2224,6 +2223,8 @@ bool SQLite::ZoneGroup::insertIntoSQLite(sqlite3_stmt *insertStmt)
 }
 bool SQLite::Material::insertIntoSQLite(sqlite3_stmt *insertStmt)
 {
+    double isoMoistCap = 0.0;
+    double thermGradCoef = 0.0;
     sqliteBindInteger(insertStmt, 1, number);
     sqliteBindText(insertStmt, 2, name);
     sqliteBindInteger(insertStmt, 3, static_cast<int>(group));
@@ -2294,7 +2295,7 @@ bool SQLite::NominalLighting::insertIntoSQLite(sqlite3_stmt *insertStmt)
     sqliteBindInteger(insertStmt, 1, number);
     sqliteBindText(insertStmt, 2, name);
     sqliteBindForeignKey(insertStmt, 3, zonePtr);
-    sqliteBindForeignKey(insertStmt, 4, schedulePtr);
+    sqliteBindForeignKey(insertStmt, 4, sched->Num);
     sqliteBindDouble(insertStmt, 5, designLevel);
     sqliteBindDouble(insertStmt, 6, fractionReturnAir);
     sqliteBindDouble(insertStmt, 7, fractionRadiant);
@@ -2314,13 +2315,13 @@ bool SQLite::NominalPeople::insertIntoSQLite(sqlite3_stmt *insertStmt)
     sqliteBindText(insertStmt, 2, name);
     sqliteBindForeignKey(insertStmt, 3, zonePtr);
     sqliteBindDouble(insertStmt, 4, numberOfPeople);
-    sqliteBindForeignKey(insertStmt, 5, numberOfPeoplePtr);
-    sqliteBindForeignKey(insertStmt, 6, activityLevelPtr);
+    sqliteBindForeignKey(insertStmt, 5, numberOfPeopleSched ? numberOfPeopleSched->Num : -1);
+    sqliteBindForeignKey(insertStmt, 6, activityLevelSched ? activityLevelSched->Num : -1);
     sqliteBindDouble(insertStmt, 7, fractionRadiant);
     sqliteBindDouble(insertStmt, 8, fractionConvected);
-    sqliteBindForeignKey(insertStmt, 9, workEffPtr);
-    sqliteBindForeignKey(insertStmt, 10, clothingPtr);
-    sqliteBindForeignKey(insertStmt, 11, airVelocityPtr);
+    sqliteBindForeignKey(insertStmt, 9, workEffSched ? workEffSched->Num : -1);
+    sqliteBindForeignKey(insertStmt, 10, clothingSched ? clothingSched->Num : -1);
+    sqliteBindForeignKey(insertStmt, 11, airVelocitySched ? airVelocitySched->Num : -1);
     sqliteBindLogical(insertStmt, 12, fanger);
     sqliteBindLogical(insertStmt, 13, pierce);
     sqliteBindLogical(insertStmt, 14, ksu);
@@ -2341,7 +2342,7 @@ bool SQLite::NominalElectricEquipment::insertIntoSQLite(sqlite3_stmt *insertStmt
     sqliteBindInteger(insertStmt, 1, number);
     sqliteBindText(insertStmt, 2, name);
     sqliteBindForeignKey(insertStmt, 3, zonePtr);
-    sqliteBindForeignKey(insertStmt, 4, schedulePtr);
+    sqliteBindForeignKey(insertStmt, 4, sched->Num);
     sqliteBindDouble(insertStmt, 5, designLevel);
     sqliteBindDouble(insertStmt, 6, fractionLatent);
     sqliteBindDouble(insertStmt, 7, fractionRadiant);
@@ -2359,7 +2360,7 @@ bool SQLite::NominalGasEquipment::insertIntoSQLite(sqlite3_stmt *insertStmt)
     sqliteBindInteger(insertStmt, 1, number);
     sqliteBindText(insertStmt, 2, name);
     sqliteBindForeignKey(insertStmt, 3, zonePtr);
-    sqliteBindForeignKey(insertStmt, 4, schedulePtr);
+    sqliteBindForeignKey(insertStmt, 4, sched->Num);
     sqliteBindDouble(insertStmt, 5, designLevel);
     sqliteBindDouble(insertStmt, 6, fractionLatent);
     sqliteBindDouble(insertStmt, 7, fractionRadiant);
@@ -2377,7 +2378,7 @@ bool SQLite::NominalSteamEquipment::insertIntoSQLite(sqlite3_stmt *insertStmt)
     sqliteBindInteger(insertStmt, 1, number);
     sqliteBindText(insertStmt, 2, name);
     sqliteBindForeignKey(insertStmt, 3, zonePtr);
-    sqliteBindForeignKey(insertStmt, 4, schedulePtr);
+    sqliteBindForeignKey(insertStmt, 4, sched->Num);
     sqliteBindDouble(insertStmt, 5, designLevel);
     sqliteBindDouble(insertStmt, 6, fractionLatent);
     sqliteBindDouble(insertStmt, 7, fractionRadiant);
@@ -2395,7 +2396,7 @@ bool SQLite::NominalHotWaterEquipment::insertIntoSQLite(sqlite3_stmt *insertStmt
     sqliteBindInteger(insertStmt, 1, number);
     sqliteBindText(insertStmt, 2, name);
     sqliteBindForeignKey(insertStmt, 3, zonePtr);
-    sqliteBindForeignKey(insertStmt, 4, schedulePtr);
+    sqliteBindForeignKey(insertStmt, 4, sched->Num);
     sqliteBindDouble(insertStmt, 5, designLevel);
     sqliteBindDouble(insertStmt, 6, fractionLatent);
     sqliteBindDouble(insertStmt, 7, fractionRadiant);
@@ -2413,7 +2414,7 @@ bool SQLite::NominalOtherEquipment::insertIntoSQLite(sqlite3_stmt *insertStmt)
     sqliteBindInteger(insertStmt, 1, number);
     sqliteBindText(insertStmt, 2, name);
     sqliteBindForeignKey(insertStmt, 3, zonePtr);
-    sqliteBindForeignKey(insertStmt, 4, schedulePtr);
+    sqliteBindForeignKey(insertStmt, 4, sched->Num);
     sqliteBindDouble(insertStmt, 5, designLevel);
     sqliteBindDouble(insertStmt, 6, fractionLatent);
     sqliteBindDouble(insertStmt, 7, fractionRadiant);
@@ -2431,7 +2432,7 @@ bool SQLite::NominalBaseboardHeat::insertIntoSQLite(sqlite3_stmt *insertStmt)
     sqliteBindInteger(insertStmt, 1, number);
     sqliteBindText(insertStmt, 2, name);
     sqliteBindForeignKey(insertStmt, 3, zonePtr);
-    sqliteBindForeignKey(insertStmt, 4, schedPtr);
+    sqliteBindForeignKey(insertStmt, 4, sched->Num);
     sqliteBindDouble(insertStmt, 5, capatLowTemperature);
     sqliteBindDouble(insertStmt, 6, lowTemperature);
     sqliteBindDouble(insertStmt, 7, capatHighTemperature);
@@ -2450,7 +2451,7 @@ bool SQLite::Infiltration::insertIntoSQLite(sqlite3_stmt *insertStmt)
     sqliteBindInteger(insertStmt, 1, number);
     sqliteBindText(insertStmt, 2, name);
     sqliteBindForeignKey(insertStmt, 3, zonePtr);
-    sqliteBindForeignKey(insertStmt, 4, schedPtr);
+    sqliteBindForeignKey(insertStmt, 4, sched->Num);
     sqliteBindDouble(insertStmt, 5, designLevel);
 
     int rc = sqliteStepCommand(insertStmt);
@@ -2463,7 +2464,7 @@ bool SQLite::Ventilation::insertIntoSQLite(sqlite3_stmt *insertStmt)
     sqliteBindInteger(insertStmt, 1, number);
     sqliteBindText(insertStmt, 2, name);
     sqliteBindForeignKey(insertStmt, 3, zonePtr);
-    sqliteBindForeignKey(insertStmt, 4, schedPtr);
+    sqliteBindForeignKey(insertStmt, 4, sched->Num);
     sqliteBindDouble(insertStmt, 5, designLevel);
 
     int rc = sqliteStepCommand(insertStmt);
@@ -2597,7 +2598,7 @@ SQLite::SQLiteData::SQLiteData(std::shared_ptr<std::ostream> const &errorStream,
 }
 
 SQLiteProcedures::SQLiteProcedures(std::shared_ptr<std::ostream> const &errorStream, std::shared_ptr<sqlite3> const &db)
-    : m_writeOutputToSQLite(true), m_errorStream(errorStream), m_connection(nullptr), m_db(db)
+    : m_writeOutputToSQLite(true), m_errorStream(errorStream), m_db(db)
 {
 }
 
@@ -2605,16 +2606,19 @@ SQLiteProcedures::SQLiteProcedures(std::shared_ptr<std::ostream> const &errorStr
                                    bool writeOutputToSQLite,
                                    fs::path const &dbName,
                                    fs::path const &errorFilePath)
-    : m_writeOutputToSQLite(writeOutputToSQLite), m_errorStream(errorStream), m_connection(nullptr)
+    : m_writeOutputToSQLite(writeOutputToSQLite), m_errorStream(errorStream)
 {
+    sqlite3 *m_connection = nullptr;
     if (m_writeOutputToSQLite) {
-        int rc = -1;
+        int rc;
         bool ok = true;
 
+        std::string const dbName_utf8 = FileSystem::toGenericString(dbName);
+
         // Test if we can write to the sqlite error file
-        //  Does there need to be a seperate sqlite.err file at all?  Consider using eplusout.err
+        //  Does there need to be a separate sqlite.err file at all?  Consider using eplusout.err
         if (m_errorStream) {
-            *m_errorStream << "SQLite3 message, " << errorFilePath.string() << " open for processing!" << std::endl;
+            *m_errorStream << "SQLite3 message, " << FileSystem::toGenericString(errorFilePath) << " open for processing!" << std::endl;
         } else {
             ok = false;
         }
@@ -2633,27 +2637,36 @@ SQLiteProcedures::SQLiteProcedures(std::shared_ptr<std::ostream> const &errorStr
         // If we can't then there are probably locks on the database
         if (ok) {
             // sqlite3_open_v2 could return SQLITE_BUSY at this point. If so, do not proceed to sqlite3_exec.
-            rc = sqlite3_open_v2(dbName.string().c_str(), &m_connection, SQLITE_OPEN_READWRITE, nullptr);
+            rc = sqlite3_open_v2(dbName_utf8.c_str(), &m_connection, SQLITE_OPEN_READWRITE, nullptr);
             if (rc) {
                 *m_errorStream << "SQLite3 message, can't get exclusive lock to open database: " << sqlite3_errmsg(m_connection) << std::endl;
                 ok = false;
             }
         }
+
         if (ok) {
             char *zErrMsg = nullptr;
-            rc = sqlite3_exec(m_connection, "CREATE TABLE Test(x INTEGER PRIMARY KEY)", nullptr, 0, &zErrMsg);
+            // Set journal_mode OFF to avoid creating the file dbName + "-journal" (when dbName is a regular file)
+            rc = sqlite3_exec(m_connection, "PRAGMA journal_mode = OFF;", nullptr, 0, &zErrMsg);
+            if (!rc) {
+                rc = sqlite3_exec(m_connection, "CREATE TABLE Test(x INTEGER PRIMARY KEY)", nullptr, 0, &zErrMsg);
+            }
             sqlite3_close(m_connection);
             if (rc) {
-                *m_errorStream << "SQLite3 message, can't get exclusive lock to edit database: " << sqlite3_errmsg(m_connection) << std::endl;
+                *m_errorStream << "SQLite3 message, can't get exclusive lock to edit database: " << zErrMsg << std::endl;
                 ok = false;
             } else {
                 if (dbName != ":memory:") {
                     // Remove test db
-                    rc = remove(dbName.string().c_str());
-                    if (rc) {
-                        // File operation failed. SQLite connection is not in an error state.
-                        *m_errorStream << "SQLite3 message, can't remove old database." << std::endl;
-                        ok = false;
+                    // rc = remove(dbName_utf8.c_str());
+                    if (fs::is_regular_file(dbName)) {
+                        std::error_code ec;
+                        if (!fs::remove(dbName, ec)) {
+                            // File operation failed. SQLite connection is not in an error state.
+                            *m_errorStream << "SQLite3 message, can't remove old database. code=" << ec.value() << ", error: " << ec.message()
+                                           << std::endl;
+                            ok = false;
+                        }
                     }
                 }
             }
@@ -2662,7 +2675,7 @@ SQLiteProcedures::SQLiteProcedures(std::shared_ptr<std::ostream> const &errorStr
 
         if (ok) {
             // Now open the output db for the duration of the simulation
-            rc = sqlite3_open_v2(dbName.string().c_str(), &m_connection, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, nullptr);
+            rc = sqlite3_open_v2(dbName_utf8.c_str(), &m_connection, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, nullptr);
             m_db = std::shared_ptr<sqlite3>(m_connection, sqlite3_close);
             if (rc) {
                 *m_errorStream << "SQLite3 message, can't open new database: " << sqlite3_errmsg(m_connection) << std::endl;
@@ -2803,7 +2816,7 @@ int SQLiteProcedures::sqliteResetCommand(sqlite3_stmt *stmt)
 
 bool SQLiteProcedures::sqliteWithinTransaction()
 {
-    return (sqlite3_get_autocommit(m_connection) == 0);
+    return (sqlite3_get_autocommit(m_db.get()) == 0);
 }
 
 // int SQLiteProcedures::sqliteClearBindings(sqlite3_stmt * stmt)

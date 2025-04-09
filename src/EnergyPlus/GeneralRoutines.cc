@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -798,7 +798,7 @@ void ValidateComponent(EnergyPlusData &state,
 
 void CalcBasinHeaterPower(EnergyPlusData &state,
                           Real64 const Capacity,     // Basin heater capacity per degree C below setpoint (W/C)
-                          int const SchedulePtr,     // Pointer to basin heater schedule
+                          Sched::Schedule *sched,    // basin heater schedule
                           Real64 const SetPointTemp, // setpoint temperature for basin heater operation (C)
                           Real64 &Power              // Basin heater power (W)
 )
@@ -821,8 +821,8 @@ void CalcBasinHeaterPower(EnergyPlusData &state,
     Power = 0.0;
     // Operate basin heater anytime outdoor temperature is below setpoint and water is not flowing through the equipment
     // IF schedule exists, basin heater performance can be scheduled OFF
-    if (SchedulePtr > 0) {
-        Real64 BasinHeaterSch = ScheduleManager::GetCurrentScheduleValue(state, SchedulePtr);
+    if (sched != nullptr) {
+        Real64 BasinHeaterSch = sched->getCurrentVal();
         if (Capacity > 0.0 && BasinHeaterSch > 0.0) {
             Power = max(0.0, Capacity * (SetPointTemp - state.dataEnvrn->OutDryBulbTemp));
         }
@@ -1298,6 +1298,9 @@ void TestReturnAirPathIntegrity(EnergyPlusData &state, bool &ErrFound, Array2S_i
                     } else {
                         ++CountNodes;
                         AllNodes(CountNodes) = state.dataMixerComponent->MixerCond(Count2).OutletNode;
+                        if (state.dataZoneEquip->ReturnAirPath(BCount).OutletNodeNum == state.dataMixerComponent->MixerCond(Count2).OutletNode) {
+                            state.dataZoneEquip->ReturnAirPath(BCount).OutletRetPathCompNum = NumComp;
+                        }
                         for (int Loop = 1; Loop <= state.dataMixerComponent->MixerCond(Count2).NumInletNodes; ++Loop) {
                             ++CountNodes;
                             AllNodes(CountNodes) = state.dataMixerComponent->MixerCond(Count2).InletNode(Loop);
@@ -1336,6 +1339,9 @@ void TestReturnAirPathIntegrity(EnergyPlusData &state, bool &ErrFound, Array2S_i
                     } else {
                         ++CountNodes;
                         AllNodes(CountNodes) = state.dataZonePlenum->ZoneRetPlenCond(Count2).OutletNode;
+                        if (state.dataZoneEquip->ReturnAirPath(BCount).OutletNodeNum == state.dataZonePlenum->ZoneRetPlenCond(Count2).OutletNode) {
+                            state.dataZoneEquip->ReturnAirPath(BCount).OutletRetPathCompNum = NumComp;
+                        }
                         for (int Loop = 1; Loop <= state.dataZonePlenum->ZoneRetPlenCond(Count2).NumInletNodes; ++Loop) {
                             ++CountNodes;
                             AllNodes(CountNodes) = state.dataZonePlenum->ZoneRetPlenCond(Count2).InletNode(Loop);

@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -53,6 +53,7 @@
 // EnergyPlus Headers
 #include "Fixtures/EnergyPlusFixture.hh"
 #include <EnergyPlus/Data/EnergyPlusData.hh>
+#include <EnergyPlus/DataContaminantBalance.hh>
 #include <EnergyPlus/DataEnvironment.hh>
 #include <EnergyPlus/DataLoopNode.hh>
 #include <EnergyPlus/InputProcessing/InputProcessor.hh>
@@ -6941,10 +6942,15 @@ TEST_F(EnergyPlusFixture, VariableSpeedCoils_Coil_Defrost_Power_Fix_Test)
                                               OnOffAirFlowRatio);
 
     EXPECT_NEAR(state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).DefrostPower, 908.10992432432420, 1e-3);
-
-    // Check that when DefrostTime == 0 the performance of the coil is not degraded
     Real64 COPwDefrost = state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).COP;
-    state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).DefrostTime == 0;
+    EXPECT_LT(state->dataVariableSpeedCoils->HeatingCapacityMultiplier, 1.0);
+    EXPECT_LT(state->dataVariableSpeedCoils->InputPowerMultiplier, 1.0);
+
+    // Frost Multiplier EMS actuators
+    state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).FrostHeatingCapacityMultiplierEMSOverrideOn = true;
+    state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).FrostHeatingCapacityMultiplierEMSOverrideValue = 0.5;
+    state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).FrostHeatingInputPowerMultiplierEMSOverrideOn = true;
+    state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).FrostHeatingInputPowerMultiplierEMSOverrideValue = 0.6;
     VariableSpeedCoils::SimVariableSpeedCoils(*state,
                                               state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).Name,
                                               DXCoilNum,
@@ -6956,7 +6962,47 @@ TEST_F(EnergyPlusFixture, VariableSpeedCoils_Coil_Defrost_Power_Fix_Test)
                                               SensLoad,
                                               LatentLoad,
                                               OnOffAirFlowRatio);
-    EXPECT_NEAR(COPwDefrost, state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).COP, 0.001);
+    EXPECT_DOUBLE_EQ(state->dataVariableSpeedCoils->HeatingCapacityMultiplier, 0.5);
+    EXPECT_DOUBLE_EQ(state->dataVariableSpeedCoils->InputPowerMultiplier, 0.6);
+    state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).FrostHeatingCapacityMultiplierEMSOverrideOn = false;
+    state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).FrostHeatingInputPowerMultiplierEMSOverrideOn = false;
+
+    // Check that when DefrostTime == 0 the performance of the coil is not degraded
+    state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).DefrostTime = 0;
+    VariableSpeedCoils::SimVariableSpeedCoils(*state,
+                                              state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).Name,
+                                              DXCoilNum,
+                                              fanOp,
+                                              compressorOp, // compressor on/off. 0 = off; 1= on
+                                              PartLoadFrac,
+                                              SpeedCal,
+                                              SpeedRatio,
+                                              SensLoad,
+                                              LatentLoad,
+                                              OnOffAirFlowRatio);
+    EXPECT_DOUBLE_EQ(state->dataVariableSpeedCoils->HeatingCapacityMultiplier, 1.0);
+    EXPECT_DOUBLE_EQ(state->dataVariableSpeedCoils->InputPowerMultiplier, 1.0);
+
+    // Frost Multiplier EMS actuators
+    state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).FrostHeatingCapacityMultiplierEMSOverrideOn = true;
+    state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).FrostHeatingCapacityMultiplierEMSOverrideValue = 0.5;
+    state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).FrostHeatingInputPowerMultiplierEMSOverrideOn = true;
+    state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).FrostHeatingInputPowerMultiplierEMSOverrideValue = 0.6;
+    VariableSpeedCoils::SimVariableSpeedCoils(*state,
+                                              state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).Name,
+                                              DXCoilNum,
+                                              fanOp,
+                                              compressorOp, // compressor on/off. 0 = off; 1= on
+                                              PartLoadFrac,
+                                              SpeedCal,
+                                              SpeedRatio,
+                                              SensLoad,
+                                              LatentLoad,
+                                              OnOffAirFlowRatio);
+    EXPECT_DOUBLE_EQ(state->dataVariableSpeedCoils->HeatingCapacityMultiplier, 1.0);
+    EXPECT_DOUBLE_EQ(state->dataVariableSpeedCoils->InputPowerMultiplier, 1.0);
+    state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).FrostHeatingCapacityMultiplierEMSOverrideOn = false;
+    state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).FrostHeatingInputPowerMultiplierEMSOverrideOn = false;
 
     // Now simulate the coil with "CompressorOperation" command to be "Off":
     // In this case, the "DefrostPower" need to be cleared to be zero if done correctly;
@@ -7133,6 +7179,186 @@ TEST_F(EnergyPlusFixture, VariableSpeedCoils_ZeroRatedCoolingCapacity_Test)
               state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).InletAirHumRat);
     EXPECT_EQ(state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).OutletAirEnthalpy,
               state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).InletAirEnthalpy);
+}
+
+TEST_F(EnergyPlusFixture, VariableSpeedCoolingCoils_AutosizePumpPower)
+{
+    std::string const idf_objects = delimited_string(
+        {"Coil:Cooling:DX:VariableSpeed,",
+         "Main Cooling Coil 1,     !- Name",
+         "    Heat Recovery Supply Outlet,  !- Indoor Air Inlet Node Name",
+         "    Heat Recovery Exhuast Inlet Node,  !- Indoor Air Outlet Node Name",
+         "    1.0,                     !- Number of Speeds {dimensionless}",
+         "    1.0,                     !- Nominal Speed Level {dimensionless}",
+         "    AUTOSIZE,                !- Gross Rated Total Cooling Capacity At Selected Nominal Speed Level {W}",
+         "    AUTOSIZE,                !- Rated Air Flow Rate At Selected Nominal Speed Level {m3/s}",
+         "    0.0,                     !- Nominal Time for Condensate to Begin Leaving the Coil {s}",
+         "    0.0,                     !- Initial Moisture Evaporation Rate Divided by Steady-State AC Latent Capacity {dimensionless}",
+         "    ,                        !- Maximum Cycling Rate",
+         "    ,                        !- Latent Capacity Time Constant",
+         "    ,                        !- Fan Delay Time",
+         "    HPACCOOLPLFFPLR,         !- Energy Part Load Fraction Curve Name",
+         "    ,                        !- Condenser Air Inlet Node Name",
+         "    EvaporativelyCooled,     !- Condenser Type",
+         "    Autosize,                !- Evaporative Condenser Pump Rated Power Consumption {W}",
+         "    0.0,                     !- Crankcase Heater Capacity {W}",
+         "    ,                        !- Crankcase Heater Capacity Function of Temperature Curve Name",
+         "    10.0,                    !- Maximum Outdoor Dry-Bulb Temperature for Crankcase Heater Operation {C}",
+         "    ,                        !- Minimum Outdoor Dry-Bulb Temperature for Compressor Operation {C}",
+         "    ,                        !- Supply Water Storage Tank Name",
+         "    ,                        !- Condensate Collection Water Storage Tank Name",
+         "    ,                        !- Basin Heater Capacity {W/K}",
+         "    ,                        !- Basin Heater Setpoint Temperature {C}",
+         "    ,                        !- Basin Heater Operating Schedule Name",
+         "    36991.44197,             !- Speed 1 Reference Unit Gross Rated Total Cooling Capacity {W}",
+         "    0.75,                    !- Speed 1 Reference Unit Gross Rated Sensible Heat Ratio {dimensionless}",
+         "    3.866381837,             !- Speed 1 Reference Unit Gross Rated Cooling COP {W/W}",
+         "    3.776,                   !- Speed 1 Reference Unit Rated Air Flow Rate {m3/s}",
+         "    ,                        !- Speed 1 2017 Rated Evaporator Fan Power Per Volume Flow Rate {W/(m3/s)}",
+         "    ,                        !- Speed 1 2023 Rated Evaporator Fan Power Per Volume Flow Rate {W/(m3/s)}",
+         "    10.62,                   !- Speed 1 Reference Unit Rated Condenser Air Flow Rate {m3/s}",
+         "    ,                        !- Speed 1 Reference Unit Rated Pad Effectiveness of Evap Precooling {dimensionless}",
+         "    HPCoolingCAPFTemp4,      !- Speed 1 Total Cooling Capacity Function of Temperature Curve Name",
+         "    HPACFFF,                 !- Speed 1 Total Cooling Capacity Function of Air Flow Fraction Curve Name",
+         "    HPCoolingEIRFTemp4,      !- Speed 1 Energy Input Ratio Function of Temperature Curve Name",
+         "    HPACFFF;                 !- Speed 1 Energy Input Ratio Function of Air Flow Fraction Curve Name",
+
+         " Curve:Quadratic,",
+         "    HPACCOOLPLFFPLR,         !- Name",
+         "    1.0,                     !- Coefficient1 Constant",
+         "    0.0,                     !- Coefficient2 x",
+         "    0.0,                     !- Coefficient3 x**2",
+         "    0.5,                     !- Minimum Value of x",
+         "    1.5;                     !- Maximum Value of x",
+
+         " Curve:Cubic,",
+         "    HPACFFF,                 !- Name",
+         "    1.0,                     !- Coefficient1 Constant",
+         "    0.0,                     !- Coefficient2 x",
+         "    0.0,                     !- Coefficient3 x**2",
+         "    0.0,                     !- Coefficient4 x**3",
+         "    0.5,                     !- Minimum Value of x",
+         "    1.5;                     !- Maximum Value of x",
+
+         " Curve:Biquadratic,",
+         "    HPCoolingEIRFTemp4,      !- Name",
+         "    0.0001514017,            !- Coefficient1 Constant",
+         "    0.0655062896,            !- Coefficient2 x",
+         "    -0.0020370821,           !- Coefficient3 x**2",
+         "    0.0067823041,            !- Coefficient4 y",
+         "    0.0004087196,            !- Coefficient5 y**2",
+         "    -0.0003552302,           !- Coefficient6 x*y",
+         "    13.89,                   !- Minimum Value of x",
+         "    22.22,                   !- Maximum Value of x",
+         "    12.78,                   !- Minimum Value of y",
+         "    51.67,                   !- Maximum Value of y",
+         "    0.5141,                  !- Minimum Curve Output",
+         "    1.7044,                  !- Maximum Curve Output",
+         "    Temperature,             !- Input Unit Type for X",
+         "    Temperature,             !- Input Unit Type for Y",
+         "    Dimensionless;           !- Output Unit Type",
+
+         "  Curve:Biquadratic,",
+         "    HPCoolingCAPFTemp4,      !- Name",
+         "    1.3544202152,            !- Coefficient1 Constant",
+         "    -0.0493402773,           !- Coefficient2 x",
+         "    0.0022649843,            !- Coefficient3 x**2",
+         "    0.0008517727,            !- Coefficient4 y",
+         "    -0.0000426316,           !- Coefficient5 y**2",
+         "    -0.0003364517,           !- Coefficient6 x*y",
+         "    13.89,                   !- Minimum Value of x",
+         "    22.22,                   !- Maximum Value of x",
+         "    12.78,                   !- Minimum Value of y",
+         "    51.67,                   !- Maximum Value of y",
+         "    0.7923,                  !- Minimum Curve Output",
+         "    1.2736,                  !- Maximum Curve Output",
+         "    Temperature,             !- Input Unit Type for X",
+         "    Temperature,             !- Input Unit Type for Y",
+         "    Dimensionless;           !- Output Unit Type",
+         ""});
+
+    ASSERT_TRUE(process_idf(idf_objects));
+
+    // Get coil inputs
+    VariableSpeedCoils::GetVarSpeedCoilInput(*state);
+
+    auto DXCoilNum = 1;
+
+    EXPECT_EQ(state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).EvapCondPumpElecNomPower, DataSizing::AutoSize);
+}
+
+TEST_F(EnergyPlusFixture, VariableSpeedCoils_UpdateVarSpeedCoil_Test)
+{
+    int coilNum = 1;
+    Real64 constexpr closeEnough = 0.001;
+    state->dataVariableSpeedCoils->VarSpeedCoil.allocate(1);
+    auto &thisVarSpeedCoil = state->dataVariableSpeedCoils->VarSpeedCoil(1);
+    state->dataLoopNodes->Node.allocate(2);
+    auto &thisInletNode = state->dataLoopNodes->Node(1);
+    auto &thisOutletNode = state->dataLoopNodes->Node(2);
+
+    // Set up test data
+    state->dataHVACGlobal->TimeStepSysSec = 60.0;
+    thisVarSpeedCoil.SimFlag = false; // not running (doesn't matter if it's running or not, this is mostly to test the GenContam fix)
+    thisVarSpeedCoil.InletAirDBTemp = 21.0;
+    thisVarSpeedCoil.InletAirHumRat = 0.003;
+    thisVarSpeedCoil.InletAirEnthalpy = 28.743;
+    thisVarSpeedCoil.InletWaterTemp = 0.0;
+    thisVarSpeedCoil.InletWaterEnthalpy = 0.0;
+    thisVarSpeedCoil.AirInletNodeNum = 1;
+    thisVarSpeedCoil.WaterInletNodeNum = 0;
+    thisVarSpeedCoil.AirOutletNodeNum = 2;
+    thisVarSpeedCoil.WaterOutletNodeNum = 0;
+    state->dataLoopNodes->Node(1).MassFlowRate = 0.123;
+    state->dataLoopNodes->Node(2).MassFlowRate = 0.0;
+    thisVarSpeedCoil.OutletAirDBTemp = 0.0;
+    thisVarSpeedCoil.OutletAirHumRat = 0.0;
+    thisVarSpeedCoil.OutletAirEnthalpy = 0.0;
+    thisVarSpeedCoil.OutletWaterTemp = -1.0;
+    thisVarSpeedCoil.OutletWaterEnthalpy = -10.0;
+    thisInletNode.Quality = 0.1;
+    thisInletNode.Press = 101234.;
+    thisInletNode.MassFlowRateMin = 0.1;
+    thisInletNode.MassFlowRateMax = 1.0;
+    thisInletNode.MassFlowRateMinAvail = 0.2;
+    thisInletNode.MassFlowRateMaxAvail = 0.9;
+    thisOutletNode.Quality = 0.0;
+    thisOutletNode.Press = 0.0;
+    thisOutletNode.MassFlowRateMin = 0.0;
+    thisOutletNode.MassFlowRateMax = 0.0;
+    thisOutletNode.MassFlowRateMinAvail = 0.0;
+    thisOutletNode.MassFlowRateMaxAvail = 0.0;
+    state->dataContaminantBalance->Contaminant.CO2Simulation = true;
+    thisInletNode.CO2 = 55.5;
+    thisOutletNode.CO2 = 0.0;
+    state->dataContaminantBalance->Contaminant.GenericContamSimulation = true;
+    thisInletNode.GenContam = 12.345;
+    thisOutletNode.GenContam = 0.0;
+    thisVarSpeedCoil.reportCoilFinalSizes = false;
+    thisVarSpeedCoil.VSCoilType == HVAC::Coil_CoolingAirToAirVariableSpeed;
+
+    // Run the test
+    VariableSpeedCoils::UpdateVarSpeedCoil(*state, coilNum);
+
+    // Check the results
+    EXPECT_NEAR(thisVarSpeedCoil.Energy, 0.0, closeEnough);
+    EXPECT_NEAR(thisVarSpeedCoil.OutletAirDBTemp, thisVarSpeedCoil.InletAirDBTemp, closeEnough);
+    EXPECT_NEAR(thisVarSpeedCoil.OutletAirHumRat, thisVarSpeedCoil.InletAirHumRat, closeEnough);
+    EXPECT_NEAR(thisVarSpeedCoil.OutletAirEnthalpy, thisVarSpeedCoil.InletAirEnthalpy, closeEnough);
+    EXPECT_NEAR(thisVarSpeedCoil.OutletWaterTemp, thisVarSpeedCoil.InletWaterTemp, closeEnough);
+    EXPECT_NEAR(thisVarSpeedCoil.OutletWaterEnthalpy, thisVarSpeedCoil.InletWaterEnthalpy, closeEnough);
+    EXPECT_NEAR(thisOutletNode.MassFlowRate, thisInletNode.MassFlowRate, closeEnough);
+    EXPECT_NEAR(thisOutletNode.Temp, thisVarSpeedCoil.OutletAirDBTemp, closeEnough);
+    EXPECT_NEAR(thisOutletNode.HumRat, thisVarSpeedCoil.OutletAirHumRat, closeEnough);
+    EXPECT_NEAR(thisOutletNode.Enthalpy, thisVarSpeedCoil.OutletAirEnthalpy, closeEnough);
+    EXPECT_NEAR(thisOutletNode.Quality, thisInletNode.Quality, closeEnough);
+    EXPECT_NEAR(thisOutletNode.Press, thisInletNode.Press, closeEnough);
+    EXPECT_NEAR(thisOutletNode.MassFlowRateMin, thisInletNode.MassFlowRateMin, closeEnough);
+    EXPECT_NEAR(thisOutletNode.MassFlowRateMax, thisInletNode.MassFlowRateMax, closeEnough);
+    EXPECT_NEAR(thisOutletNode.MassFlowRateMinAvail, thisInletNode.MassFlowRateMinAvail, closeEnough);
+    EXPECT_NEAR(thisOutletNode.MassFlowRateMaxAvail, thisInletNode.MassFlowRateMaxAvail, closeEnough);
+    EXPECT_NEAR(thisOutletNode.CO2, thisInletNode.CO2, closeEnough);
+    EXPECT_NEAR(thisOutletNode.GenContam, thisInletNode.GenContam, closeEnough);
 }
 
 } // namespace EnergyPlus

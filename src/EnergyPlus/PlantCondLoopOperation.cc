@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -102,12 +102,11 @@ namespace EnergyPlus::PlantCondLoopOperation {
 
 // Using/Aliasing
 using namespace DataPlant;
-using FluidProperties::GetSpecificHeatGlycol;
 using HVAC::SmallLoad;
 
 void ManagePlantLoadDistribution(EnergyPlusData &state,
                                  PlantLocation const &plantLoc, // PlantLoop data structure Location struct
-                                 Real64 &LoopDemand,
+                                 Real64 const LoopDemand,
                                  Real64 &RemLoopDemand,
                                  bool const FirstHVACIteration,
                                  bool &LoopShutDownFlag, // EMS flag to tell loop solver to shut down pumps
@@ -127,8 +126,6 @@ void ManagePlantLoadDistribution(EnergyPlusData &state,
     // appropriate type of control algorithm (setpoint, load range based,
     // or uncontrolled) for the component
 
-    int ListNum;    // DO loop index in PlantLoop()%LoopSide()%Branch()%Comp()%OpScheme()%EquipList(ListNum)
-    int CurListNum; // Current list...= ListNum,  used for error checking only
     // Indices in PlantLoop.LoopSide.Branch.Comp data structure
     int CurCompLevelOpNum; // This is set by the init routine at each FirstHVACIteration.
     // It tells which scheme for this component is currently scheduled
@@ -138,7 +135,6 @@ void ManagePlantLoadDistribution(EnergyPlusData &state,
     // Used as indices in PlantLoop.OpScheme() data structure
     int CurSchemePtr; // set by PlantLoop.LoopSide.Branch.Comp.OpScheme.OpSchemePtr
     // used to locate data in PL()%OpScheme(CurSchemePtr)
-    int ListPtr; // !set by PL()%LoopSide()%Branch()%Comp()%OpScheme(CurCompLevelOpNum)%EquipList(CurListNum)ListPtr
     // used to locate data in PL()%OpScheme(CurSchemePtr)%EquipList(ListPtr)
     // Local values from the PlantLoop()%OpScheme() data structure
     Real64 RangeVariable(0.0); // holds the 'loop demand', wetbulb temp, etc.
@@ -148,10 +144,6 @@ void ManagePlantLoadDistribution(EnergyPlusData &state,
     // Local values from the PlantLoop()%LoopSide()%Branch()%Comp() data structure
     int NumEquipLists; // number of equipment lists
     // Error control flags
-    int NumCompsOnList;
-    int CompIndex;
-    int EquipBranchNum;
-    int EquipCompNum;
 
     // Shut down equipment and return if so instructed by LoopShutDownFlag
     if (LoopShutDownFlag) {
@@ -268,8 +260,9 @@ void ManagePlantLoadDistribution(EnergyPlusData &state,
         break;
     }
     default: { // it's a range based control type with multiple equipment lists
-        CurListNum = 0;
-        for (ListNum = 1; ListNum <= NumEquipLists; ++ListNum) {
+        int ListPtr = 0;
+        int CurListNum = 0;
+        for (int ListNum = 1; ListNum <= NumEquipLists; ++ListNum) {
             // setpointers to 'PlantLoop()%OpScheme()...'structure
             ListPtr = this_component.OpScheme(CurCompLevelOpNum).EquipList(ListNum).ListPtr;
             RangeHiLimit = this_op_scheme.EquipList(ListPtr).RangeUpperLimit;
@@ -299,12 +292,12 @@ void ManagePlantLoadDistribution(EnergyPlusData &state,
 
         if (CurListNum > 0) {
             // there could be equipment on another list that needs to be nulled out, it may have a load from earlier iteration
-            for (ListNum = 1; ListNum <= NumEquipLists; ++ListNum) {
+            for (int ListNum = 1; ListNum <= NumEquipLists; ++ListNum) {
                 if (ListNum == CurListNum) continue; // leave current one alone
-                NumCompsOnList = this_op_scheme.EquipList(ListNum).NumComps;
-                for (CompIndex = 1; CompIndex <= NumCompsOnList; ++CompIndex) {
-                    EquipBranchNum = this_op_scheme.EquipList(ListNum).Comp(CompIndex).BranchNumPtr;
-                    EquipCompNum = this_op_scheme.EquipList(ListNum).Comp(CompIndex).CompNumPtr;
+                int NumCompsOnList = this_op_scheme.EquipList(ListNum).NumComps;
+                for (int CompIndex = 1; CompIndex <= NumCompsOnList; ++CompIndex) {
+                    int EquipBranchNum = this_op_scheme.EquipList(ListNum).Comp(CompIndex).BranchNumPtr;
+                    int EquipCompNum = this_op_scheme.EquipList(ListNum).Comp(CompIndex).CompNumPtr;
                     loop_side.Branch(EquipBranchNum).Comp(EquipCompNum).MyLoad = 0.0;
                 }
             }
@@ -340,11 +333,9 @@ void GetPlantOperationInput(EnergyPlusData &state, bool &GetInputOK)
     //    PlantEquipmentOperationSchemes
     //    CondenserEquipmentOperationSchemes
 
-    // Using/Aliasing
-    using ScheduleManager::GetScheduleIndex;
-
     // SUBROUTINE PARAMETER DEFINITIONS:
     static constexpr std::string_view RoutineName("GetPlantOperationInput: "); // include trailing blank space
+    static constexpr std::string_view routineName = "GetPlantOperationInput";
 
     // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
     int LoopNum;           // Loop counter (Plant or Cond)
@@ -355,7 +346,6 @@ void GetPlantOperationInput(EnergyPlusData &state, bool &GetInputOK)
     int NumAlphas;         // Number of alpha items in the input object
     int NumNums;           // Number of numeric items in the input object
     int IOStat;
-    std::string PlantOpSchemeName;   // Name of the plant or condenser operating scheme
     std::string CurrentModuleObject; // for ease in renaming
     std::string PlantLoopObject;     // for ease in renaming
     bool ErrorsFound;                // Passed in from OpSchemeInput
@@ -388,7 +378,7 @@ void GetPlantOperationInput(EnergyPlusData &state, bool &GetInputOK)
 
     // Load the Plant data structure
     for (LoopNum = 1; LoopNum <= state.dataPlnt->TotNumLoops; ++LoopNum) {
-        PlantOpSchemeName = state.dataPlnt->PlantLoop(LoopNum).OperationScheme;
+        std::string PlantOpSchemeName = state.dataPlnt->PlantLoop(LoopNum).OperationScheme;
         if (LoopNum <= state.dataHVACGlobal->NumPlantLoops) {
             CurrentModuleObject = "PlantEquipmentOperationSchemes";
             PlantLoopObject = "PlantLoop";
@@ -410,6 +400,9 @@ void GetPlantOperationInput(EnergyPlusData &state, bool &GetInputOK)
                                                                      state.dataIPShortCut->lAlphaFieldBlanks,
                                                                      state.dataIPShortCut->cAlphaFieldNames,
                                                                      state.dataIPShortCut->cNumericFieldNames);
+
+            ErrorObjectHeader eoh{routineName, CurrentModuleObject, state.dataIPShortCut->cAlphaArgs(1)};
+
             state.dataPlnt->PlantLoop(LoopNum).NumOpSchemes = (NumAlphas - 1) / 3;
             if (state.dataPlnt->PlantLoop(LoopNum).NumOpSchemes > 0) {
                 state.dataPlnt->PlantLoop(LoopNum).OpScheme.clear();
@@ -462,17 +455,11 @@ void GetPlantOperationInput(EnergyPlusData &state, bool &GetInputOK)
                     }
 
                     state.dataPlnt->PlantLoop(LoopNum).OpScheme(Num).Name = state.dataIPShortCut->cAlphaArgs(Num * 3);
-                    state.dataPlnt->PlantLoop(LoopNum).OpScheme(Num).Sched = state.dataIPShortCut->cAlphaArgs(Num * 3 + 1);
-                    state.dataPlnt->PlantLoop(LoopNum).OpScheme(Num).SchedPtr =
-                        GetScheduleIndex(state, state.dataPlnt->PlantLoop(LoopNum).OpScheme(Num).Sched);
-                    if (state.dataPlnt->PlantLoop(LoopNum).OpScheme(Num).SchedPtr == 0) {
-                        ShowSevereError(state,
-                                        format("{}Invalid {} = \"{}\", entered in {}= \"{}\".",
-                                               RoutineName,
-                                               state.dataIPShortCut->cAlphaFieldNames(Num * 3 + 1),
-                                               state.dataIPShortCut->cAlphaArgs(Num * 3 + 1),
-                                               CurrentModuleObject,
-                                               state.dataIPShortCut->cAlphaArgs(1)));
+
+                    if ((state.dataPlnt->PlantLoop(LoopNum).OpScheme(Num).sched =
+                             Sched::GetSchedule(state, state.dataIPShortCut->cAlphaArgs(Num * 3 + 1))) == nullptr) {
+                        ShowSevereItemNotFound(
+                            state, eoh, state.dataIPShortCut->cAlphaFieldNames(Num * 3 + 1), state.dataIPShortCut->cAlphaArgs(Num * 3 + 1));
                         ErrorsFound = true;
                     }
                 }
@@ -803,7 +790,6 @@ void FindRangeBasedOrUncontrolledInput(EnergyPlusData &state,
     // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
     int NumAlphas;
     int NumNums;
-    int IOStat;
     Array1D_string AlphArray;      // Alpha input items for object
     Array1D_string cAlphaFields;   // Alpha field names
     Array1D_string cNumericFields; // Numeric field names
@@ -812,12 +798,8 @@ void FindRangeBasedOrUncontrolledInput(EnergyPlusData &state,
     Array1D_bool lNumericBlanks;   // Logical array, numeric field input BLANK = .TRUE.
     int TotalArgs(0);              // Total number of alpha and numeric arguments (max) for a
     //   certain object in the input file
-    int Num;
-    int NumEquipLists;
-    int ListNum;
     std::string LoopOpSchemeObj; // Used to identify the object name for loop equipment operation scheme
     bool SchemeNameFound;        // Set to FALSE if a match of OpScheme object and OpScheme name is not found
-    int InnerListNum;            // inner loop list number
     Real64 OuterListNumLowerLimit;
     Real64 OuterListNumUpperLimit;
     Real64 InnerListNumLowerLimit;
@@ -842,7 +824,8 @@ void FindRangeBasedOrUncontrolledInput(EnergyPlusData &state,
     }
 
     if (NumSchemes > 0) {
-        for (Num = 1; Num <= NumSchemes; ++Num) {
+        int IOStat;
+        for (int Num = 1; Num <= NumSchemes; ++Num) {
             state.dataInputProcessing->inputProcessor->getObjectItem(
                 state, CurrentModuleObject, Num, AlphArray, NumAlphas, NumArray, NumNums, IOStat);
             if (Util::SameString(state.dataPlnt->PlantLoop(LoopNum).OpScheme(SchemeNum).Name, AlphArray(1))) break;
@@ -863,9 +846,10 @@ void FindRangeBasedOrUncontrolledInput(EnergyPlusData &state,
                 ShowSevereError(state, format("{} = \"{}\", specified without equipment list.", CurrentModuleObject, AlphArray(1)));
                 ErrorsFound = true;
             } else {
+                int ListNum;
                 state.dataPlnt->PlantLoop(LoopNum).OpScheme(SchemeNum).EquipList.allocate(
                     state.dataPlnt->PlantLoop(LoopNum).OpScheme(SchemeNum).NumEquipLists);
-                NumEquipLists = state.dataPlnt->PlantLoop(LoopNum).OpScheme(SchemeNum).NumEquipLists;
+                int NumEquipLists = state.dataPlnt->PlantLoop(LoopNum).OpScheme(SchemeNum).NumEquipLists;
                 if (NumNums <= 0) {          // Uncontrolled OpScheme type
                     ListNum = NumEquipLists; // NumEquipLists is always 1 for Uncontrolled OpScheme type
                     state.dataPlnt->PlantLoop(LoopNum).OpScheme(SchemeNum).EquipList(ListNum).Name = AlphArray(2);
@@ -933,7 +917,7 @@ void FindRangeBasedOrUncontrolledInput(EnergyPlusData &state,
                     for (ListNum = 1; ListNum <= NumEquipLists; ++ListNum) {
                         OuterListNumLowerLimit = state.dataPlnt->PlantLoop(LoopNum).OpScheme(SchemeNum).EquipList(ListNum).RangeLowerLimit;
                         OuterListNumUpperLimit = state.dataPlnt->PlantLoop(LoopNum).OpScheme(SchemeNum).EquipList(ListNum).RangeUpperLimit;
-                        for (InnerListNum = 1; InnerListNum <= NumEquipLists; ++InnerListNum) {
+                        for (int InnerListNum = 1; InnerListNum <= NumEquipLists; ++InnerListNum) {
                             if (InnerListNum == ListNum) continue; // don't check against self.
                             InnerListNumLowerLimit = state.dataPlnt->PlantLoop(LoopNum).OpScheme(SchemeNum).EquipList(InnerListNum).RangeLowerLimit;
                             InnerListNumUpperLimit = state.dataPlnt->PlantLoop(LoopNum).OpScheme(SchemeNum).EquipList(InnerListNum).RangeUpperLimit;
@@ -1031,7 +1015,6 @@ void FindDeltaTempRangeInput(EnergyPlusData &state,
     // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
     int NumAlphas;
     int NumNums;
-    int IOStat;
     Array1D_string AlphArray;      // Alpha input items for object
     Array1D_string cAlphaFields;   // Alpha field names
     Array1D_string cNumericFields; // Numeric field names
@@ -1040,13 +1023,7 @@ void FindDeltaTempRangeInput(EnergyPlusData &state,
     Array1D_bool lNumericBlanks;   // Logical array, numeric field input BLANK = .TRUE.
     int TotalArgs(0);              // Total number of alpha and numeric arguments (max) for a
     //   certain object in the input file
-    int Num;
-    int NumEquipLists;
-    int ListNum;
     std::string LoopOpSchemeObj; // Used to identify the object name for loop equipment operation scheme
-    bool SchemeNameFound;        // Set to FALSE if a match of OpScheme object and OpScheme name is not found
-
-    SchemeNameFound = true;
 
     std::string cmoStr = std::string(BranchNodeConnections::ConnectionObjectTypeNamesUC[static_cast<int>(CurrentModuleObject)]);
 
@@ -1067,7 +1044,10 @@ void FindDeltaTempRangeInput(EnergyPlusData &state,
     }
 
     if (NumSchemes > 0) {
-        for (Num = 1; Num <= NumSchemes; ++Num) {
+        int IOStat;
+        bool SchemeNameFound = true;
+
+        for (int Num = 1; Num <= NumSchemes; ++Num) {
             state.dataInputProcessing->inputProcessor->getObjectItem(state, cmoStr, Num, AlphArray, NumAlphas, NumArray, NumNums, IOStat);
             if (Util::SameString(state.dataPlnt->PlantLoop(LoopNum).OpScheme(SchemeNum).Name, AlphArray(1))) break;
             if (Num == NumSchemes) {
@@ -1089,7 +1069,7 @@ void FindDeltaTempRangeInput(EnergyPlusData &state,
             } else {
                 state.dataPlnt->PlantLoop(LoopNum).OpScheme(SchemeNum).EquipList.allocate(
                     state.dataPlnt->PlantLoop(LoopNum).OpScheme(SchemeNum).NumEquipLists);
-                NumEquipLists = state.dataPlnt->PlantLoop(LoopNum).OpScheme(SchemeNum).NumEquipLists;
+                int NumEquipLists = state.dataPlnt->PlantLoop(LoopNum).OpScheme(SchemeNum).NumEquipLists;
                 state.dataPlnt->PlantLoop(LoopNum).OpScheme(SchemeNum).ReferenceNodeName = AlphArray(2);
                 state.dataPlnt->PlantLoop(LoopNum).OpScheme(SchemeNum).ReferenceNodeNumber =
                     GetOnlySingleNode(state,
@@ -1102,7 +1082,7 @@ void FindDeltaTempRangeInput(EnergyPlusData &state,
                                       NodeInputManager::CompFluidStream::Primary,
                                       ObjectIsNotParent);
                 // For DO Loop below -- Check for lower limit > upper limit.(invalid)
-                for (ListNum = 1; ListNum <= NumEquipLists; ++ListNum) {
+                for (int ListNum = 1; ListNum <= NumEquipLists; ++ListNum) {
                     state.dataPlnt->PlantLoop(LoopNum).OpScheme(SchemeNum).EquipList(ListNum).RangeLowerLimit = NumArray(ListNum * 2 - 1);
                     state.dataPlnt->PlantLoop(LoopNum).OpScheme(SchemeNum).EquipList(ListNum).RangeUpperLimit = NumArray(ListNum * 2);
                     state.dataPlnt->PlantLoop(LoopNum).OpScheme(SchemeNum).EquipList(ListNum).Name = AlphArray(ListNum + 2);
@@ -1165,32 +1145,28 @@ void LoadEquipList(EnergyPlusData &state,
     bool FoundIntendedList;
     int Num;
     int MachineNum;
-    int PELists;
-    int CELists;
     //  INTEGER :: NumLists
     int NumAlphas;
     int NumNums;
     int IOStat;
-    bool IsNotOK;
     std::string CurrentModuleObject;
-    int iIndex;
-    bool firstblank;
 
     if (state.dataPlantCondLoopOp->LoadEquipListOneTimeFlag) {
         // assemble mapping between list names and indices one time
-        PELists = state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, "PlantEquipmentList");
-        CELists = state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, "CondenserEquipmentList");
+        int PELists = state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, "PlantEquipmentList");
+        int CELists = state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, "CondenserEquipmentList");
         state.dataPlantCondLoopOp->TotNumLists = PELists + CELists;
         if (state.dataPlantCondLoopOp->TotNumLists > 0) {
             state.dataPlantCondLoopOp->EquipListsNameList.allocate(state.dataPlantCondLoopOp->TotNumLists);
             state.dataPlantCondLoopOp->EquipListsTypeList.allocate(state.dataPlantCondLoopOp->TotNumLists);
             state.dataPlantCondLoopOp->EquipListsIndexList.allocate(state.dataPlantCondLoopOp->TotNumLists);
+            bool IsNotOK;
 
             // First load PlantEquipmentList info
             if (PELists > 0) {
                 CurrentModuleObject = "PlantEquipmentList";
                 for (Num = 1; Num <= PELists; ++Num) {
-                    iIndex = Num;
+                    int iIndex = Num;
                     state.dataInputProcessing->inputProcessor->getObjectItem(state,
                                                                              CurrentModuleObject,
                                                                              Num,
@@ -1208,8 +1184,8 @@ void LoadEquipList(EnergyPlusData &state,
                     state.dataPlantCondLoopOp->EquipListsIndexList(iIndex) = Num;
                     MachineNum = 2;
                     while (MachineNum <= NumAlphas) {
-                        firstblank = false;
                         if (state.dataIPShortCut->lAlphaFieldBlanks(MachineNum) || state.dataIPShortCut->lAlphaFieldBlanks(MachineNum + 1)) {
+                            bool firstblank = false;
                             if (state.dataIPShortCut->lAlphaFieldBlanks(MachineNum)) {
                                 ShowSevereError(
                                     state,
@@ -1246,7 +1222,7 @@ void LoadEquipList(EnergyPlusData &state,
             if (CELists > 0) {
                 CurrentModuleObject = "CondenserEquipmentList";
                 for (Num = 1; Num <= CELists; ++Num) {
-                    iIndex = Num + PELists;
+                    int iIndex = Num + PELists;
                     state.dataInputProcessing->inputProcessor->getObjectItem(state,
                                                                              CurrentModuleObject,
                                                                              Num,
@@ -1264,8 +1240,8 @@ void LoadEquipList(EnergyPlusData &state,
                     state.dataPlantCondLoopOp->EquipListsIndexList(iIndex) = Num;
                     MachineNum = 2;
                     while (MachineNum <= NumAlphas) {
-                        firstblank = false;
                         if (state.dataIPShortCut->lAlphaFieldBlanks(MachineNum) || state.dataIPShortCut->lAlphaFieldBlanks(MachineNum + 1)) {
+                            bool firstblank = false;
                             if (state.dataIPShortCut->lAlphaFieldBlanks(MachineNum)) {
                                 ShowSevereError(
                                     state,
@@ -1379,32 +1355,21 @@ void FindCompSPInput(EnergyPlusData &state,
     //    PlantEquipmentOperation:ComponentSetPoint
     //    PlantEquipmentOperation:ThermalEnergyStorage
 
+    static constexpr std::string_view routineName = "FindCompSPInput";
+
     // Using/Aliasing
     using namespace DataLoopNode;
     using NodeInputManager::GetOnlySingleNode;
     using namespace DataSizing;
     using EMSManager::CheckIfNodeSetPointManagedByEMS;
-    using ScheduleManager::GetScheduleIndex;
     using SetPointManager::SetUpNewScheduledTESSetPtMgr;
 
     // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-    int NumAlphas;
-    int NumNums;
-    int CompNum;
-    int CompInNode;
-    int IOStat;
     Real64 CompFlowRate(0.0);
     std::string LoopOpSchemeObj; // Used to identify the object name for loop equipment operation scheme
     bool SchemeNameFound;        // Set to FALSE if a match of OpScheme object and OpScheme name is not found
-    bool NodeEMSSetPointMissing;
-    std::string OnPeakSchedName;
-    int OnPeakSchedPtr;
-    std::string ChargeSchedName;
-    int ChargeSchedPtr;
     Real64 NonChargCHWTemp;
     Real64 OffPeakCHWTemp;
-    int CompNumA;
-    int CompNumN;
     CtrlType CompOpType; // 1=cooling, 2=dual(or other)
 
     SchemeNameFound = true;
@@ -1419,9 +1384,13 @@ void FindCompSPInput(EnergyPlusData &state,
     }
 
     if (NumSchemes > 0) {
+        int NumAlphas;
+        int NumNums;
+        int IOStat;
         for (int Num = 1; Num <= NumSchemes; ++Num) {
             state.dataInputProcessing->inputProcessor->getObjectItem(
                 state, CurrentModuleObject, Num, state.dataIPShortCut->cAlphaArgs, NumAlphas, state.dataIPShortCut->rNumericArgs, NumNums, IOStat);
+
             if (Util::SameString(state.dataPlnt->PlantLoop(LoopNum).OpScheme(SchemeNum).Name, state.dataIPShortCut->cAlphaArgs(1))) break;
             if (Num == NumSchemes) {
                 ShowSevereError(state,
@@ -1440,26 +1409,22 @@ void FindCompSPInput(EnergyPlusData &state,
             state.dataPlnt->PlantLoop(LoopNum).OpScheme(SchemeNum).EquipList.allocate(1);
             state.dataPlnt->PlantLoop(LoopNum).OpScheme(SchemeNum).EquipList(1).NumComps = (NumAlphas - 1) / 5;
 
+            Sched::Schedule *chargeSched = nullptr;
+            Sched::Schedule *onPeakSched = nullptr;
+
+            ErrorObjectHeader eoh{routineName, CurrentModuleObject, state.dataIPShortCut->cAlphaArgs(1)};
+
             if (CurrentModuleObject == "PlantEquipmentOperation:ThermalEnergyStorage") {
                 // Read all of the additional parameters for ice storage control scheme and error check various parameters
-                OnPeakSchedName = state.dataIPShortCut->cAlphaArgs(2);
-                OnPeakSchedPtr = GetScheduleIndex(state, OnPeakSchedName);
-                if (OnPeakSchedPtr == 0) {
-                    ShowSevereError(state,
-                                    format("Could not find On Peak Schedule {} in {}{}\".",
-                                           OnPeakSchedName,
-                                           CurrentModuleObject,
-                                           state.dataPlnt->PlantLoop(LoopNum).OpScheme(SchemeNum).Name));
+                onPeakSched = Sched::GetSchedule(state, state.dataIPShortCut->cAlphaArgs(2));
+                if (onPeakSched == nullptr) {
+                    ShowSevereItemNotFound(state, eoh, state.dataIPShortCut->cAlphaFieldNames(2), state.dataIPShortCut->cAlphaArgs(2));
                     ErrorsFound = true;
                 }
-                ChargeSchedName = state.dataIPShortCut->cAlphaArgs(3);
-                ChargeSchedPtr = GetScheduleIndex(state, ChargeSchedName);
-                if (ChargeSchedPtr == 0) {
-                    ShowSevereError(state,
-                                    format("Could not find Charging Availability Schedule {} in {}{}\".",
-                                           ChargeSchedName,
-                                           CurrentModuleObject,
-                                           state.dataPlnt->PlantLoop(LoopNum).OpScheme(SchemeNum).Name));
+
+                chargeSched = Sched::GetSchedule(state, state.dataIPShortCut->cAlphaArgs(3));
+                if (chargeSched == nullptr) {
+                    ShowSevereItemNotFound(state, eoh, state.dataIPShortCut->cAlphaFieldNames(3), state.dataIPShortCut->cAlphaArgs(3));
                     ErrorsFound = true;
                 }
                 NonChargCHWTemp = state.dataIPShortCut->rNumericArgs(1);
@@ -1469,7 +1434,9 @@ void FindCompSPInput(EnergyPlusData &state,
             if (state.dataPlnt->PlantLoop(LoopNum).OpScheme(SchemeNum).EquipList(1).NumComps > 0) {
                 state.dataPlnt->PlantLoop(LoopNum).OpScheme(SchemeNum).EquipList(1).Comp.allocate(
                     state.dataPlnt->PlantLoop(LoopNum).OpScheme(SchemeNum).EquipList(1).NumComps);
-                for (CompNum = 1; CompNum <= state.dataPlnt->PlantLoop(LoopNum).OpScheme(SchemeNum).EquipList(1).NumComps; ++CompNum) {
+                int CompNumA;
+                int CompNumN;
+                for (int CompNum = 1; CompNum <= state.dataPlnt->PlantLoop(LoopNum).OpScheme(SchemeNum).EquipList(1).NumComps; ++CompNum) {
                     if (CurrentModuleObject == "PlantEquipmentOperation:ComponentSetPoint") {
                         CompNumA = CompNum * 5;
                         CompNumN = CompNum;
@@ -1511,7 +1478,7 @@ void FindCompSPInput(EnergyPlusData &state,
                     if (state.dataIPShortCut->rNumericArgs(CompNumN) == AutoSize) {
                         int Num = 1;
                         for (; Num <= state.dataSize->SaveNumPlantComps; ++Num) {
-                            CompInNode = state.dataSize->CompDesWaterFlow(Num).SupNode;
+                            int CompInNode = state.dataSize->CompDesWaterFlow(Num).SupNode;
                             CompFlowRate = state.dataSize->CompDesWaterFlow(Num).DesVolFlowRate;
                             if (CompInNode == state.dataPlnt->PlantLoop(LoopNum).OpScheme(SchemeNum).EquipList(1).Comp(CompNum).DemandNodeNum) {
                                 state.dataPlnt->PlantLoop(LoopNum).OpScheme(SchemeNum).EquipList(1).Comp(CompNum).SetPointFlowRate = CompFlowRate;
@@ -1591,8 +1558,8 @@ void FindCompSPInput(EnergyPlusData &state,
                         // detailed input that is necessary to get thermal energy storage to work from the simpler input.
                         SetUpNewScheduledTESSetPtMgr(
                             state,
-                            OnPeakSchedPtr,
-                            ChargeSchedPtr,
+                            onPeakSched,
+                            chargeSched,
                             NonChargCHWTemp,
                             OffPeakCHWTemp,
                             CompOpType,
@@ -1625,11 +1592,11 @@ void FindCompSPInput(EnergyPlusData &state,
                                 ErrorsFound = true;
                             } else {
                                 // need call to EMS to check node
-                                NodeEMSSetPointMissing = false;
+                                bool NodeEMSSetPointMissing = false;
                                 CheckIfNodeSetPointManagedByEMS(
                                     state,
                                     state.dataPlnt->PlantLoop(LoopNum).OpScheme(SchemeNum).EquipList(1).Comp(CompNum).SetPointNodeNum,
-                                    EMSManager::SPControlType::TemperatureSetPoint,
+                                    HVAC::CtrlVarType::Temp,
                                     NodeEMSSetPointMissing);
                                 if (NodeEMSSetPointMissing) {
                                     ShowSevereError(state,
@@ -1680,11 +1647,11 @@ void FindCompSPInput(EnergyPlusData &state,
                                     ErrorsFound = true;
                                 } else {
                                     // need call to EMS to check node
-                                    NodeEMSSetPointMissing = false;
+                                    bool NodeEMSSetPointMissing = false;
                                     CheckIfNodeSetPointManagedByEMS(
                                         state,
                                         state.dataPlnt->PlantLoop(LoopNum).OpScheme(SchemeNum).EquipList(1).Comp(CompNum).SetPointNodeNum,
-                                        EMSManager::SPControlType::TemperatureMaxSetPoint,
+                                        HVAC::CtrlVarType::Temp,
                                         NodeEMSSetPointMissing);
                                     if (NodeEMSSetPointMissing) {
                                         ShowSevereError(state,
@@ -1734,16 +1701,16 @@ void FindCompSPInput(EnergyPlusData &state,
                                     ErrorsFound = true;
                                 } else {
                                     // need call to EMS to check node
-                                    NodeEMSSetPointMissing = false;
+                                    bool NodeEMSSetPointMissing = false;
                                     CheckIfNodeSetPointManagedByEMS(
                                         state,
                                         state.dataPlnt->PlantLoop(LoopNum).OpScheme(SchemeNum).EquipList(1).Comp(CompNum).SetPointNodeNum,
-                                        EMSManager::SPControlType::TemperatureMinSetPoint,
+                                        HVAC::CtrlVarType::Temp,
                                         NodeEMSSetPointMissing);
                                     CheckIfNodeSetPointManagedByEMS(
                                         state,
                                         state.dataPlnt->PlantLoop(LoopNum).OpScheme(SchemeNum).EquipList(1).Comp(CompNum).SetPointNodeNum,
-                                        EMSManager::SPControlType::TemperatureMaxSetPoint,
+                                        HVAC::CtrlVarType::Temp,
                                         NodeEMSSetPointMissing);
                                     if (NodeEMSSetPointMissing) {
                                         ShowSevereError(state,
@@ -1795,11 +1762,11 @@ void FindCompSPInput(EnergyPlusData &state,
                                     ErrorsFound = true;
                                 } else {
                                     // need call to EMS to check node
-                                    NodeEMSSetPointMissing = false;
+                                    bool NodeEMSSetPointMissing = false;
                                     CheckIfNodeSetPointManagedByEMS(
                                         state,
                                         state.dataPlnt->PlantLoop(LoopNum).OpScheme(SchemeNum).EquipList(1).Comp(CompNum).SetPointNodeNum,
-                                        EMSManager::SPControlType::TemperatureMinSetPoint,
+                                        HVAC::CtrlVarType::Temp,
                                         NodeEMSSetPointMissing);
                                     if (NodeEMSSetPointMissing) {
                                         ShowSevereError(state,
@@ -2347,9 +2314,9 @@ void GetChillerHeaterChangeoverOpSchemeInput(EnergyPlusData &state,
                 ErrorsFound = true;
             }
 
-            for (int listNum = 1; listNum <= scheme.PlantOps.NumSimultHeatCoolHeatingEquipLists; ++listNum) {
+            cCurrentModuleObject = "PlantEquipmentList";
 
-                std::string cCurrentModuleObject("PlantEquipmentList");
+            for (int listNum = 1; listNum <= scheme.PlantOps.NumSimultHeatCoolHeatingEquipLists; ++listNum) {
 
                 auto const instances = ip->epJSON.find(cCurrentModuleObject);
                 auto const &objectSchemaProps = ip->getObjectSchemaProps(state, cCurrentModuleObject);
@@ -2405,14 +2372,8 @@ void GetUserDefinedOpSchemeInput(EnergyPlusData &state,
     using namespace DataPlant;
 
     // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-    int NumAlphas;
-    int NumNums;
-    int Num;
-    int CompNum;
-    int IOStat;
     bool SchemeNameFound;        // Set to FALSE if a match of OpScheme object and OpScheme name is not found
     std::string LoopOpSchemeObj; // Used to identify the object name for loop equipment operation scheme
-    int StackMngrNum;            // local temporary for Erl program calling manager index
 
     SchemeNameFound = true;
 
@@ -2423,6 +2384,7 @@ void GetUserDefinedOpSchemeInput(EnergyPlusData &state,
     }
 
     if (NumSchemes > 0) {
+        int NumAlphas, NumNums, Num, IOStat;
 
         for (Num = 1; Num <= NumSchemes; ++Num) {
             state.dataInputProcessing->inputProcessor->getObjectItem(state,
@@ -2458,7 +2420,7 @@ void GetUserDefinedOpSchemeInput(EnergyPlusData &state,
             if (state.dataPlnt->PlantLoop(LoopNum).OpScheme(SchemeNum).EquipList(1).NumComps > 0) {
                 state.dataPlnt->PlantLoop(LoopNum).OpScheme(SchemeNum).EquipList(1).Comp.allocate(
                     state.dataPlnt->PlantLoop(LoopNum).OpScheme(SchemeNum).EquipList(1).NumComps);
-                for (CompNum = 1; CompNum <= state.dataPlnt->PlantLoop(LoopNum).OpScheme(SchemeNum).EquipList(1).NumComps; ++CompNum) {
+                for (int CompNum = 1; CompNum <= state.dataPlnt->PlantLoop(LoopNum).OpScheme(SchemeNum).EquipList(1).NumComps; ++CompNum) {
                     state.dataPlnt->PlantLoop(LoopNum).OpScheme(SchemeNum).EquipList(1).Comp(CompNum).TypeOf =
                         state.dataIPShortCut->cAlphaArgs(CompNum * 2 + 2);
                     state.dataPlnt->PlantLoop(LoopNum).OpScheme(SchemeNum).EquipList(1).Comp(CompNum).Name =
@@ -2484,7 +2446,7 @@ void GetUserDefinedOpSchemeInput(EnergyPlusData &state,
                         state.dataPlnt->PlantLoop(LoopNum).OpScheme(SchemeNum).EquipList(1).Comp(CompNum).EMSIntVarRemainingLoadValue);
                 }
             }
-            StackMngrNum = Util::FindItemInList(state.dataIPShortCut->cAlphaArgs(2), state.dataRuntimeLang->EMSProgramCallManager);
+            int StackMngrNum = Util::FindItemInList(state.dataIPShortCut->cAlphaArgs(2), state.dataRuntimeLang->EMSProgramCallManager);
             if (StackMngrNum > 0) { // found it
                 state.dataPlnt->PlantLoop(LoopNum).OpScheme(SchemeNum).ErlSimProgramMngr = StackMngrNum;
             } else {
@@ -2555,32 +2517,13 @@ void InitLoadDistribution(EnergyPlusData &state, bool const FirstHVACIteration)
 
     // Using/Aliasing
     using EMSManager::ManageEMS;
-    using ScheduleManager::GetCurrentScheduleValue;
-    using ScheduleManager::GetScheduleIndex;
 
     // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-    int LoopPtr;
     DataPlant::LoopSideLocation LoopSidePtr;
-    int BranchPtr;
-    int CompPtr;
     PlantLocation plantLoc{};
-    int Index;
-    int OpSchemePtr;
-    int thisSchemeNum;
 
-    bool FoundScheme;
-    bool FoundSchemeMatch;
-    //  LOGICAL, SAVE                     :: FirstHVACInitsDone = .FALSE.
-    //  LOGICAL, SAVE                     :: MyEnvrnFlag = .TRUE.
     DataPlant::PlantEquipmentType Type;
-    int CompOpNum;
-    int OldNumOpSchemes;
-    int NewNumEquipLists;
-    int NewNumOpSchemes;
-    int NumSearchResults;
-    bool GetInputOK; // successful Get Input
 
-    bool errFlag1;
     bool errFlag2;
     Real64 HighestRange;
 
@@ -2589,6 +2532,7 @@ void InitLoadDistribution(EnergyPlusData &state, bool const FirstHVACIteration)
     errFlag2 = false;
     // Get Input
     if (state.dataPlantCondLoopOp->GetPlantOpInput) {
+        bool GetInputOK; // successful Get Input
         GetPlantOperationInput(state, GetInputOK);
         if (GetInputOK) {
             GetOperationSchemeInput(state);
@@ -2603,6 +2547,7 @@ void InitLoadDistribution(EnergyPlusData &state, bool const FirstHVACIteration)
         // Set up 'component' to 'op scheme' pointers in Plant data structure
         // We're looking for matches between a component on a PlantLoop.OpScheme.List()
         // and the same component in the PlantLoop.LoopSide.Branch.Comp() data structure
+        int NumSearchResults;
 
         // first loop over main operation scheme data and finish filling out indexes to plant topology for the components in the lists
         for (int LoopNum = 1; LoopNum <= state.dataPlnt->TotNumLoops; ++LoopNum) {
@@ -2614,7 +2559,7 @@ void InitLoadDistribution(EnergyPlusData &state, bool const FirstHVACIteration)
                     for (int EquipNum = 1, EquipNum_end = this_equip_list.NumComps; EquipNum <= EquipNum_end; ++EquipNum) {
                         auto &this_equip = this_equip_list.Comp(EquipNum);
                         Type = static_cast<DataPlant::PlantEquipmentType>(getEnumValue(PlantEquipTypeNamesUC, Util::makeUPPER(this_equip.TypeOf)));
-                        errFlag1 = false;
+                        bool errFlag1 = false;
                         PlantUtilities::ScanPlantLoopsForObject(state, this_equip.Name, Type, plantLoc, errFlag1, _, _, NumSearchResults, _, LoopNum);
 
                         if (errFlag1) {
@@ -2693,8 +2638,9 @@ void InitLoadDistribution(EnergyPlusData &state, bool const FirstHVACIteration)
                 auto &this_op_scheme = this_plant_loop.OpScheme(OpNum);
                 for (int ListNum = 1, ListNum_end = this_op_scheme.NumEquipLists; ListNum <= ListNum_end; ++ListNum) {
                     auto &this_equip_list = this_op_scheme.EquipList(ListNum);
+                    int thisSchemeNum;
                     for (int EquipNum = 1, EquipNum_end = this_equip_list.NumComps; EquipNum <= EquipNum_end; ++EquipNum) {
-                        auto &this_equip = this_equip_list.Comp(EquipNum);
+                        auto const &this_equip = this_equip_list.Comp(EquipNum);
                         // dereference indices (stored in previous loop)
                         plantLoc.loopNum = this_equip.LoopNumPtr;
                         plantLoc.loopSideNum = this_equip.LoopSideNumPtr;
@@ -2714,10 +2660,10 @@ void InitLoadDistribution(EnergyPlusData &state, bool const FirstHVACIteration)
                             dummy_op_scheme_1.EquipList(1).ListPtr = ListNum;
                             dummy_op_scheme_1.EquipList(1).CompPtr = EquipNum;
                         } else { // already an op scheme
-                            OldNumOpSchemes = dummy_loop_equip.NumOpSchemes;
+                            int OldNumOpSchemes = dummy_loop_equip.NumOpSchemes;
 
                             // could be new list on existing scheme or new scheme with new list.  Check and see
-                            FoundSchemeMatch = false;
+                            bool FoundSchemeMatch = false;
                             for (thisSchemeNum = 1; thisSchemeNum <= OldNumOpSchemes; ++thisSchemeNum) { // Loop index used below
                                 // compare the OpScheme index, 'opnum', in the PlantLoop()%OpScheme()data structure
                                 // with the OpSchemePtr in the PlantLoop()%LoopSide()%Branch()%Comp() data structure.
@@ -2726,14 +2672,14 @@ void InitLoadDistribution(EnergyPlusData &state, bool const FirstHVACIteration)
                                 break;
                             }
                             if (FoundSchemeMatch) { // op scheme already exists, but need to add a list to the existing OpScheme
-                                auto &this_op_scheme = dummy_loop_equip.OpScheme(thisSchemeNum);
-                                NewNumEquipLists = this_op_scheme.NumEquipLists + 1;
-                                this_op_scheme.EquipList.redimension(NewNumEquipLists);
-                                this_op_scheme.NumEquipLists = NewNumEquipLists;
-                                this_op_scheme.EquipList(NewNumEquipLists).ListPtr = ListNum;
-                                this_op_scheme.EquipList(NewNumEquipLists).CompPtr = EquipNum;
+                                auto &this_op_schemeAdd = dummy_loop_equip.OpScheme(thisSchemeNum);
+                                int NewNumEquipLists = this_op_schemeAdd.NumEquipLists + 1;
+                                this_op_schemeAdd.EquipList.redimension(NewNumEquipLists);
+                                this_op_schemeAdd.NumEquipLists = NewNumEquipLists;
+                                this_op_schemeAdd.EquipList(NewNumEquipLists).ListPtr = ListNum;
+                                this_op_schemeAdd.EquipList(NewNumEquipLists).CompPtr = EquipNum;
                             } else { // !FoundSchemeMatch: Add new op scheme and a new list
-                                NewNumOpSchemes = OldNumOpSchemes + 1;
+                                int NewNumOpSchemes = OldNumOpSchemes + 1;
                                 dummy_loop_equip.OpScheme.redimension(NewNumOpSchemes);
                                 auto &new_op_scheme = dummy_loop_equip.OpScheme(NewNumOpSchemes);
                                 new_op_scheme.EquipList.allocate(1);
@@ -2760,8 +2706,8 @@ void InitLoadDistribution(EnergyPlusData &state, bool const FirstHVACIteration)
                     for (int CompNum = 1, CompNum_end = this_branch.TotalComponents; CompNum <= CompNum_end; ++CompNum) {
                         auto const &this_component = this_branch.Comp(CompNum);
                         if (allocated(this_component.OpScheme)) {
-                            for (Index = 1; Index <= this_component.NumOpSchemes; ++Index) {
-                                OpSchemePtr = this_component.OpScheme(Index).OpSchemePtr;
+                            for (int Index = 1; Index <= this_component.NumOpSchemes; ++Index) {
+                                int OpSchemePtr = this_component.OpScheme(Index).OpSchemePtr;
                                 if (OpSchemePtr == 0) {
                                     ShowSevereError(state,
                                                     format("InitLoadDistribution: no operation scheme index found for component on PlantLoop={}",
@@ -2860,7 +2806,6 @@ void InitLoadDistribution(EnergyPlusData &state, bool const FirstHVACIteration)
         }
         // Update the OpScheme schedules
         for (int LoopNum = 1; LoopNum <= state.dataPlnt->TotNumLoops; ++LoopNum) {
-            FoundScheme = false;
             auto &this_loop = state.dataPlnt->PlantLoop(LoopNum);
             for (int OpNum = 1; OpNum <= this_loop.NumOpSchemes; ++OpNum) {
                 auto &this_op_scheme = this_loop.OpScheme(OpNum);
@@ -2874,9 +2819,8 @@ void InitLoadDistribution(EnergyPlusData &state, bool const FirstHVACIteration)
                     continue;
                 }
 
-                if (GetCurrentScheduleValue(state, this_op_scheme.SchedPtr) > 0.0) {
+                if (this_op_scheme.sched->getCurrentVal() > 0.0) {
                     this_op_scheme.Available = true;
-                    FoundScheme = true;
                     for (int ListNum = 1, ListNum_end = this_op_scheme.NumEquipLists; ListNum <= ListNum_end; ++ListNum) {
                         auto &this_equip_list = this_op_scheme.EquipList(ListNum);
                         // The component loop loads the pointers from the OpScheme data structure
@@ -2888,10 +2832,10 @@ void InitLoadDistribution(EnergyPlusData &state, bool const FirstHVACIteration)
                             auto const &this_list_component = this_equip_list.Comp(CompNum);
 
                             // then look up the component topological position from this structure
-                            LoopPtr = this_list_component.LoopNumPtr;
+                            int LoopPtr = this_list_component.LoopNumPtr;
                             LoopSidePtr = this_list_component.LoopSideNumPtr;
-                            BranchPtr = this_list_component.BranchNumPtr;
-                            CompPtr = this_list_component.CompNumPtr;
+                            int BranchPtr = this_list_component.BranchNumPtr;
+                            int CompPtr = this_list_component.CompNumPtr;
 
                             // then set up a reference to the component on the plant data structure
                             auto &this_loop_component = state.dataPlnt->PlantLoop(LoopPtr).LoopSide(LoopSidePtr).Branch(BranchPtr).Comp(CompPtr);
@@ -2906,7 +2850,7 @@ void InitLoadDistribution(EnergyPlusData &state, bool const FirstHVACIteration)
                                 errFlag2 = true;
                             }
 
-                            for (CompOpNum = 1; CompOpNum <= this_loop_component.NumOpSchemes; ++CompOpNum) {
+                            for (int CompOpNum = 1; CompOpNum <= this_loop_component.NumOpSchemes; ++CompOpNum) {
                                 if (this_loop_component.OpScheme(CompOpNum).OpSchemePtr == OpNum) {
                                     this_loop_component.CurCompLevelOpNum = CompOpNum;
                                 }
@@ -2917,9 +2861,6 @@ void InitLoadDistribution(EnergyPlusData &state, bool const FirstHVACIteration)
                     this_op_scheme.Available = false;
                 }
             }
-            //    IF(.NOT. foundscheme)THEN
-            //      !'call warning 'no current control scheme specified.  Loop Equipment will be shut down'
-            //    ENDIF
         }
     } else { // call supervisory scheme every iteration
         if (!state.dataPlantCondLoopOp->ChillerHeaterSupervisoryOperationSchemes.empty()) {
@@ -3028,7 +2969,6 @@ void DistributePlantLoad(EnergyPlusData &state,
 
     // load local variables
     NumCompsOnList = this_equiplist.NumComps;
-    int numAvail = 0;
 
     // Allocate array once
     accrued_load_plr_values.reserve(NumCompsOnList);
@@ -3040,10 +2980,10 @@ void DistributePlantLoad(EnergyPlusData &state,
     } else {
 
         // OPTIMAL DISTRIBUTION SCHEME
+        int numAvail = 0;
         switch (this_loop.LoadDistribution) {
         case DataPlant::LoadingScheme::Optimal:
             // step 1: load all machines to optimal PLR
-            numAvail = 0;
             for (CompIndex = 1; CompIndex <= NumCompsOnList; ++CompIndex) {
 
                 // look up topology from the equipment list
@@ -3169,7 +3109,7 @@ void DistributePlantLoad(EnergyPlusData &state,
                 CompNum = this_equiplist.Comp(CompIndex).CompNumPtr;
 
                 // create a reference to the component itself
-                auto &this_component = this_loopside.Branch(BranchNum).Comp(CompNum);
+                auto const &this_component = this_loopside.Branch(BranchNum).Comp(CompNum);
 
                 if (this_component.Available) ++numAvail;
             }
@@ -3530,11 +3470,7 @@ void AdjustChangeInLoadByHowServed(EnergyPlusData &state,
         CurMassFlowRate = state.dataLoopNodes->Node(this_component.NodeNumIn).MassFlowRate;
         ToutLowLimit = this_component.MinOutletTemp;
         Tinlet = state.dataLoopNodes->Node(this_component.NodeNumIn).Temp;
-        CurSpecHeat = GetSpecificHeatGlycol(state,
-                                            state.dataPlnt->PlantLoop(plantLoc.loopNum).FluidName,
-                                            Tinlet,
-                                            state.dataPlnt->PlantLoop(plantLoc.loopNum).FluidIndex,
-                                            RoutineName);
+        CurSpecHeat = state.dataPlnt->PlantLoop(plantLoc.loopNum).glycol->getSpecificHeat(state, Tinlet, RoutineName);
         QdotTmp = CurMassFlowRate * CurSpecHeat * (Tinlet - ToutLowLimit);
 
         //        !- Don't correct if Q is zero, as this could indicate a component which this hasn't been implemented or not yet turned on
@@ -3618,11 +3554,7 @@ void AdjustChangeInLoadByHowServed(EnergyPlusData &state,
             CurMassFlowRate = state.dataLoopNodes->Node(this_component.NodeNumIn).MassFlowRate;
             ToutLowLimit = this_component.MinOutletTemp;
             Tinlet = state.dataLoopNodes->Node(this_component.NodeNumIn).Temp;
-            CurSpecHeat = GetSpecificHeatGlycol(state,
-                                                state.dataPlnt->PlantLoop(plantLoc.loopNum).FluidName,
-                                                Tinlet,
-                                                state.dataPlnt->PlantLoop(plantLoc.loopNum).FluidIndex,
-                                                RoutineName);
+            CurSpecHeat = state.dataPlnt->PlantLoop(plantLoc.loopNum).glycol->getSpecificHeat(state, Tinlet, RoutineName);
             QdotTmp = CurMassFlowRate * CurSpecHeat * (Tinlet - ToutLowLimit);
 
             //        !- Don't correct if Q is zero, as this could indicate a component which this hasn't been implemented or not yet turned
@@ -3639,11 +3571,7 @@ void AdjustChangeInLoadByHowServed(EnergyPlusData &state,
         CurMassFlowRate = state.dataLoopNodes->Node(this_component.NodeNumIn).MassFlowRate;
         ToutHiLimit = this_component.MaxOutletTemp;
         Tinlet = state.dataLoopNodes->Node(this_component.NodeNumIn).Temp;
-        CurSpecHeat = GetSpecificHeatGlycol(state,
-                                            state.dataPlnt->PlantLoop(plantLoc.loopNum).FluidName,
-                                            Tinlet,
-                                            state.dataPlnt->PlantLoop(plantLoc.loopNum).FluidIndex,
-                                            RoutineName);
+        CurSpecHeat = state.dataPlnt->PlantLoop(plantLoc.loopNum).glycol->getSpecificHeat(state, Tinlet, RoutineName);
         QdotTmp = CurMassFlowRate * CurSpecHeat * (ToutHiLimit - Tinlet);
 
         if (CurMassFlowRate > 0.0) {
@@ -3679,7 +3607,6 @@ void FindCompSPLoad(EnergyPlusData &state,
 
     // Using/Aliasing
     using DataLoopNode::SensedNodeFlagValue;
-    using FluidProperties::GetDensityGlycol;
 
     // Locals
     // SUBROUTINE ARGUMENT DEFINITIONS:
@@ -3721,19 +3648,17 @@ void FindCompSPLoad(EnergyPlusData &state,
 
     // load local variables from the data structures
     CompMinLoad = this_component.MinLoad;
-    CompMaxLoad = this_component.MaxLoad;
+    CompMaxLoad = this_component.getDynamicMaxCapacity(state);
     CompOptLoad = this_component.OptLoad;
     DemandNode = state.dataPlnt->PlantLoop(plantLoc.loopNum).OpScheme(OpSchemePtr).EquipList(ListPtr).Comp(CompPtr).DemandNodeNum;
     SetPtNode = state.dataPlnt->PlantLoop(plantLoc.loopNum).OpScheme(OpSchemePtr).EquipList(ListPtr).Comp(CompPtr).SetPointNodeNum;
     TempIn = state.dataLoopNodes->Node(DemandNode).Temp;
-    rho = GetDensityGlycol(
-        state, state.dataPlnt->PlantLoop(plantLoc.loopNum).FluidName, TempIn, state.dataPlnt->PlantLoop(plantLoc.loopNum).FluidIndex, RoutineName);
+    rho = state.dataPlnt->PlantLoop(plantLoc.loopNum).glycol->getDensity(state, TempIn, RoutineName);
 
     DemandMdot = state.dataPlnt->PlantLoop(plantLoc.loopNum).OpScheme(OpSchemePtr).EquipList(ListPtr).Comp(CompPtr).SetPointFlowRate * rho;
     // DemandMDot is a constant design flow rate, next based on actual current flow rate for accurate current demand?
     ActualMdot = state.dataLoopNodes->Node(DemandNode).MassFlowRate;
-    CurSpecHeat = GetSpecificHeatGlycol(
-        state, state.dataPlnt->PlantLoop(plantLoc.loopNum).FluidName, TempIn, state.dataPlnt->PlantLoop(plantLoc.loopNum).FluidIndex, RoutineName);
+    CurSpecHeat = state.dataPlnt->PlantLoop(plantLoc.loopNum).glycol->getSpecificHeat(state, TempIn, RoutineName);
     if ((ActualMdot > 0.0) && (ActualMdot != DemandMdot)) {
         DemandMdot = ActualMdot;
     }
@@ -4128,19 +4053,12 @@ void SetupPlantEMSActuators(EnergyPlusData &state)
     // Call the setupAcuator routine
 
     // Locals
-    std::string ActuatorType;
-    std::string ActuatorName;
-    std::string UniqueIDName;
     static constexpr std::string_view Units("[on/off]");
-    // INTEGER                      :: NumAct
-    int LoopNum;
-    int BranchNum;
-    int CompNum;
 
-    for (LoopNum = 1; LoopNum <= state.dataPlnt->TotNumLoops; ++LoopNum) {
-        ActuatorName = "Plant Loop Overall";
-        UniqueIDName = state.dataPlnt->PlantLoop(LoopNum).Name;
-        ActuatorType = "On/Off Supervisory";
+    for (int LoopNum = 1; LoopNum <= state.dataPlnt->TotNumLoops; ++LoopNum) {
+        std::string ActuatorName = "Plant Loop Overall";
+        std::string UniqueIDName = state.dataPlnt->PlantLoop(LoopNum).Name;
+        std::string ActuatorType = "On/Off Supervisory";
         SetupEMSActuator(state,
                          ActuatorName,
                          UniqueIDName,
@@ -4172,7 +4090,7 @@ void SetupPlantEMSActuators(EnergyPlusData &state)
                          state.dataPlnt->PlantLoop(LoopNum).LoopSide(LoopSideLocation::Demand).EMSValue);
 
         for (DataPlant::LoopSideLocation LoopSideNum : LoopSideKeys) {
-            for (BranchNum = 1; BranchNum <= state.dataPlnt->PlantLoop(LoopNum).LoopSide(LoopSideNum).TotalBranches; ++BranchNum) {
+            for (int BranchNum = 1; BranchNum <= state.dataPlnt->PlantLoop(LoopNum).LoopSide(LoopSideNum).TotalBranches; ++BranchNum) {
                 if (LoopSideNum == LoopSideLocation::Supply) {
                     ActuatorName = "Supply Side Branch";
                     UniqueIDName = state.dataPlnt->PlantLoop(LoopNum).LoopSide(LoopSideNum).Branch(BranchNum).Name;
@@ -4196,7 +4114,8 @@ void SetupPlantEMSActuators(EnergyPlusData &state)
                                      state.dataPlnt->PlantLoop(LoopNum).LoopSide(LoopSideNum).Branch(BranchNum).EMSCtrlOverrideOn,
                                      state.dataPlnt->PlantLoop(LoopNum).LoopSide(LoopSideNum).Branch(BranchNum).EMSCtrlOverrideValue);
                 }
-                for (CompNum = 1; CompNum <= state.dataPlnt->PlantLoop(LoopNum).LoopSide(LoopSideNum).Branch(BranchNum).TotalComponents; ++CompNum) {
+                for (int CompNum = 1; CompNum <= state.dataPlnt->PlantLoop(LoopNum).LoopSide(LoopSideNum).Branch(BranchNum).TotalComponents;
+                     ++CompNum) {
                     ActuatorName = format("Plant Component {}",
                                           PlantEquipTypeNames[static_cast<int>(
                                               state.dataPlnt->PlantLoop(LoopNum).LoopSide(LoopSideNum).Branch(BranchNum).Comp(CompNum).Type)]);
@@ -4314,7 +4233,7 @@ void ActivateEMSControls(EnergyPlusData &state, PlantLocation const &plantLoc, b
                 CurMassFlowRate = state.dataLoopNodes->Node(this_comp.NodeNumIn).MassFlowRate;
                 ToutLowLimit = this_comp.MinOutletTemp;
                 Tinlet = state.dataLoopNodes->Node(this_comp.NodeNumIn).Temp;
-                CurSpecHeat = GetSpecificHeatGlycol(state, this_loop.FluidName, Tinlet, this_loop.FluidIndex, RoutineName);
+                CurSpecHeat = this_loop.glycol->getSpecificHeat(state, Tinlet, RoutineName);
                 QTemporary = CurMassFlowRate * CurSpecHeat * (Tinlet - ToutLowLimit);
 
                 //- Don't correct if Q is zero, as this could indicate a component which this hasn't been implemented
@@ -4380,7 +4299,7 @@ void AdjustChangeInLoadByEMSControls(EnergyPlusData &state,
     // set up some nice references to avoid lookups
     auto &this_loopside = state.dataPlnt->PlantLoop(plantLoc.loopNum).LoopSide(plantLoc.loopSideNum);
     auto &this_branch = this_loopside.Branch(plantLoc.branchNum);
-    auto &this_comp = this_branch.Comp(plantLoc.compNum);
+    auto const &this_comp = this_branch.Comp(plantLoc.compNum);
 
     if ((this_loopside.EMSCtrl) && (this_loopside.EMSValue <= 0.0)) {
         ChangeInLoad = 0.0;

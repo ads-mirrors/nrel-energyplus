@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -680,6 +680,7 @@ public:
         bool eso = true;
         bool eio = true;
         bool audit = true;
+        bool spsz = true;
         bool zsz = true;
         bool ssz = true;
         bool dxf = true;
@@ -718,6 +719,11 @@ public:
     fs::path outputZszCsvFilePath{"epluszsz.csv"};
     fs::path outputZszTabFilePath{"epluszsz.tab"};
     fs::path outputZszTxtFilePath{"epluszsz.txt"};
+
+    InputOutputFile spsz{""};
+    fs::path outputSpszCsvFilePath{"eplusspsz.csv"};
+    fs::path outputSpszTabFilePath{"eplusspsz.tab"};
+    fs::path outputSpszTxtFilePath{"eplusspsz.txt"};
 
     InputOutputFile ssz{""};
     fs::path outputSszCsvFilePath{"eplusssz.csv"};

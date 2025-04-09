@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -69,10 +69,10 @@ TEST_F(EnergyPlusFixture, PVWattsGenerator_Constructor)
 
     PVWattsGenerator pvw(*state, "PVArray", 4000.0, ModuleType::STANDARD, ArrayType::FIXED_ROOF_MOUNTED);
     EXPECT_DOUBLE_EQ(4000.0, pvw.getDCSystemCapacity());
-    EXPECT_TRUE(compare_enums(ModuleType::STANDARD, pvw.getModuleType()));
-    EXPECT_TRUE(compare_enums(ArrayType::FIXED_ROOF_MOUNTED, pvw.getArrayType()));
+    EXPECT_ENUM_EQ(ModuleType::STANDARD, pvw.getModuleType());
+    EXPECT_ENUM_EQ(ArrayType::FIXED_ROOF_MOUNTED, pvw.getArrayType());
     EXPECT_DOUBLE_EQ(0.14, pvw.getSystemLosses());
-    EXPECT_TRUE(compare_enums(GeometryType::TILT_AZIMUTH, pvw.getGeometryType()));
+    EXPECT_ENUM_EQ(GeometryType::TILT_AZIMUTH, pvw.getGeometryType());
     EXPECT_DOUBLE_EQ(20.0, pvw.getTilt());
     EXPECT_DOUBLE_EQ(180.0, pvw.getAzimuth());
     EXPECT_DOUBLE_EQ(0.4, pvw.getGroundCoverageRatio());
@@ -134,8 +134,8 @@ TEST_F(EnergyPlusFixture, PVWattsGenerator_GetInputs)
     process_idf(idfTxt);
     EXPECT_FALSE(has_err_output());
     auto pvw1 = PVWattsGenerator::createFromIdfObj(*state, 1);
-    EXPECT_TRUE(compare_enums(pvw1->getModuleType(), ModuleType::PREMIUM));
-    EXPECT_TRUE(compare_enums(pvw1->getArrayType(), ArrayType::ONE_AXIS));
+    EXPECT_ENUM_EQ(pvw1->getModuleType(), ModuleType::PREMIUM);
+    EXPECT_ENUM_EQ(pvw1->getArrayType(), ArrayType::ONE_AXIS);
     EXPECT_DOUBLE_EQ(0.4, pvw1->getGroundCoverageRatio());
     auto pvw2 = PVWattsGenerator::createFromIdfObj(*state, 2);
     EXPECT_DOUBLE_EQ(0.4, pvw2->getGroundCoverageRatio());
@@ -183,10 +183,10 @@ TEST_F(EnergyPlusFixture, PVWattsGenerator_Calc)
     state->dataGlobal->TimeStep = 1;
     state->dataGlobal->TimeStepZone = 1.0;
     state->dataHVACGlobal->TimeStepSys = 1.0;
-    state->dataHVACGlobal->TimeStepSysSec = state->dataHVACGlobal->TimeStepSys * Constant::SecInHour;
+    state->dataHVACGlobal->TimeStepSysSec = state->dataHVACGlobal->TimeStepSys * Constant::rSecsInHour;
     state->dataGlobal->BeginTimeStepFlag = true;
-    state->dataGlobal->MinutesPerTimeStep = 60;
-    state->dataGlobal->NumOfTimeStepInHour = 1;
+    state->dataGlobal->MinutesInTimeStep = 60;
+    state->dataGlobal->TimeStepsInHour = 1;
     Weather::AllocateWeatherData(*state); // gets us the albedo array initialized
     state->dataEnvrn->Year = 1986;
     state->dataEnvrn->Month = 6;
@@ -304,11 +304,13 @@ TEST_F(EnergyPlusFixture, PVWattsInverter_Constructor)
                                                  ",",
                                                  ";"});
     ASSERT_TRUE(process_idf(idfTxt));
+    state->init_state(*state);
+
     auto eplc(ElectPowerLoadCenter(*state, 1));
     ASSERT_TRUE(eplc.inverterPresent);
     EXPECT_DOUBLE_EQ(eplc.inverterObj->pvWattsDCCapacity(), 4000.0);
     state->dataHVACGlobal->TimeStepSys = 1.0;
-    state->dataHVACGlobal->TimeStepSysSec = state->dataHVACGlobal->TimeStepSys * Constant::SecInHour;
+    state->dataHVACGlobal->TimeStepSysSec = state->dataHVACGlobal->TimeStepSys * Constant::rSecsInHour;
     eplc.inverterObj->simulate(*state, 884.018);
     EXPECT_NEAR(eplc.inverterObj->aCPowerOut(), 842.527, 0.001);
 }

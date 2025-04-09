@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -95,7 +95,7 @@ namespace OutputReportPredefined {
 
         // Climate Summary Report
 
-        auto &s(state.dataOutRptPredefined);
+        auto const &s = state.dataOutRptPredefined;
 
         s->pdrClim = newPreDefReport(state, "ClimaticDataSummary", "Clim", "Climatic Data Summary");
 
@@ -126,6 +126,8 @@ namespace OutputReportPredefined {
         s->pdstOpaque = newPreDefSubTable(state, s->pdrEnvelope, "Opaque Exterior");
 
         s->pdchOpCons = newPreDefColumn(state, s->pdstOpaque, "Construction");
+        s->pdchOpZone = newPreDefColumn(state, s->pdstOpaque, "Zone");
+        s->pdchOpSpace = newPreDefColumn(state, s->pdstOpaque, "Space");
         s->pdchOpRefl = newPreDefColumn(state, s->pdstOpaque, "Reflectance");
         s->pdchOpUfactFilm = newPreDefColumn(state, s->pdstOpaque, "U-Factor with Film [W/m2-K]");
         s->pdchOpUfactNoFilm = newPreDefColumn(state, s->pdstOpaque, "U-Factor no Film [W/m2-K]");
@@ -138,6 +140,9 @@ namespace OutputReportPredefined {
         s->pdstIntOpaque = newPreDefSubTable(state, s->pdrEnvelope, "Opaque Interior");
 
         s->pdchIntOpCons = newPreDefColumn(state, s->pdstIntOpaque, "Construction");
+        s->pdchIntOpZone = newPreDefColumn(state, s->pdstIntOpaque, "Zone");
+        s->pdchIntOpSpace = newPreDefColumn(state, s->pdstIntOpaque, "Space");
+        s->pdchIntOpAdjSurf = newPreDefColumn(state, s->pdstIntOpaque, "Adjacent Surface");
         s->pdchIntOpRefl = newPreDefColumn(state, s->pdstIntOpaque, "Reflectance");
         s->pdchIntOpUfactFilm = newPreDefColumn(state, s->pdstIntOpaque, "U-Factor with Film [W/m2-K]");
         s->pdchIntOpUfactNoFilm = newPreDefColumn(state, s->pdstIntOpaque, "U-Factor no Film [W/m2-K]");
@@ -150,6 +155,8 @@ namespace OutputReportPredefined {
         s->pdstFen = newPreDefSubTable(state, s->pdrEnvelope, "Exterior Fenestration");
 
         s->pdchFenCons = newPreDefColumn(state, s->pdstFen, "Construction");
+        s->pdchFenZone = newPreDefColumn(state, s->pdstFen, "Zone");
+        s->pdchFenSpace = newPreDefColumn(state, s->pdstFen, "Space");
         s->pdchFenFrameDivName = newPreDefColumn(state, s->pdstFen, "Frame and Divider");
         s->pdchFenGlassAreaOf1 = newPreDefColumn(state, s->pdstFen, "Glass Area [m2]");
         s->pdchFenFrameAreaOf1 = newPreDefColumn(state, s->pdstFen, "Frame Area [m2]");
@@ -185,6 +192,8 @@ namespace OutputReportPredefined {
         s->pdstIntFen = newPreDefSubTable(state, s->pdrEnvelope, "Interior Fenestration");
 
         s->pdchIntFenCons = newPreDefColumn(state, s->pdstIntFen, "Construction");
+        s->pdchIntFenZone = newPreDefColumn(state, s->pdstIntFen, "Zone");
+        s->pdchIntFenSpace = newPreDefColumn(state, s->pdstIntFen, "Space");
         s->pdchIntFenAreaOf1 = newPreDefColumn(state, s->pdstIntFen, "Area of One Opening [m2]");
         s->pdchIntFenArea = newPreDefColumn(state, s->pdstIntFen, "Area of Openings [m2]");
         s->pdchIntFenUfact = newPreDefColumn(state, s->pdstIntFen, "Glass U-Factor [W/m2-K]");
@@ -199,6 +208,8 @@ namespace OutputReportPredefined {
 
         s->pdstDoor = newPreDefSubTable(state, s->pdrEnvelope, "Exterior Door");
         s->pdchDrCons = newPreDefColumn(state, s->pdstDoor, "Construction");
+        s->pdchDrZone = newPreDefColumn(state, s->pdstDoor, "Zone");
+        s->pdchDrSpace = newPreDefColumn(state, s->pdstDoor, "Space");
         s->pdchDrUfactFilm = newPreDefColumn(state, s->pdstDoor, "U-Factor with Film [W/m2-K]");
         s->pdchDrUfactNoFilm = newPreDefColumn(state, s->pdstDoor, "U-Factor no Film [W/m2-K]");
         s->pdchDrGrArea = newPreDefColumn(state, s->pdstDoor, "Gross Area [m2]");
@@ -207,10 +218,25 @@ namespace OutputReportPredefined {
         s->pdstIntDoor = newPreDefSubTable(state, s->pdrEnvelope, "Interior Door");
 
         s->pdchIntDrCons = newPreDefColumn(state, s->pdstIntDoor, "Construction");
+        s->pdchIntDrZone = newPreDefColumn(state, s->pdstIntDoor, "Zone");
+        s->pdchIntDrSpace = newPreDefColumn(state, s->pdstIntDoor, "Space");
         s->pdchIntDrUfactFilm = newPreDefColumn(state, s->pdstIntDoor, "U-Factor with Film [W/m2-K]");
         s->pdchIntDrUfactNoFilm = newPreDefColumn(state, s->pdstIntDoor, "U-Factor no Film [W/m2-K]");
         s->pdchIntDrGrArea = newPreDefColumn(state, s->pdstIntDoor, "Gross Area [m2]");
         s->pdchIntDrParent = newPreDefColumn(state, s->pdstIntDoor, "Parent Surface");
+
+        s->pdstOpqConsLayers = newPreDefSubTable(state, s->pdrEnvelope, "Opaque Construction Layers");
+
+        s->pdchOpqConsLayCol.push_back(newPreDefColumn(state, s->pdstOpqConsLayers, "Layer 1"));
+        s->pdchOpqConsLayCol.push_back(newPreDefColumn(state, s->pdstOpqConsLayers, "Layer 2"));
+        s->pdchOpqConsLayCol.push_back(newPreDefColumn(state, s->pdstOpqConsLayers, "Layer 3"));
+        s->pdchOpqConsLayCol.push_back(newPreDefColumn(state, s->pdstOpqConsLayers, "Layer 4"));
+        s->pdchOpqConsLayCol.push_back(newPreDefColumn(state, s->pdstOpqConsLayers, "Layer 5"));
+        s->pdchOpqConsLayCol.push_back(newPreDefColumn(state, s->pdstOpqConsLayers, "Layer 6"));
+        s->pdchOpqConsLayCol.push_back(newPreDefColumn(state, s->pdstOpqConsLayers, "Layer 7"));
+        s->pdchOpqConsLayCol.push_back(newPreDefColumn(state, s->pdstOpqConsLayers, "Layer 8"));
+        s->pdchOpqConsLayCol.push_back(newPreDefColumn(state, s->pdstOpqConsLayers, "Layer 9"));
+        s->pdchOpqConsLayCol.push_back(newPreDefColumn(state, s->pdstOpqConsLayers, "Layer 10"));
 
         // Shading Report
         s->pdrShading = newPreDefReport(state, "ShadingSummary", "Shade", "Shading Summary");
@@ -336,29 +362,29 @@ namespace OutputReportPredefined {
         s->pdchCoolCoilArea = newPreDefColumn(state, s->pdstCoolCoil, "Nominal Coil Surface Area [m2]");
 
         s->pdstDXCoolCoil = newPreDefSubTable(state, s->pdrEquip, "DX Cooling Coil Standard Ratings 2017");
-        s->pdchDXCoolCoilType = newPreDefColumn(state, s->pdstDXCoolCoil, "Cooling Coil Type #1");
-        s->pdchDXCoolCoilNetCapSI = newPreDefColumn(state, s->pdstDXCoolCoil, "Standard Rated Net Cooling Capacity [W] #2");
+        s->pdchDXCoolCoilType = newPreDefColumn(state, s->pdstDXCoolCoil, "Cooling Coil Type (1)");
+        s->pdchDXCoolCoilNetCapSI = newPreDefColumn(state, s->pdstDXCoolCoil, "Standard Rating Net Cooling Capacity [W][2]");
 
-        s->pdchDXCoolCoilCOP = newPreDefColumn(state, s->pdstDXCoolCoil, "Standard Rated Net COP [W/W] #2");
-        s->pdchDXCoolCoilEERIP = newPreDefColumn(state, s->pdstDXCoolCoil, "EER [Btu/W-h] #2");
-        s->pdchDXCoolCoilSEERUserIP = newPreDefColumn(state, s->pdstDXCoolCoil, "SEER User [Btu/W-h] #2,3");
-        s->pdchDXCoolCoilSEERStandardIP = newPreDefColumn(state, s->pdstDXCoolCoil, "SEER Standard [Btu/W-h] #2,3");
-        s->pdchDXCoolCoilIEERIP = newPreDefColumn(state, s->pdstDXCoolCoil, "IEER [Btu/W-h] #2");
+        s->pdchDXCoolCoilCOP = newPreDefColumn(state, s->pdstDXCoolCoil, "Standard Rating Net COP [W/W][2]");
+        s->pdchDXCoolCoilEERIP = newPreDefColumn(state, s->pdstDXCoolCoil, "EER [Btu/W-h][2]");
+        s->pdchDXCoolCoilSEERUserIP = newPreDefColumn(state, s->pdstDXCoolCoil, "SEER User [Btu/W-h][2,3]");
+        s->pdchDXCoolCoilSEERStandardIP = newPreDefColumn(state, s->pdstDXCoolCoil, "SEER Standard [Btu/W-h][2,3]");
+        s->pdchDXCoolCoilIEERIP = newPreDefColumn(state, s->pdstDXCoolCoil, "IEER [Btu/W-h][2]");
 
         // for DX Cooling Coil AHRI Standard 2023 Ratings | SEER2
         s->pdstDXCoolCoil_2023 = newPreDefSubTable(state, s->pdrEquip, "DX Cooling Coil Standard Ratings 2023");
-        s->pdchDXCoolCoilType_2023 = newPreDefColumn(state, s->pdstDXCoolCoil_2023, "Cooling Coil Type #1");
-        s->pdchDXCoolCoilNetCapSI_2023 = newPreDefColumn(state, s->pdstDXCoolCoil_2023, "Standard Rated Net Cooling Capacity [W] #2");
+        s->pdchDXCoolCoilType_2023 = newPreDefColumn(state, s->pdstDXCoolCoil_2023, "Cooling Coil Type (1)");
+        s->pdchDXCoolCoilNetCapSI_2023 = newPreDefColumn(state, s->pdstDXCoolCoil_2023, "Standard Rating Net Cooling Capacity [W][2]");
 
-        s->pdchDXCoolCoilCOP_2023 = newPreDefColumn(state, s->pdstDXCoolCoil_2023, "Standard Rated Net COP [W/W] #2,4");
-        s->pdchDXCoolCoilEERIP_2023 = newPreDefColumn(state, s->pdstDXCoolCoil_2023, "EER [Btu/W-h] #2,4");
-        s->pdchDXCoolCoilSEER2UserIP_2023 = newPreDefColumn(state, s->pdstDXCoolCoil_2023, "SEER User [Btu/W-h] #2,3");
-        s->pdchDXCoolCoilSEER2StandardIP_2023 = newPreDefColumn(state, s->pdstDXCoolCoil_2023, "SEER Standard [Btu/W-h] #2,3");
-        s->pdchDXCoolCoilIEERIP_2023 = newPreDefColumn(state, s->pdstDXCoolCoil_2023, "IEER [Btu/W-h] #2");
+        s->pdchDXCoolCoilCOP_2023 = newPreDefColumn(state, s->pdstDXCoolCoil_2023, "Standard Rating Net COP2 [W/W][2,4]");
+        s->pdchDXCoolCoilEERIP_2023 = newPreDefColumn(state, s->pdstDXCoolCoil_2023, "EER2 [Btu/W-h][2,4]");
+        s->pdchDXCoolCoilSEER2UserIP_2023 = newPreDefColumn(state, s->pdstDXCoolCoil_2023, "SEER2 User [Btu/W-h][2,3]");
+        s->pdchDXCoolCoilSEER2StandardIP_2023 = newPreDefColumn(state, s->pdstDXCoolCoil_2023, "SEER2 Standard [Btu/W-h][2,3]");
+        s->pdchDXCoolCoilIEERIP_2023 = newPreDefColumn(state, s->pdstDXCoolCoil_2023, "IEER [Btu/W-h][2]");
 
         // for DX Cooling Coil ASHRAE 127-12 Report
         s->pdstDXCoolCoil2 = newPreDefSubTable(state, s->pdrEquip, "DX Cooling Coil ASHRAE 127 Standard Ratings Report");
-        s->pdchDXCoolCoilType = newPreDefColumn(state, s->pdstDXCoolCoil2, "DX Cooling Coil Type");
+        s->pdchDXCoolCoilType2 = newPreDefColumn(state, s->pdstDXCoolCoil2, "DX Cooling Coil Type");
         s->pdchDXCoolCoilNetCapSIA = newPreDefColumn(state, s->pdstDXCoolCoil2, "Rated Net Cooling Capacity Test A [W]");
         s->pdchDXCoolCoilElecPowerA = newPreDefColumn(state, s->pdstDXCoolCoil2, "Rated Electric Power Test A [W]");
         s->pdchDXCoolCoilNetCapSIB = newPreDefColumn(state, s->pdstDXCoolCoil2, "Rated Net Cooling Capacity Test B [W]");
@@ -388,16 +414,21 @@ namespace OutputReportPredefined {
         s->pdchDXHeatCoilRegionNum = newPreDefColumn(state, s->pdstDXHeatCoil, "Region Number");
         // Std 229 Predef outputs for DX Heating Coils
         s->pdchDXHeatCoilMinOADBTforCompOp =
-            newPreDefColumn(state, s->pdstDXHeatCoil, "Minimum Outdoor Dry-Bulb Temperature for Compressor Operation");
+            newPreDefColumn(state, s->pdstDXHeatCoil, "Minimum Outdoor Dry-Bulb Temperature for Compressor Operation [C]");
+        s->pdchDXHeatCoilSuppHiT = newPreDefColumn(state, s->pdstDXHeatCoil, "Supplemental Heat High Shutoff Temperature [C]");
         s->pdchDXHeatCoilAirloopName = newPreDefColumn(state, s->pdstDXHeatCoil, "Airloop Name");
 
         // for DX Heating Coil AHRI Standard 2023 Ratings | HSPF2
-        s->pdstDXHeatCoil_2023 = newPreDefSubTable(state, s->pdrEquip, "DX Heating Coils [ HSPF2 ]");
+        s->pdstDXHeatCoil_2023 = newPreDefSubTable(state, s->pdrEquip, "DX Heating Coils AHRI 2023");
         s->pdchDXHeatCoilType_2023 = newPreDefColumn(state, s->pdstDXHeatCoil_2023, "DX Heating Coil Type");
         s->pdchDXHeatCoilHighCap_2023 = newPreDefColumn(state, s->pdstDXHeatCoil_2023, "High Temperature Heating (net) Rating Capacity [W]");
         s->pdchDXHeatCoilLowCap_2023 = newPreDefColumn(state, s->pdstDXHeatCoil_2023, "Low Temperature Heating (net) Rating Capacity [W]");
         s->pdchDXHeatCoilHSPF2IP_2023 = newPreDefColumn(state, s->pdstDXHeatCoil_2023, "HSPF2 [Btu/W-h]");
         s->pdchDXHeatCoilRegionNum_2023 = newPreDefColumn(state, s->pdstDXHeatCoil_2023, "Region Number");
+        // Std 229 Predef outputs for DX Heating Coils AHRI 2023
+        s->pdchDXHeatCoilMinOADBTforCompOp_2023 =
+            newPreDefColumn(state, s->pdstDXHeatCoil_2023, "Minimum Outdoor Dry-Bulb Temperature for Compressor Operation [C]");
+        s->pdchDXHeatCoilAirloopName_2023 = newPreDefColumn(state, s->pdstDXHeatCoil_2023, "Airloop Name");
 
         s->pdstHeatCoil = newPreDefSubTable(state, s->pdrEquip, "Heating Coils");
 
@@ -428,6 +459,7 @@ namespace OutputReportPredefined {
         s->pdchFanAutosized = newPreDefColumn(state, s->pdstFan, "Is Autosized");
         s->pdchFanMotorEff = newPreDefColumn(state, s->pdstFan, "Motor Efficiency");
         s->pdchFanMotorHeatToZoneFrac = newPreDefColumn(state, s->pdstFan, "Motor Heat to Zone Fraction");
+        s->pdchFanMotorHeatZone = newPreDefColumn(state, s->pdstFan, "Motor Loss Zone Name");
         s->pdchFanAirLoopName = newPreDefColumn(state, s->pdstFan, "Airloop Name");
 
         s->pdstPump = newPreDefSubTable(state, s->pdrEquip, "Pumps");
@@ -525,6 +557,17 @@ namespace OutputReportPredefined {
         s->pdchAirTermSupHeatingSP = newPreDefColumn(state, s->pdstAirTerm, "Supply Heating Setpoint [C]");
         s->pdchAirTermHeatingCap = newPreDefColumn(state, s->pdstAirTerm, "Heating Capacity [W]");
         s->pdchAirTermCoolingCap = newPreDefColumn(state, s->pdstAirTerm, "Cooling Capacity [W]");
+
+        s->pdchAirTermTypeInp = newPreDefColumn(state, s->pdstAirTerm, "Type of Input Object");
+        s->pdchAirTermHeatCoilType = newPreDefColumn(state, s->pdstAirTerm, "Heat/Reheat Coil Object Type");
+        s->pdchAirTermCoolCoilType = newPreDefColumn(state, s->pdstAirTerm, "Chilled Water Coil Object Type");
+        s->pdchAirTermFanType = newPreDefColumn(state, s->pdstAirTerm, "Fan Object Type");
+        s->pdchAirTermFanName = newPreDefColumn(state, s->pdstAirTerm, "Fan Name");
+        s->pdchAirTermPrimFlow = newPreDefColumn(state, s->pdstAirTerm, "Primary Air Flow Rate [m3/s]");
+        s->pdchAirTermSecdFlow = newPreDefColumn(state, s->pdstAirTerm, "Secondary Air Flow Rate [m3/s]");
+        s->pdchAirTermMinFlowSch = newPreDefColumn(state, s->pdstAirTerm, "Minimum Flow Schedule Name");
+        s->pdchAirTermMaxFlowReh = newPreDefColumn(state, s->pdstAirTerm, "Maximum Flow During Reheat [m3/s]");
+        s->pdchAirTermMinOAflowSch = newPreDefColumn(state, s->pdstAirTerm, "Minimum Outdoor Flow Schedule Name");
 
         // Std 229 Air Heat Recovery
         s->pdstAirHR = newPreDefSubTable(state, s->pdrEquip, "Air Heat Recovery");
@@ -785,13 +828,13 @@ namespace OutputReportPredefined {
         s->pdchCoilEntHumRatIdealPeak =
             newPreDefColumn(state, s->pdstCoilSummaryCoilSelection, "Coil Entering Air Humidity Ratio at Ideal Loads Peak [kgWater/kgDryAir]");
         s->pdchCoilEntEnthalpyIdealPeak =
-            newPreDefColumn(state, s->pdstCoilSummaryCoilSelection, "Coil Entering Air Enthalpy at Ideal Loads Peak [J/KG-K]");
+            newPreDefColumn(state, s->pdstCoilSummaryCoilSelection, "Coil Entering Air Enthalpy at Ideal Loads Peak [J/kg]");
         s->pdchCoilLvgDryBulbIdealPeak = newPreDefColumn(state, s->pdstCoilSummaryCoilSelection, "Coil Leaving Air Drybulb at Ideal Loads Peak [C]");
         s->pdchCoilLvgWetBulbIdealPeak = newPreDefColumn(state, s->pdstCoilSummaryCoilSelection, "Coil Leaving Air Wetbulb at Ideal Loads Peak [C]");
         s->pdchCoilLvgHumRatIdealPeak =
             newPreDefColumn(state, s->pdstCoilSummaryCoilSelection, "Coil Leaving Air Humidity Ratio at Ideal Loads Peak [kgWater/kgDryAir]");
         s->pdchCoilLvgEnthalpyIdealPeak =
-            newPreDefColumn(state, s->pdstCoilSummaryCoilSelection, "Coil Leaving Air Enthalpy at Ideal Loads Peak [J/KG-K]");
+            newPreDefColumn(state, s->pdstCoilSummaryCoilSelection, "Coil Leaving Air Enthalpy at Ideal Loads Peak [J/kg]");
         s->pdchCoilWaterMassFlowIdealPeak =
             newPreDefColumn(state, s->pdstCoilSummaryCoilSelection, "Coil Plant Fluid Mass Flow Rate at Ideal Loads Peak [kg/s]");
         s->pdchCoilEntWaterTempIdealPeak =
@@ -830,13 +873,13 @@ namespace OutputReportPredefined {
         s->pdchCoilRatedEntHumRat =
             newPreDefColumn(state, s->pdstCoilSummaryCoilSelection, "Coil Entering Air Humidity Ratio at Rating Conditions [kgWater/kgDryAir]");
         s->pdchCoilRatedEntEnthalpy =
-            newPreDefColumn(state, s->pdstCoilSummaryCoilSelection, "Coil Entering Air Enthalpy at Rating Conditions [J/KG-K]");
+            newPreDefColumn(state, s->pdstCoilSummaryCoilSelection, "Coil Entering Air Enthalpy at Rating Conditions [J/kg]");
         s->pdchCoilRatedLvgDryBulb = newPreDefColumn(state, s->pdstCoilSummaryCoilSelection, "Coil Leaving Air Drybulb at Rating Conditions [C]");
         s->pdchCoilRatedLvgWetBulb = newPreDefColumn(state, s->pdstCoilSummaryCoilSelection, "Coil Leaving Air Wetbulb at Rating Conditions [C]");
         s->pdchCoilRatedLvgHumRat =
             newPreDefColumn(state, s->pdstCoilSummaryCoilSelection, "Coil Leaving Air Humidity Ratio at Rating Conditions [kgWater/kgDryAir]");
         s->pdchCoilRatedLvgEnthalpy =
-            newPreDefColumn(state, s->pdstCoilSummaryCoilSelection, "Coil Leaving Air Enthalpy at Rating Conditions [J/KG-K]");
+            newPreDefColumn(state, s->pdstCoilSummaryCoilSelection, "Coil Leaving Air Enthalpy at Rating Conditions [J/kg]");
 
         // Std 229 New Table "Coil Connections"
         s->pdstCoilConnections = newPreDefSubTable(state, s->pdrCoilSizingDetailsTable, "Coil Connections");
@@ -879,6 +922,7 @@ namespace OutputReportPredefined {
         s->pdchDCVZoneADEffCooling = newPreDefColumn(state, s->pdstDemCntlVent, "Air Distribution Effectiveness in Cooling Mode");
         s->pdchDCVZoneADEffHeating = newPreDefColumn(state, s->pdstDemCntlVent, "Air Distribution Effectiveness in Heating Mode");
         s->pdchDCVZoneADEffSchName = newPreDefColumn(state, s->pdstDemCntlVent, "Air Distribution Effectiveness Schedule Name");
+        s->pdchDCVType = newPreDefColumn(state, s->pdstDemCntlVent, "Type");
 
         s->pdstSimpleComfort = newPreDefSubTable(state, s->pdrSystem, "Time Not Comfortable Based on Simple ASHRAE 55-2004");
         s->pdchSCwinterClothes = newPreDefColumn(state, s->pdstSimpleComfort, "Winter Clothes [hr]");
@@ -890,6 +934,61 @@ namespace OutputReportPredefined {
         s->pdchULnotMetCool = newPreDefColumn(state, s->pdstUnmetLoads, "During Cooling [hr]");
         s->pdchULnotMetHeatOcc = newPreDefColumn(state, s->pdstUnmetLoads, "During Occupied Heating [hr]");
         s->pdchULnotMetCoolOcc = newPreDefColumn(state, s->pdstUnmetLoads, "During Occupied Cooling [hr]");
+
+        s->pdstStatSchd = newPreDefSubTable(state, s->pdrSystem, "Thermostat Schedules");
+        s->pdchStatName = newPreDefColumn(state, s->pdstStatSchd, "Thermostat Name 1");
+        s->pdchStatCtrlTypeSchd = newPreDefColumn(state, s->pdstStatSchd, "Control Type Schedule");
+        s->pdchStatSchdType1 = newPreDefColumn(state, s->pdstStatSchd, "Control Type");
+        s->pdchStatSchdTypeName1 = newPreDefColumn(state, s->pdstStatSchd, "Control Type Name");
+        s->pdchStatSchdHeatName = newPreDefColumn(state, s->pdstStatSchd, "Heating Schedule");
+        s->pdchStatSchdCoolName = newPreDefColumn(state, s->pdstStatSchd, "Cooling Schedule");
+
+        // HVAC Topology Report
+        s->pdrTopology = newPreDefReport(state, "HVACTopology", "Top", "HVAC Topology");
+
+        s->pdstTopAirLoop = newPreDefSubTable(state, s->pdrTopology, "Air Loop Supply Side Component Arrangement");
+        s->pdchTopAirLoopName = newPreDefColumn(state, s->pdstTopAirLoop, "Airloop Name");
+        s->pdchTopAirSplitName = newPreDefColumn(state, s->pdstTopAirLoop, "Splitter Name");
+        s->pdchTopAirBranchName = newPreDefColumn(state, s->pdstTopAirLoop, "Supply Branch Name");
+        s->pdchTopAirSupplyBranchType = newPreDefColumn(state, s->pdstTopAirLoop, "Supply Branch Type");
+        s->pdchTopAirCompType = newPreDefColumn(state, s->pdstTopAirLoop, "Component Type");
+        s->pdchTopAirCompName = newPreDefColumn(state, s->pdstTopAirLoop, "Component Name");
+        s->pdchTopAirSubCompType = newPreDefColumn(state, s->pdstTopAirLoop, "Sub-Component Type");
+        s->pdchTopAirSubCompName = newPreDefColumn(state, s->pdstTopAirLoop, "Sub-Component Name");
+        s->pdchTopAirSubSubCompType = newPreDefColumn(state, s->pdstTopAirLoop, "Sub-Sub-Component Type");
+        s->pdchTopAirSubSubCompName = newPreDefColumn(state, s->pdstTopAirLoop, "Sub-Sub-Component Name");
+        s->pdchTopAirMixName = newPreDefColumn(state, s->pdstTopAirLoop, "Mixer Name");
+
+        s->pdstTopAirDemand = newPreDefSubTable(state, s->pdrTopology, "Air Loop Demand Side Component Arrangement");
+        s->pdchTopAirDemandName = newPreDefColumn(state, s->pdstTopAirDemand, "Airloop Name");
+        s->pdchTopAirSupplyBranchName = newPreDefColumn(state, s->pdstTopAirDemand, "Supply Branch Name");
+        s->pdchTopAirSupplyDuctType = newPreDefColumn(state, s->pdstTopAirDemand, "Supply Branch Type");
+        s->pdchTopAirSupplyPCompType = newPreDefColumn(state, s->pdstTopAirDemand, "Supply Path Component Type");
+        s->pdchTopAirSupplyPCompName = newPreDefColumn(state, s->pdstTopAirDemand, "Supply Path Component Name");
+        s->pdchTopAirTermUnitType = newPreDefColumn(state, s->pdstTopAirDemand, "Terminal Unit Type");
+        s->pdchTopAirTermUnitName = newPreDefColumn(state, s->pdstTopAirDemand, "Terminal Unit Name");
+        s->pdchTopAirZoneName = newPreDefColumn(state, s->pdstTopAirDemand, "Zone Name");
+        s->pdchTopAirReturnPCompType = newPreDefColumn(state, s->pdstTopAirDemand, "Return Path Component Type");
+        s->pdchTopAirReturnPCompName = newPreDefColumn(state, s->pdstTopAirDemand, "Return Path Component Name");
+
+        s->pdstTopZnEqp = newPreDefSubTable(state, s->pdrTopology, "Zone Equipment Component Arrangement");
+        s->pdchTopZnEqpName = newPreDefColumn(state, s->pdstTopZnEqp, "Zone Name");
+        s->pdchTopZnEqpCompType = newPreDefColumn(state, s->pdstTopZnEqp, "Component Type");
+        s->pdchTopZnEqpCompName = newPreDefColumn(state, s->pdstTopZnEqp, "Component Name");
+        s->pdchTopZnEqpSubCompType = newPreDefColumn(state, s->pdstTopZnEqp, "Sub-Component Type");
+        s->pdchTopZnEqpSubCompName = newPreDefColumn(state, s->pdstTopZnEqp, "Sub-Component Name");
+        s->pdchTopZnEqpSubSubCompType = newPreDefColumn(state, s->pdstTopZnEqp, "Sub-Sub-Component Type");
+        s->pdchTopZnEqpSubSubCompName = newPreDefColumn(state, s->pdstTopZnEqp, "Sub-Sub-Component Name");
+
+        s->pdstTopPlantLoop2 = newPreDefSubTable(state, s->pdrTopology, "Plant Loop Component Arrangement");
+        s->pdchTopPlantLoopType2 = newPreDefColumn(state, s->pdstTopPlantLoop2, "Loop Type");
+        s->pdchTopPlantLoopName2 = newPreDefColumn(state, s->pdstTopPlantLoop2, "Loop Name");
+        s->pdchTopPlantSide2 = newPreDefColumn(state, s->pdstTopPlantLoop2, "Side");
+        s->pdchTopPlantSplitName2 = newPreDefColumn(state, s->pdstTopPlantLoop2, "Splitter Name");
+        s->pdchTopPlantBranchName2 = newPreDefColumn(state, s->pdstTopPlantLoop2, "Branch Name");
+        s->pdchTopPlantCompType2 = newPreDefColumn(state, s->pdstTopPlantLoop2, "Component Type");
+        s->pdchTopPlantCompName2 = newPreDefColumn(state, s->pdstTopPlantLoop2, "Component Name");
+        s->pdchTopPlantMixName2 = newPreDefColumn(state, s->pdstTopPlantLoop2, "Mixer Name");
 
         // Outdoor Air Report
         s->pdrOutsideAir = newPreDefReport(state, "OutdoorAirSummary", "OA", "Outdoor Air Summary");
@@ -930,6 +1029,8 @@ namespace OutputReportPredefined {
         s->pdchOaMvZoneArea = newPreDefColumn(state, s->pdstOAmechVentParByZone, "Zone Area [m2]");
         s->pdchOaMvDesZnOa = newPreDefColumn(state, s->pdstOAmechVentParByZone, "Design Zone Outdoor Airflow - Voz [m3/s]");
         s->pdchOaMvMinDynTrgVent = newPreDefColumn(state, s->pdstOAmechVentParByZone, "Minimum Dynamic Target Ventilation - Voz-dyn-min [m3/s]");
+        addFootNoteSubTable(
+            state, s->pdstOAmechVentParByZone, "Values shown for a single zone without multipliers. Total Facility includes multipliers.");
 
         s->pdstOAtotAirByZone = newPreDefSubTable(state, s->pdrOutsideAirDetails, "Total Outdoor Air by Zone");
         s->pdchOaTaBzMechVent = newPreDefColumn(state, s->pdstOAtotAirByZone, "Mechanical Ventilation [m3]");
@@ -942,6 +1043,7 @@ namespace OutputReportPredefined {
         s->pdchOaTaBzTmAt = newPreDefColumn(state, s->pdstOAtotAirByZone, "Time At Voz-dyn [hr]");
         s->pdchOaTaBzTmAbove = newPreDefColumn(state, s->pdstOAtotAirByZone, "Time Above Voz-dyn [hr]");
         s->pdchOaTaBzTmAboveUnocc = newPreDefColumn(state, s->pdstOAtotAirByZone, "Time Above Zero When Unoccupied [hr]");
+        addFootNoteSubTable(state, s->pdstOAtotAirByZone, "Values shown for a single zone without multipliers. Total Facility includes multipliers.");
 
         s->pdstOAavgOccByZone = newPreDefSubTable(state, s->pdrOutsideAirDetails, "Average Outdoor Air During Occupancy by Zone - Flow Rates");
         s->pdchOaOccBzMechVent = newPreDefColumn(state, s->pdstOAavgOccByZone, "Mechanical Ventilation [m3/s]");
@@ -953,6 +1055,7 @@ namespace OutputReportPredefined {
         s->pdchOaOccBzTmBelow = newPreDefColumn(state, s->pdstOAavgOccByZone, "Time Below Voz-dyn [hr]");
         s->pdchOaOccBzTmAt = newPreDefColumn(state, s->pdstOAavgOccByZone, "Time At Voz-dyn [hr]");
         s->pdchOaOccBzTmAbove = newPreDefColumn(state, s->pdstOAavgOccByZone, "Time Above Voz-dyn [hr]");
+        addFootNoteSubTable(state, s->pdstOAavgOccByZone, "Values shown for a single zone without multipliers. Total Facility includes multipliers.");
 
         s->pdstOAtotAirByLoop = newPreDefSubTable(state, s->pdrOutsideAirDetails, "Total Outdoor Air by AirLoop");
         s->pdchOaTaAlMechVent = newPreDefColumn(state, s->pdstOAtotAirByLoop, "Mechanical Ventilation [m3]");
@@ -963,6 +1066,7 @@ namespace OutputReportPredefined {
         s->pdchOaTaAlTmAt = newPreDefColumn(state, s->pdstOAtotAirByLoop, "Time At Voz-sum-dyn [hr]");
         s->pdchOaTaAlTmAbove = newPreDefColumn(state, s->pdstOAtotAirByLoop, "Time Above Voz-sum-dyn [hr]");
         s->pdchOaTaAlTmAboveUnocc = newPreDefColumn(state, s->pdstOAtotAirByLoop, "Time Above Zero When Unoccupied [hr]");
+        addFootNoteSubTable(state, s->pdstOAtotAirByLoop, "Values shown include multipliers.");
 
         s->pdstOAavgOccByLoop = newPreDefSubTable(state, s->pdrOutsideAirDetails, "Average Outdoor Air During Occupancy by AirLoop");
         s->pdchOaOccAlMechVent = newPreDefColumn(state, s->pdstOAavgOccByLoop, "Mechanical Ventilation [m3/s]");
@@ -972,6 +1076,7 @@ namespace OutputReportPredefined {
         s->pdchOaOccAlTmBelow = newPreDefColumn(state, s->pdstOAavgOccByLoop, "Time Below Voz-sum-dyn [hr]");
         s->pdchOaOccAlTmAt = newPreDefColumn(state, s->pdstOAavgOccByLoop, "Time At Voz-sum-dyn [hr]");
         s->pdchOaOccAlTmAbove = newPreDefColumn(state, s->pdstOAavgOccByLoop, "Time Above Voz-sum-dyn [hr]");
+        addFootNoteSubTable(state, s->pdstOAavgOccByLoop, "Values shown include multipliers.");
 
         s->pdstOAtimeFactorsDurOcc = newPreDefSubTable(state, s->pdrOutsideAirDetails, "Outdoor Air Controller Limiting Factors by AirLoop");
         s->pdchOaTmFctNoLimit = newPreDefColumn(state, s->pdstOAtimeFactorsDurOcc, "No Limiting Factor [hr]");        // todo
@@ -996,6 +1101,7 @@ namespace OutputReportPredefined {
         s->pdchOaAvFctNiteVent = newPreDefColumn(state, s->pdstOAavgFactorsDurOcc, "Night Ventilation [m3/s]");        // todo
         s->pdchOaAvFctDemand = newPreDefColumn(state, s->pdstOAavgFactorsDurOcc, "Demand Limiting [m3/s]");            // todo
         s->pdchOaAvFctEMS = newPreDefColumn(state, s->pdstOAavgFactorsDurOcc, "Energy Management System [m3/s]");      // todo
+        addFootNoteSubTable(state, s->pdstOAavgFactorsDurOcc, "Values shown include multipliers.");
 
         // Object Count Report
         s->pdrObjCnt = newPreDefReport(state, "ObjectCountSummary", "Count", "Object Count Summary");

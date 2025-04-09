@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -136,7 +136,7 @@ protected:
         state->dataZoneEquip->ZoneEquipConfig(1).ReturnNode(1) = 21;
         state->dataZoneEquip->ZoneEquipConfig(1).FixedReturnFlow.allocate(1);
         state->dataHeatBal->Zone(1).SystemZoneNodeNumber = state->dataZoneEquip->ZoneEquipConfig(1).ZoneNode;
-        state->dataZoneEquip->ZoneEquipConfig(1).ReturnFlowSchedPtrNum = ScheduleManager::ScheduleAlwaysOn;
+        state->dataZoneEquip->ZoneEquipConfig(1).returnFlowFracSched = Sched::GetScheduleAlwaysOn(*state);
         state->dataZoneEquip->ZoneEquipList(1).Name = "ZONE2EQUIPMENT";
         int maxEquipCount = 1;
         state->dataZoneEquip->ZoneEquipList(1).NumOfEquipTypes = maxEquipCount;
@@ -209,13 +209,17 @@ protected:
             loopsidebranch.TotalComponents = 2;
             loopsidebranch.Comp.allocate(2);
         }
+
+        // Need to initialize FluidProperties, do that here
+        state->dataFluid->init_state(*state);
+
         state->dataPlnt->PlantLoop(1).Name = "Hot Water Loop";
         state->dataPlnt->PlantLoop(1).FluidName = "WATER";
-        state->dataPlnt->PlantLoop(1).FluidIndex = 1;
+        state->dataPlnt->PlantLoop(1).glycol = Fluid::GetWater(*state);
 
         state->dataPlnt->PlantLoop(2).Name = "Chilled Water Loop";
         state->dataPlnt->PlantLoop(2).FluidName = "WATER";
-        state->dataPlnt->PlantLoop(2).FluidIndex = 1;
+        state->dataPlnt->PlantLoop(2).glycol = Fluid::GetWater(*state);
 
         state->dataSize->PlantSizData(1).PlantLoopName = "Hot Water Loop";
         state->dataSize->PlantSizData(1).ExitTemp = 80.0;
@@ -282,9 +286,8 @@ public:
         state->dataHVACGlobal->NumPrimaryAirSys = 1;
         state->dataAirSystemsData->PrimaryAirSystems.allocate(1);
         state->dataAirLoop->AirLoopControlInfo.allocate(1);
-        Psychrometrics::InitializePsychRoutines(*state);
         state->dataLoopNodes->Node.allocate(30);
-        state->dataHeatBal->HeatReclaimVS_DXCoil.allocate(4);
+        state->dataHeatBal->HeatReclaimVS_Coil.allocate(4);
     }
 
     virtual void TearDown()
@@ -295,6 +298,7 @@ public:
 
 TEST_F(AirloopUnitarySysTest, MultipleWaterCoolingCoilSizing)
 {
+    state->init_state(*state);
 
     // Set up raw water coil sizes as coil-on-branch configuration then
     // test against sizing of same water coils in UnitarySystem
@@ -321,16 +325,12 @@ TEST_F(AirloopUnitarySysTest, MultipleWaterCoolingCoilSizing)
         loopsidebranch.Comp.allocate(1);
     }
     state->dataPlnt->PlantLoop(1).Name = "ColdWaterLoop";
-    state->dataPlnt->PlantLoop(1).FluidName = "FluidWaterLoop";
-    state->dataPlnt->PlantLoop(1).FluidIndex = 1;
     state->dataPlnt->PlantLoop(1).FluidName = "WATER";
-    state->dataPlnt->PlantLoop(1).FluidIndex = 1;
+    state->dataPlnt->PlantLoop(1).glycol = Fluid::GetWater(*state);
 
     state->dataPlnt->PlantLoop(2).Name = "HotWaterLoop";
-    state->dataPlnt->PlantLoop(2).FluidName = "FluidWaterLoop";
-    state->dataPlnt->PlantLoop(2).FluidIndex = 1;
     state->dataPlnt->PlantLoop(2).FluidName = "WATER";
-    state->dataPlnt->PlantLoop(2).FluidIndex = 1;
+    state->dataPlnt->PlantLoop(2).glycol = Fluid::GetWater(*state);
 
     // set up sizing data
     state->dataSize->FinalSysSizing(1).MixTempAtCoolPeak = 20.0;
@@ -365,6 +365,9 @@ TEST_F(AirloopUnitarySysTest, MultipleWaterCoolingCoilSizing)
     state->dataWaterCoils->WaterCoil(CoilNum).WaterOutletNodeNum = 2;
     state->dataWaterCoils->WaterCoil(CoilNum).AirInletNodeNum = 3;
     state->dataWaterCoils->WaterCoil(CoilNum).AirOutletNodeNum = 4;
+
+    state->dataWaterCoils->WaterCoil(CoilNum).availSched = Sched::GetScheduleAlwaysOff(*state);
+
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).NodeNumIn =
         state->dataWaterCoils->WaterCoil(CoilNum).WaterInletNodeNum;
 
@@ -382,7 +385,6 @@ TEST_F(AirloopUnitarySysTest, MultipleWaterCoolingCoilSizing)
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Name =
         state->dataWaterCoils->WaterCoil(CoilNum).Name;
     state->dataSize->DataWaterLoopNum = 1;
-    state->dataFluidProps->NumOfGlycols = 1;
 
     createCoilSelectionReportObj(*state);
     WaterCoils::SizeWaterCoil(*state, CoilNum);
@@ -589,7 +591,7 @@ TEST_F(ZoneUnitarySysTest, Test_UnitarySystemModel_factory)
           Setpoint,                       !- Control Type
           East Zone,                      !- Controlling Zone or Thermostat Location
           None,                           !- Dehumidification Control Type
-          AlwaysOne,                      !- Availability Schedule Name
+          Constant-1.0,                      !- Availability Schedule Name
           Zone Exhaust Node,              !- Air Inlet Node Name
           Zone 2 Inlet Node,              !- Air Outlet Node Name
           Fan:OnOff,                      !- Supply Fan Object Type
@@ -650,7 +652,7 @@ TEST_F(ZoneUnitarySysTest, Test_UnitarySystemModel_factory)
 
         Fan:OnOff,
           Supply Fan 1,                   !- Name
-          AlwaysOne,                      !- Availability Schedule Name
+          Constant-1.0,                      !- Availability Schedule Name
           0.7,                            !- Fan Total Efficiency
           600.0,                          !- Pressure Rise{ Pa }
           AutoSize,                       !- Maximum Flow Rate{ m3 / s }
@@ -661,7 +663,7 @@ TEST_F(ZoneUnitarySysTest, Test_UnitarySystemModel_factory)
 
         Coil:Cooling:DX:MultiSpeed,
           DX Cooling Coil,                !- Name
-          AlwaysOne,                      !- Availability Schedule Name
+          Constant-1.0,                      !- Availability Schedule Name
           Cooling Coil Air Inlet Node,    !- Air Inlet Node Name
           Zone 2 Inlet Node,              !- Air Outlet Node Name
           ,                               !- Condenser Air Inlet Node Name
@@ -724,13 +726,6 @@ TEST_F(ZoneUnitarySysTest, Test_UnitarySystemModel_factory)
           Any Number;                     !- Name
 
         Schedule:Compact,
-          AlwaysOne,                      !- Name
-          Any Number,                     !- Schedule Type Limits Name
-          Through: 12/31,                 !- Field 1
-          For: AllDays,                   !- Field 2
-          Until: 24:00, 1.0;              !- Field 3
-
-        Schedule:Compact,
           Always 20C,                     !- Name
           Any Number,                     !- Schedule Type Limits Name
           Through: 12/31,                 !- Field 1
@@ -772,6 +767,7 @@ TEST_F(ZoneUnitarySysTest, Test_UnitarySystemModel_factory)
     )IDF";
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     // call the UnitarySystem factory
     std::string compName = "UNITARY SYSTEM MODEL";
@@ -791,10 +787,6 @@ TEST_F(ZoneUnitarySysTest, Test_UnitarySystemModel_factory)
     EXPECT_EQ(compName, thisSys->Name);
 
     OutputReportPredefined::SetPredefinedTables(*state);
-
-    ScheduleManager::ProcessScheduleInput(*state); // read schedules
-
-    state->dataScheduleMgr->Schedule(1).CurrentValue = 1.0; // Enable schedule without calling schedule manager
 
     state->dataGlobal->BeginEnvrnFlag = true; // act as if simulation is beginning
 
@@ -866,7 +858,7 @@ TEST_F(ZoneUnitarySysTest, UnitarySystemModel_TwoSpeedDXCoolCoil_Only)
           Setpoint,                       !- Control Type
           East Zone,                      !- Controlling Zone or Thermostat Location
           None,                           !- Dehumidification Control Type
-          AlwaysOne,                      !- Availability Schedule Name
+          Constant-1.0,                      !- Availability Schedule Name
           Zone Exhaust Node,              !- Air Inlet Node Name
           Zone 2 Inlet Node,              !- Air Outlet Node Name
           Fan:OnOff,                      !- Supply Fan Object Type
@@ -904,7 +896,7 @@ TEST_F(ZoneUnitarySysTest, UnitarySystemModel_TwoSpeedDXCoolCoil_Only)
           80.0;                           !- Maximum Supply Air Temperature{ C }
         Fan:OnOff,
           Supply Fan 1,                   !- Name
-          AlwaysOne,                      !- Availability Schedule Name
+          Constant-1.0,                      !- Availability Schedule Name
           0.7,                            !- Fan Total Efficiency
           600.0,                          !- Pressure Rise{ Pa }
           autosize,                       !- Maximum Flow Rate{ m3 / s }
@@ -941,12 +933,6 @@ TEST_F(ZoneUnitarySysTest, UnitarySystemModel_TwoSpeedDXCoolCoil_Only)
          EvaporativelyCooled; !- Condenser Type
         ScheduleTypeLimits,
           Any Number;                     !- Name
-        Schedule:Compact,
-          AlwaysOne,                      !- Name
-          Any Number,                     !- Schedule Type Limits Name
-          Through: 12/31,                 !- Field 1
-          For: AllDays,                   !- Field 2
-          Until: 24:00, 1.0;              !- Field 3
         Schedule:Compact,
           Always 20C,                     !- Name
           Any Number,                     !- Schedule Type Limits Name
@@ -986,6 +972,7 @@ TEST_F(ZoneUnitarySysTest, UnitarySystemModel_TwoSpeedDXCoolCoil_Only)
     )IDF";
 
     ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
+    state->init_state(*state);
 
     // call the UnitarySystem factory
     std::string compName = "UNITARY SYSTEM MODEL";
@@ -1046,14 +1033,10 @@ TEST_F(ZoneUnitarySysTest, UnitarySystemModel_TwoSpeedDXCoolCoil_Only)
     state->dataLoopNodes->Node(1).HumRat = 0.00922;    // 17C wb
     state->dataLoopNodes->Node(1).Enthalpy = 47597.03; // www.sugartech.com/psychro/index.php
 
-    ScheduleManager::ProcessScheduleInput(*state); // read schedules
-
     // Cooling coil air inlet node = 3
     state->dataLoopNodes->Node(3).MassFlowRateMax = thisSys->m_DesignMassFlowRate; // max at fan outlet so fan won't limit flow
     // Cooling coil air outlet node = 2
     state->dataLoopNodes->Node(2).TempSetPoint = 17.0;
-
-    state->dataScheduleMgr->Schedule(1).CurrentValue = 1.0; // Enable schedule without calling schedule manager
 
     state->dataGlobal->BeginEnvrnFlag = true; // act as if simulation is beginning
 
@@ -1088,7 +1071,7 @@ TEST_F(ZoneUnitarySysTest, UnitarySystemModel_MultiSpeedDXCoolCoil_Only)
           Setpoint,                       !- Control Type
           East Zone,                      !- Controlling Zone or Thermostat Location
           None,                           !- Dehumidification Control Type
-          AlwaysOne,                      !- Availability Schedule Name
+          Constant-1.0,                      !- Availability Schedule Name
           Zone Exhaust Node,              !- Air Inlet Node Name
           Zone 2 Inlet Node,              !- Air Outlet Node Name
           Fan:OnOff,                      !- Supply Fan Object Type
@@ -1148,7 +1131,7 @@ TEST_F(ZoneUnitarySysTest, UnitarySystemModel_MultiSpeedDXCoolCoil_Only)
 
         Fan:OnOff,
           Supply Fan 1,                   !- Name
-          AlwaysOne,                      !- Availability Schedule Name
+          Constant-1.0,                      !- Availability Schedule Name
           0.7,                            !- Fan Total Efficiency
           600.0,                          !- Pressure Rise{ Pa }
           autosize,                       !- Maximum Flow Rate{ m3 / s }
@@ -1161,6 +1144,344 @@ TEST_F(ZoneUnitarySysTest, UnitarySystemModel_MultiSpeedDXCoolCoil_Only)
           DX Cooling Coil,                !- Name
           ,                               !- Availability Schedule Name
           Cooling Coil Air Inlet Node,    !- Air Inlet Node Name
+          Zone 2 Inlet Node,              !- Air Outlet Node Name
+          ,                               !- Condenser Air Inlet Node Name
+          AirCooled,                      !- Condenser Type
+          ,                               !- Minimum Outdoor Dry - Bulb Temperature for Compressor Operation{ C }
+          ,                               !- Supply Water Storage Tank Name
+          ,                               !- Condensate Collection Water Storage Tank Name
+          No,                             !- Apply Part Load Fraction to Speeds Greater than 1
+          No,                             !- Apply Latent Degradation to Speeds Greater than 1
+          0,                              !- Crankcase Heater Capacity{ W }
+          ,                               !- Crankcase Heater Capacity Function of Temperature Curve Name
+          10,                             !- Maximum Outdoor Dry - Bulb Temperature for Crankcase Heater Operation{ C }
+          0,                              !- Basin Heater Capacity{ W / K }
+          2,                              !- Basin Heater Setpoint Temperature{ C }
+          ,                               !- Basin Heater Operating Schedule Name
+          Electricity,                    !- Fuel Type
+          2,                              !- Number of Speeds
+          AutoSize,                       !- Speed 1 Gross Rated Total Cooling Capacity{ W }
+          AutoSize,                       !- Speed 1 Gross Rated Sensible Heat Ratio
+          5.12895662368113,               !- Speed 1 Gross Rated Cooling COP{ W / W }
+          AutoSize,                       !- Speed 1 Rated Air Flow Rate{ m3 / s }
+          773.3,                          !- 2017 Speed 1 Rated Evaporator Fan Power Per Volume Flow Rate {W/(m3/s)}
+          934.4,                          !- 2023 Speed 1 Rated Evaporator Fan Power Per Volume Flow Rate {W/(m3/s)}", //??BPS:T
+          Biquadratic,                    !- Speed 1 Total Cooling Capacity Function of Temperature Curve Name
+          Quadratic,                      !- Speed 1 Total Cooling Capacity Function of Flow Fraction Curve Name
+          Biquadratic,                    !- Speed 1 Energy Input Ratio Function of Temperature Curve Name
+          Quadratic,                      !- Speed 1 Energy Input Ratio Function of Flow Fraction Curve Name
+          Quadratic,                      !- Speed 1 Part Load Fraction Correlation Curve Name
+          0,                              !- Speed 1 Nominal Time for Condensate Removal to Begin{ s }
+          0,                              !- Speed 1 Ratio of Initial Moisture Evaporation Rate and Steady State Latent Capacity{ dimensionless }
+          0,                              !- Speed 1 Maximum Cycling Rate{ cycles / hr }
+          0,                              !- Speed 1 Latent Capacity Time Constant{ s }
+          0.5,                            !- Speed 1 Rated Waste Heat Fraction of Power Input{ dimensionless }
+          Biquadratic,                    !- Speed 1 Waste Heat Function of Temperature Curve Name
+          0.9,                            !- Speed 1 Evaporative Condenser Effectiveness{ dimensionless }
+          AutoSize,                       !- Speed 1 Evaporative Condenser Air Flow Rate{ m3 / s }
+          AutoSize,                       !- Speed 1 Rated Evaporative Condenser Pump Power Consumption{ W }
+          AutoSize,                       !- Speed 2 Gross Rated Total Cooling Capacity{ W }
+          AutoSize,                       !- Speed 2 Gross Rated Sensible Heat Ratio
+          4.68933177022274,               !- Speed 2 Gross Rated Cooling COP{ W / W }
+          AutoSize,                       !- Speed 2 Rated Air Flow Rate{ m3 / s }
+          773.3,                          !- 2017 Speed 2 Rated Evaporator Fan Power Per Volume Flow Rate {W/(m3/s)}
+          934.4,                          !- 2023 Speed 2 Rated Evaporator Fan Power Per Volume Flow Rate {W/(m3/s)}", //??BPS:T
+          Biquadratic,                    !- Speed 2 Total Cooling Capacity Function of Temperature Curve Name
+          Quadratic,                      !- Speed 2 Total Cooling Capacity Function of Flow Fraction Curve Name
+          Biquadratic,                    !- Speed 2 Energy Input Ratio Function of Temperature Curve Name
+          Quadratic,                      !- Speed 2 Energy Input Ratio Function of Flow Fraction Curve Name
+          Quadratic,                      !- Speed 2 Part Load Fraction Correlation Curve Name
+          0,                              !- Speed 2 Nominal Time for Condensate Removal to Begin{ s }
+          0,                              !- Speed 2 Ratio of Initial Moisture Evaporation Rate and steady state Latent Capacity{ dimensionless }
+          0,                              !- Speed 2 Maximum Cycling Rate{ cycles / hr }
+          0,                              !- Speed 2 Latent Capacity Time Constant{ s }
+          0.5,                            !- Speed 2 Rated Waste Heat Fraction of Power Input{ dimensionless }
+          Biquadratic,                    !- Speed 2 Waste Heat Function of Temperature Curve Name
+          0.9,                            !- Speed 2 Evaporative Condenser Effectiveness{ dimensionless }
+          AutoSize,                       !- Speed 2 Evaporative Condenser Air Flow Rate{ m3 / s }
+          AutoSize;                       !- Speed 2 Rated Evaporative Condenser Pump Power Consumption{ W }
+
+        ScheduleTypeLimits,
+          Any Number;                     !- Name
+
+        Schedule:Compact,
+          Always 20C,                     !- Name
+          Any Number,                     !- Schedule Type Limits Name
+          Through: 12/31,                 !- Field 1
+          For: AllDays,                   !- Field 2
+          Until: 24:00, 20.0;             !- Field 3
+
+        SetpointManager:Scheduled,
+          Cooling Coil Setpoint Manager,  !- Name
+          Temperature,                    !- Control Variable
+          Always 20C,                     !- Schedule Name
+          Zone 2 Inlet Node;              !- Setpoint Node or NodeList Name
+
+        Curve:Quadratic,
+          Quadratic,                      !- Name
+          0.8,                            !- Coefficient1 Constant
+          0.2,                            !- Coefficient2 x
+          0.0,                            !- Coefficient3 x**2
+          0.5,                            !- Minimum Value of x
+          1.5;                            !- Maximum Value of x
+
+        Curve:Biquadratic,
+          Biquadratic,                    !- Name
+          0.942587793,                    !- Coefficient1 Constant
+          0.009543347,                    !- Coefficient2 x
+          0.000683770,                    !- Coefficient3 x**2
+          -0.011042676,                   !- Coefficient4 y
+          0.000005249,                    !- Coefficient5 y**2
+          -0.000009720,                   !- Coefficient6 x*y
+          12.77778,                       !- Minimum Value of x
+          23.88889,                       !- Maximum Value of x
+          18.0,                           !- Minimum Value of y
+          46.11111,                       !- Maximum Value of y
+          ,                               !- Minimum Curve Output
+          ,                               !- Maximum Curve Output
+          Temperature,                    !- Input Unit Type for X
+          Temperature,                    !- Input Unit Type for Y
+          Dimensionless;                  !- Output Unit Type
+
+    )IDF";
+
+    ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
+    state->init_state(*state);
+
+    // call the UnitarySystem factory
+    std::string compName = "UNITARY SYSTEM MODEL";
+    bool zoneEquipment = true;
+    bool FirstHVACIteration = true;
+    UnitarySystems::UnitarySys::factory(*state, HVAC::UnitarySysType::Unitary_AnyCoilType, compName, zoneEquipment, 0);
+    UnitarySystems::UnitarySys *thisSys = &state->dataUnitarySystems->unitarySys[0];
+
+    state->dataZoneEquip->ZoneEquipInputsFilled = true;                                  // indicate zone data is available
+    thisSys->getUnitarySystemInputData(*state, compName, zoneEquipment, 0, ErrorsFound); // get UnitarySystem input from object above
+    EXPECT_FALSE(ErrorsFound);                                                           // expect no errors
+
+    OutputReportPredefined::SetPredefinedTables(*state);
+
+    // UnitarySystem used as zone equipment will not be modeled when FirstHAVCIteration is true, first time FirstHVACIteration = false will disable
+    // the 'return' on FirstHVACIteration = true set FirstHVACIteration to false for unit testing to size water coils
+    FirstHVACIteration = false;
+    state->dataGlobal->BeginEnvrnFlag = false;
+    state->dataHVACGlobal->DoSetPointTest = true;
+    SetPointManager::ManageSetPoints(*state);
+
+    // overwrite outdoor weather temp to variable speed coil rated water temp until this gets fixed
+    state->dataSize->DesDayWeath(1).Temp(1) = 29.4;
+
+    // test #6274 where coil inlet air flow rate was non-zero prior to sizing
+    // this simulates another UnitarySystem upstream of this UnitarySystem that ran before this system coil was sized (and placed a non-zero air flow
+    // rate on this system's inlet node)
+    state->dataLoopNodes->Node(thisSys->CoolCoilInletNodeNum).MassFlowRate = 0.05;
+
+    int AirLoopNum = 0;
+    int CompIndex = 1;
+    bool HeatActive = false;
+    bool CoolActive = true;
+    int constexpr ZoneOAUnitNum = 0;
+    Real64 constexpr OAUCoilOutTemp = 0.0;
+    bool const ZoneEquipment = true;
+    Real64 sensOut = 0.0;
+    Real64 latOut = 0.0;
+
+    thisSys->simulate(*state,
+                      thisSys->Name,
+                      FirstHVACIteration,
+                      AirLoopNum,
+                      CompIndex,
+                      HeatActive,
+                      CoolActive,
+                      ZoneOAUnitNum,
+                      OAUCoilOutTemp,
+                      ZoneEquipment,
+                      sensOut,
+                      latOut);
+
+    // set up node conditions to test UnitarySystem set point based control
+    // Unitary system air inlet node = 1
+    state->dataLoopNodes->Node(1).MassFlowRate = thisSys->m_DesignMassFlowRate;
+    state->dataLoopNodes->Node(1).MassFlowRateMaxAvail = thisSys->m_DesignMassFlowRate; // max avail at fan inlet so fan won't limit flow
+
+    // test COOLING condition
+    state->dataLoopNodes->Node(1).Temp = 24.0;         // 24C db
+    state->dataLoopNodes->Node(1).HumRat = 0.00922;    // 17C wb
+    state->dataLoopNodes->Node(1).Enthalpy = 47597.03; // www.sugartech.com/psychro/index.php
+
+    // Cooling coil air inlet node = 3
+    state->dataLoopNodes->Node(3).MassFlowRateMax = thisSys->m_DesignMassFlowRate; // max at fan outlet so fan won't limit flow
+                                                                                   // Cooling coil air outlet node = 2
+    state->dataLoopNodes->Node(2).TempSetPoint = 17.0;
+
+    state->dataGlobal->BeginEnvrnFlag = true; // act as if simulation is beginning
+
+    // COOLING mode
+    thisSys->simulate(*state,
+                      thisSys->Name,
+                      FirstHVACIteration,
+                      AirLoopNum,
+                      CompIndex,
+                      HeatActive,
+                      CoolActive,
+                      ZoneOAUnitNum,
+                      OAUCoilOutTemp,
+                      ZoneEquipment,
+                      sensOut,
+                      latOut);
+
+    // check that cooling coil air outlet node is at set point
+    EXPECT_NEAR(state->dataLoopNodes->Node(2).Temp, state->dataLoopNodes->Node(2).TempSetPoint, 0.001);
+    // cooling coil air inlet node temp is greater than cooling coil air outlet node temp
+    EXPECT_GT(state->dataLoopNodes->Node(3).Temp, state->dataLoopNodes->Node(2).Temp);
+    EXPECT_NEAR(thisSys->m_CoolingCycRatio, 0.690072, 0.001);
+    EXPECT_EQ(thisSys->m_CoolingSpeedRatio, 0);
+    EXPECT_EQ(thisSys->m_CoolingSpeedNum, 1);
+
+    state->dataGlobal->BeginEnvrnFlag = true; // act as if simulation is beginning
+    thisSys->m_EMSOverrideCoilSpeedNumOn = true;
+    thisSys->m_EMSOverrideCoilSpeedNumValue = 0.690072;
+    thisSys->simulate(*state,
+                      thisSys->Name,
+                      FirstHVACIteration,
+                      AirLoopNum,
+                      CompIndex,
+                      HeatActive,
+                      CoolActive,
+                      ZoneOAUnitNum,
+                      OAUCoilOutTemp,
+                      ZoneEquipment,
+                      sensOut,
+                      latOut);
+    // EMSOverrideCoilSpeedNumValue - floor(EMSOverrideCoilSpeedNumValue);
+    EXPECT_NEAR(thisSys->m_CoolingCycRatio, 0.690072, 0.001);
+    EXPECT_EQ(thisSys->m_CoolingSpeedRatio, 0); // EMSOverrideCoilSpeedNumValue - floor(EMSOverrideCoilSpeedNumValue);
+    EXPECT_EQ(thisSys->m_CoolingSpeedNum, 1);   // ceiling of override value
+
+    // check that cooling coil air outlet node is at set point, same cycling ratio and speed level with non-ems value
+    EXPECT_NEAR(state->dataLoopNodes->Node(2).Temp, state->dataLoopNodes->Node(2).TempSetPoint, 0.001);
+    // cooling coil air inlet node temp is greater than cooling coil air outlet node temp
+    EXPECT_GT(state->dataLoopNodes->Node(3).Temp, state->dataLoopNodes->Node(2).Temp);
+    Real64 CoolingCoilAirOutletTempAtSpeedOne = state->dataLoopNodes->Node(2).Temp;
+
+    state->dataGlobal->BeginEnvrnFlag = true; // act as if simulation is beginning
+    thisSys->m_EMSOverrideCoilSpeedNumValue = 1.2;
+    thisSys->simulate(*state,
+                      thisSys->Name,
+                      FirstHVACIteration,
+                      AirLoopNum,
+                      CompIndex,
+                      HeatActive,
+                      CoolActive,
+                      ZoneOAUnitNum,
+                      OAUCoilOutTemp,
+                      ZoneEquipment,
+                      sensOut,
+                      latOut);
+
+    EXPECT_EQ(thisSys->m_CoolingSpeedNum, 2);
+    EXPECT_EQ(thisSys->m_SpeedNum, 2);
+    EXPECT_NEAR(thisSys->m_CoolingSpeedRatio, 0.2, 0.001); // EMSOverrideCoilSpeedNumValue - floor(EMSOverrideCoilSpeedNumValue);
+
+    // check that cooling coil air outlet node temperature is lower than the set point
+    EXPECT_LT(state->dataLoopNodes->Node(2).Temp, state->dataLoopNodes->Node(2).TempSetPoint);
+    // check that cooling coil air outlet node temperature at speed 1.2 is lower than that at speed 0.71
+    EXPECT_LT(state->dataLoopNodes->Node(2).Temp, CoolingCoilAirOutletTempAtSpeedOne);
+    // cooling coil air inlet node temp is greater than cooling coil air outlet node temp
+    EXPECT_GT(state->dataLoopNodes->Node(3).Temp, state->dataLoopNodes->Node(2).Temp);
+
+    state->dataGlobal->BeginEnvrnFlag = true; // act as if simulation is beginning
+    thisSys->m_EMSOverrideCoilSpeedNumValue = 2.2;
+    thisSys->simulate(*state,
+                      thisSys->Name,
+                      FirstHVACIteration,
+                      AirLoopNum,
+                      CompIndex,
+                      HeatActive,
+                      CoolActive,
+                      ZoneOAUnitNum,
+                      OAUCoilOutTemp,
+                      ZoneEquipment,
+                      sensOut,
+                      latOut);
+
+    EXPECT_EQ(thisSys->m_CoolingSpeedNum, 2);
+    EXPECT_EQ(thisSys->m_SpeedNum, 2);
+    EXPECT_NEAR(thisSys->m_CoolingSpeedRatio, 1.0, 0.001); // RESET TO MAX SPEED ALLOWED
+}
+
+TEST_F(ZoneUnitarySysTest, UnitarySystemModel_MultiSpeedDXCoolCoil_Only_NoFan)
+{
+
+    std::string_view constexpr idf_objects = R"IDF(
+
+        AirLoopHVAC:UnitarySystem,
+          Unitary System Model,           !- Name
+          Setpoint,                       !- Control Type
+          ,                      !- Controlling Zone or Thermostat Location
+          None,                           !- Dehumidification Control Type
+          AlwaysOne,                      !- Availability Schedule Name
+          Zone Exhaust Node,              !- Air Inlet Node Name
+          Zone 2 Inlet Node,              !- Air Outlet Node Name
+          ,                               !- Supply Fan Object Type
+          ,                               !- Supply Fan Name
+          ,                    !- Fan Placement
+          ,                               !- Supply Air Fan Operating Mode Schedule Name
+          ,                               !- Heating Coil Object Type
+          ,                               !- Heating Coil Name
+          ,                               !- DX Heating Coil Sizing Ratio
+          Coil:Cooling:DX:MultiSpeed,     !- Cooling Coil Object Type
+          DX Cooling Coil,                !- Cooling Coil Name
+          No,                             !- Use DOAS DX Cooling Coil
+          2.0,                            !- DOAS DX Cooling Coil Leaving Minimum Air Temperature{ C }
+          SensibleOnlyLoadControl,        !- Latent Load Control
+          ,                               !- Supplemental Heating Coil Object Type
+          ,                               !- Supplemental Heating Coil Name
+          SupplyAirFlowRate,                               !- Supply Air Flow Rate Method During Cooling Operation
+          1.8,                       !- Supply Air Flow Rate During Cooling Operation{ m3/s }
+          ,                               !- Supply Air Flow Rate Per Floor Area During Cooling Operation{ m3/s-m2 }
+          ,                               !- Fraction of Autosized Design Cooling Supply Air Flow Rate
+          ,                               !- Design Supply Air Flow Rate Per Unit of Capacity During Cooling Operation{ m3/s-W }
+          SupplyAirFlowRate,                               !- Supply air Flow Rate Method During Heating Operation
+          1.8,                       !- Supply Air Flow Rate During Heating Operation{ m3/s }
+          ,                               !- Supply Air Flow Rate Per Floor Area during Heating Operation{ m3/s-m2 }
+          ,                               !- Fraction of Autosized Design Heating Supply Air Flow Rate
+          ,                               !- Design Supply Air Flow Rate Per Unit of Capacity During Heating Operation{ m3/s-W }
+          ,                               !- Supply Air Flow Rate Method When No Cooling or Heating is Required
+          ,                               !- Supply Air Flow Rate When No Cooling or Heating is Required{ m3/s }
+          ,                               !- Supply Air Flow Rate Per Floor Area When No Cooling or Heating is Required{ m3/s-m2 }
+          ,                               !- Fraction of Autosized Design Cooling Supply Air Flow Rate
+          ,                               !- Fraction of Autosized Design Heating Supply Air Flow Rate
+          ,                               !- Design Supply Air Flow Rate Per Unit of Capacity During Cooling Operation{ m3/s-W }
+          ,                               !- Design Supply Air Flow Rate Per Unit of Capacity During Heating Operation{ m3/s-W }
+          ,                               !- No Load Supply Air Flow Rate Control Set To Low Speed
+          80.0,                           !- Maximum Supply Air Temperature{ C }
+          ,                               !- Maximum Outdoor Dry-Bulb Temperature for Supplemental Heater Operation {C}
+          ,                               !- Outdoor Dry-Bulb Temperature Sensor Node Name
+          ,                               !- Ancilliary On-Cycle Electric Power
+          ,                               !- Ancilliary Off-Cycle Electric Power
+          ,                               !- Design Heat Recovery Water Flow Rate
+          ,                               !- Maximum Temperature for Heat Recovery
+          ,                               !- Heat Recovery Water Inlet Node Name
+          ,                               !- Heat Recovery Water Outlet Node Name
+          UnitarySystemPerformance:Multispeed,                     !- Design Specification Multispeed Object Type
+          DX Cool MultiSpd Unitary System MultiSpeed Performance;  !- Design Specification Multispeed Object Name
+
+        UnitarySystemPerformance:Multispeed,
+          DX Cool MultiSpd Unitary System MultiSpeed Performance,  !- Name
+          1,                              !- Number of Speeds for Heating
+          2,                              !- Number of Speeds for Cooling
+          No,                             !- Single Mode Operation
+          ,                               !- No Load Supply Air Flow Rate Ratio
+          1,                              !- Heating Speed 1 Supply Air Flow Ratio
+          1,                              !- Cooling Speed 1 Supply Air Flow Ratio
+          Autosize,                       !- Heating Speed 2 Supply Air Flow Ratio
+          Autosize;                       !- Cooling Speed 2 Supply Air Flow Ratio
+
+        Coil:Cooling:DX:MultiSpeed,
+          DX Cooling Coil,                !- Name
+          ,                               !- Availability Schedule Name
+          Zone Exhaust Node,    !- Air Inlet Node Name
           Zone 2 Inlet Node,              !- Air Outlet Node Name
           ,                               !- Condenser Air Inlet Node Name
           AirCooled,                      !- Condenser Type
@@ -1270,17 +1591,34 @@ TEST_F(ZoneUnitarySysTest, UnitarySystemModel_MultiSpeedDXCoolCoil_Only)
     )IDF";
 
     ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
+    state->init_state(*state);
 
     // call the UnitarySystem factory
     std::string compName = "UNITARY SYSTEM MODEL";
-    bool zoneEquipment = true;
+    bool zoneEquipment = false;
     bool FirstHVACIteration = true;
     UnitarySystems::UnitarySys::factory(*state, HVAC::UnitarySysType::Unitary_AnyCoilType, compName, zoneEquipment, 0);
     UnitarySystems::UnitarySys *thisSys = &state->dataUnitarySystems->unitarySys[0];
 
+    int AirLoopNum = 1;
+    state->dataHVACGlobal->NumPrimaryAirSys = 1;
+    state->dataAirLoop->AirLoopControlInfo.allocate(1);
+    state->dataAirSystemsData->PrimaryAirSystems.allocate(1);
+    state->dataAirSystemsData->PrimaryAirSystems(AirLoopNum).Branch.allocate(1);
+    state->dataAirSystemsData->PrimaryAirSystems(AirLoopNum).NumBranches = 1;
+    int BranchNum = 1;
+    state->dataAirSystemsData->PrimaryAirSystems(AirLoopNum).Branch(BranchNum).Comp.allocate(1);
+    state->dataAirSystemsData->PrimaryAirSystems(AirLoopNum).Branch(BranchNum).TotalComponents = 1;
+    int CompNum = 1;
+    state->dataAirSystemsData->PrimaryAirSystems(AirLoopNum).Branch(BranchNum).Comp(CompNum).CompType_Num =
+        SimAirServingZones::CompType::UnitarySystemModel;
+    state->dataAirSystemsData->PrimaryAirSystems(AirLoopNum).Branch(BranchNum).Comp(CompNum).Name = thisSys->Name;
+
     state->dataZoneEquip->ZoneEquipInputsFilled = true;                                  // indicate zone data is available
     thisSys->getUnitarySystemInputData(*state, compName, zoneEquipment, 0, ErrorsFound); // get UnitarySystem input from object above
-    EXPECT_FALSE(ErrorsFound);                                                           // expect no errors
+    compare_err_stream("");
+    EXPECT_FALSE(ErrorsFound); // expect no errors
+    thisSys->m_ThisSysInputShouldBeGotten = false;
 
     OutputReportPredefined::SetPredefinedTables(*state);
 
@@ -1289,25 +1627,33 @@ TEST_F(ZoneUnitarySysTest, UnitarySystemModel_MultiSpeedDXCoolCoil_Only)
     FirstHVACIteration = false;
     state->dataGlobal->BeginEnvrnFlag = false;
     state->dataHVACGlobal->DoSetPointTest = true;
+    state->dataEnvrn->Month = 5;
+    state->dataEnvrn->DayOfMonth = 31;
+    state->dataGlobal->HourOfDay = 23;
+    state->dataEnvrn->DSTIndicator = 1; // DST IS ON
+    state->dataEnvrn->MonthTomorrow = 6;
+    state->dataEnvrn->DayOfWeek = 4;
+    state->dataEnvrn->DayOfWeekTomorrow = 5;
+    state->dataEnvrn->HolidayIndex = 0;
+    state->dataGlobal->TimeStep = 4;
+    state->dataEnvrn->DayOfYear_Schedule = General::OrdinalDay(state->dataEnvrn->Month, state->dataEnvrn->DayOfMonth, 1);
+
+    Sched::UpdateScheduleVals(*state);
     SetPointManager::ManageSetPoints(*state);
 
     // overwrite outdoor weather temp to variable speed coil rated water temp until this gets fixed
     state->dataSize->DesDayWeath(1).Temp(1) = 29.4;
 
-    // test #6274 where coil inlet air flow rate was non-zero prior to sizing
-    // this simulates another UnitarySystem upstream of this UnitarySystem that ran before this system coil was sized (and placed a non-zero air flow
-    // rate on this system's inlet node)
-    state->dataLoopNodes->Node(thisSys->CoolCoilInletNodeNum).MassFlowRate = 0.05;
-
-    int AirLoopNum = 0;
     int CompIndex = 1;
     bool HeatActive = false;
     bool CoolActive = true;
     int constexpr ZoneOAUnitNum = 0;
     Real64 constexpr OAUCoilOutTemp = 0.0;
-    bool const ZoneEquipment = true;
     Real64 sensOut = 0.0;
     Real64 latOut = 0.0;
+
+    thisSys->CoolCtrlNode = thisSys->AirOutNode;
+    thisSys->CoolCoilInletNodeNum = thisSys->AirInNode;
 
     thisSys->simulate(*state,
                       thisSys->Name,
@@ -1318,30 +1664,31 @@ TEST_F(ZoneUnitarySysTest, UnitarySystemModel_MultiSpeedDXCoolCoil_Only)
                       CoolActive,
                       ZoneOAUnitNum,
                       OAUCoilOutTemp,
-                      ZoneEquipment,
+                      zoneEquipment,
                       sensOut,
                       latOut);
 
+    // Test System behavior with no supply fan
+    EXPECT_FALSE(thisSys->m_FanExists);
+
     // set up node conditions to test UnitarySystem set point based control
     // Unitary system air inlet node = 1
-    state->dataLoopNodes->Node(1).MassFlowRate = thisSys->m_DesignMassFlowRate;
-    state->dataLoopNodes->Node(1).MassFlowRateMaxAvail = thisSys->m_DesignMassFlowRate; // max avail at fan inlet so fan won't limit flow
+    state->dataLoopNodes->Node(thisSys->AirInNode).MassFlowRate = 1.2;
 
     // test COOLING condition
     state->dataLoopNodes->Node(1).Temp = 24.0;         // 24C db
     state->dataLoopNodes->Node(1).HumRat = 0.00922;    // 17C wb
     state->dataLoopNodes->Node(1).Enthalpy = 47597.03; // www.sugartech.com/psychro/index.php
 
-    ScheduleManager::ProcessScheduleInput(*state); // read schedules
+    // ScheduleManager::ProcessScheduleInput(*state); // read schedules
 
-    // Cooling coil air inlet node = 3
-    state->dataLoopNodes->Node(3).MassFlowRateMax = thisSys->m_DesignMassFlowRate; // max at fan outlet so fan won't limit flow
-                                                                                   // Cooling coil air outlet node = 2
-    state->dataLoopNodes->Node(2).TempSetPoint = 17.0;
+    state->dataLoopNodes->Node(thisSys->AirOutNode).TempSetPoint = 17.0;
 
-    state->dataScheduleMgr->Schedule(1).CurrentValue = 1.0; // Enable schedule without calling schedule manager
+    Sched::GetSchedule(*state, "ALWAYSONE")->currentVal = 1.0; // Enable schedule without calling schedule manager
 
     state->dataGlobal->BeginEnvrnFlag = true; // act as if simulation is beginning
+    thisSys->m_EMSOverrideCoilSpeedNumOn = false;
+    FirstHVACIteration = true;
 
     // COOLING mode
     thisSys->simulate(*state,
@@ -1353,21 +1700,22 @@ TEST_F(ZoneUnitarySysTest, UnitarySystemModel_MultiSpeedDXCoolCoil_Only)
                       CoolActive,
                       ZoneOAUnitNum,
                       OAUCoilOutTemp,
-                      ZoneEquipment,
+                      zoneEquipment,
                       sensOut,
                       latOut);
 
     // check that cooling coil air outlet node is at set point
-    EXPECT_NEAR(state->dataLoopNodes->Node(2).Temp, state->dataLoopNodes->Node(2).TempSetPoint, 0.001);
+    EXPECT_NEAR(state->dataLoopNodes->Node(thisSys->AirOutNode).Temp, state->dataLoopNodes->Node(thisSys->AirOutNode).TempSetPoint, 0.1);
     // cooling coil air inlet node temp is greater than cooling coil air outlet node temp
-    EXPECT_GT(state->dataLoopNodes->Node(3).Temp, state->dataLoopNodes->Node(2).Temp);
-    EXPECT_NEAR(thisSys->m_CoolingCycRatio, 0.690072, 0.001);
+    EXPECT_GT(state->dataLoopNodes->Node(thisSys->AirInNode).Temp, state->dataLoopNodes->Node(thisSys->AirOutNode).Temp);
+    EXPECT_NEAR(thisSys->m_CoolingCycRatio, 0.36056, 0.001);
     EXPECT_EQ(thisSys->m_CoolingSpeedRatio, 0);
     EXPECT_EQ(thisSys->m_CoolingSpeedNum, 1);
+    EXPECT_EQ(state->dataLoopNodes->Node(thisSys->AirInNode).MassFlowRate, 1.2);
+    EXPECT_EQ(state->dataLoopNodes->Node(thisSys->AirInNode).MassFlowRate, state->dataLoopNodes->Node(thisSys->AirOutNode).MassFlowRate);
 
-    state->dataGlobal->BeginEnvrnFlag = true; // act as if simulation is beginning
-    thisSys->m_EMSOverrideCoilSpeedNumOn = true;
-    thisSys->m_EMSOverrideCoilSpeedNumValue = 0.690072;
+    // Set system availability schedule to off
+    Sched::GetSchedule(*state, "ALWAYSONE")->currentVal = 0.0; // Disable schedule without calling schedule manager
     thisSys->simulate(*state,
                       thisSys->Name,
                       FirstHVACIteration,
@@ -1377,64 +1725,17 @@ TEST_F(ZoneUnitarySysTest, UnitarySystemModel_MultiSpeedDXCoolCoil_Only)
                       CoolActive,
                       ZoneOAUnitNum,
                       OAUCoilOutTemp,
-                      ZoneEquipment,
-                      sensOut,
-                      latOut);
-    // EMSOverrideCoilSpeedNumValue - floor(EMSOverrideCoilSpeedNumValue);
-    EXPECT_NEAR(thisSys->m_CoolingCycRatio, 0.690072, 0.001);
-    EXPECT_EQ(thisSys->m_CoolingSpeedRatio, 0); // EMSOverrideCoilSpeedNumValue - floor(EMSOverrideCoilSpeedNumValue);
-    EXPECT_EQ(thisSys->m_CoolingSpeedNum, 1);   // ceiling of override value
-
-    // check that cooling coil air outlet node is at set point, same cycling ratio and speed level with non-ems value
-    EXPECT_NEAR(state->dataLoopNodes->Node(2).Temp, state->dataLoopNodes->Node(2).TempSetPoint, 0.001);
-    // cooling coil air inlet node temp is greater than cooling coil air outlet node temp
-    EXPECT_GT(state->dataLoopNodes->Node(3).Temp, state->dataLoopNodes->Node(2).Temp);
-    Real64 CoolingCoilAirOutletTempAtSpeedOne = state->dataLoopNodes->Node(2).Temp;
-
-    state->dataGlobal->BeginEnvrnFlag = true; // act as if simulation is beginning
-    thisSys->m_EMSOverrideCoilSpeedNumValue = 1.2;
-    thisSys->simulate(*state,
-                      thisSys->Name,
-                      FirstHVACIteration,
-                      AirLoopNum,
-                      CompIndex,
-                      HeatActive,
-                      CoolActive,
-                      ZoneOAUnitNum,
-                      OAUCoilOutTemp,
-                      ZoneEquipment,
+                      zoneEquipment,
                       sensOut,
                       latOut);
 
-    EXPECT_EQ(thisSys->m_CoolingSpeedNum, 2);
-    EXPECT_EQ(thisSys->m_SpeedNum, 2);
-    EXPECT_NEAR(thisSys->m_CoolingSpeedRatio, 0.2, 0.001); // EMSOverrideCoilSpeedNumValue - floor(EMSOverrideCoilSpeedNumValue);
-
-    // check that cooling coil air outlet node temperature is lower than the set point
-    EXPECT_LT(state->dataLoopNodes->Node(2).Temp, state->dataLoopNodes->Node(2).TempSetPoint);
-    // check that cooling coil air outlet node temperature at speed 1.2 is lower than that at speed 0.71
-    EXPECT_LT(state->dataLoopNodes->Node(2).Temp, CoolingCoilAirOutletTempAtSpeedOne);
-    // cooling coil air inlet node temp is greater than cooling coil air outlet node temp
-    EXPECT_GT(state->dataLoopNodes->Node(3).Temp, state->dataLoopNodes->Node(2).Temp);
-
-    state->dataGlobal->BeginEnvrnFlag = true; // act as if simulation is beginning
-    thisSys->m_EMSOverrideCoilSpeedNumValue = 2.2;
-    thisSys->simulate(*state,
-                      thisSys->Name,
-                      FirstHVACIteration,
-                      AirLoopNum,
-                      CompIndex,
-                      HeatActive,
-                      CoolActive,
-                      ZoneOAUnitNum,
-                      OAUCoilOutTemp,
-                      ZoneEquipment,
-                      sensOut,
-                      latOut);
-
-    EXPECT_EQ(thisSys->m_CoolingSpeedNum, 2);
-    EXPECT_EQ(thisSys->m_SpeedNum, 2);
-    EXPECT_NEAR(thisSys->m_CoolingSpeedRatio, 1.0, 0.001); // RESET TO MAX SPEED ALLOWED
+    // no cooling, pass thru mass flow rate
+    EXPECT_EQ(state->dataLoopNodes->Node(thisSys->AirInNode).Temp, state->dataLoopNodes->Node(thisSys->AirOutNode).Temp);
+    EXPECT_NEAR(thisSys->m_CoolingCycRatio, 0.0, 0.001);
+    EXPECT_EQ(thisSys->m_CoolingSpeedRatio, 0);
+    EXPECT_EQ(thisSys->m_CoolingSpeedNum, 0);
+    EXPECT_EQ(state->dataLoopNodes->Node(thisSys->AirInNode).MassFlowRate, 1.2);
+    EXPECT_EQ(state->dataLoopNodes->Node(thisSys->AirInNode).MassFlowRate, state->dataLoopNodes->Node(thisSys->AirOutNode).MassFlowRate);
 }
 
 TEST_F(ZoneUnitarySysTest, UnitarySystemModel_MultiStageGasHeatCoil_Only)
@@ -1447,7 +1748,7 @@ TEST_F(ZoneUnitarySysTest, UnitarySystemModel_MultiStageGasHeatCoil_Only)
           Setpoint,                       !- Control Type
           East Zone,                      !- Controlling Zone or Thermostat Location
           None,                           !- Dehumidification Control Type
-          AlwaysOne,                      !- Availability Schedule Name
+          Constant-1.0,                      !- Availability Schedule Name
           Zone Exhaust Node,              !- Air Inlet Node Name
           Zone 2 Inlet Node,              !- Air Outlet Node Name
           Fan:OnOff,                      !- Supply Fan Object Type
@@ -1505,7 +1806,7 @@ TEST_F(ZoneUnitarySysTest, UnitarySystemModel_MultiStageGasHeatCoil_Only)
           1;                              !- Cooling Speed 2 Supply Air Flow Ratio
         Fan:OnOff,
           Supply Fan 1,                   !- Name
-          AlwaysOne,                      !- Availability Schedule Name
+          Constant-1.0,                      !- Availability Schedule Name
           0.7,                            !- Fan Total Efficiency
           600.0,                          !- Pressure Rise{ Pa }
           autosize,                       !- Maximum Flow Rate{ m3 / s }
@@ -1515,7 +1816,7 @@ TEST_F(ZoneUnitarySysTest, UnitarySystemModel_MultiStageGasHeatCoil_Only)
           Heating Coil Air Inlet Node;    !- Air Outlet Node Name
         Coil:Heating:Gas:MultiStage,
           Gas Heating Coil,               !- Name
-          AlwaysOne,                      !- Availability Schedule Name
+          Constant-1.0,                      !- Availability Schedule Name
           Heating Coil Air Inlet Node,    !- Air Inlet Node Name
           Zone 2 Inlet Node,              !- Air Outlet Node Name
           ,                               !- Temperature Setpoint Node Name
@@ -1530,12 +1831,6 @@ TEST_F(ZoneUnitarySysTest, UnitarySystemModel_MultiStageGasHeatCoil_Only)
           100;                            !- Stage 2 On Cycle Parasitic Electric Load{ W }
         ScheduleTypeLimits,
           Any Number;                     !- Name
-        Schedule:Compact,
-          AlwaysOne,                      !- Name
-          Any Number,                     !- Schedule Type Limits Name
-          Through: 12/31,                 !- Field 1
-          For: AllDays,                   !- Field 2
-          Until: 24:00, 1.0;              !- Field 3
         Schedule:Compact,
           Always 18C,                     !- Name
           Any Number,                     !- Schedule Type Limits Name
@@ -1558,6 +1853,7 @@ TEST_F(ZoneUnitarySysTest, UnitarySystemModel_MultiStageGasHeatCoil_Only)
     )IDF";
 
     ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
+    state->init_state(*state);
 
     std::string compName = "UNITARY SYSTEM MODEL";
     bool zoneEquipment = true;
@@ -1611,14 +1907,10 @@ TEST_F(ZoneUnitarySysTest, UnitarySystemModel_MultiStageGasHeatCoil_Only)
     state->dataLoopNodes->Node(1).HumRat = 0.00922;    // 17C wb
     state->dataLoopNodes->Node(1).Enthalpy = 47597.03; // www.sugartech.com/psychro/index.php
 
-    ScheduleManager::ProcessScheduleInput(*state); // read schedules
-
     // Heating coil air inlet node = 3
     state->dataLoopNodes->Node(3).MassFlowRateMax = thisSys->m_DesignMassFlowRate; // max at fan outlet so fan won't limit flow
                                                                                    // Heating coil air outlet node = 2
     state->dataLoopNodes->Node(2).TempSetPoint = 25.0;
-
-    state->dataScheduleMgr->Schedule(1).CurrentValue = 1.0; // Enable schedule without calling schedule manager
 
     state->dataGlobal->BeginEnvrnFlag = true; // act as if simulation is beginning
 
@@ -1680,7 +1972,7 @@ TEST_F(ZoneUnitarySysTest, UnitarySystemModel_MultiStageElecHeatCoil_Only)
           Setpoint,                       !- Control Type
           East Zone,                      !- Controlling Zone or Thermostat Location
           None,                           !- Dehumidification Control Type
-          AlwaysOne,                      !- Availability Schedule Name
+          Constant-1.0,                      !- Availability Schedule Name
           Zone Exhaust Node,              !- Air Inlet Node Name
           Zone 2 Inlet Node,              !- Air Outlet Node Name
           Fan:OnOff,                      !- Supply Fan Object Type
@@ -1740,7 +2032,7 @@ TEST_F(ZoneUnitarySysTest, UnitarySystemModel_MultiStageElecHeatCoil_Only)
 
         Fan:OnOff,
           Supply Fan 1,                   !- Name
-          AlwaysOne,                      !- Availability Schedule Name
+          Constant-1.0,                      !- Availability Schedule Name
           0.7,                            !- Fan Total Efficiency
           600.0,                          !- Pressure Rise{ Pa }
           autosize,                       !- Maximum Flow Rate{ m3 / s }
@@ -1751,7 +2043,7 @@ TEST_F(ZoneUnitarySysTest, UnitarySystemModel_MultiStageElecHeatCoil_Only)
 
         Coil:Heating:Electric:MultiStage,
           Electric Heating Coil,               !- Name
-          AlwaysOne,                      !- Availability Schedule Name
+          Constant-1.0,                      !- Availability Schedule Name
           Heating Coil Air Inlet Node,    !- Air Inlet Node Name
           Zone 2 Inlet Node,              !- Air Outlet Node Name
           ,                               !- Temperature Setpoint Node Name
@@ -1763,13 +2055,6 @@ TEST_F(ZoneUnitarySysTest, UnitarySystemModel_MultiStageElecHeatCoil_Only)
 
         ScheduleTypeLimits,
           Any Number;                     !- Name
-
-        Schedule:Compact,
-          AlwaysOne,                      !- Name
-          Any Number,                     !- Schedule Type Limits Name
-          Through: 12/31,                 !- Field 1
-          For: AllDays,                   !- Field 2
-          Until: 24:00, 1.0;              !- Field 3
 
         Schedule:Compact,
           Always 18C,                     !- Name
@@ -1795,6 +2080,7 @@ TEST_F(ZoneUnitarySysTest, UnitarySystemModel_MultiStageElecHeatCoil_Only)
     )IDF";
 
     ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
+    state->init_state(*state);
 
     std::string compName = "UNITARY SYSTEM MODEL";
     bool zoneEquipment = true;
@@ -1852,14 +2138,10 @@ TEST_F(ZoneUnitarySysTest, UnitarySystemModel_MultiStageElecHeatCoil_Only)
     state->dataLoopNodes->Node(1).HumRat = 0.00922;    // 17C wb
     state->dataLoopNodes->Node(1).Enthalpy = 47597.03; // www.sugartech.com/psychro/index.php
 
-    ScheduleManager::ProcessScheduleInput(*state); // read schedules
-
     // Heating coil air inlet node = 3
     state->dataLoopNodes->Node(3).MassFlowRateMax = thisSys->m_DesignMassFlowRate; // max at fan outlet so fan won't limit flow
                                                                                    // Heating coil air outlet node = 2
     state->dataLoopNodes->Node(2).TempSetPoint = 25.0;
-
-    state->dataScheduleMgr->Schedule(1).CurrentValue = 1.0; // Enable schedule without calling schedule manager
 
     state->dataGlobal->BeginEnvrnFlag = true; // act as if simulation is beginning
 
@@ -1927,7 +2209,7 @@ TEST_F(ZoneUnitarySysTest, UnitarySystemModel_MultiStageElecHeatCoil_Backup_Load
           Load,                           !- Control Type
           East Zone,                      !- Controlling Zone or Thermostat Location
           None,                           !- Dehumidification Control Type
-          AlwaysOne,                      !- Availability Schedule Name
+          Constant-1.0,                      !- Availability Schedule Name
           Zone Exhaust Node,              !- Air Inlet Node Name
           Zone 2 Inlet Node,              !- Air Outlet Node Name
           Fan:OnOff,                      !- Supply Fan Object Type
@@ -1987,7 +2269,7 @@ TEST_F(ZoneUnitarySysTest, UnitarySystemModel_MultiStageElecHeatCoil_Backup_Load
 
         Fan:OnOff,
           Supply Fan 1,                   !- Name
-          AlwaysOne,                      !- Availability Schedule Name
+          Constant-1.0,                      !- Availability Schedule Name
           0.7,                            !- Fan Total Efficiency
           0.0,                          !- Pressure Rise{ Pa }
           autosize,                       !- Maximum Flow Rate{ m3 / s }
@@ -1998,7 +2280,7 @@ TEST_F(ZoneUnitarySysTest, UnitarySystemModel_MultiStageElecHeatCoil_Backup_Load
 
         Coil:Heating:Electric:MultiStage,
           Electric Heating Coil,               !- Name
-          AlwaysOne,                      !- Availability Schedule Name
+          Constant-1.0,                      !- Availability Schedule Name
           Heating Coil Air Inlet Node,    !- Air Inlet Node Name
           Heating Coil Air Outlet Node,   !- Air Outlet Node Name
           ,                               !- Temperature Setpoint Node Name
@@ -2010,7 +2292,7 @@ TEST_F(ZoneUnitarySysTest, UnitarySystemModel_MultiStageElecHeatCoil_Backup_Load
 
         Coil:Heating:Electric:MultiStage,
           Electric Backup Heating Coil,               !- Name
-          AlwaysOne,                      !- Availability Schedule Name
+          Constant-1.0,                      !- Availability Schedule Name
           Heating Coil Air Outlet Node,   !- Air Inlet Node Name
           Zone 2 Inlet Node,              !- Air Outlet Node Name
           ,                               !- Temperature Setpoint Node Name
@@ -2023,13 +2305,6 @@ TEST_F(ZoneUnitarySysTest, UnitarySystemModel_MultiStageElecHeatCoil_Backup_Load
         ScheduleTypeLimits,
           Any Number;                     !- Name
 
-        Schedule:Compact,
-          AlwaysOne,                      !- Name
-          Any Number,                     !- Schedule Type Limits Name
-          Through: 12/31,                 !- Field 1
-          For: AllDays,                   !- Field 2
-          Until: 24:00, 1.0;              !- Field 3
-
         Curve:Quadratic,
           Quadratic,                      !- Name
           0.8,                            !- Coefficient1 Constant
@@ -2041,6 +2316,7 @@ TEST_F(ZoneUnitarySysTest, UnitarySystemModel_MultiStageElecHeatCoil_Backup_Load
     )IDF";
 
     ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
+    state->init_state(*state);
 
     std::string compName = "UNITARY SYSTEM MODEL";
     bool zoneEquipment = true;
@@ -2080,7 +2356,7 @@ TEST_F(ZoneUnitarySysTest, UnitarySystemModel_MultiStageElecHeatCoil_Backup_Load
     state->dataZoneEnergyDemand->ZoneSysEnergyDemand(ControlZoneNum).RemainingOutputReqToCoolSP = 0;
     state->dataZoneEnergyDemand->ZoneSysEnergyDemand(ControlZoneNum).RemainingOutputReqToHeatSP = 0;
     state->dataZoneEnergyDemand->ZoneSysMoistureDemand(ControlZoneNum).RemainingOutputReqToDehumidSP = 0;
-    state->dataHeatBalFanSys->TempControlType(ControlZoneNum) = HVAC::ThermostatType::SingleHeating;
+    state->dataHeatBalFanSys->TempControlType(ControlZoneNum) = HVAC::SetptType::SingleHeat;
 
     thisSys->simulate(*state,
                       thisSys->Name,
@@ -2121,13 +2397,9 @@ TEST_F(ZoneUnitarySysTest, UnitarySystemModel_MultiStageElecHeatCoil_Backup_Load
     state->dataLoopNodes->Node(1).HumRat = 0.00922;    // 17C wb
     state->dataLoopNodes->Node(1).Enthalpy = 47597.03; // www.sugartech.com/psychro/index.php
 
-    ScheduleManager::ProcessScheduleInput(*state); // read schedules
-
     // Heating coil air inlet node = 3
     state->dataLoopNodes->Node(3).MassFlowRateMax = thisSys->m_DesignMassFlowRate; // max at fan outlet so fan won't limit flow
                                                                                    // Heating coil air outlet node = 2
-
-    state->dataScheduleMgr->Schedule(1).CurrentValue = 1.0; // Enable schedule without calling schedule manager
 
     state->dataGlobal->BeginEnvrnFlag = true; // act as if simulation is beginning
 
@@ -2259,7 +2531,7 @@ AirLoopHVAC:UnitarySystem,
   Setpoint,                       !- Control Type
   East Zone,                      !- Controlling Zone or Thermostat Location
   None,                           !- Dehumidification Control Type
-  AlwaysOne,                      !- Availability Schedule Name
+  Constant-1.0,                      !- Availability Schedule Name
   Zone Exhaust Node,              !- Air Inlet Node Name
   Zone 2 Inlet Node,              !- Air Outlet Node Name
   Fan:OnOff,                      !- Supply Fan Object Type
@@ -2319,7 +2591,7 @@ UnitarySystemPerformance:Multispeed,
 
 Fan:OnOff,
   Supply Fan 1,                   !- Name
-  AlwaysOne,                      !- Availability Schedule Name
+  Constant-1.0,                      !- Availability Schedule Name
   0.7,                            !- Fan Total Efficiency
   600.0,                          !- Pressure Rise{ Pa }
   autosize,                       !- Maximum Flow Rate{ m3 / s }
@@ -2330,7 +2602,7 @@ Fan:OnOff,
 
 Coil:Heating:Electric:MultiStage,
   Electric Heating Coil,               !- Name
-  AlwaysOne,                      !- Availability Schedule Name
+  Constant-1.0,                      !- Availability Schedule Name
   Heating Coil Air Inlet Node,    !- Air Inlet Node Name
   Heating Coil Air Outlet Node,   !- Air Outlet Node Name
   ,                               !- Temperature Setpoint Node Name
@@ -2342,7 +2614,7 @@ Coil:Heating:Electric:MultiStage,
 
 Coil:Heating:Electric:MultiStage,
   Electric Backup Heating Coil,               !- Name
-  AlwaysOne,                      !- Availability Schedule Name
+  Constant-1.0,                      !- Availability Schedule Name
   Heating Coil Air Outlet Node,   !- Air Inlet Node Name
   Zone 2 Inlet Node,              !- Air Outlet Node Name
   ,                               !- Temperature Setpoint Node Name
@@ -2354,13 +2626,6 @@ Coil:Heating:Electric:MultiStage,
 
 ScheduleTypeLimits,
   Any Number;                     !- Name
-
-Schedule:Compact,
-  AlwaysOne,                      !- Name
-  Any Number,                     !- Schedule Type Limits Name
-  Through: 12/31,                 !- Field 1
-  For: AllDays,                   !- Field 2
-  Until: 24:00, 1.0;              !- Field 3
 
 Schedule:Compact,
   Always 18C,                     !- Name
@@ -2386,6 +2651,7 @@ Curve:Quadratic,
 )IDF";
 
     ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
+    state->init_state(*state);
 
     std::string compName = "UNITARY SYSTEM MODEL";
     bool zoneEquipment = true;
@@ -2443,14 +2709,10 @@ Curve:Quadratic,
     state->dataLoopNodes->Node(1).HumRat = 0.00922;    // 17C wb
     state->dataLoopNodes->Node(1).Enthalpy = 47597.03; // www.sugartech.com/psychro/index.php
 
-    ScheduleManager::ProcessScheduleInput(*state); // read schedules
-
     // Heating coil air inlet node = 3
     state->dataLoopNodes->Node(3).MassFlowRateMax = thisSys->m_DesignMassFlowRate; // max at fan outlet so fan won't limit flow
                                                                                    // Heating coil air outlet node = 2
     state->dataLoopNodes->Node(2).TempSetPoint = 25.0;
-
-    state->dataScheduleMgr->Schedule(1).CurrentValue = 1.0; // Enable schedule without calling schedule manager
 
     state->dataGlobal->BeginEnvrnFlag = true; // act as if simulation is beginning
 
@@ -2547,7 +2809,7 @@ AirLoopHVAC:UnitarySystem,
   Load,                           !- Control Type
   East Zone,                      !- Controlling Zone or Thermostat Location
   None,                           !- Dehumidification Control Type
-  AlwaysOne,                      !- Availability Schedule Name
+  Constant-1.0,                      !- Availability Schedule Name
   Zone Exhaust Node,              !- Air Inlet Node Name
   Zone 2 Inlet Node,              !- Air Outlet Node Name
   Fan:OnOff,                      !- Supply Fan Object Type
@@ -2607,7 +2869,7 @@ UnitarySystemPerformance:Multispeed,
 
 Fan:OnOff,
   Supply Fan 1,                   !- Name
-  AlwaysOne,                      !- Availability Schedule Name
+  Constant-1.0,                      !- Availability Schedule Name
   0.7,                            !- Fan Total Efficiency
   0.0,                          !- Pressure Rise{ Pa }
   autosize,                       !- Maximum Flow Rate{ m3 / s }
@@ -2618,7 +2880,7 @@ Fan:OnOff,
 
 Coil:Heating:Electric:MultiStage,
   Electric Heating Coil,               !- Name
-  AlwaysOne,                      !- Availability Schedule Name
+  Constant-1.0,                      !- Availability Schedule Name
   Heating Coil Air Inlet Node,    !- Air Inlet Node Name
   Heating Coil Air Outlet Node,   !- Air Outlet Node Name
   ,                               !- Temperature Setpoint Node Name
@@ -2630,7 +2892,7 @@ Coil:Heating:Electric:MultiStage,
 
 Coil:Heating:Electric:MultiStage,
   Electric Backup Heating Coil,               !- Name
-  AlwaysOne,                      !- Availability Schedule Name
+  Constant-1.0,                      !- Availability Schedule Name
   Heating Coil Air Outlet Node,   !- Air Inlet Node Name
   Zone 2 Inlet Node,              !- Air Outlet Node Name
   ,                               !- Temperature Setpoint Node Name
@@ -2643,13 +2905,6 @@ Coil:Heating:Electric:MultiStage,
 ScheduleTypeLimits,
   Any Number;                     !- Name
 
-Schedule:Compact,
-  AlwaysOne,                      !- Name
-  Any Number,                     !- Schedule Type Limits Name
-  Through: 12/31,                 !- Field 1
-  For: AllDays,                   !- Field 2
-  Until: 24:00, 1.0;              !- Field 3
-
 Curve:Quadratic,
   Quadratic,                      !- Name
   0.8,                            !- Coefficient1 Constant
@@ -2661,6 +2916,7 @@ Curve:Quadratic,
 )IDF";
 
     ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
+    state->init_state(*state);
 
     std::string compName = "UNITARY SYSTEM MODEL";
     bool zoneEquipment = true;
@@ -2696,7 +2952,7 @@ Curve:Quadratic,
     state->dataHeatBalFanSys->TempControlType.allocate(1);
     state->dataZoneEnergyDemand->ZoneSysEnergyDemand(ControlZoneNum).RemainingOutputReqToCoolSP = 0;
     state->dataZoneEnergyDemand->ZoneSysMoistureDemand(ControlZoneNum).RemainingOutputReqToDehumidSP = 0;
-    state->dataHeatBalFanSys->TempControlType(ControlZoneNum) = HVAC::ThermostatType::SingleHeating;
+    state->dataHeatBalFanSys->TempControlType(ControlZoneNum) = HVAC::SetptType::SingleHeat;
 
     // set up node conditions to test UnitarySystem set point based control
     // Unitary system air inlet node = 1
@@ -2708,13 +2964,9 @@ Curve:Quadratic,
     state->dataLoopNodes->Node(1).HumRat = 0.00922;    // 17C wb
     state->dataLoopNodes->Node(1).Enthalpy = 47597.03; // www.sugartech.com/psychro/index.php
 
-    ScheduleManager::ProcessScheduleInput(*state); // read schedules
-
     // Heating coil air inlet node = 3
     state->dataLoopNodes->Node(3).MassFlowRateMax = thisSys->m_DesignMassFlowRate; // max at fan outlet so fan won't limit flow
                                                                                    // Heating coil air outlet node = 2
-
-    state->dataScheduleMgr->Schedule(1).CurrentValue = 1.0; // Enable schedule without calling schedule manager
 
     state->dataGlobal->BeginEnvrnFlag = true; // act as if simulation is beginning
 
@@ -2793,7 +3045,7 @@ AirLoopHVAC:UnitarySystem,
   Setpoint,                       !- Control Type
   East Zone,                      !- Controlling Zone or Thermostat Location
   None,                           !- Dehumidification Control Type
-  AlwaysOne,                      !- Availability Schedule Name
+  Constant-1.0,                      !- Availability Schedule Name
   Zone Exhaust Node,              !- Air Inlet Node Name
   Zone 2 Inlet Node,              !- Air Outlet Node Name
   Fan:OnOff,                      !- Supply Fan Object Type
@@ -2853,7 +3105,7 @@ UnitarySystemPerformance:Multispeed,
 
 Fan:OnOff,
   Supply Fan 1,                   !- Name
-  AlwaysOne,                      !- Availability Schedule Name
+  Constant-1.0,                      !- Availability Schedule Name
   0.7,                            !- Fan Total Efficiency
   600.0,                          !- Pressure Rise{ Pa }
   autosize,                       !- Maximum Flow Rate{ m3 / s }
@@ -2864,7 +3116,7 @@ Fan:OnOff,
 
 Coil:Heating:Electric:MultiStage,
   Electric Heating Coil,               !- Name
-  AlwaysOne,                      !- Availability Schedule Name
+  Constant-1.0,                      !- Availability Schedule Name
   Heating Coil Air Inlet Node,    !- Air Inlet Node Name
   Heating Coil Air Outlet Node,   !- Air Outlet Node Name
   ,                               !- Temperature Setpoint Node Name
@@ -2876,7 +3128,7 @@ Coil:Heating:Electric:MultiStage,
 
 Coil:Heating:Electric:MultiStage,
   Electric Backup Heating Coil,               !- Name
-  AlwaysOne,                      !- Availability Schedule Name
+  Constant-1.0,                      !- Availability Schedule Name
   Heating Coil Air Outlet Node,   !- Air Inlet Node Name
   Zone 2 Inlet Node,              !- Air Outlet Node Name
   ,                               !- Temperature Setpoint Node Name
@@ -2888,13 +3140,6 @@ Coil:Heating:Electric:MultiStage,
 
 ScheduleTypeLimits,
   Any Number;                     !- Name
-
-Schedule:Compact,
-  AlwaysOne,                      !- Name
-  Any Number,                     !- Schedule Type Limits Name
-  Through: 12/31,                 !- Field 1
-  For: AllDays,                   !- Field 2
-  Until: 24:00, 1.0;              !- Field 3
 
 Schedule:Compact,
   Always 18C,                     !- Name
@@ -2920,6 +3165,7 @@ Curve:Quadratic,
 )IDF";
 
     ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
+    state->init_state(*state);
 
     std::string compName = "UNITARY SYSTEM MODEL";
     bool zoneEquipment = true;
@@ -2976,14 +3222,10 @@ Curve:Quadratic,
     state->dataLoopNodes->Node(1).HumRat = 0.00922;    // 17C wb
     state->dataLoopNodes->Node(1).Enthalpy = 47597.03; // www.sugartech.com/psychro/index.php
 
-    ScheduleManager::ProcessScheduleInput(*state); // read schedules
-
     // Heating coil air inlet node = 3
     state->dataLoopNodes->Node(3).MassFlowRateMax = thisSys->m_DesignMassFlowRate; // max at fan outlet so fan won't limit flow
                                                                                    // Heating coil air outlet node = 2
-    state->dataScheduleMgr->Schedule(1).CurrentValue = 1.0;                        // Enable schedule without calling schedule manager
-
-    state->dataGlobal->BeginEnvrnFlag = true; // act as if simulation is beginning
+    state->dataGlobal->BeginEnvrnFlag = true;                                      // act as if simulation is beginning
 
     // Backup Heating coil air outlet node = 2
     state->dataLoopNodes->Node(2).TempSetPoint = 33.0;
@@ -3020,10 +3262,9 @@ Curve:Quadratic,
     state->dataLoopNodes->Node(2).Temp = 24.0;
     state->dataLoopNodes->Node(3).Temp = 24.0;
     state->dataLoopNodes->Node(4).Temp = 24.0;
-    state->dataScheduleMgr->Schedule(1).CurrentValue = 1.0; // Enable schedule without calling schedule manager
-    state->dataLoopNodes->Node(1).HumRat = 0.00922;         // 17C wb
-    state->dataLoopNodes->Node(1).Enthalpy = 47597.03;      // www.sugartech.com/psychro/index.php
-    state->dataGlobal->BeginEnvrnFlag = true;               // act as if simulation is beginning
+    state->dataLoopNodes->Node(1).HumRat = 0.00922;    // 17C wb
+    state->dataLoopNodes->Node(1).Enthalpy = 47597.03; // www.sugartech.com/psychro/index.php
+    state->dataGlobal->BeginEnvrnFlag = true;          // act as if simulation is beginning
     // Backup Heating coil air outlet node = 2
     state->dataLoopNodes->Node(2).TempSetPoint = 33.0;
     thisSys->m_EMSOverrideSuppCoilSpeedNumOn = true;
@@ -3065,7 +3306,7 @@ AirLoopHVAC:UnitarySystem,
   Setpoint,                       !- Control Type
   East Zone,                      !- Controlling Zone or Thermostat Location
   None,                           !- Dehumidification Control Type
-  AlwaysOne,                      !- Availability Schedule Name
+  Constant-1.0,                      !- Availability Schedule Name
   Zone Exhaust Node,              !- Air Inlet Node Name
   Zone 2 Inlet Node,              !- Air Outlet Node Name
   Fan:OnOff,                      !- Supply Fan Object Type
@@ -3114,7 +3355,7 @@ AirLoopHVAC:UnitarySystem,
 
 Fan:OnOff,
   Supply Fan 1,                   !- Name
-  AlwaysOne,                      !- Availability Schedule Name
+  Constant-1.0,                      !- Availability Schedule Name
   0.7,                            !- Fan Total Efficiency
   600.0,                          !- Pressure Rise{ Pa }
   autosize,                       !- Maximum Flow Rate{ m3 / s }
@@ -3125,7 +3366,7 @@ Fan:OnOff,
 
 Coil:Heating:Electric,
   Electric Heating Coil,               !- Name
-  AlwaysOne,                      !- Availability Schedule Name
+  Constant-1.0,                      !- Availability Schedule Name
   1.0,                            !- Efficiency
   autosize,                       !- Nominal Capacity
   Heating Coil Air Inlet Node,    !- Air Inlet Node Name
@@ -3134,13 +3375,6 @@ Coil:Heating:Electric,
 
 ScheduleTypeLimits,
   Any Number;                     !- Name
-
-Schedule:Compact,
-  AlwaysOne,                      !- Name
-  Any Number,                     !- Schedule Type Limits Name
-  Through: 12/31,                 !- Field 1
-  For: AllDays,                   !- Field 2
-  Until: 24:00, 1.0;              !- Field 3
 
 Schedule:Compact,
   Always 18C,                     !- Name
@@ -3166,6 +3400,7 @@ Curve:Quadratic,
 )IDF";
 
     ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
+    state->init_state(*state);
 
     std::string compName = "UNITARY SYSTEM MODEL";
     bool zoneEquipment = true;
@@ -3219,14 +3454,10 @@ Curve:Quadratic,
     state->dataLoopNodes->Node(1).HumRat = 0.00922;    // 17C wb
     state->dataLoopNodes->Node(1).Enthalpy = 47597.03; // www.sugartech.com/psychro/index.php
 
-    ScheduleManager::ProcessScheduleInput(*state); // read schedules
-
     // Heating coil air inlet node = 3
     state->dataLoopNodes->Node(3).MassFlowRateMax = thisSys->m_DesignMassFlowRate; // max at fan outlet so fan won't limit flow
                                                                                    // Heating coil air outlet node = 2
     state->dataLoopNodes->Node(2).TempSetPoint = 25.0;
-
-    state->dataScheduleMgr->Schedule(1).CurrentValue = 1.0; // Enable schedule without calling schedule manager
 
     state->dataGlobal->BeginEnvrnFlag = true; // act as if simulation is beginning
 
@@ -3262,7 +3493,7 @@ AirLoopHVAC:UnitarySystem,
   Setpoint,                       !- Control Type
   East Zone,                      !- Controlling Zone or Thermostat Location
   None,                           !- Dehumidification Control Type
-  AlwaysOne,                      !- Availability Schedule Name
+  Constant-1.0,                      !- Availability Schedule Name
   Zone Exhaust Node,              !- Air Inlet Node Name
   Zone 2 Inlet Node,              !- Air Outlet Node Name
   Fan:OnOff,                      !- Supply Fan Object Type
@@ -3322,7 +3553,7 @@ UnitarySystemPerformance:Multispeed,
 
 Fan:OnOff,
   Supply Fan 1,                   !- Name
-  AlwaysOne,                      !- Availability Schedule Name
+  Constant-1.0,                      !- Availability Schedule Name
   0.7,                            !- Fan Total Efficiency
   600.0,                          !- Pressure Rise{ Pa }
   autosize,                       !- Maximum Flow Rate{ m3 / s }
@@ -3333,7 +3564,7 @@ Fan:OnOff,
 
 Coil:Heating:Gas:MultiStage,
   Gas Heating Coil,               !- Name
-  AlwaysOne,                      !- Availability Schedule Name
+  Constant-1.0,                      !- Availability Schedule Name
   Heating Coil Air Inlet Node,    !- Air Inlet Node Name
   Zone 2 Inlet Node,              !- Air Outlet Node Name
   ,                               !- Temperature Setpoint Node Name
@@ -3349,13 +3580,6 @@ Coil:Heating:Gas:MultiStage,
 
 ScheduleTypeLimits,
   Any Number;                     !- Name
-
-Schedule:Compact,
-  AlwaysOne,                      !- Name
-  Any Number,                     !- Schedule Type Limits Name
-  Through: 12/31,                 !- Field 1
-  For: AllDays,                   !- Field 2
-  Until: 24:00, 1.0;              !- Field 3
 
 Schedule:Compact,
   Always 18C,                     !- Name
@@ -3381,6 +3605,7 @@ Curve:Quadratic,
 )IDF";
 
     ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
+    state->init_state(*state);
 
     std::string compName = "UNITARY SYSTEM MODEL";
     bool zoneEquipment = true;
@@ -3434,14 +3659,10 @@ Curve:Quadratic,
     state->dataLoopNodes->Node(1).HumRat = 0.00922;    // 17C wb
     state->dataLoopNodes->Node(1).Enthalpy = 47597.03; // www.sugartech.com/psychro/index.php
 
-    ScheduleManager::ProcessScheduleInput(*state); // read schedules
-
     // Heating coil air inlet node = 3
     state->dataLoopNodes->Node(3).MassFlowRateMax = thisSys->m_DesignMassFlowRate; // max at fan outlet so fan won't limit flow
                                                                                    // Heating coil air outlet node = 2
     state->dataLoopNodes->Node(2).TempSetPoint = 25.0;
-
-    state->dataScheduleMgr->Schedule(1).CurrentValue = 1.0; // Enable schedule without calling schedule manager
 
     state->dataGlobal->BeginEnvrnFlag = true; // act as if simulation is beginning
 
@@ -3504,13 +3725,13 @@ AirLoopHVAC:UnitarySystem,
   Setpoint,                       !- Control Type
   East Zone,                      !- Controlling Zone or Thermostat Location
   None,                           !- Dehumidification Control Type
-  AlwaysOne,                      !- Availability Schedule Name
+  Constant-1.0,                      !- Availability Schedule Name
   Zone Exhaust Node,              !- Air Inlet Node Name
   Zone 2 Inlet Node,              !- Air Outlet Node Name
   Fan:OnOff,                      !- Supply Fan Object Type
   Supply Fan 1,                   !- Supply Fan Name
   BlowThrough,                    !- Fan Placement
-  AlwaysOne,                      !- Supply Air Fan Operating Mode Schedule Name
+  Constant-1.0,                      !- Supply Air Fan Operating Mode Schedule Name
   Coil:Heating:DX:VariableSpeed,  !- Heating Coil Object Type
   DX Heating Coil,                !- Heating Coil Name
   ,                               !- DX Heating Coil Sizing Ratio
@@ -3580,7 +3801,7 @@ UnitarySystemPerformance:Multispeed,
 
 Fan:OnOff,
   Supply Fan 1,                   !- Name
-  AlwaysOne,                      !- Availability Schedule Name
+  Constant-1.0,                      !- Availability Schedule Name
   0.7,                            !- Fan Total Efficiency
   600.0,                          !- Pressure Rise{ Pa }
   autosize,                       !- Maximum Flow Rate{ m3 / s }
@@ -3858,13 +4079,6 @@ ScheduleTypeLimits,
   Any Number;                     !- Name
 
 Schedule:Compact,
-  AlwaysOne,                      !- Name
-  Any Number,                     !- Schedule Type Limits Name
-  Through: 12/31,                 !- Field 1
-  For: AllDays,                   !- Field 2
-  Until: 24:00, 1.0;              !- Field 3
-
-Schedule:Compact,
   Always 16C,                     !- Name
   Any Number,                     !- Schedule Type Limits Name
   Through: 12/31,                 !- Field 1
@@ -3926,6 +4140,7 @@ Curve:Biquadratic,
 )IDF";
 
     ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
+    state->init_state(*state);
 
     std::string compName = "UNITARY SYSTEM MODEL";
     bool zoneEquipment = true;
@@ -3995,8 +4210,6 @@ Curve:Biquadratic,
     // Heating coil air inlet node = 4
     // Heating coil air outlet node = 2
     state->dataLoopNodes->Node(2).TempSetPoint = 16.0;
-
-    state->dataScheduleMgr->Schedule(1).CurrentValue = 1.0; // Enable schedule without calling schedule manager
 
     state->dataGlobal->BeginEnvrnFlag = true; // act as if simulation is beginning
 
@@ -4175,13 +4388,13 @@ AirLoopHVAC:UnitarySystem,
   Setpoint,                !- Control Type
   East Zone,               !- Controlling Zone or Thermostat Location
   None,                    !- Dehumidification Control Type
-  AlwaysOne,               !- Availability Schedule Name
+  Constant-1.0,               !- Availability Schedule Name
   Zone Exhaust Node,       !- Air Inlet Node Name
   Zone 2 Inlet Node,       !- Air Outlet Node Name
   Fan:OnOff,               !- Supply Fan Object Type
   Supply Fan 1,            !- Supply Fan Name
   BlowThrough,             !- Fan Placement
-  AlwaysOne,               !- Supply Air Fan Operating Mode Schedule Name
+  Constant-1.0,               !- Supply Air Fan Operating Mode Schedule Name
   Coil:Heating:Water,      !- Heating Coil Object Type
   Water Heating Coil,      !- Heating Coil Name
   ,                        !- DX Heating Coil Sizing Ratio
@@ -4214,7 +4427,7 @@ AirLoopHVAC:UnitarySystem,
 
 Fan:OnOff,
   Supply Fan 1,            !- Name
-  AlwaysOne,               !- Availability Schedule Name
+  Constant-1.0,               !- Availability Schedule Name
   0.7,                     !- Fan Total Efficiency
   600.0,                   !- Pressure Rise{ Pa }
   1.6,                     !- Maximum Flow Rate{ m3 / s }
@@ -4225,7 +4438,7 @@ Fan:OnOff,
 
 Coil:Cooling:Water,
   Water Cooling Coil,      !- Name
-  AlwaysOne,               !- Availability Schedule Namev
+  Constant-1.0,               !- Availability Schedule Namev
   0.0004,                  !- Design Water Flow Rate { m3 / s }
   1.6000,                  !- Design Air Flow Rate { m3 / s }
   7.22,                    !- Design Inlet Water Temperature { Cv }
@@ -4242,7 +4455,7 @@ Coil:Cooling:Water,
 
 Coil:Heating:Water,
   Water Heating Coil,      !- Name
-  AlwaysOne,               !- Availability Schedule Name
+  Constant-1.0,               !- Availability Schedule Name
   300.0,                   !- U - Factor Times Area Value { W / K }
   0.0006,                  !- Maximum Water Flow Rate { m3 / s }
   HWInletNode,             !- Water Inlet Node Name
@@ -4259,7 +4472,7 @@ Coil:Heating:Water,
 
 Coil:Heating:Water,
   Supp Water Heating Coil, !- Name
-  AlwaysOne,               !- Availability Schedule Name
+  Constant-1.0,               !- Availability Schedule Name
   300.0,                   !- U - Factor Times Area Value { W / K }
   0.0006,                  !- Maximum Water Flow Rate { m3 / s }
   SuppHWInletNode,         !- Water Inlet Node Name
@@ -4276,13 +4489,6 @@ Coil:Heating:Water,
 
 ScheduleTypeLimits,
   Any Number;              !- Name
-
-Schedule:Compact,
-  AlwaysOne,               !- Name
-  Any Number,              !- Schedule Type Limits Name
-  Through: 12/31,          !- Field 1
-  For: AllDays,            !- Field 2
-  Until: 24:00, 1.0;       !- Field 3
 
 Schedule:Compact,
   Always 16C,              !- Name
@@ -4326,6 +4532,7 @@ SetpointManager:Scheduled,
 )IDF";
 
     ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
+    state->init_state(*state);
 
     std::string compName = "UNITARY SYSTEM MODEL";
     bool zoneEquipment = true;
@@ -4342,12 +4549,16 @@ SetpointManager:Scheduled,
     EXPECT_EQ(thisSys->m_MaxHeatAirVolFlow, 1.6);
     EXPECT_EQ(thisSys->m_MaxNoCoolHeatAirVolFlow, 0.8);
 
+    state->dataPlnt->PlantLoop(1).FluidName = "WATER";
+    state->dataPlnt->PlantLoop(1).glycol = Fluid::GetWater(*state);
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Name = "WATER COOLING COIL";
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Type =
         DataPlant::PlantEquipmentType::CoilWaterCooling;
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).NodeNumIn = 10;
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).NodeNumOut = 11;
 
+    state->dataPlnt->PlantLoop(2).FluidName = "WATER";
+    state->dataPlnt->PlantLoop(2).glycol = Fluid::GetWater(*state);
     state->dataPlnt->PlantLoop(2).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Name = "WATER HEATING COIL";
     state->dataPlnt->PlantLoop(2).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Type =
         DataPlant::PlantEquipmentType::CoilWaterSimpleHeating;
@@ -4434,8 +4645,6 @@ SetpointManager:Scheduled,
     // Supp heating coil water inlet node = 8
     state->dataLoopNodes->Node(suppHeatingCoilWaterInletNodeIndex).Temp = 60.0;
     state->dataLoopNodes->Node(suppHeatingCoilWaterInletNodeIndex).Enthalpy = 251221.6; // www.peacesoftware.de/einigewerte/calc_dampf.php5
-
-    state->dataScheduleMgr->Schedule(1).CurrentValue = 1.0; // Enable schedule without calling schedule manager
 
     state->dataGlobal->BeginEnvrnFlag = true; // act as if simulation is beginning
 
@@ -4610,13 +4819,13 @@ AirLoopHVAC:UnitarySystem,
   Setpoint,                !- Control Type
   East Zone,               !- Controlling Zone or Thermostat Location
   CoolReheat,                    !- Dehumidification Control Type
-  AlwaysOne,               !- Availability Schedule Name
+  Constant-1.0,               !- Availability Schedule Name
   Water Cooling Coil Air Inlet Node,       !- Air Inlet Node Name
   Zone Inlet Node,       !- Air Outlet Node Name
   Fan:OnOff,               !- Supply Fan Object Type
   Supply Fan 1,            !- Supply Fan Name
   DrawThrough,             !- Fan Placement
-  AlwaysOne,               !- Supply Air Fan Operating Mode Schedule Name
+  Constant-1.0,               !- Supply Air Fan Operating Mode Schedule Name
   ,      !- Heating Coil Object Type
   ,      !- Heating Coil Name
   ,                        !- DX Heating Coil Sizing Ratio
@@ -4649,7 +4858,7 @@ AirLoopHVAC:UnitarySystem,
 
 Fan:OnOff,
   Supply Fan 1,            !- Name
-  AlwaysOne,               !- Availability Schedule Name
+  Constant-1.0,               !- Availability Schedule Name
   0.7,                     !- Fan Total Efficiency
   600.0,                   !- Pressure Rise{ Pa }
   1.6,                     !- Maximum Flow Rate{ m3 / s }
@@ -4660,7 +4869,7 @@ Fan:OnOff,
 
 Coil:Cooling:Water,
   Water Cooling Coil,      !- Name
-  AlwaysOne,               !- Availability Schedule Namev
+  Constant-1.0,               !- Availability Schedule Namev
   0.0008,                  !- Design Water Flow Rate { m3 / s }
   1.6000,                  !- Design Air Flow Rate { m3 / s }
   7.22,                    !- Design Inlet Water Temperature { Cv }
@@ -4677,13 +4886,6 @@ Coil:Cooling:Water,
 
 ScheduleTypeLimits,
   Any Number;              !- Name
-
-Schedule:Compact,
-  AlwaysOne,               !- Name
-  Any Number,              !- Schedule Type Limits Name
-  Through: 12/31,          !- Field 1
-  For: AllDays,            !- Field 2
-  Until: 24:00, 1.0;       !- Field 3
 
 Schedule:Compact,
   Always 20C,              !- Name
@@ -4713,6 +4915,7 @@ SetpointManager:Scheduled,
 )IDF";
 
     ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
+    state->init_state(*state);
 
     std::string compName = "UNITARY SYSTEM MODEL";
     bool zoneEquipment = true;
@@ -4729,6 +4932,9 @@ SetpointManager:Scheduled,
     auto coolingCoilAirOutletNodeIndex = Util::FindItemInList("WATER COOLING COIL AIR OUTLET NODE", state->dataLoopNodes->NodeID); // was Node 6
     auto coolingCoilWaterInletNodeIndex = Util::FindItemInList("CHWINLETNODE", state->dataLoopNodes->NodeID);                      // was Node 10
     auto coolingCoilWaterOutletNodeIndex = Util::FindItemInList("CHWOUTLETNODE", state->dataLoopNodes->NodeID);                    // was Node 10
+
+    state->dataPlnt->PlantLoop(1).FluidName = "WATER";
+    state->dataPlnt->PlantLoop(1).glycol = Fluid::GetWater(*state);
 
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Name = "WATER COOLING COIL";
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Type =
@@ -4786,8 +4992,6 @@ SetpointManager:Scheduled,
     // Cooling coil water inlet node
     state->dataLoopNodes->Node(coolingCoilWaterInletNodeIndex).Temp = 6.0;
     state->dataLoopNodes->Node(coolingCoilWaterInletNodeIndex).Enthalpy = 25321.8; // www.peacesoftware.de/einigewerte/calc_dampf.php5
-
-    state->dataScheduleMgr->Schedule(1).CurrentValue = 1.0; // Enable schedule without calling schedule manager
 
     state->dataGlobal->BeginEnvrnFlag = true; // act as if simulation is beginning
 
@@ -4977,6 +5181,7 @@ Schedule:Compact,
 )IDF";
 
     ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
+    state->init_state(*state);
 
     UnitarySys thisSys;
     state->dataUnitarySystems->numUnitarySystems = 1;
@@ -4992,9 +5197,8 @@ Schedule:Compact,
     state->dataHVACGlobal->MSHPMassFlowRateLow = 0.0;
     state->dataHVACGlobal->MSHPMassFlowRateHigh = 0.0;
 
-    thisSys.m_SysAvailSchedPtr = ScheduleManager::GetScheduleIndex(*state, "FanAndCoilAvailSched"); // "Get" the schedule inputs
-    thisSys.m_FanAvailSchedPtr = ScheduleManager::GetScheduleIndex(*state, "FanAndCoilAvailSched");
-    state->dataScheduleMgr->Schedule(1).CurrentValue = 1.0; // set availability and fan schedule to 1
+    thisSys.m_sysAvailSched = Sched::GetSchedule(*state, "FANANDCOILAVAILSCHED"); // "Get" the schedule inputs
+    thisSys.m_fanAvailSched = Sched::GetSchedule(*state, "FANANDCOILAVAILSCHED");
 
     thisSys.m_HeatMassFlowRate.resize(4);
     thisSys.m_CoolMassFlowRate.resize(4);
@@ -5004,7 +5208,7 @@ Schedule:Compact,
     thisSys.m_LastMode = UnitarySystems::HeatingMode;
     thisSys.MaxNoCoolHeatAirMassFlow = 0.2;
     thisSys.m_NoLoadAirFlowRateRatio = 0.2;
-    thisSys.m_FanAvailSchedPtr = ScheduleManager::ScheduleAlwaysOn;
+    thisSys.m_fanAvailSched = Sched::GetScheduleAlwaysOn(*state);
     thisSys.AirInNode = 1;
 
     thisSys.m_HeatMassFlowRate[1] = 0.25;
@@ -5478,6 +5682,7 @@ TEST_F(EnergyPlusFixture, UnitarySystemModel_ConfirmUnitarySystemSizingTest)
 
 TEST_F(EnergyPlusFixture, UnitarySystemModel_CalcUnitaryHeatingSystem)
 {
+    state->init_state(*state);
 
     int AirLoopNum(1);
     bool FirstHVACIteration(false);
@@ -5504,7 +5709,7 @@ TEST_F(EnergyPlusFixture, UnitarySystemModel_CalcUnitaryHeatingSystem)
     thisSys.m_LastMode = UnitarySystems::HeatingMode;
     thisSys.MaxNoCoolHeatAirMassFlow = 0.2;
     thisSys.m_NoLoadAirFlowRateRatio = 0.2;
-    thisSys.m_FanAvailSchedPtr = ScheduleManager::ScheduleAlwaysOn;
+    thisSys.m_fanAvailSched = Sched::GetScheduleAlwaysOn(*state);
     thisSys.AirInNode = 1;
     thisSys.m_HeatMassFlowRate[1] = 0.25;
     thisSys.m_MSHeatingSpeedRatio[1] = 0.25;
@@ -5547,7 +5752,7 @@ TEST_F(EnergyPlusFixture, UnitarySystemModel_CalcUnitaryHeatingSystem)
     state->dataWaterCoils->CheckEquipName.allocate(1);
     state->dataWaterCoils->NumWaterCoils = 1;
     state->dataWaterCoils->GetWaterCoilsInputFlag = false;
-    state->dataWaterCoils->WaterCoil(1).SchedPtr = ScheduleManager::ScheduleAlwaysOn;
+    state->dataWaterCoils->WaterCoil(1).availSched = Sched::GetScheduleAlwaysOn(*state);
     state->dataWaterCoils->WaterCoil(1).Name = "Water Heating Coil";
     state->dataWaterCoils->WaterCoil(1).WaterCoilType = DataPlant::PlantEquipmentType::CoilWaterSimpleHeating;
     state->dataWaterCoils->WaterCoil(1).DesAirVolFlowRate = 1.0;
@@ -5595,9 +5800,8 @@ TEST_F(EnergyPlusFixture, UnitarySystemModel_CalcUnitaryHeatingSystem)
         loopsidebranch.Comp.allocate(1);
     }
     state->dataPlnt->PlantLoop(1).Name = "WaterLoop";
-    state->dataPlnt->PlantLoop(1).FluidName = "FluidWaterLoop";
-    state->dataPlnt->PlantLoop(1).FluidIndex = 1;
     state->dataPlnt->PlantLoop(1).FluidName = "WATER";
+    state->dataPlnt->PlantLoop(1).glycol = Fluid::GetWater(*state);
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Name = state->dataWaterCoils->WaterCoil(1).Name;
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Type =
         DataPlant::PlantEquipmentType::CoilWaterSimpleHeating;
@@ -5619,6 +5823,7 @@ TEST_F(EnergyPlusFixture, UnitarySystemModel_CalcUnitaryHeatingSystem)
 
 TEST_F(EnergyPlusFixture, UnitarySystemModel_CalcUnitaryCoolingSystem)
 {
+    state->init_state(*state);
 
     HVAC::CompressorOp CompressorOn(HVAC::CompressorOp::On);
     int AirLoopNum(1);
@@ -5637,7 +5842,6 @@ TEST_F(EnergyPlusFixture, UnitarySystemModel_CalcUnitaryCoolingSystem)
 
     state->dataEnvrn->OutBaroPress = 101325.0;
     state->dataEnvrn->StdRhoAir = 1.20;
-    Psychrometrics::InitializePsychRoutines(*state);
 
     thisSys.m_MultiOrVarSpeedHeatCoil = true;
     thisSys.m_MultiOrVarSpeedCoolCoil = true;
@@ -5651,7 +5855,7 @@ TEST_F(EnergyPlusFixture, UnitarySystemModel_CalcUnitaryCoolingSystem)
     thisSys.m_LastMode = UnitarySystems::HeatingMode;
     thisSys.MaxNoCoolHeatAirMassFlow = 0.2;
     thisSys.m_NoLoadAirFlowRateRatio = 0.2;
-    thisSys.m_FanAvailSchedPtr = ScheduleManager::ScheduleAlwaysOn;
+    thisSys.m_fanAvailSched = Sched::GetScheduleAlwaysOn(*state);
     thisSys.AirInNode = 1;
     thisSys.m_HeatMassFlowRate[1] = 0.25;
     thisSys.m_MSHeatingSpeedRatio[1] = 0.25;
@@ -5690,7 +5894,7 @@ TEST_F(EnergyPlusFixture, UnitarySystemModel_CalcUnitaryCoolingSystem)
     state->dataWaterCoils->CheckEquipName.allocate(1);
     state->dataWaterCoils->NumWaterCoils = 1;
     state->dataWaterCoils->GetWaterCoilsInputFlag = false;
-    state->dataWaterCoils->WaterCoil(1).SchedPtr = ScheduleManager::ScheduleAlwaysOn;
+    state->dataWaterCoils->WaterCoil(1).availSched = Sched::GetScheduleAlwaysOn(*state);
     state->dataWaterCoils->WaterCoil(1).Name = "Water Cooling Coil";
     state->dataWaterCoils->WaterCoil(1).WaterCoilType = DataPlant::PlantEquipmentType::CoilWaterCooling;
     state->dataWaterCoils->WaterCoil(1).WaterCoilModel = WaterCoils::CoilModel::CoolingSimple;
@@ -5749,9 +5953,8 @@ TEST_F(EnergyPlusFixture, UnitarySystemModel_CalcUnitaryCoolingSystem)
         loopsidebranch.Comp.allocate(1);
     }
     state->dataPlnt->PlantLoop(1).Name = "WaterLoop";
-    state->dataPlnt->PlantLoop(1).FluidName = "FluidWaterLoop";
-    state->dataPlnt->PlantLoop(1).FluidIndex = 1;
     state->dataPlnt->PlantLoop(1).FluidName = "WATER";
+    state->dataPlnt->PlantLoop(1).glycol = Fluid::GetWater(*state);
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Name = state->dataWaterCoils->WaterCoil(1).Name;
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Type =
         DataPlant::PlantEquipmentType::CoilWaterCooling;
@@ -5988,6 +6191,7 @@ Curve:Biquadratic,
 )IDF";
 
     ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
+    state->init_state(*state);
 
     HeatBalanceManager::GetZoneData(*state, ErrorsFound); // read zone data
     EXPECT_FALSE(ErrorsFound);                            // expect no errors
@@ -6051,12 +6255,12 @@ Curve:Biquadratic,
 
     state->dataHeatBalFanSys->TempControlType.allocate(1);
     state->dataHeatBalFanSys->TempControlTypeRpt.allocate(1);
-    state->dataHeatBalFanSys->TempControlType(1) = HVAC::ThermostatType::DualSetPointWithDeadBand;
+    state->dataHeatBalFanSys->TempControlType(1) = HVAC::SetptType::DualHeatCool;
     state->dataZoneEnergyDemand->CurDeadBandOrSetback.allocate(1);
     // UnitarySystem does not care (or look at) if Tstat is in deadband
     // This line tests case where other zone equipment changes deadband status
     state->dataZoneEnergyDemand->CurDeadBandOrSetback(1) = true;
-    state->dataScheduleMgr->Schedule(1).CurrentValue = 1.0;
+    Sched::GetSchedule(*state, "FANANDCOILAVAILSCHED")->currentVal = 1.0; // Enable schedule without calling schedule manager
     state->dataGlobal->BeginEnvrnFlag = true;
     state->dataEnvrn->StdRhoAir = Psychrometrics::PsyRhoAirFnPbTdbW(*state, 101325.0, 20.0, 0.0); // initialize RhoAir
     state->dataLoopNodes->Node(InletNode).MassFlowRateMaxAvail = thisSys->m_MaxCoolAirVolFlow * state->dataEnvrn->StdRhoAir;
@@ -6634,6 +6838,7 @@ Curve:Biquadratic,
 )IDF";
 
     ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
+    state->init_state(*state);
 
     HeatBalanceManager::GetZoneData(*state, ErrorsFound); // read zone data
     EXPECT_FALSE(ErrorsFound);                            // expect no errors
@@ -6996,6 +7201,7 @@ Curve:Biquadratic,
 )IDF";
 
     ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
+    state->init_state(*state);
 
     HeatBalanceManager::GetZoneData(*state, ErrorsFound); // read zone data
     EXPECT_FALSE(ErrorsFound);                            // expect no errors
@@ -7064,9 +7270,10 @@ Curve:Biquadratic,
 
     state->dataHeatBalFanSys->TempControlType.allocate(1);
     state->dataHeatBalFanSys->TempControlTypeRpt.allocate(1);
-    state->dataHeatBalFanSys->TempControlType(1) = HVAC::ThermostatType::DualSetPointWithDeadBand;
-    state->dataScheduleMgr->Schedule(1).CurrentValue = 1.0; // FanAndCoilAvailSchedule
-    state->dataScheduleMgr->Schedule(2).CurrentValue = 1.0; // ContinuousFanSchedule
+    state->dataHeatBalFanSys->TempControlType(1) = HVAC::SetptType::DualHeatCool;
+    Sched::GetSchedule(*state, "FANANDCOILAVAILSCHED")->currentVal = 1.0;
+    Sched::GetSchedule(*state, "FANANDCOILAVAILSCHED")->currentVal = 1.0;
+    Sched::GetSchedule(*state, "CONTINUOUSFANSCHEDULE")->currentVal = 1.0; // ContinuousFanSchedule
     state->dataGlobal->BeginEnvrnFlag = true;
     state->dataEnvrn->StdRhoAir = Psychrometrics::PsyRhoAirFnPbTdbW(*state, 101325.0, 20.0, 0.0); // initialize RhoAir
     state->dataLoopNodes->Node(InletNode).MassFlowRateMaxAvail = thisSys->m_MaxCoolAirVolFlow * state->dataEnvrn->StdRhoAir;
@@ -7492,6 +7699,7 @@ Curve:Biquadratic,
 )IDF";
 
     ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
+    state->init_state(*state);
 
     HeatBalanceManager::GetZoneData(*state, ErrorsFound); // read zone data
     EXPECT_FALSE(ErrorsFound);                            // expect no errors
@@ -7557,8 +7765,8 @@ Curve:Biquadratic,
 
     state->dataHeatBalFanSys->TempControlType.allocate(1);
     state->dataHeatBalFanSys->TempControlTypeRpt.allocate(1);
-    state->dataHeatBalFanSys->TempControlType(1) = HVAC::ThermostatType::DualSetPointWithDeadBand;
-    state->dataScheduleMgr->Schedule(1).CurrentValue = 1.0;
+    state->dataHeatBalFanSys->TempControlType(1) = HVAC::SetptType::DualHeatCool;
+    Sched::GetSchedule(*state, "FANANDCOILAVAILSCHED")->currentVal = 1.0;
     state->dataGlobal->BeginEnvrnFlag = true;
     state->dataEnvrn->StdRhoAir = Psychrometrics::PsyRhoAirFnPbTdbW(*state, 101325.0, 20.0, 0.0); // initialize RhoAir
     state->dataLoopNodes->Node(InletNode).MassFlowRateMaxAvail = thisSys->m_MaxCoolAirVolFlow * state->dataEnvrn->StdRhoAir;
@@ -7826,6 +8034,7 @@ Curve:Biquadratic,
 )IDF";
 
     ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
+    state->init_state(*state);
 
     HeatBalanceManager::GetZoneData(*state, ErrorsFound); // read zone data
     EXPECT_FALSE(ErrorsFound);                            // expect no errors
@@ -8009,6 +8218,7 @@ Curve:Biquadratic,
 )IDF";
 
     ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
+    state->init_state(*state);
 
     HeatBalanceManager::GetZoneData(*state, ErrorsFound); // read zone data
     EXPECT_FALSE(ErrorsFound);                            // expect no errors
@@ -8454,9 +8664,9 @@ OutdoorAir:NodeList,
 
     ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
 
-    state->dataGlobal->NumOfTimeStepInHour = 1; // must initialize this to get schedules initialized
-    state->dataGlobal->MinutesPerTimeStep = 60; // must initialize this to get schedules initialized
-    ScheduleManager::ProcessScheduleInput(*state);
+    state->dataGlobal->TimeStepsInHour = 1;    // must initialize this to get schedules initialized
+    state->dataGlobal->MinutesInTimeStep = 60; // must initialize this to get schedules initialized
+    state->init_state(*state);
 
     HeatBalanceManager::GetZoneData(*state, ErrorsFound); // read zone data
     EXPECT_FALSE(ErrorsFound);                            // expect no errors
@@ -9220,8 +9430,8 @@ Curve:Biquadratic,
 )IDF";
 
     ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
+    state->init_state(*state);
 
-    SimulationManager::GetProjectData(*state);
     createFacilityElectricPowerServiceObject(*state);
     state->dataGlobal->BeginSimFlag = true;
     state->dataGlobal->DoingSizing = true;
@@ -9367,7 +9577,6 @@ Curve:Biquadratic,
 
 TEST_F(EnergyPlusFixture, UnitarySystemModel_WaterToAirHeatPump_LoadControl)
 {
-
     bool ErrorsFound(false);
     bool FirstHVACIteration(false);
     Real64 Qsens_sys(0.0); // UnitarySystem delivered sensible capacity wrt zone
@@ -9682,6 +9891,7 @@ Curve:QuadLinear,
 )IDF";
 
     ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
+    state->init_state(*state);
 
     HeatBalanceManager::GetZoneData(*state, ErrorsFound); // read zone data
     EXPECT_FALSE(ErrorsFound);                            // expect no errors
@@ -9703,18 +9913,16 @@ Curve:QuadLinear,
         loopsidebranch.Comp.allocate(1);
     }
     state->dataPlnt->PlantLoop(1).Name = "ChilledWaterLoop";
-    state->dataPlnt->PlantLoop(1).FluidName = "FluidWaterLoop";
-    state->dataPlnt->PlantLoop(1).FluidIndex = 1;
     state->dataPlnt->PlantLoop(1).FluidName = "WATER";
+    state->dataPlnt->PlantLoop(1).glycol = Fluid::GetWater(*state);
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Name = "SYS 1 HEAT PUMP COOLING MODE";
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Type =
         DataPlant::PlantEquipmentType::CoilWAHPCoolingEquationFit;
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).NodeNumIn = 6;
 
     state->dataPlnt->PlantLoop(2).Name = "HotWaterLoop";
-    state->dataPlnt->PlantLoop(2).FluidName = "FluidWaterLoop";
-    state->dataPlnt->PlantLoop(2).FluidIndex = 1;
     state->dataPlnt->PlantLoop(2).FluidName = "WATER";
+    state->dataPlnt->PlantLoop(2).glycol = Fluid::GetWater(*state);
     state->dataPlnt->PlantLoop(2).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Name = "SYS 1 HEAT PUMP HEATING MODE";
     state->dataPlnt->PlantLoop(2).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Type =
         DataPlant::PlantEquipmentType::CoilWAHPHeatingEquationFit;
@@ -9777,8 +9985,8 @@ Curve:QuadLinear,
 
     state->dataHeatBalFanSys->TempControlType.allocate(1);
     state->dataHeatBalFanSys->TempControlTypeRpt.allocate(1);
-    state->dataHeatBalFanSys->TempControlType(1) = HVAC::ThermostatType::DualSetPointWithDeadBand;
-    state->dataScheduleMgr->Schedule(1).CurrentValue = 1.0;
+    state->dataHeatBalFanSys->TempControlType(1) = HVAC::SetptType::DualHeatCool;
+    Sched::GetSchedule(*state, "FANANDCOILAVAILSCHED")->currentVal = 1.0;
     state->dataGlobal->BeginEnvrnFlag = true;
     state->dataEnvrn->StdRhoAir = Psychrometrics::PsyRhoAirFnPbTdbW(*state, 101325.0, 20.0, 0.0); // initialize RhoAir
     state->dataLoopNodes->Node(InletNode).MassFlowRateMaxAvail = thisSys->m_DesignFanVolFlowRate * state->dataEnvrn->StdRhoAir;
@@ -10023,6 +10231,7 @@ Schedule:Compact,
 )IDF";
 
     ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
+    state->init_state(*state);
 
     HeatBalanceManager::GetZoneData(*state, ErrorsFound); // read zone data
     EXPECT_FALSE(ErrorsFound);                            // expect no errors
@@ -10045,9 +10254,8 @@ Schedule:Compact,
         loopsidebranch.Comp.allocate(1);
     }
     state->dataPlnt->PlantLoop(1).Name = "ChilledWaterLoop";
-    state->dataPlnt->PlantLoop(1).FluidName = "FluidWaterLoop";
-    state->dataPlnt->PlantLoop(1).FluidIndex = 1;
     state->dataPlnt->PlantLoop(1).FluidName = "WATER";
+    state->dataPlnt->PlantLoop(1).glycol = Fluid::GetWater(*state);
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Name = "WATER COOLING COIL";
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Type =
         DataPlant::PlantEquipmentType::CoilWaterCooling;
@@ -10055,9 +10263,8 @@ Schedule:Compact,
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).NodeNumOut = 10;
 
     state->dataPlnt->PlantLoop(2).Name = "HotWaterLoop";
-    state->dataPlnt->PlantLoop(2).FluidName = "FluidWaterLoop";
-    state->dataPlnt->PlantLoop(2).FluidIndex = 1;
     state->dataPlnt->PlantLoop(2).FluidName = "WATER";
+    state->dataPlnt->PlantLoop(2).glycol = Fluid::GetWater(*state);
     state->dataPlnt->PlantLoop(2).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Name = "WATER HEATING COIL";
     state->dataPlnt->PlantLoop(2).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Type =
         DataPlant::PlantEquipmentType::CoilWaterSimpleHeating;
@@ -10120,10 +10327,10 @@ Schedule:Compact,
 
     state->dataHeatBalFanSys->TempControlType.allocate(1);
     state->dataHeatBalFanSys->TempControlTypeRpt.allocate(1);
-    state->dataHeatBalFanSys->TempControlType(1) = HVAC::ThermostatType::DualSetPointWithDeadBand;
+    state->dataHeatBalFanSys->TempControlType(1) = HVAC::SetptType::DualHeatCool;
     // fill the schedule values
-    state->dataScheduleMgr->Schedule(1).CurrentValue = 1.0; // availability
-    state->dataScheduleMgr->Schedule(2).CurrentValue = 1.0; // constant fan
+    Sched::GetSchedule(*state, "FANANDCOILAVAILSCHED")->currentVal = 1.0;  // availability
+    Sched::GetSchedule(*state, "CONTINUOUSFANSCHEDULE")->currentVal = 1.0; // constant fan
     state->dataGlobal->BeginEnvrnFlag = true;
     state->dataEnvrn->StdRhoAir = Psychrometrics::PsyRhoAirFnPbTdbW(*state, 101325.0, 20.0, 0.0); // initialize RhoAir
     state->dataLoopNodes->Node(InletNode).MassFlowRateMaxAvail = thisSys->m_DesignFanVolFlowRate * state->dataEnvrn->StdRhoAir;
@@ -11083,8 +11290,8 @@ Schedule:Compact,
 )IDF";
 
     ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
+    state->init_state(*state);
 
-    SimulationManager::GetProjectData(*state);
     createFacilityElectricPowerServiceObject(*state);
     state->dataGlobal->BeginSimFlag = true;
     state->dataGlobal->DoingSizing = true;
@@ -11867,6 +12074,13 @@ TEST_F(EnergyPlusFixture, UnitarySystemModel_MultiSpeedCoils_SingleMode)
     });
 
     ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
+    state->init_state(*state);
+
+    state->dataEnvrn->OutDryBulbTemp = 35.0; // initialize weather before input processing
+    state->dataEnvrn->OutHumRat = 0.1;
+    state->dataEnvrn->OutBaroPress = 101325.0;
+    state->dataEnvrn->OutWetBulbTemp = 30.0;
+
     state->dataLoopNodes->Node.allocate(10);
     state->dataSize->ZoneEqSizing.deallocate();
     state->dataSize->ZoneEqSizing.allocate(1);
@@ -11918,7 +12132,7 @@ TEST_F(EnergyPlusFixture, UnitarySystemModel_MultiSpeedCoils_SingleMode)
     state->dataZoneEnergyDemand->ZoneSysMoistureDemand(thisSys->ControlZoneNum).SequencedOutputRequiredToDehumidSP.allocate(1);
     state->dataHeatBalFanSys->TempControlType.allocate(1);
     state->dataHeatBalFanSys->TempControlTypeRpt.allocate(1);
-    state->dataHeatBalFanSys->TempControlType(1) = HVAC::ThermostatType::DualSetPointWithDeadBand;
+    state->dataHeatBalFanSys->TempControlType(1) = HVAC::SetptType::DualHeatCool;
 
     InletNode = thisSys->AirInNode;
     OutletNode = thisSys->AirOutNode;
@@ -11934,18 +12148,14 @@ TEST_F(EnergyPlusFixture, UnitarySystemModel_MultiSpeedCoils_SingleMode)
     state->dataLoopNodes->Node(ControlZoneNodeNum).Temp =
         24.0; // set zone temperature during cooling season used to determine system delivered capacity
     state->dataLoopNodes->Node(ControlZoneNodeNum).HumRat =
-        0.001;                               // set zone temperature during cooling season used to determine system delivered capacity
-    state->dataEnvrn->OutDryBulbTemp = 35.0; // initialize weather
-    state->dataEnvrn->OutHumRat = 0.1;
-    state->dataEnvrn->OutBaroPress = 101325.0;
-    state->dataEnvrn->OutWetBulbTemp = 30.0;
+        0.001; // set zone temperature during cooling season used to determine system delivered capacity
 
     state->dataAirLoop->AirLoopControlInfo.allocate(1);
     state->dataGlobal->SysSizingCalc = true;
 
     thisSys->m_ZoneInletNode = state->dataZoneEquip->ZoneEquipConfig(1).InletNode(1);
 
-    state->dataScheduleMgr->Schedule(thisSys->m_SysAvailSchedPtr).CurrentValue = 1.0;
+    thisSys->m_sysAvailSched->currentVal = 1.0;
 
     state->dataSize->CurSysNum = 1;
     state->dataSize->UnitarySysEqSizing.allocate(1);
@@ -13095,8 +13305,8 @@ Curve:Biquadratic,
 )IDF";
 
     ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
+    state->init_state(*state);
 
-    SimulationManager::GetProjectData(*state);
     createFacilityElectricPowerServiceObject(*state);
 
     state->dataGlobal->BeginSimFlag = true;
@@ -13210,6 +13420,7 @@ TEST_F(EnergyPlusFixture, UnitarySystemModel_SizingWithFans)
 )IDF";
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     Fans::GetFanInput(*state);
 
@@ -13252,7 +13463,6 @@ TEST_F(EnergyPlusFixture, UnitarySystemModel_SizingWithFans)
     state->dataSize->NumSysSizInput = 1;
 
     state->dataEnvrn->StdBaroPress = 101325.0;
-    Psychrometrics::InitializePsychRoutines(*state);
 
     // Need this to prevent crash in Sizers
     state->dataSize->UnitarySysEqSizing.allocate(1);
@@ -13452,6 +13662,7 @@ Coil:Heating:Electric,
 )IDF";
 
     ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
+    state->init_state(*state);
 
     bool ErrorsFound = false;
     HeatBalanceManager::GetZoneData(*state, ErrorsFound);
@@ -13598,6 +13809,7 @@ Coil:Heating:Electric,
 )IDF";
 
     ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
+    state->init_state(*state);
 
     bool ErrorsFound = false;
     HeatBalanceManager::GetZoneData(*state, ErrorsFound);
@@ -13721,6 +13933,7 @@ Coil:Heating:Electric,
 )IDF";
 
     ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
+    state->init_state(*state);
 
     bool ErrorsFound = false;
     HeatBalanceManager::GetZoneData(*state, ErrorsFound);
@@ -13846,6 +14059,7 @@ Coil:Heating:Electric,
 )IDF";
 
     ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
+    state->init_state(*state);
 
     bool ErrorsFound = false;
     HeatBalanceManager::GetZoneData(*state, ErrorsFound);
@@ -13963,6 +14177,7 @@ TEST_F(ZoneUnitarySysTest, UnitarySystemModel_FractionOfAutoSizedCoolingValueTes
 )IDF";
 
     ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
+    state->init_state(*state);
 
     // call the UnitarySystem factory
     bool ErrorsFound = false;
@@ -13979,6 +14194,7 @@ TEST_F(ZoneUnitarySysTest, UnitarySystemModel_FractionOfAutoSizedCoolingValueTes
     state->dataSize->ZoneSizingRunDone = true;
     // DataSizing::NumPltSizInput = 2;
 
+    state->dataPlnt->PlantLoop(1).glycol = Fluid::GetWater(*state);
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Name = state->dataWaterCoils->WaterCoil(1).Name;
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Type =
         DataPlant::PlantEquipmentType::CoilWaterSimpleHeating;
@@ -13987,6 +14203,7 @@ TEST_F(ZoneUnitarySysTest, UnitarySystemModel_FractionOfAutoSizedCoolingValueTes
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).NodeNumOut =
         state->dataWaterCoils->WaterCoil(1).WaterOutletNodeNum;
 
+    state->dataPlnt->PlantLoop(2).glycol = Fluid::GetWater(*state);
     state->dataPlnt->PlantLoop(2).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Name = state->dataWaterCoils->WaterCoil(2).Name;
     state->dataPlnt->PlantLoop(2).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Type =
         DataPlant::PlantEquipmentType::CoilWaterCooling;
@@ -14112,6 +14329,7 @@ TEST_F(ZoneUnitarySysTest, UnitarySystemModel_FlowPerCoolingCapacityTest)
 )IDF";
 
     ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
+    state->init_state(*state);
 
     // call the UnitarySystem factory
     bool ErrorsFound = false;
@@ -14127,6 +14345,7 @@ TEST_F(ZoneUnitarySysTest, UnitarySystemModel_FlowPerCoolingCapacityTest)
     OutputReportPredefined::SetPredefinedTables(*state);
     state->dataSize->ZoneSizingRunDone = true;
 
+    state->dataPlnt->PlantLoop(1).glycol = Fluid::GetWater(*state);
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Name = state->dataWaterCoils->WaterCoil(1).Name;
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Type =
         DataPlant::PlantEquipmentType::CoilWaterSimpleHeating;
@@ -14135,6 +14354,7 @@ TEST_F(ZoneUnitarySysTest, UnitarySystemModel_FlowPerCoolingCapacityTest)
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).NodeNumOut =
         state->dataWaterCoils->WaterCoil(1).WaterOutletNodeNum;
 
+    state->dataPlnt->PlantLoop(2).glycol = Fluid::GetWater(*state);
     state->dataPlnt->PlantLoop(2).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Name = state->dataWaterCoils->WaterCoil(2).Name;
     state->dataPlnt->PlantLoop(2).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Type =
         DataPlant::PlantEquipmentType::CoilWaterCooling;
@@ -14286,6 +14506,7 @@ TEST_F(ZoneUnitarySysTest, UnitarySystemModel_getUnitarySystemInputDataTest)
 )IDF";
 
     ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
+    state->init_state(*state);
 
     // call the UnitarySystem factory
     bool ErrorsFound = false;
@@ -14299,16 +14520,16 @@ TEST_F(ZoneUnitarySysTest, UnitarySystemModel_getUnitarySystemInputDataTest)
     EXPECT_FALSE(ErrorsFound);                                                           // expect no errors
     // check each input fields of unitary system
     EXPECT_EQ("UNITARY SYSTEM MODEL", thisSys->Name);                                                // checks object name
-    EXPECT_TRUE(compare_enums(UnitarySys::UnitarySysCtrlType::Load, thisSys->m_ControlType));        // checks control type
-    EXPECT_TRUE(compare_enums(UnitarySys::DehumCtrlType::None, thisSys->m_DehumidControlType_Num));  // checks Dehumidification Control type
+    EXPECT_ENUM_EQ(UnitarySys::UnitarySysCtrlType::Load, thisSys->m_ControlType);                    // checks control type
+    EXPECT_ENUM_EQ(UnitarySys::DehumCtrlType::None, thisSys->m_DehumidControlType_Num);              // checks Dehumidification Control type
     EXPECT_EQ(Util::FindItemInList("EAST ZONE", state->dataHeatBal->Zone), thisSys->ControlZoneNum); // checks zone ID
-    EXPECT_EQ(ScheduleManager::ScheduleAlwaysOn, thisSys->m_SysAvailSchedPtr);                       // checks availability schedule name
+    EXPECT_EQ(Sched::GetScheduleAlwaysOn(*state), thisSys->m_sysAvailSched);                         // checks availability schedule name
     EXPECT_EQ("NODE 29", state->dataLoopNodes->NodeID(thisSys->AirInNode));                          // checks air inlet node name
     EXPECT_EQ("NODE 30", state->dataLoopNodes->NodeID(thisSys->AirOutNode));                         // checks air outlet node name
     EXPECT_EQ((int)HVAC::FanType::OnOff, (int)thisSys->m_FanType);                                   // checks fan object type "FAN:ONOFF"
     EXPECT_EQ("SUPPLY FAN", thisSys->m_FanName);                                                     // checks fan object name
     EXPECT_EQ((int)HVAC::FanPlace::DrawThru, (int)thisSys->m_FanPlace);                              // checks fan placement, "DrawThrough"
-    EXPECT_EQ(0, thisSys->m_FanOpModeSchedPtr);                          // checks Supply Air Fan Operating Mode Schedule Name
+    EXPECT_EQ(nullptr, thisSys->m_fanOpModeSched);                       // checks Supply Air Fan Operating Mode Schedule Name
     EXPECT_EQ("COIL:HEATING:WATER", thisSys->m_HeatingCoilTypeName);     // checks heating coil object type
     EXPECT_EQ("WATER HEATING COIL", thisSys->m_HeatingCoilName);         // checks heating coil object type
     EXPECT_EQ(1, thisSys->m_HeatingSizingRatio);                         // checks dx heating coil sizing ratio
@@ -14548,6 +14769,7 @@ Curve:Biquadratic,
 )IDF";
 
     ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
+    state->init_state(*state);
 
     HeatBalanceManager::GetZoneData(*state, ErrorsFound); // read zone data
     EXPECT_FALSE(ErrorsFound);                            // expect no errors
@@ -14571,11 +14793,10 @@ Curve:Biquadratic,
     EXPECT_FALSE(ErrorsFound);                                                           // expect no errors
 
     // Issue 7777
-    std::string const error_string = delimited_string({
-        "   ** Warning ** getUnitarySystemInputData AirLoopHVAC:UnitarySystem=\"UNITARY SYSTEM MODEL\", invalid Availability Schedule Name = "
-        "FANANDCOILAVAILTEST",
-        "   **   ~~~   ** Set the default as Always On. Simulation continues.",
-    });
+    std::string const error_string =
+        delimited_string({"   ** Warning ** UnitarySys::processInputSpec: AirLoopHVAC:UnitarySystem = UNITARY SYSTEM MODEL",
+                          "   **   ~~~   ** Availability Schedule Name = FANANDCOILAVAILTEST, item not found, Set the default as Always On. "
+                          "Simulation continues. will be used."});
 
     EXPECT_TRUE(compare_err_stream(error_string, true));
 }
@@ -14784,6 +15005,7 @@ Curve:Biquadratic,
 )IDF";
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     bool ErrorsFound(false);
     HeatBalanceManager::GetZoneData(*state, ErrorsFound);
@@ -16192,13 +16414,13 @@ Dimensionless;	!- Output Unit Type
 )IDF";
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
+
     bool ErrorsFound = false;
     // Read objects
-    HeatBalanceManager::GetProjectControlData(*state, ErrorsFound);
-    EXPECT_FALSE(ErrorsFound);
     HeatBalanceManager::GetZoneData(*state, ErrorsFound);
     EXPECT_FALSE(ErrorsFound);
-    HeatBalanceManager::GetWindowGlassSpectralData(*state, ErrorsFound);
+    Material::GetWindowGlassSpectralData(*state, ErrorsFound);
     EXPECT_FALSE(ErrorsFound);
     Material::GetMaterialData(*state, ErrorsFound);
     EXPECT_FALSE(ErrorsFound);
@@ -16212,18 +16434,17 @@ Dimensionless;	!- Output Unit Type
     SurfaceGeometry::GetSurfaceData(*state, ErrorsFound);
     EXPECT_FALSE(ErrorsFound);
 
-    ScheduleManager::ProcessScheduleInput(*state); // read schedules
-
-    state->dataScheduleMgr->Schedule(1).CurrentValue = 1.0; // Enable schedule without calling schedule manager
-    state->dataScheduleMgr->Schedule(6).CurrentValue = 1.0; // Enable schedule without calling schedule manager
-    state->dataScheduleMgr->Schedule(7).CurrentValue = 4.0; // Enable schedule without calling schedule manager
+    Sched::GetSchedule(*state, "HVACTEMPLATE-ALWAYS 1")->currentVal = 1.0; // Enable schedule without calling schedule manager
+    Sched::GetSchedule(*state, "LIGHTS-1")->currentVal = 1.0;              // Enable schedule without calling schedule manager
+    auto *equipSched = Sched::GetSchedule(*state, "EQUIP-1");
+    equipSched->currentVal = 4.0; // Enable schedule without calling schedule manager
 
     state->dataEnvrn->OutBaroPress = 101325;
     ZoneEquipmentManager::GetZoneEquipment(*state);
     SimAirServingZones::GetAirPathData(*state);
-    state->dataScheduleMgr->Schedule(7).MinValue = 4.0; // Enable schedule without calling schedule manager
-    state->dataScheduleMgr->Schedule(7).MaxValue = 4.0; // Enable schedule without calling schedule manager
-    state->dataScheduleMgr->Schedule(7).MaxMinSet = true;
+    equipSched->minVal = 4.0; // Enable schedule without calling schedule manager
+    equipSched->maxVal = 4.0; // Enable schedule without calling schedule manager
+    equipSched->isMinMaxSet = true;
     ZoneTempPredictorCorrector::GetZoneAirSetPoints(*state);
 
     std::string compName = "SYS 1 FURNACE DX COOL UNITARY SYSTEM";
@@ -16285,7 +16506,7 @@ Dimensionless;	!- Output Unit Type
     state->dataZoneEnergyDemand->CurDeadBandOrSetback(1) = false;
     state->dataHeatBalFanSys->TempControlType.allocate(1);
     state->dataHeatBalFanSys->TempControlTypeRpt.allocate(1);
-    state->dataHeatBalFanSys->TempControlType(1) = HVAC::ThermostatType::DualSetPointWithDeadBand;
+    state->dataHeatBalFanSys->TempControlType(1) = HVAC::SetptType::DualHeatCool;
     auto &mixedAirNode = state->dataLoopNodes->Node(state->dataMixedAir->OAMixer(1).MixNode);
     mixedAirNode.Temp = 23.822;      // 24C db
     mixedAirNode.HumRat = 0.0145946; // 17C wb
@@ -16312,7 +16533,7 @@ Dimensionless;	!- Output Unit Type
                       ZoneEquipFlag,
                       SenOutput,
                       LatOutput);
-    auto &coilCoolingDX = state->dataCoilCooingDX->coilCoolingDXs[0];
+    auto &coilCoolingDX = state->dataCoilCoolingDX->coilCoolingDXs[0];
     EXPECT_EQ(coilCoolingDX.performance.OperatingMode, 3);
     EXPECT_EQ(coilCoolingDX.performance.ModeRatio, 1.0);
     EXPECT_NEAR(thisSys->CoilSHR, thisSys->LoadSHR, 0.001);
@@ -16711,6 +16932,7 @@ Curve:Biquadratic,
 )IDF";
 
     ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
+    state->init_state(*state);
 
     bool ErrorsFound(false);
     HeatBalanceManager::GetZoneData(*state, ErrorsFound); // read zone data
@@ -16744,7 +16966,7 @@ Curve:Biquadratic,
 
     // Like I said above in the IDF snippet section, control type has to be SingleZoneVAV or autosizing of
     // 'Minimum Supply Air Temperature' (DesignMinOutletTemp) isn't allowed
-    EXPECT_TRUE(compare_enums(thisSys->m_ControlType, EnergyPlus::UnitarySystems::UnitarySys::UnitarySysCtrlType::CCMASHRAE));
+    EXPECT_ENUM_EQ(thisSys->m_ControlType, EnergyPlus::UnitarySystems::UnitarySys::UnitarySysCtrlType::CCMASHRAE);
     EXPECT_EQ(thisSys->DesignMinOutletTemp, DataSizing::AutoSize);
     EXPECT_EQ(thisSys->m_MaxCoolAirVolFlow, DataSizing::AutoSize);
     EXPECT_EQ(thisSys->m_MaxHeatAirVolFlow, DataSizing::AutoSize);
@@ -16992,6 +17214,7 @@ Curve:Biquadratic,
 )IDF";
 
     ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
+    state->init_state(*state);
 
     std::string compName = "UNITARY SYSTEM MODEL";
     bool zoneEquipment = true;
@@ -17300,6 +17523,7 @@ TEST_F(ZoneUnitarySysTest, UnitarySystemModel_MultiSpeedDXCoilsNoLoadFlowRateSiz
 )IDF";
 
     ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
+    state->init_state(*state);
 
     std::string compName = "UNITARY SYSTEM MODEL";
     bool zoneEquipment = true;
@@ -17694,7 +17918,7 @@ TEST_F(ZoneUnitarySysTest, UnitarySystemModel_MultiSpeedDXCoilsDirectSolutionTes
 )IDF";
 
     ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
-
+    state->init_state(*state);
     bool ErrorsFound = false;
 
     std::string compName = "UNITARY SYSTEM MODEL";
@@ -17732,7 +17956,7 @@ TEST_F(ZoneUnitarySysTest, UnitarySystemModel_MultiSpeedDXCoilsDirectSolutionTes
     state->dataZoneEnergyDemand->CurDeadBandOrSetback(1) = false;
     state->dataHeatBalFanSys->TempControlType.allocate(1);
     state->dataHeatBalFanSys->TempControlTypeRpt.allocate(1);
-    state->dataHeatBalFanSys->TempControlType(1) = HVAC::ThermostatType::DualSetPointWithDeadBand;
+    state->dataHeatBalFanSys->TempControlType(1) = HVAC::SetptType::DualHeatCool;
     state->dataLoopNodes->Node(7).FluidType = DataLoopNode::NodeFluidType::Air;
     state->dataLoopNodes->Node(7).Temp = 24.0;      // 24C db
     state->dataLoopNodes->Node(7).HumRat = 0.01522; // 17C wb
@@ -17907,7 +18131,7 @@ TEST_F(ZoneUnitarySysTest, UnitarySystemModel_MultiSpeedDXCoilsDirectSolutionTes
 TEST_F(EnergyPlusFixture, UnitarySystemModel_reportUnitarySystemAncillaryPowerTest)
 {
     state->dataHVACGlobal->TimeStepSys = 0.25;
-    state->dataHVACGlobal->TimeStepSysSec = state->dataHVACGlobal->TimeStepSys * Constant::SecInHour;
+    state->dataHVACGlobal->TimeStepSysSec = state->dataHVACGlobal->TimeStepSys * Constant::rSecsInHour;
     state->dataLoopNodes->Node.allocate(2);
     UnitarySys thisSys;
     thisSys.AirInNode = 1;
@@ -18242,6 +18466,7 @@ TEST_F(ZoneUnitarySysTest, UnitarySystemModel_CheckBadInputOutputNodes)
     )IDF";
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
     bool ErrorsFound = false;
     std::string compName = "UNITARY SYSTEM MODEL";
     bool zoneEquipment = true;
@@ -18267,13 +18492,13 @@ AirLoopHVAC:UnitarySystem,
   Setpoint,                       !- Control Type
   East Zone,                      !- Controlling Zone or Thermostat Location
   None,                           !- Dehumidification Control Type
-  AlwaysOne,                      !- Availability Schedule Name
+  Constant-1.0,                      !- Availability Schedule Name
   Zone Exhaust Node,              !- Air Inlet Node Name
   Zone 2 Inlet Node,              !- Air Outlet Node Name
   Fan:OnOff,                      !- Supply Fan Object Type
   Supply Fan 1,                   !- Supply Fan Name
   BlowThrough,                    !- Fan Placement
-  AlwaysZero,                     !- Supply Air Fan Operating Mode Schedule Name
+  Constant-0.0,                     !- Supply Air Fan Operating Mode Schedule Name
   ,                               !- Heating Coil Object Type
   ,                               !- Heating Coil Name
   ,                               !- DX Heating Coil Sizing Ratio
@@ -18306,7 +18531,7 @@ AirLoopHVAC:UnitarySystem,
 
 Fan:OnOff,
   Supply Fan 1,                   !- Name
-  AlwaysOne,                      !- Availability Schedule Name
+  Constant-1.0,                      !- Availability Schedule Name
   0.7,                            !- Fan Total Efficiency
   600.0,                          !- Pressure Rise{ Pa }
   autosize,                       !- Maximum Flow Rate{ m3 / s }
@@ -18341,20 +18566,6 @@ Coil:Cooling:DX:SingleSpeed,
 
 ScheduleTypeLimits,
   Any Number;                     !- Name
-
-Schedule:Compact,
-  AlwaysOne,                      !- Name
-  Any Number,                     !- Schedule Type Limits Name
-  Through: 12/31,                 !- Field 1
-  For: AllDays,                   !- Field 2
-  Until: 24:00, 1.0;              !- Field 3
-
-Schedule:Compact,
-  AlwaysZero,                      !- Name
-  Any Number,                     !- Schedule Type Limits Name
-  Through: 12/31,                 !- Field 1
-  For: AllDays,                   !- Field 2
-  Until: 24:00, 0.0;              !- Field 3
 
 Schedule:Compact,
   Always 20C,                     !- Name
@@ -18398,21 +18609,20 @@ Curve:Biquadratic,
 )IDF";
 
     ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
-
+    state->init_state(*state);
     // call the UnitarySystem factory
     std::string compName = "UNITARY SYSTEM MODEL";
     bool zoneEquipment = true;
     UnitarySystems::UnitarySys::factory(*state, HVAC::UnitarySysType::Unitary_AnyCoilType, compName, zoneEquipment, 0);
     UnitarySystems::UnitarySys *thisSys = &state->dataUnitarySystems->unitarySys[0];
 
-    state->dataGlobal->NumOfTimeStepInHour = 1;
-    state->dataGlobal->MinutesPerTimeStep = 60;
+    state->dataGlobal->TimeStepsInHour = 1;
+    state->dataGlobal->MinutesInTimeStep = 60;
     state->dataZoneEquip->ZoneEquipInputsFilled = true;                                  // indicate zone data is available
     thisSys->getUnitarySystemInputData(*state, compName, zoneEquipment, 0, ErrorsFound); // get UnitarySystem input from object above
-    std::string const error_string =
-        delimited_string({"   ** Severe  ** AirLoopHVAC:UnitarySystem = UNITARY SYSTEM MODEL\n   **   ~~~   ** For FAN:ONOFF = SUPPLY FAN 1\n   **   "
-                          "~~~   ** Fan operating mode must be continuous (fan operating mode schedule values > 0).\n   **   ~~~   ** Error found in "
-                          "Supply Air Fan Operating Mode Schedule Name ALWAYSZERO\n   **   ~~~   ** ...schedule values must be (>0., <=1.)"});
+    std::string const error_string = delimited_string(
+        {"   ** Severe  ** UnitarySys::processInputSpec: AirLoopHVAC:UnitarySystem = UNITARY SYSTEM MODEL",
+         "   **   ~~~   ** Supply Air Fan Operating Mode Schedule Name = CONSTANT-0.0, schedule contains values that are <= 0 and/or > 1"});
     EXPECT_TRUE(compare_err_stream(error_string, true));
 }
 
@@ -18426,7 +18636,7 @@ AirLoopHVAC:UnitarySystem,
   Setpoint,                       !- Control Type
   East Zone,                      !- Controlling Zone or Thermostat Location
   None,                           !- Dehumidification Control Type
-  AlwaysOne,                      !- Availability Schedule Name
+  Constant-1.0,                      !- Availability Schedule Name
   Zone Exhaust Node,              !- Air Inlet Node Name
   Zone 2 Inlet Node,              !- Air Outlet Node Name
   Fan:OnOff,                      !- Supply Fan Object Type
@@ -18475,7 +18685,7 @@ AirLoopHVAC:UnitarySystem,
 
 Fan:OnOff,
   Supply Fan 1,                   !- Name
-  AlwaysOne,                      !- Availability Schedule Name
+  Constant-1.0,                      !- Availability Schedule Name
   0.7,                            !- Fan Total Efficiency
   600.0,                          !- Pressure Rise{ Pa }
   autosize,                       !- Maximum Flow Rate{ m3 / s }
@@ -18486,7 +18696,7 @@ Fan:OnOff,
 
 Coil:Heating:Fuel,
   Fuel Heating Coil,              !- Name
-  AlwaysOne,                      !- Availability Schedule Name
+  Constant-1.0,                      !- Availability Schedule Name
   NaturalGas,                     !- Fuel Type
   1.0,                            !- Gas Burner Efficiency
   autosize,                       !- Nominal Capacity
@@ -18495,13 +18705,6 @@ Coil:Heating:Fuel,
 
 ScheduleTypeLimits,
   Any Number;                     !- Name
-
-Schedule:Compact,
-  AlwaysOne,                      !- Name
-  Any Number,                     !- Schedule Type Limits Name
-  Through: 12/31,                 !- Field 1
-  For: AllDays,                   !- Field 2
-  Until: 24:00, 1.0;              !- Field 3
 
 Schedule:Compact,
   Always 18C,                     !- Name
@@ -18527,7 +18730,7 @@ Curve:Quadratic,
 )IDF";
 
     ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
-
+    state->init_state(*state);
     std::string compName = "UNITARY SYSTEM MODEL";
     bool zoneEquipment = true;
     bool FirstHVACIteration = true;
@@ -18580,14 +18783,10 @@ Curve:Quadratic,
     state->dataLoopNodes->Node(1).HumRat = 0.00922;    // 17C wb
     state->dataLoopNodes->Node(1).Enthalpy = 47597.03; // www.sugartech.com/psychro/index.php
 
-    ScheduleManager::ProcessScheduleInput(*state); // read schedules
-
     // Heating coil air inlet node = 3
     state->dataLoopNodes->Node(3).MassFlowRateMax = thisSys->m_DesignMassFlowRate; // max at fan outlet so fan won't limit flow
     // Heating coil air outlet node = 2
     state->dataLoopNodes->Node(2).TempSetPoint = 25.0;
-
-    state->dataScheduleMgr->Schedule(1).CurrentValue = 1.0; // Enable schedule without calling schedule manager
 
     state->dataGlobal->BeginEnvrnFlag = true; // act as if simulation is beginning
 
@@ -18631,7 +18830,7 @@ AirLoopHVAC:UnitarySystem,
   Setpoint,                       !- Control Type
   East Zone,                      !- Controlling Zone or Thermostat Location
   None,                           !- Dehumidification Control Type
-  AlwaysOne,                      !- Availability Schedule Name
+  Constant-1.0,                      !- Availability Schedule Name
   Zone Exhaust Node,              !- Air Inlet Node Name
   Zone 2 Inlet Node,              !- Air Outlet Node Name
   Fan:OnOff,                      !- Supply Fan Object Type
@@ -18680,7 +18879,7 @@ AirLoopHVAC:UnitarySystem,
 
 Fan:OnOff,
   Supply Fan 1,                   !- Name
-  AlwaysOne,                      !- Availability Schedule Name
+  Constant-1.0,                      !- Availability Schedule Name
   0.7,                            !- Fan Total Efficiency
   600.0,                          !- Pressure Rise{ Pa }
   autosize,                       !- Maximum Flow Rate{ m3 / s }
@@ -18691,7 +18890,7 @@ Fan:OnOff,
 
 Coil:Heating:Electric,
   Electric Heating Coil,          !- Name
-  AlwaysOne,                      !- Availability Schedule Name
+  Constant-1.0,                      !- Availability Schedule Name
   1.0,                            !- Efficiency
   autosize,                       !- Nominal Capacity
   Heating Coil Air Inlet Node,    !- Air Inlet Node Name
@@ -18699,13 +18898,6 @@ Coil:Heating:Electric,
 
 ScheduleTypeLimits,
   Any Number;                     !- Name
-
-Schedule:Compact,
-  AlwaysOne,                      !- Name
-  Any Number,                     !- Schedule Type Limits Name
-  Through: 12/31,                 !- Field 1
-  For: AllDays,                   !- Field 2
-  Until: 24:00, 1.0;              !- Field 3
 
 Schedule:Compact,
   Always 18C,                     !- Name
@@ -18731,7 +18923,7 @@ Curve:Quadratic,
 )IDF";
 
     ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
-
+    state->init_state(*state);
     std::string compName = "UNITARY SYSTEM MODEL";
     bool zoneEquipment = true;
     bool FirstHVACIteration = true;
@@ -18784,14 +18976,10 @@ Curve:Quadratic,
     state->dataLoopNodes->Node(1).HumRat = 0.00922;    // 17C wb
     state->dataLoopNodes->Node(1).Enthalpy = 47597.03; // www.sugartech.com/psychro/index.php
 
-    ScheduleManager::ProcessScheduleInput(*state); // read schedules
-
     // Heating coil air inlet node = 3
     state->dataLoopNodes->Node(3).MassFlowRateMax = thisSys->m_DesignMassFlowRate; // max at fan outlet so fan won't limit flow
     // Heating coil air outlet node = 2
     state->dataLoopNodes->Node(2).TempSetPoint = 25.0;
-
-    state->dataScheduleMgr->Schedule(1).CurrentValue = 1.0; // Enable schedule without calling schedule manager
 
     state->dataGlobal->BeginEnvrnFlag = true; // act as if simulation is beginning
 
@@ -18825,7 +19013,7 @@ AirLoopHVAC:UnitarySystem,
   Setpoint,                       !- Control Type
   East Zone,                      !- Controlling Zone or Thermostat Location
   None,                           !- Dehumidification Control Type
-  AlwaysOne,                      !- Availability Schedule Name
+  Constant-1.0,                      !- Availability Schedule Name
   Zone Exhaust Node,              !- Air Inlet Node Name
   Zone 2 Inlet Node,              !- Air Outlet Node Name
   Fan:OnOff,                      !- Supply Fan Object Type
@@ -18874,7 +19062,7 @@ AirLoopHVAC:UnitarySystem,
 
 Fan:OnOff,
   Supply Fan 1,                   !- Name
-  AlwaysOne,                      !- Availability Schedule Name
+  Constant-1.0,                      !- Availability Schedule Name
   0.7,                            !- Fan Total Efficiency
   600.0,                          !- Pressure Rise{ Pa }
   autosize,                       !- Maximum Flow Rate{ m3 / s }
@@ -18885,7 +19073,7 @@ Fan:OnOff,
 
 Coil:Heating:Desuperheater,
   Desuperheater Heating Coil,     !- Name
-  AlwaysOne,                      !- Availability Schedule Name
+  Constant-1.0,                      !- Availability Schedule Name
   0.3,                            !- Heat Reclaim Recovery Efficiency
   Heating Coil Air Inlet Node,    !- Coil Air Inlet Node Name
   Zone 2 Inlet Node,              !- Coil Air Outlet Node Name
@@ -18896,13 +19084,6 @@ Coil:Heating:Desuperheater,
 
 ScheduleTypeLimits,
   Any Number;                     !- Name
-
-Schedule:Compact,
-  AlwaysOne,                      !- Name
-  Any Number,                     !- Schedule Type Limits Name
-  Through: 12/31,                 !- Field 1
-  For: AllDays,                   !- Field 2
-  Until: 24:00, 1.0;              !- Field 3
 
 Schedule:Compact,
   Always 18C,                     !- Name
@@ -19032,7 +19213,7 @@ Schedule:Compact,
 )IDF";
 
     ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
-
+    state->init_state(*state);
     state->dataZoneEquip->ZoneEquipInputsFilled = true;
     InternalHeatGains::ManageInternalHeatGains(*state, true);
     std::string compName = "UNITARY SYSTEM MODEL";
@@ -19092,15 +19273,11 @@ Schedule:Compact,
     state->dataLoopNodes->Node(thisSys->AirInNode).HumRat = 0.00922;    // 17C wb
     state->dataLoopNodes->Node(thisSys->AirInNode).Enthalpy = 47597.03; // www.sugartech.com/psychro/index.php
 
-    ScheduleManager::ProcessScheduleInput(*state); // read schedules
-
     // Heating coil air inlet node = 4
     state->dataLoopNodes->Node(thisSys->HeatCoilInletNodeNum).MassFlowRateMax =
         thisSys->m_DesignMassFlowRate; // max at fan outlet so fan won't limit flow
     // Heating coil air outlet node = 5
     state->dataLoopNodes->Node(thisSys->HeatCoilOutletNodeNum).TempSetPoint = 25.0;
-
-    state->dataScheduleMgr->Schedule(1).CurrentValue = 1.0; // Enable schedule without calling schedule manager
 
     state->dataGlobal->BeginEnvrnFlag = true; // act as if simulation is beginning
 
@@ -19161,6 +19338,7 @@ TEST_F(EnergyPlusFixture, WaterCoil_getCoilWaterSystemInputDataTest)
 )IDF";
 
     EXPECT_TRUE(process_idf(idf_objects, false));
+    state->init_state(*state);
 
     bool zoneEquipment = false;
     state->dataZoneEquip->ZoneEquipInputsFilled = true;
@@ -19190,12 +19368,12 @@ TEST_F(EnergyPlusFixture, WaterCoil_getCoilWaterSystemInputDataTest)
     // check object inputs
     EXPECT_FALSE(ErrorsFound);
     EXPECT_EQ(state->dataUnitarySystems->numUnitarySystems, 1);
-    EXPECT_TRUE(compare_enums(thisSys.AirloopEqType, SimAirServingZones::CompType::CoilSystemWater));
+    EXPECT_ENUM_EQ(thisSys.AirloopEqType, SimAirServingZones::CompType::CoilSystemWater);
     EXPECT_EQ(thisSys.UnitType, "CoilSystem:Cooling:Water");
     EXPECT_EQ(thisSys.Name, "COIL SYSTEM WATER");
     EXPECT_EQ(thisSys.m_minAirToWaterTempOffset, 2.0);
-    EXPECT_TRUE(compare_enums(thisSys.m_DehumidControlType_Num, UnitarySys::DehumCtrlType::None));
-    EXPECT_TRUE(compare_enums(thisSys.m_ControlType, UnitarySys::UnitarySysCtrlType::Setpoint));
+    EXPECT_ENUM_EQ(thisSys.m_DehumidControlType_Num, UnitarySys::DehumCtrlType::None);
+    EXPECT_ENUM_EQ(thisSys.m_ControlType, UnitarySys::UnitarySysCtrlType::Setpoint);
     EXPECT_EQ(thisSys.m_CoolingCoilType_Num, HVAC::Coil_CoolingWater);
     EXPECT_EQ(thisSys.m_CoolingCoilName, "WATER COOLING COIL");
     EXPECT_TRUE(thisSys.m_CoolCoilExists);
@@ -19248,6 +19426,7 @@ TEST_F(EnergyPlusFixture, DetailedWaterCoil_getCoilWaterSystemInputDataTest)
 )IDF";
 
     EXPECT_TRUE(process_idf(idf_objects, false));
+    state->init_state(*state);
 
     bool zoneEquipment = false;
     state->dataZoneEquip->ZoneEquipInputsFilled = true;
@@ -19276,12 +19455,12 @@ TEST_F(EnergyPlusFixture, DetailedWaterCoil_getCoilWaterSystemInputDataTest)
     // check object inputs
     EXPECT_FALSE(ErrorsFound);
     EXPECT_EQ(state->dataUnitarySystems->numUnitarySystems, 1);
-    EXPECT_TRUE(compare_enums(thisSys.AirloopEqType, SimAirServingZones::CompType::CoilSystemWater));
+    EXPECT_ENUM_EQ(thisSys.AirloopEqType, SimAirServingZones::CompType::CoilSystemWater);
     EXPECT_EQ(thisSys.UnitType, "CoilSystem:Cooling:Water");
     EXPECT_EQ(thisSys.Name, "COIL SYSTEM WATER");
     EXPECT_EQ(thisSys.m_minAirToWaterTempOffset, 2.0);
-    EXPECT_TRUE(compare_enums(thisSys.m_DehumidControlType_Num, UnitarySys::DehumCtrlType::CoolReheat));
-    EXPECT_TRUE(compare_enums(thisSys.m_ControlType, UnitarySys::UnitarySysCtrlType::Setpoint));
+    EXPECT_ENUM_EQ(thisSys.m_DehumidControlType_Num, UnitarySys::DehumCtrlType::CoolReheat);
+    EXPECT_ENUM_EQ(thisSys.m_ControlType, UnitarySys::UnitarySysCtrlType::Setpoint);
     EXPECT_EQ(thisSys.m_CoolingCoilType_Num, HVAC::Coil_CoolingWaterDetailed);
     EXPECT_EQ(thisSys.m_CoolingCoilName, "WATER COOLING COIL");
     EXPECT_TRUE(thisSys.m_CoolCoilExists);
@@ -19350,6 +19529,7 @@ TEST_F(EnergyPlusFixture, HXAssistedWaterCoil_getCoilWaterSystemInputDataTest)
 )IDF";
 
     EXPECT_TRUE(process_idf(idf_objects, false));
+    state->init_state(*state);
 
     bool zoneEquipment = false;
     state->dataZoneEquip->ZoneEquipInputsFilled = true;
@@ -19378,12 +19558,12 @@ TEST_F(EnergyPlusFixture, HXAssistedWaterCoil_getCoilWaterSystemInputDataTest)
     // check object inputs
     EXPECT_FALSE(ErrorsFound);
     EXPECT_EQ(state->dataUnitarySystems->numUnitarySystems, 1);
-    EXPECT_TRUE(compare_enums(thisSys.AirloopEqType, SimAirServingZones::CompType::CoilSystemWater));
+    EXPECT_ENUM_EQ(thisSys.AirloopEqType, SimAirServingZones::CompType::CoilSystemWater);
     EXPECT_EQ(thisSys.UnitType, "CoilSystem:Cooling:Water");
     EXPECT_EQ(thisSys.Name, "COIL SYSTEM WATER");
     EXPECT_EQ(thisSys.m_minAirToWaterTempOffset, 2.0);
-    EXPECT_TRUE(compare_enums(thisSys.m_DehumidControlType_Num, UnitarySys::DehumCtrlType::CoolReheat));
-    EXPECT_TRUE(compare_enums(thisSys.m_ControlType, UnitarySys::UnitarySysCtrlType::Setpoint));
+    EXPECT_ENUM_EQ(thisSys.m_DehumidControlType_Num, UnitarySys::DehumCtrlType::CoolReheat);
+    EXPECT_ENUM_EQ(thisSys.m_ControlType, UnitarySys::UnitarySysCtrlType::Setpoint);
     EXPECT_EQ(thisSys.m_CoolingCoilType_Num, HVAC::Coil_CoolingWater);
     EXPECT_EQ(thisSys.m_CoolingCoilName, "WATER COOLING COIL");
     EXPECT_TRUE(thisSys.m_CoolCoilExists);
@@ -19428,6 +19608,7 @@ TEST_F(EnergyPlusFixture, CoilSystemCoolingWater_ControlStatusTest)
 )IDF";
 
     EXPECT_TRUE(process_idf(idf_objects, false));
+    state->init_state(*state);
 
     bool zoneEquipment = false;
     state->dataZoneEquip->ZoneEquipInputsFilled = true;
@@ -19461,7 +19642,6 @@ TEST_F(EnergyPlusFixture, CoilSystemCoolingWater_ControlStatusTest)
     Real64 ColdWaterMassFlowRate(1.0);
     state->dataEnvrn->OutBaroPress = 101325.0;
     state->dataEnvrn->StdRhoAir = 1.0;
-    Psychrometrics::InitializePsychRoutines(*state);
 
     thisSys.m_MultiOrVarSpeedHeatCoil = false;
     thisSys.m_MultiOrVarSpeedCoolCoil = false;
@@ -19469,7 +19649,7 @@ TEST_F(EnergyPlusFixture, CoilSystemCoolingWater_ControlStatusTest)
     thisSys.m_HeatMassFlowRate.resize(1);
     thisSys.m_CoolMassFlowRate.resize(1);
     thisSys.m_LastMode = UnitarySystems::CoolingMode;
-    thisSys.m_FanAvailSchedPtr = ScheduleManager::ScheduleAlwaysOn;
+    thisSys.m_fanAvailSched = Sched::GetScheduleAlwaysOn(*state);
     thisSys.m_FanOpMode = HVAC::FanOp::Cycling;
 
     // cooling load
@@ -19493,7 +19673,7 @@ TEST_F(EnergyPlusFixture, CoilSystemCoolingWater_ControlStatusTest)
 
     state->dataWaterCoils->CheckEquipName.allocate(1);
     state->dataWaterCoils->GetWaterCoilsInputFlag = false;
-    state->dataWaterCoils->WaterCoil(1).SchedPtr = ScheduleManager::ScheduleAlwaysOn;
+    state->dataWaterCoils->WaterCoil(1).availSched = Sched::GetScheduleAlwaysOn(*state);
     state->dataWaterCoils->WaterCoil(1).WaterCoilType = DataPlant::PlantEquipmentType::CoilWaterCooling;
     state->dataWaterCoils->WaterCoil(1).WaterCoilModel = WaterCoils::CoilModel::CoolingSimple;
     state->dataWaterCoils->WaterCoil(1).DesAirVolFlowRate = 1.0;
@@ -19550,9 +19730,8 @@ TEST_F(EnergyPlusFixture, CoilSystemCoolingWater_ControlStatusTest)
         loopsidebranch.Comp.allocate(1);
     }
     state->dataPlnt->PlantLoop(1).Name = "WaterLoop";
-    state->dataPlnt->PlantLoop(1).FluidName = "FluidWaterLoop";
-    state->dataPlnt->PlantLoop(1).FluidIndex = 1;
     state->dataPlnt->PlantLoop(1).FluidName = "WATER";
+    state->dataPlnt->PlantLoop(1).glycol = Fluid::GetWater(*state);
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Name = state->dataWaterCoils->WaterCoil(1).Name;
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Type =
         DataPlant::PlantEquipmentType::CoilWaterCooling;
@@ -19572,12 +19751,12 @@ TEST_F(EnergyPlusFixture, CoilSystemCoolingWater_ControlStatusTest)
 
     // check getinputs
     EXPECT_EQ(state->dataUnitarySystems->numUnitarySystems, 1);
-    EXPECT_TRUE(compare_enums(thisSys.AirloopEqType, SimAirServingZones::CompType::CoilSystemWater));
+    EXPECT_ENUM_EQ(thisSys.AirloopEqType, SimAirServingZones::CompType::CoilSystemWater);
     EXPECT_EQ(thisSys.UnitType, "CoilSystem:Cooling:Water");
     EXPECT_EQ(thisSys.Name, "COIL SYSTEM WATER");
     EXPECT_EQ(thisSys.m_minAirToWaterTempOffset, 2.0);
-    EXPECT_TRUE(compare_enums(thisSys.m_DehumidControlType_Num, UnitarySys::DehumCtrlType::None));
-    EXPECT_TRUE(compare_enums(thisSys.m_ControlType, UnitarySys::UnitarySysCtrlType::Setpoint));
+    EXPECT_ENUM_EQ(thisSys.m_DehumidControlType_Num, UnitarySys::DehumCtrlType::None);
+    EXPECT_ENUM_EQ(thisSys.m_ControlType, UnitarySys::UnitarySysCtrlType::Setpoint);
     EXPECT_EQ(thisSys.m_CoolingCoilType_Num, HVAC::Coil_CoolingWater);
     EXPECT_EQ(thisSys.m_CoolingCoilName, "WATER COOLING COIL");
     EXPECT_TRUE(thisSys.m_CoolCoilExists);
@@ -19675,6 +19854,7 @@ TEST_F(EnergyPlusFixture, CoilSystemCoolingWater_CalcTest)
 )IDF";
 
     EXPECT_TRUE(process_idf(idf_objects, false));
+    state->init_state(*state);
 
     bool zoneEquipment = false;
     state->dataZoneEquip->ZoneEquipInputsFilled = true;
@@ -19710,7 +19890,6 @@ TEST_F(EnergyPlusFixture, CoilSystemCoolingWater_CalcTest)
     Real64 ColdWaterMassFlowRate(1.0);
     state->dataEnvrn->OutBaroPress = 101325.0;
     state->dataEnvrn->StdRhoAir = 1.0;
-    Psychrometrics::InitializePsychRoutines(*state);
 
     thisSys.m_MultiOrVarSpeedHeatCoil = false;
     thisSys.m_MultiOrVarSpeedCoolCoil = false;
@@ -19721,7 +19900,7 @@ TEST_F(EnergyPlusFixture, CoilSystemCoolingWater_CalcTest)
     thisSys.m_LastMode = UnitarySystems::CoolingMode;
     thisSys.MaxNoCoolHeatAirMassFlow = 0.2;
     thisSys.m_NoLoadAirFlowRateRatio = 0.2;
-    thisSys.m_FanAvailSchedPtr = ScheduleManager::ScheduleAlwaysOn;
+    thisSys.m_fanAvailSched = Sched::GetScheduleAlwaysOn(*state);
     thisSys.m_FanOpMode = HVAC::FanOp::Cycling;
 
     // cooling load
@@ -19745,7 +19924,7 @@ TEST_F(EnergyPlusFixture, CoilSystemCoolingWater_CalcTest)
 
     state->dataWaterCoils->CheckEquipName.allocate(1);
     state->dataWaterCoils->GetWaterCoilsInputFlag = false;
-    state->dataWaterCoils->WaterCoil(1).SchedPtr = ScheduleManager::ScheduleAlwaysOn;
+    state->dataWaterCoils->WaterCoil(1).availSched = Sched::GetScheduleAlwaysOn(*state);
     state->dataWaterCoils->WaterCoil(1).WaterCoilType = DataPlant::PlantEquipmentType::CoilWaterCooling;
     state->dataWaterCoils->WaterCoil(1).WaterCoilModel = WaterCoils::CoilModel::CoolingSimple;
     state->dataWaterCoils->WaterCoil(1).DesAirVolFlowRate = 1.0;
@@ -19802,9 +19981,8 @@ TEST_F(EnergyPlusFixture, CoilSystemCoolingWater_CalcTest)
         loopsidebranch.Comp.allocate(1);
     }
     state->dataPlnt->PlantLoop(1).Name = "WaterLoop";
-    state->dataPlnt->PlantLoop(1).FluidName = "FluidWaterLoop";
-    state->dataPlnt->PlantLoop(1).FluidIndex = 1;
     state->dataPlnt->PlantLoop(1).FluidName = "WATER";
+    state->dataPlnt->PlantLoop(1).glycol = Fluid::GetWater(*state);
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Name = state->dataWaterCoils->WaterCoil(1).Name;
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Type =
         DataPlant::PlantEquipmentType::CoilWaterCooling;
@@ -19823,12 +20001,12 @@ TEST_F(EnergyPlusFixture, CoilSystemCoolingWater_CalcTest)
 
     // check getinputs
     EXPECT_EQ(state->dataUnitarySystems->numUnitarySystems, 1);
-    EXPECT_TRUE(compare_enums(thisSys.AirloopEqType, SimAirServingZones::CompType::CoilSystemWater));
+    EXPECT_ENUM_EQ(thisSys.AirloopEqType, SimAirServingZones::CompType::CoilSystemWater);
     EXPECT_EQ(thisSys.UnitType, "CoilSystem:Cooling:Water");
     EXPECT_EQ(thisSys.Name, "COIL SYSTEM WATER");
     EXPECT_EQ(thisSys.m_minAirToWaterTempOffset, 2.0);
-    EXPECT_TRUE(compare_enums(thisSys.m_DehumidControlType_Num, UnitarySys::DehumCtrlType::None));
-    EXPECT_TRUE(compare_enums(thisSys.m_ControlType, UnitarySys::UnitarySysCtrlType::Setpoint));
+    EXPECT_ENUM_EQ(thisSys.m_DehumidControlType_Num, UnitarySys::DehumCtrlType::None);
+    EXPECT_ENUM_EQ(thisSys.m_ControlType, UnitarySys::UnitarySysCtrlType::Setpoint);
     EXPECT_EQ(thisSys.m_CoolingCoilType_Num, HVAC::Coil_CoolingWater);
     EXPECT_EQ(thisSys.m_CoolingCoilName, "WATER COOLING COIL");
     EXPECT_TRUE(thisSys.m_CoolCoilExists);
@@ -19942,6 +20120,7 @@ TEST_F(EnergyPlusFixture, CoilSystemCoolingWater_HeatRecoveryLoop)
 )IDF";
 
     EXPECT_TRUE(process_idf(idf_objects, false));
+    state->init_state(*state);
 
     bool zoneEquipment = false;
     state->dataZoneEquip->ZoneEquipInputsFilled = true;
@@ -19977,7 +20156,6 @@ TEST_F(EnergyPlusFixture, CoilSystemCoolingWater_HeatRecoveryLoop)
     Real64 ColdWaterMassFlowRate(1.0);
     state->dataEnvrn->OutBaroPress = 101325.0;
     state->dataEnvrn->StdRhoAir = 1.0;
-    Psychrometrics::InitializePsychRoutines(*state);
 
     thisSys.m_MultiOrVarSpeedHeatCoil = false;
     thisSys.m_MultiOrVarSpeedCoolCoil = false;
@@ -19988,7 +20166,7 @@ TEST_F(EnergyPlusFixture, CoilSystemCoolingWater_HeatRecoveryLoop)
     thisSys.m_LastMode = UnitarySystems::CoolingMode;
     thisSys.MaxNoCoolHeatAirMassFlow = 0.2;
     thisSys.m_NoLoadAirFlowRateRatio = 0.2;
-    thisSys.m_FanAvailSchedPtr = ScheduleManager::ScheduleAlwaysOn;
+    thisSys.m_fanAvailSched = Sched::GetScheduleAlwaysOn(*state);
     thisSys.m_FanOpMode = HVAC::FanOp::Cycling;
 
     // cooling load
@@ -20013,7 +20191,7 @@ TEST_F(EnergyPlusFixture, CoilSystemCoolingWater_HeatRecoveryLoop)
     state->dataWaterCoils->CheckEquipName.allocate(2);
     state->dataWaterCoils->GetWaterCoilsInputFlag = false;
     for (int i = 1; i <= 2; ++i) {
-        state->dataWaterCoils->WaterCoil(i).SchedPtr = ScheduleManager::ScheduleAlwaysOn;
+        state->dataWaterCoils->WaterCoil(i).availSched = Sched::GetScheduleAlwaysOn(*state);
         state->dataWaterCoils->WaterCoil(i).WaterCoilType = DataPlant::PlantEquipmentType::CoilWaterCooling;
         state->dataWaterCoils->WaterCoil(i).WaterCoilModel = WaterCoils::CoilModel::CoolingSimple;
         state->dataWaterCoils->WaterCoil(i).DesAirVolFlowRate = 1.0;
@@ -20073,9 +20251,8 @@ TEST_F(EnergyPlusFixture, CoilSystemCoolingWater_HeatRecoveryLoop)
         loopsidebranch.Comp.allocate(loopsidebranch.TotalComponents);
     }
     state->dataPlnt->PlantLoop(1).Name = "WaterLoop";
-    state->dataPlnt->PlantLoop(1).FluidName = "FluidWaterLoop";
-    state->dataPlnt->PlantLoop(1).FluidIndex = 1;
     state->dataPlnt->PlantLoop(1).FluidName = "WATER";
+    state->dataPlnt->PlantLoop(1).glycol = Fluid::GetWater(*state);
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Name = state->dataWaterCoils->WaterCoil(1).Name;
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).Type =
         DataPlant::PlantEquipmentType::CoilWaterCooling;
@@ -20103,12 +20280,12 @@ TEST_F(EnergyPlusFixture, CoilSystemCoolingWater_HeatRecoveryLoop)
 
     // check getinputs
     EXPECT_EQ(state->dataUnitarySystems->numUnitarySystems, 1);
-    EXPECT_TRUE(compare_enums(thisSys.AirloopEqType, SimAirServingZones::CompType::CoilSystemWater));
+    EXPECT_ENUM_EQ(thisSys.AirloopEqType, SimAirServingZones::CompType::CoilSystemWater);
     EXPECT_EQ(thisSys.UnitType, "CoilSystem:Cooling:Water");
     EXPECT_EQ(thisSys.Name, "COIL SYSTEM WATER");
     EXPECT_EQ(thisSys.m_minAirToWaterTempOffset, 2.0);
-    EXPECT_TRUE(compare_enums(thisSys.m_DehumidControlType_Num, UnitarySys::DehumCtrlType::None));
-    EXPECT_TRUE(compare_enums(thisSys.m_ControlType, UnitarySys::UnitarySysCtrlType::Setpoint));
+    EXPECT_ENUM_EQ(thisSys.m_DehumidControlType_Num, UnitarySys::DehumCtrlType::None);
+    EXPECT_ENUM_EQ(thisSys.m_ControlType, UnitarySys::UnitarySysCtrlType::Setpoint);
     EXPECT_EQ(thisSys.m_CoolingCoilType_Num, HVAC::Coil_CoolingWater);
     EXPECT_EQ(thisSys.m_CoolingCoilName, "WATER COOLING COIL");
     EXPECT_TRUE(thisSys.m_CoolCoilExists);
@@ -20182,6 +20359,8 @@ TEST_F(EnergyPlusFixture, CoilSystemCoolingWater_HeatRecoveryLoop)
 
 TEST_F(AirloopUnitarySysTest, WSHPVariableSpeedCoilSizing)
 {
+    state->init_state(*state);
+
     // test that correct CapFT inputs are used for the WSHP cooling coil
     state->dataEnvrn->OutBaroPress = 101325.0;
     state->dataEnvrn->StdRhoAir = Psychrometrics::PsyRhoAirFnPbTdbW(*state, state->dataEnvrn->OutBaroPress, 20.0, 0.0);
@@ -20205,15 +20384,11 @@ TEST_F(AirloopUnitarySysTest, WSHPVariableSpeedCoilSizing)
         loopsidebranch.Comp.allocate(1);
     }
     state->dataPlnt->PlantLoop(1).Name = "ColdWaterLoop";
-    state->dataPlnt->PlantLoop(1).FluidName = "FluidWaterLoop";
-    state->dataPlnt->PlantLoop(1).FluidIndex = 1;
     state->dataPlnt->PlantLoop(1).FluidName = "WATER";
-    state->dataPlnt->PlantLoop(1).FluidIndex = 1;
+    state->dataPlnt->PlantLoop(1).glycol = Fluid::GetWater(*state);
     state->dataPlnt->PlantLoop(2).Name = "HotWaterLoop";
-    state->dataPlnt->PlantLoop(2).FluidName = "FluidWaterLoop";
-    state->dataPlnt->PlantLoop(2).FluidIndex = 1;
     state->dataPlnt->PlantLoop(2).FluidName = "WATER";
-    state->dataPlnt->PlantLoop(2).FluidIndex = 1;
+    state->dataPlnt->PlantLoop(2).glycol = Fluid::GetWater(*state);
 
     // set up sizing data
     state->dataSize->FinalSysSizing(1).OutTempAtCoolPeak = 0.0;
@@ -20362,7 +20537,7 @@ TEST_F(ZoneUnitarySysTest, UnitarySystemModel_LowerSpeedFlowSizingTest)
     Load,                            !- Control Type
     East Zone,                       !- Controlling Zone or Thermostat Location
     None,                            !- Dehumidification Control Type
-    AlwaysOne,                       !- Availability Schedule Name
+    Constant-1.0,                       !- Availability Schedule Name
     Zone Exhaust Node,               !- Air Inlet Node Name
     DX ClgCoil Air Outlet Node,      !- Air Outlet Node Name
     Fan:OnOff,                       !- Supply Fan Object Type
@@ -20411,7 +20586,7 @@ TEST_F(ZoneUnitarySysTest, UnitarySystemModel_LowerSpeedFlowSizingTest)
 
   Fan:OnOff,
     Zone Supply Air Fan,             !- Name
-    AlwaysOne,                       !- Availability Schedule Name
+    Constant-1.0,                       !- Availability Schedule Name
     0.5,                             !- Fan Total Efficiency
     500.0,                           !- Pressure Rise{ Pa }
     autosize,                        !- Maximum Flow Rate{ m3 / s }
@@ -20422,13 +20597,6 @@ TEST_F(ZoneUnitarySysTest, UnitarySystemModel_LowerSpeedFlowSizingTest)
 
   ScheduleTypeLimits,
     Any Number;                      !- Name
-
-  Schedule:Compact,
-    AlwaysOne,                       !- Name
-    Any Number,                      !- Schedule Type Limits Name
-    Through: 12/31,                  !- Field 1
-    For: AllDays,                    !- Field 2
-    Until: 24:00, 1.0;               !- Field 3
 
   Coil:Cooling:DX,
     DX ClgCoil,                      !- Name
@@ -20572,13 +20740,14 @@ Curve:Biquadratic, EIRFT, 1, 0, 0, 0, 0, 0, 0, 100, 0, 100, , , Temperature, Tem
 )IDF";
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     std::string UnitarySysName = "UNITARY SYSTEM MODEL";
     bool zoneEquipment = true;
     UnitarySystems::UnitarySys::factory(*state, HVAC::UnitarySysType::Unitary_AnyCoilType, UnitarySysName, zoneEquipment, 0);
     UnitarySystems::UnitarySys *thisSys = &state->dataUnitarySystems->unitarySys[0];
     int coilIndex = CoilCoolingDX::factory(*state, "DX ClgCoil");
-    auto &this_dx_clg_coil = state->dataCoilCooingDX->coilCoolingDXs[coilIndex];
+    auto &this_dx_clg_coil = state->dataCoilCoolingDX->coilCoolingDXs[coilIndex];
     state->dataZoneEquip->ZoneEquipInputsFilled = true;
     thisSys->getUnitarySystemInputData(*state, UnitarySysName, zoneEquipment, 0, ErrorsFound);
     EXPECT_FALSE(ErrorsFound);
@@ -20645,7 +20814,7 @@ AirLoopHVAC:UnitarySystem,
   Load,                       !- Control Type
   East Zone,                      !- Controlling Zone or Thermostat Location
   None,                           !- Dehumidification Control Type
-  AlwaysOne,                      !- Availability Schedule Name
+  Constant-1.0,                      !- Availability Schedule Name
   Zone Exhaust Node,              !- Air Inlet Node Name
   Zone 2 Inlet Node,              !- Air Outlet Node Name
   Fan:OnOff,                      !- Supply Fan Object Type
@@ -20705,7 +20874,7 @@ UnitarySystemPerformance:Multispeed,
 
 Fan:OnOff,
   Supply Fan 1,                   !- Name
-  AlwaysOne,                      !- Availability Schedule Name
+  Constant-1.0,                      !- Availability Schedule Name
   0.7,                            !- Fan Total Efficiency
   600.0,                          !- Pressure Rise{ Pa }
   autosize,                       !- Maximum Flow Rate{ m3 / s }
@@ -20779,13 +20948,6 @@ ScheduleTypeLimits,
   Any Number;                     !- Name
 
 Schedule:Compact,
-  AlwaysOne,                      !- Name
-  Any Number,                     !- Schedule Type Limits Name
-  Through: 12/31,                 !- Field 1
-  For: AllDays,                   !- Field 2
-  Until: 24:00, 1.0;              !- Field 3
-
-Schedule:Compact,
   Always 20C,                     !- Name
   Any Number,                     !- Schedule Type Limits Name
   Through: 12/31,                 !- Field 1
@@ -20826,7 +20988,7 @@ Curve:Biquadratic,
 
 Coil:Heating:Gas:MultiStage,
   Gas Heating Coil,               !- Name
-  AlwaysOne,                      !- Availability Schedule Name
+  Constant-1.0,                      !- Availability Schedule Name
   Heating Coil Air Inlet Node,    !- Air Inlet Node Name
   Zone 2 Inlet Node,              !- Air Outlet Node Name
   ,                               !- Temperature Setpoint Node Name
@@ -20843,6 +21005,7 @@ Coil:Heating:Gas:MultiStage,
 )IDF";
 
     ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
+    state->init_state(*state);
 
     // call the UnitarySystem factory
     std::string compName = "UNITARY SYSTEM MODEL";
@@ -20886,7 +21049,7 @@ Coil:Heating:Gas:MultiStage,
     state->dataZoneEnergyDemand->ZoneSysEnergyDemand(ControlZoneNum).RemainingOutputReqToCoolSP = 0;
     state->dataZoneEnergyDemand->ZoneSysEnergyDemand(ControlZoneNum).RemainingOutputReqToHeatSP = 0;
     state->dataZoneEnergyDemand->ZoneSysMoistureDemand(ControlZoneNum).RemainingOutputReqToDehumidSP = 0;
-    state->dataHeatBalFanSys->TempControlType(ControlZoneNum) = HVAC::ThermostatType::DualSetPointWithDeadBand;
+    state->dataHeatBalFanSys->TempControlType(ControlZoneNum) = HVAC::SetptType::DualHeatCool;
     state->dataZoneCtrls->StageZoneLogic.allocate(1);
     state->dataZoneCtrls->StageZoneLogic(1) = true;
 
@@ -20916,8 +21079,7 @@ Coil:Heating:Gas:MultiStage,
     state->dataLoopNodes->Node(4).MassFlowRateMax =
         thisSys->m_DesignMassFlowRate; // max at fan outlet so fan won't limit flow // Cooling coil air outlet node = 2
     state->dataLoopNodes->Node(2).TempSetPoint = 17.0;
-    state->dataScheduleMgr->Schedule(1).CurrentValue = 1.0; // Enable schedule without calling schedule manager
-    state->dataGlobal->BeginEnvrnFlag = true;               // act as if simulation is beginning
+    state->dataGlobal->BeginEnvrnFlag = true; // act as if simulation is beginning
     thisSys->simulate(*state,
                       thisSys->Name,
                       FirstHVACIteration,
@@ -20940,9 +21102,8 @@ Coil:Heating:Gas:MultiStage,
     state->dataZoneEnergyDemand->ZoneSysEnergyDemand(ControlZoneNum).RemainingOutputRequired = 1000.0;
     state->dataZoneEnergyDemand->ZoneSysEnergyDemand(1).StageNum = 1;
     state->dataLoopNodes->Node(4).MassFlowRateMax =
-        thisSys->m_DesignMassFlowRate;                      // max at fan outlet so fan won't limit flow // Cooling coil air outlet node = 2
-    state->dataScheduleMgr->Schedule(1).CurrentValue = 1.0; // Enable schedule without calling schedule manager
-    state->dataGlobal->BeginEnvrnFlag = true;               // act as if simulation is beginning
+        thisSys->m_DesignMassFlowRate;        // max at fan outlet so fan won't limit flow // Cooling coil air outlet node = 2
+    state->dataGlobal->BeginEnvrnFlag = true; // act as if simulation is beginning
 
     thisSys->simulate(*state,
                       thisSys->Name,
@@ -20991,7 +21152,7 @@ TEST_F(EnergyPlusFixture, SetEconomizerStagingOperationSpeedTest)
     thisFan->totalEff = 0.7;
     thisFan->motorEff = 0.9;
     thisFan->motorInAirFrac = 1.0;
-    thisFan->availSchedNum = 0;
+    thisFan->availSched = Sched::GetScheduleAlwaysOff(*state);
     thisFan->minAirMassFlowRate = 0.0;
     thisFan->coeffs[0] = 0.0015302446;
     thisFan->coeffs[1] = 0.0052080574;
@@ -21291,7 +21452,7 @@ ScheduleTypeLimits,
     percent;                 !- Unit Type
 
 Schedule:Constant,
-    Schedule_Constant_Humdifier,  !- Name
+    Schedule_Constant_Humidifier,  !- Name
     Percent,                      !- Schedule Type Limits Name
     0;                            !- Hourly Value
 
@@ -21303,6 +21464,7 @@ Schedule:Constant,
 )IDF";
 
     ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
+    state->init_state(*state);
 
     HeatBalanceManager::GetZoneData(*state, ErrorsFound); // read zone data
     EXPECT_FALSE(ErrorsFound);                            // expect no errors
@@ -21318,9 +21480,8 @@ Schedule:Constant,
     state->dataZoneCtrls->HumidityControlZone(1).ControlName = "East Zone";
     state->dataZoneCtrls->HumidityControlZone(1).ZoneName = "East Zone";
     state->dataZoneCtrls->HumidityControlZone(1).ActualZoneNum = 1;
-    state->dataZoneCtrls->HumidityControlZone(1).HumidifyingSchedIndex = ScheduleManager::GetScheduleIndex(*state, "Schedule_Constant_Humdifier");
-    state->dataZoneCtrls->HumidityControlZone(1).DehumidifyingSchedIndex =
-        ScheduleManager::GetScheduleIndex(*state, "Schedule_Constant_Dehumidifier");
+    state->dataZoneCtrls->HumidityControlZone(1).humidifyingSched = Sched::GetSchedule(*state, "SCHEDULE_CONSTANT_HUMDIFIER");
+    state->dataZoneCtrls->HumidityControlZone(1).dehumidifyingSched = Sched::GetSchedule(*state, "SCHEDULE_CONSTANT_DEHUMIDIFIER");
 
     std::string compName = "UNITARY SYSTEM MODEL";
     bool zoneEquipment = true;
@@ -21335,8 +21496,8 @@ Schedule:Constant,
     // check model inputs
     ASSERT_EQ(1, state->dataUnitarySystems->numUnitarySystems);
     EXPECT_EQ(thisSys->UnitType, HVAC::unitarySysTypeNames[(int)compType]);
-    EXPECT_TRUE(compare_enums(UnitarySys::UnitarySysCtrlType::Load, thisSys->m_ControlType));
-    EXPECT_TRUE(compare_enums(UnitarySys::DehumCtrlType::CoolReheat, thisSys->m_DehumidControlType_Num));
+    EXPECT_ENUM_EQ(UnitarySys::UnitarySysCtrlType::Load, thisSys->m_ControlType);
+    EXPECT_ENUM_EQ(UnitarySys::DehumCtrlType::CoolReheat, thisSys->m_DehumidControlType_Num);
     // set sizing is already done
     state->dataGlobal->SysSizingCalc = true;
     InletNode = thisSys->AirInNode;
@@ -21369,11 +21530,11 @@ Schedule:Constant,
     // set thermostat control type
     state->dataHeatBalFanSys->TempControlType.allocate(1);
     state->dataHeatBalFanSys->TempControlTypeRpt.allocate(1);
-    state->dataHeatBalFanSys->TempControlType(1) = HVAC::ThermostatType::DualSetPointWithDeadBand;
+    state->dataHeatBalFanSys->TempControlType(1) = HVAC::SetptType::DualHeatCool;
     state->dataZoneEnergyDemand->CurDeadBandOrSetback.allocate(1);
     state->dataZoneEnergyDemand->CurDeadBandOrSetback(1) = true;
     state->dataGlobal->BeginEnvrnFlag = true;
-    state->dataScheduleMgr->Schedule(1).CurrentValue = 1.0;
+    Sched::GetSchedule(*state, "FANANDCOILAVAILSCHED")->currentVal = 1.0;
     state->dataEnvrn->StdRhoAir = Psychrometrics::PsyRhoAirFnPbTdbW(*state, 101325.0, 20.0, 0.0); // initialize RhoAir
     state->dataLoopNodes->Node(InletNode).MassFlowRateMaxAvail = thisSys->m_MaxCoolAirVolFlow * state->dataEnvrn->StdRhoAir;
 
@@ -23753,6 +23914,7 @@ TEST_F(EnergyPlusFixture, UnitarySystemModel_MultiSpeedFanWSHP_Test)
     });
 
     ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
+    state->init_state(*state);
 
     bool FirstHVACIteration(false);
 
@@ -23950,4 +24112,262 @@ TEST_F(EnergyPlusFixture, UnitarySystemModel_MultiSpeedFanWSHP_Test)
     EXPECT_NEAR(thisSys1.m_CycRatio, 1.0, 0.0001);
     EXPECT_EQ(thisSys1.m_SpeedNum, 2);
     EXPECT_NEAR(sensOut, 500.0, 2);
+}
+
+TEST_F(ZoneUnitarySysTest, ZeroCoolingSpeedTest)
+{
+    std::string_view constexpr idf_objects = R"IDF(
+
+  AirLoopHVAC:UnitarySystem,
+    Sys 1 Furnace DX Cool Unitary System,  !- Name
+    Load,                    !- Control Type
+    SPACE1-1,                !- Controlling Zone or Thermostat Location
+    None,                    !- Dehumidification Control Type
+    ,                        !- Availability Schedule Name
+    Sys 1 Furnace DX Cool Mixed Air Outlet,  !- Air Inlet Node Name
+    Sys 1 Furnace DX Cool Heating Coil Outlet,  !- Air Outlet Node Name
+    ,      !- Supply Fan Object Type
+    ,  !- Supply Fan Name
+    ,             !- Fan Placement
+    ,           !- Supply Air Fan Operating Mode Schedule Name
+    ,                        !- Heating Coil Object Type
+    ,                        !- Heating Coil Name
+    ,                        !- DX Heating Coil Sizing Ratio
+    Coil:Cooling:DX,         !- Cooling Coil Object Type
+    Sys 1 Furnace DX Cool Cooling Coil,  !- Cooling Coil Name
+    ,                        !- Use DOAS DX Cooling Coil
+    ,                        !- Minimum Supply Air Temperature {C}
+    ,                        !- Latent Load Control
+    ,                        !- Supplemental Heating Coil Object Type
+    ,                        !- Supplemental Heating Coil Name
+    SupplyAirFlowRate,       !- Cooling Supply Air Flow Rate Method
+    autosize,                !- Cooling Supply Air Flow Rate {m3/s}
+    ,                        !- Cooling Supply Air Flow Rate Per Floor Area {m3/s-m2}
+    ,                        !- Cooling Fraction of Autosized Cooling Supply Air Flow Rate
+    ,                        !- Cooling Supply Air Flow Rate Per Unit of Capacity {m3/s-W}
+    SupplyAirFlowRate,       !- Heating Supply Air Flow Rate Method
+    autosize,                !- Heating Supply Air Flow Rate {m3/s}
+    ,                        !- Heating Supply Air Flow Rate Per Floor Area {m3/s-m2}
+    ,                        !- Heating Fraction of Autosized Heating Supply Air Flow Rate
+    ,                        !- Heating Supply Air Flow Rate Per Unit of Capacity {m3/s-W}
+    SupplyAirFlowRate,       !- No Load Supply Air Flow Rate Method
+    autosize,                !- No Load Supply Air Flow Rate {m3/s}
+    ,                        !- No Load Supply Air Flow Rate Per Floor Area {m3/s-m2}
+    ,                        !- No Load Fraction of Autosized Cooling Supply Air Flow Rate
+    ,                        !- No Load Fraction of Autosized Heating Supply Air Flow Rate
+    ,                        !- No Load Supply Air Flow Rate Per Unit of Capacity During Cooling Operation {m3/s-W}
+    ,                        !- No Load Supply Air Flow Rate Per Unit of Capacity During Heating Operation {m3/s-W}
+    ,                        !- No Load Supply Air Flow Rate Control Set To Low Speed
+    Autosize,                !- Maximum Supply Air Temperature {C}
+    21,                      !- Maximum Outdoor Dry-Bulb Temperature for Supplemental Heater Operation {C}
+    ,                        !- Outdoor Dry-Bulb Temperature Sensor Node Name
+    ,                        !- Ancillary On-Cycle Electric Power {W}
+    ,                        !- Ancillary Off-Cycle Electric Power {W}
+    ,                        !- Design Heat Recovery Water Flow Rate {m3/s}
+    ,                        !- Maximum Temperature for Heat Recovery {C}
+    ,                        !- Heat Recovery Water Inlet Node Name
+    ,                        !- Heat Recovery Water Outlet Node Name
+    UnitarySystemPerformance:Multispeed,  !- Design Specification Multispeed Object Type
+    Sys 1 Furnace DX Cool Unitary System MultiSpeed Performance;  !- Design Specification Multispeed Object Name
+  Coil:Cooling:DX,
+    Sys 1 Furnace DX Cool Cooling Coil,  !- Name
+    Sys 1 Furnace DX Cool Supply Fan Outlet,  !- Evaporator Inlet Node Name
+    Sys 1 Furnace DX Cool Cooling Coil Outlet,  !- Evaporator Outlet Node Name
+    ,                        !- Availability Schedule Name
+    ,                        !- Condenser Zone Name
+    Sys 1 Furnace DX Cool Cooling Coil Condenser Inlet,  !- Condenser Inlet Node Name
+    Sys 1 Furnace DX Cool Cooling Coil Condenser Outlet Node,  !- Condenser Outlet Node Name
+    Sys 1 Furnace DX Cool Cooling Coil Performance;  !- Performance Object Name
+
+  Coil:Cooling:DX:CurveFit:Performance,
+    Sys 1 Furnace DX Cool Cooling Coil Performance,  !- Name
+    0.0,                     !- Crankcase Heater Capacity {W}
+    ,                        !- Crankcase Heater Capacity Function of Temperature Curve Name
+    ,                        !- Minimum Outdoor Dry-Bulb Temperature for Compressor Operation {C}
+    10.0,                    !- Maximum Outdoor Dry-Bulb Temperature for Crankcase Heater Operation {C}
+    ,                        !- Unit Internal Static Air Pressure {Pa}
+    Discrete,                !- Capacity Control Method
+    ,                        !- Evaporative Condenser Basin Heater Capacity {W/K}
+    ,                        !- Evaporative Condenser Basin Heater Setpoint Temperature {C}
+    ,                        !- Evaporative Condenser Basin Heater Operating Schedule Name
+    Electricity,             !- Compressor Fuel Type
+    Sys 1 Furnace DX Cool Cooling Coil Operating Mode;  !- Base Operating Mode
+
+  Coil:Cooling:DX:CurveFit:OperatingMode,
+    Sys 1 Furnace DX Cool Cooling Coil Operating Mode,  !- Name
+    autosize,                !- Rated Gross Total Cooling Capacity {W}
+    autosize,                !- Rated Evaporator Air Flow Rate {m3/s}
+    ,                        !- Rated Condenser Air Flow Rate {m3/s}
+    0,                       !- Maximum Cycling Rate {cycles/hr}
+    0,                       !- Ratio of Initial Moisture Evaporation Rate and Steady State Latent Capacity {dimensionless}
+    0,                       !- Latent Capacity Time Constant {s}
+    0,                       !- Nominal Time for Condensate Removal to Begin {s}
+    No,                      !- Apply Latent Degradation to Speeds Greater than 1
+    AirCooled,               !- Condenser Type
+    ,                        !- Nominal Evaporative Condenser Pump Power {W}
+    2,                       !- Nominal Speed Number
+    Sys 1 Furnace DX Cool Cooling Coil Speed 1 Performance,  !- Speed 1 Name
+    Sys 1 Furnace DX Cool Cooling Coil Speed 2 Performance;  !- Speed 2 Name
+
+  Coil:Cooling:DX:CurveFit:Speed,
+    Sys 1 Furnace DX Cool Cooling Coil Speed 1 Performance,  !- Name
+    0.5000,                  !- Gross Total Cooling Capacity Fraction
+    0.5000,                  !- Evaporator Air Flow Rate Fraction
+    ,                        !- Condenser Air Flow Rate Fraction
+    autosize,                !- Gross Sensible Heat Ratio
+    3,                       !- Gross Cooling COP {W/W}
+    1.0,                     !- Active Fraction of Coil Face Area
+    ,                        !- 2017 Rated Evaporator Fan Power Per Volume Flow Rate {W/(m3/s)}
+    934.4,                   !- 2023 Rated Evaporator Fan Power Per Volume Flow Rate {W/(m3/s)}
+    ,                        !- Evaporative Condenser Pump Power Fraction
+    ,                        !- Evaporative Condenser Effectiveness {dimensionless}
+    Sys 1 Furnace DX Cool Cool Coil Cap-FT,  !- Total Cooling Capacity Modifier Function of Temperature Curve Name
+    Sys 1 Furnace DX Cool Cool Coil Cap-FF,  !- Total Cooling Capacity Modifier Function of Air Flow Fraction Curve Name
+    Sys 1 Furnace DX Cool Cool Coil EIR-FT,  !- Energy Input Ratio Modifier Function of Temperature Curve Name
+    Sys 1 Furnace DX Cool Cool Coil EIR-FF,  !- Energy Input Ratio Modifier Function of Air Flow Fraction Curve Name
+    Sys 1 Furnace DX Cool Cool Coil PLF,  !- Part Load Fraction Correlation Curve Name
+    0.2,                     !- Rated Waste Heat Fraction of Power Input {dimensionless}
+    Sys 1 Furnace DX Cool Cool Coil WH-FT;  !- Waste Heat Modifier Function of Temperature Curve Name
+
+  Coil:Cooling:DX:CurveFit:Speed,
+    Sys 1 Furnace DX Cool Cooling Coil Speed 2 Performance,  !- Name
+    1.0000,                  !- Gross Total Cooling Capacity Fraction
+    1.0000,                  !- Evaporator Air Flow Rate Fraction
+    ,                        !- Condenser Air Flow Rate Fraction
+    autosize,                !- Gross Sensible Heat Ratio
+    3,                       !- Gross Cooling COP {W/W}
+    1.0,                     !- Active Fraction of Coil Face Area
+    ,                        !- 2017 Rated Evaporator Fan Power Per Volume Flow Rate {W/(m3/s)}
+    934.4,                   !- 2023 Rated Evaporator Fan Power Per Volume Flow Rate {W/(m3/s)}
+    ,                        !- Evaporative Condenser Pump Power Fraction
+    ,                        !- Evaporative Condenser Effectiveness {dimensionless}
+    Sys 1 Furnace DX Cool Cool Coil Cap-FT,  !- Total Cooling Capacity Modifier Function of Temperature Curve Name
+    Sys 1 Furnace DX Cool Cool Coil Cap-FF,  !- Total Cooling Capacity Modifier Function of Air Flow Fraction Curve Name
+    Sys 1 Furnace DX Cool Cool Coil EIR-FT,  !- Energy Input Ratio Modifier Function of Temperature Curve Name
+    Sys 1 Furnace DX Cool Cool Coil EIR-FF,  !- Energy Input Ratio Modifier Function of Air Flow Fraction Curve Name
+    Sys 1 Furnace DX Cool Cool Coil PLF,  !- Part Load Fraction Correlation Curve Name
+    0.2,                     !- Rated Waste Heat Fraction of Power Input {dimensionless}
+    Sys 1 Furnace DX Cool Cool Coil WH-FT;  !- Waste Heat Modifier Function of Temperature Curve Name
+
+! Curves from example file MultiSpeedHeatPump.idf, Sep 2013, same curves for all speeds.
+
+  Curve:Biquadratic,
+    Sys 1 Furnace DX Cool Cool Coil Cap-FT,  !- Name
+    0.476428E+00,            !- Coefficient1 Constant
+    0.401147E-01,            !- Coefficient2 x
+    0.226411E-03,            !- Coefficient3 x**2
+    -0.827136E-03,           !- Coefficient4 y
+    -0.732240E-05,           !- Coefficient5 y**2
+    -0.446278E-03,           !- Coefficient6 x*y
+    0.0,                     !- Minimum Value of x
+    50.0,                    !- Maximum Value of x
+    0.0,                     !- Minimum Value of y
+    50.0,                    !- Maximum Value of y
+    0.0,                     !- Minimum Curve Output
+    5.0,                     !- Maximum Curve Output
+    Temperature,             !- Input Unit Type for X
+    Temperature,             !- Input Unit Type for Y
+    Dimensionless;           !- Output Unit Type
+
+  Curve:Cubic,
+    Sys 1 Furnace DX Cool Cool Coil Cap-FF,  !- Name
+    0.47278589,              !- Coefficient1 Constant
+    1.2433415,               !- Coefficient2 x
+    -1.0387055,              !- Coefficient3 x**2
+    0.32257813,              !- Coefficient4 x**3
+    0.5,                     !- Minimum Value of x
+    1.5;                     !- Maximum Value of x
+
+  Curve:Biquadratic,
+    Sys 1 Furnace DX Cool Cool Coil EIR-FT,  !- Name
+    0.632475E+00,            !- Coefficient1 Constant
+    -0.121321E-01,           !- Coefficient2 x
+    0.507773E-03,            !- Coefficient3 x**2
+    0.155377E-01,            !- Coefficient4 y
+    0.272840E-03,            !- Coefficient5 y**2
+    -0.679201E-03,           !- Coefficient6 x*y
+    0.0,                     !- Minimum Value of x
+    50.0,                    !- Maximum Value of x
+    0.0,                     !- Minimum Value of y
+    50.0,                    !- Maximum Value of y
+    0.0,                     !- Minimum Curve Output
+    5.0,                     !- Maximum Curve Output
+    Temperature,             !- Input Unit Type for X
+    Temperature,             !- Input Unit Type for Y
+    Dimensionless;           !- Output Unit Type
+
+  Curve:Cubic,
+    Sys 1 Furnace DX Cool Cool Coil EIR-FF,  !- Name
+    0.47278589,              !- Coefficient1 Constant
+    1.2433415,               !- Coefficient2 x
+    -1.0387055,              !- Coefficient3 x**2
+    0.32257813,              !- Coefficient4 x**3
+    0.5,                     !- Minimum Value of x
+    1.5;                     !- Maximum Value of x
+
+! PLF = l.- Cd(1.-PLR) where Cd = 0.15
+
+  Curve:Quadratic,
+    Sys 1 Furnace DX Cool Cool Coil PLF,  !- Name
+    0.85,                    !- Coefficient1 Constant
+    0.15,                    !- Coefficient2 x
+    0,                       !- Coefficient3 x**2
+    0,                       !- Minimum Value of x
+    1;                       !- Maximum Value of x
+
+  Curve:Biquadratic,
+    Sys 1 Furnace DX Cool Cool Coil WH-FT,  !- Name
+    1.0,                     !- Coefficient1 Constant
+    0.0,                     !- Coefficient2 x
+    0.0,                     !- Coefficient3 x**2
+    0.0,                     !- Coefficient4 y
+    0.0,                     !- Coefficient5 y**2
+    0.0,                     !- Coefficient6 x*y
+    0,                       !- Minimum Value of x
+    50,                      !- Maximum Value of x
+    0,                       !- Minimum Value of y
+    50,                      !- Maximum Value of y
+    ,                        !- Minimum Curve Output
+    ,                        !- Maximum Curve Output
+    Temperature,             !- Input Unit Type for X
+    Temperature,             !- Input Unit Type for Y
+    Dimensionless;           !- Output Unit Type
+
+)IDF";
+
+    EXPECT_TRUE(process_idf(idf_objects, false));
+
+    bool zoneEquipment = true;
+    state->dataZoneEquip->ZoneEquipInputsFilled = true;
+    bool ErrorsFound(false);
+    std::string compName = "SYS 1 FURNACE DX COOL UNITARY SYSTEM";
+    UnitarySystems::UnitarySys::factory(*state, HVAC::UnitarySysType::Unitary_AnyCoilType, compName, zoneEquipment, 0);
+    auto thisSys = &state->dataUnitarySystems->unitarySys[0];
+    thisSys->getUnitarySystemInputData(*state, compName, zoneEquipment, 0, ErrorsFound);
+
+    OutputReportPredefined::SetPredefinedTables(*state);
+
+    state->dataGlobal->BeginEnvrnFlag = false;
+    state->dataLoopNodes->Node(thisSys->CoolCoilInletNodeNum).MassFlowRate = 0.05;
+    state->dataZoneEnergyDemand->ZoneSysEnergyDemand.allocate(1);
+    state->dataZoneEnergyDemand->ZoneSysMoistureDemand.allocate(1);
+    state->dataUnitarySystems->CoolingLoad = true;
+    state->dataHVACGlobal->MSHPMassFlowRateLow = 0.15;
+
+    int AirLoopNum(0);
+    bool FirstHVACIteration = false;
+    thisSys->sizeSystem(*state, FirstHVACIteration, AirLoopNum);
+
+    Real64 OnOffAirFlowRatio(1.0);
+    Real64 CoilCoolHeatRat(1.0);
+    HVAC::CompressorOp CompressorOn(HVAC::CompressorOp::On);
+    thisSys->m_CoolingSpeedNum = 0;
+    thisSys->m_SingleMode = 0;
+    thisSys->m_CoolingPartLoadFrac = 0.5;
+    thisSys->calcUnitaryCoolingSystem(
+        *state, AirLoopNum, FirstHVACIteration, thisSys->m_CoolingPartLoadFrac, CompressorOn, OnOffAirFlowRatio, CoilCoolHeatRat, false);
+    EXPECT_EQ(state->dataLoopNodes->Node(thisSys->CoolCoilInletNodeNum).Temp, state->dataLoopNodes->Node(thisSys->CoolCoilOutletNodeNum).Temp);
+    EXPECT_EQ(state->dataLoopNodes->Node(thisSys->CoolCoilInletNodeNum).HumRat, state->dataLoopNodes->Node(thisSys->CoolCoilOutletNodeNum).HumRat);
+    EXPECT_EQ(state->dataLoopNodes->Node(thisSys->CoolCoilInletNodeNum).Enthalpy,
+              state->dataLoopNodes->Node(thisSys->CoolCoilOutletNodeNum).Enthalpy);
 }

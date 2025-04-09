@@ -331,7 +331,7 @@ This is an optional field. Input is Yes or No. The default is No. Yes is that ex
 
 \paragraph{Field: Allow Unsupported Zone Equipment}\label{allow-unsupported-zone-equipment}
 
-This is an optional field. Input is Yes or No. The default is No. Set this input to Yes to have zone equipment that are currently unsupported in the AirflowNetwork model allowed in the simulation. Setting this field to Yes, allows the following equipment to be modeled along an AirflowNetwork model: ZoneHVAC:Dehumidifier, ZoneHVAC:EnergyRecoveryVentilator, WaterHeater:HeatPump:*. The AirflowNetwork model will exclude mass balance in these equipment objects and assume the mass flows are self-balanced in the equipment objects.
+This is an optional field. Input is Yes or No. The default is No. Set this input to Yes to have zone equipment that are currently unsupported in the AirflowNetwork model allowed in the simulation. Setting this field to Yes, allows the following equipment to be modeled along an AirflowNetwork model: ZoneHVAC:Dehumidifier, ZoneHVAC:EnergyRecoveryVentilator, WaterHeater:HeatPump:*, ZoneHVAC:WindowAirConditioner, ZoneHVAC:WaterToAirHeatPump, ZoneHVAC:PackagedTerminalAirConditioner, ZoneHVAC:PackagedTerminalHeatPump, and ZoneHVAC:TerminalUnit:VariableRefrigerantFlow. The AirflowNetwork model will exclude mass balance in these equipment objects and assume the mass flows are self-balanced in the equipment objects. These objects should be modeled with no outdoor air flow rate, or in the case of a ZoneHVAC:EnergyRecoveryVentilator with a balanced air flow (same supply airflow rate as exhaust airflow rate).
 
 \paragraph{Field: Do Distribution Duct Sizing Calculation}\label{do-distribution-duct-sizing-calculation}
 
@@ -2157,9 +2157,21 @@ This field requires input of the coil type used in the AirflowNetwork model. The
 \item
   \hyperref[coilcoolingdxmultispeed]{Coil:Cooling:DX:MultiSpeed}
 \item
+  \hyperref[coilcoolingdxvariablespeed]{Coil:Cooling:DX:VariableSpeed}
+\item
+  \hyperref[coilheatingdesuperheater]{Coil:Cooling:WaterToAirHeatPump:EquationFit}
+\item
+  \hyperref[coilheatingdesuperheater]{Coil:Cooling:WaterToAirHeatPump:VariableSpeedEquationFit}
+\item
   \hyperref[coilheatingdxmultispeed]{Coil:Heating:DX:MultiSpeed}
 \item
+  \hyperref[coilheatingdxvariablespeed]{Coil:Heating:DX:VariableSpeed}
+\item
   \hyperref[coilheatingdesuperheater]{Coil:Heating:Desuperheater}
+\item
+  \hyperref[coilheatingdesuperheater]{Coil:Heating:WaterToAirHeatPump:EquationFit}
+\item
+  \hyperref[coilheatingdesuperheater]{Coil:Heating:WaterToAirHeatPump:VariableSpeedEquationFit}
 \end{itemize}
 
 \paragraph{Field: Air Path Length}\label{field-air-path-length}

@@ -1,13 +1,19 @@
-cmake_minimum_required(VERSION 3.17)
+cmake_minimum_required(VERSION 3.19)
 
 # Use ccache if available, has to be before "project()"
-find_program(CCACHE_PROGRAM ccache)
+find_program(CCACHE_PROGRAM NAMES ccache sccache)
 if(CCACHE_PROGRAM)
-  # Support both Unix Makefiles and Ninja
-  set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${CCACHE_PROGRAM}")
+  # Support: Unix Makefiles and Ninja only
+  message(STATUS "Using CCACHE")
+  # RULE_LAUNCH_COMPILE is an internal variable and makes RC compilation fail on windows, hence why we use the C/CXX COMPILER_LAUNCHER instead
+  message(STATUS "${CCACHE_PROGRAM} found and enabled")
+  set(CMAKE_CXX_COMPILER_LAUNCHER ${CCACHE_PROGRAM} CACHE FILEPATH "CXX compiler cache used")
+  set(CMAKE_C_COMPILER_LAUNCHER ${CCACHE_PROGRAM} CACHE FILEPATH "C compiler cache used")
 endif()
 
 cmake_policy(SET CMP0048 NEW) # handling project_version_* variables
+
+cmake_policy(SET CMP0087 NEW) # install(CODE) and install(SCRIPT) support generator expressions.
 
 project(EnergyPlus)
 
@@ -29,6 +35,7 @@ cmake_policy(SET CMP0012 NEW) # if() recognizes boolean constants
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
@@ -178,6 +185,7 @@ endif()
 # If LINK_WITH_PYTHON, also request the Development (libs) at the same time, to ensure consistent version between interpreter and Development
 # and ask for at least 3.8 (for the PyConfig stuff).
 if(LINK_WITH_PYTHON)
+  option(PYTHON_CLI "Build the Auxiliary CLI to Call Python Utilities" OFF)
   # find_package(Python) has the problem that on github actions in particular it'll pick up the most recent python (eg 3.9) from the tool cache
   # even if you have used the setup-python action and set it to 3.8, so we make the exact version required
   set(Python_REQUIRED_VERSION "" CACHE STRING "The specific Python version you want to link to (Optional)")
@@ -187,7 +195,7 @@ if(LINK_WITH_PYTHON)
   if(Python_REQUIRED_VERSION)
     find_package(Python ${Python_REQUIRED_VERSION} EXACT COMPONENTS Interpreter Development REQUIRED)
   else()
-    find_package(Python 3.8 COMPONENTS Interpreter Development REQUIRED)
+    find_package(Python 3.12 COMPONENTS Interpreter Development REQUIRED)
   endif()
 else()
   find_package(Python 3.6 COMPONENTS Interpreter REQUIRED)
@@ -221,6 +229,21 @@ if(BUILD_TESTING)
   endif()
   set_property(GLOBAL PROPERTY CTEST_TARGETS_ADDED 1)  # This avoids all the CTest Nightly, Continuous, etc. tests.
   enable_testing()
+
+  execute_process(COMMAND ${Python_EXECUTABLE} -m pytest --version
+    RESULT_VARIABLE _Pytest_STATUS
+        OUTPUT_VARIABLE Pytest_Version
+        ERROR_QUIET
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
+  if(_Pytest_STATUS AND NOT _Pytest_STATUS EQUAL 0)
+    message(AUTHOR_WARNING "Pytest isn't installed on your system python, so some tests won't be run. Run `${Python_EXECUTABLE} -m pip install pytest`")
+    set(Pytest_AVAILABLE OFF)
+  else()
+    message(VERBOSE "Found Pytest: ${Pytest_Version}")
+    set(Pytest_AVAILABLE ON)
+  endif()
+
 endif()
 
 if(ENABLE_REGRESSION_TESTING)
@@ -433,6 +456,7 @@ mark_as_advanced(KIVA_EXE_BUILD)
 mark_as_advanced(KIVA_GROUND_PLOT)
 mark_as_advanced(KIVA_STATIC_LIB)
 mark_as_advanced(KIVA_TESTING)
+mark_as_advanced(KIVA_WERROR)
 mark_as_advanced(BTWXT_COVERAGE)
 mark_as_advanced(BUILD_BTWXT_TESTING)
 mark_as_advanced(BTWXT_STATIC_LIB)
@@ -484,3 +508,15 @@ mark_as_advanced(ENABLE_SANITIZER_LEAK)
 mark_as_advanced(ENABLE_SANITIZER_MEMORY)
 mark_as_advanced(ENABLE_SANITIZER_THREAD)
 mark_as_advanced(ENABLE_SANITIZER_UNDEFINED_BEHAVIOR)
+mark_as_advanced(X11_xcb_xkb_INCLUDE_PATH)
+mark_as_advanced(ENABLE_SANITIZER_UNDEFINED_BEHAVIOR)
+mark_as_advanced(JSONCPP_USE_SECURE_MEMORY)
+mark_as_advanced(JSONCPP_WITH_CMAKE_PACKAGE)
+mark_as_advanced(JSONCPP_WITH_PKGCONFIG_SUPPORT)
+mark_as_advanced(JSONCPP_WITH_POST_BUILD_UNITTE)
+mark_as_advanced(JSONCPP_WITH_STRICT_ISO)
+mark_as_advanced(JSONCPP_WITH_TESTS)
+mark_as_advanced(JSONCPP_WITH_WARNING_AS_ERROR)
+mark_as_advanced(CMAKE_CXX_COMPILER_LAUNCHER)
+mark_as_advanced(CMAKE_C_COMPILER_LAUNCHER)
+mark_as_advanced(DEBUG_LIBNAME_SUFFIX)

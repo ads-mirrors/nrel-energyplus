@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -111,17 +111,7 @@ namespace DataSystemVariables {
     constexpr const char *
         cDisplayInputInAuditEnvVar("DISPLAYINPUTINAUDIT"); // environmental variable that enables the echoing of the input file into the audit file
 
-    // DERIVED TYPE DEFINITIONS
-    // na
-
-    // INTERFACE BLOCK SPECIFICATIONS
-    // na
-
-    // MODULE VARIABLE DECLARATIONS:
-
-    // Shading methods
-
-    // Functions
+    constexpr const char *ciForceTimeStepEnvVar("CI_FORCE_TIME_STEP"); // environment var forcing 30 minute time steps on CI for efficiency
 
     fs::path CheckForActualFilePath(EnergyPlusData &state,
                                     fs::path const &originalInputFilePath, // path (or filename only) as input for object
@@ -183,7 +173,7 @@ namespace DataSystemVariables {
         for (std::size_t i = 0; i < numPathsToTest; ++i) {
             if (FileSystem::fileExists(pathsToCheck[i].first)) {
                 foundFilePath = pathsToCheck[i].first;
-                print(state.files.audit, "found ({})={}\n", pathsToCheck[i].second, FileSystem::getAbsolutePath(foundFilePath).string());
+                print(state.files.audit, "found ({})={}\n", pathsToCheck[i].second, FileSystem::getAbsolutePath(foundFilePath));
 
                 return foundFilePath;
             } else {
@@ -198,15 +188,15 @@ namespace DataSystemVariables {
                 if (!found) {
                     pathsChecked.push_back(currentPath);
                 }
-                print(state.files.audit, "not found ({})={}\n", pathsToCheck[i].second, FileSystem::getAbsolutePath(pathsToCheck[i].first).string());
+                print(state.files.audit, "not found ({})={}\n", pathsToCheck[i].second, FileSystem::getAbsolutePath(pathsToCheck[i].first));
             }
         }
 
         // If we get here, we didn't find the file
-        ShowSevereError(state, format("{}\"{}\" not found.", contextString, originalInputFilePath.string()));
+        ShowSevereError(state, format("{}\"{}\" not found.", contextString, originalInputFilePath));
         ShowContinueError(state, "  Paths searched:");
         for (auto &path : pathsChecked) {
-            ShowContinueError(state, format("    {}: \"{}\"", path.second, path.first.string()));
+            ShowContinueError(state, format("    {}: \"{}\"", path.second, path.first));
         }
 
         return foundFilePath;
@@ -311,6 +301,9 @@ namespace DataSystemVariables {
 
         get_environment_variable(cDisplayInputInAuditEnvVar, cEnvValue);
         if (!cEnvValue.empty()) state.dataGlobal->DisplayInputInAudit = env_var_on(cEnvValue); // Yes or True
+
+        get_environment_variable(ciForceTimeStepEnvVar, cEnvValue);
+        if (!cEnvValue.empty()) state.dataSysVars->ciForceTimeStep = env_var_on(cEnvValue); // Yes or True
     }
 
 } // namespace DataSystemVariables

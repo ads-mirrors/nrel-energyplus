@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -169,6 +169,7 @@ namespace PlantChillers {
         // required by the Electric Chiller model.
 
         static constexpr std::string_view RoutineName("GetElectricChillerInput: "); // include trailing blank space
+        static constexpr std::string_view routineName = "GetElectricChillerInput";
 
         int NumAlphas; // Number of elements in the alpha array
         int NumNums;   // Number of elements in the numeric array
@@ -204,6 +205,9 @@ namespace PlantChillers {
                                                                      state.dataIPShortCut->lAlphaFieldBlanks,
                                                                      state.dataIPShortCut->cAlphaFieldNames,
                                                                      state.dataIPShortCut->cNumericFieldNames);
+
+            ErrorObjectHeader eoh{routineName, state.dataIPShortCut->cCurrentModuleObject, state.dataIPShortCut->cAlphaArgs(1)};
+
             Util::IsNameEmpty(state, state.dataIPShortCut->cAlphaArgs(1), state.dataIPShortCut->cCurrentModuleObject, ErrorsFound);
 
             // ErrorsFound will be set to True if problem was found, left untouched otherwise
@@ -496,7 +500,7 @@ namespace PlantChillers {
                     if (thisChiller.CondVolFlowRate <= 0.0) {
                         ShowSevereError(
                             state, format("Invalid {}={:.6R}", state.dataIPShortCut->cNumericFieldNames(10), state.dataIPShortCut->rNumericArgs(10)));
-                        ShowSevereError(state, "Condenser fluid flow rate must be specified for Heat Reclaim applications.");
+                        ShowContinueError(state, "Condenser fluid flow rate must be specified for Heat Reclaim applications.");
                         ShowContinueError(
                             state, format("Entered in {}={}", state.dataIPShortCut->cCurrentModuleObject, state.dataIPShortCut->cAlphaArgs(1)));
                         ErrorsFound = true;
@@ -513,22 +517,10 @@ namespace PlantChillers {
                     thisChiller.HeatRecCapacityFraction = 1.0;
                 }
 
-                if (NumAlphas > 10) {
-                    if (!state.dataIPShortCut->lAlphaFieldBlanks(11)) {
-                        thisChiller.HeatRecInletLimitSchedNum = ScheduleManager::GetScheduleIndex(state, state.dataIPShortCut->cAlphaArgs(11));
-                        if (thisChiller.HeatRecInletLimitSchedNum == 0) {
-                            ShowSevereError(
-                                state,
-                                format("{}{}=\"{}\"", RoutineName, state.dataIPShortCut->cCurrentModuleObject, state.dataIPShortCut->cAlphaArgs(1)));
-                            ShowContinueError(
-                                state, format("Invalid {}={}", state.dataIPShortCut->cAlphaFieldNames(11), state.dataIPShortCut->cAlphaArgs(11)));
-                            ErrorsFound = true;
-                        }
-                    } else {
-                        thisChiller.HeatRecInletLimitSchedNum = 0;
-                    }
-                } else {
-                    thisChiller.HeatRecInletLimitSchedNum = 0;
+                if (NumAlphas <= 10 || state.dataIPShortCut->lAlphaFieldBlanks(11)) {
+                } else if ((thisChiller.heatRecInletLimitSched = Sched::GetSchedule(state, state.dataIPShortCut->cAlphaArgs(11))) == nullptr) {
+                    ShowSevereItemNotFound(state, eoh, state.dataIPShortCut->cAlphaFieldNames(11), state.dataIPShortCut->cAlphaArgs(11));
+                    ErrorsFound = true;
                 }
 
                 if (NumAlphas > 11) {
@@ -592,22 +584,30 @@ namespace PlantChillers {
                 }
             }
 
-            if (!state.dataIPShortCut->lAlphaFieldBlanks(10)) {
-                thisChiller.BasinHeaterSchedulePtr = ScheduleManager::GetScheduleIndex(state, state.dataIPShortCut->cAlphaArgs(10));
-                if (thisChiller.BasinHeaterSchedulePtr == 0) {
-                    ShowWarningError(state,
-                                     format("{}, \"{}\" TRIM(state.dataIPShortCut->cAlphaFieldNames(10)) \"{}\" was not found. Basin heater "
-                                            "operation will not be modeled and the simulation continues",
-                                            state.dataIPShortCut->cCurrentModuleObject,
-                                            thisChiller.Name,
-                                            state.dataIPShortCut->cAlphaArgs(10)));
-                }
+            if (state.dataIPShortCut->lAlphaFieldBlanks(10)) {
+            } else if ((thisChiller.basinHeaterSched = Sched::GetSchedule(state, state.dataIPShortCut->cAlphaArgs(10))) == nullptr) {
+                ShowWarningItemNotFound(state,
+                                        eoh,
+                                        state.dataIPShortCut->cAlphaFieldNames(10),
+                                        state.dataIPShortCut->cAlphaArgs(10),
+                                        "Basin heater operation will not be modeled and the simulation continues");
             }
+
             if (NumAlphas > 12) {
                 thisChiller.EndUseSubcategory = state.dataIPShortCut->cAlphaArgs(13);
             } else {
                 thisChiller.EndUseSubcategory = "General";
             }
+            if (!state.dataIPShortCut->lAlphaFieldBlanks(14)) {
+                thisChiller.thermosiphonTempCurveIndex = Curve::GetCurveIndex(state, Util::makeUPPER(state.dataIPShortCut->cAlphaArgs(14)));
+                if (thisChiller.thermosiphonTempCurveIndex == 0) {
+                    ShowSevereError(state, format("{}{}=\"{}\"", RoutineName, state.dataIPShortCut->cCurrentModuleObject, thisChiller.Name));
+                    ShowContinueError(state,
+                                      format("Invalid {} = {}", state.dataIPShortCut->cAlphaFieldNames(14), state.dataIPShortCut->cAlphaArgs(14)));
+                    ErrorsFound = true;
+                }
+            }
+            thisChiller.thermosiphonMinTempDiff = state.dataIPShortCut->rNumericArgs(26);
         }
 
         if (ErrorsFound) {
@@ -702,6 +702,13 @@ namespace PlantChillers {
                             "Chiller Condenser Inlet Temperature",
                             Constant::Units::C,
                             this->CondInletTemp,
+                            OutputProcessor::TimeStepType::System,
+                            OutputProcessor::StoreType::Average,
+                            this->Name);
+        SetupOutputVariable(state,
+                            "Thermosiphon Status",
+                            Constant::Units::None,
+                            this->thermosiphonStatus,
                             OutputProcessor::TimeStepType::System,
                             OutputProcessor::StoreType::Average,
                             this->Name);
@@ -803,8 +810,7 @@ namespace PlantChillers {
     {
         if (calledFromLocation.loopNum == this->CWPlantLoc.loopNum) { // chilled water loop
             this->initialize(state, RunFlag, CurLoad);
-            auto const &sim_component = DataPlant::CompData::getPlantComponent(state, this->CWPlantLoc);
-            this->calculate(state, CurLoad, RunFlag, sim_component.FlowCtrl);
+            this->calculate(state, CurLoad, RunFlag, this->CWPlantLoc.comp->FlowCtrl);
             this->update(state, CurLoad, RunFlag);
         } else if (calledFromLocation.loopNum == this->CDPlantLoc.loopNum) { // condenser loop
             PlantUtilities::UpdateChillerComponentCondenserSide(state,
@@ -855,11 +861,7 @@ namespace PlantChillers {
 
         if (this->MyEnvrnFlag && state.dataGlobal->BeginEnvrnFlag && (state.dataPlnt->PlantFirstSizesOkayToFinalize)) {
 
-            Real64 rho = FluidProperties::GetDensityGlycol(state,
-                                                           state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).FluidName,
-                                                           Constant::CWInitConvTemp,
-                                                           state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).FluidIndex,
-                                                           RoutineName);
+            Real64 rho = this->CWPlantLoc.loop->glycol->getDensity(state, Constant::CWInitConvTemp, RoutineName);
 
             this->EvapMassFlowRateMax = rho * this->EvapVolFlowRate;
             PlantUtilities::InitComponentNodes(state, 0.0, this->EvapMassFlowRateMax, this->EvapInletNodeNum, this->EvapOutletNodeNum);
@@ -869,11 +871,7 @@ namespace PlantChillers {
 
                 state.dataLoopNodes->Node(this->CondInletNodeNum).Temp = this->TempDesCondIn; // old behavior, still want?
 
-                rho = FluidProperties::GetDensityGlycol(state,
-                                                        state.dataPlnt->PlantLoop(this->CDPlantLoc.loopNum).FluidName,
-                                                        Constant::CWInitConvTemp,
-                                                        state.dataPlnt->PlantLoop(this->CDPlantLoc.loopNum).FluidIndex,
-                                                        RoutineName);
+                rho = this->CDPlantLoc.loop->glycol->getDensity(state, Constant::CWInitConvTemp, RoutineName);
 
                 this->CondMassFlowRateMax = rho * this->CondVolFlowRate;
 
@@ -896,11 +894,7 @@ namespace PlantChillers {
             }
 
             if (this->HeatRecActive) {
-                rho = FluidProperties::GetDensityGlycol(state,
-                                                        state.dataPlnt->PlantLoop(this->HRPlantLoc.loopNum).FluidName,
-                                                        Constant::HWInitConvTemp,
-                                                        state.dataPlnt->PlantLoop(this->HRPlantLoc.loopNum).FluidIndex,
-                                                        RoutineName);
+                rho = this->HRPlantLoc.loop->glycol->getDensity(state, Constant::HWInitConvTemp, RoutineName);
                 this->DesignHeatRecMassFlowRate = rho * this->DesignHeatRecVolFlowRate;
 
                 PlantUtilities::InitComponentNodes(
@@ -909,10 +903,9 @@ namespace PlantChillers {
 
                 if (this->HeatRecSetPointNodeNum > 0) {
                     Real64 THeatRecSetPoint(0.0);
-                    if (state.dataPlnt->PlantLoop(this->HRPlantLoc.loopNum).LoopDemandCalcScheme == DataPlant::LoopDemandCalcScheme::SingleSetPoint) {
+                    if (this->HRPlantLoc.loop->LoopDemandCalcScheme == DataPlant::LoopDemandCalcScheme::SingleSetPoint) {
                         THeatRecSetPoint = state.dataLoopNodes->Node(this->HeatRecSetPointNodeNum).TempSetPoint;
-                    } else if (state.dataPlnt->PlantLoop(this->HRPlantLoc.loopNum).LoopDemandCalcScheme ==
-                               DataPlant::LoopDemandCalcScheme::DualSetPointDeadBand) {
+                    } else if (this->HRPlantLoc.loop->LoopDemandCalcScheme == DataPlant::LoopDemandCalcScheme::DualSetPointDeadBand) {
                         THeatRecSetPoint = state.dataLoopNodes->Node(this->HeatRecSetPointNodeNum).TempSetPointHi;
                     }
                     if (THeatRecSetPoint == DataLoopNode::SensedNodeFlagValue) {
@@ -924,14 +917,13 @@ namespace PlantChillers {
                                                   "specified, use a SetpointManager");
                                 ShowContinueError(state,
                                                   "  The overall loop setpoint will be assumed for heat recovery. The simulation continues ...");
-                                this->HeatRecSetPointNodeNum = state.dataPlnt->PlantLoop(this->HRPlantLoc.loopNum).TempSetPointNodeNum;
+                                this->HeatRecSetPointNodeNum = this->HRPlantLoc.loop->TempSetPointNodeNum;
                                 this->HRSPErrDone = true;
                             }
                         } else {
                             // need call to EMS to check node
                             bool FatalError = false; // but not really fatal yet, but should be.
-                            EMSManager::CheckIfNodeSetPointManagedByEMS(
-                                state, this->EvapOutletNodeNum, EMSManager::SPControlType::TemperatureSetPoint, FatalError);
+                            EMSManager::CheckIfNodeSetPointManagedByEMS(state, this->EvapOutletNodeNum, HVAC::CtrlVarType::Temp, FatalError);
                             state.dataLoopNodes->NodeSetpointCheck(this->EvapOutletNodeNum).needsSetpointChecking = false;
                             if (FatalError) {
                                 if (!this->HRSPErrDone) {
@@ -942,7 +934,7 @@ namespace PlantChillers {
                                     ShowContinueError(state, "  or use an EMS actuator to establish a setpoint at this node ");
                                     ShowContinueError(state,
                                                       "  The overall loop setpoint will be assumed for heat recovery. The simulation continues ...");
-                                    this->HeatRecSetPointNodeNum = state.dataPlnt->PlantLoop(this->HRPlantLoc.loopNum).TempSetPointNodeNum;
+                                    this->HeatRecSetPointNodeNum = this->HRPlantLoc.loop->TempSetPointNodeNum;
                                     this->HRSPErrDone = true;
                                 }
                             }
@@ -960,13 +952,12 @@ namespace PlantChillers {
         if ((this->FlowMode == DataPlant::FlowMode::LeavingSetpointModulated) && (this->ModulatedFlowSetToLoop)) {
             // fix for clumsy old input that worked because loop setpoint was spread.
             //  could be removed with transition, testing , model change, period of being obsolete.
-            if (state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).LoopDemandCalcScheme == DataPlant::LoopDemandCalcScheme::SingleSetPoint) {
+            if (this->CWPlantLoc.loop->LoopDemandCalcScheme == DataPlant::LoopDemandCalcScheme::SingleSetPoint) {
                 state.dataLoopNodes->Node(this->EvapOutletNodeNum).TempSetPoint =
-                    state.dataLoopNodes->Node(state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).TempSetPointNodeNum).TempSetPoint;
-            } else if (state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).LoopDemandCalcScheme ==
-                       DataPlant::LoopDemandCalcScheme::DualSetPointDeadBand) {
+                    state.dataLoopNodes->Node(this->CWPlantLoc.loop->TempSetPointNodeNum).TempSetPoint;
+            } else if (this->CWPlantLoc.loop->LoopDemandCalcScheme == DataPlant::LoopDemandCalcScheme::DualSetPointDeadBand) {
                 state.dataLoopNodes->Node(this->EvapOutletNodeNum).TempSetPointHi =
-                    state.dataLoopNodes->Node(state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).TempSetPointNodeNum).TempSetPointHi;
+                    state.dataLoopNodes->Node(this->CWPlantLoc.loop->TempSetPointNodeNum).TempSetPointHi;
             }
         }
 
@@ -1023,24 +1014,16 @@ namespace PlantChillers {
         bool ErrorsFound(false); // If errors detected in input
 
         if (this->CondenserType == DataPlant::CondenserType::WaterCooled) {
-            PltSizCondNum = state.dataPlnt->PlantLoop(this->CDPlantLoc.loopNum).PlantSizNum;
+            PltSizCondNum = this->CDPlantLoc.loop->PlantSizNum;
         }
 
-        int PltSizNum = state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).PlantSizNum;
+        int PltSizNum = this->CWPlantLoc.loop->PlantSizNum;
 
         Real64 tmpNomCap = this->NomCap;
         if (PltSizNum > 0) {
             if (state.dataSize->PlantSizData(PltSizNum).DesVolFlowRate >= HVAC::SmallWaterVolFlow) {
-                Real64 rho = FluidProperties::GetDensityGlycol(state,
-                                                               state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).FluidName,
-                                                               Constant::CWInitConvTemp,
-                                                               state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).FluidIndex,
-                                                               RoutineName);
-                Real64 Cp = FluidProperties::GetSpecificHeatGlycol(state,
-                                                                   state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).FluidName,
-                                                                   Constant::CWInitConvTemp,
-                                                                   state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).FluidIndex,
-                                                                   RoutineName);
+                Real64 rho = this->CWPlantLoc.loop->glycol->getDensity(state, Constant::CWInitConvTemp, RoutineName);
+                Real64 Cp = this->CWPlantLoc.loop->glycol->getSpecificHeat(state, Constant::CWInitConvTemp, RoutineName);
                 tmpNomCap =
                     Cp * rho * state.dataSize->PlantSizData(PltSizNum).DeltaT * state.dataSize->PlantSizData(PltSizNum).DesVolFlowRate * this->SizFac;
             } else {
@@ -1153,16 +1136,8 @@ namespace PlantChillers {
         Real64 tmpCondVolFlowRate = this->CondVolFlowRate;
         if (PltSizCondNum > 0 && PltSizNum > 0) {
             if (state.dataSize->PlantSizData(PltSizNum).DesVolFlowRate >= HVAC::SmallWaterVolFlow && tmpNomCap > 0.0) {
-                Real64 rho = FluidProperties::GetDensityGlycol(state,
-                                                               state.dataPlnt->PlantLoop(this->CDPlantLoc.loopNum).FluidName,
-                                                               this->TempDesCondIn,
-                                                               state.dataPlnt->PlantLoop(this->CDPlantLoc.loopNum).FluidIndex,
-                                                               RoutineName);
-                Real64 Cp = FluidProperties::GetSpecificHeatGlycol(state,
-                                                                   state.dataPlnt->PlantLoop(this->CDPlantLoc.loopNum).FluidName,
-                                                                   this->TempDesCondIn,
-                                                                   state.dataPlnt->PlantLoop(this->CDPlantLoc.loopNum).FluidIndex,
-                                                                   RoutineName);
+                Real64 rho = this->CDPlantLoc.loop->glycol->getDensity(state, this->TempDesCondIn, RoutineName);
+                Real64 Cp = this->CDPlantLoc.loop->glycol->getSpecificHeat(state, this->TempDesCondIn, RoutineName);
                 tmpCondVolFlowRate = tmpNomCap * (1.0 + 1.0 / this->COP) / (state.dataSize->PlantSizData(PltSizCondNum).DeltaT * Cp * rho);
             } else {
                 if (this->CondVolFlowRateWasAutoSized) tmpCondVolFlowRate = 0.0;
@@ -1297,27 +1272,19 @@ namespace PlantChillers {
             OutputReportPredefined::PreDefTableEntry(state,
                                                      state.dataOutRptPredefined->pdchChillerPlantloopName,
                                                      this->Name,
-                                                     this->CWPlantLoc.loopNum > 0 ? state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).Name : "N/A");
+                                                     (this->CWPlantLoc.loop != nullptr) ? this->CWPlantLoc.loop->Name : "N/A");
             OutputReportPredefined::PreDefTableEntry(state,
                                                      state.dataOutRptPredefined->pdchChillerPlantloopBranchName,
                                                      this->Name,
-                                                     this->CWPlantLoc.loopNum > 0 ? state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum)
-                                                                                        .LoopSide(this->CWPlantLoc.loopSideNum)
-                                                                                        .Branch(this->CWPlantLoc.branchNum)
-                                                                                        .Name
-                                                                                  : "N/A");
+                                                     (this->CWPlantLoc.branch != nullptr) ? this->CWPlantLoc.branch->Name : "N/A");
             OutputReportPredefined::PreDefTableEntry(state,
                                                      state.dataOutRptPredefined->pdchChillerCondLoopName,
                                                      this->Name,
-                                                     this->CDPlantLoc.loopNum > 0 ? state.dataPlnt->PlantLoop(this->CDPlantLoc.loopNum).Name : "N/A");
+                                                     (this->CDPlantLoc.loop != nullptr) ? this->CDPlantLoc.loop->Name : "N/A");
             OutputReportPredefined::PreDefTableEntry(state,
                                                      state.dataOutRptPredefined->pdchChillerCondLoopBranchName,
                                                      this->Name,
-                                                     this->CDPlantLoc.loopNum > 0 ? state.dataPlnt->PlantLoop(this->CDPlantLoc.loopNum)
-                                                                                        .LoopSide(this->CDPlantLoc.loopSideNum)
-                                                                                        .Branch(this->CDPlantLoc.branchNum)
-                                                                                        .Name
-                                                                                  : "N/A");
+                                                     (this->CDPlantLoc.branch != nullptr) ? this->CDPlantLoc.branch->Name : "N/A");
             OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchChillerMinPLR, this->Name, this->MinPartLoadRat);
             OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchChillerFuelType, this->Name, "Electricity");
             OutputReportPredefined::PreDefTableEntry(
@@ -1338,15 +1305,11 @@ namespace PlantChillers {
             OutputReportPredefined::PreDefTableEntry(state,
                                                      state.dataOutRptPredefined->pdchChillerHeatRecPlantloopName,
                                                      this->Name,
-                                                     this->HRPlantLoc.loopNum > 0 ? state.dataPlnt->PlantLoop(this->HRPlantLoc.loopNum).Name : "N/A");
+                                                     (this->HRPlantLoc.loop != nullptr) ? this->HRPlantLoc.loop->Name : "N/A");
             OutputReportPredefined::PreDefTableEntry(state,
                                                      state.dataOutRptPredefined->pdchChillerHeatRecPlantloopBranchName,
                                                      this->Name,
-                                                     this->HRPlantLoc.loopNum > 0 ? state.dataPlnt->PlantLoop(this->HRPlantLoc.loopNum)
-                                                                                        .LoopSide(this->HRPlantLoc.loopSideNum)
-                                                                                        .Branch(this->HRPlantLoc.branchNum)
-                                                                                        .Name
-                                                                                  : "N/A");
+                                                     (this->HRPlantLoc.branch != nullptr) ? this->HRPlantLoc.branch->Name : "N/A");
             OutputReportPredefined::PreDefTableEntry(
                 state, state.dataOutRptPredefined->pdchChillerRecRelCapFrac, this->Name, this->HeatRecCapacityFraction);
         }
@@ -1386,6 +1349,7 @@ namespace PlantChillers {
         this->EvaporatorEnergy = 0.0;
         this->QHeatRecovered = 0.0;
         this->ActualCOP = 0.0;
+        this->thermosiphonStatus = 0;
 
         //   calculate end time of current time step
         Real64 CurrentEndTime = state.dataGlobal->CurrentTime + state.dataHVACGlobal->SysTimeElapsed;
@@ -1417,7 +1381,7 @@ namespace PlantChillers {
         if (MyLoad >= 0.0 || !RunFlag) {
             // call for zero flow before leaving
             if (EquipFlowCtrl == DataBranchAirLoopPlant::ControlType::SeriesActive ||
-                state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).LoopSide(this->CWPlantLoc.loopSideNum).FlowLock == DataPlant::FlowLock::Locked) {
+                this->CWPlantLoc.side->FlowLock == DataPlant::FlowLock::Locked) {
                 this->EvapMassFlowRate = state.dataLoopNodes->Node(this->EvapInletNodeNum).MassFlowRate;
             } else {
                 this->EvapMassFlowRate = 0.0;
@@ -1436,7 +1400,7 @@ namespace PlantChillers {
 
             if (this->CondenserType == DataPlant::CondenserType::EvapCooled) {
                 CalcBasinHeaterPower(
-                    state, this->BasinHeaterPowerFTempDiff, this->BasinHeaterSchedulePtr, this->BasinHeaterSetPointTemp, this->BasinHeaterPower);
+                    state, this->BasinHeaterPowerFTempDiff, this->basinHeaterSched, this->BasinHeaterSetPointTemp, this->BasinHeaterPower);
             }
             this->PrintMessage = false;
             return;
@@ -1450,7 +1414,13 @@ namespace PlantChillers {
             PlantUtilities::SetComponentFlowRate(state, this->CondMassFlowRate, this->CondInletNodeNum, this->CondOutletNodeNum, this->CDPlantLoc);
             PlantUtilities::PullCompInterconnectTrigger(
                 state, this->CWPlantLoc, this->CondMassFlowIndex, this->CDPlantLoc, DataPlant::CriteriaType::MassFlowRate, this->CondMassFlowRate);
-            if (this->CondMassFlowRate < DataBranchAirLoopPlant::MassFlowTolerance) return;
+            if (this->CondMassFlowRate < DataBranchAirLoopPlant::MassFlowTolerance) {
+                MyLoad = 0.0;
+                this->EvapMassFlowRate = 0.0;
+                PlantUtilities::SetComponentFlowRate(
+                    state, this->EvapMassFlowRate, this->EvapInletNodeNum, this->EvapOutletNodeNum, this->CWPlantLoc);
+                return;
+            }
         }
 
         //  LOAD LOCAL VARIABLES FROM DATA STRUCTURE (for code readability)
@@ -1516,6 +1486,7 @@ namespace PlantChillers {
         } // End of the Air Cooled/Evap Cooled Logic block
 
         Real64 condInletTemp = state.dataLoopNodes->Node(this->CondInletNodeNum).Temp;
+        this->CondInletTemp = condInletTemp; // needed if thermosiphon model is used
 
         // correct inlet temperature if using heat recovery
         if (this->HeatRecActive) {
@@ -1575,16 +1546,13 @@ namespace PlantChillers {
         } else {
             OperPartLoadRat = 0.0;
         }
+        this->partLoadRatio = OperPartLoadRat;
 
-        Real64 Cp = FluidProperties::GetSpecificHeatGlycol(state,
-                                                           state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).FluidName,
-                                                           state.dataLoopNodes->Node(this->EvapInletNodeNum).Temp,
-                                                           state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).FluidIndex,
-                                                           RoutineName);
+        Real64 Cp = this->CWPlantLoc.loop->glycol->getSpecificHeat(state, state.dataLoopNodes->Node(this->EvapInletNodeNum).Temp, RoutineName);
 
         // If FlowLock is True, the new resolved mdot is used to update Power, QEvap, Qcond, and
         // condenser side outlet temperature.
-        if (state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).LoopSide(this->CWPlantLoc.loopSideNum).FlowLock == DataPlant::FlowLock::Unlocked) {
+        if (this->CWPlantLoc.side->FlowLock == DataPlant::FlowLock::Unlocked) {
             this->PossibleSubcooling =
                 DataPlant::CompData::getPlantComponent(state, this->CWPlantLoc).CurOpSchemeType != DataPlant::OpScheme::CompSetPtBased;
             this->QEvaporator = AvailChillerCap * OperPartLoadRat;
@@ -1594,7 +1562,7 @@ namespace PlantChillers {
             } else {
                 FRAC = 1.0;
             }
-            this->Power = FracFullLoadPower * FullLoadPowerRat * AvailChillerCap / this->COP * FRAC;
+            this->cyclingRatio = FRAC;
 
             // Either set the flow to the Constant value or calculate the flow for the variable volume
             if ((this->FlowMode == DataPlant::FlowMode::Constant) || (this->FlowMode == DataPlant::FlowMode::NotModulated)) {
@@ -1618,11 +1586,10 @@ namespace PlantChillers {
 
                 // Calculate the Delta Temp from the inlet temp to the chiller outlet setpoint
                 Real64 EvapDeltaTemp(0.0);
-                if (state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).LoopDemandCalcScheme == DataPlant::LoopDemandCalcScheme::SingleSetPoint) {
+                if (this->CWPlantLoc.loop->LoopDemandCalcScheme == DataPlant::LoopDemandCalcScheme::SingleSetPoint) {
                     EvapDeltaTemp =
                         state.dataLoopNodes->Node(this->EvapInletNodeNum).Temp - state.dataLoopNodes->Node(this->EvapOutletNodeNum).TempSetPoint;
-                } else if (state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).LoopDemandCalcScheme ==
-                           DataPlant::LoopDemandCalcScheme::DualSetPointDeadBand) {
+                } else if (this->CWPlantLoc.loop->LoopDemandCalcScheme == DataPlant::LoopDemandCalcScheme::DualSetPointDeadBand) {
                     EvapDeltaTemp =
                         state.dataLoopNodes->Node(this->EvapInletNodeNum).Temp - state.dataLoopNodes->Node(this->EvapOutletNodeNum).TempSetPointHi;
                 }
@@ -1637,10 +1604,9 @@ namespace PlantChillers {
                     // Use SetComponentFlowRate to decide actual flow
                     PlantUtilities::SetComponentFlowRate(
                         state, this->EvapMassFlowRate, this->EvapInletNodeNum, this->EvapOutletNodeNum, this->CWPlantLoc);
-                    if (state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).LoopDemandCalcScheme == DataPlant::LoopDemandCalcScheme::SingleSetPoint) {
+                    if (this->CWPlantLoc.loop->LoopDemandCalcScheme == DataPlant::LoopDemandCalcScheme::SingleSetPoint) {
                         this->EvapOutletTemp = state.dataLoopNodes->Node(this->EvapOutletNodeNum).TempSetPoint;
-                    } else if (state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).LoopDemandCalcScheme ==
-                               DataPlant::LoopDemandCalcScheme::DualSetPointDeadBand) {
+                    } else if (this->CWPlantLoc.loop->LoopDemandCalcScheme == DataPlant::LoopDemandCalcScheme::DualSetPointDeadBand) {
                         this->EvapOutletTemp = state.dataLoopNodes->Node(this->EvapOutletNodeNum).TempSetPointHi;
                     }
 
@@ -1656,6 +1622,10 @@ namespace PlantChillers {
                 }
 
             } // End of Constant Variable Flow If Block
+
+            if (this->thermosiphonDisabled(state)) {
+                this->Power = FracFullLoadPower * FullLoadPowerRat * AvailChillerCap / this->COP * FRAC;
+            }
 
             // If there is a fault of Chiller SWT Sensor
             if (this->FaultyChillerSWTFlag && (!state.dataGlobal->WarmupFlag) && (!state.dataGlobal->DoingSizing) &&
@@ -1683,7 +1653,7 @@ namespace PlantChillers {
                 MyLoad = 0.0;
                 if (this->CondenserType == DataPlant::CondenserType::EvapCooled) {
                     CalcBasinHeaterPower(
-                        state, this->BasinHeaterPowerFTempDiff, this->BasinHeaterSchedulePtr, this->BasinHeaterSetPointTemp, this->BasinHeaterPower);
+                        state, this->BasinHeaterPowerFTempDiff, this->basinHeaterSched, this->BasinHeaterSetPointTemp, this->BasinHeaterPower);
                 }
                 this->PrintMessage = false;
                 return;
@@ -1697,24 +1667,21 @@ namespace PlantChillers {
             } else { // No subcooling in this case.No recalculation required.Still need to check chiller low temp limit
 
                 Real64 TempEvapOutSetPoint(0.0); // C - evaporator outlet temperature setpoint
-                if (state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).LoopDemandCalcScheme == DataPlant::LoopDemandCalcScheme::SingleSetPoint) {
+                if (this->CWPlantLoc.loop->LoopDemandCalcScheme == DataPlant::LoopDemandCalcScheme::SingleSetPoint) {
                     if ((this->FlowMode == DataPlant::FlowMode::LeavingSetpointModulated) ||
                         (DataPlant::CompData::getPlantComponent(state, this->CWPlantLoc).CurOpSchemeType == DataPlant::OpScheme::CompSetPtBased) ||
                         (state.dataLoopNodes->Node(this->EvapOutletNodeNum).TempSetPoint != DataLoopNode::SensedNodeFlagValue)) {
                         TempEvapOutSetPoint = state.dataLoopNodes->Node(this->EvapOutletNodeNum).TempSetPoint;
                     } else {
-                        TempEvapOutSetPoint =
-                            state.dataLoopNodes->Node(state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).TempSetPointNodeNum).TempSetPoint;
+                        TempEvapOutSetPoint = state.dataLoopNodes->Node(this->CWPlantLoc.loop->TempSetPointNodeNum).TempSetPoint;
                     }
-                } else if (state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).LoopDemandCalcScheme ==
-                           DataPlant::LoopDemandCalcScheme::DualSetPointDeadBand) {
+                } else if (this->CWPlantLoc.loop->LoopDemandCalcScheme == DataPlant::LoopDemandCalcScheme::DualSetPointDeadBand) {
                     if ((this->FlowMode == DataPlant::FlowMode::LeavingSetpointModulated) ||
                         (DataPlant::CompData::getPlantComponent(state, this->CWPlantLoc).CurOpSchemeType == DataPlant::OpScheme::CompSetPtBased) ||
                         (state.dataLoopNodes->Node(this->EvapOutletNodeNum).TempSetPointHi != DataLoopNode::SensedNodeFlagValue)) {
                         TempEvapOutSetPoint = state.dataLoopNodes->Node(this->EvapOutletNodeNum).TempSetPointHi;
                     } else {
-                        TempEvapOutSetPoint =
-                            state.dataLoopNodes->Node(state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).TempSetPointNodeNum).TempSetPointHi;
+                        TempEvapOutSetPoint = state.dataLoopNodes->Node(this->CWPlantLoc.loop->TempSetPointNodeNum).TempSetPointHi;
                     }
                 }
                 Real64 EvapDeltaTemp = state.dataLoopNodes->Node(this->EvapInletNodeNum).Temp - TempEvapOutSetPoint;
@@ -1792,9 +1759,12 @@ namespace PlantChillers {
             } else {
                 FRAC = 1.0;
             }
+            this->cyclingRatio = FRAC;
 
             // Chiller is false loading below PLR = minimum unloading ratio, find PLR used for energy calculation
-            this->Power = FracFullLoadPower * FullLoadPowerRat * AvailChillerCap / this->COP * FRAC;
+            if (this->thermosiphonDisabled(state)) {
+                this->Power = FracFullLoadPower * FullLoadPowerRat * AvailChillerCap / this->COP * FRAC;
+            }
 
             if (this->EvapMassFlowRate == 0.0) {
                 this->QEvaporator = 0.0;
@@ -1804,7 +1774,7 @@ namespace PlantChillers {
             }
             if (this->QEvaporator == 0.0 && this->CondenserType == DataPlant::CondenserType::EvapCooled) {
                 CalcBasinHeaterPower(
-                    state, this->BasinHeaterPowerFTempDiff, this->BasinHeaterSchedulePtr, this->BasinHeaterSetPointTemp, this->BasinHeaterPower);
+                    state, this->BasinHeaterPowerFTempDiff, this->basinHeaterSched, this->BasinHeaterSetPointTemp, this->BasinHeaterPower);
             }
         } // This is the end of the FlowLock Block
 
@@ -1816,11 +1786,7 @@ namespace PlantChillers {
             if (this->CondMassFlowRate > DataBranchAirLoopPlant::MassFlowTolerance) {
                 // If Heat Recovery specified for this vapor compression chiller, then Qcondenser will be adjusted by this subroutine
                 if (this->HeatRecActive) this->calcHeatRecovery(state, this->QCondenser, this->CondMassFlowRate, condInletTemp, this->QHeatRecovered);
-                Real64 CpCond = FluidProperties::GetSpecificHeatGlycol(state,
-                                                                       state.dataPlnt->PlantLoop(this->CDPlantLoc.loopNum).FluidName,
-                                                                       condInletTemp,
-                                                                       state.dataPlnt->PlantLoop(this->CDPlantLoc.loopNum).FluidIndex,
-                                                                       RoutineName);
+                Real64 CpCond = this->CDPlantLoc.loop->glycol->getSpecificHeat(state, condInletTemp, RoutineName);
                 this->CondOutletTemp = this->QCondenser / this->CondMassFlowRate / CpCond + condInletTemp;
             } else {
                 ShowSevereError(state, format("CalcElectricChillerModel: Condenser flow = 0, for ElectricChiller={}", this->Name));
@@ -1907,19 +1873,11 @@ namespace PlantChillers {
         this->HeatRecInletTemp = state.dataLoopNodes->Node(this->HeatRecInletNodeNum).Temp;
         Real64 HeatRecMassFlowRate = state.dataLoopNodes->Node(this->HeatRecInletNodeNum).MassFlowRate;
 
-        Real64 CpHeatRec = FluidProperties::GetSpecificHeatGlycol(state,
-                                                                  state.dataPlnt->PlantLoop(this->HRPlantLoc.loopNum).FluidName,
-                                                                  this->HeatRecInletTemp,
-                                                                  state.dataPlnt->PlantLoop(this->HRPlantLoc.loopNum).FluidIndex,
-                                                                  RoutineName);
+        Real64 CpHeatRec = this->HRPlantLoc.loop->glycol->getSpecificHeat(state, this->HeatRecInletTemp, RoutineName);
 
         Real64 CpCond;
         if (this->CondenserType == DataPlant::CondenserType::WaterCooled) {
-            CpCond = FluidProperties::GetSpecificHeatGlycol(state,
-                                                            state.dataPlnt->PlantLoop(this->CDPlantLoc.loopNum).FluidName,
-                                                            condInletTemp,
-                                                            state.dataPlnt->PlantLoop(this->CDPlantLoc.loopNum).FluidIndex,
-                                                            RoutineName);
+            CpCond = this->CDPlantLoc.loop->glycol->getSpecificHeat(state, condInletTemp, RoutineName);
         } else {
             CpCond = Psychrometrics::PsyCpAirFnW(state.dataLoopNodes->Node(this->CondInletNodeNum).HumRat);
         }
@@ -1940,10 +1898,9 @@ namespace PlantChillers {
         } else { // use new algorithm to meet setpoint
             Real64 THeatRecSetPoint(0.0);
 
-            if (state.dataPlnt->PlantLoop(this->HRPlantLoc.loopNum).LoopDemandCalcScheme == DataPlant::LoopDemandCalcScheme::SingleSetPoint) {
+            if (this->HRPlantLoc.loop->LoopDemandCalcScheme == DataPlant::LoopDemandCalcScheme::SingleSetPoint) {
                 THeatRecSetPoint = state.dataLoopNodes->Node(this->HeatRecSetPointNodeNum).TempSetPoint;
-            } else if (state.dataPlnt->PlantLoop(this->HRPlantLoc.loopNum).LoopDemandCalcScheme ==
-                       DataPlant::LoopDemandCalcScheme::DualSetPointDeadBand) {
+            } else if (this->HRPlantLoc.loop->LoopDemandCalcScheme == DataPlant::LoopDemandCalcScheme::DualSetPointDeadBand) {
                 THeatRecSetPoint = state.dataLoopNodes->Node(this->HeatRecSetPointNodeNum).TempSetPointHi;
             }
 
@@ -1954,8 +1911,8 @@ namespace PlantChillers {
             QHeatRec = min(QHeatRec, this->HeatRecMaxCapacityLimit);
         }
         // check if limit on inlet is present and exceeded.
-        if (this->HeatRecInletLimitSchedNum > 0) {
-            Real64 HeatRecHighInletLimit = ScheduleManager::GetCurrentScheduleValue(state, this->HeatRecInletLimitSchedNum);
+        if (this->heatRecInletLimitSched != nullptr) {
+            Real64 HeatRecHighInletLimit = this->heatRecInletLimitSched->getCurrentVal();
             if (this->HeatRecInletTemp > HeatRecHighInletLimit) { // shut down heat recovery
                 QHeatRec = 0.0;
             }
@@ -2092,8 +2049,7 @@ namespace PlantChillers {
                     } else {
                         // need call to EMS to check node
                         bool FatalError = false; // but not really fatal yet, but should be.
-                        EMSManager::CheckIfNodeSetPointManagedByEMS(
-                            state, this->EvapOutletNodeNum, EMSManager::SPControlType::TemperatureSetPoint, FatalError);
+                        EMSManager::CheckIfNodeSetPointManagedByEMS(state, this->EvapOutletNodeNum, HVAC::CtrlVarType::Temp, FatalError);
                         state.dataLoopNodes->NodeSetpointCheck(this->EvapOutletNodeNum).needsSetpointChecking = false;
                         if (FatalError) {
                             if (!this->ModulatedFlowErrDone) {
@@ -2109,17 +2065,36 @@ namespace PlantChillers {
                         }
                     }
                     this->ModulatedFlowSetToLoop = true;
-                    if (state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).LoopDemandCalcScheme == DataPlant::LoopDemandCalcScheme::SingleSetPoint) {
+                    if (this->CWPlantLoc.loop->LoopDemandCalcScheme == DataPlant::LoopDemandCalcScheme::SingleSetPoint) {
                         state.dataLoopNodes->Node(this->EvapOutletNodeNum).TempSetPoint =
-                            state.dataLoopNodes->Node(state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).TempSetPointNodeNum).TempSetPoint;
-                    } else if (state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).LoopDemandCalcScheme ==
-                               DataPlant::LoopDemandCalcScheme::DualSetPointDeadBand) {
+                            state.dataLoopNodes->Node(this->CWPlantLoc.loop->TempSetPointNodeNum).TempSetPoint;
+                    } else if (this->CWPlantLoc.loop->LoopDemandCalcScheme == DataPlant::LoopDemandCalcScheme::DualSetPointDeadBand) {
                         state.dataLoopNodes->Node(this->EvapOutletNodeNum).TempSetPointHi =
-                            state.dataLoopNodes->Node(state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).TempSetPointNodeNum).TempSetPointHi;
+                            state.dataLoopNodes->Node(this->CWPlantLoc.loop->TempSetPointNodeNum).TempSetPointHi;
                     }
                 }
             }
             this->MyFlag = false;
+        }
+    }
+    bool ElectricChillerSpecs::thermosiphonDisabled(EnergyPlusData &state)
+    {
+        if (this->thermosiphonTempCurveIndex > 0) {
+            this->thermosiphonStatus = 0;
+            Real64 dT = this->EvapOutletTemp - this->CondInletTemp;
+            if (dT < this->thermosiphonMinTempDiff) {
+                return true;
+            }
+            Real64 thermosiphonCapFrac = Curve::CurveValue(state, this->thermosiphonTempCurveIndex, dT);
+            Real64 capFrac = this->partLoadRatio * this->cyclingRatio;
+            if (thermosiphonCapFrac >= capFrac) {
+                this->thermosiphonStatus = 1;
+                this->Power = 0.0;
+                return false;
+            }
+            return true;
+        } else {
+            return true;
         }
     }
 
@@ -2143,8 +2118,7 @@ namespace PlantChillers {
     {
         if (calledFromLocation.loopNum == this->CWPlantLoc.loopNum) { // chilled water loop
             this->initialize(state, RunFlag, CurLoad);
-            auto const &sim_component = DataPlant::CompData::getPlantComponent(state, this->CWPlantLoc);
-            this->calculate(state, CurLoad, RunFlag, sim_component.FlowCtrl);
+            this->calculate(state, CurLoad, RunFlag, this->CWPlantLoc.comp->FlowCtrl);
             this->update(state, CurLoad, RunFlag);
         } else if (calledFromLocation.loopNum == this->CDPlantLoc.loopNum) { // condenser loop
             PlantUtilities::UpdateChillerComponentCondenserSide(state,
@@ -2185,6 +2159,7 @@ namespace PlantChillers {
         // Locals
         // PARAMETERS
         static constexpr std::string_view RoutineName("GetEngineDrivenChillerInput: "); // include trailing blank space
+        static constexpr std::string_view routineName = "GetEngineDrivenChillerInput";
 
         int NumAlphas; // Number of elements in the alpha array
         int NumNums;   // Number of elements in the numeric array
@@ -2219,6 +2194,9 @@ namespace PlantChillers {
                                                                      state.dataIPShortCut->lAlphaFieldBlanks,
                                                                      state.dataIPShortCut->cAlphaFieldNames,
                                                                      state.dataIPShortCut->cNumericFieldNames);
+
+            ErrorObjectHeader eoh{routineName, state.dataIPShortCut->cCurrentModuleObject, state.dataIPShortCut->cAlphaArgs(1)};
+
             Util::IsNameEmpty(state, state.dataIPShortCut->cAlphaArgs(1), state.dataIPShortCut->cCurrentModuleObject, ErrorsFound);
 
             // ErrorsFound will be set to True if problem was found, left untouched otherwise
@@ -2545,7 +2523,7 @@ namespace PlantChillers {
                     if (thisChiller.CondVolFlowRate <= 0.0) {
                         ShowSevereError(
                             state, format("Invalid {}={:.6R}", state.dataIPShortCut->cNumericFieldNames(10), state.dataIPShortCut->rNumericArgs(10)));
-                        ShowSevereError(state, "Condenser fluid flow rate must be specified for Heat Reclaim applications.");
+                        ShowContinueError(state, "Condenser fluid flow rate must be specified for Heat Reclaim applications.");
                         ShowContinueError(
                             state, format("Entered in {}={}", state.dataIPShortCut->cCurrentModuleObject, state.dataIPShortCut->cAlphaArgs(1)));
                         ErrorsFound = true;
@@ -2611,16 +2589,13 @@ namespace PlantChillers {
                 }
             }
 
-            if (!state.dataIPShortCut->lAlphaFieldBlanks(16)) {
-                thisChiller.BasinHeaterSchedulePtr = ScheduleManager::GetScheduleIndex(state, state.dataIPShortCut->cAlphaArgs(16));
-                if (thisChiller.BasinHeaterSchedulePtr == 0) {
-                    ShowWarningError(state,
-                                     format("{}, \"{}\" TRIM(state.dataIPShortCut->cAlphaFieldNames(16)) \"{}\" was not found. Basin heater "
-                                            "operation will not be modeled and the simulation continues",
-                                            state.dataIPShortCut->cCurrentModuleObject,
-                                            thisChiller.Name,
-                                            state.dataIPShortCut->cAlphaArgs(16)));
-                }
+            if (state.dataIPShortCut->lAlphaFieldBlanks(16)) {
+            } else if ((thisChiller.basinHeaterSched = Sched::GetSchedule(state, state.dataIPShortCut->cAlphaArgs(16))) == nullptr) {
+                ShowWarningItemNotFound(state,
+                                        eoh,
+                                        state.dataIPShortCut->cAlphaFieldNames(16),
+                                        state.dataIPShortCut->cAlphaArgs(16),
+                                        "Basin heater operation will not be modeled and the simulation continues");
             }
 
             if (NumNums > 30) {
@@ -2919,11 +2894,7 @@ namespace PlantChillers {
         // Initialize critical Demand Side Variables
         if (this->MyEnvrnFlag && state.dataGlobal->BeginEnvrnFlag && (state.dataPlnt->PlantFirstSizesOkayToFinalize)) {
 
-            Real64 rho = FluidProperties::GetDensityGlycol(state,
-                                                           state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).FluidName,
-                                                           Constant::CWInitConvTemp,
-                                                           state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).FluidIndex,
-                                                           RoutineName);
+            Real64 rho = this->CWPlantLoc.loop->glycol->getDensity(state, Constant::CWInitConvTemp, RoutineName);
 
             this->EvapMassFlowRateMax = rho * this->EvapVolFlowRate;
             PlantUtilities::InitComponentNodes(state, 0.0, this->EvapMassFlowRateMax, this->EvapInletNodeNum, this->EvapOutletNodeNum);
@@ -2934,11 +2905,7 @@ namespace PlantChillers {
 
                 state.dataLoopNodes->Node(this->CondInletNodeNum).Temp = this->TempDesCondIn;
 
-                rho = FluidProperties::GetDensityGlycol(state,
-                                                        state.dataPlnt->PlantLoop(this->CDPlantLoc.loopNum).FluidName,
-                                                        Constant::CWInitConvTemp,
-                                                        state.dataPlnt->PlantLoop(this->CDPlantLoc.loopNum).FluidIndex,
-                                                        RoutineName);
+                rho = this->CDPlantLoc.loop->glycol->getDensity(state, Constant::CWInitConvTemp, RoutineName);
 
                 this->CondMassFlowRateMax = rho * this->CondVolFlowRate;
 
@@ -2960,11 +2927,7 @@ namespace PlantChillers {
             }
 
             if (this->HeatRecActive) {
-                rho = FluidProperties::GetDensityGlycol(state,
-                                                        state.dataPlnt->PlantLoop(this->HRPlantLoc.loopNum).FluidName,
-                                                        Constant::HWInitConvTemp,
-                                                        state.dataPlnt->PlantLoop(this->HRPlantLoc.loopNum).FluidIndex,
-                                                        RoutineName);
+                rho = this->HRPlantLoc.loop->glycol->getDensity(state, Constant::HWInitConvTemp, RoutineName);
                 this->DesignHeatRecMassFlowRate = rho * this->DesignHeatRecVolFlowRate;
 
                 PlantUtilities::InitComponentNodes(
@@ -2982,9 +2945,9 @@ namespace PlantChillers {
             // fix for clumsy old input that worked because loop setpoint was spread.
             //  could be removed with transition, testing , model change, period of being obsolete.
             state.dataLoopNodes->Node(this->EvapOutletNodeNum).TempSetPoint =
-                state.dataLoopNodes->Node(state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).TempSetPointNodeNum).TempSetPoint;
+                state.dataLoopNodes->Node(this->CWPlantLoc.loop->TempSetPointNodeNum).TempSetPoint;
             state.dataLoopNodes->Node(this->EvapOutletNodeNum).TempSetPointHi =
-                state.dataLoopNodes->Node(state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).TempSetPointNodeNum).TempSetPointHi;
+                state.dataLoopNodes->Node(this->CWPlantLoc.loop->TempSetPointNodeNum).TempSetPointHi;
         }
 
         Real64 mdot;
@@ -3046,23 +3009,15 @@ namespace PlantChillers {
         Real64 tmpCondVolFlowRate = this->CondVolFlowRate;
 
         if (this->CondenserType == DataPlant::CondenserType::WaterCooled) {
-            PltSizCondNum = state.dataPlnt->PlantLoop(this->CDPlantLoc.loopNum).PlantSizNum;
+            PltSizCondNum = this->CDPlantLoc.loop->PlantSizNum;
         }
 
-        int PltSizNum = state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).PlantSizNum;
+        int PltSizNum = this->CWPlantLoc.loop->PlantSizNum;
 
         if (PltSizNum > 0) {
             if (state.dataSize->PlantSizData(PltSizNum).DesVolFlowRate >= HVAC::SmallWaterVolFlow) {
-                Real64 rho = FluidProperties::GetDensityGlycol(state,
-                                                               state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).FluidName,
-                                                               Constant::CWInitConvTemp,
-                                                               state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).FluidIndex,
-                                                               RoutineName);
-                Real64 Cp = FluidProperties::GetSpecificHeatGlycol(state,
-                                                                   state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).FluidName,
-                                                                   Constant::CWInitConvTemp,
-                                                                   state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).FluidIndex,
-                                                                   RoutineName);
+                Real64 rho = this->CWPlantLoc.loop->glycol->getDensity(state, Constant::CWInitConvTemp, RoutineName);
+                Real64 Cp = this->CWPlantLoc.loop->glycol->getSpecificHeat(state, Constant::CWInitConvTemp, RoutineName);
                 tmpNomCap =
                     Cp * rho * state.dataSize->PlantSizData(PltSizNum).DeltaT * state.dataSize->PlantSizData(PltSizNum).DesVolFlowRate * this->SizFac;
             } else {
@@ -3174,17 +3129,9 @@ namespace PlantChillers {
 
         if (PltSizCondNum > 0 && PltSizNum > 0) {
             if (state.dataSize->PlantSizData(PltSizNum).DesVolFlowRate >= HVAC::SmallWaterVolFlow && tmpNomCap > 0.0) {
-                Real64 rho = FluidProperties::GetDensityGlycol(state,
-                                                               state.dataPlnt->PlantLoop(this->CDPlantLoc.loopNum).FluidName,
-                                                               this->TempDesCondIn,
-                                                               state.dataPlnt->PlantLoop(this->CDPlantLoc.loopNum).FluidIndex,
-                                                               RoutineName);
+                Real64 rho = this->CDPlantLoc.loop->glycol->getDensity(state, this->TempDesCondIn, RoutineName);
 
-                Real64 Cp = FluidProperties::GetSpecificHeatGlycol(state,
-                                                                   state.dataPlnt->PlantLoop(this->CDPlantLoc.loopNum).FluidName,
-                                                                   this->TempDesCondIn,
-                                                                   state.dataPlnt->PlantLoop(this->CDPlantLoc.loopNum).FluidIndex,
-                                                                   RoutineName);
+                Real64 Cp = this->CDPlantLoc.loop->glycol->getSpecificHeat(state, this->TempDesCondIn, RoutineName);
                 tmpCondVolFlowRate = tmpNomCap * (1.0 + 1.0 / this->COP) / (state.dataSize->PlantSizData(PltSizCondNum).DeltaT * Cp * rho);
             } else {
                 if (this->CondVolFlowRateWasAutoSized) tmpCondVolFlowRate = 0.0;
@@ -3332,27 +3279,19 @@ namespace PlantChillers {
             OutputReportPredefined::PreDefTableEntry(state,
                                                      state.dataOutRptPredefined->pdchChillerPlantloopName,
                                                      this->Name,
-                                                     this->CWPlantLoc.loopNum > 0 ? state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).Name : "N/A");
+                                                     (this->CWPlantLoc.loop != nullptr) ? this->CWPlantLoc.loop->Name : "N/A");
             OutputReportPredefined::PreDefTableEntry(state,
                                                      state.dataOutRptPredefined->pdchChillerPlantloopBranchName,
                                                      this->Name,
-                                                     this->CWPlantLoc.loopNum > 0 ? state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum)
-                                                                                        .LoopSide(this->CWPlantLoc.loopSideNum)
-                                                                                        .Branch(this->CWPlantLoc.branchNum)
-                                                                                        .Name
-                                                                                  : "N/A");
+                                                     (this->CWPlantLoc.branch != nullptr) ? this->CWPlantLoc.branch->Name : "N/A");
             OutputReportPredefined::PreDefTableEntry(state,
                                                      state.dataOutRptPredefined->pdchChillerCondLoopName,
                                                      this->Name,
-                                                     this->CDPlantLoc.loopNum > 0 ? state.dataPlnt->PlantLoop(this->CDPlantLoc.loopNum).Name : "N/A");
+                                                     (this->CDPlantLoc.loop != nullptr) ? this->CDPlantLoc.loop->Name : "N/A");
             OutputReportPredefined::PreDefTableEntry(state,
                                                      state.dataOutRptPredefined->pdchChillerCondLoopBranchName,
                                                      this->Name,
-                                                     this->CDPlantLoc.loopNum > 0 ? state.dataPlnt->PlantLoop(this->CDPlantLoc.loopNum)
-                                                                                        .LoopSide(this->CDPlantLoc.loopSideNum)
-                                                                                        .Branch(this->CDPlantLoc.branchNum)
-                                                                                        .Name
-                                                                                  : "N/A");
+                                                     (this->CDPlantLoc.branch != nullptr) ? this->CDPlantLoc.branch->Name : "N/A");
             OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchChillerMinPLR, this->Name, this->MinPartLoadRat);
             OutputReportPredefined::PreDefTableEntry(
                 state, state.dataOutRptPredefined->pdchChillerFuelType, this->Name, Constant::eResourceNames[static_cast<int>(this->FuelType)]);
@@ -3374,15 +3313,11 @@ namespace PlantChillers {
             OutputReportPredefined::PreDefTableEntry(state,
                                                      state.dataOutRptPredefined->pdchChillerHeatRecPlantloopName,
                                                      this->Name,
-                                                     this->HRPlantLoc.loopNum > 0 ? state.dataPlnt->PlantLoop(this->HRPlantLoc.loopNum).Name : "N/A");
+                                                     (this->HRPlantLoc.loop != nullptr) ? this->HRPlantLoc.loop->Name : "N/A");
             OutputReportPredefined::PreDefTableEntry(state,
                                                      state.dataOutRptPredefined->pdchChillerHeatRecPlantloopBranchName,
                                                      this->Name,
-                                                     this->HRPlantLoc.loopNum > 0 ? state.dataPlnt->PlantLoop(this->HRPlantLoc.loopNum)
-                                                                                        .LoopSide(this->HRPlantLoc.loopSideNum)
-                                                                                        .Branch(this->HRPlantLoc.branchNum)
-                                                                                        .Name
-                                                                                  : "N/A");
+                                                     (this->HRPlantLoc.branch != nullptr) ? this->HRPlantLoc.branch->Name : "N/A");
             OutputReportPredefined::PreDefTableEntry(
                 state, state.dataOutRptPredefined->pdchChillerRecRelCapFrac, this->Name, this->HeatRecCapacityFraction);
         }
@@ -3452,7 +3387,7 @@ namespace PlantChillers {
         //   calculate end time of current time step
         Real64 CurrentEndTime = state.dataGlobal->CurrentTime + state.dataHVACGlobal->SysTimeElapsed;
 
-        //   Print warning messages only when valid and only for the first ocurrance. Let summary provide statistics.
+        //   Print warning messages only when valid and only for the first occurrence. Let summary provide statistics.
         //   Wait for next time step to print warnings. If simulation iterates, print out
         //   the warning for the last iteration only. Must wait for next time step to accomplish this.
         //   If a warning occurs and the simulation down shifts, the warning is not valid.
@@ -3477,7 +3412,7 @@ namespace PlantChillers {
         // If Chiller load is 0 or chiller is not running then leave the subroutine.
         if (MyLoad >= 0.0 || !RunFlag) {
             if (EquipFlowCtrl == DataBranchAirLoopPlant::ControlType::SeriesActive ||
-                state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).LoopSide(this->CWPlantLoc.loopSideNum).FlowLock == DataPlant::FlowLock::Locked) {
+                this->CWPlantLoc.side->FlowLock == DataPlant::FlowLock::Locked) {
                 this->EvapMassFlowRate = state.dataLoopNodes->Node(this->EvapInletNodeNum).MassFlowRate;
             } else {
                 this->EvapMassFlowRate = 0.0;
@@ -3498,7 +3433,7 @@ namespace PlantChillers {
 
             if (this->CondenserType == DataPlant::CondenserType::EvapCooled) {
                 CalcBasinHeaterPower(
-                    state, this->BasinHeaterPowerFTempDiff, this->BasinHeaterSchedulePtr, this->BasinHeaterSetPointTemp, this->BasinHeaterPower);
+                    state, this->BasinHeaterPowerFTempDiff, this->basinHeaterSched, this->BasinHeaterSetPointTemp, this->BasinHeaterPower);
             }
             this->PrintMessage = false;
             return;
@@ -3547,7 +3482,13 @@ namespace PlantChillers {
             PlantUtilities::SetComponentFlowRate(state, this->CondMassFlowRate, this->CondInletNodeNum, this->CondOutletNodeNum, this->CDPlantLoc);
             PlantUtilities::PullCompInterconnectTrigger(
                 state, this->CWPlantLoc, this->CondMassFlowIndex, this->CDPlantLoc, DataPlant::CriteriaType::MassFlowRate, this->CondMassFlowRate);
-            if (this->CondMassFlowRate < DataBranchAirLoopPlant::MassFlowTolerance) return;
+            if (this->CondMassFlowRate < DataBranchAirLoopPlant::MassFlowTolerance) {
+                MyLoad = 0.0;
+                this->EvapMassFlowRate = 0.0;
+                PlantUtilities::SetComponentFlowRate(
+                    state, this->EvapMassFlowRate, this->EvapInletNodeNum, this->EvapOutletNodeNum, this->CWPlantLoc);
+                return;
+            }
         }
 
         //  LOAD LOCAL VARIABLES FROM DATA STRUCTURE (for code readability)
@@ -3614,15 +3555,11 @@ namespace PlantChillers {
             OperPartLoadRat = 0.0;
         }
 
-        Real64 Cp = FluidProperties::GetSpecificHeatGlycol(state,
-                                                           state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).FluidName,
-                                                           state.dataLoopNodes->Node(this->EvapInletNodeNum).Temp,
-                                                           state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).FluidIndex,
-                                                           RoutineName);
+        Real64 Cp = this->CWPlantLoc.loop->glycol->getSpecificHeat(state, state.dataLoopNodes->Node(this->EvapInletNodeNum).Temp, RoutineName);
 
         // If FlowLock is True, the new resolved mdot is used to update Power, QEvap, Qcond, and
         // condenser side outlet temperature.
-        if (state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).LoopSide(this->CWPlantLoc.loopSideNum).FlowLock == DataPlant::FlowLock::Unlocked) {
+        if (this->CWPlantLoc.side->FlowLock == DataPlant::FlowLock::Unlocked) {
             this->PossibleSubcooling = false;
             this->QEvaporator = AvailChillerCap * OperPartLoadRat;
             Real64 FRAC;
@@ -3633,7 +3570,7 @@ namespace PlantChillers {
             }
             this->Power = FracFullLoadPower * FullLoadPowerRat * AvailChillerCap / COPLocal * FRAC;
 
-            // Either set the flow to the Constant value or caluclate the flow for the variable volume
+            // Either set the flow to the Constant value or calculate the flow for the variable volume
             if ((this->FlowMode == DataPlant::FlowMode::Constant) || (this->FlowMode == DataPlant::FlowMode::NotModulated)) {
                 // Start by assuming max (design) flow
                 this->EvapMassFlowRate = this->EvapMassFlowRateMax;
@@ -3654,11 +3591,10 @@ namespace PlantChillers {
 
                 // Calculate the Delta Temp from the inlet temp to the chiller outlet setpoint
                 Real64 EvapDeltaTemp(0.0);
-                if (state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).LoopDemandCalcScheme == DataPlant::LoopDemandCalcScheme::SingleSetPoint) {
+                if (this->CWPlantLoc.loop->LoopDemandCalcScheme == DataPlant::LoopDemandCalcScheme::SingleSetPoint) {
                     EvapDeltaTemp =
                         state.dataLoopNodes->Node(this->EvapInletNodeNum).Temp - state.dataLoopNodes->Node(this->EvapOutletNodeNum).TempSetPoint;
-                } else if (state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).LoopDemandCalcScheme ==
-                           DataPlant::LoopDemandCalcScheme::DualSetPointDeadBand) {
+                } else if (this->CWPlantLoc.loop->LoopDemandCalcScheme == DataPlant::LoopDemandCalcScheme::DualSetPointDeadBand) {
                     EvapDeltaTemp =
                         state.dataLoopNodes->Node(this->EvapInletNodeNum).Temp - state.dataLoopNodes->Node(this->EvapOutletNodeNum).TempSetPointHi;
                 }
@@ -3672,10 +3608,9 @@ namespace PlantChillers {
                     // Use SetComponentFlowRate to decide actual flow
                     PlantUtilities::SetComponentFlowRate(
                         state, this->EvapMassFlowRate, this->EvapInletNodeNum, this->EvapOutletNodeNum, this->CWPlantLoc);
-                    if (state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).LoopDemandCalcScheme == DataPlant::LoopDemandCalcScheme::SingleSetPoint) {
+                    if (this->CWPlantLoc.loop->LoopDemandCalcScheme == DataPlant::LoopDemandCalcScheme::SingleSetPoint) {
                         this->EvapOutletTemp = state.dataLoopNodes->Node(this->EvapOutletNodeNum).TempSetPoint;
-                    } else if (state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).LoopDemandCalcScheme ==
-                               DataPlant::LoopDemandCalcScheme::DualSetPointDeadBand) {
+                    } else if (this->CWPlantLoc.loop->LoopDemandCalcScheme == DataPlant::LoopDemandCalcScheme::DualSetPointDeadBand) {
                         this->EvapOutletTemp = state.dataLoopNodes->Node(this->EvapOutletNodeNum).TempSetPointHi;
                     }
                 } else {
@@ -3717,7 +3652,7 @@ namespace PlantChillers {
                 MyLoad = 0.0;
                 if (this->CondenserType == DataPlant::CondenserType::EvapCooled) {
                     CalcBasinHeaterPower(
-                        state, this->BasinHeaterPowerFTempDiff, this->BasinHeaterSchedulePtr, this->BasinHeaterSetPointTemp, this->BasinHeaterPower);
+                        state, this->BasinHeaterPowerFTempDiff, this->basinHeaterSched, this->BasinHeaterSetPointTemp, this->BasinHeaterPower);
                 }
                 this->PrintMessage = false;
                 return;
@@ -3736,24 +3671,21 @@ namespace PlantChillers {
 
                 Real64 TempEvapOutSetPoint(0.0); // C - evaporator outlet temperature setpoint
 
-                if (state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).LoopDemandCalcScheme == DataPlant::LoopDemandCalcScheme::SingleSetPoint) {
+                if (this->CWPlantLoc.loop->LoopDemandCalcScheme == DataPlant::LoopDemandCalcScheme::SingleSetPoint) {
                     if ((this->FlowMode == DataPlant::FlowMode::LeavingSetpointModulated) ||
-                        DataPlant::CompData::getPlantComponent(state, this->CWPlantLoc).CurOpSchemeType == DataPlant::OpScheme::CompSetPtBased ||
+                        this->CWPlantLoc.comp->CurOpSchemeType == DataPlant::OpScheme::CompSetPtBased ||
                         (state.dataLoopNodes->Node(this->EvapOutletNodeNum).TempSetPoint != DataLoopNode::SensedNodeFlagValue)) {
                         TempEvapOutSetPoint = state.dataLoopNodes->Node(this->EvapOutletNodeNum).TempSetPoint;
                     } else {
-                        TempEvapOutSetPoint =
-                            state.dataLoopNodes->Node(state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).TempSetPointNodeNum).TempSetPoint;
+                        TempEvapOutSetPoint = state.dataLoopNodes->Node(this->CWPlantLoc.loop->TempSetPointNodeNum).TempSetPoint;
                     }
-                } else if (state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).LoopDemandCalcScheme ==
-                           DataPlant::LoopDemandCalcScheme::DualSetPointDeadBand) {
+                } else if (this->CWPlantLoc.loop->LoopDemandCalcScheme == DataPlant::LoopDemandCalcScheme::DualSetPointDeadBand) {
                     if ((this->FlowMode == DataPlant::FlowMode::LeavingSetpointModulated) ||
                         DataPlant::CompData::getPlantComponent(state, this->CWPlantLoc).CurOpSchemeType == DataPlant::OpScheme::CompSetPtBased ||
                         (state.dataLoopNodes->Node(this->EvapOutletNodeNum).TempSetPointHi != DataLoopNode::SensedNodeFlagValue)) {
                         TempEvapOutSetPoint = state.dataLoopNodes->Node(this->EvapOutletNodeNum).TempSetPointHi;
                     } else {
-                        TempEvapOutSetPoint =
-                            state.dataLoopNodes->Node(state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).TempSetPointNodeNum).TempSetPointHi;
+                        TempEvapOutSetPoint = state.dataLoopNodes->Node(this->CWPlantLoc.loop->TempSetPointNodeNum).TempSetPointHi;
                     }
                 }
 
@@ -3843,7 +3775,7 @@ namespace PlantChillers {
             }
             if (this->QEvaporator == 0.0 && this->CondenserType == DataPlant::CondenserType::EvapCooled) {
                 CalcBasinHeaterPower(
-                    state, this->BasinHeaterPowerFTempDiff, this->BasinHeaterSchedulePtr, this->BasinHeaterSetPointTemp, this->BasinHeaterPower);
+                    state, this->BasinHeaterPowerFTempDiff, this->basinHeaterSched, this->BasinHeaterSetPointTemp, this->BasinHeaterPower);
             }
         } // This is the end of the FlowLock Block
 
@@ -3855,11 +3787,7 @@ namespace PlantChillers {
         if (this->CondenserType == DataPlant::CondenserType::WaterCooled) {
 
             if (this->CondMassFlowRate > DataBranchAirLoopPlant::MassFlowTolerance) {
-                Real64 CpCond = FluidProperties::GetSpecificHeatGlycol(state,
-                                                                       state.dataPlnt->PlantLoop(this->CDPlantLoc.loopNum).FluidName,
-                                                                       this->CondInletTemp,
-                                                                       state.dataPlnt->PlantLoop(this->CDPlantLoc.loopNum).FluidIndex,
-                                                                       RoutineName);
+                Real64 CpCond = this->CDPlantLoc.loop->glycol->getSpecificHeat(state, this->CondInletTemp, RoutineName);
                 this->CondOutletTemp = this->QCondenser / this->CondMassFlowRate / CpCond + this->CondInletTemp;
             } else {
                 ShowSevereError(state, format("CalcEngineDrivenChillerModel: Condenser flow = 0, for EngineDrivenChiller={}", this->Name));
@@ -4010,11 +3938,7 @@ namespace PlantChillers {
         this->HeatRecMdotActual = state.dataLoopNodes->Node(this->HeatRecInletNodeNum).MassFlowRate;
 
         this->HeatRecInletTemp = state.dataLoopNodes->Node(this->HeatRecInletNodeNum).Temp;
-        Real64 cp = FluidProperties::GetSpecificHeatGlycol(state,
-                                                           state.dataPlnt->PlantLoop(this->HRPlantLoc.loopNum).FluidName,
-                                                           this->HeatRecInletTemp,
-                                                           state.dataPlnt->PlantLoop(this->HRPlantLoc.loopNum).FluidIndex,
-                                                           RoutineName);
+        Real64 cp = this->HRPlantLoc.loop->glycol->getSpecificHeat(state, this->HeatRecInletTemp, RoutineName);
 
         // Don't divide by zero - Note This also results in no heat recovery when
         //  design Mdot for Heat Recovery - Specified on Chiller Input - is zero
@@ -4152,8 +4076,7 @@ namespace PlantChillers {
                     } else {
                         // need call to EMS to check node
                         bool FatalError = false; // but not really fatal yet, but should be.
-                        EMSManager::CheckIfNodeSetPointManagedByEMS(
-                            state, this->EvapOutletNodeNum, EMSManager::SPControlType::TemperatureSetPoint, FatalError);
+                        EMSManager::CheckIfNodeSetPointManagedByEMS(state, this->EvapOutletNodeNum, HVAC::CtrlVarType::Temp, FatalError);
                         state.dataLoopNodes->NodeSetpointCheck(this->EvapOutletNodeNum).needsSetpointChecking = false;
                         if (FatalError) {
                             if (!this->ModulatedFlowErrDone) {
@@ -4170,9 +4093,9 @@ namespace PlantChillers {
                     }
                     this->ModulatedFlowSetToLoop = true;
                     state.dataLoopNodes->Node(this->EvapOutletNodeNum).TempSetPoint =
-                        state.dataLoopNodes->Node(state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).TempSetPointNodeNum).TempSetPoint;
+                        state.dataLoopNodes->Node(this->CWPlantLoc.loop->TempSetPointNodeNum).TempSetPoint;
                     state.dataLoopNodes->Node(this->EvapOutletNodeNum).TempSetPointHi =
-                        state.dataLoopNodes->Node(state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).TempSetPointNodeNum).TempSetPointHi;
+                        state.dataLoopNodes->Node(this->CWPlantLoc.loop->TempSetPointNodeNum).TempSetPointHi;
                 }
             }
 
@@ -4200,8 +4123,7 @@ namespace PlantChillers {
     {
         if (calledFromLocation.loopNum == this->CWPlantLoc.loopNum) { // chilled water loop
             this->initialize(state, RunFlag, CurLoad);
-            auto const &sim_component = DataPlant::CompData::getPlantComponent(state, this->CWPlantLoc);
-            this->calculate(state, CurLoad, RunFlag, sim_component.FlowCtrl);
+            this->calculate(state, CurLoad, RunFlag, this->CWPlantLoc.comp->FlowCtrl);
             this->update(state, CurLoad, RunFlag);
         } else if (calledFromLocation.loopNum == this->CDPlantLoc.loopNum) { // condenser loop
             PlantUtilities::UpdateChillerComponentCondenserSide(state,
@@ -4244,6 +4166,7 @@ namespace PlantChillers {
         // EnergyPlus input processor
 
         static constexpr std::string_view RoutineName("GetGTChillerInput: "); // include trailing blank space
+        static constexpr std::string_view routineName = "GetGTChillerInput";
 
         int NumAlphas; // Number of elements in the alpha array
         int NumNums;   // Number of elements in the numeric array
@@ -4277,6 +4200,9 @@ namespace PlantChillers {
                                                                      state.dataIPShortCut->lAlphaFieldBlanks,
                                                                      state.dataIPShortCut->cAlphaFieldNames,
                                                                      state.dataIPShortCut->cNumericFieldNames);
+
+            ErrorObjectHeader eoh{routineName, state.dataIPShortCut->cCurrentModuleObject, state.dataIPShortCut->cAlphaArgs(1)};
+
             Util::IsNameEmpty(state, state.dataIPShortCut->cAlphaArgs(1), state.dataIPShortCut->cCurrentModuleObject, ErrorsFound);
 
             // ErrorsFound will be set to True if problem was found, left untouched otherwise
@@ -4558,7 +4484,7 @@ namespace PlantChillers {
                     if (thisChiller.CondVolFlowRate <= 0.0) {
                         ShowSevereError(
                             state, format("Invalid {}={:.6R}", state.dataIPShortCut->cNumericFieldNames(10), state.dataIPShortCut->rNumericArgs(10)));
-                        ShowSevereError(state, "Condenser fluid flow rate must be specified for Heat Reclaim applications.");
+                        ShowContinueError(state, "Condenser fluid flow rate must be specified for Heat Reclaim applications.");
                         ShowContinueError(
                             state, format("Entered in {}={}", state.dataIPShortCut->cCurrentModuleObject, state.dataIPShortCut->cAlphaArgs(1)));
                         ErrorsFound = true;
@@ -4633,16 +4559,13 @@ namespace PlantChillers {
                 }
             }
 
-            if (!state.dataIPShortCut->lAlphaFieldBlanks(11)) {
-                thisChiller.BasinHeaterSchedulePtr = ScheduleManager::GetScheduleIndex(state, state.dataIPShortCut->cAlphaArgs(11));
-                if (thisChiller.BasinHeaterSchedulePtr == 0) {
-                    ShowWarningError(state,
-                                     format("{}, \"{}\" TRIM(state.dataIPShortCut->cAlphaFieldNames(11)) \"{}\" was not found. Basin heater "
-                                            "operation will not be modeled and the simulation continues",
-                                            state.dataIPShortCut->cCurrentModuleObject,
-                                            thisChiller.Name,
-                                            state.dataIPShortCut->cAlphaArgs(11)));
-                }
+            if (state.dataIPShortCut->lAlphaFieldBlanks(11)) {
+            } else if ((thisChiller.basinHeaterSched = Sched::GetSchedule(state, state.dataIPShortCut->cAlphaArgs(11))) == nullptr) {
+                ShowWarningItemNotFound(state,
+                                        eoh,
+                                        state.dataIPShortCut->cAlphaFieldNames(11),
+                                        state.dataIPShortCut->cAlphaArgs(11),
+                                        "Basin heater operation will not be modeled and the simulation continues");
             }
 
             if (NumNums > 49) {
@@ -4905,11 +4828,7 @@ namespace PlantChillers {
 
         if (this->MyEnvrnFlag && state.dataGlobal->BeginEnvrnFlag && (state.dataPlnt->PlantFirstSizesOkayToFinalize)) {
 
-            Real64 rho = FluidProperties::GetDensityGlycol(state,
-                                                           state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).FluidName,
-                                                           Constant::CWInitConvTemp,
-                                                           state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).FluidIndex,
-                                                           RoutineName);
+            Real64 rho = this->CWPlantLoc.loop->glycol->getDensity(state, Constant::CWInitConvTemp, RoutineName);
 
             this->EvapMassFlowRateMax = rho * this->EvapVolFlowRate;
             PlantUtilities::InitComponentNodes(state, 0.0, this->EvapMassFlowRateMax, this->EvapInletNodeNum, this->EvapOutletNodeNum);
@@ -4919,11 +4838,7 @@ namespace PlantChillers {
 
                 state.dataLoopNodes->Node(this->CondInletNodeNum).Temp = this->TempDesCondIn;
 
-                rho = FluidProperties::GetDensityGlycol(state,
-                                                        state.dataPlnt->PlantLoop(this->CDPlantLoc.loopNum).FluidName,
-                                                        Constant::CWInitConvTemp,
-                                                        state.dataPlnt->PlantLoop(this->CDPlantLoc.loopNum).FluidIndex,
-                                                        RoutineName);
+                rho = this->CDPlantLoc.loop->glycol->getDensity(state, Constant::CWInitConvTemp, RoutineName);
 
                 this->CondMassFlowRateMax = rho * this->CondVolFlowRate;
 
@@ -4945,11 +4860,7 @@ namespace PlantChillers {
             }
 
             if (this->HeatRecActive) {
-                rho = FluidProperties::GetDensityGlycol(state,
-                                                        state.dataPlnt->PlantLoop(this->HRPlantLoc.loopNum).FluidName,
-                                                        Constant::HWInitConvTemp,
-                                                        state.dataPlnt->PlantLoop(this->HRPlantLoc.loopNum).FluidIndex,
-                                                        RoutineName);
+                rho = this->HRPlantLoc.loop->glycol->getDensity(state, Constant::HWInitConvTemp, RoutineName);
                 this->DesignHeatRecMassFlowRate = rho * this->DesignHeatRecVolFlowRate;
 
                 PlantUtilities::InitComponentNodes(
@@ -4967,9 +4878,9 @@ namespace PlantChillers {
             // fix for clumsy old input that worked because loop setpoint was spread.
             //  could be removed with transition, testing , model change, period of being obsolete.
             state.dataLoopNodes->Node(this->EvapOutletNodeNum).TempSetPoint =
-                state.dataLoopNodes->Node(state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).TempSetPointNodeNum).TempSetPoint;
+                state.dataLoopNodes->Node(this->CWPlantLoc.loop->TempSetPointNodeNum).TempSetPoint;
             state.dataLoopNodes->Node(this->EvapOutletNodeNum).TempSetPointHi =
-                state.dataLoopNodes->Node(state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).TempSetPointNodeNum).TempSetPointHi;
+                state.dataLoopNodes->Node(this->CWPlantLoc.loop->TempSetPointNodeNum).TempSetPointHi;
         }
 
         Real64 mdot;
@@ -5031,23 +4942,15 @@ namespace PlantChillers {
 
         int PltSizCondNum(0); // Plant Sizing index for condenser loop
         if (this->CondenserType == DataPlant::CondenserType::WaterCooled) {
-            PltSizCondNum = state.dataPlnt->PlantLoop(this->CDPlantLoc.loopNum).PlantSizNum;
+            PltSizCondNum = this->CDPlantLoc.loop->PlantSizNum;
         }
 
-        int PltSizNum = state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).PlantSizNum;
+        int PltSizNum = this->CWPlantLoc.loop->PlantSizNum;
 
         if (PltSizNum > 0) {
             if (state.dataSize->PlantSizData(PltSizNum).DesVolFlowRate >= HVAC::SmallWaterVolFlow) {
-                Real64 rho = FluidProperties::GetDensityGlycol(state,
-                                                               state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).FluidName,
-                                                               Constant::CWInitConvTemp,
-                                                               state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).FluidIndex,
-                                                               RoutineName);
-                Real64 Cp = FluidProperties::GetSpecificHeatGlycol(state,
-                                                                   state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).FluidName,
-                                                                   Constant::CWInitConvTemp,
-                                                                   state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).FluidIndex,
-                                                                   RoutineName);
+                Real64 rho = this->CWPlantLoc.loop->glycol->getDensity(state, Constant::CWInitConvTemp, RoutineName);
+                Real64 Cp = this->CWPlantLoc.loop->glycol->getSpecificHeat(state, Constant::CWInitConvTemp, RoutineName);
                 tmpNomCap =
                     Cp * rho * state.dataSize->PlantSizData(PltSizNum).DeltaT * state.dataSize->PlantSizData(PltSizNum).DesVolFlowRate * this->SizFac;
             } else {
@@ -5163,16 +5066,8 @@ namespace PlantChillers {
 
         if (PltSizCondNum > 0 && PltSizNum > 0) {
             if (state.dataSize->PlantSizData(PltSizNum).DesVolFlowRate >= HVAC::SmallWaterVolFlow && tmpNomCap > 0.0) {
-                Real64 rho = FluidProperties::GetDensityGlycol(state,
-                                                               state.dataPlnt->PlantLoop(this->CDPlantLoc.loopNum).FluidName,
-                                                               this->TempDesCondIn,
-                                                               state.dataPlnt->PlantLoop(this->CDPlantLoc.loopNum).FluidIndex,
-                                                               RoutineName);
-                Real64 Cp = FluidProperties::GetSpecificHeatGlycol(state,
-                                                                   state.dataPlnt->PlantLoop(this->CDPlantLoc.loopNum).FluidName,
-                                                                   this->TempDesCondIn,
-                                                                   state.dataPlnt->PlantLoop(this->CDPlantLoc.loopNum).FluidIndex,
-                                                                   RoutineName);
+                Real64 rho = this->CDPlantLoc.loop->glycol->getDensity(state, this->TempDesCondIn, RoutineName);
+                Real64 Cp = this->CDPlantLoc.loop->glycol->getSpecificHeat(state, this->TempDesCondIn, RoutineName);
                 tmpCondVolFlowRate = tmpNomCap * (1.0 + 1.0 / this->COP) / (state.dataSize->PlantSizData(PltSizCondNum).DeltaT * Cp * rho);
             } else {
                 if (this->CondVolFlowRateWasAutoSized) tmpCondVolFlowRate = 0.0;
@@ -5357,30 +5252,25 @@ namespace PlantChillers {
             OutputReportPredefined::PreDefTableEntry(state,
                                                      state.dataOutRptPredefined->pdchChillerPlantloopName,
                                                      this->Name,
-                                                     this->CWPlantLoc.loopNum > 0 ? state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).Name : "N/A");
+                                                     (this->CWPlantLoc.loop != nullptr) ? this->CWPlantLoc.loop->Name : "N/A");
             OutputReportPredefined::PreDefTableEntry(state,
                                                      state.dataOutRptPredefined->pdchChillerPlantloopBranchName,
                                                      this->Name,
-                                                     this->CWPlantLoc.loopNum > 0 ? state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum)
-                                                                                        .LoopSide(this->CWPlantLoc.loopSideNum)
-                                                                                        .Branch(this->CWPlantLoc.branchNum)
-                                                                                        .Name
-                                                                                  : "N/A");
+                                                     (this->CWPlantLoc.branch != nullptr) ? this->CWPlantLoc.branch->Name : "N/A");
             OutputReportPredefined::PreDefTableEntry(state,
                                                      state.dataOutRptPredefined->pdchChillerCondLoopName,
                                                      this->Name,
-                                                     this->CDPlantLoc.loopNum > 0 ? state.dataPlnt->PlantLoop(this->CDPlantLoc.loopNum).Name : "N/A");
+                                                     (this->CDPlantLoc.loop != nullptr) ? this->CDPlantLoc.loop->Name : "N/A");
             OutputReportPredefined::PreDefTableEntry(state,
                                                      state.dataOutRptPredefined->pdchChillerCondLoopBranchName,
                                                      this->Name,
-                                                     this->CDPlantLoc.loopNum > 0 ? state.dataPlnt->PlantLoop(this->CDPlantLoc.loopNum)
-                                                                                        .LoopSide(this->CDPlantLoc.loopSideNum)
-                                                                                        .Branch(this->CDPlantLoc.branchNum)
-                                                                                        .Name
-                                                                                  : "N/A");
+                                                     (this->CDPlantLoc.branch != nullptr) ? this->CDPlantLoc.branch->Name : "N/A");
             OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchChillerMinPLR, this->Name, this->MinPartLoadRat);
-            OutputReportPredefined::PreDefTableEntry(
-                state, state.dataOutRptPredefined->pdchChillerFuelType, this->Name, Constant::eResourceNames[static_cast<int>(this->FuelType)]);
+            OutputReportPredefined::PreDefTableEntry( // Shouldn't this be eFuelNames?
+                state,
+                state.dataOutRptPredefined->pdchChillerFuelType,
+                this->Name,
+                Constant::eResourceNames[static_cast<int>(this->FuelType)]);
             OutputReportPredefined::PreDefTableEntry(
                 state, state.dataOutRptPredefined->pdchChillerRatedEntCondTemp, this->Name, this->TempDesCondIn); // Rated==Ref?
             OutputReportPredefined::PreDefTableEntry(
@@ -5399,15 +5289,11 @@ namespace PlantChillers {
             OutputReportPredefined::PreDefTableEntry(state,
                                                      state.dataOutRptPredefined->pdchChillerHeatRecPlantloopName,
                                                      this->Name,
-                                                     this->HRPlantLoc.loopNum > 0 ? state.dataPlnt->PlantLoop(this->HRPlantLoc.loopNum).Name : "N/A");
+                                                     (this->HRPlantLoc.loop != nullptr) ? this->HRPlantLoc.loop->Name : "N/A");
             OutputReportPredefined::PreDefTableEntry(state,
                                                      state.dataOutRptPredefined->pdchChillerHeatRecPlantloopBranchName,
                                                      this->Name,
-                                                     this->HRPlantLoc.loopNum > 0 ? state.dataPlnt->PlantLoop(this->HRPlantLoc.loopNum)
-                                                                                        .LoopSide(this->HRPlantLoc.loopSideNum)
-                                                                                        .Branch(this->HRPlantLoc.branchNum)
-                                                                                        .Name
-                                                                                  : "N/A");
+                                                     (this->HRPlantLoc.branch != nullptr) ? this->HRPlantLoc.branch->Name : "N/A");
             OutputReportPredefined::PreDefTableEntry(
                 state, state.dataOutRptPredefined->pdchChillerRecRelCapFrac, this->Name, this->HeatRecCapacityFraction);
         }
@@ -5490,7 +5376,7 @@ namespace PlantChillers {
         // flow resolver will not shut down the branch
         if (MyLoad >= 0.0 || !RunFlag) {
             if (EquipFlowCtrl == DataBranchAirLoopPlant::ControlType::SeriesActive ||
-                state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).LoopSide(this->CWPlantLoc.loopSideNum).FlowLock == DataPlant::FlowLock::Locked) {
+                this->CWPlantLoc.side->FlowLock == DataPlant::FlowLock::Locked) {
                 this->EvapMassFlowRate = state.dataLoopNodes->Node(this->EvapInletNodeNum).MassFlowRate;
             } else {
                 this->EvapMassFlowRate = 0.0;
@@ -5510,7 +5396,7 @@ namespace PlantChillers {
 
             if (this->CondenserType == DataPlant::CondenserType::EvapCooled) {
                 CalcBasinHeaterPower(
-                    state, this->BasinHeaterPowerFTempDiff, this->BasinHeaterSchedulePtr, this->BasinHeaterSetPointTemp, this->BasinHeaterPower);
+                    state, this->BasinHeaterPowerFTempDiff, this->basinHeaterSched, this->BasinHeaterSetPointTemp, this->BasinHeaterPower);
             }
             this->PrintMessage = false;
             return;
@@ -5560,7 +5446,13 @@ namespace PlantChillers {
             PlantUtilities::PullCompInterconnectTrigger(
                 state, this->CWPlantLoc, this->CondMassFlowIndex, this->CDPlantLoc, DataPlant::CriteriaType::MassFlowRate, this->CondMassFlowRate);
 
-            if (this->CondMassFlowRate < DataBranchAirLoopPlant::MassFlowTolerance) return;
+            if (this->CondMassFlowRate < DataBranchAirLoopPlant::MassFlowTolerance) {
+                MyLoad = 0.0;
+                this->EvapMassFlowRate = 0.0;
+                PlantUtilities::SetComponentFlowRate(
+                    state, this->EvapMassFlowRate, this->EvapInletNodeNum, this->EvapOutletNodeNum, this->CWPlantLoc);
+                return;
+            }
         }
 
         //  LOAD LOCAL VARIABLES FROM DATA STRUCTURE (for code readability)
@@ -5620,14 +5512,10 @@ namespace PlantChillers {
             OperPartLoadRat = 0.0;
         }
 
-        Real64 Cp = FluidProperties::GetSpecificHeatGlycol(state,
-                                                           state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).FluidName,
-                                                           state.dataLoopNodes->Node(this->EvapInletNodeNum).Temp,
-                                                           state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).FluidIndex,
-                                                           RoutineName);
+        Real64 Cp = this->CWPlantLoc.loop->glycol->getSpecificHeat(state, state.dataLoopNodes->Node(this->EvapInletNodeNum).Temp, RoutineName);
         // If FlowLock is True, the new resolved mdot is used to update Power, QEvap, Qcond, and
         // condenser side outlet temperature.
-        if (state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).LoopSide(this->CWPlantLoc.loopSideNum).FlowLock == DataPlant::FlowLock::Unlocked) {
+        if (this->CWPlantLoc.side->FlowLock == DataPlant::FlowLock::Unlocked) {
             this->PossibleSubcooling = false;
             this->QEvaporator = AvailChillerCap * OperPartLoadRat;
             Real64 FRAC;
@@ -5638,7 +5526,7 @@ namespace PlantChillers {
             }
             this->Power = FracFullLoadPower * FullLoadPowerRat * AvailChillerCap / COP * FRAC;
 
-            // Either set the flow to the Constant value or caluclate the flow for the variable volume
+            // Either set the flow to the Constant value or calculate the flow for the variable volume
             if ((this->FlowMode == DataPlant::FlowMode::Constant) || (this->FlowMode == DataPlant::FlowMode::NotModulated)) {
                 // Start by assuming max (design) flow
                 this->EvapMassFlowRate = this->EvapMassFlowRateMax;
@@ -5655,11 +5543,10 @@ namespace PlantChillers {
                 this->EvapOutletTemp = state.dataLoopNodes->Node(this->EvapInletNodeNum).Temp - EvapDeltaTemp;
             } else if (this->FlowMode == DataPlant::FlowMode::LeavingSetpointModulated) {
                 // Calculate the Delta Temp from the inlet temp to the chiller outlet setpoint
-                if (state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).LoopDemandCalcScheme == DataPlant::LoopDemandCalcScheme::SingleSetPoint) {
+                if (this->CWPlantLoc.loop->LoopDemandCalcScheme == DataPlant::LoopDemandCalcScheme::SingleSetPoint) {
                     EvapDeltaTemp =
                         state.dataLoopNodes->Node(this->EvapInletNodeNum).Temp - state.dataLoopNodes->Node(this->EvapOutletNodeNum).TempSetPoint;
-                } else if (state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).LoopDemandCalcScheme ==
-                           DataPlant::LoopDemandCalcScheme::DualSetPointDeadBand) {
+                } else if (this->CWPlantLoc.loop->LoopDemandCalcScheme == DataPlant::LoopDemandCalcScheme::DualSetPointDeadBand) {
                     EvapDeltaTemp =
                         state.dataLoopNodes->Node(this->EvapInletNodeNum).Temp - state.dataLoopNodes->Node(this->EvapOutletNodeNum).TempSetPointHi;
                 }
@@ -5673,10 +5560,9 @@ namespace PlantChillers {
                     // Use SetComponentFlowRate to decide actual flow
                     PlantUtilities::SetComponentFlowRate(
                         state, this->EvapMassFlowRate, this->EvapInletNodeNum, this->EvapOutletNodeNum, this->CWPlantLoc);
-                    if (state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).LoopDemandCalcScheme == DataPlant::LoopDemandCalcScheme::SingleSetPoint) {
+                    if (this->CWPlantLoc.loop->LoopDemandCalcScheme == DataPlant::LoopDemandCalcScheme::SingleSetPoint) {
                         this->EvapOutletTemp = state.dataLoopNodes->Node(this->EvapOutletNodeNum).TempSetPoint;
-                    } else if (state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).LoopDemandCalcScheme ==
-                               DataPlant::LoopDemandCalcScheme::DualSetPointDeadBand) {
+                    } else if (this->CWPlantLoc.loop->LoopDemandCalcScheme == DataPlant::LoopDemandCalcScheme::DualSetPointDeadBand) {
                         this->EvapOutletTemp = state.dataLoopNodes->Node(this->EvapOutletNodeNum).TempSetPointHi;
                     }
                 } else {
@@ -5715,7 +5601,7 @@ namespace PlantChillers {
                 MyLoad = 0.0;
                 if (this->CondenserType == DataPlant::CondenserType::EvapCooled) {
                     CalcBasinHeaterPower(
-                        state, this->BasinHeaterPowerFTempDiff, this->BasinHeaterSchedulePtr, this->BasinHeaterSetPointTemp, this->BasinHeaterPower);
+                        state, this->BasinHeaterPowerFTempDiff, this->basinHeaterSched, this->BasinHeaterSetPointTemp, this->BasinHeaterPower);
                 }
                 this->PrintMessage = false;
                 return;
@@ -5727,24 +5613,21 @@ namespace PlantChillers {
                 this->EvapOutletTemp = state.dataLoopNodes->Node(this->EvapInletNodeNum).Temp - EvapDeltaTemp;
             } else {                              // No subcooling in this case.No recalculation required.Still need to check chiller low temp limit
                 Real64 TempEvapOutSetPoint = 0.0; // C - evaporator outlet temperature setpoint
-                if (state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).LoopDemandCalcScheme == DataPlant::LoopDemandCalcScheme::SingleSetPoint) {
+                if (this->CWPlantLoc.loop->LoopDemandCalcScheme == DataPlant::LoopDemandCalcScheme::SingleSetPoint) {
                     if ((this->FlowMode == DataPlant::FlowMode::LeavingSetpointModulated) ||
                         DataPlant::CompData::getPlantComponent(state, this->CWPlantLoc).CurOpSchemeType == DataPlant::OpScheme::CompSetPtBased ||
                         (state.dataLoopNodes->Node(this->EvapOutletNodeNum).TempSetPoint != DataLoopNode::SensedNodeFlagValue)) {
                         TempEvapOutSetPoint = state.dataLoopNodes->Node(this->EvapOutletNodeNum).TempSetPoint;
                     } else {
-                        TempEvapOutSetPoint =
-                            state.dataLoopNodes->Node(state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).TempSetPointNodeNum).TempSetPoint;
+                        TempEvapOutSetPoint = state.dataLoopNodes->Node(this->CWPlantLoc.loop->TempSetPointNodeNum).TempSetPoint;
                     }
-                } else if (state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).LoopDemandCalcScheme ==
-                           DataPlant::LoopDemandCalcScheme::DualSetPointDeadBand) {
+                } else if (this->CWPlantLoc.loop->LoopDemandCalcScheme == DataPlant::LoopDemandCalcScheme::DualSetPointDeadBand) {
                     if ((this->FlowMode == DataPlant::FlowMode::LeavingSetpointModulated) ||
                         DataPlant::CompData::getPlantComponent(state, this->CWPlantLoc).CurOpSchemeType == DataPlant::OpScheme::CompSetPtBased ||
                         (state.dataLoopNodes->Node(this->EvapOutletNodeNum).TempSetPointHi != DataLoopNode::SensedNodeFlagValue)) {
                         TempEvapOutSetPoint = state.dataLoopNodes->Node(this->EvapOutletNodeNum).TempSetPointHi;
                     } else {
-                        TempEvapOutSetPoint =
-                            state.dataLoopNodes->Node(state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).TempSetPointNodeNum).TempSetPointHi;
+                        TempEvapOutSetPoint = state.dataLoopNodes->Node(this->CWPlantLoc.loop->TempSetPointNodeNum).TempSetPointHi;
                     }
                 }
                 EvapDeltaTemp = state.dataLoopNodes->Node(this->EvapInletNodeNum).Temp - TempEvapOutSetPoint;
@@ -5833,7 +5716,7 @@ namespace PlantChillers {
             }
             if (this->QEvaporator == 0.0 && this->CondenserType == DataPlant::CondenserType::EvapCooled) {
                 CalcBasinHeaterPower(
-                    state, this->BasinHeaterPowerFTempDiff, this->BasinHeaterSchedulePtr, this->BasinHeaterSetPointTemp, this->BasinHeaterPower);
+                    state, this->BasinHeaterPowerFTempDiff, this->basinHeaterSched, this->BasinHeaterSetPointTemp, this->BasinHeaterPower);
             }
 
         } // This is the end of the FlowLock Block
@@ -5846,11 +5729,7 @@ namespace PlantChillers {
         if (this->CondenserType == DataPlant::CondenserType::WaterCooled) {
 
             if (this->CondMassFlowRate > DataBranchAirLoopPlant::MassFlowTolerance) {
-                Real64 CpCond = FluidProperties::GetSpecificHeatGlycol(state,
-                                                                       state.dataPlnt->PlantLoop(this->CDPlantLoc.loopNum).FluidName,
-                                                                       condInletTemp,
-                                                                       state.dataPlnt->PlantLoop(this->CDPlantLoc.loopNum).FluidIndex,
-                                                                       RoutineName);
+                Real64 CpCond = this->CDPlantLoc.loop->glycol->getSpecificHeat(state, condInletTemp, RoutineName);
                 this->CondOutletTemp = this->QCondenser / this->CondMassFlowRate / CpCond + condInletTemp;
             } else {
                 ShowSevereError(state, format("CalcGasTurbineChillerModel: Condenser flow = 0, for GasTurbineChiller={}", this->Name));
@@ -5925,11 +5804,7 @@ namespace PlantChillers {
                 // This mdot is input specified mdot "Desired Flowrate", already set at node in init routine
                 heatRecMdot = state.dataLoopNodes->Node(this->HeatRecInletNodeNum).MassFlowRate;
                 this->HeatRecInletTemp = state.dataLoopNodes->Node(this->HeatRecInletNodeNum).Temp;
-                Real64 HeatRecCp = FluidProperties::GetSpecificHeatGlycol(state,
-                                                                          state.dataPlnt->PlantLoop(this->HRPlantLoc.loopNum).FluidName,
-                                                                          this->HeatRecInletTemp,
-                                                                          state.dataPlnt->PlantLoop(this->HRPlantLoc.loopNum).FluidIndex,
-                                                                          RoutineNameHeatRecovery);
+                Real64 HeatRecCp = this->HRPlantLoc.loop->glycol->getSpecificHeat(state, this->HeatRecInletTemp, RoutineNameHeatRecovery);
 
                 // Don't divide by zero
                 if ((heatRecMdot > 0.0) && (HeatRecCp > 0.0)) {
@@ -6135,8 +6010,7 @@ namespace PlantChillers {
                     } else {
                         // need call to EMS to check node
                         bool FatalError = false; // but not really fatal yet, but should be.
-                        EMSManager::CheckIfNodeSetPointManagedByEMS(
-                            state, this->EvapOutletNodeNum, EMSManager::SPControlType::TemperatureSetPoint, FatalError);
+                        EMSManager::CheckIfNodeSetPointManagedByEMS(state, this->EvapOutletNodeNum, HVAC::CtrlVarType::Temp, FatalError);
                         state.dataLoopNodes->NodeSetpointCheck(this->EvapOutletNodeNum).needsSetpointChecking = false;
                         if (FatalError) {
                             if (!this->ModulatedFlowErrDone) {
@@ -6153,9 +6027,9 @@ namespace PlantChillers {
                     }
                     this->ModulatedFlowSetToLoop = true;
                     state.dataLoopNodes->Node(this->EvapOutletNodeNum).TempSetPoint =
-                        state.dataLoopNodes->Node(state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).TempSetPointNodeNum).TempSetPoint;
+                        state.dataLoopNodes->Node(this->CWPlantLoc.loop->TempSetPointNodeNum).TempSetPoint;
                     state.dataLoopNodes->Node(this->EvapOutletNodeNum).TempSetPointHi =
-                        state.dataLoopNodes->Node(state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).TempSetPointNodeNum).TempSetPointHi;
+                        state.dataLoopNodes->Node(this->CWPlantLoc.loop->TempSetPointNodeNum).TempSetPointHi;
                 }
             }
             this->MyFlag = false;
@@ -6183,8 +6057,7 @@ namespace PlantChillers {
     {
         if (calledFromLocation.loopNum == this->CWPlantLoc.loopNum) {
             this->initialize(state, RunFlag, CurLoad);
-            auto const &sim_component = DataPlant::CompData::getPlantComponent(state, this->CWPlantLoc);
-            this->calculate(state, CurLoad, RunFlag, sim_component.FlowCtrl);
+            this->calculate(state, CurLoad, RunFlag, this->CWPlantLoc.comp->FlowCtrl);
             this->update(state, CurLoad, RunFlag);
         } else if (calledFromLocation.loopNum == this->CDPlantLoc.loopNum) {
             PlantUtilities::UpdateChillerComponentCondenserSide(state,
@@ -6216,6 +6089,7 @@ namespace PlantChillers {
 
         // SUBROUTINE PARAMETER DEFINITIONS:
         static constexpr std::string_view RoutineName("GetConstCOPChillerInput: "); // include trailing blank space
+        static constexpr std::string_view routineName = "GetConstCOPChillerInput";  // include trailing blank space
 
         // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
         int NumAlphas; // Number of elements in the alpha array
@@ -6252,6 +6126,8 @@ namespace PlantChillers {
                                                                      state.dataIPShortCut->lAlphaFieldBlanks,
                                                                      state.dataIPShortCut->cAlphaFieldNames,
                                                                      state.dataIPShortCut->cNumericFieldNames);
+
+            ErrorObjectHeader eoh{routineName, state.dataIPShortCut->cCurrentModuleObject, state.dataIPShortCut->cAlphaArgs(1)};
             Util::IsNameEmpty(state, state.dataIPShortCut->cAlphaArgs(1), state.dataIPShortCut->cCurrentModuleObject, ErrorsFound);
 
             // ErrorsFound will be set to True if problem was found, left untouched otherwise
@@ -6495,17 +6371,25 @@ namespace PlantChillers {
                 }
             }
 
-            if (!state.dataIPShortCut->lAlphaFieldBlanks(8)) {
-                thisChiller.BasinHeaterSchedulePtr = ScheduleManager::GetScheduleIndex(state, state.dataIPShortCut->cAlphaArgs(8));
-                if (thisChiller.BasinHeaterSchedulePtr == 0) {
-                    ShowWarningError(state,
-                                     format("{}, \"{}\" TRIM(state.dataIPShortCut->cAlphaFieldNames(8)) \"{}\" was not found. Basin heater operation "
-                                            "will not be modeled and the simulation continues",
-                                            state.dataIPShortCut->cCurrentModuleObject,
-                                            thisChiller.Name,
-                                            state.dataIPShortCut->cAlphaArgs(8)));
+            if (state.dataIPShortCut->lAlphaFieldBlanks(8)) {
+            } else if ((thisChiller.basinHeaterSched = Sched::GetSchedule(state, state.dataIPShortCut->cAlphaArgs(8))) == nullptr) {
+                ShowWarningItemNotFound(state,
+                                        eoh,
+                                        state.dataIPShortCut->cAlphaFieldNames(8),
+                                        state.dataIPShortCut->cAlphaArgs(8),
+                                        "Basin heater operation will not be modeled and the simulation continues");
+            }
+
+            if (!state.dataIPShortCut->lAlphaFieldBlanks(9)) {
+                thisChiller.thermosiphonTempCurveIndex = Curve::GetCurveIndex(state, Util::makeUPPER(state.dataIPShortCut->cAlphaArgs(9)));
+                if (thisChiller.thermosiphonTempCurveIndex == 0) {
+                    ShowSevereError(state, format("{}{}=\"{}\"", RoutineName, state.dataIPShortCut->cCurrentModuleObject, thisChiller.Name));
+                    ShowContinueError(state,
+                                      format("Invalid {} = {}", state.dataIPShortCut->cAlphaFieldNames(9), state.dataIPShortCut->cAlphaArgs(9)));
+                    ErrorsFound = true;
                 }
             }
+            thisChiller.thermosiphonMinTempDiff = state.dataIPShortCut->rNumericArgs(8);
 
             // set default design condenser in and evaporator out temperatures
             // Values from AHRI Standard 550/590 (2023, IP Version)
@@ -6616,6 +6500,14 @@ namespace PlantChillers {
                             OutputProcessor::StoreType::Average,
                             this->Name);
 
+        SetupOutputVariable(state,
+                            "Thermosiphon Status",
+                            Constant::Units::None,
+                            this->thermosiphonStatus,
+                            OutputProcessor::TimeStepType::System,
+                            OutputProcessor::StoreType::Average,
+                            this->Name);
+
         // Condenser mass flow and outlet temp are valid for water cooled
         if (this->CondenserType == DataPlant::CondenserType::WaterCooled) {
             SetupOutputVariable(state,
@@ -6686,11 +6578,7 @@ namespace PlantChillers {
         // Initialize critical Demand Side Variables at the beginning of each environment
         if (this->MyEnvrnFlag && state.dataGlobal->BeginEnvrnFlag && (state.dataPlnt->PlantFirstSizesOkayToFinalize)) {
 
-            Real64 rho = FluidProperties::GetDensityGlycol(state,
-                                                           state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).FluidName,
-                                                           Constant::CWInitConvTemp,
-                                                           state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).FluidIndex,
-                                                           RoutineName);
+            Real64 rho = this->CWPlantLoc.loop->glycol->getDensity(state, Constant::CWInitConvTemp, RoutineName);
             this->EvapMassFlowRateMax = this->EvapVolFlowRate * rho;
             PlantUtilities::InitComponentNodes(state, 0.0, this->EvapMassFlowRateMax, this->EvapInletNodeNum, this->EvapOutletNodeNum);
 
@@ -6699,11 +6587,7 @@ namespace PlantChillers {
 
                 state.dataLoopNodes->Node(this->CondInletNodeNum).Temp = TempDesCondIn;
 
-                rho = FluidProperties::GetDensityGlycol(state,
-                                                        state.dataPlnt->PlantLoop(this->CDPlantLoc.loopNum).FluidName,
-                                                        Constant::CWInitConvTemp,
-                                                        state.dataPlnt->PlantLoop(this->CDPlantLoc.loopNum).FluidIndex,
-                                                        RoutineName);
+                rho = this->CDPlantLoc.loop->glycol->getDensity(state, Constant::CWInitConvTemp, RoutineName);
 
                 this->CondMassFlowRateMax = rho * this->CondVolFlowRate;
 
@@ -6732,13 +6616,17 @@ namespace PlantChillers {
             // fix for clumsy old input that worked because loop setpoint was spread.
             //  could be removed with transition, testing , model change, period of being obsolete.
             state.dataLoopNodes->Node(this->EvapOutletNodeNum).TempSetPoint =
-                state.dataLoopNodes->Node(state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).TempSetPointNodeNum).TempSetPoint;
+                state.dataLoopNodes->Node(this->CWPlantLoc.loop->TempSetPointNodeNum).TempSetPoint;
             state.dataLoopNodes->Node(this->EvapOutletNodeNum).TempSetPointHi =
-                state.dataLoopNodes->Node(state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).TempSetPointNodeNum).TempSetPointHi;
+                state.dataLoopNodes->Node(this->CWPlantLoc.loop->TempSetPointNodeNum).TempSetPointHi;
         }
 
         Real64 mdot = 0.0;
         Real64 mdotCond = 0.0;
+        this->thermosiphonStatus = 0;
+        this->partLoadRatio = 0.0;
+        this->CondInletTemp = state.dataLoopNodes->Node(this->CondInletNodeNum).Temp;
+        this->EvapInletTemp = state.dataLoopNodes->Node(this->EvapInletNodeNum).Temp;
         if ((MyLoad < 0.0) && RunFlag) {
             mdot = this->EvapMassFlowRateMax;
             mdotCond = this->CondMassFlowRateMax;
@@ -6784,23 +6672,15 @@ namespace PlantChillers {
         bool ErrorsFound = false;
 
         if (this->CondenserType == DataPlant::CondenserType::WaterCooled) {
-            PltSizCondNum = state.dataPlnt->PlantLoop(this->CDPlantLoc.loopNum).PlantSizNum;
+            PltSizCondNum = this->CDPlantLoc.loop->PlantSizNum;
         }
 
-        int PltSizNum = state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).PlantSizNum;
+        int PltSizNum = this->CWPlantLoc.loop->PlantSizNum;
 
         if (PltSizNum > 0) {
             if (state.dataSize->PlantSizData(PltSizNum).DesVolFlowRate >= HVAC::SmallWaterVolFlow) {
-                Real64 rho = FluidProperties::GetDensityGlycol(state,
-                                                               state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).FluidName,
-                                                               Constant::CWInitConvTemp,
-                                                               state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).FluidIndex,
-                                                               RoutineName);
-                Real64 Cp = FluidProperties::GetSpecificHeatGlycol(state,
-                                                                   state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).FluidName,
-                                                                   Constant::CWInitConvTemp,
-                                                                   state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).FluidIndex,
-                                                                   RoutineName);
+                Real64 rho = this->CWPlantLoc.loop->glycol->getDensity(state, Constant::CWInitConvTemp, RoutineName);
+                Real64 Cp = this->CWPlantLoc.loop->glycol->getSpecificHeat(state, Constant::CWInitConvTemp, RoutineName);
                 tmpNomCap =
                     Cp * rho * state.dataSize->PlantSizData(PltSizNum).DeltaT * state.dataSize->PlantSizData(PltSizNum).DesVolFlowRate * this->SizFac;
             } else {
@@ -6919,16 +6799,8 @@ namespace PlantChillers {
         if (this->CondenserType == DataPlant::CondenserType::WaterCooled) {
             if (PltSizCondNum > 0 && PltSizNum > 0) {
                 if (state.dataSize->PlantSizData(PltSizNum).DesVolFlowRate >= HVAC::SmallWaterVolFlow && tmpNomCap > 0.0) {
-                    Real64 rho = FluidProperties::GetDensityGlycol(state,
-                                                                   state.dataPlnt->PlantLoop(this->CDPlantLoc.loopNum).FluidName,
-                                                                   29.44,
-                                                                   state.dataPlnt->PlantLoop(this->CDPlantLoc.loopNum).FluidIndex,
-                                                                   RoutineName);
-                    Real64 Cp = FluidProperties::GetSpecificHeatGlycol(state,
-                                                                       state.dataPlnt->PlantLoop(this->CDPlantLoc.loopNum).FluidName,
-                                                                       29.44,
-                                                                       state.dataPlnt->PlantLoop(this->CDPlantLoc.loopNum).FluidIndex,
-                                                                       RoutineName);
+                    Real64 rho = this->CDPlantLoc.loop->glycol->getDensity(state, 29.44, RoutineName);
+                    Real64 Cp = this->CDPlantLoc.loop->glycol->getSpecificHeat(state, 29.44, RoutineName);
                     tmpCondVolFlowRate = tmpNomCap * (1.0 + 1.0 / this->COP) / (state.dataSize->PlantSizData(PltSizCondNum).DeltaT * Cp * rho);
                 } else {
                     if (this->CondVolFlowRateWasAutoSized) tmpCondVolFlowRate = 0.0;
@@ -7019,27 +6891,19 @@ namespace PlantChillers {
             OutputReportPredefined::PreDefTableEntry(state,
                                                      state.dataOutRptPredefined->pdchChillerPlantloopName,
                                                      this->Name,
-                                                     this->CWPlantLoc.loopNum > 0 ? state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).Name : "N/A");
+                                                     (this->CWPlantLoc.loop != nullptr) ? this->CWPlantLoc.loop->Name : "N/A");
             OutputReportPredefined::PreDefTableEntry(state,
                                                      state.dataOutRptPredefined->pdchChillerPlantloopBranchName,
                                                      this->Name,
-                                                     this->CWPlantLoc.loopNum > 0 ? state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum)
-                                                                                        .LoopSide(this->CWPlantLoc.loopSideNum)
-                                                                                        .Branch(this->CWPlantLoc.branchNum)
-                                                                                        .Name
-                                                                                  : "N/A");
+                                                     (this->CWPlantLoc.branch != nullptr) ? this->CWPlantLoc.branch->Name : "N/A");
             OutputReportPredefined::PreDefTableEntry(state,
                                                      state.dataOutRptPredefined->pdchChillerCondLoopName,
                                                      this->Name,
-                                                     this->CDPlantLoc.loopNum > 0 ? state.dataPlnt->PlantLoop(this->CDPlantLoc.loopNum).Name : "N/A");
+                                                     (this->CDPlantLoc.loop != nullptr) ? this->CDPlantLoc.loop->Name : "N/A");
             OutputReportPredefined::PreDefTableEntry(state,
                                                      state.dataOutRptPredefined->pdchChillerCondLoopBranchName,
                                                      this->Name,
-                                                     this->CDPlantLoc.loopNum > 0 ? state.dataPlnt->PlantLoop(this->CDPlantLoc.loopNum)
-                                                                                        .LoopSide(this->CDPlantLoc.loopSideNum)
-                                                                                        .Branch(this->CDPlantLoc.branchNum)
-                                                                                        .Name
-                                                                                  : "N/A");
+                                                     (this->CDPlantLoc.branch != nullptr) ? this->CDPlantLoc.branch->Name : "N/A");
             OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchChillerMinPLR, this->Name, this->MinPartLoadRat);
             OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchChillerFuelType, this->Name, "Electricity");
             OutputReportPredefined::PreDefTableEntry(
@@ -7082,6 +6946,7 @@ namespace PlantChillers {
         Real64 TempEvapOutSetPoint(0.0);     // C - evaporator outlet temperature setpoint
         Real64 COP = this->COP;              // coefficient of performance
         Real64 ChillerNomCap = this->NomCap; // chiller nominal capacity
+        this->Power = 0.0;
 
         // If there is a fault of chiller fouling
         if (this->FaultyChillerFoulingFlag && (!state.dataGlobal->WarmupFlag) && (!state.dataGlobal->DoingSizing) &&
@@ -7098,23 +6963,21 @@ namespace PlantChillers {
             COP = COP_ff * this->FaultyChillerFoulingFactor;
         }
 
-        if (state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).LoopDemandCalcScheme == DataPlant::LoopDemandCalcScheme::SingleSetPoint) {
+        if (this->CWPlantLoc.loop->LoopDemandCalcScheme == DataPlant::LoopDemandCalcScheme::SingleSetPoint) {
             if ((this->FlowMode == DataPlant::FlowMode::LeavingSetpointModulated) ||
                 DataPlant::CompData::getPlantComponent(state, this->CWPlantLoc).CurOpSchemeType == DataPlant::OpScheme::CompSetPtBased ||
                 (state.dataLoopNodes->Node(this->EvapOutletNodeNum).TempSetPoint != DataLoopNode::SensedNodeFlagValue)) {
                 TempEvapOutSetPoint = state.dataLoopNodes->Node(this->EvapOutletNodeNum).TempSetPoint;
             } else {
-                TempEvapOutSetPoint = state.dataLoopNodes->Node(state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).TempSetPointNodeNum).TempSetPoint;
+                TempEvapOutSetPoint = state.dataLoopNodes->Node(this->CWPlantLoc.loop->TempSetPointNodeNum).TempSetPoint;
             }
-        } else if (state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).LoopDemandCalcScheme ==
-                   DataPlant::LoopDemandCalcScheme::DualSetPointDeadBand) {
+        } else if (this->CWPlantLoc.loop->LoopDemandCalcScheme == DataPlant::LoopDemandCalcScheme::DualSetPointDeadBand) {
             if ((this->FlowMode == DataPlant::FlowMode::LeavingSetpointModulated) ||
                 DataPlant::CompData::getPlantComponent(state, this->CWPlantLoc).CurOpSchemeType == DataPlant::OpScheme::CompSetPtBased ||
                 (state.dataLoopNodes->Node(this->EvapOutletNodeNum).TempSetPointHi != DataLoopNode::SensedNodeFlagValue)) {
                 TempEvapOutSetPoint = state.dataLoopNodes->Node(this->EvapOutletNodeNum).TempSetPointHi;
             } else {
-                TempEvapOutSetPoint =
-                    state.dataLoopNodes->Node(state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).TempSetPointNodeNum).TempSetPointHi;
+                TempEvapOutSetPoint = state.dataLoopNodes->Node(this->CWPlantLoc.loop->TempSetPointNodeNum).TempSetPointHi;
             }
         }
 
@@ -7141,7 +7004,7 @@ namespace PlantChillers {
             // if the component control is SERIESACTIVE we set the component flow to inlet flow so that
             // flow resolver will not shut down the branch
             if (EquipFlowCtrl == DataBranchAirLoopPlant::ControlType::SeriesActive ||
-                state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).LoopSide(this->CWPlantLoc.loopSideNum).FlowLock == DataPlant::FlowLock::Locked) {
+                this->CWPlantLoc.side->FlowLock == DataPlant::FlowLock::Locked) {
                 this->EvapMassFlowRate = state.dataLoopNodes->Node(this->EvapInletNodeNum).MassFlowRate;
             } else {
                 this->EvapMassFlowRate = 0.0;
@@ -7170,16 +7033,17 @@ namespace PlantChillers {
 
             if (this->CondenserType == DataPlant::CondenserType::EvapCooled) {
                 CalcBasinHeaterPower(
-                    state, this->BasinHeaterPowerFTempDiff, this->BasinHeaterSchedulePtr, this->BasinHeaterSetPointTemp, this->BasinHeaterPower);
+                    state, this->BasinHeaterPowerFTempDiff, this->basinHeaterSched, this->BasinHeaterSetPointTemp, this->BasinHeaterPower);
             }
             this->PrintMessage = false;
             return;
         }
+        this->partLoadRatio = std::abs(MyLoad) / ChillerNomCap;
 
         //   calculate end time of current time step
         Real64 const CurrentEndTime = state.dataGlobal->CurrentTime + state.dataHVACGlobal->SysTimeElapsed;
 
-        //   Print warning messages only when valid and only for the first ocurrance. Let summary provide statistics.
+        //   Print warning messages only when valid and only for the first occurrence. Let summary provide statistics.
         //   Wait for next time step to print warnings. If simulation iterates, print out
         //   the warning for the last iteration only. Must wait for next time step to accomplish this.
         //   If a warning occurs and the simulation down shifts, the warning is not valid.
@@ -7244,25 +7108,26 @@ namespace PlantChillers {
             PlantUtilities::PullCompInterconnectTrigger(
                 state, this->CWPlantLoc, this->CondMassFlowIndex, this->CDPlantLoc, DataPlant::CriteriaType::MassFlowRate, this->CondMassFlowRate);
 
-            if (this->CondMassFlowRate < DataBranchAirLoopPlant::MassFlowTolerance) return;
+            if (this->CondMassFlowRate < DataBranchAirLoopPlant::MassFlowTolerance) {
+                MyLoad = 0.0;
+                this->EvapMassFlowRate = 0.0;
+                PlantUtilities::SetComponentFlowRate(
+                    state, this->EvapMassFlowRate, this->EvapInletNodeNum, this->EvapOutletNodeNum, this->CWPlantLoc);
+                return;
+            }
         }
 
         // If FlowLock is True, the new resolved mdot is used to update Power, QEvap, Qcond, and
         // condenser side outlet temperature.
 
         // local for fluid specif heat, for evaporator
-        Real64 const Cp = FluidProperties::GetSpecificHeatGlycol(state,
-                                                                 state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).FluidName,
-                                                                 state.dataLoopNodes->Node(this->EvapInletNodeNum).Temp,
-                                                                 state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).FluidIndex,
-                                                                 RoutineName);
+        Real64 const Cp = this->CWPlantLoc.loop->glycol->getSpecificHeat(state, state.dataLoopNodes->Node(this->EvapInletNodeNum).Temp, RoutineName);
 
-        if (state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).LoopSide(this->CWPlantLoc.loopSideNum).FlowLock == DataPlant::FlowLock::Unlocked) {
+        if (this->CWPlantLoc.side->FlowLock == DataPlant::FlowLock::Unlocked) {
             this->PossibleSubcooling = false;
             this->QEvaporator = std::abs(MyLoad);
-            this->Power = std::abs(MyLoad) / COP;
 
-            // Either set the flow to the Constant value or caluclate the flow for the variable volume
+            // Either set the flow to the Constant value or calculate the flow for the variable volume
             if ((this->FlowMode == DataPlant::FlowMode::Constant) || (this->FlowMode == DataPlant::FlowMode::NotModulated)) {
 
                 // Start by assuming max (design) flow
@@ -7282,11 +7147,10 @@ namespace PlantChillers {
             } else if (this->FlowMode == DataPlant::FlowMode::LeavingSetpointModulated) {
 
                 // Calculate the Delta Temp from the inlet temp to the chiller outlet setpoint
-                if (state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).LoopDemandCalcScheme == DataPlant::LoopDemandCalcScheme::SingleSetPoint) {
+                if (this->CWPlantLoc.loop->LoopDemandCalcScheme == DataPlant::LoopDemandCalcScheme::SingleSetPoint) {
                     EvapDeltaTemp = std::abs(state.dataLoopNodes->Node(this->EvapInletNodeNum).Temp -
                                              state.dataLoopNodes->Node(this->EvapOutletNodeNum).TempSetPoint);
-                } else if (state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).LoopDemandCalcScheme ==
-                           DataPlant::LoopDemandCalcScheme::DualSetPointDeadBand) {
+                } else if (this->CWPlantLoc.loop->LoopDemandCalcScheme == DataPlant::LoopDemandCalcScheme::DualSetPointDeadBand) {
                     EvapDeltaTemp = std::abs(state.dataLoopNodes->Node(this->EvapInletNodeNum).Temp -
                                              state.dataLoopNodes->Node(this->EvapOutletNodeNum).TempSetPointHi);
                 }
@@ -7300,10 +7164,9 @@ namespace PlantChillers {
                     // Use SetComponentFlowRate to decide actual flow
                     PlantUtilities::SetComponentFlowRate(
                         state, this->EvapMassFlowRate, this->EvapInletNodeNum, this->EvapOutletNodeNum, this->CWPlantLoc);
-                    if (state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).LoopDemandCalcScheme == DataPlant::LoopDemandCalcScheme::SingleSetPoint) {
+                    if (this->CWPlantLoc.loop->LoopDemandCalcScheme == DataPlant::LoopDemandCalcScheme::SingleSetPoint) {
                         this->EvapOutletTemp = state.dataLoopNodes->Node(this->EvapOutletNodeNum).TempSetPoint;
-                    } else if (state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).LoopDemandCalcScheme ==
-                               DataPlant::LoopDemandCalcScheme::DualSetPointDeadBand) {
+                    } else if (this->CWPlantLoc.loop->LoopDemandCalcScheme == DataPlant::LoopDemandCalcScheme::DualSetPointDeadBand) {
                         this->EvapOutletTemp = state.dataLoopNodes->Node(this->EvapOutletNodeNum).TempSetPointHi;
                     }
                 } else {
@@ -7316,6 +7179,9 @@ namespace PlantChillers {
                     this->EvapOutletTemp = state.dataLoopNodes->Node(this->EvapInletNodeNum).Temp;
                 }
             } // End of Constant or Variable Flow If Block for FlowLock = 0 (or making a flow request)
+            if (this->thermosiphonDisabled(state)) {
+                this->Power = std::abs(MyLoad) / COP;
+            }
 
             // If there is a fault of Chiller SWT Sensor
             if (this->FaultyChillerSWTFlag && (!state.dataGlobal->WarmupFlag) && (!state.dataGlobal->DoingSizing) &&
@@ -7342,13 +7208,13 @@ namespace PlantChillers {
                 MyLoad = 0.0;
                 if (this->CondenserType == DataPlant::CondenserType::EvapCooled) {
                     CalcBasinHeaterPower(
-                        state, this->BasinHeaterPowerFTempDiff, this->BasinHeaterSchedulePtr, this->BasinHeaterSetPointTemp, this->BasinHeaterPower);
+                        state, this->BasinHeaterPowerFTempDiff, this->basinHeaterSched, this->BasinHeaterSetPointTemp, this->BasinHeaterPower);
                 }
                 this->PrintMessage = false;
                 return;
             }
 
-            // Recalculate the Delts Temp
+            // Recalculate the Delta Temp
             if (this->PossibleSubcooling) {
                 this->QEvaporator = std::abs(MyLoad);
                 EvapDeltaTemp = this->QEvaporator / this->EvapMassFlowRate / Cp;
@@ -7417,17 +7283,20 @@ namespace PlantChillers {
                     this->EvapOutletTemp = state.dataLoopNodes->Node(this->EvapInletNodeNum).Temp;
                 }
             }
-            // Calculate the Power consumption of the Const COP chiller which is a simplified calculation
-            this->Power = this->QEvaporator / COP;
             if (this->EvapMassFlowRate == 0.0) {
                 this->QEvaporator = 0.0;
                 this->EvapOutletTemp = state.dataLoopNodes->Node(this->EvapInletNodeNum).Temp;
                 this->Power = 0.0;
                 this->PrintMessage = false;
+            } else {
+                // Calculate the Power consumption of the Const COP chiller which is a simplified calculation
+                if (this->thermosiphonDisabled(state)) {
+                    this->Power = this->QEvaporator / COP;
+                }
             }
             if (this->QEvaporator == 0.0 && this->CondenserType == DataPlant::CondenserType::EvapCooled) {
                 CalcBasinHeaterPower(
-                    state, this->BasinHeaterPowerFTempDiff, this->BasinHeaterSchedulePtr, this->BasinHeaterSetPointTemp, this->BasinHeaterPower);
+                    state, this->BasinHeaterPowerFTempDiff, this->basinHeaterSched, this->BasinHeaterSetPointTemp, this->BasinHeaterPower);
             }
 
         } // This is the end of the FlowLock Block
@@ -7441,11 +7310,7 @@ namespace PlantChillers {
 
         if (this->CondenserType == DataPlant::CondenserType::WaterCooled) {
             // local for fluid specif heat, for condenser
-            Real64 const CpCond = FluidProperties::GetSpecificHeatGlycol(state,
-                                                                         state.dataPlnt->PlantLoop(this->CDPlantLoc.loopNum).FluidName,
-                                                                         CondInletTemp,
-                                                                         state.dataPlnt->PlantLoop(this->CDPlantLoc.loopNum).FluidIndex,
-                                                                         RoutineName);
+            Real64 const CpCond = this->CDPlantLoc.loop->glycol->getSpecificHeat(state, CondInletTemp, RoutineName);
             if (this->CondMassFlowRate > DataBranchAirLoopPlant::MassFlowTolerance) {
                 this->CondOutletTemp = this->QCondenser / this->CondMassFlowRate / CpCond + CondInletTemp;
             } else {
@@ -7501,22 +7366,18 @@ namespace PlantChillers {
             this->Energy = 0.0;
             this->EvaporatorEnergy = 0.0;
             this->CondenserEnergy = 0.0;
-            this->CondInletTemp = state.dataLoopNodes->Node(this->CondInletNodeNum).Temp;
-            this->EvapInletTemp = state.dataLoopNodes->Node(this->EvapInletNodeNum).Temp;
-            this->CondOutletTemp = state.dataLoopNodes->Node(this->CondInletNodeNum).Temp;
-            this->EvapOutletTemp = state.dataLoopNodes->Node(this->EvapInletNodeNum).Temp;
+            this->CondOutletTemp = this->CondInletTemp;
+            this->EvapOutletTemp = this->EvapInletTemp;
             this->ActualCOP = 0.0;
             if (this->CondenserType == DataPlant::CondenserType::EvapCooled) {
                 this->BasinHeaterConsumption = this->BasinHeaterPower * ReportingConstant;
             }
 
             // set outlet node temperatures
-            state.dataLoopNodes->Node(this->EvapOutletNodeNum).Temp = state.dataLoopNodes->Node(this->EvapInletNodeNum).Temp;
-            state.dataLoopNodes->Node(this->CondOutletNodeNum).Temp = state.dataLoopNodes->Node(this->CondInletNodeNum).Temp;
+            state.dataLoopNodes->Node(this->EvapOutletNodeNum).Temp = this->EvapInletTemp;
+            state.dataLoopNodes->Node(this->CondOutletNodeNum).Temp = this->CondInletTemp;
 
         } else {
-            this->CondInletTemp = state.dataLoopNodes->Node(this->CondInletNodeNum).Temp;
-            this->EvapInletTemp = state.dataLoopNodes->Node(this->EvapInletNodeNum).Temp;
             if (this->Power != 0.0) {
                 this->ActualCOP = this->QEvaporator / this->Power;
             } else {
@@ -7574,8 +7435,7 @@ namespace PlantChillers {
                     } else {
                         // need call to EMS to check node
                         bool FatalError = false; // but not really fatal yet, but should be.
-                        EMSManager::CheckIfNodeSetPointManagedByEMS(
-                            state, this->EvapOutletNodeNum, EMSManager::SPControlType::TemperatureSetPoint, FatalError);
+                        EMSManager::CheckIfNodeSetPointManagedByEMS(state, this->EvapOutletNodeNum, HVAC::CtrlVarType::Temp, FatalError);
                         state.dataLoopNodes->NodeSetpointCheck(this->EvapOutletNodeNum).needsSetpointChecking = false;
                         if (FatalError) {
                             if (!this->ModulatedFlowErrDone) {
@@ -7592,12 +7452,33 @@ namespace PlantChillers {
                     }
                     this->ModulatedFlowSetToLoop = true;
                     state.dataLoopNodes->Node(this->EvapOutletNodeNum).TempSetPoint =
-                        state.dataLoopNodes->Node(state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).TempSetPointNodeNum).TempSetPoint;
+                        state.dataLoopNodes->Node(this->CWPlantLoc.loop->TempSetPointNodeNum).TempSetPoint;
                     state.dataLoopNodes->Node(this->EvapOutletNodeNum).TempSetPointHi =
-                        state.dataLoopNodes->Node(state.dataPlnt->PlantLoop(this->CWPlantLoc.loopNum).TempSetPointNodeNum).TempSetPointHi;
+                        state.dataLoopNodes->Node(this->CWPlantLoc.loop->TempSetPointNodeNum).TempSetPointHi;
                 }
             }
             this->MyFlag = false;
+        }
+    }
+
+    bool ConstCOPChillerSpecs::thermosiphonDisabled(EnergyPlusData &state)
+    {
+        if (this->thermosiphonTempCurveIndex > 0) {
+            this->thermosiphonStatus = 0;
+            Real64 dT = this->EvapOutletTemp - this->CondInletTemp;
+            if (dT < this->thermosiphonMinTempDiff) {
+                return true;
+            }
+            Real64 thermosiphonCapFrac = Curve::CurveValue(state, this->thermosiphonTempCurveIndex, dT);
+            Real64 capFrac = this->partLoadRatio * this->cyclingRatio;
+            if (thermosiphonCapFrac >= capFrac) {
+                this->thermosiphonStatus = 1;
+                this->Power = 0.0;
+                return false;
+            }
+            return true;
+        } else {
+            return true;
         }
     }
 

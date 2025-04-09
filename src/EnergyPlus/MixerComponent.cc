@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois,
+// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -355,7 +355,6 @@ void InitAirMixer(EnergyPlusData &state, int const MixerNum)
     // na
 
     // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-    int InletNode;
     int NodeNum;
 
     // Do the following initializations (every time step): This should be the info from
@@ -364,7 +363,7 @@ void InitAirMixer(EnergyPlusData &state, int const MixerNum)
     // Transfer the node data to MixerCond data structure
     for (NodeNum = 1; NodeNum <= state.dataMixerComponent->MixerCond(MixerNum).NumInletNodes; ++NodeNum) {
 
-        InletNode = state.dataMixerComponent->MixerCond(MixerNum).InletNode(NodeNum);
+        int InletNode = state.dataMixerComponent->MixerCond(MixerNum).InletNode(NodeNum);
         // Set all of the inlet mass flow variables from the nodes
         state.dataMixerComponent->MixerCond(MixerNum).InletMassFlowRate(NodeNum) = state.dataLoopNodes->Node(InletNode).MassFlowRate;
         state.dataMixerComponent->MixerCond(MixerNum).InletMassFlowRateMaxAvail(NodeNum) = state.dataLoopNodes->Node(InletNode).MassFlowRateMaxAvail;

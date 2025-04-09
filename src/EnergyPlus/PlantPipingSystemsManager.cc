@@ -2131,7 +2131,7 @@ namespace PlantPipingSystemsManager {
             }
 
             // Once we find ourselves on the plant loop, we can do other things
-            Real64 rho = state.dataPlnt->PlantLoop(thisCircuit->plantLoc.loopNum).glycol->getDensity(state, Constant::InitConvTemp, RoutineName);
+            Real64 rho = thisCircuit->plantLoc.loop->glycol->getDensity(state, Constant::InitConvTemp, RoutineName);
             thisCircuit->DesignMassFlowRate = thisCircuit->DesignVolumeFlowRate * rho;
             thisCircuit->NeedToFindOnPlantLoop = false;
         }
@@ -5705,12 +5705,10 @@ namespace PlantPipingSystemsManager {
 
         // retrieve fluid properties based on the circuit inlet temperature -- which varies during the simulation
         // but need to verify the value of inlet temperature during warm up, etc.
-        FluidCp = state.dataPlnt->PlantLoop(thisCircuit->plantLoc.loopNum).glycol->getSpecificHeat(state, thisCircuit->InletTemperature, RoutineName);
-        FluidDensity = state.dataPlnt->PlantLoop(thisCircuit->plantLoc.loopNum).glycol->getDensity(state, thisCircuit->InletTemperature, RoutineName);
-        FluidConductivity =
-            state.dataPlnt->PlantLoop(thisCircuit->plantLoc.loopNum).glycol->getConductivity(state, thisCircuit->InletTemperature, RoutineName);
-        FluidViscosity =
-            state.dataPlnt->PlantLoop(thisCircuit->plantLoc.loopNum).glycol->getViscosity(state, thisCircuit->InletTemperature, RoutineName);
+        FluidCp = thisCircuit->plantLoc.loop->glycol->getSpecificHeat(state, thisCircuit->InletTemperature, RoutineName);
+        FluidDensity = thisCircuit->plantLoc.loop->glycol->getDensity(state, thisCircuit->InletTemperature, RoutineName);
+        FluidConductivity = thisCircuit->plantLoc.loop->glycol->getConductivity(state, thisCircuit->InletTemperature, RoutineName);
+        FluidViscosity = thisCircuit->plantLoc.loop->glycol->getViscosity(state, thisCircuit->InletTemperature, RoutineName);
 
         // Doesn't anyone care about poor Ludwig Prandtl?
         FluidPrandtl = 3.0;

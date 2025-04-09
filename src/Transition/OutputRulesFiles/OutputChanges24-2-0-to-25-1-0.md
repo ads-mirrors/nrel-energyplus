@@ -58,19 +58,3 @@ Zone Ventilation Outdoor Density Air Change Rate
 ```
 
 See Pull Request [#10940](https://github.com/NREL/EnergyPlus/pull/10940).
-
-### Table Output, Equipment Summary Report, Air Heat Recovery subtable
-* Delete "Name" column.
-
-* Change "Input Object Type" heading to "Type".
-
-* In the "Plate/Rotary" column, "FlatPlate" is now "Plate"
-
-* Reorder, rename, and change units for last two columns:
-
-    "Exhaust Airflow [kg/s]" --> "Exhaust Air Flow Rate [m3/s]
-    
-    "Outdoor Airflow [kg/s]" --> "Supply Air Flow Rate [m3/s]"
-
-See Pull Request [#10995](https://github.com/NREL/EnergyPlus/pull/10995).
-

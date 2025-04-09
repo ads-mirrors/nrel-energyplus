@@ -440,7 +440,7 @@ TEST_F(EnergyPlusFixture, ExerciseSingleSpeedFluidCooler)
     ptr->plantLoc.branchNum = 1;
     ptr->plantLoc.compNum = 1;
     PlantUtilities::SetPlantLocationLinks(*state, ptr->plantLoc);
-    
+
     ptr->DesWaterMassFlowRate = 3.141;
     ptr->WaterMassFlowRate = 3.141;
     ptr->onInitLoopEquip(*state, pl);

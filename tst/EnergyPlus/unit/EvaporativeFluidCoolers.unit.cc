@@ -122,12 +122,12 @@ TEST_F(EnergyPlusFixture, EvapFluidCoolerSpecs_getDesignCapacitiesTest)
     thisEFC.plantLoc.branchNum = 1;
     thisEFC.plantLoc.compNum = 1;
     PlantUtilities::SetPlantLocationLinks(*state, thisEFC.plantLoc);
-    
+
     thisEFC.DesignWaterFlowRateWasAutoSized = false;
     thisEFC.LowSpeedAirFlowRateWasAutoSized = false;
     thisEFC.HighSpeedEvapFluidCoolerUAWasAutoSized = false;
     thisEFC.PerformanceInputMethod_Num = PIM::UFactor;
-    
+
     thisEFC.DesignWaterFlowRate = 0.001;
 
     state->dataLoopNodes->Node.allocate(2);
@@ -152,7 +152,7 @@ TEST_F(EnergyPlusFixture, EvapFluidCoolerSpecs_getDesignCapacitiesTest)
     // Call the routine to be tested and see if the fix is correct
     PlantLocation loc = PlantLocation(1, DataPlant::LoopSideLocation::Supply, 1, 1);
     PlantUtilities::SetPlantLocationLinks(*state, loc);
-    
+
     thisEFC.onInitLoopEquip(*state, loc);
     thisEFC.getDesignCapacities(*state, loc, MaxLoad, MinLoad, OptLoad);
     EXPECT_NEAR(MaxLoad, ExpectedMaxLoad, 0.01);
@@ -230,7 +230,7 @@ TEST_F(EnergyPlusFixture, ExerciseSingleSpeedEvapFluidCooler)
     ptr->plantLoc.branchNum = 1;
     ptr->plantLoc.compNum = 1;
     PlantUtilities::SetPlantLocationLinks(*state, ptr->plantLoc);
-    
+
     ptr->DesWaterMassFlowRate = 3.141;
     ptr->WaterMassFlowRate = 3.141;
     ptr->onInitLoopEquip(*state, loc);

@@ -1480,7 +1480,8 @@ void ASHRAE205ChillerSpecs::calculate(EnergyPlusData &state, Real64 &MyLoad, boo
         PlantUtilities::SetComponentFlowRate(
             state, this->OilCoolerMassFlowRate, this->OilCoolerInletNode, this->OilCoolerOutletNode, this->OCPlantLoc);
 
-        Real64 CpOilCooler = this->OCPlantLoc.loop->glycol->getSpecificHeat(state, state.dataLoopNodes->Node(this->OilCoolerInletNode).Temp, RoutineName);
+        Real64 CpOilCooler =
+            this->OCPlantLoc.loop->glycol->getSpecificHeat(state, state.dataLoopNodes->Node(this->OilCoolerInletNode).Temp, RoutineName);
 
         if (this->OilCoolerMassFlowRate != 0.0) {
             oilCoolerDeltaTemp = this->QOilCooler / (this->OilCoolerMassFlowRate * CpOilCooler);
@@ -1494,7 +1495,8 @@ void ASHRAE205ChillerSpecs::calculate(EnergyPlusData &state, Real64 &MyLoad, boo
         PlantUtilities::SetComponentFlowRate(
             state, this->AuxiliaryMassFlowRate, this->AuxiliaryHeatInletNode, this->AuxiliaryHeatOutletNode, this->AHPlantLoc);
 
-        Real64 CpAux = this->AHPlantLoc.loop->glycol->getSpecificHeat(state, state.dataLoopNodes->Node(this->AuxiliaryHeatInletNode).Temp, RoutineName);
+        Real64 CpAux =
+            this->AHPlantLoc.loop->glycol->getSpecificHeat(state, state.dataLoopNodes->Node(this->AuxiliaryHeatInletNode).Temp, RoutineName);
 
         if (this->AuxiliaryMassFlowRate != 0.0) {
             auxiliaryDeltaTemp = this->QAuxiliary / (this->AuxiliaryMassFlowRate * CpAux);

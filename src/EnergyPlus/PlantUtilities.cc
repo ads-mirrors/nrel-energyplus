@@ -1677,7 +1677,7 @@ void ScanPlantLoopsForObject(EnergyPlusData &state,
                                 plantLoc.loop = &this_loop;
                                 plantLoc.side = &this_loop_side;
                                 plantLoc.branch = &this_branch;
-                                plantLoc.comp = &this_component;                                
+                                plantLoc.comp = &this_component;
                             }
                             if (present(LowLimitTemp)) {
                                 this_component.MinOutletTemp = LowLimitTemp;
@@ -1790,7 +1790,7 @@ void ScanPlantLoopsForNodeNum(EnergyPlusData &state,
                         plantLoc.loop = &this_loop;
                         plantLoc.side = &this_loop_side;
                         plantLoc.branch = &this_branch;
-                        plantLoc.comp = &this_comp;                        
+                        plantLoc.comp = &this_comp;
                     }
 
                     if (NodeNum == this_comp.NodeNumOut) {
@@ -1802,7 +1802,7 @@ void ScanPlantLoopsForNodeNum(EnergyPlusData &state,
                         plantLoc.loop = &this_loop;
                         plantLoc.side = &this_loop_side;
                         plantLoc.branch = &this_branch;
-                        plantLoc.comp = &this_comp;                        
+                        plantLoc.comp = &this_comp;
                     }
                 }
             }
@@ -1823,9 +1823,8 @@ void ScanPlantLoopsForNodeNum(EnergyPlusData &state,
     }
 }
 
-// Utility function, mostly for unit tests.  
-void SetPlantLocationLinks(EnergyPlusData &state,
-                           PlantLocation &plantLoc)
+// Utility function, mostly for unit tests.
+void SetPlantLocationLinks(EnergyPlusData &state, PlantLocation &plantLoc)
 {
     if (plantLoc.loopNum == 0) return;
     plantLoc.loop = &state.dataPlnt->PlantLoop(plantLoc.loopNum);
@@ -1836,7 +1835,7 @@ void SetPlantLocationLinks(EnergyPlusData &state,
     if (plantLoc.compNum == 0) return;
     plantLoc.comp = &plantLoc.branch->Comp(plantLoc.compNum);
 }
-  
+
 bool AnyPlantLoopSidesNeedSim(EnergyPlusData &state)
 {
 

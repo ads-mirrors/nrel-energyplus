@@ -404,7 +404,7 @@ TEST_F(EnergyPlusFixture, BaseboardConvWater_SizingTest)
     // do baseboard sizing
     state->dataBaseboardRadiator->baseboards(BaseboardNum).plantLoc.loopNum = 1;
     PlantUtilities::SetPlantLocationLinks(*state, state->dataBaseboardRadiator->baseboards(BaseboardNum).plantLoc);
-    
+
     state->dataBaseboardRadiator->baseboards(BaseboardNum).ZonePtr = 1;
     state->dataBaseboardRadiator->baseboards(BaseboardNum).SizeBaseboard(*state, BaseboardNum);
     // check UA value
@@ -433,7 +433,7 @@ TEST_F(EnergyPlusFixture, BaseboardConvWater_SizingTest)
     // do baseboard sizing
     state->dataBaseboardRadiator->baseboards(BaseboardNum).plantLoc.loopNum = 1;
     PlantUtilities::SetPlantLocationLinks(*state, state->dataBaseboardRadiator->baseboards(BaseboardNum).plantLoc);
-    
+
     state->dataBaseboardRadiator->baseboards(BaseboardNum).ZonePtr = 2;
     state->dataBaseboardRadiator->baseboards(BaseboardNum).SizeBaseboard(*state, BaseboardNum);
     // check UA value
@@ -462,7 +462,7 @@ TEST_F(EnergyPlusFixture, BaseboardConvWater_SizingTest)
     // do baseboard sizing
     state->dataBaseboardRadiator->baseboards(BaseboardNum).plantLoc.loopNum = 1;
     PlantUtilities::SetPlantLocationLinks(*state, state->dataBaseboardRadiator->baseboards(BaseboardNum).plantLoc);
-    
+
     state->dataBaseboardRadiator->baseboards(BaseboardNum).ZonePtr = 3;
     state->dataBaseboardRadiator->baseboards(BaseboardNum).SizeBaseboard(*state, BaseboardNum);
     // check UA value

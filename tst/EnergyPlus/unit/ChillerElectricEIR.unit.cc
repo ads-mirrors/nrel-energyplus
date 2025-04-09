@@ -133,7 +133,6 @@ TEST_F(EnergyPlusFixture, ElectricEIRChiller_HeatRecoveryAutosizeTest)
     thisEIR.RefCap = 10000;
     thisEIR.RefCOP = 3.0;
 
-
     // now call sizing routine
     thisEIR.size(*state);
     // see if heat recovery flow rate is as expected
@@ -564,7 +563,8 @@ TEST_F(EnergyPlusFixture, ChillerElectricEIR_WaterCooledChillerVariableSpeedCond
 
     thisChiller.CondenserFlowControl = DataPlant::CondenserFlowControl::ModulatedDeltaTemperature;
     thisChiller.calculate(*state, MyLoad, RunFlag);
-    Real64 Cp = thisChiller.CWPlantLoc.loop->glycol->getSpecificHeat(*state, thisChiller.CondInletTemp, "ChillerElectricEIR_WaterCooledChillerVariableSpeedCondenser");
+    Real64 Cp = thisChiller.CWPlantLoc.loop->glycol->getSpecificHeat(
+        *state, thisChiller.CondInletTemp, "ChillerElectricEIR_WaterCooledChillerVariableSpeedCondenser");
     Real64 ActualCondFlow = 3.0 * std::abs(MyLoad) / (Cp * 10.0);
     EXPECT_NEAR(thisChiller.CondMassFlowRate, ActualCondFlow, 0.00001);
 

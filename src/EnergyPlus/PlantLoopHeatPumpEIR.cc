@@ -483,8 +483,8 @@ void EIRPlantLoopHeatPump::calcAvailableCapacity(EnergyPlusData &state, Real64 c
             this->calcPowerUsage(state);
             Real64 sourceSideHeatTransfer = this->calcQsource(availableCapacity * partLoadRatio, this->powerUsage);
             // check to see if souce side outlet temp exceeds limit and reduce PLR if necessary
-            Real64 const CpSrc =
-                this->sourceSidePlantLoc.loop->glycol->getSpecificHeat(state, this->sourceSideInletTemp, "EIRPlantLoopHeatPump::calcLoadSideHeatTransfer()");
+            Real64 const CpSrc = this->sourceSidePlantLoc.loop->glycol->getSpecificHeat(
+                state, this->sourceSideInletTemp, "EIRPlantLoopHeatPump::calcLoadSideHeatTransfer()");
             Real64 const sourceMCp = this->sourceSideMassFlowRate * CpSrc;
             Real64 const tempSourceOutletTemp = this->calcSourceOutletTemp(this->sourceSideInletTemp, sourceSideHeatTransfer / sourceMCp);
             if (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpEIRHeating && tempSourceOutletTemp < this->minSourceTempLimit) {
@@ -601,8 +601,8 @@ void EIRPlantLoopHeatPump::calcSourceSideHeatTransferWSHP(EnergyPlusData &state)
     this->sourceSideHeatTransfer = this->calcQsource(this->loadSideHeatTransfer, this->powerUsage);
 
     // calculate source side outlet conditions
-    Real64 const CpSrc =
-        this->sourceSidePlantLoc.loop->glycol->getSpecificHeat(state, this->sourceSideInletTemp, "EIRPlantLoopHeatPump::calcSourceSideHeatTransferWSHP()");
+    Real64 const CpSrc = this->sourceSidePlantLoc.loop->glycol->getSpecificHeat(
+        state, this->sourceSideInletTemp, "EIRPlantLoopHeatPump::calcSourceSideHeatTransferWSHP()");
     Real64 const sourceMCp = this->sourceSideMassFlowRate * CpSrc;
     this->sourceSideOutletTemp = this->calcSourceOutletTemp(this->sourceSideInletTemp, this->sourceSideHeatTransfer / sourceMCp);
 
@@ -1485,8 +1485,10 @@ void EIRPlantLoopHeatPump::sizeHeatRecoveryASHP(EnergyPlusData &state)
     std::string_view const typeName = DataPlant::PlantEquipTypeNames[static_cast<int>(this->EIRHPType)];
     Real64 heatRecoveryInitTemp =
         (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpEIRCooling) ? Constant::HWInitConvTemp : Constant::CWInitConvTemp;
-    Real64 const rhoHR = this->heatRecoveryPlantLoc.loop->glycol->getDensity(state, heatRecoveryInitTemp, "EIRPlantLoopHeatPump::sizeHeatRecoveryASHP()");
-    Real64 const CpHR = this->heatRecoveryPlantLoc.loop->glycol->getSpecificHeat(state, heatRecoveryInitTemp, "EIRPlantLoopHeatPump::sizeHeatRecoveryASHP()");
+    Real64 const rhoHR =
+        this->heatRecoveryPlantLoc.loop->glycol->getDensity(state, heatRecoveryInitTemp, "EIRPlantLoopHeatPump::sizeHeatRecoveryASHP()");
+    Real64 const CpHR =
+        this->heatRecoveryPlantLoc.loop->glycol->getSpecificHeat(state, heatRecoveryInitTemp, "EIRPlantLoopHeatPump::sizeHeatRecoveryASHP()");
 
     // calculate an auto-sized value for heat recovery design flow regardless of whether it was auto-sized or not
     int plantHRSizingIndex = this->heatRecoveryPlantLoc.loop->PlantSizNum;

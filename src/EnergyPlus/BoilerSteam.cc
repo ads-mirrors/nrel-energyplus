@@ -551,11 +551,10 @@ namespace BoilerSteam {
                             OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchBoilerRatedCap, this->Name, this->NomCap);
                             OutputReportPredefined::PreDefTableEntry(
                                 state, state.dataOutRptPredefined->pdchBoilerRatedEff, this->Name, this->NomEffic);
-                            OutputReportPredefined::PreDefTableEntry(
-                                state,
-                                state.dataOutRptPredefined->pdchBoilerPlantloopName,
-                                this->Name,
-                                (this->plantLoc.loop != nullptr) ? this->plantLoc.loop->Name : "N/A");
+                            OutputReportPredefined::PreDefTableEntry(state,
+                                                                     state.dataOutRptPredefined->pdchBoilerPlantloopName,
+                                                                     this->Name,
+                                                                     (this->plantLoc.loop != nullptr) ? this->plantLoc.loop->Name : "N/A");
                             OutputReportPredefined::PreDefTableEntry(state,
                                                                      state.dataOutRptPredefined->pdchBoilerPlantloopBranchName,
                                                                      this->Name,

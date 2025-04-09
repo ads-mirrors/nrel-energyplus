@@ -406,7 +406,8 @@ void WrapperSpecs::SizeWrapper(EnergyPlusData &state)
                 if (state.dataSize->PlantSizData(PltSizNum).DesVolFlowRate >= HVAC::SmallWaterVolFlow) {
                     Real64 rho = this->GLHEPlantLoc.loop->glycol->getDensity(state, Constant::CWInitConvTemp, RoutineName);
                     // TODO: JM 2018-12-06 I wonder why Cp isn't calculated at the same temp as rho...
-                    Real64 Cp = this->GLHEPlantLoc.loop->glycol->getSpecificHeat(state, this->ChillerHeater(NumChillerHeater).TempRefCondInCooling, RoutineName);
+                    Real64 Cp = this->GLHEPlantLoc.loop->glycol->getSpecificHeat(
+                        state, this->ChillerHeater(NumChillerHeater).TempRefCondInCooling, RoutineName);
                     tmpCondVolFlowRate =
                         tmpNomCap *
                         (1.0 + (1.0 / this->ChillerHeater(NumChillerHeater).RefCOPCooling) * this->ChillerHeater(NumChillerHeater).OpenMotorEff) /
@@ -2367,7 +2368,8 @@ void WrapperSpecs::CalcChillerHeaterModel(EnergyPlusData &state)
                     PartLoadRat = 0.0;
                 }
 
-                Real64 Cp = this->HWPlantLoc.loop->glycol->getSpecificHeat(state, this->ChillerHeater(ChillerHeaterNum).EvapInletNode.Temp, RoutineName);
+                Real64 Cp =
+                    this->HWPlantLoc.loop->glycol->getSpecificHeat(state, this->ChillerHeater(ChillerHeaterNum).EvapInletNode.Temp, RoutineName);
 
                 // Calculate evaporator heat transfer
                 if (EvapMassFlowRate > DataBranchAirLoopPlant::MassFlowTolerance) {

@@ -131,18 +131,11 @@ void GasAbsorberSpecs::simulate(
 {
     DataPlant::BrLoopType brIdentity(DataPlant::BrLoopType::NoMatch);
 
-    int branchTotalComp = state.dataPlnt->PlantLoop(calledFromLocation.loopNum)
-                              .LoopSide(calledFromLocation.loopSideNum)
-                              .Branch(calledFromLocation.branchNum)
-                              .TotalComponents;
+    int branchTotalComp = calledFromLocation.branch->TotalComponents;
 
     for (int iComp = 1; iComp <= branchTotalComp; iComp++) {
         // kind of a hacky way to find the location of this, but it's what plantloopequip was doing
-        int compInletNodeNum = state.dataPlnt->PlantLoop(calledFromLocation.loopNum)
-                                   .LoopSide(calledFromLocation.loopSideNum)
-                                   .Branch(calledFromLocation.branchNum)
-                                   .Comp(iComp)
-                                   .NodeNumIn;
+        int compInletNodeNum = calledFromLocation.branch->Comp(iComp).NodeNumIn;
         // Match inlet node name of calling branch to determine if this call is for heating or cooling
         if (compInletNodeNum == this->ChillReturnNodeNum) { // Operate as chiller
             brIdentity = DataPlant::BrLoopType::Chiller;
@@ -199,18 +192,11 @@ void GasAbsorberSpecs::getDesignCapacities(
 {
     bool matchfound = false;
 
-    int branchTotalComp = state.dataPlnt->PlantLoop(calledFromLocation.loopNum)
-                              .LoopSide(calledFromLocation.loopSideNum)
-                              .Branch(calledFromLocation.branchNum)
-                              .TotalComponents;
+    int branchTotalComp = calledFromLocation.branch->TotalComponents;
 
     for (int iComp = 1; iComp <= branchTotalComp; iComp++) {
         // kind of a hacky way to find the location of this, but it's what plantloopequip was doing
-        int compInletNodeNum = state.dataPlnt->PlantLoop(calledFromLocation.loopNum)
-                                   .LoopSide(calledFromLocation.loopSideNum)
-                                   .Branch(calledFromLocation.branchNum)
-                                   .Comp(iComp)
-                                   .NodeNumIn;
+        int compInletNodeNum = calledFromLocation.branch->Comp(iComp).NodeNumIn;
 
         if (compInletNodeNum == this->ChillReturnNodeNum) { // Operate as chiller
             MinLoad = this->NomCoolingCap * this->MinPartLoadRat;
@@ -254,8 +240,7 @@ void GasAbsorberSpecs::onInitLoopEquip(EnergyPlusData &state, const PlantLocatio
     this->initialize(state);
 
     // kind of a hacky way to find the location of this, but it's what plantloopequip was doing
-    int BranchInletNodeNum =
-        state.dataPlnt->PlantLoop(calledFromLocation.loopNum).LoopSide(calledFromLocation.loopSideNum).Branch(calledFromLocation.branchNum).NodeNumIn;
+    int BranchInletNodeNum = calledFromLocation.branch->NodeNumIn;
 
     if (BranchInletNodeNum == this->ChillReturnNodeNum) {       // Operate as chiller
         this->size(state);                                      // only call from chilled water loop
@@ -883,9 +868,9 @@ void GasAbsorberSpecs::oneTimeInit_new(EnergyPlusData &state)
         }
         this->ChillSetPointSetToLoop = true;
         state.dataLoopNodes->Node(this->ChillSupplyNodeNum).TempSetPoint =
-            state.dataLoopNodes->Node(state.dataPlnt->PlantLoop(this->CWplantLoc.loopNum).TempSetPointNodeNum).TempSetPoint;
+            state.dataLoopNodes->Node(this->CWplantLoc.loop->TempSetPointNodeNum).TempSetPoint;
         state.dataLoopNodes->Node(this->ChillSupplyNodeNum).TempSetPointHi =
-            state.dataLoopNodes->Node(state.dataPlnt->PlantLoop(this->CWplantLoc.loopNum).TempSetPointNodeNum).TempSetPointHi;
+            state.dataLoopNodes->Node(this->CWplantLoc.loop->TempSetPointNodeNum).TempSetPointHi;
     }
     // check if outlet node of hot water side has a setpoint.
     if ((state.dataLoopNodes->Node(this->HeatSupplyNodeNum).TempSetPoint == DataLoopNode::SensedNodeFlagValue) &&
@@ -915,9 +900,9 @@ void GasAbsorberSpecs::oneTimeInit_new(EnergyPlusData &state)
         }
         this->HeatSetPointSetToLoop = true;
         state.dataLoopNodes->Node(this->HeatSupplyNodeNum).TempSetPoint =
-            state.dataLoopNodes->Node(state.dataPlnt->PlantLoop(this->HWplantLoc.loopNum).TempSetPointNodeNum).TempSetPoint;
+            state.dataLoopNodes->Node(this->HWplantLoc.loop->TempSetPointNodeNum).TempSetPoint;
         state.dataLoopNodes->Node(this->HeatSupplyNodeNum).TempSetPointLo =
-            state.dataLoopNodes->Node(state.dataPlnt->PlantLoop(this->HWplantLoc.loopNum).TempSetPointNodeNum).TempSetPointLo;
+            state.dataLoopNodes->Node(this->HWplantLoc.loop->TempSetPointNodeNum).TempSetPointLo;
     }
 }
 
@@ -948,7 +933,7 @@ void GasAbsorberSpecs::initialize(EnergyPlusData &state)
         if (this->isWaterCooled) {
             // init max available condenser water flow rate
             if (this->CDplantLoc.loopNum > 0) {
-                rho = state.dataPlnt->PlantLoop(this->CDplantLoc.loopNum).glycol->getDensity(state, Constant::CWInitConvTemp, RoutineName);
+                rho = this->CDplantLoc.loop->glycol->getDensity(state, Constant::CWInitConvTemp, RoutineName);
             } else {
                 rho = Psychrometrics::RhoH2O(Constant::InitConvTemp);
             }
@@ -958,7 +943,7 @@ void GasAbsorberSpecs::initialize(EnergyPlusData &state)
         }
 
         if (this->HWplantLoc.loopNum > 0) {
-            rho = state.dataPlnt->PlantLoop(this->HWplantLoc.loopNum).glycol->getDensity(state, Constant::HWInitConvTemp, RoutineName);
+            rho = this->HWplantLoc.loop->glycol->getDensity(state, Constant::HWInitConvTemp, RoutineName);
         } else {
             rho = Psychrometrics::RhoH2O(Constant::InitConvTemp);
         }
@@ -967,7 +952,7 @@ void GasAbsorberSpecs::initialize(EnergyPlusData &state)
         PlantUtilities::InitComponentNodes(state, 0.0, this->DesHeatMassFlowRate, HeatInletNode, HeatOutletNode);
 
         if (this->CWplantLoc.loopNum > 0) {
-            rho = state.dataPlnt->PlantLoop(this->CWplantLoc.loopNum).glycol->getDensity(state, Constant::CWInitConvTemp, RoutineName);
+            rho = this->CWplantLoc.loop->glycol->getDensity(state, Constant::CWInitConvTemp, RoutineName);
         } else {
             rho = Psychrometrics::RhoH2O(Constant::InitConvTemp);
         }
@@ -986,16 +971,16 @@ void GasAbsorberSpecs::initialize(EnergyPlusData &state)
     // fill from plant if needed
     if (this->ChillSetPointSetToLoop) {
         state.dataLoopNodes->Node(this->ChillSupplyNodeNum).TempSetPoint =
-            state.dataLoopNodes->Node(state.dataPlnt->PlantLoop(this->CWplantLoc.loopNum).TempSetPointNodeNum).TempSetPoint;
+            state.dataLoopNodes->Node(this->CWplantLoc.loop->TempSetPointNodeNum).TempSetPoint;
         state.dataLoopNodes->Node(this->ChillSupplyNodeNum).TempSetPointHi =
-            state.dataLoopNodes->Node(state.dataPlnt->PlantLoop(this->CWplantLoc.loopNum).TempSetPointNodeNum).TempSetPointHi;
+            state.dataLoopNodes->Node(this->CWplantLoc.loop->TempSetPointNodeNum).TempSetPointHi;
     }
 
     if (this->HeatSetPointSetToLoop) {
         state.dataLoopNodes->Node(this->HeatSupplyNodeNum).TempSetPoint =
-            state.dataLoopNodes->Node(state.dataPlnt->PlantLoop(this->HWplantLoc.loopNum).TempSetPointNodeNum).TempSetPoint;
+            state.dataLoopNodes->Node(this->HWplantLoc.loop->TempSetPointNodeNum).TempSetPoint;
         state.dataLoopNodes->Node(this->HeatSupplyNodeNum).TempSetPointLo =
-            state.dataLoopNodes->Node(state.dataPlnt->PlantLoop(this->HWplantLoc.loopNum).TempSetPointNodeNum).TempSetPointLo;
+            state.dataLoopNodes->Node(this->HWplantLoc.loop->TempSetPointNodeNum).TempSetPointLo;
     }
 
     if ((this->isWaterCooled) && ((this->InHeatingMode) || (this->InCoolingMode))) {
@@ -1041,14 +1026,14 @@ void GasAbsorberSpecs::size(EnergyPlusData &state)
     Real64 tmpHeatRecVolFlowRate = this->HeatVolFlowRate;
 
     int PltSizCondNum = 0; // Plant Sizing index for condenser loop
-    if (this->isWaterCooled) PltSizCondNum = state.dataPlnt->PlantLoop(this->CDplantLoc.loopNum).PlantSizNum;
-    int PltSizHeatNum = state.dataPlnt->PlantLoop(this->HWplantLoc.loopNum).PlantSizNum;
-    int PltSizCoolNum = state.dataPlnt->PlantLoop(this->CWplantLoc.loopNum).PlantSizNum;
+    if (this->isWaterCooled) PltSizCondNum = this->CDplantLoc.loop->PlantSizNum;
+    int PltSizHeatNum = this->HWplantLoc.loop->PlantSizNum;
+    int PltSizCoolNum = this->CWplantLoc.loop->PlantSizNum;
 
     if (PltSizCoolNum > 0) {
         if (state.dataSize->PlantSizData(PltSizCoolNum).DesVolFlowRate >= HVAC::SmallWaterVolFlow) {
-            Cp = state.dataPlnt->PlantLoop(this->CWplantLoc.loopNum).glycol->getSpecificHeat(state, Constant::CWInitConvTemp, RoutineName);
-            rho = state.dataPlnt->PlantLoop(this->CWplantLoc.loopNum).glycol->getDensity(state, Constant::CWInitConvTemp, RoutineName);
+            Cp = this->CWplantLoc.loop->glycol->getSpecificHeat(state, Constant::CWInitConvTemp, RoutineName);
+            rho = this->CWplantLoc.loop->glycol->getDensity(state, Constant::CWInitConvTemp, RoutineName);
             tmpNomCap = Cp * rho * state.dataSize->PlantSizData(PltSizCoolNum).DeltaT * state.dataSize->PlantSizData(PltSizCoolNum).DesVolFlowRate *
                         this->SizFac;
             if (!this->NomCoolingCapWasAutoSized) tmpNomCap = this->NomCoolingCap;
@@ -1268,8 +1253,8 @@ void GasAbsorberSpecs::size(EnergyPlusData &state)
     if (PltSizCondNum > 0 && PltSizCoolNum > 0) {
         if (state.dataSize->PlantSizData(PltSizCoolNum).DesVolFlowRate >= HVAC::SmallWaterVolFlow && tmpNomCap > 0.0) {
 
-            Cp = state.dataPlnt->PlantLoop(this->CDplantLoc.loopNum).glycol->getSpecificHeat(state, this->TempDesCondReturn, RoutineName);
-            rho = state.dataPlnt->PlantLoop(this->CDplantLoc.loopNum).glycol->getDensity(state, this->TempDesCondReturn, RoutineName);
+            Cp = this->CDplantLoc.loop->glycol->getSpecificHeat(state, this->TempDesCondReturn, RoutineName);
+            rho = this->CDplantLoc.loop->glycol->getDensity(state, this->TempDesCondReturn, RoutineName);
             tmpCondVolFlowRate = tmpNomCap * (1.0 + this->FuelCoolRatio) / (state.dataSize->PlantSizData(PltSizCondNum).DeltaT * Cp * rho);
             if (!this->CondVolFlowRateWasAutoSized) tmpCondVolFlowRate = this->CondVolFlowRate;
             // IF (PlantFirstSizesOkayToFinalize) GasAbsorber(ChillNum)%CondVolFlowRate = tmpCondVolFlowRate
@@ -1373,25 +1358,19 @@ void GasAbsorberSpecs::size(EnergyPlusData &state)
         OutputReportPredefined::PreDefTableEntry(state,
                                                  state.dataOutRptPredefined->pdchChillerPlantloopName,
                                                  this->Name,
-                                                 this->CWplantLoc.loopNum > 0 ? state.dataPlnt->PlantLoop(this->CWplantLoc.loopNum).Name : "N/A");
-        OutputReportPredefined::PreDefTableEntry(
-            state,
-            state.dataOutRptPredefined->pdchChillerPlantloopBranchName,
-            this->Name,
-            this->CWplantLoc.loopNum > 0
-                ? state.dataPlnt->PlantLoop(this->CWplantLoc.loopNum).LoopSide(this->CWplantLoc.loopSideNum).Branch(this->CWplantLoc.branchNum).Name
-                : "N/A");
+                                                 (this->CWplantLoc.loop != nullptr) ? this->CWplantLoc.loop->Name : "N/A");
+        OutputReportPredefined::PreDefTableEntry(state,
+                                                 state.dataOutRptPredefined->pdchChillerPlantloopBranchName,
+                                                 this->Name,
+                                                 (this->CWplantLoc.loop != nullptr) ? this->CWplantLoc.branch->Name : "N/A");
         OutputReportPredefined::PreDefTableEntry(state,
                                                  state.dataOutRptPredefined->pdchChillerCondLoopName,
                                                  this->Name,
-                                                 this->CDplantLoc.loopNum > 0 ? state.dataPlnt->PlantLoop(this->CDplantLoc.loopNum).Name : "N/A");
-        OutputReportPredefined::PreDefTableEntry(
-            state,
-            state.dataOutRptPredefined->pdchChillerCondLoopBranchName,
-            this->Name,
-            this->CDplantLoc.loopNum > 0
-                ? state.dataPlnt->PlantLoop(this->CDplantLoc.loopNum).LoopSide(this->CDplantLoc.loopSideNum).Branch(this->CDplantLoc.branchNum).Name
-                : "N/A");
+                                                 (this->CDplantLoc.loop != nullptr) ? this->CDplantLoc.loop->Name : "N/A");
+        OutputReportPredefined::PreDefTableEntry(state,
+                                                 state.dataOutRptPredefined->pdchChillerCondLoopBranchName,
+                                                 this->Name,
+                                                 (this->CDplantLoc.branch != nullptr) ? this->CDplantLoc.branch->Name : "N/A");
         OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchChillerMinPLR, this->Name, this->MinPartLoadRat);
         OutputReportPredefined::PreDefTableEntry(
             state, state.dataOutRptPredefined->pdchChillerFuelType, this->Name, Constant::eResourceNames[static_cast<int>(this->FuelType)]);
@@ -1490,7 +1469,7 @@ void GasAbsorberSpecs::calculateChiller(EnergyPlusData &state, Real64 &MyLoad)
     Real64 lChillWaterMassFlowRate = state.dataLoopNodes->Node(lChillReturnNodeNum).MassFlowRate;
     Real64 lCondReturnTemp = state.dataLoopNodes->Node(lCondReturnNodeNum).Temp;
     // Commenting this could be cause of diffs - lCondWaterMassFlowRate = Node(lCondReturnNodeNum).MassFlowRate;
-    switch (state.dataPlnt->PlantLoop(this->CWplantLoc.loopNum).LoopDemandCalcScheme) {
+    switch (this->CWplantLoc.loop->LoopDemandCalcScheme) {
     case DataPlant::LoopDemandCalcScheme::SingleSetPoint: {
         ChillSupplySetPointTemp = state.dataLoopNodes->Node(lChillSupplyNodeNum).TempSetPoint;
     } break;
@@ -1504,11 +1483,11 @@ void GasAbsorberSpecs::calculateChiller(EnergyPlusData &state, Real64 &MyLoad)
     Real64 ChillDeltaTemp = std::abs(lChillReturnTemp - ChillSupplySetPointTemp);
 
     // local fluid specific heat for chilled water
-    Real64 Cp_CW = state.dataPlnt->PlantLoop(this->CWplantLoc.loopNum).glycol->getSpecificHeat(state, lChillReturnTemp, RoutineName);
+    Real64 Cp_CW = this->CWplantLoc.loop->glycol->getSpecificHeat(state, lChillReturnTemp, RoutineName);
     // local fluid specific heat for condenser water
     Real64 Cp_CD = 0; // putting this here as a dummy initialization to hush the compiler warning, in real runs this value should never be used
     if (this->CDplantLoc.loopNum > 0) {
-        Cp_CD = state.dataPlnt->PlantLoop(this->CDplantLoc.loopNum).glycol->getSpecificHeat(state, lChillReturnTemp, RoutineName);
+        Cp_CD = this->CDplantLoc.loop->glycol->getSpecificHeat(state, lChillReturnTemp, RoutineName);
     }
 
     // If no loop demand or Absorber OFF, return
@@ -1568,9 +1547,7 @@ void GasAbsorberSpecs::calculateChiller(EnergyPlusData &state, Real64 &MyLoad)
         //    supply temperature
         lChillWaterMassflowratemax = this->DesEvapMassFlowRate;
 
-        int LoopNum = this->CWplantLoc.loopNum;
-        LoopSideNum = this->CWplantLoc.loopSideNum;
-        switch (state.dataPlnt->PlantLoop(LoopNum).LoopSide(LoopSideNum).FlowLock) {
+        switch (this->CWplantLoc.side->FlowLock) {
         case DataPlant::FlowLock::Unlocked: { // mass flow rates may be changed by loop components
             this->PossibleSubcooling = false;
             lCoolingLoad = std::abs(MyLoad);
@@ -1796,8 +1773,6 @@ void GasAbsorberSpecs::calculateHeater(EnergyPlusData &state, Real64 &MyLoad, bo
     // other local variables
     Real64 HeatDeltaTemp(0.0); // hot water temperature difference
     Real64 HeatSupplySetPointTemp(0.0);
-    int LoopNum;
-    DataPlant::LoopSideLocation LoopSideNum;
     Real64 Cp_HW; // local fluid specific heat for hot water
 
     // set node values to data structure values for nodes
@@ -1815,10 +1790,8 @@ void GasAbsorberSpecs::calculateHeater(EnergyPlusData &state, Real64 &MyLoad, bo
     lMaxPartLoadRat = this->MaxPartLoadRat;
     lHeatCapFCoolCurve = this->HeatCapFCoolCurve;
     lFuelHeatFHPLRCurve = this->FuelHeatFHPLRCurve;
-    LoopNum = this->HWplantLoc.loopNum;
-    LoopSideNum = this->HWplantLoc.loopSideNum;
 
-    Cp_HW = state.dataPlnt->PlantLoop(LoopNum).glycol->getSpecificHeat(state, lHotWaterReturnTemp, RoutineName);
+    Cp_HW = this->HWplantLoc.loop->glycol->getSpecificHeat(state, lHotWaterReturnTemp, RoutineName);
 
     lCoolElectricPower = this->CoolElectricPower;
     lCoolFuelUseRate = this->CoolFuelUseRate;
@@ -1827,7 +1800,7 @@ void GasAbsorberSpecs::calculateHeater(EnergyPlusData &state, Real64 &MyLoad, bo
     // initialize entering conditions
     lHotWaterReturnTemp = state.dataLoopNodes->Node(lHeatReturnNodeNum).Temp;
     lHotWaterMassFlowRate = state.dataLoopNodes->Node(lHeatReturnNodeNum).MassFlowRate;
-    switch (state.dataPlnt->PlantLoop(LoopNum).LoopDemandCalcScheme) {
+    switch (this->HWplantLoc.loop->LoopDemandCalcScheme) {
     case DataPlant::LoopDemandCalcScheme::SingleSetPoint: {
         HeatSupplySetPointTemp = state.dataLoopNodes->Node(lHeatSupplyNodeNum).TempSetPoint;
     } break;
@@ -1862,7 +1835,7 @@ void GasAbsorberSpecs::calculateHeater(EnergyPlusData &state, Real64 &MyLoad, bo
         //    chilled water flow,
         //    cooling load taken by the chiller, and
         //    supply temperature
-        switch (state.dataPlnt->PlantLoop(LoopNum).LoopSide(LoopSideNum).FlowLock) {
+        switch (this->HWplantLoc.side->FlowLock) {
         case DataPlant::FlowLock::Unlocked: { // mass flow rates may be changed by loop components
             lHeatingLoad = std::abs(MyLoad);
             if (HeatDeltaTemp != 0) {

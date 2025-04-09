@@ -774,7 +774,7 @@ TEST_F(EnergyPlusFixture, HeaderedVariableSpeedPumpEMSPressureTest)
     state->dataPlnt->PlantLoop(1).glycol = Fluid::GetWater(*state);
     state->dataPlnt->PlantLoop(1).LoopSide(thisLoopSideNum).Branch.allocate(1);
     state->dataPlnt->PlantLoop(1).LoopSide(thisLoopSideNum).Branch(thisBranchNum).Comp.allocate(1);
-    
+
     Pumps::GetPumpInput(*state);
     Pumps::SizePump(*state, 1);
     Real64 massflowrate = 1.0;
@@ -786,7 +786,7 @@ TEST_F(EnergyPlusFixture, HeaderedVariableSpeedPumpEMSPressureTest)
     PlantUtilities::SetPlantLocationLinks(*state, state->dataPumps->PumpEquip(1).plantLoc);
     state->dataPumps->PumpEquip(1).MassFlowRateMax = massflowrate;
     bool PumpRunning = true;
-    
+
     state->dataLoopNodes->Node(1).MassFlowRate = massflowrate;
     state->dataLoopNodes->Node(1).MassFlowRateMinAvail = massflowrate;
     state->dataLoopNodes->Node(1).MassFlowRateMin = massflowrate;

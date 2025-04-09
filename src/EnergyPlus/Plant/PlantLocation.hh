@@ -52,14 +52,13 @@
 
 namespace EnergyPlus {
 
-  
 // Forward declarations
 namespace DataPlant {
     struct PlantLoopData;
     struct HalfLoopData;
     struct BranchData;
     struct CompData;
-}
+} // namespace DataPlant
 
 struct PlantLocation
 {
@@ -73,7 +72,7 @@ struct PlantLocation
     DataPlant::HalfLoopData *side = nullptr;
     DataPlant::BranchData *branch = nullptr;
     DataPlant::CompData *comp = nullptr;
-  
+
     // Overload operator== for PlantLocation
     friend bool operator==(PlantLocation const &lhsPlantLoc, PlantLocation const &rhsPlantLoc)
     {

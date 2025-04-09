@@ -140,7 +140,7 @@ TEST_F(EnergyPlusFixture, DistrictCoolingandHeating)
     thisDistrictHeatingWater.plantLoc = locHotWater;
     thisDistrictHeatingWater.plantLoc.loopNum = 1;
     PlantUtilities::SetPlantLocationLinks(*state, thisDistrictHeatingWater.plantLoc);
-    
+
     thisDistrictHeatingWater.BeginEnvrnInitFlag = true;
     thisDistrictHeatingWater.simulate(*state, locHotWater, firstHVAC, MyLoad, RunFlag);
 

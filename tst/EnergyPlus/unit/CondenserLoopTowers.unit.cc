@@ -4252,7 +4252,7 @@ TEST_F(EnergyPlusFixture, CondenserLoopTowers_checkMassFlowAndLoadTest)
     tower.plantLoc.branchNum = 1;
     tower.plantLoc.compNum = 1;
     PlantUtilities::SetPlantLocationLinks(*state, tower.plantLoc);
-    
+
     // Test 1: Mass flow rate is low but myLoad is ok--flag should be set to true
     flagToReturn = false;
     runFlag = true;

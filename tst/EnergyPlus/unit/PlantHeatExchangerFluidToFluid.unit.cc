@@ -2332,7 +2332,7 @@ TEST_F(EnergyPlusFixture, PlantHXControlWithFirstHVACIteration)
         DataPlant::PlantEquipmentType::FluidToFluidPlantHtExchg;
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1).NodeNumIn =
         state->dataPlantHXFluidToFluid->FluidHX(1).SupplySideLoop.inletNodeNum;
-    
+
     state->dataPlantHXFluidToFluid->FluidHX(1).SupplySideLoop.loopNum = 1;
     state->dataPlantHXFluidToFluid->FluidHX(1).SupplySideLoop.loopSideNum = DataPlant::LoopSideLocation::Demand;
     state->dataPlantHXFluidToFluid->FluidHX(1).SupplySideLoop.branchNum = 1;

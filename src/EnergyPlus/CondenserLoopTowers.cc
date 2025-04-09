@@ -2741,7 +2741,7 @@ namespace CondenserLoopTowers {
             if (this->DesignWaterFlowRate >= HVAC::SmallWaterVolFlow) {
                 // nominal capacity doesn't include compressor heat; predefined factor was 1.25 W heat rejection per W of delivered cooling but now is
                 // a user input
-                Real64 const rho = this->plantLoc.loop->glycol->getDensity(state, 29.44, RoutineName); // 85F design exiting water temp
+                Real64 const rho = this->plantLoc.loop->glycol->getDensity(state, 29.44, RoutineName);     // 85F design exiting water temp
                 Real64 const Cp = this->plantLoc.loop->glycol->getSpecificHeat(state, 29.44, RoutineName); // 85F design exiting water temp
 
                 DesTowerLoad = this->TowerNominalCapacity * this->HeatRejectCapNomCapSizingRatio;
@@ -2916,7 +2916,7 @@ namespace CondenserLoopTowers {
 
                 // nominal capacity doesn't include compressor heat; predefined factor was 1.25 W heat rejection per W of evap cooling but now is a
                 // user input
-                Real64 const rho = this->plantLoc.loop->glycol->getDensity(state, 29.44, RoutineName); // 85F design exiting water temp
+                Real64 const rho = this->plantLoc.loop->glycol->getDensity(state, 29.44, RoutineName);     // 85F design exiting water temp
                 Real64 const Cp = this->plantLoc.loop->glycol->getSpecificHeat(state, 29.44, RoutineName); // 85F design exiting water temp
                 DesTowerLoad = this->TowerLowSpeedNomCap * this->HeatRejectCapNomCapSizingRatio;
                 Real64 const solveWaterFlow = rho * tmpDesignWaterFlowRate; // design water mass flow rate
@@ -3007,7 +3007,7 @@ namespace CondenserLoopTowers {
             if (this->DesignWaterFlowRate >= HVAC::SmallWaterVolFlow && this->TowerFreeConvNomCap > 0.0) {
                 // nominal capacity doesn't include compressor heat; predefined factor was 1.25 W heat rejection per W of evap cooling but now user
                 // input
-                Real64 const rho = this->plantLoc.loop->glycol->getDensity(state, 29.44, RoutineName); // 85F design exiting water temp
+                Real64 const rho = this->plantLoc.loop->glycol->getDensity(state, 29.44, RoutineName);     // 85F design exiting water temp
                 Real64 const Cp = this->plantLoc.loop->glycol->getSpecificHeat(state, 29.44, RoutineName); // 85F design exiting water temp
                 DesTowerLoad = this->TowerFreeConvNomCap * this->HeatRejectCapNomCapSizingRatio;
                 Real64 const solveWaterFlow = rho * this->DesignWaterFlowRate; // design water mass flow rate
@@ -3144,10 +3144,10 @@ namespace CondenserLoopTowers {
                                         this->MaxWaterFlowRatio));
             }
 
-            Real64 const rho = this->plantLoc.loop->
-                                   glycol->getDensity(state, (this->DesignInletWB + this->DesignApproach + this->DesignRange), RoutineName);
-            Real64 const Cp = this->plantLoc.loop->
-                                  glycol->getSpecificHeat(state, (this->DesignInletWB + this->DesignApproach + this->DesignRange), RoutineName);
+            Real64 const rho =
+                this->plantLoc.loop->glycol->getDensity(state, (this->DesignInletWB + this->DesignApproach + this->DesignRange), RoutineName);
+            Real64 const Cp =
+                this->plantLoc.loop->glycol->getSpecificHeat(state, (this->DesignInletWB + this->DesignApproach + this->DesignRange), RoutineName);
 
             this->TowerNominalCapacity = ((rho * tmpDesignWaterFlowRate) * Cp * this->DesignRange);
             if (state.dataPlnt->PlantFinalSizesOkayToReport) {
@@ -3210,16 +3210,14 @@ namespace CondenserLoopTowers {
                                                      state.dataOutRptPredefined->pdchCTFCCondLoopName,
                                                      this->Name,
                                                      (this->plantLoc.loop != nullptr) ? this->plantLoc.loop->Name : "N/A");
-            OutputReportPredefined::PreDefTableEntry(
-                state,
-                state.dataOutRptPredefined->pdchCTFCCondLoopBranchName,
-                this->Name,
-                (this->plantLoc.branch != nullptr) ? plantLoc.branch->Name : "N/A");
-            OutputReportPredefined::PreDefTableEntry(
-                state,
-                state.dataOutRptPredefined->pdchCTFCFluidType,
-                this->Name,
-                this->plantLoc.loop->glycol->Name); // Fluid Name more reasonable than FluidType
+            OutputReportPredefined::PreDefTableEntry(state,
+                                                     state.dataOutRptPredefined->pdchCTFCCondLoopBranchName,
+                                                     this->Name,
+                                                     (this->plantLoc.branch != nullptr) ? plantLoc.branch->Name : "N/A");
+            OutputReportPredefined::PreDefTableEntry(state,
+                                                     state.dataOutRptPredefined->pdchCTFCFluidType,
+                                                     this->Name,
+                                                     this->plantLoc.loop->glycol->Name); // Fluid Name more reasonable than FluidType
             OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchCTFCRange, this->Name, this->DesignRange);
             OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchCTFCApproach, this->Name, this->DesignApproach);
             OutputReportPredefined::PreDefTableEntry(
@@ -4273,16 +4271,14 @@ namespace CondenserLoopTowers {
                                                      state.dataOutRptPredefined->pdchCTFCCondLoopName,
                                                      this->Name,
                                                      (this->plantLoc.loop != nullptr) ? this->plantLoc.loop->Name : "N/A");
-            OutputReportPredefined::PreDefTableEntry(
-                state,
-                state.dataOutRptPredefined->pdchCTFCCondLoopBranchName,
-                this->Name,
-                (this->plantLoc.branch != nullptr) ? plantLoc.branch->Name : "N/A");
-            OutputReportPredefined::PreDefTableEntry(
-                state,
-                state.dataOutRptPredefined->pdchCTFCFluidType,
-                this->Name,
-                this->plantLoc.loop->glycol->Name); // Fluid Name more reasonable than FluidType
+            OutputReportPredefined::PreDefTableEntry(state,
+                                                     state.dataOutRptPredefined->pdchCTFCCondLoopBranchName,
+                                                     this->Name,
+                                                     (this->plantLoc.branch != nullptr) ? plantLoc.branch->Name : "N/A");
+            OutputReportPredefined::PreDefTableEntry(state,
+                                                     state.dataOutRptPredefined->pdchCTFCFluidType,
+                                                     this->Name,
+                                                     this->plantLoc.loop->glycol->Name); // Fluid Name more reasonable than FluidType
             OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchCTFCRange, this->Name, this->DesignRange);
             OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchCTFCApproach, this->Name, this->DesignApproach);
             OutputReportPredefined::PreDefTableEntry(
@@ -4592,8 +4588,8 @@ namespace CondenserLoopTowers {
         // output the fraction of the time step the fan is ON
         this->FanCyclingRatio = FanModeFrac;
         // Should this be water inlet node num?????
-        Real64 const CpWater = this->plantLoc.loop->
-                                   glycol->getSpecificHeat(state, state.dataLoopNodes->Node(this->WaterInletNodeNum).Temp, RoutineName);
+        Real64 const CpWater =
+            this->plantLoc.loop->glycol->getSpecificHeat(state, state.dataLoopNodes->Node(this->WaterInletNodeNum).Temp, RoutineName);
 
         this->Qactual = this->WaterMassFlowRate * CpWater * (state.dataLoopNodes->Node(this->WaterInletNodeNum).Temp - this->OutletWaterTemp);
         this->airFlowRateRatio = (AirFlowRate * this->NumCell) / this->HighSpeedAirFlowRate;
@@ -4724,8 +4720,7 @@ namespace CondenserLoopTowers {
         }
 
         // Do not RETURN here if flow rate is less than SmallMassFlow. Check basin heater and then RETURN.
-        if (this->plantLoc.side->FlowLock == DataPlant::FlowLock::Unlocked)
-            return; // TODO: WTF
+        if (this->plantLoc.side->FlowLock == DataPlant::FlowLock::Unlocked) return; // TODO: WTF
         bool returnFlagSet = false;
         this->checkMassFlowAndLoad(state, MyLoad, RunFlag, returnFlagSet);
         if (returnFlagSet) return;
@@ -4829,8 +4824,8 @@ namespace CondenserLoopTowers {
         this->FanCyclingRatio = FanModeFrac;
         this->SpeedSelected = SpeedSel;
 
-        Real64 const CpWater = this->plantLoc.loop->
-                                   glycol->getSpecificHeat(state, state.dataLoopNodes->Node(this->WaterInletNodeNum).Temp, RoutineName);
+        Real64 const CpWater =
+            this->plantLoc.loop->glycol->getSpecificHeat(state, state.dataLoopNodes->Node(this->WaterInletNodeNum).Temp, RoutineName);
         this->Qactual = this->WaterMassFlowRate * CpWater * (state.dataLoopNodes->Node(this->WaterInletNodeNum).Temp - this->OutletWaterTemp);
         this->airFlowRateRatio = (AirFlowRate * this->NumCell) / this->HighSpeedAirFlowRate;
     }
@@ -4953,8 +4948,7 @@ namespace CondenserLoopTowers {
         Real64 Ta = TempSetPoint - this->AirWetBulb;
 
         // Do not RETURN here if flow rate is less than MassFlowTolerance. Check basin heater and then RETURN.
-        if (this->plantLoc.side->FlowLock == DataPlant::FlowLock::Unlocked)
-            return; // TODO: WTF
+        if (this->plantLoc.side->FlowLock == DataPlant::FlowLock::Unlocked) return; // TODO: WTF
 
         bool returnFlagSet = false;
         this->checkMassFlowAndLoad(state, MyLoad, RunFlag, returnFlagSet);
@@ -4971,8 +4965,8 @@ namespace CondenserLoopTowers {
         while (IncrNumCellFlag) {
             IncrNumCellFlag = false;
             // Initialize inlet node water properties
-            Real64 const WaterDensity = this->plantLoc.loop->
-                                            glycol->getDensity(state, state.dataLoopNodes->Node(this->WaterInletNodeNum).Temp, RoutineName);
+            Real64 const WaterDensity =
+                this->plantLoc.loop->glycol->getDensity(state, state.dataLoopNodes->Node(this->WaterInletNodeNum).Temp, RoutineName);
             Real64 const WaterFlowRateRatio = WaterMassFlowRatePerCell / (WaterDensity * this->CalibratedWaterFlowRate / this->NumCell);
 
             // check independent inputs with respect to model boundaries
@@ -5101,8 +5095,8 @@ namespace CondenserLoopTowers {
             }
         }
 
-        Real64 const CpWater = this->plantLoc.loop->
-                                   glycol->getSpecificHeat(state, state.dataLoopNodes->Node(this->WaterInletNodeNum).Temp, RoutineName);
+        Real64 const CpWater =
+            this->plantLoc.loop->glycol->getSpecificHeat(state, state.dataLoopNodes->Node(this->WaterInletNodeNum).Temp, RoutineName);
         this->Qactual = this->WaterMassFlowRate * CpWater * (state.dataLoopNodes->Node(this->WaterInletNodeNum).Temp - this->OutletWaterTemp);
 
         //   calculate end time of current time step
@@ -5184,8 +5178,8 @@ namespace CondenserLoopTowers {
         Real64 constexpr Acc(1.e-3);           // Accuracy of solver result
         static constexpr std::string_view RoutineName("calculateMerkelVariableSpeedTower");
 
-        Real64 const CpWater = this->plantLoc.loop->
-                                   glycol->getSpecificHeat(state, state.dataLoopNodes->Node(this->WaterInletNodeNum).Temp, RoutineName);
+        Real64 const CpWater =
+            this->plantLoc.loop->glycol->getSpecificHeat(state, state.dataLoopNodes->Node(this->WaterInletNodeNum).Temp, RoutineName);
         this->Qactual = 0.0;
         this->FanPower = 0.0;
         this->OutletWaterTemp = state.dataLoopNodes->Node(this->WaterInletNodeNum).Temp;
@@ -6063,9 +6057,7 @@ namespace CondenserLoopTowers {
         PlantUtilities::SafeCopyPlantNode(state, this->WaterInletNodeNum, this->WaterOutletNodeNum);
         state.dataLoopNodes->Node(this->WaterOutletNodeNum).Temp = this->OutletWaterTemp;
 
-        if (this->plantLoc.side->FlowLock == DataPlant::FlowLock::Unlocked ||
-            state.dataGlobal->WarmupFlag)
-            return;
+        if (this->plantLoc.side->FlowLock == DataPlant::FlowLock::Unlocked || state.dataGlobal->WarmupFlag) return;
 
         // Check flow rate through tower and compare to design flow rate, show warning if greater than Design * Multiplier
         if (state.dataLoopNodes->Node(this->WaterOutletNodeNum).MassFlowRate > this->DesWaterMassFlowRate * this->TowerMassFlowRateMultiplier) {
@@ -6198,8 +6190,8 @@ namespace CondenserLoopTowers {
         Real64 constexpr designWetBulb = 25.56;
         Real64 constexpr airFlowRateRatio = 1.0;
         Real64 constexpr waterFlowRateRatio = 1.0;
-        Real64 const CpWater = this->plantLoc.loop->
-                                   glycol->getSpecificHeat(state, state.dataLoopNodes->Node(this->WaterInletNodeNum).Temp, routineName);
+        Real64 const CpWater =
+            this->plantLoc.loop->glycol->getSpecificHeat(state, state.dataLoopNodes->Node(this->WaterInletNodeNum).Temp, routineName);
         // use operating max (i.e., at current plant flow rates, could be 0 if plant is off) or max available capacity?
         // Real64 waterMassFlowRate = state.dataLoopNodes->Node(this->WaterInletNodeNum).MassFlowRateMaxAvail;
         Real64 waterMassFlowRate = this->DesWaterMassFlowRate;

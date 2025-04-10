@@ -763,10 +763,10 @@ void GetEvapInput(EnergyPlusData &state)
                 thisEvapCooler.EvapCoolerOperationControlFlag = false;
             }
         }
-        thisEvapCooler.WetbulbEffecCurveIndex = Curve::GetCurveIndex(state, state.dataIPShortCut->cAlphaArgs(3));
-        thisEvapCooler.DrybulbEffecCurveIndex = Curve::GetCurveIndex(state, state.dataIPShortCut->cAlphaArgs(4));
-        thisEvapCooler.PumpPowerModifierCurveIndex = Curve::GetCurveIndex(state, state.dataIPShortCut->cAlphaArgs(5));
-        thisEvapCooler.FanPowerModifierCurveIndex = Curve::GetCurveIndex(state, state.dataIPShortCut->cAlphaArgs(6));
+        thisEvapCooler.WetbulbEffecCurve = Curve::GetCurve(state, state.dataIPShortCut->cAlphaArgs(3));
+        thisEvapCooler.DrybulbEffecCurve = Curve::GetCurve(state, state.dataIPShortCut->cAlphaArgs(4));
+        thisEvapCooler.PumpPowerModifierCurve = Curve::GetCurve(state, state.dataIPShortCut->cAlphaArgs(5));
+        thisEvapCooler.FanPowerModifierCurve = Curve::GetCurve(state, state.dataIPShortCut->cAlphaArgs(6));
 
         SetupOutputVariable(state,
                             "Evaporative Cooler Total Stage Effectiveness",
@@ -915,8 +915,8 @@ void GetEvapInput(EnergyPlusData &state)
                 thisEvapCooler.EvapCoolerOperationControlFlag = false;
             }
         }
-        thisEvapCooler.WetbulbEffecCurveIndex = Curve::GetCurveIndex(state, state.dataIPShortCut->cAlphaArgs(3));
-        thisEvapCooler.PumpPowerModifierCurveIndex = Curve::GetCurveIndex(state, state.dataIPShortCut->cAlphaArgs(4));
+        thisEvapCooler.WetbulbEffecCurve = Curve::GetCurve(state, state.dataIPShortCut->cAlphaArgs(3));
+        thisEvapCooler.PumpPowerModifierCurve = Curve::GetCurve(state, state.dataIPShortCut->cAlphaArgs(4));
 
         SetupOutputVariable(state,
                             "Evaporative Cooler Stage Effectiveness",
@@ -2872,8 +2872,8 @@ void CalcIndirectRDDEvapCoolerOutletTemp(EnergyPlusData &state,
         RhoAirSec = Psychrometrics::PsyRhoAirFnPbTdbW(state, state.dataEnvrn->OutBaroPress, EDBTSec, EHumRatSec);
         RhoAirSys = Psychrometrics::PsyRhoAirFnPbTdbW(state, state.dataEnvrn->OutBaroPress, thisEvapCond.InletTemp, thisEvapCond.InletHumRat);
         if (DryOrWetOperatingMode == OperatingMode::DryModulated || DryOrWetOperatingMode == OperatingMode::DryFull) {
-            if (thisEvapCond.DrybulbEffecCurveIndex > 0) {
-                EffModDryMode = Curve::CurveValue(state, thisEvapCond.DrybulbEffecCurveIndex, FlowRatio);
+            if (thisEvapCond.DrybulbEffecCurve != nullptr) {
+                EffModDryMode = thisEvapCond.DrybulbEffecCurve->value(state, FlowRatio);
             } else {
                 EffModDryMode = 1.0;
             }
@@ -2896,8 +2896,8 @@ void CalcIndirectRDDEvapCoolerOutletTemp(EnergyPlusData &state,
             }
             thisEvapCond.SecOutletTemp = OutletTempSec;
         } else if (DryOrWetOperatingMode == OperatingMode::WetModulated || DryOrWetOperatingMode == OperatingMode::WetFull) {
-            if (thisEvapCond.WetbulbEffecCurveIndex > 0) {
-                EffModWetMode = Curve::CurveValue(state, thisEvapCond.WetbulbEffecCurveIndex, FlowRatio);
+            if (thisEvapCond.WetbulbEffecCurve != nullptr) {
+                EffModWetMode = thisEvapCond.WetbulbEffecCurve->value(state, FlowRatio);
             } else {
                 EffModWetMode = 1.0;
             }
@@ -3024,16 +3024,16 @@ Real64 IndEvapCoolerPower(EnergyPlusData &state,
 
     EvapCoolertotalPower = 0.0;
     if (FlowRatio > 0.0) {
-        if (thisEvapCond.FanPowerModifierCurveIndex > 0) {
-            FanPowerModCurveValue = Curve::CurveValue(state, thisEvapCond.FanPowerModifierCurveIndex, FlowRatio);
+        if (thisEvapCond.FanPowerModifierCurve != nullptr) {
+            FanPowerModCurveValue = thisEvapCond.FanPowerModifierCurve->value(state, FlowRatio);
         } else {
             FanPowerModCurveValue = thisEvapCond.PartLoadFract * FlowRatio;
         }
         EvapCoolertotalPower += thisEvapCond.IndirectFanPower * FanPowerModCurveValue;
         if (DryWetMode == OperatingMode::WetModulated || DryWetMode == OperatingMode::WetFull) {
             // Add the pump power to the total Evap Cooler power for wet operating mode
-            if (thisEvapCond.PumpPowerModifierCurveIndex > 0) {
-                PumpPowerModCurveValue = Curve::CurveValue(state, thisEvapCond.PumpPowerModifierCurveIndex, FlowRatio);
+            if (thisEvapCond.PumpPowerModifierCurve != nullptr) {
+                PumpPowerModCurveValue = thisEvapCond.PumpPowerModifierCurve->value(state, FlowRatio);
             } else {
                 // linearly scale pump power using part-load-fraction when pump power modifier curve is not specified
                 PumpPowerModCurveValue = thisEvapCond.PartLoadFract * FlowRatio;
@@ -3105,8 +3105,8 @@ void CalcDirectResearchSpecialEvapCooler(EnergyPlusData &state, int const EvapCo
                 FlowRatio = 1.0;
             }
         }
-        if (thisEvapCond.WetbulbEffecCurveIndex > 0) {
-            EffModCurveValue = Curve::CurveValue(state, thisEvapCond.WetbulbEffecCurveIndex, FlowRatio);
+        if (thisEvapCond.WetbulbEffecCurve != nullptr) {
+            EffModCurveValue = thisEvapCond.WetbulbEffecCurve->value(state, FlowRatio);
         } else {
             // if no curve specified assume constant effectiveness
             EffModCurveValue = 1.0;
@@ -3144,8 +3144,8 @@ void CalcDirectResearchSpecialEvapCooler(EnergyPlusData &state, int const EvapCo
         //***************************************************************************
         //                  ENERGY CONSUMED BY THE RECIRCULATING PUMP
         // Add the pump energy to the total Evap Cooler energy comsumption
-        if (thisEvapCond.PumpPowerModifierCurveIndex > 0) {
-            PumpPowerModCurveValue = Curve::CurveValue(state, thisEvapCond.PumpPowerModifierCurveIndex, FlowRatio);
+        if (thisEvapCond.PumpPowerModifierCurve != nullptr) {
+            PumpPowerModCurveValue = thisEvapCond.PumpPowerModifierCurve->value(state, FlowRatio);
         } else {
             // if no pump power modifier curve specified, then assume linear variation with part-load and primary fan PLR
             PumpPowerModCurveValue = PartLoad * FanPLR;

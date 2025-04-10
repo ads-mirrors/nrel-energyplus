@@ -186,38 +186,112 @@ namespace EconomicTariff {
 
     // For ComputeSteps
     // All are negative because all variables are positive
-    int constexpr opSUM(-1);
-    int constexpr opMULTIPLY(-2);
-    int constexpr opSUBTRACT(-3);
-    int constexpr opDIVIDE(-4);
-    int constexpr opABSOLUTE(-5);
-    int constexpr opINTEGER(-6);
-    int constexpr opSIGN(-7);
-    int constexpr opROUND(-8);
-    int constexpr opMAXIMUM(-9);
-    int constexpr opMINIMUM(-10);
-    int constexpr opEXCEEDS(-11);
-    int constexpr opANNUALMINIMUM(-12);
-    int constexpr opANNUALMAXIMUM(-13);
-    int constexpr opANNUALSUM(-14);
-    int constexpr opANNUALAVERAGE(-15);
-    int constexpr opANNUALOR(-16);
-    int constexpr opANNUALAND(-17);
-    int constexpr opANNUALMAXIMUMZERO(-18);
-    int constexpr opANNUALMINIMUMZERO(-19);
-    int constexpr opIF(-20);
-    int constexpr opGREATERTHAN(-21);
-    int constexpr opGREATEREQUAL(-22);
-    int constexpr opLESSTHAN(-23);
-    int constexpr opLESSEQUAL(-24);
-    int constexpr opEQUAL(-25);
-    int constexpr opNOTEQUAL(-26);
-    int constexpr opAND(-27);
-    int constexpr opOR(-28);
-    int constexpr opNOT(-29);
-    int constexpr opADD(-30);
-    int constexpr opNOOP(-31); // no operation - just list the operand variables - shown as FROM
+    enum class Op
+    {
+        Invalid = -1,
+        SUM,
+        MULTIPLY,
+        SUBTRACT,
+        DIVIDE,
+        ABSOLUTE,
+        INTEGER,
+        SIGN,
+        ROUND,
+        MAXIMUM,
+        MINIMUM,
+        EXCEEDS,
+        ANNUALMINIMUM,
+        ANNUALMAXIMUM,
+        ANNUALSUM,
+        ANNUALAVERAGE,
+        ANNUALOR,
+        ANNUALAND,
+        ANNUALMAXIMUMZERO,
+        ANNUALMINIMUMZERO,
+        IF,
+        GREATERTHAN,
+        GREATEREQUAL,
+        LESSTHAN,
+        LESSEQUAL,
+        EQUAL,
+        NOTEQUAL,
+        AND,
+        OR,
+        NOT, 
+        ADD, 
+        NOOP,
+        Num
+    };
 
+    constexpr std::array<std::string_view, (int)Op::Num> opNamesUC = {
+        "SUM",
+        "MULTIPLY",
+        "SUBTRACT",
+        "DIVIDE",
+        "ABSOLUTE",
+        "INTEGER",
+        "SIGN",
+        "ROUND",
+        "MAXIMUM",
+        "MINIMUM",
+        "EXCEEDS",
+        "ANNUALMINIMUM",
+        "ANNUALMAXIMUM",
+        "ANNUALSUM",
+        "ANNUALAVERAGE",
+        "ANNUALOR",
+        "ANNUALAND",
+        "ANNUALMAXIMUMZERO",
+        "ANNUALMINIMUMZERO",
+        "IF",
+        "GREATERTHAN",
+        "GREATEREQUAL",
+        "LESSTHAN",
+        "LESSEQUAL",
+        "EQUAL",
+        "NOTEQUAL",
+        "AND",
+        "OR",
+        "NOT", 
+        "ADD", 
+        "FROM"
+    };
+
+    constexpr std::array<std::string_view, (int)Op::Num> opNames2UC = {
+        "SUM",
+        "MULT",
+        "SUBT",
+        "DIV",
+        "ABS",
+        "INT",
+        "SIGN",
+        "ROUND",
+        "MAX",
+        "MIN",
+        "EXCEEDS",
+        "ANMIN",
+        "ANMAX",
+        "ANSUM",
+        "ANAVG",
+        "ANOR",
+        "ANAND",
+        "ANMAXZ",
+        "ANMINZ",
+        "IF",
+        "GT",
+        "GE",
+        "LT",
+        "LE",
+        "EQ",
+        "NE",
+        "AND",
+        "OR",
+        "NOT", 
+        "ADD", 
+        "NOOP"
+    };
+    
+  
     // not predefined variable (user defined name - many variables and all objects)
     // used in econvar%specific
     int constexpr varUserDefined(-1);
@@ -264,20 +338,6 @@ namespace EconomicTariff {
         "NOTINCLUDED"
     };
 
-#ifdef GET_OUT  
-    // category variables (used in econvar%specific)
-    int constexpr catEnergyCharges(11);
-    int constexpr catDemandCharges(12);
-    int constexpr catServiceCharges(13);
-    int constexpr catBasis(14);
-    int constexpr catAdjustment(15);
-    int constexpr catSurcharge(16);
-    int constexpr catSubtotal(17);
-    int constexpr catTaxes(18);
-    int constexpr catTotal(19);
-    int constexpr catNotIncluded(20);
-#endif // GET_OUT
-  
     enum class Native
     {
         Invalid = -1,
@@ -399,48 +459,6 @@ namespace EconomicTariff {
         "ABOVECUSTOMERBASEENERGY",
         "BELOWCUSTOMERBASEENERGY"
     };
-#ifdef GET_OUT  
-    // native variables (based on energy and demands from the simulation) used in econvar%specific
-    int constexpr nativeTotalEnergy(101);
-    int constexpr nativeTotalDemand(102);
-    int constexpr nativePeakEnergy(103);
-    int constexpr nativePeakDemand(104);
-    int constexpr nativeShoulderEnergy(105);
-    int constexpr nativeShoulderDemand(106);
-    int constexpr nativeOffPeakEnergy(107);
-    int constexpr nativeOffPeakDemand(108);
-    int constexpr nativeMidPeakEnergy(109);
-    int constexpr nativeMidPeakDemand(110);
-    int constexpr nativePeakExceedsOffPeak(111);
-    int constexpr nativeOffPeakExceedsPeak(112);
-    int constexpr nativePeakExceedsMidPeak(113);
-    int constexpr nativeMidPeakExceedsPeak(114);
-    int constexpr nativePeakExceedsShoulder(115);
-    int constexpr nativeShoulderExceedsPeak(116);
-    int constexpr nativeIsWinter(117);
-    int constexpr nativeIsNotWinter(118);
-    int constexpr nativeIsSpring(119);
-    int constexpr nativeIsNotSpring(120);
-    int constexpr nativeIsSummer(121);
-    int constexpr nativeIsNotSummer(122);
-    int constexpr nativeIsAutumn(123);
-    int constexpr nativeIsNotAutumn(124);
-
-    int constexpr nativePeakAndShoulderEnergy(125);
-    int constexpr nativePeakAndShoulderDemand(126);
-    int constexpr nativePeakAndMidPeakEnergy(127);
-    int constexpr nativePeakAndMidPeakDemand(128);
-    int constexpr nativeShoulderAndOffPeakEnergy(129);
-    int constexpr nativeShoulderAndOffPeakDemand(130);
-    int constexpr nativePeakAndOffPeakEnergy(131);
-    int constexpr nativePeakAndOffPeakDemand(132);
-
-    int constexpr nativeRealTimePriceCosts(133);
-    int constexpr nativeAboveCustomerBaseCosts(134);
-    int constexpr nativeBelowCustomerBaseCosts(135);
-    int constexpr nativeAboveCustomerBaseEnergy(136);
-    int constexpr nativeBelowCustomerBaseEnergy(137);
-#endif // GET_OUT
   
     int constexpr NumMonths(12);
     int constexpr maxNumBlk(15);
@@ -501,7 +519,7 @@ namespace EconomicTariff {
         // the following items are used in determinging the dependency relationship of variables
         // and consist of an operator and a list of variables.
         int cntMeDependOn; // count of items in depend this line depends upon
-        int Operator;      // operator used in equation (usually opSUM or opNOOP)
+        Op Operator = Op::Invalid;      // operator used in equation (usually opSUM or opNOOP)
         int firstOperand;  // first item in the operand array
         int lastOperand;   // last item in the operand array
         bool activeNow;    // flag if the econVar is used in the current tariff
@@ -513,7 +531,7 @@ namespace EconomicTariff {
         // Default Constructor
         EconVarType()
             : tariffIndx(0), kindOfObj(ObjType::Invalid), index(0), values(NumMonths, 0.0), isArgument(false), isAssigned(false), specific(0),
-              cntMeDependOn(0), Operator(0), firstOperand(0), lastOperand(0), activeNow(false), isEvaluated(false), isReported(false) 
+              cntMeDependOn(0), firstOperand(0), lastOperand(0), activeNow(false), isEvaluated(false), isReported(false) 
         {
         }
     };
@@ -550,63 +568,11 @@ namespace EconomicTariff {
         int lastCategory;  // last category referenced
         // pointers to econ variables for categories
         std::array<int, (int)Cat::Num> cats;
-#ifdef GET_OUT
-        int ptEnergyCharges;
-        int ptDemandCharges;
-        int ptServiceCharges;
-        int ptBasis;
-        int ptAdjustment;
-        int ptSurcharge;
-        int ptSubtotal;
-        int ptTaxes;
-        int ptTotal;
-        int ptNotIncluded;
-#endif // GET_OUT      
         // index to the first and last native variables (energies and demands from the simulation)
         int firstNative;
         int lastNative;
         // native variables (based on energy and demands from the simulation)
         std::array<int, (int)Native::Num> natives = {0};
-#ifdef GET_OUT      
-        int nativeTotalEnergy;
-        int nativeTotalDemand;
-        int nativePeakEnergy;
-        int nativePeakDemand;
-        int nativeShoulderEnergy;
-        int nativeShoulderDemand;
-        int nativeOffPeakEnergy;
-        int nativeOffPeakDemand;
-        int nativeMidPeakEnergy;
-        int nativeMidPeakDemand;
-        int nativePeakExceedsOffPeak;
-        int nativeOffPeakExceedsPeak;
-        int nativePeakExceedsMidPeak;
-        int nativeMidPeakExceedsPeak;
-        int nativePeakExceedsShoulder;
-        int nativeShoulderExceedsPeak;
-        int nativeIsWinter;
-        int nativeIsNotWinter;
-        int nativeIsSpring;
-        int nativeIsNotSpring;
-        int nativeIsSummer;
-        int nativeIsNotSummer;
-        int nativeIsAutumn;
-        int nativeIsNotAutumn;
-        int nativePeakAndShoulderEnergy;
-        int nativePeakAndShoulderDemand;
-        int nativePeakAndMidPeakEnergy;
-        int nativePeakAndMidPeakDemand;
-        int nativeShoulderAndOffPeakEnergy;
-        int nativeShoulderAndOffPeakDemand;
-        int nativePeakAndOffPeakEnergy;
-        int nativePeakAndOffPeakDemand;
-        // real time pricing native variable pointers
-        int nativeRealTimePriceCosts;
-        int nativeAboveCustomerBaseCosts;
-        int nativeBelowCustomerBaseCosts;
-        int nativeAboveCustomerBaseEnergy;
-        int nativeBelowCustomerBaseEnergy;
-#endif //       
         // arrays for holding gathered values
         Array1D<std::array<Real64, (int)Period::Num>> gatherEnergy;
         Array1D<std::array<Real64, (int)Period::Num>> gatherDemand;
@@ -632,21 +598,7 @@ namespace EconomicTariff {
             : reportMeterIndx(0), convChoice(EconConv::USERDEF), energyConv(0.0), demandConv(0.0),
               demandWindow(DemandWindow::Invalid), demWinTime(0.0), monthChgVal(0.0), monthChgPt(0), minMonthChgVal(0.0), minMonthChgPt(0),
               firstCategory(0), lastCategory(0),
-#ifdef GET_OUT
-              ptEnergyCharges(0), ptDemandCharges(0), ptServiceCharges(0), ptBasis(0),
-              ptAdjustment(0), ptSurcharge(0), ptSubtotal(0), ptTaxes(0), ptTotal(0), ptNotIncluded(0),
-#endif // GET_OUT
               firstNative(0), lastNative(0),
-#ifdef GET_OUT
-              nativeTotalEnergy(0), nativeTotalDemand(0), nativePeakEnergy(0), nativePeakDemand(0), nativeShoulderEnergy(0), nativeShoulderDemand(0),
-              nativeOffPeakEnergy(0), nativeOffPeakDemand(0), nativeMidPeakEnergy(0), nativeMidPeakDemand(0), nativePeakExceedsOffPeak(0),
-              nativeOffPeakExceedsPeak(0), nativePeakExceedsMidPeak(0), nativeMidPeakExceedsPeak(0), nativePeakExceedsShoulder(0),
-              nativeShoulderExceedsPeak(0), nativeIsWinter(0), nativeIsNotWinter(0), nativeIsSpring(0), nativeIsNotSpring(0), nativeIsSummer(0),
-              nativeIsNotSummer(0), nativeIsAutumn(0), nativeIsNotAutumn(0), nativePeakAndShoulderEnergy(0), nativePeakAndShoulderDemand(0),
-              nativePeakAndMidPeakEnergy(0), nativePeakAndMidPeakDemand(0), nativeShoulderAndOffPeakEnergy(0), nativeShoulderAndOffPeakDemand(0),
-              nativePeakAndOffPeakEnergy(0), nativePeakAndOffPeakDemand(0), nativeRealTimePriceCosts(0), nativeAboveCustomerBaseCosts(0),
-              nativeBelowCustomerBaseCosts(0), nativeAboveCustomerBaseEnergy(0), nativeBelowCustomerBaseEnergy(0),
-#endif // GET_OUT              
               gatherEnergy(NumMonths, {0.0,0.0,0.0,0.0}), gatherDemand(NumMonths, {0.0,0.0,0.0,0.0}), collectTime(0.0), collectEnergy(0.0),
               RTPcost(NumMonths, 0.0), RTPaboveBaseCost(NumMonths, 0.0), RTPbelowBaseCost(NumMonths, 0.0),
               RTPaboveBaseEnergy(NumMonths, 0.0), RTPbelowBaseEnergy(NumMonths, 0.0), seasonForMonth(NumMonths, Season::Invalid), isQualified(false),
@@ -766,6 +718,21 @@ namespace EconomicTariff {
     };
 
     void UpdateUtilityBills(EnergyPlusData &state);
+
+    enum class StepType
+    {
+        Op,
+        Var,
+        EOL
+    };
+  
+    struct Step
+    {
+        StepType type;
+        Op op;
+        int varNum;
+    };
+  
 
     //======================================================================================================================
     //======================================================================================================================
@@ -906,7 +873,7 @@ struct EconomicTariffData : BaseGlobalStruct
     int sizeEconVar = 0;
 
     // holds the outbound connections for each variable
-    Array1D_int operand; // sized to sizeOperand
+    Array1D<EconomicTariff::Step> operands; // sized to sizeOperand
     int numOperand = 0;
     int sizeOperand = 0;
 
@@ -917,9 +884,11 @@ struct EconomicTariffData : BaseGlobalStruct
     int numRatchet = 0;
     int numComputation = 0;
 
+   
     // list of pointers to variable, 0 end of line, negative indicate operations
-    Array1D_int steps;
-    Array1D_int stepsCopy;
+    Array1D<EconomicTariff::Step> steps;
+    Array1D<EconomicTariff::Step> stepsCopy;
+  
     int numSteps = 0;
     int sizeSteps = 0;
 
@@ -950,7 +919,7 @@ struct EconomicTariffData : BaseGlobalStruct
     {
         this->numEconVar = 0;
         this->sizeEconVar = 0;
-        this->operand.deallocate();
+        this->operands.deallocate();
         this->numOperand = 0;
         this->sizeOperand = 0;
         this->numTariff = 0;

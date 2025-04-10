@@ -12675,6 +12675,25 @@ void VRFTerminalUnitEquipment::CalcVRF_FluidTCtrl(EnergyPlusData &state,
             // now calculate the the mixer outlet air conditions (and the secondary air inlet flow rate). The mixer outlet flow rate has already
             // been set above (it is the "inlet" node flow rate)
             SimATMixer(state, this->ATMixerName, FirstHVACIteration, this->ATMixerIndex);
+            // inlet side ATMixer can change the VRF TU inlet condition and therefore the operating air flow rate
+            if (this->fanOp == HVAC::FanOp::Cycling && PartLoadRatio > 0) {
+                if (this->HeatingCoilPresent && state.dataHVACVarRefFlow->MaxHeatingCapacity(VRFCond) < Constant::MaxCap) {
+                    // Only fix heating only mode for now
+                    state.dataHVACVarRefFlow->CompOnMassFlow = CalVRFTUAirFlowRate_FluidTCtrl(
+                        state, VRFTUNum, PartLoadRatio, FirstHVACIteration, state.dataHVACVarRefFlow->MaxHeatingCapacity(VRFCond));
+                } else {
+                    state.dataHVACVarRefFlow->CompOnMassFlow = CalVRFTUAirFlowRate_FluidTCtrl(state, VRFTUNum, PartLoadRatio, FirstHVACIteration, _);
+                }
+                if (std::abs(state.dataHVACVarRefFlow->CompOnMassFlow - AirMassFlow) > HVAC::SmallMassFlow) {
+                    SetAverageAirFlow(state, VRFTUNum, PartLoadRatio, OnOffAirFlowRatio);
+                    AirMassFlow = state.dataLoopNodes->Node(VRFTUInletNodeNum).MassFlowRate;
+                    // set the primary air inlet mass flow rate
+                    state.dataLoopNodes->Node(this->ATMixerPriNode).MassFlowRate =
+                        min(state.dataLoopNodes->Node(this->ATMixerPriNode).MassFlowRateMaxAvail,
+                            state.dataLoopNodes->Node(VRFTUInletNodeNum).MassFlowRate);
+                    SimATMixer(state, this->ATMixerName, FirstHVACIteration, this->ATMixerIndex);
+                }
+            }
         }
     } else {
         state.dataHVACVarRefFlow->ATMixOutNode2 = 0;

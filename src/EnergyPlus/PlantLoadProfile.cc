@@ -141,7 +141,7 @@ void PlantProfileData::simulate(EnergyPlusData &state,
 
     if (this->FluidType == PlantLoopFluidType::Water) {
         if (this->MassFlowRate > 0.0) {
-            Real64 Cp = state.dataPlnt->PlantLoop(this->plantLoc.loopNum).glycol->getSpecificHeat(state, this->InletTemp, RoutineName);
+            Real64 Cp = this->plantLoc.loop->glycol->getSpecificHeat(state, this->InletTemp, RoutineName);
             DeltaTemp = this->Power / (this->MassFlowRate * Cp);
         } else {
             this->Power = 0.0;
@@ -150,13 +150,11 @@ void PlantProfileData::simulate(EnergyPlusData &state,
         this->OutletTemp = this->InletTemp - DeltaTemp;
     } else if (this->FluidType == PlantLoopFluidType::Steam) {
         if (this->MassFlowRate > 0.0 && this->Power > 0.0) {
-            Real64 EnthSteamInDry = state.dataPlnt->PlantLoop(this->plantLoc.loopNum).steam->getSatEnthalpy(state, this->InletTemp, 1.0, RoutineName);
-            Real64 EnthSteamOutWet =
-                state.dataPlnt->PlantLoop(this->plantLoc.loopNum).steam->getSatEnthalpy(state, this->InletTemp, 0.0, RoutineName);
+            Real64 EnthSteamInDry = this->plantLoc.loop->steam->getSatEnthalpy(state, this->InletTemp, 1.0, RoutineName);
+            Real64 EnthSteamOutWet = this->plantLoc.loop->steam->getSatEnthalpy(state, this->InletTemp, 0.0, RoutineName);
             Real64 LatentHeatSteam = EnthSteamInDry - EnthSteamOutWet;
-            Real64 SatTemp =
-                state.dataPlnt->PlantLoop(this->plantLoc.loopNum).steam->getSatTemperature(state, DataEnvironment::StdPressureSeaLevel, RoutineName);
-            Real64 CpWater = state.dataPlnt->PlantLoop(this->plantLoc.loopNum).glycol->getSpecificHeat(state, SatTemp, RoutineName);
+            Real64 SatTemp = this->plantLoc.loop->steam->getSatTemperature(state, DataEnvironment::StdPressureSeaLevel, RoutineName);
+            Real64 CpWater = this->plantLoc.loop->glycol->getSpecificHeat(state, SatTemp, RoutineName);
 
             // Steam Mass Flow Rate Required
             this->MassFlowRate = this->Power / (LatentHeatSteam + this->DegOfSubcooling * CpWater);
@@ -211,11 +209,10 @@ void PlantProfileData::InitPlantProfile(EnergyPlusData &state)
         state.dataLoopNodes->Node(OutletNode).Temp = 0.0;
 
         if (this->FluidType == PlantLoopFluidType::Water) {
-            FluidDensityInit = state.dataPlnt->PlantLoop(this->plantLoc.loopNum).glycol->getDensity(state, Constant::InitConvTemp, RoutineName);
+            FluidDensityInit = this->plantLoc.loop->glycol->getDensity(state, Constant::InitConvTemp, RoutineName);
         } else { //(this->FluidType == PlantLoopFluidType::Steam)
-            Real64 SatTempAtmPress =
-                state.dataPlnt->PlantLoop(this->plantLoc.loopNum).steam->getSatTemperature(state, DataEnvironment::StdPressureSeaLevel, RoutineName);
-            FluidDensityInit = state.dataPlnt->PlantLoop(this->plantLoc.loopNum).steam->getSatDensity(state, SatTempAtmPress, 1.0, RoutineName);
+            Real64 SatTempAtmPress = this->plantLoc.loop->steam->getSatTemperature(state, DataEnvironment::StdPressureSeaLevel, RoutineName);
+            FluidDensityInit = this->plantLoc.loop->steam->getSatDensity(state, SatTempAtmPress, 1.0, RoutineName);
         }
 
         Real64 MaxFlowMultiplier = this->flowRateFracSched->getMaxVal(state);
@@ -238,9 +235,9 @@ void PlantProfileData::InitPlantProfile(EnergyPlusData &state)
     if (this->EMSOverridePower) this->Power = this->EMSPowerValue;
 
     if (this->FluidType == PlantLoopFluidType::Water) {
-        FluidDensityInit = state.dataPlnt->PlantLoop(this->plantLoc.loopNum).glycol->getDensity(state, this->InletTemp, RoutineName);
+        FluidDensityInit = this->plantLoc.loop->glycol->getDensity(state, this->InletTemp, RoutineName);
     } else { //(this->FluidType == PlantLoopFluidType::Steam)
-        FluidDensityInit = state.dataPlnt->PlantLoop(this->plantLoc.loopNum).steam->getSatDensity(state, this->InletTemp, 1.0, RoutineName);
+        FluidDensityInit = this->plantLoc.loop->steam->getSatDensity(state, this->InletTemp, 1.0, RoutineName);
     }
 
     // Get the scheduled mass flow rate

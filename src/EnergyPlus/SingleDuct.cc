@@ -5453,10 +5453,10 @@ void CalcATMixer(EnergyPlusData &state, int const SysNum)
     Real64 MixedAirTemp = 0.0;
 
     if (atMixer.type == HVAC::MixerType::SupplySide) {
-        MixedAirMassFlowRate = secInNode.MassFlowRate + priInNode.MassFlowRate;
+        atMixer.MixedAirMassFlowRate = secInNode.MassFlowRate + priInNode.MassFlowRate;
     } else {
         // for inlet side mixer, the mixed air flow has been set, but we don't know the secondary flow
-        MixedAirMassFlowRate = mixedAirOutNode.MassFlowRate;
+        atMixer.MixedAirMassFlowRate = mixedAirOutNode.MassFlowRate;
         secInNode.MassFlowRate = max(MixedAirMassFlowRate - priInNode.MassFlowRate, 0.0);
         if (std::abs(priInNode.MassFlowRate + secInNode.MassFlowRate - MixedAirMassFlowRate) > SmallMassFlow) {
             ShowSevereError(
@@ -5470,18 +5470,14 @@ void CalcATMixer(EnergyPlusData &state, int const SysNum)
             ShowFatalError(state, "Simulation terminates.");
         }
     }
-    // now calculate the mixed (outlet) conditions
-    if (MixedAirMassFlowRate > 0.0) {
-        MixedAirEnthalpy = (secInNode.MassFlowRate * secInNode.Enthalpy + priInNode.MassFlowRate * priInNode.Enthalpy) / MixedAirMassFlowRate;
-        MixedAirHumRat = (secInNode.MassFlowRate * secInNode.HumRat + priInNode.MassFlowRate * priInNode.HumRat) / MixedAirMassFlowRate;
-        // Mixed air temperature is calculated from the mixed air enthalpy and humidity ratio.
-        MixedAirTemp = PsyTdbFnHW(MixedAirEnthalpy, MixedAirHumRat);
-        atMixer.MixedAirEnthalpy = MixedAirEnthalpy; // <-- move these up inside mass flow > 0
-        atMixer.MixedAirHumRat = MixedAirHumRat;     // <-- move these up
-        atMixer.MixedAirTemp = MixedAirTemp;         // <-- move these up
-    }
 
-    atMixer.MixedAirMassFlowRate = MixedAirMassFlowRate;
+    // now calculate the mixed (outlet) conditions, these are updated only if MixedAirMaxFlowRate > 0
+    if (atMixer.MixedAirMassFlowRate > 0.0) {
+        atMixer.MixedAirEnthalpy = (secInNode.MassFlowRate * secInNode.Enthalpy + priInNode.MassFlowRate * priInNode.Enthalpy) / atMixer.MixedAirMassFlowRate;
+        atMixer.MixedAirHumRat = (secInNode.MassFlowRate * secInNode.HumRat + priInNode.MassFlowRate * priInNode.HumRat) / atMixer.MixedAirMassFlowRate;
+        // Mixed air temperature is calculated from the mixed air enthalpy and humidity ratio.
+        atMixer.MixedAirTemp = PsyTdbFnHW(MixedAirEnthalpy, MixedAirHumRat);
+    }
 }
 
 void UpdateATMixer(EnergyPlusData &state, int const SysNum)

@@ -447,7 +447,6 @@ struct OutputReportPredefinedData : BaseGlobalStruct
     int pdchPLCLRetTemp = 0;         // "Design Return Temperature [C]");
     int pdchPLCLDesCap = 0;          // "Design Capacity [W]");
 
-
     // Std 229 Air Terminal Table in Equipment Summary
     int pdstAirTerm = 0;
     int pdchAirTermZoneName = 0;       // Zone Name

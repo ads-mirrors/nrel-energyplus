@@ -3995,6 +3995,9 @@ namespace WaterToAirHeatPumpSimple {
         auto &wahp = state.dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(WhichCoil);
         if (wahp.WAHPType == WatertoAirHP::Cooling) {
             if (wahp.RatedEntAirWetbulbTemp != DataSizing::AutoSize) {
+                if (wahp.TotalCoolCapCurve == nullptr || wahp.CoolPowCurve == nullptr) {
+                    return;
+                }
                 Real64 RatedratioTWB = (wahp.RatedEntAirWetbulbTemp + Constant::Kelvin) / Tref;
                 Real64 RatedratioTS = (wahp.RatedEntWaterTemp + Constant::Kelvin) / Tref;
                 Real64 RatedTotCapTempModFac = wahp.TotalCoolCapCurve->value(state, RatedratioTWB, RatedratioTS, 1.0, 1.0);
@@ -4016,6 +4019,9 @@ namespace WaterToAirHeatPumpSimple {
             }
 
             if (wahp.RatedEntAirDrybulbTemp != DataSizing::AutoSize) {
+                if (wahp.SensCoolCapCurve == nullptr) {
+                    return;
+                }
                 Real64 RatedratioTDB = (wahp.RatedEntAirDrybulbTemp + Constant::Kelvin) / Tref;
                 Real64 RatedratioTWB = (wahp.RatedEntAirWetbulbTemp + Constant::Kelvin) / Tref;
                 Real64 RatedratioTS = (wahp.RatedEntWaterTemp + Constant::Kelvin) / Tref;
@@ -4032,6 +4038,9 @@ namespace WaterToAirHeatPumpSimple {
 
         } else if (wahp.WAHPType == WatertoAirHP::Heating) {
             if (wahp.RatedEntAirDrybulbTemp != DataSizing::AutoSize) {
+                if (wahp.HeatCapCurve == nullptr || wahp.HeatPowCurve == nullptr) {
+                    return;
+                }
                 Real64 RatedHeatratioTDB = (wahp.RatedEntAirDrybulbTemp + Constant::Kelvin) / Tref;
                 Real64 RatedHeatratioTS = (wahp.RatedEntWaterTemp + Constant::Kelvin) / Tref;
                 Real64 RatedHeatCapTempModFac = wahp.HeatCapCurve->value(state, RatedHeatratioTDB, RatedHeatratioTS, 1.0, 1.0);

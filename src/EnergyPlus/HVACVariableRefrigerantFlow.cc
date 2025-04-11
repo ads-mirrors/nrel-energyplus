@@ -931,7 +931,7 @@ void CalcVRFCondenser(EnergyPlusData &state, int const VRFCond)
                 int HRCAPFT = vrf.HRCAPFTCool; // Index to cool capacity as a function of temperature\PLR curve for heat recovery
                 if (HRCAPFT > 0) {
                     //         VRF(VRFCond)%HRCAPFTCoolConst = 0.9d0 ! initialized to 0.9
-                    if (state.dataCurveManager->PerfCurve(vrf.HRCAPFTCool)->numDims == 2) { // Curve type for HRCAPFTCool
+                    if (state.dataCurveManager->curves(vrf.HRCAPFTCool)->numDims == 2) { // Curve type for HRCAPFTCool
                         vrf.HRCAPFTCoolConst = CurveValue(state, HRCAPFT, InletAirWetBulbC, CondInletTemp);
                     } else {
                         vrf.HRCAPFTCoolConst = CurveValue(state, HRCAPFT, tmpVRFCondPLR);
@@ -944,7 +944,7 @@ void CalcVRFCondenser(EnergyPlusData &state, int const VRFCond)
                 int HREIRFT = vrf.HREIRFTCool; // Index to cool EIR as a function of temperature curve for heat recovery
                 if (HREIRFT > 0) {
                     //         VRF(VRFCond)%HREIRFTCoolConst = 1.1d0 ! initialized to 1.1
-                    if (state.dataCurveManager->PerfCurve(vrf.HREIRFTCool)->numDims == 2) { // Curve type for HREIRFTCool
+                    if (state.dataCurveManager->curves(vrf.HREIRFTCool)->numDims == 2) { // Curve type for HREIRFTCool
                         vrf.HREIRFTCoolConst = CurveValue(state, HREIRFT, InletAirWetBulbC, CondInletTemp);
                     } else {
                         vrf.HREIRFTCoolConst = CurveValue(state, HREIRFT, tmpVRFCondPLR);
@@ -962,7 +962,7 @@ void CalcVRFCondenser(EnergyPlusData &state, int const VRFCond)
                 int HRCAPFT = vrf.HRCAPFTHeat; // Index to heat capacity as a function of temperature\PLR curve for heat recovery
                 if (HRCAPFT > 0) {
                     //         VRF(VRFCond)%HRCAPFTHeatConst = 1.1d0 ! initialized to 1.1
-                    if (state.dataCurveManager->PerfCurve(vrf.HRCAPFTHeat)->numDims == 2) { // Curve type for HRCAPFTCool
+                    if (state.dataCurveManager->curves(vrf.HRCAPFTHeat)->numDims == 2) { // Curve type for HRCAPFTCool
                         switch (vrf.HeatingPerformanceOATType) {
                         case HVAC::OATType::DryBulb: {
                             vrf.HRCAPFTHeatConst = CurveValue(state, HRCAPFT, InletAirDryBulbC, CondInletTemp);
@@ -985,7 +985,7 @@ void CalcVRFCondenser(EnergyPlusData &state, int const VRFCond)
                 int HREIRFT = vrf.HREIRFTHeat; // Index to cool EIR as a function of temperature curve for heat recovery
                 if (HREIRFT > 0) {
                     //         VRF(VRFCond)%HREIRFTCoolConst = 1.1d0 ! initialized to 1.1
-                    if (state.dataCurveManager->PerfCurve(vrf.HREIRFTHeat)->numDims == 2) { // Curve type for HREIRFTHeat
+                    if (state.dataCurveManager->curves(vrf.HREIRFTHeat)->numDims == 2) { // Curve type for HREIRFTHeat
                         switch (vrf.HeatingPerformanceOATType) {
                         case HVAC::OATType::DryBulb: {
                             vrf.HREIRFTHeatConst = CurveValue(state, HREIRFT, InletAirDryBulbC, CondInletTemp);
@@ -2527,10 +2527,10 @@ void GetVRFInputData(EnergyPlusData &state, bool &ErrorsFound)
             ErrorsFound = true;
         } else {
             {
-                if (state.dataCurveManager->PerfCurve(indexOUEvapTempCurve)->curveType == Curve::CurveType::Quadratic) {
-                    thisVrfFluidCtrl.C1Te = state.dataCurveManager->PerfCurve(indexOUEvapTempCurve)->coeff[0];
-                    thisVrfFluidCtrl.C2Te = state.dataCurveManager->PerfCurve(indexOUEvapTempCurve)->coeff[1];
-                    thisVrfFluidCtrl.C3Te = state.dataCurveManager->PerfCurve(indexOUEvapTempCurve)->coeff[2];
+                if (state.dataCurveManager->curves(indexOUEvapTempCurve)->curveType == Curve::CurveType::Quadratic) {
+                    thisVrfFluidCtrl.C1Te = state.dataCurveManager->curves(indexOUEvapTempCurve)->coeff[0];
+                    thisVrfFluidCtrl.C2Te = state.dataCurveManager->curves(indexOUEvapTempCurve)->coeff[1];
+                    thisVrfFluidCtrl.C3Te = state.dataCurveManager->curves(indexOUEvapTempCurve)->coeff[2];
 
                 } else {
                     ShowSevereError(state, std::string{RoutineName} + cCurrentModuleObject + "=\"" + thisVrfFluidCtrl.Name + "\", invalid");
@@ -2538,7 +2538,7 @@ void GetVRFInputData(EnergyPlusData &state, bool &ErrorsFound)
                         state,
                         format("...illegal {} type for this object = {}",
                                cAlphaFieldNames(6),
-                               Curve::objectNames[static_cast<int>(state.dataCurveManager->PerfCurve(indexOUEvapTempCurve)->curveType)]));
+                               Curve::objectNames[static_cast<int>(state.dataCurveManager->curves(indexOUEvapTempCurve)->curveType)]));
                     ShowContinueError(state, "... Curve type must be Quadratic.");
                     ErrorsFound = true;
                 }
@@ -2559,10 +2559,10 @@ void GetVRFInputData(EnergyPlusData &state, bool &ErrorsFound)
             ErrorsFound = true;
         } else {
             {
-                if (state.dataCurveManager->PerfCurve(indexOUCondTempCurve)->curveType == Curve::CurveType::Quadratic) {
-                    thisVrfFluidCtrl.C1Tc = state.dataCurveManager->PerfCurve(indexOUCondTempCurve)->coeff[0];
-                    thisVrfFluidCtrl.C2Tc = state.dataCurveManager->PerfCurve(indexOUCondTempCurve)->coeff[1];
-                    thisVrfFluidCtrl.C3Tc = state.dataCurveManager->PerfCurve(indexOUCondTempCurve)->coeff[2];
+                if (state.dataCurveManager->curves(indexOUCondTempCurve)->curveType == Curve::CurveType::Quadratic) {
+                    thisVrfFluidCtrl.C1Tc = state.dataCurveManager->curves(indexOUCondTempCurve)->coeff[0];
+                    thisVrfFluidCtrl.C2Tc = state.dataCurveManager->curves(indexOUCondTempCurve)->coeff[1];
+                    thisVrfFluidCtrl.C3Tc = state.dataCurveManager->curves(indexOUCondTempCurve)->coeff[2];
 
                 } else {
                     ShowSevereError(state, std::string{RoutineName} + cCurrentModuleObject + "=\"" + thisVrfFluidCtrl.Name + "\", invalid");
@@ -2570,7 +2570,7 @@ void GetVRFInputData(EnergyPlusData &state, bool &ErrorsFound)
                         state,
                         format("...illegal {} type for this object = {}",
                                cAlphaFieldNames(7),
-                               Curve::objectNames[static_cast<int>(state.dataCurveManager->PerfCurve(indexOUCondTempCurve)->curveType)]));
+                               Curve::objectNames[static_cast<int>(state.dataCurveManager->curves(indexOUCondTempCurve)->curveType)]));
                     ShowContinueError(state, "... Curve type must be Quadratic.");
                     ErrorsFound = true;
                 }
@@ -2977,16 +2977,16 @@ void GetVRFInputData(EnergyPlusData &state, bool &ErrorsFound)
             }
             ErrorsFound = true;
         } else {
-            if (state.dataCurveManager->PerfCurve(indexOUEvapTempCurve)->curveType == Curve::CurveType::Quadratic) {
-                thisVrfFluidCtrlHR.C1Te = state.dataCurveManager->PerfCurve(indexOUEvapTempCurve)->coeff[0];
-                thisVrfFluidCtrlHR.C2Te = state.dataCurveManager->PerfCurve(indexOUEvapTempCurve)->coeff[1];
-                thisVrfFluidCtrlHR.C3Te = state.dataCurveManager->PerfCurve(indexOUEvapTempCurve)->coeff[2];
+            if (state.dataCurveManager->curves(indexOUEvapTempCurve)->curveType == Curve::CurveType::Quadratic) {
+                thisVrfFluidCtrlHR.C1Te = state.dataCurveManager->curves(indexOUEvapTempCurve)->coeff[0];
+                thisVrfFluidCtrlHR.C2Te = state.dataCurveManager->curves(indexOUEvapTempCurve)->coeff[1];
+                thisVrfFluidCtrlHR.C3Te = state.dataCurveManager->curves(indexOUEvapTempCurve)->coeff[2];
             } else {
                 ShowSevereError(state, std::string{RoutineName} + cCurrentModuleObject + "=\"" + thisVrfFluidCtrlHR.Name + "\", invalid");
                 ShowContinueError(state,
                                   format("...illegal {} type for this object = {}",
                                          cAlphaFieldNames(6),
-                                         Curve::objectNames[static_cast<int>(state.dataCurveManager->PerfCurve(indexOUEvapTempCurve)->curveType)]));
+                                         Curve::objectNames[static_cast<int>(state.dataCurveManager->curves(indexOUEvapTempCurve)->curveType)]));
                 ShowContinueError(state, "... Curve type must be Quadratic.");
                 ErrorsFound = true;
             }
@@ -3005,16 +3005,16 @@ void GetVRFInputData(EnergyPlusData &state, bool &ErrorsFound)
             }
             ErrorsFound = true;
         } else {
-            if (state.dataCurveManager->PerfCurve(indexOUCondTempCurve)->curveType == Curve::CurveType::Quadratic) {
-                thisVrfFluidCtrlHR.C1Tc = state.dataCurveManager->PerfCurve(indexOUCondTempCurve)->coeff[0];
-                thisVrfFluidCtrlHR.C2Tc = state.dataCurveManager->PerfCurve(indexOUCondTempCurve)->coeff[1];
-                thisVrfFluidCtrlHR.C3Tc = state.dataCurveManager->PerfCurve(indexOUCondTempCurve)->coeff[2];
+            if (state.dataCurveManager->curves(indexOUCondTempCurve)->curveType == Curve::CurveType::Quadratic) {
+                thisVrfFluidCtrlHR.C1Tc = state.dataCurveManager->curves(indexOUCondTempCurve)->coeff[0];
+                thisVrfFluidCtrlHR.C2Tc = state.dataCurveManager->curves(indexOUCondTempCurve)->coeff[1];
+                thisVrfFluidCtrlHR.C3Tc = state.dataCurveManager->curves(indexOUCondTempCurve)->coeff[2];
             } else {
                 ShowSevereError(state, std::string{RoutineName} + cCurrentModuleObject + "=\"" + thisVrfFluidCtrlHR.Name + "\", invalid");
                 ShowContinueError(state,
                                   format("...illegal {} type for this object = {}",
                                          cAlphaFieldNames(7),
-                                         Curve::objectNames[static_cast<int>(state.dataCurveManager->PerfCurve(indexOUCondTempCurve)->curveType)]));
+                                         Curve::objectNames[static_cast<int>(state.dataCurveManager->curves(indexOUCondTempCurve)->curveType)]));
                 ShowContinueError(state, "... Curve type must be Quadratic.");
                 ErrorsFound = true;
             }
@@ -3638,7 +3638,7 @@ void GetVRFInputData(EnergyPlusData &state, bool &ErrorsFound)
                         // Check VRF DX heating coil heating capacity as a function of temperature performance curve. Only report here for
                         // biquadratic curve type.
                         int heatCoilCapFTCurveNum = DXCoils::GetCoilCapFTCurve(state, vrfTU.HeatCoilNum);
-                        if (state.dataCurveManager->PerfCurve(heatCoilCapFTCurveNum)->numDims == 2) {
+                        if (state.dataCurveManager->curves(heatCoilCapFTCurveNum)->numDims == 2) {
                             if (vrfCondenser.HeatingPerformanceOATType == HVAC::OATType::WetBulb) {
                                 checkCurveIsNormalizedToOne(
                                     state,
@@ -3646,7 +3646,7 @@ void GetVRFInputData(EnergyPlusData &state, bool &ErrorsFound)
                                     vrfTU.HeatCoilName,
                                     heatCoilCapFTCurveNum,
                                     "Heating Capacity Ratio Modifier Function of Temperature Curve Name",
-                                    state.dataCurveManager->PerfCurve(heatCoilCapFTCurveNum)->Name,
+                                    state.dataCurveManager->curves(heatCoilCapFTCurveNum)->Name,
                                     DXCoils::RatedInletAirTempHeat,
                                     DXCoils::RatedOutdoorWetBulbTempHeat);
                             } else if (vrfCondenser.HeatingPerformanceOATType == HVAC::OATType::DryBulb) {
@@ -3656,7 +3656,7 @@ void GetVRFInputData(EnergyPlusData &state, bool &ErrorsFound)
                                     vrfTU.HeatCoilName,
                                     heatCoilCapFTCurveNum,
                                     "Heating Capacity Ratio Modifier Function of Temperature Curve Name",
-                                    state.dataCurveManager->PerfCurve(heatCoilCapFTCurveNum)->Name,
+                                    state.dataCurveManager->curves(heatCoilCapFTCurveNum)->Name,
                                     DXCoils::RatedInletAirTempHeat,
                                     DXCoils::RatedOutdoorAirTempHeat);
                             }
@@ -7865,7 +7865,7 @@ void SizeVRF(EnergyPlusData &state, int const VRFTUNum)
             // calculate the piping correction factors only once
             if (state.dataHVACVarRefFlow->VRF(VRFCond).PCFLengthCoolPtr > 0) {
                 {
-                    if (state.dataCurveManager->PerfCurve(state.dataHVACVarRefFlow->VRF(VRFCond).PCFLengthCoolPtr)->numDims == 2) {
+                    if (state.dataCurveManager->curves(state.dataHVACVarRefFlow->VRF(VRFCond).PCFLengthCoolPtr)->numDims == 2) {
                         state.dataHVACVarRefFlow->VRF(VRFCond).PipingCorrectionCooling =
                             min(1.0,
                                 max(0.5,
@@ -7892,7 +7892,7 @@ void SizeVRF(EnergyPlusData &state, int const VRFTUNum)
 
             if (state.dataHVACVarRefFlow->VRF(VRFCond).PCFLengthHeatPtr > 0) {
                 {
-                    if (state.dataCurveManager->PerfCurve(state.dataHVACVarRefFlow->VRF(VRFCond).PCFLengthHeatPtr)->numDims == 2) {
+                    if (state.dataCurveManager->curves(state.dataHVACVarRefFlow->VRF(VRFCond).PCFLengthHeatPtr)->numDims == 2) {
                         state.dataHVACVarRefFlow->VRF(VRFCond).PipingCorrectionHeating =
                             min(1.0,
                                 max(0.5,

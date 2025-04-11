@@ -241,13 +241,13 @@ void UpdateVariableAbsorptances(EnergyPlusData &state)
                 bool isCooling = (state.dataZoneEnergyDemand->ZoneSysEnergyDemand(zoneNum).TotalOutputRequired < 0);
                 triggerValue = static_cast<Real64>(isCooling);
             }
-            if (thisMaterial->absorpThermalVarFuncIdx > 0) {
+            if (thisMaterial->absorpThermalVarCurve != nullptr) {
                 state.dataHeatBalSurf->SurfAbsThermalExt(surfNum) =
-                    max(min(Curve::CurveValue(state, thisMaterial->absorpThermalVarFuncIdx, triggerValue), 0.9999), 0.0001);
+                    max(min(thisMaterial->absorpThermalVarCurve->value(state, triggerValue), 0.9999), 0.0001);
             }
-            if (thisMaterial->absorpSolarVarFuncIdx > 0) {
+            if (thisMaterial->absorpSolarVarCurve != nullptr) {
                 state.dataHeatBalSurf->SurfAbsSolarExt(surfNum) =
-                    max(min(Curve::CurveValue(state, thisMaterial->absorpSolarVarFuncIdx, triggerValue), 0.9999), 0.0001);
+                    max(min(thisMaterial->absorpSolarVarCurve->value(state, triggerValue), 0.9999), 0.0001);
             }
         }
     }

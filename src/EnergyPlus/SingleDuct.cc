@@ -5440,28 +5440,19 @@ void CalcATMixer(EnergyPlusData &state, int const SysNum)
     // PURPOSE OF THIS SUBROUTINE
     // Calculate the mixed air flow and conditions in the air terminal mixer
 
-    // Using/Aliasing
-    using Psychrometrics::PsyTdbFnHW;
     auto &atMixer = state.dataSingleDuct->SysATMixer(SysNum);
     auto &priInNode = state.dataLoopNodes->Node(atMixer.PriInNode);
     auto &secInNode = state.dataLoopNodes->Node(atMixer.SecInNode);
     auto &mixedAirOutNode = state.dataLoopNodes->Node(atMixer.MixedAirOutNode);
 
-    Real64 MixedAirMassFlowRate = 0.0;
-    Real64 MixedAirEnthalpy = 0.0;
-    Real64 MixedAirHumRat = 0.0;
-    Real64 MixedAirTemp = 0.0;
+    Real64 MixedAirMassFlowRate =
+        (atMixer.type == HVAC::MixerType::SupplySide) ? secInNode.MassFlowRate + priInNode.MassFlowRate : mixedAirOutNode.MassFlowRate;
 
-    if (atMixer.type == HVAC::MixerType::SupplySide) {
-        atMixer.MixedAirMassFlowRate = secInNode.MassFlowRate + priInNode.MassFlowRate;
-    } else {
+    if (atMixer.type == HVAC::MixerType::InletSide) {
         // for inlet side mixer, the mixed air flow has been set, but we don't know the secondary flow
-        atMixer.MixedAirMassFlowRate = mixedAirOutNode.MassFlowRate;
         secInNode.MassFlowRate = max(MixedAirMassFlowRate - priInNode.MassFlowRate, 0.0);
         if (std::abs(priInNode.MassFlowRate + secInNode.MassFlowRate - MixedAirMassFlowRate) > SmallMassFlow) {
-            ShowSevereError(
-                state,
-                format("CalcATMixer: Invalid mass flow rates in AirTerminal:SingleDuct:Mixer={}", atMixer.Name));
+            ShowSevereError(state, format("CalcATMixer: Invalid mass flow rates in AirTerminal:SingleDuct:Mixer={}", atMixer.Name));
             ShowContinueErrorTimeStamp(state,
                                        format("Primary mass flow rate={:.6R}Secondary mass flow rate={:.6R}Mixed mass flow rate={:.6R}",
                                               priInNode.MassFlowRate,
@@ -5470,13 +5461,18 @@ void CalcATMixer(EnergyPlusData &state, int const SysNum)
             ShowFatalError(state, "Simulation terminates.");
         }
     }
-
-    // now calculate the mixed (outlet) conditions, these are updated only if MixedAirMaxFlowRate > 0
-    if (atMixer.MixedAirMassFlowRate > 0.0) {
-        atMixer.MixedAirEnthalpy = (secInNode.MassFlowRate * secInNode.Enthalpy + priInNode.MassFlowRate * priInNode.Enthalpy) / atMixer.MixedAirMassFlowRate;
-        atMixer.MixedAirHumRat = (secInNode.MassFlowRate * secInNode.HumRat + priInNode.MassFlowRate * priInNode.HumRat) / atMixer.MixedAirMassFlowRate;
+    // now calculate the mixed (outlet) conditions
+    if ((atMixer.MixedAirMassFlowRate = MixedAirMassFlowRate) > 0.0) {
+        Real64 MixedAirEnthalpy = (secInNode.MassFlowRate * secInNode.Enthalpy + priInNode.MassFlowRate * priInNode.Enthalpy) / MixedAirMassFlowRate;
+        Real64 MixedAirHumRat = (secInNode.MassFlowRate * secInNode.HumRat + priInNode.MassFlowRate * priInNode.HumRat) / MixedAirMassFlowRate;
         // Mixed air temperature is calculated from the mixed air enthalpy and humidity ratio.
-        atMixer.MixedAirTemp = PsyTdbFnHW(MixedAirEnthalpy, MixedAirHumRat);
+        atMixer.MixedAirTemp = Psychrometrics::PsyTdbFnHW(MixedAirEnthalpy, MixedAirHumRat);
+        atMixer.MixedAirEnthalpy = MixedAirEnthalpy;
+        atMixer.MixedAirHumRat = MixedAirHumRat;
+    } else {
+        atMixer.MixedAirEnthalpy = priInNode.Enthalpy;
+        atMixer.MixedAirHumRat = priInNode.HumRat;
+        atMixer.MixedAirTemp = priInNode.Temp;
     }
 }
 

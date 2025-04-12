@@ -250,13 +250,9 @@ namespace FuelCellElectricGenerator {
                 auto &fuelCell = state.dataFuelCellElectGen->FuelCell(fuelCellNum);
 
                 fuelCell.FCPM.Name = AlphArray(1);
-                if (Util::SameString(AlphArray(2), "ANNEX42"))
-                    fuelCell.FCPM.EffMode = DataGenerators::CurveMode::Direct;
-                else if (Util::SameString(AlphArray(2), "NORMALIZED"))
-                    fuelCell.FCPM.EffMode = DataGenerators::CurveMode::Normalized;
-                else {
-                    ShowSevereError(state, format("Invalid, {} = {}", s_ipsc->cAlphaFieldNames(2), AlphArray(2)));
-                    ShowContinueError(state, format("Entered in {}={}", s_ipsc->cCurrentModuleObject, AlphArray(1)));
+                fuelCell.FCPM.EffMode = static_cast<DataGenerators::CurveMode>(getEnumValue(DataGenerators::curveModeNamesUC, AlphArray(2)));
+                if (fuelCell.FCPM.EffMode == DataGenerators::CurveMode::Invalid) { 
+                    ShowSevereInvalidKey(state, eoh, s_ipsc->cAlphaFieldNames(2), AlphArray(2));
                     ErrorsFound = true;
                 }
 
@@ -287,16 +283,9 @@ namespace FuelCellElectricGenerator {
                 fuelCell.FCPM.ShutDownElectConsum = NumArray(16);
                 fuelCell.FCPM.ANC0 = NumArray(17);
                 fuelCell.FCPM.ANC1 = NumArray(18);
-                if (Util::SameString(AlphArray(4), "ConstantRate"))
-                    fuelCell.FCPM.SkinLossMode = DataGenerators::SkinLoss::ConstantRate;
-                else if (Util::SameString(AlphArray(4), "UAForProcessGasTemperature"))
-                    fuelCell.FCPM.SkinLossMode = DataGenerators::SkinLoss::UADT;
-                else if (Util::SameString(AlphArray(4), "QUADRATIC FUNCTION OF FUEL RATE"))
-                    fuelCell.FCPM.SkinLossMode = DataGenerators::SkinLoss::QuadraticFuelNdot;
-                else {
-                    // throw error
-                    ShowSevereError(state, format("Invalid, {} = {}", s_ipsc->cAlphaFieldNames(4), AlphArray(4)));
-                    ShowContinueError(state, format("Entered in {}={}", s_ipsc->cCurrentModuleObject, AlphArray(1)));
+                fuelCell.FCPM.SkinLossMode = static_cast<DataGenerators::SkinLoss>(getEnumValue(DataGenerators::skinLossNamesUC, AlphArray(4)));
+                if (fuelCell.FCPM.SkinLossMode == DataGenerators::SkinLoss::Invalid) {
+                    ShowSevereInvalidKey(state, eoh, s_ipsc->cAlphaFieldNames(4), AlphArray(4));
                     ErrorsFound = true;
                 }
 
@@ -437,15 +426,10 @@ namespace FuelCellElectricGenerator {
                 }
                 fuelCell.AirSup.BlowerHeatLossFactor = NumArray(1);
 
-                if (Util::SameString(AlphArray(4), "AirRatiobyStoics")) {
-                    fuelCell.AirSup.AirSupRateMode = DataGenerators::AirSupRateMode::ConstantStoicsAirRat;
-                } else if (Util::SameString(AlphArray(4), "QuadraticFunctionofElectricPower")) {
-                    fuelCell.AirSup.AirSupRateMode = DataGenerators::AirSupRateMode::QuadraticFuncofPel;
-                } else if (Util::SameString(AlphArray(4), "QUADRATIC FUNCTION OF FUEL RATE")) {
-                    fuelCell.AirSup.AirSupRateMode = DataGenerators::AirSupRateMode::QuadraticFuncofNdot;
-                } else {
-                    ShowSevereError(state, format("Invalid, {} = {}", s_ipsc->cAlphaFieldNames(4), AlphArray(4)));
-                    ShowContinueError(state, format("Entered in {}={}", s_ipsc->cCurrentModuleObject, AlphArray(1)));
+                fuelCell.AirSup.AirSupRateMode =
+                    static_cast<DataGenerators::AirSupRateMode>(getEnumValue(DataGenerators::airSupRateModeNamesUC, AlphArray(4)));
+                if (fuelCell.AirSup.AirSupRateMode == DataGenerators::AirSupRateMode::Invalid) {
+                    ShowSevereInvalidKey(state, eoh, s_ipsc->cAlphaFieldNames(4), AlphArray(4));
                     ErrorsFound = true;
                 }
 
@@ -477,31 +461,17 @@ namespace FuelCellElectricGenerator {
                     }
                 }
 
-                if (Util::SameString("RecoverBurnerInverterStorage", AlphArray(7))) {
-                    fuelCell.AirSup.IntakeRecoveryMode = DataGenerators::RecoverMode::RecoverBurnInvertBatt;
-                } else if (Util::SameString("RecoverAuxiliaryBurner", AlphArray(7))) {
-                    fuelCell.AirSup.IntakeRecoveryMode = DataGenerators::RecoverMode::RecoverAuxiliaryBurner;
-                } else if (Util::SameString("RecoverInverterandStorage", AlphArray(7))) {
-                    fuelCell.AirSup.IntakeRecoveryMode = DataGenerators::RecoverMode::RecoverInverterBatt;
-                } else if (Util::SameString("RecoverInverter", AlphArray(7))) {
-                    fuelCell.AirSup.IntakeRecoveryMode = DataGenerators::RecoverMode::RecoverInverter;
-                } else if (Util::SameString("RecoverElectricalStorage", AlphArray(7))) {
-                    fuelCell.AirSup.IntakeRecoveryMode = DataGenerators::RecoverMode::RecoverBattery;
-                } else if (Util::SameString("NoRecovery", AlphArray(7))) {
-                    fuelCell.AirSup.IntakeRecoveryMode = DataGenerators::RecoverMode::NoRecoveryOnAirIntake;
-                } else {
-                    ShowSevereError(state, format("Invalid, {} = {}", s_ipsc->cAlphaFieldNames(7), AlphArray(7)));
-                    ShowContinueError(state, format("Entered in {}={}", s_ipsc->cCurrentModuleObject, AlphArray(1)));
+                fuelCell.AirSup.IntakeRecoveryMode =
+                    static_cast<DataGenerators::RecoverMode>(getEnumValue(DataGenerators::recoverModeNamesUC, AlphArray(7)));
+                if (fuelCell.AirSup.IntakeRecoveryMode == DataGenerators::RecoverMode::Invalid) { 
+                    ShowSevereInvalidKey(state, eoh, s_ipsc->cAlphaFieldNames(7), AlphArray(7));
                     ErrorsFound = true;
                 }
 
-                if (Util::SameString("AmbientAir", AlphArray(8))) {
-                    fuelCell.AirSup.ConstituentMode = DataGenerators::ConstituentMode::RegularAir;
-                } else if (Util::SameString("UserDefinedConstituents", AlphArray(8))) {
-                    fuelCell.AirSup.ConstituentMode = DataGenerators::ConstituentMode::UserDefinedConstituents;
-                } else {
-                    ShowSevereError(state, format("Invalid, {} = {}", s_ipsc->cAlphaFieldNames(8), AlphArray(8)));
-                    ShowContinueError(state, format("Entered in {}={}", s_ipsc->cCurrentModuleObject, AlphArray(1)));
+                fuelCell.AirSup.ConstituentMode =
+                    static_cast<DataGenerators::ConstituentMode>(getEnumValue(DataGenerators::constituentModeNamesUC, AlphArray(8)));
+                if (fuelCell.AirSup.ConstituentMode == DataGenerators::ConstituentMode::Invalid) {
+                    ShowSevereInvalidKey(state, eoh, s_ipsc->cAlphaFieldNames(8), AlphArray(8));
                     ErrorsFound = true;
                 }
 
@@ -644,9 +614,14 @@ namespace FuelCellElectricGenerator {
 
                 fuelCell.WaterSup.PmpPowerLossFactor = NumArray(1);
 
-                if (Util::SameString("TemperatureFromAirNode", AlphArray(4))) {
-                    fuelCell.WaterSup.WaterTempMode = DataGenerators::WaterTemperatureMode::WaterInReformAirNode;
-
+                fuelCell.WaterSup.waterTempMode =
+                    static_cast<DataGenerators::WaterTempMode>(getEnumValue(DataGenerators::waterTempModeNamesUC, AlphArray(4)));
+                
+                if (fuelCell.WaterSup.waterTempMode == DataGenerators::WaterTempMode::Invalid) {
+                    ShowSevereInvalidKey(state, eoh, s_ipsc->cAlphaFieldNames(4), AlphArray(4));
+                    ErrorsFound = true;
+                  
+                } else if (fuelCell.WaterSup.waterTempMode == DataGenerators::WaterTempMode::AirNode) {
                     fuelCell.WaterSup.NodeName = AlphArray(5);
                     fuelCell.WaterSup.NodeNum = NodeInputManager::GetOnlySingleNode(state,
                                                                                     AlphArray(5),
@@ -658,9 +633,7 @@ namespace FuelCellElectricGenerator {
                                                                                     NodeInputManager::CompFluidStream::Primary,
                                                                                     DataLoopNode::ObjectIsNotParent);
 
-                } else if (Util::SameString("TemperatureFromWaterNode", AlphArray(4))) {
-                    fuelCell.WaterSup.WaterTempMode = DataGenerators::WaterTemperatureMode::WaterInReformWaterNode;
-
+                } else if (fuelCell.WaterSup.waterTempMode == DataGenerators::WaterTempMode::WaterNode) {
                     fuelCell.WaterSup.NodeName = AlphArray(5);
                     fuelCell.WaterSup.NodeNum = NodeInputManager::GetOnlySingleNode(state,
                                                                                     AlphArray(5),
@@ -671,21 +644,11 @@ namespace FuelCellElectricGenerator {
                                                                                     DataLoopNode::ConnectionType::Sensor,
                                                                                     NodeInputManager::CompFluidStream::Primary,
                                                                                     DataLoopNode::ObjectIsNotParent);
-
-                } else if (Util::SameString("MainsWaterTemperature", AlphArray(4))) {
-                    fuelCell.WaterSup.WaterTempMode = DataGenerators::WaterTemperatureMode::WaterInReformMains;
-
-                } else if (Util::SameString("TemperatureFromSchedule", AlphArray(4))) {
-                    fuelCell.WaterSup.WaterTempMode = DataGenerators::WaterTemperatureMode::WaterInReformSchedule;
-                } else {
-                    ShowSevereError(state, format("Invalid, {} = {}", s_ipsc->cAlphaFieldNames(4), AlphArray(4)));
-                    ShowContinueError(state, format("Entered in {}={}", s_ipsc->cCurrentModuleObject, AlphArray(1)));
-                    ErrorsFound = true;
                 }
 
                 fuelCell.WaterSup.sched = Sched::GetSchedule(state, AlphArray(6));
                 if ((fuelCell.WaterSup.sched == nullptr) &&
-                    (fuelCell.WaterSup.WaterTempMode == DataGenerators::WaterTemperatureMode::WaterInReformSchedule)) {
+                    (fuelCell.WaterSup.waterTempMode == DataGenerators::WaterTempMode::Schedule)) {
                     ShowSevereItemNotFound(state, eoh, s_ipsc->cAlphaFieldNames(6), AlphArray(6));
                     ErrorsFound = true;
                 }
@@ -738,23 +701,16 @@ namespace FuelCellElectricGenerator {
                 fuelCell.AuxilHeat.ANC1 = NumArray(3);
                 fuelCell.AuxilHeat.UASkin = NumArray(4);
 
-                if (Util::SameString("SurroundingZone", AlphArray(2))) {
-                    fuelCell.AuxilHeat.SkinLossDestination = DataGenerators::LossDestination::SurroundingZone;
-                } else if (Util::SameString("AirInletForFuelCell", AlphArray(2))) {
-                    fuelCell.AuxilHeat.SkinLossDestination = DataGenerators::LossDestination::AirInletForFC;
-                } else {
-                    ShowSevereError(state, format("Invalid, {} = {}", s_ipsc->cAlphaFieldNames(2), AlphArray(2)));
-                    ShowContinueError(state, format("Entered in {}={}", s_ipsc->cCurrentModuleObject, AlphArray(1)));
+                fuelCell.AuxilHeat.SkinLossDestination =
+                    static_cast<DataGenerators::LossDestination>(getEnumValue(DataGenerators::lossDestinationNamesUC, AlphArray(2)));
+                if (fuelCell.AuxilHeat.SkinLossDestination == DataGenerators::LossDestination::Invalid) {
+                    ShowSevereInvalidKey(state, eoh, s_ipsc->cAlphaFieldNames(2), AlphArray(2));
                     ErrorsFound = true;
-                }
-
-                if (fuelCell.AuxilHeat.SkinLossDestination == DataGenerators::LossDestination::SurroundingZone) {
+                } else if (fuelCell.AuxilHeat.SkinLossDestination == DataGenerators::LossDestination::SurroundingZone) {
                     fuelCell.AuxilHeat.ZoneName = AlphArray(3);
                     fuelCell.AuxilHeat.ZoneID = Util::FindItemInList(AlphArray(3), state.dataHeatBal->Zone);
                     if (fuelCell.AuxilHeat.ZoneID == 0) {
-                        ShowSevereError(state, format("Invalid, {} = {}", s_ipsc->cAlphaFieldNames(3), AlphArray(3)));
-                        ShowContinueError(state, format("Entered in {}={}", s_ipsc->cCurrentModuleObject, AlphArray(1)));
-                        ShowContinueError(state, "Zone name was not found ");
+                        ShowSevereItemNotFound(state, eoh, s_ipsc->cAlphaFieldNames(3), AlphArray(3));
                         ErrorsFound = true;
                     }
                 }
@@ -849,17 +805,10 @@ namespace FuelCellElectricGenerator {
                                                         NodeInputManager::CompFluidStream::Secondary,
                                                         DataLoopNode::ObjectIsNotParent);
 
-                if (Util::SameString("FixedEffectiveness", AlphArray(5))) {
-                    fuelCell.ExhaustHX.HXmodelMode = DataGenerators::ExhaustGasHX::FixedEffectiveness;
-                } else if (Util::SameString("EmpiricalUAeff", AlphArray(5))) {
-                    fuelCell.ExhaustHX.HXmodelMode = DataGenerators::ExhaustGasHX::LMTDempiricalUAeff;
-                } else if (Util::SameString("FundementalUAeff", AlphArray(5))) {
-                    fuelCell.ExhaustHX.HXmodelMode = DataGenerators::ExhaustGasHX::LMTDfundementalUAeff;
-                } else if (Util::SameString("CONDENSING", AlphArray(5))) {
-                    fuelCell.ExhaustHX.HXmodelMode = DataGenerators::ExhaustGasHX::Condensing;
-                } else {
-                    ShowSevereError(state, format("Invalid, {} = {}", s_ipsc->cAlphaFieldNames(5), AlphArray(5)));
-                    ShowContinueError(state, format("Entered in {}={}", s_ipsc->cCurrentModuleObject, AlphArray(1)));
+                fuelCell.ExhaustHX.HXmodelMode =
+                    static_cast<DataGenerators::ExhaustGasHX>(getEnumValue(DataGenerators::exhaustGasHXNamesUC, AlphArray(5)));
+                if (fuelCell.ExhaustHX.HXmodelMode == DataGenerators::ExhaustGasHX::Invalid) {
+                    ShowSevereInvalidKey(state, eoh, s_ipsc->cAlphaFieldNames(5), AlphArray(5));
                     ErrorsFound = true;
                 }
                 fuelCell.ExhaustHX.WaterVolumeFlowMax = NumArray(1);
@@ -982,11 +931,10 @@ namespace FuelCellElectricGenerator {
                 auto &fuelCell = state.dataFuelCellElectGen->FuelCell(fuelCellNum);
                 fuelCell.Inverter.Name = AlphArray(1);
 
-                if (Util::SameString(AlphArray(2), "QUADRATIC")) fuelCell.Inverter.EffMode = DataGenerators::InverterEfficiencyMode::Quadratic;
-                if (Util::SameString(AlphArray(2), "Constant")) fuelCell.Inverter.EffMode = DataGenerators::InverterEfficiencyMode::Constant;
+                fuelCell.Inverter.EffMode =
+                    static_cast<DataGenerators::InverterEfficiencyMode>(getEnumValue(DataGenerators::inverterEfficiencyModeNamesUC, AlphArray(2)));
                 if (fuelCell.Inverter.EffMode == DataGenerators::InverterEfficiencyMode::Invalid) {
-                    ShowSevereError(state, format("Invalid, {} = {}", s_ipsc->cAlphaFieldNames(2), AlphArray(2)));
-                    ShowContinueError(state, format("Entered in {}={}", s_ipsc->cCurrentModuleObject, AlphArray(1)));
+                    ShowSevereInvalidKey(state, eoh, s_ipsc->cAlphaFieldNames(2), AlphArray(2));
                     ErrorsFound = true;
                 }
 
@@ -1828,15 +1776,15 @@ namespace FuelCellElectricGenerator {
 
             // set inlet temp.  (could move to init)
 
-            switch (this->WaterSup.WaterTempMode) {
-            case DataGenerators::WaterTemperatureMode::WaterInReformMains: {
+            switch (this->WaterSup.waterTempMode) {
+            case DataGenerators::WaterTempMode::Mains: {
                 this->WaterSup.TwaterIntoCompress = state.dataEnvrn->WaterMainsTemp;
             } break;
-            case DataGenerators::WaterTemperatureMode::WaterInReformAirNode:
-            case DataGenerators::WaterTemperatureMode::WaterInReformWaterNode: {
+            case DataGenerators::WaterTempMode::AirNode:
+            case DataGenerators::WaterTempMode::WaterNode: {
                 this->WaterSup.TwaterIntoCompress = state.dataLoopNodes->Node(this->WaterSup.NodeNum).Temp;
             } break;
-            case DataGenerators::WaterTemperatureMode::WaterInReformSchedule: {
+            case DataGenerators::WaterTempMode::Schedule: {
                 this->WaterSup.TwaterIntoCompress = this->WaterSup.sched->getCurrentVal();
             } break;
             default:
@@ -2134,12 +2082,8 @@ namespace FuelCellElectricGenerator {
             // refine power conditioning losses with more current power production
 
             if (this->Inverter.EffMode == DataGenerators::InverterEfficiencyMode::Constant) {
-
                 PpcuLosses = (1.0 - this->Inverter.ConstEff) * PintoInverter;
-            }
-
-            if (this->Inverter.EffMode == DataGenerators::InverterEfficiencyMode::Quadratic) {
-
+            } else if (this->Inverter.EffMode == DataGenerators::InverterEfficiencyMode::Quadratic) {
                 PpcuLosses = (1.0 - this->Inverter.EffQuadraticCurve->value(state, PintoInverter)) * PintoInverter;
             }
 
@@ -2889,9 +2833,8 @@ namespace FuelCellElectricGenerator {
 
         if (this->Inverter.EffMode == DataGenerators::InverterEfficiencyMode::Constant) {
             PpcuLosses = Pdemand * (1 - this->Inverter.ConstEff) / this->Inverter.ConstEff;
-        }
-
-        if (this->Inverter.EffMode == DataGenerators::InverterEfficiencyMode::Quadratic) {
+            
+        } else if (this->Inverter.EffMode == DataGenerators::InverterEfficiencyMode::Quadratic) {
 
             // first use Pdemand instead of Pel to get initial estimate
             Real64 lastPpcuLosses =

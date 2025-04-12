@@ -920,7 +920,7 @@ TEST_F(EnergyPlusFixture, FuelCellTest)
 
     EXPECT_EQ(0, waterSup.NodeNum);
 
-    EXPECT_ENUM_EQ(DataGenerators::WaterTemperatureMode::WaterInReformSchedule, waterSup.WaterTempMode);
+    EXPECT_ENUM_EQ(DataGenerators::WaterTempMode::Schedule, waterSup.waterTempMode);
 
     ASSERT_NE(waterSup.sched, nullptr);
 

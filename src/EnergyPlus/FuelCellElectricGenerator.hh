@@ -203,7 +203,7 @@ namespace FuelCellElectricGenerator {
     struct FCWaterSupplyDataStruct
     {
         std::string Name;                                   // name of this water supply module
-        DataGenerators::WaterTemperatureMode WaterTempMode; // temperature of water inlet determination
+        DataGenerators::WaterTempMode waterTempMode = DataGenerators::WaterTempMode::Invalid; // temperature of water inlet determination
         std::string NodeName;                               // node name for temperature at input
         int NodeNum;                                        // node number for temperature at input
         Sched::Schedule *sched = nullptr;                   // water temperature at input
@@ -219,7 +219,7 @@ namespace FuelCellElectricGenerator {
 
         // Default Constructor
         FCWaterSupplyDataStruct()
-            : WaterTempMode(DataGenerators::WaterTemperatureMode::Invalid), NodeNum(0), PmpPowerLossFactor(0.0), IsModeled(true),
+            : NodeNum(0), PmpPowerLossFactor(0.0), IsModeled(true),
               TwaterIntoCompress(0.0), TwaterIntoFCPM(0.0), PwaterCompEl(0.0), QskinLoss(0.0)
         {
         }

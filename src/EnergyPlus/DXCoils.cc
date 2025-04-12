@@ -11903,6 +11903,7 @@ Real64 CalcCBF(EnergyPlusData &state,
     Real64 DeltaT(0.0);                     // Temperature drop across evaporator at given conditions [C]
     Real64 DeltaHumRat(0.0);                // Humidity ratio drop across evaporator at given conditions [kg/kg]
     Real64 OutletAirTemp(InletAirTemp);     // Outlet dry-bulb temperature from evaporator at given conditions [C]
+    Real64 OutletAirDPTemp(InletAirTemp);   // Outlet dew point temperature from evaporator at given conditions [C]
     Real64 OutletAirTempSat(InletAirTemp);  // Saturation dry-bulb temperature from evaporator at outlet air enthalpy [C]
     Real64 OutletAirEnthalpy;               // Enthalpy of outlet air at given conditions [J/kg]
     Real64 OutletAirHumRat(InletAirHumRat); // Outlet humidity ratio from evaporator at given conditions [kg/kg]
@@ -11934,7 +11935,8 @@ Real64 CalcCBF(EnergyPlusData &state,
     OutletAirHumRat = PsyWFnTdbH(state, InletAirTemp, HTinHumRatOut);
     DeltaHumRat = InletAirHumRat - OutletAirHumRat;
     OutletAirEnthalpy = InletAirEnthalpy - DeltaH;
-    OutletAirTemp = PsyTdbFnHW(OutletAirEnthalpy, OutletAirHumRat);
+    OutletAirDPTemp = PsyTdpFnWPb(state, OutletAirHumRat, DataEnvironment::StdPressureSeaLevel);
+    OutletAirTemp = max(OutletAirDPTemp, PsyTdbFnHW(OutletAirEnthalpy, OutletAirHumRat));
     //  Eventually inlet air conditions will be used in DX Coil, these lines are commented out and marked with this comment line
     //  Pressure will have to be pass into this subroutine to fix this one
     OutletAirRH = PsyRhFnTdbWPb(state, OutletAirTemp, OutletAirHumRat, DataEnvironment::StdPressureSeaLevel, RoutineName);
@@ -12034,7 +12036,7 @@ Real64 CalcCBF(EnergyPlusData &state,
         //   First guess for Tadp is outlet air dew point
         //  Eventually inlet air conditions will be used in DX Coil, these lines are commented out and marked with this comment line
         //  Pressure will have to be pass into this subroutine to fix this one
-        ADPTemp = PsyTdpFnWPb(state, OutletAirHumRat, DataEnvironment::StdPressureSeaLevel);
+        ADPTemp = PsyTdpFnWPb(state, OutletAirHumRat, DataEnvironment::StdPressureSeaLevel) - HVAC::SmallTempDiff;
 
         Tolerance = 1.0; // initial conditions for iteration
         ErrorLast = 100.0;

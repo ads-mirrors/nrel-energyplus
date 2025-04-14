@@ -110,10 +110,6 @@ namespace Curve {
     };
 
     constexpr std::array<std::string_view, static_cast<int>(CurveType::Num)> objectNames = {"Curve:Linear",
-<<<<<<< HEAD
-					   
-=======
->>>>>>> 81b1cbde1b (clang format ver 10)
                                                                                             "Curve:Quadratic",
                                                                                             "Curve:Biquadratic",
                                                                                             "Curve:Cubic",
@@ -134,10 +130,6 @@ namespace Curve {
                                                                                             "Curve:CubicLinear",
                                                                                             "Curve:ChillerPartLoadWithLift",
                                                                                             "Table:Lookup"}; // namespace Curve
-<<<<<<< HEAD
-										  
-=======
->>>>>>> 81b1cbde1b (clang format ver 10)
 
     struct Limits
     {

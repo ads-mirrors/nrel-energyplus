@@ -337,7 +337,7 @@ namespace WaterToAirHeatPumpSimple {
                 } else if ((simpleWAHP.PLFCurve = Curve::GetCurve(state, coolPLFCurveName)) == 0) {
                     ShowSevereItemNotFound(state, eoh, cFieldName, coolPLFCurveName);
                     ErrorsFound = true;
-                } else if (simpleWAHP.CoolPowCurve->numDims != 1) {
+                } else if (simpleWAHP.PLFCurve->numDims != 1) {
                     ShowSevereCustomField(state, eoh, cFieldName, coolPLFCurveName, "Illegal curve dimension.");
                     ErrorsFound = true;
                 } else {

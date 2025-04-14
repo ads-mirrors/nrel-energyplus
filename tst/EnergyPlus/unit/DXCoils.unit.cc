@@ -1792,6 +1792,7 @@ TEST_F(EnergyPlusFixture, TestReadingCoilCoolingHeatingDX)
 
         "Coil:WaterHeating:AirToWaterHeatPump:Wrapped,",
         "    HPWH Coil_1,             !- Name",
+        "    ,                        !- Availability Schedule Name",
         "    1400,                    !- Rated Heating Capacity {W}",
         "    2.8,                     !- Rated COP {W/W}",
         "    0.88,                    !- Rated Sensible Heat Ratio",
@@ -1814,6 +1815,7 @@ TEST_F(EnergyPlusFixture, TestReadingCoilCoolingHeatingDX)
 
         "  Coil:WaterHeating:AirToWaterHeatPump:Pumped,",
         "    Zone4HPWHDXCoil,         !- Name",
+        "    ,                        !- Availability Schedule Name",
         "    4000.0,                  !- Rated Heating Capacity {W}",
         "    3.2,                     !- Rated COP {W/W}",
         "    0.6956,                  !- Rated Sensible Heat Ratio",
@@ -6722,6 +6724,7 @@ TEST_F(EnergyPlusFixture, Test_DHW_End_Use_Cat_Removal)
 
         "Coil:WaterHeating:AirToWaterHeatPump:Wrapped,",
         "    HPWH Coil_1,             !- Name",
+        "    ,                        !- Availability Schedule Name",
         "    1400,                    !- Rated Heating Capacity {W}",
         "    2.8,                     !- Rated COP {W/W}",
         "    0.88,                    !- Rated Sensible Heat Ratio",
@@ -6744,6 +6747,7 @@ TEST_F(EnergyPlusFixture, Test_DHW_End_Use_Cat_Removal)
 
         "  Coil:WaterHeating:AirToWaterHeatPump:Pumped,",
         "    Zone4HPWHDXCoil,         !- Name",
+        "    ,                        !- Availability Schedule Name",
         "    4000.0,                  !- Rated Heating Capacity {W}",
         "    3.2,                     !- Rated COP {W/W}",
         "    0.6956,                  !- Rated Sensible Heat Ratio",

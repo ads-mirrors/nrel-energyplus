@@ -3308,13 +3308,15 @@ void GetDXCoils(EnergyPlusData &state)
                                                          cFieldName);             // Field Name
 
                     if (!ErrorsFound) {
-                        checkCurveIsNormalizedToOne(state,
-                                                    std::string{RoutineName} + CurrentModuleObject,
-                                                    thisDXCoil.Name,
-                                                    thisDXCoil.HCapFAirFlow,
-                                                    cFieldName,
-                                                    fieldValue,
-                                                    1.0);
+                        if (state.dataCurveManager->curves(thisDXCoil.HCapFTemp)->numDims == 1) {
+                            checkCurveIsNormalizedToOne(state,
+                                                        std::string{RoutineName} + CurrentModuleObject,
+                                                        thisDXCoil.Name,
+                                                        thisDXCoil.HCapFAirFlow,
+                                                        cFieldName,
+                                                        fieldValue,
+                                                        1.0);
+                        }
                     }
                 }
             }
@@ -3839,13 +3841,15 @@ void GetDXCoils(EnergyPlusData &state)
                                                          cFieldName);             // Field Name
 
                     if (!ErrorsFound) {
-                        checkCurveIsNormalizedToOne(state,
-                                                    std::string{RoutineName} + CurrentModuleObject,
-                                                    thisDXCoil.Name,
-                                                    thisDXCoil.HCOPFAirFlow,
-                                                    cFieldName,
-                                                    fieldValue,
-                                                    1.0);
+                        if (state.dataCurveManager->curves(thisDXCoil.HCOPFTemp)->numDims == 1) {
+                            checkCurveIsNormalizedToOne(state,
+                                                        std::string{RoutineName} + CurrentModuleObject,
+                                                        thisDXCoil.Name,
+                                                        thisDXCoil.HCOPFAirFlow,
+                                                        cFieldName,
+                                                        fieldValue,
+                                                        1.0);
+                        }
                     }
                 }
             }

@@ -2560,7 +2560,6 @@ void GetVRFInputData(EnergyPlusData &state, bool &ErrorsFound)
                 } else {
                     ShowSevereError(state, std::string{RoutineName} + cCurrentModuleObject + "=\"" + thisVrfFluidCtrl.Name + "\", invalid");
                     ShowContinueError(state,
-		 
                                       format("...illegal {} type for this object = {}",
                                              cAlphaFieldNames(6),
                                              Curve::objectNames[static_cast<int>(state.dataCurveManager->curves(indexOUEvapTempCurve)->curveType)]));
@@ -2592,7 +2591,6 @@ void GetVRFInputData(EnergyPlusData &state, bool &ErrorsFound)
                 } else {
                     ShowSevereError(state, std::string{RoutineName} + cCurrentModuleObject + "=\"" + thisVrfFluidCtrl.Name + "\", invalid");
                     ShowContinueError(state,
-		 
                                       format("...illegal {} type for this object = {}",
                                              cAlphaFieldNames(7),
                                              Curve::objectNames[static_cast<int>(state.dataCurveManager->curves(indexOUCondTempCurve)->curveType)]));
@@ -6169,7 +6167,7 @@ void InitVRF(EnergyPlusData &state, int const VRFTUNum, int const ZoneNum, bool 
             state.dataHVACVarRefFlow->TerminalUnitList(TUListIndex).TerminalUnitNotSizedYet(IndexToTUInTUList) = false;
             state.dataHVACVarRefFlow->MySizeFlag(VRFTUNum) = false;
         } // IF ( .NOT. ZoneSizingCalc) THEN
-    }     // IF (MySizeFlag(VRFTUNum)) THEN
+    } // IF (MySizeFlag(VRFTUNum)) THEN
 
     // Do the Begin Environment initializations
     if (state.dataGlobal->BeginEnvrnFlag && state.dataHVACVarRefFlow->MyEnvrnFlag(VRFTUNum)) {
@@ -11335,7 +11333,6 @@ void VRFCondenserEquipment::CalcVRFCondenser_FluidTCtrl(EnergyPlusData &state, c
                     m_ref_IU_evap = TU_CoolingLoad / (h_IU_evap_out - h_IU_evap_in);
                 }
             }
-   
 
             // *Calculate piping loss
             this->VRFOU_PipeLossC(state,
@@ -11407,7 +11404,6 @@ void VRFCondenserEquipment::CalcVRFCondenser_FluidTCtrl(EnergyPlusData &state, c
             h_IU_evap_in = h_IU_evap_in_new;
             NumIteHIUIn = NumIteHIUIn + 1;
         } while (!converged_12);
-   
         if ((std::abs(h_IU_evap_in - h_IU_evap_in_new) > Tolerance * h_IU_evap_in)) {
             h_IU_evap_in = 0.5 * (h_IU_evap_in_low + h_IU_evap_in_up);
         } else if (h_IU_evap_in > h_IU_evap_in_up) {
@@ -11469,11 +11465,6 @@ void VRFCondenserEquipment::CalcVRFCondenser_FluidTCtrl(EnergyPlusData &state, c
         h_IU_cond_in_low = this->refrig->getSatEnthalpy(state, this->IUCondensingTemp, 1.0, RoutineName); // Quality=1
         h_IU_cond_in = h_IU_cond_in_low;
 
-	
-		
-		 
-	   
-
         bool converged_23;
         do {
             m_ref_IU_cond = 0;
@@ -11483,37 +11474,8 @@ void VRFCondenserEquipment::CalcVRFCondenser_FluidTCtrl(EnergyPlusData &state, c
             // Calculate total refrigerant flow rate
             if (Q_h_TU_PL > CompEvaporatingCAPSpdMax + CompEvaporatingPWRSpdMax) {
                 // Required load is beyond the max system capacity
-			 
-					
-			 
-		
-				   
 
-	
-			   
-						  
-						  
-						 
-		  
-				 
-									 
-							 
-			   
-					  
-		  
-							 
-		 
-									 
-				 
-						 
-							   
-	 
-	
-		 
                 h_IU_cond_out =
-			   
-	 
-		   
                     this->refrig->getSatEnthalpy(state,
                                                  this->refrig->getSatTemperature(state, max(min(Pcond, RefPHigh), RefPLow), RoutineName) - 5.0,
                                                  0.0,
@@ -11555,7 +11517,6 @@ void VRFCondenserEquipment::CalcVRFCondenser_FluidTCtrl(EnergyPlusData &state, c
                     m_ref_IU_cond = TU_HeatingLoad / (h_IU_cond_in - h_IU_cond_out_ave);
                 }
             }
-   
 
             // *Calculate piping loss
             this->VRFOU_PipeLossH(
@@ -11607,34 +11568,11 @@ void VRFCondenserEquipment::CalcVRFCondenser_FluidTCtrl(EnergyPlusData &state, c
                     CompEvaporatingCAPSpdMaxCurrentTsuc - CompEvaporatingCAPSpdMin,
                     CompEvaporatingCAPSpdMaxCurrentTsuc - CompEvaporatingCAPSpdMin);
             }
-			
-	   
-								 
-		   
-					  
-					
-   
             if ((Q_c_OU * C_cap_operation) > CompEvaporatingCAPSpdMaxCurrentTsuc) {
                 // this branch resolves the issue of supplemental heating coil turning on when compressor speed is not at the highest
                 Q_c_OU = CompEvaporatingCAPSpdMaxCurrentTsuc;
                 CompSpdActual = this->CompressorSpeed(NumOfCompSpdInput);
                 Ncomp = CompEvaporatingPWRSpdMaxCurrentTsuc;
-			 
-		
-		
-									
-	
-									 
-					   
-
-					  
-	  
-		  
-	
-		  
-			  
-
-			
                 m_air = this->OUAirFlowRate * RhoAir;
                 SH_OU = this->SH;
                 this->VRFOU_TeTc(
@@ -11650,30 +11588,6 @@ void VRFCondenserEquipment::CalcVRFCondenser_FluidTCtrl(EnergyPlusData &state, c
                 do {
                     Ncomp_new = Ncomp;
                     Q_c_OU = max(0.0, Q_h_TU_PL - Ncomp);
-			 
-			   
-			 
-		   
-			 
-		   
-			
-		   
-			
-	
-							 
-		   
-			  
-			   
-			 
-			  
-				
-			  
-			
-			  
-			
-			 
-			 
-				   
 
                     // *VRF OU Te calculations
                     m_air = this->OUAirFlowRate * RhoAir;
@@ -11714,7 +11628,6 @@ void VRFCondenserEquipment::CalcVRFCondenser_FluidTCtrl(EnergyPlusData &state, c
                 converged_23 = !((std::abs(h_comp_out - h_comp_out_new) > Tolerance * h_comp_out) && (h_IU_cond_in < h_IU_cond_in_up));
                 if (!converged_23) {
                     h_IU_cond_in = h_IU_cond_in + 0.1 * (h_IU_cond_in_up - h_IU_cond_in_low);
-		
                 } else {
                     if (h_IU_cond_in > h_IU_cond_in_up) {
                         h_IU_cond_in = 0.5 * (h_IU_cond_in_up + h_IU_cond_in_low);
@@ -11724,7 +11637,6 @@ void VRFCondenserEquipment::CalcVRFCondenser_FluidTCtrl(EnergyPlusData &state, c
                 }
             }
         } while (!converged_23);
-   
 
         // Key outputs of this subroutine
         Q_c_OU *= CyclingRatio;
@@ -11790,8 +11702,6 @@ void VRFCondenserEquipment::CalcVRFCondenser_FluidTCtrl(EnergyPlusData &state, c
             h_IU_cond_in = h_IU_cond_in_low;
         }
 
-	 
-
         bool converged_230;
         do {
             // *PL-h: Calculate total refrigerant flow rate
@@ -11824,30 +11734,11 @@ void VRFCondenserEquipment::CalcVRFCondenser_FluidTCtrl(EnergyPlusData &state, c
                 h_IU_cond_out_ave =
                     this->refrig->getSatEnthalpy(state,
                                                  this->refrig->getSatTemperature(state, max(min(Pcond, RefPHigh), RefPLow), RoutineName) - 5.0,
-							
                                                  0.0,
                                                  RoutineName); // Quality=0
                 SC_IU_merged = 5;
                 m_ref_IU_cond = TU_HeatingLoad / (h_IU_cond_in - h_IU_cond_out_ave);
-		
-									
-				
-						
-							  
             }
-   
-		
-				  
-			  
-	
-		  
-			   
-									 
-			 
-					
-		
-					
-   
 
             // *PL-h: Calculate piping loss
             this->VRFOU_PipeLossH(
@@ -11893,7 +11784,6 @@ void VRFCondenserEquipment::CalcVRFCondenser_FluidTCtrl(EnergyPlusData &state, c
                     state, max(RefTSat, this->IUEvaporatingTemp + 3), max(min(Pevap, RefPHigh), RefPLow), RoutineName);
                 SH_IU_merged = 3;
                 m_ref_IU_evap = TU_CoolingLoad / (h_IU_evap_out - h_IU_evap_in);
-				   
             }
 
             // *PL-c: Calculate piping loss
@@ -11960,7 +11850,6 @@ void VRFCondenserEquipment::CalcVRFCondenser_FluidTCtrl(EnergyPlusData &state, c
             converged_230 = !((std::abs(h_comp_out - h_comp_out_new) > Tolerance * h_comp_out) && (h_IU_cond_in < h_IU_cond_in_up));
             h_IU_cond_in = h_IU_cond_in + 0.1 * (h_IU_cond_in_up - h_IU_cond_in_low);
         } while (!converged_230);
-   
         if (h_IU_cond_in > h_IU_cond_in_up) {
             h_IU_cond_in = 0.5 * (h_IU_cond_in_up + h_IU_cond_in_low);
         }
@@ -13640,7 +13529,6 @@ void VRFCondenserEquipment::VRFOU_TeModification(
                 }
             }
         }
-  
         if (Pipe_m_ref > 0) {
             Pipe_h_IU_out = Pipe_h_IU_out / Pipe_m_ref;
             Pipe_SH_merged = Pipe_SH_merged / Pipe_m_ref;
@@ -13650,9 +13538,6 @@ void VRFCondenserEquipment::VRFOU_TeModification(
             Pipe_h_IU_out = this->refrig->getSupHeatEnthalpy(state, max(RefTSat, Te_update + Pipe_SH_merged), Pe_update, RoutineName);
         }
 
-		  
-									 
-
         // Re-calculate piping loss
         this->VRFOU_PipeLossC(state, Pipe_m_ref, Pe_update, Pipe_h_IU_out, Pipe_SH_merged, OutdoorDryBulb, Pipe_Q, Pipe_DeltP, Pipe_h_comp_in);
 
@@ -13661,7 +13546,6 @@ void VRFCondenserEquipment::VRFOU_TeModification(
         Te_update = Te_update - 0.1;
         NumTeIte = NumTeIte + 1;
     } while (!converged_11);
-  
 
     if (std::abs(Tsuction - Te_low) > 0.5) {
         NumTeIte = 999;
@@ -14114,19 +13998,6 @@ void VRFCondenserEquipment::VRFOU_CalcCompC(EnergyPlusData &state,
                     if (SolFla == -1) {
                         // show error not converging
                         ShowWarningMessage(state, format("{}: low load Te adjustment failed for {}", RoutineName, this->Name));
-				
-									 
-			
-			 
-			
-			 
-								
-				 
-				
-				   
-				   
-			   
-				 
                         ShowContinueErrorTimeStamp(state, "");
                         ShowContinueError(state, format("  Iteration limit [{}] exceeded in calculating OU evaporating temperature", MaxIter));
                     } else if (SolFla == -2) {
@@ -14151,10 +14022,6 @@ void VRFCondenserEquipment::VRFOU_CalcCompC(EnergyPlusData &state,
                             // demand < capacity at both endpoints of the Te range, assuming f(x) is roughly monotonic than this is the low load case
                             // TeTol is added to prevent the final updated Te to go out of bounds
                             SmallLoadTe = MinOutdoorUnitTe + TeTol; // MinOutdoorUnitTe; //SmallLoadTe( Te'_new ) is constant during iterations
-	   
-								 
-							  
-			 
                         } else {
                             // demand > capacity at both endpoints of the Te range, take the end point x where f(x) is closer to zero
                             if (f(MinOutdoorUnitTe) > f(T_suction)) { // f(T_suction > 0, not equal as SolFla will not be -2
@@ -14164,7 +14031,6 @@ void VRFCondenserEquipment::VRFOU_CalcCompC(EnergyPlusData &state,
                             }
                         }
                     }
-	 
 
                     // Get an updated Te corresponding to the updated Te'
                     // VRFOU_TeModification( VRFCond, this->EvaporatingTemp, SmallLoadTe, Pipe_h_IU_in, OutdoorDryBulb, Pipe_Te_assumed,
@@ -14227,8 +14093,6 @@ void VRFCondenserEquipment::VRFOU_CalcCompC(EnergyPlusData &state,
                                     }
                                 }
                             }
-	   
-	  
                             if (Pipe_m_ref > 0) {
                                 Pipe_h_IU_out = Pipe_h_IU_out / Pipe_m_ref;
                                 Pipe_SH_merged = Pipe_SH_merged / Pipe_m_ref;
@@ -14258,7 +14122,6 @@ void VRFCondenserEquipment::VRFOU_CalcCompC(EnergyPlusData &state,
                             Pipe_Te_assumed = Pipe_Te_assumed - 0.1;
                             NumIteTe = NumIteTe + 1;
                         } while (!converged_11_2);
-	  
 
                         if (std::abs(T_suction - SmallLoadTe) > TeTol) {
                             NumIteTe = 999;
@@ -14268,29 +14131,14 @@ void VRFCondenserEquipment::VRFOU_CalcCompC(EnergyPlusData &state,
                         }
                         // Iteration_Te End
                     }
-			
-	 
 
                     // Perform iteration to calculate Pipe_T_comp_in( Te'+SH' )
                     Pipe_T_comp_in = this->refrig->getSupHeatTemp(
                         state, max(min(Pipe_Pe_assumed - Pipe_DeltP, RefPHigh), RefPLow), Pipe_h_comp_in, T_suction + 3, T_suction + 30, RoutineName);
 
-				
-			   
-								  
-
                     Modifi_SH = Pipe_T_comp_in - T_suction;
                     P_suction = Pipe_Pe_assumed - Pipe_DeltP;
                     OUCondHeatRelease = TU_load + Pipe_Q + Ncomp; // Pipe_Q is changed when T_suction is changed -> Tc is also changed
-			   
-			
-				 
-			
-			  
-			 
-		  
-			 
-				 
 
                     // *VRF OU Tc calculations
                     this->VRFOU_TeTc(state,
@@ -14324,8 +14172,6 @@ void VRFCondenserEquipment::VRFOU_CalcCompC(EnergyPlusData &state,
                     C_cap_operation0 = C_cap_operation;
                     T_discharge_new = T_discharge;
                 } while (!converged_13);
-		 
-	 
 
                 // when it gets here, either NumIteCcap = 30 or CapDiff > (Tolerance * Cap_Eva0)
                 if (CapDiff > (Tolerance * Cap_Eva0) && (Cap_Eva1 - Cap_Eva0) >= 0.0) {
@@ -14479,16 +14325,10 @@ void VRFCondenserEquipment::VRFOU_CalcCompH(
                 do {
                     Q_evap_req = max(0.0, TU_load + Pipe_Q - Ncomp);
 
-					  
-			   
-					   
-				  
-
                     // Update Te'( SmallLoadTe ) to meet the required evaporator capacity
                     CompSpdActual = this->CompressorSpeed(1);
                     Real64 CondHeat = Q_evap_req * C_cap_operation / this->RatedEvapCapacity;
                     int CAPFT = this->OUCoolingCAPFT(CounterCompSpdTemp);
-				  
 
                     auto f = [&state, T_discharge, CondHeat, CAPFT](Real64 const T_suc) {
                         return CompResidual_FluidTCtrl(state, T_discharge, CondHeat, CAPFT, T_suc);
@@ -14496,16 +14336,7 @@ void VRFCondenserEquipment::VRFOU_CalcCompH(
                     General::SolveRoot(state, 1.0e-3, MaxIter, SolFla, SmallLoadTe, f, MinOutdoorUnitTe, T_suction);
                     if (SolFla < 0) SmallLoadTe = MinOutdoorUnitTe;
 
-							   
-		 
                     T_suction = SmallLoadTe;
-	   
-						 
-						
-	  
-		   
-									 
-	 
 
                     // Update SH and Pe to calculate Modification Factor, which is used to update rps to for N_comp calculations
                     if (this->C3Te == 0)
@@ -14518,17 +14349,7 @@ void VRFCondenserEquipment::VRFOU_CalcCompH(
                                         (2 * this->C3Te);
                     }
 
-			   
-							   
-		
                     Modifi_Pe = this->refrig->getSatPressure(state, T_suction, RoutineName);
-				 
-					
-					
-						  
-					 
-				   
-					 
 
                     // Calculate capacity modification factor
                     RefTSat = this->refrig->getSatTemperature(state, max(min(Modifi_Pe, RefPHigh), RefPLow), RoutineName);
@@ -14549,7 +14370,6 @@ void VRFCondenserEquipment::VRFOU_CalcCompH(
                     converged_19 = (CapDiff <= (Tolerance * Cap_Eva0)) || (NumIteCcap >= 30);
                     NumIteCcap = NumIteCcap + 1;
                 } while (!converged_19);
-	 
                 if (CapDiff > (Tolerance * Cap_Eva0) && (Cap_Eva1 - Cap_Eva0) >= 0.0) {
                     NumIteCcap = 999;
                     CyclingRatio = Cap_Eva0 / Cap_Eva1;

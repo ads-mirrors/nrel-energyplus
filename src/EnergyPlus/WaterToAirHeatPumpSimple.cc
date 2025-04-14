@@ -218,6 +218,7 @@ namespace WaterToAirHeatPumpSimple {
 
         // SUBROUTINE PARAMETER DEFINITIONS:
         static constexpr std::string_view RoutineName("GetSimpleWatertoAirHPInput: "); // include trailing blank space
+        static constexpr std::string_view routineName = "GetSimpleWatertoAirHPInput";
 
         // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
         bool ErrorsFound(false);         // If errors detected in input
@@ -372,7 +373,6 @@ namespace WaterToAirHeatPumpSimple {
                         Curve::SetCurveOutputMaxValue(state, simpleWAHP.PLFCurve->Num, ErrorsFound, 1.0);
                     }
                 }
-
                 CheckSimpleWAHPRatedCurvesOutputs(state, simpleWAHP.Name);
 
                 simpleWAHP.Twet_Rated = s_ip->getRealFieldValue(fields, schemaProps, "nominal_time_for_condensate_removal_to_begin");
@@ -499,7 +499,6 @@ namespace WaterToAirHeatPumpSimple {
         auto const instances_heat = s_ip->epJSON.find(CurrentModuleObject);
 
         if (instances_heat != s_ip->epJSON.end()) {
-
             bool errorsFound(false);
             std::string cFieldName;
             auto const &schemaProps = s_ip->getObjectSchemaProps(state, CurrentModuleObject);
@@ -615,7 +614,6 @@ namespace WaterToAirHeatPumpSimple {
                         Curve::SetCurveOutputMaxValue(state, simpleWAHP.PLFCurve->Num, ErrorsFound, 1.0);
                     }
                 }
-
                 CheckSimpleWAHPRatedCurvesOutputs(state, simpleWAHP.Name);
 
                 state.dataHeatBal->HeatReclaimSimple_WAHPCoil(HPNum).Name = simpleWAHP.Name;

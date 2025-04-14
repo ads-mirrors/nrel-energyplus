@@ -1857,7 +1857,7 @@ void GetDXCoils(EnergyPlusData &state)
                     } // end of valid performance object check
                     AlphaIndex += 2;
                 } // end of sufficient number of fields entered check
-            }     // End of multimode DX capacity stages loop
+            } // End of multimode DX capacity stages loop
             // Warn if inputs entered for unused capacity stages
             for (CapacityStageNum = (thisDXCoil.NumCapacityStages + 1); CapacityStageNum <= MaxCapacityStages; ++CapacityStageNum) {
                 if ((AlphaIndex <= NumAlphas) && ((!Alphas(AlphaIndex).empty()) || (!Alphas(AlphaIndex + 1).empty()))) {
@@ -1867,7 +1867,7 @@ void GetDXCoils(EnergyPlusData &state)
                 }
                 AlphaIndex += 2;
             } // End of unused capacity stages loop
-        }     // End of multimode DX dehumidification modes loo
+        } // End of multimode DX dehumidification modes loo
 
         // Get Water System tank connections
         //  A14, \field Name of Water Storage Tank for Supply
@@ -6823,7 +6823,7 @@ void InitDXCoil(EnergyPlusData &state, int const DXCoilNum) // number of the cur
             }
             state.dataDXCoils->CrankcaseHeaterReportVarFlag = false;
         } //(AirLoopInputsFilled)THEN
-    }     //(CrankcaseHeaterReportVarFlag)THEN
+    } //(CrankcaseHeaterReportVarFlag)THEN
 
     if (!state.dataGlobal->SysSizingCalc && state.dataDXCoils->MySizeFlag(DXCoilNum)) {
         // for each coil, do the sizing once.
@@ -6998,7 +6998,7 @@ void InitDXCoil(EnergyPlusData &state, int const DXCoilNum) // number of the cur
                                                         thisDXCoil.RatedAirVolFlowRate(Mode),
                                                         thisDXCoil.RatedSHR(Mode));
                 } // End capacity stages loop
-            }     // End dehumidification modes loop
+            } // End dehumidification modes loop
         }
 
         if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_HeatingEmpirical || thisDXCoil.DXCoilType_Num == HVAC::CoilVRF_Heating ||
@@ -7903,7 +7903,7 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
             }
 
         } // End capacity stages loop
-    }     // End dehumidification modes loop
+    } // End dehumidification modes loop
 
     // Autosizing for multispeed cooling coil
     if (thisDXCoil.DXCoilType_Num == HVAC::CoilDX_MultiSpeedCooling) {
@@ -9438,12 +9438,12 @@ void CalcDoe2DXCoil(EnergyPlusData &state,
         RatedCBF = thisDXCoil.RatedCBF(Mode);
         if (RatedCBF > 0.0) {
             A0 = -std::log(RatedCBF) * thisDXCoil.RatedAirMassFlowRate(Mode);
-        } else {
-            A0 = 0.0;
-        }
-        ADiff = -A0 / AirMassFlow;
-        if (ADiff >= DataPrecisionGlobals::EXP_LowerLimit) {
-            CBF = std::exp(ADiff);
+            ADiff = -A0 / AirMassFlow;
+            if (ADiff >= DataPrecisionGlobals::EXP_LowerLimit) {
+                CBF = std::exp(ADiff);
+            } else {
+                CBF = 0.0;
+            }
         } else {
             CBF = 0.0;
         }
@@ -10404,12 +10404,12 @@ void CalcVRFCoolingCoil(EnergyPlusData &state,
         RatedCBF = thisDXCoil.RatedCBF(Mode);
         if (RatedCBF > 0.0) {
             A0 = -std::log(RatedCBF) * thisDXCoil.RatedAirMassFlowRate(Mode);
-        } else {
-            A0 = 0.0;
-        }
-        ADiff = -A0 / AirMassFlow;
-        if (ADiff >= DataPrecisionGlobals::EXP_LowerLimit) {
-            CBF = std::exp(ADiff);
+            ADiff = -A0 / AirMassFlow;
+            if (ADiff >= DataPrecisionGlobals::EXP_LowerLimit) {
+                CBF = std::exp(ADiff);
+            } else {
+                CBF = 0.0;
+            }
         } else {
             CBF = 0.0;
         }
@@ -11847,12 +11847,12 @@ Real64 AdjustCBF(Real64 const CBFNom,             // nominal coil bypass factor
 
     if (CBFNom > 0.0) {
         A0 = -std::log(CBFNom) * AirMassFlowRateNom;
-    } else {
-        A0 = 0.0;
-    }
-    ADiff = -A0 / AirMassFlowRate;
-    if (ADiff >= DataPrecisionGlobals::EXP_LowerLimit) {
-        CBFAdj = std::exp(ADiff);
+        ADiff = -A0 / AirMassFlowRate;
+        if (ADiff >= DataPrecisionGlobals::EXP_LowerLimit) {
+            CBFAdj = std::exp(ADiff);
+        } else {
+            CBFAdj = 1.0e-6;
+        }
     } else {
         CBFAdj = 1.0e-6;
     }
@@ -11935,8 +11935,7 @@ Real64 CalcCBF(EnergyPlusData &state,
     OutletAirHumRat = PsyWFnTdbH(state, InletAirTemp, HTinHumRatOut);
     DeltaHumRat = InletAirHumRat - OutletAirHumRat;
     OutletAirEnthalpy = InletAirEnthalpy - DeltaH;
-    OutletAirDPTemp = PsyTdpFnWPb(state, OutletAirHumRat, DataEnvironment::StdPressureSeaLevel);
-    OutletAirTemp = max(OutletAirDPTemp, PsyTdbFnHW(OutletAirEnthalpy, OutletAirHumRat));
+    OutletAirTemp = PsyTdbFnHW(OutletAirEnthalpy, OutletAirHumRat);
     //  Eventually inlet air conditions will be used in DX Coil, these lines are commented out and marked with this comment line
     //  Pressure will have to be pass into this subroutine to fix this one
     OutletAirRH = PsyRhFnTdbWPb(state, OutletAirTemp, OutletAirHumRat, DataEnvironment::StdPressureSeaLevel, RoutineName);
@@ -12003,6 +12002,10 @@ Real64 CalcCBF(EnergyPlusData &state,
         ShowContinueErrorTimeStamp(state, "");
         ShowFatalError(state, "Check and revise the input data for this coil before rerunning the simulation.");
     }
+    // Make sure that the outlet temperature is below or at saturation;
+    OutletAirDPTemp = PsyTdpFnWPb(state, OutletAirHumRat, DataEnvironment::StdPressureSeaLevel);
+    OutletAirTemp = max(OutletAirDPTemp, PsyTdbFnHW(OutletAirEnthalpy, OutletAirHumRat));
+
     // Calculate slope at given conditions
     if (DeltaT > 0.0) SlopeAtConds = DeltaHumRat / DeltaT;
 
@@ -12036,7 +12039,7 @@ Real64 CalcCBF(EnergyPlusData &state,
         //   First guess for Tadp is outlet air dew point
         //  Eventually inlet air conditions will be used in DX Coil, these lines are commented out and marked with this comment line
         //  Pressure will have to be pass into this subroutine to fix this one
-        ADPTemp = PsyTdpFnWPb(state, OutletAirHumRat, DataEnvironment::StdPressureSeaLevel) - HVAC::SmallTempDiff;
+        ADPTemp = PsyTdpFnWPb(state, OutletAirHumRat, DataEnvironment::StdPressureSeaLevel);
 
         Tolerance = 1.0; // initial conditions for iteration
         ErrorLast = 100.0;
@@ -12051,6 +12054,7 @@ Real64 CalcCBF(EnergyPlusData &state,
 
             //  Eventually inlet air conditions will be used in DX Coil, these lines are commented out and marked with this comment line
             //  Pressure will have to be pass into this subroutine to fix this one
+            Real64 ADPHumRatAct = PsyWFnTdpPb(state, ADPTemp, DataEnvironment::StdPressureSeaLevel);
             ADPHumRat = min(OutletAirHumRat, PsyWFnTdpPb(state, ADPTemp, DataEnvironment::StdPressureSeaLevel));
             Slope = (InletAirHumRat - ADPHumRat) / max(0.001, (InletAirTemp - ADPTemp));
 
@@ -16787,12 +16791,12 @@ void CalcVRFCoolingCoil_FluidTCtrl(EnergyPlusData &state,
         RatedCBF = thisDXCoil.RatedCBF(Mode);
         if (RatedCBF > 0.0) {
             A0 = -std::log(RatedCBF) * thisDXCoil.RatedAirMassFlowRate(Mode);
-        } else {
-            A0 = 0.0;
-        }
-        ADiff = -A0 / AirMassFlow;
-        if (ADiff >= DataPrecisionGlobals::EXP_LowerLimit) {
-            CBF = std::exp(ADiff);
+            ADiff = -A0 / AirMassFlow;
+            if (ADiff >= DataPrecisionGlobals::EXP_LowerLimit) {
+                CBF = std::exp(ADiff);
+            } else {
+                CBF = 0.0;
+            }
         } else {
             CBF = 0.0;
         }

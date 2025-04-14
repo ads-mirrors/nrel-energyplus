@@ -5347,57 +5347,40 @@ void CalcATMixer(EnergyPlusData &state, int const SysNum)
     // PURPOSE OF THIS SUBROUTINE
     // Calculate the mixed air flow and conditions in the air terminal mixer
 
-    // Using/Aliasing
-    using Psychrometrics::PsyTdbFnHW;
+    auto &atMixer = state.dataSingleDuct->SysATMixer(SysNum);
+    auto &priInNode = state.dataLoopNodes->Node(atMixer.PriInNode);
+    auto &secInNode = state.dataLoopNodes->Node(atMixer.SecInNode);
+    auto &mixedAirOutNode = state.dataLoopNodes->Node(atMixer.MixedAirOutNode);
 
-    state.dataSingleDuct->PriEnthalpyCATM = state.dataLoopNodes->Node(state.dataSingleDuct->SysATMixer(SysNum).PriInNode).Enthalpy;
-    state.dataSingleDuct->PriHumRatCATM = state.dataLoopNodes->Node(state.dataSingleDuct->SysATMixer(SysNum).PriInNode).HumRat;
-    state.dataSingleDuct->PriTempCATM = state.dataLoopNodes->Node(state.dataSingleDuct->SysATMixer(SysNum).PriInNode).Temp;
-    state.dataSingleDuct->PriMassFlowRateCATM = state.dataLoopNodes->Node(state.dataSingleDuct->SysATMixer(SysNum).PriInNode).MassFlowRate;
+    Real64 MixedAirMassFlowRate =
+        (atMixer.type == HVAC::MixerType::SupplySide) ? secInNode.MassFlowRate + priInNode.MassFlowRate : mixedAirOutNode.MassFlowRate;
 
-    state.dataSingleDuct->SecAirMassFlowRateCATM = state.dataLoopNodes->Node(state.dataSingleDuct->SysATMixer(SysNum).SecInNode).MassFlowRate;
-    state.dataSingleDuct->SecAirEnthalpyCATM = state.dataLoopNodes->Node(state.dataSingleDuct->SysATMixer(SysNum).SecInNode).Enthalpy;
-    state.dataSingleDuct->SecAirHumRatCATM = state.dataLoopNodes->Node(state.dataSingleDuct->SysATMixer(SysNum).SecInNode).HumRat;
-    state.dataSingleDuct->SecAirTempCATM = state.dataLoopNodes->Node(state.dataSingleDuct->SysATMixer(SysNum).SecInNode).Temp;
-
-    if (state.dataSingleDuct->SysATMixer(SysNum).type == HVAC::MixerType::SupplySide) {
-        state.dataSingleDuct->MixedAirMassFlowRateCATM = state.dataSingleDuct->SecAirMassFlowRateCATM + state.dataSingleDuct->PriMassFlowRateCATM;
-    } else {
+    if (atMixer.type == HVAC::MixerType::InletSide) {
         // for inlet side mixer, the mixed air flow has been set, but we don't know the secondary flow
-        state.dataSingleDuct->MixedAirMassFlowRateCATM =
-            state.dataLoopNodes->Node(state.dataSingleDuct->SysATMixer(SysNum).MixedAirOutNode).MassFlowRate;
-        state.dataSingleDuct->SecAirMassFlowRateCATM =
-            max(state.dataSingleDuct->MixedAirMassFlowRateCATM - state.dataSingleDuct->PriMassFlowRateCATM, 0.0);
-        state.dataLoopNodes->Node(state.dataSingleDuct->SysATMixer(SysNum).SecInNode).MassFlowRate = state.dataSingleDuct->SecAirMassFlowRateCATM;
-        if (std::abs(state.dataSingleDuct->PriMassFlowRateCATM + state.dataSingleDuct->SecAirMassFlowRateCATM -
-                     state.dataSingleDuct->MixedAirMassFlowRateCATM) > SmallMassFlow) {
-            ShowSevereError(
-                state,
-                format("CalcATMixer: Invalid mass flow rates in AirTerminal:SingleDuct:Mixer={}", state.dataSingleDuct->SysATMixer(SysNum).Name));
+        secInNode.MassFlowRate = max(MixedAirMassFlowRate - priInNode.MassFlowRate, 0.0);
+        if (std::abs(priInNode.MassFlowRate + secInNode.MassFlowRate - MixedAirMassFlowRate) > SmallMassFlow) {
+            ShowSevereError(state, format("CalcATMixer: Invalid mass flow rates in AirTerminal:SingleDuct:Mixer={}", atMixer.Name));
             ShowContinueErrorTimeStamp(state,
                                        format("Primary mass flow rate={:.6R}Secondary mass flow rate={:.6R}Mixed mass flow rate={:.6R}",
-                                              state.dataSingleDuct->PriMassFlowRateCATM,
-                                              state.dataSingleDuct->SecAirMassFlowRateCATM,
-                                              state.dataSingleDuct->MixedAirMassFlowRateCATM));
+                                              priInNode.MassFlowRate,
+                                              secInNode.MassFlowRate,
+                                              MixedAirMassFlowRate));
             ShowFatalError(state, "Simulation terminates.");
         }
     }
     // now calculate the mixed (outlet) conditions
-    if (state.dataSingleDuct->MixedAirMassFlowRateCATM > 0.0) {
-        state.dataSingleDuct->MixedAirEnthalpyCATM = (state.dataSingleDuct->SecAirMassFlowRateCATM * state.dataSingleDuct->SecAirEnthalpyCATM +
-                                                      state.dataSingleDuct->PriMassFlowRateCATM * state.dataSingleDuct->PriEnthalpyCATM) /
-                                                     state.dataSingleDuct->MixedAirMassFlowRateCATM;
-        state.dataSingleDuct->MixedAirHumRatCATM = (state.dataSingleDuct->SecAirMassFlowRateCATM * state.dataSingleDuct->SecAirHumRatCATM +
-                                                    state.dataSingleDuct->PriMassFlowRateCATM * state.dataSingleDuct->PriHumRatCATM) /
-                                                   state.dataSingleDuct->MixedAirMassFlowRateCATM;
+    if ((atMixer.MixedAirMassFlowRate = MixedAirMassFlowRate) > 0.0) {
+        Real64 MixedAirEnthalpy = (secInNode.MassFlowRate * secInNode.Enthalpy + priInNode.MassFlowRate * priInNode.Enthalpy) / MixedAirMassFlowRate;
+        Real64 MixedAirHumRat = (secInNode.MassFlowRate * secInNode.HumRat + priInNode.MassFlowRate * priInNode.HumRat) / MixedAirMassFlowRate;
         // Mixed air temperature is calculated from the mixed air enthalpy and humidity ratio.
-        state.dataSingleDuct->MixedAirTempCATM = PsyTdbFnHW(state.dataSingleDuct->MixedAirEnthalpyCATM, state.dataSingleDuct->MixedAirHumRatCATM);
+        atMixer.MixedAirTemp = Psychrometrics::PsyTdbFnHW(MixedAirEnthalpy, MixedAirHumRat);
+        atMixer.MixedAirEnthalpy = MixedAirEnthalpy;
+        atMixer.MixedAirHumRat = MixedAirHumRat;
+    } else {
+        atMixer.MixedAirEnthalpy = priInNode.Enthalpy;
+        atMixer.MixedAirHumRat = priInNode.HumRat;
+        atMixer.MixedAirTemp = priInNode.Temp;
     }
-
-    state.dataSingleDuct->SysATMixer(SysNum).MixedAirMassFlowRate = state.dataSingleDuct->MixedAirMassFlowRateCATM;
-    state.dataSingleDuct->SysATMixer(SysNum).MixedAirEnthalpy = state.dataSingleDuct->MixedAirEnthalpyCATM;
-    state.dataSingleDuct->SysATMixer(SysNum).MixedAirHumRat = state.dataSingleDuct->MixedAirHumRatCATM;
-    state.dataSingleDuct->SysATMixer(SysNum).MixedAirTemp = state.dataSingleDuct->MixedAirTempCATM;
 }
 
 void UpdateATMixer(EnergyPlusData &state, int const SysNum)

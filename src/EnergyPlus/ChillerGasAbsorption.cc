@@ -268,10 +268,8 @@ void GetGasAbsorberInput(EnergyPlusData &state)
     // This routine will get the input
     // required by the Direct Fired Absorption chiller model in the object ChillerHeater:Absorption:DirectFired
 
-	   
     static constexpr std::string_view routineName = "GetGasAbsorptionInput";
 
-										  
     int NumAlphas; // Number of elements in the alpha array
     int NumNums;   // Number of elements in the numeric array
     int IOStat;    // IO Status when calling get input subroutine
@@ -309,8 +307,6 @@ void GetGasAbsorberInput(EnergyPlusData &state)
                                                                  s_ipsc->cAlphaFieldNames,
                                                                  s_ipsc->cNumericFieldNames);
 
-	
-	   
         ErrorObjectHeader eoh{routineName, s_ipsc->cCurrentModuleObject, s_ipsc->cAlphaArgs(1)};
 
         // Get_ErrorsFound will be set to True if problem was found, left untouched otherwise
@@ -352,11 +348,10 @@ void GetGasAbsorberInput(EnergyPlusData &state)
                                                                              DataLoopNode::ConnectionType::Outlet,
                                                                              NodeInputManager::CompFluidStream::Primary,
                                                                              DataLoopNode::ObjectIsNotParent);
-															  
-	   
+
         BranchNodeConnections::TestCompSet(
             state, s_ipsc->cCurrentModuleObject, s_ipsc->cAlphaArgs(1), s_ipsc->cAlphaArgs(2), s_ipsc->cAlphaArgs(3), "Chilled Water Nodes");
-										  
+
         // Condenser node processing depends on condenser type, see below
         thisChiller.HeatReturnNodeNum = NodeInputManager::GetOnlySingleNode(state,
                                                                             s_ipsc->cAlphaArgs(6),
@@ -376,7 +371,7 @@ void GetGasAbsorberInput(EnergyPlusData &state)
                                                                             DataLoopNode::ConnectionType::Outlet,
                                                                             NodeInputManager::CompFluidStream::Tertiary,
                                                                             DataLoopNode::ObjectIsNotParent);
-	   
+       
         BranchNodeConnections::TestCompSet(
             state, s_ipsc->cCurrentModuleObject, s_ipsc->cAlphaArgs(1), s_ipsc->cAlphaArgs(6), s_ipsc->cAlphaArgs(7), "Hot Water Nodes");
         if (Get_ErrorsFound) {
@@ -408,8 +403,6 @@ void GetGasAbsorberInput(EnergyPlusData &state)
             thisChiller.HeatVolFlowRateWasAutoSized = true;
         }
         // Assign Curve Numbers
-																																		 
-	   
         if (s_ipsc->lAlphaFieldBlanks(8)) {
             ShowSevereEmptyField(state, eoh, s_ipsc->cAlphaFieldNames(8));
             Get_ErrorsFound = true;
@@ -466,9 +459,7 @@ void GetGasAbsorberInput(EnergyPlusData &state)
             Get_ErrorsFound = true;
         }
 
-										  
         if (Get_ErrorsFound) {
-					 
             ShowFatalError(state, format("Errors found in processing curve input for {}={}", s_ipsc->cCurrentModuleObject, s_ipsc->cAlphaArgs(1)));
             Get_ErrorsFound = false;
         }

@@ -383,16 +383,24 @@ void GetSysInput(EnergyPlusData &state)
         }
         
         airTerm.ReheatName = Alphas(8);
-        ValidateComponent(state, airTerm.ReheatComp, airTerm.ReheatName, IsNotOK, airTerm.sysType);
-        if (IsNotOK) {
-            ShowContinueError(state, format("In {} = {}", airTerm.sysType, airTerm.SysName));
-            ErrorsFound = true;
-        } else if (airTerm.ReheatComp_Num == HeatingCoilType::Gas || airTerm.ReheatComp_Num == HeatingCoilType::Electric) {
+        if (airTerm.ReheatComp_Num == HeatingCoilType::Gas || airTerm.ReheatComp_Num == HeatingCoilType::Electric) {
             HeatingCoils::GetCoilIndex(state, airTerm.ReheatName, airTerm.ReheatComp_Index, ErrorsFound);
+            if (airTerm.ReheatComp_Index == 0) {
+                ShowSevereItemNotFound(state, eoh, cAlphaFields(8), Alphas(8));
+                ErrorsFound = true;
+            }      
         } else if (airTerm.ReheatComp_Num == HeatingCoilType::SimpleHeating) {
             airTerm.ReheatComp_Index = WaterCoils::GetWaterCoilIndex(state, airTerm.ReheatComp, airTerm.ReheatName, ErrorsFound);
+            if (airTerm.ReheatComp_Index == 0) {
+                ShowSevereItemNotFound(state, eoh, cAlphaFields(8), Alphas(8));
+                ErrorsFound = true;
+            }      
         } else if (airTerm.ReheatComp_Num == HeatingCoilType::SteamAirHeating) {
             airTerm.ReheatComp_Index = SteamCoils::GetSteamCoilIndex(state, airTerm.ReheatComp, airTerm.ReheatName, ErrorsFound);
+            if (airTerm.ReheatComp_Index == 0) {
+                ShowSevereItemNotFound(state, eoh, cAlphaFields(8), Alphas(8));
+                ErrorsFound = true;
+            }      
         }
         
         if (lAlphaBlanks(2)) {
@@ -701,16 +709,24 @@ void GetSysInput(EnergyPlusData &state)
             ErrorsFound = true;
         }
         airTerm.ReheatName = Alphas(6);
-        ValidateComponent(state, airTerm.ReheatComp, airTerm.ReheatName, IsNotOK, airTerm.sysType);
-        if (IsNotOK) {
-            ShowContinueError(state, format("In {} = {}", airTerm.sysType, airTerm.SysName));
-            ErrorsFound = true;
-        } else if (airTerm.ReheatComp_Num == HeatingCoilType::Gas || airTerm.ReheatComp_Num == HeatingCoilType::Electric) {
+        if (airTerm.ReheatComp_Num == HeatingCoilType::Gas || airTerm.ReheatComp_Num == HeatingCoilType::Electric) {
             HeatingCoils::GetCoilIndex(state, airTerm.ReheatName, airTerm.ReheatComp_Index, ErrorsFound);
+            if (airTerm.ReheatComp_Index == 0) {
+                ShowSevereItemNotFound(state, eoh, cAlphaFields(6), Alphas(6));
+                ErrorsFound = true;
+            }      
         } else if (airTerm.ReheatComp_Num == HeatingCoilType::SimpleHeating) {
             airTerm.ReheatComp_Index = WaterCoils::GetWaterCoilIndex(state, airTerm.ReheatComp, airTerm.ReheatName, ErrorsFound);
+            if (airTerm.ReheatComp_Index == 0) {
+                ShowSevereItemNotFound(state, eoh, cAlphaFields(6), Alphas(6));
+                ErrorsFound = true;
+            }      
         } else if (airTerm.ReheatComp_Num == HeatingCoilType::SteamAirHeating) {
             airTerm.ReheatComp_Index = SteamCoils::GetSteamCoilIndex(state, airTerm.ReheatComp, airTerm.ReheatName, ErrorsFound);
+            if (airTerm.ReheatComp_Index == 0) {
+                ShowSevereItemNotFound(state, eoh, cAlphaFields(6), Alphas(6));
+                ErrorsFound = true;
+            }      
         }
   
         if (lAlphaBlanks(2)) {
@@ -934,16 +950,24 @@ void GetSysInput(EnergyPlusData &state)
             ErrorsFound = true;
         }
         airTerm.ReheatName = Alphas(6);
-        ValidateComponent(state, airTerm.ReheatComp, airTerm.ReheatName, IsNotOK, airTerm.sysType);
-        if (IsNotOK) {
-            ShowContinueError(state, format("In {} = {}", airTerm.sysType, airTerm.SysName));
-            ErrorsFound = true;
-        } else if (airTerm.ReheatComp_Num == HeatingCoilType::Gas || airTerm.ReheatComp_Num == HeatingCoilType::Electric) {
+        if (airTerm.ReheatComp_Num == HeatingCoilType::Gas || airTerm.ReheatComp_Num == HeatingCoilType::Electric) {
             HeatingCoils::GetCoilIndex(state, airTerm.ReheatName, airTerm.ReheatComp_Index, ErrorsFound);
+            if (airTerm.ReheatComp_Index == 0) {
+                ShowSevereItemNotFound(state, eoh, cAlphaFields(6), Alphas(6));
+                ErrorsFound = true;
+            }      
         } else if (airTerm.ReheatComp_Num == HeatingCoilType::SimpleHeating) {
             airTerm.ReheatComp_Index = WaterCoils::GetWaterCoilIndex(state, airTerm.ReheatComp, airTerm.ReheatName, ErrorsFound);
+            if (airTerm.ReheatComp_Index == 0) {
+                ShowSevereItemNotFound(state, eoh, cAlphaFields(6), Alphas(6));
+                ErrorsFound = true;
+            }      
         } else if (airTerm.ReheatComp_Num == HeatingCoilType::SteamAirHeating) {
             airTerm.ReheatComp_Index = SteamCoils::GetSteamCoilIndex(state, airTerm.ReheatComp, airTerm.ReheatName, ErrorsFound);
+            if (airTerm.ReheatComp_Index == 0) {
+                ShowSevereItemNotFound(state, eoh, cAlphaFields(6), Alphas(6));
+                ErrorsFound = true;
+            }      
         }
   
         if (lAlphaBlanks(2)) {
@@ -1675,16 +1699,25 @@ void GetSysInput(EnergyPlusData &state)
             ShowContinueError(state, format("Occurs in {} = {}", airTerm.sysType, airTerm.SysName));
             ErrorsFound = true;
         }
-        ValidateComponent(state, airTerm.ReheatComp, airTerm.ReheatName, IsNotOK, airTerm.sysType);
-        if (IsNotOK) {
-            ShowContinueError(state, format("In {} = {}", airTerm.sysType, airTerm.SysName));
-            ErrorsFound = true;
-        } else if (airTerm.ReheatComp_Num == HeatingCoilType::Gas || airTerm.ReheatComp_Num == HeatingCoilType::Electric) {
+
+        if (airTerm.ReheatComp_Num == HeatingCoilType::Gas || airTerm.ReheatComp_Num == HeatingCoilType::Electric) {
             HeatingCoils::GetCoilIndex(state, airTerm.ReheatName, airTerm.ReheatComp_Index, ErrorsFound);
+            if (airTerm.ReheatComp_Index == 0) {
+                ShowSevereItemNotFound(state, eoh, cAlphaFields(8), Alphas(8));
+                ErrorsFound = true;
+            }      
         } else if (airTerm.ReheatComp_Num == HeatingCoilType::SimpleHeating) {
             airTerm.ReheatComp_Index = WaterCoils::GetWaterCoilIndex(state, airTerm.ReheatComp, airTerm.ReheatName, ErrorsFound);
+            if (airTerm.ReheatComp_Index == 0) {
+                ShowSevereItemNotFound(state, eoh, cAlphaFields(8), Alphas(8));
+                ErrorsFound = true;
+            }      
         } else if (airTerm.ReheatComp_Num == HeatingCoilType::SteamAirHeating) {
             airTerm.ReheatComp_Index = SteamCoils::GetSteamCoilIndex(state, airTerm.ReheatComp, airTerm.ReheatName, ErrorsFound);
+            if (airTerm.ReheatComp_Index == 0) {
+                ShowSevereItemNotFound(state, eoh, cAlphaFields(8), Alphas(8));
+                ErrorsFound = true;
+            }      
         }
   
 

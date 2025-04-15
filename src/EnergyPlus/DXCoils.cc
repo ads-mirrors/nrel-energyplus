@@ -12195,8 +12195,10 @@ Real64 ValidateADP(EnergyPlusData &state,
                     SHR += 0.001; // increase SHR slowly until ADP temps are resolved
                 }
             }
-            if (SHR > shrADPMax) SHR = min(0.8, shrADPMax); // Minimum of: 0.8 (the limit of the SHR empirical model), SHR at maximum ADP
-            bStillValidating = false;
+            if (SHR > shrADPMax) {
+                SHR = min(0.8, shrADPMax); // Minimum of: 0.8 (the limit of the SHR empirical model), SHR at maximum ADP
+                bStillValidating = false;
+            }
         } else {
             bStillValidating = false; // ADP temps are close enough. Normal input files hit this on first pass
         }

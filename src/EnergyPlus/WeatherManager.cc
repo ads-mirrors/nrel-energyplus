@@ -6951,12 +6951,11 @@ namespace Weather {
             state.dataEnvrn->WaterMainsTemp = state.dataWeather->waterMainsTempSched->getCurrentVal();
             break;
         case WaterMainsTempCalcMethod::Correlation:
-            state.dataEnvrn->WaterMainsTemp = WaterMainsTempFromCorrelation(
-                state,
-                state.dataWeather->WaterMainsTempsAnnualAvgAirTemp,
-                state.dataWeather->WaterMainsTempsMaxDiffAirTemp,
-                state.dataWeather->WaterMainsTempsMultiplier,
-                state.dataWeather->WaterMainsTempsOffset);
+            state.dataEnvrn->WaterMainsTemp = WaterMainsTempFromCorrelation(state,
+                                                                            state.dataWeather->WaterMainsTempsAnnualAvgAirTemp,
+                                                                            state.dataWeather->WaterMainsTempsMaxDiffAirTemp,
+                                                                            state.dataWeather->WaterMainsTempsMultiplier,
+                                                                            state.dataWeather->WaterMainsTempsOffset);
             break;
         case WaterMainsTempCalcMethod::CorrelationFromWeatherFile:
             if (state.dataWeather->OADryBulbAverage.OADryBulbWeatherDataProcessed) {
@@ -6975,8 +6974,11 @@ namespace Weather {
         }
     }
 
-    Real64
-    WaterMainsTempFromCorrelation(EnergyPlusData const &state, Real64 const AnnualOAAvgDryBulbTemp, Real64 const MonthlyOAAvgDryBulbTempMaxDiff, Real64 const Multiplier, Real64 const Offset)
+    Real64 WaterMainsTempFromCorrelation(EnergyPlusData const &state,
+                                         Real64 const AnnualOAAvgDryBulbTemp,
+                                         Real64 const MonthlyOAAvgDryBulbTempMaxDiff,
+                                         Real64 const TemperatureMultiplier,
+                                         Real64 const TemperatureOffset)
     {
 
         // SUBROUTINE INFORMATION:
@@ -7013,12 +7015,15 @@ namespace Weather {
             Tavg + Offset +
             Ratio * (Tdiff / 2.0) * latitude_sign * std::sin((0.986 * (state.dataEnvrn->DayOfYear - 15.0 - Lag) - 90) * Constant::DegToRad);
 
-        CurrentWaterMainsTemp = CurrentWaterMainsTemp * Multiplier + Offset;
-
         if (CurrentWaterMainsTemp < 32.0) CurrentWaterMainsTemp = 32.0;
 
         // Convert F to C
-        return (CurrentWaterMainsTemp - 32.0) * (5.0 / 9.0);
+        CurrentWaterMainsTemp = (CurrentWaterMainsTemp - 32.0) * (5.0 / 9.0);
+
+        // apply temperature multiplier and offset
+        CurrentWaterMainsTemp = CurrentWaterMainsTemp * TemperatureMultiplier + TemperatureOffset;
+
+        return CurrentWaterMainsTemp;
     }
     void GetWeatherStation(EnergyPlusData &state, bool &ErrorsFound)
     {

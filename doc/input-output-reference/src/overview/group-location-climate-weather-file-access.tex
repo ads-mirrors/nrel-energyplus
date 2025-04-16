@@ -1772,11 +1772,21 @@ If the calculation method is Correlation, this field is used in the calculation 
 
 \paragraph{Field: Temperature Multiplier}\label{field-temperature-multiplier}
 
-If the calculation method is Correlation or CorrelationFromWeatherFile, the calculated water mains temperature is subsequently multiplied by this field. The default value is one, which means no adjustment. If the calculation method is Schedule, this field is ignored.
+If the calculation method is Correlation or CorrelationFromWeatherFile, the field further adjusts the calculated water mains temperature using the equation below. The default value is one, which means no adjustment. If the calculation method is Schedule, this field is ignored.
+
+\begin{equation}
+{T_{final}} = {T_{calculated}} * {Multiplier} + {Offset}
+\end{equation}
 
 \paragraph{Field: Temperature Offset}\label{field-temperature-offset}
 
-If the calculation method is Correlation or CorrelationFromWeatherFile, the calculated water mains temperature is subsequently increased by this field (after being adjusted by the Temperature Multiplier). The default value is zero, which means no offset. If the calculation method is Schedule, this field is ignored.
+If the calculation method is Correlation or CorrelationFromWeatherFile, the field {[}C{]} further adjusts the calculated water mains temperature using the equation below. The default value is zero, which means no offset. If the calculation method is Schedule, this field is ignored.
+
+\begin{equation}
+{T_{final}} = {T_{calculated}} * {Multiplier} + {Offset}
+\end{equation}
+
+IDF example:
 
 \begin{lstlisting}
 Site:WaterMainsTemperature,

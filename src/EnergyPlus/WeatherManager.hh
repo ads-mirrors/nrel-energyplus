@@ -640,8 +640,10 @@ namespace Weather {
     void CalcWaterMainsTemp(EnergyPlusData &state);
 
     Real64 WaterMainsTempFromCorrelation(EnergyPlusData const &state,
-                                         Real64 AnnualOAAvgDryBulbTemp,        // annual average OA drybulb temperature
-                                         Real64 MonthlyOAAvgDryBulbTempMaxDiff // monthly daily average OA drybulb temperature maximum difference
+                                         Real64 AnnualOAAvgDryBulbTemp,         // annual average OA drybulb temperature
+                                         Real64 MonthlyOAAvgDryBulbTempMaxDiff, // monthly daily average OA drybulb temperature maximum difference
+                                         Real64 TemperatureMultiplier,          // temperature multiplier
+                                         Real64 TemperatureOffset               // temperature offset
     );
 
     void GetWeatherStation(EnergyPlusData &state, bool &ErrorsFound);

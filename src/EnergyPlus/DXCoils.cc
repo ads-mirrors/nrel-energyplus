@@ -11903,7 +11903,6 @@ Real64 CalcCBF(EnergyPlusData &state,
     Real64 DeltaT(0.0);                     // Temperature drop across evaporator at given conditions [C]
     Real64 DeltaHumRat(0.0);                // Humidity ratio drop across evaporator at given conditions [kg/kg]
     Real64 OutletAirTemp(InletAirTemp);     // Outlet dry-bulb temperature from evaporator at given conditions [C]
-    Real64 OutletAirDPTemp(InletAirTemp);   // Outlet dew point temperature from evaporator at given conditions [C]
     Real64 OutletAirTempSat(InletAirTemp);  // Saturation dry-bulb temperature from evaporator at outlet air enthalpy [C]
     Real64 OutletAirEnthalpy;               // Enthalpy of outlet air at given conditions [J/kg]
     Real64 OutletAirHumRat(InletAirHumRat); // Outlet humidity ratio from evaporator at given conditions [kg/kg]
@@ -12164,6 +12163,7 @@ Real64 ValidateADP(EnergyPlusData &state,
     Real64 humRatADP = PsyWFnTdbH(state, tempADPMax, enthalpyMaxADP, CallingRoutine);
     Real64 enthalpyTempinHumRatADP = PsyHFnTdbW(RatedInletAirTemp, humRatADP);
     Real64 shrADPMax = (enthalpyTempinHumRatADP - enthalpyMaxADP) / (InletAirEnthalpy - enthalpyMaxADP);
+    Real64 shrLimit = min(0.8, shrADPMax);
     while (bStillValidating) {
         CBF_calculated = max(0.0, CalcCBF(state, UnitType, UnitName, RatedInletAirTemp, RatedInletAirHumRat, TotCap, AirMassFlow, SHR, bNoReporting));
         HTinHumRatOut = InletAirEnthalpy - (1.0 - SHR) * DeltaH;
@@ -12195,8 +12195,8 @@ Real64 ValidateADP(EnergyPlusData &state,
                     SHR += 0.001; // increase SHR slowly until ADP temps are resolved
                 }
             }
-            if (SHR > shrADPMax) {
-                SHR = min(0.8, shrADPMax); // Minimum of: 0.8 (the limit of the SHR empirical model), SHR at maximum ADP
+            if (SHR > shrLimit) {
+                SHR = shrLimit; // Minimum of: 0.8 (the limit of the SHR empirical model), SHR at maximum ADP
                 bStillValidating = false;
             }
         } else {

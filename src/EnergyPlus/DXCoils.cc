@@ -12163,7 +12163,6 @@ Real64 ValidateADP(EnergyPlusData &state,
     Real64 humRatADP = PsyWFnTdbH(state, tempADPMax, enthalpyMaxADP, CallingRoutine);
     Real64 enthalpyTempinHumRatADP = PsyHFnTdbW(RatedInletAirTemp, humRatADP);
     Real64 shrADPMax = (enthalpyTempinHumRatADP - enthalpyMaxADP) / (InletAirEnthalpy - enthalpyMaxADP);
-    Real64 shrLimit = min(0.8, shrADPMax);
     while (bStillValidating) {
         CBF_calculated = max(0.0, CalcCBF(state, UnitType, UnitName, RatedInletAirTemp, RatedInletAirHumRat, TotCap, AirMassFlow, SHR, bNoReporting));
         HTinHumRatOut = InletAirEnthalpy - (1.0 - SHR) * DeltaH;
@@ -12195,8 +12194,8 @@ Real64 ValidateADP(EnergyPlusData &state,
                     SHR += 0.001; // increase SHR slowly until ADP temps are resolved
                 }
             }
-            if (SHR > shrLimit) {
-                SHR = shrLimit; // Minimum of: 0.8 (the limit of the SHR empirical model), SHR at maximum ADP
+            if (SHR > shrADPMax) {
+                SHR = shrADPMax;
                 bStillValidating = false;
             }
         } else {

@@ -327,11 +327,11 @@ This new feature proposes to create a new input object, HeatPump:AirToWater.
       A5 , \field Air Inlet Node Name
         \required-field
         \type node
-        \note The node from which the DX coil draws its inlet air.
+        \note The node from which the heat pump draws its inlet air.
       A6 , \field Air Outlet Node Name
         \required-field
         \type node
-        \note The node to which the DX coil sends its outlet air.
+        \note The node to which the heat pump sends its outlet air.
       A7 , \field Hot Water Inlet Node Name
         \required-field
         \type node
@@ -427,7 +427,7 @@ This new feature proposes to create a new input object, HeatPump:AirToWater.
       N24, \field Number of Speeds for Heating
         \type integer
         \note the number of speed levels in heating mode
-        \maximum 10
+        \maximum 5
         \default 1
       A19, \field Normalized Heating Capacity Function of Temperature Curve Name at Speed 1
         \required-field
@@ -521,7 +521,7 @@ This new feature proposes to create a new input object, HeatPump:AirToWater.
         \note which is a cubic curve or a lookup table.
       N25, \field Number of Speeds for Cooling
         \type integer
-        \maximum 10
+        \maximum 5 
         \default 1
         \note the number of speed levels in cooling mode
       A34, \field Normalized Cooling Capacity Function of Temperature Curve Name at Speed 1

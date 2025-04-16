@@ -6910,12 +6910,12 @@ namespace Weather {
                 } else {
                     state.dataWeather->WaterMainsTempsAnnualAvgAirTemp = NumArray(1);
                     state.dataWeather->WaterMainsTempsMaxDiffAirTemp = NumArray(2);
-                    state.dataWeather->WaterMainsTempsReductionFrac = NumArray(3);
+                    state.dataWeather->WaterMainsTempsMultiplier = NumArray(3);
                     state.dataWeather->WaterMainsTempsOffset = NumArray(4);
                 }
             } break;
             case WaterMainsTempCalcMethod::CorrelationFromWeatherFile: {
-                state.dataWeather->WaterMainsTempsReductionFrac = NumArray(3);
+                state.dataWeather->WaterMainsTempsMultiplier = NumArray(3);
                 state.dataWeather->WaterMainsTempsOffset = NumArray(4);
             } break;
             default: {
@@ -6955,7 +6955,7 @@ namespace Weather {
                 state,
                 state.dataWeather->WaterMainsTempsAnnualAvgAirTemp,
                 state.dataWeather->WaterMainsTempsMaxDiffAirTemp,
-                state.dataWeather->WaterMainsTempsReductionFrac,
+                state.dataWeather->WaterMainsTempsMultiplier,
                 state.dataWeather->WaterMainsTempsOffset);
             break;
         case WaterMainsTempCalcMethod::CorrelationFromWeatherFile:
@@ -6963,7 +6963,7 @@ namespace Weather {
                 state.dataEnvrn->WaterMainsTemp = WaterMainsTempFromCorrelation(state,
                                                                                 state.dataWeather->OADryBulbAverage.AnnualAvgOADryBulbTemp,
                                                                                 state.dataWeather->OADryBulbAverage.MonthlyAvgOADryBulbTempMaxDiff,
-                                                                                state.dataWeather->WaterMainsTempsReductionFrac,
+                                                                                state.dataWeather->WaterMainsTempsMultiplier,
                                                                                 state.dataWeather->WaterMainsTempsOffset);
             } else {
                 state.dataEnvrn->WaterMainsTemp = 10.0; // 50 F
@@ -6976,7 +6976,7 @@ namespace Weather {
     }
 
     Real64
-    WaterMainsTempFromCorrelation(EnergyPlusData const &state, Real64 const AnnualOAAvgDryBulbTemp, Real64 const MonthlyOAAvgDryBulbTempMaxDiff, Real64 const ReductionFrac, Real64 const Offset)
+    WaterMainsTempFromCorrelation(EnergyPlusData const &state, Real64 const AnnualOAAvgDryBulbTemp, Real64 const MonthlyOAAvgDryBulbTempMaxDiff, Real64 const Multiplier, Real64 const Offset)
     {
 
         // SUBROUTINE INFORMATION:
@@ -7013,7 +7013,7 @@ namespace Weather {
             Tavg + Offset +
             Ratio * (Tdiff / 2.0) * latitude_sign * std::sin((0.986 * (state.dataEnvrn->DayOfYear - 15.0 - Lag) - 90) * Constant::DegToRad);
 
-        CurrentWaterMainsTemp = CurrentWaterMainsTemp * (1.0 - ReductionFrac) + Offset;
+        CurrentWaterMainsTemp = CurrentWaterMainsTemp * Multiplier + Offset;
 
         if (CurrentWaterMainsTemp < 32.0) CurrentWaterMainsTemp = 32.0;
 

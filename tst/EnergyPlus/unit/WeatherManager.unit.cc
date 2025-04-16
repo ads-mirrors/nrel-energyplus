@@ -185,6 +185,8 @@ TEST_F(EnergyPlusFixture, WaterMainsCorrelationTest)
     state->dataWeather->WaterMainsTempsMethod = Weather::WaterMainsTempCalcMethod::Correlation;
     state->dataWeather->WaterMainsTempsAnnualAvgAirTemp = 9.69;
     state->dataWeather->WaterMainsTempsMaxDiffAirTemp = 28.1;
+    state->dataWeather->WaterMainsTempsMultiplier = 1.0;
+    state->dataWeather->WaterMainsTempsOffset = 0.0;
     state->dataEnvrn->DayOfYear = 50;
 
     state->dataEnvrn->Latitude = 40.0;

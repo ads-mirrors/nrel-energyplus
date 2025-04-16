@@ -801,6 +801,8 @@ struct WeatherManagerData : BaseGlobalStruct
     Sched::Schedule *waterMainsTempSched = nullptr;      // Water mains temperature schedule
     Real64 WaterMainsTempsAnnualAvgAirTemp = 0.0;        // Annual average outdoor air temperature (C)
     Real64 WaterMainsTempsMaxDiffAirTemp = 0.0;          // Maximum difference in monthly average outdoor air temperatures (deltaC)
+    Real64 WaterMainsTempsReductionFrac = 0.0;           // Temperature reduction fraction
+    Real64 WaterMainsTempsOffset = 0.0;                  // Temperature offset (C)
     bool wthFCGroundTemps = false;
 
     int TotRunPers = 0;           // Total number of Run Periods (Weather data) to Setup

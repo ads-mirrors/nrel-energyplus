@@ -8504,9 +8504,8 @@ TEST_F(EnergyPlusFixture, HeatBalanceSurfaceManager_TestUpdateVariableAbsorptanc
     state->dataGlobal->MinutesInTimeStep = 60; // must initialize this to get schedules initialized
     state->init_state(*state);
 
-    Curve::GetCurveInput(*state);
-    EXPECT_EQ(state->dataCurveManager->PerfCurve(1)->Name, "SOLAR_ABSORPTANCE_CURVE");
-    EXPECT_EQ(state->dataCurveManager->PerfCurve(2)->Name, "THERMAL_ABSORPTANCE_TABLE");
+    EXPECT_EQ(state->dataCurveManager->curves(1)->Name, "SOLAR_ABSORPTANCE_CURVE");
+    EXPECT_EQ(state->dataCurveManager->curves(2)->Name, "THERMAL_ABSORPTANCE_TABLE");
     state->dataEnvrn->Month = 1;
     state->dataEnvrn->DayOfMonth = 21;
     state->dataGlobal->HourOfDay = 1;
@@ -8536,8 +8535,8 @@ TEST_F(EnergyPlusFixture, HeatBalanceSurfaceManager_TestUpdateVariableAbsorptanc
     mat1->Name = "WALL_1";
     mat1->group = Material::Group::Regular;
     mat1->absorpVarCtrlSignal = Material::VariableAbsCtrlSignal::SurfaceTemperature;
-    mat1->absorpThermalVarFuncIdx = 2;
-    mat1->absorpSolarVarFuncIdx = 1;
+    mat1->absorpThermalVarCurve = Curve::GetCurve(*state, "THERMAL_ABSORPTANCE_TABLE");
+    mat1->absorpSolarVarCurve = Curve::GetCurve(*state, "SOLAR_ABSORPTANCE_CURVE");
     s_mat->materials.push_back(mat1);
 
     auto *mat2 = new Material::MaterialBase;
@@ -8547,7 +8546,6 @@ TEST_F(EnergyPlusFixture, HeatBalanceSurfaceManager_TestUpdateVariableAbsorptanc
     mat2->absorpThermalVarSched = Sched::GetSchedule(*state, "THERMAL_ABS_SCH");
     s_mat->materials.push_back(mat2);
 
-    state->dataCurveManager->allocateCurveVector(2);
     state->dataHeatBalSurf->SurfTempOut.allocate(2);
     state->dataHeatBalSurf->SurfTempOut(1) = 10;
     state->dataHeatBalSurf->SurfTempOut(2) = 30;

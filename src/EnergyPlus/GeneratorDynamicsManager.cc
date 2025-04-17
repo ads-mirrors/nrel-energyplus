@@ -756,7 +756,7 @@ namespace GeneratorDynamicsManager {
         int const OutletNode = thisMicroCHP.PlantOutletNodeID;
 
         // first evaluate curve
-        Real64 MdotCW = Curve::CurveValue(state, thisMicroCHP.A42Model.WaterFlowCurveID, Pnetss, TcwIn);
+        Real64 MdotCW = thisMicroCHP.A42Model.WaterFlowCurve->value(state, Pnetss, TcwIn);
 
         // now apply constraints
         MdotCW = max(0.0, MdotCW);

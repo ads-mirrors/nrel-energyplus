@@ -1851,8 +1851,8 @@ namespace InternalHeatGains {
                                                &thisZoneGas.CO2GainRate);
 
                 } // for gasEqInputNum.NumOfSpaces
-            } // for gasEqInputNum
-        } // TotGasEquip > 0
+            }     // for gasEqInputNum
+        }         // TotGasEquip > 0
 
         // HotWaterEquipment
         EPVector<InternalHeatGains::GlobalInternalGainMiscObject> hotWaterEqObjects;

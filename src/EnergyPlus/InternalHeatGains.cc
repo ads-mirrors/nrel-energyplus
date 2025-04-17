@@ -851,7 +851,7 @@ namespace InternalHeatGains {
 
                                 default: {
                                 } break; // nothing to do for the other cases
-                                } // switch (thisPeople.clothingType)
+                                }        // switch (thisPeople.clothingType)
                             }
 
                             if (IHGAlphaFieldBlanks(13)) {

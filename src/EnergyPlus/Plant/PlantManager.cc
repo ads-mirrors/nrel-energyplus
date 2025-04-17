@@ -3128,7 +3128,6 @@ void SizePlantLoop(EnergyPlusData &state,
             //  but if they put in a smaller value, then it should cap the design size, so use hard value if it is smaller than non-coincident
             //  result
             loopSizData.DesVolFlowRate = std::min(loopSizData.DesVolFlowRate, loop.MaxVolFlowRate);
-            BaseSizer::reportSizerOutput(state, "PlantLoop", loop.Name, "Maximum Loop Flow Rate [m3/s]", loop.MaxVolFlowRate);
         }
         OutputReportPredefined::PreDefTableEntry(
             state,
@@ -3165,17 +3164,6 @@ void SizePlantLoop(EnergyPlusData &state,
             }
             if (OkayToFinish) {
                 if (state.dataPlnt->PlantFinalSizesOkayToReport) {
-                    if (loop.TypeOfLoop == LoopType::Plant) {
-                        BaseSizer::reportSizerOutput(state, "PlantLoop", loop.Name, "Maximum Loop Flow Rate [m3/s]", loop.MaxVolFlowRate);
-                        // begin std 229 plantloop equipment summary new table
-                        OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchPLCLType, loop.Name, "PlantLoop");
-                        // end std 229 plantloop equipment summary new table
-                    } else if (loop.TypeOfLoop == LoopType::Condenser) {
-                        BaseSizer::reportSizerOutput(state, "CondenserLoop", loop.Name, "Maximum Loop Flow Rate [m3/s]", loop.MaxVolFlowRate);
-                        // begin std 229 plantloop equipment summary new table
-                        OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchPLCLType, loop.Name, "CondenserLoop");
-                        // end std 229 plantloop equipment summary new table
-                    }
                 }
                 if (state.dataPlnt->PlantFirstSizesOkayToReport) {
                     if (loop.TypeOfLoop == LoopType::Plant) {
@@ -3210,6 +3198,8 @@ void SizePlantLoop(EnergyPlusData &state,
         }
     }
     if (state.dataPlnt->PlantFinalSizesOkayToReport) {
+        std::string_view const loopType = DataPlant::loopTypeNames[static_cast<int>(loop.TypeOfLoop)];
+        BaseSizer::reportSizerOutput(state, loopType, loop.Name, "Maximum Loop Flow Rate [m3/s]", loop.MaxVolFlowRate);
         Real64 returnTemp = -999.0;
         if (PlantSizNum > 0) {
             auto &loopSizData = state.dataSize->PlantSizData(PlantSizNum);
@@ -3218,49 +3208,37 @@ void SizePlantLoop(EnergyPlusData &state,
             } else {
                 returnTemp = loopSizData.ExitTemp + loopSizData.DeltaT;
             }
+            OutputReportPredefined::PreDefTableEntry(
+                state, state.dataOutRptPredefined->pdchPLCLSupTemp, loop.Name, state.dataSize->PlantSizData(PlantSizNum).ExitTemp);
+            OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchPLCLRetTemp, loop.Name, returnTemp);
+        } else {
+            OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchPLCLSupTemp, loop.Name, "N/A");
+            OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchPLCLRetTemp, loop.Name, "N/A");
         }
         if (loop.TypeOfLoop == LoopType::Plant) {
             // condenser loop vs plant loop breakout needed.
-            BaseSizer::reportSizerOutput(state, "PlantLoop", loop.Name, "Plant Loop Volume [m3]", loop.Volume);
-            // begin std 229 added lines
-            BaseSizer::reportSizerOutput(state,
-                                         "PlantLoop",
-                                         loop.Name,
-                                         "Design Supply Temperature [C]",
-                                         PlantSizNum > 0 ? state.dataSize->PlantSizData(PlantSizNum).ExitTemp : -999.0);
-            BaseSizer::reportSizerOutput(state, "PlantLoop", loop.Name, "Design Return Temperature [C]", returnTemp);
-            BaseSizer::reportSizerOutput(state,
-                                         "PlantLoop",
-                                         loop.Name,
-                                         "Sizing option (Coincident/NonCoincident)",
-                                         PlantSizNum > 0 ? state.dataSize->PlantSizData(PlantSizNum).ConcurrenceOption : -1);
-            // end std 229 added lines
+            BaseSizer::reportSizerOutput(state, loopType, loop.Name, "Plant Loop Volume [m3]", loop.Volume);
         } else if (loop.TypeOfLoop == LoopType::Condenser) {
             BaseSizer::reportSizerOutput(state, "CondenserLoop", loop.Name, "Condenser Loop Volume [m3]", loop.Volume);
-            // begin std 229 added lines
-            BaseSizer::reportSizerOutput(state,
-                                         "CondenserLoop",
-                                         loop.Name,
-                                         "Design Supply Temperature [C]",
-                                         PlantSizNum > 0 ? state.dataSize->PlantSizData(PlantSizNum).ExitTemp : -999.0);
-            BaseSizer::reportSizerOutput(state, "CondenserLoop", loop.Name, "Design Return Temperature [C]", returnTemp);
-            BaseSizer::reportSizerOutput(state,
-                                         "CondenserLoop",
-                                         loop.Name,
-                                         "Sizing option (Coincident/NonCoincident)",
-                                         PlantSizNum ? state.dataSize->PlantSizData(PlantSizNum).ConcurrenceOption : -1);
-            // end std 229 added lines
         }
+        // begin std 229 added lines
+        BaseSizer::reportSizerOutput(state,
+                                     loopType,
+                                     loop.Name,
+                                     "Design Supply Temperature [C]",
+                                     PlantSizNum > 0 ? state.dataSize->PlantSizData(PlantSizNum).ExitTemp : -999.0);
+        BaseSizer::reportSizerOutput(state, loopType, loop.Name, "Design Return Temperature [C]", returnTemp);
+        BaseSizer::reportSizerOutput(state,
+                                     loopType,
+                                     loop.Name,
+                                     "Sizing option (Coincident/NonCoincident)",
+                                     PlantSizNum > 0 ? state.dataSize->PlantSizData(PlantSizNum).ConcurrenceOption : -1);
+        OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchPLCLType, loop.Name, loopType);
 
-        if (loop.TypeOfLoop == LoopType::Plant) {
-            BaseSizer::reportSizerOutput(state, "PlantLoop", loop.Name, "Minimum Loop Flow Rate [m3/s]", loop.MinVolFlowRate);
-        } else if (loop.TypeOfLoop == LoopType::Condenser) {
-            BaseSizer::reportSizerOutput(state, "CondenserLoop", loop.Name, "Minimum Loop Flow Rate [m3/s]", loop.MinVolFlowRate);
-        }
-        // begin std 229 plantloop equipment summary new table
+        BaseSizer::reportSizerOutput(state, loopType, loop.Name, "Minimum Loop Flow Rate [m3/s]", loop.MinVolFlowRate);
         OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchPLCLMaxLoopFlowRate, loop.Name, loop.MaxVolFlowRate, 6);
         OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchPLCLMinLoopFlowRate, loop.Name, loop.MinVolFlowRate, 6);
-        // end std 229 plantloop equipment summary new table
+        // end std 229 added lines
     }
 
     // should now have plant volume, calculate plant volume's mass for fluid type
@@ -3278,6 +3256,7 @@ void SizePlantLoop(EnergyPlusData &state,
                                              loop.Name,
                                              "Design Capacity [W]",
                                              DesignPlantCapacity);
+                OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchPLCLDesCap, loop.Name, DesignPlantCapacity);
             }
         }
     } else if (loop.FluidType == DataLoopNode::NodeFluidType::Steam) {

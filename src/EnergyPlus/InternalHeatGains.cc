@@ -1621,8 +1621,8 @@ namespace InternalHeatGains {
                                                &thisZoneElectric.LatGainRate);
                     }
                 } // for elecEqInputNum.NumOfSpaces
-            } // for elecEqInputNum
-        } // TotElecEquip > 0
+            }     // for elecEqInputNum
+        }         // TotElecEquip > 0
 
         // GasEquipment
         EPVector<InternalHeatGains::GlobalInternalGainMiscObject> zoneGasObjects;
@@ -2054,8 +2054,8 @@ namespace InternalHeatGains {
                                                &thisZoneHWEq.LatGainRate);
 
                 } // for hwEqInputNum.NumOfSpaces
-            } // for hwEqInputNum
-        } // TotHWEquip > 0
+            }     // for gasEqInputNum
+        }         // TotGasEquip > 0
 
         // SteamEquipment
         EPVector<InternalHeatGains::GlobalInternalGainMiscObject> steamEqObjects;
@@ -2259,8 +2259,8 @@ namespace InternalHeatGains {
                                                &thisZoneStmEq.LatGainRate);
 
                 } // for stmEqInputNum.NumOfSpaces
-            } // for stmEqInputNum
-        } // TotStmEquip > 0
+            }     // for stmEqInputNum
+        }         // TotStmEquip > 0
 
         // OtherEquipment
         EPVector<InternalHeatGains::GlobalInternalGainMiscObject> otherEqObjects;
@@ -2525,8 +2525,8 @@ namespace InternalHeatGains {
                                                &thisZoneOthEq.LatGainRate);
 
                 } // for othEqInputNum.NumOfSpaces
-            } // for othEqInputNum
-        } // TotOtherEquip > 0
+            }     // for othEqInputNum
+        }         // TotOtherEquip > 0
 
         // ElectricEquipment:ITE:AirCooled
         EPVector<InternalHeatGains::GlobalInternalGainMiscObject> iTEqObjects;
@@ -2921,7 +2921,7 @@ namespace InternalHeatGains {
                                                    &thisZoneITEq.PowerRpt[(int)PERptVars::ConGainToZone]);
                     }
                 } // for itEqInputNum.NumOfSpaces
-            } // for itEqInputNum
+            }     // for itEqInputNum
             for (int Loop = 1; Loop <= state.dataHeatBal->TotITEquip; ++Loop) {
                 if (state.dataHeatBal->Zone(state.dataHeatBal->ZoneITEq(Loop).ZonePtr).HasAdjustedReturnTempByITE &&
                     (!state.dataHeatBal->ZoneITEq(Loop).FlowControlWithApproachTemps)) {
@@ -3048,8 +3048,8 @@ namespace InternalHeatGains {
                                            nullptr,
                                            &thisZoneBBHeat.RadGainRate);
                 } // for bbHeatInputNum.NumOfSpaces
-            } // for bbHeatInputNum
-        } // TotBBHeat > 0
+            }     // for bbHeatInputNum
+        }         // TotBBHeat > 0
 
         state.dataHeatBal->TotCO2Gen = state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, contamSSModuleObject);
         state.dataHeatBal->ZoneCO2Gen.allocate(state.dataHeatBal->TotCO2Gen);

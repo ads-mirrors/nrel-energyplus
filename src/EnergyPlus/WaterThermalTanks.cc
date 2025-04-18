@@ -9671,201 +9671,206 @@ void WaterThermalTankData::CalcHeatPumpWaterHeater(EnergyPlusData &state, bool c
     // set water-side mass flow rate for final calculation
     state.dataLoopNodes->Node(HPWaterInletNode).MassFlowRate = MdotWater * state.dataWaterThermalTanks->hpPartLoadRatio;
 
-    if (MaxSpeedNum > 0) {
+    if (HeatPump.dxCoilAvailSched->getCurrentVal() > 0) {
 
-        // it is important to use mdotAir to reset the notes, otherwise, could fail to converge
-        if (InletAirMixerNode > 0) {
-            state.dataLoopNodes->Node(InletAirMixerNode).MassFlowRateMax = state.dataWaterThermalTanks->mdotAir;
-            state.dataLoopNodes->Node(InletAirMixerNode).MassFlowRateMaxAvail = state.dataWaterThermalTanks->mdotAir;
-        } else {
-            if (OutdoorAirNode == 0) {
-                state.dataLoopNodes->Node(HPAirInletNode).MassFlowRateMax = state.dataWaterThermalTanks->mdotAir;
-                state.dataLoopNodes->Node(HPAirInletNode).MassFlowRateMaxAvail = state.dataWaterThermalTanks->mdotAir;
+        if (MaxSpeedNum > 0) {
+
+            // it is important to use mdotAir to reset the notes, otherwise, could fail to converge
+            if (InletAirMixerNode > 0) {
+                state.dataLoopNodes->Node(InletAirMixerNode).MassFlowRateMax = state.dataWaterThermalTanks->mdotAir;
+                state.dataLoopNodes->Node(InletAirMixerNode).MassFlowRateMaxAvail = state.dataWaterThermalTanks->mdotAir;
             } else {
-                state.dataLoopNodes->Node(OutdoorAirNode).MassFlowRateMax = state.dataWaterThermalTanks->mdotAir;
-                state.dataLoopNodes->Node(OutdoorAirNode).MassFlowRateMaxAvail = state.dataWaterThermalTanks->mdotAir;
+                if (OutdoorAirNode == 0) {
+                    state.dataLoopNodes->Node(HPAirInletNode).MassFlowRateMax = state.dataWaterThermalTanks->mdotAir;
+                    state.dataLoopNodes->Node(HPAirInletNode).MassFlowRateMaxAvail = state.dataWaterThermalTanks->mdotAir;
+                } else {
+                    state.dataLoopNodes->Node(OutdoorAirNode).MassFlowRateMax = state.dataWaterThermalTanks->mdotAir;
+                    state.dataLoopNodes->Node(OutdoorAirNode).MassFlowRateMaxAvail = state.dataWaterThermalTanks->mdotAir;
+                }
             }
-        }
 
-        //   set the max mass flow rate for outdoor fans
-        state.dataLoopNodes->Node(HeatPump.FanOutletNode).MassFlowRateMax = state.dataWaterThermalTanks->mdotAir;
+            //   set the max mass flow rate for outdoor fans
+            state.dataLoopNodes->Node(HeatPump.FanOutletNode).MassFlowRateMax = state.dataWaterThermalTanks->mdotAir;
 
-        if (HeatPump.bIsIHP) {
+            if (HeatPump.bIsIHP) {
+                // pass node information using resulting PLR
+                if (HeatPump.fanPlace == HVAC::FanPlace::BlowThru) {
+                    //   simulate fan and DX coil twice to pass PLF (OnOffFanPartLoadFraction) to fan
+                    state.dataFans->fans(HeatPump.FanNum)->simulate(state, FirstHVACIteration, _, _);
+
+                    IntegratedHeatPump::SimIHP(state,
+                                               HeatPump.DXCoilName,
+                                               HeatPump.DXCoilNum,
+                                               HVAC::FanOp::Cycling,
+                                               compressorOp,
+                                               state.dataWaterThermalTanks->hpPartLoadRatio,
+                                               SpeedNum,
+                                               SpeedRatio,
+                                               0.0,
+                                               0.0,
+                                               true,
+                                               false,
+                                               1.0);
+                    state.dataFans->fans(HeatPump.FanNum)->simulate(state, FirstHVACIteration, _, _);
+
+                    IntegratedHeatPump::SimIHP(state,
+                                               HeatPump.DXCoilName,
+                                               HeatPump.DXCoilNum,
+                                               HVAC::FanOp::Cycling,
+                                               compressorOp,
+                                               state.dataWaterThermalTanks->hpPartLoadRatio,
+                                               SpeedNum,
+                                               SpeedRatio,
+                                               0.0,
+                                               0.0,
+                                               true,
+                                               false,
+                                               1.0);
+                } else {
+                    //   simulate DX coil and fan twice to pass fan power (FanElecPower) to DX coil
+                    IntegratedHeatPump::SimIHP(state,
+                                               HeatPump.DXCoilName,
+                                               HeatPump.DXCoilNum,
+                                               HVAC::FanOp::Cycling,
+                                               compressorOp,
+                                               state.dataWaterThermalTanks->hpPartLoadRatio,
+                                               SpeedNum,
+                                               SpeedRatio,
+                                               0.0,
+                                               0.0,
+                                               true,
+                                               false,
+                                               1.0);
+                    state.dataFans->fans(HeatPump.FanNum)->simulate(state, FirstHVACIteration, _, _);
+
+                    IntegratedHeatPump::SimIHP(state,
+                                               HeatPump.DXCoilName,
+                                               HeatPump.DXCoilNum,
+                                               HVAC::FanOp::Cycling,
+                                               compressorOp,
+                                               state.dataWaterThermalTanks->hpPartLoadRatio,
+                                               SpeedNum,
+                                               SpeedRatio,
+                                               0.0,
+                                               0.0,
+                                               true,
+                                               false,
+                                               1.0);
+                    state.dataFans->fans(HeatPump.FanNum)->simulate(state, FirstHVACIteration, _, _);
+                }
+            } else {
+                // pass node information using resulting PLR
+                if (HeatPump.fanPlace == HVAC::FanPlace::BlowThru) {
+                    //   simulate fan and DX coil twice to pass PLF (OnOffFanPartLoadFraction) to fan
+                    state.dataFans->fans(HeatPump.FanNum)->simulate(state, FirstHVACIteration, _, _);
+
+                    VariableSpeedCoils::SimVariableSpeedCoils(state,
+                                                              HeatPump.DXCoilName,
+                                                              HeatPump.DXCoilNum,
+                                                              HVAC::FanOp::Cycling,
+                                                              compressorOp,
+                                                              state.dataWaterThermalTanks->hpPartLoadRatio,
+                                                              SpeedNum,
+                                                              SpeedRatio,
+                                                              0.0,
+                                                              0.0,
+                                                              1.0);
+
+                    state.dataFans->fans(HeatPump.FanNum)->simulate(state, FirstHVACIteration, _, _);
+
+                    VariableSpeedCoils::SimVariableSpeedCoils(state,
+                                                              HeatPump.DXCoilName,
+                                                              HeatPump.DXCoilNum,
+                                                              HVAC::FanOp::Cycling,
+                                                              compressorOp,
+                                                              state.dataWaterThermalTanks->hpPartLoadRatio,
+                                                              SpeedNum,
+                                                              SpeedRatio,
+                                                              0.0,
+                                                              0.0,
+                                                              1.0);
+                } else {
+                    //   simulate DX coil and fan twice to pass fan power (FanElecPower) to DX coil
+                    VariableSpeedCoils::SimVariableSpeedCoils(state,
+                                                              HeatPump.DXCoilName,
+                                                              HeatPump.DXCoilNum,
+                                                              HVAC::FanOp::Cycling,
+                                                              compressorOp,
+                                                              state.dataWaterThermalTanks->hpPartLoadRatio,
+                                                              SpeedNum,
+                                                              SpeedRatio,
+                                                              0.0,
+                                                              0.0,
+                                                              1.0);
+
+                    state.dataFans->fans(HeatPump.FanNum)->simulate(state, FirstHVACIteration, _, _);
+
+                    VariableSpeedCoils::SimVariableSpeedCoils(state,
+                                                              HeatPump.DXCoilName,
+                                                              HeatPump.DXCoilNum,
+                                                              HVAC::FanOp::Cycling,
+                                                              compressorOp,
+                                                              state.dataWaterThermalTanks->hpPartLoadRatio,
+                                                              SpeedNum,
+                                                              SpeedRatio,
+                                                              0.0,
+                                                              0.0,
+                                                              1.0);
+
+                    state.dataFans->fans(HeatPump.FanNum)->simulate(state, FirstHVACIteration, _, _);
+                }
+            }
+        } else { // single speed
+
             // pass node information using resulting PLR
             if (HeatPump.fanPlace == HVAC::FanPlace::BlowThru) {
                 //   simulate fan and DX coil twice to pass PLF (OnOffFanPartLoadFraction) to fan
                 state.dataFans->fans(HeatPump.FanNum)->simulate(state, FirstHVACIteration, _, _);
 
-                IntegratedHeatPump::SimIHP(state,
-                                           HeatPump.DXCoilName,
-                                           HeatPump.DXCoilNum,
-                                           HVAC::FanOp::Cycling,
-                                           compressorOp,
-                                           state.dataWaterThermalTanks->hpPartLoadRatio,
-                                           SpeedNum,
-                                           SpeedRatio,
-                                           0.0,
-                                           0.0,
-                                           true,
-                                           false,
-                                           1.0);
+                DXCoils::SimDXCoil(state,
+                                   HeatPump.DXCoilName,
+                                   compressorOp,
+                                   FirstHVACIteration,
+                                   HeatPump.DXCoilNum,
+                                   HVAC::FanOp::Cycling,
+                                   state.dataWaterThermalTanks->hpPartLoadRatio);
+
                 state.dataFans->fans(HeatPump.FanNum)->simulate(state, FirstHVACIteration, _, _);
 
-                IntegratedHeatPump::SimIHP(state,
-                                           HeatPump.DXCoilName,
-                                           HeatPump.DXCoilNum,
-                                           HVAC::FanOp::Cycling,
-                                           compressorOp,
-                                           state.dataWaterThermalTanks->hpPartLoadRatio,
-                                           SpeedNum,
-                                           SpeedRatio,
-                                           0.0,
-                                           0.0,
-                                           true,
-                                           false,
-                                           1.0);
+                DXCoils::SimDXCoil(state,
+                                   HeatPump.DXCoilName,
+                                   compressorOp,
+                                   FirstHVACIteration,
+                                   HeatPump.DXCoilNum,
+                                   HVAC::FanOp::Cycling,
+                                   state.dataWaterThermalTanks->hpPartLoadRatio);
             } else {
                 //   simulate DX coil and fan twice to pass fan power (FanElecPower) to DX coil
-                IntegratedHeatPump::SimIHP(state,
-                                           HeatPump.DXCoilName,
-                                           HeatPump.DXCoilNum,
-                                           HVAC::FanOp::Cycling,
-                                           compressorOp,
-                                           state.dataWaterThermalTanks->hpPartLoadRatio,
-                                           SpeedNum,
-                                           SpeedRatio,
-                                           0.0,
-                                           0.0,
-                                           true,
-                                           false,
-                                           1.0);
-                state.dataFans->fans(HeatPump.FanNum)->simulate(state, FirstHVACIteration, _, _);
-
-                IntegratedHeatPump::SimIHP(state,
-                                           HeatPump.DXCoilName,
-                                           HeatPump.DXCoilNum,
-                                           HVAC::FanOp::Cycling,
-                                           compressorOp,
-                                           state.dataWaterThermalTanks->hpPartLoadRatio,
-                                           SpeedNum,
-                                           SpeedRatio,
-                                           0.0,
-                                           0.0,
-                                           true,
-                                           false,
-                                           1.0);
-                state.dataFans->fans(HeatPump.FanNum)->simulate(state, FirstHVACIteration, _, _);
-            }
-        } else {
-            // pass node information using resulting PLR
-            if (HeatPump.fanPlace == HVAC::FanPlace::BlowThru) {
-                //   simulate fan and DX coil twice to pass PLF (OnOffFanPartLoadFraction) to fan
-                state.dataFans->fans(HeatPump.FanNum)->simulate(state, FirstHVACIteration, _, _);
-
-                VariableSpeedCoils::SimVariableSpeedCoils(state,
-                                                          HeatPump.DXCoilName,
-                                                          HeatPump.DXCoilNum,
-                                                          HVAC::FanOp::Cycling,
-                                                          compressorOp,
-                                                          state.dataWaterThermalTanks->hpPartLoadRatio,
-                                                          SpeedNum,
-                                                          SpeedRatio,
-                                                          0.0,
-                                                          0.0,
-                                                          1.0);
+                DXCoils::SimDXCoil(state,
+                                   HeatPump.DXCoilName,
+                                   compressorOp,
+                                   FirstHVACIteration,
+                                   HeatPump.DXCoilNum,
+                                   HVAC::FanOp::Cycling,
+                                   state.dataWaterThermalTanks->hpPartLoadRatio);
 
                 state.dataFans->fans(HeatPump.FanNum)->simulate(state, FirstHVACIteration, _, _);
 
-                VariableSpeedCoils::SimVariableSpeedCoils(state,
-                                                          HeatPump.DXCoilName,
-                                                          HeatPump.DXCoilNum,
-                                                          HVAC::FanOp::Cycling,
-                                                          compressorOp,
-                                                          state.dataWaterThermalTanks->hpPartLoadRatio,
-                                                          SpeedNum,
-                                                          SpeedRatio,
-                                                          0.0,
-                                                          0.0,
-                                                          1.0);
-            } else {
-                //   simulate DX coil and fan twice to pass fan power (FanElecPower) to DX coil
-                VariableSpeedCoils::SimVariableSpeedCoils(state,
-                                                          HeatPump.DXCoilName,
-                                                          HeatPump.DXCoilNum,
-                                                          HVAC::FanOp::Cycling,
-                                                          compressorOp,
-                                                          state.dataWaterThermalTanks->hpPartLoadRatio,
-                                                          SpeedNum,
-                                                          SpeedRatio,
-                                                          0.0,
-                                                          0.0,
-                                                          1.0);
-
-                state.dataFans->fans(HeatPump.FanNum)->simulate(state, FirstHVACIteration, _, _);
-
-                VariableSpeedCoils::SimVariableSpeedCoils(state,
-                                                          HeatPump.DXCoilName,
-                                                          HeatPump.DXCoilNum,
-                                                          HVAC::FanOp::Cycling,
-                                                          compressorOp,
-                                                          state.dataWaterThermalTanks->hpPartLoadRatio,
-                                                          SpeedNum,
-                                                          SpeedRatio,
-                                                          0.0,
-                                                          0.0,
-                                                          1.0);
+                DXCoils::SimDXCoil(state,
+                                   HeatPump.DXCoilName,
+                                   compressorOp,
+                                   FirstHVACIteration,
+                                   HeatPump.DXCoilNum,
+                                   HVAC::FanOp::Cycling,
+                                   state.dataWaterThermalTanks->hpPartLoadRatio);
 
                 state.dataFans->fans(HeatPump.FanNum)->simulate(state, FirstHVACIteration, _, _);
             }
         }
-    } else { // single speed
-
-        // pass node information using resulting PLR
-        if (HeatPump.fanPlace == HVAC::FanPlace::BlowThru) {
-            //   simulate fan and DX coil twice to pass PLF (OnOffFanPartLoadFraction) to fan
-            state.dataFans->fans(HeatPump.FanNum)->simulate(state, FirstHVACIteration, _, _);
-
-            DXCoils::SimDXCoil(state,
-                               HeatPump.DXCoilName,
-                               compressorOp,
-                               FirstHVACIteration,
-                               HeatPump.DXCoilNum,
-                               HVAC::FanOp::Cycling,
-                               state.dataWaterThermalTanks->hpPartLoadRatio);
-
-            state.dataFans->fans(HeatPump.FanNum)->simulate(state, FirstHVACIteration, _, _);
-
-            DXCoils::SimDXCoil(state,
-                               HeatPump.DXCoilName,
-                               compressorOp,
-                               FirstHVACIteration,
-                               HeatPump.DXCoilNum,
-                               HVAC::FanOp::Cycling,
-                               state.dataWaterThermalTanks->hpPartLoadRatio);
-        } else {
-            //   simulate DX coil and fan twice to pass fan power (FanElecPower) to DX coil
-            DXCoils::SimDXCoil(state,
-                               HeatPump.DXCoilName,
-                               compressorOp,
-                               FirstHVACIteration,
-                               HeatPump.DXCoilNum,
-                               HVAC::FanOp::Cycling,
-                               state.dataWaterThermalTanks->hpPartLoadRatio);
-
-            state.dataFans->fans(HeatPump.FanNum)->simulate(state, FirstHVACIteration, _, _);
-
-            DXCoils::SimDXCoil(state,
-                               HeatPump.DXCoilName,
-                               compressorOp,
-                               FirstHVACIteration,
-                               HeatPump.DXCoilNum,
-                               HVAC::FanOp::Cycling,
-                               state.dataWaterThermalTanks->hpPartLoadRatio);
-
-            state.dataFans->fans(HeatPump.FanNum)->simulate(state, FirstHVACIteration, _, _);
-        }
+        HeatPump.HeatingPLR = state.dataWaterThermalTanks->hpPartLoadRatio;
+    } else {
+        HeatPump.HeatingPLR = 0.0;
     }
-
     // Call the tank one more time with the final PLR
     if (HeatPump.HPWHTankType == DataPlant::PlantEquipmentType::WtrHeaterMixed) {
         this->CalcWaterThermalTankMixed(state);
@@ -9881,11 +9886,6 @@ void WaterThermalTankData::CalcHeatPumpWaterHeater(EnergyPlusData &state, bool c
         state.dataLoopNodes->Node(ExhaustAirNode) = state.dataLoopNodes->Node(OutletAirSplitterNode);
     }
 
-    if (HeatPump.dxCoilAvailSched->getCurrentVal() > 0) {
-        HeatPump.HeatingPLR = state.dataWaterThermalTanks->hpPartLoadRatio;
-    } else {
-        HeatPump.HeatingPLR = 0.0;
-    }
     // Check schedule to divert air-side cooling to outdoors.
     if (HeatPump.outletAirSplitterSched != nullptr) {
         Real64 OutletAirSplitterSch = HeatPump.outletAirSplitterSched->getCurrentVal();

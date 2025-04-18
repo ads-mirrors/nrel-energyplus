@@ -313,6 +313,8 @@ namespace DataLoopNode {
         HeatPumpFuelFiredHeating,
         HeatPumpPlantLoopEIRCooling,
         HeatPumpPlantLoopEIRHeating,
+        HeatPumpAirToWaterHeating,
+        HeatPumpAirToWaterCooling,
         HeatPumpWaterToWaterEquationFitCooling,
         HeatPumpWaterToWaterEquationFitHeating,
         HeatPumpWaterToWaterParameterEstimationCooling,

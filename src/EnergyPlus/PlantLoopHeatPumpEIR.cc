@@ -3002,6 +3002,24 @@ PlantComponent *EIRFuelFiredHeatPump::factory(EnergyPlusData &state, DataPlant::
     return nullptr; // LCOV_EXCL_LINE
 }
 
+PlantComponent *HeatPumpAirToWater::factory(EnergyPlusData &state, DataPlant::PlantEquipmentType hp_type, const std::string &hp_name)
+{
+    if (state.dataHeatPumpAirToWater->getInputsAWHP) {
+        HeatPumpAirToWater::processInputForEIRPLHP(state);
+        //        EIRFuelFiredHeatPump::pairUpCompanionCoils(state);
+        state.dataHeatPumpAirToWater->getInputsAWHP = false;
+    }
+
+    for (auto &awhp : state.dataHeatPumpAirToWater->heatPumps) {
+        if (awhp.name == Util::makeUPPER(hp_name) && awhp.EIRHPType == hp_type) {
+            return &awhp;
+        }
+    }
+
+    ShowFatalError(state, format("Air To Water Heat Pump factory: Error getting inputs for PLFFHP named: {}.", hp_name));
+    return nullptr; // LCOV_EXCL_LINE
+}
+
 void EIRFuelFiredHeatPump::pairUpCompanionCoils(EnergyPlusData &state)
 {
     for (auto &thisHP : state.dataEIRFuelFiredHeatPump->heatPumps) {
@@ -3475,6 +3493,281 @@ void EIRFuelFiredHeatPump::processInputForEIRPLHP(EnergyPlusData &state)
     }
     if (errorsFound) {
         ShowFatalError(state, "Previous EIR PLFFHP errors cause program termination."); // LCOV_EXCL_LINE
+    }
+}
+
+void HeatPumpAirToWater::processInputForEIRPLHP(EnergyPlusData &state)
+{
+    std::string routineName = "HeatPumpAirToWater::processInputForEIRPLHP";
+    struct ClassType
+    {
+        DataPlant::PlantEquipmentType thisType;
+        std::string nodesType;
+        std::function<Real64(Real64, Real64)> calcLoadOutletTemp;
+        std::function<Real64(Real64, Real64)> calcQsource;
+        std::function<Real64(Real64, Real64)> calcSourceOutletTemp;
+
+        ClassType(DataPlant::PlantEquipmentType _thisType,
+                  std::string _nodesType,
+                  std::function<Real64(Real64, Real64)> _tLoadOutFunc,
+                  std::function<Real64(Real64, Real64)> _qSrcFunc,
+                  std::function<Real64(Real64, Real64)> _tSrcOutFunc)
+            : thisType(_thisType), nodesType(std::move(_nodesType)), calcLoadOutletTemp(_tLoadOutFunc), calcQsource(_qSrcFunc),
+              calcSourceOutletTemp(_tSrcOutFunc)
+        {
+        }
+    };
+    std::array<ClassType, 2> classesToInput = {
+        ClassType{DataPlant::PlantEquipmentType::HeatPumpAirToWaterCooling,
+                  "Chilled Water Nodes",
+                  EIRPlantLoopHeatPumps::HeatPumpAirToWater::subtract,
+                  EIRPlantLoopHeatPumps::HeatPumpAirToWater::add,
+                  EIRPlantLoopHeatPumps::HeatPumpAirToWater::add},
+        ClassType{DataPlant::PlantEquipmentType::HeatPumpAirToWaterHeating,
+                  "Hot Water Nodes",
+                  EIRPlantLoopHeatPumps::HeatPumpAirToWater::add,
+                  EIRPlantLoopHeatPumps::HeatPumpAirToWater::subtract,
+                  EIRPlantLoopHeatPumps::HeatPumpAirToWater::subtract},
+    };
+
+    bool errorsFound = false;
+    std::string cCurrentModuleObject = "HeatPump:AirToWater";
+    auto const instances = state.dataInputProcessing->inputProcessor->epJSON.find(cCurrentModuleObject);
+    auto const &schemaProps = state.dataInputProcessing->inputProcessor->getObjectSchemaProps(state, cCurrentModuleObject);
+
+    constexpr std::array<std::string_view, static_cast<int>(OperatingModeControlMethod::Num)> AWHPOperatingModeControlMethodUC = {
+        "SCHEDULEDMODES", "EMSCONTROLLED", "LOAD"};
+    constexpr std::array<std::string_view, static_cast<int>(ControlType::Num)> AWHPControlTypeUC = {"FIXEDSPEED", "VARIABLESPEED"};
+    if (instances != state.dataInputProcessing->inputProcessor->epJSON.end()) {
+        auto &instancesValue = instances.value();
+        for (auto instance = instancesValue.begin(); instance != instancesValue.end(); ++instance) {
+            auto const &fields = instance.value();
+            auto const &thisObjectName = instance.key();
+            state.dataInputProcessing->inputProcessor->markObjectAsUsed(cCurrentModuleObject, thisObjectName);
+
+            std::string &cCurrentModuleObjectSingleMode = state.dataIPShortCut->cCurrentModuleObject;
+            for (auto &classToInput : classesToInput) {
+                cCurrentModuleObjectSingleMode = DataPlant::PlantEquipTypeNames[static_cast<int>(classToInput.thisType)];
+                DataLoopNode::ConnectionObjectType objType = static_cast<DataLoopNode::ConnectionObjectType>(
+                    getEnumValue(BranchNodeConnections::ConnectionObjectTypeNamesUC, Util::makeUPPER(cCurrentModuleObjectSingleMode)));
+
+                // read shared fields
+                HeatPumpAirToWater thisAWHP;
+                thisAWHP.name = Util::makeUPPER(thisObjectName);
+                ErrorObjectHeader eoh{routineName, "HeatPump:AirToWater", thisAWHP.name};
+                thisAWHP.compressorMultiplier =
+                    state.dataInputProcessing->inputProcessor->getRealFieldValue(fields, schemaProps, "compressor_multiplier");
+                thisAWHP.operatingModeControlMethod = static_cast<HeatPumpAirToWater::OperatingModeControlMethod>(
+                    getEnumValue(AWHPOperatingModeControlMethodUC, Util::makeUPPER(fields.at("operating_mode_control_method").get<std::string>())));
+                if (thisAWHP.operatingModeControlMethod == HeatPumpAirToWater::OperatingModeControlMethod::ScheduledModes) {
+                    auto operatingModeControlSchedFound = fields.find("operating_mode_control_schedule_name");
+                    if (operatingModeControlSchedFound == fields.end()) {
+                        thisAWHP.operationModeControlScheName = "";
+                        ShowSevereEmptyField(state, eoh, "operating_mode_control_schedule_name", thisAWHP.operationModeControlScheName);
+                        errorsFound = true;
+                    } else {
+                        thisAWHP.operationModeControlScheName = Util::makeUPPER(fields.at("operating_mode_control_schedule_name").get<std::string>());
+                        if ((thisAWHP.operationModeControlSche = Sched::GetSchedule(state, thisAWHP.operationModeControlScheName)) == nullptr) {
+                            ShowSevereItemNotFound(state, eoh, "operating_mode_control_schedule_name", thisAWHP.operationModeControlScheName);
+                            errorsFound = true;
+                        }
+                    }
+                }
+                thisAWHP.controlType = static_cast<HeatPumpAirToWater::ControlType>(
+                    getEnumValue(AWHPControlTypeUC, Util::makeUPPER(fields.at("control_type").get<std::string>())));
+                thisAWHP.CrankcaseHeaterCapacity =
+                    state.dataInputProcessing->inputProcessor->getRealFieldValue(fields, schemaProps, "crankcase_heater_capacity");
+                std::string const CrankcaseHeaterCapacityCurveName =
+                    Util::makeUPPER(fields.at("crankcase_heater_capacity_function_of_temperature_curve_name").get<std::string>());
+                thisAWHP.CrankcaseHeaterCapacityCurveIndex = Curve::GetCurveIndex(state, CrankcaseHeaterCapacityCurveName);
+                thisAWHP.MaxOATCrankcaseHeater = state.dataInputProcessing->inputProcessor->getRealFieldValue(
+                    fields, schemaProps, "maximum_ambient_temperature_for_crankcase_heater_operation");
+
+                // read heating/cooling specific fields
+                thisAWHP.EIRHPType = classToInput.thisType;
+
+                std::string waterNodePrefix;
+                std::string modeKeyWord;
+                if (thisAWHP.EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterHeating) {
+                    waterNodePrefix = "hot";
+                    modeKeyWord = "heating";
+                } else {
+                    waterNodePrefix = "chilled";
+                    modeKeyWord = "cooling";
+                }
+                auto availSchedFound = fields.find(format("availability_schedule_name_{}", modeKeyWord));
+                if (availSchedFound == fields.end()) {
+                    thisAWHP.availSchedName = "";
+                    thisAWHP.availSched = Sched::GetScheduleAlwaysOn(state);
+                } else {
+                    thisAWHP.availSchedName = Util::makeUPPER(fields.at(format("availability_schedule_name_{}", modeKeyWord)).get<std::string>());
+                    if ((thisAWHP.availSched = Sched::GetSchedule(state, thisAWHP.availSchedName)) == nullptr) {
+                        ShowSevereItemNotFound(state, eoh, format("availability_schedule_name_{}", modeKeyWord), thisAWHP.availSchedName);
+                        errorsFound = true;
+                    }
+                }
+
+                thisAWHP.referenceCapacity =
+                    state.dataInputProcessing->inputProcessor->getRealFieldValue(fields, schemaProps, format("rated_{}_capacity", modeKeyWord));
+                if (thisAWHP.referenceCapacity == DataSizing::AutoSize) {
+                    thisAWHP.referenceCapacityWasAutoSized = true;
+                }
+                thisAWHP.referenceCOP =
+                    state.dataInputProcessing->inputProcessor->getRealFieldValue(fields, schemaProps, format("reference_cop_for_{}", modeKeyWord));
+                thisAWHP.sourceSideDesignInletTemp = state.dataInputProcessing->inputProcessor->getRealFieldValue(
+                    fields, schemaProps, format("rated_inlet_air_temperature_in_{}_mode", modeKeyWord));
+                thisAWHP.sourceSideDesignVolFlowRate = state.dataInputProcessing->inputProcessor->getRealFieldValue(
+                    fields, schemaProps, format("rated_air_flow_rate_in_{}_mode", modeKeyWord));
+                if (thisAWHP.sourceSideDesignVolFlowRate == DataSizing::AutoSize) {
+                    thisAWHP.sourceSideDesignVolFlowRateWasAutoSized = true;
+                }
+                thisAWHP.ratedLeavingWaterTemperature = state.dataInputProcessing->inputProcessor->getRealFieldValue(
+                    fields, schemaProps, format("rated_leaving_water_temperature_in_{}_mode", modeKeyWord));
+                thisAWHP.loadSideDesignVolFlowRate = state.dataInputProcessing->inputProcessor->getRealFieldValue(
+                    fields, schemaProps, format("rated_water_flow_rate_in_{}_mode", modeKeyWord));
+                thisAWHP.minOutdoorAirTempLimit = state.dataInputProcessing->inputProcessor->getRealFieldValue(
+                    fields, schemaProps, format("minimum_outdoor_air_temperature_in_{}_mode", modeKeyWord));
+                thisAWHP.maxOutdoorAirTempLimit = state.dataInputProcessing->inputProcessor->getRealFieldValue(
+                    fields, schemaProps, format("maximum_outdoor_air_temperature_in_{}_mode", modeKeyWord));
+                thisAWHP.sizingFactor =
+                    state.dataInputProcessing->inputProcessor->getRealFieldValue(fields, schemaProps, format("sizing_factor_for_{}", modeKeyWord));
+
+                std::string sourceSideInletNodeName = Util::makeUPPER(fields.at("air_inlet_node_name").get<std::string>());
+                std::string sourceSideOutletNodeName = Util::makeUPPER(fields.at("air_outlet_node_name").get<std::string>());
+
+                constexpr std::array<std::string_view, static_cast<int>(DefrostControl::Num)> PLHPDefrostTypeNamesUC = {
+                    "NONE", "TIMED", "ONDEMAND", "TIMEDEMPIRICAL"};
+                auto const defrostControlStrategy = fields.find("heat_pump_defrost_control");
+                if (defrostControlStrategy != fields.end()) {
+                    thisAWHP.defrostStrategy = static_cast<DefrostControl>(
+                        getEnumValue(PLHPDefrostTypeNamesUC, Util::makeUPPER(defrostControlStrategy.value().get<std::string>())));
+                } else {
+                    thisAWHP.defrostStrategy = DefrostControl::None;
+                }
+
+                if (thisAWHP.EIRHPType == DataPlant::PlantEquipmentType::HeatPumpEIRHeating &&
+                    (thisAWHP.defrostStrategy == DefrostControl::Timed || thisAWHP.defrostStrategy == DefrostControl::TimedEmpirical)) {
+                    auto const timePeriod = fields.find("heat_pump_defrost_time_period_fraction");
+                    if (timePeriod != fields.end()) {
+                        thisAWHP.defrostTime = timePeriod.value().get<Real64>();
+                    } else {
+                        Real64 defaultVal = 0.0;
+                        if (!state.dataInputProcessing->inputProcessor->getDefaultValue(
+                                state, cCurrentModuleObject, "heat_pump_defrost_time_period_fraction", defaultVal)) {
+                            // excluding from coverage
+                            ShowSevereError(state, // LCOV_EXCL_LINE
+                                            format("EIR PLHP \"{}\": Heat Pump Defrost Time Period Fraction not entered and default value not found.",
+                                                   thisAWHP.name)); // LCOV_EXCL_LINE
+                            errorsFound = true;                     // LCOV_EXCL_LINE
+                        } else {
+                            thisAWHP.defrostTime = defaultVal;
+                        }
+                    }
+                }
+
+                if (thisAWHP.defrostStrategy == DefrostControl::TimedEmpirical) {
+                    auto const timedEmpiricalDefFreqStratCurveName = fields.find("timed_empirical_defrost_frequency_curve_name");
+                    if (timedEmpiricalDefFreqStratCurveName != fields.end()) {
+                        thisAWHP.defrostFreqCurveIndex =
+                            Curve::GetCurveIndex(state, Util::makeUPPER(timedEmpiricalDefFreqStratCurveName.value().get<std::string>()));
+                    }
+                    auto const timedEmpiricalDefHeatLoadPenaltyCurveName = fields.find("timed_empirical_defrost_heat_load_penalty_curve_name");
+                    if (timedEmpiricalDefHeatLoadPenaltyCurveName != fields.end()) {
+                        thisAWHP.defrostHeatLoadCurveIndex =
+                            Curve::GetCurveIndex(state, Util::makeUPPER(timedEmpiricalDefHeatLoadPenaltyCurveName.value().get<std::string>()));
+                        thisAWHP.defrostLoadCurveDims = state.dataCurveManager->PerfCurve(thisAWHP.defrostHeatLoadCurveIndex)->numDims;
+                    }
+                    auto const defrostHeatEnergyCurveIndexCurveName = fields.find("timed_empirical_defrost_heat_input_energy_fraction_curve_name");
+                    if (defrostHeatEnergyCurveIndexCurveName != fields.end()) {
+                        thisAWHP.defrostHeatEnergyCurveIndex =
+                            Curve::GetCurveIndex(state, Util::makeUPPER(defrostHeatEnergyCurveIndexCurveName.value().get<std::string>()));
+                        thisAWHP.defrostEnergyCurveDims = state.dataCurveManager->PerfCurve(thisAWHP.defrostHeatEnergyCurveIndex)->numDims;
+                    }
+                } else if (thisAWHP.EIRHPType == DataPlant::PlantEquipmentType::HeatPumpEIRHeating) { // used for Timed or OnDemand
+                    auto const defEIRFTCurveName = fields.find("defrost_energy_input_ratio_function_of_temperature_curve_name");
+                    if (defEIRFTCurveName != fields.end()) {
+                        thisAWHP.defrostEIRFTIndex = Curve::GetCurveIndex(state, Util::makeUPPER(defEIRFTCurveName.value().get<std::string>()));
+                    }
+                }
+
+                if (thisAWHP.EIRHPType == DataPlant::PlantEquipmentType::HeatPumpEIRHeating) {
+                    thisAWHP.maxOutdoorTemperatureDefrost = state.dataInputProcessing->inputProcessor->getRealFieldValue(
+                        fields, schemaProps, "maximum_outdoor_dry_bulb_temperature_for_defrost_operation");
+                    auto const defrostCapRatioCurveName = fields.find("defrost_capacity_ratio_function_of_temperature curve name");
+                    // fixme: should this be specific to a certain strategy?
+                    if (defrostCapRatioCurveName != fields.end()) {
+                        thisAWHP.defrostCapRatioCurveIndex =
+                            Curve::GetCurveIndex(state, Util::makeUPPER(defrostCapRatioCurveName.value().get<std::string>()));
+                    }
+                } else {
+                    thisAWHP.maxOutdoorTemperatureDefrost = -999;
+                    thisAWHP.defrostStrategy = DefrostControl::None;
+                    thisAWHP.defrostTime = 0.0;
+                }
+
+                std::string loadSideInletNodeName =
+                    Util::makeUPPER(fields.at(format("{}_water_inlet_node_name", waterNodePrefix)).get<std::string>());
+                std::string loadSideOutletNodeName =
+                    Util::makeUPPER(fields.at(format("{}_water_outlet_node_name", waterNodePrefix)).get<std::string>());
+
+                thisAWHP.numSpeeds =
+                    state.dataInputProcessing->inputProcessor->getRealFieldValue(fields, schemaProps, format("number_of_speeds_for_{}", modeKeyWord));
+
+                for (int i = 0; i < thisAWHP.numSpeeds; i++) {
+                    auto capFtFieldName = format("normalized_{}_capacity_function_of_temperature_curve_name_at_speed_{}", modeKeyWord, i + 1);
+                    if (fields.find(capFtFieldName) == fields.end()) {
+                        ShowSevereError(state,
+                                        format("curve missing for speed {} of HeatPump:AirToWater (name={}; curve field name: {}",
+                                               i + 1,
+                                               thisAWHP.name,
+                                               capFtFieldName));
+                        errorsFound = true;
+                    }
+                    std::string const capFtName = Util::makeUPPER(fields.at(capFtFieldName).get<std::string>());
+                    thisAWHP.capFuncTempCurveIndex[i] = Curve::GetCurveIndex(state, capFtName);
+                    if (thisAWHP.capFuncTempCurveIndex[i] == 0) {
+                        ShowSevereError(
+                            state, format("Invalid curve name for HeatPump:AirToWater (name={}; entered curve name: {}", thisAWHP.name, capFtName));
+                        errorsFound = true;
+                    }
+                    auto eirFtFieldName = format("{}_energy_input_ratio_function_of_temperature_curve_name_at_speed_{}", modeKeyWord, i + 1);
+                    if (fields.find(eirFtFieldName) == fields.end()) {
+                        ShowSevereError(state,
+                                        format("curve missing for speed {} of HeatPump:AirToWater (name={}; curve field name: {}",
+                                               i + 1,
+                                               thisAWHP.name,
+                                               eirFtFieldName));
+                        errorsFound = true;
+                    }
+                    std::string const eirFtName = Util::makeUPPER(fields.at(eirFtFieldName).get<std::string>());
+                    thisAWHP.powerRatioFuncTempCurveIndex[i] = Curve::GetCurveIndex(state, eirFtName);
+                    if (thisAWHP.powerRatioFuncTempCurveIndex[i] == 0) {
+                        ShowSevereError(
+                            state, format("Invalid curve name for HeatPump:AirToWater (name={}; entered curve name: {}", thisAWHP.name, eirFtName));
+                        errorsFound = true;
+                    }
+                    auto eirFplrFieldName = format("{}_energy_input_ratio_function_of_plr_curve_name_at_speed_{}", modeKeyWord, i + 1);
+                    if (fields.find(eirFplrFieldName) == fields.end()) {
+                        ShowSevereError(state,
+                                        format("curve missing for speed {} of HeatPump:AirToWater (name={}; curve field name: {}",
+                                               i + 1,
+                                               thisAWHP.name,
+                                               eirFplrFieldName));
+                        errorsFound = true;
+                    }
+                    std::string const eirFplrName = Util::makeUPPER(fields.at(eirFplrFieldName).get<std::string>());
+                    thisAWHP.powerRatioFuncPLRCurveIndex[i] = Curve::GetCurveIndex(state, eirFplrName);
+                    if (thisAWHP.powerRatioFuncPLRCurveIndex[i] == 0) {
+                        ShowSevereError(
+                            state, format("Invalid curve name for HeatPump:AirToWater (name={}; entered curve name: {}", thisAWHP.name, eirFplrName));
+                        errorsFound = true;
+                    }
+                }
+                if (!errorsFound) {
+                    state.dataHeatPumpAirToWater->heatPumps.push_back(thisAWHP);
+                }
+            }
+        }
     }
 }
 

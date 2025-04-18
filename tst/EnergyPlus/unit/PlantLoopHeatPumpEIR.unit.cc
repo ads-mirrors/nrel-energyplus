@@ -433,6 +433,142 @@ TEST_F(EnergyPlusFixture, CatchErrorsOnBadCurves)
     EXPECT_THROW(EIRPlantLoopHeatPump::factory(*state, DataPlant::PlantEquipmentType::HeatPumpEIRCooling, "HP COOLING SIDE"), std::runtime_error);
 }
 
+TEST_F(EnergyPlusFixture, processInputForEIRPLHP_AWHP)
+{
+    std::string const idf_objects = delimited_string({
+        "HeatPump:AirToWater,",
+        "test_AWHP, !- Name",
+        ", !- Availability Schedule Name Heating",
+        ", !- Availability Schedule Name Cooling",
+        "Load , !- Operating Mode Control Method",
+        ", !- Operating Mode Control Schedule Name",
+        "100 , !-  Rated Heating Capacity",
+        "3, !-  Reference COP for heating",
+        "20 , !-  Rated Inlet Air Temperature in Heating Mode",
+        "0.1 , !-  Rated Air Flow Rate in Heating Mode",
+        "50 , !-  Rated Leaving Water Temperature in Heating Mode",
+        "0.02 , !-  Rated Water Flow Rate in Heating Mode",
+        "-20, !-  Minimum Outdoor Air Temperature in Heating Mode",
+        "25, !-  Maximum Outdoor Air Temperature in Heating Mode",
+        "1.0, !-  Sizing Factor for Heating",
+        "120 , !-  Rated Cooling Capacity",
+        "4, !-  Reference COP for cooling",
+        "25, !-  Rated Inlet Air Temperature in Cooling Mode",
+        "0.1 , !-  Rated Air Flow Rate in Cooling Mode",
+        "22 , !-  Rated Leaving Water Temperature in Cooling Mode",
+        "0.05 , !-  Rated Water Flow Rate in Cooling Mode",
+        "18 , !-  Minimum Outdoor Air Temperature in Cooling Mode",
+        "40, !-  Maximum Outdoor Air Temperature in Cooling Mode",
+        "0.9, !-  Sizing Factor for Cooling",
+        "Outdoor Air Inlet Node , !-  Air Inlet Node Name",
+        "Outdoor Air Outlet Node, !-  Air Outlet Node Name",
+        "Heating Coil Load Loop Intermediate Node, !-  Hot Water Inlet Node Name",
+        "Heating Coil Load Loop Supply Outlet Node, !-  Hot Water Outlet Node Name",
+        "Cooling Coil Load Loop Intermediate Node , !-  Chilled Water Inlet Node Name",
+        "Cooling Coil Load Loop Supply Outlet Node , !-  Chilled Water Outlet Node Name",
+        "Timed, !-  Heat Pump Defrost Control",
+        "0.2, !-  Defrost Time Period Fraction",
+        "150, !-  Resistive Defrost Heater Capacity",
+        ", !-  Defrost Energy Input Ratio Function of Temperature Curve Name",
+        ", !-  Defrost Capacity Ratio Function of Temperature Curve Name",
+        "1 , !- Compressor Multiplier",
+        "FixedSpeed , !- Control Type",
+        "100 , !- Crankcase Heater Capacity",
+        "EIRCurveFuncPLR, !- Crankcase Heater Capacity Function of Temperature Curve Name",
+        "20 , !- Maximum Ambient Temperature for Crankcase Heater Operation",
+        "1 , !- Number of Speeds for Heating",
+        "CapCurveFuncTemp, !-  Normalized Heating Capacity Function of Temperature Curve Name at Speed 1",
+        "EIRCurveFuncTemp, !-  Heating Energy Input Ratio Function of Temperature Curve Name at Speed 1",
+        "EIRCurveFuncPLR, !-  Heating Energy Input Ratio Function of PLR Curve Name at Speed 1",
+        ", !-  Normalized Heating Capacity Function of Temperature Curve Name at Speed 2",
+        ", !-  Heating Energy Input Ratio Function of Temperature Curve Name at Speed 2",
+        ", !-  Heating Energy Input Ratio Function of PLR Curve Name at Speed 2",
+        ", !-  Normalized Heating Capacity Function of Temperature Curve Name at Speed 3",
+        ", !-  Heating Energy Input Ratio Function of Temperature Curve Name at Speed 3",
+        ", !-  Heating Energy Input Ratio Function of PLR Curve Name at Speed 3",
+        ", !-  Normalized Heating Capacity Function of Temperature Curve Name at Speed 4",
+        ", !-  Heating Energy Input Ratio Function of Temperature Curve Name at Speed 4",
+        ", !-  Heating Energy Input Ratio Function of PLR Curve Name at Speed 4",
+        ", !-  Normalized Heating Capacity Function of Temperature Curve Name at Speed 5",
+        ", !-  Heating Energy Input Ratio Function of Temperature Curve Name at Speed 5",
+        ", !-  Heating Energy Input Ratio Function of PLR Curve Name at Speed 5",
+        "1, !-  Number of Speeds for Cooling",
+        "CapCurveFuncTemp, !-  Normalized Cooling Capacity Function of Temperature Curve Name at Speed 1",
+        "EIRCurveFuncTemp, !-  Cooling Energy Input Ratio Function of Temperature Curve Name at Speed 1",
+        "EIRCurveFuncPLR, !-  Cooling Energy Input Ratio Function of PLR Curve Name at Speed 1",
+        ", !-  Normalized Cooling Capacity Function of Temperature Curve Name at Speed 2",
+        ", !-  Cooling Energy Input Ratio Function of Temperature Curve Name at Speed 2",
+        ", !-  Cooling Energy Input Ratio Function of PLR Curve Name at Speed 2",
+        ", !-  Normalized Cooling Capacity Function of Temperature Curve Name at Speed 3",
+        ", !-  Cooling Energy Input Ratio Function of Temperature Curve Name at Speed 3",
+        ", !-  Cooling Energy Input Ratio Function of PLR Curve Name at Speed 3",
+        ", !-  Normalized Cooling Capacity Function of Temperature Curve Name at Speed 4",
+        ", !-  Cooling Energy Input Ratio Function of Temperature Curve Name at Speed 4",
+        ", !-  Cooling Energy Input Ratio Function of PLR Curve Name at Speed 4",
+        ", !-  Normalized Cooling Capacity Function of Temperature Curve Name at Speed 5",
+        ", !-  Cooling Energy Input Ratio Function of Temperature Curve Name at Speed 5",
+        "; !-  Cooling Energy Input Ratio Function of PLR Curve Name at Speed 5",
+
+        "Curve:Biquadratic,",
+        "CapCurveFuncTemp,        !- Name",
+        "1.0,                     !- Coefficient1 Constant",
+        "0.0,                     !- Coefficient2 x",
+        "0.0,                     !- Coefficient3 x**2",
+        "0.0,                     !- Coefficient4 y",
+        "0.0,                     !- Coefficient5 y**2",
+        "0.0,                     !- Coefficient6 x*y",
+        "5.0,                     !- Minimum Value of x",
+        "10.0,                    !- Maximum Value of x",
+        "24.0,                    !- Minimum Value of y",
+        "35.0,                    !- Maximum Value of y",
+        ",                        !- Minimum Curve Output",
+        ",                        !- Maximum Curve Output",
+        "Temperature,             !- Input Unit Type for X",
+        "Temperature,             !- Input Unit Type for Y",
+        "Dimensionless;           !- Output Unit Type",
+
+        "Curve:Biquadratic,",
+        "EIRCurveFuncTemp,        !- Name",
+        "1.0,                     !- Coefficient1 Constant",
+        "0.0,                     !- Coefficient2 x",
+        "0.0,                     !- Coefficient3 x**2",
+        "0.0,                     !- Coefficient4 y",
+        "0.0,                     !- Coefficient5 y**2",
+        "0.0,                     !- Coefficient6 x*y",
+        "5.0,                     !- Minimum Value of x",
+        "10.0,                    !- Maximum Value of x",
+        "24.0,                    !- Minimum Value of y",
+        "35.0,                    !- Maximum Value of y",
+        ",                        !- Minimum Curve Output",
+        ",                        !- Maximum Curve Output",
+        "Temperature,             !- Input Unit Type for X",
+        "Temperature,             !- Input Unit Type for Y",
+        "Dimensionless;           !- Output Unit Type",
+
+        "Curve:Quadratic,",
+        "EIRCurveFuncPLR,         !- Name",
+        "1.0,                     !- Coefficient1 Constant",
+        "0.0,                     !- Coefficient2 x",
+        "0.0,                     !- Coefficient3 x**2",
+        "0.0,                     !- Minimum Value of x",
+        "1.0;                     !- Maximum Value of x",
+    });
+    ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
+
+    HeatPumpAirToWater::factory(*state, DataPlant::PlantEquipmentType::HeatPumpAirToWaterHeating, "TEST_AWHP");
+    HeatPumpAirToWater::factory(*state, DataPlant::PlantEquipmentType::HeatPumpAirToWaterCooling, "TEST_AWHP");
+    EXPECT_ENUM_EQ(state->dataHeatPumpAirToWater->heatPumps[0].EIRHPType, DataPlant::PlantEquipmentType::HeatPumpAirToWaterCooling);
+    EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].name, "TEST_AWHP");
+    EXPECT_ENUM_EQ(state->dataHeatPumpAirToWater->heatPumps[0].operatingModeControlMethod, HeatPumpAirToWater::OperatingModeControlMethod::Load);
+    EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].referenceCapacity, 120);
+
+    EXPECT_ENUM_EQ(state->dataHeatPumpAirToWater->heatPumps[1].EIRHPType, DataPlant::PlantEquipmentType::HeatPumpAirToWaterHeating);
+    EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].name, "TEST_AWHP");
+    EXPECT_ENUM_EQ(state->dataHeatPumpAirToWater->heatPumps[1].operatingModeControlMethod, HeatPumpAirToWater::OperatingModeControlMethod::Load);
+    EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].referenceCapacity, 100);
+}
+
 TEST_F(EnergyPlusFixture, processInputForEIRPLHP_TestAirSourceDuplicateNodes)
 {
     std::string const idf_objects = delimited_string({"HeatPump:PlantLoop:EIR:Cooling,",

@@ -57,6 +57,7 @@
 #include <EnergyPlus/Data/BaseData.hh>
 #include <EnergyPlus/Plant/PlantLocation.hh>
 #include <EnergyPlus/PlantComponent.hh>
+#include <EnergyPlus/ScheduleManager.hh>
 
 namespace EnergyPlus {
 
@@ -426,6 +427,52 @@ namespace EIRPlantLoopHeatPumps {
         virtual ~EIRFuelFiredHeatPump() = default;
         EIRFuelFiredHeatPump() = default;
     };
+
+    struct HeatPumpAirToWater : public EIRPlantLoopHeatPump
+    {
+
+        enum class OperatingModeControlMethod
+        {
+            Invalid = -1,
+            ScheduledModes,
+            EMSControlled,
+            Load,
+            Num
+        };
+        enum class ControlType
+        {
+            Invalid = -1,
+            FixedSpeed,
+            VariableSpeed,
+            Num
+        };
+
+        // additional variables
+        std::string availSchedName;            // availability schedule
+        Sched::Schedule *availSched = nullptr; // availability schedule
+        OperatingModeControlMethod operatingModeControlMethod = OperatingModeControlMethod::Load;
+        std::string operationModeControlScheName;
+        Sched::Schedule *operationModeControlSche = nullptr; // availability schedule
+        int compressorMultiplier = 1;
+        ControlType controlType = ControlType::FixedSpeed;
+        Real64 sourceSideDesignInletTemp = 0.0;    // Rated Inlet Air Temperature in xx Mode
+        Real64 ratedLeavingWaterTemperature = 0.0; // rated_leaving_water_temperature_in_xx_mode
+        Real64 minOutdoorAirTempLimit = 0.0;
+        Real64 maxOutdoorAirTempLimit = 0.0;
+        Real64 CrankcaseHeaterCapacity;        // total crankcase heater capacity [W]
+        Real64 MaxOATCrankcaseHeater;          // maximum OAT for crankcase heater operation [C]
+        int CrankcaseHeaterCapacityCurveIndex; // Crankcase heater power-temperature curve or table index
+        int defrostCapRatioCurveIndex = 0;
+
+        int static constexpr maxNumSpeeds = 5;
+        int numSpeeds = 1;
+        std::array<int, maxNumSpeeds> capFuncTempCurveIndex = {};
+        std::array<int, maxNumSpeeds> powerRatioFuncTempCurveIndex = {};
+        std::array<int, maxNumSpeeds> powerRatioFuncPLRCurveIndex = {};
+
+        static PlantComponent *factory(EnergyPlusData &state, DataPlant::PlantEquipmentType hp_type, const std::string &hp_name);
+        static void processInputForEIRPLHP(EnergyPlusData &state);
+    };
 } // namespace EIRPlantLoopHeatPumps
 
 struct EIRPlantLoopHeatPumpsData : BaseGlobalStruct
@@ -466,6 +513,24 @@ struct EIRFuelFiredHeatPumpsData : BaseGlobalStruct
     }
 };
 
+struct HeatPumpAirToWatersData : BaseGlobalStruct
+{
+    std::vector<EIRPlantLoopHeatPumps::HeatPumpAirToWater> heatPumps;
+    bool getInputsAWHP = true;
+
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
+
+    void init_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
+
+    void clear_state() override
+    {
+        new (this) HeatPumpAirToWatersData();
+    }
+};
 } // namespace EnergyPlus
 
 #endif // ENERGYPLUS_PLANTLOOPHEATPUMPEIR_HH

@@ -1450,8 +1450,11 @@ bool getHPWaterHeaterInput(EnergyPlusData &state)
             HPWH.DXCoilTypeNum = 0;
             if (HPWH.bIsIHP) {
                 HPWH.DXCoilType = "COILSYSTEM:INTEGRATEDHEATPUMP:AIRSOURCE";
+                int VSCoilNum = state.dataIntegratedHP->IntegratedHeatPumps(HPWH.DXCoilNum).SCWHCoilIndex;
+                HPWH.dxCoilAvailSched = state.dataVariableSpeedCoils->VarSpeedCoil(VSCoilNum).availSched;
             } else {
                 HPWH.DXCoilType = state.dataVariableSpeedCoils->VarSpeedCoil(HPWH.DXCoilNum).VarSpeedCoilType;
+                HPWH.dxCoilAvailSched = state.dataVariableSpeedCoils->VarSpeedCoil(HPWH.DXCoilNum).availSched;
             }
         } else {
             // this is a single speed coil
@@ -1463,6 +1466,7 @@ bool getHPWaterHeaterInput(EnergyPlusData &state)
                 ErrorsFound = true;
             }
             HPWH.DXCoilTypeNum = Coil.DXCoilType_Num;
+            HPWH.dxCoilAvailSched = Coil.availSched;
         }
 
         // Make sure that the coil and tank are compatible.
@@ -9877,6 +9881,11 @@ void WaterThermalTankData::CalcHeatPumpWaterHeater(EnergyPlusData &state, bool c
         state.dataLoopNodes->Node(ExhaustAirNode) = state.dataLoopNodes->Node(OutletAirSplitterNode);
     }
 
+    if (HeatPump.dxCoilAvailSched->getCurrentVal() > 0) {
+        HeatPump.HeatingPLR = state.dataWaterThermalTanks->hpPartLoadRatio;
+    } else {
+        HeatPump.HeatingPLR = 0.0;
+    }
     // Check schedule to divert air-side cooling to outdoors.
     if (HeatPump.outletAirSplitterSched != nullptr) {
         Real64 OutletAirSplitterSch = HeatPump.outletAirSplitterSched->getCurrentVal();
@@ -9886,10 +9895,9 @@ void WaterThermalTankData::CalcHeatPumpWaterHeater(EnergyPlusData &state, bool c
             state.dataWaterThermalTanks->mdotAir * state.dataWaterThermalTanks->hpPartLoadRatio * OutletAirSplitterSch;
     }
 
-    HeatPump.HeatingPLR = state.dataWaterThermalTanks->hpPartLoadRatio;
-    HeatPump.OnCycParaFuelRate = HeatPump.OnCycParaLoad * state.dataWaterThermalTanks->hpPartLoadRatio;
+    HeatPump.OnCycParaFuelRate = HeatPump.OnCycParaLoad * HeatPump.HeatingPLR;
     HeatPump.OnCycParaFuelEnergy = HeatPump.OnCycParaFuelRate * state.dataHVACGlobal->TimeStepSysSec;
-    HeatPump.OffCycParaFuelRate = HeatPump.OffCycParaLoad * (1.0 - state.dataWaterThermalTanks->hpPartLoadRatio);
+    HeatPump.OffCycParaFuelRate = HeatPump.OffCycParaLoad * (1.0 - HeatPump.HeatingPLR);
     HeatPump.OffCycParaFuelEnergy = HeatPump.OffCycParaFuelRate * state.dataHVACGlobal->TimeStepSysSec;
     if (HeatPump.HPWHTankType == DataPlant::PlantEquipmentType::WtrHeaterMixed) {
         HeatPump.ControlTempAvg = this->TankTempAvg;

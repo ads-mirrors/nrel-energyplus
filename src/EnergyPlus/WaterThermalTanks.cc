@@ -9890,9 +9890,8 @@ void WaterThermalTankData::CalcHeatPumpWaterHeater(EnergyPlusData &state, bool c
     if (HeatPump.outletAirSplitterSched != nullptr) {
         Real64 OutletAirSplitterSch = HeatPump.outletAirSplitterSched->getCurrentVal();
         state.dataLoopNodes->Node(HPAirOutletNode).MassFlowRate =
-            state.dataWaterThermalTanks->mdotAir * state.dataWaterThermalTanks->hpPartLoadRatio * (1.0 - OutletAirSplitterSch);
-        state.dataLoopNodes->Node(ExhaustAirNode).MassFlowRate =
-            state.dataWaterThermalTanks->mdotAir * state.dataWaterThermalTanks->hpPartLoadRatio * OutletAirSplitterSch;
+            state.dataWaterThermalTanks->mdotAir * HeatPump.HeatingPLR * (1.0 - OutletAirSplitterSch);
+        state.dataLoopNodes->Node(ExhaustAirNode).MassFlowRate = state.dataWaterThermalTanks->mdotAir * HeatPump.HeatingPLR * OutletAirSplitterSch;
     }
 
     HeatPump.OnCycParaFuelRate = HeatPump.OnCycParaLoad * HeatPump.HeatingPLR;

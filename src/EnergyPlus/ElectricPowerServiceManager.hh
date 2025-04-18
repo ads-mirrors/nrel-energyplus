@@ -223,6 +223,11 @@ private: // data
         Num
     };
 
+    static constexpr std::array<std::string_view, (int)ConverterModelType::Num> converterModelTypeNames = {
+        "FunctionOfPower", "SimpleFixed" };
+    static constexpr std::array<std::string_view, (int)ConverterModelType::Num> converterModelTypeNamesUC = {
+        "FUNCTIONOFPOWER", "SIMPLEFIXED" };
+  
     std::string name_; // user identifier
     Real64 efficiency_;
     Real64 aCPowerIn_;
@@ -477,6 +482,12 @@ private: // data
                                        // draws
         Num
     };
+
+    static constexpr std::array<std::string_view, (int)TransformerUse::Num> transformerUseNames = {
+        "PowerInFromGrid", "PowerOutToGrid", "LoadCenterPowerConditioning" };
+    static constexpr std::array<std::string_view, (int)TransformerUse::Num> transformerUseNamesUC = {
+        "POWERINFROMGRID", "POWEROUTTOGRID", "LOADCENTERPOWERCONDITIONING" };
+  
     enum class TransformerPerformanceInput
     {
         Invalid = -1,
@@ -485,6 +496,11 @@ private: // data
         Num
     };
 
+    static constexpr std::array<std::string_view, (int)TransformerPerformanceInput::Num> transformerPerformanceInputNames = {
+      "RatedLosses", "NominalEfficiency" };
+    static constexpr std::array<std::string_view, (int)TransformerPerformanceInput::Num> transformerPerformanceInputNamesUC = {
+      "RATEDLOSSES", "NOMINALEFFICIENCY" };
+  
     std::string name_; // user identifier
     bool myOneTimeFlag_;
     Sched::Schedule *availSched_ = nullptr;            // availability schedule
@@ -628,6 +644,21 @@ public: // data public for unit test
         Num
     };
 
+    static constexpr std::array<std::string_view, (int)ElectricBussType::Num> electricBussTypeNames = {
+        "AlternatingCurrent",
+        "DirectCurrentWithInverter",
+        "AlternatingCurrentWithStorage",
+        "DirectCurrentWithInverterDCStorage",
+        "DirectCurrentWithInverterACStorage"
+    };
+    static constexpr std::array<std::string_view, (int)ElectricBussType::Num> electricBussTypeNamesUC = {
+        "ALTERNATINGCURRENT",
+        "DIRECTCURRENTWITHINVERTER",
+        "ALTERNATINGCURRENTWITHSTORAGE",
+        "DIRECTCURRENTWITHINVERTERDCSTORAGE",
+        "DIRECTCURRENTWITHINVERTERACSTORAGE"
+    };
+  
     std::unique_ptr<ElectricStorage> storageObj;
     std::unique_ptr<ACtoDCConverter> converterObj;
     std::unique_ptr<ElectricTransformer> transformerObj;
@@ -668,6 +699,11 @@ private: // data
         Num
     };
 
+    static constexpr std::array<std::string_view, (int)GeneratorOpScheme::Num> generatorOpSchemeNames = {
+        "Baseload", "DemandLimit", "TrackElectrical", "TrackSchedule", "TrackMeter", "FollowThermal", "FollowThermalLimitElectrical" };
+    static constexpr std::array<std::string_view, (int)GeneratorOpScheme::Num> generatorOpSchemeNamesUC = {
+        "BASELOAD", "DEMANDLIMIT", "TRACKELECTRICAL", "TRACKSCHEDULE", "TRACKMETER", "FOLLOWTHERMAL", "FOLLOWTHERMALLIMITELECTRICAL" };
+  
     enum class StorageOpScheme : int
     {
         Invalid = -1,
@@ -678,6 +714,19 @@ private: // data
         Num
     };
 
+    static constexpr std::array<std::string_view, (int)StorageOpScheme::Num> storageOpSchemeNames = {
+        "TrackFacilityElectricDemandStoreExcessOnSite",
+        "TrackMeterDemandStoreExcessOnSite",
+        "TrackChargeDischargeSchedules",
+        "FacilityDemandLeveling"
+    };
+    static constexpr std::array<std::string_view, (int)StorageOpScheme::Num> storageOpSchemeNamesUC = {
+        "TRACKFACILITYELECTRICDEMANDSTOREEXCESSONSITE",
+        "TRACKMETERDEMANDSTOREEXCESSONSITE",
+        "TRACKCHARGEDISCHARGESCHEDULES",
+        "FACILITYDEMANDLEVELING"
+    };
+  
     std::string name_;                     // user identifier
     std::string generatorListName_;        // List name of available generators
     GeneratorOpScheme genOperationScheme_; // Name of Operation Scheme
@@ -809,7 +858,7 @@ private:                      // data
 
 void createFacilityElectricPowerServiceObject(const EnergyPlusData &state);
 
-Real64 checkUserEfficiencyInput(EnergyPlusData &state, Real64 userInputValue, std::string whichType, std::string deviceName, bool &errorsFound);
+Real64 checkUserEfficiencyInput(EnergyPlusData &state, Real64 userInputValue, bool isCharging, std::string const &deviceName, bool &errorsFound);
 
 void checkChargeDischargeVoltageCurves(
     EnergyPlusData &state, std::string_view nameBatt, Real64 const E0c, Real64 const E0d, Curve::Curve *chargeCurve, Curve::Curve *dischargeCurve);

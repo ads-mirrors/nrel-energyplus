@@ -6910,19 +6910,23 @@ namespace Weather {
                 } else {
                     state.dataWeather->WaterMainsTempsAnnualAvgAirTemp = NumArray(1);
                     state.dataWeather->WaterMainsTempsMaxDiffAirTemp = NumArray(2);
-                    state.dataWeather->WaterMainsTempsMultiplier = NumArray(3);
-                    state.dataWeather->WaterMainsTempsOffset = NumArray(4);
                 }
             } break;
             case WaterMainsTempCalcMethod::CorrelationFromWeatherFile: {
-                state.dataWeather->WaterMainsTempsMultiplier = NumArray(3);
-                state.dataWeather->WaterMainsTempsOffset = NumArray(4);
+                // No action
             } break;
             default: {
                 ShowSevereInvalidKey(state, eoh, ipsc->cAlphaFieldNames(1), AlphArray(1));
                 ErrorsFound = true;
             } break;
             } // switch
+
+            if (!ipsc->lNumericFieldBlanks(3)) {
+                state.dataWeather->WaterMainsTempsMultiplier = NumArray(3);
+            }
+            if (!ipsc->lNumericFieldBlanks(4)) {
+                state.dataWeather->WaterMainsTempsOffset = NumArray(4);
+            }
 
         } else if (NumObjects > 1) {
             ShowSevereError(state, format("{}: Too many objects entered. Only one allowed.", ipsc->cCurrentModuleObject));

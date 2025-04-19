@@ -104,6 +104,11 @@ namespace PlantPipingSystemsManager {
     // The mesh can include any number of pipe circuits placed within the domain
     // The mesh can interact with basement walls also
 
+constexpr std::array<std::string_view, (int)SlabPosition::Num> slabPositionNamesUC = { "INGRADE", "ONGRADE" };
+
+constexpr std::array<std::string_view, (int)HorizInsulation::Num> horizInsulationNamesUC = { "NONE", "PERIMETER", "FULL" };
+
+
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "cert-err58-cpp"
     // MODULE PARAMETER DEFINITIONS:
@@ -624,21 +629,16 @@ namespace PlantPipingSystemsManager {
             thisDomain.Moisture.Theta_sat = state.dataIPShortCut->rNumericArgs(14) / 100.0;
 
             // check if there is a basement
-            if (Util::SameString(state.dataIPShortCut->cAlphaArgs(7), "YES")) {
-                thisDomain.HasBasement = true;
-            } else if (Util::SameString(state.dataIPShortCut->cAlphaArgs(7), "NO")) {
-                thisDomain.HasBasement = false;
+            if (state.dataIPShortCut->lAlphaFieldBlanks(7)) {
+                ShowSevereEmptyField(state, eoh, state.dataIPShortCut->cAlphaFieldNames(7));
+                ErrorsFound = true;
+            } else if (BooleanSwitch bs = getYesNoValue(state.dataIPShortCut->cAlphaArgs(7)); bs != BooleanSwitch::Invalid) {
+                thisDomain.HasBasement = static_cast<bool>(bs);
             } else {
-                IssueSevereInputFieldError(state,
-                                           routineName,
-                                           ObjName_ug_GeneralDomain,
-                                           state.dataIPShortCut->cAlphaArgs(1),
-                                           state.dataIPShortCut->cAlphaFieldNames(7),
-                                           state.dataIPShortCut->cAlphaArgs(7),
-                                           "Must enter either yes or no.",
-                                           ErrorsFound);
+                ShowSevereInvalidBool(state, eoh, state.dataIPShortCut->cAlphaFieldNames(7), state.dataIPShortCut->cAlphaArgs(7));
+                ErrorsFound = true;
             }
-
+            
             // more work to do if there is a basement
             if (thisDomain.HasBasement) {
 
@@ -682,19 +682,14 @@ namespace PlantPipingSystemsManager {
 
                 // check for dimension shift
                 CurIndex = 8;
-                if (Util::SameString(state.dataIPShortCut->cAlphaArgs(CurIndex), "YES")) {
-                    thisDomain.BasementZone.ShiftPipesByWidth = true;
-                } else if (Util::SameString(state.dataIPShortCut->cAlphaArgs(CurIndex), "NO")) {
-                    thisDomain.BasementZone.ShiftPipesByWidth = false;
+                if (state.dataIPShortCut->lAlphaFieldBlanks(CurIndex)) {
+                    ShowSevereEmptyField(state, eoh, state.dataIPShortCut->cAlphaFieldNames(CurIndex));
+                    ErrorsFound = true;
+                } else if (BooleanSwitch bs = getYesNoValue(state.dataIPShortCut->cAlphaArgs(CurIndex)); bs != BooleanSwitch::Invalid) {
+                    thisDomain.BasementZone.ShiftPipesByWidth = static_cast<bool>(bs);
                 } else {
-                    IssueSevereInputFieldError(state,
-                                               routineName,
-                                               ObjName_ug_GeneralDomain,
-                                               state.dataIPShortCut->cAlphaArgs(1),
-                                               state.dataIPShortCut->cAlphaFieldNames(CurIndex),
-                                               state.dataIPShortCut->cAlphaArgs(CurIndex),
-                                               "Must enter either yes or no.",
-                                               ErrorsFound);
+                    ShowSevereInvalidBool(state, eoh, state.dataIPShortCut->cAlphaFieldNames(CurIndex), state.dataIPShortCut->cAlphaArgs(CurIndex));
+                    ErrorsFound = true;
                 }
 
                 // get boundary condition model names and indices --error check
@@ -879,18 +874,16 @@ namespace PlantPipingSystemsManager {
             thisDomain.VertInsDepth = s_ipsc->rNumericArgs(11);
 
             // Set flag for slab in-grade or slab on-grade
-            if (Util::SameString(s_ipsc->cAlphaArgs(5), "INGRADE")) {
-                thisDomain.SlabInGradeFlag = true;
-            } else if (Util::SameString(s_ipsc->cAlphaArgs(5), "ONGRADE")) {
-                thisDomain.SlabInGradeFlag = false;
-            } else {
-                ShowSevereError(state, format("Invalid {}={}", s_ipsc->cAlphaFieldNames(5), s_ipsc->cAlphaArgs(5)));
-                ShowContinueError(state, format("Found in: {}", thisDomain.Name));
+            if (s_ipsc->lAlphaFieldBlanks(5)) {
+                ShowSevereEmptyField(state, eoh, s_ipsc->cAlphaFieldNames(5));
+            } else if ((thisDomain.slabPosition =
+                        static_cast<SlabPosition>(getEnumValue(slabPositionNamesUC, s_ipsc->cAlphaArgs(5)))) == SlabPosition::Invalid) {
+                ShowSevereInvalidKey(state, eoh, s_ipsc->cAlphaFieldNames(5), s_ipsc->cAlphaArgs(5));
                 ErrorsFound = true;
             }
 
             // Get slab material properties
-            if (thisDomain.SlabInGradeFlag) {
+            if (thisDomain.slabPosition == SlabPosition::InGrade) {
                 thisDomain.SlabMaterialNum = Material::GetMaterialNum(state, s_ipsc->cAlphaArgs(6));
                 if (thisDomain.SlabMaterialNum == 0) {
                     ShowSevereItemNotFound(state, eoh, s_ipsc->cAlphaFieldNames(6), s_ipsc->cAlphaArgs(6));
@@ -905,20 +898,20 @@ namespace PlantPipingSystemsManager {
             }
 
             // set flag for horizontal insulation
-            if (thisDomain.SlabInGradeFlag) {
-                if (Util::SameString(s_ipsc->cAlphaArgs(7), "NO")) {
-                    thisDomain.HorizInsPresentFlag = false;
-                } else if (Util::SameString(s_ipsc->cAlphaArgs(7), "YES")) {
-                    thisDomain.HorizInsPresentFlag = true;
+            if (thisDomain.slabPosition == SlabPosition::InGrade) {
+                if (s_ipsc->lAlphaFieldBlanks(7)) {
+                    ShowSevereEmptyField(state, eoh, s_ipsc->cAlphaFieldNames(7));
+                    ErrorsFound = true;
+                } else if (BooleanSwitch bs = getYesNoValue(s_ipsc->cAlphaArgs(7)); bs != BooleanSwitch::Invalid) {
+                    thisDomain.HorizIns = static_cast<bool>(bs) ? HorizInsulation::Perimeter : HorizInsulation::None;
                 } else {
-                    ShowSevereError(state, format("Invalid {}={}", s_ipsc->cAlphaFieldNames(7), s_ipsc->cAlphaArgs(7)));
-                    ShowContinueError(state, format("Found in: {}", thisDomain.Name));
+                    ShowSevereInvalidBool(state, eoh, s_ipsc->cAlphaFieldNames(7), s_ipsc->cAlphaArgs(7));
                     ErrorsFound = true;
                 }
             }
 
             // Get horizontal insulation material properties
-            if (thisDomain.HorizInsPresentFlag) {
+            if (thisDomain.HorizIns != HorizInsulation::Invalid && thisDomain.HorizIns != HorizInsulation::None) {
                 thisDomain.HorizInsMaterialNum = Material::GetMaterialNum(state, s_ipsc->cAlphaArgs(8));
                 if (thisDomain.HorizInsMaterialNum == 0) {
                     ShowSevereItemNotFound(state, eoh, s_ipsc->cAlphaFieldNames(8), s_ipsc->cAlphaArgs(8));
@@ -935,32 +928,33 @@ namespace PlantPipingSystemsManager {
                     }
                 }
 
-                // Set flag for horizontal insulation extents
-                if (Util::SameString(s_ipsc->cAlphaArgs(9), "PERIMETER")) {
-                    thisDomain.FullHorizInsPresent = false;
+                if (s_ipsc->lAlphaFieldBlanks(9)) {
+                    if (thisDomain.HorizIns != HorizInsulation::None) {
+                        ShowSevereEmptyField(state, eoh, s_ipsc->cAlphaFieldNames(9));
+                        ErrorsFound = true;
+                    }
+                } else if ((thisDomain.HorizIns =
+                            static_cast<HorizInsulation>(getEnumValue(horizInsulationNamesUC, s_ipsc->cAlphaArgs(9)))) == HorizInsulation::Invalid) {
+                    ShowSevereInvalidKey(state, eoh, s_ipsc->cAlphaFieldNames(9), s_ipsc->cAlphaArgs(9));
+                    ErrorsFound = true;
+                } else if (thisDomain.HorizIns == HorizInsulation::Perimeter) { 
                     // Horizontal insulation perimeter width
                     if (thisDomain.HorizInsWidth <= 0.0) {
                         ShowSevereError(state, format("Invalid {}", s_ipsc->cNumericFieldNames(10)));
                         ShowContinueError(state, format("Found in: {}", thisDomain.Name));
                         ErrorsFound = true;
                     }
-                } else if (Util::SameString(s_ipsc->cAlphaArgs(9), "FULL")) {
-                    thisDomain.FullHorizInsPresent = true;
-                } else {
-                    ShowSevereError(state, format("Invalid {}={}", s_ipsc->cAlphaFieldNames(9), s_ipsc->cAlphaArgs(9)));
-                    ShowContinueError(state, format("Found in: {}", thisDomain.Name));
-                    ErrorsFound = true;
                 }
             }
 
             // set flag for vertical insulation
-            if (Util::SameString(s_ipsc->cAlphaArgs(10), "NO")) {
-                thisDomain.VertInsPresentFlag = false;
-            } else if (Util::SameString(s_ipsc->cAlphaArgs(10), "YES")) {
-                thisDomain.VertInsPresentFlag = true;
+            if (s_ipsc->lAlphaFieldBlanks(10)) {
+                ShowSevereEmptyField(state, eoh, s_ipsc->cAlphaFieldNames(10));
+                ErrorsFound = true;
+            } else if (BooleanSwitch bs = getYesNoValue(s_ipsc->cAlphaArgs(10)); bs != BooleanSwitch::Invalid) {
+                thisDomain.VertInsPresentFlag = static_cast<bool>(bs);
             } else {
-                ShowSevereError(state, format("Invalid {}={}", s_ipsc->cAlphaFieldNames(10), s_ipsc->cAlphaArgs(10)));
-                ShowContinueError(state, format("Found in: {}", thisDomain.Name));
+                ShowSevereInvalidBool(state, eoh, s_ipsc->cAlphaFieldNames(10), s_ipsc->cAlphaArgs(10));
                 ErrorsFound = true;
             }
 
@@ -990,6 +984,8 @@ namespace PlantPipingSystemsManager {
                 }
             }
 
+#ifdef GET_OUT
+            // This does not appear to be used anywhere
             // Set simulation interval flag
             if (Util::SameString(s_ipsc->cAlphaArgs(12), "TIMESTEP")) {
                 thisDomain.SimTimeStepFlag = true;
@@ -1000,7 +996,8 @@ namespace PlantPipingSystemsManager {
                 ShowContinueError(state, format("Found in: {}", thisDomain.Name));
                 ErrorsFound = true;
             }
-
+#endif // GET_OUT
+            
             //******* We'll first set up the domain ********
             thisDomain.IsActuallyPartOfAHorizontalTrench = false;
             thisDomain.HasAPipeCircuit = false;
@@ -1049,14 +1046,14 @@ namespace PlantPipingSystemsManager {
 
             // Check horizontal insulation width so as to prevent overlapping insulation. VertInsThickness is used here since it is used for vertical
             // partition thickness.
-            if (!thisDomain.FullHorizInsPresent && ThisArea > 0.0) {
+            if (thisDomain.HorizIns == HorizInsulation::Perimeter && ThisArea > 0.0) {
                 if (2 * (thisDomain.HorizInsWidth + thisDomain.VertInsThickness) > thisDomain.SlabWidth ||
                     2 * (thisDomain.HorizInsWidth + thisDomain.VertInsThickness) > thisDomain.SlabLength) {
                     ShowContinueError(state, format("{}: Perimeter insulation width is too large.", routineName));
                     ShowContinueError(state, "This would cause overlapping insulation. Check inputs.");
                     ShowContinueError(state, "Defaulting to full horizontal insulation.");
                     ShowContinueError(state, format("Found in: {}", thisDomain.Name));
-                    thisDomain.FullHorizInsPresent = true;
+                    thisDomain.HorizIns = HorizInsulation::Full;
                 }
             }
 
@@ -1293,18 +1290,18 @@ namespace PlantPipingSystemsManager {
 
             // set flag for horizontal insulation
             // Check s_ipsc->cAlphaArgs value
-            if (Util::SameString(s_ipsc->cAlphaArgs(5), "NO")) {
-                thisDomain.HorizInsPresentFlag = false;
-            } else if (Util::SameString(s_ipsc->cAlphaArgs(5), "YES")) {
-                thisDomain.HorizInsPresentFlag = true;
+            if (s_ipsc->lAlphaFieldBlanks(5)) {
+                ShowSevereEmptyField(state, eoh, s_ipsc->cAlphaFieldNames(5));
+                ErrorsFound = true;
+            } else if (BooleanSwitch bs = getYesNoValue(s_ipsc->cAlphaArgs(5)); bs != BooleanSwitch::Invalid) {
+                thisDomain.HorizIns = static_cast<bool>(bs) ? HorizInsulation::Perimeter : HorizInsulation::None;
             } else {
-                ShowSevereError(state, format("Invalid {}={}", s_ipsc->cAlphaFieldNames(5), s_ipsc->cAlphaArgs(5)));
-                ShowContinueError(state, format("Found in: {}", thisDomain.Name));
+                ShowSevereInvalidBool(state, eoh, s_ipsc->cAlphaFieldNames(5), s_ipsc->cAlphaArgs(5));
                 ErrorsFound = true;
             }
 
             // Get horizontal insulation material properties
-            if (thisDomain.HorizInsPresentFlag) {
+            if (thisDomain.HorizIns != HorizInsulation::None) {
                 thisDomain.HorizInsMaterialNum = Material::GetMaterialNum(state, s_ipsc->cAlphaArgs(6));
                 if (thisDomain.HorizInsMaterialNum == 0) {
                     ShowSevereItemNotFound(state, eoh, s_ipsc->cAlphaFieldNames(6), s_ipsc->cAlphaArgs(6));
@@ -1322,31 +1319,33 @@ namespace PlantPipingSystemsManager {
                 }
 
                 // Set flag for horizontal insulation extents
-                if (Util::SameString(s_ipsc->cAlphaArgs(7), "PERIMETER")) {
-                    thisDomain.FullHorizInsPresent = false;
+                if (s_ipsc->lAlphaFieldBlanks(7)) {
+                    if (thisDomain.HorizIns != HorizInsulation::None) { 
+                        ShowSevereEmptyField(state, eoh, s_ipsc->cAlphaFieldNames(7));
+                        ErrorsFound = true;
+                    }
+                } else if ((thisDomain.HorizIns =
+                            static_cast<HorizInsulation>(getEnumValue(horizInsulationNamesUC, s_ipsc->cAlphaArgs(7)))) == HorizInsulation::Invalid) {
+                    ShowSevereInvalidKey(state, eoh, s_ipsc->cAlphaFieldNames(7), s_ipsc->cAlphaArgs(7));
+                    ErrorsFound = true;
+                } else if (thisDomain.HorizIns == HorizInsulation::Perimeter) { 
                     // Horizontal insulation perimeter width
                     if (thisDomain.HorizInsWidth <= 0.0) {
                         ShowSevereError(state, format("Invalid {}", s_ipsc->cNumericFieldNames(10)));
                         ShowContinueError(state, format("Found in: {}", thisDomain.Name));
                         ErrorsFound = true;
                     }
-                } else if (Util::SameString(s_ipsc->cAlphaArgs(7), "FULL")) {
-                    thisDomain.FullHorizInsPresent = true;
-                } else {
-                    ShowSevereError(state, format("Invalid {}={}", s_ipsc->cAlphaFieldNames(7), s_ipsc->cAlphaArgs(7)));
-                    ShowContinueError(state, format("Found in: {}", thisDomain.Name));
-                    ErrorsFound = true;
                 }
             }
 
             // set flag for vertical insulation
-            if (Util::SameString(s_ipsc->cAlphaArgs(9), "NO")) {
-                thisDomain.VertInsPresentFlag = false;
-            } else if (Util::SameString(s_ipsc->cAlphaArgs(9), "YES")) {
-                thisDomain.VertInsPresentFlag = true;
+            if (s_ipsc->lAlphaFieldBlanks(9)) {
+                ShowSevereEmptyField(state, eoh, s_ipsc->cAlphaFieldNames(9));
+                ErrorsFound = true;
+            } else if (BooleanSwitch bs = getYesNoValue(s_ipsc->cAlphaArgs(9)); bs != BooleanSwitch::Invalid) {
+                thisDomain.VertInsPresentFlag = static_cast<bool>(bs);
             } else {
-                ShowSevereError(state, format("Invalid {}={}", s_ipsc->cAlphaFieldNames(9), s_ipsc->cAlphaArgs(9)));
-                ShowContinueError(state, format("Found in: {}", thisDomain.Name));
+                ShowSevereInvalidBool(state, eoh, s_ipsc->cAlphaFieldNames(9), s_ipsc->cAlphaArgs(9));
                 ErrorsFound = true;
             }
 
@@ -1375,6 +1374,8 @@ namespace PlantPipingSystemsManager {
                 }
             }
 
+#ifdef GET_OUT
+            // This is not actually used
             // Set simulation interval flag
             if (Util::SameString(s_ipsc->cAlphaArgs(11), "TIMESTEP")) {
                 thisDomain.SimTimeStepFlag = true;
@@ -1385,7 +1386,8 @@ namespace PlantPipingSystemsManager {
                 ShowContinueError(state, format("Found in: {}", thisDomain.Name));
                 ErrorsFound = true;
             }
-
+#endif // GET_OUT
+            
             GroundTemp::ModelType gtmType = static_cast<GroundTemp::ModelType>(getEnumValue(GroundTemp::modelTypeNamesUC, s_ipsc->cAlphaArgs(2)));
             if (gtmType == GroundTemp::ModelType::Invalid) {
                 ShowSevereInvalidKey(state, eoh, s_ipsc->cAlphaFieldNames(2), s_ipsc->cAlphaArgs(2));
@@ -1412,14 +1414,14 @@ namespace PlantPipingSystemsManager {
 
             // Check horizontal insulation width so as to prevent overlapping insulation. VertInsThickness is used here since it is used for vertical
             // partition thickness.
-            if (!thisDomain.FullHorizInsPresent && ThisArea > 0.0) {
+            if (thisDomain.HorizIns == HorizInsulation::Perimeter && ThisArea > 0.0) {
                 if ((thisDomain.HorizInsWidth + thisDomain.VertInsThickness) > thisDomain.BasementZone.Width / 2.0 ||
                     (thisDomain.HorizInsWidth + thisDomain.VertInsThickness) > thisDomain.BasementZone.Length / 2.0) {
                     ShowContinueError(state, format("{}: Perimeter insulation width is too large.", routineName));
                     ShowContinueError(state, "This would cause overlapping insulation. Check inputs.");
                     ShowContinueError(state, "Defaulting to full horizontal insulation.");
                     ShowContinueError(state, format("Found in: {}", thisDomain.Name));
-                    thisDomain.FullHorizInsPresent = true;
+                    thisDomain.HorizIns = HorizInsulation::Full;
                 }
             }
 
@@ -2819,7 +2821,7 @@ namespace PlantPipingSystemsManager {
                 SideXLocation = this->PerimeterOffset - InterfaceCellWidth - CellWidth / 2.0;
                 // Side X direction - Basement Wall Interface
                 SideXWallLocation = this->PerimeterOffset - InterfaceCellWidth / 2.0;
-                if (this->HorizInsPresentFlag && !this->FullHorizInsPresent) {
+                if (this->HorizIns == HorizInsulation::Perimeter) {
                     // Insulation Edge in X direction
                     SideXInsulationLocation = this->PerimeterOffset + this->HorizInsWidth + InterfaceCellWidth / 2.0;
                 } else {
@@ -2827,20 +2829,18 @@ namespace PlantPipingSystemsManager {
                 }
                 if (std::find(this->Partitions.X.begin(), this->Partitions.X.end(), this->BasementZone.Width) == this->Partitions.X.end()) {
                     // Partition at insulation edges in the X direction, if horizontal insulation present
-                    if (this->HorizInsPresentFlag) {
-                        if (!this->FullHorizInsPresent) {
-                            // Side X direction - Insulation layer
-                            this->Partitions.X.emplace_back(SideXLocation, PartitionType::XSide, CellWidth);
-                            // Side X direction - Basement Wall interface
-                            this->Partitions.X.emplace_back(SideXWallLocation, PartitionType::XSideWall, InterfaceCellWidth);
-                            // Insulation Edge X direction
-                            this->Partitions.X.emplace_back(SideXInsulationLocation, PartitionType::HorizInsXSide, InterfaceCellWidth);
-                        } else {
-                            // Side X direction - Insulation layer
-                            this->Partitions.X.emplace_back(SideXLocation, PartitionType::XSide, CellWidth);
-                            // Side X direction -Basement Wall interface
-                            this->Partitions.X.emplace_back(SideXWallLocation, PartitionType::XSideWall, InterfaceCellWidth);
-                        }
+                    if (this->HorizIns == HorizInsulation::Perimeter) {
+                        // Side X direction - Insulation layer
+                        this->Partitions.X.emplace_back(SideXLocation, PartitionType::XSide, CellWidth);
+                        // Side X direction - Basement Wall interface
+                        this->Partitions.X.emplace_back(SideXWallLocation, PartitionType::XSideWall, InterfaceCellWidth);
+                        // Insulation Edge X direction
+                        this->Partitions.X.emplace_back(SideXInsulationLocation, PartitionType::HorizInsXSide, InterfaceCellWidth);
+                    } else if (this->HorizIns == HorizInsulation::Full) {
+                        // Side X direction - Insulation layer
+                        this->Partitions.X.emplace_back(SideXLocation, PartitionType::XSide, CellWidth);
+                        // Side X direction -Basement Wall interface
+                        this->Partitions.X.emplace_back(SideXWallLocation, PartitionType::XSideWall, InterfaceCellWidth);
                     } else {
                         // Side X direction - Insulation layer
                         this->Partitions.X.emplace_back(SideXLocation, PartitionType::XSide, CellWidth);
@@ -2883,7 +2883,7 @@ namespace PlantPipingSystemsManager {
                 SideZLocation = this->PerimeterOffset - InterfaceCellWidth - CellWidth / 2.0;
                 // Side Z direction - Basement Wall Interface
                 SideZWallLocation = this->PerimeterOffset - InterfaceCellWidth / 2.0;
-                if (this->HorizInsPresentFlag && !this->FullHorizInsPresent) {
+                if (this->HorizIns == HorizInsulation::Perimeter) {
                     // Insulation Edge Z direction
                     SideZInsulationLocation = this->PerimeterOffset + this->HorizInsWidth + InterfaceCellWidth / 2.0;
                 } else {
@@ -2891,20 +2891,18 @@ namespace PlantPipingSystemsManager {
                 }
                 if (std::find(this->Partitions.Z.begin(), this->Partitions.Z.end(), this->BasementZone.Width) == this->Partitions.Z.end()) {
                     // Partition at insulation edges in the Z direction, if horizontal insulation present
-                    if (this->HorizInsPresentFlag) {
-                        if (!this->FullHorizInsPresent) {
-                            // Side Z direction - Insulation layer
-                            this->Partitions.Z.emplace_back(SideZLocation, PartitionType::ZSide, CellWidth);
-                            // Side Z direction - Basement Wall interface
-                            this->Partitions.Z.emplace_back(SideZWallLocation, PartitionType::ZSideWall, InterfaceCellWidth);
-                            // Insulation Edge Z direction
-                            this->Partitions.Z.emplace_back(SideZInsulationLocation, PartitionType::HorizInsZSide, InterfaceCellWidth);
-                        } else {
-                            // Side Z direction - Insulation layer
-                            this->Partitions.Z.emplace_back(SideZLocation, PartitionType::ZSide, CellWidth);
-                            // Side Z direction -Basement Wall interface
-                            this->Partitions.Z.emplace_back(SideZWallLocation, PartitionType::ZSideWall, InterfaceCellWidth);
-                        }
+                    if (this->HorizIns == HorizInsulation::Perimeter) { 
+                        // Side Z direction - Insulation layer
+                        this->Partitions.Z.emplace_back(SideZLocation, PartitionType::ZSide, CellWidth);
+                        // Side Z direction - Basement Wall interface
+                        this->Partitions.Z.emplace_back(SideZWallLocation, PartitionType::ZSideWall, InterfaceCellWidth);
+                        // Insulation Edge Z direction
+                        this->Partitions.Z.emplace_back(SideZInsulationLocation, PartitionType::HorizInsZSide, InterfaceCellWidth);
+                    } else if (this->HorizIns == HorizInsulation::Full) { 
+                        // Side Z direction - Insulation layer
+                        this->Partitions.Z.emplace_back(SideZLocation, PartitionType::ZSide, CellWidth);
+                        // Side Z direction -Basement Wall interface
+                        this->Partitions.Z.emplace_back(SideZWallLocation, PartitionType::ZSideWall, InterfaceCellWidth);
                     } else {
                         // Side Z direction - Insulation layer
                         this->Partitions.Z.emplace_back(SideZLocation, PartitionType::ZSide, CellWidth);
@@ -2926,23 +2924,21 @@ namespace PlantPipingSystemsManager {
             // Side X direction
             SideXLocation = this->PerimeterOffset - CellWidth / 2.0;
             // Insulation Edge X direction
-            if (this->HorizInsPresentFlag && !this->FullHorizInsPresent) {
+            if (this->HorizIns == HorizInsulation::Perimeter) { 
                 SideXInsulationLocation = SideXLocation + this->HorizInsWidth;
             } else {
                 SideXInsulationLocation = -1;
             }
             if (std::find(this->Partitions.X.begin(), this->Partitions.X.end(), this->SlabWidth) == this->Partitions.X.end()) {
                 // Partition at insulation edges in the X direction, if horizontal insulation present
-                if (this->HorizInsPresentFlag) {
-                    if (!this->FullHorizInsPresent) {
-                        // Side X direction
-                        this->Partitions.X.emplace_back(SideXLocation, PartitionType::XSide, CellWidth);
-                        // Insulation Edge X direction
-                        this->Partitions.X.emplace_back(SideXInsulationLocation, PartitionType::HorizInsXSide, CellWidth);
-                    } else {
-                        // Side X direction
-                        this->Partitions.X.emplace_back(SideXLocation, PartitionType::XSide, CellWidth);
-                    }
+                if (this->HorizIns == HorizInsulation::Perimeter) {
+                    // Side X direction
+                    this->Partitions.X.emplace_back(SideXLocation, PartitionType::XSide, CellWidth);
+                    // Insulation Edge X direction
+                    this->Partitions.X.emplace_back(SideXInsulationLocation, PartitionType::HorizInsXSide, CellWidth);
+                } else if (this->HorizIns == HorizInsulation::Full) { 
+                    // Side X direction
+                    this->Partitions.X.emplace_back(SideXLocation, PartitionType::XSide, CellWidth);
                 } else {
                     // Side X direction
                     this->Partitions.X.emplace_back(SideXLocation, PartitionType::XSide, CellWidth);
@@ -2960,7 +2956,7 @@ namespace PlantPipingSystemsManager {
                 YInsulationLocation = -1;
             }
 
-            if (this->SlabInGradeFlag) { // Slab in-grade case
+            if (this->slabPosition == SlabPosition::InGrade) { // Slab in-grade case
 
                 SlabDistFromBottom = this->Extents.yMax - this->SlabThickness - CellWidth / 2.0;
 
@@ -2994,23 +2990,21 @@ namespace PlantPipingSystemsManager {
             // Side Z direction
             SideZLocation = this->PerimeterOffset - CellWidth / 2.0;
             // Insulation Edge Z direction
-            if (this->HorizInsPresentFlag && !this->FullHorizInsPresent) {
+            if (this->HorizIns == HorizInsulation::Perimeter) { 
                 SideZInsulationLocation = SideZLocation + this->HorizInsWidth;
             } else {
                 SideZInsulationLocation = -1;
             }
             if (std::find(this->Partitions.Z.begin(), this->Partitions.Z.end(), this->SlabWidth) == this->Partitions.Z.end()) {
                 // Partition at insulation edges in the Z direction, if horizontal insulation present
-                if (this->HorizInsPresentFlag) {
-                    if (!this->FullHorizInsPresent) {
-                        // Side Z direction
-                        this->Partitions.Z.emplace_back(SideZLocation, PartitionType::ZSide, CellWidth);
-                        // Insulation Edge Z direction
-                        this->Partitions.Z.emplace_back(SideZInsulationLocation, PartitionType::HorizInsZSide, CellWidth);
-                    } else {
-                        // Side Z direction
-                        this->Partitions.Z.emplace_back(SideZLocation, PartitionType::ZSide, CellWidth);
-                    }
+                if (this->HorizIns == HorizInsulation::Perimeter) { 
+                    // Side Z direction
+                    this->Partitions.Z.emplace_back(SideZLocation, PartitionType::ZSide, CellWidth);
+                    // Insulation Edge Z direction
+                    this->Partitions.Z.emplace_back(SideZInsulationLocation, PartitionType::HorizInsZSide, CellWidth);
+                } else if (this->HorizIns == HorizInsulation::Full) { 
+                    // Side Z direction
+                    this->Partitions.Z.emplace_back(SideZLocation, PartitionType::ZSide, CellWidth);
                 } else {
                     // Side Z direction
                     this->Partitions.Z.emplace_back(SideZLocation, PartitionType::ZSide, CellWidth);
@@ -3420,16 +3414,16 @@ namespace PlantPipingSystemsManager {
                         }
 
                         // Assign different cells between in-grade and on-grade cases
-                        if (this->SlabInGradeFlag) { // In-grade case
+                        if (this->slabPosition == SlabPosition::InGrade) { // In-grade case
                             // This will assign the slab cells and horizontal insulation
 
                             if (CellZIndex > MinZIndex && CellXIndex > MinXIndex) {     // Cells inside bounds of slab
                                 if (CellYIndex >= YIndex && CellYIndex < y_max_index) { // Slab cells
                                     cellType = CellType::Slab;
                                 } else if (CellYIndex == (YIndex - 1)) {
-                                    if (this->HorizInsPresentFlag && this->FullHorizInsPresent) { // Full under-slab insulation
+                                    if (this->HorizIns == HorizInsulation::Full) { // Full under-slab insulation
                                         cellType = CellType::HorizInsulation;
-                                    } else if (this->HorizInsPresentFlag && !this->FullHorizInsPresent) { // Perimeter only under-slab insulation
+                                    } else if (this->HorizIns == HorizInsulation::Perimeter) { // Perimeter only under-slab insulation
                                         if (CellZIndex < InsulationZIndex || CellXIndex < InsulationXIndex) {
                                             cellType = CellType::HorizInsulation;
                                         }
@@ -3454,15 +3448,13 @@ namespace PlantPipingSystemsManager {
                                 cellType = CellType::BasementFloor;
                             } else if (CellYIndex == YIndex) {
                                 // Check if horizontal insulation present
-                                if (this->HorizInsPresentFlag) {
-                                    if (this->FullHorizInsPresent) { // Entire underfloor insulated
+                                if (this->HorizIns == HorizInsulation::Full) { // Entire underfloor insulated
+                                    cellType = CellType::HorizInsulation;
+                                    ++NumInsulationCells;
+                                } else if (this->HorizIns == HorizInsulation::Perimeter) { // Perimeter insulation
+                                    if (CellXIndex < InsulationXIndex || CellZIndex < InsulationZIndex) {
                                         cellType = CellType::HorizInsulation;
                                         ++NumInsulationCells;
-                                    } else { // Perimeter insulation
-                                        if (CellXIndex < InsulationXIndex || CellZIndex < InsulationZIndex) {
-                                            cellType = CellType::HorizInsulation;
-                                            ++NumInsulationCells;
-                                        }
                                     }
                                 }
                             }
@@ -5557,7 +5549,7 @@ namespace PlantPipingSystemsManager {
                         cell.Properties = this->VertInsProperties;
                         break;
                     case CellType::ZoneGroundInterface:
-                        if (this->SlabInGradeFlag) {
+                      if (this->slabPosition == SlabPosition::InGrade) {
                             cell.Properties = this->SlabProperties;
                         } else {
                             cell.Properties = this->GroundProperties;

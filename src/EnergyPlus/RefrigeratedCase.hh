@@ -75,11 +75,6 @@ namespace RefrigeratedCase {
         Num,
     };
 
-    constexpr std::array<std::string_view, (int)WIStockDoor::Num> wiStockDoorNames = {
-        "None", "AirCurtain", "StripCurtain" };
-    constexpr std::array<std::string_view, (int)WIStockDoor::Num> wiStockDoorNamesUC = {
-        "NONE", "AIRCURTAIN", "STRIPCURTAIN" };
-
     // Compressor suction pressure control
     enum class CompressorSuctionPressureCtrl
     {
@@ -89,11 +84,6 @@ namespace RefrigeratedCase {
         Num,
     };
 
-    constexpr std::array<std::string_view, (int)CompressorSuctionPressureCtrl::Num> compressorSuctionPressureCtrlNames = {
-        "FloatSuctionTemperature", "ConstantSuctionTemperature" };
-    constexpr std::array<std::string_view, (int)CompressorSuctionPressureCtrl::Num> compressorSuctionPressureCtrlNamesUC = {
-        "FLOATSUCTIONTEMPERATURE", "CONSTANTSUCTIONTEMPERATURE" };
-  
     // Subcooler type
     enum class SubcoolerType
     {
@@ -102,11 +92,6 @@ namespace RefrigeratedCase {
         Mechanical,
         Num,
     };
-
-    constexpr std::array<std::string_view, (int)SubcoolerType::Num> subcoolerTypeNames = {
-        "LiquidSuction", "Mechanical" };
-    constexpr std::array<std::string_view, (int)SubcoolerType::Num> subcoolerTypeNamesUC = {
-        "LIQUIDSUCTION", "MECHANICAL" };
 
     // Walk In Cooler Defrost Control type
     enum class DefrostCtrlType
@@ -117,11 +102,6 @@ namespace RefrigeratedCase {
         Num
     };
 
-    constexpr std::array<std::string_view, (int)DefrostCtrlType::Num> defrostCtrlTypeNames = {
-        "TimeSchedule", "TemperatureTermination"}; 
-    constexpr std::array<std::string_view, (int)DefrostCtrlType::Num> defrostCtrlTypeNamesUC = {
-        "TIMESCHEDULE", "TEMPERATURETERMINATION"}; 
-
     // Secondary loop parameters
     enum class SecFluidType
     {
@@ -131,11 +111,6 @@ namespace RefrigeratedCase {
         Num
     };
 
-    constexpr std::array<std::string_view, (int)SecFluidType::Num> secFluidTypeNames = {
-        "FluidAlwaysLiquid", "FluidPhaseChange" };
-    constexpr std::array<std::string_view, (int)SecFluidType::Num> secFluidTypeNamesUC = {
-        "FLUIDALWAYSLIQUID", "FLUIDPHASECHANGE" };
-  
     enum class SecPumpCtrl
     {
         Invalid = -1,
@@ -144,11 +119,6 @@ namespace RefrigeratedCase {
         Num
     };
 
-    constexpr std::array<std::string_view, (int)SecPumpCtrl::Num> secPumpCtrlNames = {
-        "Constant", "Variable" };
-    constexpr std::array<std::string_view, (int)SecPumpCtrl::Num> secPumpCtrlNamesUC = {
-        "CONSTANT", "VARIABLE" };
-  
     // Refrigerated display case energy equation form
     enum class EnergyEqnForm
     {
@@ -160,20 +130,6 @@ namespace RefrigeratedCase {
         Num
     };
 
-    constexpr std::array<std::string_view, (int)EnergyEqnForm::Num> energyEqnFormNames = {
-        "None",
-        "CaseTemperatureMethod", 
-        "RelativeHumidityMethod",
-        "DewpointMethod"
-    };
-
-    constexpr std::array<std::string_view, (int)EnergyEqnForm::Num> energyEqnFormNamesUC = {
-        "NONE",
-        "CASETEMPERATUREMETHOD", 
-        "RELATIVEHUMIDITYMETHOD",
-        "DEWPOINTMETHOD"
-    };
-  
     // Cascade condenser temperature control types
     enum class CascadeCndsrTempCtrlType
     {
@@ -183,11 +139,6 @@ namespace RefrigeratedCase {
         Num
     };
 
-    constexpr std::array<std::string_view, (int)CascadeCndsrTempCtrlType::Num> cascaseCndsrTempCtrlTypeNames = {
-        "Fixed", "Float"};
-    constexpr std::array<std::string_view, (int)CascadeCndsrTempCtrlType::Num> cascaseCndsrTempCtrlTypeNamesUC = {
-        "FIXED", "FLOAT"};
-    
     // Water-cooled condenser loop flow type
     enum class CndsrFlowType : int
     {
@@ -197,11 +148,6 @@ namespace RefrigeratedCase {
         Num
     };
 
-    constexpr std::array<std::string_view, (int)CndsrFlowType::Num> cndsrFlowTypeNames = {
-        "VariableFlow", "ConstantFlow" };
-    constexpr std::array<std::string_view, (int)CndsrFlowType::Num> cndsrFlowTypeNamesUC = {
-        "VARIABLEFLOW", "CONSTANTFLOW" };
-  
     // Air- and evap-cooled condenser fan speed control types
     enum class FanSpeedCtrlType
     {
@@ -213,11 +159,6 @@ namespace RefrigeratedCase {
         Num
     };
 
-    constexpr std::array<std::string_view, (int)FanSpeedCtrlType::Num> fanSpeedCtrlTypeNames = {
-        "VariableSpeed", "FixedLinear", "TwoSpeed", "Fixed" };
-    constexpr std::array<std::string_view, (int)FanSpeedCtrlType::Num> fanSpeedCtrlTypeNamesUC = {
-        "VARIABLESPEED", "FIXEDLINEAR", "TWOSPEED", "FIXED" };
-  
     // Refrigerated display case rack heat rejection location
     enum class HeatRejLocation
     {
@@ -227,11 +168,6 @@ namespace RefrigeratedCase {
         Num
     };
 
-    constexpr std::array<std::string_view, (int)FanSpeedCtrlType::Num> heatRejLocationNames = {
-        "Outdoors", "Zone" };
-    constexpr std::array<std::string_view, (int)FanSpeedCtrlType::Num> heatRejLocationNamesUC = {
-        "OUTDOORS", "ZONE" };
-  
     // Refrigerated display case defrost type
     enum class RefCaseDefrostType
     {
@@ -246,11 +182,6 @@ namespace RefrigeratedCase {
         Num
     };
 
-  constexpr std::array<std::string_view, (int)RefCaseDefrostType::Num> refCaseDefrostTypeNames = {
-      "None", "OffCycle", "HotFluid", "HotFluidWithTemperatureTermination", "Electric", "ElectricOnDemand", "ElectricWithTemperatureTermination" };
-  constexpr std::array<std::string_view, (int)RefCaseDefrostType::Num> refCaseDefrostTypeNamesUC = {
-      "NONE", "OFFCYCLE", "HOTFLUID", "HOTFLUIDWITHTEMPERATURETERMINATION", "ELECTRIC", "ELECTRICONDEMAND", "ELECTRICWITHTEMPERATURETERMINATION" };
-  
     // Anti-sweat heater control type
     enum class ASHtrCtrlType
     {
@@ -263,11 +194,6 @@ namespace RefrigeratedCase {
         Num
     };
 
-    constexpr std::array<std::string_view, (int)ASHtrCtrlType::Num> asHtrCtrlTypeNames = {
-        "None", "Constant", "Linear", "DewpointMethod", "HeatBalanceMethod" };
-    constexpr std::array<std::string_view, (int)ASHtrCtrlType::Num> asHtrCtrlTypeNamesUC = {
-        "NONE", "CONSTANT", "LINEAR", "DEWPOINTMETHOD", "HEATBALANCEMETHOD" };
-  
     // Compressor rating types
     enum class CompRatingType
     {
@@ -306,35 +232,6 @@ namespace RefrigeratedCase {
         Num
     };
 
-    constexpr std::array<std::string_view, (int)RatingType::Num> ratingTypeNames = {
-        "CapacityTotalSpecificConditions", 
-        "EuropeanSC1Standard",
-        "EuropeanSC1NominalWet",
-        "EuropeanSC2Standard", 
-        "EuropeanSC2NominalWet", 
-        "EuropeanSC3Standard", 
-        "EuropeanSC3NominalWet", 
-        "EuropeanSC4Standard", 
-        "EuropeanSC4NominalWet", 
-        "EuropeanSC5Standard", 
-        "EuropeanSC5NominalWet",
-        "UnitLoadFactorSensibleOnly" };
-
-    constexpr std::array<std::string_view, (int)RatingType::Num> ratingTypeNamesUC = {
-        "CAPACITYTOTALSPECIFICCONDITIONS", 
-        "EUROPEANSC1STANDARD",
-        "EUROPEANSC1NOMINALWET",
-        "EUROPEANSC2STANDARD", 
-        "EUROPEANSC2NOMINALWET", 
-        "EUROPEANSC3STANDARD", 
-        "EUROPEANSC3NOMINALWET", 
-        "EUROPEANSC4STANDARD", 
-        "EUROPEANSC4NOMINALWET", 
-        "EUROPEANSC5STANDARD", 
-        "EUROPEANSC5NOMINALWET",
-        "UNITLOADFACTORSENSIBLEONLY" };
-  
-
     enum class SHRCorrectionType
     {
         Invalid = -1,
@@ -345,11 +242,6 @@ namespace RefrigeratedCase {
         Num
     };
 
-    constexpr std::array<std::string_view, (int)SHRCorrectionType::Num> shrCorrectionTypeNames = {
-        "LinearSHR60", "QuadraticSHR", "European", "TabularRHxDT1xTRoom" };
-    constexpr std::array<std::string_view, (int)SHRCorrectionType::Num> shrCorrectionTypeNamesUC = {
-        "LINEARSHR60", "QUADRATICSHR", "EUROPEAN", "TABULARRHXDT1XTROOM" };
-  
     enum class VerticalLoc
     {
         Invalid = -1,
@@ -359,11 +251,6 @@ namespace RefrigeratedCase {
         Num
     };
 
-    constexpr std::array<std::string_view, (int)VerticalLoc::Num> verticalLocNames = {
-        "Ceiling", "Middle", "Floor" };
-    constexpr std::array<std::string_view, (int)VerticalLoc::Num> verticalLocNamesUC = {
-        "CEILING", "MIDDLE", "FLOOR" };
-  
     enum class SourceType
     {
         Invalid = -1,
@@ -383,11 +270,6 @@ namespace RefrigeratedCase {
         Num
     };
 
-    constexpr std::array<std::string_view, (int)DefrostType::Num> defrostTypeNames = {
-        "HotFluid", "Electric", "None", "OffCycle" };
-    constexpr std::array<std::string_view, (int)DefrostType::Num> defrostTypeNamesUC = {
-        "HOTFLUID", "ELECTRIC", "NONE", "OFFCYCLE" };
-
     enum class CriticalType
     {
         Invalid = -1,
@@ -395,11 +277,6 @@ namespace RefrigeratedCase {
         Transcritical,
         Num
     };
-
-    constexpr std::array<std::string_view, (int)CriticalType::Num> criticalTypeNames = {
-        "Subcritical", "Transcritical" };
-    constexpr std::array<std::string_view, (int)CriticalType::Num> criticalTypeNamesUC = {
-        "SUBCRITICAL", "TRANSCRITICAL" };
 
     enum class IntercoolerType
     {
@@ -410,11 +287,6 @@ namespace RefrigeratedCase {
         Num 
     };
 
-    constexpr std::array<std::string_view, (int)IntercoolerType::Num> intercoolerTypeNames = {
-        "None", "Flash Intercooler", "Shell-and-Coil Intercooler" };
-    constexpr std::array<std::string_view, (int)IntercoolerType::Num> intercoolerTypeNamesUC = {
-        "None", "Flash Intercooler", "Shell-and-Coil Intercooler" };
-
     enum class TransSysType
     {
         Invalid = -1,
@@ -423,11 +295,6 @@ namespace RefrigeratedCase {
         Num
     };
    
-    constexpr std::array<std::string_view, (int)IntercoolerType::Num> transSysTypeNames = {
-        "SingleStage", "TwoStage" };
-    constexpr std::array<std::string_view, (int)IntercoolerType::Num> transSysTypeNamesUC = {
-        "SINGLESTAGE", "TWOSTAGE" };
-  
     struct RefrigCaseData
     {
         std::string Name;                                             // Name of refrigerated display case

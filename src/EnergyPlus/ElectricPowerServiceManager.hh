@@ -83,24 +83,26 @@ enum class GeneratorType
     Num
 };
 
-static constexpr std::array<std::string_view, static_cast<int>(GeneratorType::Num)> GeneratorTypeNames{"Generator:InternalCombustionEngine",
-                                                                                                       "Generator:CombustionTurbine",
-                                                                                                       "Generator:Photovoltaic",
-                                                                                                       "Generator:FuelCell",
-                                                                                                       "Generator:MicroCHP",
-                                                                                                       "Generator:MicroTurbine",
-                                                                                                       "Generator:WindTurbine",
-                                                                                                       "Generator:PVWatts"};
-
-static constexpr std::array<std::string_view, static_cast<int>(GeneratorType::Num)> GeneratorTypeNamesUC{"GENERATOR:INTERNALCOMBUSTIONENGINE",
-                                                                                                         "GENERATOR:COMBUSTIONTURBINE",
-                                                                                                         "GENERATOR:PHOTOVOLTAIC",
-                                                                                                         "GENERATOR:FUELCELL",
-                                                                                                         "GENERATOR:MICROCHP",
-                                                                                                         "GENERATOR:MICROTURBINE",
-                                                                                                         "GENERATOR:WINDTURBINE",
-                                                                                                         "GENERATOR:PVWATTS"};
-
+constexpr std::array<std::string_view, (int)GeneratorType::Num> generatorTypeNames = {
+    "Generator:InternalCombustionEngine",
+    "Generator:CombustionTurbine",
+    "Generator:Photovoltaic",
+    "Generator:FuelCell",
+    "Generator:MicroCHP",
+    "Generator:MicroTurbine",
+    "Generator:WindTurbine",
+    "Generator:PVWatts"};
+  
+constexpr std::array<std::string_view, (int)GeneratorType::Num> generatorTypeNamesUC = {
+    "GENERATOR:INTERNALCOMBUSTIONENGINE",
+    "GENERATOR:COMBUSTIONTURBINE",
+    "GENERATOR:PHOTOVOLTAIC",
+    "GENERATOR:FUELCELL",
+    "GENERATOR:MICROCHP",
+    "GENERATOR:MICROTURBINE",
+    "GENERATOR:WINDTURBINE",
+    "GENERATOR:PVWATTS"};
+  
 enum class ThermalLossDestination
 {
     Invalid = -1,

@@ -80,7 +80,206 @@ namespace EnergyPlus::EconomicTariff {
 
 //    Compute utility bills for a building based on energy
 //    use estimate.
+  
+constexpr std::array<std::string_view, (int)EconConv::Num> convEnergyStrings = {
+    "Userdefined", "kWh", "Therm", "MMBtu", "MJ", "kBTU", "MCF", "CCF", "m3", "gal", "kgal" };
+constexpr std::array<std::string_view, (int)EconConv::Num> convDemandStrings = {
+    "", "kW", "Therm", "MMBtu", "MJ", "kBTU", "MCF", "CCF", "m3", "gal", "kgal" };
+constexpr std::array<std::string_view, (int)EconConv::Num> econConvNamesUC = {
+    "USERDEFINED", "KWH", "THERM", "MMBTU", "MJ", "KBTU", "MCF", "CCF", "M3", "GAL", "KGAL" };
 
+constexpr std::array<std::string_view, (int)DemandWindow::Num> demandWindowStrings = {
+    "/Hr", "/Hr", "/Hr", "/Day", "/Wk" };
+
+constexpr std::array<std::string_view, (int)BuySell::Num> buySellNames = {
+    "BuyFromUtility", "SellToUtility", "NetMetering" };
+constexpr std::array<std::string_view, (int)BuySell::Num> buySellNamesUC = {
+    "BUYFROMUTILITY", "SELLTOUTILITY", "NETMETERING" };
+  
+constexpr std::array<std::string_view, (int)Season::Num> seasonNames = {
+    "Unused", "Winter", "Spring", "Summer", "Fall", "Annual", "Monthly"};
+constexpr std::array<std::string_view, (int)Season::Num> seasonNamesUC = {
+    "Unused", "WINTER", "SPRING", "SUMMER", "FALL", "ANNUAL", "MONTHLY"};
+
+constexpr std::array<std::string_view, (int)Op::Num> opNamesUC = {
+    "SUM",
+    "MULTIPLY",
+    "SUBTRACT",
+    "DIVIDE",
+    "ABSOLUTE",
+    "INTEGER",
+    "SIGN",
+    "ROUND",
+    "MAXIMUM",
+    "MINIMUM",
+    "EXCEEDS",
+    "ANNUALMINIMUM",
+    "ANNUALMAXIMUM",
+    "ANNUALSUM",
+    "ANNUALAVERAGE",
+    "ANNUALOR",
+    "ANNUALAND",
+    "ANNUALMAXIMUMZERO",
+    "ANNUALMINIMUMZERO",
+    "IF",
+    "GREATERTHAN",
+    "GREATEREQUAL",
+    "LESSTHAN",
+    "LESSEQUAL",
+    "EQUAL",
+    "NOTEQUAL",
+    "AND",
+    "OR",
+    "NOT", 
+    "ADD", 
+    "FROM"
+};
+  
+constexpr std::array<std::string_view, (int)Op::Num> opNames2UC = {
+    "SUM",
+    "MULT",
+    "SUBT",
+    "DIV",
+    "ABS",
+    "INT",
+    "SIGN",
+    "ROUND",
+    "MAX",
+    "MIN",
+    "EXCEEDS",
+    "ANMIN",
+    "ANMAX",
+    "ANSUM",
+    "ANAVG",
+    "ANOR",
+    "ANAND",
+    "ANMAXZ",
+    "ANMINZ",
+    "IF",
+    "GT",
+    "GE",
+    "LT",
+    "LE",
+    "EQ",
+    "NE",
+    "AND",
+    "OR",
+    "NOT", 
+    "ADD", 
+    "NOOP"
+};
+  
+constexpr std::array<std::string_view, (int)Cat::Num> catNames = {
+    "EnergyCharges",
+    "DemandCharges",
+    "ServiceCharges",
+    "Basis",
+    "Adjustment",
+    "Surcharge",
+    "Subtotal",
+    "Taxes",
+    "Total",
+    "NotIncluded"
+};
+constexpr std::array<std::string_view, (int)Cat::Num> catNamesUC = {
+    "ENERGYCHARGES",
+    "DEMANDCHARGES",
+    "SERVICECHARGES",
+    "BASIS",
+    "ADJUSTMENT",
+    "SURCHARGE",
+    "SUBTOTAL",
+    "TAXES",
+    "TOTAL",
+    "NOTINCLUDED"
+};
+
+constexpr std::array<std::string_view, (int)Native::Num> nativeNames = {
+    "TotalEnergy", 
+    "TotalDemand", 
+    "PeakEnergy", 
+    "PeakDemand", 
+    "ShoulderEnergy", 
+    "ShoulderDemand", 
+    "OffPeakEnergy", 
+    "OffPeakDemand", 
+    "MidPeakEnergy", 
+    "MidPeakDemand", 
+    "PeakExceedsOffPeak", 
+    "OffPeakExceedsPeak", 
+    "PeakExceedsMidPeak", 
+    "MidPeakExceedsPeak", 
+    "PeakExceedsShoulder", 
+    "ShoulderExceedsPeak", 
+    "IsWinter", 
+    "IsNotWinter", 
+    "IsSpring", 
+    "IsNotSpring", 
+    "IsSummer", 
+    "IsNotSummer", 
+    "IsAutumn", 
+    "IsNotAutumn", 
+    "PeakAndShoulderEnergy", 
+    "PeakAndShoulderDemand", 
+    "PeakAndMidPeakEnergy", 
+    "PeakAndMidPeakDemand",
+    "ShoulderAndOffPeakEnergy", 
+    "ShoulderAndOffPeakDemand", 
+    "PeakAndOffPeakEnergy", 
+    "PeakAndOffPeakDemand",
+    "RealTimePriceCosts", 
+    "AboveCustomerBaseCosts",
+    "BelowCustomerBaseCosts", 
+    "AboveCustomerBaseEnergy",
+    "BelowCustomerBaseEnergy"
+};
+constexpr std::array<std::string_view, (int)Native::Num> nativeNamesUC = {
+    "TOTALENERGY", 
+    "TOTALDEMAND", 
+    "PEAKENERGY", 
+    "PEAKDEMAND", 
+    "SHOULDERENERGY", 
+    "SHOULDERDEMAND", 
+    "OFFPEAKENERGY", 
+    "OFFPEAKDEMAND", 
+    "MIDPEAKENERGY", 
+    "MIDPEAKDEMAND", 
+    "PEAKEXCEEDSOFFPEAK", 
+    "OFFPEAKEXCEEDSPEAK", 
+    "PEAKEXCEEDSMIDPEAK", 
+    "MIDPEAKEXCEEDSPEAK", 
+    "PEAKEXCEEDSSHOULDER", 
+    "SHOULDEREXCEEDSPEAK", 
+    "ISWINTER", 
+    "ISNOTWINTER", 
+    "ISSPRING", 
+    "ISNOTSPRING", 
+    "ISSUMMER", 
+    "ISNOTSUMMER", 
+    "ISAUTUMN", 
+    "ISNOTAUTUMN", 
+    "PEAKANDSHOULDERENERGY", 
+    "PEAKANDSHOULDERDEMAND", 
+    "PEAKANDMIDPEAKENERGY", 
+    "PEAKANDMIDPEAKDEMAND",
+    "SHOULDERANDOFFPEAKENERGY", 
+    "SHOULDERANDOFFPEAKDEMAND", 
+    "PEAKANDOFFPEAKENERGY", 
+    "PEAKANDOFFPEAKDEMAND",
+    "REALTIMEPRICECOSTS", 
+    "ABOVECUSTOMERBASECOSTS",
+    "BELOWCUSTOMERBASECOSTS", 
+    "ABOVECUSTOMERBASEENERGY",
+    "BELOWCUSTOMERBASEENERGY"
+};
+
+constexpr std::array<std::string_view, (int)VarUnitType::Num> varUnitTypeNames = {
+    "Energy", "Demand", "Dimensionless", "Currency" };
+constexpr std::array<std::string_view, (int)VarUnitType::Num> varUnitTypeNamesUC = {
+    "ENERGY", "DEMAND", "DIMENSIONLESS", "CURRENCY" };
+
+  
+  
 void UpdateUtilityBills(EnergyPlusData &state)
 {
     //    AUTHOR         Jason Glazer of GARD Analytics, Inc.

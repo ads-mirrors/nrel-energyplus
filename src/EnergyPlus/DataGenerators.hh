@@ -70,8 +70,6 @@ namespace DataGenerators {
         Num
     };
 
-    constexpr std::array<std::string_view, (int)CurveMode::Num> curveModeNamesUC = { "NORMALIZED", "ANNEX42" };
-  
     enum class SkinLoss
     {
         Invalid = -1,
@@ -81,9 +79,6 @@ namespace DataGenerators {
         Num
     };
 
-    constexpr std::array<std::string_view, (int)SkinLoss::Num> skinLossNamesUC = {
-        "CONSTANTRATE", "UAFORPROCESSGASTEMPERATURE", "QUADRATIC FUNCTION OF FUEL RATE" }; // Seriously with this last one?
-  
     enum class AirSupRateMode
     {
         Invalid = -1,
@@ -92,9 +87,6 @@ namespace DataGenerators {
         QuadraticFuncofPel,   // function of electric power mode
         Num
     };
-
-    constexpr std::array<std::string_view, (int)AirSupRateMode::Num> airSupRateModeNamesUC = {
-        "QUADRATIC FUNCTION OF FUEL RATE", "AIRRATIOBYSTOICS", "QUADRATICFUNCTIONOFELECTRICPOWER" }; // Seriously with the first one?
 
     enum class RecoverMode
     {
@@ -108,23 +100,6 @@ namespace DataGenerators {
         Num
     };
 
-    constexpr std::array<std::string_view, (int)RecoverMode::Num> recoverModeNames = {
-        "NoRecovery",
-        "RecoverBurnerInverterStorage",
-        "RecoverAuxiliaryBurner",
-        "RecoverInverterandStorage",
-        "RecoverInverter",
-        "RecoverElectricalStorage"
-    };
-    constexpr std::array<std::string_view, (int)RecoverMode::Num> recoverModeNamesUC = {
-        "NORECOVERY",
-        "RECOVERBURNERINVERTERSTORAGE",
-        "RECOVERAUXILIARYBURNER",
-        "RECOVERINVERTERANDSTORAGE",
-        "RECOVERINVERTER",
-        "RECOVERELECTRICALSTORAGE"
-    };
-  
     enum class ConstituentMode
     {
         Invalid = -1,
@@ -132,11 +107,6 @@ namespace DataGenerators {
         UserDefinedConstituents,
         Num
     };
-
-    constexpr std::array<std::string_view, (int)ConstituentMode::Num> constituentModeNames = {
-        "AmbientAir", "UserDefinedConstituents" };
-    constexpr std::array<std::string_view, (int)ConstituentMode::Num> constituentModeNamesUC = {
-        "AMBIENTAIR", "USERDEFINEDCONSTITUENTS" };
 
     enum class FuelTemperatureMode
     {
@@ -156,11 +126,6 @@ namespace DataGenerators {
         Num
     };
 
-    constexpr std::array<std::string_view, (int)WaterTempMode::Num> waterTempModeNames = {
-        "MainsWaterTemperature", "TemperatureFromAirNode", "TemperatureFromWaterNode", "TemperatureFromSchedule" };
-    constexpr std::array<std::string_view, (int)WaterTempMode::Num> waterTempModeNamesUC = {
-        "MAINSWATERTEMPERATURE", "TEMPERATUREFROMAIRNODE", "TEMPERATUREFROMWATERNODE", "TEMPERATUREFROMSCHEDULE" };
-  
     enum class InverterEfficiencyMode
     {
         Invalid = -1,
@@ -169,11 +134,6 @@ namespace DataGenerators {
         Num
     };
 
-    constexpr std::array<std::string_view, (int)WaterTempMode::Num> inverterEfficiencyModeNames = {
-        "Constant", "Quadratic" };
-    constexpr std::array<std::string_view, (int)WaterTempMode::Num> inverterEfficiencyModeNamesUC = {
-        "CONSTANT", "QUADRATIC" };
-  
     enum class ExhaustGasHX
     {
         Invalid = -1,
@@ -184,11 +144,6 @@ namespace DataGenerators {
         Num
     };
 
-    constexpr std::array<std::string_view, (int)ExhaustGasHX::Num> exhaustGasHXNames = {
-        "FixedEffectiveness", "EmpiricalUAeff", "FundementalUAeff", "Condensing" };
-    constexpr std::array<std::string_view, (int)ExhaustGasHX::Num> exhaustGasHXNamesUC = {
-        "FIXEDEFFECTIVENESS", "EMPIRICALUAEFF", "FUNDEMENTALUAEFF", "CONDENSING" };
-    
     enum class ElectricalStorage
     {
         Invalid = -1,
@@ -206,11 +161,6 @@ namespace DataGenerators {
         Num
     };
 
-    constexpr std::array<std::string_view, (int)LossDestination::Num> lossDestinationNames = {
-        "SurroundingZone", "AirInletForFuelCell" };
-    constexpr std::array<std::string_view, (int)LossDestination::Num> lossDestinationNamesUC = {
-        "SURROUNDINGZONE", "AIRINLETFORFUELCELL" };
-  
     enum class OperatingMode
     {
         Invalid = -1,

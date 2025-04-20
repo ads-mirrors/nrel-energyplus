@@ -945,7 +945,7 @@ ElectPowerLoadCenter::ElectPowerLoadCenter(EnergyPlusData &state, int const obje
                     ShowContinueError(state,
                                       format("\"{}\" is of type {}",
                                              generatorController->name,
-                                             GeneratorTypeNames[static_cast<int>(generatorController->generatorType)]));
+                                             generatorTypeNames[static_cast<int>(generatorController->generatorType)]));
                 } else {
                     totalDCCapacity += generatorController->pvwattsGenerator->getDCSystemCapacity();
 
@@ -2056,7 +2056,7 @@ GeneratorController::GeneratorController(EnergyPlusData &state,
 
     name = objectName;
 
-    generatorType = static_cast<GeneratorType>(getEnumValue(GeneratorTypeNamesUC, Util::makeUPPER(objectType)));
+    generatorType = static_cast<GeneratorType>(getEnumValue(generatorTypeNamesUC, Util::makeUPPER(objectType)));
     switch (generatorType) {
     case GeneratorType::ICEngine: {
         compPlantType = DataPlant::PlantEquipmentType::Generator_ICEngine;
@@ -2301,14 +2301,14 @@ void GeneratorController::simGeneratorGetPowerOutput(EnergyPlusData &state,
         if (errCountNegElectProd_ == 0) {
             ShowWarningMessage(state,
                                format("{} named {} is producing negative electric power, check generator inputs.",
-                                      GeneratorTypeNames[static_cast<int>(generatorType)],
+                                      generatorTypeNames[(int)generatorType],
                                       name));
             ShowContinueError(state, format("Electric power production rate ={:.4R}", electricPowerOutput));
             ShowContinueError(state, "The power will be set to zero, and the simulation continues... ");
         }
         ShowRecurringWarningErrorAtEnd(
             state,
-            format("{} named {} is producing negative electric power ", GeneratorTypeNames[static_cast<int>(generatorType)], name),
+            format("{} named {} is producing negative electric power ", generatorTypeNames[(int)generatorType], name),
             errCountNegElectProd_,
             electricPowerOutput,
             electricPowerOutput);

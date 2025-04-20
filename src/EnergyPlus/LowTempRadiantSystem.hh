@@ -1,4 +1,4 @@
-// EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
+// Energyplus, Copyright (c) 1996-2025, The Board of Trustees of the University of Illinois,
 // The Regents of the University of California, through Lawrence Berkeley National Laboratory
 // (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge
 // National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other
@@ -81,7 +81,6 @@ namespace LowTempRadiantSystem {
         Num
     };
 
-
     enum class OpMode
     {
         Cool = -1, // Ok for this to be -1 because this isn't coming from the IDF so there is no Invalid
@@ -105,27 +104,6 @@ namespace LowTempRadiantSystem {
         Num
     };
 
-    constexpr std::array<std::string_view, (int)CtrlType::Num> ctrlTypeNames = {
-        "MeanAirTemperature",
-        "MeanRadiantTemperature",
-        "OperativeTemperature",
-        "OutdoorDryBulbTemperature",
-        "OutdoorWetBulbTemperature",
-        "SurfaceFaceTemperature" ,
-        "SurfaceInteriorTemperature",
-        "RunningMeanOutdoorDryBulbTemperature"
-    };
-    constexpr std::array<std::string_view, (int)CtrlType::Num> ctrlTypeNamesUC = {
-        "MEANAIRTEMPERATURE",
-        "MEANRADIANTTEMPERATURE",
-        "OPERATIVETEMPERATURE",
-        "OUTDOORDRYBULBTEMPERATURE",
-        "OUTDOORWETBULBTEMPERATURE",
-        "SURFACEFACETEMPERATURE" ,
-        "SURFACEINTERIORTEMPERATURE",
-        "RUNNINGMEANOUTDOORDRYBULBTEMPERATURE"
-    };
-  
   
     // Setpoint Types:
     enum class SetpointType
@@ -136,11 +114,6 @@ namespace LowTempRadiantSystem {
         Num
     };
 
-    constexpr std::array<std::string_view, (int)SetpointType::Num> setpointTypeNames = {
-        "HalfFlowPower", "ZeroFlowPower" };
-    constexpr std::array<std::string_view, (int)SetpointType::Num> setpointTypeNamesUC = {
-        "HALFFLOWPOWER", "ZEROFLOWPOWER" };
-
     // Fluid to Slab Heat Transfer Types:
     enum class FluidToSlabHeatTransferType
     {
@@ -150,11 +123,6 @@ namespace LowTempRadiantSystem {
         Num
     };
 
-    constexpr std::array<std::string_view, (int)FluidToSlabHeatTransferType::Num> fluidToSlabHeatTransferTypeNames = {
-        "ConvectionOnly", "ISOStandard" };
-    constexpr std::array<std::string_view, (int)FluidToSlabHeatTransferType::Num> fluidToSlabHeatTransferTypeNamesUC = {
-        "CONVECTIONONLY", "ISOSTANDARD" };
-  
     enum class CondCtrlType
     {
         Invalid = -1,
@@ -163,9 +131,6 @@ namespace LowTempRadiantSystem {
         VariedOff, // Condensation control--variable off, system modulates to keep running if possible
         Num
     };
-
-    constexpr std::array<std::string_view, (int)CondCtrlType::Num> condCtrlTypeNamesUC = {
-        "OFF", "SIMPLEOFF", "VARIABLEOFF" };
 
     // Number of Circuits per Surface Calculation Method
     enum class CircuitCalc
@@ -176,11 +141,6 @@ namespace LowTempRadiantSystem {
         Num
     };
 
-    constexpr std::array<std::string_view, (int)CircuitCalc::Num> circuitCalcNames = {
-        "OnePerSurface", "CalculateFromCircuitLength" };
-    constexpr std::array<std::string_view, (int)CircuitCalc::Num> circuitCalcNamesUC = {
-        "ONEPERSURFACE", "CALCULATEFROMCIRCUITLENGTH" };
-  
     struct RadiantSystemBaseData
     {
         // Members

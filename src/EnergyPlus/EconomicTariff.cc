@@ -2641,10 +2641,10 @@ void GatherForEconomics(EnergyPlusData &state)
                     }
                 }
                 if (isGood) {
-                    tariff.seasonForMonth[curMonth] = curSeason;
-                    tariff.gatherEnergy[curMonth][(int)curPeriod] += curEnergy;
-                    if (tariff.gatherDemand[curMonth][(int)curPeriod] < curDemand) {
-                        tariff.gatherDemand[curMonth][(int)curPeriod] = curDemand;
+                    tariff.seasonForMonth(curMonth) = curSeason;
+                    tariff.gatherEnergy(curMonth)[(int)curPeriod] += curEnergy;
+                    if (tariff.gatherDemand(curMonth)[(int)curPeriod] < curDemand) {
+                        tariff.gatherDemand(curMonth)[(int)curPeriod] = curDemand;
                     }
                 } else {
                     ShowWarningError(state, format("UtilityCost:Tariff: While gathering for: {}", tariff.tariffName));

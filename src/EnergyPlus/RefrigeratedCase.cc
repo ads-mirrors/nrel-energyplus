@@ -4713,7 +4713,9 @@ void GetRefrigerationInput(EnergyPlusData &state)
             //  If the compressor is a transcritical CO compressor, get transcritical power and capacity curves
             if (lAlphaBlanks(5)) {
                 Compressor(CompNum).TransFlag = false;
-            } else if (CriticalType crit = static_cast<CriticalType>(getEnumValue(criticalTypeNamesUC, Alphas(5))); crit != CriticalType::Invalid) {
+            // For some reason, Alkphas(5) is not uppercased?
+            } else if (CriticalType crit = static_cast<CriticalType>(getEnumValue(criticalTypeNamesUC, Util::makeUPPER(Alphas(5))));
+                       crit != CriticalType::Invalid) {
                 Compressor(CompNum).TransFlag = static_cast<bool>(crit);
             } else {
                 ShowSevereInvalidKey(state, eoh, cAlphaFieldNames(5), Alphas(5));

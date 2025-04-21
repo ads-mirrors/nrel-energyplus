@@ -1784,8 +1784,15 @@ void GetZoneAirSetPoints(EnergyPlusData &state)
                         ErrorsFound = true;
                     }
 
-                    tempZone.OvercoolCtrl = static_cast<DataZoneControls::TempCtrl>(getEnumValue(DataZoneControls::tempCtrlNamesUC, s_ipsc->cAlphaArgs(3)));
-                    if (tempZone.OvercoolCtrl == DataZoneControls::TempCtrl::Invalid) {
+                    // This (i.e., using two booleans to represent three options) is a bad idiom
+                    if (s_ipsc->cAlphaArgs(3) == "NONE") {
+                          tempZone.OvercoolCtrl = DataZoneControls::TempCtrl::None;
+                    } else if (s_ipsc->cAlphaArgs(3) != "OVERCOOL") {
+                        if (Item == 1) {
+                            ShowSevereInvalidKey(state, eoh, s_ipsc->cAlphaFieldNames(3), s_ipsc->cAlphaArgs(3));
+                            ErrorsFound = true;
+                        }
+                    } else if ((tempZone.OvercoolCtrl = static_cast<DataZoneControls::TempCtrl>(getEnumValue(DataZoneControls::tempCtrlNamesUC, s_ipsc->cAlphaArgs(4)))) == DataZoneControls::TempCtrl::Invalid) { 
                         if (Item == 1) {
                             ShowSevereInvalidKey(state, eoh, s_ipsc->cAlphaFieldNames(4), s_ipsc->cAlphaArgs(4));
                             ErrorsFound = true;

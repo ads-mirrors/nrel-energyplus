@@ -3230,8 +3230,7 @@ void SizePlantLoop(EnergyPlusData &state,
         BaseSizer::reportSizerOutput(state, loopType, loop.Name, "Design Return Temperature [C]", returnTemp);
         if (PlantSizNum > 0) {
             int concur = (int)state.dataSize->PlantSizData(PlantSizNum).ConcurrenceOption;
-            BaseSizer::reportSizerStrOutput(
-                state, loopType, loop.Name, "Sizing Option", DataSizing::SizingConcurrenceNames[concur]);
+            BaseSizer::reportSizerStrOutput(state, loopType, loop.Name, "Sizing Option", DataSizing::SizingConcurrenceNames[concur]);
         }
         OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchPLCLType, loop.Name, loopType);
 

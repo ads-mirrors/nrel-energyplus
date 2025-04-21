@@ -3228,13 +3228,11 @@ void SizePlantLoop(EnergyPlusData &state,
                                      "Design Supply Temperature [C]",
                                      PlantSizNum > 0 ? state.dataSize->PlantSizData(PlantSizNum).ExitTemp : -999.0);
         BaseSizer::reportSizerOutput(state, loopType, loop.Name, "Design Return Temperature [C]", returnTemp);
-        int concur = -1;
         if (PlantSizNum > 0) {
-            concur = (int)state.dataSize->PlantSizData(PlantSizNum).ConcurrenceOption;
-            OutputReportPredefined::PreDefTableEntry(
-                state, state.dataOutRptPredefined->pdchPLCLType, loop.Name, DataSizing::SizingConcurrenceNames[concur]);
+            int concur = (int)state.dataSize->PlantSizData(PlantSizNum).ConcurrenceOption;
+            BaseSizer::reportSizerStrOutput(
+                state, loopType, loop.Name, "Sizing Option", DataSizing::SizingConcurrenceNames[concur]);
         }
-        BaseSizer::reportSizerOutput(state, loopType, loop.Name, "Sizing option (Coincident/NonCoincident)", concur + 1);
         OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchPLCLType, loop.Name, loopType);
 
         BaseSizer::reportSizerOutput(state, loopType, loop.Name, "Minimum Loop Flow Rate [m3/s]", loop.MinVolFlowRate);

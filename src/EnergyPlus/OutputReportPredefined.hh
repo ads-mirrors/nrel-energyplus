@@ -139,14 +139,10 @@ namespace OutputReportPredefined {
         std::string typeField;
         std::string nameField;
         std::string description;
-        Real64 valField;
-        bool active;
-        bool written;
-
-        // Default Constructor
-        CompSizeTableEntryType() : valField(0.0), active(false), written(false)
-        {
-        }
+        Real64 valField = 0.0;
+        std::string strField;
+        bool active = false;
+        bool written = false;
     };
 
     struct ShadowRelateType
@@ -183,6 +179,12 @@ namespace OutputReportPredefined {
 
     void AddCompSizeTableEntry(
         EnergyPlusData &state, std::string_view FieldType, std::string_view FieldName, std::string_view FieldDescription, Real64 const FieldValue);
+
+    void AddCompSizeTableStrEntry(EnergyPlusData &state,
+                                  std::string_view FieldType,
+                                  std::string_view FieldName,
+                                  std::string_view FieldDescription,
+                                  std::string_view FieldValue);
 
     void AddShadowRelateTableEntry(EnergyPlusData &state, int const castingField, int const receivingField, int const receivingKind);
 

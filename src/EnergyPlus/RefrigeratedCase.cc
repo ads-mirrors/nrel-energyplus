@@ -3275,10 +3275,10 @@ void GetRefrigerationInput(EnergyPlusData &state)
                 if ((!lNumericBlanks(2)) && (Numbers(2) > 0.0)) Condenser(CondNum).RatedSubcool = Numbers(2);
 
                 // Get fan control type
-                if (lAlphaBlanks(3)) {
+                if (lAlphaBlanks(2)) {
                     Condenser(CondNum).FanSpeedControlType = FanSpeedCtrlType::ConstantSpeed; // default
-                } else if ((Condenser(CondNum).FanSpeedControlType = static_cast<FanSpeedCtrlType>(getEnumValue(fanSpeedCtrlTypeNamesUC, Alphas(3)))) == FanSpeedCtrlType::Invalid) { 
-                    ShowSevereInvalidKey(state, eoh, cAlphaFieldNames(3), Alphas(3));
+                } else if ((Condenser(CondNum).FanSpeedControlType = static_cast<FanSpeedCtrlType>(getEnumValue(fanSpeedCtrlTypeNamesUC, Alphas(2)))) == FanSpeedCtrlType::Invalid) { 
+                    ShowSevereInvalidKey(state, eoh, cAlphaFieldNames(2), Alphas(2));
                     ErrorsFound = true;
                 }                                                                             // Set fan control type
 

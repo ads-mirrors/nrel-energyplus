@@ -616,8 +616,8 @@ TEST_F(EnergyPlusFixture, EconomicTariff_GatherForEconomics)
     state->dataGlobal->KindOfSim = Constant::KindOfSim::RunPeriodWeather; // fake a weather run
 
     // Unitialized: default initialized to 0
-    EXPECT_ENUM_EQ(Season::Invalid, state->dataEconTariff->tariff(1).seasonForMonth[5]);
-    EXPECT_ENUM_EQ(Season::Invalid, state->dataEconTariff->tariff(1).seasonForMonth[6]);
+    EXPECT_ENUM_EQ(Season::Invalid, state->dataEconTariff->tariff(1).seasonForMonth(5));
+    EXPECT_ENUM_EQ(Season::Invalid, state->dataEconTariff->tariff(1).seasonForMonth(6));
 
     state->dataEnvrn->Month = 5;
     state->dataEnvrn->DayOfMonth = 31;
@@ -640,14 +640,14 @@ TEST_F(EnergyPlusFixture, EconomicTariff_GatherForEconomics)
     EXPECT_EQ(state->dataExteriorEnergyUse->ExteriorLights(1).Power * state->dataGlobal->TimeStepZoneSec,
               state->dataExteriorEnergyUse->ExteriorLights(1).CurrentUse);
 
-    EXPECT_EQ(0, state->dataEconTariff->tariff(1).gatherEnergy[state->dataEnvrn->Month][(int)Period::Peak]);
+    EXPECT_EQ(0, state->dataEconTariff->tariff(1).gatherEnergy(state->dataEnvrn->Month)[(int)Period::Peak]);
 
     // This Should now call GatherForEconomics
     state->dataGlobal->DoOutputReporting = true;
     EconomicTariff::UpdateUtilityBills(*state);
     ;
-    EXPECT_ENUM_EQ(Season::Winter, state->dataEconTariff->tariff(1).seasonForMonth[5]);
-    EXPECT_ENUM_EQ(Season::Invalid, state->dataEconTariff->tariff(1).seasonForMonth[6]);
+    EXPECT_ENUM_EQ(Season::Winter, state->dataEconTariff->tariff(1).seasonForMonth(5));
+    EXPECT_ENUM_EQ(Season::Invalid, state->dataEconTariff->tariff(1).seasonForMonth(6));
 
     state->dataEnvrn->Month = 5;
     state->dataEnvrn->DayOfMonth = 31;
@@ -672,8 +672,8 @@ TEST_F(EnergyPlusFixture, EconomicTariff_GatherForEconomics)
     // This Should now call GatherForEconomics
     EconomicTariff::UpdateUtilityBills(*state);
     ;
-    EXPECT_ENUM_EQ(Season::Winter, state->dataEconTariff->tariff(1).seasonForMonth[5]);
-    EXPECT_ENUM_EQ(Season::Summer, state->dataEconTariff->tariff(1).seasonForMonth[6]);
+    EXPECT_ENUM_EQ(Season::Winter, state->dataEconTariff->tariff(1).seasonForMonth(5));
+    EXPECT_ENUM_EQ(Season::Summer, state->dataEconTariff->tariff(1).seasonForMonth(6));
 }
 
 TEST_F(EnergyPlusFixture, EconomicTariff_GatherForEconomics_ZeroMeterIndex)
@@ -695,7 +695,7 @@ TEST_F(EnergyPlusFixture, EconomicTariff_GatherForEconomics_ZeroMeterIndex)
     state->dataOutputProcessor->meters.push_back(meter);
 
     GatherForEconomics(*state);
-    EXPECT_EQ(100, state->dataEconTariff->tariff(1).gatherEnergy[1][1]);
+    EXPECT_EQ(100, state->dataEconTariff->tariff(1).gatherEnergy(1)[1]);
 }
 
 TEST_F(EnergyPlusFixture, EconomicTariff_PushPopStack)

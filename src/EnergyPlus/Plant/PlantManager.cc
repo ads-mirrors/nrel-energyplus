@@ -3257,6 +3257,8 @@ void SizePlantLoop(EnergyPlusData &state,
                                              DesignPlantCapacity);
                 OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchPLCLDesCap, loop.Name, DesignPlantCapacity);
             }
+        } else {
+            OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchPLCLDesCap, loop.Name, "N/A");
         }
     } else if (loop.FluidType == DataLoopNode::NodeFluidType::Steam) {
         auto *steam = Fluid::GetSteam(state);

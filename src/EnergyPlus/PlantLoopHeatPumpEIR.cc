@@ -4109,6 +4109,11 @@ Real64 EIRFuelFiredHeatPump::getDynamicMaxCapacity(EnergyPlusData &state)
 void HeatPumpAirToWater::doPhysics(EnergyPlusData &state, Real64 currentLoad)
 {
     // add free cooling at some point, compressor is off during free cooling, temp limits restrict free cooling range
+    if ((this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterCooling && currentLoad >= 0.0) ||
+        (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterHeating && currentLoad <= 0.0)) {
+        this->resetReportingVariables();
+        return;
+    }
 
     Real64 availableCapacity = this->referenceCapacity;
     Real64 partLoadRatio = 0.0;

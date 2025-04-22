@@ -998,14 +998,17 @@ if(BUILD_PACKAGE)
       install(FILES "${PROJECT_SOURCE_DIR}/release/VersionUpdater-NEWS.txt" DESTINATION "PreProcess/" COMPONENT Auxiliary)
       if(WIN32)
         # on Windows, with Build Package, and also Link With Python, we can also drop in shortcuts to the new auxiliary CLI
-        add_executable(windows_gui_launcher WIN32 WindowsGuiLauncher.cc)
-        target_link_options(windows_gui_launcher PRIVATE /SUBSYSTEM:WINDOWS)
+        set(APP_ICON "${PROJECT_SOURCE_DIR}/release/ep.ico")
+        set(RESOURCE_FILE "${PROJECT_BINARY_DIR}/resource.rc")
+        file(GENERATE OUTPUT ${RESOURCE_FILE} CONTENT "IDI_ICON1 ICON \"${APP_ICON}\"\n")
+        add_executable(windows_gui_launcher WIN32 WindowsGuiLauncher.cc ${RESOURCE_FILE})
         install(TARGETS windows_gui_launcher DESTINATION ./ COMPONENT Auxiliary)
         # NOTE: The install command COMPONENTS should line up so that they are run at the same packaging step
-        install(CODE "execute_process(COMMAND powershell.exe -ExecutionPolicy Bypass -File ${PROJECT_SOURCE_DIR}/scripts/dev/create_shortcut.ps1 -TargetPath \"$<TARGET_FILE_DIR:energyplus>/windows_gui_launcher.exe\" -ShortcutPath \"$<TARGET_FILE_DIR:energyplus>/EPLaunch.lnk\" -Arguments \"eplaunch\")" COMPONENT Auxiliary)
-        install(CODE "execute_process(COMMAND powershell.exe -ExecutionPolicy Bypass -File ${PROJECT_SOURCE_DIR}/scripts/dev/create_shortcut.ps1 -TargetPath \"$<TARGET_FILE_DIR:energyplus>/windows_gui_launcher.exe\" -ShortcutPath \"$<TARGET_FILE_DIR:energyplus>/VersionUpdater.lnk\" -Arguments \"updater\")" COMPONENT Auxiliary)
-        install(FILES $<TARGET_FILE_DIR:energyplus>/EPLaunch.lnk DESTINATION "./" COMPONENT Auxiliary)
-        install(FILES $<TARGET_FILE_DIR:energyplus>/VersionUpdater.lnk DESTINATION "./" COMPONENT Auxiliary)
+        # TODO: Just move these shortcut creation steps over to the install_auxiliary_python_shortcuts.qs file?  And remove create_shortcut.ps1?
+        install(CODE "execute_process(COMMAND powershell.exe -ExecutionPolicy Bypass -File ${PROJECT_SOURCE_DIR}/scripts/dev/create_shortcut.ps1 -TargetPath \"$<TARGET_FILE_DIR:energyplus>/windows_gui_launcher.exe\" -ShortcutPath \"$<TARGET_FILE_DIR:energyplus>/EPLaunch_Python.lnk\" -Arguments \"eplaunch\")" COMPONENT Auxiliary)
+        install(CODE "execute_process(COMMAND powershell.exe -ExecutionPolicy Bypass -File ${PROJECT_SOURCE_DIR}/scripts/dev/create_shortcut.ps1 -TargetPath \"$<TARGET_FILE_DIR:energyplus>/windows_gui_launcher.exe\" -ShortcutPath \"$<TARGET_FILE_DIR:energyplus>/VersionUpdater_Python.lnk\" -Arguments \"updater\")" COMPONENT Auxiliary)
+        install(FILES $<TARGET_FILE_DIR:energyplus>/EPLaunch_Python.lnk DESTINATION "./" COMPONENT Auxiliary)
+        install(FILES $<TARGET_FILE_DIR:energyplus>/VersionUpdater_Python.lnk DESTINATION "./" COMPONENT Auxiliary)
       elseif(APPLE)
         # Pre-signed and notarized launcher apps
         install(DIRECTORY "${PROJECT_SOURCE_DIR}/bin/PythonApps/EPLaunch.app" DESTINATION "." COMPONENT Auxiliary USE_SOURCE_PERMISSIONS)

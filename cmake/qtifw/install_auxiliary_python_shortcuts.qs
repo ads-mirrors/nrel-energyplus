@@ -27,8 +27,8 @@ function Component()
       );
     } else if( kernel === "winnt" ) {
       const target_dir = installer.value("StartMenuDir");
-      component.addOperation("CreateShortcut", "@TargetDir@/windows_gui_launcher.exe", target_dir + "/EP-Launch.lnk", "eplaunch");
-      component.addOperation("CreateShortcut", "@TargetDir@/windows_gui_launcher.exe", target_dir + "/IDFVersionUpdater.lnk", "updater");
+      component.addOperation("CreateShortcut", "@TargetDir@/windows_gui_launcher.exe", target_dir + "/EP-Launch-Python.lnk", "eplaunch");
+      component.addOperation("CreateShortcut", "@TargetDir@/windows_gui_launcher.exe", target_dir + "/IDFVersionUpdater-Python.lnk", "updater");
     }
   }
 }

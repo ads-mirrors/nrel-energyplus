@@ -76,9 +76,7 @@ private:
     std::vector<std::string> warnings_;
 };
 
-/**
- * @brief   Struct that provides a default Regular Expression Engine using RE2 rather than std::regex
- */
+// Struct that provides a valijson Regular Expression Engine using RE2 rather than std::regex
 struct RE2RegexpEngine
 {
     RE2RegexpEngine(const std::string &pattern) : regex_ptr(std::make_unique<RE2>(pattern))

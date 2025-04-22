@@ -565,9 +565,7 @@ void EIRPlantLoopHeatPump::calcLoadSideHeatTransfer(EnergyPlusData &state, Real6
 
 void HeatPumpAirToWater::calcLoadSideHeatTransfer(EnergyPlusData &state, Real64 const availableCapacity, Real64 const currentLoad)
 {
-    // evaluate the actual current operating load side heat transfer rate
-    auto &thisLoadPlantLoop = state.dataPlnt->PlantLoop(this->loadSidePlantLoc.loopNum);
-    Real64 CpLoad = thisLoadPlantLoop.glycol->getSpecificHeat(
+    Real64 CpLoad = this->loadSidePlantLoc.loop->glycol->getSpecificHeat(
         state, state.dataLoopNodes->Node(this->loadSideNodes.inlet).Temp, "HeatPumpAirToWater::calcLoadSideHeatTransfer()");
 
     this->loadSideHeatTransfer = min(availableCapacity, abs(currentLoad));

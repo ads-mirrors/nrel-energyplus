@@ -3613,8 +3613,10 @@ TEST_F(EnergyPlusFixture, Test_DoPhysics_AWHP)
     thisCoolingAWHP->loadSidePlantLoc.loopSideNum = DataPlant::LoopSideLocation::Supply;
     thisCoolingAWHP->loadSidePlantLoc.branchNum = 1;
     thisCoolingAWHP->loadSidePlantLoc.compNum = 1;
+    PlantUtilities::SetPlantLocationLinks(*state, thisCoolingAWHP->loadSidePlantLoc);
     thisCoolingAWHP->loadSideNodes.outlet = 1;
     thisCoolingAWHP->sourceSidePlantLoc.loopNum = 2;
+    PlantUtilities::SetPlantLocationLinks(*state, thisCoolingAWHP->sourceSidePlantLoc);
 
     // the factory would've called GetOnlySingleNode for the in/out pairs on the PLHP, add another one for the loop
     // outlet setpoint node

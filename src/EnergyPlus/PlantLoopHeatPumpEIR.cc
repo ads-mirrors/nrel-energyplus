@@ -570,6 +570,40 @@ void EIRPlantLoopHeatPump::calcLoadSideHeatTransfer(EnergyPlusData &state, Real6
     // currentLoad will be met and there should? be some adjustment based on outlet water temp limit?
 }
 
+void HeatPumpAirToWater::calcLoadSideHeatTransfer(EnergyPlusData &state, Real64 const availableCapacity, Real64 const currentLoad)
+{
+    // evaluate the actual current operating load side heat transfer rate
+    auto &thisLoadPlantLoop = state.dataPlnt->PlantLoop(this->loadSidePlantLoc.loopNum);
+    Real64 CpLoad = thisLoadPlantLoop.glycol->getSpecificHeat(
+        state, state.dataLoopNodes->Node(this->loadSideNodes.inlet).Temp, "HeatPumpAirToWater::calcLoadSideHeatTransfer()");
+
+    this->loadSideHeatTransfer = min(availableCapacity, abs(currentLoad));
+
+    // calculate load side outlet conditions
+    Real64 const loadMCp = this->loadSideMassFlowRate * CpLoad;
+    this->loadSideOutletTemp = this->calcLoadOutletTemp(this->loadSideInletTemp, this->loadSideHeatTransfer / loadMCp);
+
+    // now what to do here if outlet water temp exceeds limit based on HW supply temp limit curves?
+    // currentLoad will be met and there should? be some adjustment based on outlet water temp limit?
+}
+
+void HeatPumpAirToWater::calcPowerUsage(EnergyPlusData &state, int speedLevel)
+{
+    // calculate power usage from EIR curves
+    Real64 eirModifierFuncTemp = 0.0;
+    eirModifierFuncTemp =
+        Curve::CurveValue(state, this->powerRatioFuncTempCurveIndex[speedLevel], this->loadSideOutletTemp, this->sourceSideInletTemp);
+    // check curves value and resets to zero if negative
+    this->eirModCurveCheck(state, eirModifierFuncTemp);
+    Real64 eirModifierFuncPLR = Curve::CurveValue(state, this->powerRatioFuncPLRCurveIndex[speedLevel], this->partLoadRatio);
+    // check EIR func of PLR curve value and resets to zero if negative
+    this->eirModFPLRCurveCheck(state, eirModifierFuncPLR);
+
+    // fixme: might not be multiplying cyclingRatio like this
+    this->powerUsage = (this->loadSideHeatTransfer / this->referenceCOP) * eirModifierFuncPLR * eirModifierFuncTemp * this->defrostPowerMultiplier *
+                       this->cyclingRatio;
+}
+
 void EIRPlantLoopHeatPump::calcPowerUsage(EnergyPlusData &state)
 {
     // calculate power usage from EIR curves
@@ -3554,6 +3588,8 @@ void HeatPumpAirToWater::processInputForEIRPLHP(EnergyPlusData &state)
                 // read shared fields
                 HeatPumpAirToWater thisAWHP;
                 thisAWHP.name = Util::makeUPPER(thisObjectName);
+                thisAWHP.airSource = true;
+                thisAWHP.waterSource = false;
                 ErrorObjectHeader eoh{routineName, "HeatPump:AirToWater", thisAWHP.name};
                 thisAWHP.compressorMultiplier =
                     state.dataInputProcessing->inputProcessor->getRealFieldValue(fields, schemaProps, "compressor_multiplier");
@@ -3709,6 +3745,57 @@ void HeatPumpAirToWater::processInputForEIRPLHP(EnergyPlusData &state)
                     Util::makeUPPER(fields.at(format("{}_water_inlet_node_name", waterNodePrefix)).get<std::string>());
                 std::string loadSideOutletNodeName =
                     Util::makeUPPER(fields.at(format("{}_water_outlet_node_name", waterNodePrefix)).get<std::string>());
+
+                bool nodeErrorsFound = false;
+                thisAWHP.loadSideNodes.inlet = NodeInputManager::GetOnlySingleNode(state,
+                                                                                   loadSideInletNodeName,
+                                                                                   nodeErrorsFound,
+                                                                                   objType,
+                                                                                   thisAWHP.name,
+                                                                                   DataLoopNode::NodeFluidType::Water,
+                                                                                   DataLoopNode::ConnectionType::Inlet,
+                                                                                   NodeInputManager::CompFluidStream::Primary,
+                                                                                   DataLoopNode::ObjectIsNotParent);
+                thisAWHP.loadSideNodes.outlet = NodeInputManager::GetOnlySingleNode(state,
+                                                                                    loadSideOutletNodeName,
+                                                                                    nodeErrorsFound,
+                                                                                    objType,
+                                                                                    thisAWHP.name,
+                                                                                    DataLoopNode::NodeFluidType::Water,
+                                                                                    DataLoopNode::ConnectionType::Outlet,
+                                                                                    NodeInputManager::CompFluidStream::Primary,
+                                                                                    DataLoopNode::ObjectIsNotParent);
+                thisAWHP.sourceSideNodes.inlet = NodeInputManager::GetOnlySingleNode(state,
+                                                                                     sourceSideInletNodeName,
+                                                                                     nodeErrorsFound,
+                                                                                     objType,
+                                                                                     thisAWHP.name,
+                                                                                     DataLoopNode::NodeFluidType::Air,
+                                                                                     DataLoopNode::ConnectionType::OutsideAir,
+                                                                                     NodeInputManager::CompFluidStream::Secondary,
+                                                                                     DataLoopNode::ObjectIsNotParent);
+                thisAWHP.sourceSideNodes.outlet = NodeInputManager::GetOnlySingleNode(state,
+                                                                                      sourceSideOutletNodeName,
+                                                                                      nodeErrorsFound,
+                                                                                      objType,
+                                                                                      thisAWHP.name,
+                                                                                      DataLoopNode::NodeFluidType::Air,
+                                                                                      DataLoopNode::ConnectionType::OutsideAir,
+                                                                                      NodeInputManager::CompFluidStream::Secondary,
+                                                                                      DataLoopNode::ObjectIsNotParent);
+
+                if (nodeErrorsFound) errorsFound = true;
+                BranchNodeConnections::TestCompSet(state,
+                                                   Util::makeUPPER(format("{}:{}", cCurrentModuleObject, modeKeyWord)),
+                                                   thisAWHP.name,
+                                                   loadSideInletNodeName,
+                                                   loadSideOutletNodeName,
+                                                   classToInput.nodesType);
+
+                // store the worker functions that generalized the heating/cooling sides
+                thisAWHP.calcLoadOutletTemp = classToInput.calcLoadOutletTemp;
+                thisAWHP.calcQsource = classToInput.calcQsource;
+                thisAWHP.calcSourceOutletTemp = classToInput.calcSourceOutletTemp;
 
                 thisAWHP.numSpeeds =
                     state.dataInputProcessing->inputProcessor->getRealFieldValue(fields, schemaProps, format("number_of_speeds_for_{}", modeKeyWord));
@@ -4034,6 +4121,85 @@ Real64 EIRFuelFiredHeatPump::getDynamicMaxCapacity(EnergyPlusData &state)
     // evaluate capacity modifier curve and determine load side heat transfer
     Real64 capacityModifierFuncTemp = Curve::CurveValue(state, this->capFuncTempCurveIndex, waterTempforCurve, oaTempforCurve);
     return this->referenceCapacity * capacityModifierFuncTemp;
+}
+
+void HeatPumpAirToWater::doPhysics(EnergyPlusData &state, Real64 currentLoad)
+{
+    // add free cooling at some point, compressor is off during free cooling, temp limits restrict free cooling range
+
+    Real64 availableCapacity = this->referenceCapacity;
+    Real64 partLoadRatio = 0.0;
+    int speedLevel = 0;
+
+    this->calcAvailableCapacity(state, currentLoad, availableCapacity, partLoadRatio, speedLevel);
+    this->setPartLoadAndCyclingRatio(state, partLoadRatio);
+
+    // do defrost calculation if applicable
+    this->doDefrost(state, availableCapacity);
+
+    // evaluate the actual current operating load side heat transfer rate
+    this->calcLoadSideHeatTransfer(state, availableCapacity, currentLoad);
+
+    //  calculate power usage from EIR curves
+    this->calcPowerUsage(state, speedLevel);
+
+    this->calcSourceSideHeatTransferASHP(state);
+}
+
+void HeatPumpAirToWater::calcAvailableCapacity(
+    EnergyPlusData &state, Real64 const currentLoad, Real64 &availableCapacity, Real64 &partLoadRatio, int &speedLevel)
+{
+    // get setpoint on the load side outlet
+    Real64 loadSideOutletSetpointTemp = this->getLoadSideOutletSetPointTemp(state);
+    Real64 originalLoadSideOutletSPTemp = loadSideOutletSetpointTemp;
+
+    Real64 capacityModifierFuncTemp = 1.0;
+    bool waterTempExceeded = false;
+
+    capacityModifierFuncTemp =
+        Curve::CurveValue(state, this->capFuncTempCurveIndex[this->numSpeeds - 1], loadSideOutletSetpointTemp, this->sourceSideInletTemp);
+    // maximum capacity
+    availableCapacity = this->referenceCapacity * capacityModifierFuncTemp;
+
+    // evaluate capacity modifier curve and determine load side heat transfer
+    // any adjustment to outlet water temp set point requires some form of iteration
+    for (int loop = 0; loop < 2; ++loop) {
+
+        Real64 capacityLow = 0.0;
+        Real64 capacityHigh = 0.0;
+        speedLevel = 0;
+        for (int i = 0; i < this->numSpeeds; i++) {
+            capacityModifierFuncTemp =
+                Curve::CurveValue(state, this->capFuncTempCurveIndex[i], loadSideOutletSetpointTemp, this->sourceSideInletTemp);
+            capacityHigh = this->referenceCapacity * capacityModifierFuncTemp;
+            speedLevel = i;
+            if (std::abs(currentLoad) < capacityHigh) {
+                break;
+            } else {
+                capacityLow = capacityHigh;
+            }
+            // fixme: is this needed?
+            //            // apply air source HP dry air heating capacity correction
+            //            availableCapacity *= heatingCapacityModifierASHP(state);
+        }
+        if (availableCapacity > 0) {
+            if (this->controlType == HeatPumpAirToWater::ControlType::FixedSpeed) {
+                partLoadRatio = capacityHigh / availableCapacity;
+                if (abs(currentLoad) >= availableCapacity) {
+                    this->cyclingRatio = 1.0;
+                } else {
+                    assert(abs(currentLoad) >= capacityLow);
+                    // for fixed-speed, cycling ratio is only about the first level that meet the load,
+                    // speed levels lower than this are all running fully
+                    this->cyclingRatio = (abs(currentLoad) - capacityLow) / (capacityHigh - capacityLow);
+                }
+            } else {
+                partLoadRatio = std::clamp(std::abs(currentLoad) / availableCapacity, 0.0, 1.0);
+                this->cyclingRatio = 1.0;
+                // if there's a minPLR, then below the minPLR, it will cycle
+            }
+        }
+    }
 }
 
 } // namespace EnergyPlus::EIRPlantLoopHeatPumps

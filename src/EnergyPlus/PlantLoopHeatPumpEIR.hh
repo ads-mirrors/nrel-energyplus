@@ -470,6 +470,11 @@ namespace EIRPlantLoopHeatPumps {
         std::array<int, maxNumSpeeds> powerRatioFuncTempCurveIndex = {};
         std::array<int, maxNumSpeeds> powerRatioFuncPLRCurveIndex = {};
 
+        void doPhysics(EnergyPlusData &state, Real64 currentLoad) override;
+        void
+        calcAvailableCapacity(EnergyPlusData &state, Real64 const currentLoad, Real64 &availableCapacity, Real64 &partLoadRatio, int &speedLevel);
+        void calcLoadSideHeatTransfer(EnergyPlusData &state, Real64 const availableCapacity, Real64 const currentLoad);
+        void calcPowerUsage(EnergyPlusData &state, int speedLevel);
         static PlantComponent *factory(EnergyPlusData &state, DataPlant::PlantEquipmentType hp_type, const std::string &hp_name);
         static void processInputForEIRPLHP(EnergyPlusData &state);
     };

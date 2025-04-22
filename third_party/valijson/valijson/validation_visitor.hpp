@@ -342,7 +342,7 @@ public:
 
         if (numValidated == 0) {
             if (m_results) {
-                m_results->pushError(m_context, "Failed to match against any enum values.");
+                m_results->pushError(m_context, "\"" + m_target.asString() + "\" - Failed to match against any enum values.");
             }
 
             return false;
@@ -555,7 +555,7 @@ public:
         if (constraint.getExclusiveMaximum()) {
             if (m_target.asDouble() >= maximum) {
                 if (m_results) {
-                    m_results->pushError(m_context, "Expected number less than " + std::to_string(maximum));
+                    m_results->pushError(m_context, "\"" + m_target.asString() + "\" - Expected number less than " + std::to_string(maximum));
                 }
 
                 return false;
@@ -563,7 +563,7 @@ public:
 
         } else if (m_target.asDouble() > maximum) {
             if (m_results) {
-                m_results->pushError(m_context, "Expected number less than or equal to " + std::to_string(maximum));
+                m_results->pushError(m_context, "\"" + m_target.asString() + "\" - Expected number less than or equal to " + std::to_string(maximum));
             }
 
             return false;
@@ -672,14 +672,14 @@ public:
         if (constraint.getExclusiveMinimum()) {
             if (m_target.asDouble() <= minimum) {
                 if (m_results) {
-                    m_results->pushError(m_context, "Expected number greater than " + std::to_string(minimum));
+                    m_results->pushError(m_context, "\"" + m_target.asString() + "\" - Expected number greater than " + std::to_string(minimum));
                 }
 
                 return false;
             }
         } else if (m_target.asDouble() < minimum) {
             if (m_results) {
-                m_results->pushError(m_context, "Expected number greater than or equal to " + std::to_string(minimum));
+                m_results->pushError(m_context, "\"" + m_target.asString() + "\" - Expected number greater than or equal to " + std::to_string(minimum));
             }
 
             return false;
@@ -1219,7 +1219,36 @@ public:
             if (numValidated > 0) {
                 return true;
             } else if (m_results) {
-                m_results->pushError(m_context, "Value type not permitted by 'type' constraint.");
+                std::string type;
+                bool output_target = true;
+                if (m_target.isNumber()) {
+                    type = "number";
+                } else if(m_target.isString()) {
+                    type = "string";
+                } else if(m_target.isArray()) {
+                    type = "array";
+                    output_target = false;
+                } else if(m_target.isObject()) {
+                    type = "object";
+                    output_target = false;
+                } else if(m_target.isInteger()) {
+                    type = "integer";
+                } else if(m_target.isBool()) {
+                    type = "boolean";
+                } else if(m_target.isNull()) {
+                    type = "null";
+                } else {
+                    type = "unknown type";
+                    output_target = false;
+                }
+
+                if (output_target) {
+                    m_results->pushError(m_context,
+                                         "Value type \"" + type + "\" for input \"" + m_target.asString() + "\" not permitted by 'type' constraint.");
+                } else {
+                    m_results->pushError(m_context,
+                                         "Value type \"" + type + "\" not permitted by 'type' constraint.");
+                }
             }
         }
 
@@ -1605,14 +1634,17 @@ private:
             // PropertiesConstraint. does std::regex currently support
             // custom allocators? Anyway, this isn't an issue here, because Valijson's
             // JSON Scheme validator does not yet support custom allocators.
-            const std::regex r(patternPropertyStr);
+            auto it = m_regexesCache.find(patternPropertyStr);
+            if (it == m_regexesCache.end()) {
+                it = m_regexesCache.emplace(patternPropertyStr, RegexEngine(patternPropertyStr)).first;
+            }
 
             bool matchFound = false;
 
             // Recursively validate all matching properties
             typedef const typename AdapterType::ObjectMember ObjectMember;
             for (const ObjectMember m : m_object) {
-                if (std::regex_search(m.first, r)) {
+                if (RegexEngine::search(m.first, it->second)) {
                     matchFound = true;
                     if (m_propertiesMatched) {
                         m_propertiesMatched->insert(m.first);

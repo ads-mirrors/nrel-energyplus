@@ -119,11 +119,11 @@ namespace EconomicTariff {
         Num
     };
 
+    // For several different objects that reference seasons
     enum class Season
     {
-        // For several different objects that reference seasons
         Invalid = -1,
-        Unused,
+        Unused, // Can't use 0 because these things appear in schedules
         Winter,
         Spring,
         Summer,
@@ -248,6 +248,7 @@ namespace EconomicTariff {
     enum class Period
     {
         Invalid = -1,
+        Unused, // Can't use 0 because these things appear in schedules
         Peak,
         Shoulder,
         OffPeak,

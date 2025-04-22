@@ -2663,16 +2663,16 @@ void GatherForEconomics(EnergyPlusData &state)
                     }
                     // calculate the real time cost for current times energy
                     curRTPcost = curRTPenergy * curRTPprice;
-                    tariff.RTPcost[curMonth] += curRTPcost;
+                    tariff.RTPcost(curMonth) += curRTPcost;
                     if (curRTPcost > 0) {
-                        tariff.RTPaboveBaseCost[curMonth] += curRTPcost;
+                        tariff.RTPaboveBaseCost(curMonth) += curRTPcost;
                     } else {
-                        tariff.RTPbelowBaseCost[curMonth] += curRTPcost;
+                        tariff.RTPbelowBaseCost(curMonth) += curRTPcost;
                     }
                     if (curRTPenergy > 0) {
-                        tariff.RTPaboveBaseEnergy[curMonth] += curRTPenergy;
+                        tariff.RTPaboveBaseEnergy(curMonth) += curRTPenergy;
                     } else {
-                        tariff.RTPbelowBaseEnergy[curMonth] += curRTPenergy;
+                        tariff.RTPbelowBaseEnergy(curMonth) += curRTPenergy;
                     }
                 }
                 // reset the counters
@@ -3098,11 +3098,11 @@ void ComputeTariff(EnergyPlusData &state)
                 } break;
                 }
             }
-            checkMinimumMonthlyCharge(state, iTariff);
         }
-        selectTariff(state);
-        LEEDtariffReporting(state);
+        checkMinimumMonthlyCharge(state, iTariff);
     }
+    selectTariff(state);
+    LEEDtariffReporting(state);
 }
 
 void pushStack(EnergyPlusData &state, Array1A<Real64> const monthlyArray, int const variablePointer)

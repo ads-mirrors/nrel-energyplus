@@ -3697,13 +3697,13 @@ void HeatPumpAirToWater::processInputForEIRPLHP(EnergyPlusData &state)
                     if (timedEmpiricalDefHeatLoadPenaltyCurveName != fields.end()) {
                         thisAWHP.defrostHeatLoadCurveIndex =
                             Curve::GetCurveIndex(state, Util::makeUPPER(timedEmpiricalDefHeatLoadPenaltyCurveName.value().get<std::string>()));
-                        thisAWHP.defrostLoadCurveDims = state.dataCurveManager->PerfCurve(thisAWHP.defrostHeatLoadCurveIndex)->numDims;
+                        thisAWHP.defrostLoadCurveDims = state.dataCurveManager->curves(thisAWHP.defrostHeatLoadCurveIndex)->numDims;
                     }
                     auto const defrostHeatEnergyCurveIndexCurveName = fields.find("timed_empirical_defrost_heat_input_energy_fraction_curve_name");
                     if (defrostHeatEnergyCurveIndexCurveName != fields.end()) {
                         thisAWHP.defrostHeatEnergyCurveIndex =
                             Curve::GetCurveIndex(state, Util::makeUPPER(defrostHeatEnergyCurveIndexCurveName.value().get<std::string>()));
-                        thisAWHP.defrostEnergyCurveDims = state.dataCurveManager->PerfCurve(thisAWHP.defrostHeatEnergyCurveIndex)->numDims;
+                        thisAWHP.defrostEnergyCurveDims = state.dataCurveManager->curves(thisAWHP.defrostHeatEnergyCurveIndex)->numDims;
                     }
                 } else if (thisAWHP.EIRHPType == DataPlant::PlantEquipmentType::HeatPumpEIRHeating) { // used for Timed or OnDemand
                     auto const defEIRFTCurveName = fields.find("defrost_energy_input_ratio_function_of_temperature_curve_name");

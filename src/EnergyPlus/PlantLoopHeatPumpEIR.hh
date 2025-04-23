@@ -233,6 +233,14 @@ namespace EIRPlantLoopHeatPumps {
         Real64 thermosiphonMinTempDiff = 0.0;
         int thermosiphonStatus = 0;
 
+        // new output
+        Real64 CrankcaseHeaterPower = 0.0;
+        Real64 heatingCOP = 0.0;
+        Real64 coolingCOP = 0.0;
+        Real64 heatingRate = 0.0;
+        Real64 coolingRate = 0.0;
+        int operatingMode = 0;
+
         // a couple worker functions to easily allow merging of cooling and heating operations
         std::function<Real64(Real64, Real64)> calcLoadOutletTemp;
         std::function<Real64(Real64, Real64)> calcQsource;

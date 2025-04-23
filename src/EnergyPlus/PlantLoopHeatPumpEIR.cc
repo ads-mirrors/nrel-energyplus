@@ -2201,7 +2201,8 @@ void EIRPlantLoopHeatPump::oneTimeInit(EnergyPlusData &state)
                             OutputProcessor::TimeStepType::System,
                             OutputProcessor::StoreType::Average,
                             this->name);
-        if (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpEIRCooling) { // energy from HeatPump:PlantLoop:EIR:Cooling object
+        if (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpEIRCooling ||
+            this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterCooling) { // energy from HeatPump:PlantLoop:EIR:Cooling object
             SetupOutputVariable(state,
                                 "Heat Pump Electricity Energy",
                                 Constant::Units::J,
@@ -2220,7 +2221,8 @@ void EIRPlantLoopHeatPump::oneTimeInit(EnergyPlusData &state)
                                 OutputProcessor::TimeStepType::System,
                                 OutputProcessor::StoreType::Average,
                                 this->name);
-        } else if (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpEIRHeating) { // energy from HeatPump:PlantLoop:EIR:Heating object
+        } else if (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpEIRHeating ||
+                   this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterHeating) { // energy from HeatPump:PlantLoop:EIR:Heating object
             SetupOutputVariable(state,
                                 "Heat Pump Electricity Energy",
                                 Constant::Units::J,
@@ -2266,6 +2268,69 @@ void EIRPlantLoopHeatPump::oneTimeInit(EnergyPlusData &state)
                                     OutputProcessor::EndUseCat::Heating,
                                     "Heat Pump");
             }
+        }
+
+        if (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterHeating) {
+            SetupOutputVariable(state,
+                                "Heat Pump Crankcase Heater Electricity Rate",
+                                Constant::Units::W,
+                                this->CrankcaseHeaterPower,
+                                OutputProcessor::TimeStepType::System,
+                                OutputProcessor::StoreType::Average,
+                                this->name);
+            SetupOutputVariable(state,
+                                "Heat Pump Crankcase Heater Electricity Energy",
+                                Constant::Units::W,
+                                this->CrankcaseHeaterPower,
+                                OutputProcessor::TimeStepType::System,
+                                OutputProcessor::StoreType::Sum,
+                                this->name,
+                                Constant::eResource::Electricity,
+                                OutputProcessor::Group::HVAC,
+                                OutputProcessor::EndUseCat::Cooling);
+            SetupOutputVariable(state,
+                                "Heat Pump Heating COP",
+                                Constant::Units::None,
+                                this->heatingCOP,
+                                OutputProcessor::TimeStepType::System,
+                                OutputProcessor::StoreType::Average,
+                                this->name);
+            SetupOutputVariable(state,
+                                "Heat Pump Total Heating Rate",
+                                Constant::Units::None,
+                                this->heatingRate,
+                                OutputProcessor::TimeStepType::System,
+                                OutputProcessor::StoreType::Average,
+                                this->name);
+            SetupOutputVariable(state,
+                                "Heat Pump Operating Mode",
+                                Constant::Units::None,
+                                this->operatingMode,
+                                OutputProcessor::TimeStepType::System,
+                                OutputProcessor::StoreType::Average,
+                                this->name);
+        } else if (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterCooling) {
+            SetupOutputVariable(state,
+                                "Heat Pump Operating Mode",
+                                Constant::Units::None,
+                                this->operatingMode,
+                                OutputProcessor::TimeStepType::System,
+                                OutputProcessor::StoreType::Average,
+                                this->name);
+            SetupOutputVariable(state,
+                                "Heat Pump Cooling COP",
+                                Constant::Units::None,
+                                this->coolingCOP,
+                                OutputProcessor::TimeStepType::System,
+                                OutputProcessor::StoreType::Average,
+                                this->name);
+            SetupOutputVariable(state,
+                                "Heat Pump Total Cooling Rate",
+                                Constant::Units::None,
+                                this->coolingRate,
+                                OutputProcessor::TimeStepType::System,
+                                OutputProcessor::StoreType::Average,
+                                this->name);
         }
         SetupOutputVariable(state,
                             "Heat Pump Load Side Mass Flow Rate",

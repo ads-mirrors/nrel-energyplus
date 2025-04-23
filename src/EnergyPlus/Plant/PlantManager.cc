@@ -3147,8 +3147,8 @@ void SizePlantLoop(EnergyPlusData &state,
         OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchPLCLProvCool, loop.Name, "N/A");
     }
 
+    std::string_view const loopType = DataPlant::loopTypeNames[static_cast<int>(loop.TypeOfLoop)];
     if (loop.MaxVolFlowRateWasAutoSized) {
-
         if ((PlantSizNum > 0)) {
             auto &loopSizData = state.dataSize->PlantSizData(PlantSizNum);
             if (loopSizData.DesVolFlowRate >= HVAC::SmallWaterVolFlow) {
@@ -3163,17 +3163,10 @@ void SizePlantLoop(EnergyPlusData &state,
                 }
             }
             if (OkayToFinish) {
-                if (state.dataPlnt->PlantFinalSizesOkayToReport) {
-                }
                 if (state.dataPlnt->PlantFirstSizesOkayToReport) {
-                    if (loop.TypeOfLoop == LoopType::Plant) {
-                        BaseSizer::reportSizerOutput(state, "PlantLoop", loop.Name, "Initial Maximum Loop Flow Rate [m3/s]", loop.MaxVolFlowRate);
-                    } else if (loop.TypeOfLoop == LoopType::Condenser) {
-                        BaseSizer::reportSizerOutput(state, "CondenserLoop", loop.Name, "Initial Maximum Loop Flow Rate [m3/s]", loop.MaxVolFlowRate);
-                    }
+                    BaseSizer::reportSizerOutput(state, loopType, loop.Name, "Initial Maximum Loop Flow Rate [m3/s]", loop.MaxVolFlowRate);
                 }
             }
-
         } else {
             if (state.dataPlnt->PlantFirstSizesOkayToFinalize) {
                 ShowFatalError(state, "Autosizing of plant loop requires a loop Sizing:Plant object");
@@ -3198,7 +3191,6 @@ void SizePlantLoop(EnergyPlusData &state,
         }
     }
     if (state.dataPlnt->PlantFinalSizesOkayToReport) {
-        std::string_view const loopType = DataPlant::loopTypeNames[static_cast<int>(loop.TypeOfLoop)];
         BaseSizer::reportSizerOutput(state, loopType, loop.Name, "Maximum Loop Flow Rate [m3/s]", loop.MaxVolFlowRate);
         Real64 returnTemp = -999.0;
         if (PlantSizNum > 0) {

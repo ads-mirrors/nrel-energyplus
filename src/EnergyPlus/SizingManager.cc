@@ -3473,15 +3473,6 @@ void GetSystemSizingInput(EnergyPlusData &state)
 
         SysSizInput(SysSizIndex).SizingOption = static_cast<SizingConcurrence>(
             getEnumValue(SizingConcurrenceNamesUC, Util::makeUPPER(state.dataIPShortCut->cAlphaArgs(iSizingOptionAlphaNum))));
-        if (SysSizInput(SysSizIndex).SizingOption == SizingConcurrence::Invalid) {
-            ShowSevereError(state, format("{}=\"{}\", invalid data.", cCurrentModuleObject, state.dataIPShortCut->cAlphaArgs(iNameAlphaNum)));
-            ShowContinueError(state,
-                              format("... incorrect {}=\"{}\".",
-                                     state.dataIPShortCut->cAlphaFieldNames(iSizingOptionAlphaNum),
-                                     state.dataIPShortCut->cAlphaArgs(iSizingOptionAlphaNum)));
-            ShowContinueError(state, "... valid values are Coincident or NonCoincident.");
-            ErrorsFound = true;
-        }
 
         BooleanSwitch is100PctOACooling = getYesNoValue(state.dataIPShortCut->cAlphaArgs(i100PercentOACoolingAlphaNum));
         SysSizInput(SysSizIndex).CoolOAOption = (is100PctOACooling == BooleanSwitch::Yes) ? OAControl::AllOA : OAControl::MinOA;
@@ -3971,10 +3962,6 @@ void GetPlantSizingInput(EnergyPlusData &state)
             e.LoopType = DataSizing::TypeOfPlantLoop::Invalid;
             e.DesVolFlowRate = 0.0;
         }
-        for (int i = 1; i <= state.dataSize->NumPltSizInput; ++i) {
-            state.dataSize->PlantSizData(i).ConcurrenceOption = DataSizing::SizingConcurrence::NonCoincident;
-            state.dataSize->PlantSizData(i).NumTimeStepsInAvg = 1;
-        }
     }
 
     for (PltSizIndex = 1; PltSizIndex <= state.dataSize->NumPltSizInput; ++PltSizIndex) {
@@ -4010,13 +3997,6 @@ void GetPlantSizingInput(EnergyPlusData &state)
         if (NumAlphas > 2) {
             state.dataSize->PlantSizData(PltSizIndex).ConcurrenceOption =
                 static_cast<SizingConcurrence>(getEnumValue(SizingConcurrenceNamesUC, Util::makeUPPER(state.dataIPShortCut->cAlphaArgs(3))));
-            if (state.dataSize->PlantSizData(PltSizIndex).ConcurrenceOption == SizingConcurrence::Invalid) {
-                ShowSevereError(state, format("{}=\"{}\", invalid data.", cCurrentModuleObject, state.dataIPShortCut->cAlphaArgs(1)));
-                ShowContinueError(state,
-                                  format("...incorrect {}=\"{}\".", state.dataIPShortCut->cAlphaFieldNames(3), state.dataIPShortCut->cAlphaArgs(3)));
-                ShowContinueError(state, R"(...Valid values are "NonCoincident" or "Coincident".)");
-                ErrorsFound = true;
-            }
         }
         if (NumAlphas > 3) {
             {

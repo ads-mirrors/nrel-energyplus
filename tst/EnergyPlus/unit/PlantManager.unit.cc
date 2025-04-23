@@ -80,6 +80,7 @@ namespace PlantManager {
         state->dataPlnt->PlantLoop(1).MaxVolFlowRate = 5;
         state->dataPlnt->PlantLoop(1).CirculationTime = 2;
         state->dataPlnt->PlantLoop(1).FluidType = DataLoopNode::NodeFluidType::Water;
+        state->dataPlnt->PlantLoop(1).TypeOfLoop = LoopType::Plant;
         state->dataPlnt->PlantLoop(1).glycol = Fluid::GetWater(*state);
         SizePlantLoop(*state, 1, true);
         int TestVolume = 600;

@@ -1031,13 +1031,14 @@ namespace DataSizing {
     struct PlantSizingData
     {
         // Members
-        std::string PlantLoopName;                                                                // name of PLANT LOOP or CONDENSER LOOP object
-        TypeOfPlantLoop LoopType = TypeOfPlantLoop::Invalid;                                      // type of loop: 1=heating, 2=cooling, 3=condenser
-        Real64 ExitTemp = 0.0;                                                                    // loop design exit (supply) temperature [C]
-        Real64 DeltaT = 0.0;                                                                      // loop design temperature drop (or rise) [DelK]
-        DataSizing::SizingConcurrence ConcurrenceOption = DataSizing::SizingConcurrence::Invalid; // sizing option for coincident or noncoincident
-        int NumTimeStepsInAvg = 0;  // number of zone timesteps in the averaging window for coincident plant flow
-        int SizingFactorOption = 0; // option for what sizing factor to apply
+        std::string PlantLoopName;                           // name of PLANT LOOP or CONDENSER LOOP object
+        TypeOfPlantLoop LoopType = TypeOfPlantLoop::Invalid; // type of loop: 1=heating, 2=cooling, 3=condenser
+        Real64 ExitTemp = 0.0;                               // loop design exit (supply) temperature [C]
+        Real64 DeltaT = 0.0;                                 // loop design temperature drop (or rise) [DelK]
+        DataSizing::SizingConcurrence ConcurrenceOption =
+            DataSizing::SizingConcurrence::NonCoincident; // sizing option for coincident or noncoincident (default)
+        int NumTimeStepsInAvg = 1;                        // number of zone timesteps in the averaging window for coincident plant flow
+        int SizingFactorOption = 0;                       // option for what sizing factor to apply
         // Calculated
         Real64 DesVolFlowRate = 0.0; // loop design flow rate in m3/s
         bool VolFlowSizingDone = 0;  // flag to indicate when this loop has finished sizing flow rate

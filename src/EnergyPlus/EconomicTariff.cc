@@ -4672,7 +4672,9 @@ void ReportEconomicVariable(
                     curCategory = econVar(curCatPt).specific;
                 }
 
-                tableBody(15, nCntOfVar) = (econVar(curCatPt).kindOfObj == ObjType::Category) ? catNames[econVar(curCatPt).specific] : "NotIncluded";
+                // In this specific table, "NotIncluded" is written as "none" so need a special case for that
+                tableBody(15, nCntOfVar) = (econVar(curCatPt).kindOfObj == ObjType::Category) ?
+                    ((econVar(curCatPt).specific == (int)Cat::NotIncluded) ? "none" : catNames[econVar(curCatPt).specific]) : "none";
             }
             s_econ->econVar(iVar).isReported = true;
         }

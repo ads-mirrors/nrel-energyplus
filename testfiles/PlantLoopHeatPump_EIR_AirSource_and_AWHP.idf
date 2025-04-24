@@ -243,7 +243,7 @@
     Heating Coil Load Loop Pump,  !- Component 1 Name
     Heating Coil Load Loop Supply Inlet Node,  !- Component 1 Inlet Node Name
     Heating Coil Load Loop Intermediate Node,  !- Component 1 Outlet Node Name
-    HeatPump:AirToWater,  !- Component 2 Object Type
+    HeatPump:AirToWater:Heating,  !- Component 2 Object Type
     test_AWHP,            !- Component 2 Name
     Heating Coil Load Loop Intermediate Node,  !- Component 2 Inlet Node Name
     Heating Coil Load Loop Supply Outlet Node;  !- Component 2 Outlet Node Name
@@ -470,7 +470,7 @@
 
   PlantEquipmentList,
     Cooling Coil Load Loop Cooling Equipment,  !- Name
-    HeatPump:AirToWater:Cooling,  !- Equipment 1 Object Type
+    HeatPump:AirToWater,  !- Equipment 1 Object Type
     test_AWHP;            !- Equipment 1 Name
 
   BranchList,
@@ -484,7 +484,7 @@
     Cooling Coil Load Loop Pump,  !- Component 1 Name
     Cooling Coil Load Loop Supply Inlet Node,  !- Component 1 Inlet Node Name
     Cooling Coil Load Loop Intermediate Node,  !- Component 1 Outlet Node Name
-    HeatPump:AirToWater,  !- Component 2 Object Type
+    HeatPump:AirToWater:Cooling,  !- Component 2 Object Type
     test_AWHP,            !- Component 2 Name
     Cooling Coil Load Loop Intermediate Node,  !- Component 2 Inlet Node Name
     Cooling Coil Load Loop Supply Outlet Node;  !- Component 2 Outlet Node Name

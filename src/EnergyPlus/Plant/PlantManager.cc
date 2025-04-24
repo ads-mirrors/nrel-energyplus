@@ -1193,6 +1193,21 @@ void GetPlantInput(EnergyPlusData &state)
                         this_comp.CurOpSchemeType = OpScheme::Invalid;
                         break;
                     }
+                    case PlantEquipmentType::HeatPumpAirToWater: {
+                        if (state.dataPlnt->PlantLoop(LoopNum).TypeOfWaterLoop == DataPlant::WaterLoopType::HotWater) {
+                            this_comp.compPtr = EIRPlantLoopHeatPumps::HeatPumpAirToWater::factory(
+                                state, PlantEquipmentType::HeatPumpAirToWaterHeating, CompNames(CompNum));
+                            this_comp.Type = PlantEquipmentType::HeatPumpAirToWaterHeating;
+                            this_comp.TypeOf = "HeatPumpAirToWaterHeating";
+                        } else if (state.dataPlnt->PlantLoop(LoopNum).TypeOfWaterLoop == DataPlant::WaterLoopType::ChilledWater) {
+                            this_comp.compPtr = EIRPlantLoopHeatPumps::HeatPumpAirToWater::factory(
+                                state, PlantEquipmentType::HeatPumpAirToWaterCooling, CompNames(CompNum));
+                            this_comp.Type = PlantEquipmentType::HeatPumpAirToWaterCooling;
+                            this_comp.TypeOf = "HeatPumpAirToWaterCooling";
+                        }
+                        this_comp.CurOpSchemeType = OpScheme::Invalid;
+                        break;
+                    }
                     case PlantEquipmentType::HeatPumpAirToWaterHeating: {
                         this_comp.compPtr = EIRPlantLoopHeatPumps::HeatPumpAirToWater::factory(
                             state, PlantEquipmentType::HeatPumpAirToWaterHeating, CompNames(CompNum));
@@ -4384,6 +4399,8 @@ void SetupBranchControlTypes(EnergyPlusData &state)
                         this_component.FlowPriority = DataPlant::LoopFlowStatus::TakesWhatGets;
                         this_component.HowLoadServed = DataPlant::HowMet::PassiveCap;
                     } break;
+                    case DataPlant::PlantEquipmentType::HeatPumpAirToWaterCooling:
+                    case DataPlant::PlantEquipmentType::HeatPumpAirToWaterHeating:
                     case DataPlant::PlantEquipmentType::HeatPumpEIRCooling:
                     case PlantEquipmentType::HeatPumpEIRHeating: { // 95, 96
                         this_component.FlowCtrl = DataBranchAirLoopPlant::ControlType::Active;

@@ -568,7 +568,7 @@ void HeatPumpAirToWater::calcLoadSideHeatTransfer(EnergyPlusData &state, Real64 
     Real64 CpLoad = this->loadSidePlantLoc.loop->glycol->getSpecificHeat(
         state, state.dataLoopNodes->Node(this->loadSideNodes.inlet).Temp, "HeatPumpAirToWater::calcLoadSideHeatTransfer()");
 
-    this->loadSideHeatTransfer = min(availableCapacity, abs(currentLoad));
+    this->loadSideHeatTransfer = min(availableCapacity, std::fabs(currentLoad));
 
     // calculate load side outlet conditions
     Real64 const loadMCp = this->loadSideMassFlowRate * CpLoad;
@@ -4226,7 +4226,7 @@ void HeatPumpAirToWater::calcAvailableCapacity(
                 Curve::CurveValue(state, this->capFuncTempCurveIndex[i], loadSideOutletSetpointTemp, this->sourceSideInletTemp);
             capacityHigh = this->referenceCapacity * capacityModifierFuncTemp;
             speedLevel = i;
-            if (std::abs(currentLoad) < capacityHigh) {
+            if (std::fabs(currentLoad) < capacityHigh) {
                 break;
             } else {
                 capacityLow = capacityHigh;
@@ -4238,16 +4238,16 @@ void HeatPumpAirToWater::calcAvailableCapacity(
         if (availableCapacity > 0) {
             if (this->controlType == HeatPumpAirToWater::ControlType::FixedSpeed) {
                 partLoadRatio = capacityHigh / availableCapacity;
-                if (abs(currentLoad) >= availableCapacity) {
+                if (std::fabs(currentLoad) >= availableCapacity) {
                     this->cyclingRatio = 1.0;
                 } else {
-                    assert(abs(currentLoad) >= capacityLow);
+                    assert(std::fabs(currentLoad) >= capacityLow);
                     // for fixed-speed, cycling ratio is only about the first level that meet the load,
                     // speed levels lower than this are all running fully
-                    this->cyclingRatio = (abs(currentLoad) - capacityLow) / (capacityHigh - capacityLow);
+                    this->cyclingRatio = (std::fabs(currentLoad) - capacityLow) / (capacityHigh - capacityLow);
                 }
             } else {
-                partLoadRatio = std::clamp(std::abs(currentLoad) / availableCapacity, 0.0, 1.0);
+                partLoadRatio = std::clamp(std::fabs(currentLoad) / availableCapacity, 0.0, 1.0);
                 this->cyclingRatio = 1.0;
                 // if there's a minPLR, then below the minPLR, it will cycle
             }

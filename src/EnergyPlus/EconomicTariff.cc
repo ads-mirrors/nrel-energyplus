@@ -4672,7 +4672,7 @@ void ReportEconomicVariable(
                     curCategory = econVar(curCatPt).specific;
                 }
 
-                tableBody(15, nCntOfVar) = (econVar(curCatPt).kindOfObj == ObjType::Category) ? catNames[econVar(curCatPt).specific] : "none";
+                tableBody(15, nCntOfVar) = (econVar(curCatPt).kindOfObj == ObjType::Category) ? catNames[econVar(curCatPt).specific] : "NotIncluded";
             }
             s_econ->econVar(iVar).isReported = true;
         }

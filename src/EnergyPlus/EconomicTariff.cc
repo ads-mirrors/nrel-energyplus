@@ -82,7 +82,7 @@ namespace EnergyPlus::EconomicTariff {
 //    use estimate.
   
 constexpr std::array<std::string_view, (int)EconConv::Num> convEnergyStrings = {
-    "Userdefined", "kWh", "Therm", "MMBtu", "MJ", "kBTU", "MCF", "CCF", "m3", "gal", "kgal" };
+    "", "kWh", "Therm", "MMBtu", "MJ", "kBTU", "MCF", "CCF", "m3", "gal", "kgal" };
 constexpr std::array<std::string_view, (int)EconConv::Num> convDemandStrings = {
     "", "kW", "Therm", "MMBtu", "MJ", "kBTU", "MCF", "CCF", "m3", "gal", "kgal" };
 constexpr std::array<std::string_view, (int)EconConv::Num> econConvNamesUC = {
@@ -4036,14 +4036,17 @@ void LEEDtariffReporting(EnergyPlusData &state)
             state, s_orp->pdchLeedEtsEneUnt, "Other", format("{}", convEnergyStrings[(int)othrUnits]));
         OutputReportPredefined::PreDefTableEntry(
             state, s_orp->pdchLeedEtsDemUnt, "Electricity", format("{}", convDemandStrings[(int)elecUnits]));
-        OutputReportPredefined::PreDefTableEntry(state,
-                                                 s_orp->pdchLeedEtsDemUnt,
-                                                 "Natural Gas",
-                                                 format("{}{}", convDemandStrings[(int)gasUnits], demandWindowStrings[(int)gasDemWindowUnits]));
-        OutputReportPredefined::PreDefTableEntry(state,
-                                                 s_orp->pdchLeedEtsDemUnt,
-                                                 "Other",
-                                                 format("{}{}", convDemandStrings[(int)othrUnits], demandWindowStrings[(int)othrDemWindowUnits]));
+        OutputReportPredefined::PreDefTableEntry(
+            state, s_orp->pdchLeedEtsDemUnt, "Natural Gas",
+            format("{}{}",
+                   convDemandStrings[(int)gasUnits],
+                   (gasDemWindowUnits == DemandWindow::Invalid) ? "" : demandWindowStrings[(int)gasDemWindowUnits]));
+        OutputReportPredefined::PreDefTableEntry(
+            state, s_orp->pdchLeedEtsDemUnt, "Other",
+            format("{}{}",
+                   convDemandStrings[(int)othrUnits],
+                   (othrDemWindowUnits == DemandWindow::Invalid) ? "" : demandWindowStrings[(int)othrDemWindowUnits]));
+        
         // total cost
         OutputReportPredefined::PreDefTableEntry(state, s_orp->pdchLeedEcsTotal, "Electricity", elecTotalCost, 2);
         OutputReportPredefined::PreDefTableEntry(state, s_orp->pdchLeedEcsTotal, "Natural Gas", gasTotalCost, 2);

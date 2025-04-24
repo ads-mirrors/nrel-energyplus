@@ -63,8 +63,9 @@ using namespace EnergyPlus;
 
 TEST_F(CoilCoolingDXTest, CoilCoolingDXCurveFitModeInput)
 {
-    std::string idf_objects = this->getModeObjectString("mode1", 2);
+    std::string idf_objects = this->getModeObjectString("mode1", 2); // What is going on here?
     EXPECT_TRUE(process_idf(idf_objects, false));
+    state->init_state(*state);
     CoilCoolingDXCurveFitOperatingMode thisMode(*state, "mode1");
     EXPECT_EQ("MODE1", thisMode.name);
     EXPECT_EQ("MODE1SPEED1", thisMode.speeds[0].name);

@@ -299,7 +299,7 @@ void GetPlantLoopData(EnergyPlusData &state)
     int NumFluids; // number of fluids in sim
     int PlantLoopNum;
     int CondLoopNum;
-    Array1D_string Alpha(18); // dimension to num of alpha fields in input
+    Array1D_string Alpha(19); // dimension to num of alpha fields in input
     Array1D<Real64> Num(30);  // dimension to num of numeric data fields in input
     bool ErrorsFound(false);
     std::string CurrentModuleObject; // for ease in renaming.
@@ -603,6 +603,7 @@ void GetPlantLoopData(EnergyPlusData &state)
         } else {
             PressSimAlphaIndex = 15;
         }
+        this_loop.TypeOfWaterLoop = static_cast<DataPlant::WaterLoopType>(getEnumValue(DataPlant::waterLoopTypeNamesUC, Util::makeUPPER(Alpha(19))));
 
         if (NumAlphas >= PressSimAlphaIndex) {
             MatchedPressureString = false;

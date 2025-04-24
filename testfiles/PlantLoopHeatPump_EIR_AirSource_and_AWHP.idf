@@ -201,7 +201,13 @@
     Heating Coil Load Loop Demand Outlet Node,  !- Demand Side Outlet Node Name
     Heating Coil Load Loop Demand Branches,  !- Demand Side Branch List Name
     ,                        !- Demand Side Connector List Name
-    Optimal;                 !- Load Distribution Scheme
+    Optimal,                 !- Load Distribution Scheme
+    ,
+    ,
+    ,
+    ,
+    ,
+    HotWater;
 
   SetpointManager:Scheduled,
     Heating Coil Load Loop Setpoint Manager,  !- Name
@@ -223,8 +229,8 @@
 
   PlantEquipmentList,
     Heating Coil Load Loop Heating Equipment,  !- Name
-    HeatPump:PlantLoop:EIR:Heating,  !- Equipment 1 Object Type
-    Heating Coil;            !- Equipment 1 Name
+    HeatPump:AirToWater,  !- Equipment 1 Object Type
+    test_AWHP;            !- Equipment 1 Name
 
   BranchList,
     Heating Coil Load Loop Supply Branches,  !- Name
@@ -237,8 +243,8 @@
     Heating Coil Load Loop Pump,  !- Component 1 Name
     Heating Coil Load Loop Supply Inlet Node,  !- Component 1 Inlet Node Name
     Heating Coil Load Loop Intermediate Node,  !- Component 1 Outlet Node Name
-    HeatPump:PlantLoop:EIR:Heating,  !- Component 2 Object Type
-    Heating Coil,            !- Component 2 Name
+    HeatPump:AirToWater,  !- Component 2 Object Type
+    test_AWHP,            !- Component 2 Name
     Heating Coil Load Loop Intermediate Node,  !- Component 2 Inlet Node Name
     Heating Coil Load Loop Supply Outlet Node;  !- Component 2 Outlet Node Name
 
@@ -340,7 +346,7 @@
     Outdoor Air Outlet Node, !- Source Side Outlet Node Name
     ,                        !- Heat Recovery Inlet Node Name
     ,                        !- Heat Recovery Outlet Node Name      
-    Cooling Coil,            !- Companion Heat Pump Name
+    ,            !- Companion Heat Pump Name
     0.005,                   !- Load Side Reference Flow Rate {m3/s}
     2,                       !- Source Side Reference Flow Rate {m3/s}
     ,                        !- Heat Recovery Reference Flow Rate {m3/s}
@@ -436,7 +442,13 @@
     Cooling Coil Load Loop Demand Outlet Node,  !- Demand Side Outlet Node Name
     Cooling Coil Load Loop Demand Branches,  !- Demand Side Branch List Name
     ,                        !- Demand Side Connector List Name
-    Optimal;                 !- Load Distribution Scheme
+    Optimal,                 !- Load Distribution Scheme
+    ,
+    ,
+    ,
+    ,
+    ,
+    ChilledWater;
 
   SetpointManager:Scheduled,
     Cooling Coil Load Loop Setpoint Manager,  !- Name
@@ -458,8 +470,8 @@
 
   PlantEquipmentList,
     Cooling Coil Load Loop Cooling Equipment,  !- Name
-    HeatPump:PlantLoop:EIR:Cooling,  !- Equipment 1 Object Type
-    Cooling Coil;            !- Equipment 1 Name
+    HeatPump:AirToWater:Cooling,  !- Equipment 1 Object Type
+    test_AWHP;            !- Equipment 1 Name
 
   BranchList,
     Cooling Coil Load Loop Supply Branches,  !- Name
@@ -472,8 +484,8 @@
     Cooling Coil Load Loop Pump,  !- Component 1 Name
     Cooling Coil Load Loop Supply Inlet Node,  !- Component 1 Inlet Node Name
     Cooling Coil Load Loop Intermediate Node,  !- Component 1 Outlet Node Name
-    HeatPump:PlantLoop:EIR:Cooling,  !- Component 2 Object Type
-    Cooling Coil,            !- Component 2 Name
+    HeatPump:AirToWater,  !- Component 2 Object Type
+    test_AWHP,            !- Component 2 Name
     Cooling Coil Load Loop Intermediate Node,  !- Component 2 Inlet Node Name
     Cooling Coil Load Loop Supply Outlet Node;  !- Component 2 Outlet Node Name
 
@@ -502,7 +514,7 @@
     Outdoor Air Outlet Node, !- Source Side Outlet Node Name
     ,                        !- Heat Recovery Inlet Node Name
     ,                        !- Heat Recovery Outlet Node Name
-    Heating Coil,            !- Companion Heat Pump Name
+    ,            !- Companion Heat Pump Name
     0.005,                   !- Load Side Reference Flow Rate {m3/s}
     20,                      !- Source Side Reference Flow Rate {m3/s}
     ,                        !- Heat Recovery Reference Flow Rate {m3/s}

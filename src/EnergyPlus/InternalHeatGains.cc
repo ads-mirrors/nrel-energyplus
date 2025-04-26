@@ -150,39 +150,37 @@ namespace InternalHeatGains {
     static constexpr std::array<DataHeatBalance::IntGainType, 3> IntGainTypesWaterUse = {DataHeatBalance::IntGainType::WaterUseEquipment,
                                                                                          DataHeatBalance::IntGainType::WaterHeaterMixed,
                                                                                          DataHeatBalance::IntGainType::WaterHeaterStratified};
-    static constexpr std::array<DataHeatBalance::IntGainType, 21> IntGainTypesHvacLoss = {
-        DataHeatBalance::IntGainType::ZoneBaseboardOutdoorTemperatureControlled,
-        DataHeatBalance::IntGainType::ThermalStorageChilledWaterMixed,
-        DataHeatBalance::IntGainType::ThermalStorageChilledWaterStratified,
-        DataHeatBalance::IntGainType::PipeIndoor,
-        DataHeatBalance::IntGainType::Pump_VarSpeed,
-        DataHeatBalance::IntGainType::Pump_ConSpeed,
-        DataHeatBalance::IntGainType::Pump_Cond,
-        DataHeatBalance::IntGainType::PumpBank_VarSpeed,
-        DataHeatBalance::IntGainType::PumpBank_ConSpeed,
-        DataHeatBalance::IntGainType::PlantComponentUserDefined,
-        DataHeatBalance::IntGainType::CoilUserDefined,
-        DataHeatBalance::IntGainType::ZoneHVACForcedAirUserDefined,
-        DataHeatBalance::IntGainType::AirTerminalUserDefined,
-        DataHeatBalance::IntGainType::PackagedTESCoilTank,
-        DataHeatBalance::IntGainType::FanSystemModel,
-        DataHeatBalance::IntGainType::SecCoolingDXCoilSingleSpeed,
-        DataHeatBalance::IntGainType::SecHeatingDXCoilSingleSpeed,
-        DataHeatBalance::IntGainType::SecCoolingDXCoilTwoSpeed,
-        DataHeatBalance::IntGainType::SecCoolingDXCoilMultiSpeed,
-        DataHeatBalance::IntGainType::SecHeatingDXCoilMultiSpeed,
-        DataHeatBalance::IntGainType::ParallelPIUDamperLeakage};
-    static constexpr std::array<DataHeatBalance::IntGainType, 10> IntGainTypesPowerGen = {
-        DataHeatBalance::IntGainType::GeneratorFuelCell,
-        DataHeatBalance::IntGainType::GeneratorMicroCHP,
-        DataHeatBalance::IntGainType::ElectricLoadCenterTransformer,
-        DataHeatBalance::IntGainType::ElectricLoadCenterInverterSimple,
-        DataHeatBalance::IntGainType::ElectricLoadCenterInverterFunctionOfPower,
-        DataHeatBalance::IntGainType::ElectricLoadCenterInverterLookUpTable,
-        DataHeatBalance::IntGainType::ElectricLoadCenterStorageLiIonNmcBattery,
-        DataHeatBalance::IntGainType::ElectricLoadCenterStorageBattery,
-        DataHeatBalance::IntGainType::ElectricLoadCenterStorageSimple,
-        DataHeatBalance::IntGainType::ElectricLoadCenterConverter};
+    static constexpr std::array<DataHeatBalance::IntGainType, 20> IntGainTypesHvacLoss =
+        {DataHeatBalance::IntGainType::ZoneBaseboardOutdoorTemperatureControlled,
+         DataHeatBalance::IntGainType::ThermalStorageChilledWaterMixed,
+         DataHeatBalance::IntGainType::ThermalStorageChilledWaterStratified,
+         DataHeatBalance::IntGainType::PipeIndoor,
+         DataHeatBalance::IntGainType::Pump_VarSpeed,
+         DataHeatBalance::IntGainType::Pump_ConSpeed,
+         DataHeatBalance::IntGainType::Pump_Cond,
+         DataHeatBalance::IntGainType::PumpBank_VarSpeed,
+         DataHeatBalance::IntGainType::PumpBank_ConSpeed,
+         DataHeatBalance::IntGainType::PlantComponentUserDefined,
+         DataHeatBalance::IntGainType::CoilUserDefined,
+         DataHeatBalance::IntGainType::ZoneHVACForcedAirUserDefined,
+         DataHeatBalance::IntGainType::AirTerminalUserDefined,
+         DataHeatBalance::IntGainType::PackagedTESCoilTank,
+         DataHeatBalance::IntGainType::FanSystemModel,
+         DataHeatBalance::IntGainType::SecCoolingDXCoilSingleSpeed,
+         DataHeatBalance::IntGainType::SecHeatingDXCoilSingleSpeed,
+         DataHeatBalance::IntGainType::SecCoolingDXCoilTwoSpeed,
+         DataHeatBalance::IntGainType::SecCoolingDXCoilMultiSpeed,
+         DataHeatBalance::IntGainType::SecHeatingDXCoilMultiSpeed} static constexpr std::array<DataHeatBalance::IntGainType, 10>
+            IntGainTypesPowerGen = {DataHeatBalance::IntGainType::GeneratorFuelCell,
+                                    DataHeatBalance::IntGainType::GeneratorMicroCHP,
+                                    DataHeatBalance::IntGainType::ElectricLoadCenterTransformer,
+                                    DataHeatBalance::IntGainType::ElectricLoadCenterInverterSimple,
+                                    DataHeatBalance::IntGainType::ElectricLoadCenterInverterFunctionOfPower,
+                                    DataHeatBalance::IntGainType::ElectricLoadCenterInverterLookUpTable,
+                                    DataHeatBalance::IntGainType::ElectricLoadCenterStorageLiIonNmcBattery,
+                                    DataHeatBalance::IntGainType::ElectricLoadCenterStorageBattery,
+                                    DataHeatBalance::IntGainType::ElectricLoadCenterStorageSimple,
+                                    DataHeatBalance::IntGainType::ElectricLoadCenterConverter};
     // Explicitly list internal gains not gathered here
     static constexpr std::array<DataHeatBalance::IntGainType, 3> ExcludedIntGainTypes = {
         DataHeatBalance::IntGainType::ZoneContaminantSourceAndSinkCarbonDioxide,
@@ -1850,8 +1848,8 @@ namespace InternalHeatGains {
                                                nullptr,
                                                &thisZoneGas.CO2GainRate);
 
-                } // for gasEqInputNum.NumOfSpaces
-            }     // for gasEqInputNum
+                } // for hwEqInputNum
+            }     // TotHWEquip > 0
         }         // TotGasEquip > 0
 
         // HotWaterEquipment

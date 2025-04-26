@@ -205,7 +205,6 @@ namespace PoweredInductionUnits {
         Real64 leakFrac = 0.0;         // parallel PIU backdraft damper leakage fraction
         Real64 leakMassFlowRate = 0.0; // parallel PIU backdraft damper leakage mass flow rate
         int leakFracCurve = 0.0;       // parallel PIU backdraft damper leakage fraction curve
-        Real64 leakLoss = 0.0;         // parallel PIU backdraft damper loss
         int secZoneNum = 0;            // index to secondary zone
 
         int CurOperationControlStage = -1; // integer reference for what stage of control the unit is in

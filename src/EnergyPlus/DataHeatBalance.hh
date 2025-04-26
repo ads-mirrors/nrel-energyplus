@@ -283,7 +283,6 @@ namespace DataHeatBalance {
         ElectricLoadCenterConverter,
         FanSystemModel,
         IndoorGreen,
-        ParallelPIUDamperLeakage,
         Num
     };
 

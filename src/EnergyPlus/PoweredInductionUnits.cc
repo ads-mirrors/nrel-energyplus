@@ -580,12 +580,6 @@ void GetPIUs(EnergyPlusData &state)
                                                     thisPIU.Name));
                             thisPIU.leakFracCurve = 0;
                         }
-
-                        //                        SetupZoneInternalGain(state,
-                        //                                              thisPIU.CtrlZoneNum, // Need to use the secondary zone/plenum zone num
-                        //                                              thisPIU.Name,
-                        //                                              DataHeatBalance::IntGainType::ParallelPIUDamperLeakage,
-                        //                                              &thisPIU.leakLoss);
                     }
                 }
             }
@@ -683,13 +677,6 @@ void GetPIUs(EnergyPlusData &state)
                             thisPIU.leakMassFlowRate,
                             OutputProcessor::TimeStepType::System,
                             OutputProcessor::StoreType::Average,
-                            state.dataPowerInductionUnits->PIU(PIURpt).Name);
-        SetupOutputVariable(state,
-                            "Zone Air Terminal Backdraft Damper Heat Loss",
-                            Constant::Units::J,
-                            thisPIU.leakLoss,
-                            OutputProcessor::TimeStepType::System,
-                            OutputProcessor::StoreType::Sum,
                             state.dataPowerInductionUnits->PIU(PIURpt).Name);
     }
 }
@@ -1812,7 +1799,6 @@ void CalcParallelPIU(EnergyPlusData &state,
     auto &thisPIU = state.dataPowerInductionUnits->PIU(PIUNum);
 
     thisPIU.leakMassFlowRate = 0.0;
-    thisPIU.leakLoss = 0.0;
     Real64 const PriAirMassFlowMax = state.dataLoopNodes->Node(thisPIU.PriAirInNode).MassFlowRateMaxAvail; // max primary air mass flow rate [kg/s]
     Real64 const PriAirMassFlowMin = state.dataLoopNodes->Node(thisPIU.PriAirInNode).MassFlowRateMinAvail; // min primary air mass flow rate [kg/s]
     thisPIU.PriAirMassFlow = state.dataLoopNodes->Node(thisPIU.PriAirInNode).MassFlowRate;                 // primary air mass flow rate [kg/s]

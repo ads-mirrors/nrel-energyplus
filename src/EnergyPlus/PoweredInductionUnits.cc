@@ -581,11 +581,11 @@ void GetPIUs(EnergyPlusData &state)
                             thisPIU.leakFracCurve = 0;
                         }
 
-                        SetupZoneInternalGain(state,
-                                              thisPIU.CtrlZoneNum, // Need to use the secondary zone/plenum zone num
-                                              thisPIU.Name,
-                                              DataHeatBalance::IntGainType::ParallelPIUDamperLeakage,
-                                              &thisPIU.leakLoss);
+                        //                        SetupZoneInternalGain(state,
+                        //                                              thisPIU.CtrlZoneNum, // Need to use the secondary zone/plenum zone num
+                        //                                              thisPIU.Name,
+                        //                                              DataHeatBalance::IntGainType::ParallelPIUDamperLeakage,
+                        //                                              &thisPIU.leakLoss);
                     }
                 }
             }
@@ -680,7 +680,7 @@ void GetPIUs(EnergyPlusData &state)
         SetupOutputVariable(state,
                             "Zone Air Terminal Backdraft Damper Leakage Mass Flow Rate",
                             Constant::Units::kg_s,
-                            thisPIU.leakFlow,
+                            thisPIU.leakMassFlowRate,
                             OutputProcessor::TimeStepType::System,
                             OutputProcessor::StoreType::Average,
                             state.dataPowerInductionUnits->PIU(PIURpt).Name);
@@ -1811,7 +1811,7 @@ void CalcParallelPIU(EnergyPlusData &state,
     // initialize local variables
     auto &thisPIU = state.dataPowerInductionUnits->PIU(PIUNum);
 
-    thisPIU.leakFlow = 0.0;
+    thisPIU.leakMassFlowRate = 0.0;
     thisPIU.leakLoss = 0.0;
     Real64 const PriAirMassFlowMax = state.dataLoopNodes->Node(thisPIU.PriAirInNode).MassFlowRateMaxAvail; // max primary air mass flow rate [kg/s]
     Real64 const PriAirMassFlowMin = state.dataLoopNodes->Node(thisPIU.PriAirInNode).MassFlowRateMinAvail; // min primary air mass flow rate [kg/s]
@@ -1927,7 +1927,6 @@ void CalcParallelPIU(EnergyPlusData &state,
             thisPIU.PriAirMassFlow =
                 QZnReq /
                 (CpAirZn * min(-SmallTempDiff, (state.dataLoopNodes->Node(thisPIU.PriAirInNode).Temp - state.dataLoopNodes->Node(ZoneNode).Temp)));
-            thisPIU.PriAirMassFlow = min(max(thisPIU.PriAirMassFlow, PriAirMassFlowMin), PriAirMassFlowMax);
             // check for fan on or off
             if ((thisPIU.PriAirMassFlow > thisPIU.FanOnAirMassFlow) && !ReheatRequired) {
                 thisPIU.SecAirMassFlow = 0.0; // Fan is off unless reheat is required; no secondary air; also reset fan flag
@@ -1940,9 +1939,9 @@ void CalcParallelPIU(EnergyPlusData &state,
                                   (state.dataLoopNodes->Node(thisPIU.SecAirInNode).Temp + FanDeltaTemp - state.dataLoopNodes->Node(ZoneNode).Temp)) /
                     (CpAirZn *
                      min(-SmallTempDiff, (state.dataLoopNodes->Node(thisPIU.PriAirInNode).Temp - state.dataLoopNodes->Node(ZoneNode).Temp)));
-                thisPIU.PriAirMassFlow = min(max(thisPIU.PriAirMassFlow, PriAirMassFlowMin), PriAirMassFlowMax);
                 thisPIU.SecAirMassFlow = thisPIU.MaxSecAirMassFlow;
             }
+            thisPIU.PriAirMassFlow = min(max(thisPIU.PriAirMassFlow, PriAirMassFlowMin), PriAirMassFlowMax);
             if (QZnReq < 0) {
                 if (thisPIU.fanControlType == FanCntrlType::VariableSpeedFan) {
                     if (thisPIU.PriAirMassFlow == PriAirMassFlowMax) {
@@ -2525,18 +2524,19 @@ void CalcBackdraftDamperLeakage(EnergyPlusData &state, int piuNum)
     auto &thisPIU = state.dataPowerInductionUnits->PIU(piuNum);
     Real64 const CpAirZn = PsyCpAirFnW(state.dataLoopNodes->Node(thisPIU.PriAirInNode).HumRat);
     thisPIU.leakFrac = 0.0;
-    thisPIU.leakFlow = 0.0;
+    thisPIU.leakMassFlowRate = 0.0;
     if (thisPIU.leakFracCurve > 0) {
-        Real64 airflowFrac = thisPIU.PriAirMassFlow / thisPIU.MaxPriAirMassFlow;
-        thisPIU.leakFrac = Curve::CurveValue(state, thisPIU.leakFracCurve, airflowFrac);
+        if (thisPIU.MaxPriAirMassFlow > 0) {
+            Real64 airflowFrac = thisPIU.PriAirMassFlow / thisPIU.MaxPriAirMassFlow;
+            thisPIU.leakFrac = Curve::CurveValue(state, thisPIU.leakFracCurve, airflowFrac);
+            Real64 priAirEnthalpy = Psychrometrics::PsyHFnTdbW(state.dataLoopNodes->Node(thisPIU.PriAirInNode).Temp,
+                                                               state.dataLoopNodes->Node(thisPIU.PriAirInNode).HumRat);
+            Real64 zoneEnthalpy = Psychrometrics::PsyHFnTdbW(state.dataLoopNodes->Node(thisPIU.SecAirInNode).Temp,
+                                                             state.dataLoopNodes->Node(thisPIU.PriAirInNode).HumRat);
+            thisPIU.leakMassFlowRate = thisPIU.leakFrac * thisPIU.PriAirMassFlow;
+            thisPIU.PriAirMassFlow *= (1 + thisPIU.leakFrac);
+        }
     }
-    Real64 priAirEnthalpy =
-        Psychrometrics::PsyHFnTdbW(state.dataLoopNodes->Node(thisPIU.PriAirInNode).Temp, state.dataLoopNodes->Node(thisPIU.PriAirInNode).HumRat);
-    Real64 zoneEnthalpy =
-        Psychrometrics::PsyHFnTdbW(state.dataLoopNodes->Node(thisPIU.SecAirInNode).Temp, state.dataLoopNodes->Node(thisPIU.PriAirInNode).HumRat);
-    thisPIU.leakFlow = thisPIU.leakFrac * thisPIU.PriAirMassFlow;
-    thisPIU.leakLoss = thisPIU.leakFlow * (priAirEnthalpy - zoneEnthalpy); // sensible only
-    thisPIU.PriAirMassFlow *= (1 + thisPIU.leakFrac);
 }
 
 void ReportPIU(EnergyPlusData &state, int const PIUNum) // number of the current fan coil unit being simulated

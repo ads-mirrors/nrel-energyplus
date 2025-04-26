@@ -295,7 +295,7 @@ void InitZoneEquipment(EnergyPlusData &state, bool const FirstHVACIteration) // 
         airLoopFlow.ZoneRetFlow = 0.0;
         airLoopFlow.SysRetFlow = 0.0;
         airLoopFlow.RecircFlow = 0.0;
-        airLoopFlow.LeakFlow = 0.0;
+        airLoopFlow.leakMassFlowRate = 0.0;
         airLoopFlow.ExcessZoneExhFlow = 0.0;
     }
 }
@@ -4809,7 +4809,7 @@ void CalcZoneMassBalance(EnergyPlusData &state, bool const FirstHVACIteration)
             auto &airLoopFlow = state.dataAirLoop->AirLoopFlow(airDisUnit.AirLoopNum);
             airLoopFlow.SupFlow += airDisUnit.MassFlowRateSup;
             airLoopFlow.RecircFlow += airDisUnit.MassFlowRatePlenInd;
-            airLoopFlow.LeakFlow += airDisUnit.MassFlowRateDnStrLk + airDisUnit.MassFlowRateUpStrLk;
+            airLoopFlow.leakMassFlowRate += airDisUnit.MassFlowRateDnStrLk + airDisUnit.MassFlowRateUpStrLk;
         }
     }
 
@@ -5112,7 +5112,7 @@ void CalcZoneMassBalance(EnergyPlusData &state, bool const FirstHVACIteration)
     // Set system return flows
     for (int AirLoopNum = 1; AirLoopNum <= state.dataHVACGlobal->NumPrimaryAirSys; ++AirLoopNum) {
         auto &thisAirLoopFlow(state.dataAirLoop->AirLoopFlow(AirLoopNum));
-        thisAirLoopFlow.SysRetFlow = thisAirLoopFlow.ZoneRetFlow - thisAirLoopFlow.RecircFlow + thisAirLoopFlow.LeakFlow;
+        thisAirLoopFlow.SysRetFlow = thisAirLoopFlow.ZoneRetFlow - thisAirLoopFlow.RecircFlow + thisAirLoopFlow.leakMassFlowRate;
     }
 }
 

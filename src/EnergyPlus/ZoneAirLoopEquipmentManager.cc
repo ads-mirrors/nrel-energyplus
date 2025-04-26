@@ -684,12 +684,17 @@ namespace ZoneAirLoopEquipmentManager {
                        airDistUnit.EquipIndex(AirDistCompNum));
             } break;
             case DataDefineEquip::ZnAirLoopEquipType::SingleDuct_ParallelPIU_Reheat: {
+                airDistUnit.piuTerminalLeakMassFlowRate = 0.0;
                 SimPIU(state,
                        airDistUnit.EquipName(AirDistCompNum),
                        FirstHVACIteration,
                        ControlledZoneNum,
                        controlledZoneAirNode,
                        airDistUnit.EquipIndex(AirDistCompNum));
+                int PIUNum = Util::FindItemInList(airDistUnit.EquipName(AirDistCompNum), state.dataPowerInductionUnits->PIU);
+                if (PIUNum > 0) {
+                    airDistUnit.piuTerminalLeakMassFlowRate = state.dataPowerInductionUnits->PIU(PIUNum).leakMassFlowRate;
+                }
             } break;
             case DataDefineEquip::ZnAirLoopEquipType::SingleDuct_ConstVol_4PipeInduc: {
                 SimIndUnit(state,
@@ -747,8 +752,10 @@ namespace ZoneAirLoopEquipmentManager {
                 }
                 if ((airDistUnit.UpStreamLeak || airDistUnit.DownStreamLeak) && MassFlowRateMaxAvail > 0.0) {
                     airDistUnit.MassFlowRateTU = state.dataLoopNodes->Node(InNodeNum).MassFlowRate;
-                    airDistUnit.MassFlowRateZSup = airDistUnit.MassFlowRateTU * (1.0 - airDistUnit.DownStreamLeakFrac);
-                    airDistUnit.MassFlowRateDnStrLk = airDistUnit.MassFlowRateTU * airDistUnit.DownStreamLeakFrac;
+                    airDistUnit.MassFlowRateZSup =
+                        airDistUnit.MassFlowRateTU * (1.0 - airDistUnit.DownStreamLeakFrac) - airDistUnit.piuTerminalLeakMassFlowRate;
+                    airDistUnit.MassFlowRateDnStrLk =
+                        airDistUnit.MassFlowRateTU * airDistUnit.DownStreamLeakFrac + airDistUnit.piuTerminalLeakMassFlowRate;
                     airDistUnit.MassFlowRateSup = airDistUnit.MassFlowRateTU + airDistUnit.MassFlowRateUpStrLk;
                     state.dataLoopNodes->Node(InNodeNum).MassFlowRate = airDistUnit.MassFlowRateSup;
                     state.dataLoopNodes->Node(OutNodeNum).MassFlowRate = airDistUnit.MassFlowRateZSup;

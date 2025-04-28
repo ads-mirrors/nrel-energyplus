@@ -71,6 +71,7 @@
 #include <EnergyPlus/InputProcessing/InputProcessor.hh>
 #include <EnergyPlus/InternalHeatGains.hh>
 #include <EnergyPlus/OutputProcessor.hh>
+#include <EnergyPlus/PoweredInductionUnits.hh>
 #include <EnergyPlus/Psychrometrics.hh>
 #include <EnergyPlus/ScheduleManager.hh>
 #include <EnergyPlus/UtilityRoutines.hh>
@@ -2291,6 +2292,23 @@ void CorrectZoneContaminants(EnergyPlusData &state,
                 GCMassFlowRate += (node.MassFlowRate * node.GenContam) / ZoneMult;
             }
             ZoneMassFlowRate += node.MassFlowRate / ZoneMult;
+        }
+
+        if (state.dataHeatBal->Zone(ZoneNum).isSourceForParallelPIU) {
+            for (int iExhNode = 1; iExhNode <= state.dataZoneEquip->ZoneEquipConfig(ZoneNum).NumExhaustNodes; ++iExhNode) {
+                int piuNum = PoweredInductionUnits::getParallelPIUNumFromSecNodeNum(
+                    state, state.dataZoneEquip->ZoneEquipConfig(ZoneNum).ExhaustNode(iExhNode));
+                if (piuNum > 0) {
+                    auto &thisPIU = state.dataPowerInductionUnits->PIU(piuNum);
+                    if (state.dataContaminantBalance->Contaminant.CO2Simulation) {
+                        CO2MassFlowRate += (thisPIU.leakMassFlowRate * state.dataLoopNodes->Node(thisPIU.PriAirInNode).CO2) / ZoneMult;
+                    }
+                    if (state.dataContaminantBalance->Contaminant.GenericContamSimulation) {
+                        GCMassFlowRate += (thisPIU.leakMassFlowRate * state.dataLoopNodes->Node(thisPIU.PriAirInNode).GenContam) / ZoneMult;
+                    }
+                    ZoneMassFlowRate += thisPIU.leakMassFlowRate / ZoneMult;
+                }
+            }
         }
 
         Real64 timeStepSysSec = state.dataHVACGlobal->TimeStepSysSec;

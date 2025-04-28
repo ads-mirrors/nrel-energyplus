@@ -517,6 +517,7 @@ namespace ZoneAirLoopEquipmentManager {
         // every time step
         airDistUnit.MassFlowRateDnStrLk = 0.0;
         airDistUnit.MassFlowRateUpStrLk = 0.0;
+        airDistUnit.massFlowRateParallelPIULk = 0.0;
         airDistUnit.MassFlowRateTU = 0.0;
         airDistUnit.MassFlowRateZSup = 0.0;
         airDistUnit.MassFlowRateSup = 0.0;
@@ -750,19 +751,24 @@ namespace ZoneAirLoopEquipmentManager {
                     state.dataLoopNodes->Node(InNodeNum).MassFlowRateMaxAvail = MassFlowRateMaxAvail;
                     state.dataLoopNodes->Node(InNodeNum).MassFlowRateMinAvail = MassFlowRateMinAvail;
                 }
-                if ((airDistUnit.UpStreamLeak || airDistUnit.DownStreamLeak) && MassFlowRateMaxAvail > 0.0) {
+                if ((airDistUnit.UpStreamLeak || airDistUnit.DownStreamLeak || airDistUnit.piuTerminalLeakMassFlowRate) &&
+                    MassFlowRateMaxAvail > 0.0) {
                     airDistUnit.MassFlowRateTU = state.dataLoopNodes->Node(InNodeNum).MassFlowRate;
                     airDistUnit.MassFlowRateZSup =
-                        airDistUnit.MassFlowRateTU * (1.0 - airDistUnit.DownStreamLeakFrac) - airDistUnit.piuTerminalLeakMassFlowRate;
-                    airDistUnit.MassFlowRateDnStrLk =
-                        airDistUnit.MassFlowRateTU * airDistUnit.DownStreamLeakFrac + airDistUnit.piuTerminalLeakMassFlowRate;
+                        max(airDistUnit.MassFlowRateTU * (1.0 - airDistUnit.DownStreamLeakFrac) - airDistUnit.piuTerminalLeakMassFlowRate, 0.0);
+                    airDistUnit.MassFlowRateDnStrLk = airDistUnit.MassFlowRateTU * airDistUnit.DownStreamLeakFrac;
+                    airDistUnit.massFlowRateParallelPIULk = airDistUnit.piuTerminalLeakMassFlowRate;
                     airDistUnit.MassFlowRateSup = airDistUnit.MassFlowRateTU + airDistUnit.MassFlowRateUpStrLk;
                     state.dataLoopNodes->Node(InNodeNum).MassFlowRate = airDistUnit.MassFlowRateSup;
                     state.dataLoopNodes->Node(OutNodeNum).MassFlowRate = airDistUnit.MassFlowRateZSup;
                     state.dataLoopNodes->Node(OutNodeNum).MassFlowRateMaxAvail =
-                        max(0.0, MassFlowRateMaxAvail - airDistUnit.MassFlowRateDnStrLk - airDistUnit.MassFlowRateUpStrLk);
+                        max(0.0,
+                            MassFlowRateMaxAvail - airDistUnit.MassFlowRateDnStrLk - airDistUnit.MassFlowRateUpStrLk -
+                                airDistUnit.massFlowRateParallelPIULk);
                     state.dataLoopNodes->Node(OutNodeNum).MassFlowRateMinAvail =
-                        max(0.0, MassFlowRateMinAvail - airDistUnit.MassFlowRateDnStrLk - airDistUnit.MassFlowRateUpStrLk);
+                        max(0.0,
+                            MassFlowRateMinAvail - airDistUnit.MassFlowRateDnStrLk - airDistUnit.MassFlowRateUpStrLk -
+                                airDistUnit.massFlowRateParallelPIULk);
                     airDistUnit.MaxAvailDelta = MassFlowRateMaxAvail - state.dataLoopNodes->Node(OutNodeNum).MassFlowRateMaxAvail;
                     airDistUnit.MinAvailDelta = MassFlowRateMinAvail - state.dataLoopNodes->Node(OutNodeNum).MassFlowRateMinAvail;
                 } else {

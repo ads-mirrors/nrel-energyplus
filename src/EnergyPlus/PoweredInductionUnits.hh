@@ -205,7 +205,6 @@ namespace PoweredInductionUnits {
         Real64 leakFrac = 0.0;         // parallel PIU backdraft damper leakage fraction
         Real64 leakMassFlowRate = 0.0; // parallel PIU backdraft damper leakage mass flow rate
         int leakFracCurve = 0.0;       // parallel PIU backdraft damper leakage fraction curve
-        int secZoneNum = 0;            // index to secondary zone
 
         int CurOperationControlStage = -1; // integer reference for what stage of control the unit is in
         int plenumIndex = 0;
@@ -219,7 +218,7 @@ namespace PoweredInductionUnits {
               MaxHotWaterFlow(0.0), MaxHotSteamFlow(0.0), MinVolHotWaterFlow(0.0), MinHotSteamFlow(0.0), MinVolHotSteamFlow(0.0),
               MinHotWaterFlow(0.0), HotControlNode(0), HotCoilOutNodeNum(0), HotControlOffset(0.0), HWplantLoc{}, ADUNum(0), InducesPlenumAir(false),
               HeatingRate(0.0), HeatingEnergy(0.0), SensCoolRate(0.0), SensCoolEnergy(0.0), CtrlZoneNum(0), ctrlZoneInNodeIndex(0), AirLoopNum(0),
-              OutdoorAirFlowRate(0.0), leakFrac(0.0), leakMassFlowRate(0.0), leakFracCurve(0), secZoneNum(0)
+              OutdoorAirFlowRate(0.0), leakFrac(0.0), leakMassFlowRate(0.0), leakFracCurve(0)
         {
         }
 
@@ -283,6 +282,8 @@ namespace PoweredInductionUnits {
     bool PIUnitHasMixer(EnergyPlusData &state, std::string_view CompName); // component (mixer) name
 
     void PIUInducesPlenumAir(EnergyPlusData &state, int NodeNum, int const plenumNum); // induced air node number
+
+    int getParallelPIUNumFromSecNodeNum(EnergyPlusData &state, int const zoneNum); // get parallel PIU index
 
     Real64 CalcVariableSpeedPIUHeatingResidual(EnergyPlusData &state,
                                                Real64 const fanSignal,

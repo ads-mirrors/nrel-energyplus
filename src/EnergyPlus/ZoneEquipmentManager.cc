@@ -4809,7 +4809,7 @@ void CalcZoneMassBalance(EnergyPlusData &state, bool const FirstHVACIteration)
             auto &airLoopFlow = state.dataAirLoop->AirLoopFlow(airDisUnit.AirLoopNum);
             airLoopFlow.SupFlow += airDisUnit.MassFlowRateSup;
             airLoopFlow.RecircFlow += airDisUnit.MassFlowRatePlenInd;
-            airLoopFlow.leakMassFlowRate += airDisUnit.MassFlowRateDnStrLk + airDisUnit.MassFlowRateUpStrLk;
+            airLoopFlow.leakMassFlowRate += airDisUnit.MassFlowRateDnStrLk + airDisUnit.MassFlowRateUpStrLk + airDisUnit.massFlowRateParallelPIULk;
         }
     }
 

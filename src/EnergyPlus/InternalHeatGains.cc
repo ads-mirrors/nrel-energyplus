@@ -171,7 +171,6 @@ namespace InternalHeatGains {
         DataHeatBalance::IntGainType::SecCoolingDXCoilTwoSpeed,
         DataHeatBalance::IntGainType::SecCoolingDXCoilMultiSpeed,
         DataHeatBalance::IntGainType::SecHeatingDXCoilMultiSpeed};
-
     static constexpr std::array<DataHeatBalance::IntGainType, 10> IntGainTypesPowerGen = {
         DataHeatBalance::IntGainType::GeneratorFuelCell,
         DataHeatBalance::IntGainType::GeneratorMicroCHP,
@@ -1850,8 +1849,8 @@ namespace InternalHeatGains {
                                                nullptr,
                                                &thisZoneGas.CO2GainRate);
 
-                } // for hwEqInputNum
-            }     // TotHWEquip > 0
+                } // for gasEqInputNum.NumOfSpaces
+            }     // for gasEqInputNum
         }         // TotGasEquip > 0
 
         // HotWaterEquipment
@@ -2054,8 +2053,8 @@ namespace InternalHeatGains {
                                                &thisZoneHWEq.LatGainRate);
 
                 } // for hwEqInputNum.NumOfSpaces
-            }     // for gasEqInputNum
-        }         // TotGasEquip > 0
+            }     // for hwEqInputNum
+        }         // TotHWEquip > 0
 
         // SteamEquipment
         EPVector<InternalHeatGains::GlobalInternalGainMiscObject> steamEqObjects;

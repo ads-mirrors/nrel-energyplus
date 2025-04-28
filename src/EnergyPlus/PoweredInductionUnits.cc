@@ -558,7 +558,7 @@ void GetPIUs(EnergyPlusData &state)
                         for (int zoneNum = 1; zoneNum <= state.dataGlobal->NumOfZones; ++zoneNum) {
                             for (int exhaustNum = 1; exhaustNum <= state.dataZoneEquip->ZoneEquipConfig(zoneNum).NumExhaustNodes; ++exhaustNum) {
                                 if (thisPIU.SecAirInNode == state.dataZoneEquip->ZoneEquipConfig(zoneNum).ExhaustNode(exhaustNum)) {
-                                    thisPIU.secZoneNum = zoneNum;
+                                    state.dataHeatBal->Zone(zoneNum).isSourceForParallelPIU = true;
                                     break;
                                 }
                             }
@@ -567,18 +567,10 @@ void GetPIUs(EnergyPlusData &state)
                         for (int zoneNum = 1; zoneNum <= state.dataZonePlenum->NumZoneSupplyPlenums; ++zoneNum) {
                             for (int nodeNum = 1; nodeNum <= state.dataZonePlenum->ZoneRetPlenCond(zoneNum).NumInducedNodes; ++nodeNum) {
                                 if (thisPIU.SecAirInNode == state.dataZonePlenum->ZoneRetPlenCond(zoneNum).InducedNode(nodeNum)) {
-                                    thisPIU.secZoneNum = zoneNum;
+                                    state.dataHeatBal->Zone(zoneNum).isSourceForParallelPIU = true;
                                     break;
                                 }
                             }
-                        }
-                        if (thisPIU.secZoneNum == 0) {
-                            ShowWarningError(state,
-                                             format("The zone corresponding to the secondary air inlet could not be found for {} Unit = {}, no "
-                                                    "leakage will be simulated",
-                                                    cCurrentModuleObject,
-                                                    thisPIU.Name));
-                            thisPIU.leakFracCurve = 0;
                         }
                     }
                 }
@@ -2606,6 +2598,21 @@ void PIUInducesPlenumAir(EnergyPlusData &state, int const NodeNum, int const ple
             break;
         }
     }
+}
+
+int getParallelPIUNumFromSecNodeNum(EnergyPlusData &state, int const zoneNum)
+{
+    if (state.dataPowerInductionUnits->GetPIUInputFlag) {
+        GetPIUs(state);
+        state.dataPowerInductionUnits->GetPIUInputFlag = false;
+    }
+
+    for (int PIUIndex = 1; PIUIndex <= state.dataPowerInductionUnits->NumPIUs; ++PIUIndex) {
+        if (zoneNum == state.dataPowerInductionUnits->PIU(PIUIndex).SecAirInNode) {
+            return PIUIndex;
+        }
+    }
+    return 0;
 }
 
 void PowIndUnitData::CalcOutdoorAirVolumeFlowRate(EnergyPlusData &state)

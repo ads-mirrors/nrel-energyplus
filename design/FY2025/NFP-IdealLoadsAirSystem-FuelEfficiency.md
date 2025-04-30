@@ -95,6 +95,8 @@ For both options, the heating and cooling energy rate and energy consumption wil
 
       * - Zone Ideal Loads Supply Air Total Heating Rate [W] *
       * - Zone Ideal Loads Supply Air Total Cooling Rate [W] *
+
+* (6) What should be the maximum limit for the fuel efficiency value, or no maximum limit?
 	  
 ## Testing/Validation/Data Source(s): ##
 

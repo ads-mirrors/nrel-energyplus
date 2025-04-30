@@ -383,7 +383,18 @@ namespace InternalHeatGains {
                                                                          IHGNumericFieldNames);
 
                 ErrorObjectHeader eoh{routineName, peopleModuleObject, IHGAlphas(1)};
-                // Create one People instance for every space associated with this People input object
+                Sched::Schedule *schedPtr = Sched::GetSchedule(state, IHGAlphas(3));
+                if (IHGAlphaFieldBlanks(3)) {
+                    ShowSevereEmptyField(state, eoh, IHGAlphaFieldNames(3));
+                    ErrorsFound = true;
+                } else if (schedPtr == nullptr) {
+                    ShowSevereItemNotFound(state, eoh, IHGAlphaFieldNames(3), IHGAlphas(3));
+                    ErrorsFound = true;
+                } else if (!schedPtr->checkMinVal(state, Clusive::In, 0.0)) {
+                    Sched::ShowSevereBadMin(state, eoh, IHGAlphaFieldNames(3), IHGAlphas(3), Clusive::In, 0.0);
+                    ErrorsFound = true;
+                }
+
                 auto &thisPeopleInput = peopleObjects(peopleInputNum);
                 DesignLevelMethod const levelMethod = static_cast<DesignLevelMethod>(getEnumValue(DesignLevelMethodNamesUC, IHGAlphas(4)));
                 int fieldNum = 1;
@@ -405,6 +416,7 @@ namespace InternalHeatGains {
                 bool const levelBlank = IHGNumericFieldBlanks(fieldNum);
                 std::string_view const levelField = IHGNumericFieldNames(fieldNum);
 
+                // Create one People instance for every space associated with this People input object
                 for (int Item1 = 1; Item1 <= thisPeopleInput.numOfSpaces; ++Item1) {
                     ++peopleNum;
                     auto &thisPeople = state.dataHeatBal->People(peopleNum);
@@ -413,21 +425,7 @@ namespace InternalHeatGains {
                     thisPeople.Name = thisPeopleInput.names(Item1);
                     thisPeople.spaceIndex = spaceNum;
                     thisPeople.ZonePtr = zoneNum;
-
-                    thisPeople.sched = Sched::GetSchedule(state, IHGAlphas(3));
-
-                    if (Item1 == 1) { // only show error on first one
-                        if (IHGAlphaFieldBlanks(3)) {
-                            ShowSevereEmptyField(state, eoh, IHGAlphaFieldNames(3));
-                            ErrorsFound = true;
-                        } else if (thisPeople.sched == nullptr) {
-                            ShowSevereItemNotFound(state, eoh, IHGAlphaFieldNames(3), IHGAlphas(3));
-                            ErrorsFound = true;
-                        } else if (!thisPeople.sched->checkMinVal(state, Clusive::In, 0.0)) {
-                            Sched::ShowSevereBadMin(state, eoh, IHGAlphaFieldNames(3), IHGAlphas(3), Clusive::In, 0.0);
-                            ErrorsFound = true;
-                        }
-                    }
+                    thisPeople.sched = schedPtr;
 
                     // Number of people calculation method.
                     thisPeople.NumberOfPeople = setDesignLevel(
@@ -946,11 +944,19 @@ namespace InternalHeatGains {
                                                                          IHGNumericFieldNames);
 
                 ErrorObjectHeader eoh{routineName, lightsModuleObject, IHGAlphas(1)};
+                Sched::Schedule *schedPtr = Sched::GetSchedule(state, IHGAlphas(3));
+                if (IHGAlphaFieldBlanks(3)) {
+                    ShowSevereEmptyField(state, eoh, IHGAlphaFieldNames(3));
+                    ErrorsFound = true;
+                } else if (schedPtr == nullptr) {
+                    ShowSevereItemNotFound(state, eoh, IHGAlphaFieldNames(3), IHGAlphas(3));
+                    ErrorsFound = true;
+                } else if (!schedPtr->checkMinVal(state, Clusive::In, 0.0)) {
+                    Sched::ShowSevereBadMin(state, eoh, IHGAlphaFieldNames(3), IHGAlphas(3), Clusive::In, 0.0);
+                    ErrorsFound = true;
+                }
 
                 auto &thisLightsInput = state.dataInternalHeatGains->lightsObjects(lightsInputNum);
-                // Create one Lights instance for every space associated with this Lights input object
-                // Why? Why can't multple spaces share a single lights instance?
-                // Answer: It followed the same pattern as when a ZoneList was used. It might/should be possible to refactor this.
 
                 DesignLevelMethod const levelMethod = static_cast<DesignLevelMethod>(getEnumValue(DesignLevelMethodNamesUC, IHGAlphas(4)));
                 int fieldNum = 1;
@@ -972,6 +978,9 @@ namespace InternalHeatGains {
                 bool const levelBlank = IHGNumericFieldBlanks(fieldNum);
                 std::string_view const levelField = IHGNumericFieldNames(fieldNum);
 
+                // Create one Lights instance for every space associated with this Lights input object
+                // Why? Why can't multple spaces share a single lights instance?
+                // Answer: It followed the same pattern as when a ZoneList was used. It might/should be possible to refactor this.
                 for (int Item1 = 1; Item1 <= thisLightsInput.numOfSpaces; ++Item1) {
                     ++lightsNum;
                     auto &thisLights = state.dataHeatBal->Lights(lightsNum);
@@ -980,23 +989,7 @@ namespace InternalHeatGains {
                     thisLights.Name = thisLightsInput.names(Item1);
                     thisLights.spaceIndex = spaceNum;
                     thisLights.ZonePtr = zoneNum;
-
-                    if (!IHGAlphaFieldBlanks(3)) {
-                        thisLights.sched = Sched::GetSchedule(state, IHGAlphas(3));
-                    }
-
-                    if (Item1 == 1) {
-                        if (IHGAlphaFieldBlanks(3)) {
-                            ShowSevereEmptyField(state, eoh, IHGAlphaFieldNames(3));
-                            ErrorsFound = true;
-                        } else if (thisLights.sched == nullptr) {
-                            ShowSevereItemNotFound(state, eoh, IHGAlphaFieldNames(3), IHGAlphas(3));
-                            ErrorsFound = true;
-                        } else if (!thisLights.sched->checkMinVal(state, Clusive::In, 0.0)) {
-                            Sched::ShowSevereBadMin(state, eoh, IHGAlphaFieldNames(3), IHGAlphas(3), Clusive::In, 0.0);
-                            ErrorsFound = true;
-                        }
-                    }
+                    thisLights.sched = schedPtr;
 
                     // Lights Design Level calculation method.
                     thisLights.DesignLevel = setDesignLevel(
@@ -1282,6 +1275,17 @@ namespace InternalHeatGains {
                                                                          IHGNumericFieldNames);
 
                 ErrorObjectHeader eoh{routineName, elecEqModuleObject, IHGAlphas(1)};
+                Sched::Schedule *schedPtr = Sched::GetSchedule(state, IHGAlphas(3));
+                if (IHGAlphaFieldBlanks(3)) {
+                    ShowSevereEmptyField(state, eoh, IHGAlphaFieldNames(3));
+                    ErrorsFound = true;
+                } else if (schedPtr == nullptr) {
+                    ShowSevereItemNotFound(state, eoh, IHGAlphaFieldNames(3), IHGAlphas(3));
+                    ErrorsFound = true;
+                } else if (!schedPtr->checkMinVal(state, Clusive::In, 0.0)) {
+                    Sched::ShowSevereBadMin(state, eoh, IHGAlphaFieldNames(3), IHGAlphas(3), Clusive::In, 0.0);
+                    ErrorsFound = true;
+                }
 
                 auto &thisElecEqInput = state.dataInternalHeatGains->zoneElectricObjects(elecEqInputNum);
                 DesignLevelMethod const levelMethod = static_cast<DesignLevelMethod>(getEnumValue(DesignLevelMethodNamesUC, IHGAlphas(4)));
@@ -1312,19 +1316,7 @@ namespace InternalHeatGains {
                     thisZoneElectric.Name = thisElecEqInput.names(Item1);
                     thisZoneElectric.spaceIndex = spaceNum;
                     thisZoneElectric.ZonePtr = zoneNum;
-
-                    // Why are error messages not guarded by (Item1 == 1) checks for equipment?
-
-                    if (IHGAlphaFieldBlanks(3)) {
-                        ShowSevereEmptyField(state, eoh, IHGAlphaFieldNames(3));
-                        ErrorsFound = true;
-                    } else if ((thisZoneElectric.sched = Sched::GetSchedule(state, IHGAlphas(3))) == nullptr) {
-                        ShowSevereItemNotFound(state, eoh, IHGAlphaFieldNames(3), IHGAlphas(3));
-                        ErrorsFound = true;
-                    } else if (!thisZoneElectric.sched->checkMinVal(state, Clusive::In, 0.0)) {
-                        Sched::ShowSevereBadMin(state, eoh, IHGAlphaFieldNames(3), IHGAlphas(3), Clusive::In, 0.0);
-                        ErrorsFound = true;
-                    }
+                    thisZoneElectric.sched = schedPtr;
 
                     // Electric equipment design level calculation method.
                     thisZoneElectric.DesignLevel = setDesignLevel(
@@ -1401,6 +1393,17 @@ namespace InternalHeatGains {
                                                                          IHGNumericFieldNames);
 
                 ErrorObjectHeader eoh{routineName, gasEqModuleObject, IHGAlphas(1)};
+                Sched::Schedule *schedPtr = Sched::GetSchedule(state, IHGAlphas(3));
+                if (IHGAlphaFieldBlanks(3)) {
+                    ShowSevereEmptyField(state, eoh, IHGAlphaFieldNames(3));
+                    ErrorsFound = true;
+                } else if (schedPtr == nullptr) {
+                    ShowSevereItemNotFound(state, eoh, IHGAlphaFieldNames(3), IHGAlphas(3));
+                    ErrorsFound = true;
+                } else if (!schedPtr->checkMinVal(state, Clusive::In, 0.0)) {
+                    Sched::ShowSevereBadMin(state, eoh, IHGAlphaFieldNames(3), IHGAlphas(3), Clusive::In, 0.0);
+                    ErrorsFound = true;
+                }
 
                 auto &thisGasEqInput = zoneGasObjects(gasEqInputNum);
                 DesignLevelMethod const levelMethod = static_cast<DesignLevelMethod>(getEnumValue(DesignLevelMethodNamesUC, IHGAlphas(4)));
@@ -1433,24 +1436,7 @@ namespace InternalHeatGains {
                     thisZoneGas.Name = thisGasEqInput.names(Item1);
                     thisZoneGas.spaceIndex = spaceNum;
                     thisZoneGas.ZonePtr = zoneNum;
-
-                    if (!IHGAlphaFieldBlanks(3)) {
-                        thisZoneGas.sched = Sched::GetSchedule(state, IHGAlphas(3));
-                    }
-
-                    // And here for gas, we are guarding with (Item1 == 1) again
-                    if (Item1 == 1) {
-                        if (IHGAlphaFieldBlanks(3)) {
-                            ShowSevereEmptyField(state, eoh, IHGAlphaFieldNames(3));
-                            ErrorsFound = true;
-                        } else if (thisZoneGas.sched == nullptr) {
-                            ShowSevereItemNotFound(state, eoh, IHGAlphaFieldNames(3), IHGAlphas(3));
-                            ErrorsFound = true;
-                        } else if (!thisZoneGas.sched->checkMinVal(state, Clusive::In, 0.0)) {
-                            Sched::ShowSevereBadMin(state, eoh, IHGAlphaFieldNames(3), IHGAlphas(3), Clusive::In, 0.0);
-                            ErrorsFound = true;
-                        }
-                    }
+                    thisZoneGas.sched = schedPtr;
 
                     // Gas equipment design level calculation method.
                     thisZoneGas.DesignLevel = setDesignLevel(
@@ -1556,6 +1542,17 @@ namespace InternalHeatGains {
                                                                          IHGNumericFieldNames);
 
                 ErrorObjectHeader eoh{routineName, hwEqModuleObject, IHGAlphas(1)};
+                Sched::Schedule *schedPtr = Sched::GetSchedule(state, IHGAlphas(3));
+                if (IHGAlphaFieldBlanks(3)) {
+                    ShowSevereEmptyField(state, eoh, IHGAlphaFieldNames(3));
+                    ErrorsFound = true;
+                } else if (schedPtr == nullptr) {
+                    ShowSevereItemNotFound(state, eoh, IHGAlphaFieldNames(3), IHGAlphas(3));
+                    ErrorsFound = true;
+                } else if (!schedPtr->checkMinVal(state, Clusive::In, 0.0)) {
+                    Sched::ShowSevereBadMin(state, eoh, IHGAlphaFieldNames(3), IHGAlphas(3), Clusive::In, 0.0);
+                    ErrorsFound = true;
+                }
 
                 auto &thisHWEqInput = hotWaterEqObjects(hwEqInputNum);
                 DesignLevelMethod const levelMethod = static_cast<DesignLevelMethod>(getEnumValue(DesignLevelMethodNamesUC, IHGAlphas(4)));
@@ -1588,17 +1585,7 @@ namespace InternalHeatGains {
                     thisZoneHWEq.Name = thisHWEqInput.names(Item1);
                     thisZoneHWEq.spaceIndex = spaceNum;
                     thisZoneHWEq.ZonePtr = zoneNum;
-
-                    if (IHGAlphaFieldBlanks(3)) {
-                        ShowSevereEmptyField(state, eoh, IHGAlphaFieldNames(3));
-                        ErrorsFound = true;
-                    } else if ((thisZoneHWEq.sched = Sched::GetSchedule(state, IHGAlphas(3))) == nullptr) {
-                        ShowSevereItemNotFound(state, eoh, IHGAlphaFieldNames(3), IHGAlphas(3));
-                        ErrorsFound = true;
-                    } else if (!thisZoneHWEq.sched->checkMinVal(state, Clusive::In, 0.0)) {
-                        Sched::ShowSevereBadMin(state, eoh, IHGAlphaFieldNames(3), IHGAlphas(3), Clusive::In, 0.0);
-                        ErrorsFound = true;
-                    }
+                    thisZoneHWEq.sched = schedPtr;
 
                     // Hot Water equipment design level calculation method.
                     thisZoneHWEq.DesignLevel = setDesignLevel(
@@ -1674,6 +1661,17 @@ namespace InternalHeatGains {
                                                                          IHGNumericFieldNames);
 
                 ErrorObjectHeader eoh{routineName, stmEqModuleObject, IHGAlphas(1)};
+                Sched::Schedule *schedPtr = Sched::GetSchedule(state, IHGAlphas(3));
+                if (IHGAlphaFieldBlanks(3)) {
+                    ShowSevereEmptyField(state, eoh, IHGAlphaFieldNames(3));
+                    ErrorsFound = true;
+                } else if (schedPtr == nullptr) {
+                    ShowSevereItemNotFound(state, eoh, IHGAlphaFieldNames(3), IHGAlphas(3));
+                    ErrorsFound = true;
+                } else if (!schedPtr->checkMinVal(state, Clusive::In, 0.0)) {
+                    Sched::ShowSevereBadMin(state, eoh, IHGAlphaFieldNames(3), IHGAlphas(3), Clusive::In, 0.0);
+                    ErrorsFound = true;
+                }
 
                 auto &thisStmEqInput = steamEqObjects(stmEqInputNum);
                 DesignLevelMethod const levelMethod = static_cast<DesignLevelMethod>(getEnumValue(DesignLevelMethodNamesUC, IHGAlphas(4)));
@@ -1706,17 +1704,8 @@ namespace InternalHeatGains {
                     thisZoneStmEq.Name = thisStmEqInput.names(Item1);
                     thisZoneStmEq.spaceIndex = spaceNum;
                     thisZoneStmEq.ZonePtr = zoneNum;
+                    thisZoneStmEq.sched = schedPtr;
 
-                    if (IHGAlphaFieldBlanks(3)) {
-                        ShowSevereEmptyField(state, eoh, IHGAlphaFieldNames(3));
-                        ErrorsFound = true;
-                    } else if ((thisZoneStmEq.sched = Sched::GetSchedule(state, IHGAlphas(3))) == nullptr) {
-                        ShowSevereItemNotFound(state, eoh, IHGAlphaFieldNames(3), IHGAlphas(3));
-                        ErrorsFound = true;
-                    } else if (!thisZoneStmEq.sched->checkMinVal(state, Clusive::In, 0.0)) {
-                        Sched::ShowSevereBadMin(state, eoh, IHGAlphaFieldNames(3), IHGAlphas(3), Clusive::In, 0.0);
-                        ErrorsFound = true;
-                    }
 
                     // Steam equipment design level calculation method.
                     thisZoneStmEq.DesignLevel = setDesignLevel(
@@ -1796,10 +1785,21 @@ namespace InternalHeatGains {
                                                                          IHGAlphaFieldNames,
                                                                          IHGNumericFieldNames);
 
+                // Note alpha field numbers are different for OtherEquipment
                 ErrorObjectHeader eoh{routineName, othEqModuleObject, IHGAlphas(1)};
+                Sched::Schedule *schedPtr = Sched::GetSchedule(state, IHGAlphas(4));
+                if (IHGAlphaFieldBlanks(4)) {
+                    ShowSevereEmptyField(state, eoh, IHGAlphaFieldNames(4));
+                    ErrorsFound = true;
+                } else if (schedPtr == nullptr) {
+                    ShowSevereItemNotFound(state, eoh, IHGAlphaFieldNames(4), IHGAlphas(4));
+                    ErrorsFound = true;
+                } else if (!schedPtr->checkMinVal(state, Clusive::In, 0.0)) {
+                    Sched::ShowSevereBadMin(state, eoh, IHGAlphaFieldNames(4), IHGAlphas(4), Clusive::In, 0.0);
+                    ErrorsFound = true;
+                }
 
                 auto &thisOthEqInput = otherEqObjects(othEqInputNum);
-                // Note alpha field numbers are different for OtherEquipment
                 DesignLevelMethod const levelMethod = static_cast<DesignLevelMethod>(getEnumValue(DesignLevelMethodNamesUC, IHGAlphas(5)));
                 int levelFieldNum = 1;
                 switch (levelMethod) {
@@ -1830,6 +1830,7 @@ namespace InternalHeatGains {
                     thisZoneOthEq.Name = thisOthEqInput.names(Item1);
                     thisZoneOthEq.spaceIndex = spaceNum;
                     thisZoneOthEq.ZonePtr = zoneNum;
+                    thisZoneOthEq.sched = schedPtr;
 
                     if (IHGAlphas(2) == "NONE") {
                         thisZoneOthEq.OtherEquipFuelType = Constant::eFuel::None;
@@ -1872,17 +1873,6 @@ namespace InternalHeatGains {
                             state.dataHeatBal->space(spaceNum).otherEquipFuelTypeNums.emplace_back(thisZoneOthEq.OtherEquipFuelType);
                             // state.dataHeatBal->space(spaceNum).otherEquipFuelTypeNames.emplace_back(FuelTypeString);
                         }
-                    }
-
-                    if (IHGAlphaFieldBlanks(4)) {
-                        ShowSevereEmptyField(state, eoh, IHGAlphaFieldNames(4));
-                        ErrorsFound = true;
-                    } else if ((thisZoneOthEq.sched = Sched::GetSchedule(state, IHGAlphas(4))) == nullptr) {
-                        ShowSevereItemNotFound(state, eoh, IHGAlphaFieldNames(4), IHGAlphas(4));
-                        ErrorsFound = true;
-                    } else if (!thisZoneOthEq.sched->checkMinVal(state, Clusive::In, 0.0)) {
-                        Sched::ShowSevereBadMin(state, eoh, IHGAlphaFieldNames(4), IHGAlphas(4), Clusive::In, 0.0);
-                        ErrorsFound = true;
                     }
 
                     // equipment design level calculation method.
@@ -2003,6 +1993,28 @@ namespace InternalHeatGains {
                                                                          IHGNumericFieldNames);
 
                 ErrorObjectHeader eoh{routineName, itEqModuleObject, IHGAlphas(1)};
+                Sched::Schedule *opSchedPtr = Sched::GetSchedule(state, IHGAlphas(5));
+                if (IHGAlphaFieldBlanks(5)) {
+                    opSchedPtr = Sched::GetScheduleAlwaysOn(state); // Not an availability schedule, but default is constant-1.0
+                } else if (opSchedPtr== nullptr) {
+                    ShowSevereItemNotFound(state, eoh, IHGAlphaFieldNames(5), IHGAlphas(5));
+                    ErrorsFound = true;
+                } else if (!opSchedPtr->checkMinVal(state, Clusive::In, 0.0)) {
+                    Sched::ShowSevereBadMin(state, eoh, IHGAlphaFieldNames(5), IHGAlphas(5), Clusive::In, 0.0);
+                    ErrorsFound = true;
+                }
+
+                Sched::Schedule *cpuSchedPtr = Sched::GetSchedule(state, IHGAlphas(6));
+                if (IHGAlphaFieldBlanks(6)) {
+                    cpuSchedPtr = Sched::GetScheduleAlwaysOn(state); // not an availability schedule, but default is constant-1.0
+                } else if (cpuSchedPtr == nullptr) {
+                    ShowSevereItemNotFound(state, eoh, IHGAlphaFieldNames(6), IHGAlphas(6));
+                    ErrorsFound = true;
+                } else if (!cpuSchedPtr->checkMinVal(state, Clusive::In, 0.0)) {
+                    Sched::ShowSevereBadMin(state, eoh, IHGAlphaFieldNames(6), IHGAlphas(6), Clusive::In, 0.0);
+                    ErrorsFound = true;
+                }
+
 
                 auto &thisITEqInput = iTEqObjects(itEqInputNum);
                 for (int Item1 = 1; Item1 <= thisITEqInput.numOfSpaces; ++Item1) {
@@ -2013,6 +2025,8 @@ namespace InternalHeatGains {
                     thisZoneITEq.Name = thisITEqInput.names(Item1);
                     thisZoneITEq.spaceIndex = spaceNum;
                     thisZoneITEq.ZonePtr = zoneNum;
+                    thisZoneITEq.operSched = opSchedPtr;
+                    thisZoneITEq.cpuLoadSched = cpuSchedPtr;
 
                     // IT equipment design level calculation method.
                     if (IHGAlphaFieldBlanks(3)) {
@@ -2116,27 +2130,6 @@ namespace InternalHeatGains {
                                 ShowContinueError(state, "...Valid values are \"Watts/Unit\" or \"Watts/Area\".");
                                 ErrorsFound = true;
                             }
-                        }
-
-                        if (IHGAlphaFieldBlanks(5)) {
-                            thisZoneITEq.operSched = Sched::GetScheduleAlwaysOn(state); // Not an availability schedule, but default is constant-1.0
-                        } else if ((thisZoneITEq.operSched = Sched::GetSchedule(state, IHGAlphas(5))) == nullptr) {
-                            ShowSevereItemNotFound(state, eoh, IHGAlphaFieldNames(5), IHGAlphas(5));
-                            ErrorsFound = true;
-                        } else if (!thisZoneITEq.operSched->checkMinVal(state, Clusive::In, 0.0)) {
-                            Sched::ShowSevereBadMin(state, eoh, IHGAlphaFieldNames(5), IHGAlphas(5), Clusive::In, 0.0);
-                            ErrorsFound = true;
-                        }
-
-                        if (IHGAlphaFieldBlanks(6)) {
-                            thisZoneITEq.cpuLoadSched =
-                                Sched::GetScheduleAlwaysOn(state); // not an availability schedule, but default is constant-1.0
-                        } else if ((thisZoneITEq.cpuLoadSched = Sched::GetSchedule(state, IHGAlphas(6))) == nullptr) {
-                            ShowSevereItemNotFound(state, eoh, IHGAlphaFieldNames(6), IHGAlphas(6));
-                            ErrorsFound = true;
-                        } else if (!thisZoneITEq.cpuLoadSched->checkMinVal(state, Clusive::In, 0.0)) {
-                            Sched::ShowSevereBadMin(state, eoh, IHGAlphaFieldNames(6), IHGAlphas(6), Clusive::In, 0.0);
-                            ErrorsFound = true;
                         }
 
                         // Calculate nominal min/max equipment level

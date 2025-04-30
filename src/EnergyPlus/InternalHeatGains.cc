@@ -1065,7 +1065,7 @@ namespace InternalHeatGains {
                             thisLights.RetNodeName = IHGAlphas(7);
                         }
                     }
-                    if (thisLights.ZonePtr > 0) {
+                    if ((thisLights.FractionReturnAir > 0.0) && (thisLights.ZonePtr > 0)) {
                         thisLights.ZoneReturnNum = DataZoneEquipment::GetReturnNumForZone(state, thisLights.ZonePtr, thisLights.RetNodeName);
                     }
 

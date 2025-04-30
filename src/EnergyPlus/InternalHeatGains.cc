@@ -948,6 +948,7 @@ namespace InternalHeatGains {
                 auto &thisLightsInput = state.dataInternalHeatGains->lightsObjects(lightsInputNum);
                 // Create one Lights instance for every space associated with this Lights input object
                 // Why? Why can't multple spaces share a single lights instance?
+                // Answer: It followed the same pattern as when a ZoneList was used. It might/should be possible to refactor this.
                 const std::string_view methodInput = IHGAlphas(4);
                 inputValues[(int)DesignLevelMethod::LightingLevel] = IHGNumbers(1);
                 inputBlanks[(int)DesignLevelMethod::LightingLevel] = IHGNumericFieldBlanks(1);
@@ -1275,6 +1276,13 @@ namespace InternalHeatGains {
                 ErrorObjectHeader eoh{routineName, elecEqModuleObject, IHGAlphas(1)};
 
                 auto &thisElecEqInput = state.dataInternalHeatGains->zoneElectricObjects(elecEqInputNum);
+                const std::string_view methodInput = IHGAlphas(4);
+                inputValues[(int)DesignLevelMethod::EquipmentLevel] = IHGNumbers(1);
+                inputBlanks[(int)DesignLevelMethod::EquipmentLevel] = IHGNumericFieldBlanks(1);
+                inputValues[(int)DesignLevelMethod::WattsPerArea] = IHGNumbers(2);
+                inputBlanks[(int)DesignLevelMethod::WattsPerArea] = IHGNumericFieldBlanks(2);
+                inputValues[(int)DesignLevelMethod::WattsPerPerson] = IHGNumbers(3);
+                inputBlanks[(int)DesignLevelMethod::WattsPerPerson] = IHGNumericFieldBlanks(3);
                 for (int Item1 = 1; Item1 <= thisElecEqInput.numOfSpaces; ++Item1) {
                     ++elecEqNum;
                     auto &thisZoneElectric = state.dataHeatBal->ZoneElectric(elecEqNum);
@@ -1298,114 +1306,16 @@ namespace InternalHeatGains {
                     }
 
                     // Electric equipment design level calculation method.
-                    {
-                        std::string const &equipmentLevel = IHGAlphas(4);
-                        if (equipmentLevel == "EQUIPMENTLEVEL") {
-                            Real64 spaceFrac = 1.0;
-                            if (thisElecEqInput.numOfSpaces > 1) {
-                                Real64 const zoneArea = state.dataHeatBal->Zone(zoneNum).FloorArea;
-                                if (zoneArea > 0.0) {
-                                    spaceFrac = state.dataHeatBal->space(spaceNum).FloorArea / zoneArea;
-                                } else {
-                                    ShowSevereError(
-                                        state, format("{}Zone floor area is zero when allocating ElectricEquipment loads to Spaces.", RoutineName));
-                                    ShowContinueError(state,
-                                                      format("Occurs for ElectricEquipment object ={} in Zone={}",
-                                                             thisElecEqInput.Name,
-                                                             state.dataHeatBal->Zone(thisZoneElectric.ZonePtr).Name));
-                                    ErrorsFound = true;
-                                }
-                            }
-                            thisZoneElectric.DesignLevel = IHGNumbers(1) * spaceFrac;
-                            if (IHGNumericFieldBlanks(1)) {
-                                ShowWarningError(state,
-                                                 format("{}{}=\"{}\", specifies {}, but that field is blank.  0 Electric Equipment will result.",
-                                                        RoutineName,
-                                                        elecEqModuleObject,
-                                                        thisElecEqInput.Name,
-                                                        IHGNumericFieldNames(1)));
-                            }
-                        } else if (equipmentLevel == "WATTS/AREA") {
-                            if (spaceNum != 0) {
-                                if (IHGNumbers(2) >= 0.0) {
-                                    thisZoneElectric.DesignLevel = IHGNumbers(2) * state.dataHeatBal->space(spaceNum).FloorArea;
-                                    if ((state.dataHeatBal->space(spaceNum).FloorArea <= 0.0) &&
-                                        !state.dataHeatBal->space(spaceNum).isRemainderSpace) {
-                                        ShowWarningError(
-                                            state,
-                                            format("{}{}=\"{}\", specifies {}, but Space Floor Area = 0.  0 Electric Equipment will result.",
-                                                   RoutineName,
-                                                   elecEqModuleObject,
-                                                   thisZoneElectric.Name,
-                                                   IHGNumericFieldNames(2)));
-                                    }
-                                } else {
-                                    ShowSevereError(state,
-                                                    format("{}{}=\"{}\", invalid {}, value  [<0.0]={:.3R}",
-                                                           RoutineName,
-                                                           elecEqModuleObject,
-                                                           thisZoneElectric.Name,
-                                                           IHGNumericFieldNames(2),
-                                                           IHGNumbers(2)));
-                                    ErrorsFound = true;
-                                }
-                            }
-                            if (IHGNumericFieldBlanks(2)) {
-                                ShowWarningError(state,
-                                                 format("{}{}=\"{}\", specifies {}, but that field is blank.  0 Electric Equipment will result.",
-                                                        RoutineName,
-                                                        elecEqModuleObject,
-                                                        thisElecEqInput.Name,
-                                                        IHGNumericFieldNames(2)));
-                            }
-
-                        } else if (equipmentLevel == "WATTS/PERSON") {
-                            if (spaceNum != 0) {
-                                if (IHGNumbers(3) >= 0.0) {
-                                    thisZoneElectric.DesignLevel = IHGNumbers(3) * state.dataHeatBal->space(spaceNum).TotOccupants;
-                                    if (state.dataHeatBal->space(spaceNum).TotOccupants <= 0.0) {
-                                        ShowWarningError(
-                                            state,
-                                            format("{}{}=\"{}\", specifies {}, but Total Occupants = 0.  0 Electric Equipment will result.",
-                                                   RoutineName,
-                                                   elecEqModuleObject,
-                                                   thisZoneElectric.Name,
-                                                   IHGNumericFieldNames(2)));
-                                    }
-                                } else {
-                                    ShowSevereError(state,
-                                                    format("{}{}=\"{}\", invalid {}, value  [<0.0]={:.3R}",
-                                                           RoutineName,
-                                                           elecEqModuleObject,
-                                                           thisZoneElectric.Name,
-                                                           IHGNumericFieldNames(3),
-                                                           IHGNumbers(3)));
-                                    ErrorsFound = true;
-                                }
-                            }
-                            if (IHGNumericFieldBlanks(3)) {
-                                ShowWarningError(state,
-                                                 format("{}{}=\"{}\", specifies {}, but that field is blank.  0 Electric Equipment will result.",
-                                                        RoutineName,
-                                                        elecEqModuleObject,
-                                                        thisElecEqInput.Name,
-                                                        IHGNumericFieldNames(3)));
-                            }
-
-                        } else {
-                            if (Item1 == 1) {
-                                ShowSevereError(state,
-                                                format("{}{}=\"{}\", invalid {}, value  ={}",
-                                                       RoutineName,
-                                                       elecEqModuleObject,
-                                                       thisElecEqInput.Name,
-                                                       IHGAlphaFieldNames(4),
-                                                       IHGAlphas(4)));
-                                ShowContinueError(state, "...Valid values are \"EquipmentLevel\", \"Watts/Area\", \"Watts/Person\".");
-                                ErrorsFound = true;
-                            }
-                        }
-                    }
+                    thisZoneElectric.DesignLevel = setDesignLevel(state,
+                                                                  ErrorsFound,
+                                                                  peopleModuleObject,
+                                                                  thisElecEqInput.Name,
+                                                                  methodInput,
+                                                                  thisElecEqInput.numOfSpaces,
+                                                                  zoneNum,
+                                                                  spaceNum,
+                                                                  inputValues,
+                                                                  inputBlanks);
 
                     // Calculate nominal min/max equipment level
                     thisZoneElectric.NomMinDesignLevel = thisZoneElectric.DesignLevel * thisZoneElectric.sched->getMinVal(state);
@@ -3865,7 +3775,31 @@ namespace InternalHeatGains {
             designLevel = inputValues[(int)DesignLevelMethod::LightingLevel] * spaceFrac;
             if (inputBlanks[(int)DesignLevelMethod::LightingLevel]) {
                 ShowWarningError(state,
-                                 format("{}{}=\"{}\", specifies Number of People, but that field is blank.  0 {} will result.",
+                                 format("{}{}=\"{}\", specifies Lighting Level, but that field is blank.  0 {} will result.",
+                                        RoutineName,
+                                        objectType,
+                                        objectName,
+                                        objectType));
+            }
+        } break;
+        case DesignLevelMethod::EquipmentLevel: {
+            // Set space load fraction
+            Real64 spaceFrac = 1.0;
+            if (numSpaces > 1) {
+                Real64 const zoneArea = state.dataHeatBal->Zone(zoneNum).FloorArea;
+                if (zoneArea > 0.0) {
+                    spaceFrac = state.dataHeatBal->space(spaceNum).FloorArea / zoneArea;
+                } else {
+                    ShowSevereError(state, format("{}Zone floor area is zero when allocating {} loads to Spaces.", RoutineName, objectType));
+                    ShowContinueError(state,
+                                      format("Occurs for {} object ={} in Zone={}", objectType, objectName, state.dataHeatBal->Zone(zoneNum).Name));
+                    ErrorsFound = true;
+                }
+            }
+            designLevel = inputValues[(int)DesignLevelMethod::EquipmentLevel] * spaceFrac;
+            if (inputBlanks[(int)DesignLevelMethod::EquipmentLevel]) {
+                ShowWarningError(state,
+                                 format("{}{}=\"{}\", specifies Equipment Level, but that field is blank.  0 {} will result.",
                                         RoutineName,
                                         objectType,
                                         objectName,

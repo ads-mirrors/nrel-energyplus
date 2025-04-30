@@ -57,14 +57,14 @@ For both options, the heating and cooling energy rate and energy consumption wil
 	 {E_dot_{cool}} = {Q_dot_{load,cool}} / {Fuel_Eff_{cool}}
 	 
 	 where,
-	 {Q_{dot,cool}} 	= Zone Ideal Loads Zone Total Cooling Rate, [W]
-	 {Q_{dot,heat}} 	= Zone Ideal Loads Zone Total Heating Rate, [W]
-	 {E_dot_{cool}} 	= Zone Ideal Loads Zone Cooling Energy Rate, [W]
-	 {E_dot_{heat}} 	= Zone Ideal Loads Zone Heating Energy Rate, [W]
-	 {E_{cool}}      	= Zone Ideal Loads Zone Cooling Energy, [J]
-	 {E_{heat}} 	    = Zone Ideal Loads Zone Heating Energy, [J]	 
-	 {Fuel_Eff_{cool}} 	= Cooling Fuel Efficiency, [-]
-	 {Fuel_Eff_{heat}} 	= Heating Fuel Efficiency, [-]
+	 {Q_{dot,cool}}     = Zone Ideal Loads Zone Total Cooling Rate, [W]
+	 {Q_{dot,heat}}     = Zone Ideal Loads Zone Total Heating Rate, [W]
+	 {E_dot_{cool}}     = Zone Ideal Loads Zone Cooling Energy Rate, [W]
+	 {E_dot_{heat}}     = Zone Ideal Loads Zone Heating Energy Rate, [W]
+	 {E_{cool}}         = Zone Ideal Loads Zone Cooling Energy, [J]
+	 {E_{heat}}         = Zone Ideal Loads Zone Heating Energy, [J]	 
+	 {Fuel_Eff_{cool}}  = Cooling Fuel Efficiency, [-]
+	 {Fuel_Eff_{heat}}  = Heating Fuel Efficiency, [-]
 	 
 ### Questions for Discussion:
 
@@ -84,12 +84,14 @@ For both options, the heating and cooling energy rate and energy consumption wil
       * - Zone Ideal Loads Zone Heating Energy [J] *
 
 * (5) Consider adding the following new report variables: *
+
       * - Zone Ideal Loads Supply Air Heating Energy Rate [W] *
       * - Zone Ideal Loads Supply Air Heating Energy [J] *
       * - Zone Ideal Loads Supply Air Cooling Energy Rate [W] *
       * - Zone Ideal Loads Supply Air Cooling Energy [J] *
-	  
+
       * - these four new variables will also be derived from the corresponding the following report variables by applying the fuel efficiencies *
+
       * - Zone Ideal Loads Supply Air Total Heating Rate [W] *
       * - Zone Ideal Loads Supply Air Total Cooling Rate [W] *
 	  

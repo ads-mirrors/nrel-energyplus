@@ -985,7 +985,7 @@ namespace InternalHeatGains {
                     // Lights Design Level calculation method.
                     thisLights.DesignLevel = setDesignLevel(state,
                                                             ErrorsFound,
-                                                            peopleModuleObject,
+                                                            lightsModuleObject,
                                                             thisLightsInput.Name,
                                                             methodInput,
                                                             thisLightsInput.numOfSpaces,
@@ -1308,7 +1308,7 @@ namespace InternalHeatGains {
                     // Electric equipment design level calculation method.
                     thisZoneElectric.DesignLevel = setDesignLevel(state,
                                                                   ErrorsFound,
-                                                                  peopleModuleObject,
+                                                                  elecEqModuleObject,
                                                                   thisElecEqInput.Name,
                                                                   methodInput,
                                                                   thisElecEqInput.numOfSpaces,
@@ -3822,8 +3822,7 @@ namespace InternalHeatGains {
                 } else {
                     ShowSevereError(
                         state,
-                        format(
-                            "{}{}=\"{}\", invalid Watts per Floor Area, value  [<0.0]={:.3R}", RoutineName, objectType, objectName, wattsPerArea));
+                        format("{}{}=\"{}\", invalid Watts per Floor Area, value  [<0.0]={:.3R}", RoutineName, objectType, objectName, wattsPerArea));
                     ErrorsFound = true;
                 }
             }

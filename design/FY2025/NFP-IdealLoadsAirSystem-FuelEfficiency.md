@@ -71,6 +71,7 @@ For both options, the heating and cooling energy rate and energy consumption wil
 * (1) Which alternative approach is preferred? *
 
 *     - Option II requires transition while option I does not *
+*     - Option II does not require transition if the new fields are appended as an optional fields * 
 
 * (2) The efficiencies apply to the total (sensible and latent components) heating and cooling loads *
 
@@ -102,6 +103,101 @@ Demonstrate that the fuel efficiency input fields set to 1.0 duplicates the curr
 ## Input Output Reference Documentation ##
 
 Update the documentations for the changed sections.
+
+```
+ZoneHVAC:IdealLoadsAirSystem,
+       \memo Ideal system used to calculate loads without modeling a full HVAC system. All that is
+       \memo required for the ideal system are zone controls, zone equipment configurations, and
+       \memo the ideal loads system component. This component can be thought of as an ideal unit
+       \memo that mixes zone air with the specified amount of outdoor air and then adds or removes
+       \memo heat and moisture at 100% efficiency in order to meet the specified controls. Energy
+       \memo use is reported as DistrictHeatingWater and DistrictCooling.
+       \min-fields 27
+  A1 , \field Name
+       \required-field
+       \reference ZoneEquipmentNames
+  A2 , \field Availability Schedule Name
+       \note Availability schedule name for this system. Schedule value > 0 means the system is available.
+       \note If this field is blank, the system is always available.
+       \type object-list
+       \object-list ScheduleNames
+  A3 , \field Zone Supply Air Node Name
+       \note Must match a zone air inlet node name.
+       \required-field
+       \type node
+  A4 , \field Zone Exhaust Air Node Name
+       \note Should match a zone air exhaust node name.
+       \note This field is optional, but is required if this
+       \note this object is used with other forced air equipment.
+       \type node
+  A5 , \field System Inlet Air Node Name
+       \note This field is only required when the Ideal Loads Air System is connected to an
+       \note AirloopHVAC:ZoneReturnPlenum, otherwise leave this field blank. When connected to a plenum
+       \note the return plenum Outlet Node Name (or Induced Air Outlet Node Name when connecting multiple
+       \note ideal loads air systems) is entered here. The two ideal loads air system node name fields described above,
+       \note the Zone Supply Air Node Name and the Zone Exhaust Air Node Name must also be entered.
+       \note The Zone Supply Air Node Name must match a zone inlet air node name for the zone where this
+       \note Ideal Loads Air System is connected. The Zone Exhaust Air Node Name must match an inlet air
+       \note node name of an AirloopHVAC:ReturnAirPlenum object.
+       \type node
+  N1 , \field Maximum Heating Supply Air Temperature
+       \units C
+       \minimum> 0
+       \maximum< 100
+       \default 50
+  N2 , \field Minimum Cooling Supply Air Temperature
+       \units C
+       \minimum> -100
+       \maximum< 50
+       \default 13
+  N3 , \field Maximum Heating Supply Air Humidity Ratio
+       \units kgWater/kgDryAir
+       \minimum> 0
+       \default 0.0156
+  N4 , \field Minimum Cooling Supply Air Humidity Ratio
+       \units kgWater/kgDryAir
+       \minimum> 0
+       \default 0.0077
+
+        ....
+
+  N10, \field Sensible Heat Recovery Effectiveness
+       \units dimensionless
+       \minimum 0.0
+       \maximum 1.0
+       \default 0.70
+  N11, \field Latent Heat Recovery Effectiveness
+       \note Applicable only if Heat Recovery Type is Enthalpy.
+       \units dimensionless
+       \minimum 0.0
+       \maximum 1.0
+       \default 0.65
+  A17, \field Design Specification ZoneHVAC Sizing Object Name
+       \note Enter the name of a DesignSpecificationZoneHVACSizing object.
+       \type object-list
+       \object-list DesignSpecificationZoneHVACSizingName
+```
+
+  **  The following two optional NEW input fields will be added  **
+
+```
+  A18, \field Heating Fuel Efficiency Schedule Name
+       \type real
+       \units dimensionless
+       \minimum> 0.0
+       \maximum 1.0
+       \default 1.0
+       \note Reference heating fuel efficiency for converting heating 
+       \note ideal air loads into fuel energy consumption.
+  A19; \field Cooling Fuel Efficiency Schedule Name
+       \type real
+       \units dimensionless
+       \minimum> 0.0
+       \maximum 1.0
+       \default 1.0
+       \note Reference cooling fuel efficiency for converting cooling 
+       \note ideal air loads into fuel energy consumption.
+```   
 
 ## Engineering Reference ##
 

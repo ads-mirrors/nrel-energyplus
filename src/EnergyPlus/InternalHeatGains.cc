@@ -388,7 +388,7 @@ namespace InternalHeatGains {
                 ErrorObjectHeader eoh{routineName, peopleModuleObject, IHGAlphas(1)};
                 // Create one People instance for every space associated with this People input object
                 auto &thisPeopleInput = peopleObjects(peopleInputNum);
-                const std::string_view peopleMethod = IHGAlphas(4);
+                const std::string_view methodInput = IHGAlphas(4);
                 inputValues[(int)DesignLevelMethod::People] = IHGNumbers(1);
                 inputBlanks[(int)DesignLevelMethod::People] = IHGNumericFieldBlanks(1);
                 inputValues[(int)DesignLevelMethod::PeoplePerArea] = IHGNumbers(2);
@@ -420,124 +420,16 @@ namespace InternalHeatGains {
                     }
 
                     // Number of people calculation method.
-                    { // Why open a new scope here
-                        thisPeople.NumberOfPeople = setDesignLevel(state,
-                                                                   ErrorsFound,
-                                                                   peopleModuleObject,
-                                                                   thisPeopleInput.Name,
-                                                                   peopleMethod,
-                                                                   thisPeopleInput.numOfSpaces,
-                                                                   zoneNum,
-                                                                   spaceNum,
-                                                                   inputValues,
-                                                                   inputBlanks);
-
-                        //if (peopleMethod == "PEOPLE") {
-                        //    // Set space load fraction
-                        //    Real64 spaceFrac = 1.0;
-                        //    if (thisPeopleInput.numOfSpaces > 1) {
-                        //        Real64 const zoneArea = state.dataHeatBal->Zone(zoneNum).FloorArea;
-                        //        if (zoneArea > 0.0) {
-                        //            spaceFrac = state.dataHeatBal->space(spaceNum).FloorArea / zoneArea;
-                        //        } else {
-                        //            ShowSevereError(state, format("{}Zone floor area is zero when allocating People loads to Spaces.", RoutineName));
-                        //            ShowContinueError(state,
-                        //                              format("Occurs for People object ={} in Zone={}",
-                        //                                     thisPeopleInput.Name,
-                        //                                     state.dataHeatBal->Zone(zoneNum).Name));
-                        //            ErrorsFound = true;
-                        //        }
-                        //    }
-                        //    thisPeople.NumberOfPeople = IHGNumbers(1) * spaceFrac;
-                        //    if (IHGNumericFieldBlanks(1)) {
-                        //        ShowWarningError(state,
-                        //                         format("{}{}=\"{}\", specifies {}, but that field is blank.  0 People will result.",
-                        //                                RoutineName,
-                        //                                peopleModuleObject,
-                        //                                thisPeople.Name,
-                        //                                IHGNumericFieldNames(1)));
-                        //    }
-
-                        //} else if (peopleMethod == "PEOPLE/AREA") {
-                        //    if (spaceNum != 0) {
-                        //        if (IHGNumbers(2) >= 0.0) {
-                        //            thisPeople.NumberOfPeople = IHGNumbers(2) * state.dataHeatBal->space(spaceNum).FloorArea;
-                        //            if ((state.dataHeatBal->space(spaceNum).FloorArea <= 0.0) &&
-                        //                !state.dataHeatBal->space(spaceNum).isRemainderSpace) {
-                        //                ShowWarningError(state,
-                        //                                 format("{}{}=\"{}\", specifies {}, but Space Floor Area = 0.  0 People will result.",
-                        //                                        RoutineName,
-                        //                                        peopleModuleObject,
-                        //                                        thisPeople.Name,
-                        //                                        IHGNumericFieldNames(2)));
-                        //            }
-                        //        } else {
-                        //            ShowSevereError(state,
-                        //                            format("{}{}=\"{}\", invalid {}, value  [<0.0]={:.3R}",
-                        //                                   RoutineName,
-                        //                                   peopleModuleObject,
-                        //                                   thisPeople.Name,
-                        //                                   IHGNumericFieldNames(2),
-                        //                                   IHGNumbers(2)));
-                        //            ErrorsFound = true;
-                        //        }
-                        //    }
-                        //    if (IHGNumericFieldBlanks(2)) {
-                        //        ShowWarningError(state,
-                        //                         format("{}{}=\"{}\", specifies {}, but that field is blank.  0 People will result.",
-                        //                                RoutineName,
-                        //                                peopleModuleObject,
-                        //                                thisPeople.Name,
-                        //                                IHGNumericFieldNames(2)));
-                        //    }
-
-                        //} else if (peopleMethod == "AREA/PERSON") {
-                        //    if (spaceNum != 0) {
-                        //        if (IHGNumbers(3) > 0.0) {
-                        //            thisPeople.NumberOfPeople = state.dataHeatBal->space(spaceNum).FloorArea / IHGNumbers(3);
-                        //            if ((state.dataHeatBal->space(spaceNum).FloorArea <= 0.0) &&
-                        //                !state.dataHeatBal->space(spaceNum).isRemainderSpace) {
-                        //                ShowWarningError(state,
-                        //                                 format("{}{}=\"{}\", specifies {}, but Space Floor Area = 0.  0 People will result.",
-                        //                                        RoutineName,
-                        //                                        peopleModuleObject,
-                        //                                        thisPeople.Name,
-                        //                                        IHGNumericFieldNames(3)));
-                        //            }
-                        //        } else {
-                        //            ShowSevereError(state,
-                        //                            format("{}{}=\"{}\", invalid {}, value  [<0.0]={:.3R}",
-                        //                                   RoutineName,
-                        //                                   peopleModuleObject,
-                        //                                   thisPeople.Name,
-                        //                                   IHGNumericFieldNames(3),
-                        //                                   IHGNumbers(3)));
-                        //            ErrorsFound = true;
-                        //        }
-                        //    }
-                        //    if (IHGNumericFieldBlanks(3)) {
-                        //        ShowWarningError(state,
-                        //                         format("{}{}=\"{}\", specifies {}, but that field is blank.  0 People will result.",
-                        //                                RoutineName,
-                        //                                peopleModuleObject,
-                        //                                thisPeople.Name,
-                        //                                IHGNumericFieldNames(3)));
-                        //    }
-
-                        //} else {
-                        //    if (Item1 == 1) {
-                        //        ShowSevereError(state,
-                        //                        format("{}{}=\"{}\", invalid {}, value  ={}",
-                        //                               RoutineName,
-                        //                               peopleModuleObject,
-                        //                               IHGAlphas(1),
-                        //                               IHGAlphaFieldNames(4),
-                        //                               IHGAlphas(4)));
-                        //        ShowContinueError(state, "...Valid values are \"People\", \"People/Area\", \"Area/Person\".");
-                        //        ErrorsFound = true;
-                        //    }
-                        //}
-                    }
+                    thisPeople.NumberOfPeople = setDesignLevel(state,
+                                                               ErrorsFound,
+                                                               peopleModuleObject,
+                                                               thisPeopleInput.Name,
+                                                               methodInput,
+                                                               thisPeopleInput.numOfSpaces,
+                                                               zoneNum,
+                                                               spaceNum,
+                                                               inputValues,
+                                                               inputBlanks);
 
                     // Calculate nominal min/max people
                     thisPeople.NomMinNumberPeople = thisPeople.NumberOfPeople * thisPeople.sched->getMinVal(state);

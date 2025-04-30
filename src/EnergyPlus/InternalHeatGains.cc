@@ -1406,6 +1406,28 @@ namespace InternalHeatGains {
                 ErrorObjectHeader eoh{routineName, gasEqModuleObject, IHGAlphas(1)};
 
                 auto &thisGasEqInput = zoneGasObjects(gasEqInputNum);
+                DesignLevelMethod const levelMethod = static_cast<DesignLevelMethod>(getEnumValue(DesignLevelMethodNamesUC, IHGAlphas(4)));
+                int fieldNum = 1;
+                switch (levelMethod) {
+                case DesignLevelMethod::EquipmentLevel: {
+                    fieldNum = 1;
+                } break;
+                case DesignLevelMethod::WattsPerArea:
+                case DesignLevelMethod::PowerPerArea: {
+                    fieldNum = 2;
+                } break;
+                case DesignLevelMethod::WattsPerPerson:
+                case DesignLevelMethod::PowerPerPerson: {
+                    fieldNum = 3;
+                } break;
+                default: {
+                    assert(false);
+                } break;
+                }
+                Real64 const levelValue = IHGNumbers(fieldNum);
+                bool const levelBlank = IHGNumericFieldBlanks(fieldNum);
+                std::string_view const levelField = IHGNumericFieldNames(fieldNum);
+
                 for (int Item1 = 1; Item1 <= thisGasEqInput.numOfSpaces; ++Item1) {
                     ++gasEqNum;
                     auto &thisZoneGas = state.dataHeatBal->ZoneGas(gasEqNum);
@@ -1434,105 +1456,8 @@ namespace InternalHeatGains {
                     }
 
                     // Gas equipment design level calculation method.
-                    {
-                        std::string const &equipmentLevel = IHGAlphas(4);
-                        if (equipmentLevel == "EQUIPMENTLEVEL") {
-                            Real64 spaceFrac = 1.0;
-                            if (thisGasEqInput.numOfSpaces > 1) {
-                                Real64 const zoneArea = state.dataHeatBal->Zone(zoneNum).FloorArea;
-                                if (zoneArea > 0.0) {
-                                    spaceFrac = state.dataHeatBal->space(spaceNum).FloorArea / zoneArea;
-                                } else {
-                                    ShowSevereError(state,
-                                                    format("{}Zone floor area is zero when allocating GasEquipment loads to Spaces.", RoutineName));
-                                    ShowContinueError(state,
-                                                      format("Occurs for GasEquipment object ={} in Zone={}",
-                                                             thisGasEqInput.Name,
-                                                             state.dataHeatBal->Zone(thisZoneGas.ZonePtr).Name));
-                                    ErrorsFound = true;
-                                }
-                            }
-                            thisZoneGas.DesignLevel = IHGNumbers(1) * spaceFrac;
-                            if (IHGNumericFieldBlanks(1)) {
-                                ShowWarningError(state,
-                                                 format("{}{}=\"{}\", specifies {}, but that field is blank.  0 Gas Equipment will result.",
-                                                        RoutineName,
-                                                        gasEqModuleObject,
-                                                        thisGasEqInput.Name,
-                                                        IHGNumericFieldNames(1)));
-                            }
-                        } else if (equipmentLevel == "WATTS/AREA" || equipmentLevel == "POWER/AREA") {
-                            if (spaceNum != 0) {
-                                if (IHGNumbers(2) >= 0.0) {
-                                    thisZoneGas.DesignLevel = IHGNumbers(2) * state.dataHeatBal->space(spaceNum).FloorArea;
-                                    if ((state.dataHeatBal->space(spaceNum).FloorArea <= 0.0) &&
-                                        !state.dataHeatBal->space(spaceNum).isRemainderSpace) {
-                                        ShowWarningError(state,
-                                                         format("{}{}=\"{}\", specifies {}, but Space Floor Area = 0.  0 Gas Equipment will result.",
-                                                                RoutineName,
-                                                                gasEqModuleObject,
-                                                                thisZoneGas.Name,
-                                                                IHGNumericFieldNames(2)));
-                                    }
-                                } else {
-                                    ShowSevereError(state,
-                                                    format("{}{}=\"{}\", invalid {}, value  [<0.0]={:.3R}",
-                                                           RoutineName,
-                                                           gasEqModuleObject,
-                                                           thisGasEqInput.Name,
-                                                           IHGNumericFieldNames(2),
-                                                           IHGNumbers(2)));
-                                    ErrorsFound = true;
-                                }
-                            }
-                            if (IHGNumericFieldBlanks(2)) {
-                                ShowWarningError(state,
-                                                 format("{}{}=\"{}\", specifies {}, but that field is blank.  0 Gas Equipment will result.",
-                                                        RoutineName,
-                                                        gasEqModuleObject,
-                                                        thisGasEqInput.Name,
-                                                        IHGNumericFieldNames(2)));
-                            }
-
-                        } else if (equipmentLevel == "WATTS/PERSON" || equipmentLevel == "POWER/PERSON") {
-                            if (spaceNum != 0) {
-                                if (IHGNumbers(3) >= 0.0) {
-                                    thisZoneGas.DesignLevel = IHGNumbers(3) * state.dataHeatBal->space(spaceNum).TotOccupants;
-                                    if (state.dataHeatBal->space(spaceNum).TotOccupants <= 0.0) {
-                                        ShowWarningError(state,
-                                                         format("{}{}=\"{}\", specifies {}, but Total Occupants = 0.  0 Gas Equipment will result.",
-                                                                RoutineName,
-                                                                gasEqModuleObject,
-                                                                thisZoneGas.Name,
-                                                                IHGNumericFieldNames(2)));
-                                    }
-                                } else {
-                                    ShowSevereError(state,
-                                                    format("{}{}=\"{}\", invalid {}, value  [<0.0]={:.3R}",
-                                                           RoutineName,
-                                                           gasEqModuleObject,
-                                                           thisGasEqInput.Name,
-                                                           IHGNumericFieldNames(3),
-                                                           IHGNumbers(3)));
-                                    ErrorsFound = true;
-                                }
-                            }
-                            if (IHGNumericFieldBlanks(3)) {
-                                ShowWarningError(state,
-                                                 format("{}{}=\"{}\", specifies {}, but that field is blank.  0 Gas Equipment will result.",
-                                                        RoutineName,
-                                                        gasEqModuleObject,
-                                                        thisGasEqInput.Name,
-                                                        IHGNumericFieldNames(3)));
-                            }
-
-                        } else {
-                            if (Item1 == 1) {
-                                ShowSevereInvalidKey(state, eoh, IHGAlphaFieldNames(4), IHGAlphas(4));
-                                ErrorsFound = true;
-                            }
-                        }
-                    }
+                    thisZoneGas.DesignLevel = setDesignLevel(
+                        state, ErrorsFound, gasEqModuleObject, thisGasEqInput, levelMethod, zoneNum, spaceNum, levelValue, levelBlank, levelField);
 
                     // Calculate nominal min/max equipment level
                     thisZoneGas.NomMinDesignLevel = thisZoneGas.DesignLevel * thisZoneGas.sched->getMinVal(state);
@@ -1636,6 +1561,28 @@ namespace InternalHeatGains {
                 ErrorObjectHeader eoh{routineName, hwEqModuleObject, IHGAlphas(1)};
 
                 auto &thisHWEqInput = hotWaterEqObjects(hwEqInputNum);
+                DesignLevelMethod const levelMethod = static_cast<DesignLevelMethod>(getEnumValue(DesignLevelMethodNamesUC, IHGAlphas(4)));
+                int fieldNum = 1;
+                switch (levelMethod) {
+                case DesignLevelMethod::EquipmentLevel: {
+                    fieldNum = 1;
+                } break;
+                case DesignLevelMethod::WattsPerArea:
+                case DesignLevelMethod::PowerPerArea: {
+                    fieldNum = 2;
+                } break;
+                case DesignLevelMethod::WattsPerPerson:
+                case DesignLevelMethod::PowerPerPerson: {
+                    fieldNum = 3;
+                } break;
+                default: {
+                    assert(false);
+                } break;
+                }
+                Real64 const levelValue = IHGNumbers(fieldNum);
+                bool const levelBlank = IHGNumericFieldBlanks(fieldNum);
+                std::string_view const levelField = IHGNumericFieldNames(fieldNum);
+
                 for (int Item1 = 1; Item1 <= thisHWEqInput.numOfSpaces; ++Item1) {
                     ++hwEqNum;
                     auto &thisZoneHWEq = state.dataHeatBal->ZoneHWEq(hwEqNum);
@@ -1657,114 +1604,8 @@ namespace InternalHeatGains {
                     }
 
                     // Hot Water equipment design level calculation method.
-                    {
-                        std::string const &equipmentLevel = IHGAlphas(4);
-                        if (equipmentLevel == "EQUIPMENTLEVEL") {
-                            Real64 spaceFrac = 1.0;
-                            if (thisHWEqInput.numOfSpaces > 1) {
-                                Real64 const zoneArea = state.dataHeatBal->Zone(zoneNum).FloorArea;
-                                if (zoneArea > 0.0) {
-                                    spaceFrac = state.dataHeatBal->space(spaceNum).FloorArea / zoneArea;
-                                } else {
-                                    ShowSevereError(
-                                        state, format("{}Zone floor area is zero when allocating HotWaterEquipment loads to Spaces.", RoutineName));
-                                    ShowContinueError(state,
-                                                      format("Occurs for HotWaterEquipment object ={} in Zone={}",
-                                                             thisHWEqInput.Name,
-                                                             state.dataHeatBal->Zone(zoneNum).Name));
-                                    ErrorsFound = true;
-                                }
-                            }
-                            thisZoneHWEq.DesignLevel = IHGNumbers(1) * spaceFrac;
-                            if (IHGNumericFieldBlanks(1)) {
-                                ShowWarningError(state,
-                                                 format("{}{}=\"{}\", specifies {}, but that field is blank.  0 Hot Water Equipment will result.",
-                                                        RoutineName,
-                                                        hwEqModuleObject,
-                                                        thisHWEqInput.Name,
-                                                        IHGNumericFieldNames(1)));
-                            }
-                        } else if (equipmentLevel == "WATTS/AREA" || equipmentLevel == "POWER/AREA") {
-                            if (spaceNum != 0) {
-                                if (IHGNumbers(2) >= 0.0) {
-                                    thisZoneHWEq.DesignLevel = IHGNumbers(2) * state.dataHeatBal->space(spaceNum).FloorArea;
-                                    if ((state.dataHeatBal->space(spaceNum).FloorArea <= 0.0) &&
-                                        !state.dataHeatBal->space(spaceNum).isRemainderSpace) {
-                                        ShowWarningError(
-                                            state,
-                                            format("{}{}=\"{}\", specifies {}, but Space Floor Area = 0.  0 Hot Water Equipment will result.",
-                                                   RoutineName,
-                                                   hwEqModuleObject,
-                                                   thisZoneHWEq.Name,
-                                                   IHGNumericFieldNames(2)));
-                                    }
-                                } else {
-                                    ShowSevereError(state,
-                                                    format("{}{}=\"{}\", invalid {}, value  [<0.0]={:.3R}",
-                                                           RoutineName,
-                                                           hwEqModuleObject,
-                                                           thisHWEqInput.Name,
-                                                           IHGNumericFieldNames(2),
-                                                           IHGNumbers(2)));
-                                    ErrorsFound = true;
-                                }
-                            }
-                            if (IHGNumericFieldBlanks(2)) {
-                                ShowWarningError(state,
-                                                 format("{}{}=\"{}\", specifies {}, but that field is blank.  0 Hot Water Equipment will result.",
-                                                        RoutineName,
-                                                        hwEqModuleObject,
-                                                        thisHWEqInput.Name,
-                                                        IHGNumericFieldNames(2)));
-                            }
-
-                        } else if (equipmentLevel == "WATTS/PERSON" || equipmentLevel == "POWER/PERSON") {
-                            if (spaceNum != 0) {
-                                if (IHGNumbers(3) >= 0.0) {
-                                    thisZoneHWEq.DesignLevel = IHGNumbers(3) * state.dataHeatBal->space(spaceNum).TotOccupants;
-                                    if (state.dataHeatBal->space(spaceNum).TotOccupants <= 0.0) {
-                                        ShowWarningError(
-                                            state,
-                                            format("{}{}=\"{}\", specifies {}, but Total Occupants = 0.  0 Hot Water Equipment will result.",
-                                                   RoutineName,
-                                                   hwEqModuleObject,
-                                                   thisZoneHWEq.Name,
-                                                   IHGNumericFieldNames(2)));
-                                    }
-                                } else {
-                                    ShowSevereError(state,
-                                                    format("{}{}=\"{}\", invalid {}, value  [<0.0]={:.3R}",
-                                                           RoutineName,
-                                                           hwEqModuleObject,
-                                                           thisHWEqInput.Name,
-                                                           IHGNumericFieldNames(3),
-                                                           IHGNumbers(3)));
-                                    ErrorsFound = true;
-                                }
-                            }
-                            if (IHGNumericFieldBlanks(3)) {
-                                ShowWarningError(state,
-                                                 format("{}{}=\"{}\", specifies {}, but that field is blank.  0 Hot Water Equipment will result.",
-                                                        RoutineName,
-                                                        hwEqModuleObject,
-                                                        thisHWEqInput.Name,
-                                                        IHGNumericFieldNames(3)));
-                            }
-
-                        } else {
-                            if (Item1 == 1) {
-                                ShowSevereError(state,
-                                                format("{}{}=\"{}\", invalid {}, value  ={}",
-                                                       RoutineName,
-                                                       hwEqModuleObject,
-                                                       thisHWEqInput.Name,
-                                                       IHGAlphaFieldNames(4),
-                                                       IHGAlphas(4)));
-                                ShowContinueError(state, "...Valid values are \"EquipmentLevel\", \"Watts/Area\", \"Watts/Person\".");
-                                ErrorsFound = true;
-                            }
-                        }
-                    }
+                    thisZoneHWEq.DesignLevel = setDesignLevel(
+                        state, ErrorsFound, hwEqModuleObject, thisHWEqInput, levelMethod, zoneNum, spaceNum, levelValue, levelBlank, levelField);
 
                     // Calculate nominal min/max equipment level
                     thisZoneHWEq.NomMinDesignLevel = thisZoneHWEq.DesignLevel * thisZoneHWEq.sched->getMinVal(state);
@@ -1838,6 +1679,28 @@ namespace InternalHeatGains {
                 ErrorObjectHeader eoh{routineName, stmEqModuleObject, IHGAlphas(1)};
 
                 auto &thisStmEqInput = steamEqObjects(stmEqInputNum);
+                DesignLevelMethod const levelMethod = static_cast<DesignLevelMethod>(getEnumValue(DesignLevelMethodNamesUC, IHGAlphas(4)));
+                int fieldNum = 1;
+                switch (levelMethod) {
+                case DesignLevelMethod::EquipmentLevel: {
+                    fieldNum = 1;
+                } break;
+                case DesignLevelMethod::WattsPerArea:
+                case DesignLevelMethod::PowerPerArea: {
+                    fieldNum = 2;
+                } break;
+                case DesignLevelMethod::WattsPerPerson:
+                case DesignLevelMethod::PowerPerPerson: {
+                    fieldNum = 3;
+                } break;
+                default: {
+                    assert(false);
+                } break;
+                }
+                Real64 const levelValue = IHGNumbers(fieldNum);
+                bool const levelBlank = IHGNumericFieldBlanks(fieldNum);
+                std::string_view const levelField = IHGNumericFieldNames(fieldNum);
+
                 for (int Item1 = 1; Item1 <= thisStmEqInput.numOfSpaces; ++Item1) {
                     ++stmEqNum;
                     auto &thisZoneStmEq = state.dataHeatBal->ZoneSteamEq(stmEqNum);
@@ -1859,113 +1722,8 @@ namespace InternalHeatGains {
                     }
 
                     // Steam equipment design level calculation method.
-                    {
-                        std::string const &equipmentLevel = IHGAlphas(4);
-                        if (equipmentLevel == "EQUIPMENTLEVEL") {
-                            Real64 spaceFrac = 1.0;
-                            if (thisStmEqInput.numOfSpaces > 1) {
-                                Real64 const zoneArea = state.dataHeatBal->Zone(zoneNum).FloorArea;
-                                if (zoneArea > 0.0) {
-                                    spaceFrac = state.dataHeatBal->space(spaceNum).FloorArea / zoneArea;
-                                } else {
-                                    ShowSevereError(state,
-                                                    format("{}Zone floor area is zero when allocating SteamEquipment loads to Spaces.", RoutineName));
-                                    ShowContinueError(state,
-                                                      format("Occurs for SteamEquipment object ={} in Zone={}",
-                                                             thisStmEqInput.Name,
-                                                             state.dataHeatBal->Zone(zoneNum).Name));
-                                    ErrorsFound = true;
-                                }
-                            }
-                            thisZoneStmEq.DesignLevel = IHGNumbers(1) * spaceFrac;
-                            if (IHGNumericFieldBlanks(1)) {
-                                ShowWarningError(state,
-                                                 format("{}{}=\"{}\", specifies {}, but that field is blank.  0 Steam Equipment will result.",
-                                                        RoutineName,
-                                                        hwEqModuleObject,
-                                                        thisStmEqInput.Name,
-                                                        IHGNumericFieldNames(1)));
-                            }
-                        } else if (equipmentLevel == "WATTS/AREA" || equipmentLevel == "POWER/AREA") {
-                            if (spaceNum > 0) {
-                                if (IHGNumbers(2) >= 0.0) {
-                                    thisZoneStmEq.DesignLevel = IHGNumbers(2) * state.dataHeatBal->space(spaceNum).FloorArea;
-                                    if ((state.dataHeatBal->space(spaceNum).FloorArea <= 0.0) &&
-                                        !state.dataHeatBal->space(spaceNum).isRemainderSpace) {
-                                        ShowWarningError(
-                                            state,
-                                            format("{}{}=\"{}\", specifies {}, but Space Floor Area = 0.  0 Steam Equipment will result.",
-                                                   RoutineName,
-                                                   stmEqModuleObject,
-                                                   thisZoneStmEq.Name,
-                                                   IHGNumericFieldNames(2)));
-                                    }
-                                } else {
-                                    ShowSevereError(state,
-                                                    format("{}{}=\"{}\", invalid {}, value  [<0.0]={:.3R}",
-                                                           RoutineName,
-                                                           stmEqModuleObject,
-                                                           IHGAlphas(1),
-                                                           IHGNumericFieldNames(2),
-                                                           IHGNumbers(2)));
-                                    ErrorsFound = true;
-                                }
-                            }
-                            if (IHGNumericFieldBlanks(2)) {
-                                ShowWarningError(state,
-                                                 format("{}{}=\"{}\", specifies {}, but that field is blank.  0 Steam Equipment will result.",
-                                                        RoutineName,
-                                                        stmEqModuleObject,
-                                                        thisStmEqInput.Name,
-                                                        IHGNumericFieldNames(2)));
-                            }
-
-                        } else if (equipmentLevel == "WATTS/PERSON" || equipmentLevel == "POWER/PERSON") {
-                            if (spaceNum != 0) {
-                                if (IHGNumbers(3) >= 0.0) {
-                                    thisZoneStmEq.DesignLevel = IHGNumbers(3) * state.dataHeatBal->space(spaceNum).TotOccupants;
-                                    if (state.dataHeatBal->space(spaceNum).TotOccupants <= 0.0) {
-                                        ShowWarningError(state,
-                                                         format("{}{}=\"{}\", specifies {}, but Total Occupants = 0.  0 Steam Equipment will result.",
-                                                                RoutineName,
-                                                                stmEqModuleObject,
-                                                                thisZoneStmEq.Name,
-                                                                IHGNumericFieldNames(2)));
-                                    }
-                                } else {
-                                    ShowSevereError(state,
-                                                    format("{}{}=\"{}\", invalid {}, value  [<0.0]={:.3R}",
-                                                           RoutineName,
-                                                           stmEqModuleObject,
-                                                           IHGAlphas(1),
-                                                           IHGNumericFieldNames(3),
-                                                           IHGNumbers(3)));
-                                    ErrorsFound = true;
-                                }
-                            }
-                            if (IHGNumericFieldBlanks(3)) {
-                                ShowWarningError(state,
-                                                 format("{}{}=\"{}\", specifies {}, but that field is blank.  0 Steam Equipment will result.",
-                                                        RoutineName,
-                                                        stmEqModuleObject,
-                                                        IHGAlphas(1),
-                                                        IHGNumericFieldNames(3)));
-                            }
-
-                        } else {
-                            if (Item1 == 1) {
-                                ShowSevereError(state,
-                                                format("{}{}=\"{}\", invalid {}, value  ={}",
-                                                       RoutineName,
-                                                       stmEqModuleObject,
-                                                       IHGAlphas(1),
-                                                       IHGAlphaFieldNames(4),
-                                                       IHGAlphas(4)));
-                                ShowContinueError(state, "...Valid values are \"EquipmentLevel\", \"Watts/Area\", \"Watts/Person\".");
-                                ErrorsFound = true;
-                            }
-                        }
-                    }
+                    thisZoneStmEq.DesignLevel = setDesignLevel(
+                        state, ErrorsFound, stmEqModuleObject, thisStmEqInput, levelMethod, zoneNum, spaceNum, levelValue, levelBlank, levelField);
 
                     // Calculate nominal min/max equipment level
                     thisZoneStmEq.NomMinDesignLevel = thisZoneStmEq.DesignLevel * thisZoneStmEq.sched->getMinVal(state);
@@ -2044,6 +1802,29 @@ namespace InternalHeatGains {
                 ErrorObjectHeader eoh{routineName, othEqModuleObject, IHGAlphas(1)};
 
                 auto &thisOthEqInput = otherEqObjects(othEqInputNum);
+                // Note alpha field numbers are different for OtherEquipment
+                DesignLevelMethod const levelMethod = static_cast<DesignLevelMethod>(getEnumValue(DesignLevelMethodNamesUC, IHGAlphas(5)));
+                int levelFieldNum = 1;
+                switch (levelMethod) {
+                case DesignLevelMethod::EquipmentLevel: {
+                    levelFieldNum = 1;
+                } break;
+                case DesignLevelMethod::WattsPerArea:
+                case DesignLevelMethod::PowerPerArea: {
+                    levelFieldNum = 2;
+                } break;
+                case DesignLevelMethod::WattsPerPerson:
+                case DesignLevelMethod::PowerPerPerson: {
+                    levelFieldNum = 3;
+                } break;
+                default: {
+                    assert(false);
+                } break;
+                }
+                Real64 const levelValue = IHGNumbers(levelFieldNum);
+                bool const levelBlank = IHGNumericFieldBlanks(levelFieldNum);
+                std::string_view const levelField = IHGNumericFieldNames(levelFieldNum);
+
                 for (int Item1 = 1; Item1 <= thisOthEqInput.numOfSpaces; ++Item1) {
                     ++othEqNum;
                     auto &thisZoneOthEq = state.dataHeatBal->ZoneOtherEq(othEqNum);
@@ -2108,94 +1889,8 @@ namespace InternalHeatGains {
                     }
 
                     // equipment design level calculation method.
-                    unsigned int DesignLevelFieldNumber;
-                    {
-                        std::string const &equipmentLevel = IHGAlphas(5);
-                        if (equipmentLevel == "EQUIPMENTLEVEL") {
-                            DesignLevelFieldNumber = 1;
-                            Real64 spaceFrac = 1.0;
-                            if (thisOthEqInput.numOfSpaces > 1) {
-                                Real64 const zoneArea = state.dataHeatBal->Zone(zoneNum).FloorArea;
-                                if (zoneArea > 0.0) {
-                                    spaceFrac = state.dataHeatBal->space(spaceNum).FloorArea / zoneArea;
-                                } else {
-                                    ShowSevereError(state,
-                                                    format("{}Zone floor area is zero when allocating OtherEquipment loads to Spaces.", RoutineName));
-                                    ShowContinueError(state,
-                                                      format("Occurs for OtherEquipment object ={} in Zone={}",
-                                                             thisOthEqInput.Name,
-                                                             state.dataHeatBal->Zone(zoneNum).Name));
-                                    ErrorsFound = true;
-                                }
-                            }
-                            thisZoneOthEq.DesignLevel = IHGNumbers(1) * spaceFrac;
-                            if (IHGNumericFieldBlanks(DesignLevelFieldNumber)) {
-                                ShowWarningError(state,
-                                                 format("{}{}=\"{}\", specifies {}, but that field is blank.  0 Other Equipment will result.",
-                                                        RoutineName,
-                                                        othEqModuleObject,
-                                                        thisOthEqInput.Name,
-                                                        IHGNumericFieldNames(DesignLevelFieldNumber)));
-                            }
-
-                        } else if (equipmentLevel == "WATTS/AREA" || equipmentLevel == "POWER/AREA") {
-                            DesignLevelFieldNumber = 2;
-                            if (spaceNum > 0) {
-                                thisZoneOthEq.DesignLevel = IHGNumbers(DesignLevelFieldNumber) * state.dataHeatBal->space(spaceNum).FloorArea;
-                                if ((state.dataHeatBal->space(spaceNum).FloorArea <= 0.0) && !state.dataHeatBal->space(spaceNum).isRemainderSpace) {
-                                    ShowWarningError(state,
-                                                     format("{}{}=\"{}\", specifies {}, but Space Floor Area = 0.  0 Other Equipment will result.",
-                                                            RoutineName,
-                                                            othEqModuleObject,
-                                                            thisZoneOthEq.Name,
-                                                            IHGNumericFieldNames(DesignLevelFieldNumber)));
-                                }
-                            }
-                            if (IHGNumericFieldBlanks(DesignLevelFieldNumber)) {
-                                ShowWarningError(state,
-                                                 format("{}{}=\"{}\", specifies {}, but that field is blank.  0 Other Equipment will result.",
-                                                        RoutineName,
-                                                        othEqModuleObject,
-                                                        IHGAlphas(1),
-                                                        IHGNumericFieldNames(DesignLevelFieldNumber)));
-                            }
-
-                        } else if (equipmentLevel == "WATTS/PERSON" || equipmentLevel == "POWER/PERSON") {
-                            DesignLevelFieldNumber = 3;
-                            if (thisZoneOthEq.ZonePtr != 0) {
-                                thisZoneOthEq.DesignLevel = IHGNumbers(3) * state.dataHeatBal->Zone(thisZoneOthEq.ZonePtr).TotOccupants;
-                                if (state.dataHeatBal->Zone(thisZoneOthEq.ZonePtr).TotOccupants <= 0.0) {
-                                    ShowWarningError(state,
-                                                     format("{}{}=\"{}\", specifies {}, but Total Occupants = 0.  0 Other Equipment will result.",
-                                                            RoutineName,
-                                                            othEqModuleObject,
-                                                            thisZoneOthEq.Name,
-                                                            IHGNumericFieldNames(DesignLevelFieldNumber)));
-                                }
-                            }
-                            if (IHGNumericFieldBlanks(DesignLevelFieldNumber)) {
-                                ShowWarningError(state,
-                                                 format("{}{}=\"{}\", specifies {}, but that field is blank.  0 Other Equipment will result.",
-                                                        RoutineName,
-                                                        othEqModuleObject,
-                                                        thisOthEqInput.Name,
-                                                        IHGNumericFieldNames(DesignLevelFieldNumber)));
-                            }
-
-                        } else {
-                            if (Item1 == 1) {
-                                ShowSevereError(state,
-                                                format("{}{}=\"{}\", invalid {}, value  ={}",
-                                                       RoutineName,
-                                                       othEqModuleObject,
-                                                       thisOthEqInput.Name,
-                                                       IHGAlphaFieldNames(5),
-                                                       IHGAlphas(5)));
-                                ShowContinueError(state, "...Valid values are \"EquipmentLevel\", \"Watts/Area\", \"Watts/Person\".");
-                                ErrorsFound = true;
-                            }
-                        }
-                    }
+                    thisZoneOthEq.DesignLevel = setDesignLevel(
+                        state, ErrorsFound, othEqModuleObject, thisOthEqInput, levelMethod, zoneNum, spaceNum, levelValue, levelBlank, levelField);
 
                     // Throw an error if the design level is negative and we have a fuel type
                     if (thisZoneOthEq.DesignLevel < 0.0 && thisZoneOthEq.OtherEquipFuelType != Constant::eFuel::Invalid &&
@@ -2205,7 +1900,7 @@ namespace InternalHeatGains {
                                                RoutineName,
                                                othEqModuleObject,
                                                thisOthEqInput.Name,
-                                               IHGNumericFieldNames(DesignLevelFieldNumber)));
+                                               IHGNumericFieldNames(levelFieldNum)));
                         ShowContinueError(
                             state, format("... when a fuel type of {} is specified.", Constant::eFuelNames[(int)thisZoneOthEq.OtherEquipFuelType]));
                         ErrorsFound = true;

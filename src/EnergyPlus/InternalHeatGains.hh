@@ -109,13 +109,13 @@ namespace InternalHeatGains {
     Real64 setDesignLevel(EnergyPlusData &state,
                           bool &ErrorsFound,
                           std::string_view objectType,
-                          std::string_view objectName,
-                          std::string_view methodInput,
-                          int const numSpaces,
+                          InternalHeatGains::GlobalInternalGainMiscObject &inputObject,
+                          DesignLevelMethod const method,
                           int const zoneNum,
                           int const spaceNum,
-                          std::array<Real64, static_cast<int>(DesignLevelMethod::Num)> &inputValues,
-                          std::array<bool, static_cast<int>(DesignLevelMethod::Num)> &inputBlanks);
+                          Real64 inputValue,
+                          bool inputBlank,
+                          std::string_view fieldName);
 
     void setupIHGOutputs(EnergyPlusData &state);
 

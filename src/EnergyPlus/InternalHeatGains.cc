@@ -388,13 +388,26 @@ namespace InternalHeatGains {
                 ErrorObjectHeader eoh{routineName, peopleModuleObject, IHGAlphas(1)};
                 // Create one People instance for every space associated with this People input object
                 auto &thisPeopleInput = peopleObjects(peopleInputNum);
-                const std::string_view methodInput = IHGAlphas(4);
-                inputValues[(int)DesignLevelMethod::People] = IHGNumbers(1);
-                inputBlanks[(int)DesignLevelMethod::People] = IHGNumericFieldBlanks(1);
-                inputValues[(int)DesignLevelMethod::PeoplePerArea] = IHGNumbers(2);
-                inputBlanks[(int)DesignLevelMethod::PeoplePerArea] = IHGNumericFieldBlanks(2);
-                inputValues[(int)DesignLevelMethod::AreaPerPerson] = IHGNumbers(3);
-                inputBlanks[(int)DesignLevelMethod::AreaPerPerson] = IHGNumericFieldBlanks(3);
+                DesignLevelMethod const levelMethod = static_cast<DesignLevelMethod>(getEnumValue(DesignLevelMethodNamesUC, IHGAlphas(4)));
+                int fieldNum = 1;
+                switch (levelMethod) {
+                case DesignLevelMethod::People: {
+                    fieldNum = 1;
+                } break;
+                case DesignLevelMethod::PeoplePerArea: {
+                    fieldNum = 2;
+                } break;
+                case DesignLevelMethod::AreaPerPerson: {
+                    fieldNum = 3;
+                } break;
+                default: {
+                    assert(false);
+                } break;
+                }
+                Real64 const levelValue = IHGNumbers(fieldNum);
+                bool const levelBlank = IHGNumericFieldBlanks(fieldNum);
+                std::string_view const levelField = IHGNumericFieldNames(fieldNum);
+
                 for (int Item1 = 1; Item1 <= thisPeopleInput.numOfSpaces; ++Item1) {
                     ++peopleNum;
                     auto &thisPeople = state.dataHeatBal->People(peopleNum);
@@ -420,16 +433,8 @@ namespace InternalHeatGains {
                     }
 
                     // Number of people calculation method.
-                    thisPeople.NumberOfPeople = setDesignLevel(state,
-                                                               ErrorsFound,
-                                                               peopleModuleObject,
-                                                               thisPeopleInput.Name,
-                                                               methodInput,
-                                                               thisPeopleInput.numOfSpaces,
-                                                               zoneNum,
-                                                               spaceNum,
-                                                               inputValues,
-                                                               inputBlanks);
+                    thisPeople.NumberOfPeople = setDesignLevel(
+                        state, ErrorsFound, peopleModuleObject, thisPeopleInput, levelMethod, zoneNum, spaceNum, levelValue, levelBlank, levelField);
 
                     // Calculate nominal min/max people
                     thisPeople.NomMinNumberPeople = thisPeople.NumberOfPeople * thisPeople.sched->getMinVal(state);
@@ -949,13 +954,27 @@ namespace InternalHeatGains {
                 // Create one Lights instance for every space associated with this Lights input object
                 // Why? Why can't multple spaces share a single lights instance?
                 // Answer: It followed the same pattern as when a ZoneList was used. It might/should be possible to refactor this.
-                const std::string_view methodInput = IHGAlphas(4);
-                inputValues[(int)DesignLevelMethod::LightingLevel] = IHGNumbers(1);
-                inputBlanks[(int)DesignLevelMethod::LightingLevel] = IHGNumericFieldBlanks(1);
-                inputValues[(int)DesignLevelMethod::WattsPerArea] = IHGNumbers(2);
-                inputBlanks[(int)DesignLevelMethod::WattsPerArea] = IHGNumericFieldBlanks(2);
-                inputValues[(int)DesignLevelMethod::WattsPerPerson] = IHGNumbers(3);
-                inputBlanks[(int)DesignLevelMethod::WattsPerPerson] = IHGNumericFieldBlanks(3);
+
+                DesignLevelMethod const levelMethod = static_cast<DesignLevelMethod>(getEnumValue(DesignLevelMethodNamesUC, IHGAlphas(4)));
+                int fieldNum = 1;
+                switch (levelMethod) {
+                case DesignLevelMethod::LightingLevel: {
+                    fieldNum = 1;
+                } break;
+                case DesignLevelMethod::WattsPerArea: {
+                    fieldNum = 2;
+                } break;
+                case DesignLevelMethod::WattsPerPerson: {
+                    fieldNum = 3;
+                } break;
+                default: {
+                    assert(false);
+                } break;
+                }
+                Real64 const levelValue = IHGNumbers(fieldNum);
+                bool const levelBlank = IHGNumericFieldBlanks(fieldNum);
+                std::string_view const levelField = IHGNumericFieldNames(fieldNum);
+
                 for (int Item1 = 1; Item1 <= thisLightsInput.numOfSpaces; ++Item1) {
                     ++lightsNum;
                     auto &thisLights = state.dataHeatBal->Lights(lightsNum);
@@ -983,16 +1002,8 @@ namespace InternalHeatGains {
                     }
 
                     // Lights Design Level calculation method.
-                    thisLights.DesignLevel = setDesignLevel(state,
-                                                            ErrorsFound,
-                                                            lightsModuleObject,
-                                                            thisLightsInput.Name,
-                                                            methodInput,
-                                                            thisLightsInput.numOfSpaces,
-                                                            zoneNum,
-                                                            spaceNum,
-                                                            inputValues,
-                                                            inputBlanks);
+                    thisLights.DesignLevel = setDesignLevel(
+                        state, ErrorsFound, lightsModuleObject, thisLightsInput, levelMethod, zoneNum, spaceNum, levelValue, levelBlank, levelField);
 
                     // Calculate nominal min/max lighting level
                     thisLights.NomMinDesignLevel = thisLights.DesignLevel * thisLights.sched->getMinVal(state);
@@ -1276,13 +1287,26 @@ namespace InternalHeatGains {
                 ErrorObjectHeader eoh{routineName, elecEqModuleObject, IHGAlphas(1)};
 
                 auto &thisElecEqInput = state.dataInternalHeatGains->zoneElectricObjects(elecEqInputNum);
-                const std::string_view methodInput = IHGAlphas(4);
-                inputValues[(int)DesignLevelMethod::EquipmentLevel] = IHGNumbers(1);
-                inputBlanks[(int)DesignLevelMethod::EquipmentLevel] = IHGNumericFieldBlanks(1);
-                inputValues[(int)DesignLevelMethod::WattsPerArea] = IHGNumbers(2);
-                inputBlanks[(int)DesignLevelMethod::WattsPerArea] = IHGNumericFieldBlanks(2);
-                inputValues[(int)DesignLevelMethod::WattsPerPerson] = IHGNumbers(3);
-                inputBlanks[(int)DesignLevelMethod::WattsPerPerson] = IHGNumericFieldBlanks(3);
+                DesignLevelMethod const levelMethod = static_cast<DesignLevelMethod>(getEnumValue(DesignLevelMethodNamesUC, IHGAlphas(4)));
+                int fieldNum = 1;
+                switch (levelMethod) {
+                case DesignLevelMethod::EquipmentLevel: {
+                    fieldNum = 1;
+                } break;
+                case DesignLevelMethod::WattsPerArea: {
+                    fieldNum = 2;
+                } break;
+                case DesignLevelMethod::WattsPerPerson: {
+                    fieldNum = 3;
+                } break;
+                default: {
+                    assert(false);
+                } break;
+                }
+                Real64 const levelValue = IHGNumbers(fieldNum);
+                bool const levelBlank = IHGNumericFieldBlanks(fieldNum);
+                std::string_view const levelField = IHGNumericFieldNames(fieldNum);
+
                 for (int Item1 = 1; Item1 <= thisElecEqInput.numOfSpaces; ++Item1) {
                     ++elecEqNum;
                     auto &thisZoneElectric = state.dataHeatBal->ZoneElectric(elecEqNum);
@@ -1306,16 +1330,8 @@ namespace InternalHeatGains {
                     }
 
                     // Electric equipment design level calculation method.
-                    thisZoneElectric.DesignLevel = setDesignLevel(state,
-                                                                  ErrorsFound,
-                                                                  elecEqModuleObject,
-                                                                  thisElecEqInput.Name,
-                                                                  methodInput,
-                                                                  thisElecEqInput.numOfSpaces,
-                                                                  zoneNum,
-                                                                  spaceNum,
-                                                                  inputValues,
-                                                                  inputBlanks);
+                    thisZoneElectric.DesignLevel = setDesignLevel(
+                        state, ErrorsFound, elecEqModuleObject, thisElecEqInput, levelMethod, zoneNum, spaceNum, levelValue, levelBlank, levelField);
 
                     // Calculate nominal min/max equipment level
                     thisZoneElectric.NomMinDesignLevel = thisZoneElectric.DesignLevel * thisZoneElectric.sched->getMinVal(state);
@@ -3658,216 +3674,159 @@ namespace InternalHeatGains {
     Real64 setDesignLevel(EnergyPlusData &state,
                           bool &ErrorsFound,
                           std::string_view objectType,
-                          std::string_view objectName,
-                          std::string_view methodInput,
-                          int const numSpaces,
+                          InternalHeatGains::GlobalInternalGainMiscObject &inputObject,
+                          DesignLevelMethod const method,
                           int const zoneNum,
                           int const spaceNum,
-                          std::array<Real64, static_cast<int>(DesignLevelMethod::Num)> &inputValues,
-                          std::array<bool, static_cast<int>(DesignLevelMethod::Num)> &inputBlanks)
+                          Real64 inputValue,
+                          bool inputBlank,
+                          std::string_view fieldName)
     {
         static constexpr std::string_view RoutineName("GetInternalHeatGains: "); // Use this for now to avoid error diffs
 
-        DesignLevelMethod method = static_cast<DesignLevelMethod>(getEnumValue(DesignLevelMethodNamesUC, methodInput));
-        Real64 designLevel = 0.0;
+        Real64 designLevel = 0.0; // return value
+
+        // Check input value
+        if (inputBlank) {
+            ShowWarningError(state,
+                             format("{}{}=\"{}\", specifies {}, but that field is blank.  0 {} will result.",
+                                    RoutineName,
+                                    objectType,
+                                    inputObject.Name,
+                                    fieldName,
+                                    objectType));
+            return designLevel;
+        }
 
         switch (method) {
-        case DesignLevelMethod::People: {
-            // Set space load fraction
-            Real64 spaceFrac = 1.0;
-            if (numSpaces > 1) {
-                Real64 const zoneArea = state.dataHeatBal->Zone(zoneNum).FloorArea;
-                if (zoneArea > 0.0) {
-                    spaceFrac = state.dataHeatBal->space(spaceNum).FloorArea / zoneArea;
-                } else {
-                    ShowSevereError(state, format("{}Zone floor area is zero when allocating {} loads to Spaces.", RoutineName, objectType));
-                    ShowContinueError(state,
-                                      format("Occurs for {} object ={} in Zone={}", objectType, objectName, state.dataHeatBal->Zone(zoneNum).Name));
-                    ErrorsFound = true;
-                }
-            }
-            designLevel = inputValues[(int)DesignLevelMethod::People] * spaceFrac;
-            if (inputBlanks[(int)DesignLevelMethod::People]) {
-                ShowWarningError(state,
-                                 format("{}{}=\"{}\", specifies Number of People, but that field is blank.  0 {} will result.",
-                                        RoutineName,
-                                        objectType,
-                                        objectName,
-                                        objectType));
-            }
+        case DesignLevelMethod::People:
+        case DesignLevelMethod::LightingLevel:
+        case DesignLevelMethod::EquipmentLevel: {
+            // No check
         } break;
 
-        case DesignLevelMethod::PeoplePerArea: {
-            if (spaceNum != 0) {
-                Real64 peoplePerArea = inputValues[(int)DesignLevelMethod::PeoplePerArea];
-                if (peoplePerArea >= 0.0) {
-                    designLevel = peoplePerArea * state.dataHeatBal->space(spaceNum).FloorArea;
-                    if ((state.dataHeatBal->space(spaceNum).FloorArea <= 0.0) && !state.dataHeatBal->space(spaceNum).isRemainderSpace) {
-                        ShowWarningError(state,
-                                         format("{}{}=\"{}\", specifies People per Floor Area, but Space Floor Area = 0.  0 {} will result.",
-                                                RoutineName,
-                                                objectType,
-                                                objectName,
-                                                objectType));
-                    }
-                } else {
-                    ShowSevereError(
-                        state,
-                        format(
-                            "{}{}=\"{}\", invalid People per Floor Area, value  [<0.0]={:.3R}", RoutineName, objectType, objectName, peoplePerArea));
-                    ErrorsFound = true;
-                }
+        case DesignLevelMethod::PeoplePerArea:
+        case DesignLevelMethod::WattsPerArea:
+        case DesignLevelMethod::PowerPerArea: {
+            if (inputValue < 0.0) {
+                ShowSevereError(
+                    state, format("{}{}=\"{}\", invalid {}, value  [<0.0]={:.3R}", RoutineName, objectType, inputObject.Name, fieldName, inputValue));
+                ErrorsFound = true;
             }
-            if (inputBlanks[(int)DesignLevelMethod::PeoplePerArea]) {
-                ShowWarningError(state,
-                                 format("{}{}=\"{}\", specifies People per Floor Area, but that field is blank.  0 {} will result.",
-                                        RoutineName,
-                                        objectType,
-                                        objectName,
-                                        objectType));
+        } break;
+        case DesignLevelMethod::AreaPerPerson:
+        case DesignLevelMethod::WattsPerPerson:
+        case DesignLevelMethod::PowerPerPerson: {
+            if (inputValue <= 0.0) {
+                ShowSevereError(
+                    state,
+                    format("{}{}=\"{}\", invalid {}, value  [<=0.0]={:.3R}", RoutineName, objectType, inputObject.Name, fieldName, inputValue));
+                ErrorsFound = true;
             }
+        } break;
+        }
+        if (ErrorsFound) return designLevel;
 
-        } break;
-        case DesignLevelMethod::AreaPerPerson: {
-            if (spaceNum != 0) {
-                Real64 areaPerPerson = inputValues[(int)DesignLevelMethod::AreaPerPerson];
-                if (areaPerPerson > 0.0) {
-                    designLevel = state.dataHeatBal->space(spaceNum).FloorArea / areaPerPerson;
-                    if ((state.dataHeatBal->space(spaceNum).FloorArea <= 0.0) && !state.dataHeatBal->space(spaceNum).isRemainderSpace) {
-                        ShowWarningError(state,
-                                         format("{}{}=\"{}\", specifies Floor Area per Person, but Space Floor Area = 0.  0 {} will result.",
-                                                RoutineName,
-                                                objectType,
-                                                objectName,
-                                                objectType));
-                    }
-                } else {
-                    ShowSevereError(
-                        state,
-                        format(
-                            "{}{}=\"{}\", invalid Floor Area per Person, value  [<0.0]={:.3R}", RoutineName, objectType, objectName, areaPerPerson));
-                    ErrorsFound = true;
-                }
-            }
-            if (inputBlanks[(int)DesignLevelMethod::AreaPerPerson]) {
-                ShowWarningError(state,
-                                 format("{}{}=\"{}\", specifies Floor Area per Person, but that field is blank.  0 {} will result.",
-                                        RoutineName,
-                                        objectType,
-                                        objectName,
-                                        objectType));
-            }
-        } break;
-        case DesignLevelMethod::LightingLevel: {
-            // Set space load fraction
-            Real64 spaceFrac = 1.0;
-            if (numSpaces > 1) {
-                Real64 const zoneArea = state.dataHeatBal->Zone(zoneNum).FloorArea;
-                if (zoneArea > 0.0) {
-                    spaceFrac = state.dataHeatBal->space(spaceNum).FloorArea / zoneArea;
-                } else {
-                    ShowSevereError(state, format("{}Zone floor area is zero when allocating {} loads to Spaces.", RoutineName, objectType));
-                    ShowContinueError(state,
-                                      format("Occurs for {} object ={} in Zone={}", objectType, objectName, state.dataHeatBal->Zone(zoneNum).Name));
-                    ErrorsFound = true;
-                }
-            }
-            designLevel = inputValues[(int)DesignLevelMethod::LightingLevel] * spaceFrac;
-            if (inputBlanks[(int)DesignLevelMethod::LightingLevel]) {
-                ShowWarningError(state,
-                                 format("{}{}=\"{}\", specifies Lighting Level, but that field is blank.  0 {} will result.",
-                                        RoutineName,
-                                        objectType,
-                                        objectName,
-                                        objectType));
-            }
-        } break;
+        switch (method) {
+        case DesignLevelMethod::People:
+        case DesignLevelMethod::LightingLevel:
         case DesignLevelMethod::EquipmentLevel: {
             // Set space load fraction
             Real64 spaceFrac = 1.0;
-            if (numSpaces > 1) {
+            if (inputObject.numOfSpaces > 1) {
                 Real64 const zoneArea = state.dataHeatBal->Zone(zoneNum).FloorArea;
                 if (zoneArea > 0.0) {
                     spaceFrac = state.dataHeatBal->space(spaceNum).FloorArea / zoneArea;
                 } else {
                     ShowSevereError(state, format("{}Zone floor area is zero when allocating {} loads to Spaces.", RoutineName, objectType));
-                    ShowContinueError(state,
-                                      format("Occurs for {} object ={} in Zone={}", objectType, objectName, state.dataHeatBal->Zone(zoneNum).Name));
+                    ShowContinueError(
+                        state, format("Occurs for {} object ={} in Zone={}", objectType, inputObject.Name, state.dataHeatBal->Zone(zoneNum).Name));
                     ErrorsFound = true;
                 }
             }
-            designLevel = inputValues[(int)DesignLevelMethod::EquipmentLevel] * spaceFrac;
-            if (inputBlanks[(int)DesignLevelMethod::EquipmentLevel]) {
-                ShowWarningError(state,
-                                 format("{}{}=\"{}\", specifies Equipment Level, but that field is blank.  0 {} will result.",
-                                        RoutineName,
-                                        objectType,
-                                        objectName,
-                                        objectType));
-            }
+            designLevel = inputValue * spaceFrac;
         } break;
-        case DesignLevelMethod::WattsPerArea: {
+
+        case DesignLevelMethod::PeoplePerArea:
+        case DesignLevelMethod::WattsPerArea:
+        case DesignLevelMethod::PowerPerArea: {
             if (spaceNum != 0) {
-                Real64 wattsPerArea = inputValues[(int)DesignLevelMethod::WattsPerArea];
-                if (wattsPerArea >= 0.0) {
-                    designLevel = wattsPerArea * state.dataHeatBal->space(spaceNum).FloorArea;
+                if (inputValue >= 0.0) {
+                    designLevel = inputValue * state.dataHeatBal->space(spaceNum).FloorArea;
                     if ((state.dataHeatBal->space(spaceNum).FloorArea <= 0.0) && !state.dataHeatBal->space(spaceNum).isRemainderSpace) {
                         ShowWarningError(state,
-                                         format("{}{}=\"{}\", specifies Watts per Floor Area, but Space Floor Area = 0.  0 {} will result.",
+                                         format("{}{}=\"{}\", specifies {}, but Space Floor Area = 0.  0 {} will result.",
                                                 RoutineName,
                                                 objectType,
-                                                objectName,
+                                                inputObject.Name,
+                                                fieldName,
                                                 objectType));
                     }
                 } else {
-                    ShowSevereError(
-                        state,
-                        format("{}{}=\"{}\", invalid Watts per Floor Area, value  [<0.0]={:.3R}", RoutineName, objectType, objectName, wattsPerArea));
+                    ShowSevereError(state,
+                                    format("{}{}=\"{}\", invalid {}, value  [<0.0]={:.3R}",
+                                           RoutineName,
+                                           objectType,
+                                           inputObject.Name,
+                                           fieldName,
+                                           inputValue));
                     ErrorsFound = true;
                 }
             }
-            if (inputBlanks[(int)DesignLevelMethod::WattsPerArea]) {
-                ShowWarningError(state,
-                                 format("{}{}=\"{}\", specifies Watts per Floor Area, but that field is blank.  0 {} will result.",
-                                        RoutineName,
-                                        objectType,
-                                        objectName,
-                                        objectType));
-            }
-
         } break;
-        case DesignLevelMethod::WattsPerPerson: {
+        case DesignLevelMethod::AreaPerPerson: {
             if (spaceNum != 0) {
-                Real64 wattsPerPerson = inputValues[(int)DesignLevelMethod::WattsPerPerson];
-                if (wattsPerPerson > 0.0) {
-                    designLevel = wattsPerPerson * state.dataHeatBal->space(spaceNum).TotOccupants;
+                if (inputValue > 0.0) {
+                    designLevel = state.dataHeatBal->space(spaceNum).FloorArea / inputValue;
+                    if ((state.dataHeatBal->space(spaceNum).FloorArea <= 0.0) && !state.dataHeatBal->space(spaceNum).isRemainderSpace) {
+                        ShowWarningError(state,
+                                         format("{}{}=\"{}\", specifies {}, but Space Floor Area = 0.  0 {} will result.",
+                                                RoutineName,
+                                                objectType,
+                                                inputObject.Name,
+                                                fieldName,
+                                                objectType));
+                    }
+                } else {
+                    ShowSevereError(state,
+                                    format("{}{}=\"{}\", invalid {}, value  [<0.0]={:.3R}",
+                                           RoutineName,
+                                           objectType,
+                                           inputObject.Name,
+                                           fieldName,
+                                           inputValue));
+                    ErrorsFound = true;
+                }
+            }
+        } break;
+        case DesignLevelMethod::WattsPerPerson:
+        case DesignLevelMethod::PowerPerPerson: {
+            if (spaceNum != 0) {
+                if (inputValue > 0.0) {
+                    designLevel = inputValue * state.dataHeatBal->space(spaceNum).TotOccupants;
                     if (state.dataHeatBal->space(spaceNum).TotOccupants <= 0.0) {
                         ShowWarningError(state,
-                                         format("{}{}=\"{}\", specifies Watts per Person, but Total Occupants = 0.  0 {} will result.",
+                                         format("{}{}=\"{}\", specifies {}, but Total Occupants = 0.  0 {} will result.",
                                                 RoutineName,
                                                 objectType,
-                                                objectName,
+                                                inputObject.Name,
+                                                fieldName,
                                                 objectType));
                     }
                 } else {
-                    ShowSevereError(
-                        state,
-                        format("{}{}=\"{}\", invalid Watts per Person, value  [<0.0]={:.3R}", RoutineName, objectType, objectName, wattsPerPerson));
+                    ShowSevereError(state,
+                                    format("{}{}=\"{}\", invalid {}, value  [<0.0]={:.3R}",
+                                           RoutineName,
+                                           objectType,
+                                           inputObject.Name,
+                                           fieldName,
+                                           inputValue));
                     ErrorsFound = true;
                 }
             }
-            if (inputBlanks[(int)DesignLevelMethod::WattsPerPerson]) {
-                ShowWarningError(state,
-                                 format("{}{}=\"{}\", specifies Watts per Person, but that field is blank.  0 {} will result.",
-                                        RoutineName,
-                                        objectType,
-                                        objectName,
-                                        objectType));
-            }
-        } break;
-        default: {
         } break;
         }
+
         return designLevel;
     }
 

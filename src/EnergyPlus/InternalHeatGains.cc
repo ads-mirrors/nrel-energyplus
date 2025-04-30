@@ -1064,9 +1064,9 @@ namespace InternalHeatGains {
                         } else {
                             thisLights.RetNodeName = IHGAlphas(7);
                         }
-                        if (thisLights.ZonePtr > 0) {
-                            thisLights.ZoneReturnNum = DataZoneEquipment::GetReturnNumForZone(state, thisLights.ZonePtr, thisLights.RetNodeName);
-                        }
+                    }
+                    if (thisLights.ZonePtr > 0) {
+                        thisLights.ZoneReturnNum = DataZoneEquipment::GetReturnNumForZone(state, thisLights.ZonePtr, thisLights.RetNodeName);
                     }
 
                     if ((thisLights.ZoneReturnNum == 0) && (thisLights.FractionReturnAir > 0.0) && (!IHGAlphaFieldBlanks(7))) {

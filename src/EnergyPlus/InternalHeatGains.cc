@@ -359,9 +359,6 @@ namespace InternalHeatGains {
             IHGNumAlphas = 0;
             IHGNumNumbers = 0;
         }
-        std::array<Real64, static_cast<int>(DesignLevelMethod::Num)> inputValues{0.0};
-        std::array<bool, static_cast<int>(DesignLevelMethod::Num)> inputBlanks{false};
-
 
         // PEOPLE: Includes both information related to the heat balance and thermal comfort
         EPVector<InternalHeatGains::GlobalInternalGainMiscObject> peopleObjects;
@@ -3446,77 +3443,44 @@ namespace InternalHeatGains {
         case DesignLevelMethod::WattsPerArea:
         case DesignLevelMethod::PowerPerArea: {
             if (spaceNum != 0) {
-                if (inputValue >= 0.0) {
-                    designLevel = inputValue * state.dataHeatBal->space(spaceNum).FloorArea;
-                    if ((state.dataHeatBal->space(spaceNum).FloorArea <= 0.0) && !state.dataHeatBal->space(spaceNum).isRemainderSpace) {
-                        ShowWarningError(state,
-                                         format("{}{}=\"{}\", specifies {}, but Space Floor Area = 0.  0 {} will result.",
-                                                RoutineName,
-                                                objectType,
-                                                inputObject.Name,
-                                                fieldName,
-                                                objectType));
-                    }
-                } else {
-                    ShowSevereError(state,
-                                    format("{}{}=\"{}\", invalid {}, value  [<0.0]={:.3R}",
-                                           RoutineName,
-                                           objectType,
-                                           inputObject.Name,
-                                           fieldName,
-                                           inputValue));
-                    ErrorsFound = true;
+                designLevel = inputValue * state.dataHeatBal->space(spaceNum).FloorArea;
+                if ((state.dataHeatBal->space(spaceNum).FloorArea <= 0.0) && !state.dataHeatBal->space(spaceNum).isRemainderSpace) {
+                    ShowWarningError(state,
+                                     format("{}{}=\"{}\", specifies {}, but Space Floor Area = 0.  0 {} will result.",
+                                            RoutineName,
+                                            objectType,
+                                            inputObject.Name,
+                                            fieldName,
+                                            objectType));
                 }
             }
         } break;
         case DesignLevelMethod::AreaPerPerson: {
             if (spaceNum != 0) {
-                if (inputValue > 0.0) {
-                    designLevel = state.dataHeatBal->space(spaceNum).FloorArea / inputValue;
-                    if ((state.dataHeatBal->space(spaceNum).FloorArea <= 0.0) && !state.dataHeatBal->space(spaceNum).isRemainderSpace) {
-                        ShowWarningError(state,
-                                         format("{}{}=\"{}\", specifies {}, but Space Floor Area = 0.  0 {} will result.",
-                                                RoutineName,
-                                                objectType,
-                                                inputObject.Name,
-                                                fieldName,
-                                                objectType));
-                    }
-                } else {
-                    ShowSevereError(state,
-                                    format("{}{}=\"{}\", invalid {}, value  [<0.0]={:.3R}",
-                                           RoutineName,
-                                           objectType,
-                                           inputObject.Name,
-                                           fieldName,
-                                           inputValue));
-                    ErrorsFound = true;
+                designLevel = state.dataHeatBal->space(spaceNum).FloorArea / inputValue;
+                if ((state.dataHeatBal->space(spaceNum).FloorArea <= 0.0) && !state.dataHeatBal->space(spaceNum).isRemainderSpace) {
+                    ShowWarningError(state,
+                                     format("{}{}=\"{}\", specifies {}, but Space Floor Area = 0.  0 {} will result.",
+                                            RoutineName,
+                                            objectType,
+                                            inputObject.Name,
+                                            fieldName,
+                                            objectType));
                 }
             }
         } break;
         case DesignLevelMethod::WattsPerPerson:
         case DesignLevelMethod::PowerPerPerson: {
             if (spaceNum != 0) {
-                if (inputValue > 0.0) {
-                    designLevel = inputValue * state.dataHeatBal->space(spaceNum).TotOccupants;
-                    if (state.dataHeatBal->space(spaceNum).TotOccupants <= 0.0) {
-                        ShowWarningError(state,
-                                         format("{}{}=\"{}\", specifies {}, but Total Occupants = 0.  0 {} will result.",
-                                                RoutineName,
-                                                objectType,
-                                                inputObject.Name,
-                                                fieldName,
-                                                objectType));
-                    }
-                } else {
-                    ShowSevereError(state,
-                                    format("{}{}=\"{}\", invalid {}, value  [<0.0]={:.3R}",
-                                           RoutineName,
-                                           objectType,
-                                           inputObject.Name,
-                                           fieldName,
-                                           inputValue));
-                    ErrorsFound = true;
+                designLevel = inputValue * state.dataHeatBal->space(spaceNum).TotOccupants;
+                if (state.dataHeatBal->space(spaceNum).TotOccupants <= 0.0) {
+                    ShowWarningError(state,
+                                     format("{}{}=\"{}\", specifies {}, but Total Occupants = 0.  0 {} will result.",
+                                            RoutineName,
+                                            objectType,
+                                            inputObject.Name,
+                                            fieldName,
+                                            objectType));
                 }
             }
         } break;

@@ -6705,24 +6705,21 @@ namespace AirflowNetwork {
         std::pair<EnergyPlusData *, std::string> callbackPair{&state, contextString};
         state.dataCurveManager->btwxtManager.setLoggingContext(&callbackPair);
 
-        int CurveNum = static_cast<int>(state.dataCurveManager->PerfCurve.size()) + 1;
-        state.dataCurveManager->PerfCurve.push_back(new Curve::Curve());
+        Curve::Curve *curve = Curve::AddCurve(state, name);
 
-        state.dataCurveManager->PerfCurve(CurveNum)->Name = name;
-        state.dataCurveManager->PerfCurve(CurveNum)->numDims = 1;
+        curve->numDims = 1;
 
-        state.dataCurveManager->PerfCurve(CurveNum)->interpolationType = Curve::InterpType::BtwxtMethod;
+        curve->curveType = Curve::CurveType::BtwxtTableLookup;
 
-        state.dataCurveManager->PerfCurve(CurveNum)->inputLimits[0].min = 0.0;
-        state.dataCurveManager->PerfCurve(CurveNum)->inputLimits[0].minPresent = true;
-        state.dataCurveManager->PerfCurve(CurveNum)->inputLimits[0].max = 360.0;
-        state.dataCurveManager->PerfCurve(CurveNum)->inputLimits[0].maxPresent = true;
+        curve->inputLimits[0].min = 0.0;
+        curve->inputLimits[0].minPresent = true;
+        curve->inputLimits[0].max = 360.0;
+        curve->inputLimits[0].maxPresent = true;
 
-        state.dataCurveManager->PerfCurve(CurveNum)->TableIndex = gridIndex;
-        state.dataCurveManager->PerfCurve(CurveNum)->GridValueIndex = state.dataCurveManager->btwxtManager.addOutputValues(gridIndex, y);
+        curve->TableIndex = gridIndex;
+        curve->GridValueIndex = state.dataCurveManager->btwxtManager.addOutputValues(gridIndex, y);
 
-        state.dataCurveManager->NumCurves += 1;
-        return CurveNum;
+        return curve->Num;
     }
 
     void Solver::calculate_Cps()
@@ -10595,6 +10592,44 @@ namespace AirflowNetwork {
                         ErrorsFound = true;
                     } else {
                         SetDXCoilAirLoopNumber(m_state, DisSysCompCoilData(i).name, DisSysCompCoilData(i).AirLoopNum);
+                    }
+                } else if (SELECT_CASE_var == "COIL:COOLING:WATERTOAIRHEATPUMP:EQUATIONFIT") {
+                    ValidateComponent(m_state,
+                                      "Coil:Cooling:WaterToAirHeatPump:EquationFit",
+                                      DisSysCompCoilData(i).name,
+                                      IsNotOK,
+                                      format(RoutineName) + CurrentModuleObject);
+                    if (IsNotOK) {
+                        ErrorsFound = true;
+                    }
+
+                } else if (SELECT_CASE_var == "COIL:HEATING:WATERTOAIRHEATPUMP:EQUATIONFIT") {
+                    ValidateComponent(m_state,
+                                      "Coil:Heating:WaterToAirHeatPump:EquationFit",
+                                      DisSysCompCoilData(i).name,
+                                      IsNotOK,
+                                      format(RoutineName) + CurrentModuleObject);
+                    if (IsNotOK) {
+                        ErrorsFound = true;
+                    }
+                } else if (SELECT_CASE_var == "COIL:COOLING:WATERTOAIRHEATPUMP:VARIABLESPEEDEQUATIONFIT") {
+                    ValidateComponent(m_state,
+                                      "Coil:Cooling:WaterToAirHeatPump:VariableSpeedEquationFit",
+                                      DisSysCompCoilData(i).name,
+                                      IsNotOK,
+                                      format(RoutineName) + CurrentModuleObject);
+                    if (IsNotOK) {
+                        ErrorsFound = true;
+                    }
+
+                } else if (SELECT_CASE_var == "COIL:HEATING:WATERTOAIRHEATPUMP:VARIABLESPEEDEQUATIONFIT") {
+                    ValidateComponent(m_state,
+                                      "Coil:Heating:WaterToAirHeatPump:VariableSpeedEquationFit",
+                                      DisSysCompCoilData(i).name,
+                                      IsNotOK,
+                                      format(RoutineName) + CurrentModuleObject);
+                    if (IsNotOK) {
+                        ErrorsFound = true;
                     }
 
                 } else if (SELECT_CASE_var == "COIL:HEATING:DESUPERHEATER") {

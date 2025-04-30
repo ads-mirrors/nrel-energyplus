@@ -567,7 +567,7 @@ namespace StandardRatings {
                         // Available chiller capacity as a function of temperature
                         AvailChillerCap = RefCap * ReformEIRChillerCapFT;
 
-                        switch (state.dataCurveManager->PerfCurve(EIRFPLRCurveIndex)->numDims) {
+                        switch (state.dataCurveManager->curves(EIRFPLRCurveIndex)->numDims) {
                         case 1:
                             ReformEIRChillerEIRFPLR = CurveValue(state, EIRFPLRCurveIndex, CondenserOutletTemp);
                             break;
@@ -626,7 +626,7 @@ namespace StandardRatings {
                     PartLoadRatio = ReducedPLR[RedCapNum] * ChillerCapFT_rated / ChillerCapFT;
 
                     if (PartLoadRatio >= MinUnloadRat) {
-                        switch (state.dataCurveManager->PerfCurve(EIRFPLRCurveIndex)->numDims) {
+                        switch (state.dataCurveManager->curves(EIRFPLRCurveIndex)->numDims) {
                         case 1:
                             ChillerEIRFPLR = CurveValue(state, EIRFPLRCurveIndex, CondenserOutletTemp);
                             break;
@@ -639,7 +639,7 @@ namespace StandardRatings {
                             break;
                         }
                     } else {
-                        switch (state.dataCurveManager->PerfCurve(EIRFPLRCurveIndex)->numDims) {
+                        switch (state.dataCurveManager->curves(EIRFPLRCurveIndex)->numDims) {
                         case 1:
                             ChillerEIRFPLR = CurveValue(state, EIRFPLRCurveIndex, CondenserOutletTemp);
                             break;
@@ -693,19 +693,17 @@ namespace StandardRatings {
                         ShowContinueError(state, format(" Check the chiller reference or rated COP specified. Specified COP = {:.2R}", RefCOP));
                     }
                     if (ChillerCapFT <= 0.0) {
-                        ShowContinueError(
-                            state,
-                            format(" Check limits in Cooling Capacity Function of Temperature Curve, Curve Type = {}, Curve Name = {}.",
-                                   Curve::objectNames[static_cast<int>(state.dataCurveManager->PerfCurve(CapFTempCurveIndex)->curveType)],
-                                   GetCurveName(state, CapFTempCurveIndex)));
+                        ShowContinueError(state,
+                                          format(" Check limits in Cooling Capacity Function of Temperature Curve, Curve Type = {}, Curve Name = {}.",
+                                                 Curve::objectNames[static_cast<int>(state.dataCurveManager->curves(CapFTempCurveIndex)->curveType)],
+                                                 GetCurveName(state, CapFTempCurveIndex)));
                         ShowContinueError(state, format(" ..ChillerCapFT value at standard test condition = {:.2R}", ChillerCapFT));
                     }
                     if (ChillerEIRFT <= 0.0) {
-                        ShowContinueError(
-                            state,
-                            format(" Check limits in EIR Function of Temperature Curve, Curve Type = {}, Curve Name = {}.",
-                                   Curve::objectNames[static_cast<int>(state.dataCurveManager->PerfCurve(EIRFTempCurveIndex)->curveType)],
-                                   GetCurveName(state, EIRFTempCurveIndex)));
+                        ShowContinueError(state,
+                                          format(" Check limits in EIR Function of Temperature Curve, Curve Type = {}, Curve Name = {}.",
+                                                 Curve::objectNames[static_cast<int>(state.dataCurveManager->curves(EIRFTempCurveIndex)->curveType)],
+                                                 GetCurveName(state, EIRFTempCurveIndex)));
                         ShowContinueError(state, format(" ..ChillerEIRFT value at standard test condition = {:.2R}", ChillerEIRFT));
                     }
                     IPLV = 0.0;
@@ -869,13 +867,13 @@ namespace StandardRatings {
                 if (CapCurveIPLVLimitsExceeded) {
                     ShowContinueError(state,
                                       format(" Check limits in Cooling Capacity Function of Temperature Curve, Curve Type = {}, Curve Name = {}",
-                                             Curve::objectNames[static_cast<int>(state.dataCurveManager->PerfCurve(CapFTempCurveIndex)->curveType)],
+                                             Curve::objectNames[static_cast<int>(state.dataCurveManager->curves(CapFTempCurveIndex)->curveType)],
                                              GetCurveName(state, CapFTempCurveIndex)));
                 }
                 if (EIRCurveIPLVLimitsExceeded) {
                     ShowContinueError(state,
                                       format(" Check limits in EIR Function of Temperature Curve, Curve Type = {}, Curve Name = {}",
-                                             Curve::objectNames[static_cast<int>(state.dataCurveManager->PerfCurve(EIRFTempCurveIndex)->curveType)],
+                                             Curve::objectNames[static_cast<int>(state.dataCurveManager->curves(EIRFTempCurveIndex)->curveType)],
                                              GetCurveName(state, EIRFTempCurveIndex)));
                 }
             }
@@ -1277,8 +1275,8 @@ namespace StandardRatings {
             }
             // Calculate the standard ratings for multispeed DX cooling coil
             std::map<std::string, Real64> StandardRatingsResult = MultiSpeedDXCoolingCoilStandardRatings(state,
-                                                                                                         DXCoilName,
                                                                                                          DXCoilType,
+                                                                                                         DXCoilName,
                                                                                                          CapFTempCurveIndex,
                                                                                                          CapFFlowCurveIndex,
                                                                                                          EIRFTempCurveIndex,
@@ -2087,7 +2085,7 @@ namespace StandardRatings {
         EIRFlowModFac = CurveValue(state, EIRFFlowCurveIndex, AirMassFlowRatioRated);
 
         {
-            if (state.dataCurveManager->PerfCurve(CapFTempCurveIndex)->numDims == 1) {
+            if (state.dataCurveManager->curves(CapFTempCurveIndex)->numDims == 1) {
                 TotCapTempModFacRated = CurveValue(state, CapFTempCurveIndex, HeatingOutdoorCoilInletAirDBTempRated);
 
                 CapTempModFacH2Test = CurveValue(state, CapFTempCurveIndex, HeatingOutdoorCoilInletAirDBTempH2Test);
@@ -2106,7 +2104,7 @@ namespace StandardRatings {
         }
 
         {
-            if (state.dataCurveManager->PerfCurve(EIRFTempCurveIndex)->numDims == 1) {
+            if (state.dataCurveManager->curves(EIRFTempCurveIndex)->numDims == 1) {
                 EIRTempModFacRated = CurveValue(state, EIRFTempCurveIndex, HeatingOutdoorCoilInletAirDBTempRated);
 
                 EIRTempModFacH2Test = CurveValue(state, EIRFTempCurveIndex, HeatingOutdoorCoilInletAirDBTempH2Test);
@@ -2144,7 +2142,7 @@ namespace StandardRatings {
                     state,
                     format(" Invalid Total Heating Capacity Function of Temperature Curve value = {:.2R}, Curve Type = {}, Curve Name = {}",
                            TotCapTempModFacRated,
-                           Curve::objectNames[static_cast<int>(state.dataCurveManager->PerfCurve(CapFTempCurveIndex)->curveType)],
+                           Curve::objectNames[static_cast<int>(state.dataCurveManager->curves(CapFTempCurveIndex)->curveType)],
                            GetCurveName(state, CapFTempCurveIndex)));
                 ShowContinueError(state,
                                   " ...Net heating capacity at high temperature is set to zero. The curve value must be > 0. Check the curve.");
@@ -2156,7 +2154,7 @@ namespace StandardRatings {
                     state,
                     format(" Invalid Total Heating Capacity Function of Temperature Curve value = {:.2R}, Curve Type = {}, Curve Name = {}",
                            CapTempModFacH3Test,
-                           Curve::objectNames[static_cast<int>(state.dataCurveManager->PerfCurve(CapFTempCurveIndex)->curveType)],
+                           Curve::objectNames[static_cast<int>(state.dataCurveManager->curves(CapFTempCurveIndex)->curveType)],
                            GetCurveName(state, CapFTempCurveIndex)));
                 ShowContinueError(state, " ...Net heating capacity at low temperature is set to zero. The curve value must be > 0. Check the curve.");
                 NetHeatingCapH3Test = 0.0;
@@ -2167,7 +2165,7 @@ namespace StandardRatings {
                     state,
                     format(" Invalid Total Heating Capacity Function of Temperature Curve value = {:.2R}, Curve Type = {}, Curve Name = {}",
                            CapTempModFacH2Test,
-                           Curve::objectNames[static_cast<int>(state.dataCurveManager->PerfCurve(CapFTempCurveIndex)->curveType)],
+                           Curve::objectNames[static_cast<int>(state.dataCurveManager->curves(CapFTempCurveIndex)->curveType)],
                            GetCurveName(state, CapFTempCurveIndex)));
                 ShowContinueError(state, " ...HSPF calculation is incorrect. The curve value must be > 0. Check the curve.");
                 NetHeatingCapH3Test = 0.0;
@@ -2178,7 +2176,7 @@ namespace StandardRatings {
                 ShowSevereError(state,
                                 format(" Invalid EIR Function of Temperature Curve value = {:.2R}, Curve Type = {}, Curve Name = {}",
                                        EIRTempModFacRated,
-                                       Curve::objectNames[static_cast<int>(state.dataCurveManager->PerfCurve(EIRFTempCurveIndex)->curveType)],
+                                       Curve::objectNames[static_cast<int>(state.dataCurveManager->curves(EIRFTempCurveIndex)->curveType)],
                                        GetCurveName(state, EIRFTempCurveIndex)));
                 ShowContinueError(state, " ...HSPF calculation is incorrect. The curve value must be > 0. Check the curve.");
             }
@@ -2186,7 +2184,7 @@ namespace StandardRatings {
                 ShowSevereError(state,
                                 format(" Invalid EIR Function of Temperature Curve value = {:.2R}, Curve Type = {}, Curve Name = {}",
                                        EIRTempModFacH2Test,
-                                       Curve::objectNames[static_cast<int>(state.dataCurveManager->PerfCurve(EIRFTempCurveIndex)->curveType)],
+                                       Curve::objectNames[static_cast<int>(state.dataCurveManager->curves(EIRFTempCurveIndex)->curveType)],
                                        GetCurveName(state, EIRFTempCurveIndex)));
                 ShowContinueError(state, " ...HSPF calculation is incorrect. The curve value must be > 0. Check the curve.");
             }
@@ -2194,7 +2192,7 @@ namespace StandardRatings {
                 ShowSevereError(state,
                                 format(" Invalid EIR Function of Temperature Curve value = {:.2R}, Curve Type = {}, Curve Name = {}",
                                        EIRTempModFacH3Test,
-                                       Curve::objectNames[static_cast<int>(state.dataCurveManager->PerfCurve(EIRFTempCurveIndex)->curveType)],
+                                       Curve::objectNames[static_cast<int>(state.dataCurveManager->curves(EIRFTempCurveIndex)->curveType)],
                                        GetCurveName(state, EIRFTempCurveIndex)));
                 ShowContinueError(state, " ...HSPF calculation is incorrect. The curve value must be > 0. Check the curve.");
             }
@@ -5749,7 +5747,7 @@ namespace StandardRatings {
         for (int spnum = 1; spnum <= nsp; ++spnum) {
             TotCapFlowModFac(spnum) = Curve::CurveValue(state, CapFFlowCurveIndex(spnum), AirMassFlowRatioRated);
             {
-                if (state.dataCurveManager->PerfCurve(CapFTempCurveIndex(spnum))->numDims == 1) {
+                if (state.dataCurveManager->curves(CapFTempCurveIndex(spnum))->numDims == 1) {
                     TotCapTempModFacH0 = Curve::CurveValue(state, CapFTempCurveIndex(spnum), HeatingOutdoorCoilInletAirDBTempH0Test);
                     TotCapTempModFacH1 = Curve::CurveValue(state, CapFTempCurveIndex(spnum), HeatingOutdoorCoilInletAirDBTempRated);
                     TotCapTempModFacH2 = Curve::CurveValue(state, CapFTempCurveIndex(spnum), HeatingOutdoorCoilInletAirDBTempH2Test);
@@ -5778,7 +5776,7 @@ namespace StandardRatings {
             EIRFlowModFac(spnum) = Curve::CurveValue(state, EIRFFlowCurveIndex(spnum), AirMassFlowRatioRated);
 
             {
-                if (state.dataCurveManager->PerfCurve(EIRFTempCurveIndex(spnum))->numDims == 1) {
+                if (state.dataCurveManager->curves(EIRFTempCurveIndex(spnum))->numDims == 1) {
                     EIRTempModFacH0 = Curve::CurveValue(state, EIRFTempCurveIndex(spnum), HeatingOutdoorCoilInletAirDBTempH0Test);
                     EIRTempModFacH1 = Curve::CurveValue(state, EIRFTempCurveIndex(spnum), HeatingOutdoorCoilInletAirDBTempRated);
                     EIRTempModFacH2 = Curve::CurveValue(state, EIRFTempCurveIndex(spnum), HeatingOutdoorCoilInletAirDBTempH2Test);
@@ -6106,7 +6104,7 @@ namespace StandardRatings {
         for (spnum = 1; spnum <= nsp; ++spnum) {
             TotCapFlowModFac(spnum) = Curve::CurveValue(state, CapFFlowCurveIndex(spnum), AirMassFlowRatioRated);
 
-            if (state.dataCurveManager->PerfCurve(CapFTempCurveIndex(spnum))->numDims == 1) {
+            if (state.dataCurveManager->curves(CapFTempCurveIndex(spnum))->numDims == 1) {
 
                 TotCapTempModFacH0Low = Curve::CurveValue(state, CapFTempCurveIndex(spnum), HeatingOutdoorCoilInletAirDBTemp_H0LowTest);
                 TotCapTempModFacH1Low = Curve::CurveValue(state, CapFTempCurveIndex(spnum), HeatingOutdoorCoilInletAirDBTemp_H1LowTest);
@@ -6133,7 +6131,7 @@ namespace StandardRatings {
             }
 
             Real64 curveVal;
-            switch (state.dataCurveManager->PerfCurve(CapFTempCurveIndex(spnum))->numDims) {
+            switch (state.dataCurveManager->curves(CapFTempCurveIndex(spnum))->numDims) {
             case 1:
                 curveVal = Curve::CurveValue(state, CapFTempCurveIndex(spnum), IndoorCoilInletAirWetBulbTempRated);
                 break;
@@ -6163,7 +6161,7 @@ namespace StandardRatings {
 
             EIRFlowModFac(spnum) = Curve::CurveValue(state, EIRFFlowCurveIndex(spnum), AirMassFlowRatioRated);
 
-            if (state.dataCurveManager->PerfCurve(EIRFTempCurveIndex(spnum))->numDims == 1) {
+            if (state.dataCurveManager->curves(EIRFTempCurveIndex(spnum))->numDims == 1) {
 
                 EIRTempModFacH0Low = Curve::CurveValue(state, EIRFTempCurveIndex(spnum), HeatingOutdoorCoilInletAirDBTemp_H0LowTest);
 
@@ -7266,14 +7264,14 @@ namespace StandardRatings {
                             ShowContinueError(
                                 state,
                                 format(" Check limits in Total Cooling Capacity Function of Temperature Curve, Curve Type = {}, Curve Name = {}",
-                                       Curve::objectNames[static_cast<int>(state.dataCurveManager->PerfCurve(CapFTempCurveIndex)->curveType)],
+                                       Curve::objectNames[static_cast<int>(state.dataCurveManager->curves(CapFTempCurveIndex)->curveType)],
                                        GetCurveName(state, CapFTempCurveIndex)));
                         }
                         if (CapCurveFlowLimitsExceeded) {
                             ShowContinueError(
                                 state,
                                 format(" Check limits in Total Cooling Capacity Function of Flow Fraction Curve, Curve Type = {}, Curve Name = {}",
-                                       Curve::objectNames[static_cast<int>(state.dataCurveManager->PerfCurve(CapFFlowCurveIndex)->curveType)],
+                                       Curve::objectNames[static_cast<int>(state.dataCurveManager->curves(CapFFlowCurveIndex)->curveType)],
                                        GetCurveName(state, CapFFlowCurveIndex)));
                         }
                     }
@@ -7289,28 +7287,28 @@ namespace StandardRatings {
                             ShowContinueError(
                                 state,
                                 format(" Check limits in Total Cooling Capacity Function of Temperature Curve, Curve Type = {}, Curve Name = {}",
-                                       Curve::objectNames[static_cast<int>(state.dataCurveManager->PerfCurve(CapFTempCurveIndex)->curveType)],
+                                       Curve::objectNames[static_cast<int>(state.dataCurveManager->curves(CapFTempCurveIndex)->curveType)],
                                        GetCurveName(state, CapFTempCurveIndex)));
                         }
                         if (CapCurveFlowLimitsExceeded) {
                             ShowContinueError(
                                 state,
                                 format(" Check limits in Total Cooling Capacity Function of Flow Fraction Curve, Curve Type = {}, Curve Name = {}",
-                                       Curve::objectNames[static_cast<int>(state.dataCurveManager->PerfCurve(CapFFlowCurveIndex)->curveType)],
+                                       Curve::objectNames[static_cast<int>(state.dataCurveManager->curves(CapFFlowCurveIndex)->curveType)],
                                        GetCurveName(state, CapFFlowCurveIndex)));
                         }
                         if (EIRCurveHighOATLimitsExceeded) {
                             ShowContinueError(
                                 state,
                                 format(" Check limits in Energy Input Ratio Function of Temperature Curve, Curve Type = {}, Curve Name = {}",
-                                       Curve::objectNames[static_cast<int>(state.dataCurveManager->PerfCurve(EIRFTempCurveIndex)->curveType)],
+                                       Curve::objectNames[static_cast<int>(state.dataCurveManager->curves(EIRFTempCurveIndex)->curveType)],
                                        GetCurveName(state, EIRFTempCurveIndex)));
                         }
                         if (EIRCurveFlowLimitsExceeded) {
                             ShowContinueError(
                                 state,
                                 format(" Check limits in Energy Input Ratio Function of Flow Fraction Curve, Curve Type = {}, Curve Name = {}",
-                                       Curve::objectNames[static_cast<int>(state.dataCurveManager->PerfCurve(EIRFFlowCurveIndex)->curveType)],
+                                       Curve::objectNames[static_cast<int>(state.dataCurveManager->curves(EIRFFlowCurveIndex)->curveType)],
                                        GetCurveName(state, EIRFFlowCurveIndex)));
                         }
                     }
@@ -7328,35 +7326,35 @@ namespace StandardRatings {
                             ShowContinueError(
                                 state,
                                 format(" Check limits in Total Cooling Capacity Function of Temperature Curve, Curve Type = {}, Curve Name = {}",
-                                       Curve::objectNames[static_cast<int>(state.dataCurveManager->PerfCurve(CapFTempCurveIndex)->curveType)],
+                                       Curve::objectNames[static_cast<int>(state.dataCurveManager->curves(CapFTempCurveIndex)->curveType)],
                                        GetCurveName(state, CapFTempCurveIndex)));
                         }
                         if (CapCurveFlowLimitsExceeded) {
                             ShowContinueError(
                                 state,
                                 format(" Check limits in Total Cooling Capacity Function of Flow Fraction Curve, Curve Type = {}, Curve Name = {}",
-                                       Curve::objectNames[static_cast<int>(state.dataCurveManager->PerfCurve(CapFFlowCurveIndex)->curveType)],
+                                       Curve::objectNames[static_cast<int>(state.dataCurveManager->curves(CapFFlowCurveIndex)->curveType)],
                                        GetCurveName(state, CapFFlowCurveIndex)));
                         }
                         if (EIRCurveMidOATLimitsExceeded) {
                             ShowContinueError(
                                 state,
                                 format(" Check limits in Energy Input Ratio Function of Temperature Curve, Curve Type = {}, Curve Name = {}",
-                                       Curve::objectNames[static_cast<int>(state.dataCurveManager->PerfCurve(EIRFTempCurveIndex)->curveType)],
+                                       Curve::objectNames[static_cast<int>(state.dataCurveManager->curves(EIRFTempCurveIndex)->curveType)],
                                        GetCurveName(state, EIRFTempCurveIndex)));
                         }
                         if (EIRCurveFlowLimitsExceeded) {
                             ShowContinueError(
                                 state,
                                 format(" Check limits in Energy Input Ratio Function of Flow Fraction Curve, Curve Type = {}, Curve Name = {}",
-                                       Curve::objectNames[static_cast<int>(state.dataCurveManager->PerfCurve(EIRFFlowCurveIndex)->curveType)],
+                                       Curve::objectNames[static_cast<int>(state.dataCurveManager->curves(EIRFFlowCurveIndex)->curveType)],
                                        GetCurveName(state, EIRFFlowCurveIndex)));
                         }
                         if (PLFfPLRforSEERLimitsExceeded) {
                             ShowContinueError(
                                 state,
                                 format(" Check limits in Part Load Fraction Correlation Curve, Curve Type = {}, Curve Name = {}",
-                                       Curve::objectNames[static_cast<int>(state.dataCurveManager->PerfCurve(PLFFPLRCurveIndex)->curveType)],
+                                       Curve::objectNames[static_cast<int>(state.dataCurveManager->curves(PLFFPLRCurveIndex)->curveType)],
                                        GetCurveName(state, PLFFPLRCurveIndex)));
                         }
                     }
@@ -7373,28 +7371,28 @@ namespace StandardRatings {
                             ShowContinueError(
                                 state,
                                 format(" Check limits in Total Cooling Capacity Function of Temperature Curve, Curve Type = {}, Curve Name = {}",
-                                       Curve::objectNames[static_cast<int>(state.dataCurveManager->PerfCurve(CapFTempCurveIndex)->curveType)],
+                                       Curve::objectNames[static_cast<int>(state.dataCurveManager->curves(CapFTempCurveIndex)->curveType)],
                                        GetCurveName(state, CapFTempCurveIndex)));
                         }
                         if (CapCurveFlowLimitsExceeded) {
                             ShowContinueError(
                                 state,
                                 format(" Check limits in Total Cooling Capacity Function of Flow Fraction Curve, Curve Type = {}, Curve Name = {}",
-                                       Curve::objectNames[static_cast<int>(state.dataCurveManager->PerfCurve(CapFFlowCurveIndex)->curveType)],
+                                       Curve::objectNames[static_cast<int>(state.dataCurveManager->curves(CapFFlowCurveIndex)->curveType)],
                                        GetCurveName(state, CapFFlowCurveIndex)));
                         }
                         if (EIRCurveIEERLimitsExceeded) {
                             ShowContinueError(
                                 state,
                                 format(" Check limits in EIR Function of Temperature Curve, Curve Type = {}, Curve Name = {}",
-                                       Curve::objectNames[static_cast<int>(state.dataCurveManager->PerfCurve(EIRFTempCurveIndex)->curveType)],
+                                       Curve::objectNames[static_cast<int>(state.dataCurveManager->curves(EIRFTempCurveIndex)->curveType)],
                                        GetCurveName(state, EIRFTempCurveIndex)));
                         }
                         if (EIRCurveFlowLimitsExceeded) {
                             ShowContinueError(
                                 state,
                                 format(" Check limits in Energy Input Ratio Function of Flow Fraction Curve, Curve Type = {}, Curve Name = {}",
-                                       Curve::objectNames[static_cast<int>(state.dataCurveManager->PerfCurve(EIRFFlowCurveIndex)->curveType)],
+                                       Curve::objectNames[static_cast<int>(state.dataCurveManager->curves(EIRFFlowCurveIndex)->curveType)],
                                        GetCurveName(state, EIRFFlowCurveIndex)));
                         }
                     }
@@ -7405,7 +7403,7 @@ namespace StandardRatings {
         }
         case CoilDX_HeatingEmpirical: {
             {
-                if (state.dataCurveManager->PerfCurve(CapFTempCurveIndex)->numDims == 1) {
+                if (state.dataCurveManager->curves(CapFTempCurveIndex)->numDims == 1) {
                     GetCurveMinMaxValues(state, CapFTempCurveIndex, HeatingCapODBTempMin, HeatingCapODBTempMax);
 
                     // Checking the limits of capacity modifying curve for temperatures (IEER high and low test conditions)
@@ -7426,7 +7424,7 @@ namespace StandardRatings {
                 }
             }
             {
-                if (state.dataCurveManager->PerfCurve(EIRFTempCurveIndex)->numDims == 1) {
+                if (state.dataCurveManager->curves(EIRFTempCurveIndex)->numDims == 1) {
                     GetCurveMinMaxValues(state, EIRFTempCurveIndex, HeatingEIRODBTempMin, HeatingEIRODBTempMax);
 
                     // Checking the limits of EIR modifying curve for temperatures (HSPF high and low test conditions)
@@ -7469,15 +7467,14 @@ namespace StandardRatings {
                         ShowContinueError(
                             state,
                             format(" Check limits in Total Heating Capacity Function of Temperature Curve, Curve Type = {}, Curve Name = {}",
-                                   Curve::objectNames[static_cast<int>(state.dataCurveManager->PerfCurve(CapFTempCurveIndex)->curveType)],
+                                   Curve::objectNames[static_cast<int>(state.dataCurveManager->curves(CapFTempCurveIndex)->curveType)],
                                    GetCurveName(state, CapFTempCurveIndex)));
                     }
                     if (HeatingEIRCurveHSPFLimitsExceeded) {
-                        ShowContinueError(
-                            state,
-                            format(" Check limits in EIR Function of Temperature Curve, Curve Type = {}, Curve Name = {}",
-                                   Curve::objectNames[static_cast<int>(state.dataCurveManager->PerfCurve(EIRFTempCurveIndex)->curveType)],
-                                   GetCurveName(state, EIRFTempCurveIndex)));
+                        ShowContinueError(state,
+                                          format(" Check limits in EIR Function of Temperature Curve, Curve Type = {}, Curve Name = {}",
+                                                 Curve::objectNames[static_cast<int>(state.dataCurveManager->curves(EIRFTempCurveIndex)->curveType)],
+                                                 GetCurveName(state, EIRFTempCurveIndex)));
                     }
                 }
             }
@@ -7552,14 +7549,14 @@ namespace StandardRatings {
                             ShowContinueError(
                                 state,
                                 format(" Check limits in Total Cooling Capacity Function of Temperature Curve, Curve Type = {}, Curve Name = {}",
-                                       Curve::objectNames[static_cast<int>(state.dataCurveManager->PerfCurve(CapFTempCurveIndex)->curveType)],
+                                       Curve::objectNames[static_cast<int>(state.dataCurveManager->curves(CapFTempCurveIndex)->curveType)],
                                        GetCurveName(state, CapFTempCurveIndex)));
                         }
                         if (CapCurveFlowLimitsExceeded) {
                             ShowContinueError(
                                 state,
                                 format(" Check limits in Total Cooling Capacity Function of Flow Fraction Curve, Curve Type = {}, Curve Name = {}",
-                                       Curve::objectNames[static_cast<int>(state.dataCurveManager->PerfCurve(CapFFlowCurveIndex)->curveType)],
+                                       Curve::objectNames[static_cast<int>(state.dataCurveManager->curves(CapFFlowCurveIndex)->curveType)],
                                        GetCurveName(state, CapFFlowCurveIndex)));
                         }
                     }
@@ -7577,28 +7574,28 @@ namespace StandardRatings {
                             ShowContinueError(
                                 state,
                                 format(" Check limits in Total Cooling Capacity Function of Temperature Curve, Curve Type = {}, Curve Name = {}",
-                                       Curve::objectNames[static_cast<int>(state.dataCurveManager->PerfCurve(CapFTempCurveIndex)->curveType)],
+                                       Curve::objectNames[static_cast<int>(state.dataCurveManager->curves(CapFTempCurveIndex)->curveType)],
                                        GetCurveName(state, CapFTempCurveIndex)));
                         }
                         if (CapCurveFlowLimitsExceeded) {
                             ShowContinueError(
                                 state,
                                 format(" Check limits in Total Cooling Capacity Function of Flow Fraction Curve, Curve Type = {}, Curve Name = {}",
-                                       Curve::objectNames[static_cast<int>(state.dataCurveManager->PerfCurve(CapFFlowCurveIndex)->curveType)],
+                                       Curve::objectNames[static_cast<int>(state.dataCurveManager->curves(CapFFlowCurveIndex)->curveType)],
                                        GetCurveName(state, CapFFlowCurveIndex)));
                         }
                         if (EIRCurveLowOATLimitsExceeded) {
                             ShowContinueError(
                                 state,
                                 format(" Check limits in Energy Input Ratio Function of Temperature Curve, Curve Type = {}, Curve Name = {}",
-                                       Curve::objectNames[static_cast<int>(state.dataCurveManager->PerfCurve(EIRFTempCurveIndex)->curveType)],
+                                       Curve::objectNames[static_cast<int>(state.dataCurveManager->curves(EIRFTempCurveIndex)->curveType)],
                                        GetCurveName(state, EIRFTempCurveIndex)));
                         }
                         if (EIRCurveFlowLimitsExceeded) {
                             ShowContinueError(
                                 state,
                                 format(" Check limits in Energy Input Ratio Function of Flow Fraction Curve, Curve Type = {}, Curve Name = {}",
-                                       Curve::objectNames[static_cast<int>(state.dataCurveManager->PerfCurve(EIRFFlowCurveIndex)->curveType)],
+                                       Curve::objectNames[static_cast<int>(state.dataCurveManager->curves(EIRFFlowCurveIndex)->curveType)],
                                        GetCurveName(state, EIRFFlowCurveIndex)));
                         }
                     }
@@ -7612,7 +7609,7 @@ namespace StandardRatings {
 
             bool CapCurveOATLimitsExceeded = false; // Logical for capacity curve OD temp. limits being exceeded (low and High)
             {
-                if (state.dataCurveManager->PerfCurve(CapFTempCurveIndex)->numDims == 1) {
+                if (state.dataCurveManager->curves(CapFTempCurveIndex)->numDims == 1) {
                     GetCurveMinMaxValues(state, CapFTempCurveIndex, HeatingCapODBTempMin, HeatingCapODBTempMax);
 
                     if (HeatingCapODBTempMax < HeatingOutdoorCoilInletAirDBTempRated ||
@@ -7641,7 +7638,7 @@ namespace StandardRatings {
             }
 
             {
-                if (state.dataCurveManager->PerfCurve(EIRFTempCurveIndex)->numDims == 1) {
+                if (state.dataCurveManager->curves(EIRFTempCurveIndex)->numDims == 1) {
                     GetCurveMinMaxValues(state, EIRFTempCurveIndex, HeatingEIRODBTempMin, HeatingEIRODBTempMax);
                     // Checking the limits of EIR modifying curve for temperatures (HSPF high and low test conditions)
                     if (HeatingEIRODBTempMax < HeatingOutdoorCoilInletAirDBTempRated ||
@@ -7686,7 +7683,7 @@ namespace StandardRatings {
                     ShowContinueError(
                         state,
                         format(" Check limits in Total Heating Capacity Function of Temperature Curve, Curve Type = {}, Curve Name = {}",
-                               Curve::objectNames[static_cast<int>(state.dataCurveManager->PerfCurve(CapFTempCurveIndex)->curveType)],
+                               Curve::objectNames[static_cast<int>(state.dataCurveManager->curves(CapFTempCurveIndex)->curveType)],
                                GetCurveName(state, CapFTempCurveIndex)));
                 }
             }
@@ -7701,15 +7698,14 @@ namespace StandardRatings {
                         ShowContinueError(
                             state,
                             format(" Check limits in Total Heating Capacity Function of Temperature Curve, Curve Type = {}, Curve Name = {}",
-                                   Curve::objectNames[static_cast<int>(state.dataCurveManager->PerfCurve(CapFTempCurveIndex)->curveType)],
+                                   Curve::objectNames[static_cast<int>(state.dataCurveManager->curves(CapFTempCurveIndex)->curveType)],
                                    GetCurveName(state, CapFTempCurveIndex)));
                     }
                     if (HeatingEIRCurveHSPFLimitsExceeded) {
-                        ShowContinueError(
-                            state,
-                            format(" Check limits in EIR Function of Temperature Curve, Curve Type = {}, Curve Name = {}",
-                                   Curve::objectNames[static_cast<int>(state.dataCurveManager->PerfCurve(EIRFTempCurveIndex)->curveType)],
-                                   GetCurveName(state, EIRFTempCurveIndex)));
+                        ShowContinueError(state,
+                                          format(" Check limits in EIR Function of Temperature Curve, Curve Type = {}, Curve Name = {}",
+                                                 Curve::objectNames[static_cast<int>(state.dataCurveManager->curves(EIRFTempCurveIndex)->curveType)],
+                                                 GetCurveName(state, EIRFTempCurveIndex)));
                     }
                 }
             }

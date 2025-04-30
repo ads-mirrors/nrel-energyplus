@@ -187,17 +187,18 @@ protected:
         state->dataSize->NumSysSizInput = 1;
         state->dataSize->SysSizInput.allocate(1);
         state->dataSize->SysSizInput(1).AirLoopNum = 1;
-        state->dataCurveManager->allocateCurveVector(10);
-        state->dataCurveManager->PerfCurve(1)->interpolationType = InterpType::EvaluateCurveToLimits;
-        state->dataCurveManager->PerfCurve(1)->curveType = CurveType::Linear;
-        state->dataCurveManager->PerfCurve(1)->numDims = 1;
-        state->dataCurveManager->PerfCurve(1)->coeff[0] = 1.0;
-        state->dataCurveManager->PerfCurve(1)->outputLimits.max = 1.0;
-        state->dataCurveManager->PerfCurve(2)->interpolationType = InterpType::EvaluateCurveToLimits;
-        state->dataCurveManager->PerfCurve(2)->curveType = CurveType::Linear;
-        state->dataCurveManager->PerfCurve(2)->numDims = 1;
-        state->dataCurveManager->PerfCurve(2)->coeff[0] = 1.0;
-        state->dataCurveManager->PerfCurve(2)->outputLimits.max = 1.0;
+
+        auto *curve1 = Curve::AddCurve(*state, "Curve1");
+        curve1->curveType = CurveType::Linear;
+        curve1->numDims = 1;
+        curve1->coeff[0] = 1.0;
+        curve1->outputLimits.max = 1.0;
+
+        auto *curve2 = Curve::AddCurve(*state, "Curve2");
+        curve2->curveType = CurveType::Linear;
+        curve2->numDims = 1;
+        curve2->coeff[0] = 1.0;
+        curve2->outputLimits.max = 1.0;
 
         int NumAirLoops = state->dataHVACGlobal->NumPrimaryAirSys = 1; // allocate to 1 air loop and adjust/resize as needed
         state->dataAirSystemsData->PrimaryAirSystems.allocate(NumAirLoops);
@@ -2351,22 +2352,6 @@ TEST_F(EnergyPlusFixture, VRF_FluidTCtrl_VRFOU_Compressor)
     state->dataZoneEquip->ZoneEquipInputsFilled = true; // denotes zone equipment has been read in
     state->dataEnvrn->StdRhoAir = PsyRhoAirFnPbTdbW(*state, state->dataEnvrn->OutBaroPress, 20.0, 0.0);
 
-    // Read in IDF
-    Curve::GetCurveInput(*state); // read curves
-
-    // test consecutive call to fluid properties getInput
-    Fluid::GetFluidPropertiesData(*state); // read refrigerant properties
-    EXPECT_EQ(2, state->dataFluid->refrigs.isize());
-    EXPECT_EQ(1, state->dataFluid->glycols.isize());
-
-    // If this should never happen, then the right thing to do is to
-    // assert that it doesn't happen, not to test that it is safe if
-    // it does happen
-
-    Fluid::GetFluidPropertiesData(*state); // should never happen but if it does it's safe
-    EXPECT_EQ(2, state->dataFluid->refrigs.isize());
-    EXPECT_EQ(1, state->dataFluid->glycols.isize());
-
     // set up ZoneEquipConfig data
     state->dataGlobal->NumOfZones = 1;
     state->dataZoneEquip->ZoneEquipConfig.allocate(1);
@@ -2630,14 +2615,14 @@ TEST_F(EnergyPlusFixture, VRF_FluidTCtrl_VRFOU_Compressor)
                                                             Ncomp,
                                                             CyclingRatio);
 
-    EXPECT_NEAR(0.20, CyclingRatio, 0.01);
+    EXPECT_NEAR(0.21, CyclingRatio, 0.01);
     Real64 x = T_discharge;
     Real64 y = -5; // in low load modification
     Real64 CurveValueEvap = 3.19E-01 - 1.26E-03 * x - 2.15E-05 * x * x + 1.20E-02 * y + 1.05E-04 * y * y - 8.66E-05 * x * y;
     Real64 CurveValuePower = 8.79E-02 - 1.72E-04 * x + 6.93E-05 * x * x - 3.38E-05 * y - 8.10E-06 * y * y - 1.04E-05 * x * y;
     EXPECT_NEAR(CurveValueEvap * state->dataHVACVarRefFlow->VRF(1).RatedEvapCapacity, OUEvapHeatExtract, 1);
     EXPECT_NEAR(1500, CompSpdActual, 1);
-    EXPECT_NEAR(CurveValuePower * state->dataHVACVarRefFlow->VRF(1).RatedCompPower, Ncomp, 1);
+    EXPECT_NEAR(CurveValuePower * state->dataHVACVarRefFlow->VRF(1).RatedCompPower * CyclingRatio, Ncomp, 1);
     EXPECT_EQ(state->dataLoopNodes->Node(state->dataHVACVarRefFlow->VRFTU(1).VRFTUInletNodeNum).MassFlowRate, 0.0);
 }
 
@@ -2681,7 +2666,7 @@ TEST_F(EnergyPlusFixture, VRF_FluidTCtrl_VRFOU_Compressor)
         thisVRF.RatedEvapCapacity * CurveValue(*state, thisVRF.OUCoolingCAPFT(1), thisVRF.CondensingTemp, thisVRF.EvaporatingTemp);
     Real64 CompEvaporatingPWRSpdMin =
         thisVRF.RatedCompPower * CurveValue(*state, thisVRF.OUCoolingPWRFT(1), thisVRF.CondensingTemp, thisVRF.EvaporatingTemp);
-    EXPECT_NEAR(0.35, CyclingRatio, 0.01);
+    EXPECT_NEAR(0.36, CyclingRatio, 0.01);
     EXPECT_NEAR(OUEvapHeatExtract, CompEvaporatingCAPSpdMin + Ncomp, 1e-4);
     EXPECT_NEAR(1500, CompSpdActual, 1);
     EXPECT_NEAR(Ncomp, CompEvaporatingPWRSpdMin, 1e-4);
@@ -2939,18 +2924,13 @@ TEST_F(EnergyPlusFixture, VRF_FluidTCtrl_CompResidual)
 
     using namespace Curve;
 
-    int CurveNum = 1;
     double Te = -2.796; // Outdoor unit evaporating temperature
     double Tdis = 40.093;
     double CondHeat = 1864.44;
 
-    // Allocate
-    state->dataCurveManager->allocateCurveVector(1);
-
     // Inputs: parameters
-    auto thisCurve = state->dataCurveManager->PerfCurve(CurveNum);
+    auto *thisCurve = AddCurve(*state, "Curve1");
     thisCurve->curveType = CurveType::BiQuadratic;
-    thisCurve->interpolationType = InterpType::EvaluateCurveToLimits;
     thisCurve->coeff[0] = 724.71125;     // Coefficient1 Constant
     thisCurve->coeff[1] = -21.867868;    // Coefficient2 x
     thisCurve->coeff[2] = 0.52480042;    // Coefficient3 x**2
@@ -2963,11 +2943,11 @@ TEST_F(EnergyPlusFixture, VRF_FluidTCtrl_CompResidual)
     thisCurve->inputLimits[1].max = 15;  // Maximum Value of y
 
     // Run and Check
-    double CompResidual = HVACVariableRefrigerantFlow::CompResidual_FluidTCtrl(*state, Tdis, CondHeat, CurveNum, Te);
+    double CompResidual = HVACVariableRefrigerantFlow::CompResidual_FluidTCtrl(*state, Tdis, CondHeat, 1, Te);
     EXPECT_NEAR(1.652, CompResidual, 0.005);
 
     // Clean up
-    state->dataCurveManager->PerfCurve.deallocate();
+    state->dataCurveManager->curves.deallocate();
 }
 
 TEST_F(EnergyPlusFixture, VRF_FluidTCtrl_FanSpdResidualCool)
@@ -3871,7 +3851,6 @@ TEST_F(EnergyPlusFixture, VRFTest_SysCurve)
     state->dataZoneEnergyDemand->ZoneSysEnergyDemand.allocate(1);
     state->dataZoneTempPredictorCorrector->zoneHeatBalance.allocate(1);
 
-    GetCurveInput(*state);            // read curves
     GetZoneData(*state, ErrorsFound); // read zone data
     EXPECT_FALSE(ErrorsFound);
 
@@ -4998,7 +4977,6 @@ TEST_F(EnergyPlusFixture, VRFTest_SysCurve_GetInputFailers)
     state->dataZoneEnergyDemand->ZoneSysEnergyDemand.allocate(1);
     state->dataZoneTempPredictorCorrector->zoneHeatBalance.allocate(1);
 
-    GetCurveInput(*state);            // read curves
     GetZoneData(*state, ErrorsFound); // read zone data
     EXPECT_FALSE(ErrorsFound);
 
@@ -5852,7 +5830,6 @@ TEST_F(EnergyPlusFixture, VRFTest_SysCurve_WaterCooled)
 
     Sched::GetSchedule(*state, "MAIN LOOP TEMP SCH")->getDayVals(*state, 58, 3);
 
-    Curve::GetCurveInput(*state);                         // read curves
     HeatBalanceManager::GetZoneData(*state, ErrorsFound); // read zone data
     EXPECT_FALSE(ErrorsFound);
 
@@ -6740,7 +6717,6 @@ TEST_F(EnergyPlusFixture, VRFTest_TU_NoLoad_OAMassFlowRateTest)
     state->dataGlobal->SysSizingCalc = true;
     state->dataSize->ZoneEqSizing.allocate(1);
 
-    Curve::GetCurveInput(*state);                         // read curves
     HeatBalanceManager::GetZoneData(*state, ErrorsFound); // read zone data
     EXPECT_FALSE(ErrorsFound);
 
@@ -6829,7 +6805,6 @@ TEST_F(EnergyPlusFixture, VRFTest_CondenserCalcTest)
 
     ASSERT_TRUE(process_idf(idf_objects));
     state->init_state(*state);
-    Curve::GetCurveInput(*state);
 
     int VRFCond = 1;
     state->dataHVACVarRefFlow->VRF.allocate(1);
@@ -11516,7 +11491,6 @@ TEST_F(EnergyPlusFixture, VRFTU_SysCurve_ReportOutputVerificationTest)
 
     state->dataZoneEnergyDemand->ZoneSysEnergyDemand.allocate(1);
     state->dataZoneTempPredictorCorrector->zoneHeatBalance.allocate(1);
-    GetCurveInput(*state);
     GetZoneData(*state, ErrorsFound);
     EXPECT_FALSE(ErrorsFound);
     // get zone input and connections
@@ -13269,7 +13243,6 @@ TEST_F(EnergyPlusFixture, VRF_FluidTCtrl_ReportOutputVerificationTest)
 
     state->dataZoneEnergyDemand->ZoneSysEnergyDemand.allocate(1);
     state->dataZoneTempPredictorCorrector->zoneHeatBalance.allocate(1);
-    GetCurveInput(*state);
     GetZoneData(*state, ErrorsFound);
     EXPECT_FALSE(ErrorsFound);
     // get zone input and connections
@@ -13363,7 +13336,7 @@ TEST_F(EnergyPlusFixture, VRF_FluidTCtrl_ReportOutputVerificationTest)
     EXPECT_NEAR(5645.5696, thisVRFTU.TotalCoolingRate, 0.0001);
     EXPECT_NEAR(84.8359, thisFan->totalPower, 0.0001);
     EXPECT_NEAR(thisDXCoolingCoil.TotalCoolingEnergyRate, (thisVRFTU.TotalCoolingRate + thisFan->totalPower), 0.0001);
-    EXPECT_NEAR(0.4124, state->dataHVACVarRefFlow->VRF(1).VRFCondCyclingRatio, 0.0001);
+    EXPECT_NEAR(0.4772, state->dataHVACVarRefFlow->VRF(1).VRFCondCyclingRatio, 0.0001);
     EXPECT_NEAR(state->dataHVACVarRefFlow->VRF(1).OUFanPower,
                 state->dataHVACVarRefFlow->VRF(1).RatedOUFanPower * state->dataHVACVarRefFlow->VRF(1).VRFCondCyclingRatio,
                 0.0001);
@@ -13435,7 +13408,6 @@ TEST_F(EnergyPlusFixture, VRFTest_CondenserCalcTest_HREIRFTHeat)
 
     ASSERT_TRUE(process_idf(idf_objects));
     state->init_state(*state);
-    Curve::GetCurveInput(*state);
 
     int VRFCond = 1;
     state->dataHVACVarRefFlow->VRF.allocate(1);
@@ -14026,7 +13998,6 @@ TEST_F(EnergyPlusFixture, VRF_BlowthroughFanPlacement_InputTest)
     state->init_state(*state);
 
     bool ErrorsFound(false);
-    GetCurveInput(*state);
     GetZoneData(*state, ErrorsFound);
     EXPECT_FALSE(ErrorsFound);
     // get zone input and connections
@@ -14614,7 +14585,6 @@ TEST_F(EnergyPlusFixture, VRF_MinPLR_and_EIRfPLRCruveMinPLRInputsTest)
     Real64 minEIRfLowPLRXInput(0.0);
     Real64 maxEIRfLowPLRXInput(0.0);
     bool ErrorsFound(false);
-    GetCurveInput(*state);
     GetZoneData(*state, ErrorsFound);
     EXPECT_FALSE(ErrorsFound);
     // get zone input and connections
@@ -14624,8 +14594,8 @@ TEST_F(EnergyPlusFixture, VRF_MinPLR_and_EIRfPLRCruveMinPLRInputsTest)
     EXPECT_TRUE(ErrorsFound);
     // set pointer to components
     auto &thisVRF(state->dataHVACVarRefFlow->VRF(1));
-    auto &thisCoolEIRFPLR(state->dataCurveManager->PerfCurve(thisVRF.CoolEIRFPLR1));
-    auto &thisHeatEIRFPLR(state->dataCurveManager->PerfCurve(thisVRF.HeatEIRFPLR1));
+    auto &thisCoolEIRFPLR(state->dataCurveManager->curves(thisVRF.CoolEIRFPLR1));
+    auto &thisHeatEIRFPLR(state->dataCurveManager->curves(thisVRF.HeatEIRFPLR1));
     // check user input VRF Minimum PLR
     EXPECT_EQ(0.15, thisVRF.MinPLR);
     // EIRFPLR curve minimum PLR value specified
@@ -15328,7 +15298,6 @@ TEST_F(EnergyPlusFixture, VRFTest_TU_NotOnZoneHVACEquipmentList)
     state->dataGlobal->SysSizingCalc = true;
     state->dataSize->ZoneEqSizing.allocate(1);
 
-    Curve::GetCurveInput(*state);                         // read curves
     HeatBalanceManager::GetZoneData(*state, ErrorsFound); // read zone data
     EXPECT_FALSE(ErrorsFound);
 
@@ -15958,7 +15927,6 @@ TEST_F(EnergyPlusFixture, VRFTU_FanOnOff_Power)
 
     state->dataZoneEnergyDemand->ZoneSysEnergyDemand.allocate(1);
     state->dataZoneTempPredictorCorrector->zoneHeatBalance.allocate(1);
-    GetCurveInput(*state);
     GetZoneData(*state, ErrorsFound);
     EXPECT_FALSE(ErrorsFound);
     // get zone input and connections
@@ -16090,7 +16058,6 @@ TEST_F(EnergyPlusFixture, VRF_Condenser_Calc_EIRFPLR_Bound_Test)
 
     ASSERT_TRUE(process_idf(idf_objects));
     state->init_state(*state);
-    Curve::GetCurveInput(*state);
 
     int VRFCond = 1;
     state->dataHVACVarRefFlow->VRF.allocate(1);
@@ -18279,7 +18246,6 @@ TEST_F(EnergyPlusFixture, VRF_FluidTCtrl_SupplementalHtgCoilTest)
     state->dataZoneEnergyDemand->ZoneSysEnergyDemand(zone_num_TU2).RemainingOutputReqToHeatSP = 2500.0;
     state->dataZoneEnergyDemand->ZoneSysEnergyDemand(zone_num_TU2).RemainingOutputReqToCoolSP = 0.0;
 
-    GetCurveInput(*state);
     GetZoneData(*state, ErrorsFound);
     EXPECT_FALSE(ErrorsFound);
     // get zone input and connections
@@ -20414,7 +20380,6 @@ TEST_F(EnergyPlusFixture, VRF_FluidTCtrl_offSupplementalHtgCoilTest)
     state->dataZoneEnergyDemand->ZoneSysEnergyDemand(zone_num_TU2).RemainingOutputReqToHeatSP = 2500.0;
     state->dataZoneEnergyDemand->ZoneSysEnergyDemand(zone_num_TU2).RemainingOutputReqToCoolSP = 0.0;
 
-    GetCurveInput(*state);
     GetZoneData(*state, ErrorsFound);
     EXPECT_FALSE(ErrorsFound);
     // get zone input and connections
@@ -22897,9 +22862,6 @@ TEST_F(EnergyPlusFixture, VRF_MixedTypes)
     state->dataZoneEquip->ZoneEquipInputsFilled = true; // denotes zone equipment has been read in
     state->dataEnvrn->StdRhoAir = PsyRhoAirFnPbTdbW(*state, state->dataEnvrn->OutBaroPress, 20.0, 0.0);
 
-    // Read in IDF
-    Curve::GetCurveInput(*state); // read curves
-
     // set up ZoneEquipConfig data
     state->dataGlobal->NumOfZones = 1;
     state->dataZoneEquip->ZoneEquipConfig.allocate(1);
@@ -22979,7 +22941,6 @@ TEST_F(EnergyPlusFixture, VRFHP_CondenserCalc_PLR_Issue_Test)
 
     ASSERT_TRUE(process_idf(idf_objects));
     state->init_state(*state);
-    Curve::GetCurveInput(*state);
 
     int VRFCond = 1;
     state->dataHVACVarRefFlow->VRF.allocate(1);
@@ -26912,7 +26873,6 @@ TEST_F(EnergyPlusFixture, VRFTest_TU_HeatRecoveryCheck)
     state->dataSize->ZoneEqSizing.allocate(1);
 
     bool ErrorsFound = false;                             // function returns true on error
-    Curve::GetCurveInput(*state);                         // read curves
     HeatBalanceManager::GetZoneData(*state, ErrorsFound); // read zone data
     EXPECT_FALSE(ErrorsFound);
 

@@ -2506,6 +2506,7 @@ TEST_F(EnergyPlusFixture, VariableSpeedCoils_mixedCoilTypesInput)
         });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     VariableSpeedCoils::GetVarSpeedCoilInput(*state);
 
@@ -2696,6 +2697,7 @@ TEST_F(EnergyPlusFixture, CoilHeatingDXVariableSpeed_MinOADBTempCompOperLimit)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     VariableSpeedCoils::GetVarSpeedCoilInput(*state);
 
@@ -2807,6 +2809,7 @@ TEST_F(EnergyPlusFixture, VariableSpeedCoils_Test_CalcTotCap_VSWSHP)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     VariableSpeedCoils::GetVarSpeedCoilInput(*state);
 
@@ -2988,6 +2991,8 @@ TEST_F(EnergyPlusFixture, VariableSpeedCoils_ContFanCycCoil_Test)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
+
     // get coil inputs
     VariableSpeedCoils::GetVarSpeedCoilInput(*state);
     // Setting predefined tables is needed though
@@ -3163,6 +3168,8 @@ TEST_F(EnergyPlusFixture, VariableSpeedCoils_RatedSource_Temp_ASHP_Cooling)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
+
     VariableSpeedCoils::GetVarSpeedCoilInput(*state);
     EXPECT_EQ(VariableSpeedCoils::GetVSCoilRatedSourceTemp(*state, 1.0), 35.0);
 }
@@ -3293,6 +3300,8 @@ TEST_F(EnergyPlusFixture, VariableSpeedCoils_RatedSource_Temp_ASHP_Heating)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
+
     VariableSpeedCoils::GetVarSpeedCoilInput(*state);
     EXPECT_EQ(VariableSpeedCoils::GetVSCoilRatedSourceTemp(*state, 1.0), 8.3333);
 }
@@ -3495,6 +3504,8 @@ TEST_F(EnergyPlusFixture, VariableSpeedCoils_RatedSource_Temp_AWHP)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
+
     VariableSpeedCoils::GetVarSpeedCoilInput(*state);
     EXPECT_EQ(VariableSpeedCoils::GetVSCoilRatedSourceTemp(*state, 1.0), 55.72);
 }
@@ -3724,6 +3735,8 @@ TEST_F(EnergyPlusFixture, VariableSpeedCoils_RatedSource_Temp_WSHP_Cooling)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
+
     VariableSpeedCoils::GetVarSpeedCoilInput(*state);
     EXPECT_EQ(VariableSpeedCoils::GetVSCoilRatedSourceTemp(*state, 1.0), 29.4444);
 }
@@ -3937,6 +3950,8 @@ TEST_F(EnergyPlusFixture, VariableSpeedCoils_RatedSource_Temp_WSHP_Heating)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
+
     VariableSpeedCoils::GetVarSpeedCoilInput(*state);
     EXPECT_EQ(VariableSpeedCoils::GetVSCoilRatedSourceTemp(*state, 1.0), 21.1111);
 }
@@ -4152,6 +4167,8 @@ TEST_F(EnergyPlusFixture, VariableSpeedCooling_Initialization)
         "    1.5;                     !- Maximum Value of x",
     });
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
+
     std::string const CurrentModuleObject = "Coil:Cooling:DX:VariableSpeed";
     int num_coils = state->dataInputProcessing->inputProcessor->getNumObjectsFound(*state, CurrentModuleObject);
     ASSERT_EQ(1, num_coils);
@@ -4349,6 +4366,7 @@ TEST_F(EnergyPlusFixture, VariableSpeedHeating_Initialization)
                           "    1.0;                     !- Maximum Value of x"});
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     // get coil inputs
     EnergyPlus::VariableSpeedCoils::GetVarSpeedCoilInput(*state);
@@ -6686,6 +6704,8 @@ TEST_F(EnergyPlusFixture, CoolingVariableSpeedEquationFit_Initialization)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
+
     std::string CurrentModuleObject = "Coil:Cooling:DX:VariableSpeed";
     int num_coils = state->dataInputProcessing->inputProcessor->getNumObjectsFound(*state, CurrentModuleObject);
     ASSERT_EQ(0, num_coils);
@@ -6891,6 +6911,7 @@ TEST_F(EnergyPlusFixture, VariableSpeedCoils_Coil_Defrost_Power_Fix_Test)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     // Get coil inputs
     VariableSpeedCoils::GetVarSpeedCoilInput(*state);
@@ -6942,10 +6963,15 @@ TEST_F(EnergyPlusFixture, VariableSpeedCoils_Coil_Defrost_Power_Fix_Test)
                                               OnOffAirFlowRatio);
 
     EXPECT_NEAR(state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).DefrostPower, 908.10992432432420, 1e-3);
-
-    // Check that when DefrostTime == 0 the performance of the coil is not degraded
     Real64 COPwDefrost = state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).COP;
-    state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).DefrostTime == 0;
+    EXPECT_LT(state->dataVariableSpeedCoils->HeatingCapacityMultiplier, 1.0);
+    EXPECT_LT(state->dataVariableSpeedCoils->InputPowerMultiplier, 1.0);
+
+    // Frost Multiplier EMS actuators
+    state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).FrostHeatingCapacityMultiplierEMSOverrideOn = true;
+    state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).FrostHeatingCapacityMultiplierEMSOverrideValue = 0.5;
+    state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).FrostHeatingInputPowerMultiplierEMSOverrideOn = true;
+    state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).FrostHeatingInputPowerMultiplierEMSOverrideValue = 0.6;
     VariableSpeedCoils::SimVariableSpeedCoils(*state,
                                               state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).Name,
                                               DXCoilNum,
@@ -6957,7 +6983,47 @@ TEST_F(EnergyPlusFixture, VariableSpeedCoils_Coil_Defrost_Power_Fix_Test)
                                               SensLoad,
                                               LatentLoad,
                                               OnOffAirFlowRatio);
-    EXPECT_NEAR(COPwDefrost, state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).COP, 0.001);
+    EXPECT_DOUBLE_EQ(state->dataVariableSpeedCoils->HeatingCapacityMultiplier, 0.5);
+    EXPECT_DOUBLE_EQ(state->dataVariableSpeedCoils->InputPowerMultiplier, 0.6);
+    state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).FrostHeatingCapacityMultiplierEMSOverrideOn = false;
+    state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).FrostHeatingInputPowerMultiplierEMSOverrideOn = false;
+
+    // Check that when DefrostTime == 0 the performance of the coil is not degraded
+    state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).DefrostTime = 0;
+    VariableSpeedCoils::SimVariableSpeedCoils(*state,
+                                              state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).Name,
+                                              DXCoilNum,
+                                              fanOp,
+                                              compressorOp, // compressor on/off. 0 = off; 1= on
+                                              PartLoadFrac,
+                                              SpeedCal,
+                                              SpeedRatio,
+                                              SensLoad,
+                                              LatentLoad,
+                                              OnOffAirFlowRatio);
+    EXPECT_DOUBLE_EQ(state->dataVariableSpeedCoils->HeatingCapacityMultiplier, 1.0);
+    EXPECT_DOUBLE_EQ(state->dataVariableSpeedCoils->InputPowerMultiplier, 1.0);
+
+    // Frost Multiplier EMS actuators
+    state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).FrostHeatingCapacityMultiplierEMSOverrideOn = true;
+    state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).FrostHeatingCapacityMultiplierEMSOverrideValue = 0.5;
+    state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).FrostHeatingInputPowerMultiplierEMSOverrideOn = true;
+    state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).FrostHeatingInputPowerMultiplierEMSOverrideValue = 0.6;
+    VariableSpeedCoils::SimVariableSpeedCoils(*state,
+                                              state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).Name,
+                                              DXCoilNum,
+                                              fanOp,
+                                              compressorOp, // compressor on/off. 0 = off; 1= on
+                                              PartLoadFrac,
+                                              SpeedCal,
+                                              SpeedRatio,
+                                              SensLoad,
+                                              LatentLoad,
+                                              OnOffAirFlowRatio);
+    EXPECT_DOUBLE_EQ(state->dataVariableSpeedCoils->HeatingCapacityMultiplier, 1.0);
+    EXPECT_DOUBLE_EQ(state->dataVariableSpeedCoils->InputPowerMultiplier, 1.0);
+    state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).FrostHeatingCapacityMultiplierEMSOverrideOn = false;
+    state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).FrostHeatingInputPowerMultiplierEMSOverrideOn = false;
 
     // Now simulate the coil with "CompressorOperation" command to be "Off":
     // In this case, the "DefrostPower" need to be cleared to be zero if done correctly;
@@ -7085,6 +7151,8 @@ TEST_F(EnergyPlusFixture, VariableSpeedCoils_ZeroRatedCoolingCapacity_Test)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
+
     // get coil inputs
     VariableSpeedCoils::GetVarSpeedCoilInput(*state);
     // Setting predefined tables is needed though
@@ -7233,6 +7301,7 @@ TEST_F(EnergyPlusFixture, VariableSpeedCoolingCoils_AutosizePumpPower)
          ""});
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     // Get coil inputs
     VariableSpeedCoils::GetVarSpeedCoilInput(*state);

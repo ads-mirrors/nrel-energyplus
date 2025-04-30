@@ -2021,7 +2021,7 @@ void GetDXCoils(EnergyPlusData &state)
                                                  cAlphaFields(5));        // Field Name
 
             if (!ErrorsFound) {
-                if (state.dataCurveManager->PerfCurve(thisDXCoil.CCapFTemp(1))->numDims == 1) {
+                if (state.dataCurveManager->curves(thisDXCoil.CCapFTemp(1))->numDims == 1) {
                     checkCurveIsNormalizedToOne(state,
                                                 std::string{RoutineName} + CurrentModuleObject,
                                                 thisDXCoil.Name,
@@ -2089,7 +2089,7 @@ void GetDXCoils(EnergyPlusData &state)
                                                  cAlphaFields(7));       // Field Name
 
             if (!ErrorsFound) {
-                if (state.dataCurveManager->PerfCurve(thisDXCoil.EIRFTemp(1))->numDims == 1) {
+                if (state.dataCurveManager->curves(thisDXCoil.EIRFTemp(1))->numDims == 1) {
                     checkCurveIsNormalizedToOne(state,
                                                 std::string{RoutineName} + CurrentModuleObject,
                                                 thisDXCoil.Name,
@@ -3236,7 +3236,7 @@ void GetDXCoils(EnergyPlusData &state)
                                                      cAlphaFields(11));    // Field Name
 
                 if (!ErrorsFound) {
-                    if (state.dataCurveManager->PerfCurve(thisDXCoil.HCapFTemp)->numDims == 1) {
+                    if (state.dataCurveManager->curves(thisDXCoil.HCapFTemp)->numDims == 1) {
                         checkCurveIsNormalizedToOne(state,
                                                     std::string{RoutineName} + CurrentModuleObject,
                                                     thisDXCoil.Name,
@@ -3331,7 +3331,7 @@ void GetDXCoils(EnergyPlusData &state)
                                                      cAlphaFields(14));    // Field Name
 
                 if (!ErrorsFound) {
-                    if (state.dataCurveManager->PerfCurve(thisDXCoil.HCOPFTemp)->numDims == 1) {
+                    if (state.dataCurveManager->curves(thisDXCoil.HCOPFTemp)->numDims == 1) {
                         checkCurveIsNormalizedToOne(state,
                                                     std::string{RoutineName} + CurrentModuleObject,
                                                     thisDXCoil.Name,
@@ -3690,7 +3690,7 @@ void GetDXCoils(EnergyPlusData &state)
                                                      cAlphaFields(7));     // Field Name
 
                 if (!ErrorsFound) {
-                    if (state.dataCurveManager->PerfCurve(thisDXCoil.HCapFTemp)->numDims == 1) {
+                    if (state.dataCurveManager->curves(thisDXCoil.HCapFTemp)->numDims == 1) {
                         checkCurveIsNormalizedToOne(state,
                                                     std::string{RoutineName} + CurrentModuleObject,
                                                     thisDXCoil.Name,
@@ -3757,7 +3757,7 @@ void GetDXCoils(EnergyPlusData &state)
                                                      cAlphaFields(9));     // Field Name
 
                 if (!ErrorsFound) {
-                    if (state.dataCurveManager->PerfCurve(thisDXCoil.HCOPFTemp)->numDims == 1) {
+                    if (state.dataCurveManager->curves(thisDXCoil.HCOPFTemp)->numDims == 1) {
                         checkCurveIsNormalizedToOne(state,
                                                     std::string{RoutineName} + CurrentModuleObject,
                                                     thisDXCoil.Name,
@@ -4665,7 +4665,7 @@ void GetDXCoils(EnergyPlusData &state)
                                                      cAlphaFields(11 + (I - 1) * 6)); // Field Name
 
                 if (!ErrorsFound) {
-                    if (state.dataCurveManager->PerfCurve(thisDXCoil.MSCCapFTemp(I))->numDims == 1) {
+                    if (state.dataCurveManager->curves(thisDXCoil.MSCCapFTemp(I))->numDims == 1) {
                         checkCurveIsNormalizedToOne(state,
                                                     std::string{RoutineName} + CurrentModuleObject,
                                                     thisDXCoil.Name,
@@ -4738,7 +4738,7 @@ void GetDXCoils(EnergyPlusData &state)
                                                      cAlphaFields(13 + (I - 1) * 6)); // Field Name
 
                 if (!ErrorsFound) {
-                    if (state.dataCurveManager->PerfCurve(thisDXCoil.MSEIRFTemp(I))->numDims == 1) {
+                    if (state.dataCurveManager->curves(thisDXCoil.MSEIRFTemp(I))->numDims == 1) {
                         checkCurveIsNormalizedToOne(state,
                                                     std::string{RoutineName} + CurrentModuleObject,
                                                     thisDXCoil.Name,
@@ -4972,7 +4972,7 @@ void GetDXCoils(EnergyPlusData &state)
                                              cAlphaFields(3));        // Field Name
 
         if (!ErrorsFound) {
-            if (state.dataCurveManager->PerfCurve(thisDXCoil.CCapFTemp(1))->numDims == 1) {
+            if (state.dataCurveManager->curves(thisDXCoil.CCapFTemp(1))->numDims == 1) {
                 checkCurveIsNormalizedToOne(state,
                                             std::string{RoutineName} + CurrentModuleObject,
                                             thisDXCoil.Name,
@@ -5142,7 +5142,7 @@ void GetDXCoils(EnergyPlusData &state)
                                                  cAlphaFields(5));        // Field Name
 
             if (!ErrorsFound) {
-                if (state.dataCurveManager->PerfCurve(thisDXCoil.CCapFTemp(1))->numDims == 1) {
+                if (state.dataCurveManager->curves(thisDXCoil.CCapFTemp(1))->numDims == 1) {
                     checkCurveIsNormalizedToOne(state,
                                                 std::string{RoutineName} + CurrentModuleObject,
                                                 thisDXCoil.Name,
@@ -5266,17 +5266,17 @@ void GetDXCoils(EnergyPlusData &state)
             ErrorsFound = true;
         } else {
             {
-                if (state.dataCurveManager->PerfCurve(indexSHCurve)->curveType == Curve::CurveType::Quadratic) {
-                    thisDXCoil.C1Te = state.dataCurveManager->PerfCurve(indexSHCurve)->coeff[0];
-                    thisDXCoil.C2Te = state.dataCurveManager->PerfCurve(indexSHCurve)->coeff[1];
-                    thisDXCoil.C3Te = state.dataCurveManager->PerfCurve(indexSHCurve)->coeff[2];
+                if (state.dataCurveManager->curves(indexSHCurve)->curveType == Curve::CurveType::Quadratic) {
+                    thisDXCoil.C1Te = state.dataCurveManager->curves(indexSHCurve)->coeff[0];
+                    thisDXCoil.C2Te = state.dataCurveManager->curves(indexSHCurve)->coeff[1];
+                    thisDXCoil.C3Te = state.dataCurveManager->curves(indexSHCurve)->coeff[2];
 
                 } else {
                     ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, thisDXCoil.Name));
                     ShowContinueError(state,
                                       format("...illegal {} type for this object = {}",
                                              cAlphaFields(5),
-                                             Curve::objectNames[static_cast<int>(state.dataCurveManager->PerfCurve(indexSHCurve)->curveType)]));
+                                             Curve::objectNames[static_cast<int>(state.dataCurveManager->curves(indexSHCurve)->curveType)]));
                     ShowContinueError(state, "... Curve type must be Quadratic.");
                     ErrorsFound = true;
                 }
@@ -5378,17 +5378,17 @@ void GetDXCoils(EnergyPlusData &state)
             ErrorsFound = true;
         } else {
             {
-                if (state.dataCurveManager->PerfCurve(indexSCCurve)->curveType == Curve::CurveType::Quadratic) {
-                    thisDXCoil.C1Tc = state.dataCurveManager->PerfCurve(indexSCCurve)->coeff[0];
-                    thisDXCoil.C2Tc = state.dataCurveManager->PerfCurve(indexSCCurve)->coeff[1];
-                    thisDXCoil.C3Tc = state.dataCurveManager->PerfCurve(indexSCCurve)->coeff[2];
+                if (state.dataCurveManager->curves(indexSCCurve)->curveType == Curve::CurveType::Quadratic) {
+                    thisDXCoil.C1Tc = state.dataCurveManager->curves(indexSCCurve)->coeff[0];
+                    thisDXCoil.C2Tc = state.dataCurveManager->curves(indexSCCurve)->coeff[1];
+                    thisDXCoil.C3Tc = state.dataCurveManager->curves(indexSCCurve)->coeff[2];
 
                 } else {
                     ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, thisDXCoil.Name));
                     ShowContinueError(state,
                                       format("...illegal {} type for this object = {}",
                                              cAlphaFields(5),
-                                             Curve::objectNames[static_cast<int>(state.dataCurveManager->PerfCurve(indexSCCurve)->curveType)]));
+                                             Curve::objectNames[static_cast<int>(state.dataCurveManager->curves(indexSCCurve)->curveType)]));
                     ShowContinueError(state, "... Curve type must be Quadratic.");
                     ErrorsFound = true;
                 }
@@ -5709,6 +5709,23 @@ void GetDXCoils(EnergyPlusData &state)
                                     OutputProcessor::TimeStepType::System,
                                     OutputProcessor::StoreType::Average,
                                     thisDXCoil.Name);
+            }
+            if (state.dataGlobal->AnyEnergyManagementSystemInModel) {
+                SetupEMSActuator(state,
+                                 thisDXCoil.DXCoilType,
+                                 thisDXCoil.Name,
+                                 "Frost Heating Capacity Multiplier",
+                                 "[]",
+                                 thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideOn,
+                                 thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideValue);
+
+                SetupEMSActuator(state,
+                                 thisDXCoil.DXCoilType,
+                                 thisDXCoil.Name,
+                                 "Frost Heating Input Power Multiplier",
+                                 "[]",
+                                 thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideOn,
+                                 thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideValue);
             }
         }
 
@@ -6312,6 +6329,24 @@ void GetDXCoils(EnergyPlusData &state)
                                     OutputProcessor::StoreType::Average,
                                     thisDXCoil.Name);
             }
+
+            if (state.dataGlobal->AnyEnergyManagementSystemInModel) {
+                SetupEMSActuator(state,
+                                 thisDXCoil.DXCoilType,
+                                 thisDXCoil.Name,
+                                 "Frost Heating Capacity Multiplier",
+                                 "[]",
+                                 thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideOn,
+                                 thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideValue);
+
+                SetupEMSActuator(state,
+                                 thisDXCoil.DXCoilType,
+                                 thisDXCoil.Name,
+                                 "Frost Heating Input Power Multiplier",
+                                 "[]",
+                                 thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideOn,
+                                 thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideValue);
+            }
         }
 
         // VRF cooling coil report variables
@@ -6419,6 +6454,24 @@ void GetDXCoils(EnergyPlusData &state)
                                 OutputProcessor::TimeStepType::System,
                                 OutputProcessor::StoreType::Average,
                                 thisDXCoil.Name);
+
+            if (state.dataGlobal->AnyEnergyManagementSystemInModel) {
+                SetupEMSActuator(state,
+                                 thisDXCoil.DXCoilType,
+                                 thisDXCoil.Name,
+                                 "Frost Heating Capacity Multiplier",
+                                 "[]",
+                                 thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideOn,
+                                 thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideValue);
+
+                SetupEMSActuator(state,
+                                 thisDXCoil.DXCoilType,
+                                 thisDXCoil.Name,
+                                 "Frost Heating Input Power Multiplier",
+                                 "[]",
+                                 thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideOn,
+                                 thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideValue);
+            }
         }
 
         // VRF cooling coil for FluidTCtrl, report variables
@@ -8703,7 +8756,7 @@ void CalcHPWHDXCoil(EnergyPlusData &state,
 
     // get output of Heating Capacity and Heating COP curves (curves default to 1 if user has not specified curve name)
     if (Coil.HCapFTemp > 0) {
-        if (state.dataCurveManager->PerfCurve(Coil.HCapFTemp)->numDims == 1) {
+        if (state.dataCurveManager->curves(Coil.HCapFTemp)->numDims == 1) {
             HeatCapFTemp = CurveValue(state, Coil.HCapFTemp, InletAirTemp);
         } else {
             HeatCapFTemp = CurveValue(state, Coil.HCapFTemp, InletAirTemp, InletWaterTemp);
@@ -8714,7 +8767,7 @@ void CalcHPWHDXCoil(EnergyPlusData &state,
                 ShowWarningMessage(state, format("{} \"{}\":", Coil.DXCoilType, Coil.Name));
                 ShowContinueError(
                     state, format(" HPWH Heating Capacity Modifier curve (function of temperature) output is negative ({:.3T}).", HeatCapFTemp));
-                if (state.dataCurveManager->PerfCurve(Coil.HCapFTemp)->numDims == 2) {
+                if (state.dataCurveManager->curves(Coil.HCapFTemp)->numDims == 2) {
                     ShowContinueError(
                         state,
                         format(" Negative value occurs using an inlet air temperature of {:.1T} and an inlet water temperature of {:.1T}.",
@@ -8742,7 +8795,7 @@ void CalcHPWHDXCoil(EnergyPlusData &state,
     }
 
     if (Coil.HCOPFTemp > 0) {
-        if (state.dataCurveManager->PerfCurve(Coil.HCOPFTemp)->numDims == 1) {
+        if (state.dataCurveManager->curves(Coil.HCOPFTemp)->numDims == 1) {
             HeatCOPFTemp = CurveValue(state, Coil.HCOPFTemp, InletAirTemp);
         } else {
             HeatCOPFTemp = CurveValue(state, Coil.HCOPFTemp, InletAirTemp, InletWaterTemp);
@@ -8753,7 +8806,7 @@ void CalcHPWHDXCoil(EnergyPlusData &state,
                 ShowWarningMessage(state, format("{} \"{}\":", Coil.DXCoilType, Coil.Name));
                 ShowContinueError(state,
                                   format(" HPWH Heating COP Modifier curve (function of temperature) output is negative ({:.3T}).", HeatCOPFTemp));
-                if (state.dataCurveManager->PerfCurve(Coil.HCOPFTemp)->numDims == 2) {
+                if (state.dataCurveManager->curves(Coil.HCOPFTemp)->numDims == 2) {
                     ShowContinueError(
                         state,
                         format(" Negative value occurs using an inlet air temperature of {:.1T} and an inlet water temperature of {:.1T}.",
@@ -9437,7 +9490,7 @@ void CalcDoe2DXCoil(EnergyPlusData &state,
                 TotCapTempModFac = 1.0;
                 TotCapFlowModFac = 1.0;
             } else {
-                if (state.dataCurveManager->PerfCurve(thisDXCoil.CCapFTemp(Mode))->numDims == 2) {
+                if (state.dataCurveManager->curves(thisDXCoil.CCapFTemp(Mode))->numDims == 2) {
                     TotCapTempModFac = CurveValue(state, thisDXCoil.CCapFTemp(Mode), InletAirWetBulbC, CondInletTemp);
                 } else {
                     TotCapTempModFac = CurveValue(state, thisDXCoil.CCapFTemp(Mode), CondInletTemp);
@@ -9450,7 +9503,7 @@ void CalcDoe2DXCoil(EnergyPlusData &state,
                         ShowContinueError(state,
                                           format(" Total Cooling Capacity Modifier curve (function of temperature) output is negative ({:.3T}).",
                                                  TotCapTempModFac));
-                        if (state.dataCurveManager->PerfCurve(thisDXCoil.CCapFTemp(Mode))->numDims == 2) {
+                        if (state.dataCurveManager->curves(thisDXCoil.CCapFTemp(Mode))->numDims == 2) {
                             ShowContinueError(state,
                                               format(" Negative value occurs using a condenser inlet air temperature of {:.1T} and an inlet air "
                                                      "wet-bulb temperature of {:.1T}.",
@@ -9820,7 +9873,7 @@ void CalcDoe2DXCoil(EnergyPlusData &state,
                     ShowWarningMessage(state, format("{}{}=\"{}\":", RoutineName, thisDXCoil.DXCoilType, thisDXCoil.Name));
                     ShowContinueError(
                         state, format(" Energy Input Ratio Modifier curve (function of temperature) output is negative ({:.3T}).", EIRTempModFac));
-                    if (state.dataCurveManager->PerfCurve(thisDXCoil.EIRFTemp(Mode))->numDims == 2) {
+                    if (state.dataCurveManager->curves(thisDXCoil.EIRFTemp(Mode))->numDims == 2) {
                         ShowContinueError(state,
                                           format(" Negative value occurs using a condenser inlet air temperature of {:.1T} and an inlet air "
                                                  "wet-bulb temperature of {:.1T}.",
@@ -10396,7 +10449,7 @@ void CalcVRFCoolingCoil(EnergyPlusData &state,
         InletAirHumRatTemp = InletAirHumRat;
 
     Label50:;
-        switch (state.dataCurveManager->PerfCurve(thisDXCoil.CCapFTemp(Mode))->numDims) {
+        switch (state.dataCurveManager->curves(thisDXCoil.CCapFTemp(Mode))->numDims) {
         case 1:
             TotCapTempModFac = CurveValue(state, thisDXCoil.CCapFTemp(Mode), InletAirWetBulbC);
             break;
@@ -10903,7 +10956,7 @@ void CalcDXHeatingCoil(EnergyPlusData &state,
         // Model was extended to accept bi-quadratic curves. This allows sensitivity of the heating capacity
         // to the entering dry-bulb temperature as well as the outside dry-bulb temperature. User is
         // advised to use the bi-quadratic curve if sufficient manufacturer data is available.
-        if (state.dataCurveManager->PerfCurve(thisDXCoil.CCapFTemp(Mode))->numDims == 2) {
+        if (state.dataCurveManager->curves(thisDXCoil.CCapFTemp(Mode))->numDims == 2) {
             switch (thisDXCoil.HeatingPerformanceOATType) {
             case HVAC::OATType::DryBulb: {
                 TotCapTempModFac = CurveValue(state, thisDXCoil.CCapFTemp(Mode), InletAirDryBulbTemp, OutdoorDryBulb);
@@ -10979,13 +11032,37 @@ void CalcDXHeatingCoil(EnergyPlusData &state,
             if (thisDXCoil.DefrostControl == StandardRatings::HPdefrostControl::Timed) {
                 FractionalDefrostTime = thisDXCoil.DefrostTime;
                 if (FractionalDefrostTime > 0.0) {
-                    HeatingCapacityMultiplier = 0.909 - 107.33 * OutdoorCoildw;
-                    InputPowerMultiplier = 0.90 - 36.45 * OutdoorCoildw;
+                    if (thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideOn && thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideOn) {
+                        HeatingCapacityMultiplier = thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideValue;
+                        InputPowerMultiplier = thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideValue;
+                    } else {
+                        HeatingCapacityMultiplier = 0.909 - 107.33 * OutdoorCoildw;
+                        InputPowerMultiplier = 0.90 - 36.45 * OutdoorCoildw;
+                        if (thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideOn || thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideOn) {
+                            ShowWarningMessage(state,
+                                               format("The Frost Heating Capacity Multiplier actuator and the Frost Heating Input Power Multiplier "
+                                                      "actuator must be both provided for DX heating coil {}",
+                                                      thisDXCoil.Name));
+                            ShowContinueError(state, "EMS actuators are ignored. Simulation is continuing.");
+                        }
+                    }
                 }
             } else { // else defrost control is on-demand
                 FractionalDefrostTime = 1.0 / (1.0 + 0.01446 / OutdoorCoildw);
-                HeatingCapacityMultiplier = 0.875 * (1.0 - FractionalDefrostTime);
-                InputPowerMultiplier = 0.954 * (1.0 - FractionalDefrostTime);
+                if (thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideOn && thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideOn) {
+                    HeatingCapacityMultiplier = thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideValue;
+                    InputPowerMultiplier = thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideValue;
+                } else {
+                    HeatingCapacityMultiplier = 0.875 * (1.0 - FractionalDefrostTime);
+                    InputPowerMultiplier = 0.954 * (1.0 - FractionalDefrostTime);
+                    if (thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideOn || thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideOn) {
+                        ShowWarningMessage(state,
+                                           format("The Frost Heating Capacity Multiplier actuator and the Frost Heating Input Power Multiplier "
+                                                  "actuator must be both provided for DX heating coil {}",
+                                                  thisDXCoil.Name));
+                        ShowContinueError(state, "EMS actuators are ignored. Simulation is continuing.");
+                    }
+                }
             }
 
             if (FractionalDefrostTime > 0.0) {
@@ -11043,7 +11120,7 @@ void CalcDXHeatingCoil(EnergyPlusData &state,
         // to the entering dry-bulb temperature as well as the outside dry-bulb temperature. User is
         // advised to use the bi-quadratic curve if sufficient manufacturer data is available.
         if (thisDXCoil.DXCoilType_Num != HVAC::CoilVRF_Heating && thisDXCoil.DXCoilType_Num != HVAC::CoilVRF_FluidTCtrl_Heating) {
-            if (state.dataCurveManager->PerfCurve(thisDXCoil.EIRFTemp(Mode))->numDims == 1) {
+            if (state.dataCurveManager->curves(thisDXCoil.EIRFTemp(Mode))->numDims == 1) {
                 EIRTempModFac = CurveValue(state, thisDXCoil.EIRFTemp(Mode), OutdoorDryBulb);
             } else {
                 EIRTempModFac = CurveValue(state, thisDXCoil.EIRFTemp(Mode), InletAirDryBulbTemp, OutdoorDryBulb);
@@ -13545,7 +13622,7 @@ void CalcMultiSpeedDXCoilHeating(EnergyPlusData &state,
             // to the entering dry-bulb temperature as well as the outside dry-bulb temperature. User is
             // advised to use the bi-quadratic curve if sufficient manufacturer data is available.
             // Low speed
-            if (state.dataCurveManager->PerfCurve(thisDXCoil.MSCCapFTemp(SpeedNumLS))->numDims == 1) {
+            if (state.dataCurveManager->curves(thisDXCoil.MSCCapFTemp(SpeedNumLS))->numDims == 1) {
                 TotCapTempModFac = CurveValue(state, thisDXCoil.MSCCapFTemp(SpeedNumLS), OutdoorDryBulb);
             } else {
                 TotCapTempModFac = CurveValue(state, thisDXCoil.MSCCapFTemp(SpeedNumLS), InletAirDryBulbTemp, OutdoorDryBulb);
@@ -13555,7 +13632,7 @@ void CalcMultiSpeedDXCoilHeating(EnergyPlusData &state,
             // Calculate total heating capacity for off-rated conditions
             TotCapLS = thisDXCoil.MSRatedTotCap(SpeedNumLS) * TotCapFlowModFac * TotCapTempModFac;
             // High speed
-            if (state.dataCurveManager->PerfCurve(thisDXCoil.MSCCapFTemp(SpeedNumHS))->numDims == 1) {
+            if (state.dataCurveManager->curves(thisDXCoil.MSCCapFTemp(SpeedNumHS))->numDims == 1) {
                 TotCapTempModFac = CurveValue(state, thisDXCoil.MSCCapFTemp(SpeedNumHS), OutdoorDryBulb);
             } else {
                 TotCapTempModFac = CurveValue(state, thisDXCoil.MSCCapFTemp(SpeedNumHS), InletAirDryBulbTemp, OutdoorDryBulb);
@@ -13569,7 +13646,7 @@ void CalcMultiSpeedDXCoilHeating(EnergyPlusData &state,
             // to the entering dry-bulb temperature as well as the outside dry-bulb temperature. User is
             // advised to use the bi-quadratic curve if sufficient manufacturer data is available.
             // Low Speed
-            if (state.dataCurveManager->PerfCurve(thisDXCoil.MSEIRFTemp(SpeedNumLS))->numDims == 1) {
+            if (state.dataCurveManager->curves(thisDXCoil.MSEIRFTemp(SpeedNumLS))->numDims == 1) {
                 EIRTempModFac = CurveValue(state, thisDXCoil.MSEIRFTemp(SpeedNumLS), OutdoorDryBulb);
             } else {
                 EIRTempModFac = CurveValue(state, thisDXCoil.MSEIRFTemp(SpeedNumLS), InletAirDryBulbTemp, OutdoorDryBulb);
@@ -13577,7 +13654,7 @@ void CalcMultiSpeedDXCoilHeating(EnergyPlusData &state,
             EIRFlowModFac = CurveValue(state, thisDXCoil.MSEIRFFlow(SpeedNumLS), AirMassFlowRatioLS);
             EIRLS = 1.0 / thisDXCoil.MSRatedCOP(SpeedNumLS) * EIRTempModFac * EIRFlowModFac;
             // High Speed
-            if (state.dataCurveManager->PerfCurve(thisDXCoil.MSEIRFTemp(SpeedNumHS))->numDims == 1) {
+            if (state.dataCurveManager->curves(thisDXCoil.MSEIRFTemp(SpeedNumHS))->numDims == 1) {
                 EIRTempModFac = CurveValue(state, thisDXCoil.MSEIRFTemp(SpeedNumHS), OutdoorDryBulb);
             } else {
                 EIRTempModFac = CurveValue(state, thisDXCoil.MSEIRFTemp(SpeedNumHS), InletAirDryBulbTemp, OutdoorDryBulb);
@@ -13605,13 +13682,38 @@ void CalcMultiSpeedDXCoilHeating(EnergyPlusData &state,
                 if (thisDXCoil.DefrostControl == StandardRatings::HPdefrostControl::Timed) {
                     FractionalDefrostTime = thisDXCoil.DefrostTime;
                     if (FractionalDefrostTime > 0.0) {
-                        HeatingCapacityMultiplier = 0.909 - 107.33 * OutdoorCoildw;
-                        InputPowerMultiplier = 0.90 - 36.45 * OutdoorCoildw;
+                        if (thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideOn && thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideOn) {
+                            HeatingCapacityMultiplier = thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideValue;
+                            InputPowerMultiplier = thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideValue;
+                        } else {
+                            HeatingCapacityMultiplier = 0.909 - 107.33 * OutdoorCoildw;
+                            InputPowerMultiplier = 0.90 - 36.45 * OutdoorCoildw;
+                            if (thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideOn || thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideOn) {
+                                ShowWarningMessage(
+                                    state,
+                                    format("The Frost Heating Capacity Multiplier actuator and the Frost Heating Input Power Multiplier "
+                                           "actuator must be both provided for DX heating coil {}",
+                                           thisDXCoil.Name));
+                                ShowContinueError(state, "EMS actuators are ignored. Simulation is continuing.");
+                            }
+                        }
                     }
                 } else { // else defrost control is on-demand
                     FractionalDefrostTime = 1.0 / (1.0 + 0.01446 / OutdoorCoildw);
-                    HeatingCapacityMultiplier = 0.875 * (1.0 - FractionalDefrostTime);
-                    InputPowerMultiplier = 0.954 * (1.0 - FractionalDefrostTime);
+                    if (thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideOn && thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideOn) {
+                        HeatingCapacityMultiplier = thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideValue;
+                        InputPowerMultiplier = thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideValue;
+                    } else {
+                        HeatingCapacityMultiplier = 0.875 * (1.0 - FractionalDefrostTime);
+                        InputPowerMultiplier = 0.954 * (1.0 - FractionalDefrostTime);
+                        if (thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideOn || thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideOn) {
+                            ShowWarningMessage(state,
+                                               format("The Frost Heating Capacity Multiplier actuator and the Frost Heating Input Power Multiplier "
+                                                      "actuator must be both provided for DX heating coil {}",
+                                                      thisDXCoil.Name));
+                            ShowContinueError(state, "EMS actuators are ignored. Simulation is continuing.");
+                        }
+                    }
                 }
 
                 if (FractionalDefrostTime > 0.0) {
@@ -13789,7 +13891,7 @@ void CalcMultiSpeedDXCoilHeating(EnergyPlusData &state,
             // Model was extended to accept bi-quadratic curves. This allows sensitivity of the heating capacity
             // to the entering dry-bulb temperature as well as the outside dry-bulb temperature. User is
             // advised to use the bi-quadratic curve if sufficient manufacturer data is available.
-            if (state.dataCurveManager->PerfCurve(thisDXCoil.MSCCapFTemp(SpeedNum))->numDims == 1) {
+            if (state.dataCurveManager->curves(thisDXCoil.MSCCapFTemp(SpeedNum))->numDims == 1) {
                 TotCapTempModFac = CurveValue(state, thisDXCoil.MSCCapFTemp(SpeedNum), OutdoorDryBulb);
             } else {
                 TotCapTempModFac = CurveValue(state, thisDXCoil.MSCCapFTemp(SpeedNum), InletAirDryBulbTemp, OutdoorDryBulb);
@@ -13819,13 +13921,38 @@ void CalcMultiSpeedDXCoilHeating(EnergyPlusData &state,
                 if (thisDXCoil.DefrostControl == StandardRatings::HPdefrostControl::Timed) {
                     FractionalDefrostTime = thisDXCoil.DefrostTime;
                     if (FractionalDefrostTime > 0.0) {
-                        HeatingCapacityMultiplier = 0.909 - 107.33 * OutdoorCoildw;
-                        InputPowerMultiplier = 0.90 - 36.45 * OutdoorCoildw;
+                        if (thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideOn && thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideOn) {
+                            HeatingCapacityMultiplier = thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideValue;
+                            InputPowerMultiplier = thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideValue;
+                        } else {
+                            HeatingCapacityMultiplier = 0.909 - 107.33 * OutdoorCoildw;
+                            InputPowerMultiplier = 0.90 - 36.45 * OutdoorCoildw;
+                            if (thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideOn || thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideOn) {
+                                ShowWarningMessage(
+                                    state,
+                                    format("The Frost Heating Capacity Multiplier actuator and the Frost Heating Input Power Multiplier "
+                                           "actuator must be both provided for DX heating coil {}",
+                                           thisDXCoil.Name));
+                                ShowContinueError(state, "EMS actuators are ignored. Simulation is continuing.");
+                            }
+                        }
                     }
                 } else { // else defrost control is on-demand
                     FractionalDefrostTime = 1.0 / (1.0 + 0.01446 / OutdoorCoildw);
-                    HeatingCapacityMultiplier = 0.875 * (1.0 - FractionalDefrostTime);
-                    InputPowerMultiplier = 0.954 * (1.0 - FractionalDefrostTime);
+                    if (thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideOn && thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideOn) {
+                        HeatingCapacityMultiplier = thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideValue;
+                        InputPowerMultiplier = thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideValue;
+                    } else {
+                        HeatingCapacityMultiplier = 0.875 * (1.0 - FractionalDefrostTime);
+                        InputPowerMultiplier = 0.954 * (1.0 - FractionalDefrostTime);
+                        if (thisDXCoil.FrostHeatingCapacityMultiplierEMSOverrideOn || thisDXCoil.FrostHeatingInputPowerMultiplierEMSOverrideOn) {
+                            ShowWarningMessage(state,
+                                               format("The Frost Heating Capacity Multiplier actuator and the Frost Heating Input Power Multiplier "
+                                                      "actuator must be both provided for DX heating coil {}",
+                                                      thisDXCoil.Name));
+                            ShowContinueError(state, "EMS actuators are ignored. Simulation is continuing.");
+                        }
+                    }
                 }
 
                 if (FractionalDefrostTime > 0.0) {
@@ -13867,7 +13994,7 @@ void CalcMultiSpeedDXCoilHeating(EnergyPlusData &state,
             // Model was extended to accept bi-quadratic curves. This allows sensitivity of the EIR
             // to the entering dry-bulb temperature as well as the outside dry-bulb temperature. User is
             // advised to use the bi-quadratic curve if sufficient manufacturer data is available.
-            if (state.dataCurveManager->PerfCurve(thisDXCoil.MSEIRFTemp(1))->numDims == 1) {
+            if (state.dataCurveManager->curves(thisDXCoil.MSEIRFTemp(1))->numDims == 1) {
                 EIRTempModFac = CurveValue(state, thisDXCoil.MSEIRFTemp(1), OutdoorDryBulb);
             } else {
                 EIRTempModFac = CurveValue(state, thisDXCoil.MSEIRFTemp(1), InletAirDryBulbTemp, OutdoorDryBulb);
@@ -17036,7 +17163,7 @@ void CalcVRFHeatingCoil_FluidTCtrl(EnergyPlusData &state,
         // to the entering dry-bulb temperature as well as the outside dry-bulb temperature. User is
         // advised to use the bi-quaratic curve if sufficient manufacturer data is available.
         if (thisDXCoil.DXCoilType_Num != HVAC::CoilVRF_Heating && thisDXCoil.DXCoilType_Num != HVAC::CoilVRF_FluidTCtrl_Heating) {
-            if (state.dataCurveManager->PerfCurve(thisDXCoil.EIRFTemp(Mode))->numDims == 1) {
+            if (state.dataCurveManager->curves(thisDXCoil.EIRFTemp(Mode))->numDims == 1) {
                 EIRTempModFac = CurveValue(state, thisDXCoil.EIRFTemp(Mode), OutdoorDryBulb);
             } else {
                 EIRTempModFac = CurveValue(state, thisDXCoil.EIRFTemp(Mode), InletAirDryBulbTemp, OutdoorDryBulb);

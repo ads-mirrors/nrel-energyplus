@@ -948,6 +948,13 @@ namespace InternalHeatGains {
                 auto &thisLightsInput = state.dataInternalHeatGains->lightsObjects(lightsInputNum);
                 // Create one Lights instance for every space associated with this Lights input object
                 // Why? Why can't multple spaces share a single lights instance?
+                const std::string_view methodInput = IHGAlphas(4);
+                inputValues[(int)DesignLevelMethod::LightingLevel] = IHGNumbers(1);
+                inputBlanks[(int)DesignLevelMethod::LightingLevel] = IHGNumericFieldBlanks(1);
+                inputValues[(int)DesignLevelMethod::WattsPerArea] = IHGNumbers(2);
+                inputBlanks[(int)DesignLevelMethod::WattsPerArea] = IHGNumericFieldBlanks(2);
+                inputValues[(int)DesignLevelMethod::WattsPerPerson] = IHGNumbers(3);
+                inputBlanks[(int)DesignLevelMethod::WattsPerPerson] = IHGNumericFieldBlanks(3);
                 for (int Item1 = 1; Item1 <= thisLightsInput.numOfSpaces; ++Item1) {
                     ++lightsNum;
                     auto &thisLights = state.dataHeatBal->Lights(lightsNum);
@@ -975,110 +982,16 @@ namespace InternalHeatGains {
                     }
 
                     // Lights Design Level calculation method.
-                    {
-                        // Set space load fraction
-                        std::string const &lightingLevel = IHGAlphas(4);
-                        if (lightingLevel == "LIGHTINGLEVEL") {
-                            Real64 spaceFrac = 1.0;
-                            if (thisLightsInput.numOfSpaces > 1) {
-                                Real64 const zoneArea = state.dataHeatBal->Zone(zoneNum).FloorArea;
-                                if (zoneArea > 0.0) {
-                                    spaceFrac = state.dataHeatBal->space(spaceNum).FloorArea / zoneArea;
-                                } else {
-                                    ShowSevereError(state, format("{}Zone floor area is zero when allocating Lights loads to Spaces.", RoutineName));
-                                    ShowContinueError(
-                                        state,
-                                        format("Occurs for Lights object ={} in Zone={}", IHGAlphas(1), state.dataHeatBal->Zone(zoneNum).Name));
-                                    ErrorsFound = true;
-                                }
-                            }
-
-                            thisLights.DesignLevel = IHGNumbers(1) * spaceFrac;
-                            if (IHGNumericFieldBlanks(1)) {
-                                ShowWarningError(state,
-                                                 format("{}{}=\"{}\", specifies {}, but that field is blank.  0 Lights will result.",
-                                                        RoutineName,
-                                                        lightsModuleObject,
-                                                        IHGAlphas(1),
-                                                        IHGNumericFieldNames(1)));
-                            }
-                        } else if (lightingLevel == "WATTS/AREA") {
-                            if (spaceNum != 0) {
-                                if (IHGNumbers(2) >= 0.0) {
-                                    thisLights.DesignLevel = IHGNumbers(2) * state.dataHeatBal->space(spaceNum).FloorArea;
-                                    if ((state.dataHeatBal->space(spaceNum).FloorArea <= 0.0) &&
-                                        !state.dataHeatBal->space(spaceNum).isRemainderSpace) {
-                                        ShowWarningError(state,
-                                                         format("{}{}=\"{}\", specifies {}, but Space Floor Area = 0.  0 Lights will result.",
-                                                                RoutineName,
-                                                                lightsModuleObject,
-                                                                thisLights.Name,
-                                                                IHGNumericFieldNames(2)));
-                                    }
-                                } else {
-                                    ShowSevereError(state,
-                                                    format("{}{}=\"{}\", invalid {}, value  [<0.0]={:.3R}",
-                                                           RoutineName,
-                                                           lightsModuleObject,
-                                                           thisLights.Name,
-                                                           IHGNumericFieldNames(2),
-                                                           IHGNumbers(2)));
-                                    ErrorsFound = true;
-                                }
-                            }
-                            if (IHGNumericFieldBlanks(2)) {
-                                ShowWarningError(state,
-                                                 format("{}{}=\"{}\", specifies {}, but that field is blank.  0 Lights will result.",
-                                                        RoutineName,
-                                                        lightsModuleObject,
-                                                        IHGAlphas(1),
-                                                        IHGNumericFieldNames(2)));
-                            }
-                        } else if (lightingLevel == "WATTS/PERSON") {
-                            if (spaceNum != 0) {
-                                if (IHGNumbers(3) >= 0.0) {
-                                    thisLights.DesignLevel = IHGNumbers(3) * state.dataHeatBal->space(spaceNum).TotOccupants;
-                                    if (state.dataHeatBal->space(spaceNum).TotOccupants <= 0.0) {
-                                        ShowWarningError(state,
-                                                         format("{}{}=\"{}\", specifies {}, but Total Occupants = 0.  0 Lights will result.",
-                                                                RoutineName,
-                                                                lightsModuleObject,
-                                                                thisLights.Name,
-                                                                IHGNumericFieldNames(2)));
-                                    }
-                                } else {
-                                    ShowSevereError(state,
-                                                    format("{}{}=\"{}\", invalid {}, value  [<0.0]={:.3R}",
-                                                           RoutineName,
-                                                           lightsModuleObject,
-                                                           thisLights.Name,
-                                                           IHGNumericFieldNames(3),
-                                                           IHGNumbers(3)));
-                                    ErrorsFound = true;
-                                }
-                            }
-                            if (IHGNumericFieldBlanks(3)) {
-                                ShowWarningError(state,
-                                                 format("{}{}=\"{}\", specifies {}, but that field is blank.  0 Lights will result.",
-                                                        RoutineName,
-                                                        lightsModuleObject,
-                                                        IHGAlphas(1),
-                                                        IHGNumericFieldNames(3)));
-                            }
-                        } else {
-                            if (Item1 == 1) {
-                                ShowSevereError(state,
-                                                format("{}{}=\"{}\", invalid {}, value  ={}",
-                                                       RoutineName,
-                                                       lightsModuleObject,
-                                                       IHGAlphas(1),
-                                                       IHGAlphaFieldNames(4),
-                                                       IHGAlphas(4)));
-                                ShowContinueError(state, R"(...Valid values are "LightingLevel", "Watts/Area", "Watts/Person".)");
-                                ErrorsFound = true;
-                            }
-                        }
-                    }
+                    thisLights.DesignLevel = setDesignLevel(state,
+                                                            ErrorsFound,
+                                                            peopleModuleObject,
+                                                            thisLightsInput.Name,
+                                                            methodInput,
+                                                            thisLightsInput.numOfSpaces,
+                                                            zoneNum,
+                                                            spaceNum,
+                                                            inputValues,
+                                                            inputBlanks);
 
                     // Calculate nominal min/max lighting level
                     thisLights.NomMinDesignLevel = thisLights.DesignLevel * thisLights.sched->getMinVal(state);
@@ -3929,6 +3842,90 @@ namespace InternalHeatGains {
             if (inputBlanks[(int)DesignLevelMethod::AreaPerPerson]) {
                 ShowWarningError(state,
                                  format("{}{}=\"{}\", specifies Floor Area per Person, but that field is blank.  0 {} will result.",
+                                        RoutineName,
+                                        objectType,
+                                        objectName,
+                                        objectType));
+            }
+        } break;
+        case DesignLevelMethod::LightingLevel: {
+            // Set space load fraction
+            Real64 spaceFrac = 1.0;
+            if (numSpaces > 1) {
+                Real64 const zoneArea = state.dataHeatBal->Zone(zoneNum).FloorArea;
+                if (zoneArea > 0.0) {
+                    spaceFrac = state.dataHeatBal->space(spaceNum).FloorArea / zoneArea;
+                } else {
+                    ShowSevereError(state, format("{}Zone floor area is zero when allocating {} loads to Spaces.", RoutineName, objectType));
+                    ShowContinueError(state,
+                                      format("Occurs for {} object ={} in Zone={}", objectType, objectName, state.dataHeatBal->Zone(zoneNum).Name));
+                    ErrorsFound = true;
+                }
+            }
+            designLevel = inputValues[(int)DesignLevelMethod::LightingLevel] * spaceFrac;
+            if (inputBlanks[(int)DesignLevelMethod::LightingLevel]) {
+                ShowWarningError(state,
+                                 format("{}{}=\"{}\", specifies Number of People, but that field is blank.  0 {} will result.",
+                                        RoutineName,
+                                        objectType,
+                                        objectName,
+                                        objectType));
+            }
+        } break;
+        case DesignLevelMethod::WattsPerArea: {
+            if (spaceNum != 0) {
+                Real64 wattsPerArea = inputValues[(int)DesignLevelMethod::WattsPerArea];
+                if (wattsPerArea >= 0.0) {
+                    designLevel = wattsPerArea * state.dataHeatBal->space(spaceNum).FloorArea;
+                    if ((state.dataHeatBal->space(spaceNum).FloorArea <= 0.0) && !state.dataHeatBal->space(spaceNum).isRemainderSpace) {
+                        ShowWarningError(state,
+                                         format("{}{}=\"{}\", specifies Watts per Floor Area, but Space Floor Area = 0.  0 {} will result.",
+                                                RoutineName,
+                                                objectType,
+                                                objectName,
+                                                objectType));
+                    }
+                } else {
+                    ShowSevereError(
+                        state,
+                        format(
+                            "{}{}=\"{}\", invalid Watts per Floor Area, value  [<0.0]={:.3R}", RoutineName, objectType, objectName, wattsPerArea));
+                    ErrorsFound = true;
+                }
+            }
+            if (inputBlanks[(int)DesignLevelMethod::WattsPerArea]) {
+                ShowWarningError(state,
+                                 format("{}{}=\"{}\", specifies Watts per Floor Area, but that field is blank.  0 {} will result.",
+                                        RoutineName,
+                                        objectType,
+                                        objectName,
+                                        objectType));
+            }
+
+        } break;
+        case DesignLevelMethod::WattsPerPerson: {
+            if (spaceNum != 0) {
+                Real64 wattsPerPerson = inputValues[(int)DesignLevelMethod::WattsPerPerson];
+                if (wattsPerPerson > 0.0) {
+                    designLevel = wattsPerPerson * state.dataHeatBal->space(spaceNum).TotOccupants;
+                    if (state.dataHeatBal->space(spaceNum).TotOccupants <= 0.0) {
+                        ShowWarningError(state,
+                                         format("{}{}=\"{}\", specifies Watts per Person, but Total Occupants = 0.  0 {} will result.",
+                                                RoutineName,
+                                                objectType,
+                                                objectName,
+                                                objectType));
+                    }
+                } else {
+                    ShowSevereError(
+                        state,
+                        format("{}{}=\"{}\", invalid Watts per Person, value  [<0.0]={:.3R}", RoutineName, objectType, objectName, wattsPerPerson));
+                    ErrorsFound = true;
+                }
+            }
+            if (inputBlanks[(int)DesignLevelMethod::WattsPerPerson]) {
+                ShowWarningError(state,
+                                 format("{}{}=\"{}\", specifies Watts per Person, but that field is blank.  0 {} will result.",
                                         RoutineName,
                                         objectType,
                                         objectName,

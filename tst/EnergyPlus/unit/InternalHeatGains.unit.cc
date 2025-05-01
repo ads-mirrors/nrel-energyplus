@@ -72,6 +72,7 @@
 #include <EnergyPlus/InternalHeatGains.hh>
 #include <EnergyPlus/OutputReportTabular.hh>
 #include <EnergyPlus/ScheduleManager.hh>
+#include <EnergyPlus/SurfaceGeometry.hh>
 #include <EnergyPlus/ZoneEquipmentManager.hh>
 #include <EnergyPlus/ZoneTempPredictorCorrector.hh>
 
@@ -3498,7 +3499,7 @@ TEST_F(EnergyPlusFixture, InternalHeatGains_SpaceAllocation)
         "  1,                       !- Multiplier",
         "  autocalculate,           !- Ceiling Height {m}",
         "  autocalculate,           !- Volume {m3}",
-        "  autocalculate;           !- Area {m2}",
+        "  20.0;           !- Area {m2}",
 
         "Space,",
         "Space 1A,            !- Name",
@@ -3626,20 +3627,9 @@ TEST_F(EnergyPlusFixture, InternalHeatGains_SpaceAllocation)
 
     bool ErrorsFound(false);
 
-    //state->dataEnvrn->DayOfYear_Schedule = 1;
-    //state->dataEnvrn->DayOfMonth = 1;
-    //state->dataEnvrn->DayOfWeek = 1;
-    //state->dataGlobal->HourOfDay = 1;
-    //state->dataGlobal->TimeStep = 1;
-    //Sched::UpdateScheduleVals(*state);
-
     HeatBalanceManager::GetZoneData(*state, ErrorsFound);
+    SurfaceGeometry::SetupZoneGeometry(*state, ErrorsFound);
     ASSERT_FALSE(ErrorsFound);
-    //ZoneEquipmentManager::GetZoneEquipment(*state);
-    //HeatBalanceManager::AllocateHeatBalArrays(*state);
-    //state->dataHeatBal->Zone(1).FloorArea = 20.0;
-    //state->dataHeatBal->space(1).FloorArea = 5.0;
-    //state->dataHeatBal->space(2).FloorArea = 15.0;
 
     InternalHeatGains::GetInternalHeatGainsInput(*state);
 

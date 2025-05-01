@@ -2298,7 +2298,8 @@ void EIRPlantLoopHeatPump::oneTimeInit(EnergyPlusData &state)
                                 OutputProcessor::Group::HVAC,
                                 OutputProcessor::EndUseCat::Cooling);
         }
-        if (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterHeating || this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterCooling) {
+        if (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterHeating ||
+            this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterCooling) {
             SetupOutputVariable(state,
                                 format("Heat Pump {} COP", mode_keyword),
                                 Constant::Units::None,

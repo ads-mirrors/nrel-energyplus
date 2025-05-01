@@ -1706,7 +1706,6 @@ namespace InternalHeatGains {
                     thisZoneStmEq.ZonePtr = zoneNum;
                     thisZoneStmEq.sched = schedPtr;
 
-
                     // Steam equipment design level calculation method.
                     thisZoneStmEq.DesignLevel = setDesignLevel(
                         state, ErrorsFound, stmEqModuleObject, thisStmEqInput, levelMethod, zoneNum, spaceNum, levelValue, levelBlank, levelField);
@@ -1996,7 +1995,7 @@ namespace InternalHeatGains {
                 Sched::Schedule *opSchedPtr = Sched::GetSchedule(state, IHGAlphas(5));
                 if (IHGAlphaFieldBlanks(5)) {
                     opSchedPtr = Sched::GetScheduleAlwaysOn(state); // Not an availability schedule, but default is constant-1.0
-                } else if (opSchedPtr== nullptr) {
+                } else if (opSchedPtr == nullptr) {
                     ShowSevereItemNotFound(state, eoh, IHGAlphaFieldNames(5), IHGAlphas(5));
                     ErrorsFound = true;
                 } else if (!opSchedPtr->checkMinVal(state, Clusive::In, 0.0)) {
@@ -2014,7 +2013,6 @@ namespace InternalHeatGains {
                     Sched::ShowSevereBadMin(state, eoh, IHGAlphaFieldNames(6), IHGAlphas(6), Clusive::In, 0.0);
                     ErrorsFound = true;
                 }
-
 
                 auto &thisITEqInput = iTEqObjects(itEqInputNum);
                 for (int Item1 = 1; Item1 <= thisITEqInput.numOfSpaces; ++Item1) {
@@ -3389,7 +3387,6 @@ namespace InternalHeatGains {
         case DesignLevelMethod::EquipmentLevel: {
             // No check
         } break;
-
         case DesignLevelMethod::PeoplePerArea:
         case DesignLevelMethod::WattsPerArea:
         case DesignLevelMethod::PowerPerArea: {
@@ -3419,25 +3416,30 @@ namespace InternalHeatGains {
             // Set space load fraction
             Real64 spaceFrac = 1.0;
             if (inputObject.numOfSpaces > 1) {
-                Real64 const zoneArea = state.dataHeatBal->Zone(zoneNum).FloorArea;
-                if (zoneArea > 0.0) {
-                    spaceFrac = state.dataHeatBal->space(spaceNum).FloorArea / zoneArea;
+                auto &zone = state.dataHeatBal->Zone(zoneNum);
+                if (inputObject.spaceListActive) {
+                    spaceFrac = 1.0; // apply the full amount to every space in the SpaceList
+                } else if (zone.numSpaces == 1) {
+                    spaceFrac = 1.0; // apply the full amount to the space in the zone
                 } else {
-                    ShowSevereError(state, format("{}Zone floor area is zero when allocating {} loads to Spaces.", RoutineName, objectType));
-                    ShowContinueError(
-                        state, format("Occurs for {} object ={} in Zone={}", objectType, inputObject.Name, state.dataHeatBal->Zone(zoneNum).Name));
-                    ErrorsFound = true;
+                    if (zone.FloorArea > 0.0) {
+                        spaceFrac = state.dataHeatBal->space(spaceNum).FloorArea / zone.FloorArea;
+                    } else {
+                        ShowSevereError(state, format("{}Zone floor area is zero when allocating {} loads to Spaces.", RoutineName, objectType));
+                        ShowContinueError(state, format("Occurs for {} object ={} in Zone={}", objectType, inputObject.Name, zone.Name));
+                        ErrorsFound = true;
+                    }
                 }
             }
             designLevel = inputValue * spaceFrac;
         } break;
-
         case DesignLevelMethod::PeoplePerArea:
         case DesignLevelMethod::WattsPerArea:
         case DesignLevelMethod::PowerPerArea: {
             if (spaceNum != 0) {
-                designLevel = inputValue * state.dataHeatBal->space(spaceNum).FloorArea;
-                if ((state.dataHeatBal->space(spaceNum).FloorArea <= 0.0) && !state.dataHeatBal->space(spaceNum).isRemainderSpace) {
+                auto &space = state.dataHeatBal->space(spaceNum);
+                designLevel = inputValue * space.FloorArea;
+                if ((space.FloorArea <= 0.0) && !space.isRemainderSpace) {
                     ShowWarningError(state,
                                      format("{}{}=\"{}\", specifies {}, but Space Floor Area = 0.  0 {} will result.",
                                             RoutineName,
@@ -3450,8 +3452,9 @@ namespace InternalHeatGains {
         } break;
         case DesignLevelMethod::AreaPerPerson: {
             if (spaceNum != 0) {
-                designLevel = state.dataHeatBal->space(spaceNum).FloorArea / inputValue;
-                if ((state.dataHeatBal->space(spaceNum).FloorArea <= 0.0) && !state.dataHeatBal->space(spaceNum).isRemainderSpace) {
+                auto &space = state.dataHeatBal->space(spaceNum);
+                designLevel = space.FloorArea / inputValue;
+                if ((space.FloorArea <= 0.0) && !space.isRemainderSpace) {
                     ShowWarningError(state,
                                      format("{}{}=\"{}\", specifies {}, but Space Floor Area = 0.  0 {} will result.",
                                             RoutineName,
@@ -3465,8 +3468,9 @@ namespace InternalHeatGains {
         case DesignLevelMethod::WattsPerPerson:
         case DesignLevelMethod::PowerPerPerson: {
             if (spaceNum != 0) {
-                designLevel = inputValue * state.dataHeatBal->space(spaceNum).TotOccupants;
-                if (state.dataHeatBal->space(spaceNum).TotOccupants <= 0.0) {
+                auto &space = state.dataHeatBal->space(spaceNum);
+                designLevel = inputValue * space.TotOccupants;
+                if (space.TotOccupants <= 0.0) {
                     ShowWarningError(state,
                                      format("{}{}=\"{}\", specifies {}, but Total Occupants = 0.  0 {} will result.",
                                             RoutineName,

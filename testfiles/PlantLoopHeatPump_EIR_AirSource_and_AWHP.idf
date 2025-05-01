@@ -594,31 +594,41 @@
 
   Output:VariableDictionary,IDF;
 
-  Output:Variable,*,Plant Load Profile Mass Flow Rate,Hourly;
+  Output:Variable,*,Plant Load Profile Mass Flow Rate in Heating Mode,Hourly;
+  Output:Variable,*,Plant Load Profile Heat Transfer Rate in Heating Mode,Hourly;
+  Output:Variable,*,Heat Pump Load Side Heat Transfer Rate in Heating Mode,Hourly;
+  Output:Variable,*,Heat Pump Load Side Heat Transfer Energy in Heating Mode,Hourly;
+  Output:Variable,*,Heat Pump Source Side Heat Transfer Rate in Heating Mode,Hourly;
+  Output:Variable,*,Heat Pump Source Side Heat Transfer Energy in Heating Mode,Hourly;
+  Output:Variable,*,Heat Pump Load Side Inlet Temperature in Heating Mode,Hourly;
+  Output:Variable,*,Heat Pump Load Side Outlet Temperature in Heating Mode,Hourly;
+  Output:Variable,*,Heat Pump Source Side Inlet Temperature in Heating Mode,Hourly;
+  Output:Variable,*,Heat Pump Source Side Outlet Temperature in Heating Mode,Hourly;
+  Output:Variable,*,Heat Pump Electricity Rate in Heating Mode,Hourly;
+  Output:Variable,*,Heat Pump Electricity Energy in Heating Mode,Hourly;
+  Output:Variable,*,Heat Pump Load Side Mass Flow Rate in Heating Mode,Hourly;
+  Output:Variable,*,Heat Pump Source Side Mass Flow Rate in Heating Mode,Hourly;
+  Output:Variable,*,Heat Pump Operating Mode is Heating,hourly; !- HVAC Average []
 
-  Output:Variable,*,Plant Load Profile Heat Transfer Rate,Hourly;
+  Output:Variable,*,Plant Load Profile Mass Flow Rate in Cooling Mode,Hourly;
+  Output:Variable,*,Plant Load Profile Heat Transfer Rate in Cooling Mode,Hourly;
+  Output:Variable,*,Heat Pump Load Side Heat Transfer Rate in Cooling Mode,Hourly;
+  Output:Variable,*,Heat Pump Load Side Heat Transfer Energy in Cooling Mode,Hourly;
+  Output:Variable,*,Heat Pump Source Side Heat Transfer Rate in Cooling Mode,Hourly;
+  Output:Variable,*,Heat Pump Source Side Heat Transfer Energy in Cooling Mode,Hourly;
+  Output:Variable,*,Heat Pump Load Side Inlet Temperature in Cooling Mode,Hourly;
+  Output:Variable,*,Heat Pump Load Side Outlet Temperature in Cooling Mode,Hourly;
+  Output:Variable,*,Heat Pump Source Side Inlet Temperature in Cooling Mode,Hourly;
+  Output:Variable,*,Heat Pump Source Side Outlet Temperature in Cooling Mode,Hourly;
+  Output:Variable,*,Heat Pump Electricity Rate in Cooling Mode,Hourly;
+  Output:Variable,*,Heat Pump Electricity Energy in Cooling Mode,Hourly;
+  Output:Variable,*,Heat Pump Load Side Mass Flow Rate in Cooling Mode,Hourly;
+  Output:Variable,*,Heat Pump Source Side Mass Flow Rate in Cooling Mode,Hourly;
+  Output:Variable,*,Heat Pump Operating Mode is Cooling,hourly; !- HVAC Average []
 
-  Output:Variable,*,Heat Pump Load Side Heat Transfer Rate,Hourly;
-
-  Output:Variable,*,Heat Pump Load Side Heat Transfer Energy,Hourly;
-
-  Output:Variable,*,Heat Pump Source Side Heat Transfer Rate,Hourly;
-
-  Output:Variable,*,Heat Pump Source Side Heat Transfer Energy,Hourly;
-
-  Output:Variable,*,Heat Pump Load Side Inlet Temperature,Hourly;
-
-  Output:Variable,*,Heat Pump Load Side Outlet Temperature,Hourly;
-
-  Output:Variable,*,Heat Pump Source Side Inlet Temperature,Hourly;
-
-  Output:Variable,*,Heat Pump Source Side Outlet Temperature,Hourly;
-
-  Output:Variable,*,Heat Pump Electricity Rate,Hourly;
-
-  Output:Variable,*,Heat Pump Electricity Energy,Hourly;
-
-  Output:Variable,*,Heat Pump Load Side Mass Flow Rate,Hourly;
-
-  Output:Variable,*,Heat Pump Source Side Mass Flow Rate,Hourly;
-
+  Output:Variable,*,Heat Pump Crankcase Heater Electricity Rate,hourly; !- HVAC Average [W]
+  Output:Variable,*,Heat Pump Crankcase Heater Electricity Energy,hourly; !- HVAC Sum [W]
+  Output:Variable,*,Heat Pump Heating COP,hourly; !- HVAC Average []
+  Output:Variable,*,Heat Pump Total Heating Rate,hourly; !- HVAC Average []
+  Output:Variable,*,Heat Pump Cooling COP,hourly; !- HVAC Average []
+  Output:Variable,*,Heat Pump Total Cooling Rate,hourly; !- HVAC Average []

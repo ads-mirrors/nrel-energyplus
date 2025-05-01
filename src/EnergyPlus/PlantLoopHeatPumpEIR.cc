@@ -2120,31 +2120,40 @@ void EIRPlantLoopHeatPump::oneTimeInit(EnergyPlusData &state)
 
     if (this->oneTimeInitFlag) {
         bool errFlag = false;
+        std::string suffix;
+        std::string mode_keyword;
+        if (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterHeating) {
+            suffix = " in Heating Mode";
+            mode_keyword = "Heating";
+        } else if (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterCooling) {
+            suffix = " in Cooling Mode";
+            mode_keyword = "Cooling";
+        }
 
         // setup output variables
         SetupOutputVariable(state,
-                            "Heat Pump Part Load Ratio",
+                            format("Heat Pump Part Load Ratio{}", suffix),
                             Constant::Units::None,
                             this->partLoadRatio,
                             OutputProcessor::TimeStepType::System,
                             OutputProcessor::StoreType::Average,
                             this->name);
         SetupOutputVariable(state,
-                            "Heat Pump Cycling Ratio",
+                            format("Heat Pump Cycling Ratio{}", suffix),
                             Constant::Units::None,
                             this->cyclingRatio,
                             OutputProcessor::TimeStepType::System,
                             OutputProcessor::StoreType::Average,
                             this->name);
         SetupOutputVariable(state,
-                            "Heat Pump Load Side Heat Transfer Rate",
+                            format("Heat Pump Load Side Heat Transfer Rate{}", suffix),
                             Constant::Units::W,
                             this->loadSideHeatTransfer,
                             OutputProcessor::TimeStepType::System,
                             OutputProcessor::StoreType::Average,
                             this->name);
         SetupOutputVariable(state,
-                            "Heat Pump Load Side Heat Transfer Energy",
+                            format("Heat Pump Load Side Heat Transfer Energy{}", suffix),
                             Constant::Units::J,
                             this->loadSideEnergy,
                             OutputProcessor::TimeStepType::System,
@@ -2153,49 +2162,49 @@ void EIRPlantLoopHeatPump::oneTimeInit(EnergyPlusData &state)
                             Constant::eResource::EnergyTransfer,
                             OutputProcessor::Group::Plant);
         SetupOutputVariable(state,
-                            "Heat Pump Source Side Heat Transfer Rate",
+                            format("Heat Pump Source Side Heat Transfer Rate{}", suffix),
                             Constant::Units::W,
                             this->sourceSideHeatTransfer,
                             OutputProcessor::TimeStepType::System,
                             OutputProcessor::StoreType::Average,
                             this->name);
         SetupOutputVariable(state,
-                            "Heat Pump Source Side Heat Transfer Energy",
+                            format("Heat Pump Source Side Heat Transfer Energy{}", suffix),
                             Constant::Units::J,
                             this->sourceSideEnergy,
                             OutputProcessor::TimeStepType::System,
                             OutputProcessor::StoreType::Sum,
                             this->name);
         SetupOutputVariable(state,
-                            "Heat Pump Load Side Inlet Temperature",
+                            format("Heat Pump Load Side Inlet Temperature{}", suffix),
                             Constant::Units::C,
                             this->loadSideInletTemp,
                             OutputProcessor::TimeStepType::System,
                             OutputProcessor::StoreType::Average,
                             this->name);
         SetupOutputVariable(state,
-                            "Heat Pump Load Side Outlet Temperature",
+                            format("Heat Pump Load Side Outlet Temperature{}", suffix),
                             Constant::Units::C,
                             this->loadSideOutletTemp,
                             OutputProcessor::TimeStepType::System,
                             OutputProcessor::StoreType::Average,
                             this->name);
         SetupOutputVariable(state,
-                            "Heat Pump Source Side Inlet Temperature",
+                            format("Heat Pump Source Side Inlet Temperature{}", suffix),
                             Constant::Units::C,
                             this->sourceSideInletTemp,
                             OutputProcessor::TimeStepType::System,
                             OutputProcessor::StoreType::Average,
                             this->name);
         SetupOutputVariable(state,
-                            "Heat Pump Source Side Outlet Temperature",
+                            format("Heat Pump Source Side Outlet Temperature{}", suffix),
                             Constant::Units::C,
                             this->sourceSideOutletTemp,
                             OutputProcessor::TimeStepType::System,
                             OutputProcessor::StoreType::Average,
                             this->name);
         SetupOutputVariable(state,
-                            "Heat Pump Electricity Rate",
+                            format("Heat Pump Electricity Rate{}", suffix),
                             Constant::Units::W,
                             this->powerUsage,
                             OutputProcessor::TimeStepType::System,
@@ -2204,7 +2213,7 @@ void EIRPlantLoopHeatPump::oneTimeInit(EnergyPlusData &state)
         if (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpEIRCooling ||
             this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterCooling) { // energy from HeatPump:PlantLoop:EIR:Cooling object
             SetupOutputVariable(state,
-                                "Heat Pump Electricity Energy",
+                                format("Heat Pump Electricity Energy{}", suffix),
                                 Constant::Units::J,
                                 this->powerEnergy,
                                 OutputProcessor::TimeStepType::System,
@@ -2224,7 +2233,7 @@ void EIRPlantLoopHeatPump::oneTimeInit(EnergyPlusData &state)
         } else if (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpEIRHeating ||
                    this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterHeating) { // energy from HeatPump:PlantLoop:EIR:Heating object
             SetupOutputVariable(state,
-                                "Heat Pump Electricity Energy",
+                                format("Heat Pump Electricity Energy{}", suffix),
                                 Constant::Units::J,
                                 this->powerEnergy,
                                 OutputProcessor::TimeStepType::System,
@@ -2288,59 +2297,39 @@ void EIRPlantLoopHeatPump::oneTimeInit(EnergyPlusData &state)
                                 Constant::eResource::Electricity,
                                 OutputProcessor::Group::HVAC,
                                 OutputProcessor::EndUseCat::Cooling);
+        }
+        if (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterHeating || this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterCooling) {
             SetupOutputVariable(state,
-                                "Heat Pump Heating COP",
+                                format("Heat Pump {} COP", mode_keyword),
                                 Constant::Units::None,
                                 this->heatingCOP,
                                 OutputProcessor::TimeStepType::System,
                                 OutputProcessor::StoreType::Average,
                                 this->name);
             SetupOutputVariable(state,
-                                "Heat Pump Total Heating Rate",
+                                format("Heat Pump Total {} Rate", mode_keyword),
                                 Constant::Units::None,
                                 this->heatingRate,
                                 OutputProcessor::TimeStepType::System,
                                 OutputProcessor::StoreType::Average,
                                 this->name);
             SetupOutputVariable(state,
-                                "Heat Pump Operating Mode",
+                                format("Heat Pump Operating Mode is {}", mode_keyword),
                                 Constant::Units::None,
                                 this->operatingMode,
-                                OutputProcessor::TimeStepType::System,
-                                OutputProcessor::StoreType::Average,
-                                this->name);
-        } else if (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterCooling) {
-            SetupOutputVariable(state,
-                                "Heat Pump Operating Mode",
-                                Constant::Units::None,
-                                this->operatingMode,
-                                OutputProcessor::TimeStepType::System,
-                                OutputProcessor::StoreType::Average,
-                                this->name);
-            SetupOutputVariable(state,
-                                "Heat Pump Cooling COP",
-                                Constant::Units::None,
-                                this->coolingCOP,
-                                OutputProcessor::TimeStepType::System,
-                                OutputProcessor::StoreType::Average,
-                                this->name);
-            SetupOutputVariable(state,
-                                "Heat Pump Total Cooling Rate",
-                                Constant::Units::None,
-                                this->coolingRate,
                                 OutputProcessor::TimeStepType::System,
                                 OutputProcessor::StoreType::Average,
                                 this->name);
         }
         SetupOutputVariable(state,
-                            "Heat Pump Load Side Mass Flow Rate",
+                            format("Heat Pump Load Side Mass Flow Rate{}", suffix),
                             Constant::Units::kg_s,
                             this->loadSideMassFlowRate,
                             OutputProcessor::TimeStepType::System,
                             OutputProcessor::StoreType::Average,
                             this->name);
         SetupOutputVariable(state,
-                            "Heat Pump Source Side Mass Flow Rate",
+                            format("Heat Pump Source Side Mass Flow Rate{}", suffix),
                             Constant::Units::kg_s,
                             this->sourceSideMassFlowRate,
                             OutputProcessor::TimeStepType::System,

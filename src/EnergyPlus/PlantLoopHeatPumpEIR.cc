@@ -49,7 +49,6 @@
 #include <algorithm>
 #include <string>
 #include <utility>
-#include <vector>
 
 // EnergyPlus headers
 #include <EnergyPlus/Autosizing/Base.hh>
@@ -62,9 +61,7 @@
 #include <EnergyPlus/DataLoopNode.hh>
 #include <EnergyPlus/DataPrecisionGlobals.hh>
 #include <EnergyPlus/DataSizing.hh>
-#include <EnergyPlus/FluidProperties.hh>
 #include <EnergyPlus/General.hh>
-#include <EnergyPlus/InputProcessing/InputProcessor.hh>
 #include <EnergyPlus/NodeInputManager.hh>
 #include <EnergyPlus/OutAirNodeManager.hh>
 #include <EnergyPlus/OutputProcessor.hh>
@@ -214,6 +211,7 @@ void EIRPlantLoopHeatPump::resetReportingVariables()
     this->heatRecoveryIsActive = false;
     this->heatRecoveryOperatingStatus = 0;
     this->thermosiphonStatus = 0;
+    this->CrankcaseHeaterPower = 0.0;
 }
 
 void EIRPlantLoopHeatPump::setOperatingFlowRatesWSHP(EnergyPlusData &state, bool FirstHVACIteration)
@@ -4161,7 +4159,7 @@ Real64 EIRFuelFiredHeatPump::getDynamicMaxCapacity(EnergyPlusData &state)
     return this->referenceCapacity * capacityModifierFuncTemp;
 }
 
-void HeatPumpAirToWater::doPhysics(EnergyPlusData &state, Real64 currentLoad)
+void HeatPumpAirToWater::doPhysics(EnergyPlusData &state, Real64 const currentLoad)
 {
     // add free cooling at some point, compressor is off during free cooling, temp limits restrict free cooling range
     if ((this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterCooling && currentLoad >= 0.0) ||
@@ -4187,6 +4185,26 @@ void HeatPumpAirToWater::doPhysics(EnergyPlusData &state, Real64 currentLoad)
     this->calcPowerUsage(state, speedLevel);
 
     this->calcSourceSideHeatTransferASHP(state);
+    if (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterHeating) {
+        this->CrankcaseHeaterPower = calcCrankcaseHeaterPower(state);
+    } else {
+        this->CrankcaseHeaterPower = 0.0;
+    }
+}
+
+Real64 HeatPumpAirToWater::calcCrankcaseHeaterPower(EnergyPlusData &state) const
+{
+    Real64 CompAmbTemp = state.dataEnvrn->OutDryBulbTemp;
+    Real64 CrankcaseHeatingPower;
+    if (CompAmbTemp < this->MaxOATCrankcaseHeater) {
+        CrankcaseHeatingPower = this->CrankcaseHeaterCapacity;
+        if (this->CrankcaseHeaterCapacityCurveIndex > 0) {
+            CrankcaseHeatingPower *= Curve::CurveValue(state, this->CrankcaseHeaterCapacityCurveIndex, CompAmbTemp);
+        }
+    } else {
+        CrankcaseHeatingPower = 0.0;
+    }
+    return CrankcaseHeatingPower;
 }
 
 void HeatPumpAirToWater::calcAvailableCapacity(

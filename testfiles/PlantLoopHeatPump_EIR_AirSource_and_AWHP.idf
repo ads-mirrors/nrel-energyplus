@@ -302,8 +302,8 @@
     1 , !- Compressor Multiplier
     FixedSpeed , !- Control Type
     100 , !- Crankcase Heater Capacity
-    EIRCurveFuncPLR, !- Crankcase Heater Capacity Function of Temperature Curve Name
-    20 , !- Maximum Ambient Temperature for Crankcase Heater Operation
+    CrankCaseHeaterPowerCurve, !- Crankcase Heater Capacity Function of Temperature Curve Name
+    5 , !- Maximum Ambient Temperature for Crankcase Heater Operation
     1 , !- Number of Speeds for Heating
     CapCurveFuncTemp, !-  Normalized Heating Capacity Function of Temperature Curve Name at Speed 1
     EIRCurveFuncTemp, !-  Heating Energy Input Ratio Function of Temperature Curve Name at Speed 1
@@ -400,6 +400,14 @@
     0.0,                     !- Coefficient3 x**2
     0.0,                     !- Minimum Value of x
     1.0;                     !- Maximum Value of x
+
+  Curve:Quadratic,
+    CrankCaseHeaterPowerCurve,         !- Name
+    1.0,                     !- Coefficient1 Constant
+    0.01,                     !- Coefficient2 x
+    0.0,                     !- Coefficient3 x**2
+    -30,                     !- Minimum Value of x
+    30;                     !- Maximum Value of x
 
   BranchList,
     Heating Coil Load Loop Demand Branches,  !- Name
@@ -632,3 +640,5 @@
   Output:Variable,*,Heat Pump Total Heating Rate,hourly; !- HVAC Average []
   Output:Variable,*,Heat Pump Cooling COP,hourly; !- HVAC Average []
   Output:Variable,*,Heat Pump Total Cooling Rate,hourly; !- HVAC Average []
+
+  Output:Variable,*,Site Outdoor Air Drybulb Temperature,hourly; !- Zone Average [C]

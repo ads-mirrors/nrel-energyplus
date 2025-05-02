@@ -216,8 +216,8 @@ void GetPurchasedAir(EnergyPlusData &state)
     static constexpr std::string_view routineName = "GetPurchasedAir";
     constexpr std::array<std::string_view, static_cast<int>(LimitType::Num)> LimitTypeNamesUC{
         "NOLIMIT", "LIMITFLOWRATE", "LIMITCAPACITY", "LIMITFLOWRATEANDCAPACITY"};
-    constexpr std::array<std::string_view, static_cast<int>(HumControl::Num)> DehumCtrlTypeNamesUC{
-        "NONE", "CONSTANTSENSIBLEHEATRATIO", "CONSTANTSUPPLYHUMIDITYRATIO", "HUMIDISTAT"};
+    constexpr std::array<std::string_view, static_cast<int>(HumControl::Num)> HumCtrlTypeNamesUC{
+        "NONE", "CONSTANTSENSIBLEHEATRATIO", "HUMIDISTAT", "CONSTANTSUPPLYHUMIDITYRATIO"};
     constexpr std::array<std::string_view, static_cast<int>(DCV::Num)> DCVTypeNamesUC{"NONE", "OCCUPANCYSCHEDULE", "CO2SETPOINT"};
     constexpr std::array<std::string_view, static_cast<int>(Econ::Num)> EconomizerTypeNamesUC{
         "NOECONOMIZER", "DIFFERENTIALDRYBULB", "DIFFERENTIALENTHALPY"};
@@ -241,7 +241,6 @@ void GetPurchasedAir(EnergyPlusData &state)
 
         int IOStat = 0;
         int NumNums = 0;
-        // int TotalArgs = 0;
         int NumAlphas = 0;
         int purchAirNum = 0;
         std::string fieldValue = "";
@@ -446,7 +445,7 @@ void GetPurchasedAir(EnergyPlusData &state)
             // get Dehumidification control type
             cAlphaFieldName = "Dehumidification Control Type";
             fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "dehumidification_control_type");
-            PurchAir.DehumidCtrlType = static_cast<HumControl>(getEnumValue(DehumCtrlTypeNamesUC, Util::makeUPPER(fieldValue)));
+            PurchAir.DehumidCtrlType = static_cast<HumControl>(getEnumValue(HumCtrlTypeNamesUC, Util::makeUPPER(fieldValue)));
             if (PurchAir.DehumidCtrlType == HumControl::Invalid) {
                 ShowSevereInvalidKey(state,
                                      eoh,
@@ -459,7 +458,7 @@ void GetPurchasedAir(EnergyPlusData &state)
             // get Humidification control type
             cAlphaFieldName = "Humidification Control Type";
             fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "humidification_control_type");
-            PurchAir.HumidCtrlType = static_cast<HumControl>(getEnumValue(DehumCtrlTypeNamesUC, Util::makeUPPER(fieldValue)));
+            PurchAir.HumidCtrlType = static_cast<HumControl>(getEnumValue(HumCtrlTypeNamesUC, Util::makeUPPER(fieldValue)));
             if (PurchAir.HumidCtrlType == HumControl::Invalid) {
                 ShowSevereInvalidKey(state, eoh, cAlphaFieldName, fieldValue, "Valid entries are None, Humidistat, or ConstantSupplyHumidityRatio.");
                 ErrorsFound = true;

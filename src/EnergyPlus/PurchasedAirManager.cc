@@ -536,7 +536,8 @@ void GetPurchasedAir(EnergyPlusData &state)
                 fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "outdoor_air_economizer_type");
                 PurchAir.EconomizerType = static_cast<Econ>(getEnumValue(EconomizerTypeNamesUC, Util::makeUPPER(fieldValue)));
                 if (PurchAir.EconomizerType == Econ::Invalid) {
-                    ShowSevereInvalidKey(state, eoh, cAlphaFieldName, fieldValue, "Valid entries are NoEconomizer, DifferentialDryBulb, or DifferentialEnthalpy.");
+                    ShowSevereInvalidKey(
+                        state, eoh, cAlphaFieldName, fieldValue, "Valid entries are NoEconomizer, DifferentialDryBulb, or DifferentialEnthalpy.");
                     ErrorsFound = true;
                 }
                 // get Outdoor air heat recovery type and effectiveness
@@ -2349,7 +2350,7 @@ void CalcPurchAirLoads(EnergyPlusData &state,
                                 // CoolSensOutput = SupplyMassFlowRate * CpAir * (MixedAirTemp - SupplyTemp)
                                 // CoolTotOutput = SupplyMassFlowRate * (MixedAirEnthalpy - SupplyEnthalpy)
                             }
-                        } // Capacity limit exceeded
+                        }    // Capacity limit exceeded
                     } else { // Not dehumidifying
                         // If not dehumidifying, compare sensible cooling to the limit
                         // This section will only increase supply temp, so no need to recheck for super-saturation
@@ -2359,8 +2360,8 @@ void CalcPurchAirLoads(EnergyPlusData &state,
                             CoolSensOutput = PurchAir.MaxCoolTotCap;
                             PurchAir.SupplyTemp = PurchAir.MixedAirTemp - CoolSensOutput / (SupplyMassFlowRate * CpAir);
                         } // Capacity limit exceeded
-                    } // Dehumidifying or not
-                } // Capacity limit active
+                    }     // Dehumidifying or not
+                }         // Capacity limit active
 
             } else { // SupplyMassFlowRate is zero
                 SupplyEnthalpy = MixedAirEnthalpy;

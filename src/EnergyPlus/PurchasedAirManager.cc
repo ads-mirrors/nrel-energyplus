@@ -560,6 +560,7 @@ void GetPurchasedAir(EnergyPlusData &state)
                 for (int NodeNum = 1; NodeNum <= state.dataZoneEquip->ZoneEquipConfig(CtrlZone).NumInletNodes; ++NodeNum) {
                     if (PurchAir.ZoneSupplyAirNodeNum == state.dataZoneEquip->ZoneEquipConfig(CtrlZone).InletNode(NodeNum)) {
                         PurchAir.ZonePtr = CtrlZone;
+                        break;
                     }
                 }
             }

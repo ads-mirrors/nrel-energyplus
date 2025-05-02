@@ -246,6 +246,7 @@ void GetPurchasedAir(EnergyPlusData &state)
         int purchAirNum = 0;
         std::string fieldValue = "";
         std::string cAlphaFieldName = "";
+        InitUniqueNodeCheck(state, cCurrentModuleObject);
         auto const &schemaProps = s_ip->getObjectSchemaProps(state, cCurrentModuleObject);
         auto &instancesValue = instances_PurchAir.value();
         for (auto instance = instancesValue.begin(); instance != instancesValue.end(); ++instance) {
@@ -253,7 +254,6 @@ void GetPurchasedAir(EnergyPlusData &state)
             ++purchAirNum;
             auto const &fields = instance.value();
             std::string thisObjectName = instance.key();
-
             auto &PurchAir = state.dataPurchasedAirMgr->PurchAir(purchAirNum);
             PurchAir.cObjectName = cCurrentModuleObject;
             ErrorObjectHeader eoh{routineName, cCurrentModuleObject, thisObjectName};
@@ -274,10 +274,9 @@ void GetPurchasedAir(EnergyPlusData &state)
             state.dataPurchasedAirMgr->PurchAirNumericFields(purchAirNum).FieldNames.allocate(NumNums);
             state.dataPurchasedAirMgr->PurchAirNumericFields(purchAirNum).FieldNames = "";
             state.dataPurchasedAirMgr->PurchAirNumericFields(purchAirNum).FieldNames = state.dataIPShortCut->cNumericFieldNames;
-
             Util::IsNameEmpty(state, thisObjectName, cCurrentModuleObject, ErrorsFound);
 
-            PurchAir.Name = thisObjectName;
+            PurchAir.Name = Util::makeUPPER(thisObjectName);
             cAlphaFieldName = "Availability Schedule Name";
             // get optional  availability schedule
             std::string const availSchedName = s_ip->getAlphaFieldValue(fields, schemaProps, "availability_schedule_name");
@@ -289,7 +288,7 @@ void GetPurchasedAir(EnergyPlusData &state)
             }
             // Purchased air supply air node is an outlet node
             cAlphaFieldName = "Zone Supply Air Node Name";
-            std::string const zoneSupplyAirNodeName = s_ip->getAlphaFieldValue(fields, schemaProps, "zone_supply_air_node_name");
+            std::string zoneSupplyAirNodeName = s_ip->getAlphaFieldValue(fields, schemaProps, "zone_supply_air_node_name");
             PurchAir.ZoneSupplyAirNodeNum = GetOnlySingleNode(state,
                                                               zoneSupplyAirNodeName,
                                                               ErrorsFound,
@@ -381,9 +380,8 @@ void GetPurchasedAir(EnergyPlusData &state)
                 }
                 break;
             default:
-                ShowSevereError(state, format("{}{}=\"{} invalid data", RoutineName, cCurrentModuleObject, PurchAir.Name));
-                ShowContinueError(state, format("Invalid-entry {}=\"{}\".", cAlphaFieldName, fieldValue));
-                ShowContinueError(state, "Valid entries are NoLimit, LimitFlowRate, LimitCapacity, or LimitFlowRateAndCapacity");
+                ShowSevereInvalidKey(
+                    state, eoh, cAlphaFieldName, fieldValue, "Valid entries are NoLimit, LimitFlowRate, LimitCapacity, or LimitFlowRateAndCapacity.");
                 ErrorsFound = true;
             }
             PurchAir.MaxHeatVolFlowRate = s_ip->getRealFieldValue(fields, schemaProps, "maximum_heating_air_flow_rate");
@@ -421,9 +419,8 @@ void GetPurchasedAir(EnergyPlusData &state)
                 }
                 break;
             default:
-                ShowSevereError(state, format("{}{}=\"{} invalid data", RoutineName, cCurrentModuleObject, PurchAir.Name));
-                ShowContinueError(state, format("Invalid-entry {}=\"{}\".", cAlphaFieldName, fieldValue));
-                ShowContinueError(state, "Valid entries are NoLimit, LimitFlowRate, LimitCapacity, or LimitFlowRateAndCapacity");
+                ShowSevereInvalidKey(
+                    state, eoh, cAlphaFieldName, fieldValue, "Valid entries are NoLimit, LimitFlowRate, LimitCapacity, or LimitFlowRateAndCapacity.");
                 ErrorsFound = true;
             }
             PurchAir.MaxCoolVolFlowRate = s_ip->getRealFieldValue(fields, schemaProps, "maximum_cooling_air_flow_rate");
@@ -451,9 +448,11 @@ void GetPurchasedAir(EnergyPlusData &state)
             fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "dehumidification_control_type");
             PurchAir.DehumidCtrlType = static_cast<HumControl>(getEnumValue(DehumCtrlTypeNamesUC, Util::makeUPPER(fieldValue)));
             if (PurchAir.DehumidCtrlType == HumControl::Invalid) {
-                ShowSevereError(state, format("{}{}=\"{} invalid data", RoutineName, cCurrentModuleObject, PurchAir.Name));
-                ShowContinueError(state, format("Invalid-entry {}=\"{}\".", cAlphaFieldName, fieldValue));
-                ShowContinueError(state, "Valid entries are ConstantSensibleHeatRatio, Humidistat, or ConstantSupplyHumidityRatio");
+                ShowSevereInvalidKey(state,
+                                     eoh,
+                                     cAlphaFieldName,
+                                     fieldValue,
+                                     "Valid entries are ConstantSensibleHeatRatio, Humidistat, or ConstantSupplyHumidityRatio.");
                 ErrorsFound = true;
             }
             PurchAir.CoolSHR = s_ip->getRealFieldValue(fields, schemaProps, "cooling_sensible_heat_ratio");
@@ -462,9 +461,7 @@ void GetPurchasedAir(EnergyPlusData &state)
             fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "humidification_control_type");
             PurchAir.HumidCtrlType = static_cast<HumControl>(getEnumValue(DehumCtrlTypeNamesUC, Util::makeUPPER(fieldValue)));
             if (PurchAir.HumidCtrlType == HumControl::Invalid) {
-                ShowSevereError(state, format("{}{}=\"{} invalid data", RoutineName, cCurrentModuleObject, PurchAir.Name));
-                ShowContinueError(state, format("Invalid-entry {}=\"{}\".", cAlphaFieldName, fieldValue));
-                ShowContinueError(state, "Valid entries are None, Humidistat, or ConstantSupplyHumidityRatio");
+                ShowSevereInvalidKey(state, eoh, cAlphaFieldName, fieldValue, "Valid entries are None, Humidistat, or ConstantSupplyHumidityRatio.");
                 ErrorsFound = true;
             }
             // get Design specification outdoor air object
@@ -472,8 +469,7 @@ void GetPurchasedAir(EnergyPlusData &state)
             fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "design_specification_outdoor_air_object_name");
             if (!fieldValue.empty()) {
                 if (PurchAir.OARequirementsPtr = Util::FindItemInList(fieldValue, state.dataSize->OARequirements) == 0) {
-                    ShowSevereError(state, format("{}{}=\"{} invalid data", RoutineName, cCurrentModuleObject, PurchAir.Name));
-                    ShowContinueError(state, format("Invalid-not found{}=\"{}\".", cAlphaFieldName, fieldValue));
+                    ShowSevereItemNotFound(state, eoh, cAlphaFieldName, fieldValue);
                     ErrorsFound = true;
                 } else {
                     PurchAir.OutdoorAir = true;
@@ -532,9 +528,7 @@ void GetPurchasedAir(EnergyPlusData &state)
                                           "Concentration\"=\"Yes\".");
                     }
                 } else if (PurchAir.DCVType == DCV::Invalid) {
-                    ShowSevereError(state, format("{}{}=\"{} invalid data", RoutineName, cCurrentModuleObject, PurchAir.Name));
-                    ShowContinueError(state, format("Invalid-entry {}={}", cAlphaFieldName, fieldValue));
-                    ShowContinueError(state, "Valid entries are None, OccupancySchedule, or CO2Setpoint");
+                    ShowSevereInvalidKey(state, eoh, cAlphaFieldName, fieldValue, "Valid entries are None, OccupancySchedule, or CO2Setpoint.");
                     ErrorsFound = true;
                 }
                 // get Outdoor air economizer type
@@ -542,9 +536,7 @@ void GetPurchasedAir(EnergyPlusData &state)
                 fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "outdoor_air_economizer_type");
                 PurchAir.EconomizerType = static_cast<Econ>(getEnumValue(EconomizerTypeNamesUC, Util::makeUPPER(fieldValue)));
                 if (PurchAir.EconomizerType == Econ::Invalid) {
-                    ShowSevereError(state, format("{}{}=\"{} invalid data", RoutineName, cCurrentModuleObject, PurchAir.Name));
-                    ShowContinueError(state, format("Invalid-entry {}={}", cAlphaFieldName, fieldValue));
-                    ShowContinueError(state, "Valid entries are NoEconomizer, DifferentialDryBulb, or DifferentialEnthalpy");
+                    ShowSevereInvalidKey(state, eoh, cAlphaFieldName, fieldValue, "Valid entries are NoEconomizer, DifferentialDryBulb, or DifferentialEnthalpy.");
                     ErrorsFound = true;
                 }
                 // get Outdoor air heat recovery type and effectiveness
@@ -552,9 +544,7 @@ void GetPurchasedAir(EnergyPlusData &state)
                 fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "heat_recovery_type");
                 PurchAir.HtRecType = static_cast<HeatRecovery>(getEnumValue(HtRecTypeNamesUC, Util::makeUPPER(fieldValue)));
                 if (PurchAir.HtRecType == HeatRecovery::Invalid) {
-                    ShowSevereError(state, format("{}{}=\"{} invalid data", RoutineName, cCurrentModuleObject, PurchAir.Name));
-                    ShowContinueError(state, format("Invalid-entry {}={}", cAlphaFieldName, fieldValue));
-                    ShowContinueError(state, "Valid entries are None, Sensible, or Enthalpy");
+                    ShowSevereInvalidKey(state, eoh, cAlphaFieldName, fieldValue, "Valid entries are None, Sensible, or Enthalpy.");
                     ErrorsFound = true;
                 }
             } else { // No outdoorair
@@ -577,8 +567,7 @@ void GetPurchasedAir(EnergyPlusData &state)
             fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "design_specification_zonehvac_sizing_object_name");
             if (!fieldValue.empty()) {
                 if (PurchAir.HVACSizingIndex = Util::FindItemInList(fieldValue, state.dataSize->ZoneHVACSizing) == 0) {
-                    ShowSevereError(state, format("{} = {} not found.", cAlphaFieldName, fieldValue));
-                    ShowContinueError(state, format("Occurs in {} = {}", cCurrentModuleObject, PurchAir.Name));
+                    ShowSevereItemNotFound(state, eoh, cAlphaFieldName, fieldValue);
                     ErrorsFound = true;
                 }
             }

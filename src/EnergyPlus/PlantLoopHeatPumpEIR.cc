@@ -1495,6 +1495,19 @@ void EIRPlantLoopHeatPump::sizeSrcSideASHP(EnergyPlusData &state)
         }
     }
 
+    if (state.dataPlnt->PlantFinalSizesOkayToReport) {
+        std::string objectName = this->name;
+        if (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterHeating) {
+            objectName = format("{}:Heating", this->name);
+        } else if (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterCooling) {
+            objectName = format("{}:Cooling", this->name);
+        }
+        // create predefined report
+        OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchMechType, objectName, typeName);
+        OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchMechNomEff, objectName, this->referenceCOP);
+        OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchMechNomCap, objectName, this->referenceCapacity);
+    }
+
     if (errorsFound) {
         ShowFatalError(state, "Preceding sizing errors cause program termination"); // LCOV_EXCL_LINE
     }

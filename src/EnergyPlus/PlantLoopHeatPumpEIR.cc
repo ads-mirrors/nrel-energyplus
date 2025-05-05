@@ -1497,10 +1497,42 @@ void EIRPlantLoopHeatPump::sizeSrcSideASHP(EnergyPlusData &state)
 
     if (state.dataPlnt->PlantFinalSizesOkayToReport) {
         std::string objectName = this->name;
-        if (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterHeating) {
-            objectName = format("{}:Heating", this->name);
-        } else if (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterCooling) {
-            objectName = format("{}:Cooling", this->name);
+        std::string modeKeyWord;
+        if (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterHeating ||
+            this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterCooling) {
+            if (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterHeating) {
+                modeKeyWord = "Heating";
+            } else if (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterCooling) {
+                modeKeyWord = "Cooling";
+            }
+            objectName = format("{}:{}", this->name, modeKeyWord);
+            constexpr std::array<std::string_view, static_cast<int>(ControlType::Num)> AWHPCompressorControlTypeUC = {"FIXEDSPEED", "VARIABLESPEED"};
+            auto typeNameCompressor = AWHPCompressorControlTypeUC[static_cast<int>(this->controlType)];
+            OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchAWHPType, objectName, typeNameCompressor);
+            OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchAWHPRefCap, objectName, this->referenceCapacity);
+            OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchAWHPRefEff, objectName, "N/A");
+            OutputReportPredefined::PreDefTableEntry(
+                state, state.dataOutRptPredefined->pdchAWHPRatedCap, objectName, this->referenceCapacity); // did not find rated cap, using Nominal
+            OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchAWHPIPLVinSI, objectName, "N/A");
+            OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchAWHPIPLVinIP, objectName, "N/A");
+            OutputReportPredefined::PreDefTableEntry(
+                state,
+                state.dataOutRptPredefined->pdchAWHPPlantloopName,
+                objectName,
+                this->loadSidePlantLoc.loopNum > 0 ? state.dataPlnt->PlantLoop(this->loadSidePlantLoc.loopNum).Name : "N/A");
+            OutputReportPredefined::PreDefTableEntry(state,
+                                                     state.dataOutRptPredefined->pdchAWHPPlantloopBranchName,
+                                                     objectName,
+                                                     this->loadSidePlantLoc.loopNum > 0 ? state.dataPlnt->PlantLoop(this->loadSidePlantLoc.loopNum)
+                                                                                              .LoopSide(this->loadSidePlantLoc.loopSideNum)
+                                                                                              .Branch(this->loadSidePlantLoc.branchNum)
+                                                                                              .Name
+                                                                                        : "N/A");
+            OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchAWHPMinPLR, objectName, this->minimumPLR);
+            OutputReportPredefined::PreDefTableEntry(state,
+                                                     state.dataOutRptPredefined->pdchAWHPDesSizeRefWaterFlowRate,
+                                                     objectName,
+                                                     this->loadSideDesignMassFlowRate); // flowrate Max==DesignSizeRef flowrate?
         }
         // create predefined report
         OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchMechType, objectName, typeName);
@@ -3659,7 +3691,7 @@ void HeatPumpAirToWater::processInputForEIRPLHP(EnergyPlusData &state)
                         }
                     }
                 }
-                thisAWHP.controlType = static_cast<HeatPumpAirToWater::ControlType>(
+                thisAWHP.controlType = static_cast<CompressorControlType>(
                     getEnumValue(AWHPControlTypeUC, Util::makeUPPER(fields.at("control_type").get<std::string>())));
                 thisAWHP.CrankcaseHeaterCapacity =
                     state.dataInputProcessing->inputProcessor->getRealFieldValue(fields, schemaProps, "crankcase_heater_capacity");
@@ -4257,7 +4289,7 @@ void HeatPumpAirToWater::calcAvailableCapacity(
             //            availableCapacity *= heatingCapacityModifierASHP(state);
         }
         if (availableCapacity > 0) {
-            if (this->controlType == HeatPumpAirToWater::ControlType::FixedSpeed) {
+            if (this->controlType == CompressorControlType::FixedSpeed) {
                 partLoadRatio = capacityHigh / availableCapacity;
                 if (std::fabs(currentLoad) >= availableCapacity) {
                     this->cyclingRatio = 1.0;

@@ -240,6 +240,14 @@ namespace EIRPlantLoopHeatPumps {
         Real64 heatingRate = 0.0;
         Real64 coolingRate = 0.0;
         int operatingMode = 0;
+        enum class CompressorControlType
+        {
+            Invalid = -1,
+            FixedSpeed,
+            VariableSpeed,
+            Num
+        };
+        CompressorControlType controlType = CompressorControlType::FixedSpeed;
 
         // a couple worker functions to easily allow merging of cooling and heating operations
         std::function<Real64(Real64, Real64)> calcLoadOutletTemp;
@@ -447,13 +455,6 @@ namespace EIRPlantLoopHeatPumps {
             Load,
             Num
         };
-        enum class ControlType
-        {
-            Invalid = -1,
-            FixedSpeed,
-            VariableSpeed,
-            Num
-        };
 
         // additional variables
         std::string availSchedName;            // availability schedule
@@ -462,7 +463,6 @@ namespace EIRPlantLoopHeatPumps {
         std::string operationModeControlScheName;
         Sched::Schedule *operationModeControlSche = nullptr; // availability schedule
         int compressorMultiplier = 1;
-        ControlType controlType = ControlType::FixedSpeed;
         Real64 sourceSideDesignInletTemp = 0.0;    // Rated Inlet Air Temperature in xx Mode
         Real64 ratedLeavingWaterTemperature = 0.0; // rated_leaving_water_temperature_in_xx_mode
         Real64 minOutdoorAirTempLimit = 0.0;

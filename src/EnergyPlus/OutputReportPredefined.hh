@@ -423,6 +423,21 @@ struct OutputReportPredefinedData : BaseGlobalStruct
     int pdchBoilerFuelType = 0;            // Fuel type
     int pdchBoilerParaElecLoad = 0;        // Parasitic electric load
 
+    // AWHP Table in Equipment Summary
+    int pdstAWHP = 0;
+    int pdchAWHPType = 0;                       // Type
+    int pdchAWHPRefCap = 0;                     // Reference Capacity[W]
+    int pdchAWHPRefEff = 0;                     // Reference Efficiency [W/W]
+    int pdchAWHPRatedCap = 0;                   // Rated Capacity [W]
+    int pdchAWHPRatedEff = 0;                   // Rated Efficiency [W/W]
+    int pdchAWHPIPLVinSI = 0;                   // IPLV in SI Units [W/W]
+    int pdchAWHPIPLVinIP = 0;                   // IPLV in IP Units [Btu/W-h]
+    int pdchAWHPMinPLR = 0;                     // Minimum part load ratio
+    int pdchAWHPDesSizeRefWaterFlowRate = 0;    // "Design Size Reference Water Flow Rate [kg/s]");
+    int pdchAWHPDesSizeRefAirFlowRate = 0;      // "Design Size Reference Air Flow Rate [kg/s]");
+    int pdchAWHPPlantloopName = 0;              // Plantloop name
+    int pdchAWHPPlantloopBranchName = 0;        // Plantloop branch name
+
     // Std 229 cooling towers and fluid coolers Table in Equipment Summary
     int pdstCTFC = 0;
     int pdchCTFCType = 0;               // Type

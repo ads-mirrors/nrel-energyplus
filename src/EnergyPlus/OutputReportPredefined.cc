@@ -523,6 +523,22 @@ namespace OutputReportPredefined {
         s->pdchBoilerParaElecLoad = newPreDefColumn(state, s->pdstBoiler, "Parasitic Electric Load [W]");
         s->pdchBoilerPlantloopName = newPreDefColumn(state, s->pdstBoiler, "Plantloop Name");
         s->pdchBoilerPlantloopBranchName = newPreDefColumn(state, s->pdstBoiler, "Plantloop Branch Name");
+        
+        // Heat Pumps in Equipment Summary
+        s->pdstAWHP = newPreDefSubTable(state, s->pdrEquip, "AWHPs");
+        
+        s->pdchAWHPType = newPreDefColumn(state, s->pdstAWHP, "Type");
+        s->pdchAWHPRefCap = newPreDefColumn(state, s->pdstAWHP, "Reference Capacity[W]");
+        s->pdchAWHPRefEff = newPreDefColumn(state, s->pdstAWHP, "TypeReference Efficiency [W/W]");
+        s->pdchAWHPRatedCap = newPreDefColumn(state, s->pdstAWHP, "Rated Capacity [W]");
+        s->pdchAWHPRatedEff = newPreDefColumn(state, s->pdstAWHP, "Rated Efficiency [W/W]");
+        s->pdchAWHPIPLVinSI = newPreDefColumn(state, s->pdstAWHP, "IPLV in SI Units [W/W]");
+        s->pdchAWHPIPLVinIP = newPreDefColumn(state, s->pdstAWHP, "IPLV in IP Units [Btu/W-h]");
+        s->pdchAWHPMinPLR = newPreDefColumn(state, s->pdstAWHP, "Minimum Part Load Ratio");
+        s->pdchAWHPDesSizeRefWaterFlowRate = newPreDefColumn(state, s->pdstAWHP, "Design Size Reference Water Flow Rate [kg/s]");
+        s->pdchAWHPDesSizeRefAirFlowRate = newPreDefColumn(state, s->pdstAWHP, "Design Size Reference Air Flow Rate [kg/s]");
+        s->pdchAWHPPlantloopName = newPreDefColumn(state, s->pdstAWHP, "Plantloop Name");
+        s->pdchAWHPPlantloopBranchName = newPreDefColumn(state, s->pdstAWHP, "Plantloop Branch Name");
 
         // Std 229 cooling towers and fluid coolers Table in Equipment Summary
         s->pdstCTFC = newPreDefSubTable(state, s->pdrEquip, "Cooling Towers and Fluid Coolers");

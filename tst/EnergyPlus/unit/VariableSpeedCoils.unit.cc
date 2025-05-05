@@ -3025,50 +3025,74 @@ TEST_F(EnergyPlusFixture, VariableSpeedCoils_ContFanCycCoil_Test)
 
     // run coil init
     VariableSpeedCoils::InitVarSpeedCoil(*state, DXCoilNum, SensLoad, LatentLoad, fanOp, OnOffAirFlowRatio, SpeedRatio, SpeedCal);
+    // shortCut
+    auto &vsCoolingCoil = state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum);
     // set coil inlet condition
-    state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).InletAirDBTemp = 24.0;
-    state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).InletAirHumRat = 0.009;
-    state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).InletAirEnthalpy = Psychrometrics::PsyHFnTdbW(24.0, 0.009);
+    vsCoolingCoil.InletAirDBTemp = 24.0;
+    vsCoolingCoil.InletAirHumRat = 0.009;
+    vsCoolingCoil.InletAirEnthalpy = Psychrometrics::PsyHFnTdbW(24.0, 0.009);
     // test 1: compressor is On but PLR = 0
     compressorOp = HVAC::CompressorOp::On;
     PartLoadFrac = 0.0;
     // set coil inlet air flow rate to speed 1
-    state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).AirMassFlowRate =
-        state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).MSRatedAirMassFlowRate(1) * 0.1;
-    state->dataVariableSpeedCoils->LoadSideMassFlowRate = state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).AirMassFlowRate;
-    state->dataLoopNodes->Node(state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).AirInletNodeNum).MassFlowRate =
-        state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).AirMassFlowRate;
+    vsCoolingCoil.AirMassFlowRate = vsCoolingCoil.MSRatedAirMassFlowRate(1) * 0.1;
+    state->dataVariableSpeedCoils->LoadSideMassFlowRate = vsCoolingCoil.AirMassFlowRate;
+    state->dataLoopNodes->Node(vsCoolingCoil.AirInletNodeNum).MassFlowRate = vsCoolingCoil.AirMassFlowRate;
     VariableSpeedCoils::CalcVarSpeedCoilCooling(
         *state, DXCoilNum, fanOp, SensLoad, LatentLoad, compressorOp, PartLoadFrac, OnOffAirFlowRatio, SpeedRatio, SpeedCal);
     ;
     // check coil outlet and inlet air conditions match
-    EXPECT_EQ(state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).OutletAirDBTemp,
-              state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).InletAirDBTemp);
-    EXPECT_EQ(state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).OutletAirHumRat,
-              state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).InletAirHumRat);
-    EXPECT_EQ(state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).OutletAirEnthalpy,
-              state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).InletAirEnthalpy);
+    EXPECT_EQ(vsCoolingCoil.OutletAirDBTemp, vsCoolingCoil.InletAirDBTemp);
+    EXPECT_EQ(vsCoolingCoil.OutletAirHumRat, vsCoolingCoil.InletAirHumRat);
+    EXPECT_EQ(vsCoolingCoil.OutletAirEnthalpy, vsCoolingCoil.InletAirEnthalpy);
     ;
     // test 2: compressor is On and PLR > 0
     compressorOp = HVAC::CompressorOp::On;
     PartLoadFrac = 0.1;
     // set coil inlet condition
-    state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).InletAirDBTemp = 24.0;
-    state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).InletAirHumRat = 0.009;
-    state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).InletAirEnthalpy = Psychrometrics::PsyHFnTdbW(24.0, 0.009);
+    vsCoolingCoil.InletAirDBTemp = 24.0;
+    vsCoolingCoil.InletAirHumRat = 0.009;
+    vsCoolingCoil.InletAirEnthalpy = Psychrometrics::PsyHFnTdbW(24.0, 0.009);
     // set coil inlet air flow rate to speed 1 times PLR
-    state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).AirMassFlowRate =
-        state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).MSRatedAirMassFlowRate(1) * PartLoadFrac;
-    state->dataVariableSpeedCoils->LoadSideMassFlowRate = state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).AirMassFlowRate;
-    state->dataLoopNodes->Node(state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).AirInletNodeNum).MassFlowRate =
-        state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).AirMassFlowRate;
+    vsCoolingCoil.AirMassFlowRate = vsCoolingCoil.MSRatedAirMassFlowRate(1) * PartLoadFrac;
+    state->dataVariableSpeedCoils->LoadSideMassFlowRate = vsCoolingCoil.AirMassFlowRate;
+    state->dataLoopNodes->Node(vsCoolingCoil.AirInletNodeNum).MassFlowRate = vsCoolingCoil.AirMassFlowRate;
     // run the coil
     VariableSpeedCoils::CalcVarSpeedCoilCooling(
         *state, DXCoilNum, fanOp, SensLoad, LatentLoad, compressorOp, PartLoadFrac, OnOffAirFlowRatio, SpeedRatio, SpeedCal);
     // check coil air outlet conditions
-    EXPECT_NEAR(state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).OutletAirDBTemp, 5.23333, 0.00001);
-    EXPECT_NEAR(state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).OutletAirHumRat, 0.00810, 0.00001);
-    EXPECT_NEAR(state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).OutletAirEnthalpy, 25597.58, 0.01);
+    EXPECT_NEAR(vsCoolingCoil.OutletAirDBTemp, 5.23333, 0.00001);
+    EXPECT_NEAR(vsCoolingCoil.OutletAirHumRat, 0.00810, 0.00001);
+    EXPECT_NEAR(vsCoolingCoil.OutletAirEnthalpy, 25597.58, 0.01);
+    EXPECT_NEAR(vsCoolingCoil.Power, 785.588, 0.001);
+    EXPECT_NEAR(vsCoolingCoil.QSource, 3915.355, 0.001);
+    EXPECT_NEAR(vsCoolingCoil.QLoadTotal, 3182.143, 0.001);
+    ;
+    // test 3: dx cooling coil unavailable, compressor is On and PLR > 0
+    // run init the coil to reset coil air inlet and outlet conditions
+    VariableSpeedCoils::InitVarSpeedCoil(*state, DXCoilNum, SensLoad, LatentLoad, fanOp, OnOffAirFlowRatio, SpeedRatio, SpeedCal);
+    compressorOp = HVAC::CompressorOp::On;
+    PartLoadFrac = 0.1;
+    // reset the cooling coil availability schedule to AlwaysOff
+    vsCoolingCoil.availSched = Sched::GetScheduleAlwaysOff(*state);
+    // set coil inlet condition
+    vsCoolingCoil.InletAirDBTemp = 24.0;
+    vsCoolingCoil.InletAirHumRat = 0.009;
+    vsCoolingCoil.InletAirEnthalpy = Psychrometrics::PsyHFnTdbW(24.0, 0.009);
+    // set coil inlet air flow rate to speed 1 times PLR
+    vsCoolingCoil.AirMassFlowRate = vsCoolingCoil.MSRatedAirMassFlowRate(1) * PartLoadFrac;
+    state->dataVariableSpeedCoils->LoadSideMassFlowRate = vsCoolingCoil.AirMassFlowRate;
+    state->dataLoopNodes->Node(vsCoolingCoil.AirInletNodeNum).MassFlowRate = vsCoolingCoil.AirMassFlowRate;
+    // run the coil
+    VariableSpeedCoils::CalcVarSpeedCoilCooling(
+        *state, DXCoilNum, fanOp, SensLoad, LatentLoad, compressorOp, PartLoadFrac, OnOffAirFlowRatio, SpeedRatio, SpeedCal);
+    // check coil air outlet conditions to the initial air condition, which is all zero
+    EXPECT_EQ(vsCoolingCoil.OutletAirDBTemp, 0.0);
+    EXPECT_EQ(vsCoolingCoil.OutletAirHumRat, 0.0);
+    EXPECT_EQ(vsCoolingCoil.OutletAirEnthalpy, 0.0);
+    EXPECT_EQ(vsCoolingCoil.Power, 0.0);
+    EXPECT_EQ(vsCoolingCoil.QSource, 0.0);
+    EXPECT_EQ(vsCoolingCoil.QLoadTotal, 0.0);
 }
 
 TEST_F(EnergyPlusFixture, VariableSpeedCoils_RatedSource_Temp_ASHP_Cooling)

@@ -467,7 +467,8 @@ void GetPurchasedAir(EnergyPlusData &state)
             cAlphaFieldName = "Design Specification Outdoor Air Object Name";
             fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "design_specification_outdoor_air_object_name");
             if (!fieldValue.empty()) {
-                if (PurchAir.OARequirementsPtr = Util::FindItemInList(fieldValue, state.dataSize->OARequirements) == 0) {
+                PurchAir.OARequirementsPtr = Util::FindItemInList(fieldValue, state.dataSize->OARequirements);
+                if (PurchAir.OARequirementsPtr == 0) {
                     ShowSevereItemNotFound(state, eoh, cAlphaFieldName, fieldValue);
                     ErrorsFound = true;
                 } else {

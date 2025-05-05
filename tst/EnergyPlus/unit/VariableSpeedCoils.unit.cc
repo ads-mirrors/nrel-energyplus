@@ -7084,6 +7084,56 @@ TEST_F(EnergyPlusFixture, VariableSpeedCoils_Coil_Defrost_Power_Fix_Test)
 
     // Without the current PR (PR 10109), the DefrostPower would remain 908.1 and fail the following test:
     EXPECT_NEAR(state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).DefrostPower, 0.0, 1e-3);
+    ;
+    // new test: dx cooling coil unavailable, compressor is On and PLR > 0
+    auto &vsHeatingCoil = state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum);
+    // Set up some environmental parameters
+    state->dataEnvrn->OutDryBulbTemp = 5.0;
+    compressorOp = HVAC::CompressorOp::On;
+    PartLoadFrac = 1.;
+    VariableSpeedCoils::SimVariableSpeedCoils(*state,
+                                              state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).Name,
+                                              DXCoilNum,
+                                              fanOp,
+                                              compressorOp, // compressor on/off. 0 = off; 1= on
+                                              PartLoadFrac,
+                                              SpeedCal,
+                                              SpeedRatio,
+                                              SensLoad,
+                                              LatentLoad,
+                                              OnOffAirFlowRatio);
+    // check the VS DX heating coil outputs, when the coil is available:
+    EXPECT_EQ(vsHeatingCoil.DefrostPower, 0.0);
+    EXPECT_GT(vsHeatingCoil.availSched->getCurrentVal(), 0.0);
+    EXPECT_NEAR(vsHeatingCoil.OutletAirDBTemp, 7.16, 0.001);
+    EXPECT_NEAR(vsHeatingCoil.OutletAirHumRat, 0.0, 0.001);
+    EXPECT_NEAR(vsHeatingCoil.OutletAirEnthalpy, 7219.7401811854543, 0.001);
+    EXPECT_NEAR(vsHeatingCoil.Power, 280.91365138509082, 0.0);
+    EXPECT_NEAR(vsHeatingCoil.QSource, 1163.0343848520001, 0.0);
+    EXPECT_NEAR(vsHeatingCoil.QLoadTotal, 1443.9480362370909, 0.001);
+    ;
+    // reset the heating coil availability schedule to AlwaysOff
+    vsHeatingCoil.availSched = Sched::GetScheduleAlwaysOff(*state);
+    VariableSpeedCoils::SimVariableSpeedCoils(*state,
+                                              state->dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).Name,
+                                              DXCoilNum,
+                                              fanOp,
+                                              compressorOp, // compressor on/off. 0 = off; 1= on
+                                              PartLoadFrac,
+                                              SpeedCal,
+                                              SpeedRatio,
+                                              SensLoad,
+                                              LatentLoad,
+                                              OnOffAirFlowRatio);
+    // check the VS DX heating coil outputs, when the coil is unavailable:
+    EXPECT_EQ(vsHeatingCoil.DefrostPower, 0.0);
+    EXPECT_LE(vsHeatingCoil.availSched->getCurrentVal(), 0.0);
+    EXPECT_EQ(vsHeatingCoil.OutletAirDBTemp, 0.0);
+    EXPECT_EQ(vsHeatingCoil.OutletAirHumRat, 0.0);
+    EXPECT_EQ(vsHeatingCoil.OutletAirEnthalpy, 0.0);
+    EXPECT_EQ(vsHeatingCoil.Power, 0.0);
+    EXPECT_EQ(vsHeatingCoil.QSource, 0.0);
+    EXPECT_EQ(vsHeatingCoil.QLoadTotal, 0.0);
 }
 
 TEST_F(EnergyPlusFixture, VariableSpeedCoils_ZeroRatedCoolingCapacity_Test)

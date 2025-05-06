@@ -621,14 +621,16 @@ Real64 ZoneAirDistributionData::calculateEz(EnergyPlusData &state, int const Zon
     return zoneEz;
 }
 
-Real64 calcDesignSpecificationOutdoorAir(EnergyPlusData &state,
-                                         int const DSOAPtr,           // Pointer to DesignSpecification:OutdoorAir object
-                                         int const ActualZoneNum,     // Zone index
-                                         bool const UseOccSchFlag,    // Zone occupancy schedule will be used instead of using total zone occupancy
-                                         bool const UseMinOASchFlag,  // Use min OA schedule in DesignSpecification:OutdoorAir object
-                                         bool const PerPersonNotSet,  // when calculation should not include occupants (e.g., dual duct)
-                                         bool const MaxOAVolFlowFlag, // TRUE when calculation uses occupancy schedule  (e.g., dual duct)
-                                         int const spaceNum)
+Real64
+calcDesignSpecificationOutdoorAir(EnergyPlusData &state,
+                                  int const DSOAPtr,           // Pointer to DesignSpecification:OutdoorAir object
+                                  int const ActualZoneNum,     // Zone index
+                                  bool const UseOccSchFlag,    // Zone occupancy schedule will be used instead of using total zone occupancy
+                                  bool const UseMinOASchFlag,  // Use min OA schedule in DesignSpecification:OutdoorAir object
+                                  bool const PerPersonNotSet,  // when calculation should not include occupants (e.g., dual duct)
+                                  bool const MaxOAVolFlowFlag, // TRUE when calculation uses occupancy schedule  (e.g., dual duct)
+                                  int const spaceNum,          // Space index (if applicable)
+                                  bool const calcIAQMethods)   // For IAQProcedure, PCOccSch, and PCDesOcc, calculate if true, return zero if false
 {
     Real64 totOAFlowRate = 0.0;
     if (DSOAPtr == 0) return totOAFlowRate;
@@ -637,7 +639,8 @@ Real64 calcDesignSpecificationOutdoorAir(EnergyPlusData &state,
 
     if (thisDSOA.numDSOA == 0) {
         // This is a simple DesignSpecification:OutdoorAir
-        return thisDSOA.calcOAFlowRate(state, ActualZoneNum, UseOccSchFlag, UseMinOASchFlag, PerPersonNotSet, MaxOAVolFlowFlag, spaceNum);
+        return thisDSOA.calcOAFlowRate(
+            state, ActualZoneNum, UseOccSchFlag, UseMinOASchFlag, PerPersonNotSet, MaxOAVolFlowFlag, spaceNum, calcIAQMethods);
     } else {
         // This is a DesignSpecification:OutdoorAir:SpaceList
         for (int dsoaCount = 1; dsoaCount <= thisDSOA.numDSOA; ++dsoaCount) {
@@ -649,7 +652,8 @@ Real64 calcDesignSpecificationOutdoorAir(EnergyPlusData &state,
                                                      UseMinOASchFlag,
                                                      PerPersonNotSet,
                                                      MaxOAVolFlowFlag,
-                                                     thisDSOA.dsoaSpaceIndexes(dsoaCount));
+                                                     thisDSOA.dsoaSpaceIndexes(dsoaCount),
+                                                     calcIAQMethods);
             }
         }
         return totOAFlowRate;
@@ -730,7 +734,8 @@ Real64 OARequirementsData::calcOAFlowRate(EnergyPlusData &state,
                                           bool const UseMinOASchFlag,  // Use min OA schedule in DesignSpecification:OutdoorAir object
                                           bool const PerPersonNotSet,  // when calculation should not include occupants (e.g., dual duct)
                                           bool const MaxOAVolFlowFlag, // TRUE when calculation uses occupancy schedule  (e.g., dual duct)
-                                          int const spaceNum           // Space index (if applicable)
+                                          int const spaceNum,          // Space index (if applicable)
+                                          bool const calcIAQMethods    // For IAQProcedure, PCOccSch, and PCDesOcc, calculate if true, return zero if false
 )
 {
 
@@ -820,6 +825,12 @@ Real64 OARequirementsData::calcOAFlowRate(EnergyPlusData &state,
             ShowFatalError(state, "CalcDesignSpecificationOutdoorAir: Errors found in input. Preceding condition(s) cause termination.");
         }
         this->myEnvrnFlag = false;
+    }
+
+    if (!calcIAQMethods &&
+        (this->OAFlowMethod == DataSizing::OAFlowCalcMethod::IAQProcedure || this->OAFlowMethod == DataSizing::OAFlowCalcMethod::PCOccSch ||
+         this->OAFlowMethod == DataSizing::OAFlowCalcMethod::PCDesOcc)) {
+        return OAVolumeFlowRate;
     }
 
     // Calculate people outdoor air flow rate as needed

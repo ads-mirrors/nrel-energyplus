@@ -5881,6 +5881,7 @@ TEST_F(EnergyPlusFixture, MechVentController_VRPCap)
     EXPECT_EQ(SysOAMethod::VRPL, state->dataMixedAir->VentilationMechanical(1).SystemOAMethod);
 
     state->dataZoneEnergyDemand->ZoneSysEnergyDemand.allocate(2);                // Necessary for CalcMechVentController
+    state->dataHeatBal->ZoneIntGain.allocate(2);                                 // Necessary for CalcMechVentController
     state->dataSize->SysSizingRunDone = true;                                    // Indicate that a system sizing run has been performed
     state->dataHeatBal->Zone(1).TotOccupants = 15;                               // Zone 1 total number of people
     state->dataHeatBal->Zone(2).TotOccupants = 12;                               // Zone 2 total number of people
@@ -5991,6 +5992,7 @@ TEST_F(EnergyPlusFixture, MechVentController_VRPNoCap)
     EXPECT_EQ(SysOAMethod::VRP, state->dataMixedAir->VentilationMechanical(1).SystemOAMethod);
 
     state->dataZoneEnergyDemand->ZoneSysEnergyDemand.allocate(2); // Necessary for CalcMechVentController
+    state->dataHeatBal->ZoneIntGain.allocate(2);                  // Necessary for CalcMechVentController
     state->dataSize->SysSizingRunDone = true;                     // Indicate that a system sizing run has been performed
     state->dataHeatBal->Zone(1).TotOccupants = 15;                // Zone 1 total number of people
     state->dataHeatBal->Zone(2).TotOccupants = 12;                // Zone 2 total number of people
@@ -6153,6 +6155,7 @@ TEST_F(EnergyPlusFixture, MechVentController_ACHflow)
     EXPECT_EQ(SysOAMethod::VRP, state->dataMixedAir->VentilationMechanical(1).SystemOAMethod);
 
     state->dataZoneEnergyDemand->ZoneSysEnergyDemand.allocate(2);                // Necessary for CalcMechVentController
+    state->dataHeatBal->ZoneIntGain.allocate(2);                                 // Necessary for CalcMechVentController
     state->dataSize->SysSizingRunDone = true;                                    // Indicate that a system sizing run has been performed
     state->dataHeatBal->Zone(1).Volume = 100.0;                                  // Zone 1 total floor area
     state->dataHeatBal->Zone(2).Volume = 50.0;                                   // Zone 2 total floor area

@@ -284,10 +284,10 @@ namespace MixedAir {
     struct VentilationMechanicalProps // Derived type for Ventilation:Mechanical data
     {
         // Members
-        std::string Name;                      // Name of Ventilation:Mechanical object
-        Sched::Schedule *availSched = nullptr; // Mechanical ventilation schedule
-        bool DCVFlag = false;                  // if true, implement OA based on demand controlled ventilation
-        int NumofVentMechZones = 0;            // Number of zones with mechanical ventilation
+        std::string Name;                                                          // Name of Ventilation:Mechanical object
+        Sched::Schedule *availSched = nullptr;                                     // Mechanical ventilation schedule
+        bool DCVFlag = false;                                                      // if true, implement OA based on demand controlled ventilation
+        int NumofVentMechZones = 0;                                                // Number of zones with mechanical ventilation
         DataSizing::SysOAMethod SystemOAMethod = DataSizing::SysOAMethod::Invalid; // System Outdoor Air Method - SOAM_ZoneSum, SOAM_VRP, SOAM_VRPL
         Real64 ZoneMaxOAFraction = 1.0;                                            // Zone maximum outdoor air fraction
         int CO2MaxMinLimitErrorCount = 0; // Counter when max CO2 concentration < min CO2 concentration for SOAM_ProportionalControlSchOcc

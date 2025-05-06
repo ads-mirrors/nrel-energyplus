@@ -573,62 +573,6 @@ void GetPurchasedAir(EnergyPlusData &state)
                     ErrorsFound = true;
                 }
             }
-            // initialize the calculated and report values
-            PurchAir.MaxHeatMassFlowRate = 0.0;
-            PurchAir.MaxCoolMassFlowRate = 0.0;
-            PurchAir.SenHeatEnergy = 0.0;
-            PurchAir.LatHeatEnergy = 0.0;
-            PurchAir.TotHeatEnergy = 0.0;
-            PurchAir.SenCoolEnergy = 0.0;
-            PurchAir.LatCoolEnergy = 0.0;
-            PurchAir.TotCoolEnergy = 0.0;
-            PurchAir.ZoneSenHeatEnergy = 0.0;
-            PurchAir.ZoneLatHeatEnergy = 0.0;
-            PurchAir.ZoneTotHeatEnergy = 0.0;
-            PurchAir.ZoneSenCoolEnergy = 0.0;
-            PurchAir.ZoneLatCoolEnergy = 0.0;
-            PurchAir.ZoneTotCoolEnergy = 0.0;
-            PurchAir.OASenHeatEnergy = 0.0;
-            PurchAir.OALatHeatEnergy = 0.0;
-            PurchAir.OATotHeatEnergy = 0.0;
-            PurchAir.OASenCoolEnergy = 0.0;
-            PurchAir.OALatCoolEnergy = 0.0;
-            PurchAir.OATotCoolEnergy = 0.0;
-            PurchAir.HtRecSenHeatEnergy = 0.0;
-            PurchAir.HtRecLatHeatEnergy = 0.0;
-            PurchAir.HtRecTotHeatEnergy = 0.0;
-            PurchAir.HtRecSenCoolEnergy = 0.0;
-            PurchAir.HtRecLatCoolEnergy = 0.0;
-            PurchAir.HtRecTotCoolEnergy = 0.0;
-            PurchAir.SenHeatRate = 0.0;
-            PurchAir.LatHeatRate = 0.0;
-            PurchAir.TotHeatRate = 0.0;
-            PurchAir.SenCoolRate = 0.0;
-            PurchAir.LatCoolRate = 0.0;
-            PurchAir.TotCoolRate = 0.0;
-            PurchAir.ZoneSenHeatRate = 0.0;
-            PurchAir.ZoneLatHeatRate = 0.0;
-            PurchAir.ZoneTotHeatRate = 0.0;
-            PurchAir.ZoneSenCoolRate = 0.0;
-            PurchAir.ZoneLatCoolRate = 0.0;
-            PurchAir.ZoneTotCoolRate = 0.0;
-            PurchAir.OASenHeatRate = 0.0;
-            PurchAir.OALatHeatRate = 0.0;
-            PurchAir.OATotHeatRate = 0.0;
-            PurchAir.OASenCoolRate = 0.0;
-            PurchAir.OALatCoolRate = 0.0;
-            PurchAir.OATotCoolRate = 0.0;
-            PurchAir.HtRecSenHeatRate = 0.0;
-            PurchAir.HtRecLatHeatRate = 0.0;
-            PurchAir.HtRecTotHeatRate = 0.0;
-            PurchAir.HtRecSenCoolRate = 0.0;
-            PurchAir.HtRecLatCoolRate = 0.0;
-            PurchAir.HtRecTotCoolRate = 0.0;
-
-            PurchAir.OutdoorAirMassFlowRate = 0.0;
-            PurchAir.OutdoorAirVolFlowRateStdRho = 0.0;
-            PurchAir.SupplyAirMassFlowRate = 0.0;
-            PurchAir.SupplyAirVolFlowRateStdRho = 0.0;
         }
         EndUniqueNodeCheck(state, cCurrentModuleObject);
     }

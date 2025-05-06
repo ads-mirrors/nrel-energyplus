@@ -277,6 +277,10 @@ namespace PurchasedAirManager {
         Real64 SupplyHumRat;       // Supply inlet to zone humidity ratio [kgWater/kgDryAir]
         Real64 MixedAirTemp;       // Mixed air dry bulb temperature [C]
         Real64 MixedAirHumRat;     // Mixed air humidity ratio [kgWater/kgDryAir]
+        Real64 ZoneTotHeatFuelRate;   // Total heating fuel energy consumption rate to maintain the zone condition [W]
+        Real64 ZoneTotCoolFuelRate;   // Total cooling fuel energy consumption rate to maintain the zone condition [W]
+        Real64 ZoneTotHeatFuelEnergy; // Total heating fuel energy consumption to the zone condition [J]
+        Real64 ZoneTotCoolFuelEnergy; // Total cooling fuel energy consumption to the zone condition [J]
 
         // Default Constructor
         ZonePurchasedAir()
@@ -301,7 +305,8 @@ namespace PurchasedAirManager {
               ZoneLatCoolRate(0.0), ZoneTotCoolRate(0.0), OASenHeatRate(0.0), OALatHeatRate(0.0), OATotHeatRate(0.0), OASenCoolRate(0.0),
               OALatCoolRate(0.0), OATotCoolRate(0.0), HtRecSenHeatRate(0.0), HtRecLatHeatRate(0.0), HtRecTotHeatRate(0.0), HtRecSenCoolRate(0.0),
               HtRecLatCoolRate(0.0), HtRecTotCoolRate(0.0), TimeEconoActive(0.0), TimeHtRecActive(0.0), ZonePtr(0), HVACSizingIndex(0),
-              SupplyTemp(0.0), SupplyHumRat(0.0), MixedAirTemp(0.0), MixedAirHumRat(0.0)
+              SupplyTemp(0.0), SupplyHumRat(0.0), MixedAirTemp(0.0), MixedAirHumRat(0.0), ZoneTotHeatFuelRate(0.0), ZoneTotCoolFuelRate(0.0),
+              ZoneTotHeatFuelEnergy(0.0), ZoneTotCoolFuelEnergy(0.0)
         {
         }
     };

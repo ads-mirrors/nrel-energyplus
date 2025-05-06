@@ -774,6 +774,20 @@ void GetPurchasedAir(EnergyPlusData &state)
                             OutputProcessor::TimeStepType::System,
                             OutputProcessor::StoreType::Sum,
                             PurchAir.Name);
+        SetupOutputVariable(state,
+                            "Zone Ideal Loads Zone Heating Fuel Energy",
+                            Constant::Units::J,
+                            PurchAir.ZoneTotHeatFuelEnergy,
+                            OutputProcessor::TimeStepType::System,
+                            OutputProcessor::StoreType::Sum,
+                            PurchAir.Name);
+        SetupOutputVariable(state,
+                            "Zone Ideal Loads Zone Cooling Fuel Energy",
+                            Constant::Units::J,
+                            PurchAir.ZoneTotCoolFuelEnergy,
+                            OutputProcessor::TimeStepType::System,
+                            OutputProcessor::StoreType::Sum,
+                            PurchAir.Name);
 
         //    rate variables
         SetupOutputVariable(state,
@@ -944,7 +958,20 @@ void GetPurchasedAir(EnergyPlusData &state)
                             OutputProcessor::TimeStepType::System,
                             OutputProcessor::StoreType::Average,
                             PurchAir.Name);
-
+        SetupOutputVariable(state,
+                            "Zone Ideal Loads Zone Heating Fuel Energy Rate",
+                            Constant::Units::W,
+                            PurchAir.ZoneTotHeatFuelRate,
+                            OutputProcessor::TimeStepType::System,
+                            OutputProcessor::StoreType::Average,
+                            PurchAir.Name);
+        SetupOutputVariable(state,
+                            "Zone Ideal Loads Zone Cooling Fuel Energy Rate",
+                            Constant::Units::W,
+                            PurchAir.ZoneTotCoolFuelRate,
+                            OutputProcessor::TimeStepType::System,
+                            OutputProcessor::StoreType::Average,
+                            PurchAir.Name);
         SetupOutputVariable(state,
                             "Zone Ideal Loads Economizer Active Time",
                             Constant::Units::hr,
@@ -3023,6 +3050,11 @@ void ReportPurchasedAir(EnergyPlusData &state, int const PurchAirNum)
     PurchAir.HtRecTotHeatRate = PurchAir.HtRecSenHeatRate + PurchAir.HtRecLatHeatRate;
     PurchAir.HtRecTotCoolRate = PurchAir.HtRecSenCoolRate + PurchAir.HtRecLatCoolRate;
 
+    Real64 heatFuelEffValue = PurchAir.heatFuelEffSched->getCurrentVal();
+    PurchAir.ZoneTotHeatFuelRate = PurchAir.ZoneTotHeatRate / heatFuelEffValue;
+    Real64 coolFuelEffValue = PurchAir.heatFuelEffSched->getCurrentVal();
+    PurchAir.ZoneTotCoolFuelRate = PurchAir.ZoneTotCoolRate / coolFuelEffValue;
+
     PurchAir.SenHeatEnergy = PurchAir.SenHeatRate * TimeStepSysSec;
     PurchAir.SenCoolEnergy = PurchAir.SenCoolRate * TimeStepSysSec;
     PurchAir.LatHeatEnergy = PurchAir.LatHeatRate * TimeStepSysSec;
@@ -3050,6 +3082,9 @@ void ReportPurchasedAir(EnergyPlusData &state, int const PurchAirNum)
     PurchAir.HtRecLatCoolEnergy = PurchAir.HtRecLatCoolRate * TimeStepSysSec;
     PurchAir.HtRecTotHeatEnergy = PurchAir.HtRecTotHeatRate * TimeStepSysSec;
     PurchAir.HtRecTotCoolEnergy = PurchAir.HtRecTotCoolRate * TimeStepSysSec;
+
+    PurchAir.ZoneTotHeatFuelEnergy = PurchAir.ZoneTotHeatFuelRate * TimeStepSysSec;
+    PurchAir.ZoneTotCoolFuelEnergy = PurchAir.ZoneTotCoolFuelRate * TimeStepSysSec;
 }
 
 Real64 GetPurchasedAirOutAirMassFlow(EnergyPlusData &state, int const PurchAirNum)

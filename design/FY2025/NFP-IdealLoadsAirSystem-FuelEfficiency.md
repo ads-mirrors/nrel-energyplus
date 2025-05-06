@@ -59,10 +59,10 @@ For both options, the heating and cooling energy rate and energy consumption wil
 	 where,
 	 {Q_{dot,cool}}     = Zone Ideal Loads Zone Total Cooling Rate, [W]
 	 {Q_{dot,heat}}     = Zone Ideal Loads Zone Total Heating Rate, [W]
-	 {E_dot_{cool}}     = Zone Ideal Loads Zone Cooling Energy Rate, [W]
-	 {E_dot_{heat}}     = Zone Ideal Loads Zone Heating Energy Rate, [W]
-	 {E_{cool}}         = Zone Ideal Loads Zone Cooling Energy, [J]
-	 {E_{heat}}         = Zone Ideal Loads Zone Heating Energy, [J]	 
+	 {E_dot_{cool}}     = Zone Ideal Loads Zone Cooling Fuel Energy Rate, [W]
+	 {E_dot_{heat}}     = Zone Ideal Loads Zone Heating Fuel Energy Rate, [W]
+	 {E_{cool}}         = Zone Ideal Loads Zone Cooling Fuel Energy, [J]
+	 {E_{heat}}         = Zone Ideal Loads Zone Heating Fuel Energy, [J]	 
 	 {Fuel_Eff_{cool}}  = Cooling Fuel Efficiency, [-]
 	 {Fuel_Eff_{heat}}  = Heating Fuel Efficiency, [-]
 	 
@@ -79,17 +79,17 @@ For both options, the heating and cooling energy rate and energy consumption wil
 
 * (4) Adds the following new report variables: *
 
-      * - Zone Ideal Loads Zone Cooling Energy Rate [W] *
-      * - Zone Ideal Loads Zone Cooling Energy [J] *
-      * - Zone Ideal Loads Zone Heating Energy Rate [W] *
-      * - Zone Ideal Loads Zone Heating Energy [J] *
+      * - Zone Ideal Loads Zone Cooling Fuel Energy Rate [W] *
+      * - Zone Ideal Loads Zone Cooling Fuel Energy [J] *
+      * - Zone Ideal Loads Zone Heating Fuel Energy Rate [W] *
+      * - Zone Ideal Loads Zone Heating Fuel Energy [J] *
 
 * (5) Consider adding the following new report variables: *
 
-      * - Zone Ideal Loads Supply Air Heating Energy Rate [W] *
-      * - Zone Ideal Loads Supply Air Heating Energy [J] *
-      * - Zone Ideal Loads Supply Air Cooling Energy Rate [W] *
-      * - Zone Ideal Loads Supply Air Cooling Energy [J] *
+      * - Zone Ideal Loads Supply Air Heating Fuel Energy Rate [W] *
+      * - Zone Ideal Loads Supply Air Heating Fuel Energy [J] *
+      * - Zone Ideal Loads Supply Air Cooling Fuel Energy Rate [W] *
+      * - Zone Ideal Loads Supply Air Cooling Fuel Energy [J] *
 
       * - these four new variables will also be derived from the corresponding the following report variables by applying the fuel efficiencies *
 
@@ -184,20 +184,21 @@ ZoneHVAC:IdealLoadsAirSystem,
 
 ```
   A18, \field Heating Fuel Efficiency Schedule Name
-       \type real
-       \units dimensionless
-       \minimum> 0.0
-       \maximum 1.0
-       \default 1.0
-       \note Reference heating fuel efficiency for converting heating 
+       \type object-list
+       \object-list ScheduleNames
+       \note Reference heating fuel efficiency value for converting heating 
        \note ideal air loads into fuel energy consumption.
+       \note The minimum schedule value must be greater than 0.0. The maximum value
+       \note depends on the technology, and can exceed 1.0.
+       \note If blank, heating fuel efficiency value is always 1.0.
   A19; \field Cooling Fuel Efficiency Schedule Name
-       \type real
-       \units dimensionless
-       \minimum> 0.0
-       \default 1.0
-       \note Reference cooling fuel efficiency for converting cooling 
+       \type object-list
+       \object-list ScheduleNames
+       \note Reference cooling fuel efficiency value for converting cooling 
        \note ideal air loads into fuel energy consumption.
+       \note The minimum schedule value must be greater than 0.0. The maximum value
+       \note depends on the technology, and can exceed 1.0.
+       \note If blank, cooling fuel efficiency value is always 1.0.
 ```   
 
 ## Engineering Reference ##

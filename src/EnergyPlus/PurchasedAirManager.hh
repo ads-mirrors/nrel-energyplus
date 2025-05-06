@@ -218,6 +218,8 @@ namespace PurchasedAirManager {
         Avail::Status availStatus = Avail::Status::NoAction;
         int CoolErrIndex; // Cooling setpoint error index (recurring errors)
         int HeatErrIndex; // Heating setpoint error index (recurring errors)
+        Sched::Schedule *heatFuelEffSched = nullptr; // heating feul efficiency schedule
+        Sched::Schedule *coolFuelEffSched = nullptr; // cooling feul efficiency schedule
         // Output variables
         Real64 SenHeatEnergy;      // Sensible heating energy consumed [J]
         Real64 LatHeatEnergy;      // Latent   heating energy consumed [J]

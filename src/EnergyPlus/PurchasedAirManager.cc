@@ -573,6 +573,24 @@ void GetPurchasedAir(EnergyPlusData &state)
                     ErrorsFound = true;
                 }
             }
+            // get optional heating fuel efficiency schedule name
+            cAlphaFieldName = "Heating Fuel Efficiency Schedule Name";
+            std::string const heatFuelEfficiencySchedName = s_ip->getAlphaFieldValue(fields, schemaProps, "heating_fuel_efficiency_schedule_name");
+            if (heatFuelEfficiencySchedName.empty()) {
+                PurchAir.heatFuelEffSched = Sched::GetScheduleAlwaysOn(state);
+            } else if ((PurchAir.heatFuelEffSched = Sched::GetSchedule(state, heatFuelEfficiencySchedName)) == nullptr) {
+                ShowSevereItemNotFound(state, eoh, cAlphaFieldName, heatFuelEfficiencySchedName);
+                ErrorsFound = true;
+            }
+            // get optional cooling fuel efficiency schedule name
+            cAlphaFieldName = "Cooling Fuel Efficiency Schedule Name";
+            std::string const coolFuelEfficiencySchedName = s_ip->getAlphaFieldValue(fields, schemaProps, "cooling_fuel_efficiency_schedule_name");
+            if (coolFuelEfficiencySchedName.empty()) {
+                PurchAir.coolFuelEffSched = Sched::GetScheduleAlwaysOn(state);
+            } else if ((PurchAir.coolFuelEffSched = Sched::GetSchedule(state, coolFuelEfficiencySchedName)) == nullptr) {
+                ShowSevereItemNotFound(state, eoh, cAlphaFieldName, coolFuelEfficiencySchedName);
+                ErrorsFound = true;
+            }
         }
         EndUniqueNodeCheck(state, cCurrentModuleObject);
     }

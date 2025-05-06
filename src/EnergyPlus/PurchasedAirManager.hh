@@ -310,8 +310,7 @@ namespace PurchasedAirManager {
               OALatCoolRate(0.0), OATotCoolRate(0.0), HtRecSenHeatRate(0.0), HtRecLatHeatRate(0.0), HtRecTotHeatRate(0.0), HtRecSenCoolRate(0.0),
               HtRecLatCoolRate(0.0), HtRecTotCoolRate(0.0), TimeEconoActive(0.0), TimeHtRecActive(0.0), ZonePtr(0), HVACSizingIndex(0),
               SupplyTemp(0.0), SupplyHumRat(0.0), MixedAirTemp(0.0), MixedAirHumRat(0.0), ZoneTotHeatFuelRate(0.0), ZoneTotCoolFuelRate(0.0),
-              ZoneTotHeatFuelEnergy(0.0), ZoneTotCoolFuelEnergy(0.0), TotHeatFuelRate(0.0), TotCoolFuelRate(0.0), TotHeatFuelEnergy(0.0),
-              TotCoolFuelEnergy(0.0)
+              ZoneTotHeatFuelEnergy(0.0), ZoneTotCoolFuelEnergy(0.0), TotHeatFuelRate(0.0), TotCoolFuelRate(0.0), TotHeatFuelEnergy(0.0), TotCoolFuelEnergy(0.0)
         {
         }
     };

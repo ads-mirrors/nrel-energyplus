@@ -385,7 +385,7 @@ void EIRPlantLoopHeatPump::doPhysicsWSHP(EnergyPlusData &state, Real64 currentLo
     Real64 availableCapacity = this->referenceCapacity;
     Real64 partLoadRatio = 0.0;
 
-    this->calcAvailableCapacity(state, currentLoad, availableCapacity, partLoadRatio);
+    this->calcAvailableCapacity(state, currentLoad, this->capFuncTempCurveIndex, availableCapacity, partLoadRatio);
     this->setPartLoadAndCyclingRatio(state, partLoadRatio);
 
     // evaluate the actual current operating load side heat transfer rate
@@ -406,7 +406,7 @@ void EIRPlantLoopHeatPump::doPhysicsASHP(EnergyPlusData &state, Real64 currentLo
     Real64 availableCapacity = this->referenceCapacity;
     Real64 partLoadRatio = 0.0;
 
-    this->calcAvailableCapacity(state, currentLoad, availableCapacity, partLoadRatio);
+    this->calcAvailableCapacity(state, currentLoad, this->capFuncTempCurveIndex, availableCapacity, partLoadRatio);
     this->setPartLoadAndCyclingRatio(state, partLoadRatio);
 
     // do defrost calculation if applicable
@@ -427,7 +427,8 @@ void EIRPlantLoopHeatPump::doPhysicsASHP(EnergyPlusData &state, Real64 currentLo
     }
 }
 
-void EIRPlantLoopHeatPump::calcAvailableCapacity(EnergyPlusData &state, Real64 const currentLoad, Real64 &availableCapacity, Real64 &partLoadRatio)
+void EIRPlantLoopHeatPump::calcAvailableCapacity(
+    EnergyPlusData &state, Real64 const currentLoad, int curveIndex, Real64 &availableCapacity, Real64 &partLoadRatio)
 {
     // get setpoint on the load side outlet
     Real64 loadSideOutletSetpointTemp = this->getLoadSideOutletSetPointTemp(state);
@@ -447,12 +448,11 @@ void EIRPlantLoopHeatPump::calcAvailableCapacity(EnergyPlusData &state, Real64 c
                 capacityModifierFuncTemp =
                     Curve::CurveValue(state, this->heatRecoveryCapFTempCurveIndex, loadSideOutletSetpointTemp, this->heatRecoveryInletTemp);
             } else {
-                capacityModifierFuncTemp =
-                    Curve::CurveValue(state, this->capFuncTempCurveIndex, loadSideOutletSetpointTemp, this->heatRecoveryInletTemp);
+                capacityModifierFuncTemp = Curve::CurveValue(state, curveIndex, loadSideOutletSetpointTemp, this->heatRecoveryInletTemp);
             }
             availableCapacity = this->referenceCapacity * capacityModifierFuncTemp;
         } else {
-            capacityModifierFuncTemp = Curve::CurveValue(state, this->capFuncTempCurveIndex, loadSideOutletSetpointTemp, this->sourceSideInletTemp);
+            capacityModifierFuncTemp = Curve::CurveValue(state, curveIndex, loadSideOutletSetpointTemp, this->sourceSideInletTemp);
             availableCapacity = this->referenceCapacity * capacityModifierFuncTemp;
             // apply air source HP dry air heating capacity correction
             availableCapacity *= heatingCapacityModifierASHP(state);
@@ -576,21 +576,53 @@ void HeatPumpAirToWater::calcLoadSideHeatTransfer(EnergyPlusData &state, Real64 
     // currentLoad will be met and there should? be some adjustment based on outlet water temp limit?
 }
 
-void HeatPumpAirToWater::calcPowerUsage(EnergyPlusData &state, int speedLevel)
+void HeatPumpAirToWater::calcPowerUsage(EnergyPlusData &state, Real64 const currentLoad)
 {
-    // calculate power usage from EIR curves
-    Real64 eirModifierFuncTemp = 0.0;
-    eirModifierFuncTemp =
-        Curve::CurveValue(state, this->powerRatioFuncTempCurveIndex[speedLevel], this->loadSideOutletTemp, this->sourceSideInletTemp);
-    // check curves value and resets to zero if negative
-    this->eirModCurveCheck(state, eirModifierFuncTemp);
-    Real64 eirModifierFuncPLR = Curve::CurveValue(state, this->powerRatioFuncPLRCurveIndex[speedLevel], this->partLoadRatio);
-    // check EIR func of PLR curve value and resets to zero if negative
-    this->eirModFPLRCurveCheck(state, eirModifierFuncPLR);
 
-    // fixme: might not be multiplying cyclingRatio like this
-    this->powerUsage = (this->loadSideHeatTransfer / this->referenceCOP) * eirModifierFuncPLR * eirModifierFuncTemp * this->defrostPowerMultiplier *
-                       this->cyclingRatio;
+    //    calculate speed level
+    Real64 capacityLow = 0.0;
+    Real64 capacityHigh = 0.0;
+    Real64 loadSideOutletSetpointTemp = this->getLoadSideOutletSetPointTemp(state);
+    int speedLevel = 0;
+    for (int i = 0; i < this->numSpeeds; i++) {
+        auto capacityModifierFuncTemp =
+            Curve::CurveValue(state, this->capFuncTempCurveIndex[i], loadSideOutletSetpointTemp, this->sourceSideInletTemp);
+        capacityHigh = this->referenceCapacity * capacityModifierFuncTemp;
+        speedLevel = i;
+        if (std::fabs(currentLoad) < capacityHigh) {
+            break;
+        } else {
+            capacityLow = capacityHigh;
+        }
+    }
+    // calculate power usage from EIR curves
+    Real64 eirModifierFuncTempLow = 0.0;
+    Real64 eirModifierFuncPLRLow = 0.0;
+    if (speedLevel > 0) {
+        eirModifierFuncTempLow =
+            Curve::CurveValue(state, this->powerRatioFuncTempCurveIndex[speedLevel - 1], this->loadSideOutletTemp, this->sourceSideInletTemp);
+        eirModifierFuncPLRLow = Curve::CurveValue(state, this->powerRatioFuncPLRCurveIndex[speedLevel - 1], this->partLoadRatio);
+        this->eirModCurveCheck(state, eirModifierFuncTempLow);
+        this->eirModFPLRCurveCheck(state, eirModifierFuncPLRLow);
+    }
+    Real64 eirModifierFuncTempHigh =
+        Curve::CurveValue(state, this->powerRatioFuncTempCurveIndex[speedLevel], this->loadSideOutletTemp, this->sourceSideInletTemp);
+    Real64 eirModifierFuncPLRHigh = Curve::CurveValue(state, this->powerRatioFuncPLRCurveIndex[speedLevel], this->partLoadRatio);
+    // check curves value and resets to zero if negative
+    this->eirModCurveCheck(state, eirModifierFuncTempHigh);
+    this->eirModFPLRCurveCheck(state, eirModifierFuncPLRHigh);
+    if (speedLevel < this->numSpeeds - 1) { // not at highest speed
+        Real64 interpRatio = (std::fabs(currentLoad) - capacityLow) / (capacityHigh - capacityLow);
+
+        Real64 powerUsageLow = (this->loadSideHeatTransfer / this->referenceCOP) * (eirModifierFuncPLRLow * eirModifierFuncTempLow) *
+                               this->defrostPowerMultiplier * this->cyclingRatio;
+        Real64 powerUsageHigh = (this->loadSideHeatTransfer / this->referenceCOP) * (eirModifierFuncPLRHigh * eirModifierFuncTempHigh) *
+                                this->defrostPowerMultiplier * this->cyclingRatio;
+        this->powerUsage = (1 - interpRatio) * powerUsageLow + interpRatio * powerUsageHigh;
+    } else { // at highest speed level
+        this->powerUsage = (this->loadSideHeatTransfer / this->referenceCOP) * (eirModifierFuncPLRHigh * eirModifierFuncTempHigh) *
+                           this->defrostPowerMultiplier * this->cyclingRatio;
+    }
 }
 
 void EIRPlantLoopHeatPump::calcPowerUsage(EnergyPlusData &state)
@@ -777,12 +809,11 @@ void EIRPlantLoopHeatPump::heatRecoveryCapModFTCurveCheck(EnergyPlusData &state,
             ShowContinueError(state,
                               format(" Heat Recovery mode Capacity Modifier curve (function of Temperatures) output is negative ({:.3T}).",
                                      capacityModifierFuncTemp));
-            ShowContinueError(
-                state,
-                format(
-                    " Negative value occurs using a load side water temperature of {:.2T}C and heat recovery entering water temperature of {:.2T}C.",
-                    loadSideOutletSetpointTemp,
-                    this->heatRecoveryInletTemp));
+            ShowContinueError(state,
+                              format(" Negative value occurs using a load side water temperature of {:.2T}C and heat recovery entering water "
+                                     "temperature of {:.2T}C.",
+                                     loadSideOutletSetpointTemp,
+                                     this->heatRecoveryInletTemp));
             ShowContinueErrorTimeStamp(state, " Resetting curve output to zero and continuing simulation.");
         }
         ShowRecurringWarningErrorAtEnd(
@@ -827,12 +858,11 @@ void EIRPlantLoopHeatPump::heatRecoveryEIRModCurveCheck(EnergyPlusData &state, R
             ShowSevereMessage(state, format("{} \"{}\":", DataPlant::PlantEquipTypeNames[static_cast<int>(this->EIRHPType)], this->name));
             ShowContinueError(
                 state, format(" Heat Recovery mode EIR Modifier curve (function of Temperatures) output is negative ({:.3T}).", eirModifierFuncTemp));
-            ShowContinueError(
-                state,
-                format(
-                    " Negative value occurs using a load side water temperature of {:.2T}C and heat recovery entering water temperature of {:.2T}C.",
-                    this->loadSideOutletTemp,
-                    this->heatRecoveryInletTemp));
+            ShowContinueError(state,
+                              format(" Negative value occurs using a load side water temperature of {:.2T}C and heat recovery entering water "
+                                     "temperature of {:.2T}C.",
+                                     this->loadSideOutletTemp,
+                                     this->heatRecoveryInletTemp));
             ShowContinueErrorTimeStamp(state, " Resetting curve output to zero and continuing simulation.");
         }
         ShowRecurringWarningErrorAtEnd(
@@ -4225,7 +4255,8 @@ void HeatPumpAirToWater::doPhysics(EnergyPlusData &state, Real64 const currentLo
     Real64 partLoadRatio = 0.0;
     int speedLevel = 0;
 
-    this->calcAvailableCapacity(state, currentLoad, availableCapacity, partLoadRatio, speedLevel);
+    this->calcAvailableCapacity(state, currentLoad, this->capFuncTempCurveIndex[this->numSpeeds - 1], availableCapacity, partLoadRatio);
+    // fixme: might need to change
     this->setPartLoadAndCyclingRatio(state, partLoadRatio);
 
     // do defrost calculation if applicable
@@ -4235,13 +4266,12 @@ void HeatPumpAirToWater::doPhysics(EnergyPlusData &state, Real64 const currentLo
     this->calcLoadSideHeatTransfer(state, availableCapacity, currentLoad);
 
     //  calculate power usage from EIR curves
-    this->calcPowerUsage(state, speedLevel);
+    this->calcPowerUsage(state, currentLoad);
 
     this->calcSourceSideHeatTransferASHP(state);
+    this->CrankcaseHeaterPower = 0.0;
     if (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterHeating) {
         this->CrankcaseHeaterPower = calcCrankcaseHeaterPower(state);
-    } else {
-        this->CrankcaseHeaterPower = 0.0;
     }
 }
 
@@ -4258,62 +4288,6 @@ Real64 HeatPumpAirToWater::calcCrankcaseHeaterPower(EnergyPlusData &state) const
         CrankcaseHeatingPower = 0.0;
     }
     return CrankcaseHeatingPower;
-}
-
-void HeatPumpAirToWater::calcAvailableCapacity(
-    EnergyPlusData &state, Real64 const currentLoad, Real64 &availableCapacity, Real64 &partLoadRatio, int &speedLevel)
-{
-    // get setpoint on the load side outlet
-    Real64 loadSideOutletSetpointTemp = this->getLoadSideOutletSetPointTemp(state);
-    Real64 originalLoadSideOutletSPTemp = loadSideOutletSetpointTemp;
-
-    Real64 capacityModifierFuncTemp = 1.0;
-    bool waterTempExceeded = false;
-
-    capacityModifierFuncTemp =
-        Curve::CurveValue(state, this->capFuncTempCurveIndex[this->numSpeeds - 1], loadSideOutletSetpointTemp, this->sourceSideInletTemp);
-    // maximum capacity
-    availableCapacity = this->referenceCapacity * capacityModifierFuncTemp;
-
-    // evaluate capacity modifier curve and determine load side heat transfer
-    // any adjustment to outlet water temp set point requires some form of iteration
-    for (int loop = 0; loop < 2; ++loop) {
-
-        Real64 capacityLow = 0.0;
-        Real64 capacityHigh = 0.0;
-        speedLevel = 0;
-        for (int i = 0; i < this->numSpeeds; i++) {
-            capacityModifierFuncTemp =
-                Curve::CurveValue(state, this->capFuncTempCurveIndex[i], loadSideOutletSetpointTemp, this->sourceSideInletTemp);
-            capacityHigh = this->referenceCapacity * capacityModifierFuncTemp;
-            speedLevel = i;
-            if (std::fabs(currentLoad) < capacityHigh) {
-                break;
-            } else {
-                capacityLow = capacityHigh;
-            }
-            // fixme: is this needed?
-            //            // apply air source HP dry air heating capacity correction
-            //            availableCapacity *= heatingCapacityModifierASHP(state);
-        }
-        if (availableCapacity > 0) {
-            if (this->controlType == CompressorControlType::FixedSpeed) {
-                partLoadRatio = capacityHigh / availableCapacity;
-                if (std::fabs(currentLoad) >= availableCapacity) {
-                    this->cyclingRatio = 1.0;
-                } else {
-                    assert(std::fabs(currentLoad) >= capacityLow);
-                    // for fixed-speed, cycling ratio is only about the first level that meet the load,
-                    // speed levels lower than this are all running fully
-                    this->cyclingRatio = (std::fabs(currentLoad) - capacityLow) / (capacityHigh - capacityLow);
-                }
-            } else {
-                partLoadRatio = std::clamp(std::fabs(currentLoad) / availableCapacity, 0.0, 1.0);
-                this->cyclingRatio = 1.0;
-                // if there's a minPLR, then below the minPLR, it will cycle
-            }
-        }
-    }
 }
 
 } // namespace EnergyPlus::EIRPlantLoopHeatPumps

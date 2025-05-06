@@ -304,13 +304,13 @@
     100 , !- Crankcase Heater Capacity
     CrankCaseHeaterPowerCurve, !- Crankcase Heater Capacity Function of Temperature Curve Name
     5 , !- Maximum Ambient Temperature for Crankcase Heater Operation
-    1 , !- Number of Speeds for Heating
+    2 , !- Number of Speeds for Heating
     CapCurveFuncTemp, !-  Normalized Heating Capacity Function of Temperature Curve Name at Speed 1
     EIRCurveFuncTemp, !-  Heating Energy Input Ratio Function of Temperature Curve Name at Speed 1
     EIRCurveFuncPLR, !-  Heating Energy Input Ratio Function of PLR Curve Name at Speed 1
-    , !-  Normalized Heating Capacity Function of Temperature Curve Name at Speed 2
-    , !-  Heating Energy Input Ratio Function of Temperature Curve Name at Speed 2
-    , !-  Heating Energy Input Ratio Function of PLR Curve Name at Speed 2
+    CapCurveFuncTemp2, !-  Normalized Heating Capacity Function of Temperature Curve Name at Speed 2
+    EIRCurveFuncTemp2, !-  Heating Energy Input Ratio Function of Temperature Curve Name at Speed 2
+    EIRCurveFuncPLR2,  !-  Heating Energy Input Ratio Function of PLR Curve Name at Speed 2
     , !-  Normalized Heating Capacity Function of Temperature Curve Name at Speed 3
     , !-  Heating Energy Input Ratio Function of Temperature Curve Name at Speed 3
     , !-  Heating Energy Input Ratio Function of PLR Curve Name at Speed 3
@@ -320,13 +320,13 @@
     , !-  Normalized Heating Capacity Function of Temperature Curve Name at Speed 5
     , !-  Heating Energy Input Ratio Function of Temperature Curve Name at Speed 5
     , !-  Heating Energy Input Ratio Function of PLR Curve Name at Speed 5
-    1, !-  Number of Speeds for Cooling
-    CapCurveFuncTemp2, !-  Normalized Cooling Capacity Function of Temperature Curve Name at Speed 1
-    EIRCurveFuncTemp2, !-  Cooling Energy Input Ratio Function of Temperature Curve Name at Speed 1
-    EIRCurveFuncPLR2, !-  Cooling Energy Input Ratio Function of PLR Curve Name at Speed 1
-    , !-  Normalized Cooling Capacity Function of Temperature Curve Name at Speed 2
-    , !-  Cooling Energy Input Ratio Function of Temperature Curve Name at Speed 2
-    , !-  Cooling Energy Input Ratio Function of PLR Curve Name at Speed 2
+    2, !-  Number of Speeds for Cooling
+    CapCurveFuncTemp, !-  Normalized Cooling Capacity Function of Temperature Curve Name at Speed 1
+    EIRCurveFuncTemp, !-  Cooling Energy Input Ratio Function of Temperature Curve Name at Speed 1
+    EIRCurveFuncPLR, !-  Cooling Energy Input Ratio Function of PLR Curve Name at Speed 1
+    CapCurveFuncTemp2, !-  Normalized Cooling Capacity Function of Temperature Curve Name at Speed 2
+    EIRCurveFuncTemp2, !-  Cooling Energy Input Ratio Function of Temperature Curve Name at Speed 2
+    EIRCurveFuncPLR2,  !-  Cooling Energy Input Ratio Function of PLR Curve Name at Speed 2
     , !-  Normalized Cooling Capacity Function of Temperature Curve Name at Speed 3
     , !-  Cooling Energy Input Ratio Function of Temperature Curve Name at Speed 3
     , !-  Cooling Energy Input Ratio Function of PLR Curve Name at Speed 3
@@ -359,7 +359,7 @@
 
   Curve:Biquadratic,
     CapCurveFuncTemp,        !- Name
-    1.0,                     !- Coefficient1 Constant
+    0.5,                     !- Coefficient1 Constant
     0.0,                     !- Coefficient2 x
     0.0,                     !- Coefficient3 x**2
     0.0,                     !- Coefficient4 y
@@ -535,8 +535,8 @@
 
   Curve:Biquadratic,
     CapCurveFuncTemp2,       !- Name
-    1.0,                     !- Coefficient1 Constant
-    0.0,                     !- Coefficient2 x
+    0.8,                     !- Coefficient1 Constant
+    0.02,                     !- Coefficient2 x
     0.0,                     !- Coefficient3 x**2
     0.0,                     !- Coefficient4 y
     0.0,                     !- Coefficient5 y**2

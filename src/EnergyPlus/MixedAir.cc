@@ -3697,50 +3697,23 @@ Real64 VentilationMechanicalProps::CalcMechVentController(EnergyPlusData &state,
             SysOA = 0.0;
             for (int ZoneIndex = 1; ZoneIndex <= this->NumofVentMechZones; ++ZoneIndex) {
                 auto &thisMechVentZone = this->VentMechZone(ZoneIndex);
-                int ZoneNum = thisMechVentZone.zoneNum;
-                auto const &curZone(state.dataHeatBal->Zone(ZoneNum));
-                Real64 multiplier = curZone.Multiplier * curZone.ListMultiplier * thisMechVentZone.zoneOASched->getCurrentVal();
+                int const ZoneNum = thisMechVentZone.zoneNum;
 
-                // Calc the zone OA flow rate based on the people component
-                // ZoneIntGain(ZoneNum)%NOFOCC is the number of occupants of a zone at each time step, already counting the occupant schedule
-                //  Checking DCV flag before calculating zone OA per person
-                if (this->DCVFlag && this->SystemOAMethod != DataSizing::SysOAMethod::ProportionalControlDesOcc) {
-                    ZoneOACalc[static_cast<int>(DataSizing::OAFlowCalcMethod::PerPerson)] =
-                        state.dataHeatBal->ZoneIntGain(ZoneNum).NOFOCC * thisMechVentZone.ZoneOAPeopleRate;
-                } else {
-                    ZoneOACalc[static_cast<int>(DataSizing::OAFlowCalcMethod::PerPerson)] = curZone.TotOccupants * thisMechVentZone.ZoneOAPeopleRate;
-                }
-
-                // Calc the zone OA flow rate based on the floor area component
-                ZoneOACalc[static_cast<int>(DataSizing::OAFlowCalcMethod::PerArea)] = curZone.FloorArea * thisMechVentZone.ZoneOAAreaRate;
-                ZoneOACalc[static_cast<int>(DataSizing::OAFlowCalcMethod::PerZone)] = thisMechVentZone.ZoneOAFlowRate;
-                ZoneOACalc[static_cast<int>(DataSizing::OAFlowCalcMethod::ACH)] = (thisMechVentZone.ZoneOAACHRate * curZone.Volume) / 3600.0;
-
-                // Calc the breathing-zone OA flow rate
-                int OAIndex = thisMechVentZone.ZoneDesignSpecOAObjIndex; // index to design specification outdoor air objects
-                if (OAIndex > 0) {
-                    switch (state.dataSize->OARequirements(OAIndex).OAFlowMethod) {
-                    case DataSizing::OAFlowCalcMethod::Sum: {
-                        ZoneOABZ = multiplier * (ZoneOACalc[static_cast<int>(DataSizing::OAFlowCalcMethod::PerPerson)] +
-                                                 ZoneOACalc[static_cast<int>(DataSizing::OAFlowCalcMethod::PerArea)] +
-                                                 ZoneOACalc[static_cast<int>(DataSizing::OAFlowCalcMethod::PerZone)] +
-                                                 ZoneOACalc[static_cast<int>(DataSizing::OAFlowCalcMethod::ACH)]);
-                    } break;
-                    case DataSizing::OAFlowCalcMethod::Max: {
-                        ZoneOABZ = multiplier * max(ZoneOACalc[static_cast<int>(DataSizing::OAFlowCalcMethod::PerPerson)],
-                                                    ZoneOACalc[static_cast<int>(DataSizing::OAFlowCalcMethod::PerArea)],
-                                                    ZoneOACalc[static_cast<int>(DataSizing::OAFlowCalcMethod::PerZone)],
-                                                    ZoneOACalc[static_cast<int>(DataSizing::OAFlowCalcMethod::ACH)]);
-
-                    } break;
-                    default: {
-                        ZoneOABZ = multiplier * ZoneOACalc[static_cast<int>(state.dataSize->OARequirements(OAIndex).OAFlowMethod)];
-                        break;
-                    }
-                    }
-                } else {
-                    ZoneOABZ = multiplier * ZoneOACalc[static_cast<int>(DataSizing::OAFlowCalcMethod::PerPerson)];
-                }
+                bool const useOccSch = this->DCVFlag && (this->SystemOAMethod != DataSizing::SysOAMethod::ProportionalControlDesOcc);
+                bool const useOASch = true;
+                bool const perPersonNotSet = false;  // placeholder function argument
+                bool const maxOAVolFlowFlag = false; // placeholder function argument
+                int const spaceNum = 0;              // placeholder function argument
+                bool const calcIAQMethods = false;   // If the zone or space OA method is IAQProcedure, PCOccSch or PCDesOcc then return zero
+                ZoneOABZ = DataSizing::calcDesignSpecificationOutdoorAir(state,
+                                                                         thisMechVentZone.ZoneDesignSpecOAObjIndex,
+                                                                         ZoneNum,
+                                                                         useOccSch,
+                                                                         useOASch,
+                                                                         perPersonNotSet,
+                                                                         maxOAVolFlowFlag,
+                                                                         spaceNum,
+                                                                         calcIAQMethods);
 
                 if (this->SystemOAMethod == DataSizing::SysOAMethod::ZoneSum) {
                     // Sum the zone OA flow rates and done
@@ -3774,7 +3747,7 @@ Real64 VentilationMechanicalProps::CalcMechVentController(EnergyPlusData &state,
                     int ZoneNum = thisMechVentZone.zoneNum;
                     int ZoneEquipConfigNum = ZoneNum; // correspondence - 1:1 of ZoneEquipConfig to Zone index
                     Real64 ZoneEz = 0.0;              // Zone air distribution effectiveness
-
+                    
                     // Assign references
                     auto &curZone(state.dataHeatBal->Zone(ZoneNum));
                     auto &curZoneSysEnergyDemand(state.dataZoneEnergyDemand->ZoneSysEnergyDemand(ZoneEquipConfigNum));

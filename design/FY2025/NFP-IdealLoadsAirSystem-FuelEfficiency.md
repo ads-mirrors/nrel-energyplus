@@ -195,7 +195,6 @@ ZoneHVAC:IdealLoadsAirSystem,
        \type real
        \units dimensionless
        \minimum> 0.0
-       \maximum 1.0
        \default 1.0
        \note Reference cooling fuel efficiency for converting cooling 
        \note ideal air loads into fuel energy consumption.

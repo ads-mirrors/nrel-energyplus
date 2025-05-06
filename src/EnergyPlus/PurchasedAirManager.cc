@@ -487,7 +487,7 @@ void GetPurchasedAir(EnergyPlusData &state)
                         oaInletNodeName = PurchAir.Name.substr(0, 75) + " OUTDOOR AIR INLET NODE ";
                     }
                     if (state.dataGlobal->DisplayExtraWarnings) {
-                        ShowWarningError(state, format("{}{}=\"{} blank field", RoutineName, cCurrentModuleObject, PurchAir.Name));
+                        ShowWarningEmptyField(state, eoh, cAlphaFieldName);
                         ShowContinueError(state, format("{} is blank, but there is outdoor air requested for this system.", cAlphaFieldName));
                         ShowContinueError(state, format("Creating node name ={}", oaInletNodeName));
                     }

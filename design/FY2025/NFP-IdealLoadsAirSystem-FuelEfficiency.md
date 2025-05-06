@@ -219,3 +219,85 @@ As proposed.
 ## References ##
 
 N/A
+
+## Design ##
+
+### Get Input ###
+
+(1) * Modify the get input function *
+	
+```
+   GetPurchasedAir()
+```
+    
+	(1.1) Convert getinput to JSON format IDD 
+	(1.2) Use Enum for all key choice fields
+	(1.3) Update the error report functions
+	
+
+(2) * Add new member and report variables
+
+    (2.1) Add two new member variables
+
+```
+        Sched::Schedule *heatFuelEffSched = nullptr; // heating feul efficiency schedule
+        Sched::Schedule *coolFuelEffSched = nullptr; // cooling feul efficiency schedule
+```
+
+    (2.2) Add eight new report variables
+
+```
+        Real64 ZoneTotHeatFuelRate;   // Zone total heating fuel energy consumption rate [W]
+        Real64 ZoneTotCoolFuelRate;   // zone total cooling fuel energy consumption rate [W]
+        Real64 ZoneTotHeatFuelEnergy; // Zone total heating fuel energy consumption [J]
+        Real64 ZoneTotCoolFuelEnergy; // Zone total cooling fuel energy consumption [J]
+        Real64 TotHeatFuelRate;       // Total heating fuel consumption rate [W]
+        Real64 TotCoolFuelRate;       // Total cooling fuel consumption rate [W]
+        Real64 TotHeatFuelEnergy;     // Total heating fuel consumption [J]
+        Real64 TotCoolFuelEnergy;     // Total cooling fuel consumption [J]
+``` 
+
+### IDD Change ###
+
+(1) * Modified the IDD by adding two new input fields *
+
+    *    - (1.1) Add heating_fuel_efficiency_schedule_name new input field *
+    *    - (1.2) Add cooling_fuel_efficiency_schedule_name new input field *
+    
+    
+### Modify Reporting Function ###
+
+(1) * Modify the ReportPurchasedAir() to support the energy consumption calculation
+
+    *    - (1.1) Fuel Energy Consumption Rate Calculations
+
+```	
+    Real64 heatFuelEffValue = PurchAir.heatFuelEffSched->getCurrentVal();
+    PurchAir.ZoneTotHeatFuelRate = PurchAir.TotHeatRate / heatFuelEffValue;
+    PurchAir.TotHeatFuelRate = PurchAir.ZoneTotHeatRate / heatFuelEffValue;
+    Real64 coolFuelEffValue = PurchAir.heatFuelEffSched->getCurrentVal();
+    PurchAir.ZoneTotCoolFuelRate = PurchAir.ZoneTotCoolRate / coolFuelEffValue;
+    PurchAir.TotCoolFuelRate = PurchAir.TotCoolRate / coolFuelEffValue;
+```
+
+    *    - (1.2) Fuel Energy Consumption Calculations
+    
+```
+    PurchAir.ZoneTotHeatFuelEnergy = PurchAir.ZoneTotHeatFuelRate * TimeStepSysSec;
+    PurchAir.ZoneTotCoolFuelEnergy = PurchAir.ZoneTotCoolFuelRate * TimeStepSysSec;
+    PurchAir.TotHeatFuelEnergy = PurchAir.TotHeatFuelRate * TimeStepSysSec;
+    PurchAir.TotCoolFuelEnergy = PurchAir.TotCoolFuelRate * TimeStepSysSec;
+```
+
+### Add eight new report variables ###
+
+```
+   (1) * Zone Ideal Loads Zone Heating Fuel Energy Rate [W] *
+   (2) * Zone Ideal Loads Zone Cooling Fuel Energy Rate [W]            
+   (3) * Zone Ideal Loads Zone Heating Fuel Energy [J]
+   (4) * Zone Ideal Loads Zone Cooling Fuel Energy [J]
+   (5) * Zone Ideal Loads Supply Air Total Heating Fuel Energy Rate [W] *
+   (6) * Zone Ideal Loads Supply Air Total Cooling Fuel Energy Rate [W] *
+   (7) * Zone Ideal Loads Supply Air Total Heating Fuel Energy [J] *
+   (8) * Zone Ideal Loads Supply Air Total Cooling Fuel Energy [J] *
+```

@@ -2735,11 +2735,6 @@ void InitOAController(EnergyPlusData &state, int const OAControllerNum, bool con
                             tempMechVentZone.ZoneADEffHeating = thisMechVentZone.ZoneADEffHeating;
                             tempMechVentZone.zoneADEffSched = thisMechVentZone.zoneADEffSched;
                         }
-
-                        // Sum outside air per unit floor area for each mechanical ventilation object only once per simulation
-                        vent_mech.TotAreaOAFlow += zone.FloorArea * zone.Multiplier * zone.ListMultiplier * thisMechVentZone.ZoneOAAreaRate;
-                        vent_mech.TotZoneOAFlow += zone.Multiplier * zone.ListMultiplier * thisMechVentZone.ZoneOAFlowRate;
-                        vent_mech.TotZoneOAACH += zone.Multiplier * zone.ListMultiplier * (thisMechVentZone.ZoneOAACHRate * zone.Volume / 3600.0);
                         break;
                     }
                 }
@@ -3108,25 +3103,6 @@ void InitOAController(EnergyPlusData &state, int const OAControllerNum, bool con
                 thisOAController.MixSetTemp = state.dataLoopNodes->Node(thisOAController.MixNode).TempSetPoint;
             } else {
                 thisOAController.MixSetTemp = thisOAController.TempLowLim;
-            }
-
-            Real64 TotalPeopleOAFlow = 0.0;
-            if (thisOAController.VentMechObjectNum != 0) {
-                auto &vent_mech(state.dataMixedAir->VentilationMechanical(thisOAController.VentMechObjectNum));
-                for (int ZoneIndex = 1; ZoneIndex <= vent_mech.NumofVentMechZones; ++ZoneIndex) {
-                    auto &thisVentMechZone = vent_mech.VentMechZone(ZoneIndex);
-                    int ZoneNum = thisVentMechZone.zoneNum;
-
-                    // ZoneIntGain(ZoneNum)%NOFOCC is the number of occupants of a zone at each time step, already counting the occupant schedule
-                    OAFlowCalcMethod OAFlowMethod = thisVentMechZone.ZoneOAFlowMethod;
-                    if (OAFlowMethod == OAFlowCalcMethod::PerPerson || OAFlowMethod == OAFlowCalcMethod::Sum ||
-                        OAFlowMethod == OAFlowCalcMethod::Max) {
-                        TotalPeopleOAFlow += state.dataHeatBal->ZoneIntGain(ZoneNum).NOFOCC * state.dataHeatBal->Zone(ZoneNum).Multiplier *
-                                             state.dataHeatBal->Zone(ZoneNum).ListMultiplier * thisVentMechZone.ZoneOAPeopleRate *
-                                             thisVentMechZone.zoneOASched->getCurrentVal();
-                    }
-                }
-                vent_mech.TotPeopleOAFlow = TotalPeopleOAFlow;
             }
         } else {
             // Stand Alone ERV does not require a temperature setpoint schedule, make setpoint equal to lower economizer limit

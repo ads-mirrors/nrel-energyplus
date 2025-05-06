@@ -288,10 +288,6 @@ namespace MixedAir {
         Sched::Schedule *availSched = nullptr; // Mechanical ventilation schedule
         bool DCVFlag = false;                  // if true, implement OA based on demand controlled ventilation
         int NumofVentMechZones = 0;            // Number of zones with mechanical ventilation
-        Real64 TotAreaOAFlow = 0.0;            // Total outdoor air flow rate for all zones per area (m3/s/m2)
-        Real64 TotPeopleOAFlow = 0.0;          // Total outdoor air flow rate for all PEOPLE objects in zones (m3/s)
-        Real64 TotZoneOAFlow = 0.0;            // Total outdoor air flow rate for all zones (m3/s)
-        Real64 TotZoneOAACH = 0.0;             // Total outdoor air flow rate for all zones Air Changes per hour (m3/s/m3)
         DataSizing::SysOAMethod SystemOAMethod = DataSizing::SysOAMethod::Invalid; // System Outdoor Air Method - SOAM_ZoneSum, SOAM_VRP, SOAM_VRPL
         Real64 ZoneMaxOAFraction = 1.0;                                            // Zone maximum outdoor air fraction
         int CO2MaxMinLimitErrorCount = 0; // Counter when max CO2 concentration < min CO2 concentration for SOAM_ProportionalControlSchOcc

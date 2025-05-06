@@ -529,14 +529,15 @@ namespace OutputReportPredefined {
         
         s->pdchAWHPType = newPreDefColumn(state, s->pdstAWHP, "Type");
         s->pdchAWHPRefCap = newPreDefColumn(state, s->pdstAWHP, "Reference Capacity[W]");
-        s->pdchAWHPRefEff = newPreDefColumn(state, s->pdstAWHP, "TypeReference Efficiency [W/W]");
-        s->pdchAWHPRatedCap = newPreDefColumn(state, s->pdstAWHP, "Rated Capacity [W]");
-        s->pdchAWHPRatedEff = newPreDefColumn(state, s->pdstAWHP, "Rated Efficiency [W/W]");
-        s->pdchAWHPIPLVinSI = newPreDefColumn(state, s->pdstAWHP, "IPLV in SI Units [W/W]");
-        s->pdchAWHPIPLVinIP = newPreDefColumn(state, s->pdstAWHP, "IPLV in IP Units [Btu/W-h]");
+        s->pdchAWHPRefCOP = newPreDefColumn(state, s->pdstAWHP, "Reference COP");
+        s->pdchAWHPSEER = newPreDefColumn(state, s->pdstAWHP, "SEER");
+        s->pdchAWHPHSPF = newPreDefColumn(state, s->pdstAWHP, "HSPF");
         s->pdchAWHPMinPLR = newPreDefColumn(state, s->pdstAWHP, "Minimum Part Load Ratio");
-        s->pdchAWHPDesSizeRefWaterFlowRate = newPreDefColumn(state, s->pdstAWHP, "Design Size Reference Water Flow Rate [kg/s]");
+        s->pdchAWHPDesSizeRefAirTemp = newPreDefColumn(state, s->pdstAWHP, "Design Size Reference Air Temperature [C]");
+        s->pdchAWHPDesEnterWaterTemp = newPreDefColumn(state, s->pdstAWHP, "Entering Water Temperature [C]");
+        s->pdchAWHPDesLeaveWaterTemp = newPreDefColumn(state, s->pdstAWHP, "Leaving Water Temperature [C]");
         s->pdchAWHPDesSizeRefAirFlowRate = newPreDefColumn(state, s->pdstAWHP, "Design Size Reference Air Flow Rate [kg/s]");
+        s->pdchAWHPDesSizeRefWaterFlowRate = newPreDefColumn(state, s->pdstAWHP, "Design Size Reference Water Flow Rate [kg/s]");
         s->pdchAWHPPlantloopName = newPreDefColumn(state, s->pdstAWHP, "Plantloop Name");
         s->pdchAWHPPlantloopBranchName = newPreDefColumn(state, s->pdstAWHP, "Plantloop Branch Name");
 

@@ -1510,11 +1510,20 @@ void EIRPlantLoopHeatPump::sizeSrcSideASHP(EnergyPlusData &state)
             auto typeNameCompressor = AWHPCompressorControlTypeUC[static_cast<int>(this->controlType)];
             OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchAWHPType, objectName, typeNameCompressor);
             OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchAWHPRefCap, objectName, this->referenceCapacity);
-            OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchAWHPRefEff, objectName, "N/A");
+            OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchAWHPRefCOP, objectName, this->referenceCOP);
+            OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchAWHPSEER, objectName, "fixme");
+            OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchAWHPHSPF, objectName, "fixme");
+            OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchAWHPMinPLR, objectName, this->minimumPLR);
             OutputReportPredefined::PreDefTableEntry(
-                state, state.dataOutRptPredefined->pdchAWHPRatedCap, objectName, this->referenceCapacity); // did not find rated cap, using Nominal
-            OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchAWHPIPLVinSI, objectName, "N/A");
-            OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchAWHPIPLVinIP, objectName, "N/A");
+                state, state.dataOutRptPredefined->pdchAWHPDesSizeRefAirTemp, objectName, this->sourceSideDesignInletTemp);
+            OutputReportPredefined::PreDefTableEntry(
+                state, state.dataOutRptPredefined->pdchAWHPDesEnterWaterTemp, objectName, this->ratedEnteringWaterTemperature);
+            OutputReportPredefined::PreDefTableEntry(
+                state, state.dataOutRptPredefined->pdchAWHPDesLeaveWaterTemp, objectName, this->ratedLeavingWaterTemperature);
+            OutputReportPredefined::PreDefTableEntry(
+                state, state.dataOutRptPredefined->pdchAWHPDesSizeRefAirFlowRate, objectName, this->sourceSideDesignMassFlowRate);
+            OutputReportPredefined::PreDefTableEntry(
+                state, state.dataOutRptPredefined->pdchAWHPDesSizeRefWaterFlowRate, objectName, this->loadSideDesignMassFlowRate);
             OutputReportPredefined::PreDefTableEntry(
                 state,
                 state.dataOutRptPredefined->pdchAWHPPlantloopName,
@@ -1528,7 +1537,6 @@ void EIRPlantLoopHeatPump::sizeSrcSideASHP(EnergyPlusData &state)
                                                                                               .Branch(this->loadSidePlantLoc.branchNum)
                                                                                               .Name
                                                                                         : "N/A");
-            OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchAWHPMinPLR, objectName, this->minimumPLR);
             OutputReportPredefined::PreDefTableEntry(state,
                                                      state.dataOutRptPredefined->pdchAWHPDesSizeRefWaterFlowRate,
                                                      objectName,

@@ -233,13 +233,16 @@ namespace EIRPlantLoopHeatPumps {
         Real64 thermosiphonMinTempDiff = 0.0;
         int thermosiphonStatus = 0;
 
-        // new output
+        // new output in AWHP
         Real64 CrankcaseHeaterPower = 0.0;
         Real64 heatingCOP = 0.0;
         Real64 coolingCOP = 0.0;
         Real64 heatingRate = 0.0;
         Real64 coolingRate = 0.0;
         int operatingMode = 0;
+        Real64 sourceSideDesignInletTemp = 0.0;    // Rated Inlet Air Temperature in xx Mode
+        Real64 ratedLeavingWaterTemperature = 0.0; // rated_leaving_water_temperature_in_xx_mode
+        Real64 ratedEnteringWaterTemperature = 0.0; // rated_leaving_water_temperature_in_xx_mode
         enum class CompressorControlType
         {
             Invalid = -1,
@@ -463,8 +466,6 @@ namespace EIRPlantLoopHeatPumps {
         std::string operationModeControlScheName;
         Sched::Schedule *operationModeControlSche = nullptr; // availability schedule
         int compressorMultiplier = 1;
-        Real64 sourceSideDesignInletTemp = 0.0;    // Rated Inlet Air Temperature in xx Mode
-        Real64 ratedLeavingWaterTemperature = 0.0; // rated_leaving_water_temperature_in_xx_mode
         Real64 minOutdoorAirTempLimit = 0.0;
         Real64 maxOutdoorAirTempLimit = 0.0;
         Real64 CrankcaseHeaterCapacity;        // total crankcase heater capacity [W]

@@ -1353,7 +1353,10 @@ TEST_F(ZoneIdealLoadsTest, IdealLoads_Fix_SA_HumRat_Test)
         "  ,                               !- Outdoor Air Economizer Type",
         "  ,                               !- Heat Recovery Type",
         "  ,                               !- Sensible Heat Recovery Effectiveness{ dimensionless }",
-        "  ;                               !- Latent Heat Recovery Effectiveness{ dimensionless }",
+        "  ,                               !- Latent Heat Recovery Effectiveness{ dimensionless }",
+        "  ,                               !- Design Specification ZoneHVAC Sizing Object Name }",
+        "  DXHeatingCoilFuelEffSched,      !- Heating Fuel Efficiency Schedule Name }",
+        "  DXCoolingCoilFuelEffSched;      !- Cooling Fuel Efficiency Schedule Name }",
 
         "ZoneHVAC:EquipmentConnections,",
         "  EAST ZONE,                      !- Zone Name",
@@ -1419,6 +1422,38 @@ TEST_F(ZoneIdealLoadsTest, IdealLoads_Fix_SA_HumRat_Test)
         "EnergyManagementSystem:Program,",
         "Test_InsideHVACSystemIterationLoop,",
         "set Mdot = 0.1;",
+
+        "Schedule:Constant,",
+        "  DXHeatingCoilFuelEffSched,    !- Name",
+        "  AnyValue,                     !- Schedule Type Limits Name",
+        "  1.0;                          !- Field 1",
+
+        "Schedule:Constant,",
+        "  DXCoolingCoilFuelEffSched,    !- Name",
+        "  AnyValue,                     !- Schedule Type Limits Name",
+        "  1.0;                          !- Field 1",
+
+        "EnergyManagementSystem:Actuator,",
+        "  HeatingFuelEff_SCH_Override,  !- Name",
+        "  DXHeatingCoilFuelEffSched,    !- Actuated Component Unique Name",
+        "  Schedule:Constant,            !- Actuated Component Type",
+        "  Schedule Value;               !- Actuated Component Control Type",
+
+        "EnergyManagementSystem:Actuator,",
+        "  CoolingFuelEff_SCH_Override,  !- Name",
+        "  DXCoolingCoilFuelEffSched,    !- Actuated Component Unique Name",
+        "  Schedule:Constant,            !- Actuated Component Type",
+        "  Schedule Value;               !- Actuated Component Control Type",
+
+        "EnergyManagementSystem:ProgramCallingManager,",
+        "  IdealLoads_Fuel_Eff_Reset_ProgMgr, !- Name",
+        "  InsideHVACSystemIterationLoop,     !- EnergyPlus Model Calling Point",
+        "  IdealLoadsAirSystemFuelEffProg;    !- Program Name 2",
+
+        "EnergyManagementSystem:Program,",
+        "  IdealLoadsAirSystemFuelEffProg,    !- Name",
+        "  Set HeatingFuelEff_SCH_Override = 2.0,  !- Program Line 1",
+        "  Set CoolingFuelEff_SCH_Override = 3.0;  !- Program Line 2",
     });
 
     ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
@@ -1501,12 +1536,14 @@ TEST_F(ZoneIdealLoadsTest, IdealLoads_Fix_SA_HumRat_Test)
     EXPECT_DOUBLE_EQ(state->dataLoopNodes->Node(1).Temp, 20.228931255157292);
 
     ReportPurchasedAir(*state, 1);
+    EXPECT_EQ(PurchAir.heatFuelEffSched->getCurrentVal(), 2.0);
+    EXPECT_EQ(PurchAir.coolFuelEffSched->getCurrentVal(), 3.0);
     EXPECT_DOUBLE_EQ(PurchAir.TotCoolRate, 1003.6327856486452);
-    EXPECT_DOUBLE_EQ(PurchAir.TotCoolFuelRate, 1003.6327856486452);
+    EXPECT_DOUBLE_EQ(PurchAir.TotCoolFuelRate, 1003.6327856486452 / 3.0);
     EXPECT_DOUBLE_EQ(PurchAir.TotHeatRate, 5574.8612856486452);
-    EXPECT_DOUBLE_EQ(PurchAir.TotHeatFuelRate, 5574.8612856486452);
+    EXPECT_DOUBLE_EQ(PurchAir.TotHeatFuelRate, 5574.8612856486452 / 2.0);
     EXPECT_DOUBLE_EQ(PurchAir.ZoneTotCoolRate, 1000.0000000000002);
-    EXPECT_DOUBLE_EQ(PurchAir.ZoneTotCoolFuelRate, 1000.0000000000002);
+    EXPECT_DOUBLE_EQ(PurchAir.ZoneTotCoolFuelRate, 1000.0000000000002 / 3.0);
     EXPECT_DOUBLE_EQ(PurchAir.ZoneTotHeatRate, 5571.2285000000002);
-    EXPECT_DOUBLE_EQ(PurchAir.ZoneTotHeatFuelRate, 5571.2285000000002);
+    EXPECT_DOUBLE_EQ(PurchAir.ZoneTotHeatFuelRate, 5571.2285000000002 / 2.0);
 }

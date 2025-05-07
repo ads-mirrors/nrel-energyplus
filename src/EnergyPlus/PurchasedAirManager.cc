@@ -3079,9 +3079,11 @@ void ReportPurchasedAir(EnergyPlusData &state, int const PurchAirNum)
     PurchAir.HtRecTotCoolRate = PurchAir.HtRecSenCoolRate + PurchAir.HtRecLatCoolRate;
 
     Real64 heatFuelEffValue = PurchAir.heatFuelEffSched->getCurrentVal();
-    PurchAir.ZoneTotHeatFuelRate = PurchAir.TotHeatRate / heatFuelEffValue;
-    PurchAir.TotHeatFuelRate = PurchAir.ZoneTotHeatRate / heatFuelEffValue;
+    if (heatFuelEffValue <= 0.0) heatFuelEffValue = 1.0;
+    PurchAir.TotHeatFuelRate = PurchAir.TotHeatRate / heatFuelEffValue;
+    PurchAir.ZoneTotHeatFuelRate = PurchAir.ZoneTotHeatRate / heatFuelEffValue;
     Real64 coolFuelEffValue = PurchAir.coolFuelEffSched->getCurrentVal();
+    if (coolFuelEffValue <= 0.0) coolFuelEffValue = 1.0;
     PurchAir.ZoneTotCoolFuelRate = PurchAir.ZoneTotCoolRate / coolFuelEffValue;
     PurchAir.TotCoolFuelRate = PurchAir.TotCoolRate / coolFuelEffValue;
 

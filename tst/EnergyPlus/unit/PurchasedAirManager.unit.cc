@@ -1514,4 +1514,15 @@ TEST_F(ZoneIdealLoadsTest, IdealLoads_Fix_SA_HumRat_Test)
     EXPECT_DOUBLE_EQ(state->dataLoopNodes->Node(1).Enthalpy, 45712.285000000003);
     EXPECT_DOUBLE_EQ(state->dataLoopNodes->Node(1).HumRat, 0.01);
     EXPECT_DOUBLE_EQ(state->dataLoopNodes->Node(1).Temp, 20.228931255157292);
+
+    ReportPurchasedAir(*state, 1);
+    EXPECT_DOUBLE_EQ(state->dataPurchasedAirMgr->PurchAir(1).TotCoolRate, 1003.6327856486452);
+    EXPECT_DOUBLE_EQ(state->dataPurchasedAirMgr->PurchAir(1).TotCoolFuelRate, 1003.6327856486452);
+    EXPECT_DOUBLE_EQ(state->dataPurchasedAirMgr->PurchAir(1).TotHeatRate, 5574.8612856486452);
+    EXPECT_DOUBLE_EQ(state->dataPurchasedAirMgr->PurchAir(1).TotHeatFuelRate, 5574.8612856486452);
+
+    EXPECT_DOUBLE_EQ(state->dataPurchasedAirMgr->PurchAir(1).ZoneTotCoolRate, 1000.0000000000002);
+    EXPECT_DOUBLE_EQ(state->dataPurchasedAirMgr->PurchAir(1).ZoneTotCoolFuelRate, 1000.0000000000002);
+    EXPECT_DOUBLE_EQ(state->dataPurchasedAirMgr->PurchAir(1).ZoneTotHeatRate, 5571.2285000000002);
+    EXPECT_DOUBLE_EQ(state->dataPurchasedAirMgr->PurchAir(1).ZoneTotHeatFuelRate, 5571.2285000000002);
 }

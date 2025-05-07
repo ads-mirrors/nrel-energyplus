@@ -507,37 +507,21 @@ TEST_F(ZoneIdealLoadsTest, IdealLoads_ExhaustNodeTest)
         "  ,                               !- Induced Air Outlet Node or NodeList Name",
         "  Zone Exhaust Node;              !- Inlet 1 Node Name",
 
-        "  Schedule:Compact,",
+        "  Schedule:Constant,",
         "    DXHeatingCoilFuelEffSched,    !- Name",
         "    AnyValue,                     !- Schedule Type Limits Name",
-        "    Through: 12/31,               !- Field 1",
-        "    For: AllDays,                 !- Field 2",
-        "    Until: 24:00,2.0;             !- Field 3",
+        "    2.0;                          !- Field 1",
 
-        "  Schedule:Compact,",
+        "  Schedule:Constant,",
         "    DXCoolingCoilFuelEffSched,    !- Name",
         "    AnyValue,                     !- Schedule Type Limits Name",
-        "    Through: 12/31,               !- Field 1",
-        "    For: AllDays,                 !- Field 2",
-        "    Until: 24:00,3.0;             !- Field 3",
+        "    3.0;                          !- Field 1",
     });
 
     ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
     state->init_state(*state);
 
     state->dataGlobal->DoWeathSim = true;
-
-    state->dataEnvrn->Month = 12;
-    state->dataEnvrn->DayOfMonth = 31;
-    state->dataGlobal->HourOfDay = 23;
-    state->dataEnvrn->DayOfWeek = 4;
-    state->dataEnvrn->DayOfWeekTomorrow = 5;
-    state->dataEnvrn->HolidayIndex = 0;
-    state->dataGlobal->TimeStep = 1;
-    state->dataGlobal->HourOfDay = 24;
-    state->dataGlobal->CurrentTime = 24.0;
-    state->dataEnvrn->DayOfYear_Schedule = General::OrdinalDay(state->dataEnvrn->Month, state->dataEnvrn->DayOfMonth, 1);
-    Sched::UpdateScheduleVals(*state);
 
     bool ErrorsFound = false;
     GetZoneData(*state, ErrorsFound);
@@ -1467,9 +1451,10 @@ TEST_F(ZoneIdealLoadsTest, IdealLoads_Fix_SA_HumRat_Test)
         state->dataPurchasedAirMgr->GetPurchAirInputFlag = false;
     }
 
-    state->dataPurchasedAirMgr->PurchAir(1).EMSOverrideMdotOn = true;
-    state->dataPurchasedAirMgr->PurchAir(1).EMSOverrideSupplyTempOn = false;
-    state->dataPurchasedAirMgr->PurchAir(1).EMSOverrideSupplyHumRatOn = false;
+    auto &PurchAir = state->dataPurchasedAirMgr->PurchAir(1);
+    PurchAir.EMSOverrideMdotOn = true;
+    PurchAir.EMSOverrideSupplyTempOn = false;
+    PurchAir.EMSOverrideSupplyHumRatOn = false;
 
     state->dataLoopNodes->Node(2).Temp = 25.0;
     state->dataLoopNodes->Node(2).HumRat = 0.001;
@@ -1482,8 +1467,8 @@ TEST_F(ZoneIdealLoadsTest, IdealLoads_Fix_SA_HumRat_Test)
     ManageEMS(*state, EMSManager::EMSCallFrom::HVACIterationLoop, anyEMSRan, ObjexxFCL::Optional_int_const());
 
     state->dataZoneEquip->ZoneEquipConfig(1).ZoneNode = 1;
-    state->dataPurchasedAirMgr->PurchAir(1).OutdoorAirNodeNum = 2;
-    state->dataPurchasedAirMgr->PurchAir(1).ZoneRecircAirNodeNum = 1;
+    PurchAir.OutdoorAirNodeNum = 2;
+    PurchAir.ZoneRecircAirNodeNum = 1;
 
     int ControlledZoneNum = 1;
     state->dataZoneEnergyDemand->ZoneSysEnergyDemand(ControlledZoneNum).RemainingOutputReqToCoolSP = -1000.0;
@@ -1496,33 +1481,32 @@ TEST_F(ZoneIdealLoadsTest, IdealLoads_Fix_SA_HumRat_Test)
 
     CalcPurchAirLoads(*state, 1, SysOutputProvided, MoistOutputProvided, 1);
 
-    EXPECT_DOUBLE_EQ(state->dataPurchasedAirMgr->PurchAir(1).MinCoolSuppAirHumRat, 0.009);
+    EXPECT_DOUBLE_EQ(PurchAir.MinCoolSuppAirHumRat, 0.009);
 
-    EXPECT_DOUBLE_EQ(state->dataPurchasedAirMgr->PurchAir(1).SupplyTemp, 20.228931255157292);
+    EXPECT_DOUBLE_EQ(PurchAir.SupplyTemp, 20.228931255157292);
     // Without the current fix, this SupplyHumRat value would be 0.009, which is incorrect:
-    EXPECT_DOUBLE_EQ(state->dataPurchasedAirMgr->PurchAir(1).SupplyHumRat, 0.01);
+    EXPECT_DOUBLE_EQ(PurchAir.SupplyHumRat, 0.01);
 
-    EXPECT_DOUBLE_EQ(state->dataPurchasedAirMgr->PurchAir(1).MixedAirTemp, 30.0);
-    EXPECT_DOUBLE_EQ(state->dataPurchasedAirMgr->PurchAir(1).MixedAirHumRat, 0.012);
+    EXPECT_DOUBLE_EQ(PurchAir.MixedAirTemp, 30.0);
+    EXPECT_DOUBLE_EQ(PurchAir.MixedAirHumRat, 0.012);
 
-    EXPECT_DOUBLE_EQ(state->dataPurchasedAirMgr->PurchAir(1).SenCoilLoad, -1003.6327856486452);
-    EXPECT_DOUBLE_EQ(state->dataPurchasedAirMgr->PurchAir(1).LatCoilLoad, 5574.8612856486452);
+    EXPECT_DOUBLE_EQ(PurchAir.SenCoilLoad, -1003.6327856486452);
+    EXPECT_DOUBLE_EQ(PurchAir.LatCoilLoad, 5574.8612856486452);
 
-    EXPECT_DOUBLE_EQ(state->dataPurchasedAirMgr->PurchAir(1).SenOutputToZone, -1000.0000000000002);
-    EXPECT_DOUBLE_EQ(state->dataPurchasedAirMgr->PurchAir(1).LatOutputToZone, 5571.2285000000002);
+    EXPECT_DOUBLE_EQ(PurchAir.SenOutputToZone, -1000.0000000000002);
+    EXPECT_DOUBLE_EQ(PurchAir.LatOutputToZone, 5571.2285000000002);
 
     EXPECT_DOUBLE_EQ(state->dataLoopNodes->Node(1).Enthalpy, 45712.285000000003);
     EXPECT_DOUBLE_EQ(state->dataLoopNodes->Node(1).HumRat, 0.01);
     EXPECT_DOUBLE_EQ(state->dataLoopNodes->Node(1).Temp, 20.228931255157292);
 
     ReportPurchasedAir(*state, 1);
-    EXPECT_DOUBLE_EQ(state->dataPurchasedAirMgr->PurchAir(1).TotCoolRate, 1003.6327856486452);
-    EXPECT_DOUBLE_EQ(state->dataPurchasedAirMgr->PurchAir(1).TotCoolFuelRate, 1003.6327856486452);
-    EXPECT_DOUBLE_EQ(state->dataPurchasedAirMgr->PurchAir(1).TotHeatRate, 5574.8612856486452);
-    EXPECT_DOUBLE_EQ(state->dataPurchasedAirMgr->PurchAir(1).TotHeatFuelRate, 5574.8612856486452);
-
-    EXPECT_DOUBLE_EQ(state->dataPurchasedAirMgr->PurchAir(1).ZoneTotCoolRate, 1000.0000000000002);
-    EXPECT_DOUBLE_EQ(state->dataPurchasedAirMgr->PurchAir(1).ZoneTotCoolFuelRate, 1000.0000000000002);
-    EXPECT_DOUBLE_EQ(state->dataPurchasedAirMgr->PurchAir(1).ZoneTotHeatRate, 5571.2285000000002);
-    EXPECT_DOUBLE_EQ(state->dataPurchasedAirMgr->PurchAir(1).ZoneTotHeatFuelRate, 5571.2285000000002);
+    EXPECT_DOUBLE_EQ(PurchAir.TotCoolRate, 1003.6327856486452);
+    EXPECT_DOUBLE_EQ(PurchAir.TotCoolFuelRate, 1003.6327856486452);
+    EXPECT_DOUBLE_EQ(PurchAir.TotHeatRate, 5574.8612856486452);
+    EXPECT_DOUBLE_EQ(PurchAir.TotHeatFuelRate, 5574.8612856486452);
+    EXPECT_DOUBLE_EQ(PurchAir.ZoneTotCoolRate, 1000.0000000000002);
+    EXPECT_DOUBLE_EQ(PurchAir.ZoneTotCoolFuelRate, 1000.0000000000002);
+    EXPECT_DOUBLE_EQ(PurchAir.ZoneTotHeatRate, 5571.2285000000002);
+    EXPECT_DOUBLE_EQ(PurchAir.ZoneTotHeatFuelRate, 5571.2285000000002);
 }

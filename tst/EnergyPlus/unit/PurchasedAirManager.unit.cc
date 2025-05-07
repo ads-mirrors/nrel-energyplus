@@ -478,7 +478,10 @@ TEST_F(ZoneIdealLoadsTest, IdealLoads_ExhaustNodeTest)
         "  ,                               !- Outdoor Air Economizer Type",
         "  ,                               !- Heat Recovery Type",
         "  ,                               !- Sensible Heat Recovery Effectiveness{ dimensionless }",
-        "  ;                               !- Latent Heat Recovery Effectiveness{ dimensionless }",
+        "  ,                               !- Latent Heat Recovery Effectiveness{ dimensionless }",
+        "  ,                               !- Design Specification ZoneHVAC Sizing Object Name }",
+        "  DXHeatingCoilFuelEffSched,      !- Heating Fuel Efficiency Schedule Name }",
+        "  DXCoolingCoilFuelEffSched;      !- Cooling Fuel Efficiency Schedule Name }",
 
         "ZoneHVAC:EquipmentConnections,",
         "  EAST ZONE,                      !- Zone Name",
@@ -504,12 +507,37 @@ TEST_F(ZoneIdealLoadsTest, IdealLoads_ExhaustNodeTest)
         "  ,                               !- Induced Air Outlet Node or NodeList Name",
         "  Zone Exhaust Node;              !- Inlet 1 Node Name",
 
+        "  Schedule:Compact,",
+        "    DXHeatingCoilFuelEffSched,    !- Name",
+        "    AnyValue,                     !- Schedule Type Limits Name",
+        "    Through: 12/31,               !- Field 1",
+        "    For: AllDays,                 !- Field 2",
+        "    Until: 24:00,2.0;             !- Field 3",
+
+        "  Schedule:Compact,",
+        "    DXCoolingCoilFuelEffSched,    !- Name",
+        "    AnyValue,                     !- Schedule Type Limits Name",
+        "    Through: 12/31,               !- Field 1",
+        "    For: AllDays,                 !- Field 2",
+        "    Until: 24:00,3.0;             !- Field 3",
     });
 
     ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
     state->init_state(*state);
 
     state->dataGlobal->DoWeathSim = true;
+
+    state->dataEnvrn->Month = 12;
+    state->dataEnvrn->DayOfMonth = 31;
+    state->dataGlobal->HourOfDay = 23;
+    state->dataEnvrn->DayOfWeek = 4;
+    state->dataEnvrn->DayOfWeekTomorrow = 5;
+    state->dataEnvrn->HolidayIndex = 0;
+    state->dataGlobal->TimeStep = 1;
+    state->dataGlobal->HourOfDay = 24;
+    state->dataGlobal->CurrentTime = 24.0;
+    state->dataEnvrn->DayOfYear_Schedule = General::OrdinalDay(state->dataEnvrn->Month, state->dataEnvrn->DayOfMonth, 1);
+    Sched::UpdateScheduleVals(*state);
 
     bool ErrorsFound = false;
     GetZoneData(*state, ErrorsFound);
@@ -529,11 +557,13 @@ TEST_F(ZoneIdealLoadsTest, IdealLoads_ExhaustNodeTest)
                         SimZone,
                         SimAir); // read zone equipment configuration and list objects and simulate ideal loads air system
 
-    auto &PurchAir(state->dataPurchasedAirMgr->PurchAir);
-    EXPECT_EQ(PurchAir(1).Name, "ZONE 1 IDEAL LOADS");
+    auto &PurchAir = state->dataPurchasedAirMgr->PurchAir(1);
+    EXPECT_EQ(PurchAir.Name, "ZONE 1 IDEAL LOADS");
     // Ideal loads air system found the plenum it is attached to
-    EXPECT_EQ(PurchAir(1).SupplyAirMassFlowRate, state->dataLoopNodes->Node(PurchAir(1).ZoneSupplyAirNodeNum).MassFlowRate);
-    EXPECT_EQ(PurchAir(1).SupplyAirMassFlowRate, state->dataLoopNodes->Node(PurchAir(1).ZoneExhaustAirNodeNum).MassFlowRate);
+    EXPECT_EQ(PurchAir.SupplyAirMassFlowRate, state->dataLoopNodes->Node(PurchAir.ZoneSupplyAirNodeNum).MassFlowRate);
+    EXPECT_EQ(PurchAir.SupplyAirMassFlowRate, state->dataLoopNodes->Node(PurchAir.ZoneExhaustAirNodeNum).MassFlowRate);
+    EXPECT_EQ(PurchAir.heatFuelEffSched->getCurrentVal(), 2.0);
+    EXPECT_EQ(PurchAir.coolFuelEffSched->getCurrentVal(), 3.0);
 }
 
 TEST_F(ZoneIdealLoadsTest, IdealLoads_IntermediateOutputVarsTest)

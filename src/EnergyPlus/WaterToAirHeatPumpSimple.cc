@@ -2878,18 +2878,20 @@ namespace WaterToAirHeatPumpSimple {
                             state.dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(simpleWatertoAirHP.CompanionCoolingCoilNum);
                         if (companionCoolingCoil.RatedCapCoolTotal != DataSizing::AutoSize) {
                             int PltSizNumCompanionCoil = 0;
-                            PltSizNumCompanionCoil =
-                                PlantUtilities::MyPlantSizingIndex(state,
-                                                                   format("COIL:{}:WATERTOAIRHEATPUMP:EQUATIONFIT",
-                                                                          WatertoAirHPNamesUC[static_cast<int>(companionCoolingCoil.WAHPType)]),
-                                                                   companionCoolingCoil.Name,
-                                                                   companionCoolingCoil.WaterInletNodeNum,
-                                                                   companionCoolingCoil.WaterOutletNodeNum,
-                                                                   ErrorsFound,
-                                                                   false);
-                            RatedWaterVolFlowRateDes = max(RatedWaterVolFlowRateDes,
-                                                           (1 + 1 / RatedCoolCOP) * companionCoolingCoil.RatedCapCoolTotal /
-                                                               (state.dataSize->PlantSizData(PltSizNumCompanionCoil).DeltaT * Cp * rho));
+                            if (PltSizNumCompanionCoil > 0) {
+                                PltSizNumCompanionCoil =
+                                    PlantUtilities::MyPlantSizingIndex(state,
+                                                                       format("COIL:{}:WATERTOAIRHEATPUMP:EQUATIONFIT",
+                                                                              WatertoAirHPNamesUC[static_cast<int>(companionCoolingCoil.WAHPType)]),
+                                                                       companionCoolingCoil.Name,
+                                                                       companionCoolingCoil.WaterInletNodeNum,
+                                                                       companionCoolingCoil.WaterOutletNodeNum,
+                                                                       ErrorsFound,
+                                                                       false);
+                                RatedWaterVolFlowRateDes = max(RatedWaterVolFlowRateDes,
+                                                               (1 + 1 / RatedCoolCOP) * companionCoolingCoil.RatedCapCoolTotal /
+                                                                   (state.dataSize->PlantSizData(PltSizNumCompanionCoil).DeltaT * Cp * rho));
+                            }
                         }
                     }
                 } else if (simpleWatertoAirHP.WAHPType == WatertoAirHP::Cooling) {

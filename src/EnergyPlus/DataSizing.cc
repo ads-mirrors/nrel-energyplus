@@ -660,6 +660,54 @@ calcDesignSpecificationOutdoorAir(EnergyPlusData &state,
     }
 }
 
+Real64 OARequirementsData::desOAFlowArea(EnergyPlusData &state,
+                                         int const zoneNum,
+                                         Real64 &sumArea, // Zonw or space floor area - returned via reference for use in desFlorPerZoneArea
+                                         bool const useMinOASchFlag, // Use min OA schedule in DesignSpecification:OutdoorAir object
+                                         int const spaceNum)         // Space index (if applicable)
+{
+    Real64 sumAreaOA = 0.0; // OA Flow Rate based on area [m3/s]
+    sumArea = 0.0;          // Zone or space floor area [m2] - returned via reference for use in desFlorPerZoneArea
+    if (this->numDSOA == 0) {
+        // This is a simple DesignSpecification:OutdoorAir
+        if (this->OAFlowMethod != OAFlowCalcMethod::PerPerson && this->OAFlowMethod != OAFlowCalcMethod::PerZone &&
+            this->OAFlowMethod != OAFlowCalcMethod::ACH) {
+            if (spaceNum == 0) {
+                sumArea = state.dataHeatBal->Zone(zoneNum).FloorArea;
+            } else {
+                sumArea = state.dataHeatBal->space(spaceNum).FloorArea;
+            }
+            sumAreaOA = sumArea * this->OAFlowPerArea;
+            if (useMinOASchFlag && (this->oaFlowFracSched != nullptr)) {
+                sumAreaOA *= this->oaFlowFracSched->getCurrentVal();
+            }
+        }
+    } else {
+        // This is a DesignSpecification:OutdoorAir:SpaceList
+        for (int dsoaCount = 1; dsoaCount <= this->numDSOA; ++dsoaCount) {
+            auto const &thisDSOA = state.dataSize->OARequirements(this->dsoaIndexes(dsoaCount));
+            int const dsoaSpaceNum = this->dsoaSpaceIndexes(dsoaCount);
+            if (thisDSOA.OAFlowMethod != OAFlowCalcMethod::PerPerson && thisDSOA.OAFlowMethod != OAFlowCalcMethod::PerZone &&
+                thisDSOA.OAFlowMethod != OAFlowCalcMethod::ACH) {
+                if ((spaceNum == 0) || (spaceNum == dsoaSpaceNum)) {
+                    Real64 spaceArea = state.dataHeatBal->space(this->dsoaSpaceIndexes(dsoaCount)).FloorArea;
+                    sumArea += spaceArea;
+                    Real64 spaceOAArea = thisDSOA.OAFlowPerArea * spaceArea;
+                    if (useMinOASchFlag && (thisDSOA.oaFlowFracSched != nullptr)) {
+                        spaceOAArea *= thisDSOA.oaFlowFracSched->getCurrentVal();
+                    }
+                    sumAreaOA += spaceOAArea;
+                }
+            }
+        }
+    }
+    auto &thisZone = state.dataHeatBal->Zone(zoneNum);
+    Real64 const mult = thisZone.Multiplier * thisZone.ListMultiplier;
+    sumArea *= mult;
+    sumAreaOA *= mult;
+    return sumAreaOA;
+}
+
 Real64 OARequirementsData::desFlowPerZoneArea(EnergyPlusData &state, int const zoneNum, int const spaceNum)
 {
     Real64 desFlowPA = 0.0;
@@ -671,30 +719,81 @@ Real64 OARequirementsData::desFlowPerZoneArea(EnergyPlusData &state, int const z
         }
     } else {
         // This is a DesignSpecification:OutdoorAir:SpaceList
-        Real64 sumAreaOA = 0.0;
         Real64 sumArea = 0.0;
-        for (int dsoaCount = 1; dsoaCount <= this->numDSOA; ++dsoaCount) {
-            auto const &thisDSOA = state.dataSize->OARequirements(this->dsoaIndexes(dsoaCount));
-            int const dsoaSpaceNum = this->dsoaSpaceIndexes(dsoaCount);
-            if (thisDSOA.OAFlowMethod != OAFlowCalcMethod::PerPerson && thisDSOA.OAFlowMethod != OAFlowCalcMethod::PerZone &&
-                thisDSOA.OAFlowMethod != OAFlowCalcMethod::ACH) {
-                if ((spaceNum == 0) || (spaceNum == dsoaSpaceNum)) {
-                    Real64 spaceArea = state.dataHeatBal->space(this->dsoaSpaceIndexes(dsoaCount)).FloorArea;
-                    sumArea + -spaceArea;
-                    sumAreaOA += thisDSOA.OAFlowPerArea * spaceArea;
-                }
-            }
-        }
-        if ((spaceNum == 0) && (state.dataHeatBal->Zone(zoneNum).FloorArea)) {
-            desFlowPA = sumAreaOA / state.dataHeatBal->Zone(zoneNum).FloorArea;
-        } else if (sumArea > 0.0) {
+        bool useMinOASch = false;
+        Real64 sumAreaOA = this->desOAFlowArea(state, zoneNum, sumArea, useMinOASch, spaceNum);
+        if (sumArea > 0.0) {
             desFlowPA = sumAreaOA / sumArea;
         }
     }
     return desFlowPA;
 }
 
-Real64 OARequirementsData::desFlowPerZonePerson(EnergyPlusData &state, int const actualZoneNum, int const spaceNum)
+Real64
+OARequirementsData::desOAFlowPeople(EnergyPlusData &state,
+                                    int const zoneNum, // Zone index
+                                    Real64 &sumPeople, // Zone or space design number of people - returned via reference for use in desFlorPerZoneArea
+                                    bool const useOccSchFlag,   // Zone occupancy schedule will be used instead of using total zone occupancy
+                                    bool const useMinOASchFlag, // Use min OA schedule in DesignSpecification:OutdoorAir object
+                                    int const spaceNum)         // Space index (if applicable)
+{
+    Real64 sumPeopleOA = 0.0; // OA Flow Rate based on people [m3/s]
+    sumPeople = 0.0;          // Zone or space design number of people - returned via reference for use in desFlorPerZoneArea
+    if (this->numDSOA == 0) {
+        // This is a simple DesignSpecification:OutdoorAir
+        if (this->OAFlowMethod != OAFlowCalcMethod::PerArea && this->OAFlowMethod != OAFlowCalcMethod::PerZone &&
+            this->OAFlowMethod != OAFlowCalcMethod::ACH) {
+            if (spaceNum == 0) {
+                if (useOccSchFlag) {
+                    sumPeople = state.dataHeatBal->ZoneIntGain(zoneNum).NOFOCC;
+                } else {
+                    sumPeople = state.dataHeatBal->Zone(zoneNum).TotOccupants;
+                }
+            } else {
+                if (useOccSchFlag) {
+                    sumPeople = state.dataHeatBal->space(spaceNum).TotOccupants;
+                } else {
+                    sumPeople = state.dataHeatBal->spaceIntGain(spaceNum).NOFOCC;
+                }
+            }
+            sumPeopleOA = sumPeople * this->OAFlowPerPerson;
+            // Apply schedule as needed. Sizing does not use schedule.
+            if (useMinOASchFlag && (this->oaFlowFracSched != nullptr)) {
+                sumPeopleOA *= this->oaFlowFracSched->getCurrentVal();
+            }
+        }
+    } else {
+        // This is a DesignSpecification:OutdoorAir:SpaceList
+        Real64 spacePeople = 0.0;
+        for (int dsoaCount = 1; dsoaCount <= this->numDSOA; ++dsoaCount) {
+            auto const &thisDSOA = state.dataSize->OARequirements(this->dsoaIndexes(dsoaCount));
+            int const dsoaSpaceNum = this->dsoaSpaceIndexes(dsoaCount);
+            if (thisDSOA.OAFlowMethod != OAFlowCalcMethod::PerArea && thisDSOA.OAFlowMethod != OAFlowCalcMethod::PerZone &&
+                thisDSOA.OAFlowMethod != OAFlowCalcMethod::ACH) {
+                if ((spaceNum == 0) || (spaceNum == dsoaSpaceNum)) {
+
+                    if (useOccSchFlag) {
+                        spacePeople = state.dataHeatBal->spaceIntGain(spaceNum).NOFOCC;
+                    } else {
+                        spacePeople = state.dataHeatBal->space(dsoaSpaceNum).TotOccupants;
+                    }
+                    if (useMinOASchFlag && (thisDSOA.oaFlowFracSched != nullptr)) {
+                        spacePeople *= thisDSOA.oaFlowFracSched->getCurrentVal();
+                    }
+                    sumPeople += spacePeople;
+                    sumPeopleOA += thisDSOA.OAFlowPerPerson * spacePeople;
+                }
+            }
+        }
+    }
+    auto &thisZone = state.dataHeatBal->Zone(zoneNum);
+    Real64 const mult = thisZone.Multiplier * thisZone.ListMultiplier;
+    sumPeople *= mult;
+    sumPeopleOA *= mult;
+    return sumPeopleOA;
+}
+
+Real64 OARequirementsData::desFlowPerZonePerson(EnergyPlusData &state, int const zoneNum, int const spaceNum)
 {
     Real64 desFlowPP = 0.0;
     if (this->numDSOA == 0) {
@@ -705,37 +804,26 @@ Real64 OARequirementsData::desFlowPerZonePerson(EnergyPlusData &state, int const
         }
     } else {
         // This is a DesignSpecification:OutdoorAir:SpaceList
-        Real64 sumPeopleOA = 0.0;
         Real64 sumPeople = 0.0;
-        for (int dsoaCount = 1; dsoaCount <= this->numDSOA; ++dsoaCount) {
-            auto const &thisDSOA = state.dataSize->OARequirements(this->dsoaIndexes(dsoaCount));
-            int const dsoaSpaceNum = this->dsoaSpaceIndexes(dsoaCount);
-            if (thisDSOA.OAFlowMethod != OAFlowCalcMethod::PerArea && thisDSOA.OAFlowMethod != OAFlowCalcMethod::PerZone &&
-                thisDSOA.OAFlowMethod != OAFlowCalcMethod::ACH) {
-                if ((spaceNum == 0) || (spaceNum == dsoaSpaceNum)) {
-                    Real64 spacePeople = state.dataHeatBal->space(dsoaSpaceNum).TotOccupants;
-                    sumPeople += spacePeople;
-                    sumPeopleOA += thisDSOA.OAFlowPerPerson * spacePeople;
-                }
-            }
-        }
-        if ((spaceNum == 0) && (state.dataHeatBal->Zone(actualZoneNum).TotOccupants > 0.0)) {
-            desFlowPP = sumPeopleOA / state.dataHeatBal->Zone(actualZoneNum).TotOccupants;
-        } else if (sumPeople > 0.0) {
+        bool useOccSch = false; // Use the design people value
+        bool useMinOASch = false;
+        Real64 sumPeopleOA = this->desOAFlowPeople(state, zoneNum, sumPeople, useOccSch, useMinOASch, spaceNum);
+        if (sumPeople > 0.0) {
             desFlowPP = sumPeopleOA / sumPeople;
         }
     }
     return desFlowPP;
 }
 
-Real64 OARequirementsData::calcOAFlowRate(EnergyPlusData &state,
-                                          int const ActualZoneNum,     // Zone index
-                                          bool const UseOccSchFlag,    // Zone occupancy schedule will be used instead of using total zone occupancy
-                                          bool const UseMinOASchFlag,  // Use min OA schedule in DesignSpecification:OutdoorAir object
-                                          bool const PerPersonNotSet,  // when calculation should not include occupants (e.g., dual duct)
-                                          bool const MaxOAVolFlowFlag, // TRUE when calculation uses occupancy schedule  (e.g., dual duct)
-                                          int const spaceNum,          // Space index (if applicable)
-                                          bool const calcIAQMethods    // For IAQProcedure, PCOccSch, and PCDesOcc, calculate if true, return zero if false
+Real64
+OARequirementsData::calcOAFlowRate(EnergyPlusData &state,
+                                   int const ActualZoneNum,     // Zone index
+                                   bool const UseOccSchFlag,    // Zone occupancy schedule will be used instead of using total zone occupancy
+                                   bool const UseMinOASchFlag,  // Use min OA schedule in DesignSpecification:OutdoorAir object
+                                   bool const PerPersonNotSet,  // when calculation should not include occupants (e.g., dual duct)
+                                   bool const MaxOAVolFlowFlag, // TRUE when calculation uses occupancy schedule  (e.g., dual duct)
+                                   int const spaceNum,          // Space index (if applicable)
+                                   bool const calcIAQMethods    // For IAQProcedure, PCOccSch, and PCDesOcc, calculate if true, return zero if false
 )
 {
 
@@ -1090,7 +1178,7 @@ Real64 OARequirementsData::calcOAFlowRate(EnergyPlusData &state,
     }
 
     // Apply zone multipliers and zone list multipliers
-    // TODO MJW: this looks like it's double-counting the multipliers
+    // TODO MJW: this looks like it's double-counting the multipliers - it *is* double counting for methods PCOccSch and PCDesOcc
     OAVolumeFlowRate *= thisZone.Multiplier * thisZone.ListMultiplier;
 
     // Apply schedule as needed. Sizing does not use schedule.

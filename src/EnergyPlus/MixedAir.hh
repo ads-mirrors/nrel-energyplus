@@ -278,6 +278,7 @@ namespace MixedAir {
         DataSizing::OAFlowCalcMethod ZoneOAFlowMethod = DataSizing::OAFlowCalcMethod::PerPerson; // OA flow method for each zone
         Sched::Schedule *zoneOASched = nullptr;           // Outdoor air schedule for each zone (from DesignSpecification:OutdoorAir or default)
         Sched::Schedule *oaPropCtlMinRateSched = nullptr; // Outdoor design OA flow rate schedule from DesignSpecification:OutdoorAir
+        Real64 zoneOABZ = 0.0;                            // Zone breathing-zone OA flow rate [m3/s]
         EPVector<int> peopleIndexes; // List of People objects in this zone (for SystemOAMethod == DataSizing::SysOAMethod::ProportionalControlDesOcc)
     };
 

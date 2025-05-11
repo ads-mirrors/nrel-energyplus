@@ -451,6 +451,7 @@ namespace HighTempRadiantSystem {
             }
 
             if (state.dataIPShortCut->lAlphaFieldBlanks(7)) {
+                highTempRadSys.setptSched = Sched::GetScheduleAlwaysOff(state);
             } else if ((highTempRadSys.setptSched = Sched::GetSchedule(state, state.dataIPShortCut->cAlphaArgs(7))) == nullptr) {
                 ShowSevereItemNotFound(state, eoh, state.dataIPShortCut->cAlphaFieldNames(7), state.dataIPShortCut->cAlphaArgs(7));
                 ErrorsFound = true;

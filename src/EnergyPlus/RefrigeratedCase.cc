@@ -222,137 +222,98 @@ Real64 constexpr CapFac60Percent(0.60);          // = 60%, load served by half p
 static constexpr std::array<Real64, 5> EuropeanWetCoilFactor = {1.35, 1.15, 1.05, 1.01, 1.0};
 static constexpr std::array<Real64, 5> EuropeanAirInletTemp = {10.0, 0.0, -18.0, -25.0, -34.0};
 
-constexpr std::array<std::string_view, (int)WIStockDoor::Num> wiStockDoorNames = {
-    "None", "AirCurtain", "StripCurtain" };
-constexpr std::array<std::string_view, (int)WIStockDoor::Num> wiStockDoorNamesUC = {
-    "NONE", "AIRCURTAIN", "STRIPCURTAIN" };
+constexpr std::array<std::string_view, (int)WIStockDoor::Num> wiStockDoorNames = {"None", "AirCurtain", "StripCurtain"};
+constexpr std::array<std::string_view, (int)WIStockDoor::Num> wiStockDoorNamesUC = {"NONE", "AIRCURTAIN", "STRIPCURTAIN"};
 
-constexpr std::array<std::string_view, (int)CompressorSuctionPressureCtrl::Num> compressorSuctionPressureCtrlNames = {
-    "FloatSuctionTemperature", "ConstantSuctionTemperature" };
-constexpr std::array<std::string_view, (int)CompressorSuctionPressureCtrl::Num> compressorSuctionPressureCtrlNamesUC = {
-    "FLOATSUCTIONTEMPERATURE", "CONSTANTSUCTIONTEMPERATURE" };
-  
-constexpr std::array<std::string_view, (int)SubcoolerType::Num> subcoolerTypeNames = {
-    "LiquidSuction", "Mechanical" };
-constexpr std::array<std::string_view, (int)SubcoolerType::Num> subcoolerTypeNamesUC = {
-    "LIQUIDSUCTION", "MECHANICAL" };
+constexpr std::array<std::string_view, (int)CompressorSuctionPressureCtrl::Num> compressorSuctionPressureCtrlNames = {"FloatSuctionTemperature",
+                                                                                                                      "ConstantSuctionTemperature"};
+constexpr std::array<std::string_view, (int)CompressorSuctionPressureCtrl::Num> compressorSuctionPressureCtrlNamesUC = {"FLOATSUCTIONTEMPERATURE",
+                                                                                                                        "CONSTANTSUCTIONTEMPERATURE"};
 
-constexpr std::array<std::string_view, (int)DefrostCtrlType::Num> defrostCtrlTypeNames = {
-    "TimeSchedule", "TemperatureTermination"}; 
-constexpr std::array<std::string_view, (int)DefrostCtrlType::Num> defrostCtrlTypeNamesUC = {
-    "TIMESCHEDULE", "TEMPERATURETERMINATION"}; 
+constexpr std::array<std::string_view, (int)SubcoolerType::Num> subcoolerTypeNames = {"LiquidSuction", "Mechanical"};
+constexpr std::array<std::string_view, (int)SubcoolerType::Num> subcoolerTypeNamesUC = {"LIQUIDSUCTION", "MECHANICAL"};
 
-constexpr std::array<std::string_view, (int)SecFluidType::Num> secFluidTypeNames = {
-    "FluidAlwaysLiquid", "FluidPhaseChange" };
-constexpr std::array<std::string_view, (int)SecFluidType::Num> secFluidTypeNamesUC = {
-    "FLUIDALWAYSLIQUID", "FLUIDPHASECHANGE" };
-  
-constexpr std::array<std::string_view, (int)SecPumpCtrl::Num> secPumpCtrlNames = {
-    "Constant", "Variable" };
-constexpr std::array<std::string_view, (int)SecPumpCtrl::Num> secPumpCtrlNamesUC = {
-    "CONSTANT", "VARIABLE" };
-  
+constexpr std::array<std::string_view, (int)DefrostCtrlType::Num> defrostCtrlTypeNames = {"TimeSchedule", "TemperatureTermination"};
+constexpr std::array<std::string_view, (int)DefrostCtrlType::Num> defrostCtrlTypeNamesUC = {"TIMESCHEDULE", "TEMPERATURETERMINATION"};
+
+constexpr std::array<std::string_view, (int)SecFluidType::Num> secFluidTypeNames = {"FluidAlwaysLiquid", "FluidPhaseChange"};
+constexpr std::array<std::string_view, (int)SecFluidType::Num> secFluidTypeNamesUC = {"FLUIDALWAYSLIQUID", "FLUIDPHASECHANGE"};
+
+constexpr std::array<std::string_view, (int)SecPumpCtrl::Num> secPumpCtrlNames = {"Constant", "Variable"};
+constexpr std::array<std::string_view, (int)SecPumpCtrl::Num> secPumpCtrlNamesUC = {"CONSTANT", "VARIABLE"};
+
 constexpr std::array<std::string_view, (int)EnergyEqnForm::Num> energyEqnFormNames = {
-    "None",
-    "CaseTemperatureMethod", 
-    "RelativeHumidityMethod",
-    "DewpointMethod"
-};
+    "None", "CaseTemperatureMethod", "RelativeHumidityMethod", "DewpointMethod"};
 constexpr std::array<std::string_view, (int)EnergyEqnForm::Num> energyEqnFormNamesUC = {
-    "NONE",
-    "CASETEMPERATUREMETHOD", 
-    "RELATIVEHUMIDITYMETHOD",
-    "DEWPOINTMETHOD"
-};
-  
-constexpr std::array<std::string_view, (int)CascadeCndsrTempCtrlType::Num> cascaseCndsrTempCtrlTypeNames = {
-    "Fixed", "Float"};
-constexpr std::array<std::string_view, (int)CascadeCndsrTempCtrlType::Num> cascaseCndsrTempCtrlTypeNamesUC = {
-    "FIXED", "FLOAT"};
-    
-constexpr std::array<std::string_view, (int)CndsrFlowType::Num> cndsrFlowTypeNames = {
-    "VariableFlow", "ConstantFlow" };
-constexpr std::array<std::string_view, (int)CndsrFlowType::Num> cndsrFlowTypeNamesUC = {
-    "VARIABLEFLOW", "CONSTANTFLOW" };
-  
-constexpr std::array<std::string_view, (int)FanSpeedCtrlType::Num> fanSpeedCtrlTypeNames = {
-    "VariableSpeed", "FixedLinear", "TwoSpeed", "Fixed" };
-constexpr std::array<std::string_view, (int)FanSpeedCtrlType::Num> fanSpeedCtrlTypeNamesUC = {
-    "VARIABLESPEED", "FIXEDLINEAR", "TWOSPEED", "FIXED" };
-  
-constexpr std::array<std::string_view, (int)FanSpeedCtrlType::Num> heatRejLocationNames = {
-    "Outdoors", "Zone" };
-constexpr std::array<std::string_view, (int)FanSpeedCtrlType::Num> heatRejLocationNamesUC = {
-    "OUTDOORS", "ZONE" };
-  
+    "NONE", "CASETEMPERATUREMETHOD", "RELATIVEHUMIDITYMETHOD", "DEWPOINTMETHOD"};
+
+constexpr std::array<std::string_view, (int)CascadeCndsrTempCtrlType::Num> cascaseCndsrTempCtrlTypeNames = {"Fixed", "Float"};
+constexpr std::array<std::string_view, (int)CascadeCndsrTempCtrlType::Num> cascaseCndsrTempCtrlTypeNamesUC = {"FIXED", "FLOAT"};
+
+constexpr std::array<std::string_view, (int)CndsrFlowType::Num> cndsrFlowTypeNames = {"VariableFlow", "ConstantFlow"};
+constexpr std::array<std::string_view, (int)CndsrFlowType::Num> cndsrFlowTypeNamesUC = {"VARIABLEFLOW", "CONSTANTFLOW"};
+
+constexpr std::array<std::string_view, (int)FanSpeedCtrlType::Num> fanSpeedCtrlTypeNames = {"VariableSpeed", "FixedLinear", "TwoSpeed", "Fixed"};
+constexpr std::array<std::string_view, (int)FanSpeedCtrlType::Num> fanSpeedCtrlTypeNamesUC = {"VARIABLESPEED", "FIXEDLINEAR", "TWOSPEED", "FIXED"};
+
+constexpr std::array<std::string_view, (int)FanSpeedCtrlType::Num> heatRejLocationNames = {"Outdoors", "Zone"};
+constexpr std::array<std::string_view, (int)FanSpeedCtrlType::Num> heatRejLocationNamesUC = {"OUTDOORS", "ZONE"};
+
 constexpr std::array<std::string_view, (int)RefCaseDefrostType::Num> refCaseDefrostTypeNames = {
-    "None", "OffCycle", "HotFluid", "HotFluidWithTemperatureTermination", "Electric", "ElectricOnDemand", "ElectricWithTemperatureTermination" };
+    "None", "OffCycle", "HotFluid", "HotFluidWithTemperatureTermination", "Electric", "ElectricOnDemand", "ElectricWithTemperatureTermination"};
 constexpr std::array<std::string_view, (int)RefCaseDefrostType::Num> refCaseDefrostTypeNamesUC = {
-    "NONE", "OFFCYCLE", "HOTFLUID", "HOTFLUIDWITHTEMPERATURETERMINATION", "ELECTRIC", "ELECTRICONDEMAND", "ELECTRICWITHTEMPERATURETERMINATION" };
-  
+    "NONE", "OFFCYCLE", "HOTFLUID", "HOTFLUIDWITHTEMPERATURETERMINATION", "ELECTRIC", "ELECTRICONDEMAND", "ELECTRICWITHTEMPERATURETERMINATION"};
+
 constexpr std::array<std::string_view, (int)ASHtrCtrlType::Num> asHtrCtrlTypeNames = {
-    "None", "Constant", "Linear", "DewpointMethod", "HeatBalanceMethod" };
+    "None", "Constant", "Linear", "DewpointMethod", "HeatBalanceMethod"};
 constexpr std::array<std::string_view, (int)ASHtrCtrlType::Num> asHtrCtrlTypeNamesUC = {
-    "NONE", "CONSTANT", "LINEAR", "DEWPOINTMETHOD", "HEATBALANCEMETHOD" };
-  
-constexpr std::array<std::string_view, (int)RatingType::Num> ratingTypeNames = {
-    "CapacityTotalSpecificConditions", 
-    "EuropeanSC1Standard",
-    "EuropeanSC1NominalWet",
-    "EuropeanSC2Standard", 
-    "EuropeanSC2NominalWet", 
-    "EuropeanSC3Standard", 
-    "EuropeanSC3NominalWet", 
-    "EuropeanSC4Standard", 
-    "EuropeanSC4NominalWet", 
-    "EuropeanSC5Standard", 
-    "EuropeanSC5NominalWet",
-    "UnitLoadFactorSensibleOnly"
-};
-constexpr std::array<std::string_view, (int)RatingType::Num> ratingTypeNamesUC = {
-    "CAPACITYTOTALSPECIFICCONDITIONS", 
-    "EUROPEANSC1STANDARD",
-    "EUROPEANSC1NOMINALWET",
-    "EUROPEANSC2STANDARD", 
-    "EUROPEANSC2NOMINALWET", 
-    "EUROPEANSC3STANDARD", 
-    "EUROPEANSC3NOMINALWET", 
-    "EUROPEANSC4STANDARD", 
-    "EUROPEANSC4NOMINALWET", 
-    "EUROPEANSC5STANDARD", 
-    "EUROPEANSC5NOMINALWET",
-    "UNITLOADFACTORSENSIBLEONLY"
-};
-  
+    "NONE", "CONSTANT", "LINEAR", "DEWPOINTMETHOD", "HEATBALANCEMETHOD"};
+
+constexpr std::array<std::string_view, (int)RatingType::Num> ratingTypeNames = {"CapacityTotalSpecificConditions",
+                                                                                "EuropeanSC1Standard",
+                                                                                "EuropeanSC1NominalWet",
+                                                                                "EuropeanSC2Standard",
+                                                                                "EuropeanSC2NominalWet",
+                                                                                "EuropeanSC3Standard",
+                                                                                "EuropeanSC3NominalWet",
+                                                                                "EuropeanSC4Standard",
+                                                                                "EuropeanSC4NominalWet",
+                                                                                "EuropeanSC5Standard",
+                                                                                "EuropeanSC5NominalWet",
+                                                                                "UnitLoadFactorSensibleOnly"};
+constexpr std::array<std::string_view, (int)RatingType::Num> ratingTypeNamesUC = {"CAPACITYTOTALSPECIFICCONDITIONS",
+                                                                                  "EUROPEANSC1STANDARD",
+                                                                                  "EUROPEANSC1NOMINALWET",
+                                                                                  "EUROPEANSC2STANDARD",
+                                                                                  "EUROPEANSC2NOMINALWET",
+                                                                                  "EUROPEANSC3STANDARD",
+                                                                                  "EUROPEANSC3NOMINALWET",
+                                                                                  "EUROPEANSC4STANDARD",
+                                                                                  "EUROPEANSC4NOMINALWET",
+                                                                                  "EUROPEANSC5STANDARD",
+                                                                                  "EUROPEANSC5NOMINALWET",
+                                                                                  "UNITLOADFACTORSENSIBLEONLY"};
+
 constexpr std::array<std::string_view, (int)SHRCorrectionType::Num> shrCorrectionTypeNames = {
-    "LinearSHR60", "QuadraticSHR", "European", "TabularRHxDT1xTRoom" };
+    "LinearSHR60", "QuadraticSHR", "European", "TabularRHxDT1xTRoom"};
 constexpr std::array<std::string_view, (int)SHRCorrectionType::Num> shrCorrectionTypeNamesUC = {
-    "LINEARSHR60", "QUADRATICSHR", "EUROPEAN", "TABULARRHXDT1XTROOM" };
-  
-constexpr std::array<std::string_view, (int)VerticalLoc::Num> verticalLocNames = {
-    "Ceiling", "Middle", "Floor" };
-constexpr std::array<std::string_view, (int)VerticalLoc::Num> verticalLocNamesUC = {
-    "CEILING", "MIDDLE", "FLOOR" };
-  
-constexpr std::array<std::string_view, (int)DefrostType::Num> defrostTypeNames = {
-    "HotFluid", "Electric", "None", "OffCycle" };
-constexpr std::array<std::string_view, (int)DefrostType::Num> defrostTypeNamesUC = {
-    "HOTFLUID", "ELECTRIC", "NONE", "OFFCYCLE" };
+    "LINEARSHR60", "QUADRATICSHR", "EUROPEAN", "TABULARRHXDT1XTROOM"};
 
-constexpr std::array<std::string_view, (int)CriticalType::Num> criticalTypeNames = {
-    "Subcritical", "Transcritical" };
-constexpr std::array<std::string_view, (int)CriticalType::Num> criticalTypeNamesUC = {
-    "SUBCRITICAL", "TRANSCRITICAL" };
+constexpr std::array<std::string_view, (int)VerticalLoc::Num> verticalLocNames = {"Ceiling", "Middle", "Floor"};
+constexpr std::array<std::string_view, (int)VerticalLoc::Num> verticalLocNamesUC = {"CEILING", "MIDDLE", "FLOOR"};
 
-constexpr std::array<std::string_view, (int)IntercoolerType::Num> intercoolerTypeNames = {
-    "None", "Flash Intercooler", "Shell-and-Coil Intercooler" };
+constexpr std::array<std::string_view, (int)DefrostType::Num> defrostTypeNames = {"HotFluid", "Electric", "None", "OffCycle"};
+constexpr std::array<std::string_view, (int)DefrostType::Num> defrostTypeNamesUC = {"HOTFLUID", "ELECTRIC", "NONE", "OFFCYCLE"};
+
+constexpr std::array<std::string_view, (int)CriticalType::Num> criticalTypeNames = {"Subcritical", "Transcritical"};
+constexpr std::array<std::string_view, (int)CriticalType::Num> criticalTypeNamesUC = {"SUBCRITICAL", "TRANSCRITICAL"};
+
+constexpr std::array<std::string_view, (int)IntercoolerType::Num> intercoolerTypeNames = {"None", "Flash Intercooler", "Shell-and-Coil Intercooler"};
 constexpr std::array<std::string_view, (int)IntercoolerType::Num> intercoolerTypeNamesUC = {
-    "NONE", "FLASH INTERCOOLER", "SHELL-AND-COIL INTERCOOLER" };
+    "NONE", "FLASH INTERCOOLER", "SHELL-AND-COIL INTERCOOLER"};
 
-constexpr std::array<std::string_view, (int)IntercoolerType::Num> transSysTypeNames = {
-    "SingleStage", "TwoStage" };
-constexpr std::array<std::string_view, (int)IntercoolerType::Num> transSysTypeNamesUC = {
-    "SINGLESTAGE", "TWOSTAGE" };
+constexpr std::array<std::string_view, (int)IntercoolerType::Num> transSysTypeNames = {"SingleStage", "TwoStage"};
+constexpr std::array<std::string_view, (int)IntercoolerType::Num> transSysTypeNamesUC = {"SINGLESTAGE", "TWOSTAGE"};
 
 void ManageRefrigeratedCaseRacks(EnergyPlusData &state)
 {
@@ -1074,14 +1035,16 @@ void GetRefrigerationInput(EnergyPlusData &state)
             }
 
             // Multiple strings mapping to the same enum is not good
-            if (Alphas(8) == "HOTGAS") Alphas(8) = "HOTFLUID";
-            else if (Alphas(8) == "HOTGASWITHTEMPERATURETERMINATION") Alphas(8) = "HOTFLUIDWITHTEMPERATURETERMINATION";
+            if (Alphas(8) == "HOTGAS")
+                Alphas(8) = "HOTFLUID";
+            else if (Alphas(8) == "HOTGASWITHTEMPERATURETERMINATION")
+                Alphas(8) = "HOTFLUIDWITHTEMPERATURETERMINATION";
 
-            RefrigCase(CaseNum).defrostType = static_cast<RefCaseDefrostType>(getEnumValue(refCaseDefrostTypeNamesUC, Alphas(8))); 
+            RefrigCase(CaseNum).defrostType = static_cast<RefCaseDefrostType>(getEnumValue(refCaseDefrostTypeNamesUC, Alphas(8)));
             if (RefrigCase(CaseNum).defrostType == RefCaseDefrostType::Invalid) {
                 ShowWarningInvalidKey(state, eoh, cAlphaFieldNames(8), Alphas(8), "None");
                 RefrigCase(CaseNum).defrostType = RefCaseDefrostType::None;
-            } 
+            }
 
             RefCaseDefrostType DefType = RefrigCase(CaseNum).defrostType;
             NumNum = 18;
@@ -1200,7 +1163,7 @@ void GetRefrigerationInput(EnergyPlusData &state)
                                                      RefrigCase(CaseNum).Name,           // Object Name
                                                      cAlphaFieldNames(12));              // Field Name
             }
-            
+
             //  warn user if defrost energy curve is entered that it is only used for temperature termination types
             if (RefrigCase(CaseNum).DefCapCurvePtr > 0) {
                 if (RefrigCase(CaseNum).defrostType != RefCaseDefrostType::ElectricTerm &&
@@ -1495,10 +1458,11 @@ void GetRefrigerationInput(EnergyPlusData &state)
             AlphaNum = 5;
             if (lAlphaBlanks(AlphaNum)) {
                 WalkIn(WalkInID).defrostType = DefrostType::Elec;
-            } else if ((WalkIn(WalkInID).defrostType = static_cast<DefrostType>(getEnumValue(defrostTypeNamesUC, Alphas(AlphaNum))))== DefrostType::Invalid) {
+            } else if ((WalkIn(WalkInID).defrostType = static_cast<DefrostType>(getEnumValue(defrostTypeNamesUC, Alphas(AlphaNum)))) ==
+                       DefrostType::Invalid) {
                 ShowSevereInvalidKey(state, eoh, cAlphaFieldNames(AlphaNum), Alphas(AlphaNum));
                 ErrorsFound = true;
-            }              
+            }
 
             AlphaNum = 6;
             if (lAlphaBlanks(AlphaNum)) {
@@ -1571,7 +1535,7 @@ void GetRefrigerationInput(EnergyPlusData &state)
                     } // number out of range
                 }     // lnumericblanks
             }         // defrost type
-            
+
             // convert restocking schedule name to pointer, default of 0.1 is assigned inside walkin subroutine if blank
             AlphaNum = 9;
             if (lAlphaBlanks(AlphaNum)) {
@@ -1579,7 +1543,7 @@ void GetRefrigerationInput(EnergyPlusData &state)
                 ShowSevereItemNotFound(state, eoh, cAlphaFieldNames(AlphaNum), Alphas(AlphaNum));
                 ErrorsFound = true;
             }
-        
+
             WalkIn(WalkInID).DesignRefrigInventory = 0.0;
             if (!lNumericBlanks(10)) WalkIn(WalkInID).DesignRefrigInventory = Numbers(10);
 
@@ -1740,8 +1704,9 @@ void GetRefrigerationInput(EnergyPlusData &state)
 
                     if (lAlphaBlanks(AStart + 3)) {
                         // default air curtain
-                      WalkIn(WalkInID).StockDoorProtectType(ZoneID) = WIStockDoor::AirCurtain;
-                    } else if ((WalkIn(WalkInID).StockDoorProtectType(ZoneID) = static_cast<WIStockDoor>(getEnumValue(wiStockDoorNamesUC, Alphas(AStart + 3)))) == WIStockDoor::Invalid) {
+                        WalkIn(WalkInID).StockDoorProtectType(ZoneID) = WIStockDoor::AirCurtain;
+                    } else if ((WalkIn(WalkInID).StockDoorProtectType(ZoneID) =
+                                    static_cast<WIStockDoor>(getEnumValue(wiStockDoorNamesUC, Alphas(AStart + 3)))) == WIStockDoor::Invalid) {
                         ShowSevereInvalidKey(state, eoh, cAlphaFieldNames(AStart + 3), Alphas(AStart + 3));
                         ErrorsFound = true;
                     } // stock door protection (AStart + 3) blank
@@ -1749,7 +1714,7 @@ void GetRefrigerationInput(EnergyPlusData &state)
 
                 AStart += NumWIAlphaFieldsPerZone;
                 NStart += NumWINumberFieldsPerZone;
-            }  // Zones for Walk Ins
+            } // Zones for Walk Ins
         }     // Individual Walk Ins
     }         //(NumSimulationWalkIns > 0 )
 
@@ -1804,7 +1769,8 @@ void GetRefrigerationInput(EnergyPlusData &state)
             if (lAlphaBlanks(AlphaNum)) {
                 ShowSevereEmptyField(state, eoh, cAlphaFieldNames(AlphaNum));
                 ErrorsFound = true;
-            } else if ((WarehouseCoil(CoilID).ratingType = static_cast<RatingType>(getEnumValue(ratingTypeNamesUC, Alphas(AlphaNum)))) == RatingType::Invalid) {
+            } else if ((WarehouseCoil(CoilID).ratingType = static_cast<RatingType>(getEnumValue(ratingTypeNamesUC, Alphas(AlphaNum)))) ==
+                       RatingType::Invalid) {
 
                 ShowSevereInvalidKey(state, eoh, cAlphaFieldNames(AlphaNum), Alphas(AlphaNum));
                 ErrorsFound = true;
@@ -1829,7 +1795,7 @@ void GetRefrigerationInput(EnergyPlusData &state)
                         ErrorsFound = true;
                     }
                 } break;
-                  
+
                 case RatingType::RatedCapacityTotal: {
                     // N2
                     NumNum = 2; // advance past rating in W/C to N2 with rating in W
@@ -1861,7 +1827,7 @@ void GetRefrigerationInput(EnergyPlusData &state)
                         ErrorsFound = true;
                     }
                 } break;
-                  
+
                 case RatingType::EuropeanSC1Std: {
                     // N2
                     NumNum = 2; // advance past rating in W/C to rating in W at N2
@@ -1878,7 +1844,7 @@ void GetRefrigerationInput(EnergyPlusData &state)
                         ErrorsFound = true;
                     }
                 } break;
-                  
+
                 case RatingType::EuropeanSC1Nom: {
                     // N2
                     NumNum = 2; // advance past rating in W/C to rating in W at N2
@@ -1896,7 +1862,7 @@ void GetRefrigerationInput(EnergyPlusData &state)
                         ErrorsFound = true;
                     }
                 } break;
-                  
+
                 case RatingType::EuropeanSC2Std: {
                     // N2
                     NumNum = 2; // advance past rating in W/C to rating in W at N2
@@ -1913,7 +1879,7 @@ void GetRefrigerationInput(EnergyPlusData &state)
                         ErrorsFound = true;
                     }
                 } break;
-                  
+
                 case RatingType::EuropeanSC2Nom: {
                     // N2
                     NumNum = 2; // advance past rating in W/C to rating in W at N2
@@ -1931,7 +1897,7 @@ void GetRefrigerationInput(EnergyPlusData &state)
                         ErrorsFound = true;
                     }
                 } break;
-                  
+
                 case RatingType::EuropeanSC3Std: {
                     // N2
                     NumNum = 2; // advance past rating in W/C to rating in W at N2
@@ -1948,7 +1914,7 @@ void GetRefrigerationInput(EnergyPlusData &state)
                         ErrorsFound = true;
                     }
                 } break;
-                  
+
                 case RatingType::EuropeanSC3Nom: {
                     // N2
                     NumNum = 2; // advance past rating in W/C to rating in W at N2
@@ -1966,7 +1932,7 @@ void GetRefrigerationInput(EnergyPlusData &state)
                         ErrorsFound = true;
                     }
                 } break;
-                  
+
                 case RatingType::EuropeanSC4Std: {
                     // N2
                     NumNum = 2; // advance past rating in W/C to rating in W at N2
@@ -1983,7 +1949,7 @@ void GetRefrigerationInput(EnergyPlusData &state)
                         ErrorsFound = true;
                     }
                 } break;
-                  
+
                 case RatingType::EuropeanSC4Nom: {
                     // N2
                     NumNum = 2; // advance past rating in W/C to rating in W at N2
@@ -2001,7 +1967,7 @@ void GetRefrigerationInput(EnergyPlusData &state)
                         ErrorsFound = true;
                     }
                 } break;
-                  
+
                 case RatingType::EuropeanSC5Std: {
                     // N2
                     NumNum = 2; // advance past rating in W/C to rating in W at N2
@@ -2018,7 +1984,7 @@ void GetRefrigerationInput(EnergyPlusData &state)
                         ErrorsFound = true;
                     }
                 } break;
-                  
+
                 case RatingType::EuropeanSC5Nom: {
                     // N2
                     NumNum = 2; // advance past rating in W/C to rating in W at N2
@@ -2036,7 +2002,7 @@ void GetRefrigerationInput(EnergyPlusData &state)
                         ErrorsFound = true;
                     }
                 } break;
-                  
+
                 default: {
                 } break;
                 }
@@ -2129,12 +2095,12 @@ void GetRefrigerationInput(EnergyPlusData &state)
                             R"(the "TabularRHxDT1xTRoom" correction curve.  Verify that a valid "TabularRHxDT1xTRoom" curve is specified in "{}".)",
                             cAlphaFieldNames(AlphaNum + 1)));
                 }
-            } else if ((WarehouseCoil(CoilID).SHRCorrType = static_cast<SHRCorrectionType>(getEnumValue(shrCorrectionTypeNamesUC, Alphas(AlphaNum))))
-                       == SHRCorrectionType::Invalid) {
+            } else if ((WarehouseCoil(CoilID).SHRCorrType =
+                            static_cast<SHRCorrectionType>(getEnumValue(shrCorrectionTypeNamesUC, Alphas(AlphaNum)))) == SHRCorrectionType::Invalid) {
                 ShowSevereInvalidKey(state, eoh, cAlphaFieldNames(AlphaNum), Alphas(AlphaNum));
                 ErrorsFound = true;
             }
-                
+
             ++AlphaNum; // A5
             ++NumNum;   // N9
             switch (WarehouseCoil(CoilID).SHRCorrType) {
@@ -2235,13 +2201,13 @@ void GetRefrigerationInput(EnergyPlusData &state)
 
             // Input fan control type
             ++AlphaNum; // A7
-            if (lAlphaBlanks(AlphaNum)) { 
+            if (lAlphaBlanks(AlphaNum)) {
                 WarehouseCoil(CoilID).FanType = FanSpeedCtrlType::ConstantSpeed;
-            } else if ((WarehouseCoil(CoilID).FanType = static_cast<FanSpeedCtrlType>(getEnumValue(fanSpeedCtrlTypeNamesUC, Alphas(AlphaNum)))) == FanSpeedCtrlType::Invalid) {
+            } else if ((WarehouseCoil(CoilID).FanType = static_cast<FanSpeedCtrlType>(getEnumValue(fanSpeedCtrlTypeNamesUC, Alphas(AlphaNum)))) ==
+                       FanSpeedCtrlType::Invalid) {
                 ShowSevereInvalidKey(state, eoh, cAlphaFieldNames(AlphaNum), Alphas(AlphaNum));
                 ErrorsFound = true;
             } // fan control type
-
 
             ++NumNum; // N11
             if (!lNumericBlanks(NumNum) && Numbers(NumNum) > 0.0) {
@@ -2276,15 +2242,17 @@ void GetRefrigerationInput(EnergyPlusData &state)
             ++AlphaNum; // A8
             if (lAlphaBlanks(AlphaNum)) {
                 WarehouseCoil(CoilID).defrostType = DefrostType::Elec;
-            } else if ((WarehouseCoil(CoilID).defrostType = static_cast<DefrostType>(getEnumValue(defrostTypeNamesUC, Alphas(AlphaNum)))) == DefrostType::Invalid) {
+            } else if ((WarehouseCoil(CoilID).defrostType = static_cast<DefrostType>(getEnumValue(defrostTypeNamesUC, Alphas(AlphaNum)))) ==
+                       DefrostType::Invalid) {
                 ShowSevereInvalidKey(state, eoh, cAlphaFieldNames(AlphaNum), Alphas(AlphaNum));
                 ErrorsFound = true;
             } // defrost type
 
             ++AlphaNum; // A9
-            if (lAlphaBlanks(AlphaNum)) { 
+            if (lAlphaBlanks(AlphaNum)) {
                 WarehouseCoil(CoilID).DefrostControlType = DefrostCtrlType::Sched;
-            } else if ((WarehouseCoil(CoilID).DefrostControlType = static_cast<DefrostCtrlType>(getEnumValue(defrostCtrlTypeNamesUC, Alphas(AlphaNum)))) == DefrostCtrlType::Invalid) { 
+            } else if ((WarehouseCoil(CoilID).DefrostControlType =
+                            static_cast<DefrostCtrlType>(getEnumValue(defrostCtrlTypeNamesUC, Alphas(AlphaNum)))) == DefrostCtrlType::Invalid) {
                 ShowSevereInvalidKey(state, eoh, cAlphaFieldNames(AlphaNum), Alphas(AlphaNum));
                 ErrorsFound = true;
             } // defrost control type
@@ -2357,7 +2325,8 @@ void GetRefrigerationInput(EnergyPlusData &state)
             ++AlphaNum; // A12
             if (lAlphaBlanks(AlphaNum)) {
                 WarehouseCoil(CoilID).VerticalLocation = VerticalLoc::Middle; // default position
-            } else if ((WarehouseCoil(CoilID).VerticalLocation = static_cast<VerticalLoc>(getEnumValue(verticalLocNamesUC, Alphas(AlphaNum)))) == VerticalLoc::Invalid) {
+            } else if ((WarehouseCoil(CoilID).VerticalLocation = static_cast<VerticalLoc>(getEnumValue(verticalLocNamesUC, Alphas(AlphaNum)))) ==
+                       VerticalLoc::Invalid) {
                 ShowSevereInvalidKey(state, eoh, cAlphaFieldNames(AlphaNum), Alphas(AlphaNum));
                 ErrorsFound = true;
             } // Vertical location class
@@ -2612,7 +2581,8 @@ void GetRefrigerationInput(EnergyPlusData &state)
 
             if (lAlphaBlanks(2)) {
                 RefrigRack(RackNum).HeatRejectionLocation = HeatRejLocation::Outdoors;
-            } else if ((RefrigRack(RackNum).HeatRejectionLocation = static_cast<HeatRejLocation>(getEnumValue(heatRejLocationNamesUC, Alphas(2)))) == HeatRejLocation::Invalid) {
+            } else if ((RefrigRack(RackNum).HeatRejectionLocation = static_cast<HeatRejLocation>(getEnumValue(heatRejLocationNamesUC, Alphas(2)))) ==
+                       HeatRejLocation::Invalid) {
                 RefrigRack(RackNum).HeatRejectionLocation = HeatRejLocation::Outdoors;
                 ShowWarningInvalidKey(state, eoh, cAlphaFieldNames(2), Alphas(2), "Outdoors");
             }
@@ -2678,7 +2648,8 @@ void GetRefrigerationInput(EnergyPlusData &state)
 
             if (lAlphaBlanks(5)) {
                 RefrigRack(RackNum).CondenserType = DataHeatBalance::RefrigCondenserType::Air;
-            } else if ((RefrigRack(RackNum).CondenserType = static_cast<DataHeatBalance::RefrigCondenserType>(getEnumValue(DataHeatBalance::refrigCondenserTypeNamesUC, Alphas(5)))) == DataHeatBalance::RefrigCondenserType::Invalid) {
+            } else if ((RefrigRack(RackNum).CondenserType = static_cast<DataHeatBalance::RefrigCondenserType>(
+                            getEnumValue(DataHeatBalance::refrigCondenserTypeNamesUC, Alphas(5)))) == DataHeatBalance::RefrigCondenserType::Invalid) {
                 ShowSevereInvalidKey(state, eoh, cAlphaFieldNames(5), Alphas(5));
                 ErrorsFound = true;
             } else if (RefrigRack(RackNum).CondenserType == DataHeatBalance::RefrigCondenserType::Evap ||
@@ -2722,7 +2693,8 @@ void GetRefrigerationInput(EnergyPlusData &state)
                 // Check node connections
                 BranchNodeConnections::TestCompSet(state, CurrentModuleObject, Alphas(1), Alphas(6), Alphas(7), "RefrigRack Nodes");
                 // Get loop flow type
-                if ((RefrigRack(RackNum).FlowType = static_cast<CndsrFlowType>(getEnumValue(cndsrFlowTypeNamesUC, Alphas(8)))) == CndsrFlowType::Invalid) { 
+                if ((RefrigRack(RackNum).FlowType = static_cast<CndsrFlowType>(getEnumValue(cndsrFlowTypeNamesUC, Alphas(8)))) ==
+                    CndsrFlowType::Invalid) {
                     ShowSevereInvalidKey(state, eoh, cAlphaFieldNames(8), Alphas(8));
                     ErrorsFound = true;
                 }
@@ -3095,7 +3067,7 @@ void GetRefrigerationInput(EnergyPlusData &state)
                                                                          cNumericFieldNames);
 
                 ErrorObjectHeader eoh{routineName, CurrentModuleObject, Alphas(1)};
-                
+
                 GlobalNames::VerifyUniqueInterObjectName(
                     state, state.dataRefrigCase->UniqueCondenserNames, Alphas(1), CurrentModuleObject, cAlphaFieldNames(1), ErrorsFound);
                 Condenser(CondNum).Name = Alphas(1);
@@ -3151,10 +3123,11 @@ void GetRefrigerationInput(EnergyPlusData &state)
                 // Get fan control type
                 if (lAlphaBlanks(3)) {
                     Condenser(CondNum).FanSpeedControlType = FanSpeedCtrlType::ConstantSpeed; // default
-                } else if ((Condenser(CondNum).FanSpeedControlType = static_cast<FanSpeedCtrlType>(getEnumValue(fanSpeedCtrlTypeNamesUC, Alphas(3)))) == FanSpeedCtrlType::Invalid) {
+                } else if ((Condenser(CondNum).FanSpeedControlType =
+                                static_cast<FanSpeedCtrlType>(getEnumValue(fanSpeedCtrlTypeNamesUC, Alphas(3)))) == FanSpeedCtrlType::Invalid) {
                     ShowSevereInvalidKey(state, eoh, cAlphaFieldNames(3), Alphas(3));
                     ErrorsFound = true;
-                }                                                                             // Set fan control type
+                } // Set fan control type
 
                 if (!lNumericBlanks(2)) Condenser(CondNum).RatedFanPower = Numbers(2);
                 if ((lNumericBlanks(2)) || (Numbers(2) < 0.0)) {
@@ -3277,10 +3250,11 @@ void GetRefrigerationInput(EnergyPlusData &state)
                 // Get fan control type
                 if (lAlphaBlanks(2)) {
                     Condenser(CondNum).FanSpeedControlType = FanSpeedCtrlType::ConstantSpeed; // default
-                } else if ((Condenser(CondNum).FanSpeedControlType = static_cast<FanSpeedCtrlType>(getEnumValue(fanSpeedCtrlTypeNamesUC, Alphas(2)))) == FanSpeedCtrlType::Invalid) { 
+                } else if ((Condenser(CondNum).FanSpeedControlType =
+                                static_cast<FanSpeedCtrlType>(getEnumValue(fanSpeedCtrlTypeNamesUC, Alphas(2)))) == FanSpeedCtrlType::Invalid) {
                     ShowSevereInvalidKey(state, eoh, cAlphaFieldNames(2), Alphas(2));
                     ErrorsFound = true;
-                }                                                                             // Set fan control type
+                } // Set fan control type
 
                 Condenser(CondNum).RatedFanPower = Numbers(3);
                 if (Numbers(3) < 0.0) {
@@ -3584,9 +3558,10 @@ void GetRefrigerationInput(EnergyPlusData &state)
                 // Check node connections
                 BranchNodeConnections::TestCompSet(state, CurrentModuleObject, Alphas(1), Alphas(2), Alphas(3), "Water Cooled Condenser Nodes");
                 // Get loop flow type
-                if ((Condenser(CondNum).FlowType = static_cast<CndsrFlowType>(getEnumValue(cndsrFlowTypeNamesUC, Alphas(4)))) == CndsrFlowType::Invalid) {
+                if ((Condenser(CondNum).FlowType = static_cast<CndsrFlowType>(getEnumValue(cndsrFlowTypeNamesUC, Alphas(4)))) ==
+                    CndsrFlowType::Invalid) {
 
-                    ShowSevereInvalidKey(state, eoh,cAlphaFieldNames(4), Alphas(4));
+                    ShowSevereInvalidKey(state, eoh, cAlphaFieldNames(4), Alphas(4));
                     ErrorsFound = true;
                 } // Set FlowType
 
@@ -3734,10 +3709,11 @@ void GetRefrigerationInput(EnergyPlusData &state)
                 // Get condensing temperature type, either fixed by design or allowed to float to match other loads on supply system
                 if (lAlphaBlanks(2)) {
                     Condenser(CondNum).CascadeTempControl = CascadeCndsrTempCtrlType::TempSet;
-                } else if ((Condenser(CondNum).CascadeTempControl = static_cast<CascadeCndsrTempCtrlType>(getEnumValue(cascaseCndsrTempCtrlTypeNamesUC, Alphas(2)))) == CascadeCndsrTempCtrlType::Invalid) { 
+                } else if ((Condenser(CondNum).CascadeTempControl = static_cast<CascadeCndsrTempCtrlType>(
+                                getEnumValue(cascaseCndsrTempCtrlTypeNamesUC, Alphas(2)))) == CascadeCndsrTempCtrlType::Invalid) {
                     ShowSevereInvalidKey(state, eoh, cAlphaFieldNames(2), Alphas(2));
                     ErrorsFound = true;
-                }    // string comparison to key choices
+                } // string comparison to key choices
 
                 Condenser(CondNum).CascadeRatedEvapTemp = Condenser(CondNum).RatedTCondense - Condenser(CondNum).RatedApproachT;
 
@@ -3810,11 +3786,12 @@ void GetRefrigerationInput(EnergyPlusData &state)
                 // Get fan control type
                 if (lAlphaBlanks(3)) {
                     GasCooler(GCNum).FanSpeedControlType = FanSpeedCtrlType::ConstantSpeed; // default
-                } else if ((GasCooler(GCNum).FanSpeedControlType = static_cast<FanSpeedCtrlType>(getEnumValue(fanSpeedCtrlTypeNamesUC, Alphas(3)))) == FanSpeedCtrlType::Invalid) {
+                } else if ((GasCooler(GCNum).FanSpeedControlType = static_cast<FanSpeedCtrlType>(getEnumValue(fanSpeedCtrlTypeNamesUC, Alphas(3)))) ==
+                           FanSpeedCtrlType::Invalid) {
                     ShowSevereInvalidKey(state, eoh, cAlphaFieldNames(3), Alphas(3));
                     ErrorsFound = true;
                 }
-                
+
                 // Gas cooler fan power
                 GasCooler(GCNum).RatedFanPower = 5000.0; // default value
                 if (!lNumericBlanks(1)) GasCooler(GCNum).RatedFanPower = Numbers(1);
@@ -4115,9 +4092,10 @@ void GetRefrigerationInput(EnergyPlusData &state)
                 // Get circulating fluid type
                 AlphaNum = 3;
                 if (lAlphaBlanks(AlphaNum)) {
-                  ShowSevereEmptyField(state, eoh, cAlphaFieldNames(AlphaNum));
-                  ErrorsFound = true;
-                } else if ((Secondary(SecondaryNum).FluidType = static_cast<SecFluidType>(getEnumValue(secFluidTypeNamesUC, Alphas(AlphaNum)))) == SecFluidType::Invalid) {
+                    ShowSevereEmptyField(state, eoh, cAlphaFieldNames(AlphaNum));
+                    ErrorsFound = true;
+                } else if ((Secondary(SecondaryNum).FluidType = static_cast<SecFluidType>(getEnumValue(secFluidTypeNamesUC, Alphas(AlphaNum)))) ==
+                           SecFluidType::Invalid) {
                     ShowSevereInvalidKey(state, eoh, cAlphaFieldNames(AlphaNum), Alphas(AlphaNum));
                     ErrorsFound = true;
                 } // Set FluidType
@@ -4357,9 +4335,10 @@ void GetRefrigerationInput(EnergyPlusData &state)
                 AlphaNum = 5;
                 if (lAlphaBlanks(AlphaNum)) {
                     Secondary(SecondaryNum).PumpControlType = SecPumpCtrl::Constant; // default
-                } else if ((Secondary(SecondaryNum).PumpControlType = static_cast<SecPumpCtrl>(getEnumValue(secPumpCtrlNamesUC, Alphas(AlphaNum)))) == SecPumpCtrl::Invalid) {
-                  ShowSevereInvalidKey(state, eoh, cAlphaFieldNames(AlphaNum), Alphas(AlphaNum));
-                  ErrorsFound = true;
+                } else if ((Secondary(SecondaryNum).PumpControlType = static_cast<SecPumpCtrl>(getEnumValue(secPumpCtrlNamesUC, Alphas(AlphaNum)))) ==
+                           SecPumpCtrl::Invalid) {
+                    ShowSevereInvalidKey(state, eoh, cAlphaFieldNames(AlphaNum), Alphas(AlphaNum));
+                    ErrorsFound = true;
                 }
 
                 //  Print warning if Pump Control = Constant and Variable Speed Curve is specified.
@@ -4713,7 +4692,7 @@ void GetRefrigerationInput(EnergyPlusData &state)
             //  If the compressor is a transcritical CO compressor, get transcritical power and capacity curves
             if (lAlphaBlanks(5)) {
                 Compressor(CompNum).TransFlag = false;
-            // For some reason, Alkphas(5) is not uppercased?
+                // For some reason, Alkphas(5) is not uppercased?
             } else if (CriticalType crit = static_cast<CriticalType>(getEnumValue(criticalTypeNamesUC, Util::makeUPPER(Alphas(5))));
                        crit != CriticalType::Invalid) {
                 Compressor(CompNum).TransFlag = static_cast<bool>(crit);
@@ -4721,7 +4700,7 @@ void GetRefrigerationInput(EnergyPlusData &state)
                 ShowSevereInvalidKey(state, eoh, cAlphaFieldNames(5), Alphas(5));
                 ErrorsFound = true;
             }
-            
+
             if (Compressor(CompNum).TransFlag) {
                 if (lAlphaBlanks(6)) {
                     ShowSevereEmptyField(state, eoh, cAlphaFieldNames(6));
@@ -4738,7 +4717,7 @@ void GetRefrigerationInput(EnergyPlusData &state)
                     ShowSevereItemNotFound(state, eoh, cAlphaFieldNames(7), Alphas(7));
                     ErrorsFound = true;
                 }
-            } else { 
+            } else {
                 if (!lAlphaBlanks(6)) ShowWarningNonEmptyField(state, eoh, cAlphaFieldNames(6), cAlphaFieldNames(5), Alphas(5));
                 if (!lAlphaBlanks(7)) ShowWarningNonEmptyField(state, eoh, cAlphaFieldNames(7), cAlphaFieldNames(5), Alphas(5));
             }
@@ -4768,7 +4747,8 @@ void GetRefrigerationInput(EnergyPlusData &state)
                 Subcooler(SubcoolerNum).Name = Alphas(1);
 
                 // Get subcooler type
-                if ((Subcooler(SubcoolerNum).subcoolerType = static_cast<SubcoolerType>(getEnumValue(subcoolerTypeNamesUC, Alphas(2)))) == SubcoolerType::Invalid) {
+                if ((Subcooler(SubcoolerNum).subcoolerType = static_cast<SubcoolerType>(getEnumValue(subcoolerTypeNamesUC, Alphas(2)))) ==
+                    SubcoolerType::Invalid) {
                     ShowSevereInvalidKey(state, eoh, cAlphaFieldNames(2), Alphas(2));
                     ErrorsFound = true;
                 } else if (Subcooler(SubcoolerNum).subcoolerType == SubcoolerType::Mechanical) {
@@ -5468,7 +5448,8 @@ void GetRefrigerationInput(EnergyPlusData &state)
             AlphaNum = 7;
             if (lAlphaBlanks(AlphaNum)) {
                 System(RefrigSysNum).CompSuctControl = CompressorSuctionPressureCtrl::ConstantSuctionTemperature; // Default for blank
-            } else if ((System(RefrigSysNum).CompSuctControl = static_cast<CompressorSuctionPressureCtrl>(getEnumValue(compressorSuctionPressureCtrlNamesUC, Alphas(AlphaNum)))) == CompressorSuctionPressureCtrl::Invalid) {
+            } else if ((System(RefrigSysNum).CompSuctControl = static_cast<CompressorSuctionPressureCtrl>(
+                            getEnumValue(compressorSuctionPressureCtrlNamesUC, Alphas(AlphaNum)))) == CompressorSuctionPressureCtrl::Invalid) {
                 ShowSevereInvalidKey(state, eoh, cAlphaFieldNames(AlphaNum), Alphas(AlphaNum));
                 ErrorsFound = true;
             } else if (System(RefrigSysNum).CompSuctControl == CompressorSuctionPressureCtrl::FloatSuctionTemperature &&
@@ -5478,7 +5459,7 @@ void GetRefrigerationInput(EnergyPlusData &state)
                                         "chiller loads so ConstantSuctionTemperature will be used. ",
                                         CurrentModuleObject,
                                         System(RefrigSysNum).Name));
-            } 
+            }
 
             // Count subcoolers on system and allocate
             AlphaNum = 8;
@@ -5601,14 +5582,14 @@ void GetRefrigerationInput(EnergyPlusData &state)
             AlphaNum = 12;
             if (lAlphaBlanks(AlphaNum)) {
                 System(RefrigSysNum).intercoolerType = IntercoolerType::None; // Default for blank
-            } else if ((System(RefrigSysNum).intercoolerType = static_cast<IntercoolerType>(getEnumValue(intercoolerTypeNamesUC, Alphas(AlphaNum)))) == IntercoolerType::Invalid) {
+            } else if ((System(RefrigSysNum).intercoolerType =
+                            static_cast<IntercoolerType>(getEnumValue(intercoolerTypeNamesUC, Alphas(AlphaNum)))) == IntercoolerType::Invalid) {
                 ShowSevereInvalidKey(state, eoh, cAlphaFieldNames(AlphaNum), Alphas(AlphaNum));
                 ErrorsFound = true;
             }
 
-
-            if (System(RefrigSysNum).NumStages == 1 &&
-                (System(RefrigSysNum).intercoolerType == IntercoolerType::Flash || System(RefrigSysNum).intercoolerType == IntercoolerType::ShellAndCoil)) {
+            if (System(RefrigSysNum).NumStages == 1 && (System(RefrigSysNum).intercoolerType == IntercoolerType::Flash ||
+                                                        System(RefrigSysNum).intercoolerType == IntercoolerType::ShellAndCoil)) {
                 ShowSevereError(
                     state, format("{}{}=\"{}\", A single-stage compression system", RoutineName, CurrentModuleObject, System(RefrigSysNum).Name));
                 ShowContinueError(state, "has been specified with an intercooler.  Verify that the number of compressor stages");
@@ -5942,7 +5923,8 @@ void GetRefrigerationInput(EnergyPlusData &state)
             if (lAlphaBlanks(2)) {
                 ShowSevereEmptyField(state, eoh, cAlphaFieldNames(2));
                 ErrorsFound = true;
-            } else if ((TransSystem(TransRefrigSysNum).transSysType = static_cast<TransSysType>(getEnumValue(transSysTypeNamesUC, Alphas(2)))) == TransSysType::Invalid) {
+            } else if ((TransSystem(TransRefrigSysNum).transSysType = static_cast<TransSysType>(getEnumValue(transSysTypeNamesUC, Alphas(2)))) ==
+                       TransSysType::Invalid) {
                 ShowSevereInvalidKey(state, eoh, cAlphaFieldNames(1), Alphas(2));
                 ErrorsFound = true;
             } else if (TransSystem(TransRefrigSysNum).transSysType == TransSysType::SingleStage && lAlphaBlanks(3)) {
@@ -11856,7 +11838,7 @@ void SimulateDetailedTransRefrigSystems(EnergyPlusData &state)
             }
             sys.TotalSystemLoad = sys.TotalSystemLoadLT + sys.TotalSystemLoadMT;
             if (sys.TotalSystemLoad > 0.0) {
-              if (sys.transSysType == TransSysType::TwoStage) {
+                if (sys.transSysType == TransSysType::TwoStage) {
                     sys.CpSatVapEvapLT = sys.refrig->getSatSpecificHeat(state, sys.TEvapNeededLT, 1.0, RoutineName);
                     sys.HCaseOutLT = sys.refrig->getSatEnthalpy(state, sys.TEvapNeededLT, 1.0, RoutineName) + sys.CpSatVapEvapLT * TransCaseSuperheat;
                 }
@@ -12785,11 +12767,11 @@ void RefrigSystemData::CalculateCompressors(EnergyPlusData &state)
                 // TCompIn needs to include case superheat as well as Temp change from lshx subcoolers
                 // Calculate both here unless set previously by subcooler subroutine
                 // HCaseOut corresponds to (tevapneeded + case superheat)
-                if (this->NumSubcoolers == 0) {       // No subcooler on this system
-                    if (this->intercoolerType == IntercoolerType::Flash) { 
+                if (this->NumSubcoolers == 0) { // No subcooler on this system
+                    if (this->intercoolerType == IntercoolerType::Flash) {
                         this->HCaseIn = this->refrig->getSatEnthalpy(state, this->TIntercooler, 0.0, RoutineName);
                         this->TLiqInActual = this->TIntercooler;
-                    } else if (this->intercoolerType == IntercoolerType::ShellAndCoil) { 
+                    } else if (this->intercoolerType == IntercoolerType::ShellAndCoil) {
                         this->TLiqInActual = this->TCondense - Condenser1.RatedSubcool -
                                              this->IntercoolerEffectiveness * (this->TCondense - Condenser1.RatedSubcool - this->TIntercooler);
                         this->HCaseIn = this->HSatLiqCond - this->CpSatLiqCond * (this->TCondense - this->TLiqInActual);

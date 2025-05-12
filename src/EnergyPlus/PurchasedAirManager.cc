@@ -125,64 +125,24 @@ using Psychrometrics::PsyWFnTdbRhPb;
 Real64 constexpr SmallDeltaHumRat(0.00025);
 
 constexpr std::array<std::string_view, (int)LimitType::Num> limitTypeNames = {
-    "NoLimit",
-    "LimitFlowRate",
-    "LimitCapacity",
-    "LimitFlowRateAndCapacity"
-};
+    "NoLimit", "LimitFlowRate", "LimitCapacity", "LimitFlowRateAndCapacity"};
 constexpr std::array<std::string_view, (int)LimitType::Num> limitTypeNamesUC = {
-    "NOLIMIT",
-    "LIMITFLOWRATE",
-    "LIMITCAPACITY",
-    "LIMITFLOWRATEANDCAPACITY"
-};
+    "NOLIMIT", "LIMITFLOWRATE", "LIMITCAPACITY", "LIMITFLOWRATEANDCAPACITY"};
 
 constexpr std::array<std::string_view, (int)HumControl::Num> humControlNames = {
-    "None",
-    "ConstantSensibleHeatRatio",
-    "Humidistat",
-    "ConstantSupplyHumidityRatio"
-};
+    "None", "ConstantSensibleHeatRatio", "Humidistat", "ConstantSupplyHumidityRatio"};
 constexpr std::array<std::string_view, (int)HumControl::Num> humControlNamesUC = {
-    "NONE",
-    "CONSTANTSENSIBLEHEATRATIO",
-    "HUMIDISTAT",
-    "CONSTANTSUPPLYHUMIDITYRATIO"
-};
-  
-constexpr std::array<std::string_view, (int)DCV::Num> dcvNames = {
-    "None",
-    "OccupancySchedule",
-    "CO2SetPoint"
-};
-constexpr std::array<std::string_view, (int)DCV::Num> dcvNamesUC = {
-    "NONE",
-    "OCCUPANCYSCHEDULE",
-    "CO2SETPOINT"
-};
-  
-constexpr std::array<std::string_view, (int)Econ::Num> econNames = {
-    "NoEconomizer", 
-    "DifferentialDryBulb", 
-    "DifferentialEnthalpy"
-};
-constexpr std::array<std::string_view, (int)Econ::Num> econNamesUC = {
-    "NOECONOMIZER", 
-    "DIFFERENTIALDRYBULB", 
-    "DIFFERENTIALENTHALPY"
-};
-    
-constexpr std::array<std::string_view, (int)HeatRecovery::Num> heatRecoveryNames = {
-    "None",
-    "Sensible",
-    "Enthalpy"
-};
-constexpr std::array<std::string_view, (int)HeatRecovery::Num> heatRecoveryNamesUC = {
-    "NONE",
-    "SENSIBLE",
-    "ENTHALPY"
-};
-  
+    "NONE", "CONSTANTSENSIBLEHEATRATIO", "HUMIDISTAT", "CONSTANTSUPPLYHUMIDITYRATIO"};
+
+constexpr std::array<std::string_view, (int)DCV::Num> dcvNames = {"None", "OccupancySchedule", "CO2SetPoint"};
+constexpr std::array<std::string_view, (int)DCV::Num> dcvNamesUC = {"NONE", "OCCUPANCYSCHEDULE", "CO2SETPOINT"};
+
+constexpr std::array<std::string_view, (int)Econ::Num> econNames = {"NoEconomizer", "DifferentialDryBulb", "DifferentialEnthalpy"};
+constexpr std::array<std::string_view, (int)Econ::Num> econNamesUC = {"NOECONOMIZER", "DIFFERENTIALDRYBULB", "DIFFERENTIALENTHALPY"};
+
+constexpr std::array<std::string_view, (int)HeatRecovery::Num> heatRecoveryNames = {"None", "Sensible", "Enthalpy"};
+constexpr std::array<std::string_view, (int)HeatRecovery::Num> heatRecoveryNamesUC = {"NONE", "SENSIBLE", "ENTHALPY"};
+
 void SimPurchasedAir(EnergyPlusData &state,
                      std::string const &PurchAirName,
                      Real64 &SysOutputProvided,
@@ -276,7 +236,7 @@ void GetPurchasedAir(EnergyPlusData &state)
 
     bool ErrorsFound(false); // If errors detected in input
     auto &s_ipsc = state.dataIPShortCut;
-    
+
     s_ipsc->cCurrentModuleObject = "ZoneHVAC:IdealLoadsAirSystem";
 
     auto &PurchAir(state.dataPurchasedAirMgr->PurchAir);
@@ -334,11 +294,7 @@ void GetPurchasedAir(EnergyPlusData &state)
                                                                            NodeInputManager::CompFluidStream::Primary,
                                                                            ObjectIsNotParent);
             bool UniqueNodeError = false;
-            CheckUniqueNodeNames(state,
-                                 s_ipsc->cAlphaFieldNames(3),
-                                 UniqueNodeError,
-                                 s_ipsc->cAlphaArgs(3),
-                                 s_ipsc->cAlphaArgs(1));
+            CheckUniqueNodeNames(state, s_ipsc->cAlphaFieldNames(3), UniqueNodeError, s_ipsc->cAlphaArgs(3), s_ipsc->cAlphaArgs(1));
             if (UniqueNodeError) ErrorsFound = true;
             // If new (optional) exhaust air node name is present, then register it as inlet
             if (!s_ipsc->lAlphaFieldBlanks(4)) {
@@ -364,11 +320,7 @@ void GetPurchasedAir(EnergyPlusData &state)
                                                                                     ObjectIsNotParent);
                 }
                 UniqueNodeError = false;
-                CheckUniqueNodeNames(state,
-                                     s_ipsc->cAlphaFieldNames(4),
-                                     UniqueNodeError,
-                                     s_ipsc->cAlphaArgs(4),
-                                     s_ipsc->cAlphaArgs(1));
+                CheckUniqueNodeNames(state, s_ipsc->cAlphaFieldNames(4), UniqueNodeError, s_ipsc->cAlphaArgs(4), s_ipsc->cAlphaArgs(1));
                 if (UniqueNodeError) ErrorsFound = true;
             }
             if (!s_ipsc->lAlphaFieldBlanks(5)) {
@@ -392,19 +344,19 @@ void GetPurchasedAir(EnergyPlusData &state)
 
             case LimitType::None: {
             } break;
-              
+
             case LimitType::FlowRate: {
                 if (s_ipsc->lNumericFieldBlanks(5)) {
                     PurchAir(PurchAirNum).HeatingLimit = LimitType::None;
                 }
-            } break; 
-              
-            case LimitType::Capacity: { 
+            } break;
+
+            case LimitType::Capacity: {
                 if (s_ipsc->lNumericFieldBlanks(6)) {
                     PurchAir(PurchAirNum).HeatingLimit = LimitType::None;
                 }
             } break;
-              
+
             case LimitType::FlowRateAndCapacity: {
                 if (s_ipsc->lNumericFieldBlanks(5) && s_ipsc->lNumericFieldBlanks(6)) {
                     PurchAir(PurchAirNum).HeatingLimit = LimitType::None;
@@ -414,13 +366,13 @@ void GetPurchasedAir(EnergyPlusData &state)
                     PurchAir(PurchAirNum).HeatingLimit = LimitType::FlowRate;
                 }
             } break;
-              
+
             default: {
                 ShowSevereInvalidKey(state, eoh, s_ipsc->cAlphaFieldNames(6), s_ipsc->cAlphaArgs(6));
                 ErrorsFound = true;
             } break;
             }
-            
+
             PurchAir(PurchAirNum).MaxHeatVolFlowRate = s_ipsc->rNumericArgs(5);
             PurchAir(PurchAirNum).MaxHeatSensCap = s_ipsc->rNumericArgs(6);
 
@@ -430,12 +382,12 @@ void GetPurchasedAir(EnergyPlusData &state)
             case LimitType::None: {
             } break;
 
-            case LimitType::FlowRate: { 
+            case LimitType::FlowRate: {
                 if (s_ipsc->lNumericFieldBlanks(7)) {
                     PurchAir(PurchAirNum).CoolingLimit = LimitType::None;
                 }
             } break;
-              
+
             case LimitType::Capacity: {
                 if (s_ipsc->lNumericFieldBlanks(8)) {
                     PurchAir(PurchAirNum).CoolingLimit = LimitType::None;
@@ -453,12 +405,15 @@ void GetPurchasedAir(EnergyPlusData &state)
             } break;
 
             default: {
-                ShowSevereInvalidKey(state, eoh, s_ipsc->cAlphaFieldNames(6), s_ipsc->cAlphaArgs(6),
+                ShowSevereInvalidKey(state,
+                                     eoh,
+                                     s_ipsc->cAlphaFieldNames(6),
+                                     s_ipsc->cAlphaArgs(6),
                                      "Valid entries are None, ConstantSensibleHeatRatio, Humidistat, or ConstantSupplyHumidityRatio");
                 ErrorsFound = true;
             } break;
             }
-            
+
             PurchAir(PurchAirNum).MaxCoolVolFlowRate = s_ipsc->rNumericArgs(7);
             PurchAir(PurchAirNum).MaxCoolTotCap = s_ipsc->rNumericArgs(8);
 
@@ -484,18 +439,21 @@ void GetPurchasedAir(EnergyPlusData &state)
                 ShowSevereInvalidKey(state, eoh, s_ipsc->cAlphaFieldNames(10), s_ipsc->cAlphaArgs(10));
                 ErrorsFound = true;
             }
-            
+
             PurchAir(PurchAirNum).CoolSHR = s_ipsc->rNumericArgs(9);
 
             // get Humidification control type
             PurchAir(PurchAirNum).HumidCtrlType = static_cast<HumControl>(getEnumValue(humControlNamesUC, s_ipsc->cAlphaArgs(11)));
             if (PurchAir(PurchAirNum).HumidCtrlType == HumControl::Invalid ||
                 PurchAir(PurchAirNum).HumidCtrlType == HumControl::ConstantSensibleHeatRatio) {
-                ShowSevereInvalidKey(state, eoh, s_ipsc->cAlphaFieldNames(11), s_ipsc->cAlphaArgs(11), 
+                ShowSevereInvalidKey(state,
+                                     eoh,
+                                     s_ipsc->cAlphaFieldNames(11),
+                                     s_ipsc->cAlphaArgs(11),
                                      "Valid entries are None, Humidistat, or ConstantSupplyHumidityRatio");
                 ErrorsFound = true;
             }
-            
+
             // get Design specification outdoor air object
             if (!s_ipsc->lAlphaFieldBlanks(12)) {
                 PurchAir(PurchAirNum).OARequirementsPtr = Util::FindItemInList(s_ipsc->cAlphaArgs(12), state.dataSize->OARequirements);
@@ -517,11 +475,9 @@ void GetPurchasedAir(EnergyPlusData &state)
                         s_ipsc->cAlphaArgs(13) = s_ipsc->cAlphaArgs(1).substr(0, 75) + " OUTDOOR AIR INLET NODE";
                     }
                     if (state.dataGlobal->DisplayExtraWarnings) {
-                        ShowWarningError(state,
-                                         format("{}{}=\"{} blank field", RoutineName, s_ipsc->cCurrentModuleObject, s_ipsc->cAlphaArgs(1)));
-                        ShowContinueError(
-                            state,
-                            format("{} is blank, but there is outdoor air requested for this system.", s_ipsc->cAlphaFieldNames(13)));
+                        ShowWarningError(state, format("{}{}=\"{} blank field", RoutineName, s_ipsc->cCurrentModuleObject, s_ipsc->cAlphaArgs(1)));
+                        ShowContinueError(state,
+                                          format("{} is blank, but there is outdoor air requested for this system.", s_ipsc->cAlphaFieldNames(13)));
                         ShowContinueError(state, format("Creating node name ={}", s_ipsc->cAlphaArgs(13)));
                     }
                 }
@@ -540,51 +496,52 @@ void GetPurchasedAir(EnergyPlusData &state)
                 CheckAndAddAirNodeNumber(state, PurchAir(PurchAirNum).OutdoorAirNodeNum, IsOANodeListed);
                 if ((!IsOANodeListed) && state.dataGlobal->DisplayExtraWarnings) {
                     ShowWarningError(state, format("{}{}=\"{} missing data", RoutineName, s_ipsc->cCurrentModuleObject, s_ipsc->cAlphaArgs(1)));
-                    ShowContinueError(
-                        state,
-                        format("{} does not appear in an OutdoorAir:NodeList or as an OutdoorAir:Node.", s_ipsc->cAlphaArgs(13)));
+                    ShowContinueError(state,
+                                      format("{} does not appear in an OutdoorAir:NodeList or as an OutdoorAir:Node.", s_ipsc->cAlphaArgs(13)));
                     ShowContinueError(state, format("Adding OutdoorAir:Node={}", s_ipsc->cAlphaArgs(13)));
                 }
                 UniqueNodeError = false;
-                CheckUniqueNodeNames(state,
-                                     s_ipsc->cAlphaFieldNames(13),
-                                     UniqueNodeError,
-                                     s_ipsc->cAlphaArgs(13),
-                                     s_ipsc->cAlphaArgs(1));
+                CheckUniqueNodeNames(state, s_ipsc->cAlphaFieldNames(13), UniqueNodeError, s_ipsc->cAlphaArgs(13), s_ipsc->cAlphaArgs(1));
                 if (UniqueNodeError) ErrorsFound = true;
 
                 // get Demand controlled ventilation type
                 PurchAir(PurchAirNum).DCVType = static_cast<DCV>(getEnumValue(dcvNamesUC, s_ipsc->cAlphaArgs(14)));
                 if (PurchAir(PurchAirNum).DCVType == DCV::Invalid) {
-                    ShowSevereInvalidKey(state, eoh, s_ipsc->cAlphaFieldNames(14), s_ipsc->cAlphaArgs(14),
+                    ShowSevereInvalidKey(state,
+                                         eoh,
+                                         s_ipsc->cAlphaFieldNames(14),
+                                         s_ipsc->cAlphaArgs(14),
                                          "Valid entries are None, OccupancySchedule, or CO2Setpoint");
                     ErrorsFound = true;
-                } else if (PurchAir(PurchAirNum).DCVType == DCV::CO2SetPoint &&
-                           !state.dataContaminantBalance->Contaminant.CO2Simulation) {
+                } else if (PurchAir(PurchAirNum).DCVType == DCV::CO2SetPoint && !state.dataContaminantBalance->Contaminant.CO2Simulation) {
                     PurchAir(PurchAirNum).DCVType = DCV::None;
                     ShowWarningError(state, format("{}{}=\"{} invalid data", RoutineName, s_ipsc->cCurrentModuleObject, s_ipsc->cAlphaArgs(1)));
                     ShowContinueError(state, format("{}={} but CO2 simulation is not active.", s_ipsc->cAlphaFieldNames(14), s_ipsc->cAlphaArgs(14)));
                     ShowContinueError(state, format("Resetting {} to NoDCV", s_ipsc->cAlphaFieldNames(14)));
-                    ShowContinueError(state, "To activate CO2 simulation, use ZoneAirContaminantBalance object and specify \"Carbon Dioxide "
-                                          "Concentration\"=\"Yes\".");
+                    ShowContinueError(state,
+                                      "To activate CO2 simulation, use ZoneAirContaminantBalance object and specify \"Carbon Dioxide "
+                                      "Concentration\"=\"Yes\".");
                 }
 
                 // get Outdoor air economizer type
                 PurchAir(PurchAirNum).EconomizerType = static_cast<Econ>(getEnumValue(econNamesUC, s_ipsc->cAlphaArgs(15)));
-                if (PurchAir(PurchAirNum).EconomizerType == Econ::Invalid) { 
-                    ShowSevereInvalidKey(state, eoh, s_ipsc->cAlphaFieldNames(15), s_ipsc->cAlphaArgs(15),
-                                       "Valid entries are NoEconomizer, DifferentialDryBulb, or DifferentialEnthalpy");
+                if (PurchAir(PurchAirNum).EconomizerType == Econ::Invalid) {
+                    ShowSevereInvalidKey(state,
+                                         eoh,
+                                         s_ipsc->cAlphaFieldNames(15),
+                                         s_ipsc->cAlphaArgs(15),
+                                         "Valid entries are NoEconomizer, DifferentialDryBulb, or DifferentialEnthalpy");
                     ErrorsFound = true;
                 }
-                
+
                 // get Outdoor air heat recovery type and effectiveness
                 PurchAir(PurchAirNum).HtRecType = static_cast<HeatRecovery>(getEnumValue(heatRecoveryNamesUC, s_ipsc->cAlphaArgs(16)));
                 if (PurchAir(PurchAirNum).HtRecType == HeatRecovery::Invalid) {
-                    ShowSevereInvalidKey(state, eoh, s_ipsc->cAlphaFieldNames(16), s_ipsc->cAlphaArgs(16),
-                                         "Valid entries are None, Sensible, or Enthalpy");
+                    ShowSevereInvalidKey(
+                        state, eoh, s_ipsc->cAlphaFieldNames(16), s_ipsc->cAlphaArgs(16), "Valid entries are None, Sensible, or Enthalpy");
                     ErrorsFound = true;
                 }
-                
+
             } else { // No outdoorair
                 PurchAir(PurchAirNum).DCVType = DCV::None;
                 PurchAir(PurchAirNum).EconomizerType = Econ::NoEconomizer;
@@ -607,8 +564,7 @@ void GetPurchasedAir(EnergyPlusData &state)
             if (!s_ipsc->lAlphaFieldBlanks(17)) {
                 PurchAir(PurchAirNum).HVACSizingIndex = Util::FindItemInList(s_ipsc->cAlphaArgs(17), state.dataSize->ZoneHVACSizing);
                 if (PurchAir(PurchAirNum).HVACSizingIndex == 0) {
-                    ShowSevereError(state,
-                                    format("{} = {} not found.", s_ipsc->cAlphaFieldNames(17), s_ipsc->cAlphaArgs(17)));
+                    ShowSevereError(state, format("{} = {} not found.", s_ipsc->cAlphaFieldNames(17), s_ipsc->cAlphaArgs(17)));
                     ShowContinueError(state, format("Occurs in {} = {}", s_ipsc->cCurrentModuleObject, PurchAir(PurchAirNum).Name));
                     ErrorsFound = true;
                 }
@@ -2159,8 +2115,7 @@ void CalcPurchAirLoads(EnergyPlusData &state,
                         DeltaT = (state.dataLoopNodes->Node(OANodeNum).Temp - state.dataLoopNodes->Node(ZoneNodeNum).Temp);
                         if (DeltaT < -HVAC::SmallTempDiff) {
                             SupplyMassFlowRate = QZnCoolSP / CpAir / DeltaT;
-                            if (((PurchAir.CoolingLimit == LimitType::FlowRate) ||
-                                 (PurchAir.CoolingLimit == LimitType::FlowRateAndCapacity)) &&
+                            if (((PurchAir.CoolingLimit == LimitType::FlowRate) || (PurchAir.CoolingLimit == LimitType::FlowRateAndCapacity)) &&
                                 (PurchAir.MaxCoolMassFlowRate > 0.0)) {
                                 SupplyMassFlowRate = min(max(SupplyMassFlowRate, 0.0), PurchAir.MaxCoolMassFlowRate);
                             }
@@ -2564,8 +2519,7 @@ void CalcPurchAirLoads(EnergyPlusData &state,
                     if (OperatingMode == OpMode::Heat) {
                         // If this results in dehumidification, must check cooling capacity limit
                         if (PurchAir.MixedAirHumRat > PurchAir.MaxHeatSuppAirHumRat) {
-                            if ((PurchAir.CoolingLimit == LimitType::Capacity) ||
-                                (PurchAir.CoolingLimit == LimitType::FlowRateAndCapacity)) {
+                            if ((PurchAir.CoolingLimit == LimitType::Capacity) || (PurchAir.CoolingLimit == LimitType::FlowRateAndCapacity)) {
                                 PurchAir.SupplyHumRat = PurchAir.MaxHeatSuppAirHumRat;
                                 SupplyEnthalpy = PsyHFnTdbW(PurchAir.SupplyTemp, PurchAir.SupplyHumRat);
                                 CoolTotOutput = SupplyMassFlowRate * (MixedAirEnthalpy - SupplyEnthalpy);
@@ -2612,8 +2566,7 @@ void CalcPurchAirLoads(EnergyPlusData &state,
                                 CpAir = PsyCpAirFnW(PurchAir.MixedAirHumRat);
                                 SensOutput = SupplyMassFlowRate * CpAir * (PurchAir.SupplyTemp - PurchAir.MixedAirTemp);
                                 LatOutput = SupplyMassFlowRate * (SupplyEnthalpy - MixedAirEnthalpy) - SensOutput;
-                                if ((PurchAir.CoolingLimit == LimitType::Capacity) ||
-                                    (PurchAir.CoolingLimit == LimitType::FlowRateAndCapacity)) {
+                                if ((PurchAir.CoolingLimit == LimitType::Capacity) || (PurchAir.CoolingLimit == LimitType::FlowRateAndCapacity)) {
                                     if (LatOutput > PurchAir.MaxCoolTotCap) {
                                         LatOutput = PurchAir.MaxCoolTotCap;
                                         SupplyEnthalpy = MixedAirEnthalpy + (LatOutput + SensOutput) / SupplyMassFlowRate;

@@ -114,37 +114,29 @@ namespace Photovoltaics {
     constexpr std::string_view cPVGeneratorObjectName = "Generator:Photovoltaic";
 
     constexpr std::array<std::string_view, (int)PVModel::Num> pvModelNames = {
-        "PhotovoltaicPerformance:Simple", "PhotovoltaicPerformance:EquivalentOne-Diode", "PhotovoltaicPerformance:Sandia" };
+        "PhotovoltaicPerformance:Simple", "PhotovoltaicPerformance:EquivalentOne-Diode", "PhotovoltaicPerformance:Sandia"};
     constexpr std::array<std::string_view, (int)PVModel::Num> pvModelNamesUC = {
-        "PHOTOVOLTAICPERFORMANCE:SIMPLE", "PHOTOVOLTAICPERFORMANCE:EQUIVALENTONE-DIODE", "PHOTOVOLTAICPERFORMANCE:SANDIA" };
+        "PHOTOVOLTAICPERFORMANCE:SIMPLE", "PHOTOVOLTAICPERFORMANCE:EQUIVALENTONE-DIODE", "PHOTOVOLTAICPERFORMANCE:SANDIA"};
 
-    constexpr std::array<std::string_view, (int)CellIntegration::Num> cellIntegrationNames = {
-        "Decoupled",
-        "DecoupledUllebergDynamic",
-        "IntegratedSurfaceOutsideFace",
-        "IntegratedTranspiredCollector",
-        "IntegratedExteriorVentedCavity",
-        "PhotovoltaicThermalSolarCollector"
-    };
-    constexpr std::array<std::string_view, (int)CellIntegration::Num> cellIntegrationNamesUC = {
-        "DECOUPLED",
-        "DECOUPLEDULLEBERGDYNAMIC",
-        "INTEGRATEDSURFACEOUTSIDEFACE",
-        "INTEGRATEDTRANSPIREDCOLLECTOR",
-        "INTEGRATEDEXTERIORVENTEDCAVITY",
-        "PHOTOVOLTAICTHERMALSOLARCOLLECTOR"
-    };
+    constexpr std::array<std::string_view, (int)CellIntegration::Num> cellIntegrationNames = {"Decoupled",
+                                                                                              "DecoupledUllebergDynamic",
+                                                                                              "IntegratedSurfaceOutsideFace",
+                                                                                              "IntegratedTranspiredCollector",
+                                                                                              "IntegratedExteriorVentedCavity",
+                                                                                              "PhotovoltaicThermalSolarCollector"};
+    constexpr std::array<std::string_view, (int)CellIntegration::Num> cellIntegrationNamesUC = {"DECOUPLED",
+                                                                                                "DECOUPLEDULLEBERGDYNAMIC",
+                                                                                                "INTEGRATEDSURFACEOUTSIDEFACE",
+                                                                                                "INTEGRATEDTRANSPIREDCOLLECTOR",
+                                                                                                "INTEGRATEDEXTERIORVENTEDCAVITY",
+                                                                                                "PHOTOVOLTAICTHERMALSOLARCOLLECTOR"};
 
-    constexpr std::array<std::string_view, (int)Efficiency::Num> efficiencyNames = {
-        "Fixed", "Scheduled" };
-    constexpr std::array<std::string_view, (int)Efficiency::Num> efficiencyNamesUC = {
-        "FIXED", "SCHEDULED" };
-  
-    constexpr std::array<std::string_view, (int)SiPVCells::Num> siPVCellsNames = {
-        "CrystallineSilicon", "AmorphousSilicon" };
-    constexpr std::array<std::string_view, (int)SiPVCells::Num> siPVCellsNamesUC = {
-        "CRYSTALLINESILICON", "AMORPHOUSSILICON" };
-  
+    constexpr std::array<std::string_view, (int)Efficiency::Num> efficiencyNames = {"Fixed", "Scheduled"};
+    constexpr std::array<std::string_view, (int)Efficiency::Num> efficiencyNamesUC = {"FIXED", "SCHEDULED"};
+
+    constexpr std::array<std::string_view, (int)SiPVCells::Num> siPVCellsNames = {"CrystallineSilicon", "AmorphousSilicon"};
+    constexpr std::array<std::string_view, (int)SiPVCells::Num> siPVCellsNamesUC = {"CRYSTALLINESILICON", "AMORPHOUSSILICON"};
+
     void SimPVGenerator(EnergyPlusData &state,
                         [[maybe_unused]] GeneratorType const GeneratorType, // type of Generator !unused1208
                         std::string const &GeneratorName,                   // user specified name of Generator
@@ -302,10 +294,9 @@ namespace Photovoltaics {
         Array1D<SNLModuleParamsStuct> tmpSNLModuleParams;          // temporary, for processing input data
 
         auto &s_ipsc = state.dataIPShortCut;
-        
+
         // count how many photovoltaic arrays of different types are in the .idf
-        state.dataPhotovoltaic->NumPVs =
-            state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, cPVGeneratorObjectName);
+        state.dataPhotovoltaic->NumPVs = state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, cPVGeneratorObjectName);
         state.dataPhotovoltaic->NumSimplePVModuleTypes =
             state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, pvModelNames[(int)PVModel::Simple]);
         state.dataPhotovoltaic->Num1DiodePVModuleTypes =
@@ -337,7 +328,7 @@ namespace Photovoltaics {
                                                                      s_ipsc->cNumericFieldNames);
 
             ErrorObjectHeader eoh{routineName, s_ipsc->cCurrentModuleObject, s_ipsc->cAlphaArgs(1)};
-            
+
             Util::IsNameEmpty(state, s_ipsc->cAlphaArgs(1), s_ipsc->cCurrentModuleObject, ErrorsFound);
             state.dataPhotovoltaic->PVarray(PVnum).Name = s_ipsc->cAlphaArgs(1);
 
@@ -360,8 +351,7 @@ namespace Photovoltaics {
                 state.dataSurface->SurfIsPV(SurfNum) = true;
 
                 if (!state.dataSurface->Surface(SurfNum).ExtSolar) {
-                    ShowWarningError(state,
-                                     format("Invalid {} = {}", s_ipsc->cAlphaFieldNames(2), s_ipsc->cAlphaArgs(2)));
+                    ShowWarningError(state, format("Invalid {} = {}", s_ipsc->cAlphaFieldNames(2), s_ipsc->cAlphaArgs(2)));
                     ShowContinueError(state, format("Entered in {} = {}", s_ipsc->cCurrentModuleObject, s_ipsc->cAlphaArgs(1)));
                     ShowContinueError(state, "Surface is not exposed to solar, check surface boundary condition");
                 }
@@ -369,10 +359,7 @@ namespace Photovoltaics {
 
                 // check surface orientation, warn if upside down
                 if ((state.dataSurface->Surface(SurfNum).Tilt < -95.0) || (state.dataSurface->Surface(SurfNum).Tilt > 95.0)) {
-                    ShowWarningError(state,
-                                     format("Suspected input problem with {} = {}",
-                                            s_ipsc->cAlphaFieldNames(2),
-                                            s_ipsc->cAlphaArgs(2)));
+                    ShowWarningError(state, format("Suspected input problem with {} = {}", s_ipsc->cAlphaFieldNames(2), s_ipsc->cAlphaArgs(2)));
                     ShowContinueError(state, format("Entered in {} = {}", s_ipsc->cCurrentModuleObject, s_ipsc->cAlphaArgs(1)));
                     ShowContinueError(state, "Surface used for solar collector faces down");
                     ShowContinueError(
@@ -385,16 +372,17 @@ namespace Photovoltaics {
                 ErrorsFound = true;
             } else if ((state.dataPhotovoltaic->PVarray(PVnum).PVModelType =
                             static_cast<PVModel>(getEnumValue(pvModelNamesUC, s_ipsc->cAlphaArgs(3)))) == PVModel::Invalid) {
-                 ShowSevereInvalidKey(state, eoh, s_ipsc->cAlphaFieldNames(3), s_ipsc->cAlphaArgs(3));
-                 ErrorsFound = true;
+                ShowSevereInvalidKey(state, eoh, s_ipsc->cAlphaFieldNames(3), s_ipsc->cAlphaArgs(3));
+                ErrorsFound = true;
             }
-            
+
             state.dataPhotovoltaic->PVarray(PVnum).PerfObjName = s_ipsc->cAlphaArgs(4); // check later once perf objects are loaded
 
             if (s_ipsc->lAlphaFieldBlanks(5)) {
                 ShowSevereEmptyField(state, eoh, s_ipsc->cAlphaFieldNames(5), s_ipsc->cAlphaArgs(5));
                 ErrorsFound = true;
-            } else if ((state.dataPhotovoltaic->PVarray(PVnum).CellIntegrationMode = static_cast<CellIntegration>(getEnumValue(cellIntegrationNamesUC, s_ipsc->cAlphaArgs(5)))) == CellIntegration::Invalid) {
+            } else if ((state.dataPhotovoltaic->PVarray(PVnum).CellIntegrationMode =
+                            static_cast<CellIntegration>(getEnumValue(cellIntegrationNamesUC, s_ipsc->cAlphaArgs(5)))) == CellIntegration::Invalid) {
                 ShowSevereInvalidKey(state, eoh, s_ipsc->cAlphaFieldNames(5), s_ipsc->cAlphaArgs(5));
                 ErrorsFound = true;
             }
@@ -534,7 +522,8 @@ namespace Photovoltaics {
                 if (s_ipsc->lAlphaFieldBlanks(2)) {
                     ShowSevereEmptyField(state, eoh, s_ipsc->cAlphaFieldNames(2), s_ipsc->cAlphaArgs(2));
                     ErrorsFound = true;
-                } else if ((tmpTRNSYSModuleParams(ModNum).CellType = static_cast<SiPVCells>(getEnumValue(siPVCellsNamesUC, s_ipsc->cAlphaArgs(2)))) == SiPVCells::Invalid) { 
+                } else if ((tmpTRNSYSModuleParams(ModNum).CellType = static_cast<SiPVCells>(getEnumValue(siPVCellsNamesUC, s_ipsc->cAlphaArgs(2)))) ==
+                           SiPVCells::Invalid) {
                     ShowSevereInvalidKey(state, eoh, s_ipsc->cAlphaFieldNames(2), s_ipsc->cAlphaArgs(2));
                     ErrorsFound = true;
                 }

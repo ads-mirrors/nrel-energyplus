@@ -104,10 +104,9 @@ namespace PlantPipingSystemsManager {
     // The mesh can include any number of pipe circuits placed within the domain
     // The mesh can interact with basement walls also
 
-constexpr std::array<std::string_view, (int)SlabPosition::Num> slabPositionNamesUC = { "INGRADE", "ONGRADE" };
+    constexpr std::array<std::string_view, (int)SlabPosition::Num> slabPositionNamesUC = {"INGRADE", "ONGRADE"};
 
-constexpr std::array<std::string_view, (int)HorizInsulation::Num> horizInsulationNamesUC = { "NONE", "PERIMETER", "FULL" };
-
+    constexpr std::array<std::string_view, (int)HorizInsulation::Num> horizInsulationNamesUC = {"NONE", "PERIMETER", "FULL"};
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "cert-err58-cpp"
@@ -638,7 +637,7 @@ constexpr std::array<std::string_view, (int)HorizInsulation::Num> horizInsulatio
                 ShowSevereInvalidBool(state, eoh, state.dataIPShortCut->cAlphaFieldNames(7), state.dataIPShortCut->cAlphaArgs(7));
                 ErrorsFound = true;
             }
-            
+
             // more work to do if there is a basement
             if (thisDomain.HasBasement) {
 
@@ -876,8 +875,8 @@ constexpr std::array<std::string_view, (int)HorizInsulation::Num> horizInsulatio
             // Set flag for slab in-grade or slab on-grade
             if (s_ipsc->lAlphaFieldBlanks(5)) {
                 ShowSevereEmptyField(state, eoh, s_ipsc->cAlphaFieldNames(5));
-            } else if ((thisDomain.slabPosition =
-                        static_cast<SlabPosition>(getEnumValue(slabPositionNamesUC, s_ipsc->cAlphaArgs(5)))) == SlabPosition::Invalid) {
+            } else if ((thisDomain.slabPosition = static_cast<SlabPosition>(getEnumValue(slabPositionNamesUC, s_ipsc->cAlphaArgs(5)))) ==
+                       SlabPosition::Invalid) {
                 ShowSevereInvalidKey(state, eoh, s_ipsc->cAlphaFieldNames(5), s_ipsc->cAlphaArgs(5));
                 ErrorsFound = true;
             }
@@ -933,11 +932,11 @@ constexpr std::array<std::string_view, (int)HorizInsulation::Num> horizInsulatio
                         ShowSevereEmptyField(state, eoh, s_ipsc->cAlphaFieldNames(9));
                         ErrorsFound = true;
                     }
-                } else if ((thisDomain.HorizIns =
-                            static_cast<HorizInsulation>(getEnumValue(horizInsulationNamesUC, s_ipsc->cAlphaArgs(9)))) == HorizInsulation::Invalid) {
+                } else if ((thisDomain.HorizIns = static_cast<HorizInsulation>(getEnumValue(horizInsulationNamesUC, s_ipsc->cAlphaArgs(9)))) ==
+                           HorizInsulation::Invalid) {
                     ShowSevereInvalidKey(state, eoh, s_ipsc->cAlphaFieldNames(9), s_ipsc->cAlphaArgs(9));
                     ErrorsFound = true;
-                } else if (thisDomain.HorizIns == HorizInsulation::Perimeter) { 
+                } else if (thisDomain.HorizIns == HorizInsulation::Perimeter) {
                     // Horizontal insulation perimeter width
                     if (thisDomain.HorizInsWidth <= 0.0) {
                         ShowSevereError(state, format("Invalid {}", s_ipsc->cNumericFieldNames(10)));
@@ -997,7 +996,7 @@ constexpr std::array<std::string_view, (int)HorizInsulation::Num> horizInsulatio
                 ErrorsFound = true;
             }
 #endif // GET_OUT
-            
+
             //******* We'll first set up the domain ********
             thisDomain.IsActuallyPartOfAHorizontalTrench = false;
             thisDomain.HasAPipeCircuit = false;
@@ -1320,15 +1319,15 @@ constexpr std::array<std::string_view, (int)HorizInsulation::Num> horizInsulatio
 
                 // Set flag for horizontal insulation extents
                 if (s_ipsc->lAlphaFieldBlanks(7)) {
-                    if (thisDomain.HorizIns != HorizInsulation::None) { 
+                    if (thisDomain.HorizIns != HorizInsulation::None) {
                         ShowSevereEmptyField(state, eoh, s_ipsc->cAlphaFieldNames(7));
                         ErrorsFound = true;
                     }
-                } else if ((thisDomain.HorizIns =
-                            static_cast<HorizInsulation>(getEnumValue(horizInsulationNamesUC, s_ipsc->cAlphaArgs(7)))) == HorizInsulation::Invalid) {
+                } else if ((thisDomain.HorizIns = static_cast<HorizInsulation>(getEnumValue(horizInsulationNamesUC, s_ipsc->cAlphaArgs(7)))) ==
+                           HorizInsulation::Invalid) {
                     ShowSevereInvalidKey(state, eoh, s_ipsc->cAlphaFieldNames(7), s_ipsc->cAlphaArgs(7));
                     ErrorsFound = true;
-                } else if (thisDomain.HorizIns == HorizInsulation::Perimeter) { 
+                } else if (thisDomain.HorizIns == HorizInsulation::Perimeter) {
                     // Horizontal insulation perimeter width
                     if (thisDomain.HorizInsWidth <= 0.0) {
                         ShowSevereError(state, format("Invalid {}", s_ipsc->cNumericFieldNames(10)));
@@ -1387,7 +1386,7 @@ constexpr std::array<std::string_view, (int)HorizInsulation::Num> horizInsulatio
                 ErrorsFound = true;
             }
 #endif // GET_OUT
-            
+
             GroundTemp::ModelType gtmType = static_cast<GroundTemp::ModelType>(getEnumValue(GroundTemp::modelTypeNamesUC, s_ipsc->cAlphaArgs(2)));
             if (gtmType == GroundTemp::ModelType::Invalid) {
                 ShowSevereInvalidKey(state, eoh, s_ipsc->cAlphaFieldNames(2), s_ipsc->cAlphaArgs(2));
@@ -2891,14 +2890,14 @@ constexpr std::array<std::string_view, (int)HorizInsulation::Num> horizInsulatio
                 }
                 if (std::find(this->Partitions.Z.begin(), this->Partitions.Z.end(), this->BasementZone.Width) == this->Partitions.Z.end()) {
                     // Partition at insulation edges in the Z direction, if horizontal insulation present
-                    if (this->HorizIns == HorizInsulation::Perimeter) { 
+                    if (this->HorizIns == HorizInsulation::Perimeter) {
                         // Side Z direction - Insulation layer
                         this->Partitions.Z.emplace_back(SideZLocation, PartitionType::ZSide, CellWidth);
                         // Side Z direction - Basement Wall interface
                         this->Partitions.Z.emplace_back(SideZWallLocation, PartitionType::ZSideWall, InterfaceCellWidth);
                         // Insulation Edge Z direction
                         this->Partitions.Z.emplace_back(SideZInsulationLocation, PartitionType::HorizInsZSide, InterfaceCellWidth);
-                    } else if (this->HorizIns == HorizInsulation::Full) { 
+                    } else if (this->HorizIns == HorizInsulation::Full) {
                         // Side Z direction - Insulation layer
                         this->Partitions.Z.emplace_back(SideZLocation, PartitionType::ZSide, CellWidth);
                         // Side Z direction -Basement Wall interface
@@ -2924,7 +2923,7 @@ constexpr std::array<std::string_view, (int)HorizInsulation::Num> horizInsulatio
             // Side X direction
             SideXLocation = this->PerimeterOffset - CellWidth / 2.0;
             // Insulation Edge X direction
-            if (this->HorizIns == HorizInsulation::Perimeter) { 
+            if (this->HorizIns == HorizInsulation::Perimeter) {
                 SideXInsulationLocation = SideXLocation + this->HorizInsWidth;
             } else {
                 SideXInsulationLocation = -1;
@@ -2936,7 +2935,7 @@ constexpr std::array<std::string_view, (int)HorizInsulation::Num> horizInsulatio
                     this->Partitions.X.emplace_back(SideXLocation, PartitionType::XSide, CellWidth);
                     // Insulation Edge X direction
                     this->Partitions.X.emplace_back(SideXInsulationLocation, PartitionType::HorizInsXSide, CellWidth);
-                } else if (this->HorizIns == HorizInsulation::Full) { 
+                } else if (this->HorizIns == HorizInsulation::Full) {
                     // Side X direction
                     this->Partitions.X.emplace_back(SideXLocation, PartitionType::XSide, CellWidth);
                 } else {
@@ -2990,19 +2989,19 @@ constexpr std::array<std::string_view, (int)HorizInsulation::Num> horizInsulatio
             // Side Z direction
             SideZLocation = this->PerimeterOffset - CellWidth / 2.0;
             // Insulation Edge Z direction
-            if (this->HorizIns == HorizInsulation::Perimeter) { 
+            if (this->HorizIns == HorizInsulation::Perimeter) {
                 SideZInsulationLocation = SideZLocation + this->HorizInsWidth;
             } else {
                 SideZInsulationLocation = -1;
             }
             if (std::find(this->Partitions.Z.begin(), this->Partitions.Z.end(), this->SlabWidth) == this->Partitions.Z.end()) {
                 // Partition at insulation edges in the Z direction, if horizontal insulation present
-                if (this->HorizIns == HorizInsulation::Perimeter) { 
+                if (this->HorizIns == HorizInsulation::Perimeter) {
                     // Side Z direction
                     this->Partitions.Z.emplace_back(SideZLocation, PartitionType::ZSide, CellWidth);
                     // Insulation Edge Z direction
                     this->Partitions.Z.emplace_back(SideZInsulationLocation, PartitionType::HorizInsZSide, CellWidth);
-                } else if (this->HorizIns == HorizInsulation::Full) { 
+                } else if (this->HorizIns == HorizInsulation::Full) {
                     // Side Z direction
                     this->Partitions.Z.emplace_back(SideZLocation, PartitionType::ZSide, CellWidth);
                 } else {
@@ -5549,7 +5548,7 @@ constexpr std::array<std::string_view, (int)HorizInsulation::Num> horizInsulatio
                         cell.Properties = this->VertInsProperties;
                         break;
                     case CellType::ZoneGroundInterface:
-                      if (this->slabPosition == SlabPosition::InGrade) {
+                        if (this->slabPosition == SlabPosition::InGrade) {
                             cell.Properties = this->SlabProperties;
                         } else {
                             cell.Properties = this->GroundProperties;

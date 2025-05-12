@@ -83,26 +83,24 @@ enum class GeneratorType
     Num
 };
 
-constexpr std::array<std::string_view, (int)GeneratorType::Num> generatorTypeNames = {
-    "Generator:InternalCombustionEngine",
-    "Generator:CombustionTurbine",
-    "Generator:Photovoltaic",
-    "Generator:FuelCell",
-    "Generator:MicroCHP",
-    "Generator:MicroTurbine",
-    "Generator:WindTurbine",
-    "Generator:PVWatts"};
-  
-constexpr std::array<std::string_view, (int)GeneratorType::Num> generatorTypeNamesUC = {
-    "GENERATOR:INTERNALCOMBUSTIONENGINE",
-    "GENERATOR:COMBUSTIONTURBINE",
-    "GENERATOR:PHOTOVOLTAIC",
-    "GENERATOR:FUELCELL",
-    "GENERATOR:MICROCHP",
-    "GENERATOR:MICROTURBINE",
-    "GENERATOR:WINDTURBINE",
-    "GENERATOR:PVWATTS"};
-  
+constexpr std::array<std::string_view, (int)GeneratorType::Num> generatorTypeNames = {"Generator:InternalCombustionEngine",
+                                                                                      "Generator:CombustionTurbine",
+                                                                                      "Generator:Photovoltaic",
+                                                                                      "Generator:FuelCell",
+                                                                                      "Generator:MicroCHP",
+                                                                                      "Generator:MicroTurbine",
+                                                                                      "Generator:WindTurbine",
+                                                                                      "Generator:PVWatts"};
+
+constexpr std::array<std::string_view, (int)GeneratorType::Num> generatorTypeNamesUC = {"GENERATOR:INTERNALCOMBUSTIONENGINE",
+                                                                                        "GENERATOR:COMBUSTIONTURBINE",
+                                                                                        "GENERATOR:PHOTOVOLTAIC",
+                                                                                        "GENERATOR:FUELCELL",
+                                                                                        "GENERATOR:MICROCHP",
+                                                                                        "GENERATOR:MICROTURBINE",
+                                                                                        "GENERATOR:WINDTURBINE",
+                                                                                        "GENERATOR:PVWATTS"};
+
 enum class ThermalLossDestination
 {
     Invalid = -1,
@@ -225,11 +223,9 @@ private: // data
         Num
     };
 
-    static constexpr std::array<std::string_view, (int)ConverterModelType::Num> converterModelTypeNames = {
-        "FunctionOfPower", "SimpleFixed" };
-    static constexpr std::array<std::string_view, (int)ConverterModelType::Num> converterModelTypeNamesUC = {
-        "FUNCTIONOFPOWER", "SIMPLEFIXED" };
-  
+    static constexpr std::array<std::string_view, (int)ConverterModelType::Num> converterModelTypeNames = {"FunctionOfPower", "SimpleFixed"};
+    static constexpr std::array<std::string_view, (int)ConverterModelType::Num> converterModelTypeNamesUC = {"FUNCTIONOFPOWER", "SIMPLEFIXED"};
+
     std::string name_; // user identifier
     Real64 efficiency_;
     Real64 aCPowerIn_;
@@ -486,10 +482,10 @@ private: // data
     };
 
     static constexpr std::array<std::string_view, (int)TransformerUse::Num> transformerUseNames = {
-        "PowerInFromGrid", "PowerOutToGrid", "LoadCenterPowerConditioning" };
+        "PowerInFromGrid", "PowerOutToGrid", "LoadCenterPowerConditioning"};
     static constexpr std::array<std::string_view, (int)TransformerUse::Num> transformerUseNamesUC = {
-        "POWERINFROMGRID", "POWEROUTTOGRID", "LOADCENTERPOWERCONDITIONING" };
-  
+        "POWERINFROMGRID", "POWEROUTTOGRID", "LOADCENTERPOWERCONDITIONING"};
+
     enum class TransformerPerformanceInput
     {
         Invalid = -1,
@@ -498,11 +494,11 @@ private: // data
         Num
     };
 
-    static constexpr std::array<std::string_view, (int)TransformerPerformanceInput::Num> transformerPerformanceInputNames = {
-      "RatedLosses", "NominalEfficiency" };
-    static constexpr std::array<std::string_view, (int)TransformerPerformanceInput::Num> transformerPerformanceInputNamesUC = {
-      "RATEDLOSSES", "NOMINALEFFICIENCY" };
-  
+    static constexpr std::array<std::string_view, (int)TransformerPerformanceInput::Num> transformerPerformanceInputNames = {"RatedLosses",
+                                                                                                                             "NominalEfficiency"};
+    static constexpr std::array<std::string_view, (int)TransformerPerformanceInput::Num> transformerPerformanceInputNamesUC = {"RATEDLOSSES",
+                                                                                                                               "NOMINALEFFICIENCY"};
+
     std::string name_; // user identifier
     bool myOneTimeFlag_;
     Sched::Schedule *availSched_ = nullptr;            // availability schedule
@@ -646,21 +642,17 @@ public: // data public for unit test
         Num
     };
 
-    static constexpr std::array<std::string_view, (int)ElectricBussType::Num> electricBussTypeNames = {
-        "AlternatingCurrent",
-        "DirectCurrentWithInverter",
-        "AlternatingCurrentWithStorage",
-        "DirectCurrentWithInverterDCStorage",
-        "DirectCurrentWithInverterACStorage"
-    };
-    static constexpr std::array<std::string_view, (int)ElectricBussType::Num> electricBussTypeNamesUC = {
-        "ALTERNATINGCURRENT",
-        "DIRECTCURRENTWITHINVERTER",
-        "ALTERNATINGCURRENTWITHSTORAGE",
-        "DIRECTCURRENTWITHINVERTERDCSTORAGE",
-        "DIRECTCURRENTWITHINVERTERACSTORAGE"
-    };
-  
+    static constexpr std::array<std::string_view, (int)ElectricBussType::Num> electricBussTypeNames = {"AlternatingCurrent",
+                                                                                                       "DirectCurrentWithInverter",
+                                                                                                       "AlternatingCurrentWithStorage",
+                                                                                                       "DirectCurrentWithInverterDCStorage",
+                                                                                                       "DirectCurrentWithInverterACStorage"};
+    static constexpr std::array<std::string_view, (int)ElectricBussType::Num> electricBussTypeNamesUC = {"ALTERNATINGCURRENT",
+                                                                                                         "DIRECTCURRENTWITHINVERTER",
+                                                                                                         "ALTERNATINGCURRENTWITHSTORAGE",
+                                                                                                         "DIRECTCURRENTWITHINVERTERDCSTORAGE",
+                                                                                                         "DIRECTCURRENTWITHINVERTERACSTORAGE"};
+
     std::unique_ptr<ElectricStorage> storageObj;
     std::unique_ptr<ACtoDCConverter> converterObj;
     std::unique_ptr<ElectricTransformer> transformerObj;
@@ -702,10 +694,10 @@ private: // data
     };
 
     static constexpr std::array<std::string_view, (int)GeneratorOpScheme::Num> generatorOpSchemeNames = {
-        "Baseload", "DemandLimit", "TrackElectrical", "TrackSchedule", "TrackMeter", "FollowThermal", "FollowThermalLimitElectrical" };
+        "Baseload", "DemandLimit", "TrackElectrical", "TrackSchedule", "TrackMeter", "FollowThermal", "FollowThermalLimitElectrical"};
     static constexpr std::array<std::string_view, (int)GeneratorOpScheme::Num> generatorOpSchemeNamesUC = {
-        "BASELOAD", "DEMANDLIMIT", "TRACKELECTRICAL", "TRACKSCHEDULE", "TRACKMETER", "FOLLOWTHERMAL", "FOLLOWTHERMALLIMITELECTRICAL" };
-  
+        "BASELOAD", "DEMANDLIMIT", "TRACKELECTRICAL", "TRACKSCHEDULE", "TRACKMETER", "FOLLOWTHERMAL", "FOLLOWTHERMALLIMITELECTRICAL"};
+
     enum class StorageOpScheme : int
     {
         Invalid = -1,
@@ -716,19 +708,15 @@ private: // data
         Num
     };
 
-    static constexpr std::array<std::string_view, (int)StorageOpScheme::Num> storageOpSchemeNames = {
-        "TrackFacilityElectricDemandStoreExcessOnSite",
-        "TrackMeterDemandStoreExcessOnSite",
-        "TrackChargeDischargeSchedules",
-        "FacilityDemandLeveling"
-    };
-    static constexpr std::array<std::string_view, (int)StorageOpScheme::Num> storageOpSchemeNamesUC = {
-        "TRACKFACILITYELECTRICDEMANDSTOREEXCESSONSITE",
-        "TRACKMETERDEMANDSTOREEXCESSONSITE",
-        "TRACKCHARGEDISCHARGESCHEDULES",
-        "FACILITYDEMANDLEVELING"
-    };
-  
+    static constexpr std::array<std::string_view, (int)StorageOpScheme::Num> storageOpSchemeNames = {"TrackFacilityElectricDemandStoreExcessOnSite",
+                                                                                                     "TrackMeterDemandStoreExcessOnSite",
+                                                                                                     "TrackChargeDischargeSchedules",
+                                                                                                     "FacilityDemandLeveling"};
+    static constexpr std::array<std::string_view, (int)StorageOpScheme::Num> storageOpSchemeNamesUC = {"TRACKFACILITYELECTRICDEMANDSTOREEXCESSONSITE",
+                                                                                                       "TRACKMETERDEMANDSTOREEXCESSONSITE",
+                                                                                                       "TRACKCHARGEDISCHARGESCHEDULES",
+                                                                                                       "FACILITYDEMANDLEVELING"};
+
     std::string name_;                     // user identifier
     std::string generatorListName_;        // List name of available generators
     GeneratorOpScheme genOperationScheme_; // Name of Operation Scheme

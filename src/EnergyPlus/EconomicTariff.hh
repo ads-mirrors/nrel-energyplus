@@ -146,7 +146,7 @@ namespace EconomicTariff {
         MULTIPLY,
         SUBTRACT,
         DIVIDE,
-        ABSOLUTE,
+        ABSOLUTEVALUE,
         INTEGER,
         SIGN,
         ROUND,
@@ -170,14 +170,12 @@ namespace EconomicTariff {
         NOTEQUAL,
         AND,
         OR,
-        NOT, 
-        ADD, 
+        NOT,
+        ADD,
         NOOP,
         Num
     };
 
-    
-  
     // not predefined variable (user defined name - many variables and all objects)
     // used in econvar%specific
     int constexpr varUserDefined(-1);
@@ -202,46 +200,46 @@ namespace EconomicTariff {
     enum class Native
     {
         Invalid = -1,
-        TotalEnergy, 
-        TotalDemand, 
-        PeakEnergy, 
-        PeakDemand, 
-        ShoulderEnergy, 
-        ShoulderDemand, 
-        OffPeakEnergy, 
-        OffPeakDemand, 
-        MidPeakEnergy, 
-        MidPeakDemand, 
-        PeakExceedsOffPeak, 
-        OffPeakExceedsPeak, 
-        PeakExceedsMidPeak, 
-        MidPeakExceedsPeak, 
-        PeakExceedsShoulder, 
-        ShoulderExceedsPeak, 
-        IsWinter, 
-        IsNotWinter, 
-        IsSpring, 
-        IsNotSpring, 
-        IsSummer, 
-        IsNotSummer, 
-        IsAutumn, 
-        IsNotAutumn, 
-        PeakAndShoulderEnergy, 
-        PeakAndShoulderDemand, 
-        PeakAndMidPeakEnergy, 
+        TotalEnergy,
+        TotalDemand,
+        PeakEnergy,
+        PeakDemand,
+        ShoulderEnergy,
+        ShoulderDemand,
+        OffPeakEnergy,
+        OffPeakDemand,
+        MidPeakEnergy,
+        MidPeakDemand,
+        PeakExceedsOffPeak,
+        OffPeakExceedsPeak,
+        PeakExceedsMidPeak,
+        MidPeakExceedsPeak,
+        PeakExceedsShoulder,
+        ShoulderExceedsPeak,
+        IsWinter,
+        IsNotWinter,
+        IsSpring,
+        IsNotSpring,
+        IsSummer,
+        IsNotSummer,
+        IsAutumn,
+        IsNotAutumn,
+        PeakAndShoulderEnergy,
+        PeakAndShoulderDemand,
+        PeakAndMidPeakEnergy,
         PeakAndMidPeakDemand,
-        ShoulderAndOffPeakEnergy, 
-        ShoulderAndOffPeakDemand, 
-        PeakAndOffPeakEnergy, 
+        ShoulderAndOffPeakEnergy,
+        ShoulderAndOffPeakDemand,
+        PeakAndOffPeakEnergy,
         PeakAndOffPeakDemand,
-        RealTimePriceCosts, 
+        RealTimePriceCosts,
         AboveCustomerBaseCosts,
-        BelowCustomerBaseCosts, 
+        BelowCustomerBaseCosts,
         AboveCustomerBaseEnergy,
         BelowCustomerBaseEnergy,
         Num
     };
-  
+
     int constexpr NumMonths(12);
     int constexpr maxNumBlk(15);
 
@@ -269,16 +267,16 @@ namespace EconomicTariff {
         Other,
         Num
     };
-  
+
     enum class VarUnitType
-      {
+    {
         Invalid = -1,
         Energy,
         Demand,
         Dimensionless,
         Currency,
         Num
-      };
+    };
 
     // Types
 
@@ -296,20 +294,20 @@ namespace EconomicTariff {
         int specific;    // the specific type of variable - see enumerated lists
         // the following items are used in determinging the dependency relationship of variables
         // and consist of an operator and a list of variables.
-        int cntMeDependOn; // count of items in depend this line depends upon
-        Op Operator = Op::Invalid;      // operator used in equation (usually opSUM or opNOOP)
-        int firstOperand;  // first item in the operand array
-        int lastOperand;   // last item in the operand array
-        bool activeNow;    // flag if the econVar is used in the current tariff
-        bool isEvaluated;  // flag if the economics object that results in this variable
+        int cntMeDependOn;         // count of items in depend this line depends upon
+        Op Operator = Op::Invalid; // operator used in equation (usually opSUM or opNOOP)
+        int firstOperand;          // first item in the operand array
+        int lastOperand;           // last item in the operand array
+        bool activeNow;            // flag if the econVar is used in the current tariff
+        bool isEvaluated;          // flag if the economics object that results in this variable
         // has already been evaulated
-        bool isReported; // flag if the econVar has been reported in the output file
+        bool isReported;                                // flag if the econVar has been reported in the output file
         VarUnitType varUnitType = VarUnitType::Invalid; // variable unit type: energy, demand, dimensionless, currency
 
         // Default Constructor
         EconVarType()
             : tariffIndx(0), kindOfObj(ObjType::Invalid), index(0), values(NumMonths, 0.0), isArgument(false), isAssigned(false), specific(0),
-              cntMeDependOn(0), firstOperand(0), lastOperand(0), activeNow(false), isEvaluated(false), isReported(false) 
+              cntMeDependOn(0), firstOperand(0), lastOperand(0), activeNow(false), isEvaluated(false), isReported(false)
         {
         }
     };
@@ -340,7 +338,7 @@ namespace EconomicTariff {
         Sched::Schedule *baseUseSched = nullptr; // index to the baseline use schedule
         std::string groupName;                   // name of the group
         std::string monetaryUnit;                // text string representing monetary unit, usually $
-        BuySell buyOrSell;                           // enumerated choice index of the buy or sell options
+        BuySell buyOrSell;                       // enumerated choice index of the buy or sell options
         // index to the first and last category variables
         int firstCategory; // first category referenced
         int lastCategory;  // last category referenced
@@ -373,12 +371,10 @@ namespace EconomicTariff {
 
         // Default Constructor
         TariffType()
-            : reportMeterIndx(0), convChoice(EconConv::USERDEF), energyConv(0.0), demandConv(0.0),
-              demandWindow(DemandWindow::Invalid), demWinTime(0.0), monthChgVal(0.0), monthChgPt(0), minMonthChgVal(0.0), minMonthChgPt(0),
-              firstCategory(0), lastCategory(0),
-              firstNative(0), lastNative(0),
-              gatherEnergy(NumMonths, {0.0,0.0,0.0,0.0}), gatherDemand(NumMonths, {0.0,0.0,0.0,0.0}), collectTime(0.0), collectEnergy(0.0),
-              RTPcost(NumMonths, 0.0), RTPaboveBaseCost(NumMonths, 0.0), RTPbelowBaseCost(NumMonths, 0.0),
+            : reportMeterIndx(0), convChoice(EconConv::USERDEF), energyConv(0.0), demandConv(0.0), demandWindow(DemandWindow::Invalid),
+              demWinTime(0.0), monthChgVal(0.0), monthChgPt(0), minMonthChgVal(0.0), minMonthChgPt(0), firstCategory(0), lastCategory(0),
+              firstNative(0), lastNative(0), gatherEnergy(NumMonths, {0.0, 0.0, 0.0, 0.0}), gatherDemand(NumMonths, {0.0, 0.0, 0.0, 0.0}),
+              collectTime(0.0), collectEnergy(0.0), RTPcost(NumMonths, 0.0), RTPaboveBaseCost(NumMonths, 0.0), RTPbelowBaseCost(NumMonths, 0.0),
               RTPaboveBaseEnergy(NumMonths, 0.0), RTPbelowBaseEnergy(NumMonths, 0.0), seasonForMonth(NumMonths, Season::Invalid), isQualified(false),
               ptDisqualifier(0), isSelected(false), totalAnnualCost(0.0), totalAnnualEnergy(0.0)
         {
@@ -394,14 +390,13 @@ namespace EconomicTariff {
         bool isMaximum;      // indicator if maximum test otherwise minimum
         Real64 thresholdVal; // value of the threshold
         int thresholdPt;     // pointer to the variable holding the values
-        Season season;          // enumerated list of the kind of season
+        Season season;       // enumerated list of the kind of season
         bool isConsecutive;  // indicator if consecutive months otherwise count
         int numberOfMonths;  // number of months the test must be good for
 
         // Default Constructor
         QualifyType()
-            : namePt(0), tariffIndx(0), sourcePt(0), isMaximum(false), thresholdVal(0.0), thresholdPt(0), isConsecutive(false),
-              numberOfMonths(0)
+            : namePt(0), tariffIndx(0), sourcePt(0), isMaximum(false), thresholdVal(0.0), thresholdPt(0), isConsecutive(false), numberOfMonths(0)
         {
         }
     };
@@ -409,13 +404,13 @@ namespace EconomicTariff {
     struct ChargeSimpleType
     {
         // Members
-        int namePt;        // index of the name and variable in the variable array
-        int tariffIndx;    // index of the tariff name in the tariff array
-        int sourcePt;      // index of the variable in the variable array
-        Season season = Season::Invalid;        // enumerated list of the kind of season
-        int categoryPt;    // index of the category in the variable array
-        Real64 costPerVal; // cost per unit value
-        int costPerPt;     // cost per unit index in the variable array (0 is flag for no variable)
+        int namePt;                      // index of the name and variable in the variable array
+        int tariffIndx;                  // index of the tariff name in the tariff array
+        int sourcePt;                    // index of the variable in the variable array
+        Season season = Season::Invalid; // enumerated list of the kind of season
+        int categoryPt;                  // index of the category in the variable array
+        Real64 costPerVal;               // cost per unit value
+        int costPerPt;                   // cost per unit index in the variable array (0 is flag for no variable)
 
         // Default Constructor
         ChargeSimpleType() : namePt(0), tariffIndx(0), sourcePt(0), categoryPt(0), costPerVal(0.0), costPerPt(0)
@@ -426,19 +421,19 @@ namespace EconomicTariff {
     struct ChargeBlockType
     {
         // Members
-        int namePt;                 // index of the name and variable in the variable array
-        int tariffIndx;             // index of the tariff name in the tariff array
-        int sourcePt;               // index of the variable in the variable array
-        Season season = Season::Invalid;                 // enumerated list of the kind of season
-        int categoryPt;             // index of the category in the variable array
-        int remainingPt;            // index of the remaining into variable in the variable array
-        Real64 blkSzMultVal;        // block size multiplier value
-        int blkSzMultPt;            // block size variable in the variable array (0 is flag for no variable)
-        int numBlk;                 // number of blocks used
-        Array1D<Real64> blkSzVal;   // array of block size values
-        Array1D_int blkSzPt;        // block size variables index to the variable array (0 is no variable)
-        Array1D<Real64> blkCostVal; // array of block cost values
-        Array1D_int blkCostPt;      // block cost variables index to the variable array (0 is no variable)
+        int namePt;                      // index of the name and variable in the variable array
+        int tariffIndx;                  // index of the tariff name in the tariff array
+        int sourcePt;                    // index of the variable in the variable array
+        Season season = Season::Invalid; // enumerated list of the kind of season
+        int categoryPt;                  // index of the category in the variable array
+        int remainingPt;                 // index of the remaining into variable in the variable array
+        Real64 blkSzMultVal;             // block size multiplier value
+        int blkSzMultPt;                 // block size variable in the variable array (0 is flag for no variable)
+        int numBlk;                      // number of blocks used
+        Array1D<Real64> blkSzVal;        // array of block size values
+        Array1D_int blkSzPt;             // block size variables index to the variable array (0 is no variable)
+        Array1D<Real64> blkCostVal;      // array of block cost values
+        Array1D_int blkCostPt;           // block cost variables index to the variable array (0 is no variable)
 
         // Default Constructor
         ChargeBlockType()
@@ -451,21 +446,19 @@ namespace EconomicTariff {
     struct RatchetType
     {
         // Members
-        int namePt;           // index of the name and variable in the variable array
-        int tariffIndx;       // index of the tariff name in the tariff array
-        int baselinePt;       // index of the baseline variable in the variable array
-        int adjustmentPt;     // index fo the adjustment variable in the variable array
-        Season seasonFrom = Season::Invalid;       // enumerated list of the kind of season
-        Season seasonTo = Season::Invalid;         // enumerated list of the kind of season
-        Real64 multiplierVal; // value of the ratchet multiplier
-        int multiplierPt;     // multiplier variable in the variable array (0 for no variable)
-        Real64 offsetVal;     // value of the ratchet offset
-        int offsetPt;         // offset variable in the variable array (0 for no variable)
+        int namePt;                          // index of the name and variable in the variable array
+        int tariffIndx;                      // index of the tariff name in the tariff array
+        int baselinePt;                      // index of the baseline variable in the variable array
+        int adjustmentPt;                    // index fo the adjustment variable in the variable array
+        Season seasonFrom = Season::Invalid; // enumerated list of the kind of season
+        Season seasonTo = Season::Invalid;   // enumerated list of the kind of season
+        Real64 multiplierVal;                // value of the ratchet multiplier
+        int multiplierPt;                    // multiplier variable in the variable array (0 for no variable)
+        Real64 offsetVal;                    // value of the ratchet offset
+        int offsetPt;                        // offset variable in the variable array (0 for no variable)
 
         // Default Constructor
-        RatchetType()
-            : namePt(0), tariffIndx(0), baselinePt(0), adjustmentPt(0), multiplierVal(0.0), multiplierPt(0),
-              offsetVal(0.0), offsetPt(0)
+        RatchetType() : namePt(0), tariffIndx(0), baselinePt(0), adjustmentPt(0), multiplierVal(0.0), multiplierPt(0), offsetVal(0.0), offsetPt(0)
         {
         }
     };
@@ -487,7 +480,7 @@ namespace EconomicTariff {
     struct StackType
     {
         // Members
-        int varPt = 0.0;              // pointer to item in specific array
+        int varPt = 0.0;        // pointer to item in specific array
         Array1D<Real64> values; // values
 
         StackType() : varPt(0.0), values(NumMonths, 0.0)
@@ -503,14 +496,13 @@ namespace EconomicTariff {
         Var,
         EOL
     };
-  
+
     struct Step
     {
         StepType type;
         Op op;
         int varNum;
     };
-  
 
     //======================================================================================================================
     //======================================================================================================================
@@ -662,11 +654,10 @@ struct EconomicTariffData : BaseGlobalStruct
     int numRatchet = 0;
     int numComputation = 0;
 
-   
     // list of pointers to variable, 0 end of line, negative indicate operations
     Array1D<EconomicTariff::Step> steps;
     Array1D<EconomicTariff::Step> stepsCopy;
-  
+
     int numSteps = 0;
     int sizeSteps = 0;
 

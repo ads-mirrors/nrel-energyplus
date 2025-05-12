@@ -151,45 +151,35 @@ namespace LowTempRadiantSystem {
     // Standard, run-of-the-mill variables...
 
     // Object Data
-    constexpr std::array<std::string_view, (int)CtrlType::Num> ctrlTypeNames = {
-        "MeanAirTemperature",
-        "MeanRadiantTemperature",
-        "OperativeTemperature",
-        "OutdoorDryBulbTemperature",
-        "OutdoorWetBulbTemperature",
-        "SurfaceFaceTemperature" ,
-        "SurfaceInteriorTemperature",
-        "RunningMeanOutdoorDryBulbTemperature"
-    };
-    constexpr std::array<std::string_view, (int)CtrlType::Num> ctrlTypeNamesUC = {
-        "MEANAIRTEMPERATURE",
-        "MEANRADIANTTEMPERATURE",
-        "OPERATIVETEMPERATURE",
-        "OUTDOORDRYBULBTEMPERATURE",
-        "OUTDOORWETBULBTEMPERATURE",
-        "SURFACEFACETEMPERATURE" ,
-        "SURFACEINTERIORTEMPERATURE",
-        "RUNNINGMEANOUTDOORDRYBULBTEMPERATURE"
-    };
-  
-    constexpr std::array<std::string_view, (int)SetpointType::Num> setpointTypeNames = {
-        "HalfFlowPower", "ZeroFlowPower" };
-    constexpr std::array<std::string_view, (int)SetpointType::Num> setpointTypeNamesUC = {
-        "HALFFLOWPOWER", "ZEROFLOWPOWER" };
+    constexpr std::array<std::string_view, (int)CtrlType::Num> ctrlTypeNames = {"MeanAirTemperature",
+                                                                                "MeanRadiantTemperature",
+                                                                                "OperativeTemperature",
+                                                                                "OutdoorDryBulbTemperature",
+                                                                                "OutdoorWetBulbTemperature",
+                                                                                "SurfaceFaceTemperature",
+                                                                                "SurfaceInteriorTemperature",
+                                                                                "RunningMeanOutdoorDryBulbTemperature"};
+    constexpr std::array<std::string_view, (int)CtrlType::Num> ctrlTypeNamesUC = {"MEANAIRTEMPERATURE",
+                                                                                  "MEANRADIANTTEMPERATURE",
+                                                                                  "OPERATIVETEMPERATURE",
+                                                                                  "OUTDOORDRYBULBTEMPERATURE",
+                                                                                  "OUTDOORWETBULBTEMPERATURE",
+                                                                                  "SURFACEFACETEMPERATURE",
+                                                                                  "SURFACEINTERIORTEMPERATURE",
+                                                                                  "RUNNINGMEANOUTDOORDRYBULBTEMPERATURE"};
 
-    constexpr std::array<std::string_view, (int)FluidToSlabHeatTransferType::Num> fluidToSlabHeatTransferTypeNames = {
-        "ConvectionOnly", "ISOStandard" };
-    constexpr std::array<std::string_view, (int)FluidToSlabHeatTransferType::Num> fluidToSlabHeatTransferTypeNamesUC = {
-        "CONVECTIONONLY", "ISOSTANDARD" };
-  
-    constexpr std::array<std::string_view, (int)CondCtrlType::Num> condCtrlTypeNamesUC = {
-        "OFF", "SIMPLEOFF", "VARIABLEOFF" };
+    constexpr std::array<std::string_view, (int)SetpointType::Num> setpointTypeNames = {"HalfFlowPower", "ZeroFlowPower"};
+    constexpr std::array<std::string_view, (int)SetpointType::Num> setpointTypeNamesUC = {"HALFFLOWPOWER", "ZEROFLOWPOWER"};
 
-    constexpr std::array<std::string_view, (int)CircuitCalc::Num> circuitCalcNames = {
-        "OnePerSurface", "CalculateFromCircuitLength" };
-    constexpr std::array<std::string_view, (int)CircuitCalc::Num> circuitCalcNamesUC = {
-        "ONEPERSURFACE", "CALCULATEFROMCIRCUITLENGTH" };
-  
+    constexpr std::array<std::string_view, (int)FluidToSlabHeatTransferType::Num> fluidToSlabHeatTransferTypeNames = {"ConvectionOnly",
+                                                                                                                      "ISOStandard"};
+    constexpr std::array<std::string_view, (int)FluidToSlabHeatTransferType::Num> fluidToSlabHeatTransferTypeNamesUC = {"CONVECTIONONLY",
+                                                                                                                        "ISOSTANDARD"};
+
+    constexpr std::array<std::string_view, (int)CondCtrlType::Num> condCtrlTypeNamesUC = {"OFF", "SIMPLEOFF", "VARIABLEOFF"};
+
+    constexpr std::array<std::string_view, (int)CircuitCalc::Num> circuitCalcNames = {"OnePerSurface", "CalculateFromCircuitLength"};
+    constexpr std::array<std::string_view, (int)CircuitCalc::Num> circuitCalcNamesUC = {"ONEPERSURFACE", "CALCULATEFROMCIRCUITLENGTH"};
 
     void SimLowTempRadiantSystem(EnergyPlusData &state,
                                  std::string_view CompName,     // name of the low temperature radiant system
@@ -205,7 +195,7 @@ namespace LowTempRadiantSystem {
         // Using/Aliasing
 
         // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-        int RadSysNum;                               // Radiant system number/index in local derived types
+        int RadSysNum;         // Radiant system number/index in local derived types
         SystemType systemType; // Type of radiant system: hydronic, constant flow, or electric
         bool InitErrorFound(false);
 
@@ -276,9 +266,7 @@ namespace LowTempRadiantSystem {
                 ShowFatalError(state, format("SimLowTempRadiantSystem: Illegal system type for system {}", CompName));
             }
 
-            if ((systemType == SystemType::Hydronic) ||
-                (systemType == SystemType::ConstantFlow) ||
-                (systemType == SystemType::Electric)) {
+            if ((systemType == SystemType::Hydronic) || (systemType == SystemType::ConstantFlow) || (systemType == SystemType::Electric)) {
                 baseSystem->calculateLowTemperatureRadiantSystem(state, LoadMet);
                 baseSystem->updateLowTemperatureRadiantSystemSurfaces(state);
                 baseSystem->updateLowTemperatureRadiantSystem(state); // Nothing to update for electric systems
@@ -475,7 +463,8 @@ namespace LowTempRadiantSystem {
 
             if (lAlphaBlanks(2)) {
                 thisRadSysDesign.FluidToSlabHeatTransfer = FluidToSlabHeatTransferType::ConvectionOnly;
-            } else if ((thisRadSysDesign.FluidToSlabHeatTransfer = static_cast<FluidToSlabHeatTransferType>(getEnumValue(fluidToSlabHeatTransferTypeNamesUC, Alphas(2)))) == FluidToSlabHeatTransferType::Invalid) {
+            } else if ((thisRadSysDesign.FluidToSlabHeatTransfer = static_cast<FluidToSlabHeatTransferType>(
+                            getEnumValue(fluidToSlabHeatTransferTypeNamesUC, Alphas(2)))) == FluidToSlabHeatTransferType::Invalid) {
                 ShowWarningInvalidKey(state, eoh, cAlphaFields(2), Alphas(2), "ConvectionOnly");
                 thisRadSysDesign.FluidToSlabHeatTransfer = FluidToSlabHeatTransferType::ConvectionOnly;
             }
@@ -492,15 +481,16 @@ namespace LowTempRadiantSystem {
                 ShowWarningInvalidKey(state, eoh, cAlphaFields(3), Alphas(3), "MeanAirTemperature");
                 thisRadSysDesign.VarFlowControlType = CtrlType::MAT;
             }
-            
+
             // Process the setpoint type
             if (lAlphaBlanks(4)) {
                 thisRadSysDesign.VarFlowSetpointType = SetpointType::HalfFlowPower;
-            } else if ((thisRadSysDesign.VarFlowSetpointType = static_cast<SetpointType>(getEnumValue(setpointTypeNamesUC, Alphas(4)))) == SetpointType::Invalid) {
+            } else if ((thisRadSysDesign.VarFlowSetpointType = static_cast<SetpointType>(getEnumValue(setpointTypeNamesUC, Alphas(4)))) ==
+                       SetpointType::Invalid) {
                 ShowWarningInvalidKey(state, eoh, cAlphaFields(4), Alphas(4), "HalfFlowPower");
                 thisRadSysDesign.VarFlowSetpointType = SetpointType::HalfFlowPower;
             }
-            
+
             // Refactor everything below to Alphas as HCMethod, etc
 
             // Determine Low Temp Radiant heating design capacity sizing method
@@ -612,10 +602,11 @@ namespace LowTempRadiantSystem {
             }
 
             if (lAlphaBlanks(9)) {
-              thisRadSysDesign.condCtrlType = CondCtrlType::SimpleOff;
-            } else if ((thisRadSysDesign.condCtrlType = static_cast<CondCtrlType>(getEnumValue(condCtrlTypeNamesUC, Alphas(9)))) == CondCtrlType::Invalid) {
-              ShowWarningInvalidKey(state, eoh, cAlphaFields(9), Alphas(9), "SimpleOff");
-              thisRadSysDesign.condCtrlType = CondCtrlType::SimpleOff;
+                thisRadSysDesign.condCtrlType = CondCtrlType::SimpleOff;
+            } else if ((thisRadSysDesign.condCtrlType = static_cast<CondCtrlType>(getEnumValue(condCtrlTypeNamesUC, Alphas(9)))) ==
+                       CondCtrlType::Invalid) {
+                ShowWarningInvalidKey(state, eoh, cAlphaFields(9), Alphas(9), "SimpleOff");
+                thisRadSysDesign.condCtrlType = CondCtrlType::SimpleOff;
             }
 
             thisRadSysDesign.CondDewPtDeltaT = Numbers(10);
@@ -848,7 +839,8 @@ namespace LowTempRadiantSystem {
 
             if (lAlphaBlanks(10)) {
                 thisRadSys.NumCircCalcMethod = CircuitCalc::OneCircuit;
-            } else if ((thisRadSys.NumCircCalcMethod = static_cast<CircuitCalc>(getEnumValue(circuitCalcNamesUC, Alphas(10)))) == CircuitCalc::Invalid) {
+            } else if ((thisRadSys.NumCircCalcMethod = static_cast<CircuitCalc>(getEnumValue(circuitCalcNamesUC, Alphas(10)))) ==
+                       CircuitCalc::Invalid) {
                 ShowWarningInvalidKey(state, eoh, cAlphaFields(10), Alphas(10), "OnePerSurface");
                 thisRadSys.NumCircCalcMethod = CircuitCalc::OneCircuit;
             }
@@ -899,7 +891,8 @@ namespace LowTempRadiantSystem {
 
             if (lAlphaBlanks(2)) {
                 thisRadSysDesign.FluidToSlabHeatTransfer = FluidToSlabHeatTransferType::ConvectionOnly;
-            } else if ((thisRadSysDesign.FluidToSlabHeatTransfer = static_cast<FluidToSlabHeatTransferType>(getEnumValue(fluidToSlabHeatTransferTypeNamesUC, Alphas(2)))) == FluidToSlabHeatTransferType::Invalid) {
+            } else if ((thisRadSysDesign.FluidToSlabHeatTransfer = static_cast<FluidToSlabHeatTransferType>(
+                            getEnumValue(fluidToSlabHeatTransferTypeNamesUC, Alphas(2)))) == FluidToSlabHeatTransferType::Invalid) {
                 ShowWarningInvalidKey(state, eoh, cAlphaFields(2), Alphas(2), "ConvectionOnly");
                 thisRadSysDesign.FluidToSlabHeatTransfer = FluidToSlabHeatTransferType::ConvectionOnly;
             }
@@ -911,11 +904,12 @@ namespace LowTempRadiantSystem {
             // Process the temperature control type
             if (lAlphaBlanks(3)) {
                 thisRadSysDesign.ConstFlowControlType = CtrlType::MAT;
-            } else if ((thisRadSysDesign.ConstFlowControlType = static_cast<CtrlType>(getEnumValue(ctrlTypeNamesUC, Alphas(3)))) == CtrlType::Invalid) {
+            } else if ((thisRadSysDesign.ConstFlowControlType = static_cast<CtrlType>(getEnumValue(ctrlTypeNamesUC, Alphas(3)))) ==
+                       CtrlType::Invalid) {
                 ShowWarningInvalidKey(state, eoh, cAlphaFields(3), Alphas(3), "MeanAirTemperature");
                 thisRadSysDesign.ConstFlowControlType = CtrlType::MAT;
             } else if (thisRadSysDesign.ConstFlowControlType == CtrlType::RunningMeanODB) {
-               state.dataLowTempRadSys->anyRadiantSystemUsingRunningMeanAverage = true;
+                state.dataLowTempRadSys->anyRadiantSystemUsingRunningMeanAverage = true;
             }
 
             thisRadSysDesign.runningMeanOutdoorAirTemperatureWeightingFactor = Numbers(4);
@@ -923,10 +917,11 @@ namespace LowTempRadiantSystem {
             thisRadSysDesign.FracMotorLossToFluid = Numbers(6);
 
             if (lAlphaBlanks(4)) {
-              thisRadSysDesign.condCtrlType = CondCtrlType::SimpleOff;
-            } else if ((thisRadSysDesign.condCtrlType = static_cast<CondCtrlType>(getEnumValue(condCtrlTypeNamesUC, Alphas(4)))) == CondCtrlType::Invalid) {
-              ShowWarningInvalidKey(state, eoh, cAlphaFields(4), Alphas(4), "SimpleOff");
-              thisRadSysDesign.condCtrlType = CondCtrlType::SimpleOff;
+                thisRadSysDesign.condCtrlType = CondCtrlType::SimpleOff;
+            } else if ((thisRadSysDesign.condCtrlType = static_cast<CondCtrlType>(getEnumValue(condCtrlTypeNamesUC, Alphas(4)))) ==
+                       CondCtrlType::Invalid) {
+                ShowWarningInvalidKey(state, eoh, cAlphaFields(4), Alphas(4), "SimpleOff");
+                thisRadSysDesign.condCtrlType = CondCtrlType::SimpleOff;
             }
 
             thisRadSysDesign.CondDewPtDeltaT = Numbers(7);
@@ -1152,7 +1147,8 @@ namespace LowTempRadiantSystem {
 
             if (lAlphaBlanks(19)) {
                 thisCFloSys.NumCircCalcMethod = CircuitCalc::OneCircuit;
-            } else if ((thisCFloSys.NumCircCalcMethod = static_cast<CircuitCalc>(getEnumValue(circuitCalcNamesUC, Alphas(19)))) == CircuitCalc::Invalid) {
+            } else if ((thisCFloSys.NumCircCalcMethod = static_cast<CircuitCalc>(getEnumValue(circuitCalcNamesUC, Alphas(19)))) ==
+                       CircuitCalc::Invalid) {
                 ShowWarningInvalidKey(state, eoh, cAlphaFields(19), Alphas(19), "OnePerSurface");
                 thisCFloSys.NumCircCalcMethod = CircuitCalc::OneCircuit;
             }
@@ -1334,7 +1330,8 @@ namespace LowTempRadiantSystem {
             // Process the setpoint type
             if (lAlphaBlanks(7)) {
                 thisElecSys.setpointType = SetpointType::HalfFlowPower;
-            } else if ((thisElecSys.setpointType = static_cast<SetpointType>(getEnumValue(setpointTypeNamesUC, Alphas(7)))) == SetpointType::Invalid) {
+            } else if ((thisElecSys.setpointType = static_cast<SetpointType>(getEnumValue(setpointTypeNamesUC, Alphas(7)))) ==
+                       SetpointType::Invalid) {
                 ShowWarningInvalidKey(state, eoh, cAlphaFields(7), Alphas(7), "HalfFlowPower");
                 thisElecSys.setpointType = SetpointType::HalfFlowPower;
             }
@@ -1535,7 +1532,7 @@ namespace LowTempRadiantSystem {
             SetupOutputVariable(state,
                                 "Zone Radiant HVAC Operation Mode",
                                 Constant::Units::None,
-                                (int&)thisHydrSys.opMode,
+                                (int &)thisHydrSys.opMode,
                                 OutputProcessor::TimeStepType::System,
                                 OutputProcessor::StoreType::Average,
                                 thisHydrSys.Name);
@@ -1710,7 +1707,7 @@ namespace LowTempRadiantSystem {
             SetupOutputVariable(state,
                                 "Zone Radiant HVAC Operation Mode",
                                 Constant::Units::None,
-                                (int&)thisCFloSys.opMode,
+                                (int &)thisCFloSys.opMode,
                                 OutputProcessor::TimeStepType::System,
                                 OutputProcessor::StoreType::Average,
                                 thisCFloSys.Name);
@@ -1792,8 +1789,6 @@ namespace LowTempRadiantSystem {
                                 OutputProcessor::EndUseCat::HeatingCoils);
         }
     }
-
-
 
     void RadiantSystemBaseData::errorCheckZonesAndConstructions(EnergyPlusData &state, bool &errorsFound)
     {
@@ -1949,8 +1944,9 @@ namespace LowTempRadiantSystem {
 
             Real64 MotorEffic(0.0);
             if (systemType == SystemType::ConstantFlow) {
-                // Is there a reason why we were making a copy of this object? 
-                MotorEffic = state.dataLowTempRadSys->CflowRadiantSysDesign(state.dataLowTempRadSys->CFloRadSys(RadSysNum).DesignObjectPtr).MotorEffic; 
+                // Is there a reason why we were making a copy of this object?
+                MotorEffic =
+                    state.dataLowTempRadSys->CflowRadiantSysDesign(state.dataLowTempRadSys->CFloRadSys(RadSysNum).DesignObjectPtr).MotorEffic;
             }
 
             // Check pump parameters for constant flow hydronic radiant systems
@@ -2261,8 +2257,7 @@ namespace LowTempRadiantSystem {
                 state.dataLowTempRadSys->MyEnvrnFlagHydr(RadSysNum) = false;
             }
         } // NumOfHydrLowTempRadSys > 0
-        if (!state.dataGlobal->BeginEnvrnFlag && systemType == SystemType::Hydronic)
-            state.dataLowTempRadSys->MyEnvrnFlagHydr(RadSysNum) = true;
+        if (!state.dataGlobal->BeginEnvrnFlag && systemType == SystemType::Hydronic) state.dataLowTempRadSys->MyEnvrnFlagHydr(RadSysNum) = true;
 
         if (systemType == SystemType::ConstantFlow) {
             if (state.dataGlobal->BeginEnvrnFlag && state.dataLowTempRadSys->MyEnvrnFlagCFlo(RadSysNum)) {
@@ -2310,8 +2305,7 @@ namespace LowTempRadiantSystem {
             }
 
         } // NumOfCFloLowTempRadSys > 0
-        if (!state.dataGlobal->BeginEnvrnFlag && systemType == SystemType::ConstantFlow)
-            state.dataLowTempRadSys->MyEnvrnFlagCFlo(RadSysNum) = true;
+        if (!state.dataGlobal->BeginEnvrnFlag && systemType == SystemType::ConstantFlow) state.dataLowTempRadSys->MyEnvrnFlagCFlo(RadSysNum) = true;
 
         if (systemType == SystemType::Electric) {
             if (state.dataGlobal->BeginEnvrnFlag && state.dataLowTempRadSys->MyEnvrnFlagElec(RadSysNum)) {
@@ -2322,8 +2316,7 @@ namespace LowTempRadiantSystem {
             }
             state.dataLowTempRadSys->MyEnvrnFlagElec(RadSysNum) = false;
         }
-        if (!state.dataGlobal->BeginEnvrnFlag && systemType == SystemType::Electric)
-            state.dataLowTempRadSys->MyEnvrnFlagElec(RadSysNum) = true;
+        if (!state.dataGlobal->BeginEnvrnFlag && systemType == SystemType::Electric) state.dataLowTempRadSys->MyEnvrnFlagElec(RadSysNum) = true;
 
         if (systemType == SystemType::ConstantFlow) {
 
@@ -4378,8 +4371,8 @@ namespace LowTempRadiantSystem {
                 SysWaterInTemp = coldNode.Temp;
                 state.dataLowTempRadSys->CFloCondIterNum = 1;
                 while ((state.dataLowTempRadSys->CFloCondIterNum <= 1) ||
-                       ((state.dataLowTempRadSys->CFloCondIterNum <= 2) &&
-                        (ConstantFlowDesignDataObject.condCtrlType == CondCtrlType::VariedOff) && (state.dataLowTempRadSys->VarOffCond))) {
+                       ((state.dataLowTempRadSys->CFloCondIterNum <= 2) && (ConstantFlowDesignDataObject.condCtrlType == CondCtrlType::VariedOff) &&
+                        (state.dataLowTempRadSys->VarOffCond))) {
                     Iteration = false;
 
                     if ((SysWaterInTemp <= state.dataLowTempRadSys->LoopReqTemp) && (coldNode.MassFlowRateMaxAvail >= this->WaterMassFlowRate)) {
@@ -4469,8 +4462,7 @@ namespace LowTempRadiantSystem {
                             this->WaterRecircRate = this->WaterMassFlowRate - this->WaterInjectionRate;
                             this->WaterInletTemp = SysWaterInTemp + PumpTempRise;
                             Iteration = true;
-                            this->calculateLowTemperatureRadiantSystemComponents(
-                                state, LoopInNode, Iteration, LoadMet, SystemType::ConstantFlow);
+                            this->calculateLowTemperatureRadiantSystemComponents(state, LoopInNode, Iteration, LoadMet, SystemType::ConstantFlow);
                         } else {
                             this->WaterInjectionRate = InjectFlowRate;
                             this->WaterRecircRate = this->WaterMassFlowRate - this->WaterInjectionRate;

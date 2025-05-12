@@ -795,8 +795,8 @@ ElectPowerLoadCenter::ElectPowerLoadCenter(EnergyPlusData &state, int const obje
         // user selected storage operation scheme
         if (s_ipsc->lAlphaFieldBlanks(10)) {
             storageScheme_ = StorageOpScheme::FacilityDemandStoreExcessOnSite;
-        } else if ((storageScheme_ = static_cast<StorageOpScheme>(getEnumValue(storageOpSchemeNamesUC, s_ipsc->cAlphaArgs(10))))
-                   == StorageOpScheme::Invalid) {
+        } else if ((storageScheme_ = static_cast<StorageOpScheme>(getEnumValue(storageOpSchemeNamesUC, s_ipsc->cAlphaArgs(10)))) ==
+                   StorageOpScheme::Invalid) {
             ShowSevereInvalidKey(state, eoh, s_ipsc->cAlphaFieldNames(10), s_ipsc->cAlphaArgs(10));
             errorsFound = true;
         }
@@ -2299,19 +2299,17 @@ void GeneratorController::simGeneratorGetPowerOutput(EnergyPlusData &state,
     // check if generator production has gone wrong and is negative, reset to zero and warn
     if (electricPowerOutput < 0.0) {
         if (errCountNegElectProd_ == 0) {
-            ShowWarningMessage(state,
-                               format("{} named {} is producing negative electric power, check generator inputs.",
-                                      generatorTypeNames[(int)generatorType],
-                                      name));
+            ShowWarningMessage(
+                state,
+                format("{} named {} is producing negative electric power, check generator inputs.", generatorTypeNames[(int)generatorType], name));
             ShowContinueError(state, format("Electric power production rate ={:.4R}", electricPowerOutput));
             ShowContinueError(state, "The power will be set to zero, and the simulation continues... ");
         }
-        ShowRecurringWarningErrorAtEnd(
-            state,
-            format("{} named {} is producing negative electric power ", generatorTypeNames[(int)generatorType], name),
-            errCountNegElectProd_,
-            electricPowerOutput,
-            electricPowerOutput);
+        ShowRecurringWarningErrorAtEnd(state,
+                                       format("{} named {} is producing negative electric power ", generatorTypeNames[(int)generatorType], name),
+                                       errCountNegElectProd_,
+                                       electricPowerOutput,
+                                       electricPowerOutput);
         electricPowerOutput = 0.0;
     }
 }
@@ -2870,7 +2868,7 @@ ACtoDCConverter::ACtoDCConverter(EnergyPlusData &state, std::string const &objec
         case ConverterModelType::Invalid: {
             // do nothing
         } break;
-          
+
         default:
             assert(false);
         } // end switch
@@ -4454,8 +4452,8 @@ ElectricTransformer::ElectricTransformer(EnergyPlusData &state, std::string cons
 
         if (s_ipsc->lAlphaFieldBlanks(3)) {
             usageMode_ = TransformerUse::PowerInFromGrid; // default
-        } else if ((usageMode_ = static_cast<TransformerUse>(getEnumValue(transformerUseNamesUC, s_ipsc->cAlphaArgs(3))))
-                   == TransformerUse::Invalid) {
+        } else if ((usageMode_ = static_cast<TransformerUse>(getEnumValue(transformerUseNamesUC, s_ipsc->cAlphaArgs(3)))) ==
+                   TransformerUse::Invalid) {
             ShowSevereInvalidKey(state, eoh, s_ipsc->cAlphaFieldNames(3), s_ipsc->cAlphaArgs(3));
             errorsFound = true;
         }
@@ -4486,8 +4484,7 @@ ElectricTransformer::ElectricTransformer(EnergyPlusData &state, std::string cons
         tempRise_ = s_ipsc->rNumericArgs(4);
         eddyFrac_ = s_ipsc->rNumericArgs(5);
 
-        performanceInputMode_ = static_cast<TransformerPerformanceInput>(getEnumValue(transformerPerformanceInputNamesUC,
-                                                                                      s_ipsc->cAlphaArgs(6)));
+        performanceInputMode_ = static_cast<TransformerPerformanceInput>(getEnumValue(transformerPerformanceInputNamesUC, s_ipsc->cAlphaArgs(6)));
         if (performanceInputMode_ == TransformerPerformanceInput::Invalid) {
             ShowSevereInvalidKey(state, eoh, s_ipsc->cAlphaFieldNames(6), s_ipsc->cAlphaArgs(6));
             errorsFound = true;
@@ -4522,7 +4519,7 @@ ElectricTransformer::ElectricTransformer(EnergyPlusData &state, std::string cons
 
         BooleanSwitch bs = getYesNoValue(s_ipsc->cAlphaArgs(7));
         if (bs != BooleanSwitch::Invalid) {
-            considerLosses_ = static_cast<bool>(bs); 
+            considerLosses_ = static_cast<bool>(bs);
         } else if (usageMode_ == TransformerUse::PowerInFromGrid) {
             ShowSevereInvalidBool(state, eoh, s_ipsc->cAlphaFieldNames(7), s_ipsc->cAlphaArgs(7));
             errorsFound = true;

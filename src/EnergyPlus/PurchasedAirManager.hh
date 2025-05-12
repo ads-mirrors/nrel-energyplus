@@ -73,7 +73,7 @@ namespace PurchasedAirManager {
         FlowRateAndCapacity,
         Num
     };
- 
+
     // Dehumidification and Humidification control type parameters
     enum class HumControl
     {

@@ -64,7 +64,7 @@ namespace DataZoneControls {
     enum class AverageMethod
     {
         Invalid = -1,
-        NO, // No multiple people objects
+        NO,  // No multiple people objects
         SPE, // Specific people object
         OBJ, // People object average
         PEO, // People number average
@@ -72,9 +72,9 @@ namespace DataZoneControls {
     };
 
     constexpr std::array<std::string_view, (int)AverageMethod::Num> averageMethodNames = {
-        "NoMultiplePeopleObjects", "SpecificObject", "ObjectAverage", "PeopleAverage" };
+        "NoMultiplePeopleObjects", "SpecificObject", "ObjectAverage", "PeopleAverage"};
     constexpr std::array<std::string_view, (int)AverageMethod::Num> averageMethodNamesUC = {
-        "NOMULTIPLEPEOPLEOBJECTS", "SPECIFICOBJECT", "OBJECTAVERAGE", "PEOPLEAVERAGE" };
+        "NOMULTIPLEPEOPLEOBJECTS", "SPECIFICOBJECT", "OBJECTAVERAGE", "PEOPLEAVERAGE"};
 
     enum class TempCtrl
     {
@@ -84,12 +84,10 @@ namespace DataZoneControls {
         Scheduled,
         Num
     };
-  
-    constexpr std::array<std::string_view, (int)TempCtrl::Num> tempCtrlNames = {
-        "None", "Constant", "Scheduled" };
-    constexpr std::array<std::string_view, (int)TempCtrl::Num> tempCtrlNamesUC = {
-        "NONE", "CONSTANT", "SCHEDULED" };
-  
+
+    constexpr std::array<std::string_view, (int)TempCtrl::Num> tempCtrlNames = {"None", "Constant", "Scheduled"};
+    constexpr std::array<std::string_view, (int)TempCtrl::Num> tempCtrlNamesUC = {"NONE", "CONSTANT", "SCHEDULED"};
+
     struct TempSetptType
     {
         std::string Name;
@@ -109,14 +107,14 @@ namespace DataZoneControls {
 
         std::array<TempSetptType, (int)HVAC::SetptType::Num> setpts;
 
-        bool ManageDemand;                      // Flag to indicate whether to use demand limiting
-        Real64 HeatingResetLimit;               // Lowest heating setpoint that can be set by demand manager [C]
-        Real64 CoolingResetLimit;               // Highest cooling setpoint that can be set by demand manager [C]
-        bool EMSOverrideHeatingSetPointOn;      // EMS is calling to override heating setpoint
-        Real64 EMSOverrideHeatingSetPointValue; // value EMS is directing to use for heating setpoint [C]
-        bool EMSOverrideCoolingSetPointOn;      // EMS is calling to override cooling setpoint
-        Real64 EMSOverrideCoolingSetPointValue; // value EMS is directing to use for cooling setpoint [C]
-        TempCtrl OpTempCtrl = TempCtrl::Invalid;          // flag to indicate if radiative fraction is scheduled,
+        bool ManageDemand;                       // Flag to indicate whether to use demand limiting
+        Real64 HeatingResetLimit;                // Lowest heating setpoint that can be set by demand manager [C]
+        Real64 CoolingResetLimit;                // Highest cooling setpoint that can be set by demand manager [C]
+        bool EMSOverrideHeatingSetPointOn;       // EMS is calling to override heating setpoint
+        Real64 EMSOverrideHeatingSetPointValue;  // value EMS is directing to use for heating setpoint [C]
+        bool EMSOverrideCoolingSetPointOn;       // EMS is calling to override cooling setpoint
+        Real64 EMSOverrideCoolingSetPointValue;  // value EMS is directing to use for cooling setpoint [C]
+        TempCtrl OpTempCtrl = TempCtrl::Invalid; // flag to indicate if radiative fraction is scheduled,
         // else constant
         Real64 FixedRadiativeFraction;                           // weighting factor for mean radiant temp for Operative temperature
         Sched::Schedule *opTempRadiativeFractionSched = nullptr; // schedule for when fraction is scheduled
@@ -124,7 +122,7 @@ namespace DataZoneControls {
         bool AdaptiveComfortTempControl;   // flag to indicate whether control based on Operative Temp
         int AdaptiveComfortModelTypeIndex; // index to adaptive comfort model type
 
-        Real64 ZoneOvercoolRange;        // Zone overcool temperature range (max), deg C
+        Real64 ZoneOvercoolRange;                  // Zone overcool temperature range (max), deg C
         TempCtrl OvercoolCtrl = TempCtrl::Invalid; // Flag to indicate if zone overcool range is scheduled
         //   or constant
         Real64 ZoneOvercoolConstRange;                     // Overcool Range for Zone Air Setpoint Temperature [deltaC]
@@ -146,8 +144,7 @@ namespace DataZoneControls {
         ZoneTempControls()
             : ActualZoneNum(0), ManageDemand(false), HeatingResetLimit(0.0), CoolingResetLimit(0.0), EMSOverrideHeatingSetPointOn(false),
               EMSOverrideHeatingSetPointValue(0.0), EMSOverrideCoolingSetPointOn(false), EMSOverrideCoolingSetPointValue(0.0),
-              FixedRadiativeFraction(0.0), AdaptiveComfortTempControl(false),
-              AdaptiveComfortModelTypeIndex(0), ZoneOvercoolRange(0.0), 
+              FixedRadiativeFraction(0.0), AdaptiveComfortTempControl(false), AdaptiveComfortModelTypeIndex(0), ZoneOvercoolRange(0.0),
               ZoneOvercoolConstRange(0.0), ZoneOvercoolControlRatio(0.0), DeltaTCutSet(0), ZoneThermostatSetPointHi(0.0),
               ZoneThermostatSetPointLo(0.0), CoolModeLast(false), HeatModeLast(false), CoolModeLastSave(false), HeatModeLastSave(false),
               CoolOffFlag(false), HeatOffFlag(false)
@@ -196,31 +193,31 @@ namespace DataZoneControls {
 
         std::array<ComfortSetptType, (int)HVAC::SetptType::Num> setpts; // Type of control
 
-        bool ManageDemand;                             // Flag to indicate whether to use demand limiting
-        Real64 HeatingResetLimit;                      // Lowest heating setpoint that can be set by demand manager [C]
-        Real64 CoolingResetLimit;                      // Highest cooling setpoint that can be set by demand manager [C]
-        bool EMSOverrideHeatingSetPointOn;             // EMS is calling to override heating setpoint
-        Real64 EMSOverrideHeatingSetPointValue;        // value EMS is directing to use for heating setpoint
-        bool EMSOverrideCoolingSetPointOn;             // EMS is calling to override cooling setpoint
-        Real64 EMSOverrideCoolingSetPointValue;        // value EMS is directing to use for cooling setpoint
-        Real64 TdbMaxSetPoint;                         // Maximum dry-bulb temperature setpoint [C]
-        Real64 TdbMinSetPoint;                         // Minimum dry-bulb temperature setpoint [C]
-        std::string AverageObjectName;                 // Object Name for Specific Object Average
+        bool ManageDemand;                                    // Flag to indicate whether to use demand limiting
+        Real64 HeatingResetLimit;                             // Lowest heating setpoint that can be set by demand manager [C]
+        Real64 CoolingResetLimit;                             // Highest cooling setpoint that can be set by demand manager [C]
+        bool EMSOverrideHeatingSetPointOn;                    // EMS is calling to override heating setpoint
+        Real64 EMSOverrideHeatingSetPointValue;               // value EMS is directing to use for heating setpoint
+        bool EMSOverrideCoolingSetPointOn;                    // EMS is calling to override cooling setpoint
+        Real64 EMSOverrideCoolingSetPointValue;               // value EMS is directing to use for cooling setpoint
+        Real64 TdbMaxSetPoint;                                // Maximum dry-bulb temperature setpoint [C]
+        Real64 TdbMinSetPoint;                                // Minimum dry-bulb temperature setpoint [C]
+        std::string AverageObjectName;                        // Object Name for Specific Object Average
         AverageMethod averageMethod = AverageMethod::Invalid; // Averaging method
-        int SpecificObjectNum;                         // People Object number used for Specific people object choice
-        int PeopleAverageErrIndex;                     // People average error index
-        int TdbMaxErrIndex;                            // Single cooling setpoint error index
-        int TdbMinErrIndex;                            // Single heating setpoint error index
-        int TdbHCErrIndex;                             // Single heating cooling setpoint error index
-        int TdbDualMaxErrIndex;                        // Dual cooling setpoint error index
-        int TdbDualMinErrIndex;                        // Dual heating setpoint error index
+        int SpecificObjectNum;                                // People Object number used for Specific people object choice
+        int PeopleAverageErrIndex;                            // People average error index
+        int TdbMaxErrIndex;                                   // Single cooling setpoint error index
+        int TdbMinErrIndex;                                   // Single heating setpoint error index
+        int TdbHCErrIndex;                                    // Single heating cooling setpoint error index
+        int TdbDualMaxErrIndex;                               // Dual cooling setpoint error index
+        int TdbDualMinErrIndex;                               // Dual heating setpoint error index
 
         // Default Constructor
         ZoneComfortControls()
             : ActualZoneNum(0), ManageDemand(false), HeatingResetLimit(0.0), CoolingResetLimit(0.0), EMSOverrideHeatingSetPointOn(false),
               EMSOverrideHeatingSetPointValue(0.0), EMSOverrideCoolingSetPointOn(false), EMSOverrideCoolingSetPointValue(0.0), TdbMaxSetPoint(50.0),
-              TdbMinSetPoint(0.0), SpecificObjectNum(0),
-              PeopleAverageErrIndex(0), TdbMaxErrIndex(0), TdbMinErrIndex(0), TdbHCErrIndex(0), TdbDualMaxErrIndex(0), TdbDualMinErrIndex(0)
+              TdbMinSetPoint(0.0), SpecificObjectNum(0), PeopleAverageErrIndex(0), TdbMaxErrIndex(0), TdbMinErrIndex(0), TdbHCErrIndex(0),
+              TdbDualMaxErrIndex(0), TdbDualMinErrIndex(0)
         {
         }
     };

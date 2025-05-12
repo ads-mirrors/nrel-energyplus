@@ -85,40 +85,28 @@ namespace WaterManager {
     using namespace DataWater;
 
     constexpr std::array<std::string_view, (int)ControlSupplyType::Num> controlSupplyTypeNames = {
-        "None", "Mains",  "GroundwaterWell", "GroundwaterWellMainsBackup", "OtherTank", "OtherTankMainsBackup" };
+        "None", "Mains", "GroundwaterWell", "GroundwaterWellMainsBackup", "OtherTank", "OtherTankMainsBackup"};
     constexpr std::array<std::string_view, (int)ControlSupplyType::Num> controlSupplyTypeNamesUC = {
-        "NONE", "MAINS",  "GROUNDWATERWELL", "GROUNDWATERWELLMAINSBACKUP", "OTHERTANK", "OTHERTANKMAINSBACKUP" };
+        "NONE", "MAINS", "GROUNDWATERWELL", "GROUNDWATERWELLMAINSBACKUP", "OTHERTANK", "OTHERTANKMAINSBACKUP"};
 
-    constexpr std::array<std::string_view, (int)TankThermalMode::Num> tankThermalModeNames = {
-        "ScheduledTemperature", "ThermalModel" };
-    constexpr std::array<std::string_view, (int)TankThermalMode::Num> tankThermalModeNamesUC = {
-        "SCHEDULEDTEMPERATURE", "THERMALMODEL" };
+    constexpr std::array<std::string_view, (int)TankThermalMode::Num> tankThermalModeNames = {"ScheduledTemperature", "ThermalModel"};
+    constexpr std::array<std::string_view, (int)TankThermalMode::Num> tankThermalModeNamesUC = {"SCHEDULEDTEMPERATURE", "THERMALMODEL"};
 
-    constexpr std::array<std::string_view, (int)AmbientTempType::Num> ambientTempTypeNames = {
-        "Schedule", "Zone", "Outdoors" };
-    constexpr std::array<std::string_view, (int)AmbientTempType::Num> ambientTempTypeNamesUC = {
-        "SCHEDULE", "ZONE", "OUTDOORS" };
-  
-    constexpr std::array<std::string_view, (int)RainLossFactor::Num> rainLossFactorNames = {
-        "Constant", "Scheduled" };
-    constexpr std::array<std::string_view, (int)RainLossFactor::Num> rainLossFactorNamesUC = {
-        "CONSTANT", "SCHEDULED" };
+    constexpr std::array<std::string_view, (int)AmbientTempType::Num> ambientTempTypeNames = {"Schedule", "Zone", "Outdoors"};
+    constexpr std::array<std::string_view, (int)AmbientTempType::Num> ambientTempTypeNamesUC = {"SCHEDULE", "ZONE", "OUTDOORS"};
 
-    constexpr std::array<std::string_view, (int)GroundWaterTable::Num> groundWaterTableNames = {
-        "Constant", "Scheduled" };
-    constexpr std::array<std::string_view, (int)GroundWaterTable::Num> groundWaterTableNamesUC = {
-        "CONSTANT", "SCHEDULED" };
+    constexpr std::array<std::string_view, (int)RainLossFactor::Num> rainLossFactorNames = {"Constant", "Scheduled"};
+    constexpr std::array<std::string_view, (int)RainLossFactor::Num> rainLossFactorNamesUC = {"CONSTANT", "SCHEDULED"};
 
-    constexpr std::array<std::string_view, (int)IrrigationMode::Num> irrigationModeNames = {
-        "Schedule", "SmartSchedule" };
-    constexpr std::array<std::string_view, (int)IrrigationMode::Num> irrigationModeNamesUC = {
-        "SCHEDULE", "SMARTSCHEDULE" };
+    constexpr std::array<std::string_view, (int)GroundWaterTable::Num> groundWaterTableNames = {"Constant", "Scheduled"};
+    constexpr std::array<std::string_view, (int)GroundWaterTable::Num> groundWaterTableNamesUC = {"CONSTANT", "SCHEDULED"};
 
-    constexpr std::array<std::string_view, (int)RainfallMode::Num> rainfallModeNames = {
-        "None", "ScheduleAndDesignLevel", "EPWPrecipitation" };
-    constexpr std::array<std::string_view, (int)RainfallMode::Num> rainfallModeNamesUC = {
-        "NONE", "SCHEDULEANDDESIGNLEVEL", "EPWPRECIPITATION" };
-  
+    constexpr std::array<std::string_view, (int)IrrigationMode::Num> irrigationModeNames = {"Schedule", "SmartSchedule"};
+    constexpr std::array<std::string_view, (int)IrrigationMode::Num> irrigationModeNamesUC = {"SCHEDULE", "SMARTSCHEDULE"};
+
+    constexpr std::array<std::string_view, (int)RainfallMode::Num> rainfallModeNames = {"None", "ScheduleAndDesignLevel", "EPWPrecipitation"};
+    constexpr std::array<std::string_view, (int)RainfallMode::Num> rainfallModeNamesUC = {"NONE", "SCHEDULEANDDESIGNLEVEL", "EPWPRECIPITATION"};
+
     void ManageWater(EnergyPlusData &state)
     {
 
@@ -303,8 +291,8 @@ namespace WaterManager {
                     if (lAlphaFieldBlanks(4)) {
                         ShowSevereEmptyField(state, eoh, cAlphaFieldNames(4));
                         ErrorsFound = true;
-                    } else if ((state.dataWaterData->WaterStorage(Item).ControlSupply =
-                                static_cast<ControlSupplyType>(getEnumValue(controlSupplyTypeNamesUC, cAlphaArgs(4)))) == ControlSupplyType::Invalid) {
+                    } else if ((state.dataWaterData->WaterStorage(Item).ControlSupply = static_cast<ControlSupplyType>(
+                                    getEnumValue(controlSupplyTypeNamesUC, cAlphaArgs(4)))) == ControlSupplyType::Invalid) {
                         ShowSevereInvalidKey(state, eoh, cAlphaFieldNames(4), cAlphaArgs(4));
                         ErrorsFound = true;
                     }
@@ -344,7 +332,7 @@ namespace WaterManager {
                         ShowSevereEmptyField(state, eoh, cAlphaFieldNames(6));
                         ErrorsFound = true;
                     } else if ((state.dataWaterData->WaterStorage(Item).ThermalMode =
-                                    static_cast<TankThermalMode>(getEnumValue(tankThermalModeNamesUC, cAlphaArgs(6)))) == TankThermalMode::Invalid) { 
+                                    static_cast<TankThermalMode>(getEnumValue(tankThermalModeNamesUC, cAlphaArgs(6)))) == TankThermalMode::Invalid) {
                         ShowSevereItemNotFound(state, eoh, cAlphaFieldNames(6), cAlphaArgs(6));
                         ErrorsFound = true;
                     }
@@ -368,8 +356,8 @@ namespace WaterManager {
                         if (lAlphaFieldBlanks(8)) {
                             ShowSevereEmptyField(state, eoh, cAlphaFieldNames(8));
                             ErrorsFound = true;
-                        } else if ((state.dataWaterData->WaterStorage(Item).AmbientTempIndicator =
-                                    static_cast<AmbientTempType>(getEnumValue(ambientTempTypeNamesUC, cAlphaArgs(8)))) == AmbientTempType::Invalid) {
+                        } else if ((state.dataWaterData->WaterStorage(Item).AmbientTempIndicator = static_cast<AmbientTempType>(
+                                        getEnumValue(ambientTempTypeNamesUC, cAlphaArgs(8)))) == AmbientTempType::Invalid) {
                             ShowSevereInvalidKey(state, eoh, cAlphaFieldNames(8), cAlphaArgs(8));
                             ErrorsFound = true;
                         } else if (state.dataWaterData->WaterStorage(Item).AmbientTempIndicator == AmbientTempType::Schedule) {
@@ -442,7 +430,7 @@ namespace WaterManager {
                         ShowSevereEmptyField(state, eoh, cAlphaFieldNames(3));
                         ErrorsFound = true;
                     } else if ((state.dataWaterData->RainCollector(Item).LossFactorMode =
-                                    static_cast<RainLossFactor>(getEnumValue(rainLossFactorNamesUC, cAlphaArgs(3)))) == RainLossFactor::Invalid) { 
+                                    static_cast<RainLossFactor>(getEnumValue(rainLossFactorNamesUC, cAlphaArgs(3)))) == RainLossFactor::Invalid) {
                         ShowSevereInvalidKey(state, eoh, cAlphaFieldNames(3), cAlphaArgs(3));
                         ErrorsFound = true;
                     }
@@ -566,8 +554,8 @@ namespace WaterManager {
 
                     if (lAlphaFieldBlanks(3)) {
                         // This is not an error
-                    } else  if ((state.dataWaterData->GroundwaterWell(Item).GroundwaterTableMode =
-                                 static_cast<GroundWaterTable>(getEnumValue(groundWaterTableNamesUC, cAlphaArgs(3)))) == GroundWaterTable::Invalid) { 
+                    } else if ((state.dataWaterData->GroundwaterWell(Item).GroundwaterTableMode = static_cast<GroundWaterTable>(
+                                    getEnumValue(groundWaterTableNamesUC, cAlphaArgs(3)))) == GroundWaterTable::Invalid) {
                         ShowSevereInvalidKey(state, eoh, cAlphaFieldNames(3), cAlphaArgs(3));
                         ErrorsFound = true;
                     }
@@ -719,12 +707,12 @@ namespace WaterManager {
                 if (lAlphaFieldBlanks(1)) {
                     ShowSevereEmptyField(state, eoh, cAlphaFieldNames(1));
                     ErrorsFound = true;
-                } else if ((state.dataWaterData->Irrigation.ModeID
-                                = static_cast<IrrigationMode>(getEnumValue(irrigationModeNamesUC, cAlphaArgs(1)))) == IrrigationMode::Invalid) { 
+                } else if ((state.dataWaterData->Irrigation.ModeID =
+                                static_cast<IrrigationMode>(getEnumValue(irrigationModeNamesUC, cAlphaArgs(1)))) == IrrigationMode::Invalid) {
                     ShowSevereInvalidKey(state, eoh, cAlphaFieldNames(1), cAlphaArgs(1));
                     ErrorsFound = true;
                 }
-                
+
                 if (state.dataWaterData->RainFall.ModeID == RainfallMode::None) {
                     state.dataWaterData->RainFall.ModeID = RainfallMode::EPWPrecipitation;
                 }

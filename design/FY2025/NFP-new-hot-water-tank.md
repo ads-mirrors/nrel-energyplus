@@ -52,7 +52,9 @@ chilled water tank, but designed to hold hot water. It will also include various
 actuators to control flow direction and tank charging. The autosizing
 functionality will be thoroughly tested to ensure it functions properly. This
 new tank can be incorporated into complex energy recovery systems like the TIER
-system.
+system. Note that the tank will charge and discharge via direct fluid change,
+unlike the ice or PCM tanks via heat exchanger coils.
+
 
 ## Overview ##
 
@@ -158,7 +160,10 @@ A passive hot water storage tank object will be added as follows.
         \units m
         \minimum 0.0
         \note Only used if Tank Shape is Other
-    A3 , \field Setpoint Temperature Schedule Name
+    A3 , \field Top Setpoint Temperature Schedule Name
+        \type object-list
+        \object-list ScheduleNames
+    A4 , \field Bottom Setpoint Temperature Schedule Name
         \type object-list
         \object-list ScheduleNames
     N4 , \field Deadband Temperature Difference
@@ -166,54 +171,58 @@ A passive hot water storage tank object will be added as follows.
         \units deltaC
         \minimum 0.0
         \default 0.0
-    N5,  \field Temperature Sensor Height
+    N5,  \field Top Temperature Sensor Height
         \units m
         \minimum 0.0
-    A4 , \field Charging Curve Name
+    N6,  \field Bottom Temperature Sensor Height
+        \units m
+        \minimum 0.0
+    A5 , \field Charging Curve Name
         \note a univariate curve defining the relationship between tank temperature and tank charging percent
         \note if this field has value, that the control will be based on charging fraction rather than setpoint 
         \type object-list
         \object-list UnivariateFunctions
-    A5 , \field Charging Curve Variable Specifications
+    A6 , \field Charging Curve Variable Specifications
         \note specifies which variable is used in the curve above
+        \note when the TemperatureSensor is chosen, the charging percent will be calculated using both the top and bottom tank temperature.
         \type choice
         \key TemperatureSensor
         \key AverageTemperature
-    N6 , \field Maximum Temperature Limit
+    N7 , \field Maximum Temperature Limit
         \type real
         \units C
-    N7 , \field Nominal Heating Capacity
+    N8 , \field Nominal Heating Capacity
         \type real
         \units W
-    A6 , \field Ambient Temperature Indicator
+    A7 , \field Ambient Temperature Indicator
         \required-field
         \type choice
         \key Schedule
         \key Zone
         \key Outdoors
-    A7 , \field Ambient Temperature Schedule Name
+    A8 , \field Ambient Temperature Schedule Name
         \type object-list
         \object-list ScheduleNames
-    A8 , \field Ambient Temperature Zone Name
+    A9 , \field Ambient Temperature Zone Name
         \type object-list
         \object-list ZoneNames
-    A9 , \field Ambient Temperature Outdoor Air Node Name
+    A10, \field Ambient Temperature Outdoor Air Node Name
         \type node
         \note required for Ambient Temperature Indicator=Outdoors
-    N8 , \field Uniform Skin Loss Coefficient per Unit Area to Ambient Temperature
+    N9 , \field Uniform Skin Loss Coefficient per Unit Area to Ambient Temperature
         \type real
         \units W/m2-K
         \minimum 0.0
-    A10, \field Use Side Inlet Node Name
+    A11, \field Use Side Inlet Node Name
         \type node
-    A11, \field Use Side Outlet Node Name
+    A12, \field Use Side Outlet Node Name
         \type node
-    A12, Use Side Flow Direction Schedule
+    A13, Use Side Flow Direction Schedule
         \note allowed value is -1 and 1. When the value is 1, water flows in from
         \note the inlet and flows out from the outlet node. When the value is -1, water
         \note flows in from the outlet node and flows out from the inlet node (i.e. the
         \note flow direction is reversed)
-    N9 , \field Use Side Heat Transfer Effectiveness
+    N10, \field Use Side Heat Transfer Effectiveness
         \type real
         \minimum 0.0
         \maximum 1.0
@@ -223,42 +232,42 @@ A passive hot water storage tank object will be added as follows.
         \note use mass flow rate that directly mixes with the tank fluid. And one minus the
         \note effectiveness is the fraction that bypasses the tank. The use side mass flow rate
         \note that bypasses the tank is mixed with the fluid or water leaving the stratified tank.
-    A13, \field Use Side Availability Schedule Name
+    A14, \field Use Side Availability Schedule Name
         \note Availability schedule name for use side. Schedule value > 0 means the system is available.
         \note If this field is blank, the system is always available.
         \type object-list
         \object-list ScheduleNames
-    N10 , \field Use Side Inlet Height
+    N11 , \field Use Side Inlet Height
         \type real
         \units m
         \minimum 0.0
         \autocalculatable
         \default autocalculate
         \note Defaults to top of tank
-    N11, \field Use Side Outlet Height
+    N12, \field Use Side Outlet Height
         \type real
         \units m
         \minimum 0.0
         \default 0.0
         \note Defaults to bottom of tank
-    N12, \field Use Side Design Flow Rate
+    N13, \field Use Side Design Flow Rate
         \type real
         \autosizable
         \default autosize
         \units m3/s
         \ip-units gal/min
         \minimum 0.0
-    A14, \field Source Side Inlet Node Name
+    A15, \field Source Side Inlet Node Name
         \type node
-    A15, \field Source Side Outlet Node Name
+    A16, \field Source Side Outlet Node Name
         \type node
-    A16, Source Side Flow Direction Schedule
+    A17, Source Side Flow Direction Schedule
         \type alpha
         \note allowed value is -1 and 1. When the value is 1, water flows in from
         \note the inlet and flows out from the outlet node. When the value is -1, water
         \note flows in from the outlet node and flows out from the inlet node (i.e. the
         \note flow direction is reversed)
-    N13, \field Source Side Heat Transfer Effectiveness
+    N14, \field Source Side Heat Transfer Effectiveness
         \type real
         \minimum> 0.0
         \maximum 1.0
@@ -268,90 +277,90 @@ A passive hot water storage tank object will be added as follows.
         \note source mass flow rate that directly mixes with the tank fluid. And one minus the
         \note effectiveness is the fraction that bypasses the tank. The source side mass flow rate
         \note that bypasses the tank is mixed with the fluid or water leaving the stratified tank.
-    A17, \field Source Side Availability Schedule Name
+    A18, \field Source Side Availability Schedule Name
         \note Availability schedule name for use side. Schedule value > 0 means the system is available.
         \note If this field is blank, the system is always available.
         \type object-list
         \object-list ScheduleNames
-    N14, \field Source Side Inlet Height
+    N15, \field Source Side Inlet Height
         \type real
         \units m
         \minimum 0.0
         \default 0.0
         \note Defaults to bottom of tank
-    N15, \field Source Side Outlet Height
+    N16, \field Source Side Outlet Height
         \type real
         \units m
         \minimum 0.0
         \autocalculatable
         \default autocalculate
         \note Defaults to top of tank
-    N16, \field Source Side Design Flow Rate
+    N17, \field Source Side Design Flow Rate
         \type real
         \autosizable
         \default autosize
         \units m3/s
         \ip-units gal/min
         \minimum 0.0
-    N17, \field Tank Recovery Time
+    N18, \field Tank Recovery Time
         \type real
         \default 4.0
         \note Parameter for autosizing design flow rates for indirectly cooled water tanks
         \note time required to lower temperature of entire tank from 14.4C to 9.0C
         \units hr
         \minimum> 0.0
-    A18, \field Inlet Mode
+    A19, \field Inlet Mode
         \type choice
         \key Fixed
         \key Seeking
         \default Fixed
-    N18, \field Number of Nodes
+    N19, \field Number of Nodes
         \type integer
         \minimum 1
         \maximum 10
         \default 1
-    N19, \field Additional Destratification Conductivity
+    N20, \field Additional Destratification Conductivity
         \type real
         \units W/m-K
         \minimum 0.0
         \default 0.0
-    N20, \field Node 1 Additional Loss Coefficient
+    N21, \field Node 1 Additional Loss Coefficient
         \type real
         \units W/K
         \default 0.0
-    N21, \field Node 2 Additional Loss Coefficient
+    N22, \field Node 2 Additional Loss Coefficient
         \type real
         \units W/K
         \default 0.0
-    N22, \field Node 3 Additional Loss Coefficient
+    N23, \field Node 3 Additional Loss Coefficient
         \type real
         \units W/K
         \default 0.0
-    N23, \field Node 4 Additional Loss Coefficient
+    N24, \field Node 4 Additional Loss Coefficient
         \type real
         \units W/K
         \default 0.0
-    N24, \field Node 5 Additional Loss Coefficient
+    N25, \field Node 5 Additional Loss Coefficient
         \type real
         \units W/K
         \default 0.0
-    N25, \field Node 6 Additional Loss Coefficient
+    N26, \field Node 6 Additional Loss Coefficient
         \type real
         \units W/K
         \default 0.0
-    N26, \field Node 7 Additional Loss Coefficient
+    N27, \field Node 7 Additional Loss Coefficient
         \type real
         \units W/K
         \default 0.0
-    N27, \field Node 8 Additional Loss Coefficient
+    N28, \field Node 8 Additional Loss Coefficient
         \type real
         \units W/K
         \default 0.0
-    N28, \field Node 9 Additional Loss Coefficient
+    N29, \field Node 9 Additional Loss Coefficient
         \type real
         \units W/K
         \default 0.0
-    N29; \field Node 10 Additional Loss Coefficient
+    N30; \field Node 10 Additional Loss Coefficient
         \type real
         \units W/K
         \default 0.0

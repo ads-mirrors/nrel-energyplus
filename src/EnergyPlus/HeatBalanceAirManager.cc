@@ -4596,10 +4596,10 @@ void calcMeanAirTemps(EnergyPlusData &state,
         // find TempControlledZoneID from ZoneLoop index
         int TempControlledZoneID = state.dataHeatBal->Zone(zoneNum).TempControlledZoneIndex;
         if (state.dataHeatBal->Zone(zoneNum).IsControlled) {
-            if ((state.dataZoneCtrls->TempControlledZone(TempControlledZoneID).OperativeTempControl)) {
+            if ((state.dataZoneCtrls->TempControlledZone(TempControlledZoneID).OpTempCtrl != DataZoneControls::TempCtrl::None)) {
                 Real64 thisMRTFraction; // temp working value for radiative fraction/weight
                 // is operative temp radiative fraction scheduled or fixed?
-                if (state.dataZoneCtrls->TempControlledZone(TempControlledZoneID).OpTempCntrlModeScheduled) {
+                if (state.dataZoneCtrls->TempControlledZone(TempControlledZoneID).OpTempCtrl == DataZoneControls::TempCtrl::Scheduled) {
                     thisMRTFraction = state.dataZoneCtrls->TempControlledZone(TempControlledZoneID).opTempRadiativeFractionSched->getCurrentVal();
                 } else {
                     thisMRTFraction = state.dataZoneCtrls->TempControlledZone(TempControlledZoneID).FixedRadiativeFraction;

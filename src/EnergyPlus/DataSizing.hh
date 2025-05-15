@@ -208,9 +208,8 @@ namespace DataSizing {
     // parameter for (time-of-peak) sizing format
     static constexpr std::string_view PeakHrMinFmt("{:02}:{:02}:00");
 
-    // Zone Outdoor Air Method
-    constexpr int ZOAM_ProportionalControlDesOcc(9); // Use ASHRAE Standard 62.1-2004 or Trane Engineer's newsletter (volume 34-5)
-    // to calculate the zone level outdoor air flow rates based on design occupancy
+    // Index to default DesignSpecification:OutdoorAir
+    constexpr int OARequirements_Default = 1;
 
     enum class SysOAMethod
     {
@@ -1146,6 +1145,10 @@ namespace DataSizing {
 
         Real64 desFlowPerZonePerson(EnergyPlusData &state, int const zoneNum, int const spaceNum = 0);
 
+        Real64 desFlowPerZone(EnergyPlusData &state, int const zoneNum, int const spaceNum = 0);
+
+        Real64 desFlowPerACH(EnergyPlusData &state, int const zoneNum, int const spaceNum = 0);
+
         Real64 calcOAFlowRate(EnergyPlusData &state,
                               int ActualZoneNum,               // Zone index
                               bool UseOccSchFlag,              // Zone occupancy schedule will be used instead of using total zone occupancy
@@ -1155,6 +1158,10 @@ namespace DataSizing {
                               int const spaceNum = 0,          // Space index (if applicable)
                               bool const calcIAQMethods = true // For IAQProcedure, PCOccSch, and PCDesOcc, calculate if true, return zero if false
         );
+
+        Sched::Schedule *getZoneFlowFracSched(EnergyPlusData &state, bool notAllSame);
+
+        Sched::Schedule *getZonePropCtlMinRateSched(EnergyPlusData &state, bool notAllSame);
     };
 
     struct ZoneAirDistributionData

@@ -815,6 +815,64 @@ Real64 OARequirementsData::desFlowPerZonePerson(EnergyPlusData &state, int const
     return desFlowPP;
 }
 
+Real64 OARequirementsData::desFlowPerZone(EnergyPlusData &state, int const zoneNum, int const spaceNum)
+{
+    Real64 desFlowPZ = 0.0; // [m3/s]
+    if (this->numDSOA == 0) {
+        // This is a simple DesignSpecification:OutdoorAir
+        if (this->OAFlowMethod != OAFlowCalcMethod::PerPerson && this->OAFlowMethod != OAFlowCalcMethod::PerArea &&
+            this->OAFlowMethod != OAFlowCalcMethod::ACH) {
+            desFlowPZ = this->OAFlowPerZone;
+        }
+    } else {
+        // This is a DesignSpecification:OutdoorAir:SpaceList
+        for (int dsoaCount = 1; dsoaCount <= this->numDSOA; ++dsoaCount) {
+            auto const &thisDSOA = state.dataSize->OARequirements(this->dsoaIndexes(dsoaCount));
+            int const dsoaSpaceNum = this->dsoaSpaceIndexes(dsoaCount);
+            if (thisDSOA.OAFlowMethod != OAFlowCalcMethod::PerPerson && thisDSOA.OAFlowMethod != OAFlowCalcMethod::PerArea &&
+                thisDSOA.OAFlowMethod != OAFlowCalcMethod::ACH) {
+                if ((spaceNum == 0) || (spaceNum == dsoaSpaceNum)) {
+                    desFlowPZ += thisDSOA.OAFlowPerZone;
+                }
+            }
+        }
+    }
+    return desFlowPZ;
+}
+
+Real64 OARequirementsData::desFlowPerACH(EnergyPlusData &state, int const zoneNum, int const spaceNum)
+{
+    Real64 desFlowPACH = 0.0; // [1/hr]
+    if (this->numDSOA == 0) {
+        // This is a simple DesignSpecification:OutdoorAir
+        if (this->OAFlowMethod != OAFlowCalcMethod::PerPerson && this->OAFlowMethod != OAFlowCalcMethod::PerArea &&
+            this->OAFlowMethod != OAFlowCalcMethod::PerZone) {
+            desFlowPACH = this->OAFlowACH;
+        }
+    } else {
+        // This is a DesignSpecification:OutdoorAir:SpaceList
+        Real64 sumVolume = 0.0;
+        Real64 sumACHFlow = 0.0;
+        for (int dsoaCount = 1; dsoaCount <= this->numDSOA; ++dsoaCount) {
+            auto const &thisDSOA = state.dataSize->OARequirements(this->dsoaIndexes(dsoaCount));
+            int const dsoaSpaceNum = this->dsoaSpaceIndexes(dsoaCount);
+            if (thisDSOA.OAFlowMethod != OAFlowCalcMethod::PerPerson && thisDSOA.OAFlowMethod != OAFlowCalcMethod::PerArea &&
+                thisDSOA.OAFlowMethod != OAFlowCalcMethod::PerZone) {
+                if ((spaceNum == 0) || (spaceNum == dsoaSpaceNum)) {
+                    Real64 spaceVol = state.dataHeatBal->space(this->dsoaSpaceIndexes(dsoaCount)).Volume;
+                    sumVolume += spaceVol;
+                    Real64 spaceOAACH = thisDSOA.OAFlowACH * spaceVol;
+                    sumACHFlow += spaceOAACH;
+                }
+            }
+        }
+        if (sumVolume > 0.0) {
+            desFlowPACH = Constant::rSecsInHour * sumACHFlow / sumVolume;
+        }
+    }
+    return desFlowPACH;
+}
+
 Real64
 OARequirementsData::calcOAFlowRate(EnergyPlusData &state,
                                    int const ActualZoneNum,     // Zone index
@@ -1191,6 +1249,66 @@ OARequirementsData::calcOAFlowRate(EnergyPlusData &state,
     }
 
     return OAVolumeFlowRate;
+}
+
+Sched::Schedule *OARequirementsData::getZoneFlowFracSched(EnergyPlusData &state, bool notAllSame)
+{
+    notAllSame = false;
+    Sched::Schedule *schedPtr = nullptr;
+    if (this->numDSOA == 0) {
+        // This is a simple DesignSpecification:OutdoorAir
+        schedPtr = this->oaFlowFracSched;
+    } else {
+        // This is a DesignSpecification:OutdoorAir:SpaceList
+        for (int dsoaCount = 1; dsoaCount <= this->numDSOA; ++dsoaCount) {
+            auto const &thisDSOA = state.dataSize->OARequirements(this->dsoaIndexes(dsoaCount));
+            if (dsoaCount == 1) {
+                schedPtr = thisDSOA.oaFlowFracSched;
+            } else {
+                if (schedPtr != thisDSOA.oaFlowFracSched) {
+                    notAllSame = true;
+                    ShowWarningError(state,
+                                     format("getZoneFlowFracSched: Outdoor Air Schedules are not the same for all spaces in "
+                                            "DesignSpecification:OutdoorAir:SpaceList={}.",
+                                            this->Name));
+                    ShowContinueError(state, format("Using the first space schedule={}", schedPtr->Name));
+                    break;
+                }
+            }
+        }
+    }
+    return schedPtr;
+}
+
+Sched::Schedule *OARequirementsData::getZonePropCtlMinRateSched(EnergyPlusData &state, bool notAllSame)
+{
+    notAllSame = false;
+    Sched::Schedule *schedPtr = nullptr;
+    if (this->numDSOA == 0) {
+        // This is a simple DesignSpecification:OutdoorAir
+        schedPtr = this->oaPropCtlMinRateSched;
+    } else {
+        // This is a DesignSpecification:OutdoorAir:SpaceList
+        for (int dsoaCount = 1; dsoaCount <= this->numDSOA; ++dsoaCount) {
+            auto const &thisDSOA = state.dataSize->OARequirements(this->dsoaIndexes(dsoaCount));
+            if (dsoaCount == 1) {
+                schedPtr = thisDSOA.oaPropCtlMinRateSched;
+            } else {
+                if (schedPtr != thisDSOA.oaPropCtlMinRateSched) {
+                    notAllSame = true;
+                    ShowWarningError(
+                        state,
+                        format(
+                            "getZoneFlowFracSched: Proportional Control Minimum Outdoor Air Flow Rate Schedules are not the same for all spaces in "
+                            "DesignSpecification:OutdoorAir:SpaceList={}.",
+                            this->Name));
+                    ShowContinueError(state, format("Using the first space schedule={}", schedPtr->Name));
+                    break;
+                }
+            }
+        }
+    }
+    return schedPtr;
 }
 
 } // namespace EnergyPlus::DataSizing

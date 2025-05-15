@@ -261,24 +261,17 @@ namespace MixedAir {
 
     struct VentilationMechanicalZoneProps
     {
-        std::string name;                          // name of mech vent zone
-        int zoneNum = 0;                           // Actual zones number
-        Real64 ZoneOAAreaRate = 0.0;               // Mechanical ventilation rate (m3/s/m2) for each zone
-        Real64 ZoneOAPeopleRate = 0.0;             // Mechanical ventilation rate (m3/s/person) for each zone
-        Real64 ZoneOAFlowRate = 0.0;               // OA Flow Rate (m3/s/zone) for each zone
-        Real64 ZoneOAACHRate = 0.0;                // OA ACH (m3/s/volume) for each zone
-        int ZoneDesignSpecOAObjIndex = 0;          // index of the design specification outdoor air object for each zone
-        std::string ZoneDesignSpecOAObjName;       // name of the design specification outdoor air object for each zone
-        Real64 ZoneADEffCooling = 1.0;             // Zone air distribution effectiveness in cooling mode for each zone
-        Real64 ZoneADEffHeating = 1.0;             // Zone air distribution effectiveness in heating mode for each zone
-        Sched::Schedule *zoneADEffSched = nullptr; // air distribution effectiveness schedule for each zone
-        int ZoneDesignSpecADObjIndex = 0;          // index of the design specification zone air distribution object for each zone
-        std::string ZoneDesignSpecADObjName;       // name of the design specification zone air distribution object for each zone
-        Real64 ZoneSecondaryRecirculation = 0.0;   // zone air secondary recirculation ratio for each zone
-        DataSizing::OAFlowCalcMethod ZoneOAFlowMethod = DataSizing::OAFlowCalcMethod::PerPerson; // OA flow method for each zone
-        Sched::Schedule *zoneOASched = nullptr;           // Outdoor air schedule for each zone (from DesignSpecification:OutdoorAir or default)
-        Sched::Schedule *oaPropCtlMinRateSched = nullptr; // Outdoor design OA flow rate schedule from DesignSpecification:OutdoorAir
-        Real64 zoneOABZ = 0.0;                            // Zone breathing-zone OA flow rate [m3/s]
+        std::string name;                                   // name of mech vent zone
+        int zoneNum = 0;                                    // Actual zones number
+        int ZoneDesignSpecOAObjIndex = 0;                   // index of the design specification outdoor air object for each zone
+        Real64 ZoneADEffCooling = 1.0;                      // Zone air distribution effectiveness in cooling mode for each zone
+        Real64 ZoneADEffHeating = 1.0;                      // Zone air distribution effectiveness in heating mode for each zone
+        Sched::Schedule *zoneADEffSched = nullptr;          // air distribution effectiveness schedule for each zone
+        int ZoneDesignSpecADObjIndex = 0;                   // index of the design specification zone air distribution object for each zone
+        Real64 ZoneSecondaryRecirculation = 0.0;            // zone air secondary recirculation ratio for each zone
+        Sched::Schedule *zoneOASched = nullptr;             // Outdoor air schedule for each zone (from DesignSpecification:OutdoorAir or default)
+        Sched::Schedule *zonePropCtlMinRateSched = nullptr; // Outdoor design OA flow rate schedule from DesignSpecification:OutdoorAir
+        Real64 zoneOABZ = 0.0;                              // Zone breathing-zone OA flow rate [m3/s]
         EPVector<int> peopleIndexes; // List of People objects in this zone (for SystemOAMethod == DataSizing::SysOAMethod::ProportionalControlDesOcc)
     };
 
@@ -495,11 +488,6 @@ struct MixedAirData : BaseGlobalStruct
     Array1D_bool InitOAControllerSetPointCheckFlag;
     bool InitOAControllerSetUpAirLoopHVACVariables = true;
     bool AllocateOAControllersFlag = true;
-    Array1D_string DesignSpecOAObjName;     // name of the design specification outdoor air object
-    Array1D_int DesignSpecOAObjIndex;       // index of the design specification outdoor air object
-    Array1D_string VentMechZoneOrListName;  // Zone or Zone List to apply mechanical ventilation rate
-    Array1D_string DesignSpecZoneADObjName; // name of the design specification zone air distribution object
-    Array1D_int DesignSpecZoneADObjIndex;   // index of the design specification zone air distribution object
     EPVector<MixedAir::ControllerListProps> ControllerLists;
     EPVector<MixedAir::OAControllerProps> OAController;
     EPVector<MixedAir::OAMixerProps> OAMixer;
@@ -539,11 +527,6 @@ struct MixedAirData : BaseGlobalStruct
         this->InitOAControllerSetPointCheckFlag.deallocate();
         this->InitOAControllerSetUpAirLoopHVACVariables = true;
         this->AllocateOAControllersFlag = true;
-        this->DesignSpecOAObjName.deallocate();
-        this->DesignSpecOAObjIndex.deallocate();
-        this->VentMechZoneOrListName.deallocate();
-        this->DesignSpecZoneADObjName.deallocate();
-        this->DesignSpecZoneADObjIndex.deallocate();
         this->ControllerLists.deallocate();
         this->OAController.deallocate();
         this->OAMixer.deallocate();

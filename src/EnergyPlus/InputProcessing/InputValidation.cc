@@ -107,7 +107,8 @@ bool Validation::validate(json const &parsed_input)
     static constexpr std::string_view otherError =
         "Object contains a property that could not be validated using 'properties' or 'additionalProperties' constraints";
 
-    valijson::Validator validator;
+    // valijson::Validator = valijson::ValidatorT<DefaultRegexEngine>, which uses std::regex, and we want RE2 because std::regex is horribly slow
+    valijson::ValidatorT<RE2RegexpEngine> validator;
     valijson::adapters::NlohmannJsonAdapter doc(parsed_input);
     valijson::ValidationResults results;
     if (!validator.validate(validation_schema(schema), doc, &results)) {

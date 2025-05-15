@@ -91,6 +91,49 @@ namespace EnergyPlus::PlantHeatExchangerFluidToFluid {
 
 std::string const ComponentClassName("HeatExchanger:FluidToFluid");
 
+constexpr std::array<std::string_view, (int)FluidHXType::Num> fluidHXTypeNames = {"CrossFlowBothUnMixed",
+                                                                                  "CrossFlowBothMixed",
+                                                                                  "CrossFlowSupplyMixedDemandUnMixed",
+                                                                                  "CrossFlowSupplyUnMixedDemandMixed",
+                                                                                  "CounterFlow",
+                                                                                  "ParallelFlow",
+                                                                                  "Ideal"};
+constexpr std::array<std::string_view, (int)FluidHXType::Num> fluidHXTypeNamesUC = {"CROSSFLOWBOTHUNMIXED",
+                                                                                    "CROSSFLOWBOTHMIXED",
+                                                                                    "CROSSFLOWSUPPLYMIXEDDEMANDUNMIXED",
+                                                                                    "CROSSFLOWSUPPLYUNMIXEDDEMANDMIXED",
+                                                                                    "COUNTERFLOW",
+                                                                                    "PARALLELFLOW",
+                                                                                    "IDEAL"};
+
+constexpr std::array<std::string_view, (int)ControlType::Num> controlTypeNames = {"UncontrolledOn",
+                                                                                  "OperationSchemeModulated",
+                                                                                  "OperationSchemeOnOff",
+                                                                                  "HeatingSetpointModulated",
+                                                                                  "HeatingSetpointOnOff",
+                                                                                  "CoolingSetpointModulated",
+                                                                                  "CoolingSetpointOnOff",
+                                                                                  "DualDeadbandSetpointModulated",
+                                                                                  "DualDeadbandSetpointOnOff",
+                                                                                  "CoolingDifferentialOnOff",
+                                                                                  "CoolingSetpointOnOffWithComponentOverride",
+                                                                                  "TrackComponentOnOff"};
+constexpr std::array<std::string_view, (int)ControlType::Num> controlTypeNamesUC = {"UNCONTROLLEDON",
+                                                                                    "OPERATIONSCHEMEMODULATED",
+                                                                                    "OPERATIONSCHEMEONOFF",
+                                                                                    "HEATINGSETPOINTMODULATED",
+                                                                                    "HEATINGSETPOINTONOFF",
+                                                                                    "COOLINGSETPOINTMODULATED",
+                                                                                    "COOLINGSETPOINTONOFF",
+                                                                                    "DUALDEADBANDSETPOINTMODULATED",
+                                                                                    "DUALDEADBANDSETPOINTONOFF",
+                                                                                    "COOLINGDIFFERENTIALONOFF",
+                                                                                    "COOLINGSETPOINTONOFFWITHCOMPONENTOVERRIDE",
+                                                                                    "TRACKCOMPONENTONOFF"};
+
+constexpr std::array<std::string_view, (int)CtrlTempType::Num> ctrlTempTypeNames = {"WetBulbTemperature", "DryBulbTemperature", "Loop"};
+constexpr std::array<std::string_view, (int)CtrlTempType::Num> ctrlTempTypeNamesUC = {"WETBULBTEMPERATURE", "DRYBULBTEMPERATURE", "LOOP"};
+
 PlantComponent *HeatExchangerStruct::factory(EnergyPlusData &state, std::string const &objectName)
 {
     // Process the input data for heat exchangers if it hasn't been done already
@@ -291,23 +334,12 @@ void GetFluidHeatExchangerInput(EnergyPlusData &state)
                 state.dataPlantHXFluidToFluid->FluidHX(CompLoop).SupplySideLoop.DesignVolumeFlowRateWasAutoSized = true;
             }
 
-            if (Util::SameString(cAlphaArgs(7), "CrossFlowBothUnMixed")) {
-                state.dataPlantHXFluidToFluid->FluidHX(CompLoop).HeatExchangeModelType = FluidHXType::CrossFlowBothUnMixed;
-            } else if (Util::SameString(cAlphaArgs(7), "CrossFlowBothMixed")) {
-                state.dataPlantHXFluidToFluid->FluidHX(CompLoop).HeatExchangeModelType = FluidHXType::CrossFlowBothMixed;
-            } else if (Util::SameString(cAlphaArgs(7), "CrossFlowSupplyMixedDemandUnMixed")) {
-                state.dataPlantHXFluidToFluid->FluidHX(CompLoop).HeatExchangeModelType = FluidHXType::CrossFlowSupplyLoopMixedDemandLoopUnMixed;
-            } else if (Util::SameString(cAlphaArgs(7), "CrossFlowSupplyUnMixedDemandMixed")) {
-                state.dataPlantHXFluidToFluid->FluidHX(CompLoop).HeatExchangeModelType = FluidHXType::CrossFlowSupplyLoopUnMixedDemandLoopMixed;
-            } else if (Util::SameString(cAlphaArgs(7), "CounterFlow")) {
-                state.dataPlantHXFluidToFluid->FluidHX(CompLoop).HeatExchangeModelType = FluidHXType::CounterFlow;
-            } else if (Util::SameString(cAlphaArgs(7), "ParallelFlow")) {
-                state.dataPlantHXFluidToFluid->FluidHX(CompLoop).HeatExchangeModelType = FluidHXType::ParallelFlow;
-            } else if (Util::SameString(cAlphaArgs(7), "Ideal")) {
-                state.dataPlantHXFluidToFluid->FluidHX(CompLoop).HeatExchangeModelType = FluidHXType::Ideal;
-            } else {
-                ShowSevereError(state, format("{}{}=\"{}\", invalid entry.", RoutineName, cCurrentModuleObject, cAlphaArgs(1)));
-                ShowContinueError(state, format("Invalid {} = {}", cAlphaFieldNames(7), cAlphaArgs(7)));
+            if (lAlphaFieldBlanks(7)) {
+                ShowSevereEmptyField(state, eoh, cAlphaFieldNames(7), cAlphaArgs(7));
+                ErrorsFound = true;
+            } else if ((state.dataPlantHXFluidToFluid->FluidHX(CompLoop).HeatExchangeModelType =
+                            static_cast<FluidHXType>(getEnumValue(fluidHXTypeNamesUC, cAlphaArgs(7)))) == FluidHXType::Invalid) {
+                ShowSevereInvalidKey(state, eoh, cAlphaFieldNames(7), cAlphaArgs(7));
                 ErrorsFound = true;
             }
 
@@ -324,33 +356,12 @@ void GetFluidHeatExchangerInput(EnergyPlusData &state)
                 }
             }
 
-            if (Util::SameString(cAlphaArgs(8), "UncontrolledOn")) {
-                state.dataPlantHXFluidToFluid->FluidHX(CompLoop).controlMode = ControlType::UncontrolledOn;
-            } else if (Util::SameString(cAlphaArgs(8), "OperationSchemeModulated")) {
-                state.dataPlantHXFluidToFluid->FluidHX(CompLoop).controlMode = ControlType::OperationSchemeModulated;
-            } else if (Util::SameString(cAlphaArgs(8), "OperationSchemeOnOff")) {
-                state.dataPlantHXFluidToFluid->FluidHX(CompLoop).controlMode = ControlType::OperationSchemeOnOff;
-            } else if (Util::SameString(cAlphaArgs(8), "HeatingSetpointModulated")) {
-                state.dataPlantHXFluidToFluid->FluidHX(CompLoop).controlMode = ControlType::HeatingSetPointModulated;
-            } else if (Util::SameString(cAlphaArgs(8), "HeatingSetpointOnOff")) {
-                state.dataPlantHXFluidToFluid->FluidHX(CompLoop).controlMode = ControlType::HeatingSetPointOnOff;
-            } else if (Util::SameString(cAlphaArgs(8), "CoolingSetpointModulated")) {
-                state.dataPlantHXFluidToFluid->FluidHX(CompLoop).controlMode = ControlType::CoolingSetPointModulated;
-            } else if (Util::SameString(cAlphaArgs(8), "CoolingSetpointOnOff")) {
-                state.dataPlantHXFluidToFluid->FluidHX(CompLoop).controlMode = ControlType::CoolingSetPointOnOff;
-            } else if (Util::SameString(cAlphaArgs(8), "DualDeadbandSetpointModulated")) {
-                state.dataPlantHXFluidToFluid->FluidHX(CompLoop).controlMode = ControlType::DualDeadBandSetPointModulated;
-            } else if (Util::SameString(cAlphaArgs(8), "DualDeadbandSetpointOnOff")) {
-                state.dataPlantHXFluidToFluid->FluidHX(CompLoop).controlMode = ControlType::DualDeadBandSetPointOnOff;
-            } else if (Util::SameString(cAlphaArgs(8), "CoolingDifferentialOnOff")) {
-                state.dataPlantHXFluidToFluid->FluidHX(CompLoop).controlMode = ControlType::CoolingDifferentialOnOff;
-            } else if (Util::SameString(cAlphaArgs(8), "CoolingSetpointOnOffWithComponentOverride")) {
-                state.dataPlantHXFluidToFluid->FluidHX(CompLoop).controlMode = ControlType::CoolingSetPointOnOffWithComponentOverride;
-            } else if (Util::SameString(cAlphaArgs(8), "TrackComponentOnOff")) {
-                state.dataPlantHXFluidToFluid->FluidHX(CompLoop).controlMode = ControlType::TrackComponentOnOff;
-            } else {
-                ShowSevereError(state, format("{}{}=\"{}\", invalid entry.", RoutineName, cCurrentModuleObject, cAlphaArgs(1)));
-                ShowContinueError(state, format("Invalid {} = {}", cAlphaFieldNames(8), cAlphaArgs(8)));
+            if (lAlphaFieldBlanks(8)) {
+                ShowSevereEmptyField(state, eoh, cAlphaFieldNames(8));
+                ErrorsFound = true;
+            } else if ((state.dataPlantHXFluidToFluid->FluidHX(CompLoop).controlMode =
+                            static_cast<ControlType>(getEnumValue(controlTypeNamesUC, cAlphaArgs(8)))) == ControlType::Invalid) {
+                ShowSevereInvalidKey(state, eoh, cAlphaFieldNames(8), cAlphaArgs(8));
                 ErrorsFound = true;
             }
 
@@ -502,20 +513,15 @@ void GetFluidHeatExchangerInput(EnergyPlusData &state)
                 }
             }
 
-            if (!lAlphaFieldBlanks(13)) {
-                if (Util::SameString(cAlphaArgs(13), "WetBulbTemperature")) {
-                    state.dataPlantHXFluidToFluid->FluidHX(CompLoop).ControlSignalTemp = CtrlTempType::WetBulbTemperature;
-                } else if (Util::SameString(cAlphaArgs(13), "DryBulbTemperature")) {
-                    state.dataPlantHXFluidToFluid->FluidHX(CompLoop).ControlSignalTemp = CtrlTempType::DryBulbTemperature;
-                } else if (Util::SameString(cAlphaArgs(13), "Loop")) {
-                    state.dataPlantHXFluidToFluid->FluidHX(CompLoop).ControlSignalTemp = CtrlTempType::LoopTemperature;
-                }
-            } else {
+            if (lAlphaFieldBlanks(13)) {
                 if (state.dataPlantHXFluidToFluid->FluidHX(CompLoop).controlMode == ControlType::CoolingSetPointOnOffWithComponentOverride) {
-                    ShowSevereError(state, format("{}{}=\"{}\", invalid entry.", RoutineName, cCurrentModuleObject, cAlphaArgs(1)));
-                    ShowContinueError(state, format("Missing entry for {}", cAlphaFieldNames(13)));
+                    ShowSevereEmptyField(state, eoh, cAlphaFieldNames(13), cAlphaFieldNames(8), cAlphaArgs(8));
                     ErrorsFound = true;
                 }
+            } else if ((state.dataPlantHXFluidToFluid->FluidHX(CompLoop).ControlSignalTemp =
+                            static_cast<CtrlTempType>(getEnumValue(ctrlTempTypeNamesUC, cAlphaArgs(13)))) == CtrlTempType::Invalid) {
+                ShowSevereInvalidKey(state, eoh, cAlphaFieldNames(13), cAlphaArgs(13));
+                ErrorsFound = true;
             }
 
             if (!lNumericFieldBlanks(5)) {

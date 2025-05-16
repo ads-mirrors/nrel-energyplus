@@ -440,7 +440,14 @@ namespace HighTempRadiantSystem {
             }
 
             // Process the temperature control type
-            highTempRadSys.ControlType = static_cast<RadControlType>(getEnumValue(radControlTypeNamesUC, state.dataIPShortCut->cAlphaArgs(6)));
+            if (state.dataIPShortCut->lAlphaFieldBlanks(6)) {
+                ShowWarningEmptyField(state, eoh, state.dataIPShortCut->cAlphaFieldNames(6), "OperativeTemperature");
+                highTempRadSys.ControlType = RadControlType::OperativeControl;
+            } else if ((highTempRadSys.ControlType = static_cast<RadControlType>(
+                            getEnumValue(radControlTypeNamesUC, state.dataIPShortCut->cAlphaArgs(6)))) == RadControlType::Invalid) {
+                ShowSevereInvalidKey(state, eoh, state.dataIPShortCut->cAlphaFieldNames(6), state.dataIPShortCut->cAlphaArgs(6));
+                ErrorsFound = true;
+            }
 
             highTempRadSys.ThrottlRange = state.dataIPShortCut->rNumericArgs(8);
             if (highTempRadSys.ThrottlRange < MinThrottlingRange) {
@@ -451,6 +458,12 @@ namespace HighTempRadiantSystem {
             }
 
             if (state.dataIPShortCut->lAlphaFieldBlanks(7)) {
+                ShowSevereEmptyField(state,
+                                     eoh,
+                                     state.dataIPShortCut->cAlphaFieldNames(7),
+                                     state.dataIPShortCut->cAlphaFieldNames(6),
+                                     state.dataIPShortCut->cAlphaArgs(6));
+                ErrorsFound = true;
             } else if ((highTempRadSys.setptSched = Sched::GetSchedule(state, state.dataIPShortCut->cAlphaArgs(7))) == nullptr) {
                 ShowSevereItemNotFound(state, eoh, state.dataIPShortCut->cAlphaFieldNames(7), state.dataIPShortCut->cAlphaArgs(7));
                 ErrorsFound = true;

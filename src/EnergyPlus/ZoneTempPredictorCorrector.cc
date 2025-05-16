@@ -952,23 +952,15 @@ void GetZoneAirSetPoints(EnergyPlusData &state)
                                            s_ipsc->cAlphaArgs(2)));
                     ErrorsFound = true;
                 }
-                comfortZone.AverageMethod = DataZoneControls::AverageMethod::NO;
+
+                comfortZone.averageMethod = DataZoneControls::AverageMethod::NO;
                 if (IZoneCount > 1) {
-                    comfortZone.AverageMethodName = s_ipsc->cAlphaArgs(3);
-                    if (Util::SameString(s_ipsc->cAlphaArgs(3), "SpecificObject")) {
-                        comfortZone.AverageMethod = DataZoneControls::AverageMethod::SPE;
-                    }
-                    if (Util::SameString(s_ipsc->cAlphaArgs(3), "ObjectAverage")) {
-                        comfortZone.AverageMethod = DataZoneControls::AverageMethod::OBJ;
-                    }
-                    if (Util::SameString(s_ipsc->cAlphaArgs(3), "PeopleAverage")) {
-                        comfortZone.AverageMethod = DataZoneControls::AverageMethod::PEO;
-                    }
-                    if (comfortZone.AverageMethod == DataZoneControls::AverageMethod::NO) {
+                    comfortZone.averageMethod =
+                        static_cast<DataZoneControls::AverageMethod>(getEnumValue(DataZoneControls::averageMethodNamesUC, s_ipsc->cAlphaArgs(3)));
+                    if (comfortZone.averageMethod == DataZoneControls::AverageMethod::Invalid) {
                         ShowSevereInvalidKey(state, eoh, s_ipsc->cAlphaFieldNames(3), s_ipsc->cAlphaArgs(3));
                         ErrorsFound = true;
-                    }
-                    if (comfortZone.AverageMethod == DataZoneControls::AverageMethod::SPE) {
+                    } else if (comfortZone.averageMethod == DataZoneControls::AverageMethod::SPE) {
                         comfortZone.AverageObjectName = s_ipsc->cAlphaArgs(4);
                         if (Util::FindItem(s_ipsc->cAlphaArgs(4), state.dataHeatBal->People) == 0) {
                             ShowSevereItemNotFound(state, eoh, s_ipsc->cAlphaFieldNames(4), s_ipsc->cAlphaArgs(4));
@@ -1521,105 +1513,19 @@ void GetZoneAirSetPoints(EnergyPlusData &state)
             ErrorObjectHeader eoh{routineName, s_ipsc->cCurrentModuleObject, s_ipsc->cAlphaArgs(1)};
 
             // find matching name of  ZONECONTROL:THERMOSTAT object
-            found = Util::FindItem(s_ipsc->cAlphaArgs(1), TStatObjects);
-            if (found == 0) {
-                // It might be in the TempControlledZones
-                found = Util::FindItem(s_ipsc->cAlphaArgs(1), state.dataZoneCtrls->TempControlledZone);
-                if (found == 0) { // throw error
-                    ShowSevereError(state,
-                                    format("{}={} invalid {} reference not found.",
-                                           s_ipsc->cCurrentModuleObject,
-                                           s_ipsc->cAlphaArgs(1),
-                                           cZControlTypes(static_cast<int>(ZoneControlTypes::TStat))));
-                    ErrorsFound = true;
-                } else {
-                    TempControlledZoneNum = found;
-                    auto &tempZone = state.dataZoneCtrls->TempControlledZone(TempControlledZoneNum);
-                    tempZone.OperativeTempControl = true;
-                    if (Util::SameString(s_ipsc->cAlphaArgs(2), "Scheduled")) {
-                        tempZone.OpTempCntrlModeScheduled = true;
-                    }
-                    if ((!(Util::SameString(s_ipsc->cAlphaArgs(2), "Scheduled"))) && (!(Util::SameString(s_ipsc->cAlphaArgs(2), "Constant")))) {
-                        ShowSevereInvalidKey(state, eoh, s_ipsc->cAlphaFieldNames(2), s_ipsc->cAlphaArgs(2));
-                        ErrorsFound = true;
-                    }
-
-                    tempZone.FixedRadiativeFraction = s_ipsc->rNumericArgs(1);
-
-                    if (tempZone.OpTempCntrlModeScheduled) {
-                        if (s_ipsc->lAlphaFieldBlanks(3)) {
-                            ShowSevereEmptyField(state, eoh, s_ipsc->cAlphaFieldNames(3));
-                            ErrorsFound = true;
-                        } else if ((tempZone.opTempRadiativeFractionSched = Sched::GetSchedule(state, s_ipsc->cAlphaArgs(3))) == nullptr) {
-                            ShowSevereItemNotFound(state, eoh, s_ipsc->cAlphaFieldNames(3), s_ipsc->cAlphaArgs(3));
-                            ErrorsFound = true;
-                        } else if (!tempZone.opTempRadiativeFractionSched->checkMinMaxVals(state, Clusive::In, 0.0, Clusive::Ex, 0.9)) {
-                            Sched::ShowSevereBadMinMax(
-                                state, eoh, s_ipsc->cAlphaFieldNames(3), s_ipsc->cAlphaArgs(3), Clusive::In, 0.0, Clusive::Ex, 0.9);
-                            ErrorsFound = true;
-                        }
-
-                    } else { // !tempZone.OpTempCntrlModeScheduled
-
-                        if (tempZone.FixedRadiativeFraction < 0.0) {
-                            ShowSevereBadMin(state, eoh, s_ipsc->cNumericFieldNames(1), s_ipsc->rNumericArgs(1), Clusive::In, 0.0);
-                            ErrorsFound = true;
-                        } else if (tempZone.FixedRadiativeFraction >= 0.9) {
-                            ShowSevereBadMax(state, eoh, s_ipsc->cNumericFieldNames(1), s_ipsc->rNumericArgs(1), Clusive::Ex, 0.9);
-                            ErrorsFound = true;
-                        }
-                    }
-
-                    // added Jan, 2017 - Xuan Luo
-                    // read adaptive comfort model and calculate adaptive thermal comfort setpoint
-                    if (tempZone.OperativeTempControl) {
-                        if (NumAlphas >= 4 && !s_ipsc->lAlphaFieldBlanks(4)) {
-                            int adaptiveComfortModelTypeIndex =
-                                Util::FindItem(s_ipsc->cAlphaArgs(4), AdaptiveComfortModelTypes, AdaptiveComfortModelTypes.isize());
-                            if (!adaptiveComfortModelTypeIndex) {
-                                ShowSevereError(state,
-                                                format("{}={} invalid {}=\"{}\" not found.",
-                                                       s_ipsc->cCurrentModuleObject,
-                                                       s_ipsc->cAlphaArgs(1),
-                                                       s_ipsc->cAlphaFieldNames(4),
-                                                       s_ipsc->cAlphaArgs(4)));
-                                ErrorsFound = true;
-                            } else if (adaptiveComfortModelTypeIndex != static_cast<int>(AdaptiveComfortModel::ADAP_NONE)) {
-                                tempZone.AdaptiveComfortTempControl = true;
-                                tempZone.AdaptiveComfortModelTypeIndex =
-                                    Util::FindItem(s_ipsc->cAlphaArgs(4), AdaptiveComfortModelTypes, AdaptiveComfortModelTypes.isize());
-                                if (!s_ztpc->AdapComfortDailySetPointSchedule.initialized) {
-                                    Array1D<Real64> runningAverageASH(state.dataWeather->NumDaysInYear, 0.0);
-                                    Array1D<Real64> runningAverageCEN(state.dataWeather->NumDaysInYear, 0.0);
-                                    CalculateMonthlyRunningAverageDryBulb(state, runningAverageASH, runningAverageCEN);
-                                    CalculateAdaptiveComfortSetPointSchl(state, runningAverageASH, runningAverageCEN);
-                                }
-                            }
-                        }
-                    }
-
-                    // CurrentModuleObject='ZoneControl:Thermostat:OperativeTemperature'
-                    SetupOutputVariable(state,
-                                        "Zone Thermostat Operative Temperature",
-                                        Constant::Units::C,
-                                        state.dataHeatBal->ZnAirRpt(tempZone.ActualZoneNum).ThermOperativeTemp,
-                                        OutputProcessor::TimeStepType::Zone,
-                                        OutputProcessor::StoreType::Average,
-                                        Zone(tempZone.ActualZoneNum).Name);
-                }
-            } else {
+            if ((found = Util::FindItem(s_ipsc->cAlphaArgs(1), TStatObjects)) != 0) {
                 auto const &TStatObjects = state.dataZoneCtrls->TStatObjects(found);
                 for (Item = 1; Item <= TStatObjects.NumOfZones; ++Item) {
                     TempControlledZoneNum = TStatObjects.TempControlledZoneStartPtr + Item - 1;
                     auto &TempControlledZone = state.dataZoneCtrls->TempControlledZone(TempControlledZoneNum);
                     if (state.dataZoneCtrls->NumTempControlledZones == 0) continue;
                     auto &tempZone = state.dataZoneCtrls->TempControlledZone(TempControlledZoneNum);
-                    tempZone.OperativeTempControl = true;
-                    if (Util::SameString(s_ipsc->cAlphaArgs(2), "Scheduled")) {
-                        tempZone.OpTempCntrlModeScheduled = true;
-                    }
+                    tempZone.OpTempCtrl =
+                        static_cast<DataZoneControls::TempCtrl>(getEnumValue(DataZoneControls::tempCtrlNamesUC, s_ipsc->cAlphaArgs(2)));
+
                     if (Item == 1) {
-                        if ((!(Util::SameString(s_ipsc->cAlphaArgs(2), "Scheduled"))) && (!(Util::SameString(s_ipsc->cAlphaArgs(2), "Constant")))) {
+                        if (tempZone.OpTempCtrl != DataZoneControls::TempCtrl::Constant &&
+                            tempZone.OpTempCtrl != DataZoneControls::TempCtrl::Scheduled) {
                             ShowSevereInvalidKey(state, eoh, s_ipsc->cAlphaFieldNames(2), s_ipsc->cAlphaArgs(2));
                             ErrorsFound = true;
                         }
@@ -1627,7 +1533,7 @@ void GetZoneAirSetPoints(EnergyPlusData &state)
 
                     tempZone.FixedRadiativeFraction = s_ipsc->rNumericArgs(1);
 
-                    if (tempZone.OpTempCntrlModeScheduled) {
+                    if (tempZone.OpTempCtrl == DataZoneControls::TempCtrl::Scheduled) {
                         if (s_ipsc->lAlphaFieldBlanks(3)) {
                             if (Item == 1) {
                                 ShowSevereEmptyField(state, eoh, s_ipsc->cAlphaFieldNames(3));
@@ -1662,7 +1568,7 @@ void GetZoneAirSetPoints(EnergyPlusData &state)
 
                     // added Jan, 2017 - Xuan Luo
                     // read adaptive comfort model and calculate adaptive thermal comfort setpoint
-                    if (tempZone.OperativeTempControl) {
+                    if (tempZone.OpTempCtrl == DataZoneControls::TempCtrl::Constant || tempZone.OpTempCtrl == DataZoneControls::TempCtrl::Scheduled) {
                         if (NumAlphas >= 4 && !s_ipsc->lAlphaFieldBlanks(4)) {
                             int adaptiveComfortModelTypeIndex =
                                 Util::FindItem(s_ipsc->cAlphaArgs(4), AdaptiveComfortModelTypes, AdaptiveComfortModelTypes.isize());
@@ -1692,9 +1598,86 @@ void GetZoneAirSetPoints(EnergyPlusData &state)
                                         OutputProcessor::StoreType::Average,
                                         Zone(tempZone.ActualZoneNum).Name);
                 } // TStat Objects Loop
-            }     // found thermostat reference
-        }         // loop over NumOpTempControlledZones
-    }             // NumOpTempControlledZones > 0
+
+                // It might be in the TempControlledZones
+            } else if ((found = Util::FindItem(s_ipsc->cAlphaArgs(1), state.dataZoneCtrls->TempControlledZone)) != 0) {
+
+                TempControlledZoneNum = found;
+                auto &tempZone = state.dataZoneCtrls->TempControlledZone(TempControlledZoneNum);
+                tempZone.OpTempCtrl = static_cast<DataZoneControls::TempCtrl>(getEnumValue(DataZoneControls::tempCtrlNamesUC, s_ipsc->cAlphaArgs(2)));
+                if (tempZone.OpTempCtrl == DataZoneControls::TempCtrl::Invalid || tempZone.OpTempCtrl == DataZoneControls::TempCtrl::None) {
+                    ShowSevereInvalidKey(state, eoh, s_ipsc->cAlphaFieldNames(2), s_ipsc->cAlphaArgs(2));
+                    ErrorsFound = true;
+                }
+
+                tempZone.FixedRadiativeFraction = s_ipsc->rNumericArgs(1);
+
+                if (tempZone.OpTempCtrl == DataZoneControls::TempCtrl::Scheduled) {
+                    if (s_ipsc->lAlphaFieldBlanks(3)) {
+                        ShowSevereEmptyField(state, eoh, s_ipsc->cAlphaFieldNames(3));
+                        ErrorsFound = true;
+                    } else if ((tempZone.opTempRadiativeFractionSched = Sched::GetSchedule(state, s_ipsc->cAlphaArgs(3))) == nullptr) {
+                        ShowSevereItemNotFound(state, eoh, s_ipsc->cAlphaFieldNames(3), s_ipsc->cAlphaArgs(3));
+                        ErrorsFound = true;
+                    } else if (!tempZone.opTempRadiativeFractionSched->checkMinMaxVals(state, Clusive::In, 0.0, Clusive::Ex, 0.9)) {
+                        Sched::ShowSevereBadMinMax(
+                            state, eoh, s_ipsc->cAlphaFieldNames(3), s_ipsc->cAlphaArgs(3), Clusive::In, 0.0, Clusive::Ex, 0.9);
+                        ErrorsFound = true;
+                    }
+
+                } else { // !tempZone.OpTempCntrlModeScheduled
+
+                    if (tempZone.FixedRadiativeFraction < 0.0) {
+                        ShowSevereBadMin(state, eoh, s_ipsc->cNumericFieldNames(1), s_ipsc->rNumericArgs(1), Clusive::In, 0.0);
+                        ErrorsFound = true;
+                    } else if (tempZone.FixedRadiativeFraction >= 0.9) {
+                        ShowSevereBadMax(state, eoh, s_ipsc->cNumericFieldNames(1), s_ipsc->rNumericArgs(1), Clusive::Ex, 0.9);
+                        ErrorsFound = true;
+                    }
+                }
+
+                // added Jan, 2017 - Xuan Luo
+                // read adaptive comfort model and calculate adaptive thermal comfort setpoint
+                if (tempZone.OpTempCtrl == DataZoneControls::TempCtrl::Constant || tempZone.OpTempCtrl == DataZoneControls::TempCtrl::Scheduled) {
+                    if (NumAlphas >= 4 && !s_ipsc->lAlphaFieldBlanks(4)) {
+                        int adaptiveComfortModelTypeIndex =
+                            Util::FindItem(s_ipsc->cAlphaArgs(4), AdaptiveComfortModelTypes, AdaptiveComfortModelTypes.isize());
+                        if (!adaptiveComfortModelTypeIndex) {
+                            ShowSevereItemNotFound(state, eoh, s_ipsc->cAlphaFieldNames(4), s_ipsc->cAlphaArgs(4));
+                            ErrorsFound = true;
+                        } else if (adaptiveComfortModelTypeIndex != static_cast<int>(AdaptiveComfortModel::ADAP_NONE)) {
+                            tempZone.AdaptiveComfortTempControl = true;
+                            tempZone.AdaptiveComfortModelTypeIndex = adaptiveComfortModelTypeIndex;
+                            if (!s_ztpc->AdapComfortDailySetPointSchedule.initialized) {
+                                Array1D<Real64> runningAverageASH(state.dataWeather->NumDaysInYear, 0.0);
+                                Array1D<Real64> runningAverageCEN(state.dataWeather->NumDaysInYear, 0.0);
+                                // What does this accomplish?
+                                CalculateMonthlyRunningAverageDryBulb(state, runningAverageASH, runningAverageCEN);
+                                CalculateAdaptiveComfortSetPointSchl(state, runningAverageASH, runningAverageCEN);
+                            }
+                        }
+                    }
+
+                    // CurrentModuleObject='ZoneControl:Thermostat:OperativeTemperature'
+                    SetupOutputVariable(state,
+                                        "Zone Thermostat Operative Temperature",
+                                        Constant::Units::C,
+                                        state.dataHeatBal->ZnAirRpt(tempZone.ActualZoneNum).ThermOperativeTemp,
+                                        OutputProcessor::TimeStepType::Zone,
+                                        OutputProcessor::StoreType::Average,
+                                        Zone(tempZone.ActualZoneNum).Name);
+                }
+                // throw error
+            } else {
+                ShowSevereError(state,
+                                format("{}={} invalid {} reference not found.",
+                                       s_ipsc->cCurrentModuleObject,
+                                       s_ipsc->cAlphaArgs(1),
+                                       cZControlTypes(static_cast<int>(ZoneControlTypes::TStat))));
+                ErrorsFound = true;
+            }
+        } // loop over NumOpTempControlledZones
+    }     // NumOpTempControlledZones > 0
 
     // Overcool dehumidificaton GetInput starts here
     s_ipsc->cCurrentModuleObject = cZControlTypes((int)ZoneControlTypes::TandHStat);
@@ -1742,20 +1725,16 @@ void GetZoneAirSetPoints(EnergyPlusData &state)
                         ErrorsFound = true;
                     }
 
-                    tempZone.ZoneOvercoolControl = true;
-                    if ((Util::SameString(s_ipsc->cAlphaArgs(3), "None"))) {
-                        tempZone.ZoneOvercoolControl = false;
-                    }
-                    if (Util::SameString(s_ipsc->cAlphaArgs(4), "Scheduled")) {
-                        tempZone.OvercoolCntrlModeScheduled = true;
-                    } else if (!Util::SameString(s_ipsc->cAlphaArgs(4), "Constant")) {
+                    tempZone.OvercoolCtrl =
+                        static_cast<DataZoneControls::TempCtrl>(getEnumValue(DataZoneControls::tempCtrlNamesUC, s_ipsc->cAlphaArgs(3)));
+                    if (tempZone.OvercoolCtrl == DataZoneControls::TempCtrl::Invalid) {
                         ShowSevereInvalidKey(state, eoh, s_ipsc->cAlphaFieldNames(4), s_ipsc->cAlphaArgs(4));
                         ErrorsFound = true;
                     }
 
                     tempZone.ZoneOvercoolConstRange = s_ipsc->rNumericArgs(1);
 
-                    if (tempZone.OvercoolCntrlModeScheduled) {
+                    if (tempZone.OvercoolCtrl == DataZoneControls::TempCtrl::Scheduled) {
                         if (s_ipsc->lAlphaFieldBlanks(5)) {
                             ShowSevereEmptyField(state, eoh, s_ipsc->cAlphaFieldNames(5));
                             ErrorsFound = true;
@@ -1800,14 +1779,16 @@ void GetZoneAirSetPoints(EnergyPlusData &state)
                         ErrorsFound = true;
                     }
 
-                    tempZone.ZoneOvercoolControl = true;
-                    if (Util::SameString(s_ipsc->cAlphaArgs(3), "None")) {
-                        tempZone.ZoneOvercoolControl = false;
-                    }
-
-                    if (Util::SameString(s_ipsc->cAlphaArgs(4), "Scheduled")) {
-                        tempZone.OvercoolCntrlModeScheduled = false;
-                    } else if (!Util::SameString(s_ipsc->cAlphaArgs(4), "Constant")) {
+                    // This (i.e., using two booleans to represent three options) is a bad idiom
+                    if (s_ipsc->cAlphaArgs(3) == "NONE") {
+                        tempZone.OvercoolCtrl = DataZoneControls::TempCtrl::None;
+                    } else if (s_ipsc->cAlphaArgs(3) != "OVERCOOL") {
+                        if (Item == 1) {
+                            ShowSevereInvalidKey(state, eoh, s_ipsc->cAlphaFieldNames(3), s_ipsc->cAlphaArgs(3));
+                            ErrorsFound = true;
+                        }
+                    } else if ((tempZone.OvercoolCtrl = static_cast<DataZoneControls::TempCtrl>(
+                                    getEnumValue(DataZoneControls::tempCtrlNamesUC, s_ipsc->cAlphaArgs(4)))) == DataZoneControls::TempCtrl::Invalid) {
                         if (Item == 1) {
                             ShowSevereInvalidKey(state, eoh, s_ipsc->cAlphaFieldNames(4), s_ipsc->cAlphaArgs(4));
                             ErrorsFound = true;
@@ -1816,7 +1797,7 @@ void GetZoneAirSetPoints(EnergyPlusData &state)
 
                     tempZone.ZoneOvercoolConstRange = s_ipsc->rNumericArgs(1);
 
-                    if (tempZone.OvercoolCntrlModeScheduled) {
+                    if (tempZone.OvercoolCtrl == DataZoneControls::TempCtrl::Scheduled) {
                         if (s_ipsc->lAlphaFieldBlanks(6)) {
                             if (Item == 1) {
                                 ShowSevereEmptyField(state, eoh, s_ipsc->cAlphaFieldNames(6));
@@ -5704,11 +5685,12 @@ void AdjustAirSetPointsforOpTempCntrl(EnergyPlusData &state, int const TempContr
     if (!(state.dataZoneCtrls->AnyOpTempControl)) return; // do nothing to setpoint
 
     auto &tempControlledZone = state.dataZoneCtrls->TempControlledZone(TempControlledZoneID);
-    if (!(tempControlledZone.OperativeTempControl)) return; // do nothing to setpoint
+    if (tempControlledZone.OpTempCtrl == DataZoneControls::TempCtrl::None) return; // do nothing to setpoint
 
     // is operative temp radiative fraction scheduled or fixed?
-    thisMRTFraction = (tempControlledZone.OpTempCntrlModeScheduled) ? tempControlledZone.opTempRadiativeFractionSched->getCurrentVal()
-                                                                    : tempControlledZone.FixedRadiativeFraction;
+    thisMRTFraction = (tempControlledZone.OpTempCtrl == DataZoneControls::TempCtrl::Scheduled)
+                          ? tempControlledZone.opTempRadiativeFractionSched->getCurrentVal()
+                          : tempControlledZone.FixedRadiativeFraction;
 
     // get mean radiant temperature for zone
     Real64 thisMRT = s_ztpc->zoneHeatBalance(ActualZoneNum).MRT;
@@ -5879,7 +5861,7 @@ void CalcZoneAirComfortSetPoints(EnergyPlusData &state)
         } // switch
 
         // Check Average method
-        switch (comfortZone.AverageMethod) {
+        switch (comfortZone.averageMethod) {
         case DataZoneControls::AverageMethod::NO: {
             int PeopleNum = comfortZone.SpecificObjectNum;
             if (s_hbfs->ComfortControlType(ActualZoneNum) == HVAC::SetptType::SingleCool) {
@@ -6226,20 +6208,16 @@ void AdjustCoolingSetPointforTempAndHumidityControl(EnergyPlusData &state,
     //  This subroutine modifies the air cooling setpoint temperature to effect zone air Temperature and humidity control
     //  Alter the zone air cooling setpoint if the zone air relative humidity value exceeds the the zone dehumidifying relative humidity setpoint.
 
-    Real64 ZoneOvercoolRange = 0.0;
-
     auto const &s_ztpc = state.dataZoneTempPredictorCorrector;
     auto &tempZone = state.dataZoneCtrls->TempControlledZone(TempControlledZoneID);
     auto &zoneTstatSetpt = state.dataHeatBalFanSys->zoneTstatSetpts(ActualZoneNum);
 
-    if (!state.dataZoneCtrls->AnyZoneTempAndHumidityControl) return; // do nothing to setpoint
-    if (!tempZone.ZoneOvercoolControl) return;                       // do nothing to setpoint
+    if (!state.dataZoneCtrls->AnyZoneTempAndHumidityControl) return;       // do nothing to setpoint
+    if (tempZone.OvercoolCtrl == DataZoneControls::TempCtrl::None) return; // do nothing to setpoint
 
-    if (tempZone.OvercoolCntrlModeScheduled) {
-        ZoneOvercoolRange = tempZone.zoneOvercoolRangeSched->getCurrentVal();
-    } else {
-        ZoneOvercoolRange = tempZone.ZoneOvercoolConstRange;
-    }
+    Real64 ZoneOvercoolRange = (tempZone.OvercoolCtrl == DataZoneControls::TempCtrl::Scheduled) ? tempZone.zoneOvercoolRangeSched->getCurrentVal()
+                                                                                                : tempZone.ZoneOvercoolConstRange;
+
     Real64 ZoneOvercoolControlRatio = tempZone.ZoneOvercoolControlRatio;
 
     // For Dual Setpoint thermostat the overcool range is limited by the temperature difference between cooling and heating setpoints

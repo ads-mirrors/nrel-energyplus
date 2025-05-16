@@ -354,6 +354,7 @@ void GetSysInput(EnergyPlusData &state)
         sdAirTerm.SysNum = state.dataSingleDuct->SysNumGSI;
         GlobalNames::VerifyUniqueInterObjectName(
             state, state.dataSingleDuct->SysUniqueNames, Alphas(1), CurrentModuleObject, cAlphaFields(1), ErrorsFound);
+
         sdAirTerm.SysName = Alphas(1);
         sdAirTerm.sysType = CurrentModuleObject;
         sdAirTerm.SysType_Num = SysType::SingleDuctVAVReheat;
@@ -371,6 +372,26 @@ void GetSysInput(EnergyPlusData &state)
         }
 
         sdAirTerm.ReheatCoilName = Alphas(8);
+
+        if (sdAirTerm.reheatCoilType == HVAC::CoilType::HeatingGasOrOtherFuel || sdAirTerm.reheatCoilType == HVAC::CoilType::HeatingElectric) {
+            sdAirTerm.ReheatCoilNum = HeatingCoils::GetCoilIndex(state, sdAirTerm.ReheatCoilName);
+            if (sdAirTerm.ReheatCoilNum == 0) {
+                ShowSevereItemNotFound(state, eoh, cAlphaFields(8), Alphas(8));
+                ErrorsFound = true;
+            }
+        } else if (sdAirTerm.reheatCoilType == HVAC::CoilType::HeatingWater) {
+            sdAirTerm.ReheatCoilNum = WaterCoils::GetCoilIndex(state, sdAirTerm.ReheatCoilName);
+            if (sdAirTerm.ReheatCoilNum == 0) {
+                ShowSevereItemNotFound(state, eoh, cAlphaFields(8), Alphas(8));
+                ErrorsFound = true;
+            }
+        } else if (sdAirTerm.reheatCoilType == HVAC::CoilType::HeatingSteam) {
+            sdAirTerm.ReheatCoilNum = SteamCoils::GetCoilIndex(state, sdAirTerm.ReheatCoilName);
+            if (sdAirTerm.ReheatCoilNum == 0) {
+                ShowSevereItemNotFound(state, eoh, cAlphaFields(8), Alphas(8));
+                ErrorsFound = true;
+            }
+        }
 
         if (lAlphaBlanks(2)) {
             sdAirTerm.availSched = Sched::GetScheduleAlwaysOn(state);
@@ -712,6 +733,7 @@ void GetSysInput(EnergyPlusData &state)
         sdAirTerm.SysNum = state.dataSingleDuct->SysNumGSI;
         GlobalNames::VerifyUniqueInterObjectName(
             state, state.dataSingleDuct->SysUniqueNames, Alphas(1), CurrentModuleObject, cAlphaFields(1), ErrorsFound);
+
         sdAirTerm.SysName = Alphas(1);
         sdAirTerm.sysType = CurrentModuleObject;
         sdAirTerm.SysType_Num = SysType::SingleDuctCBVAVReheat;
@@ -728,6 +750,27 @@ void GetSysInput(EnergyPlusData &state)
             ErrorsFound = true;
         }
         
+        sdAirTerm.ReheatCoilName = Alphas(6);
+        if (sdAirTerm.reheatCoilType == HVAC::CoilType::HeatingGasOrOtherFuel || sdAirTerm.reheatCoilType == HVAC::CoilType::HeatingElectric) {
+            sdAirTerm.ReheatCoilNum = HeatingCoils::GetCoilIndex(state, sdAirTerm.ReheatCoilName);
+            if (sdAirTerm.ReheatCoilNum == 0) {
+                ShowSevereItemNotFound(state, eoh, cAlphaFields(6), Alphas(6));
+                ErrorsFound = true;
+            }
+        } else if (sdAirTerm.reheatCoilType == HVAC::CoilType::HeatingWater) {
+            sdAirTerm.ReheatCoilNum = WaterCoils::GetCoilIndex(state, sdAirTerm.ReheatCoilName);
+            if (sdAirTerm.ReheatCoilNum == 0) {
+                ShowSevereItemNotFound(state, eoh, cAlphaFields(6), Alphas(6));
+                ErrorsFound = true;
+            }
+        } else if (sdAirTerm.reheatCoilType == HVAC::CoilType::HeatingSteam) {
+            sdAirTerm.ReheatCoilNum = SteamCoils::GetCoilIndex(state, sdAirTerm.ReheatCoilName);
+            if (sdAirTerm.ReheatCoilNum == 0) {
+                ShowSevereItemNotFound(state, eoh, cAlphaFields(6), Alphas(6));
+                ErrorsFound = true;
+            }
+        }
+
         if (lAlphaBlanks(2)) {
             sdAirTerm.availSched = Sched::GetScheduleAlwaysOn(state);
         } else if ((sdAirTerm.availSched = Sched::GetSchedule(state, Alphas(2))) == nullptr) {
@@ -967,9 +1010,11 @@ void GetSysInput(EnergyPlusData &state)
         sdAirTerm.SysNum = state.dataSingleDuct->SysNumGSI;
         GlobalNames::VerifyUniqueInterObjectName(
             state, state.dataSingleDuct->SysUniqueNames, Alphas(1), CurrentModuleObject, cAlphaFields(1), ErrorsFound);
+
         sdAirTerm.SysName = Alphas(1);
         sdAirTerm.sysType = CurrentModuleObject;
         sdAirTerm.SysType_Num = SysType::SingleDuctConstVolReheat;
+
 
         if (lAlphaBlanks(2)) {
             sdAirTerm.availSched = Sched::GetScheduleAlwaysOn(state);
@@ -991,6 +1036,25 @@ void GetSysInput(EnergyPlusData &state)
         }
 
         sdAirTerm.ReheatCoilName = Alphas(6);
+        if (sdAirTerm.reheatCoilType == HVAC::CoilType::HeatingGasOrOtherFuel || sdAirTerm.reheatCoilType == HVAC::CoilType::HeatingElectric) {
+            sdAirTerm.ReheatCoilNum = HeatingCoils::GetCoilIndex(state, sdAirTerm.ReheatCoilName);
+            if (sdAirTerm.ReheatCoilNum == 0) {
+                ShowSevereItemNotFound(state, eoh, cAlphaFields(6), Alphas(6));
+                ErrorsFound = true;
+            }
+        } else if (sdAirTerm.reheatCoilType == HVAC::CoilType::HeatingWater) {
+            sdAirTerm.ReheatCoilNum = WaterCoils::GetCoilIndex(state, sdAirTerm.ReheatCoilName);
+            if (sdAirTerm.ReheatCoilNum == 0) {
+                ShowSevereItemNotFound(state, eoh, cAlphaFields(6), Alphas(6));
+                ErrorsFound = true;
+            }
+        } else if (sdAirTerm.reheatCoilType == HVAC::CoilType::HeatingSteam) {
+            sdAirTerm.ReheatCoilNum = SteamCoils::GetCoilIndex(state, sdAirTerm.ReheatCoilName);
+            if (sdAirTerm.ReheatCoilNum == 0) {
+                ShowSevereItemNotFound(state, eoh, cAlphaFields(6), Alphas(6));
+                ErrorsFound = true;
+            }
+        }
 
         sdAirTerm.OutletNodeNum =
             GetOnlySingleNode(state,
@@ -1790,6 +1854,7 @@ void GetSysInput(EnergyPlusData &state)
         sdAirTerm.SysNum = state.dataSingleDuct->SysNumGSI;
         GlobalNames::VerifyUniqueInterObjectName(
             state, state.dataSingleDuct->SysUniqueNames, Alphas(1), CurrentModuleObject, cAlphaFields(1), ErrorsFound);
+
         sdAirTerm.SysName = Alphas(1);
         sdAirTerm.sysType = CurrentModuleObject;
         sdAirTerm.SysType_Num = SysType::SingleDuctVAVReheatVSFan;

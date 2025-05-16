@@ -2178,7 +2178,7 @@ void GetOARequirements(EnergyPlusData &state)
     defaultOAReq.Name = "Default-0.00944[m3/s-person]";
     defaultOAReq.OAFlowMethod = OAFlowCalcMethod::PerPerson;
     defaultOAReq.OAFlowPerPerson = 0.00944;
-    defaultOAReq.oaFlowFracSched= Sched::GetScheduleAlwaysOn(state);
+    defaultOAReq.oaFlowFracSched = Sched::GetScheduleAlwaysOn(state);
 
     if (state.dataSize->NumOARequirements > 1) {
         int IOStatus;            // Used in GetObjectItem

@@ -1793,7 +1793,7 @@ void GetOAControllerInputs(EnergyPlusData &state)
                                                       ? state.dataSize->OARequirements(thisVentMechZone.ZoneDesignSpecOAObjIndex).Name
                                                       : "";
                 std::string_view const adName = thisVentMechZone.ZoneDesignSpecADObjIndex > 0
-                                                    ? state.dataSize->OARequirements(thisVentMechZone.ZoneDesignSpecADObjIndex).Name
+                                                    ? state.dataSize->ZoneAirDistribution(thisVentMechZone.ZoneDesignSpecADObjIndex).Name
                                                     : "";
                 print(state.files.eio, ",{},{},{}", state.dataHeatBal->Zone(thisVentMechZone.zoneNum).Name, dsoaName, adName);
             }
@@ -3665,6 +3665,7 @@ Real64 VentilationMechanicalProps::CalcMechVentController(EnergyPlusData &state,
         } else {
             // for system OA methods: Zone_Sum, VRP, CO2 methods
             // new code for DCV method complying with the VRP defined in ASHRAE Standard 62.1-2010
+            bool const useOccSch = this->DCVFlag && (this->SystemOAMethod != DataSizing::SysOAMethod::ProportionalControlDesOcc);
 
             // Loop through each zone first to calc uncorrected system OA flow rate
             SysOAuc = 0.0; // [m3/s]
@@ -3674,11 +3675,10 @@ Real64 VentilationMechanicalProps::CalcMechVentController(EnergyPlusData &state,
                 int const ZoneNum = thisMechVentZone.zoneNum;
 
                 // Use calcDesignSpecificationOutdoorAir function to support simple DSOA and DSOA:SpaceList
-                bool const useOccSch = this->DCVFlag && (this->SystemOAMethod != DataSizing::SysOAMethod::ProportionalControlDesOcc);
                 bool const useOASch = true;
                 bool const perPersonNotSet = false;  // placeholder function argument
                 bool const maxOAVolFlowFlag = false; // placeholder function argument
-                int const spaceNum = 0;              // placeholder function argument
+                int constexpr spaceNum = 0;          // placeholder function argument
                 bool const calcIAQMethods = false;   // If the zone or space OA method is IAQProcedure, PCOccSch or PCDesOcc then return zero
                 thisMechVentZone.zoneOABZ = DataSizing::calcDesignSpecificationOutdoorAir(state,
                                                                                           thisMechVentZone.ZoneDesignSpecOAObjIndex,
@@ -3762,7 +3762,6 @@ Real64 VentilationMechanicalProps::CalcMechVentController(EnergyPlusData &state,
                             if (ZoneContamControllerSchedVal > 0.0) {
                                 auto &oaReq = state.dataSize->OARequirements(thisMechVentZone.ZoneDesignSpecOAObjIndex);
                                 bool const useMinOASch = true;
-                                bool const useOccSch = this->DCVFlag && (this->SystemOAMethod != DataSizing::SysOAMethod::ProportionalControlDesOcc);
                                 Real64 dummyArg = 0.0; // placeholder function argument
                                 Real64 const zoneOAArea = oaReq.desOAFlowArea(state, ZoneNum, dummyArg, useMinOASch);
                                 Real64 const zoneOAPeople = oaReq.desOAFlowPeople(state, ZoneNum, dummyArg, useOccSch, useMinOASch);

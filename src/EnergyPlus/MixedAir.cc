@@ -2744,7 +2744,7 @@ void InitOAController(EnergyPlusData &state, int const OAControllerNum, bool con
                 std::string const zoneName = state.dataHeatBal->Zone(thisMechVentZone.zoneNum).Name;
                 auto &dsoa = state.dataSize->OARequirements(thisMechVentZone.ZoneDesignSpecOAObjIndex);
                 // Loop through spaces if DesignSpecification:OutdoorAir:Spacelist, or just once for simple DSOA
-                for (int n = 0; n < dsoa.numDSOA; ++n) {
+                for (int n = 0; n <= dsoa.numDSOA; ++n) {
                     std::string const zsName = dsoa.numDSOA > 0 ? format("{}:{}", zoneName, dsoa.dsoaSpaceNames[n]) : zoneName;
                     auto &dsoa2 = dsoa.numDSOA > 0 ? state.dataSize->OARequirements(dsoa.dsoaIndexes[n]) : dsoa;
                     OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchDCVventMechName, zsName, vent_mech.Name);
@@ -3761,12 +3761,7 @@ Real64 VentilationMechanicalProps::CalcMechVentController(EnergyPlusData &state,
                             Real64 ZoneContamControllerSchedVal = curZone.zoneContamControllerSched->getCurrentVal();
                             if (ZoneContamControllerSchedVal > 0.0) {
                                 auto &oaReq = state.dataSize->OARequirements(thisMechVentZone.ZoneDesignSpecOAObjIndex);
-                                bool const useMinOASch = true;
-                                Real64 dummyArg = 0.0; // placeholder function argument
-                                Real64 const zoneOAArea = oaReq.desOAFlowArea(state, ZoneNum, dummyArg, useMinOASch);
-                                Real64 const zoneOAPeople = oaReq.desOAFlowPeople(state, ZoneNum, dummyArg, useOccSch, useMinOASch);
-                                ZoneOAMin = zoneOAArea / ZoneEz;
-                                ZoneOAMax = (zoneOAArea + zoneOAPeople) / ZoneEz;
+                                Real64 const zoneOAPeople = oaReq.oaFlowPeople(state, ZoneNum, useOccSch);
                                 if (this->SystemOAMethod == DataSizing::SysOAMethod::ProportionalControlDesOARate) {
                                     ZoneOAMax = thisMechVentZone.zoneOABZ / ZoneEz;
                                     if (thisMechVentZone.zonePropCtlMinRateSched != nullptr) {
@@ -3799,6 +3794,10 @@ Real64 VentilationMechanicalProps::CalcMechVentController(EnergyPlusData &state,
                                                 this->OAMaxMinLimitErrorIndex);
                                         }
                                     }
+                                } else {
+                                    Real64 const zoneOAArea = oaReq.oaFlowArea(state, ZoneNum);
+                                    ZoneOAMin = zoneOAArea / ZoneEz;
+                                    ZoneOAMax = (zoneOAArea + zoneOAPeople) / ZoneEz;
                                 }
 
                                 if (zoneOAPeople > 0.0) {
@@ -3987,7 +3986,7 @@ Real64 VentilationMechanicalProps::CalcMechVentController(EnergyPlusData &state,
                                         ZoneOA = thisMechVentZone.zoneOABZ / ZoneEz;
                                     }
                                 } else {
-                                    // ZoneOACalc[static_cast<int>(DataSizing::OAFlowCalcMethod::PerPerson)] is less than or equal to zero
+                                    // zoneOAPeople is less than or equal to zero
                                     ZoneOA = thisMechVentZone.zoneOABZ / ZoneEz;
                                 }
                             } else {

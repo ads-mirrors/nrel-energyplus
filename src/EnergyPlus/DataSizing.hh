@@ -1128,20 +1128,25 @@ namespace DataSizing {
         int CO2GainErrorIndex = 0; // Index for recurring error message when CO2 generation from people is zero for SOAM_ProportionalControlSchOcc
         bool myEnvrnFlag = true;
 
-        Real64 desOAFlowArea(EnergyPlusData &state,
+        Real64 oaFlowArea(EnergyPlusData &state,
                              int const zoneNum,
-                             Real64 &sumArea,                    // Zonw or space floor area - returned via reference for use in desFlorPerZoneArea
-                             bool const useMinOASchFlag = false, // Use min OA schedule in DesignSpecification:OutdoorAir object
+                             bool const useMinOASchFlag = true, // Use min OA schedule in DesignSpecification:OutdoorAir object
                              int const spaceNum = 0);            // Space index (if applicable)
+
+        Real64 floorArea(EnergyPlusData &state, int const zoneNum, int const spaceNum = 0);
 
         Real64 desFlowPerZoneArea(EnergyPlusData &state, int const zoneNum, int const spaceNum = 0);
 
-        Real64 desOAFlowPeople(EnergyPlusData &state,
-                               int const zoneNum, // Zone index
-                               Real64 &sumPeople, // Zone or space design number of people - returned via reference for use in desFlorPerPerson
-                               bool const useOccSchFlag = false,   // Zone occupancy schedule will be used instead of using total zone occupancy
-                               bool const useMinOASchFlag = false, // Use min OA schedule in DesignSpecification:OutdoorAir object
-                               int const spaceNum = 0);            // Space index (if applicable)
+        Real64 oaFlowPeople(EnergyPlusData &state,
+                            int const zoneNum,                 // Zone index
+                            bool const useOccSchFlag = true,   // Use occupancy schedule
+                            bool const useMinOASchFlag = true, // Use min OA schedule in DesignSpecification:OutdoorAir object
+                            int const spaceNum = 0);           // Space index (if applicable)
+
+        Real64 people(EnergyPlusData &state,
+                      int const zoneNum,               // Zone index
+                      bool const useOccSchFlag = true, // Use occupancy schedule
+                      int const spaceNum = 0);         // Space index (if applicable)
 
         Real64 desFlowPerZonePerson(EnergyPlusData &state, int const zoneNum, int const spaceNum = 0);
 

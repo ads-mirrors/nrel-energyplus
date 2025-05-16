@@ -1789,12 +1789,12 @@ void GetOAControllerInputs(EnergyPlusData &state)
 
             for (int jZone = 1; jZone <= ventMech.NumofVentMechZones; ++jZone) {
                 auto &thisVentMechZone = ventMech.VentMechZone(jZone);
-                std::string_view const dsoaName = thisVentMechZone.ZoneDesignSpecOAObjIndex > 0
-                                                      ? state.dataSize->OARequirements(thisVentMechZone.ZoneDesignSpecOAObjIndex).Name
-                                                      : "";
-                std::string_view const adName = thisVentMechZone.ZoneDesignSpecADObjIndex > 0
-                                                    ? state.dataSize->ZoneAirDistribution(thisVentMechZone.ZoneDesignSpecADObjIndex).Name
-                                                    : "";
+                std::string const dsoaName = thisVentMechZone.ZoneDesignSpecOAObjIndex > 0
+                                                 ? state.dataSize->OARequirements(thisVentMechZone.ZoneDesignSpecOAObjIndex).Name
+                                                 : "";
+                std::string const adName = thisVentMechZone.ZoneDesignSpecADObjIndex > 0
+                                               ? state.dataSize->ZoneAirDistribution(thisVentMechZone.ZoneDesignSpecADObjIndex).Name
+                                               : "";
                 print(state.files.eio, ",{},{},{}", state.dataHeatBal->Zone(thisVentMechZone.zoneNum).Name, dsoaName, adName);
             }
             print(state.files.eio, "\n");

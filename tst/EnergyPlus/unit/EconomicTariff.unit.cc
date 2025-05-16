@@ -420,6 +420,7 @@ TEST_F(EnergyPlusFixture, EconomicTariff_LEEDtariffReporting_Test)
     state->dataEconTariff->tariff(1).totalAnnualEnergy = 4855.21;
     state->dataEconTariff->tariff(1).kindMtr = EconomicTariff::MeterType::ElecPurchased;
     state->dataEconTariff->tariff(1).reportMeterIndx = GetMeterIndex(*state, "ELECTRICITY:FACILITY");
+    state->dataEconTariff->tariff(1).demandWindow = DemandWindow::Day;
 
     state->dataEconTariff->tariff(2).tariffName = "SmallCGUnit";
     state->dataEconTariff->tariff(2).isSelected = true;
@@ -427,18 +428,21 @@ TEST_F(EnergyPlusFixture, EconomicTariff_LEEDtariffReporting_Test)
     state->dataEconTariff->tariff(2).totalAnnualEnergy = 0.00;
     state->dataEconTariff->tariff(2).kindMtr = EconomicTariff::MeterType::Gas;
     state->dataEconTariff->tariff(2).reportMeterIndx = GetMeterIndex(*state, "NATURALGAS:FACILITY");
+    state->dataEconTariff->tariff(2).demandWindow = DemandWindow::Day;
 
     state->dataEconTariff->tariff(3).tariffName = "DistrictCoolingUnit";
     state->dataEconTariff->tariff(3).isSelected = true;
     state->dataEconTariff->tariff(3).totalAnnualCost = 55.22;
     state->dataEconTariff->tariff(3).totalAnnualEnergy = 8.64;
     state->dataEconTariff->tariff(3).reportMeterIndx = GetMeterIndex(*state, "DISTRICTCOOLING:FACILITY");
+    state->dataEconTariff->tariff(3).demandWindow = DemandWindow::Day;
 
     state->dataEconTariff->tariff(4).tariffName = "DistrictHeatingUnit";
     state->dataEconTariff->tariff(4).isSelected = true;
     state->dataEconTariff->tariff(4).totalAnnualCost = 15.98;
     state->dataEconTariff->tariff(4).totalAnnualEnergy = 1.47;
     state->dataEconTariff->tariff(4).reportMeterIndx = GetMeterIndex(*state, "DISTRICTHEATINGWATER:FACILITY");
+    state->dataEconTariff->tariff(4).demandWindow = DemandWindow::Day;
 
     SetPredefinedTables(*state); // need to setup the predefined table entry numbers
 

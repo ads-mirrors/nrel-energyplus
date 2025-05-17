@@ -791,7 +791,7 @@ namespace HeatingCoils {
             }
 
             heatingCoil.HeatingCoilType = "Heating";
-            heatingCoil.HeatingCoilModel = "GasMultiStage";
+            heatingCoil.HeatingCoilModel = "Gas:MultiStage";
             heatingCoil.HCoilType_Num = HVAC::Coil_HeatingGas_MultiStage;
 
             heatingCoil.ParasiticFuelCapacity = Numbers(1);

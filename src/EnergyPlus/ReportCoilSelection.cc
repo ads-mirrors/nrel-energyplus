@@ -1092,11 +1092,7 @@ void setCoilEntAirTemp(EnergyPlusData &state,
 )
 {
     int index = getReportIndex(state, coilName, coilType);
-    auto *c = state.dataRptCoilSelection->coils[index];
-    c->coilDesEntTemp = entAirDryBulbTemp;
-    c->airloopNum = curSysNum;
-    doAirLoopSetup(state, index);
-    c->zoneEqNum = curZoneEqNum;
+    setCoilEntAirTemp(state, index, entAirDryBulbTemp, curSysNum, curZoneEqNum);
 }
 
 void setCoilEntAirTemp(EnergyPlusData &state,

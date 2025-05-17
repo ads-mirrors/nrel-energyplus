@@ -2162,7 +2162,7 @@ namespace UnitVentilator {
                 unitVent.coolCoilType == HVAC::CoilType::CoolingWaterDetailed) { 
                 WaterCoils::SetCoilDesFlow(state, unitVent.CoolCoilNum, unitVent.MaxAirVolFlow);
             } else if (unitVent.coolCoilType == HVAC::CoilType::CoolingWaterHXAssisted) {
-                WaterCoils::SetCoilDesFlow(state, unitVent.CoolCoilNum, unitVent.MaxAirVolFlow);
+                WaterCoils::SetCoilDesFlow(state, unitVent.ChildCoolCoilNum, unitVent.MaxAirVolFlow);
             }
             // No DX coils? 
         }

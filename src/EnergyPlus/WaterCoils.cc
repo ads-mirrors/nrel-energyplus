@@ -2226,11 +2226,14 @@ void SizeWaterCoil(EnergyPlusData &state, int const CoilNum)
             } else {
                 bPRINT = true;
             }
+#ifdef GET_OUT
+            // Not sure how this snuck in here
             if (waterCoil.DesAirVolFlowRateIsAutosized && waterCoil.DesAirVolFlowRate > 0.0) {
                 state.dataSize->DataConstantUsedForSizing = 1.0;
                 state.dataSize->DataFractionUsedForSizing = waterCoil.DesAirVolFlowRate;
                 waterCoil.DesAirVolFlowRate = DataSizing::AutoSize;
             }
+#endif // GET_OUT            
             TempSize = waterCoil.DesAirVolFlowRate;
             CoolingAirFlowSizer sizingCoolingAirFlow2;
             std::string stringOverride = "Design Air Flow Rate [m3/s]";
@@ -2240,9 +2243,12 @@ void SizeWaterCoil(EnergyPlusData &state, int const CoilNum)
             sizingCoolingAirFlow2.initializeWithinEP(state, HVAC::coilTypeNames[(int)waterCoil.coilType], CompName, bPRINT, RoutineName);
             waterCoil.DesAirVolFlowRate = sizingCoolingAirFlow2.size(state, TempSize, ErrorsFound);
             waterCoil.DesAirMassFlowRate = waterCoil.DesAirVolFlowRate * state.dataEnvrn->StdRhoAir;
+#ifdef GET_OUT
+            // Not sure how this snuck in here
             state.dataSize->DataConstantUsedForSizing = 0.0;
             state.dataSize->DataFractionUsedForSizing = 0.0;
-
+#endif // GET_OUT
+            
             if (waterCoil.DesAirVolFlowRate <= 0.0) {
                 waterCoil.DesAirVolFlowRate = 0.0;
                 ShowWarningError(state, format("The design air flow rate is zero for {} = {}", HVAC::coilTypeNames[(int)waterCoil.coilType], CompName));

@@ -2835,7 +2835,9 @@ void CalcSimpleHeatingCoil(EnergyPlusData &state,
 
     if (fanOp == HVAC::FanOp::Cycling) {
         HeatingCoilLoad *= PartLoadRatio;
-        TempWaterOut = TempWaterIn - HeatingCoilLoad / CapacitanceWater;
+        if (CapacitanceWater > 0) {
+            TempWaterOut = TempWaterIn - HeatingCoilLoad / CapacitanceWater;
+        }
     }
 
     // Set the outlet conditions

@@ -2677,7 +2677,7 @@ void EIRFuelFiredHeatPump::doPhysics(EnergyPlusData &state, Real64 currentLoad)
     }
 
     // evaluate capacity modifier curve and determine load side heat transfer
-    Real64 capacityModifierFuncTemp = Curve::CurveValue(state, this->capFuncTempCurveIndex, waterTempforCurve, oaTempforCurve);
+    Real64 capacityModifierFuncTemp = Curve::CurveValue(state, this->capFuncTempCurveIndex, oaTempforCurve, waterTempforCurve);
 
     if (capacityModifierFuncTemp < 0.0) {
         if (this->capModFTErrorIndex == 0) {
@@ -2717,11 +2717,7 @@ void EIRFuelFiredHeatPump::doPhysics(EnergyPlusData &state, Real64 currentLoad)
     this->loadSideOutletTemp = this->calcLoadOutletTemp(this->loadSideInletTemp, this->loadSideHeatTransfer / loadMCp);
 
     // calculate power usage from EIR curves
-    Real64 eirModifierFuncTemp = Curve::CurveValue(state,
-                                                   this->powerRatioFuncTempCurveIndex,
-                                                   waterTempforCurve,
-                                                   oaTempforCurve); // CurveManager::CurveValue(state, this->powerRatioFuncTempCurveIndex,
-                                                                    // this->loadSideOutletTemp, this->sourceSideInletTemp);
+    Real64 eirModifierFuncTemp = Curve::CurveValue(state, this->powerRatioFuncTempCurveIndex, oaTempforCurve, waterTempforCurve);
 
     if (eirModifierFuncTemp < 0.0) {
         if (this->eirModFTErrorIndex == 0) {
@@ -2815,7 +2811,7 @@ void EIRFuelFiredHeatPump::doPhysics(EnergyPlusData &state, Real64 currentLoad)
     // aux elec
     Real64 eirAuxElecFuncTemp = 0.0;
     if (this->auxElecEIRFoTempCurveIndex > 0) {
-        eirAuxElecFuncTemp = Curve::CurveValue(state, this->auxElecEIRFoTempCurveIndex, waterTempforCurve, oaTempforCurve);
+        eirAuxElecFuncTemp = Curve::CurveValue(state, this->auxElecEIRFoTempCurveIndex, oaTempforCurve, waterTempforCurve);
     }
 
     if (eirAuxElecFuncTemp < 0.0) {
@@ -3724,7 +3720,7 @@ Real64 EIRFuelFiredHeatPump::getDynamicMaxCapacity(EnergyPlusData &state)
     }
 
     // evaluate capacity modifier curve and determine load side heat transfer
-    Real64 capacityModifierFuncTemp = Curve::CurveValue(state, this->capFuncTempCurveIndex, waterTempforCurve, oaTempforCurve);
+    Real64 capacityModifierFuncTemp = Curve::CurveValue(state, this->capFuncTempCurveIndex, oaTempforCurve, waterTempforCurve);
     return this->referenceCapacity * capacityModifierFuncTemp;
 }
 

@@ -1732,8 +1732,13 @@ void GetChildrenData(EnergyPlusData &state,
         } else {
             // Children arrays built.  Now "sort" for flow connection order(?)
             // FindIntInList is 0-based and FindItemInList is 1-based .. great!
-            int ParentInletNodeIndex = Util::FindIntInList(ChildInNodeNum, ParentInletNodeNum) + 1;
-            int ParentOutletNodeIndex = Util::FindIntInList(ChildOutNodeNum, ParentOutletNodeNum) + 1;
+            int ParentInletNodeIndex = 0;
+            for (int Loop = 1; Loop <= NumChildren; ++Loop)
+                 if (ChildInNodeNum(Loop) == ParentInletNodeNum) { ParentInletNodeIndex = Loop; break; }
+            
+            int ParentOutletNodeIndex = 0;
+            for (int Loop = 1; Loop <= NumChildren; ++Loop)
+                 if (ChildOutNodeNum(Loop) == ParentOutletNodeNum) { ParentOutletNodeIndex = Loop; break; }
 
             // Parent inlet node matches one of the inlet-nodes of the sub-components
             if (ParentInletNodeIndex > 0) {
@@ -1741,7 +1746,10 @@ void GetChildrenData(EnergyPlusData &state,
                 CountNum = 0;
                 
                 while (CountNum < NumChildren) {
-                    int MatchInNodeIndex = Util::FindIntInList(ChildInNodeNum, MatchInNodeNum) + 1;
+                    int MatchInNodeIndex = 0; 
+                    for (int Loop = 1; Loop <= NumChildren; ++Loop)
+                        if (ChildInNodeNum(Loop) == MatchInNodeNum && !ChildMatched(Loop)) { MatchInNodeIndex = Loop; break; }
+                    
                     if (MatchInNodeIndex == 0) // The chain is broken
                         break;
                         
@@ -1773,7 +1781,10 @@ void GetChildrenData(EnergyPlusData &state,
                 CountNum = NumChildren + 1;
                 
                 while (CountNum > 1) {
-                    int MatchOutNodeIndex = Util::FindIntInList(ChildOutNodeNum, MatchOutNodeNum) + 1;
+                    int MatchOutNodeIndex = 0; 
+                    for (int Loop = 1; Loop <= NumChildren; ++Loop)
+                        if (ChildOutNodeNum(Loop) == MatchOutNodeNum && !ChildMatched(Loop)) { MatchOutNodeIndex = Loop; break; }
+                    
                     if (MatchOutNodeIndex == 0) // The chain is broken
                         break;
 

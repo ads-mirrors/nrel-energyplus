@@ -1662,6 +1662,8 @@ void GetChildrenData(EnergyPlusData &state,
     Array1D_string ChildOutNodeName;
     Array1D_int ChildInNodeNum;
     Array1D_int ChildOutNodeNum;
+    Array1D_bool ChildMatched;
+    
     bool ErrInObject;
 
     std::fill(ChildrenCType.begin(), ChildrenCType.end(), DataLoopNode::ConnectionObjectType::Invalid);
@@ -1672,86 +1674,90 @@ void GetChildrenData(EnergyPlusData &state,
     OutletNodeNum = 0;
     ErrInObject = false;
 
-    if (IsParentObject(state, ComponentType, ComponentName)) {
-        NumChildren = GetNumChildren(state, ComponentType, ComponentName);
-        if (NumChildren == 0) {
-            ShowWarningError(state,
-                             format("GetChildrenData: Parent Node has no children, node={}:{}.",
-                                    ConnectionObjectTypeNames[static_cast<int>(ComponentType)],
-                                    ComponentName));
-        } else {
-            int ParentInletNodeNum;
-            int ParentOutletNodeNum;
-            std::string ParentInletNodeName;
-            std::string ParentOutletNodeName;
-            GetParentData(
-                state, ComponentType, ComponentName, ParentInletNodeName, ParentInletNodeNum, ParentOutletNodeName, ParentOutletNodeNum, ErrInObject);
-            ChildCType.clear();
-            ChildCType.allocate(NumChildren);
-            ChildCName.allocate(NumChildren);
-            ChildInNodeName.allocate(NumChildren);
-            ChildOutNodeName.allocate(NumChildren);
-            ChildInNodeNum.allocate(NumChildren);
-            ChildOutNodeNum.allocate(NumChildren);
-            ChildCName = std::string();
-            ChildInNodeName = std::string();
-            ChildOutNodeName = std::string();
-            ChildInNodeNum = 0;
-            ChildOutNodeNum = 0;
-            int CountNum = 0;
-            for (int Loop = 1; Loop <= state.dataBranchNodeConnections->NumCompSets; ++Loop) {
-                if (state.dataBranchNodeConnections->CompSets(Loop).ParentObjectType == ComponentType &&
-                    state.dataBranchNodeConnections->CompSets(Loop).ParentCName == ComponentName) {
-                    ++CountNum;
-                    ChildCType(CountNum) = state.dataBranchNodeConnections->CompSets(Loop).ComponentObjectType;
-                    ChildCName(CountNum) = state.dataBranchNodeConnections->CompSets(Loop).CName;
-                    ChildInNodeName(CountNum) = state.dataBranchNodeConnections->CompSets(Loop).InletNodeName;
-                    ChildOutNodeName(CountNum) = state.dataBranchNodeConnections->CompSets(Loop).OutletNodeName;
-                    // Get Node Numbers
-                    ChildInNodeNum(CountNum) = Util::FindItemInList(ChildInNodeName(CountNum),
-                                                                    state.dataLoopNodes->NodeID({1, state.dataLoopNodes->NumOfNodes}),
-                                                                    state.dataLoopNodes->NumOfNodes);
-                    ChildOutNodeNum(CountNum) = Util::FindItemInList(ChildOutNodeName(CountNum),
-                                                                     state.dataLoopNodes->NodeID({1, state.dataLoopNodes->NumOfNodes}),
-                                                                     state.dataLoopNodes->NumOfNodes);
-                }
+    if (!IsParentObject(state, ComponentType, ComponentName)) {
+        ShowWarningError(state,
+                         format("GetChildrenData: Requested Children Data for non Parent Node={}:{}.",
+                                ConnectionObjectTypeNames[static_cast<int>(ComponentType)],
+                                ComponentName));
+        ErrorsFound = true;
+
+    } else if ((NumChildren = GetNumChildren(state, ComponentType, ComponentName)) == 0) { 
+         ShowWarningError(state,
+                          format("GetChildrenData: Parent Node has no children, node={}:{}.",
+                                 ConnectionObjectTypeNames[static_cast<int>(ComponentType)],
+                                 ComponentName));
+
+    } else {
+        int ParentInletNodeNum;
+        int ParentOutletNodeNum;
+        std::string ParentInletNodeName;
+        std::string ParentOutletNodeName;
+        GetParentData(
+                      state, ComponentType, ComponentName, ParentInletNodeName, ParentInletNodeNum, ParentOutletNodeName, ParentOutletNodeNum, ErrInObject);
+        ChildCType.allocate(NumChildren);
+        ChildCName.allocate(NumChildren);
+        ChildInNodeName.allocate(NumChildren);
+        ChildOutNodeName.allocate(NumChildren);
+        ChildInNodeNum.allocate(NumChildren);
+        ChildOutNodeNum.allocate(NumChildren);
+        ChildMatched.allocate(NumChildren);
+        
+        std::fill(ChildCType.begin(), ChildCType.end(), DataLoopNode::ConnectionObjectType::Invalid);
+        ChildCName = std::string();
+        ChildInNodeName = std::string();
+        ChildOutNodeName = std::string();
+        ChildInNodeNum = 0;
+        ChildOutNodeNum = 0;
+        ChildMatched = false;
+                         
+        int CountNum = 0;
+        for (int Loop = 1; Loop <= state.dataBranchNodeConnections->NumCompSets; ++Loop) {
+            auto const &compSet = state.dataBranchNodeConnections->CompSets(Loop);
+            if (compSet.ParentObjectType == ComponentType && compSet.ParentCName == ComponentName) {
+                ++CountNum;
+                ChildCType(CountNum) = compSet.ComponentObjectType;
+                ChildCName(CountNum) = compSet.CName;
+                ChildInNodeName(CountNum) = compSet.InletNodeName;
+                ChildOutNodeName(CountNum) = compSet.OutletNodeName;
+                // Get Node Numbers
+                ChildInNodeNum(CountNum) = Util::FindItemInList(ChildInNodeName(CountNum), state.dataLoopNodes->NodeID);
+                ChildOutNodeNum(CountNum) = Util::FindItemInList(ChildOutNodeName(CountNum), state.dataLoopNodes->NodeID);
             }
-            if (CountNum != NumChildren) {
-                ShowSevereError(state, "GetChildrenData: Counted nodes not equal to GetNumChildren count");
-                ErrInObject = true;
-            } else {
-                // Children arrays built.  Now "sort" for flow connection order(?)
-                std::string MatchNodeName = ParentInletNodeName;
+        }
+
+        if (CountNum != NumChildren) {
+            ShowSevereError(state, "GetChildrenData: Counted nodes not equal to GetNumChildren count");
+            ErrorsFound = true;
+
+        } else {
+            // Children arrays built.  Now "sort" for flow connection order(?)
+            // FindIntInList is 0-based and FindItemInList is 1-based .. great!
+            int ParentInletNodeIndex = Util::FindIntInList(ChildInNodeNum, ParentInletNodeNum) + 1;
+            int ParentOutletNodeIndex = Util::FindIntInList(ChildOutNodeNum, ParentOutletNodeNum) + 1;
+
+            // Parent inlet node matches one of the inlet-nodes of the sub-components
+            if (ParentInletNodeIndex > 0) {
+                int MatchInNodeNum = ParentInletNodeNum;
                 CountNum = 0;
-                int CountMatchLoop = 0;
-                while (CountMatchLoop < NumChildren) {
-                    ++CountMatchLoop;
-                    //          Matched=.FALSE.
-                    for (int Loop = 1; Loop <= NumChildren; ++Loop) {
-                        if (ChildInNodeName(Loop) == MatchNodeName) {
-                            ++CountNum;
-                            ChildrenCType(CountNum) = ChildCType(Loop);
-                            ChildrenCName(CountNum) = ChildCName(Loop);
-                            InletNodeName(CountNum) = ChildInNodeName(Loop);
-                            InletNodeNum(CountNum) = ChildInNodeNum(Loop);
-                            OutletNodeName(CountNum) = ChildOutNodeName(Loop);
-                            OutletNodeNum(CountNum) = ChildOutNodeNum(Loop);
-                            ChildInNodeName(Loop).clear(); // So it won't match anymore
-                            //              Matched=.TRUE.
-                            MatchNodeName = ChildOutNodeName(Loop);
-                            break;
-                        }
-                    }
-                }
-                if (MatchNodeName != ParentOutletNodeName) {
-                    for (int Loop = 1; Loop <= NumChildren; ++Loop) {
-                        if (ChildInNodeName(Loop).empty()) continue;
-                        if (ChildOutNodeName(Loop) == ParentOutletNodeName) break;
+                
+                while (CountNum < NumChildren) {
+                    int MatchInNodeIndex = Util::FindIntInList(ChildInNodeNum, MatchInNodeNum) + 1;
+                    if (MatchInNodeIndex == 0) // The chain is broken
                         break;
-                    }
+                        
+                    ++CountNum;
+                    ChildrenCType(CountNum) = ChildCType(MatchInNodeIndex);
+                    ChildrenCName(CountNum) = ChildCName(MatchInNodeIndex);
+                    InletNodeName(CountNum) = ChildInNodeName(MatchInNodeIndex);
+                    InletNodeNum(CountNum) = ChildInNodeNum(MatchInNodeIndex);
+                    OutletNodeName(CountNum) = ChildOutNodeName(MatchInNodeIndex);
+                    OutletNodeNum(CountNum) = ChildOutNodeNum(MatchInNodeIndex);
+                    ChildMatched(MatchInNodeIndex) = true;
+                    MatchInNodeNum = ChildOutNodeNum(MatchInNodeIndex);
                 }
+
                 for (int Loop = 1; Loop <= NumChildren; ++Loop) {
-                    if (ChildInNodeName(Loop).empty()) continue;
+                    if (ChildMatched(Loop)) continue;
                     ++CountNum;
                     ChildrenCType(CountNum) = ChildCType(Loop);
                     ChildrenCName(CountNum) = ChildCName(Loop);
@@ -1760,21 +1766,65 @@ void GetChildrenData(EnergyPlusData &state,
                     OutletNodeName(CountNum) = ChildOutNodeName(Loop);
                     OutletNodeNum(CountNum) = ChildOutNodeNum(Loop);
                 }
-                ChildCType.deallocate();
-                ChildCName.deallocate();
-                ChildInNodeName.deallocate();
-                ChildOutNodeName.deallocate();
-                ChildInNodeNum.deallocate();
-                ChildOutNodeNum.deallocate();
+                
+            // Parent outlet node matches one of the outlet-nodes of the sub-components            
+            } else if (ParentOutletNodeIndex > 0) {
+                int MatchOutNodeNum = ParentOutletNodeNum;
+                CountNum = NumChildren + 1;
+                
+                while (CountNum > 1) {
+                    int MatchOutNodeIndex = Util::FindIntInList(ChildOutNodeNum, MatchOutNodeNum) + 1;
+                    if (MatchOutNodeIndex == 0) // The chain is broken
+                        break;
+
+                    --CountNum;
+                    ChildrenCType(CountNum) = ChildCType(MatchOutNodeIndex);
+                    ChildrenCName(CountNum) = ChildCName(MatchOutNodeIndex);
+                    InletNodeName(CountNum) = ChildInNodeName(MatchOutNodeIndex);
+                    InletNodeNum(CountNum) = ChildInNodeNum(MatchOutNodeIndex);
+                    OutletNodeName(CountNum) = ChildOutNodeName(MatchOutNodeIndex);
+                    OutletNodeNum(CountNum) = ChildOutNodeNum(MatchOutNodeIndex);
+                    ChildMatched(MatchOutNodeIndex) = true;
+                    MatchOutNodeNum = ChildInNodeNum(MatchOutNodeIndex);
+                }
+
+                CountNum = 0;
+                for (int Loop = 1; Loop <= NumChildren; ++Loop) {
+                    if (ChildMatched(Loop)) continue;
+                    ++CountNum;
+                    ChildrenCType(CountNum) = ChildCType(Loop);
+                    ChildrenCName(CountNum) = ChildCName(Loop);
+                    InletNodeName(CountNum) = ChildInNodeName(Loop);
+                    InletNodeNum(CountNum) = ChildInNodeNum(Loop);
+                    OutletNodeName(CountNum) = ChildOutNodeName(Loop);
+                    OutletNodeNum(CountNum) = ChildOutNodeNum(Loop);
+                }
+            } else {
+                // No sub-component is connected to either the parent
+                // component's inlet- or outlet- nodes? Just copy the
+                // sub-components in the order in which they appear in
+                // the CompSets
+                 
+                for (int Loop = 1; Loop <= NumChildren; ++Loop) {
+                    if (ChildMatched(Loop)) continue;
+                    ChildrenCType(Loop) = ChildCType(Loop);
+                    ChildrenCName(Loop) = ChildCName(Loop);
+                    InletNodeName(Loop) = ChildInNodeName(Loop);
+                    InletNodeNum(Loop) = ChildInNodeNum(Loop);
+                    OutletNodeName(Loop) = ChildOutNodeName(Loop);
+                    OutletNodeNum(Loop) = ChildOutNodeNum(Loop);
+                }
             }
         }
-    } else {
-        ShowWarningError(state,
-                         format("GetChildrenData: Requested Children Data for non Parent Node={}:{}.",
-                                ConnectionObjectTypeNames[static_cast<int>(ComponentType)],
-                                ComponentName));
-        ErrInObject = true;
-    }
+    
+        ChildCType.deallocate();
+        ChildCName.deallocate();
+        ChildInNodeName.deallocate();
+        ChildOutNodeName.deallocate();
+        ChildInNodeNum.deallocate();
+        ChildOutNodeNum.deallocate();
+        ChildMatched.deallocate();
+    } 
 
     if (ErrInObject) ErrorsFound = true;
 }

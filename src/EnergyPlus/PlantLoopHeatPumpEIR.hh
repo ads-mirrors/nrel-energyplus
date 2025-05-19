@@ -120,7 +120,7 @@ namespace EIRPlantLoopHeatPumps {
         bool heatRecoveryIsActive = false;
         int heatRecoveryOperatingStatus = 0;
         ControlType sysControlType = ControlType::Invalid;
-        DataPlant::FlowMode flowControl = DataPlant::FlowMode::Invalid;
+        DataPlant::FlowMode flowMode = DataPlant::FlowMode::Invalid;
 
         // sizing data
         Real64 heatSizingRatio = 1.0;
@@ -302,7 +302,7 @@ namespace EIRPlantLoopHeatPumps {
 
         Real64 getLoadSideOutletSetPointTemp(EnergyPlusData &state) const;
 
-        void setOperatingFlowRatesASHP(EnergyPlusData &state, bool FirstHVACIteration);
+        void setOperatingFlowRatesASHP(EnergyPlusData &state, bool FirstHVACIteration, Real64 const currentLoad);
 
         void setOperatingFlowRatesWSHP(EnergyPlusData &state, bool FirstHVACIteration);
 

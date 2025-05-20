@@ -324,40 +324,6 @@ void EIRPlantLoopHeatPump::setOperatingFlowRatesASHP(EnergyPlusData &state, bool
                         this->loadSideMassFlowRate = std::max(this->loadSideMassFlowRate, this->loadVSPumpMinLimitMassFlow);
                     }
                 }
-            } else if (this->flowMode == DataPlant::FlowMode::LeavingSetpointModulated) {
-                auto &thisInletNode = state.dataLoopNodes->Node(this->loadSideNodes.inlet);
-                auto &thisOutletNode = state.dataLoopNodes->Node(this->loadSideNodes.outlet);
-                Real64 FFHPDeltaTemp = 0.0;
-                Real64 CpLoad = this->loadSidePlantLoc.loop->glycol->getSpecificHeat(state, thisInletNode.Temp, "PLFFHPEIR::simulate()");
-                if (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpFuelFiredHeating) {
-                    if (this->loadSidePlantLoc.loop->LoopDemandCalcScheme == DataPlant::LoopDemandCalcScheme::SingleSetPoint) {
-                        FFHPDeltaTemp = thisOutletNode.TempSetPoint - thisInletNode.Temp;
-                    } else { // DataPlant::LoopDemandCalcScheme::DualSetPointDeadBand
-                        FFHPDeltaTemp = thisOutletNode.TempSetPointLo - thisInletNode.Temp;
-                    }
-                    this->loadSideOutletTemp = FFHPDeltaTemp + thisInletNode.Temp;
-                    if ((FFHPDeltaTemp > 0.0) && currentLoad > 0.0) {
-                        this->loadSideMassFlowRate = currentLoad / (CpLoad * FFHPDeltaTemp);
-                        this->loadSideMassFlowRate = min(this->loadSideDesignMassFlowRate, this->loadSideMassFlowRate);
-                    } else {
-                        this->loadSideOutletTemp = thisInletNode.Temp;
-                        this->loadSideMassFlowRate = 0.0;
-                    }
-                } else if (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpFuelFiredCooling) {
-                    if (this->loadSidePlantLoc.loop->LoopDemandCalcScheme == DataPlant::LoopDemandCalcScheme::SingleSetPoint) {
-                        FFHPDeltaTemp = thisInletNode.Temp - thisOutletNode.TempSetPoint;
-                    } else { // DataPlant::LoopDemandCalcScheme::DualSetPointDeadBand
-                        FFHPDeltaTemp = thisInletNode.Temp - thisOutletNode.TempSetPointHi;
-                    }
-                    this->loadSideOutletTemp = thisInletNode.Temp - FFHPDeltaTemp;
-                    if ((FFHPDeltaTemp > 0.0) && std::abs(currentLoad) > 0.0) {
-                        this->loadSideMassFlowRate = std::abs(currentLoad) / (CpLoad * FFHPDeltaTemp);
-                        this->loadSideMassFlowRate = min(this->loadSideDesignMassFlowRate, this->loadSideMassFlowRate);
-                    } else {
-                        this->loadSideOutletTemp = thisInletNode.Temp;
-                        this->loadSideMassFlowRate = 0.0;
-                    }
-                }
             }
 
             PlantUtilities::SetComponentFlowRate(
@@ -391,6 +357,72 @@ void EIRPlantLoopHeatPump::setOperatingFlowRatesASHP(EnergyPlusData &state, bool
                                                         this->heatRecoveryPlantLoc,
                                                         DataPlant::CriteriaType::MassFlowRate,
                                                         this->heatRecoveryMassFlowRate);
+        }
+    }
+}
+
+void EIRFuelFiredHeatPump::setOperatingFlowRatesASHP(EnergyPlusData &state, bool FirstHVACIteration, Real64 const currentLoad)
+{
+    if (!this->running) {
+        this->loadSideMassFlowRate = 0.0;
+        this->sourceSideMassFlowRate = 0.0;
+        PlantUtilities::SetComponentFlowRate(
+            state, this->loadSideMassFlowRate, this->loadSideNodes.inlet, this->loadSideNodes.outlet, this->loadSidePlantLoc);
+        if (this->heatRecoveryAvailable) {
+            // set the HR flow to zero if the heat pump is off
+            this->heatRecoveryMassFlowRate = 0.0;
+            PlantUtilities::SetComponentFlowRate(
+                state, this->heatRecoveryMassFlowRate, this->heatRecoveryNodes.inlet, this->heatRecoveryNodes.outlet, this->heatRecoveryPlantLoc);
+        }
+    } else { // the heat pump must run
+        this->loadSideMassFlowRate = this->loadSideDesignMassFlowRate;
+        this->sourceSideMassFlowRate = this->sourceSideDesignMassFlowRate;
+
+        if (!FirstHVACIteration && this->flowMode == DataPlant::FlowMode::LeavingSetpointModulated) {
+            auto &thisInletNode = state.dataLoopNodes->Node(this->loadSideNodes.inlet);
+            auto &thisOutletNode = state.dataLoopNodes->Node(this->loadSideNodes.outlet);
+            Real64 FFHPDeltaTemp = 0.0;
+            Real64 CpLoad = this->loadSidePlantLoc.loop->glycol->getSpecificHeat(state, thisInletNode.Temp, "PLFFHPEIR::simulate()");
+            if (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpFuelFiredHeating) {
+                if (this->loadSidePlantLoc.loop->LoopDemandCalcScheme == DataPlant::LoopDemandCalcScheme::SingleSetPoint) {
+                    FFHPDeltaTemp = thisOutletNode.TempSetPoint - thisInletNode.Temp;
+                } else { // DataPlant::LoopDemandCalcScheme::DualSetPointDeadBand
+                    FFHPDeltaTemp = thisOutletNode.TempSetPointLo - thisInletNode.Temp;
+                }
+                this->loadSideOutletTemp = FFHPDeltaTemp + thisInletNode.Temp;
+                if ((FFHPDeltaTemp > 0.0) && currentLoad > 0.0) {
+                    this->loadSideMassFlowRate = currentLoad / (CpLoad * FFHPDeltaTemp);
+                    this->loadSideMassFlowRate = min(this->loadSideDesignMassFlowRate, this->loadSideMassFlowRate);
+                } else {
+                    this->loadSideOutletTemp = thisInletNode.Temp;
+                    this->loadSideMassFlowRate = 0.0;
+                }
+            } else if (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpFuelFiredCooling) {
+                if (this->loadSidePlantLoc.loop->LoopDemandCalcScheme == DataPlant::LoopDemandCalcScheme::SingleSetPoint) {
+                    FFHPDeltaTemp = thisInletNode.Temp - thisOutletNode.TempSetPoint;
+                } else { // DataPlant::LoopDemandCalcScheme::DualSetPointDeadBand
+                    FFHPDeltaTemp = thisInletNode.Temp - thisOutletNode.TempSetPointHi;
+                }
+                this->loadSideOutletTemp = thisInletNode.Temp - FFHPDeltaTemp;
+                if ((FFHPDeltaTemp > 0.0) && std::abs(currentLoad) > 0.0) {
+                    this->loadSideMassFlowRate = std::abs(currentLoad) / (CpLoad * FFHPDeltaTemp);
+                    this->loadSideMassFlowRate = min(this->loadSideDesignMassFlowRate, this->loadSideMassFlowRate);
+                } else {
+                    this->loadSideOutletTemp = thisInletNode.Temp;
+                    this->loadSideMassFlowRate = 0.0;
+                }
+            }
+        }
+        PlantUtilities::SetComponentFlowRate(
+            state, this->loadSideMassFlowRate, this->loadSideNodes.inlet, this->loadSideNodes.outlet, this->loadSidePlantLoc);
+
+        // if there's no flow in one, try to turn the entire heat pump off
+        if (this->loadSideMassFlowRate <= 0.0) {
+            this->loadSideMassFlowRate = 0.0;
+            this->sourceSideMassFlowRate = 0.0;
+            this->running = false;
+            PlantUtilities::SetComponentFlowRate(
+                state, this->loadSideMassFlowRate, this->loadSideNodes.inlet, this->loadSideNodes.outlet, this->loadSidePlantLoc);
         }
     }
 }

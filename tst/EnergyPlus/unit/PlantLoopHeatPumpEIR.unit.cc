@@ -4499,6 +4499,34 @@ TEST_F(EnergyPlusFixture, GAHP_HeatingSimulate_AirSource)
         EXPECT_NEAR(45.0, thisHeatingPLHP->loadSideOutletTemp, 0.001);
         EXPECT_NEAR(30.0, thisHeatingPLHP->sourceSideOutletTemp, 0.001);
     }
+
+    // call it from the load side, very low load
+    {
+        bool firstHVAC = true;
+        Real64 curLoad = 100;
+        bool runFlag = true;
+        Real64 constexpr specifiedLoadSetpoint = 45;
+        state->dataLoopNodes->Node(thisHeatingPLHP->loadSideNodes.outlet).TempSetPoint = specifiedLoadSetpoint;
+        state->dataLoopNodes->Node(thisHeatingPLHP->loadSideNodes.inlet).Temp = 40;
+        state->dataLoopNodes->Node(thisHeatingPLHP->sourceSideNodes.inlet).Temp = 30;
+        thisHeatingPLHP->simulate(*state, myLoadLocation, firstHVAC, curLoad, runFlag);
+        EXPECT_TRUE(thisHeatingPLHP->fuelRate > 0);
+        EXPECT_NEAR(5.0, thisHeatingPLHP->loadSideMassFlowRate, 0.001);
+    }
+
+    {
+        bool firstHVAC = false;
+        Real64 curLoad = 2000;
+        bool runFlag = true;
+        Real64 constexpr expectedLoadMassFlowRate = 0.0478;
+        Real64 constexpr specifiedLoadSetpoint = 45;
+        state->dataLoopNodes->Node(thisHeatingPLHP->loadSideNodes.outlet).TempSetPoint = specifiedLoadSetpoint;
+        state->dataLoopNodes->Node(thisHeatingPLHP->loadSideNodes.inlet).Temp = 35;
+        state->dataLoopNodes->Node(thisHeatingPLHP->sourceSideNodes.inlet).Temp = 30;
+        thisHeatingPLHP->flowMode = DataPlant::FlowMode::LeavingSetpointModulated;
+        thisHeatingPLHP->simulate(*state, myLoadLocation, firstHVAC, curLoad, runFlag);
+        EXPECT_NEAR(expectedLoadMassFlowRate, thisHeatingPLHP->loadSideMassFlowRate, 0.001);
+    }
 }
 
 TEST_F(EnergyPlusFixture, GAHP_HeatingSimulate_AirSource_with_Defrost)

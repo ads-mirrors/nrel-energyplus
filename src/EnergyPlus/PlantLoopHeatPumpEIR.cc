@@ -95,16 +95,6 @@ void EIRPlantLoopHeatPump::simulate(
     if (this->heatRecoveryAvailable) {
         this->heatRecoveryInletTemp = state.dataLoopNodes->Node(this->heatRecoveryNodes.inlet).Temp;
     }
-    Real64 currentLoad = 0.0;
-    if (this->running) {
-        if (this->sysControlType == ControlType::Setpoint) {
-            Real64 leavingSetpoint = state.dataLoopNodes->Node(this->loadSideNodes.outlet).TempSetPoint;
-            Real64 CurSpecHeat = this->loadSidePlantLoc.loop->glycol->getSpecificHeat(state, loadSideInletTemp, "EIRPlantLoopHeatPump::simulate");
-            currentLoad = this->loadSideMassFlowRate * CurSpecHeat * (leavingSetpoint - loadSideInletTemp);
-        } else {
-            currentLoad = CurLoad;
-        }
-    }
 
     if (this->waterSource) {
         this->setOperatingFlowRatesWSHP(state, FirstHVACIteration);
@@ -130,7 +120,7 @@ void EIRPlantLoopHeatPump::simulate(
         }
     } else if (this->airSource) {
         this->setHeatRecoveryOperatingStatusASHP(state, FirstHVACIteration);
-        this->setOperatingFlowRatesASHP(state, FirstHVACIteration, currentLoad);
+        this->setOperatingFlowRatesASHP(state, FirstHVACIteration, CurLoad);
 
         if (calledFromLocation.loopNum == this->heatRecoveryPlantLoc.loopNum) {
             if (this->heatRecoveryAvailable) {
@@ -150,7 +140,15 @@ void EIRPlantLoopHeatPump::simulate(
     }
 
     if (this->running) {
-        this->doPhysics(state, currentLoad);
+        if (this->sysControlType == ControlType::Setpoint) {
+            Real64 leavingSetpoint = state.dataLoopNodes->Node(this->loadSideNodes.outlet).TempSetPoint;
+            Real64 CurSpecHeat = this->loadSidePlantLoc.loop->glycol->getSpecificHeat(state, loadSideInletTemp, "EIRPlantLoopHeatPump::simulate");
+            Real64 controlLoad = this->loadSideMassFlowRate * CurSpecHeat * (leavingSetpoint - loadSideInletTemp);
+
+            this->doPhysics(state, controlLoad);
+        } else {
+            this->doPhysics(state, CurLoad);
+        }
     } else {
         this->resetReportingVariables();
     }

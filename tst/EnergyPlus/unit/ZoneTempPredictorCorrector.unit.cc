@@ -1150,7 +1150,18 @@ TEST_F(EnergyPlusFixture, ZoneTempPredictorCorrector_WrongControlTypeSchedule)
     ASSERT_FALSE(ErrorsFound);
 
     EXPECT_THROW(GetZoneAirSetPoints(*state), EnergyPlus::FatalError);
-    std::string const error_string = delimited_string({""});
+    std::string const error_string = delimited_string({
+        "   ** Severe  ** Control Type Schedule=SINGLE HEATING CONTROL TYPE SCHED",
+        "   **   ~~~   ** ..specifies 1 (ThermostatSetpoint:SingleHeating) as the control type. Not valid for this zone.",
+        "   **   ~~~   ** ..reference ZoneControl:Thermostat=ZONE1 THERMOSTAT",
+        "   **   ~~~   ** ..reference ZONE=ZONE1",
+        "   ** Severe  ** GetStagedDualSetpoint: Errors with invalid names in ZoneControl:Thermostat:StagedDualSetpoint objects.",
+        "   **   ~~~   ** ...These will not be read in.  Other errors may occur.",
+        "   **  Fatal  ** Errors getting Zone Control input data.  Preceding condition(s) cause termination.",
+        "   ...Summary of Errors that led to program termination:",
+        "   ..... Reference severe error count=2",
+        "   ..... Last severe error=GetStagedDualSetpoint: Errors with invalid names in ZoneControl:Thermostat:StagedDualSetpoint objects.",
+    });
     EXPECT_TRUE(compare_err_stream(error_string, true));
     // Avoid calling InitZoneAirSetPoints(*state); but still initialize needed arrays
     state->dataHeatBalFanSys->TempControlType.allocate(1);

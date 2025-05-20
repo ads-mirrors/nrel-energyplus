@@ -1163,12 +1163,6 @@ TEST_F(EnergyPlusFixture, ZoneTempPredictorCorrector_WrongControlTypeSchedule)
         "   ..... Last severe error=GetStagedDualSetpoint: Errors with invalid names in ZoneControl:Thermostat:StagedDualSetpoint objects.",
     });
     EXPECT_TRUE(compare_err_stream(error_string, true));
-    // Avoid calling InitZoneAirSetPoints(*state); but still initialize needed arrays
-    state->dataHeatBalFanSys->TempControlType.allocate(1);
-    state->dataHeatBalFanSys->TempControlTypeRpt.allocate(1);
-    state->dataHeatBalFanSys->zoneTstatSetpts.allocate(1);
-
-    CalcZoneAirTempSetPoints(*state);
 }
 
 TEST_F(EnergyPlusFixture, temperatureAndCountInSch_test)

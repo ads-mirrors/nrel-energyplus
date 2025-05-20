@@ -716,7 +716,18 @@ void GetZoneAirSetPoints(EnergyPlusData &state)
 
         for (HVAC::SetptType setptType : HVAC::setptTypes) {
             auto const &setpt = tempZone.setpts[(int)setptType];
+
             if (!setpt.isUsed) {
+                // Catch early issues
+                if (tempZone.setptTypeSched->hasVal(state, (int)setptType)) {
+                    ShowSevereError(state, format("Control Type Schedule={}", tempZone.setptTypeSched->Name));
+                    ShowContinueError(
+                        state,
+                        format("..specifies {} ({}) as the control type. Not valid for this zone.", (int)setptType, setptTypeNames[(int)setptType]));
+                    ShowContinueError(state, format("..reference {}={}", cZControlTypes((int)ZoneControlTypes::TStat), tempZone.Name));
+                    ShowContinueError(state, format("..reference ZONE={}", tempZone.ZoneName));
+                    ErrorsFound = true;
+                }
                 continue;
             }
 
@@ -3285,11 +3296,13 @@ void CalcZoneAirTempSetPoints(EnergyPlusData &state)
         } break;
 
         case HVAC::SetptType::SingleHeat: {
-            zoneTstatSetpt.setpt = tempZone.setpts[(int)HVAC::SetptType::SingleHeat].heatSetptSched->getCurrentVal();
-            tempZone.ZoneThermostatSetPointLo = zoneTstatSetpt.setpt;
+            if (tempZone.setpts[(int)HVAC::SetptType::SingleHeat].isUsed) {
+                zoneTstatSetpt.setpt = tempZone.setpts[(int)HVAC::SetptType::SingleHeat].heatSetptSched->getCurrentVal();
+                tempZone.ZoneThermostatSetPointLo = zoneTstatSetpt.setpt;
 
-            AdjustAirSetPointsforOpTempCntrl(state, RelativeZoneNum, ActualZoneNum, zoneTstatSetpt.setpt);
-            zoneTstatSetpt.setptLo = zoneTstatSetpt.setpt;
+                AdjustAirSetPointsforOpTempCntrl(state, RelativeZoneNum, ActualZoneNum, zoneTstatSetpt.setpt);
+                zoneTstatSetpt.setptLo = zoneTstatSetpt.setpt;
+            }
         } break;
 
         case HVAC::SetptType::SingleCool: {

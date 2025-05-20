@@ -4541,10 +4541,10 @@ TEST_F(EnergyPlusFixture, GAHP_HeatingSimulate_AirSource_with_Defrost)
                                                       "  0.0,",
                                                       "  0.0,",
                                                       "  0.0,",
-                                                      "  5.0,",
-                                                      "  10.0,",
                                                       "  24.0,",
                                                       "  35.0,",
+                                                      "  5.0,",
+                                                      "  10.0,",
                                                       "  ,",
                                                       "  ,",
                                                       "  Temperature,",
@@ -4553,15 +4553,15 @@ TEST_F(EnergyPlusFixture, GAHP_HeatingSimulate_AirSource_with_Defrost)
                                                       "Curve:Biquadratic,",
                                                       "  EIRCurveFuncTemp,",
                                                       "  1.0,",
-                                                      "  0.0,",
-                                                      "  0.0,",
                                                       "  1.0,",
                                                       "  0.0,",
                                                       "  0.0,",
-                                                      "  5.0,",
-                                                      "  10.0,",
+                                                      "  0.0,",
+                                                      "  0.0,",
                                                       "  24.0,",
                                                       "  35.0,",
+                                                      "  5.0,",
+                                                      "  10.0,",
                                                       "  ,",
                                                       "  ,",
                                                       "  Temperature,",
@@ -5639,10 +5639,10 @@ TEST_F(EnergyPlusFixture, GAHP_AirSource_CurveEval)
         "  0,                                      !- Coefficient4 y",
         "  0,                                      !- Coefficient5 y**2",
         "  0,                                      !- Coefficient6 x*y",
-        "  5,                                      !- Minimum Value of x {BasedOnField A2}",
-        "  10,                                     !- Maximum Value of x {BasedOnField A2}",
-        "  24,                                     !- Minimum Value of y {BasedOnField A3}",
-        "  35,                                     !- Maximum Value of y {BasedOnField A3}",
+        "  24,                                     !- Minimum Value of x {BasedOnField A2}",
+        "  35,                                     !- Maximum Value of x {BasedOnField A2}",
+        "  5,                                      !- Minimum Value of y {BasedOnField A3}",
+        "  10,                                     !- Maximum Value of y {BasedOnField A3}",
         "  ,                                       !- Minimum Curve Output {BasedOnField A4}",
         "  ,                                       !- Maximum Curve Output {BasedOnField A4}",
         "  Temperature,                            !- Input Unit Type for X",
@@ -5656,10 +5656,10 @@ TEST_F(EnergyPlusFixture, GAHP_AirSource_CurveEval)
         "  0,                                      !- Coefficient4 y",
         "  0,                                      !- Coefficient5 y**2",
         "  0,                                      !- Coefficient6 x*y",
-        "  5,                                      !- Minimum Value of x {BasedOnField A2}",
-        "  10,                                     !- Maximum Value of x {BasedOnField A2}",
-        "  24,                                     !- Minimum Value of y {BasedOnField A3}",
-        "  35,                                     !- Maximum Value of y {BasedOnField A3}",
+        "  24,                                     !- Minimum Value of x {BasedOnField A2}",
+        "  35,                                     !- Maximum Value of x {BasedOnField A2}",
+        "  5,                                      !- Minimum Value of y {BasedOnField A3}",
+        "  10,                                     !- Maximum Value of y {BasedOnField A3}",
         "  ,                                       !- Minimum Curve Output {BasedOnField A4}",
         "  ,                                       !- Maximum Curve Output {BasedOnField A4}",
         "  Temperature,                            !- Input Unit Type for X",
@@ -5811,16 +5811,16 @@ TEST_F(EnergyPlusFixture, GAHP_AirSource_CurveEval)
         {
             ASSERT_GT(thisHeatingPLHP->capFuncTempCurveIndex, 0);
             auto const *thisCurve = state->dataCurveManager->curves(thisHeatingPLHP->capFuncTempCurveIndex);
-            Real64 const waterTempforCurve = thisCurve->inputs[0];
-            Real64 const oaTempforCurve = thisCurve->inputs[1];
+            Real64 const waterTempforCurve = thisCurve->inputs[1];
+            Real64 const oaTempforCurve = thisCurve->inputs[0];
             EXPECT_EQ(calculatedLoadInletTemp, waterTempforCurve);
             EXPECT_EQ(oaTemp, oaTempforCurve);
         }
         {
             ASSERT_GT(thisHeatingPLHP->powerRatioFuncTempCurveIndex, 0);
             auto const *thisCurve = state->dataCurveManager->curves(thisHeatingPLHP->powerRatioFuncTempCurveIndex);
-            Real64 const waterTempforCurve = thisCurve->inputs[0];
-            Real64 const oaTempforCurve = thisCurve->inputs[1];
+            Real64 const waterTempforCurve = thisCurve->inputs[1];
+            Real64 const oaTempforCurve = thisCurve->inputs[0];
             EXPECT_EQ(calculatedLoadInletTemp, waterTempforCurve);
             EXPECT_EQ(oaTemp, oaTempforCurve);
         }
@@ -5854,16 +5854,16 @@ TEST_F(EnergyPlusFixture, GAHP_AirSource_CurveEval)
         {
             ASSERT_GT(thisCoolingPLHP->powerRatioFuncTempCurveIndex, 0);
             auto const *thisCurve = state->dataCurveManager->curves(thisCoolingPLHP->capFuncTempCurveIndex);
-            Real64 const waterTempforCurve = thisCurve->inputs[0];
-            Real64 const oaTempforCurve = thisCurve->inputs[1];
+            Real64 const waterTempforCurve = thisCurve->inputs[1];
+            Real64 const oaTempforCurve = thisCurve->inputs[0];
             EXPECT_EQ(calculatedLoadInletTemp, waterTempforCurve);
             EXPECT_EQ(oaTemp, oaTempforCurve);
         }
         {
             ASSERT_GT(thisCoolingPLHP->powerRatioFuncTempCurveIndex, 0);
             auto const *thisCurve = state->dataCurveManager->curves(thisCoolingPLHP->powerRatioFuncTempCurveIndex);
-            Real64 const waterTempforCurve = thisCurve->inputs[0];
-            Real64 const oaTempforCurve = thisCurve->inputs[1];
+            Real64 const waterTempforCurve = thisCurve->inputs[1];
+            Real64 const oaTempforCurve = thisCurve->inputs[0];
             EXPECT_EQ(calculatedLoadInletTemp, waterTempforCurve);
             EXPECT_EQ(oaTemp, oaTempforCurve);
         }
@@ -5897,16 +5897,16 @@ TEST_F(EnergyPlusFixture, GAHP_AirSource_CurveEval)
         {
             ASSERT_GT(thisHeatingPLHP->capFuncTempCurveIndex, 0);
             auto const *thisCurve = state->dataCurveManager->curves(thisHeatingPLHP->capFuncTempCurveIndex);
-            Real64 const waterTempforCurve = thisCurve->inputs[0];
-            Real64 const oaTempforCurve = thisCurve->inputs[1];
+            Real64 const waterTempforCurve = thisCurve->inputs[1];
+            Real64 const oaTempforCurve = thisCurve->inputs[0];
             EXPECT_EQ(ori_loadSideOutletTemp, waterTempforCurve);
             EXPECT_EQ(oaWetbulb, oaTempforCurve);
         }
         {
             ASSERT_GT(thisHeatingPLHP->powerRatioFuncTempCurveIndex, 0);
             auto const *thisCurve = state->dataCurveManager->curves(thisHeatingPLHP->powerRatioFuncTempCurveIndex);
-            Real64 const waterTempforCurve = thisCurve->inputs[0];
-            Real64 const oaTempforCurve = thisCurve->inputs[1];
+            Real64 const waterTempforCurve = thisCurve->inputs[1];
+            Real64 const oaTempforCurve = thisCurve->inputs[0];
             EXPECT_EQ(ori_loadSideOutletTemp, waterTempforCurve);
             EXPECT_EQ(oaWetbulb, oaTempforCurve);
         }
@@ -5939,16 +5939,16 @@ TEST_F(EnergyPlusFixture, GAHP_AirSource_CurveEval)
         {
             ASSERT_GT(thisCoolingPLHP->powerRatioFuncTempCurveIndex, 0);
             auto const *thisCurve = state->dataCurveManager->curves(thisCoolingPLHP->capFuncTempCurveIndex);
-            Real64 const waterTempforCurve = thisCurve->inputs[0];
-            Real64 const oaTempforCurve = thisCurve->inputs[1];
+            Real64 const waterTempforCurve = thisCurve->inputs[1];
+            Real64 const oaTempforCurve = thisCurve->inputs[0];
             EXPECT_EQ(ori_loadSideOutletTemp, waterTempforCurve);
             EXPECT_EQ(oaWetbulb, oaTempforCurve);
         }
         {
             ASSERT_GT(thisCoolingPLHP->powerRatioFuncTempCurveIndex, 0);
             auto const *thisCurve = state->dataCurveManager->curves(thisCoolingPLHP->powerRatioFuncTempCurveIndex);
-            Real64 const waterTempforCurve = thisCurve->inputs[0];
-            Real64 const oaTempforCurve = thisCurve->inputs[1];
+            Real64 const waterTempforCurve = thisCurve->inputs[1];
+            Real64 const oaTempforCurve = thisCurve->inputs[0];
             EXPECT_EQ(ori_loadSideOutletTemp, waterTempforCurve);
             EXPECT_EQ(oaWetbulb, oaTempforCurve);
         }

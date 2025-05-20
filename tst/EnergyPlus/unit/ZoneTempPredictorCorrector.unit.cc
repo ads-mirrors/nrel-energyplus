@@ -1083,6 +1083,83 @@ TEST_F(EnergyPlusFixture, ZoneTempPredictorCorrector_EMSOverrideSetpointTest)
     EXPECT_EQ(25.0, state->dataHeatBalFanSys->zoneTstatSetpts(1).setptHi);
 }
 
+TEST_F(EnergyPlusFixture, ZoneTempPredictorCorrector_WrongControlTypeSchedule)
+{
+    // Test for #11026
+
+    std::string const idf_objects = delimited_string({
+        "Zone,",
+        "  Zone1,                                  !- Name",
+        "  0,                                      !- Direction of Relative North {deg}",
+        "  0,                                      !- X Origin {m}",
+        "  0,                                      !- Y Origin {m}",
+        "  0,                                      !- Z Origin {m}",
+        "  ,                                       !- Type",
+        "  1,                                      !- Multiplier",
+        "  ,                                       !- Ceiling Height {m}",
+        "  ,                                       !- Volume {m3}",
+        "  ,                                       !- Floor Area {m2}",
+        "  ,                                       !- Zone Inside Convection Algorithm",
+        "  ,                                       !- Zone Outside Convection Algorithm",
+        "  Yes;                                    !- Part of Total Floor Area",
+
+        "ZoneControl:Thermostat,",
+        "  Zone1 Thermostat,                       !- Name",
+        "  Zone1,                                  !- Zone or ZoneList Name",
+        "  Single HEATING Control Type Sched,      !- Control Type Schedule Name",
+        "  ThermostatSetpoint:SingleCooling,       !- Control 1 Object Type",
+        "  Thermostat Setpoint Single Cooling;     !- Control 1 Name",
+
+        "Schedule:Constant,",
+        "  Single HEATING Control Type Sched,      !- Name",
+        "  Control Type,                           !- Schedule Type Limits Name",
+        "  1;                                      !- Hourly Value", // <-------- 1 = Single Heating, which is WRONG
+
+        "ThermostatSetpoint:SingleCooling,",
+        "  Thermostat Setpoint Single Cooling,    !- Name",
+        "  Always 26C;                             !- Setpoint Temperature Schedule Name",
+
+        "Schedule:Constant,",
+        "  Always 26C,                             !- Name",
+        "  Temperature,                            !- Schedule Type Limits Name",
+        "  26;                                     !- Hourly Value",
+
+        "ScheduleTypeLimits,",
+        "  Control Type,                           !- Name",
+        "  0,                                      !- Lower Limit Value {BasedOnField A3}",
+        "  4,                                      !- Upper Limit Value {BasedOnField A3}",
+        "  Discrete;                               !- Numeric Type",
+
+        "ScheduleTypeLimits,",
+        "  Temperature,                            !- Name",
+        "  ,                                       !- Lower Limit Value {BasedOnField A3}",
+        "  ,                                       !- Upper Limit Value {BasedOnField A3}",
+        "  Continuous,                             !- Numeric Type",
+        "  Temperature;                            !- Unit Type",
+    });
+
+    ASSERT_TRUE(process_idf(idf_objects));
+
+    state->dataGlobal->TimeStepsInHour = 1;    // must initialize this to get schedules initialized
+    state->dataGlobal->MinutesInTimeStep = 60; // must initialize this to get schedules initialized
+    state->init_state(*state);
+
+    bool ErrorsFound(false); // If errors detected in input
+
+    GetZoneData(*state, ErrorsFound);
+    ASSERT_FALSE(ErrorsFound);
+
+    EXPECT_THROW(GetZoneAirSetPoints(*state), EnergyPlus::FatalError);
+    std::string const error_string = delimited_string({""});
+    EXPECT_TRUE(compare_err_stream(error_string, true));
+    // Avoid calling InitZoneAirSetPoints(*state); but still initialize needed arrays
+    state->dataHeatBalFanSys->TempControlType.allocate(1);
+    state->dataHeatBalFanSys->TempControlTypeRpt.allocate(1);
+    state->dataHeatBalFanSys->zoneTstatSetpts.allocate(1);
+
+    CalcZoneAirTempSetPoints(*state);
+}
+
 TEST_F(EnergyPlusFixture, temperatureAndCountInSch_test)
 {
     // J.Glazer - August 2017

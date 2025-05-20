@@ -61,6 +61,7 @@
 #include <EnergyPlus/DataLoopNode.hh>
 #include <EnergyPlus/DataPrecisionGlobals.hh>
 #include <EnergyPlus/DataSizing.hh>
+#include <EnergyPlus/EMSManager.hh>
 #include <EnergyPlus/General.hh>
 #include <EnergyPlus/NodeInputManager.hh>
 #include <EnergyPlus/OutAirNodeManager.hh>
@@ -211,7 +212,6 @@ void EIRPlantLoopHeatPump::resetReportingVariables()
     this->heatRecoveryIsActive = false;
     this->heatRecoveryOperatingStatus = 0;
     this->thermosiphonStatus = 0;
-    this->CrankcaseHeaterPower = 0.0;
 }
 
 void EIRPlantLoopHeatPump::setOperatingFlowRatesWSHP(EnergyPlusData &state, bool FirstHVACIteration)
@@ -989,6 +989,7 @@ void EIRPlantLoopHeatPump::onInitLoopEquip(EnergyPlusData &state, [[maybe_unused
 
     this->oneTimeInit(state);          // plant setup
     this->isPlantInletOrOutlet(state); // check location
+    this->setUpEMS(state);
 
     if (calledFromLocation.loopNum == this->loadSidePlantLoc.loopNum) {
         this->sizeLoadSide(state);
@@ -1038,6 +1039,72 @@ void EIRPlantLoopHeatPump::onInitLoopEquip(EnergyPlusData &state, [[maybe_unused
     }
     if (!state.dataGlobal->BeginEnvrnFlag) {
         this->envrnInit = true;
+    }
+}
+
+void EIRPlantLoopHeatPump::reportEquipmentSummary(EnergyPlusData &state)
+{
+    std::string objectName = this->name;
+    std::string_view const typeName = DataPlant::PlantEquipTypeNames[static_cast<int>(this->EIRHPType)];
+    // create predefined report
+    OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchMechType, objectName, typeName);
+    OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchMechNomEff, objectName, this->referenceCOP);
+    OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchMechNomCap, objectName, this->referenceCapacity);
+}
+
+void HeatPumpAirToWater::reportEquipmentSummary(EnergyPlusData &state) {
+    if (state.dataPlnt->PlantFinalSizesOkayToReport) {
+        std::string_view const typeName = DataPlant::PlantEquipTypeNames[static_cast<int>(this->EIRHPType)];
+        std::string objectName = this->name;
+        std::string modeKeyWord;
+        if (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterHeating ||
+            this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterCooling) {
+            if (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterHeating) {
+                modeKeyWord = "Heating";
+            } else if (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterCooling) {
+                modeKeyWord = "Cooling";
+            }
+            objectName = format("{}:{}", this->name, modeKeyWord);
+            constexpr std::array<std::string_view, static_cast<int>(ControlType::Num)> AWHPCompressorControlTypeUC = {"FIXEDSPEED", "VARIABLESPEED"};
+            auto typeNameCompressor = AWHPCompressorControlTypeUC[static_cast<int>(this->controlType)];
+            OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchAWHPType, objectName, typeNameCompressor);
+            OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchAWHPRefCap, objectName, this->referenceCapacity);
+            OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchAWHPRefCOP, objectName, this->referenceCOP);
+            OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchAWHPSEER, objectName, "fixme");
+            OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchAWHPHSPF, objectName, "fixme");
+            OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchAWHPMinPLR, objectName, this->minimumPLR);
+            OutputReportPredefined::PreDefTableEntry(
+                state, state.dataOutRptPredefined->pdchAWHPDesSizeRefAirTemp, objectName, this->sourceSideDesignInletTemp);
+            OutputReportPredefined::PreDefTableEntry(
+                state, state.dataOutRptPredefined->pdchAWHPDesEnterWaterTemp, objectName, this->ratedEnteringWaterTemperature);
+            OutputReportPredefined::PreDefTableEntry(
+                state, state.dataOutRptPredefined->pdchAWHPDesLeaveWaterTemp, objectName, this->ratedLeavingWaterTemperature);
+            OutputReportPredefined::PreDefTableEntry(
+                state, state.dataOutRptPredefined->pdchAWHPDesSizeRefAirFlowRate, objectName, this->sourceSideDesignMassFlowRate);
+            OutputReportPredefined::PreDefTableEntry(
+                state, state.dataOutRptPredefined->pdchAWHPDesSizeRefWaterFlowRate, objectName, this->loadSideDesignMassFlowRate);
+            OutputReportPredefined::PreDefTableEntry(
+                state,
+                state.dataOutRptPredefined->pdchAWHPPlantloopName,
+                objectName,
+                this->loadSidePlantLoc.loopNum > 0 ? state.dataPlnt->PlantLoop(this->loadSidePlantLoc.loopNum).Name : "N/A");
+            OutputReportPredefined::PreDefTableEntry(state,
+                                                     state.dataOutRptPredefined->pdchAWHPPlantloopBranchName,
+                                                     objectName,
+                                                     this->loadSidePlantLoc.loopNum > 0 ? state.dataPlnt->PlantLoop(this->loadSidePlantLoc.loopNum)
+                                                         .LoopSide(this->loadSidePlantLoc.loopSideNum)
+                                                         .Branch(this->loadSidePlantLoc.branchNum)
+                                                         .Name
+                                                                                        : "N/A");
+            OutputReportPredefined::PreDefTableEntry(state,
+                                                     state.dataOutRptPredefined->pdchAWHPDesSizeRefWaterFlowRate,
+                                                     objectName,
+                                                     this->loadSideDesignMassFlowRate); // flowrate Max==DesignSizeRef flowrate?
+        }
+        // create predefined report
+        OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchMechType, objectName, typeName);
+        OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchMechNomEff, objectName, this->referenceCOP);
+        OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchMechNomCap, objectName, this->referenceCapacity);
     }
 }
 
@@ -1523,59 +1590,6 @@ void EIRPlantLoopHeatPump::sizeSrcSideASHP(EnergyPlusData &state)
                 }
             }
         }
-    }
-
-    if (state.dataPlnt->PlantFinalSizesOkayToReport) {
-        std::string objectName = this->name;
-        std::string modeKeyWord;
-        if (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterHeating ||
-            this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterCooling) {
-            if (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterHeating) {
-                modeKeyWord = "Heating";
-            } else if (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterCooling) {
-                modeKeyWord = "Cooling";
-            }
-            objectName = format("{}:{}", this->name, modeKeyWord);
-            constexpr std::array<std::string_view, static_cast<int>(ControlType::Num)> AWHPCompressorControlTypeUC = {"FIXEDSPEED", "VARIABLESPEED"};
-            auto typeNameCompressor = AWHPCompressorControlTypeUC[static_cast<int>(this->controlType)];
-            OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchAWHPType, objectName, typeNameCompressor);
-            OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchAWHPRefCap, objectName, this->referenceCapacity);
-            OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchAWHPRefCOP, objectName, this->referenceCOP);
-            OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchAWHPSEER, objectName, "fixme");
-            OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchAWHPHSPF, objectName, "fixme");
-            OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchAWHPMinPLR, objectName, this->minimumPLR);
-            OutputReportPredefined::PreDefTableEntry(
-                state, state.dataOutRptPredefined->pdchAWHPDesSizeRefAirTemp, objectName, this->sourceSideDesignInletTemp);
-            OutputReportPredefined::PreDefTableEntry(
-                state, state.dataOutRptPredefined->pdchAWHPDesEnterWaterTemp, objectName, this->ratedEnteringWaterTemperature);
-            OutputReportPredefined::PreDefTableEntry(
-                state, state.dataOutRptPredefined->pdchAWHPDesLeaveWaterTemp, objectName, this->ratedLeavingWaterTemperature);
-            OutputReportPredefined::PreDefTableEntry(
-                state, state.dataOutRptPredefined->pdchAWHPDesSizeRefAirFlowRate, objectName, this->sourceSideDesignMassFlowRate);
-            OutputReportPredefined::PreDefTableEntry(
-                state, state.dataOutRptPredefined->pdchAWHPDesSizeRefWaterFlowRate, objectName, this->loadSideDesignMassFlowRate);
-            OutputReportPredefined::PreDefTableEntry(
-                state,
-                state.dataOutRptPredefined->pdchAWHPPlantloopName,
-                objectName,
-                this->loadSidePlantLoc.loopNum > 0 ? state.dataPlnt->PlantLoop(this->loadSidePlantLoc.loopNum).Name : "N/A");
-            OutputReportPredefined::PreDefTableEntry(state,
-                                                     state.dataOutRptPredefined->pdchAWHPPlantloopBranchName,
-                                                     objectName,
-                                                     this->loadSidePlantLoc.loopNum > 0 ? state.dataPlnt->PlantLoop(this->loadSidePlantLoc.loopNum)
-                                                                                              .LoopSide(this->loadSidePlantLoc.loopSideNum)
-                                                                                              .Branch(this->loadSidePlantLoc.branchNum)
-                                                                                              .Name
-                                                                                        : "N/A");
-            OutputReportPredefined::PreDefTableEntry(state,
-                                                     state.dataOutRptPredefined->pdchAWHPDesSizeRefWaterFlowRate,
-                                                     objectName,
-                                                     this->loadSideDesignMassFlowRate); // flowrate Max==DesignSizeRef flowrate?
-        }
-        // create predefined report
-        OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchMechType, objectName, typeName);
-        OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchMechNomEff, objectName, this->referenceCOP);
-        OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchMechNomCap, objectName, this->referenceCapacity);
     }
 
     if (errorsFound) {
@@ -2201,14 +2215,11 @@ void EIRPlantLoopHeatPump::oneTimeInit(EnergyPlusData &state)
 
     if (this->oneTimeInitFlag) {
         bool errFlag = false;
-        std::string suffix;
-        std::string mode_keyword;
+        std::string suffix = "";
         if (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterHeating) {
             suffix = " in Heating Mode";
-            mode_keyword = "Heating";
         } else if (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterCooling) {
             suffix = " in Cooling Mode";
-            mode_keyword = "Cooling";
         }
 
         // setup output variables
@@ -2358,50 +2369,6 @@ void EIRPlantLoopHeatPump::oneTimeInit(EnergyPlusData &state)
                                     OutputProcessor::EndUseCat::Heating,
                                     "Heat Pump");
             }
-        }
-
-        if (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterHeating) {
-            SetupOutputVariable(state,
-                                "Heat Pump Crankcase Heater Electricity Rate",
-                                Constant::Units::W,
-                                this->CrankcaseHeaterPower,
-                                OutputProcessor::TimeStepType::System,
-                                OutputProcessor::StoreType::Average,
-                                this->name);
-            SetupOutputVariable(state,
-                                "Heat Pump Crankcase Heater Electricity Energy",
-                                Constant::Units::W,
-                                this->CrankcaseHeaterPower,
-                                OutputProcessor::TimeStepType::System,
-                                OutputProcessor::StoreType::Sum,
-                                this->name,
-                                Constant::eResource::Electricity,
-                                OutputProcessor::Group::HVAC,
-                                OutputProcessor::EndUseCat::Cooling);
-        }
-        if (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterHeating ||
-            this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterCooling) {
-            SetupOutputVariable(state,
-                                format("Heat Pump {} COP", mode_keyword),
-                                Constant::Units::None,
-                                this->heatingCOP,
-                                OutputProcessor::TimeStepType::System,
-                                OutputProcessor::StoreType::Average,
-                                this->name);
-            SetupOutputVariable(state,
-                                format("Heat Pump Total {} Rate", mode_keyword),
-                                Constant::Units::None,
-                                this->heatingRate,
-                                OutputProcessor::TimeStepType::System,
-                                OutputProcessor::StoreType::Average,
-                                this->name);
-            SetupOutputVariable(state,
-                                format("Heat Pump Operating Mode is {}", mode_keyword),
-                                Constant::Units::None,
-                                this->operatingMode,
-                                OutputProcessor::TimeStepType::System,
-                                OutputProcessor::StoreType::Average,
-                                this->name);
         }
         SetupOutputVariable(state,
                             format("Heat Pump Load Side Mass Flow Rate{}", suffix),
@@ -2576,6 +2543,66 @@ void EIRPlantLoopHeatPump::oneTimeInit(EnergyPlusData &state)
             ShowFatalError(state, format("{}: Program terminated due to previous condition(s).", routineName));
         }
         this->oneTimeInitFlag = false;
+    }
+}
+
+void HeatPumpAirToWater::oneTimeInit(EnergyPlusData &state) {
+    EIRPlantLoopHeatPump::oneTimeInit(state);
+    std::string suffix = "";
+    std::string mode_keyword = "";
+    if (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterHeating) {
+        suffix = " in Heating Mode";
+        mode_keyword = "Heating";
+    } else if (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterCooling) {
+        suffix = " in Cooling Mode";
+        mode_keyword = "Cooling";
+    }
+    constexpr std::array<std::string_view, static_cast<int>(OperatingMode::Num)> OperatingModeUC = {
+        "COOLING", "HEATING", "OFF"};
+    if (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterHeating ||
+        this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterCooling) {
+        SetupOutputVariable(state,
+                            format("Heat Pump {} COP", mode_keyword),
+                            Constant::Units::None,
+                            this->heatingCOP,
+                            OutputProcessor::TimeStepType::System,
+                            OutputProcessor::StoreType::Average,
+                            this->name);
+        SetupOutputVariable(state,
+                            format("Heat Pump Total {} Rate", mode_keyword),
+                            Constant::Units::None,
+                            this->heatingRate,
+                            OutputProcessor::TimeStepType::System,
+                            OutputProcessor::StoreType::Average,
+                            this->name);
+        int operatingMode = static_cast<int>(this->operatingMode);
+        SetupOutputVariable(state,
+                            format("Heat Pump Operating Mode is {}", mode_keyword),
+                            Constant::Units::None,
+                            operatingMode,
+                            OutputProcessor::TimeStepType::System,
+                            OutputProcessor::StoreType::Average,
+                            this->name);
+    }
+
+    if (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterHeating) {
+        SetupOutputVariable(state,
+                            "Heat Pump Crankcase Heater Electricity Rate",
+                            Constant::Units::W,
+                            this->CrankcaseHeaterPower,
+                            OutputProcessor::TimeStepType::System,
+                            OutputProcessor::StoreType::Average,
+                            this->name);
+        SetupOutputVariable(state,
+                            "Heat Pump Crankcase Heater Electricity Energy",
+                            Constant::Units::W,
+                            this->CrankcaseHeaterPower,
+                            OutputProcessor::TimeStepType::System,
+                            OutputProcessor::StoreType::Sum,
+                            this->name,
+                            Constant::eResource::Electricity,
+                            OutputProcessor::Group::HVAC,
+                            OutputProcessor::EndUseCat::Cooling);
     }
 }
 
@@ -3136,6 +3163,10 @@ void EIRFuelFiredHeatPump::resetReportingVariables()
     this->sourceSideHeatTransfer = 0.0;
     this->sourceSideOutletTemp = this->sourceSideInletTemp;
     this->sourceSideEnergy = 0.0;
+}
+
+void HeatPumpAirToWater::resetReportingVariables() {
+    this->CrankcaseHeaterPower = 0.0;
 }
 
 PlantComponent *EIRFuelFiredHeatPump::factory(EnergyPlusData &state, DataPlant::PlantEquipmentType hp_type, const std::string &hp_name)
@@ -3981,6 +4012,67 @@ void HeatPumpAirToWater::processInputForEIRPLHP(EnergyPlusData &state)
         }
     }
 }
+void EIRPlantLoopHeatPump::setUpEMS(EnergyPlusData &state)
+{
+    // do nothing
+}
+
+void HeatPumpAirToWater::setUpEMS(EnergyPlusData &state)
+{
+
+    std::string mode_keyword = "";
+    if (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterHeating) {
+        // defrost related actuators
+        mode_keyword = "Heating";
+        SetupEMSActuator(state,
+                         format("HeatPump:AirToWater:{}", mode_keyword),
+                         this->name,
+                         "Compressor Suction Temperature",
+                         "[C]",
+                         this->TsucEMSOverrideOn,
+                         this->TsucEMSOverrideValue);
+        SetupEMSActuator(state,
+                         format("HeatPump:AirToWater:{}", mode_keyword),
+                         this->name,
+                         "Entering Water Temperature",
+                         "[C]",
+                         this->EnteringTempEMSOverrideOn,
+                         this->EnteringTempEMSOverrideValue);
+        SetupEMSActuator(state,
+                         format("HeatPump:AirToWater:{}", mode_keyword),
+                         this->name,
+                         "Leaving Water Temperature",
+                         "[C]",
+                         this->LeavingTempEMSOverrideOn,
+                         this->LeavingTempEMSOverrideValue);
+        SetupEMSActuator(state,
+                         format("HeatPump:AirToWater:{}", mode_keyword),
+                         this->name,
+                         "Time Since Last Defrost",
+                         "[s]",
+                         this->TimeSinceLastEMSOverrideOn,
+                         this->TimeSinceLastEMSOverrideValue);
+        SetupEMSActuator(state,
+                         format("HeatPump:AirToWater:{}", mode_keyword),
+                         this->name,
+                         "Time Since Defrost Started",
+                         "[s]",
+                         this->TimeSinceStartEMSOverrideOn,
+                         this->TimeSinceStartEMSOverrideValue);
+    } else {
+        mode_keyword = "Cooling";
+    }
+    if (this->operatingModeControlMethod == OperatingModeControlMethod::EMSControlled) {
+        // the two internal object is assumed to have the same operating mode
+        SetupEMSActuator(state,
+                         format("HeatPump:AirToWater:{}", mode_keyword),
+                         this->name,
+                         "Operation Mode",
+                         "[ ]",
+                         this->OperationModeEMSOverrideOn,
+                         this->OperationModeEMSOverrideValue);
+    }
+}
 
 void EIRFuelFiredHeatPump::oneTimeInit(EnergyPlusData &state)
 {
@@ -4246,6 +4338,19 @@ Real64 EIRFuelFiredHeatPump::getDynamicMaxCapacity(EnergyPlusData &state)
     return this->referenceCapacity * capacityModifierFuncTemp;
 }
 
+void HeatPumpAirToWater::calcOpMode(EnergyPlus::EnergyPlusData &state, Real64 currentLoad)
+{
+
+    Real64 constexpr minLoadThresh = 1e-6;
+    if (currentLoad > minLoadThresh) {
+        this->operatingMode = HeatPumpAirToWater::OperatingMode::Heating;
+    } else if (currentLoad < (-1) * minLoadThresh) {
+        this->operatingMode = HeatPumpAirToWater::OperatingMode::Cooling;
+    } else {
+        this->operatingMode = HeatPumpAirToWater::OperatingMode::Off;
+    }
+}
+
 void HeatPumpAirToWater::doPhysics(EnergyPlusData &state, Real64 const currentLoad)
 {
     // add free cooling at some point, compressor is off during free cooling, temp limits restrict free cooling range
@@ -4259,6 +4364,7 @@ void HeatPumpAirToWater::doPhysics(EnergyPlusData &state, Real64 const currentLo
     Real64 partLoadRatio = 0.0;
     int speedLevel = 0;
 
+    this->calcOpMode(state, currentLoad);
     this->calcAvailableCapacity(state, currentLoad, this->capFuncTempCurveIndex[this->numSpeeds - 1], availableCapacity, partLoadRatio);
     // fixme: might need to change
     this->setPartLoadAndCyclingRatio(state, partLoadRatio);

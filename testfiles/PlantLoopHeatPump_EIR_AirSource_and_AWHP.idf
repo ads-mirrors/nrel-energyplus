@@ -668,3 +668,8 @@
 
   Output:Table:SummaryReports,
     AllSummary;              !- Report 1 Name
+
+  Output:EnergyManagementSystem,
+    Verbose,                 !- Actuator Availability Dictionary Reporting
+    Verbose,                 !- Internal Variable Availability Dictionary Reporting
+    Verbose;                 !- EMS Runtime Language Debug Output Level

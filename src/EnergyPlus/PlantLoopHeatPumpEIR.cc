@@ -587,7 +587,7 @@ void HeatPumpAirToWater::calcPowerUsage(EnergyPlusData &state, Real64 const curr
     for (int i = 0; i < this->numSpeeds; i++) {
         auto capacityModifierFuncTemp =
             Curve::CurveValue(state, this->capFuncTempCurveIndex[i], loadSideOutletSetpointTemp, this->sourceSideInletTemp);
-        capacityHigh = this->referenceCapacity * capacityModifierFuncTemp;
+        capacityHigh = this->ratedCapacity[i] * capacityModifierFuncTemp;
         speedLevel = i;
         if (std::fabs(currentLoad) < capacityHigh) {
             break;
@@ -614,13 +614,13 @@ void HeatPumpAirToWater::calcPowerUsage(EnergyPlusData &state, Real64 const curr
     if (speedLevel < this->numSpeeds - 1) { // not at highest speed
         Real64 interpRatio = (std::fabs(currentLoad) - capacityLow) / (capacityHigh - capacityLow);
 
-        Real64 powerUsageLow = (this->loadSideHeatTransfer / this->referenceCOP) * (eirModifierFuncPLRLow * eirModifierFuncTempLow) *
+        Real64 powerUsageLow = (this->loadSideHeatTransfer / this->ratedCOP[speedLevel]) * (eirModifierFuncPLRLow * eirModifierFuncTempLow) *
                                this->defrostPowerMultiplier * this->cyclingRatio;
-        Real64 powerUsageHigh = (this->loadSideHeatTransfer / this->referenceCOP) * (eirModifierFuncPLRHigh * eirModifierFuncTempHigh) *
+        Real64 powerUsageHigh = (this->loadSideHeatTransfer / this->ratedCOP[speedLevel]) * (eirModifierFuncPLRHigh * eirModifierFuncTempHigh) *
                                 this->defrostPowerMultiplier * this->cyclingRatio;
         this->powerUsage = (1 - interpRatio) * powerUsageLow + interpRatio * powerUsageHigh;
     } else { // at highest speed level
-        this->powerUsage = (this->loadSideHeatTransfer / this->referenceCOP) * (eirModifierFuncPLRHigh * eirModifierFuncTempHigh) *
+        this->powerUsage = (this->loadSideHeatTransfer / this->ratedCOP[this->numSpeeds - 1]) * (eirModifierFuncPLRHigh * eirModifierFuncTempHigh) *
                            this->defrostPowerMultiplier * this->cyclingRatio;
     }
 }
@@ -3931,6 +3931,10 @@ void HeatPumpAirToWater::processInputForEIRPLHP(EnergyPlusData &state)
                         errorsFound = true;
                     }
                     std::string const capFtName = Util::makeUPPER(fields.at(capFtFieldName).get<std::string>());
+                    thisAWHP.ratedCapacity[i] = state.dataInputProcessing->inputProcessor->getRealFieldValue(
+                        fields, schemaProps, format("rated_{}_capacity_at_speed_{}", modeKeyWord, i + 1));
+                    thisAWHP.ratedCOP[i] = state.dataInputProcessing->inputProcessor->getRealFieldValue(
+                        fields, schemaProps, format("rated_cop_for_{}_at_speed_{}", modeKeyWord, i + 1));
                     thisAWHP.capFuncTempCurveIndex[i] = Curve::GetCurveIndex(state, capFtName);
                     if (thisAWHP.capFuncTempCurveIndex[i] == 0) {
                         ShowSevereError(

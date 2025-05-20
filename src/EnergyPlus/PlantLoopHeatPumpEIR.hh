@@ -240,8 +240,8 @@ namespace EIRPlantLoopHeatPumps {
         Real64 heatingRate = 0.0;
         Real64 coolingRate = 0.0;
         int operatingMode = 0;
-        Real64 sourceSideDesignInletTemp = 0.0;    // Rated Inlet Air Temperature in xx Mode
-        Real64 ratedLeavingWaterTemperature = 0.0; // rated_leaving_water_temperature_in_xx_mode
+        Real64 sourceSideDesignInletTemp = 0.0;     // Rated Inlet Air Temperature in xx Mode
+        Real64 ratedLeavingWaterTemperature = 0.0;  // rated_leaving_water_temperature_in_xx_mode
         Real64 ratedEnteringWaterTemperature = 0.0; // rated_leaving_water_temperature_in_xx_mode
         enum class CompressorControlType
         {
@@ -475,6 +475,8 @@ namespace EIRPlantLoopHeatPumps {
 
         int static constexpr maxNumSpeeds = 5;
         int numSpeeds = 1;
+        std::array<Real64, maxNumSpeeds> ratedCapacity = {};
+        std::array<Real64, maxNumSpeeds> ratedCOP = {};
         std::array<int, maxNumSpeeds> capFuncTempCurveIndex = {};
         std::array<int, maxNumSpeeds> powerRatioFuncTempCurveIndex = {};
         std::array<int, maxNumSpeeds> powerRatioFuncPLRCurveIndex = {};

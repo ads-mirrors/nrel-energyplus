@@ -55,6 +55,7 @@
 #include <EnergyPlus/DataZoneEquipment.hh>
 #include <EnergyPlus/Psychrometrics.hh>
 #include <EnergyPlus/ScheduleManager.hh>
+#include <EnergyPlus/SizingManager.hh>
 
 namespace EnergyPlus::DataSizing {
 
@@ -658,6 +659,14 @@ calcDesignSpecificationOutdoorAir(EnergyPlusData &state,
         }
         return totOAFlowRate;
     }
+}
+
+int getDefaultOAReq(EnergyPlusData &state)
+{
+    if (state.dataSize->OARequirements_Default == 0) {
+        SizingManager::GetOARequirements(state); // get the OA requirements object and set up the default
+    }
+    return state.dataSize->OARequirements_Default;
 }
 
 Real64 OARequirementsData::oaFlowArea(EnergyPlusData &state,

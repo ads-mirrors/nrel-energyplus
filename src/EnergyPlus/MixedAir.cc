@@ -1558,89 +1558,85 @@ void GetOAControllerInputs(EnergyPlusData &state)
                 auto &thisVentMechZone = thisVentilationMechanical.VentMechZone(ventMechZoneNum);
                 Real64 zoneOAAreaRate = 0.0;
                 Real64 zoneOAPeopleRate = 0.0;
-                if (thisVentMechZone.ZoneDesignSpecOAObjIndex > 0) {
-                    auto &curOARequirements = state.dataSize->OARequirements(thisVentMechZone.ZoneDesignSpecOAObjIndex);
-                    zoneOAAreaRate = curOARequirements.desFlowPerZoneArea(state, thisVentMechZone.zoneNum);
-                    zoneOAPeopleRate = curOARequirements.desFlowPerZonePerson(state, thisVentMechZone.zoneNum);
-                    // Get OA schedules - only used for system methods
-                    if (thisVentilationMechanical.SystemOAMethod == DataSizing::SysOAMethod::IAQP ||
-                        thisVentilationMechanical.SystemOAMethod == DataSizing::SysOAMethod::IAQPGC ||
-                        thisVentilationMechanical.SystemOAMethod == DataSizing::SysOAMethod::IAQPCOM) {
-                        bool notAllSame = false;
-                        thisVentMechZone.zoneOASched = curOARequirements.getZoneFlowFracSched(state, notAllSame);
-                        if (notAllSame) {
-                            ShowWarningError(state,
-                                             format("{}{}=\"{}\", mixed schedules found for Zone={}.",
-                                                    RoutineName,
-                                                    CurrentModuleObject,
-                                                    thisVentilationMechanical.Name,
-                                                    thisVentMechZone.name));
-                        }
-                    }
-                    if (thisVentilationMechanical.SystemOAMethod == DataSizing::SysOAMethod::ProportionalControlSchOcc ||
-                        thisVentilationMechanical.SystemOAMethod == DataSizing::SysOAMethod::ProportionalControlDesOcc ||
-                        thisVentilationMechanical.SystemOAMethod == DataSizing::SysOAMethod::ProportionalControlDesOARate) {
-                        bool notAllSame = false;
-                        thisVentMechZone.zonePropCtlMinRateSched = curOARequirements.getZonePropCtlMinRateSched(state, notAllSame);
-                        if (notAllSame) {
-                            ShowWarningError(state,
-                                             format("{}{}=\"{}\", mixed schedules found for Zone={}.",
-                                                    RoutineName,
-                                                    CurrentModuleObject,
-                                                    thisVentilationMechanical.Name,
-                                                    thisVentMechZone.name));
-                        }
-                    }
-                    if (thisVentilationMechanical.SystemOAMethod == DataSizing::SysOAMethod::ProportionalControlDesOARate) {
-                        if (zoneOAPeopleRate == 0.0 && zoneOAAreaRate == 0.0) {
-                            ShowSevereError(
-                                state,
-                                format("{}{}=\"{}\", invalid input with System Outdoor Air Method = ProportionalControlBasedOnDesignOARate.",
-                                       RoutineName,
-                                       CurrentModuleObject,
-                                       thisVentilationMechanical.Name));
-                            ShowContinueError(state,
-                                              " The values of Outdoor Air Flow per Person and Outdoor Air Flow per Zone Floor Area in the same "
-                                              "object can not be zero.");
-                            ErrorsFound = true;
-                        }
-                    }
-                    if (thisVentilationMechanical.SystemOAMethod == DataSizing::SysOAMethod::ProportionalControlSchOcc) {
-                        if (curOARequirements.desFlowPerACH(state, thisVentMechZone.zoneNum) > 0.0 ||
-                            curOARequirements.desFlowPerZone(state, thisVentMechZone.zoneNum) > 0.0) {
-                            ShowWarningError(
-                                state, format("{}=\"{}\", inappropriate outdoor air method", CurrentModuleObject, thisVentilationMechanical.Name));
-                            ShowContinueError(
-                                state,
-                                format("Inappropriate method for Design Specification Outdoor Air Object Name=\"{}\".", curOARequirements.Name));
-                            ShowContinueError(state, format("For Zone=\"{}\".", thisVentMechZone.name));
-                            ShowContinueError(state,
-                                              "Since System Outdoor Air Method= ProportionalControlBasedOnOccupancySchedule\", AirChanges/Hour or "
-                                              "Flow/Zone outdoor air methods are not valid. Simulation continues.... ");
-                        }
-                    }
-                    if (thisVentilationMechanical.SystemOAMethod == DataSizing::SysOAMethod::ProportionalControlDesOcc) {
-                        if (curOARequirements.desFlowPerACH(state, thisVentMechZone.zoneNum) > 0.0 ||
-                            curOARequirements.desFlowPerZone(state, thisVentMechZone.zoneNum) > 0.0) {
-                            ShowWarningError(
-                                state, format("{}=\"{}\", inappropriate outdoor air method", CurrentModuleObject, thisVentilationMechanical.Name));
-                            ShowContinueError(
-                                state,
-                                format("Inappropriate method for Design Specification Outdoor Air Object Name=\"{}\".", curOARequirements.Name));
-                            ShowContinueError(state, format("For Zone=\"{}\".", thisVentMechZone.name));
-                            ShowContinueError(state,
-                                              "Since System Outdoor Air Method= ProportionalControlBasedOnDesignOccupancy\", AirChanges/Hour or "
-                                              "Flow/Zone outdoor air methods are not valid. Simulation continues.... ");
-                        }
-                    }
-                } else { // use defaults
-                    // since this is case with no DesSpcOA object, cannot determine the method and default would be Flow/Person which should
-                    // default to this flow rate
-                    thisVentMechZone.ZoneDesignSpecOAObjIndex = DataSizing::OARequirements_Default;
+                if (thisVentMechZone.ZoneDesignSpecOAObjIndex == 0) {
+                    // use defaults
+                    thisVentMechZone.ZoneDesignSpecOAObjIndex = DataSizing::getDefaultOAReq(state);
                     ShowWarningError(state, format("{}{}=\"{}", RoutineName, CurrentModuleObject, thisVentilationMechanical.Name));
                     ShowContinueError(
                         state, format("Cannot locate a matching DesignSpecification:OutdoorAir object for Zone=\"{}\".", thisVentMechZone.name));
                     ShowContinueError(state, "Using default OA of 0.00944 m3/s-person and 0.0 m3/s-m2.");
+                }
+                assert(thisVentMechZone.ZoneDesignSpecOAObjIndex > 0);
+                auto &curOARequirements = state.dataSize->OARequirements(thisVentMechZone.ZoneDesignSpecOAObjIndex);
+                zoneOAAreaRate = curOARequirements.desFlowPerZoneArea(state, thisVentMechZone.zoneNum);
+                zoneOAPeopleRate = curOARequirements.desFlowPerZonePerson(state, thisVentMechZone.zoneNum);
+                // Get OA schedules - only used for system methods
+                if (thisVentilationMechanical.SystemOAMethod == DataSizing::SysOAMethod::IAQP ||
+                    thisVentilationMechanical.SystemOAMethod == DataSizing::SysOAMethod::IAQPGC ||
+                    thisVentilationMechanical.SystemOAMethod == DataSizing::SysOAMethod::IAQPCOM) {
+                    bool notAllSame = false;
+                    thisVentMechZone.zoneOASched = curOARequirements.getZoneFlowFracSched(state, notAllSame);
+                    if (notAllSame) {
+                        ShowWarningError(state,
+                                         format("{}{}=\"{}\", mixed schedules found for Zone={}.",
+                                                RoutineName,
+                                                CurrentModuleObject,
+                                                thisVentilationMechanical.Name,
+                                                thisVentMechZone.name));
+                    }
+                }
+                if (thisVentilationMechanical.SystemOAMethod == DataSizing::SysOAMethod::ProportionalControlSchOcc ||
+                    thisVentilationMechanical.SystemOAMethod == DataSizing::SysOAMethod::ProportionalControlDesOcc ||
+                    thisVentilationMechanical.SystemOAMethod == DataSizing::SysOAMethod::ProportionalControlDesOARate) {
+                    bool notAllSame = false;
+                    thisVentMechZone.zonePropCtlMinRateSched = curOARequirements.getZonePropCtlMinRateSched(state, notAllSame);
+                    if (notAllSame) {
+                        ShowWarningError(state,
+                                         format("{}{}=\"{}\", mixed schedules found for Zone={}.",
+                                                RoutineName,
+                                                CurrentModuleObject,
+                                                thisVentilationMechanical.Name,
+                                                thisVentMechZone.name));
+                    }
+                }
+                if (thisVentilationMechanical.SystemOAMethod == DataSizing::SysOAMethod::ProportionalControlDesOARate) {
+                    if (zoneOAPeopleRate == 0.0 && zoneOAAreaRate == 0.0) {
+                        ShowSevereError(state,
+                                        format("{}{}=\"{}\", invalid input with System Outdoor Air Method = ProportionalControlBasedOnDesignOARate.",
+                                               RoutineName,
+                                               CurrentModuleObject,
+                                               thisVentilationMechanical.Name));
+                        ShowContinueError(state,
+                                          " The values of Outdoor Air Flow per Person and Outdoor Air Flow per Zone Floor Area in the same "
+                                          "object can not be zero.");
+                        ErrorsFound = true;
+                    }
+                }
+                if (thisVentilationMechanical.SystemOAMethod == DataSizing::SysOAMethod::ProportionalControlSchOcc) {
+                    if (curOARequirements.desFlowPerACH(state, thisVentMechZone.zoneNum) > 0.0 ||
+                        curOARequirements.desFlowPerZone(state, thisVentMechZone.zoneNum) > 0.0) {
+                        ShowWarningError(state,
+                                         format("{}=\"{}\", inappropriate outdoor air method", CurrentModuleObject, thisVentilationMechanical.Name));
+                        ShowContinueError(
+                            state, format("Inappropriate method for Design Specification Outdoor Air Object Name=\"{}\".", curOARequirements.Name));
+                        ShowContinueError(state, format("For Zone=\"{}\".", thisVentMechZone.name));
+                        ShowContinueError(state,
+                                          "Since System Outdoor Air Method= ProportionalControlBasedOnOccupancySchedule\", AirChanges/Hour or "
+                                          "Flow/Zone outdoor air methods are not valid. Simulation continues.... ");
+                    }
+                }
+                if (thisVentilationMechanical.SystemOAMethod == DataSizing::SysOAMethod::ProportionalControlDesOcc) {
+                    if (curOARequirements.desFlowPerACH(state, thisVentMechZone.zoneNum) > 0.0 ||
+                        curOARequirements.desFlowPerZone(state, thisVentMechZone.zoneNum) > 0.0) {
+                        ShowWarningError(state,
+                                         format("{}=\"{}\", inappropriate outdoor air method", CurrentModuleObject, thisVentilationMechanical.Name));
+                        ShowContinueError(
+                            state, format("Inappropriate method for Design Specification Outdoor Air Object Name=\"{}\".", curOARequirements.Name));
+                        ShowContinueError(state, format("For Zone=\"{}\".", thisVentMechZone.name));
+                        ShowContinueError(state,
+                                          "Since System Outdoor Air Method= ProportionalControlBasedOnDesignOccupancy\", AirChanges/Hour or "
+                                          "Flow/Zone outdoor air methods are not valid. Simulation continues.... ");
+                    }
                 }
                 int zoneAirDistObjIndex = thisVentMechZone.ZoneDesignSpecADObjIndex;
                 if (zoneAirDistObjIndex > 0) {

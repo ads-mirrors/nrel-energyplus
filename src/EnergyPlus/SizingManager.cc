@@ -2171,16 +2171,17 @@ void GetOARequirements(EnergyPlusData &state)
     lAlphaBlanks.dimension(NumAlphas, true);
     lNumericBlanks.dimension(NumNumbers, true);
 
-    // Create default OASpec for use by Controller:MechanicalVentilation if needed
+    // Create default OASpec for use by Controller:MechanicalVentilation if needed, put at the end of OARequirements
     state.dataSize->NumOARequirements += 1;
     state.dataSize->OARequirements.allocate(state.dataSize->NumOARequirements);
-    auto &defaultOAReq = state.dataSize->OARequirements(DataSizing::OARequirements_Default);
+    state.dataSize->OARequirements_Default = state.dataSize->NumOARequirements;
+    auto &defaultOAReq = state.dataSize->OARequirements(state.dataSize->OARequirements_Default);
     defaultOAReq.Name = "Default-0.00944[m3/s-person]";
     defaultOAReq.OAFlowMethod = OAFlowCalcMethod::PerPerson;
     defaultOAReq.OAFlowPerPerson = 0.00944;
     defaultOAReq.oaFlowFracSched = Sched::GetScheduleAlwaysOn(state);
 
-    if (state.dataSize->NumOARequirements > 1) {
+    if (numOARequirements > 0) {
         int IOStatus;            // Used in GetObjectItem
         bool ErrorsFound(false); // If errors detected in input
 

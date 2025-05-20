@@ -208,9 +208,6 @@ namespace DataSizing {
     // parameter for (time-of-peak) sizing format
     static constexpr std::string_view PeakHrMinFmt("{:02}:{:02}:00");
 
-    // Index to default DesignSpecification:OutdoorAir
-    constexpr int OARequirements_Default = 1;
-
     enum class SysOAMethod
     {
         Invalid = -1,
@@ -1129,9 +1126,9 @@ namespace DataSizing {
         bool myEnvrnFlag = true;
 
         Real64 oaFlowArea(EnergyPlusData &state,
-                             int const zoneNum,
-                             bool const useMinOASchFlag = true, // Use min OA schedule in DesignSpecification:OutdoorAir object
-                             int const spaceNum = 0);            // Space index (if applicable)
+                          int const zoneNum,
+                          bool const useMinOASchFlag = true, // Use min OA schedule in DesignSpecification:OutdoorAir object
+                          int const spaceNum = 0);           // Space index (if applicable)
 
         Real64 floorArea(EnergyPlusData &state, int const zoneNum, int const spaceNum = 0);
 
@@ -1214,11 +1211,14 @@ namespace DataSizing {
         int const spaceNum = 0,              // Space index (if applicable)
         bool const calcIAQMethods = true);   // For IAQProcedure, PCOccSch, and PCDesOcc, calculate if true, return zero if false
 
+    int getDefaultOAReq(EnergyPlusData &state); // get index to default OA requirements - used by Controller:MechanicalVentilation
+
 } // namespace DataSizing
 
 struct SizingData : BaseGlobalStruct
 {
     int NumOARequirements = 0;                                  // Number of OA Requirements objects
+    int OARequirements_Default = 0;                             // Index to default DesignSpecification:OutdoorAir
     int NumZoneAirDistribution = 0;                             // Number of zone air distribution objects
     int NumZoneSizingInput = 0;                                 // Number of Zone Sizing objects
     int NumSysSizInput = 0;                                     // Number of System Sizing objects

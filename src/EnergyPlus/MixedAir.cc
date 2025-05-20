@@ -1378,23 +1378,20 @@ void GetOAControllerInputs(EnergyPlusData &state)
                 //     Getting OA details from design specification OA object
                 if (!lAlphaBlanks((groupNum - 1) * 3 + 6)) {
                     std::string_view designSpecOAObjName = AlphArray((groupNum - 1) * 3 + 6);
-                    if (designSpecOAObjName.empty()) {
-                        ShowSevereError(state,
-                                        format("{}=\"{}\", Design Specification Outdoor Air Object Name blank",
-                                               CurrentModuleObject,
-                                               thisVentilationMechanical.Name));
-                        ShowContinueError(state, format("For Zone=\"{}\".", ventMechZoneOrListName(groupNum)));
-                        ShowContinueError(state, "This field either needs to be filled in in this object or Sizing:Zone object.");
-                        ShowContinueError(state, "For this run, default values for these fields will be used.");
-                    } else {
-                        int ObjIndex = Util::FindItemInList(designSpecOAObjName, state.dataSize->OARequirements);
-                        designSpecOAObjIndex(groupNum) = ObjIndex;
-                        if (ObjIndex == 0) {
-                            ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, thisVentilationMechanical.Name));
-                            ShowContinueError(state, format("... not found {}=\"{}\".", cAlphaFields((groupNum - 1) * 3 + 6), designSpecOAObjName));
-                            ErrorsFound = true;
-                        }
+                    int ObjIndex = Util::FindItemInList(designSpecOAObjName, state.dataSize->OARequirements);
+                    designSpecOAObjIndex(groupNum) = ObjIndex;
+                    if (ObjIndex == 0) {
+                        ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, CurrentModuleObject, thisVentilationMechanical.Name));
+                        ShowContinueError(state, format("... not found {}=\"{}\".", cAlphaFields((groupNum - 1) * 3 + 6), designSpecOAObjName));
+                        ErrorsFound = true;
                     }
+                } else {
+                    ShowSevereError(
+                        state,
+                        format("{}=\"{}\", Design Specification Outdoor Air Object Name blank", CurrentModuleObject, thisVentilationMechanical.Name));
+                    ShowContinueError(state, format("For Zone=\"{}\".", ventMechZoneOrListName(groupNum)));
+                    ShowContinueError(state, "This field either needs to be filled in in this object or Sizing:Zone object.");
+                    ShowContinueError(state, "For this run, default values for these fields will be used.");
                 }
 
                 // Get zone air distribution details from design specification Zone Air Distribution object
@@ -1556,8 +1553,6 @@ void GetOAControllerInputs(EnergyPlusData &state)
             // Loop over zones and fill OA and AD specs, if none were found, use defaults
             for (int ventMechZoneNum = 1; ventMechZoneNum <= MechVentZoneCount; ++ventMechZoneNum) {
                 auto &thisVentMechZone = thisVentilationMechanical.VentMechZone(ventMechZoneNum);
-                Real64 zoneOAAreaRate = 0.0;
-                Real64 zoneOAPeopleRate = 0.0;
                 if (thisVentMechZone.ZoneDesignSpecOAObjIndex == 0) {
                     // use defaults
                     thisVentMechZone.ZoneDesignSpecOAObjIndex = DataSizing::getDefaultOAReq(state);
@@ -1568,8 +1563,8 @@ void GetOAControllerInputs(EnergyPlusData &state)
                 }
                 assert(thisVentMechZone.ZoneDesignSpecOAObjIndex > 0);
                 auto &curOARequirements = state.dataSize->OARequirements(thisVentMechZone.ZoneDesignSpecOAObjIndex);
-                zoneOAAreaRate = curOARequirements.desFlowPerZoneArea(state, thisVentMechZone.zoneNum);
-                zoneOAPeopleRate = curOARequirements.desFlowPerZonePerson(state, thisVentMechZone.zoneNum);
+                Real64 zoneOAAreaRate = curOARequirements.desFlowPerZoneArea(state, thisVentMechZone.zoneNum);
+                Real64 zoneOAPeopleRate = curOARequirements.desFlowPerZonePerson(state, thisVentMechZone.zoneNum);
                 // Get OA schedules - only used for system methods
                 if (thisVentilationMechanical.SystemOAMethod == DataSizing::SysOAMethod::IAQP ||
                     thisVentilationMechanical.SystemOAMethod == DataSizing::SysOAMethod::IAQPGC ||

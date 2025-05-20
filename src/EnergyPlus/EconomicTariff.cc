@@ -3980,7 +3980,9 @@ void LEEDtariffReporting(EnergyPlusData &state)
                 state,
                 s_orp->pdchLeedEtsDemUnt,
                 "District Cooling",
-                format("{}{}", convDemandStrings[(int)distCoolUnits], demandWindowStrings[(int)distCoolDemWindowUnits]));
+                format("{}{}",
+                       convDemandStrings[(int)distCoolUnits],
+                       (distCoolDemWindowUnits == DemandWindow::Invalid) ? "" : demandWindowStrings[(int)distCoolDemWindowUnits]));
             OutputReportPredefined::PreDefTableEntry(state, s_orp->pdchLeedEcsTotal, "District Cooling", distCoolTotalCost, 2);
         }
         if (distHeatWaterTotalEne != 0) {
@@ -3992,7 +3994,9 @@ void LEEDtariffReporting(EnergyPlusData &state)
                 state,
                 s_orp->pdchLeedEtsDemUnt,
                 "District Heating Water",
-                format("{}{}", convDemandStrings[(int)distHeatWaterUnits], demandWindowStrings[(int)distHeatWaterDemWindowUnits]));
+                format("{}{}",
+                       convDemandStrings[(int)distHeatWaterUnits],
+                       (distHeatWaterDemWindowUnits == DemandWindow::Invalid) ? "" : demandWindowStrings[(int)distHeatWaterDemWindowUnits]));
             OutputReportPredefined::PreDefTableEntry(state, s_orp->pdchLeedEcsTotal, "District Heating Water", distHeatWaterTotalCost, 2);
         }
         if (distHeatSteamTotalEne != 0) {
@@ -4004,7 +4008,9 @@ void LEEDtariffReporting(EnergyPlusData &state)
                 state,
                 s_orp->pdchLeedEtsDemUnt,
                 "District Heating Steam",
-                format("{}{}", convDemandStrings[(int)distHeatSteamUnits], demandWindowStrings[(int)distHeatSteamDemWindowUnits]));
+                format("{}{}",
+                       convDemandStrings[(int)distHeatSteamUnits],
+                       (distHeatSteamDemWindowUnits == DemandWindow::Invalid) ? "" : demandWindowStrings[(int)distHeatSteamDemWindowUnits]));
             OutputReportPredefined::PreDefTableEntry(state, s_orp->pdchLeedEcsTotal, "District Heating Steam", distHeatSteamTotalCost, 2);
         }
         // save the total costs for later to compute process fraction

@@ -6623,6 +6623,8 @@ TEST_F(EnergyPlusFixture, MechVentController_ZoneSumTests_DSOASpaceList)
     state->dataHeatBal->spaceIntGain(6).NOFOCC = 6;
 
     SizingManager::GetOARequirements(*state);
+    state->dataZoneEquip->ZoneEquipConfig.allocate(NumZones);
+    SetUpZoneSizingArrays(*state); // Call this to fill in space indexes in DSOA:Spacelist
     GetOAControllerInputs(*state);
     EXPECT_EQ(SysOAMethod::ZoneSum, state->dataMixedAir->VentilationMechanical(1).SystemOAMethod);
 

@@ -3194,7 +3194,7 @@ PlantComponent *HeatPumpAirToWater::factory(EnergyPlusData &state, DataPlant::Pl
 {
     if (state.dataHeatPumpAirToWater->getInputsAWHP) {
         HeatPumpAirToWater::processInputForEIRPLHP(state);
-        //        EIRFuelFiredHeatPump::pairUpCompanionCoils(state);
+        HeatPumpAirToWater::pairUpCompanionCoils(state);
         state.dataHeatPumpAirToWater->getInputsAWHP = false;
     }
 
@@ -3238,6 +3238,25 @@ void EIRFuelFiredHeatPump::pairUpCompanionCoils(EnergyPlusData &state)
                 ShowContinueError(state, format("Base coil: {}", thisCoilName));
                 ShowContinueError(state, format("Looking for companion coil named: {}", targetCompanionName));
                 ShowFatalError(state, "Simulation aborts due to previous severe error");
+            }
+        }
+    }
+}
+
+void HeatPumpAirToWater::pairUpCompanionCoils(EnergyPlusData &state)
+{
+    for (auto &thisHP : state.dataHeatPumpAirToWater->heatPumps) {
+        std::string const thisCoilName = Util::makeUPPER(thisHP.name);
+        DataPlant::PlantEquipmentType thisCoilType = thisHP.EIRHPType;
+        std::string const targetCompanionName = thisCoilName;
+        for (auto &potentialCompanionCoil : state.dataHeatPumpAirToWater->heatPumps) {
+            DataPlant::PlantEquipmentType potentialCompanionType = potentialCompanionCoil.EIRHPType;
+            std::string potentialCompanionName = Util::makeUPPER(potentialCompanionCoil.name);
+            if (potentialCompanionName == targetCompanionName) {
+                if (thisCoilType != potentialCompanionType) {
+                    thisHP.companionHeatPumpCoil = &potentialCompanionCoil;
+                    break;
+                }
             }
         }
     }

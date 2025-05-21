@@ -513,6 +513,7 @@ namespace EIRPlantLoopHeatPumps {
         void calcPowerUsage(EnergyPlusData &state, Real64 currentLoad);
         void calcOpMode(EnergyPlusData &state, Real64 currentLoad);
         void reportEquipmentSummary(EnergyPlusData &state) override;
+        static void pairUpCompanionCoils(EnergyPlusData &state);
         void resetReportingVariables() override;
         Real64 calcCrankcaseHeaterPower(EnergyPlusData &state) const;
         void setUpEMS(EnergyPlusData &state) override;

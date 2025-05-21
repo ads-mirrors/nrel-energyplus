@@ -2797,20 +2797,20 @@ void EIRFuelFiredHeatPump::doPhysics(EnergyPlusData &state, Real64 currentLoad)
         }
     }
 
-    // Cycling Ratio
-    constexpr Real64 CR_min = 0.0;
-    constexpr Real64 CR_max = 1.0;
-    Real64 CR = std::clamp(max(this->minPLR, partLoadRatio) / miniPLR_mod,
-                           CR_min,
-                           CR_max); // min(max(0.0, max(this->minPLR, partLoadRatio) / miniPLR_mod), 1.0); // partLoadRatio / this->minPLR;
-
-    constexpr Real64 CRF_Slope = 0.4167;
+    // Cycling degradation calculation
+    Real64 CRF = 1.0;
+    constexpr Real64 CRF_Slope = 0.4167; // default curve coefficients from "Pathways to Decarbonization of Residential Heating", Fridlyand et al. (2021)
     constexpr Real64 CRF_Intercept = 0.5833;
-    Real64 CRF = CRF_Slope * CR + CRF_Intercept; // Use the the fixed eqn in the paper as the default curve (or maybe choose constant 1 as default)
-    if (this->cycRatioCurveIndex > 0) {
-        CRF = Curve::CurveValue(state, this->cycRatioCurveIndex, CR);
+    if (partLoadRatio < this->minimumUnloadingRatio) {
+        Real64 CR = std::clamp(partLoadRatio / this->minimumUnloadingRatio, 0.0, 1.0);
+        if (this->cycRatioCurveIndex > 0) {
+            CRF = Curve::CurveValue(state, this->cycRatioCurveIndex, CR);
+        } else {
+            CRF = CRF_Slope * CR + CRF_Intercept;
+        }
     }
-    if (CRF <= Constant::rTinyValue) CRF = CRF_Intercept; // What could a proper default for too tiny CRF?
+    if (CRF <= Constant::rTinyValue) CRF = CRF_Intercept;
+    this->cyclingRatioFraction = CRF;
 
     // aux elec
     Real64 eirAuxElecFuncTemp = 0.0;
@@ -3404,6 +3404,24 @@ void EIRFuelFiredHeatPump::processInputForEIRPLHP(EnergyPlusData &state)
                 }
             }
 
+            // N14 minimum unloading ratio
+            auto minimumUnloadingRatio = fields.find("minimum_unloading_ratio");
+            if (minimumUnloadingRatio != fields.end()) {
+                thisPLHP.minimumUnloadingRatio = minimumUnloadingRatio.value().get<Real64>();
+            } else {
+                Real64 defaultVal = 0.25;
+                if (!state.dataInputProcessing->inputProcessor->getDefaultValue(state, cCurrentModuleObject, "minimum_unloading_ratio", defaultVal)) {
+                    ShowSevereError(state, "EIR FFHP: minimum unload ratio not entered and could not get default value.");
+                    errorsFound = true;
+                } else {
+                    thisPLHP.minimumUnloadingRatio = defaultVal;
+                }
+            }
+            if (thisPLHP.minimumUnloadingRatio < thisPLHP.minPLR) {
+                ShowSevereError(state, "EIR FFHP: the minimum unloading ratio cannot be lower than the minimum part load ratio.");
+                errorsFound = true;
+            }
+
             bool nodeErrorsFound = false;
             thisPLHP.loadSideNodes.inlet = NodeInputManager::GetOnlySingleNode(state,
                                                                                loadSideInletNodeName,
@@ -3489,20 +3507,6 @@ void EIRFuelFiredHeatPump::oneTimeInit(EnergyPlusData &state)
                             this->name,
                             Constant::eResource::EnergyTransfer,
                             OutputProcessor::Group::Plant);
-        // Setup Output Variable(state,
-        //                    "Fuel-fired Absorption Heat Pump Source Side Heat Transfer Rate",
-        //                    Constant::Units::W,
-        //                    this->sourceSideHeatTransfer,
-        //                    OutputProcessor::TimeStepType::System,
-        //                    OutputProcessor::StoreType::Average,
-        //                    this->name);
-        // Setup Output Variable(state,
-        //                    "Fuel-fired Absorption Heat Pump Source Side Heat Transfer Energy",
-        //                    Constant::Units::J,
-        //                    this->sourceSideEnergy,
-        //                    OutputProcessor::TimeStepType::System,
-        //                    OutputProcessor::StoreType::Sum,
-        //                    this->name);
         SetupOutputVariable(state,
                             "Fuel-fired Absorption HeatPump Inlet Temperature", // "Heat Pump Load Side Inlet Temperature",
                             Constant::Units::C,
@@ -3517,20 +3521,6 @@ void EIRFuelFiredHeatPump::oneTimeInit(EnergyPlusData &state)
                             OutputProcessor::TimeStepType::System,
                             OutputProcessor::StoreType::Average,
                             this->name);
-        // Setup Output Variable(state,
-        //                    "Fuel-fired Absorption Heat Pump Source Side Inlet Temperature",
-        //                    Constant::Units::C,
-        //                    this->sourceSideInletTemp,
-        //                    OutputProcessor::TimeStepType::System,
-        //                    OutputProcessor::StoreType::Average,
-        //                    this->name);
-        // Setup Output Variable(state,
-        //                    "Heat Pump Source Side Outlet Temperature",
-        //                    Constant::Units::C,
-        //                    this->sourceSideOutletTemp,
-        //                    OutputProcessor::TimeStepType::System,
-        //                    OutputProcessor::StoreType::Average,
-        //                    this->name);
         SetupOutputVariable(state,
                             "Fuel-fired Absorption HeatPump Fuel Rate",
                             Constant::Units::W,
@@ -3604,6 +3594,13 @@ void EIRFuelFiredHeatPump::oneTimeInit(EnergyPlusData &state)
                             "Fuel-fired Absorption HeatPump Volumetric Flow Rate",
                             Constant::Units::m3_s,
                             this->loadSideVolumeFlowRate,
+                            OutputProcessor::TimeStepType::System,
+                            OutputProcessor::StoreType::Average,
+                            this->name);
+        SetupOutputVariable(state,
+                            "Fuel-fired Absorption HeatPump Cycling Ratio Fraction",
+                            Constant::Units::None,
+                            this->cyclingRatioFraction,
                             OutputProcessor::TimeStepType::System,
                             OutputProcessor::StoreType::Average,
                             this->name);

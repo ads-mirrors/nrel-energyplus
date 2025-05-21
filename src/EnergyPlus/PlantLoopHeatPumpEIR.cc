@@ -1052,7 +1052,8 @@ void EIRPlantLoopHeatPump::reportEquipmentSummary(EnergyPlusData &state)
     OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchMechNomCap, objectName, this->referenceCapacity);
 }
 
-void HeatPumpAirToWater::reportEquipmentSummary(EnergyPlusData &state) {
+void HeatPumpAirToWater::reportEquipmentSummary(EnergyPlusData &state)
+{
     if (state.dataPlnt->PlantFinalSizesOkayToReport) {
         std::string_view const typeName = DataPlant::PlantEquipTypeNames[static_cast<int>(this->EIRHPType)];
         std::string objectName = this->name;
@@ -1092,9 +1093,9 @@ void HeatPumpAirToWater::reportEquipmentSummary(EnergyPlusData &state) {
                                                      state.dataOutRptPredefined->pdchAWHPPlantloopBranchName,
                                                      objectName,
                                                      this->loadSidePlantLoc.loopNum > 0 ? state.dataPlnt->PlantLoop(this->loadSidePlantLoc.loopNum)
-                                                         .LoopSide(this->loadSidePlantLoc.loopSideNum)
-                                                         .Branch(this->loadSidePlantLoc.branchNum)
-                                                         .Name
+                                                                                              .LoopSide(this->loadSidePlantLoc.loopSideNum)
+                                                                                              .Branch(this->loadSidePlantLoc.branchNum)
+                                                                                              .Name
                                                                                         : "N/A");
             OutputReportPredefined::PreDefTableEntry(state,
                                                      state.dataOutRptPredefined->pdchAWHPDesSizeRefWaterFlowRate,
@@ -2546,7 +2547,8 @@ void EIRPlantLoopHeatPump::oneTimeInit(EnergyPlusData &state)
     }
 }
 
-void HeatPumpAirToWater::oneTimeInit(EnergyPlusData &state) {
+void HeatPumpAirToWater::oneTimeInit(EnergyPlusData &state)
+{
     EIRPlantLoopHeatPump::oneTimeInit(state);
     std::string suffix = "";
     std::string mode_keyword = "";
@@ -2557,8 +2559,7 @@ void HeatPumpAirToWater::oneTimeInit(EnergyPlusData &state) {
         suffix = " in Cooling Mode";
         mode_keyword = "Cooling";
     }
-    constexpr std::array<std::string_view, static_cast<int>(OperatingMode::Num)> OperatingModeUC = {
-        "COOLING", "HEATING", "OFF"};
+    constexpr std::array<std::string_view, static_cast<int>(OperatingMode::Num)> OperatingModeUC = {"COOLING", "HEATING", "OFF"};
     if (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterHeating ||
         this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterCooling) {
         SetupOutputVariable(state,
@@ -3165,7 +3166,9 @@ void EIRFuelFiredHeatPump::resetReportingVariables()
     this->sourceSideEnergy = 0.0;
 }
 
-void HeatPumpAirToWater::resetReportingVariables() {
+void HeatPumpAirToWater::resetReportingVariables()
+{
+    EIRPlantLoopHeatPump::resetReportingVariables();
     this->CrankcaseHeaterPower = 0.0;
 }
 
@@ -4062,16 +4065,13 @@ void HeatPumpAirToWater::setUpEMS(EnergyPlusData &state)
     } else {
         mode_keyword = "Cooling";
     }
-    if (this->operatingModeControlMethod == OperatingModeControlMethod::EMSControlled) {
-        // the two internal object is assumed to have the same operating mode
-        SetupEMSActuator(state,
-                         format("HeatPump:AirToWater:{}", mode_keyword),
-                         this->name,
-                         "Operation Mode",
-                         "[ ]",
-                         this->OperationModeEMSOverrideOn,
-                         this->OperationModeEMSOverrideValue);
-    }
+    SetupEMSActuator(state,
+                     format("HeatPump:AirToWater"),
+                     this->name,
+                     "Operation Mode",
+                     "[ ]",
+                     this->OperationModeEMSOverrideOn,
+                     this->OperationModeEMSOverrideValue);
 }
 
 void EIRFuelFiredHeatPump::oneTimeInit(EnergyPlusData &state)
@@ -4340,8 +4340,7 @@ Real64 EIRFuelFiredHeatPump::getDynamicMaxCapacity(EnergyPlusData &state)
 
 void HeatPumpAirToWater::calcOpMode(EnergyPlus::EnergyPlusData &state, Real64 currentLoad)
 {
-
-    Real64 constexpr minLoadThresh = 1e-6;
+    Real64 constexpr minLoadThresh = 1e-6; // fixme: hardcode value, unify with others
     if (currentLoad > minLoadThresh) {
         this->operatingMode = HeatPumpAirToWater::OperatingMode::Heating;
     } else if (currentLoad < (-1) * minLoadThresh) {

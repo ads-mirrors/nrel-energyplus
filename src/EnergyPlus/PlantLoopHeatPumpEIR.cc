@@ -2799,7 +2799,8 @@ void EIRFuelFiredHeatPump::doPhysics(EnergyPlusData &state, Real64 currentLoad)
 
     // Cycling degradation calculation
     Real64 CRF = 1.0;
-    constexpr Real64 CRF_Slope = 0.4167; // default curve coefficients from "Pathways to Decarbonization of Residential Heating", Fridlyand et al. (2021)
+    constexpr Real64 CRF_Slope =
+        0.4167; // default curve coefficients from "Pathways to Decarbonization of Residential Heating", Fridlyand et al. (2021)
     constexpr Real64 CRF_Intercept = 0.5833;
     if (partLoadRatio < this->minimumUnloadingRatio) {
         Real64 CR = std::clamp(partLoadRatio / this->minimumUnloadingRatio, 0.0, 1.0);

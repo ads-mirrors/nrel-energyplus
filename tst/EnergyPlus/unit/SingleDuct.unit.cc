@@ -2774,7 +2774,6 @@ TEST_F(EnergyPlusFixture, VAVReheatTerminal_SizeMinFrac)
     thisSys.ZoneMinAirFracDes = DataSizing::AutoSize;
     thisSys.MaxAirVolFlowRateDuringReheat = DataSizing::AutoSize;
     thisSys.MaxAirVolFractionDuringReheat = DataSizing::AutoSize;
-    state->dataSize->TermUnitFinalZoneSizing(1).ZoneNum = 1;
     state->dataSize->TermUnitFinalZoneSizing(1).DesHeatVolFlow = 1.7;
     state->dataSize->TermUnitFinalZoneSizing(1).DesHeatVolFlowMax = 1.6;
     thisSys.SizeSys(*state);

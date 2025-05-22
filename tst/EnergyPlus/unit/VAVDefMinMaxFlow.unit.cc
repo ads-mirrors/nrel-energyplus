@@ -248,6 +248,7 @@ TEST_F(EnergyPlusFixture, VAVDefMinMaxFlowTestSizing1)
     state->dataSize->CurZoneEqNum = 1;
     state->dataSize->CurTermUnitSizingNum = 1;
     state->dataHeatBal->Zone(1).FloorArea = 96.48;
+    state->dataSize->FinalZoneSizing(state->dataSize->CurZoneEqNum).ZoneNum = 1;
     state->dataSize->FinalZoneSizing(state->dataSize->CurZoneEqNum).DesCoolVolFlow = 0.21081;
     state->dataSize->FinalZoneSizing(state->dataSize->CurZoneEqNum).DesHeatVolFlow = 0.11341;
     state->dataSize->FinalZoneSizing(state->dataSize->CurZoneEqNum).DesCoolMinAirFlowFrac =
@@ -439,6 +440,7 @@ TEST_F(EnergyPlusFixture, VAVDefMinMaxFlowTestSizing2)
     state->dataSize->CurZoneEqNum = 1;
     state->dataSize->CurTermUnitSizingNum = 1;
     state->dataHeatBal->Zone(1).FloorArea = 96.48;
+    state->dataSize->FinalZoneSizing(state->dataSize->CurZoneEqNum).ZoneNum = 1;
     state->dataSize->FinalZoneSizing(state->dataSize->CurZoneEqNum).DesCoolVolFlow = 0.21081;
     state->dataSize->FinalZoneSizing(state->dataSize->CurZoneEqNum).DesHeatVolFlow = 0.11341;
     state->dataSize->FinalZoneSizing(state->dataSize->CurZoneEqNum).DesCoolMinAirFlowFrac =
@@ -633,6 +635,7 @@ TEST_F(EnergyPlusFixture, VAVDefMinMaxFlowTestSizing3)
     state->dataSize->CurZoneEqNum = 1;
     state->dataSize->CurTermUnitSizingNum = 1;
     state->dataHeatBal->Zone(1).FloorArea = 96.48;
+    state->dataSize->FinalZoneSizing(state->dataSize->CurZoneEqNum).ZoneNum = 1;
     state->dataSize->TermUnitFinalZoneSizing(state->dataSize->CurTermUnitSizingNum).DesCoolVolFlow = 0.21081;
     state->dataSize->TermUnitFinalZoneSizing(state->dataSize->CurTermUnitSizingNum).DesHeatVolFlow = 0.11341;
     state->dataSize->FinalZoneSizing(state->dataSize->CurZoneEqNum).DesCoolVolFlow = 0.21081;
@@ -973,6 +976,7 @@ TEST_F(EnergyPlusFixture, VAVDefMinMaxFlowTestSizing5)
     state->dataSize->CurZoneEqNum = 1;
     state->dataSize->CurTermUnitSizingNum = 1;
     state->dataHeatBal->Zone(1).FloorArea = 96.48;
+    state->dataSize->FinalZoneSizing(state->dataSize->CurZoneEqNum).ZoneNum = 1;
     state->dataSize->FinalZoneSizing(state->dataSize->CurZoneEqNum).DesCoolVolFlow = 0.21081;
     state->dataSize->FinalZoneSizing(state->dataSize->CurZoneEqNum).DesHeatVolFlow = 0.11341;
     state->dataSize->FinalZoneSizing(state->dataSize->CurZoneEqNum).DesCoolMinAirFlowFrac =

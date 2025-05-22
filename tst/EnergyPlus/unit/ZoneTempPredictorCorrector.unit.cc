@@ -1298,6 +1298,7 @@ TEST_F(EnergyPlusFixture, SetPointWithCutoutDeltaT_test)
     auto *coolSetptSched = Sched::AddScheduleConstant(*state, "COOL SETPT-1");
 
     state->dataZoneCtrls->TempControlledZone(1).setpts[(int)HVAC::SetptType::SingleHeat].heatSetptSched = heatSetptSched;
+    state->dataZoneCtrls->TempControlledZone(1).setpts[(int)HVAC::SetptType::SingleHeat].isUsed = true;
     state->dataZoneTempPredictorCorrector->tempSetptScheds[(int)HVAC::SetptType::SingleHeat].allocate(1);
     state->dataZoneTempPredictorCorrector->tempSetptScheds[(int)HVAC::SetptType::SingleHeat](1).heatSched = heatSetptSched;
     heatSetptSched->currentVal = 22.0;
@@ -1431,6 +1432,7 @@ TEST_F(EnergyPlusFixture, TempAtPrevTimeStepWithCutoutDeltaT_test)
     state->dataHeatBalFanSys->TempControlType.allocate(1);
     state->dataHeatBalFanSys->TempControlTypeRpt.allocate(1);
     state->dataZoneCtrls->TempControlledZone(1).setpts[(int)HVAC::SetptType::SingleHeat].heatSetptSched = heatSetptSched;
+    state->dataZoneCtrls->TempControlledZone(1).setpts[(int)HVAC::SetptType::SingleHeat].isUsed = true;
     state->dataZoneTempPredictorCorrector->tempSetptScheds[(int)HVAC::SetptType::SingleHeat].allocate(1);
     state->dataZoneTempPredictorCorrector->tempSetptScheds[(int)HVAC::SetptType::SingleHeat](1).heatSched = heatSetptSched;
     heatSetptSched->currentVal = 22.0;

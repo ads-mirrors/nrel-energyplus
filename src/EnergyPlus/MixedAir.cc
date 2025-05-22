@@ -2734,31 +2734,45 @@ void InitOAController(EnergyPlusData &state, int const OAControllerNum, bool con
                 auto &thisMechVentZone = vent_mech.VentMechZone(jZone);
                 std::string const zoneName = state.dataHeatBal->Zone(thisMechVentZone.zoneNum).Name;
                 auto &dsoa = state.dataSize->OARequirements(thisMechVentZone.ZoneDesignSpecOAObjIndex);
+
                 // Loop through spaces if DesignSpecification:OutdoorAir:Spacelist, or just once for simple DSOA
-                for (int n = 0; n <= dsoa.numDSOA; ++n) {
-                    std::string const zsName = dsoa.numDSOA > 0 ? format("{}:{}", zoneName, dsoa.dsoaSpaceNames[n]) : zoneName;
-                    auto &dsoa2 = dsoa.numDSOA > 0 ? state.dataSize->OARequirements(dsoa.dsoaIndexes[n]) : dsoa;
-                    OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchDCVventMechName, zsName, vent_mech.Name);
+                auto writeDSOAToPredefined = [&state, &vent_mech, &thisMechVentZone](const OARequirementsData &dsoa,
+                                                                                     const std::string &zoneOrSpaceName) {
+                    OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchDCVventMechName, zoneOrSpaceName, vent_mech.Name);
+                    OutputReportPredefined::PreDefTableEntry(state,
+                                                             state.dataOutRptPredefined->pdchDCVType,
+                                                             zoneOrSpaceName,
+                                                             SysOAMethodNames[static_cast<int>(vent_mech.SystemOAMethod)]);
                     OutputReportPredefined::PreDefTableEntry(
-                        state, state.dataOutRptPredefined->pdchDCVType, zsName, SysOAMethodNames[static_cast<int>(vent_mech.SystemOAMethod)]);
-                    OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchDCVperPerson, zsName, dsoa2.OAFlowPerPerson, 6);
-                    OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchDCVperArea, zsName, dsoa2.OAFlowPerArea, 6);
-                    OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchDCVperZone, zsName, dsoa2.OAFlowPerZone, 6);
-                    OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchDCVperACH, zsName, dsoa2.OAFlowACH, 6);
+                        state, state.dataOutRptPredefined->pdchDCVperPerson, zoneOrSpaceName, dsoa.OAFlowPerPerson, 6);
                     OutputReportPredefined::PreDefTableEntry(
-                        state, state.dataOutRptPredefined->pdchDCVMethod, zsName, OAFlowCalcMethodNames[static_cast<int>(dsoa2.OAFlowMethod)]);
-                    if (dsoa2.oaFlowFracSched != nullptr) {
+                        state, state.dataOutRptPredefined->pdchDCVperArea, zoneOrSpaceName, dsoa.OAFlowPerArea, 6);
+                    OutputReportPredefined::PreDefTableEntry(
+                        state, state.dataOutRptPredefined->pdchDCVperZone, zoneOrSpaceName, dsoa.OAFlowPerZone, 6);
+                    OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchDCVperACH, zoneOrSpaceName, dsoa.OAFlowACH, 6);
+                    OutputReportPredefined::PreDefTableEntry(state,
+                                                             state.dataOutRptPredefined->pdchDCVMethod,
+                                                             zoneOrSpaceName,
+                                                             OAFlowCalcMethodNames[static_cast<int>(dsoa.OAFlowMethod)]);
+                    if (dsoa.oaFlowFracSched != nullptr) {
                         OutputReportPredefined::PreDefTableEntry(
-                            state, state.dataOutRptPredefined->pdchDCVOASchName, zsName, dsoa2.oaFlowFracSched->Name);
+                            state, state.dataOutRptPredefined->pdchDCVOASchName, zoneOrSpaceName, dsoa.oaFlowFracSched->Name);
                     }
                     if (thisMechVentZone.zoneADEffSched != nullptr) {
                         OutputReportPredefined::PreDefTableEntry(
-                            state, state.dataOutRptPredefined->pdchDCVZoneADEffSchName, zsName, thisMechVentZone.zoneADEffSched->Name);
+                            state, state.dataOutRptPredefined->pdchDCVZoneADEffSchName, zoneOrSpaceName, thisMechVentZone.zoneADEffSched->Name);
                     } else {
                         OutputReportPredefined::PreDefTableEntry(
-                            state, state.dataOutRptPredefined->pdchDCVZoneADEffCooling, zsName, thisMechVentZone.ZoneADEffCooling, 2);
+                            state, state.dataOutRptPredefined->pdchDCVZoneADEffCooling, zoneOrSpaceName, thisMechVentZone.ZoneADEffCooling, 2);
                         OutputReportPredefined::PreDefTableEntry(
-                            state, state.dataOutRptPredefined->pdchDCVZoneADEffHeating, zsName, thisMechVentZone.ZoneADEffHeating, 2);
+                            state, state.dataOutRptPredefined->pdchDCVZoneADEffHeating, zoneOrSpaceName, thisMechVentZone.ZoneADEffHeating, 2);
+                    }
+                };
+                if (dsoa.numDSOA == 0) {
+                    writeDSOAToPredefined(dsoa, zoneName);
+                } else {
+                    for (int n = 0; n < dsoa.numDSOA; ++n) {
+                        writeDSOAToPredefined(state.dataSize->OARequirements(dsoa.dsoaIndexes[n]), format("{}:{}", zoneName, dsoa.dsoaSpaceNames[n]));
                     }
                 }
             }

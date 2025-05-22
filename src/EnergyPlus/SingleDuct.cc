@@ -2973,7 +2973,7 @@ void SingleDuctAirTerminal::SizeSys(EnergyPlusData &state)
                 }
             }
         }
-        if (state.dataSize->TermUnitFinalZoneSizing.size() > 0 &&
+        if (state.dataSize->TermUnitFinalZoneSizing.size() > 0 && this->DamperHeatingAction == Action::ReverseWithLimits &&
             TermUnitSizing(state.dataSize->CurTermUnitSizingNum).AirVolFlow <
                 state.dataSize->TermUnitFinalZoneSizing(state.dataSize->CurTermUnitSizingNum).DesHeatVolFlow) {
             ShowMessage(state, format("SizeHVACSingleDuct: Potential issue with equipment sizing for {} = \"{}\".", this->sysType, this->SysName));

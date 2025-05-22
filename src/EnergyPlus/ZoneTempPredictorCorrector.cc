@@ -719,7 +719,7 @@ void GetZoneAirSetPoints(EnergyPlusData &state)
 
             if (!setpt.isUsed) {
                 // Catch early issues
-                if (tempZone.setptTypeSched->hasVal(state, (int)setptType)) {
+                if (setptType != HVAC::SetptType::Uncontrolled && tempZone.setptTypeSched->hasVal(state, (int)setptType)) {
                     ShowSevereError(state, format("Control Type Schedule={}", tempZone.setptTypeSched->Name));
                     ShowContinueError(
                         state,

@@ -3169,7 +3169,6 @@ void EIRFuelFiredHeatPump::processInputForEIRPLHP(EnergyPlusData &state)
             auto sizeFactorFound = fields.find("sizing_factor");
             if (sizeFactorFound != fields.end()) {
                 thisPLHP.sizingFactor = sizeFactorFound.value().get<Real64>();
-                if (thisPLHP.sizingFactor <= 0.0) thisPLHP.sizingFactor = 1.0;
             } else {
                 Real64 defaultVal_sizeFactor = 1.0;
                 if (!state.dataInputProcessing->inputProcessor->getDefaultValue(

@@ -2824,7 +2824,9 @@ void EIRFuelFiredHeatPump::doPhysics(EnergyPlusData &state, Real64 currentLoad)
             CRF = CRF_Slope * CR + CRF_Intercept;
         }
     }
-    if (CRF <= Constant::rTinyValue) CRF = CRF_Intercept;
+    if (CRF <= Constant::rTinyValue) {
+        CRF = CRF_Intercept;
+    }
     this->cyclingRatioFraction = CRF;
 
     // aux elec

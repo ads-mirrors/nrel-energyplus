@@ -1107,13 +1107,19 @@ void EIRPlantLoopHeatPump::sizeLoadSide(EnergyPlusData &state)
                 tmpCapacity = this->companionHeatPumpCoil->referenceCapacity;
             }
         } else {
-            if (this->referenceCapacityWasAutoSized) tmpCapacity = 0.0;
-            if (this->loadSideDesignVolFlowRateWasAutoSized) tmpLoadVolFlow = 0.0;
+            if (this->referenceCapacityWasAutoSized) {
+                tmpCapacity = 0.0;
+            }
+            if (this->loadSideDesignVolFlowRateWasAutoSized) {
+                tmpLoadVolFlow = 0.0;
+            }
         }
         if (this->heatRecoveryHeatPump) {
             tmpLoadVolFlow = state.dataSize->PlantSizData(pltLoadSizNum).DesVolFlowRate;
         }
-        if (this->loadSideDesignVolFlowRateWasAutoSized) this->loadSideDesignVolFlowRate = tmpLoadVolFlow;
+        if (this->loadSideDesignVolFlowRateWasAutoSized) {
+            this->loadSideDesignVolFlowRate = tmpLoadVolFlow;
+        }
         if (this->referenceCapacityWasAutoSized) {
             this->referenceCapacity = tmpCapacity;
         }
@@ -1273,7 +1279,9 @@ void EIRPlantLoopHeatPump::sizeSrcSideWSHP(EnergyPlusData &state)
 
     // To start we need to override the calculated load side flow
     // rate if it was actually hard-sized
-    if (!this->loadSideDesignVolFlowRateWasAutoSized) tmpLoadVolFlow = this->loadSideDesignVolFlowRate;
+    if (!this->loadSideDesignVolFlowRateWasAutoSized) {
+        tmpLoadVolFlow = this->loadSideDesignVolFlowRate;
+    }
 
     // calculate an auto-sized value for source design flow regardless of whether it was auto-sized or not
     int plantSourceSizingIndex = this->sourceSidePlantLoc.loop->PlantSizNum;
@@ -1666,7 +1674,9 @@ void EIRPlantLoopHeatPump::processInputForEIRPLHP(EnergyPlusData &state)
         int numPLHP = state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, cCurrentModuleObject);
         if (numPLHP > 0) {
             auto const instances = state.dataInputProcessing->inputProcessor->epJSON.find(cCurrentModuleObject);
-            if (instances == state.dataInputProcessing->inputProcessor->epJSON.end()) continue;
+            if (instances == state.dataInputProcessing->inputProcessor->epJSON.end()) {
+                continue;
+            }
             auto &instancesValue = instances.value();
             auto const &schemaProps = state.dataInputProcessing->inputProcessor->getObjectSchemaProps(state, cCurrentModuleObject);
             for (auto instance = instancesValue.begin(); instance != instancesValue.end(); ++instance) {
@@ -1976,7 +1986,9 @@ void EIRPlantLoopHeatPump::processInputForEIRPLHP(EnergyPlusData &state)
                     }
                 }
 
-                if (nodeErrorsFound) errorsFound = true;
+                if (nodeErrorsFound) {
+                    errorsFound = true;
+                }
                 BranchNodeConnections::TestCompSet(
                     state, cCurrentModuleObject, thisPLHP.name, loadSideInletNodeName, loadSideOutletNodeName, classToInput.nodesType);
 
@@ -2497,7 +2509,9 @@ void EIRFuelFiredHeatPump::doPhysics(EnergyPlusData &state, Real64 currentLoad)
     auto &thisSourceSideInletNode = state.dataLoopNodes->Node(this->sourceSideNodes.inlet); // OA Intake node
     auto &sim_component = DataPlant::CompData::getPlantComponent(state, this->loadSidePlantLoc);
     if ((this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpFuelFiredHeating && currentLoad <= 0.0)) {
-        if (sim_component.FlowCtrl == DataBranchAirLoopPlant::ControlType::SeriesActive) this->loadSideMassFlowRate = thisInletNode.MassFlowRate;
+        if (sim_component.FlowCtrl == DataBranchAirLoopPlant::ControlType::SeriesActive) {
+            this->loadSideMassFlowRate = thisInletNode.MassFlowRate;
+        }
         this->resetReportingVariables();
         return;
     }
@@ -2549,7 +2563,7 @@ void EIRFuelFiredHeatPump::doPhysics(EnergyPlusData &state, Real64 currentLoad)
                 PlantUtilities::SetComponentFlowRate(
                     state, this->loadSideMassFlowRate, this->loadSideNodes.inlet, this->loadSideNodes.outlet, this->loadSidePlantLoc);
 
-            }    // End of Constant/Variable Flow If Block
+            } // End of Constant/Variable Flow If Block
         } else { // If FlowLock is True
             // Set the boiler flow rate from inlet node and then check performance
             this->loadSideMassFlowRate = thisInletNode.MassFlowRate;
@@ -3066,7 +3080,9 @@ void EIRFuelFiredHeatPump::processInputForEIRPLHP(EnergyPlusData &state)
             getEnumValue(BranchNodeConnections::ConnectionObjectTypeNamesUC, Util::makeUPPER(cCurrentModuleObject)));
 
         auto const instances = state.dataInputProcessing->inputProcessor->epJSON.find(cCurrentModuleObject);
-        if (instances == state.dataInputProcessing->inputProcessor->epJSON.end()) continue;
+        if (instances == state.dataInputProcessing->inputProcessor->epJSON.end()) {
+            continue;
+        }
         auto &instancesValue = instances.value();
         for (auto instance = instancesValue.begin(); instance != instancesValue.end(); ++instance) {
             auto const &fields = instance.value();
@@ -3134,7 +3150,9 @@ void EIRFuelFiredHeatPump::processInputForEIRPLHP(EnergyPlusData &state)
 
             // N2 Nominal heating capacity
             thisPLHP.referenceCOP = fields.at("nominal_cop").get<Real64>();
-            if (thisPLHP.referenceCOP <= 0.0) thisPLHP.referenceCOP = 1.0;
+            if (thisPLHP.referenceCOP <= 0.0) {
+                thisPLHP.referenceCOP = 1.0;
+            }
 
             // N3 Design flow rate
             auto &tmpFlowRate = fields.at("design_flow_rate");
@@ -3463,7 +3481,9 @@ void EIRFuelFiredHeatPump::processInputForEIRPLHP(EnergyPlusData &state)
                                                                                   NodeInputManager::CompFluidStream::Secondary,
                                                                                   DataLoopNode::ObjectIsNotParent);
 
-            if (nodeErrorsFound) errorsFound = true;
+            if (nodeErrorsFound) {
+                errorsFound = true;
+            }
             BranchNodeConnections::TestCompSet(
                 state, cCurrentModuleObject, thisPLHP.name, loadSideInletNodeName, loadSideOutletNodeName, classToInput.nodesType);
 

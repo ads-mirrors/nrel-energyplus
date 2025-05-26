@@ -82,6 +82,14 @@
 #include <EnergyPlus/WindTurbine.hh>
 #include <EnergyPlus/ZoneTempPredictorCorrector.hh>
 
+#ifdef DEBUG_ARITHM_GCC_OR_CLANG
+#    include <EnergyPlus/fenv_missing.h>
+#endif
+
+#ifdef DEBUG_ARITHM_MSVC
+#    include <cfloat>
+#endif
+
 namespace EnergyPlus {
 
 void createFacilityElectricPowerServiceObject(const EnergyPlusData &state)
@@ -4120,6 +4128,22 @@ void ElectricStorage::simulateLiIonNmcBatteryModel(EnergyPlusData &state,
                                                    Real64 const controlSOCMinFracLimit)
 {
 
+// Disable floating point exceptions around SSC battery calculations, which uses quiet_NaN in particular
+#ifdef DEBUG_ARITHM_GCC_OR_CLANG
+    int old_excepts = fegetexcept();
+    fedisableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW);
+#endif
+
+#ifdef DEBUG_ARITHM_MSVC
+    unsigned int ori_fpcntrl = 0;
+    _controlfp_s(&ori_fpcntrl, 0, 0);
+
+    // Temporarily disable traps, as MSVC does it reversed compared to GCC,
+    // you need to turn ON the bits for the exceptions you want to mask
+    unsigned int fpcntrl = ori_fpcntrl | (_EM_ZERODIVIDE | _EM_INVALID | _EM_OVERFLOW);
+    _controlfp_s(&fpcntrl, fpcntrl, _MCW_EM);
+#endif
+
     // Copy the battery state from the end of last timestep
     battery_state battState = *ssc_lastBatteryState_;
     ssc_battery_->set_state(battState, ssc_lastBatteryTimeStep_);
@@ -4193,6 +4217,14 @@ void ElectricStorage::simulateLiIonNmcBatteryModel(EnergyPlusData &state,
         qdotConvZone_ = (1.0 - zoneRadFract_) * thermLossRate_;
         qdotRadZone_ = (zoneRadFract_)*thermLossRate_;
     }
+
+#ifdef DEBUG_ARITHM_GCC_OR_CLANG
+    feenableexcept(old_excepts);
+#endif
+
+#ifdef DEBUG_ARITHM_MSVC
+    _controlfp_s(nullptr, ori_fpcntrl, _MCW_EM);
+#endif
 }
 
 Real64 ElectricStorage::drawnPower() const

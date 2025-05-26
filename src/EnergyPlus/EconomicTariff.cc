@@ -3663,17 +3663,17 @@ void setNativeVariables(EnergyPlusData &state)
         // nativeTotalEnergy
         monthVal = 0.0;
         for (int kMonth = 1; kMonth <= NumMonths; ++kMonth) {
-            for (int jPeriod = 1; jPeriod <= (int)Period::Num; ++jPeriod) {
-                monthVal(kMonth) += tariff.gatherEnergy(kMonth)[jPeriod - 1];
+            for (int jPeriod = 0; jPeriod < (int)Period::Num; ++jPeriod) {
+                monthVal(kMonth) += tariff.gatherEnergy(kMonth)[jPeriod];
             }
         }
         s_econ->econVar(tariff.natives[(int)Native::TotalEnergy]).values = monthVal;
         // nativeTotalDemand
         monthVal = -bigNumber;
         for (int kMonth = 1; kMonth <= NumMonths; ++kMonth) {
-            for (int jPeriod = 1; jPeriod <= (int)Period::Num; ++jPeriod) {
-                if (tariff.gatherDemand(kMonth)[jPeriod - 1] > monthVal(kMonth)) {
-                    monthVal(kMonth) = tariff.gatherDemand(kMonth)[jPeriod - 1];
+            for (int jPeriod = 0; jPeriod < (int)Period::Num; ++jPeriod) {
+                if (tariff.gatherDemand(kMonth)[jPeriod] > monthVal(kMonth)) {
+                    monthVal(kMonth) = tariff.gatherDemand(kMonth)[jPeriod];
                 }
             }
         }

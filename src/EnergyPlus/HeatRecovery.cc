@@ -671,8 +671,9 @@ namespace HeatRecovery {
             }
 
             // regen outlet temp variables
-            for (int i = 0; i < 8; ++i)
+            for (int i = 0; i < 8; ++i) {
                 thisPerfData.B[i] = state.dataIPShortCut->rNumericArgs(i + 4);
+            }
 
             //     Check that the minimum is not greater than or equal to the maximum for each of the following model boundaries
             thisPerfData.T_MinRegenAirInHumRat = state.dataIPShortCut->rNumericArgs(12);
@@ -820,8 +821,9 @@ namespace HeatRecovery {
             }
 
             // regen outlet humidity ratio variables
-            for (int i = 0; i < 8; ++i)
+            for (int i = 0; i < 8; ++i) {
                 thisPerfData.C[i] = state.dataIPShortCut->rNumericArgs(i + 28);
+            }
 
             //     Check that the minimum is not greater than or equal to the maximum for each of the following model boundaries
             thisPerfData.H_MinRegenAirInHumRat = state.dataIPShortCut->rNumericArgs(36);
@@ -1730,10 +1732,18 @@ namespace HeatRecovery {
             UnitSecMassFlow = min(this->NomSecAirMassFlow, this->SecInMassFlow);
         }
 
-        if (this->availSched->getCurrentVal() <= 0.0) UnitOn = false;
-        if (this->SupInMassFlow <= HVAC::SmallMassFlow) UnitOn = false;
-        if (this->SecInMassFlow <= HVAC::SmallMassFlow) UnitOn = false;
-        if (!HXUnitOn) UnitOn = false;
+        if (this->availSched->getCurrentVal() <= 0.0) {
+            UnitOn = false;
+        }
+        if (this->SupInMassFlow <= HVAC::SmallMassFlow) {
+            UnitOn = false;
+        }
+        if (this->SecInMassFlow <= HVAC::SmallMassFlow) {
+            UnitOn = false;
+        }
+        if (!HXUnitOn) {
+            UnitOn = false;
+        }
 
         if (UnitOn) {
             // unit is on
@@ -1957,16 +1967,26 @@ namespace HeatRecovery {
             this->SecBypassMassFlow = 0.0;
         }
         // Unit is scheduled OFF, so bypass heat exchange calcs
-        if (this->availSched->getCurrentVal() <= 0.0) UnitOn = false;
+        if (this->availSched->getCurrentVal() <= 0.0) {
+            UnitOn = false;
+        }
         //! Economizer is active, so bypass heat exchange calcs. This applies to both flat plate and rotary HX's
         if ((EconomizerActiveFlag || HighHumCtrlActiveFlag) && this->EconoLockOut) {
             UnitOn = false;
         }
         // Determine if unit is ON or OFF based on air mass flow through the supply and secondary airstreams and operation flag
-        if (this->SupInMassFlow <= HVAC::SmallMassFlow) UnitOn = false;
-        if (this->SecInMassFlow <= HVAC::SmallMassFlow) UnitOn = false;
-        if (!HXUnitOn) UnitOn = false;
-        if (this->NomSupAirVolFlow == 0.0) UnitOn = false;
+        if (this->SupInMassFlow <= HVAC::SmallMassFlow) {
+            UnitOn = false;
+        }
+        if (this->SecInMassFlow <= HVAC::SmallMassFlow) {
+            UnitOn = false;
+        }
+        if (!HXUnitOn) {
+            UnitOn = false;
+        }
+        if (this->NomSupAirVolFlow == 0.0) {
+            UnitOn = false;
+        }
 
         if (UnitOn) {
             bool FrostControlFlag = false; // unit is in frost control mode when TRUE
@@ -2478,13 +2498,25 @@ namespace HeatRecovery {
         }
 
         // Unit is scheduled OFF, so bypass heat exchange calcs
-        if (this->availSched->getCurrentVal() <= 0.0) UnitOn = false;
+        if (this->availSched->getCurrentVal() <= 0.0) {
+            UnitOn = false;
+        }
         // Determine if unit is ON or OFF based on air mass flow through the supply and secondary airstreams and operation flag
-        if (this->SupInMassFlow <= HVAC::SmallMassFlow) UnitOn = false;
-        if (this->SecInMassFlow <= HVAC::SmallMassFlow) UnitOn = false;
-        if (HXPartLoadRatio == 0.0) UnitOn = false;
-        if (!HXUnitOn) UnitOn = false;
-        if ((EconomizerActiveFlag || HighHumCtrlActiveFlag) && this->EconoLockOut) UnitOn = false;
+        if (this->SupInMassFlow <= HVAC::SmallMassFlow) {
+            UnitOn = false;
+        }
+        if (this->SecInMassFlow <= HVAC::SmallMassFlow) {
+            UnitOn = false;
+        }
+        if (HXPartLoadRatio == 0.0) {
+            UnitOn = false;
+        }
+        if (!HXUnitOn) {
+            UnitOn = false;
+        }
+        if ((EconomizerActiveFlag || HighHumCtrlActiveFlag) && this->EconoLockOut) {
+            UnitOn = false;
+        }
 
         if (UnitOn) {
             constexpr std::string_view ThisSubTSat = "CalcDesiccantBalancedHeatExch:   TSat";
@@ -3532,8 +3564,9 @@ namespace HeatRecovery {
             if (!state.dataGlobal->WarmupFlag && !FirstHVACIteration) {
                 state.dataHeatRecovery->BalDesDehumPerfData(this->PerfDataIndex).T_ProcInTempError.print = true;
                 //       Suppress warning message when process inlet temperature = 0 (DX coil is off)
-                if (state.dataHeatRecovery->BalDesDehumPerfData(this->PerfDataIndex).T_ProcInTempError.last == 0.0)
+                if (state.dataHeatRecovery->BalDesDehumPerfData(this->PerfDataIndex).T_ProcInTempError.last == 0.0) {
                     state.dataHeatRecovery->BalDesDehumPerfData(this->PerfDataIndex).T_ProcInTempError.print = false;
+                }
                 state.dataHeatRecovery->BalDesDehumPerfData(this->PerfDataIndex).T_ProcInTempError.buffer1 = format(
                     "{} \"{}\" - Process inlet air temperature used in regen outlet air temperature equation is outside model boundaries at {}.",
                     state.dataHeatRecovery->BalDesDehumPerfData(this->PerfDataIndex).PerfType,
@@ -3571,8 +3604,9 @@ namespace HeatRecovery {
             if (!state.dataGlobal->WarmupFlag && !FirstHVACIteration) {
                 state.dataHeatRecovery->BalDesDehumPerfData(this->PerfDataIndex).T_ProcInHumRatError.print = true;
                 //       Suppress warning message when process inlet humrat = 0 (DX coil is off)
-                if (state.dataHeatRecovery->BalDesDehumPerfData(this->PerfDataIndex).T_ProcInHumRatError.last == 0.0)
+                if (state.dataHeatRecovery->BalDesDehumPerfData(this->PerfDataIndex).T_ProcInHumRatError.last == 0.0) {
                     state.dataHeatRecovery->BalDesDehumPerfData(this->PerfDataIndex).T_ProcInHumRatError.print = false;
+                }
                 state.dataHeatRecovery->BalDesDehumPerfData(this->PerfDataIndex).T_ProcInHumRatError.buffer1 = format(
                     "{} \"{}\" - Process inlet air humidity ratio used in regen outlet air temperature equation is outside model boundaries at {}.",
                     state.dataHeatRecovery->BalDesDehumPerfData(this->PerfDataIndex).PerfType,
@@ -3896,8 +3930,9 @@ namespace HeatRecovery {
             if (!state.dataGlobal->WarmupFlag && !FirstHVACIteration) {
                 state.dataHeatRecovery->BalDesDehumPerfData(this->PerfDataIndex).H_ProcInTempError.print = true;
                 //       Suppress warning message when process inlet temperature = 0 (DX coil is off)
-                if (state.dataHeatRecovery->BalDesDehumPerfData(this->PerfDataIndex).H_ProcInTempError.last == 0.0)
+                if (state.dataHeatRecovery->BalDesDehumPerfData(this->PerfDataIndex).H_ProcInTempError.last == 0.0) {
                     state.dataHeatRecovery->BalDesDehumPerfData(this->PerfDataIndex).H_ProcInTempError.print = false;
+                }
                 state.dataHeatRecovery->BalDesDehumPerfData(this->PerfDataIndex).H_ProcInTempError.buffer1 = format(
                     "{} \"{}\" - Process inlet air temperature used in regen outlet air humidity ratio equation is outside model boundaries at {}.",
                     state.dataHeatRecovery->BalDesDehumPerfData(this->PerfDataIndex).PerfType,
@@ -3936,8 +3971,9 @@ namespace HeatRecovery {
             if (!state.dataGlobal->WarmupFlag && !FirstHVACIteration) {
                 state.dataHeatRecovery->BalDesDehumPerfData(this->PerfDataIndex).H_ProcInHumRatError.print = true;
                 //       Suppress warning message when process inlet humrat = 0 (DX coil is off)
-                if (state.dataHeatRecovery->BalDesDehumPerfData(this->PerfDataIndex).H_ProcInHumRatError.last == 0.0)
+                if (state.dataHeatRecovery->BalDesDehumPerfData(this->PerfDataIndex).H_ProcInHumRatError.last == 0.0) {
                     state.dataHeatRecovery->BalDesDehumPerfData(this->PerfDataIndex).H_ProcInHumRatError.print = false;
+                }
                 state.dataHeatRecovery->BalDesDehumPerfData(this->PerfDataIndex).H_ProcInHumRatError.buffer1 =
                     format("{} \"{}\" - Process inlet air humidity ratio used in regen outlet air humidity ratio equation is outside model "
                            "boundaries at {}.",
@@ -4367,7 +4403,9 @@ namespace HeatRecovery {
         auto &thisError = state.dataHeatRecovery->error6;
         // current end time is compared with last to see if time step changed
 
-        if (state.dataGlobal->WarmupFlag || FirstHVACIteration) return;
+        if (state.dataGlobal->WarmupFlag || FirstHVACIteration) {
+            return;
+        }
 
         //   calculate end time of current time step
         thisError.CurrentEndTime = state.dataGlobal->CurrentTime + SysTimeElapsed;
@@ -4542,7 +4580,9 @@ namespace HeatRecovery {
         auto &thisError = state.dataHeatRecovery->error5;
         // current end time is compared with last to see if time step changed
 
-        if (state.dataGlobal->WarmupFlag || FirstHVACIteration) return;
+        if (state.dataGlobal->WarmupFlag || FirstHVACIteration) {
+            return;
+        }
 
         //   calculate end time of current time step
         thisError.CurrentEndTime = state.dataGlobal->CurrentTime + SysTimeElapsed;
@@ -4712,7 +4752,9 @@ namespace HeatRecovery {
         // current end time is compared with last to see if time step changed
         Real64 ABSImbalancedFlow; // absolute value of process and regeneration air flow imbalance fraction
 
-        if (state.dataGlobal->WarmupFlag || FirstHVACIteration) return;
+        if (state.dataGlobal->WarmupFlag || FirstHVACIteration) {
+            return;
+        }
 
         //   calculate end time of current time step
         thisError.CurrentEndTime = state.dataGlobal->CurrentTime + SysTimeElapsed;

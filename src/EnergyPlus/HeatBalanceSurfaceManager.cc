@@ -7257,7 +7257,7 @@ void CalcHeatBalanceOutsideSurf(EnergyPlusData &state,
                                 state.dataMstBal->HSkyFD(SurfNum) = state.dataHeatBalSurf->SurfHSkyExt(SurfNum);
                                 state.dataMstBal->HGrndFD(SurfNum) = state.dataHeatBalSurf->SurfHGrdExt(SurfNum);
                                 state.dataMstBal->HAirFD(SurfNum) = state.dataHeatBalSurf->SurfHAirExt(SurfNum);
-                                state.dataMstBal->HSurrFD(SurfNum) = state.dataHeatBalSurf->SurfHAirExt(SurfNum);
+                                state.dataMstBal->HSurrFD(SurfNum) = state.dataHeatBalSurf->SurfHSrdSurfExt(SurfNum);
                             }
 
                         } else { // Surface is dry, use the normal correlation
@@ -7291,7 +7291,7 @@ void CalcHeatBalanceOutsideSurf(EnergyPlusData &state,
                                 state.dataMstBal->HSkyFD(SurfNum) = state.dataHeatBalSurf->SurfHSkyExt(SurfNum);
                                 state.dataMstBal->HGrndFD(SurfNum) = state.dataHeatBalSurf->SurfHGrdExt(SurfNum);
                                 state.dataMstBal->HAirFD(SurfNum) = state.dataHeatBalSurf->SurfHAirExt(SurfNum);
-                                state.dataMstBal->HSurrFD(SurfNum) = state.dataHeatBalSurf->SurfHAirExt(SurfNum);
+                                state.dataMstBal->HSurrFD(SurfNum) = state.dataHeatBalSurf->SurfHSrdSurfExt(SurfNum);
                             }
                         }
 
@@ -7334,7 +7334,7 @@ void CalcHeatBalanceOutsideSurf(EnergyPlusData &state,
                             state.dataMstBal->HSkyFD(SurfNum) = state.dataHeatBalSurf->SurfHSkyExt(SurfNum);
                             state.dataMstBal->HGrndFD(SurfNum) = state.dataHeatBalSurf->SurfHGrdExt(SurfNum);
                             state.dataMstBal->HAirFD(SurfNum) = state.dataHeatBalSurf->SurfHAirExt(SurfNum);
-                            state.dataMstBal->HSurrFD(SurfNum) = state.dataHeatBalSurf->SurfHAirExt(SurfNum);
+                            state.dataMstBal->HSurrFD(SurfNum) = state.dataHeatBalSurf->SurfHSrdSurfExt(SurfNum);
                         }
                     }
                     // Calculate LWR from surrounding surfaces if defined for an exterior surface

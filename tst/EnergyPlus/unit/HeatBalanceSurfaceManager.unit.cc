@@ -2512,6 +2512,12 @@ TEST_F(EnergyPlusFixture, HeatBalanceSurfaceManager_TestSurfPropertySrdSurfLWR)
     EXPECT_DOUBLE_EQ(Constant::StefanBoltzmann * 0.9 * 0.5 * (pow_4(25.0 + Constant::Kelvin) - pow_4(20.0 + Constant::Kelvin)),
                      state->dataHeatBalSurf->SurfQRadLWOutSrdSurfs(3));
     EXPECT_DOUBLE_EQ(0.0, state->dataHeatBalSurf->SurfQRadLWOutSrdSurfs(4));
+    // LWR Exchange Coefficient check for CTF method heat balance algorithm
+    EXPECT_EQ(state->dataHeatBal->OverallHeatTransferSolutionAlgo, DataSurfaces::HeatTransferModel::CTF);
+    EXPECT_DOUBLE_EQ(0.0, state->dataMstBal->HSurrFD(1));
+    EXPECT_DOUBLE_EQ(0.0, state->dataMstBal->HSurrFD(2));
+    EXPECT_DOUBLE_EQ(0.0, state->dataMstBal->HSurrFD(3));
+    EXPECT_DOUBLE_EQ(0.0, state->dataMstBal->HSurrFD(4));
 }
 
 TEST_F(EnergyPlusFixture, HeatBalanceSurfaceManager_SurfaceCOnstructionIndexTest)

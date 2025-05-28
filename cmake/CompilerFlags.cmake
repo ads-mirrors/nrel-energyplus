@@ -88,7 +88,10 @@ if(MSVC AND NOT ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")) # Visual C++ (VS 
 
 elseif(CMAKE_COMPILER_IS_GNUCXX OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang") # g++/Clang
 
+  option(FORCE_CONTAINER_CHECKS_GCC_OR_CLANG "Enable trapping for container issues in non-debug builds" OFF)
   option(FORCE_DEBUG_ARITHM_GCC_OR_CLANG "Enable trapping floating point exceptions in non Debug mode" OFF)
+
+  mark_as_advanced(FORCE_CONTAINER_CHECKS_GCC_OR_CLANG)
   mark_as_advanced(FORCE_DEBUG_ARITHM_GCC_OR_CLANG)
 
   # COMPILER FLAGS
@@ -132,6 +135,7 @@ elseif(CMAKE_COMPILER_IS_GNUCXX OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" O
   endif()
 
   set(need_arithm_debug_genex "$<OR:$<BOOL:${FORCE_DEBUG_ARITHM_GCC_OR_CLANG}>,$<CONFIG:Debug>>")
+  set(need_container_debug_genex "$<OR:$<BOOL:${FORCE_CONTAINER_CHECKS_GCC_OR_CLANG}>,$<CONFIG:Debug>>")
 
   # in main.cc for E+ (actual: api/EnergyPlusPgm.cc) and gtest: feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW)
   target_compile_definitions(project_fp_options INTERFACE $<${need_arithm_debug_genex}:DEBUG_ARITHM_GCC_OR_CLANG>)
@@ -146,7 +150,7 @@ elseif(CMAKE_COMPILER_IS_GNUCXX OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" O
   if(CMAKE_COMPILER_IS_GNUCXX) # g++
     target_compile_options(project_options INTERFACE $<${need_arithm_debug_genex}:-ffloat-store>) # Improve debug run solution stability
     target_compile_options(project_options INTERFACE $<${need_arithm_debug_genex}:-fsignaling-nans>) # Disable optimizations that may have concealed NaN behavior
-    target_compile_definitions(project_options INTERFACE $<${need_arithm_debug_genex}:_GLIBCXX_DEBUG>) # Standard container debug mode (bounds checking, ...>)
+    target_compile_definitions(project_options INTERFACE $<${need_container_debug_genex}:_GLIBCXX_DEBUG>) # Standard container debug mode (bounds checking, ...>)
     # ADD_CXX_RELEASE_DEFINITIONS("-finline-limit=2000") # More aggressive inlining   This is causing unit test failures on Ubuntu 14.04
   else()
     #check_cxx_compiler_flag(<flag> <var>)

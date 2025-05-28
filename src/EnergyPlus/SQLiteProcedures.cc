@@ -1557,8 +1557,8 @@ void SQLite::createSQLiteReportDataRecord(int const recordIndex,
                 sqliteWriteMessage(ss.str());
             } break;
             } // switch (reportFreq)
-        }     // if (minutesPerTimeStep != -1)
-    }         // if (minDataValue != 0)
+        } // if (minutesPerTimeStep != -1)
+    } // if (minDataValue != 0)
 } // SQLite::createSQLiteReportDataRecord()
 
 void SQLite::createSQLiteTimeIndexRecord(OutputProcessor::ReportFreq const reportFreq,
@@ -2289,12 +2289,16 @@ bool SQLite::Construction::insertIntoSQLite(sqlite3_stmt *insertStmt)
 bool SQLite::Construction::insertIntoSQLite(sqlite3_stmt *insertStmt, sqlite3_stmt *subInsertStmt)
 {
     bool constructionInsertValid = insertIntoSQLite(insertStmt);
-    if (!constructionInsertValid) return false;
+    if (!constructionInsertValid) {
+        return false;
+    }
 
     bool valid = true;
     for (auto const &constructionLayer : constructionLayers) {
         bool validInsert = constructionLayer->insertIntoSQLite(subInsertStmt);
-        if (valid && !validInsert) valid = false;
+        if (valid && !validInsert) {
+            valid = false;
+        }
     }
     return valid;
 }
@@ -2548,7 +2552,9 @@ bool SQLite::ZoneList::insertIntoSQLite(sqlite3_stmt *insertStmt)
 bool SQLite::ZoneList::insertIntoSQLite(sqlite3_stmt *insertStmt, sqlite3_stmt *subInsertStmt)
 {
     bool zoneListInsertValid = insertIntoSQLite(insertStmt);
-    if (!zoneListInsertValid) return false;
+    if (!zoneListInsertValid) {
+        return false;
+    }
     bool valid = true;
     for (size_t i = 1; i <= zones.size(); ++i) {
         sqliteBindForeignKey(subInsertStmt, 1, number);
@@ -2556,7 +2562,9 @@ bool SQLite::ZoneList::insertIntoSQLite(sqlite3_stmt *insertStmt, sqlite3_stmt *
         int rc = sqliteStepCommand(subInsertStmt);
         bool validInsert = sqliteStepValidity(rc);
         sqliteResetCommand(subInsertStmt);
-        if (valid && !validInsert) valid = false;
+        if (valid && !validInsert) {
+            valid = false;
+        }
     }
     return valid;
 }

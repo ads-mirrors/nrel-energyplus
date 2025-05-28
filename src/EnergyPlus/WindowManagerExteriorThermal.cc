@@ -143,12 +143,14 @@ namespace Window {
                 auto &surfShade = state.dataSurface->surfShades(SurfNum);
                 Real64 EffShBlEmiss = surfShade.effShadeEmi;
                 Real64 EffGlEmiss = surfShade.effGlassEmi;
-                surfShade.effShadeEmi = Interp(construction.effShadeBlindEmi[surfShade.blind.slatAngIdxLo],
-                                               construction.effShadeBlindEmi[surfShade.blind.slatAngIdxHi],
-                                               surfShade.blind.slatAngInterpFac);
-                surfShade.effGlassEmi = Interp(construction.effGlassEmi[surfShade.blind.slatAngIdxLo],
-                                               construction.effGlassEmi[surfShade.blind.slatAngIdxHi],
-                                               surfShade.blind.slatAngInterpFac);
+                if (surfShade.blind.movableSlats) {
+                    surfShade.effShadeEmi = Interp(construction.effShadeBlindEmi[surfShade.blind.slatAngIdxLo],
+                                                   construction.effShadeBlindEmi[surfShade.blind.slatAngIdxHi],
+                                                   surfShade.blind.slatAngInterpFac);
+                    surfShade.effGlassEmi = Interp(construction.effGlassEmi[surfShade.blind.slatAngIdxLo],
+                                                   construction.effGlassEmi[surfShade.blind.slatAngIdxHi],
+                                                   surfShade.blind.slatAngInterpFac);
+                }
                 state.dataSurface->SurfWinEffInsSurfTemp(SurfNum) =
                     (EffShBlEmiss * SurfInsideTemp + EffGlEmiss * (state.dataWindowManager->thetas[2 * totSolidLayers - 3] - Constant::Kelvin)) /
                     (EffShBlEmiss + EffGlEmiss);

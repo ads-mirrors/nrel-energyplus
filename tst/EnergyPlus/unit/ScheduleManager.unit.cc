@@ -1735,3 +1735,90 @@ TEST_F(EnergyPlusFixture, getScheduleMinMaxByDayType_test)
     EXPECT_EQ(0.16, schMin);
     EXPECT_EQ(0.25, schMax);
 }
+
+TEST_F(EnergyPlusFixture, ScheduleCompact_MissingDayTypes)
+{
+    // Test for #11054
+    std::string const idf_objects = delimited_string({
+        "ScheduleTypeLimits,",
+        "  Any Number;              !- Name",
+
+        "Schedule:Compact,",
+        "  WindowVentSched,         !- Name",
+        "  Any Number,              !- Schedule Type Limits Name",
+        "  Through: 12/31,          !- Field 1",
+        "  For: Monday Tuesday Wednesday Thursday Friday Saturday, !- Field 2",
+        "  Until: 24:00,1;          !- Field 3",
+    });
+
+    ASSERT_TRUE(process_idf(idf_objects));
+
+    auto &s_glob = state->dataGlobal;
+
+    s_glob->TimeStepsInHour = 4;    // must initialize this to get schedules initialized
+    s_glob->MinutesInTimeStep = 15; // must initialize this to get schedules initialized
+    s_glob->TimeStepZone = 0.25;
+    s_glob->TimeStepZoneSec = s_glob->TimeStepZone * Constant::rSecsInHour;
+    state->dataEnvrn->CurrentYearIsLeapYear = false;
+
+    state->init_state(*state); // read schedules (this calls ProcessScheduleInput via ScheduleManagerData::init_state)
+
+    const std::string expected_error = delimited_string({
+        "   ** Warning ** ProcessScheduleInput: Schedule:Compact = WINDOWVENTSCHED",
+        "   **   ~~~   ** has missing day types in Through=12/31",
+        "   **   ~~~   ** Last \"For\" field=FOR: MONDAY TUESDAY WEDNESDAY THURSDAY FRIDAY SATURDAY",
+        R"(   **   ~~~   ** Missing day types= "Sunday", "Holiday", "SummerDesignDay", "WinterDesignDay", "CustomDay1", "CustomDay2")",
+        "   **   ~~~   ** Missing day types will have 0.0 as Schedule Values",
+    });
+
+    compare_err_stream(expected_error);
+
+    auto const *sch = dynamic_cast<Sched::ScheduleDetailed const *>(Sched::GetSchedule(*state, "WINDOWVENTSCHED"));
+    EXPECT_NE(sch, nullptr);
+    EXPECT_EQ(367, sch->weekScheds.size());
+    EXPECT_EQ(sch->weekScheds.front(), nullptr);
+    const auto &weekSched = sch->weekScheds[1];
+    EXPECT_EQ("WINDOWVENTSCHED_wk_1", weekSched->Name);
+    for (size_t i = 2; i < 367; ++i) {
+        EXPECT_EQ(weekSched, sch->weekScheds[i]);
+    }
+    EXPECT_EQ((int)Sched::DayType::Num, weekSched->dayScheds.size());
+
+    EXPECT_EQ(nullptr, weekSched->dayScheds[(int)Sched::DayType::Unused]);
+    EXPECT_EQ(nullptr, weekSched->dayScheds[(int)Sched::DayType::Sunday]);
+
+    ASSERT_NE(nullptr, weekSched->dayScheds[(int)Sched::DayType::Monday]);
+    ASSERT_NE(nullptr, weekSched->dayScheds[(int)Sched::DayType::Tuesday]);
+    ASSERT_NE(nullptr, weekSched->dayScheds[(int)Sched::DayType::Wednesday]);
+    ASSERT_NE(nullptr, weekSched->dayScheds[(int)Sched::DayType::Thursday]);
+    ASSERT_NE(nullptr, weekSched->dayScheds[(int)Sched::DayType::Friday]);
+    ASSERT_NE(nullptr, weekSched->dayScheds[(int)Sched::DayType::Saturday]);
+    auto const &daySched = weekSched->dayScheds[(int)Sched::DayType::Monday];
+    for (int i = (int)Sched::DayType::Monday; i <= (int)Sched::DayType::Saturday; ++i) {
+        EXPECT_EQ(daySched, weekSched->dayScheds[i]);
+    }
+
+    EXPECT_EQ(nullptr, weekSched->dayScheds[(int)Sched::DayType::Holiday]);
+    EXPECT_EQ(nullptr, weekSched->dayScheds[(int)Sched::DayType::SummerDesignDay]);
+    EXPECT_EQ(nullptr, weekSched->dayScheds[(int)Sched::DayType::WinterDesignDay]);
+    EXPECT_EQ(nullptr, weekSched->dayScheds[(int)Sched::DayType::CustomDay1]);
+    EXPECT_EQ(nullptr, weekSched->dayScheds[(int)Sched::DayType::CustomDay2]);
+
+    state->dataEnvrn->Month = 1;
+    state->dataEnvrn->DayOfMonth = 1;
+    state->dataEnvrn->DayOfYear_Schedule = General::OrdinalDay(state->dataEnvrn->Month, state->dataEnvrn->DayOfMonth, 1);
+    s_glob->HourOfDay = 1;
+    s_glob->TimeStep = 1;
+    state->dataEnvrn->DSTIndicator = 0;
+    state->dataEnvrn->HolidayIndex = 0;
+
+    // Monday is defined, so we should get 1.0
+    state->dataEnvrn->DayOfWeek = 2;
+    EXPECT_NEAR(1.0, sch->getHrTsVal(*state, 7, 4), 0.000001);
+
+    // Now test a day that is not defined, like Sunday
+    // We shouldn't segfault, and it should default to returning 0.0
+    state->dataEnvrn->DayOfWeek = 1;
+    ASSERT_NO_THROW(sch->getHrTsVal(*state, 7, 4));
+    EXPECT_NEAR(0.0, sch->getHrTsVal(*state, 7, 4), 0.000001);
+}

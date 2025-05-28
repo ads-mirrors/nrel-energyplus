@@ -120,7 +120,7 @@ namespace EIRPlantLoopHeatPumps {
         bool heatRecoveryIsActive = false;
         int heatRecoveryOperatingStatus = 0;
         ControlType sysControlType = ControlType::Invalid;
-        DataPlant::FlowMode flowControl = DataPlant::FlowMode::Invalid;
+        DataPlant::FlowMode flowMode = DataPlant::FlowMode::Invalid;
 
         // sizing data
         Real64 heatSizingRatio = 1.0;
@@ -302,7 +302,7 @@ namespace EIRPlantLoopHeatPumps {
 
         Real64 getLoadSideOutletSetPointTemp(EnergyPlusData &state) const;
 
-        void setOperatingFlowRatesASHP(EnergyPlusData &state, bool FirstHVACIteration);
+        virtual void setOperatingFlowRatesASHP(EnergyPlusData &state, bool FirstHVACIteration, Real64 const currentLoad);
 
         void setOperatingFlowRatesWSHP(EnergyPlusData &state, bool FirstHVACIteration);
 
@@ -414,6 +414,7 @@ namespace EIRPlantLoopHeatPumps {
         // Override parent methods to be declared
         void doPhysics(EnergyPlusData &state, Real64 currentLoad) override;
         void sizeSrcSideASHP(EnergyPlusData &state); // 2022-05-18: may not need this one
+        void setOperatingFlowRatesASHP(EnergyPlusData &state, bool FirstHVACIteration, Real64 const currentLoad) override;
         void resetReportingVariables() override;
         static PlantComponent *factory(EnergyPlusData &state, DataPlant::PlantEquipmentType hp_type, const std::string &hp_name);
         static void pairUpCompanionCoils(EnergyPlusData &state);

@@ -396,7 +396,7 @@ namespace HVAC {
     {
         Invalid = -1,
         AirToAir_FlatPlate,
-        AirToAir_Generic,
+        AirToAir_SensAndLatent,
         Desiccant_Balanced,
         Num
     };

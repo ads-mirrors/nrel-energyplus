@@ -673,7 +673,7 @@ void GetZoneAirSetPoints(EnergyPlusData &state)
     for (TempControlledZoneNum = 1; TempControlledZoneNum <= state.dataZoneCtrls->NumTempControlledZones; ++TempControlledZoneNum) {
         auto &tempZone = state.dataZoneCtrls->TempControlledZone(TempControlledZoneNum);
 
-        for (HVAC::SetptType setptType : HVAC::setptTypes) {
+        for (HVAC::SetptType setptType : HVAC::controlledSetptTypes) {
             auto &setpt = tempZone.setpts[(int)setptType];
             if (!setpt.isUsed) {
                 continue;
@@ -714,9 +714,20 @@ void GetZoneAirSetPoints(EnergyPlusData &state)
             CTSchedMapToControlledZone(TempControlledZoneNum) = tempZone.setptTypeSched->Num;
         }
 
-        for (HVAC::SetptType setptType : HVAC::setptTypes) {
+        for (HVAC::SetptType setptType : HVAC::controlledSetptTypes) {
             auto const &setpt = tempZone.setpts[(int)setptType];
+
             if (!setpt.isUsed) {
+                // Catch early issues
+                if (tempZone.setptTypeSched->hasVal(state, (int)setptType)) {
+                    ShowSevereError(state, format("Control Type Schedule={}", tempZone.setptTypeSched->Name));
+                    ShowContinueError(
+                        state,
+                        format("..specifies {} ({}) as the control type. Not valid for this zone.", (int)setptType, setptTypeNames[(int)setptType]));
+                    ShowContinueError(state, format("..reference {}={}", cZControlTypes((int)ZoneControlTypes::TStat), tempZone.Name));
+                    ShowContinueError(state, format("..reference ZONE={}", tempZone.ZoneName));
+                    ErrorsFound = true;
+                }
                 continue;
             }
 
@@ -756,7 +767,7 @@ void GetZoneAirSetPoints(EnergyPlusData &state)
             continue; // error caught elsewhere -- would just be confusing here
         }
 
-        for (HVAC::SetptType setptType : HVAC::setptTypes) {
+        for (HVAC::SetptType setptType : HVAC::controlledSetptTypes) {
             if (TStatControlTypes(TempControlledZoneNum).MustHave[(int)setptType] &&
                 TStatControlTypes(TempControlledZoneNum).DidHave[(int)setptType]) {
                 continue;
@@ -1307,7 +1318,7 @@ void GetZoneAirSetPoints(EnergyPlusData &state)
 
         auto &comfortZone = state.dataZoneCtrls->ComfortControlledZone(ComfortControlledZoneNum);
 
-        for (HVAC::SetptType setptType : HVAC::setptTypes) {
+        for (HVAC::SetptType setptType : HVAC::controlledSetptTypes) {
             auto &setpt = comfortZone.setpts[(int)setptType];
             if (!setpt.isUsed) {
                 continue;
@@ -1350,7 +1361,7 @@ void GetZoneAirSetPoints(EnergyPlusData &state)
             CCmSchedMapToControlledZone(ComfortControlledZoneNum) = comfortZone.setptTypeSched->Num;
         }
 
-        for (HVAC::SetptType setptType : HVAC::setptTypes) {
+        for (HVAC::SetptType setptType : HVAC::controlledSetptTypes) {
             auto const &setpt = comfortZone.setpts[(int)setptType];
             if (!setpt.isUsed) {
                 continue;
@@ -1394,7 +1405,7 @@ void GetZoneAirSetPoints(EnergyPlusData &state)
             continue;
         }
 
-        for (HVAC::SetptType setptType : HVAC::setptTypes) {
+        for (HVAC::SetptType setptType : HVAC::controlledSetptTypes) {
             if (TComfortControlTypes(ComfortControlledZoneNum).MustHave[(int)setptType] &&
                 TComfortControlTypes(ComfortControlledZoneNum).DidHave[(int)setptType]) {
                 continue;
@@ -3285,11 +3296,13 @@ void CalcZoneAirTempSetPoints(EnergyPlusData &state)
         } break;
 
         case HVAC::SetptType::SingleHeat: {
-            zoneTstatSetpt.setpt = tempZone.setpts[(int)HVAC::SetptType::SingleHeat].heatSetptSched->getCurrentVal();
-            tempZone.ZoneThermostatSetPointLo = zoneTstatSetpt.setpt;
+            if (tempZone.setpts[(int)HVAC::SetptType::SingleHeat].isUsed) {
+                zoneTstatSetpt.setpt = tempZone.setpts[(int)HVAC::SetptType::SingleHeat].heatSetptSched->getCurrentVal();
+                tempZone.ZoneThermostatSetPointLo = zoneTstatSetpt.setpt;
 
-            AdjustAirSetPointsforOpTempCntrl(state, RelativeZoneNum, ActualZoneNum, zoneTstatSetpt.setpt);
-            zoneTstatSetpt.setptLo = zoneTstatSetpt.setpt;
+                AdjustAirSetPointsforOpTempCntrl(state, RelativeZoneNum, ActualZoneNum, zoneTstatSetpt.setpt);
+                zoneTstatSetpt.setptLo = zoneTstatSetpt.setpt;
+            }
         } break;
 
         case HVAC::SetptType::SingleCool: {
@@ -6625,7 +6638,7 @@ void FillPredefinedTableOnThermostatSchedules(EnergyPlusData &state)
 
         std::vector<ControlTypeInfo> infos;
         infos.resize((int)HVAC::SetptType::Num);
-        for (HVAC::SetptType setptType : HVAC::setptTypes) {
+        for (HVAC::SetptType setptType : HVAC::controlledSetptTypes) {
             auto &setpt = tcz.setpts[(int)setptType];
 
             auto &info = infos[(int)setptType];

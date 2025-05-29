@@ -120,7 +120,7 @@ namespace HVAC {
         Num
     };
 
-    static constexpr std::array<SetptType, (int)SetptType::Num> setptTypes = {
+    static constexpr std::array<SetptType, 4> controlledSetptTypes = {
         SetptType::SingleHeat, SetptType::SingleCool, SetptType::SingleHeatCool, SetptType::DualHeatCool};
 
     static constexpr std::array<std::string_view, (int)SetptType::Num> setptTypeNames = {

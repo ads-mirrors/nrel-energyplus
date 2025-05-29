@@ -7042,7 +7042,7 @@ namespace Weather {
             int NumNums;                 // Number of elements in the numeric array
             int IOStat;                  // IO Status when calling get input subroutine
             Array1D_string AlphArray(2); // Character string data
-            Array1D<Real64> NumArray(2); // Numeric data
+            Array1D<Real64> NumArray(4); // Numeric data
             state.dataInputProcessing->inputProcessor->getObjectItem(state,
                                                                      ipsc->cCurrentModuleObject,
                                                                      1,
@@ -7093,6 +7093,9 @@ namespace Weather {
             } break;
             } // switch
 
+            state.dataWeather->WaterMainsTempsMultiplier = NumArray(3);
+            state.dataWeather->WaterMainsTempsOffset = NumArray(4);
+
         } else if (NumObjects > 1) {
             ShowSevereError(state, format("{}: Too many objects entered. Only one allowed.", ipsc->cCurrentModuleObject));
             ErrorsFound = true;
@@ -7120,14 +7123,19 @@ namespace Weather {
             state.dataEnvrn->WaterMainsTemp = state.dataWeather->waterMainsTempSched->getCurrentVal();
             break;
         case WaterMainsTempCalcMethod::Correlation:
-            state.dataEnvrn->WaterMainsTemp = WaterMainsTempFromCorrelation(
-                state, state.dataWeather->WaterMainsTempsAnnualAvgAirTemp, state.dataWeather->WaterMainsTempsMaxDiffAirTemp);
+            state.dataEnvrn->WaterMainsTemp = WaterMainsTempFromCorrelation(state,
+                                                                            state.dataWeather->WaterMainsTempsAnnualAvgAirTemp,
+                                                                            state.dataWeather->WaterMainsTempsMaxDiffAirTemp,
+                                                                            state.dataWeather->WaterMainsTempsMultiplier,
+                                                                            state.dataWeather->WaterMainsTempsOffset);
             break;
         case WaterMainsTempCalcMethod::CorrelationFromWeatherFile:
             if (state.dataWeather->OADryBulbAverage.OADryBulbWeatherDataProcessed) {
                 state.dataEnvrn->WaterMainsTemp = WaterMainsTempFromCorrelation(state,
                                                                                 state.dataWeather->OADryBulbAverage.AnnualAvgOADryBulbTemp,
-                                                                                state.dataWeather->OADryBulbAverage.MonthlyAvgOADryBulbTempMaxDiff);
+                                                                                state.dataWeather->OADryBulbAverage.MonthlyAvgOADryBulbTempMaxDiff,
+                                                                                state.dataWeather->WaterMainsTempsMultiplier,
+                                                                                state.dataWeather->WaterMainsTempsOffset);
             } else {
                 state.dataEnvrn->WaterMainsTemp = 10.0; // 50 F
             }
@@ -7138,8 +7146,11 @@ namespace Weather {
         }
     }
 
-    Real64
-    WaterMainsTempFromCorrelation(EnergyPlusData const &state, Real64 const AnnualOAAvgDryBulbTemp, Real64 const MonthlyOAAvgDryBulbTempMaxDiff)
+    Real64 WaterMainsTempFromCorrelation(EnergyPlusData const &state,
+                                         Real64 const AnnualOAAvgDryBulbTemp,
+                                         Real64 const MonthlyOAAvgDryBulbTempMaxDiff,
+                                         Real64 const TemperatureMultiplier,
+                                         Real64 const TemperatureOffset)
     {
 
         // SUBROUTINE INFORMATION:
@@ -7181,7 +7192,12 @@ namespace Weather {
         }
 
         // Convert F to C
-        return (CurrentWaterMainsTemp - 32.0) * (5.0 / 9.0);
+        CurrentWaterMainsTemp = (CurrentWaterMainsTemp - 32.0) * (5.0 / 9.0);
+
+        // apply temperature multiplier and offset
+        CurrentWaterMainsTemp = CurrentWaterMainsTemp * TemperatureMultiplier + TemperatureOffset;
+
+        return CurrentWaterMainsTemp;
     }
     void GetWeatherStation(EnergyPlusData &state, bool &ErrorsFound)
     {

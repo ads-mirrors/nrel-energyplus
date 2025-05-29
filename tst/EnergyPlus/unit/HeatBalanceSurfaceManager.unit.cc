@@ -9514,5 +9514,4 @@ TEST_F(EnergyPlusFixture, CFDHeatBalanceSurfaceManager_TestSurfPropSrdSurfLWR)
     EXPECT_DOUBLE_EQ(state->dataHeatBalSurf->SurfQRadLWOutSrdSurfs(4), 0.0);
 }
 
-
 } // namespace EnergyPlus

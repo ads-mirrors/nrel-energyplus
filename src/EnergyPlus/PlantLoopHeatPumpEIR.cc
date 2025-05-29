@@ -2796,7 +2796,7 @@ void EIRFuelFiredHeatPump::doPhysics(EnergyPlusData &state, Real64 currentLoad)
 
     this->powerUsage = this->nominalAuxElecPower * eirAuxElecFuncTemp * eirAuxElecFuncPLR;
     if (this->defrostType == DefrostType::Timed) {
-        this->powerUsage += this->defrostResistiveHeaterCap * this->defrostOpTimeFrac * reportingInterval;
+        this->powerUsage += this->defrostResistiveHeaterCap * this->defrostOpTimeFrac;
     }
 
     this->powerUsage += this->standbyElecPower;

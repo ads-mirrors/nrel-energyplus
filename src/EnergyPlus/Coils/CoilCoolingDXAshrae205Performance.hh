@@ -152,21 +152,21 @@ private:
                                     Real64 air_mass_flow_rate) const;
 
     // Rating constants
-    const double outdoor_coil_entering_dry_bulb_temperature_K{308.15}; // 95F
-    const double indoor_coil_entering_dry_bulb_temperature_K{299.82};  // 80F
-    const double reference_wb_temperature{292.59};                     // 67F
-    const double reference_pressure_sea_level{101325.0};
-    const double rating_flow{400.0}; // cfm/ton
-    double rating_humidity_ratio{0.0};
-    double rating_indoor_coil_entering_relative_humidity{0.0};
-    double rating_rho_air{0.0};
+    static constexpr Real64 outdoor_coil_entering_dry_bulb_temperature_K{308.15}; // 95F
+    static constexpr Real64 indoor_coil_entering_dry_bulb_temperature_K{299.82};  // 80F
+    static constexpr Real64 reference_wb_temperature{292.59};                     // 67F
+    static constexpr Real64 reference_pressure_sea_level{101325.0};
+    static constexpr Real64 rating_flow{400.0}; // cfm/ton
+    Real64 rating_humidity_ratio{0.0};
+    Real64 rating_indoor_coil_entering_relative_humidity{0.0};
+    Real64 rating_rho_air{0.0};
 
     int nominal_speed_index{0};
 
     struct CoilSpeedParameters
     {
-        double evaporator_air_mass_flow;
-        double evaporator_air_volumetric_flow;
+        Real64 evaporator_air_mass_flow;
+        Real64 evaporator_air_volumetric_flow;
     };
     std::vector<CoilSpeedParameters> speeds;
 };

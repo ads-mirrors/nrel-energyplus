@@ -2549,6 +2549,9 @@ void EIRPlantLoopHeatPump::oneTimeInit(EnergyPlusData &state)
 
 void HeatPumpAirToWater::oneTimeInit(EnergyPlusData &state)
 {
+    if (!this->oneTimeInitFlagAWHP) {
+        return;
+    }
     EIRPlantLoopHeatPump::oneTimeInit(state);
     std::string suffix = "";
     std::string mode_keyword = "";
@@ -2559,7 +2562,6 @@ void HeatPumpAirToWater::oneTimeInit(EnergyPlusData &state)
         suffix = " in Cooling Mode";
         mode_keyword = "Cooling";
     }
-    constexpr std::array<std::string_view, static_cast<int>(OperatingMode::Num)> OperatingModeUC = {"COOLING", "HEATING", "OFF"};
     if (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterHeating ||
         this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterCooling) {
         SetupOutputVariable(state,
@@ -2576,11 +2578,10 @@ void HeatPumpAirToWater::oneTimeInit(EnergyPlusData &state)
                             OutputProcessor::TimeStepType::System,
                             OutputProcessor::StoreType::Average,
                             this->name);
-        int operatingMode = static_cast<int>(this->operatingMode);
         SetupOutputVariable(state,
                             format("Heat Pump Operating Mode is {}", mode_keyword),
                             Constant::Units::None,
-                            operatingMode,
+                            this->operatingMode,
                             OutputProcessor::TimeStepType::System,
                             OutputProcessor::StoreType::Average,
                             this->name);
@@ -2605,6 +2606,7 @@ void HeatPumpAirToWater::oneTimeInit(EnergyPlusData &state)
                             OutputProcessor::Group::HVAC,
                             OutputProcessor::EndUseCat::Cooling);
     }
+    this->oneTimeInitFlagAWHP = false;
 }
 
 bool EIRPlantLoopHeatPump::thermosiphonDisabled(EnergyPlusData &state)
@@ -3170,6 +3172,7 @@ void HeatPumpAirToWater::resetReportingVariables()
 {
     EIRPlantLoopHeatPump::resetReportingVariables();
     this->CrankcaseHeaterPower = 0.0;
+    this->operatingMode = 0.0;
 }
 
 PlantComponent *EIRFuelFiredHeatPump::factory(EnergyPlusData &state, DataPlant::PlantEquipmentType hp_type, const std::string &hp_name)
@@ -4085,7 +4088,7 @@ void HeatPumpAirToWater::setUpEMS(EnergyPlusData &state)
         mode_keyword = "Cooling";
     }
     SetupEMSActuator(state,
-                     format("HeatPump:AirToWater"),
+                     format("HeatPump:AirToWater:{}", mode_keyword),
                      this->name,
                      "Operation Mode",
                      "[ ]",
@@ -4359,18 +4362,41 @@ Real64 EIRFuelFiredHeatPump::getDynamicMaxCapacity(EnergyPlusData &state)
 
 void HeatPumpAirToWater::calcOpMode(EnergyPlus::EnergyPlusData &state, Real64 currentLoad)
 {
-    Real64 constexpr minLoadThresh = 1e-6; // fixme: hardcode value, unify with others
-    if (currentLoad > minLoadThresh) {
-        this->operatingMode = HeatPumpAirToWater::OperatingMode::Heating;
-    } else if (currentLoad < (-1) * minLoadThresh) {
-        this->operatingMode = HeatPumpAirToWater::OperatingMode::Cooling;
+    if (OperationModeEMSOverrideOn) {
+        if (OperationModeEMSOverrideValue == 1) {
+            this->operatingMode = 1;
+            this->companionHeatPumpCoil->operatingMode = 0;
+        } else {
+            this->operatingMode = 0;
+            this->companionHeatPumpCoil->operatingMode = 1;
+        }
     } else {
-        this->operatingMode = HeatPumpAirToWater::OperatingMode::Off;
+        if (currentLoad < 0) {
+            if (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterCooling) {
+                this->operatingMode = 1;
+                this->companionHeatPumpCoil->operatingMode = 0;
+            } else {
+                this->operatingMode = 0;
+                this->companionHeatPumpCoil->operatingMode = 1;
+            }
+        } else if (currentLoad > 0) {
+            if (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterHeating) {
+                this->operatingMode = 1;
+                this->companionHeatPumpCoil->operatingMode = 0;
+            } else {
+                this->operatingMode = 0;
+                this->companionHeatPumpCoil->operatingMode = 1;
+            }
+        } else {
+            this->operatingMode = 0;
+            this->companionHeatPumpCoil->operatingMode = 0;
+        }
     }
 }
 
-void HeatPumpAirToWater::doPhysics(EnergyPlusData &state, Real64 const currentLoad)
+void HeatPumpAirToWater::doPhysics(EnergyPlusData &state, Real64 currentLoad)
 {
+    this->calcOpMode(state, currentLoad);
     // add free cooling at some point, compressor is off during free cooling, temp limits restrict free cooling range
     if ((this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterCooling && currentLoad >= 0.0) ||
         (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterHeating && currentLoad <= 0.0)) {
@@ -4382,7 +4408,6 @@ void HeatPumpAirToWater::doPhysics(EnergyPlusData &state, Real64 const currentLo
     Real64 partLoadRatio = 0.0;
     int speedLevel = 0;
 
-    this->calcOpMode(state, currentLoad);
     this->calcAvailableCapacity(state, currentLoad, this->capFuncTempCurveIndex[this->numSpeeds - 1], availableCapacity, partLoadRatio);
     // fixme: might need to change
     this->setPartLoadAndCyclingRatio(state, partLoadRatio);

@@ -443,16 +443,9 @@ namespace EIRPlantLoopHeatPumps {
             Load,
             Num
         };
-        enum class OperatingMode
-        {
-            Invalid = -1,
-            Cooling,
-            Heating,
-            Off,
-            Num
-        };
 
         // additional variables
+        HeatPumpAirToWater *companionHeatPumpCoil = nullptr;
         std::string availSchedName;            // availability schedule
         Sched::Schedule *availSched = nullptr; // availability schedule
         OperatingModeControlMethod operatingModeControlMethod = OperatingModeControlMethod::Load;
@@ -488,13 +481,15 @@ namespace EIRPlantLoopHeatPumps {
         bool TimeSinceStartEMSOverrideOn = false; //            time since defrost started
         Real64 TimeSinceStartEMSOverrideValue = 0.0;
 
+        bool oneTimeInitFlagAWHP = true;
+
         // new output in AWHP
         Real64 CrankcaseHeaterPower = 0.0;
         Real64 heatingCOP = 0.0;
         Real64 coolingCOP = 0.0;
         Real64 heatingRate = 0.0;
         Real64 coolingRate = 0.0;
-        OperatingMode operatingMode = OperatingMode::Off;
+        int operatingMode = 0;
         Real64 sourceSideDesignInletTemp = 0.0;     // Rated Inlet Air Temperature in xx Mode
         Real64 ratedLeavingWaterTemperature = 0.0;  // rated_leaving_water_temperature_in_xx_mode
         Real64 ratedEnteringWaterTemperature = 0.0; // rated_leaving_water_temperature_in_xx_mode

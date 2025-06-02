@@ -622,47 +622,48 @@
 
   Output:VariableDictionary,IDF;
 
-  Output:Variable,*,Plant Load Profile Mass Flow Rate in Heating Mode,Hourly;
-  Output:Variable,*,Plant Load Profile Heat Transfer Rate in Heating Mode,Hourly;
-  Output:Variable,*,Heat Pump Load Side Heat Transfer Rate in Heating Mode,Hourly;
-  Output:Variable,*,Heat Pump Load Side Heat Transfer Energy in Heating Mode,Hourly;
-  Output:Variable,*,Heat Pump Source Side Heat Transfer Rate in Heating Mode,Hourly;
-  Output:Variable,*,Heat Pump Source Side Heat Transfer Energy in Heating Mode,Hourly;
-  Output:Variable,*,Heat Pump Load Side Inlet Temperature in Heating Mode,Hourly;
-  Output:Variable,*,Heat Pump Load Side Outlet Temperature in Heating Mode,Hourly;
-  Output:Variable,*,Heat Pump Source Side Inlet Temperature in Heating Mode,Hourly;
-  Output:Variable,*,Heat Pump Source Side Outlet Temperature in Heating Mode,Hourly;
-  Output:Variable,*,Heat Pump Electricity Rate in Heating Mode,Hourly;
-  Output:Variable,*,Heat Pump Electricity Energy in Heating Mode,Hourly;
-  Output:Variable,*,Heat Pump Load Side Mass Flow Rate in Heating Mode,Hourly;
-  Output:Variable,*,Heat Pump Source Side Mass Flow Rate in Heating Mode,Hourly;
+!-   Output:Variable,*,Plant Load Profile Mass Flow Rate in Heating Mode,Hourly;
+!-   Output:Variable,*,Plant Load Profile Heat Transfer Rate in Heating Mode,Hourly;
+!-   Output:Variable,*,Heat Pump Load Side Heat Transfer Rate in Heating Mode,Hourly;
+!-   Output:Variable,*,Heat Pump Load Side Heat Transfer Energy in Heating Mode,Hourly;
+!-   Output:Variable,*,Heat Pump Source Side Heat Transfer Rate in Heating Mode,Hourly;
+!-   Output:Variable,*,Heat Pump Source Side Heat Transfer Energy in Heating Mode,Hourly;
+!-   Output:Variable,*,Heat Pump Load Side Inlet Temperature in Heating Mode,Hourly;
+!-   Output:Variable,*,Heat Pump Load Side Outlet Temperature in Heating Mode,Hourly;
+!-   Output:Variable,*,Heat Pump Source Side Inlet Temperature in Heating Mode,Hourly;
+!-   Output:Variable,*,Heat Pump Source Side Outlet Temperature in Heating Mode,Hourly;
+!-   Output:Variable,*,Heat Pump Electricity Rate in Heating Mode,Hourly;
+!-   Output:Variable,*,Heat Pump Electricity Energy in Heating Mode,Hourly;
+!-   Output:Variable,*,Heat Pump Load Side Mass Flow Rate in Heating Mode,Hourly;
+!-   Output:Variable,*,Heat Pump Source Side Mass Flow Rate in Heating Mode,Hourly;
   Output:Variable,*,Heat Pump Operating Mode is Heating,hourly; !- HVAC Average []
 
-  Output:Variable,*,Plant Load Profile Mass Flow Rate in Cooling Mode,Hourly;
-  Output:Variable,*,Plant Load Profile Heat Transfer Rate in Cooling Mode,Hourly;
-  Output:Variable,*,Heat Pump Load Side Heat Transfer Rate in Cooling Mode,Hourly;
-  Output:Variable,*,Heat Pump Load Side Heat Transfer Energy in Cooling Mode,Hourly;
-  Output:Variable,*,Heat Pump Source Side Heat Transfer Rate in Cooling Mode,Hourly;
-  Output:Variable,*,Heat Pump Source Side Heat Transfer Energy in Cooling Mode,Hourly;
-  Output:Variable,*,Heat Pump Load Side Inlet Temperature in Cooling Mode,Hourly;
-  Output:Variable,*,Heat Pump Load Side Outlet Temperature in Cooling Mode,Hourly;
-  Output:Variable,*,Heat Pump Source Side Inlet Temperature in Cooling Mode,Hourly;
-  Output:Variable,*,Heat Pump Source Side Outlet Temperature in Cooling Mode,Hourly;
-  Output:Variable,*,Heat Pump Electricity Rate in Cooling Mode,Hourly;
-  Output:Variable,*,Heat Pump Electricity Energy in Cooling Mode,Hourly;
-  Output:Variable,*,Heat Pump Load Side Mass Flow Rate in Cooling Mode,Hourly;
-  Output:Variable,*,Heat Pump Source Side Mass Flow Rate in Cooling Mode,Hourly;
+!-   Output:Variable,*,Plant Load Profile Mass Flow Rate in Cooling Mode,Hourly;
+!-   Output:Variable,*,Plant Load Profile Heat Transfer Rate in Cooling Mode,Hourly;
+!-   Output:Variable,*,Heat Pump Load Side Heat Transfer Rate in Cooling Mode,Hourly;
+!-   Output:Variable,*,Heat Pump Load Side Heat Transfer Energy in Cooling Mode,Hourly;
+!-   Output:Variable,*,Heat Pump Source Side Heat Transfer Rate in Cooling Mode,Hourly;
+!-   Output:Variable,*,Heat Pump Source Side Heat Transfer Energy in Cooling Mode,Hourly;
+!-   Output:Variable,*,Heat Pump Load Side Inlet Temperature in Cooling Mode,Hourly;
+!-   Output:Variable,*,Heat Pump Load Side Outlet Temperature in Cooling Mode,Hourly;
+!-   Output:Variable,*,Heat Pump Source Side Inlet Temperature in Cooling Mode,Hourly;
+!-   Output:Variable,*,Heat Pump Source Side Outlet Temperature in Cooling Mode,Hourly;
+!-   Output:Variable,*,Heat Pump Electricity Rate in Cooling Mode,Hourly;
+!-   Output:Variable,*,Heat Pump Electricity Energy in Cooling Mode,Hourly;
+!-   Output:Variable,*,Heat Pump Load Side Mass Flow Rate in Cooling Mode,Hourly;
+!-   Output:Variable,*,Heat Pump Source Side Mass Flow Rate in Cooling Mode,Hourly;
   Output:Variable,*,Heat Pump Operating Mode is Cooling,hourly; !- HVAC Average []
 
-  Output:Variable,*,Heat Pump Crankcase Heater Electricity Rate,hourly; !- HVAC Average [W]
-  Output:Variable,*,Heat Pump Crankcase Heater Electricity Energy,hourly; !- HVAC Sum [W]
-  Output:Variable,*,Heat Pump Heating COP,hourly; !- HVAC Average []
-  Output:Variable,*,Heat Pump Total Heating Rate,hourly; !- HVAC Average []
-  Output:Variable,*,Heat Pump Cooling COP,hourly; !- HVAC Average []
-  Output:Variable,*,Heat Pump Total Cooling Rate,hourly; !- HVAC Average []
-
-  Output:Variable,*,Site Outdoor Air Drybulb Temperature,hourly; !- Zone Average [C]
-  Output:Variable,*,Operating Model Output,detailed;
+!-   Output:Variable,*,Heat Pump Crankcase Heater Electricity Rate,hourly; !- HVAC Average [W]
+!-   Output:Variable,*,Heat Pump Crankcase Heater Electricity Energy,hourly; !- HVAC Sum [W]
+!-   Output:Variable,*,Heat Pump Heating COP,hourly; !- HVAC Average []
+!-   Output:Variable,*,Heat Pump Total Heating Rate,hourly; !- HVAC Average []
+!-   Output:Variable,*,Heat Pump Cooling COP,hourly; !- HVAC Average []
+!-   Output:Variable,*,Heat Pump Total Cooling Rate,hourly; !- HVAC Average []
+!-
+!-   Output:Variable,*,Site Outdoor Air Drybulb Temperature,hourly; !- Zone Average [C]
+  Output:Variable,*,Operating Model Output Heating,detailed;
+  Output:Variable,*,Operating Model Output Cooling,detailed;
 
   OutputControl:Table:Style,
     HTML;                    !- Column Separator
@@ -676,14 +677,28 @@
     Verbose;                 !- EMS Runtime Language Debug Output Level
 
   EnergyManagementSystem:Actuator,
-    opModeAct,               !- Name
+    opModeAct_heating,               !- Name
     test_AWHP,               !- Actuated Component Unique Name
-    HeatPump:AirToWater,     !- Actuated Component Type
+    HeatPump:AirToWater:Heating,     !- Actuated Component Type
+    Operation Mode;          !- Actuated Component Control Type
+
+  EnergyManagementSystem:Actuator,
+    opModeAct_cooling,               !- Name
+    test_AWHP,               !- Actuated Component Unique Name
+    HeatPump:AirToWater:Cooling,     !- Actuated Component Type
     Operation Mode;          !- Actuated Component Control Type
 
   EnergyManagementSystem:OutputVariable,
-    Operating Model Output,       !- Name
-    opModeAct,                    !- EMS Variable Name
+    Operating Model Output Heating,       !- Name
+    opModeAct_heating,                    !- EMS Variable Name
+    Averaged,                !- Type of Data in Variable
+    SystemTimeStep,          !- Update Frequency
+    ,                        !- EMS Program or Subroutine Name
+    ;                        !- Units
+
+  EnergyManagementSystem:OutputVariable,
+    Operating Model Output Cooling,       !- Name
+    opModeAct_cooling,                    !- EMS Variable Name
     Averaged,                !- Type of Data in Variable
     SystemTimeStep,          !- Update Frequency
     ,                        !- EMS Program or Subroutine Name
@@ -691,13 +706,16 @@
 
   EnergyManagementSystem:ProgramCallingManager,
     Change_OpMode_EMS_Program_Manager,  !- Name
-    BeginTimestepBeforePredictor,  !- EnergyPlus Model Calling Point
+    InsideHVACSystemIterationLoop,  !- EnergyPlus Model Calling Point
     Change_OpMode_EMS_Program;  !- Program Name 1
 
+  !- cooling is 1 heating is 2
   EnergyManagementSystem:Program,
     Change_OpMode_EMS_Program,  !- Name
     IF (Hour <= 12),  !- Program Line 2
-    SET opModeAct = 1,  !- <none>
+    SET opModeAct_heating = 1,  !- <none>
+    SET opModeAct_cooling = 0,  !- <none>
     ELSE,                    !- <none>
-    SET opModeAct = 0,  !- <none>
+    SET opModeAct_heating = 0,  !- <none>
+    SET opModeAct_cooling = 1,  !- <none>
     ENDIF;                   !- <none>

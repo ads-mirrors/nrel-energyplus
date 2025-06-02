@@ -938,7 +938,7 @@ following three tables illustrate the names for data elements.
   |                | rmal_radiation |                |                |
   +----------------+----------------+----------------+----------------+
   | horirsky       | horizon        | W              | Y              |
-  |                | tal_infrared\_ | h m\ :sup:`−2` |                |
+  |                | tal_infrared_  | h m\ :sup:`−2` |                |
   |                | radiation_inte |                |                |
   |                | nsity_from_sky |                |                |
   +----------------+----------------+----------------+----------------+
@@ -1058,7 +1058,7 @@ be used for data elements in DEF files, if desired.
   |                | horizontal     | h m\ :sup:`−2` |                |
   |                | radiation      |                |                |
   +----------------+----------------+----------------+----------------+
-  | dirnorzrad     | direct normal  | W              | Y              |
+  | dirnormrad     | direct normal  | W              | Y              |
   |                | radiation      | h m\ :sup:`−2` |                |
   +----------------+----------------+----------------+----------------+
   | difhorzrad     | diffuse        | W              | Y              |
@@ -1069,7 +1069,7 @@ be used for data elements in DEF files, if desired.
   |                | horizontal     |                |                |
   |                | illuminance    |                |                |
   +----------------+----------------+----------------+----------------+
-  | dirnorzillum   | direct normal  | lx             | N              |
+  | dirnormillum   | direct normal  | lx             | N              |
   |                | illuminance    |                |                |
   +----------------+----------------+----------------+----------------+
   | difhorzillum   | diffuse        | lx             | N              |
@@ -1492,7 +1492,7 @@ used because the data set does not contain wind direction.
    NumInHour = 1
    InputFileType = 'CUSTOM'
    InFormat = '(I2, I2, I2, F7.2, F7.2, F5.1, F5.1, F5.1)'
-   DataElements = Month,Day,Hour,DirNorRad,DifHorRad,DryBulb,Wind\_Speed,Relative\_Humidity
+   DataElements = Month,Day,Hour,DirNorRad,DifHorRad,DryBulb,Wind_Speed,Relative_Humidity
    DataUnits = ,,,'kJ/M2','kJ/M2','C','m/s','%'
    DataConversionFactors = 1,1,1,.2777778,.2777778,1,1,1
    /
@@ -1544,7 +1544,7 @@ file.
    NumInHour = 1
    InputFileType = 'CUSTOM'
    InFormat = 'DELIMITED'
-   DataElements = Ignore,Year,Month,Day,Hour,Ignore,DryBulb,DewPoint,Ignore,Relative\_Humidity,Ignore,DirNorRad,DifHorRad,WindDir,Wind\_Speed,OpaqSkyCvr,Atmos\_Pressure
+   DataElements = Ignore,Year,Month,Day,Hour,Ignore,DryBulb,DewPoint,Ignore,Relative_Humidity,Ignore,DirNorRad,DifHorRad,WindDir,Wind_Speed,OpaqSkyCvr,Atmos_Pressure
    DataUnits = x,x,x,x,x,x,'k','k',x,'%',x,'wh/m2','wh/m2','deg','m/s',x,'Pa'
    DataConversionFactors = 1,1,1,1,1,1,.1,.1,1,1,1,1,1,1,.1,.1,10
    DelimiterChar = ' '
@@ -1629,7 +1629,7 @@ be automatically read in and this format is provided as an extra bonus.
    NumInHour = 1
    InputFileType = 'CUSTOM'
    InFormat = 'DELIMITED'
-   DataElements = year,month,day,hour,minute,datasource,Dry\_Bulb\_Temperature,Dew\_Point\_Temperature,Relative\_Humidity,Atmospheric\_Pressure,Extraterrestrial\_Horizontal\_Radiation,Extraterrestrial\_Direct\_Normal\_Radiation,Horizontal\_Infrared\_Radiation\_Intensity\_from\_Sky,Global\_Horizontal\_Radiation,Direct\_Normal\_Radiation,Diffuse\_Horizontal\_Radiation,Global\_Horizontal\_Illuminance,Direct\_Normal\_Illuminance,Diffuse\_Horizontal\_Illuminance,Zenith\_Luminance,Wind\_Direction,Wind\_Speed,Total\_Sky\_Cover,Opaque\_Sky\_Cover,Visibility,Ceiling\_Height,Present\_Weather\_Observation,Present\_Weather\_Codes,Precipitable\_Water,Aerosol\_Optical\_Depth,Snow\_Depth,Days\_Since\_Last\_Snow,Albedo,Liquid\_Precipitation\_Depth,Liquid\_Precipitation\_Quantity
+   DataElements = year,month,day,hour,minute,datasource,Dry_Bulb_Temperature,Dew_Point_Temperature,Relative_Humidity,Atmospheric_Pressure,Extraterrestrial_Horizontal_Radiation,Extraterrestrial_Direct_Normal_Radiation,Horizontal_Infrared_Radiation_Intensity_from_Sky,Global_Horizontal_Radiation,Direct_Normal_Radiation,Diffuse_Horizontal_Radiation,Global_Horizontal_Illuminance,Direct_Normal_Illuminance,Diffuse_Horizontal_Illuminance,Zenith_Luminance,Wind_Direction,Wind_Speed,Total_Sky_Cover,Opaque_Sky_Cover,Visibility,Ceiling_Height,Present_Weather_Observation,Present_Weather_Codes,Precipitable_Water,Aerosol_Optical_Depth,Snow_Depth,Days_Since_Last_Snow,Albedo,Liquid_Precipitation_Depth,Liquid_Precipitation_Quantity
    DataUnits = 'x','x','x','x','x','x','C','C','%','Pa','Wh/m2','Wh/m2','Wh/m2','Wh/m2','Wh/m2','Wh/m2','lux','lux','lux','Cd/m2','deg','m/s','tenths','tenths','km','m','x','x','mm','{.001}','cm','x','{.01}','mm','hr'
    DataConversionFactors = 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
    DelimiterChar = ','
@@ -1805,8 +1805,8 @@ As an example, the initial portion of an audit file is shown
 
 ::
 
-    -Output File Type = epw, with FileName = D:\DevTests\Release\WeatherData\Out\CAN\_Ottawa-International\_Airport\_CWEC.epw
-    -Output File Type = csv, with FileName = D:\DevTests\Release\WeatherData\Out\CAN\_Ottawa-International\_Airport\_CWEC.csv
+    -Output File Type = epw, with FileName = D:\DevTests\Release\WeatherData\Out\CAN\Ottawa-International\Airport\CWEC.epw
+    -Output File Type = csv, with FileName = D:\DevTests\Release\WeatherData\Out\CAN\Ottawa-International\Airport\CWEC.csv
 
 Statistical Report File
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -1954,7 +1954,7 @@ These are followed by groupings of Monthly temperature data.
 
 
    - Monthly Statistics for Dry Bulb temperatures&deg;C
-     Jan    Feb    Mar    Apr    May    Jun    Jul    Aug    Sep    Oct    Nov    Dec   
+                  Jan   Feb   Mar   Apr   May   Jun   Jul   Aug   Sep   Oct   Nov   Dec   
      Maximum       16.7  22.2  23.9  28.3  29.4  32.8  26.7  29.4  30.0  26.7  20.6  16.1 
      Day:Hour     19:13  14:13  12:15  2:15  1:12  30:14  12:13  2:13  15:14  20:14  1:14  1:15 
 
@@ -1987,17 +1987,17 @@ These are followed by groupings of Monthly temperature data.
      - Minimum Dew Point temperature of  -5.6&deg;C on Dec 19
      For the dry bulb and dew point temperatures, an average hourly report, by month, is also given:
      - Average Hourly Statistics for Dry Bulb temperatures&deg;C
-     Jan    Feb    Mar    Apr    May    Jun    Jul    Aug    Sep    Oct    Nov    Dec   
-     0:01- 1:00    8.9   9.9  10.6  11.6  12.3  12.1  13.4  14.0  14.4  13.3  11.6   9.7 
-     1:01- 2:00    8.7   9.5  10.3  11.4  12.1  12.0  13.2  13.7  14.3  12.7  11.2   9.4 
-     2:01- 3:00    8.3   9.0  10.1  11.3  12.0  11.7  13.1  13.5  14.1  12.4  11.0   9.2 
-     3:01- 4:00    7.8   8.6  10.0  11.2  12.0  11.6  12.9  13.4  14.0  12.4  11.1   8.9 
-     4:01- 5:00    7.9   8.5   9.7  11.0  11.8  11.5  13.4  13.3  13.8  12.0  10.6   8.7 
-     5:01- 6:00    7.8   8.4   9.6  11.3  12.4  12.3  13.8  13.5  13.9  12.2  10.8   8.5 
-     6:01- 7:00    7.9   8.3   9.8  12.2  14.0  14.1  14.3  14.9  14.6  12.5  10.9   8.5 
-     7:01- 8:00    7.9   9.2  11.5  13.1  15.5  15.7  15.4  16.3  16.1  14.3  11.5   8.9 
-     8:01- 9:00    8.8  10.1  12.6  14.1  16.6  16.6  16.5  17.5  17.4  15.3  12.6   9.9 
-     9:01-10:00    9.5  11.0  13.7  15.0  17.7  17.7  17.5  18.4  18.5  16.1  13.2  10.9 
+                  Jan   Feb   Mar   Apr   May   Jun   Jul   Aug   Sep   Oct   Nov   Dec   
+      0:01- 1:00    8.9   9.9  10.6  11.6  12.3  12.1  13.4  14.0  14.4  13.3  11.6   9.7 
+      1:01- 2:00    8.7   9.5  10.3  11.4  12.1  12.0  13.2  13.7  14.3  12.7  11.2   9.4 
+      2:01- 3:00    8.3   9.0  10.1  11.3  12.0  11.7  13.1  13.5  14.1  12.4  11.0   9.2 
+      3:01- 4:00    7.8   8.6  10.0  11.2  12.0  11.6  12.9  13.4  14.0  12.4  11.1   8.9 
+      4:01- 5:00    7.9   8.5   9.7  11.0  11.8  11.5  13.4  13.3  13.8  12.0  10.6   8.7 
+      5:01- 6:00    7.8   8.4   9.6  11.3  12.4  12.3  13.8  13.5  13.9  12.2  10.8   8.5 
+      6:01- 7:00    7.9   8.3   9.8  12.2  14.0  14.1  14.3  14.9  14.6  12.5  10.9   8.5 
+      7:01- 8:00    7.9   9.2  11.5  13.1  15.5  15.7  15.4  16.3  16.1  14.3  11.5   8.9 
+      8:01- 9:00    8.8  10.1  12.6  14.1  16.6  16.6  16.5  17.5  17.4  15.3  12.6   9.9 
+      9:01-10:00    9.5  11.0  13.7  15.0  17.7  17.7  17.5  18.4  18.5  16.1  13.2  10.9 
      10:01-11:00   10.1  12.1  14.5  16.2  18.8  19.1  18.4  19.6  19.6  17.2  13.8  11.5 
      11:01-12:00   10.6  13.2  15.6  16.8  19.3  19.9  19.3  20.6  20.5  18.0  14.3  11.9 
      12:01-13:00   11.4  14.2  16.4  17.1  19.2  20.6  20.2  21.3  21.3  18.9  14.9  12.5 
@@ -2016,17 +2016,17 @@ These are followed by groupings of Monthly temperature data.
      Min Hour       6     7     6     5     5     5     4     5     5     5     5     6  
 
      - Average Hourly Statistics for Dew Point temperatures&deg;C
-     Jan    Feb    Mar    Apr    May    Jun    Jul    Aug    Sep    Oct    Nov    Dec   
-     0:01- 1:00    6.7   6.6   8.0   8.1   9.5   9.7   9.9  11.4  12.3   9.7   8.0   5.7 
-     1:01- 2:00    6.6   6.1   7.7   8.1   9.4   9.6  10.1  11.2  12.3   9.3   8.0   5.8 
-     2:01- 3:00    6.3   5.9   7.4   8.2   9.3   9.4  10.0  11.2  12.2   9.1   7.6   5.9 
-     3:01- 4:00    5.9   5.9   7.7   8.0   9.3   9.5   9.7  11.0  12.1   8.9   8.0   5.8 
-     4:01- 5:00    5.9   5.6   7.6   8.0   9.2   9.4   9.9  11.0  12.1   9.1   7.6   5.5 
-     5:01- 6:00    5.9   5.5   7.5   8.1   9.4   9.8  10.1  11.1  12.1   9.1   7.8   5.7 
-     6:01- 7:00    6.0   5.7   7.6   8.5   9.7  10.3  10.2  11.6  12.4   9.5   7.8   5.8 
-     7:01- 8:00    5.9   6.1   8.4   8.8   9.7  10.6  10.8  11.8  12.7  10.4   7.9   6.1 
-     8:01- 9:00    6.1   6.8   8.8   9.0  10.0  10.8  11.0  12.1  12.9  10.4   8.2   6.3 
-     9:01-10:00    6.1   7.3   8.8   8.9   9.7  10.9  11.0  12.4  13.2  10.4   8.1   6.3 
+                  Jan   Feb   Mar   Apr   May   Jun   Jul   Aug   Sep   Oct   Nov   Dec   
+      0:01- 1:00    6.7   6.6   8.0   8.1   9.5   9.7   9.9  11.4  12.3   9.7   8.0   5.7 
+      1:01- 2:00    6.6   6.1   7.7   8.1   9.4   9.6  10.1  11.2  12.3   9.3   8.0   5.8 
+      2:01- 3:00    6.3   5.9   7.4   8.2   9.3   9.4  10.0  11.2  12.2   9.1   7.6   5.9 
+      3:01- 4:00    5.9   5.9   7.7   8.0   9.3   9.5   9.7  11.0  12.1   8.9   8.0   5.8 
+      4:01- 5:00    5.9   5.6   7.6   8.0   9.2   9.4   9.9  11.0  12.1   9.1   7.6   5.5 
+      5:01- 6:00    5.9   5.5   7.5   8.1   9.4   9.8  10.1  11.1  12.1   9.1   7.8   5.7 
+      6:01- 7:00    6.0   5.7   7.6   8.5   9.7  10.3  10.2  11.6  12.4   9.5   7.8   5.8 
+      7:01- 8:00    5.9   6.1   8.4   8.8   9.7  10.6  10.8  11.8  12.7  10.4   7.9   6.1 
+      8:01- 9:00    6.1   6.8   8.8   9.0  10.0  10.8  11.0  12.1  12.9  10.4   8.2   6.3 
+      9:01-10:00    6.1   7.3   8.8   8.9   9.7  10.9  11.0  12.4  13.2  10.4   8.1   6.3 
      10:01-11:00    6.4   7.1   8.5   8.7   9.8  10.8  11.4  12.0  13.4   9.9   8.3   6.2 
      11:01-12:00    6.3   6.8   8.3   8.6   9.5  10.6  11.5  11.8  13.3   9.7   8.1   6.2 
      12:01-13:00    6.2   6.9   8.3   8.5   9.4  10.5  11.5  11.6  12.8   9.2   8.3   6.5 
@@ -2060,17 +2060,17 @@ These are followed by groupings of Monthly temperature data.
 
 
      - Average Hourly Relative Humidity %
-     Jan    Feb    Mar    Apr    May    Jun    Jul    Aug    Sep    Oct    Nov    Dec
-     0:01- 1:00     83    81    77    81    85    84    83    86    84    81    81    84
-     1:01- 2:00     84    82    75    80    87    84    83    86    85    82    81    85
-     2:01- 3:00     86    83    76    83    88    85    83    87    85    82    82    86
-     3:01- 4:00     87    84    78    82    87    85    83    87    85    83    83    85
-     4:01- 5:00     88    84    79    83    88    83    81    88    85    83    83    86
-     5:01- 6:00     89    84    80    83    88    81    80    88    85    83    83    86
-     6:01- 7:00     89    84    80    79    81    80    78    84    82    83    83    86
-     7:01- 8:00     88    82    75    73    74    75    73    77    78    78    79    86
-     8:01- 9:00     83    81    70    70    68    69    68    71    71    74    74    82
-     9:01-10:00     77    79    68    65    64    64    62    67    65    70    70    79
+                  Jan   Feb   Mar   Apr   May   Jun   Jul   Aug   Sep   Oct   Nov   Dec   
+      0:01- 1:00     83    81    77    81    85    84    83    86    84    81    81    84
+      1:01- 2:00     84    82    75    80    87    84    83    86    85    82    81    85
+      2:01- 3:00     86    83    76    83    88    85    83    87    85    82    82    86
+      3:01- 4:00     87    84    78    82    87    85    83    87    85    83    83    85
+      4:01- 5:00     88    84    79    83    88    83    81    88    85    83    83    86
+      5:01- 6:00     89    84    80    83    88    81    80    88    85    83    83    86
+      6:01- 7:00     89    84    80    79    81    80    78    84    82    83    83    86
+      7:01- 8:00     88    82    75    73    74    75    73    77    78    78    79    86
+      8:01- 9:00     83    81    70    70    68    69    68    71    71    74    74    82
+      9:01-10:00     77    79    68    65    64    64    62    67    65    70    70    79
      10:01-11:00     74    74    65    62    59    62    59    60    59    65    66    76
      11:01-12:00     69    69    59    60    55    60    56    57    54    60    63    73
      12:01-13:00     65    63    58    59    53    58    53    55    52    55    59    71
@@ -2121,7 +2121,7 @@ These are followed by groupings of Monthly temperature data.
 
 
      - Monthly Wind Direction % {N = 0 or 360,E = 90,S = 180,W = 270}
-     Jan    Feb    Mar    Apr    May    Jun    Jul    Aug    Sep    Oct    Nov    Dec
+                  Jan   Feb   Mar   Apr   May   Jun   Jul   Aug   Sep   Oct   Nov   Dec   
      North           20    11     6     5     4     3     7     6     9     8    16    27
      NorthEast       10    10     6     3     3     2     3     3     5     6     6    13
      East             8     8     6     3     2     1     1     3     3     5     9     8
@@ -2133,7 +2133,7 @@ These are followed by groupings of Monthly temperature data.
 
 
      - Monthly Statistics for Wind Speed m/s
-     Jan    Feb    Mar    Apr    May    Jun    Jul    Aug    Sep    Oct    Nov    Dec
+                  Jan   Feb   Mar   Apr   May   Jun   Jul   Aug   Sep   Oct   Nov   Dec   
      Maximum       11.8  14.9  17.0  12.9  15.9  11.8  12.4  13.4  14.9  10.8   8.8  13.4
      Day:Hour    29:12  10:22  2:15  9:16  10:17  10:16  4:16  29:14  11:15  22:19  3:10  27:13
 
@@ -2176,17 +2176,17 @@ These are followed by groupings of Monthly temperature data.
      - Maximum Direct Normal Solar of 10692 Wh/m$^{2}$ on Jul 25
 
      - Average Hourly Statistics for Direct Normal Solar Radiation Wh/m$^{2}$
-     Jan    Feb    Mar    Apr    May    Jun    Jul    Aug    Sep    Oct    Nov    Dec   
-     0:01- 1:00      0     0     0     0     0     0     0     0     0     0     0     0 
-     1:01- 2:00      0     0     0     0     0     0     0     0     0     0     0     0 
-     2:01- 3:00      0     0     0     0     0     0     0     0     0     0     0     0 
-     3:01- 4:00      0     0     0     0     0     0     0     0     0     0     0     0 
-     4:01- 5:00      0     0     0     0     0     1     0     0     0     0     0     0 
-     5:01- 6:00      0     0     0    25    47    87    51    22     1     0     0     0 
-     6:01- 7:00      0     2    38   194   201   283   200   162    85    64     0     0 
-     7:01- 8:00     50    98   210   340   345   413   310   304   239   279   168    63 
-     8:01- 9:00    220   246   309   407   439   509   444   466   365   383   297   266 
-     9:01-10:00    277   338   424   470   526   575   525   554   523   399   372   375 
+                  Jan   Feb   Mar   Apr   May   Jun   Jul   Aug   Sep   Oct   Nov   Dec   
+      0:01- 1:00      0     0     0     0     0     0     0     0     0     0     0     0 
+      1:01- 2:00      0     0     0     0     0     0     0     0     0     0     0     0 
+      2:01- 3:00      0     0     0     0     0     0     0     0     0     0     0     0 
+      3:01- 4:00      0     0     0     0     0     0     0     0     0     0     0     0 
+      4:01- 5:00      0     0     0     0     0     1     0     0     0     0     0     0 
+      5:01- 6:00      0     0     0    25    47    87    51    22     1     0     0     0 
+      6:01- 7:00      0     2    38   194   201   283   200   162    85    64     0     0 
+      7:01- 8:00     50    98   210   340   345   413   310   304   239   279   168    63 
+      8:01- 9:00    220   246   309   407   439   509   444   466   365   383   297   266 
+      9:01-10:00    277   338   424   470   526   575   525   554   523   399   372   375 
      10:01-11:00    288   449   477   456   561   599   617   594   653   438   428   413 
      11:01-12:00    303   467   531   546   576   641   657   643   744   445   426   473 
      12:01-13:00    342   498   537   504   572   653   705   666   732   533   360   455 
@@ -2205,17 +2205,17 @@ These are followed by groupings of Monthly temperature data.
      Min Hour       1     1     1     1     1     1     1     1     1     1     1     1  
 
      - Average Hourly Statistics for Diffuse Horizontal Solar Radiation Wh/m$^{2}$
-     Jan    Feb    Mar    Apr    May    Jun    Jul    Aug    Sep    Oct    Nov    Dec   
-     0:01- 1:00      0     0     0     0     0     0     0     0     0     0     0     0 
-     1:01- 2:00      0     0     0     0     0     0     0     0     0     0     0     0 
-     2:01- 3:00      0     0     0     0     0     0     0     0     0     0     0     0 
-     3:01- 4:00      0     0     0     0     0     0     0     0     0     0     0     0 
-     4:01- 5:00      0     0     0     0     0     0     0     0     0     0     0     0 
-     5:01- 6:00      0     0     0     1    26    35    24    12     0     0     0     0 
-     6:01- 7:00      0     1    14    45    81    79    73    56    36     5     0     0 
-     7:01- 8:00      2    28    70   107   135   129   140   112    98    61    28    11 
-     8:01- 9:00     51    82   124   155   190   177   182   159   146   118    84    57 
-     9:01-10:00    105   123   169   225   215   192   199   196   181   155   127   100 
+                  Jan   Feb   Mar   Apr   May   Jun   Jul   Aug   Sep   Oct   Nov   Dec   
+      0:01- 1:00      0     0     0     0     0     0     0     0     0     0     0     0 
+      1:01- 2:00      0     0     0     0     0     0     0     0     0     0     0     0 
+      2:01- 3:00      0     0     0     0     0     0     0     0     0     0     0     0 
+      3:01- 4:00      0     0     0     0     0     0     0     0     0     0     0     0 
+      4:01- 5:00      0     0     0     0     0     0     0     0     0     0     0     0 
+      5:01- 6:00      0     0     0     1    26    35    24    12     0     0     0     0 
+      6:01- 7:00      0     1    14    45    81    79    73    56    36     5     0     0 
+      7:01- 8:00      2    28    70   107   135   129   140   112    98    61    28    11 
+      8:01- 9:00     51    82   124   155   190   177   182   159   146   118    84    57 
+      9:01-10:00    105   123   169   225   215   192   199   196   181   155   127   100 
      10:01-11:00    146   164   203   268   255   235   224   219   192   208   167   131 
      11:01-12:00    174   187   227   267   260   232   242   225   189   226   192   141 
      12:01-13:00    176   173   224   281   249   242   211   231   190   225   205   153 
@@ -2234,17 +2234,17 @@ These are followed by groupings of Monthly temperature data.
      Min Hour       1     1     1     1     1     1     1     1     1     1     1     1  
 
      - Average Hourly Statistics for Global Horizontal Solar Radiation Wh/m$^{2}$
-     Jan    Feb    Mar    Apr    May    Jun    Jul    Aug    Sep    Oct    Nov    Dec   
-     0:01- 1:00      0     0     0     0     0     0     0     0     0     0     0     0 
-     1:01- 2:00      0     0     0     0     0     0     0     0     0     0     0     0 
-     2:01- 3:00      0     0     0     0     0     0     0     0     0     0     0     0 
-     3:01- 4:00      0     0     0     0     0     0     0     0     0     0     0     0 
-     4:01- 5:00      0     0     0     0     0     0     0     0     0     0     0     0 
-     5:01- 6:00      0     0     0     2    31    45    29    14     0     0     0     0 
-     6:01- 7:00      0     1    17    83   136   165   127    91    47     8     0     0 
-     7:01- 8:00      3    39   119   237   295   330   282   234   175   122    47    15 
-     8:01- 9:00     92   150   254   383   469   511   462   429   330   269   164   108 
-     9:01-10:00    197   268   414   558   625   650   607   600   520   368   277   222 
+                  Jan   Feb   Mar   Apr   May   Jun   Jul   Aug   Sep   Oct   Nov   Dec    
+      0:01- 1:00      0     0     0     0     0     0     0     0     0     0     0     0 
+      1:01- 2:00      0     0     0     0     0     0     0     0     0     0     0     0 
+      2:01- 3:00      0     0     0     0     0     0     0     0     0     0     0     0 
+      3:01- 4:00      0     0     0     0     0     0     0     0     0     0     0     0 
+      4:01- 5:00      0     0     0     0     0     0     0     0     0     0     0     0 
+      5:01- 6:00      0     0     0     2    31    45    29    14     0     0     0     0 
+      6:01- 7:00      0     1    17    83   136   165   127    91    47     8     0     0 
+      7:01- 8:00      3    39   119   237   295   330   282   234   175   122    47    15 
+      8:01- 9:00     92   150   254   383   469   511   462   429   330   269   164   108 
+      9:01-10:00    197   268   414   558   625   650   607   600   520   368   277   222 
      10:01-11:00    272   409   532   641   749   773   769   717   684   486   382   306 
      11:01-12:00    326   473   626   746   800   845   863   805   790   531   425   367 
      12:01-13:00    353   490   638   726   787   872   886   840   786   589   401   373 
@@ -2263,17 +2263,17 @@ These are followed by groupings of Monthly temperature data.
      Min Hour       1     1     1     1     1     1     1     1     1     1     1     1  
 
      - Average Hourly Statistics for Total Sky Cover %
-     Jan    Feb    Mar    Apr    May    Jun    Jul    Aug    Sep    Oct    Nov    Dec   
-     0:01- 1:00     59    43    54    47    43    28    37    41    42    31    49    42 
-     1:01- 2:00     60    46    60    53    41    26    41    40    51    33    45    40 
-     2:01- 3:00     62    52    59    48    43    27    45    41    55    30    46    43 
-     3:01- 4:00     60    55    61    52    42    31    50    38    59    30    46    44 
-     4:01- 5:00     63    57    65    56    50    40    52    45    65    33    49    43 
-     5:01- 6:00     62    61    60    53    54    37    55    52    64    39    54    38 
-     6:01- 7:00     60    63    59    59    55    36    58    54    63    41    55    38 
-     7:01- 8:00     61    67    63    51    51    34    52    54    62    42    52    43 
-     8:01- 9:00     65    68    64    48    48    32    45    42    59    44    49    50 
-     9:01-10:00     64    71    59    43    46    29    38    38    43    40    44    50 
+                  Jan   Feb   Mar   Apr   May   Jun   Jul   Aug   Sep   Oct   Nov   Dec   
+      0:01- 1:00     59    43    54    47    43    28    37    41    42    31    49    42 
+      1:01- 2:00     60    46    60    53    41    26    41    40    51    33    45    40 
+      2:01- 3:00     62    52    59    48    43    27    45    41    55    30    46    43 
+      3:01- 4:00     60    55    61    52    42    31    50    38    59    30    46    44 
+      4:01- 5:00     63    57    65    56    50    40    52    45    65    33    49    43 
+      5:01- 6:00     62    61    60    53    54    37    55    52    64    39    54    38 
+      6:01- 7:00     60    63    59    59    55    36    58    54    63    41    55    38 
+      7:01- 8:00     61    67    63    51    51    34    52    54    62    42    52    43 
+      8:01- 9:00     65    68    64    48    48    32    45    42    59    44    49    50 
+      9:01-10:00     64    71    59    43    46    29    38    38    43    40    44    50 
      10:01-11:00     63    66    54    42    45    30    32    35    33    37    46    52 
      11:01-12:00     58    64    55    42    48    26    26    33    25    36    42    49 
      12:01-13:00     52    59    53    43    46    27    19    30    25    35    39    50 
@@ -2292,17 +2292,17 @@ These are followed by groupings of Monthly temperature data.
      Min Hour      16    24    22    15    23    14    16    16    19    20    13     6  
 
      - Average Hourly Statistics for Opaque Sky Cover %
-     Jan    Feb    Mar    Apr    May    Jun    Jul    Aug    Sep    Oct    Nov    Dec   
-     0:01- 1:00     57    36    41    41    38    28    36    35    38    26    44    36 
-     1:01- 2:00     57    38    44    45    34    26    40    36    46    30    43    35 
-     2:01- 3:00     58    39    43    43    37    27    44    36    51    27    43    37 
-     3:01- 4:00     57    41    49    50    39    31    48    34    57    28    45    37 
-     4:01- 5:00     60    43    45    54    45    39    50    36    62    30    47    35 
-     5:01- 6:00     60    46    46    52    45    36    54    41    57    37    51    33 
-     6:01- 7:00     58    48    49    58    48    35    56    45    52    39    52    32 
-     7:01- 8:00     59    49    46    50    44    31    50    46    52    40    49    38 
-     8:01- 9:00     62    51    50    46    40    29    43    36    47    43    48    43 
-     9:01-10:00     61    53    43    41    37    26    37    32    34    38    43    44 
+                  Jan   Feb   Mar   Apr   May   Jun   Jul   Aug   Sep   Oct   Nov   Dec   
+      0:01- 1:00     57    36    41    41    38    28    36    35    38    26    44    36 
+      1:01- 2:00     57    38    44    45    34    26    40    36    46    30    43    35 
+      2:01- 3:00     58    39    43    43    37    27    44    36    51    27    43    37 
+      3:01- 4:00     57    41    49    50    39    31    48    34    57    28    45    37 
+      4:01- 5:00     60    43    45    54    45    39    50    36    62    30    47    35 
+      5:01- 6:00     60    46    46    52    45    36    54    41    57    37    51    33 
+      6:01- 7:00     58    48    49    58    48    35    56    45    52    39    52    32 
+      7:01- 8:00     59    49    46    50    44    31    50    46    52    40    49    38 
+      8:01- 9:00     62    51    50    46    40    29    43    36    47    43    48    43 
+      9:01-10:00     61    53    43    41    37    26    37    32    34    38    43    44 
      10:01-11:00     59    50    41    40    35    27    30    31    25    36    45    44 
      11:01-12:00     55    46    35    40    35    22    25    26    16    34    38    41 
      12:01-13:00     49    42    33    40    33    21    18    23    15    30    37    43 
@@ -3945,7 +3945,7 @@ Location Header/Data (CSV)
 Location Title,Latitude {N+/S-},Longitude {E+/W-},TimeZone {+/-
 GMT},Elevation {m}
 
-LOCATION_SYDNEY\__AUS_IWEC Data_947670,-33.95,151.18,10.0,3.0
+LOCATION_SYDNEY_AUS_IWEC Data_947670,-33.95,151.18,10.0,3.0
 
 LOCATION + the city, state/province, country and WMO fields from the EPW
 file are concatenated to form the “Location Title”. The latitude,
@@ -5725,11 +5725,11 @@ several important lines:
    :Instructions:
    :  Complete the following path and program names.
    :  path names must have a following \\ or errors will happen
-    set program\_path =
-    set program\_name = Slab.exe
-    set input\_path =
-    set output\_path =
-    set weather\_path = C:\\EnergyPlus\\WeatherData\\
+    set program_path =
+    set program_name = Slab.exe
+    set input_path =
+    set output_path =
+    set weather_path = C:\\EnergyPlus\\WeatherData\\
 
 and then in command mode issue the run command:
 
@@ -6711,11 +6711,11 @@ one may modify several important lines:
    :Instructions:
    :  Complete the following path and program names.
    :  path names must have a following \\ or errors will happen
-    set program\_path =
-    set program\_name = Basement.exe
-    set input\_path =
-    set output\_path =
-    set weather\_path = C:\\EnergyPlus\\WeatherData\\
+    set program_path =
+    set program_name = Basement.exe
+    set input_path =
+    set output_path =
+    set weather_path = C:\\EnergyPlus\\WeatherData\\
 
 and then in command mode issue the run command:
 
@@ -8211,7 +8211,7 @@ checkbox.
   +---------------------------------+-----------------------------------+
   | Transition Output File Name     | Description                       |
   +=================================+===================================+
-  | < filename > \_Transition.audit | This is the contents of what you  |
+  | < filename > Transition.audit   | This is the contents of what you  |
   |                                 | would see on the screen if you    |
   |                                 | sat and watched the transition    |
   |                                 | process during a console run. If  |
@@ -8222,7 +8222,7 @@ checkbox.
   | < filename > .idf               | Converted results to the latest   |
   |                                 | version or version selected.      |
   +---------------------------------+-----------------------------------+
-  | < filename > \_Vxxx.idf         | If you don’t select "create       |
+  | < filename > Vxxx.idf           | If you don’t select "create       |
   |                                 | intermediate versions", this will |
   |                                 | only be the original version.     |
   |                                 | Otherwise will have each version. |
@@ -9174,17 +9174,17 @@ of the following error messages is received:
 “Need more memory for storing macro definitions”
 
 Use “**##reserve** TEXT nnnnnn” command to get more memory. Current
-value of *nnnnnn* is: \_ \_ \_
+value of *nnnnnn* is: _ _ _
 
 “Macro table capacity exceeded”
 
 Use “**##reserve** NAMES nnnnnn” command to get more memory. Current
-value of *nnnnnn* is: \_ \_ \_
+value of *nnnnnn* is: _ _ _
 
 “Macro stack overflow”
 
 Use “**##reserve** STACK nnnnnn” command to get more memory. Current
-value of *nnnnnn* is: \_ \_ \_
+value of *nnnnnn* is: _ _ _
 
 **##! <comment>**
 

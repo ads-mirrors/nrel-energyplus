@@ -7835,7 +7835,7 @@ void CalcHeatBalanceInsideSurf2(EnergyPlusData &state,
         }
 
         HeatBalanceIntRadExchange::CalcInteriorRadExchange(state,
-                                                           state.dataHeatBalSurf->SurfTempIn,
+                                                           state.dataHeatBalSurf->SurfTempInTmp,
                                                            state.dataHeatBal->InsideSurfIterations,
                                                            state.dataHeatBalSurf->SurfQdotRadNetLWInPerArea,
                                                            ZoneToResimulate,
@@ -8716,7 +8716,7 @@ void CalcHeatBalanceInsideSurf2CTFOnly(EnergyPlusData &state,
         state.dataHeatBalSurf->SurfTempInsOld = state.dataHeatBalSurf->SurfTempIn; // Keep track of last iteration's temperature values
 
         HeatBalanceIntRadExchange::CalcInteriorRadExchange(state,
-                                                           state.dataHeatBalSurf->SurfTempIn,
+                                                           state.dataHeatBalSurf->SurfTempInTmp,
                                                            state.dataHeatBal->InsideSurfIterations,
                                                            state.dataHeatBalSurf->SurfQdotRadNetLWInPerArea,
                                                            ZoneToResimulate,
@@ -8848,11 +8848,11 @@ void CalcHeatBalanceInsideSurf2CTFOnly(EnergyPlusData &state,
                         Real64 HMovInsul = movInsul.H;
                         Real64 F1 = HMovInsul / (HMovInsul + state.dataHeatBalSurf->SurfHConvInt(surfNum) + DataHeatBalSurface::IterDampConst);
                         state.dataHeatBalSurf->SurfTempIn(surfNum) =
-                            (state.dataHeatBalSurf->SurfCTFConstInPart(surfNum) + state.dataHeatBalSurf->SurfOpaqQRadSWInAbs(surfNum) +
+                            (state.dataHeatBalSurf->SurfCTFConstInPart(surfNum) +
                              state.dataHeatBalSurf->SurfCTFCross0(surfNum) * state.dataHeatBalSurf->SurfTempOutHist(surfNum) +
                              F1 * (state.dataHeatBal->SurfQdotRadIntGainsInPerArea(surfNum) +
                                    state.dataHeatBalSurf->SurfHConvInt(surfNum) * state.dataHeatBalSurfMgr->RefAirTemp(surfNum) +
-                                   state.dataHeatBalSurf->SurfQdotRadNetLWInPerArea(surfNum) +
+                                   state.dataHeatBalSurf->SurfOpaqQRadSWInAbs(surfNum) + state.dataHeatBalSurf->SurfQdotRadNetLWInPerArea(surfNum) +
                                    state.dataHeatBalSurf->SurfQdotRadHVACInPerArea(surfNum) +
                                    state.dataHeatBalSurf->SurfQAdditionalHeatSourceInside(surfNum) +
                                    DataHeatBalSurface::IterDampConst * state.dataHeatBalSurf->SurfTempInsOld(surfNum))) /
@@ -8860,8 +8860,7 @@ void CalcHeatBalanceInsideSurf2CTFOnly(EnergyPlusData &state,
 
                         state.dataHeatBalSurf->SurfTempInTmp(surfNum) =
                             (state.dataHeatBalSurf->SurfCTFInside0(surfNum) * state.dataHeatBalSurf->SurfTempIn(surfNum) +
-                             HMovInsul * state.dataHeatBalSurf->SurfTempIn(surfNum) - state.dataHeatBalSurf->SurfOpaqQRadSWInAbs(surfNum) -
-                             state.dataHeatBalSurf->SurfCTFConstInPart(surfNum) -
+                             HMovInsul * state.dataHeatBalSurf->SurfTempIn(surfNum) - state.dataHeatBalSurf->SurfCTFConstInPart(surfNum) -
                              state.dataHeatBalSurf->SurfCTFCross0(surfNum) * state.dataHeatBalSurf->SurfTempOutHist(surfNum)) /
                             (HMovInsul);
                     }

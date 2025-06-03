@@ -3193,8 +3193,23 @@ void SizePlantLoop(EnergyPlusData &state,
                 ? "Yes"
                 : "No");
     } else {
-        OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchPLCLProvHeat, loop.Name, "N/A");
-        OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchPLCLProvCool, loop.Name, "N/A");
+        // If no plant sizing object, scan supply equipment types to infer heating or cooling operation
+        bool heat = false;
+        bool cool = false;
+        auto &supplySide = loop.LoopSide(LoopSideLocation::Supply);
+        for (auto &branch : supplySide.Branch) {
+            for (auto &comp : branch.Comp) {
+                DataPlant::CtrlType type = DataPlant::PlantEquipmentCtrlType[static_cast<int>(comp.Type)];
+                if (type == DataPlant::CtrlType::CoolingOp || type == DataPlant::CtrlType::DualOp) {
+                    cool = true;
+                }
+                if (type == DataPlant::CtrlType::HeatingOp || type == DataPlant::CtrlType::DualOp) {
+                    heat = true;
+                }
+            }
+        }
+        OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchPLCLProvHeat, loop.Name, heat ? "Yes" : "No");
+        OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchPLCLProvCool, loop.Name, cool ? "Yes" : "No");
     }
 
     std::string_view const loopType = DataPlant::loopTypeNames[static_cast<int>(loop.TypeOfLoop)];

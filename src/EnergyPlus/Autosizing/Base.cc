@@ -361,8 +361,9 @@ void BaseSizer::reportSizerStrOutput(
     OutputReportPredefined::AddCompSizeTableStrEntry(state, CompType, CompName, VarDesc, VarValue);
 
     // add to SQL output
-    if (state.dataSQLiteProcedures->sqlite)
+    if (state.dataSQLiteProcedures->sqlite) {
         state.dataSQLiteProcedures->sqlite->addSQLiteComponentSizingStrRecord(CompType, CompName, VarDesc, VarValue);
+    }
 }
 
 void BaseSizer::selectSizerOutput(EnergyPlusData &state, bool &errorsFound)

@@ -3119,8 +3119,12 @@ void SizePlantLoop(EnergyPlusData &state,
                 auto &supplyBranch = supplySide.Branch(BranchNum);
                 Real64 BranchSizFac = 0.0;
                 supplyBranch.PumpSizFac = 1.0;
-                if (supplySide.NodeNumIn == supplyBranch.NodeNumIn) continue;
-                if (supplySide.NodeNumOut == supplyBranch.NodeNumOut) continue;
+                if (supplySide.NodeNumIn == supplyBranch.NodeNumIn) {
+                    continue;
+                }
+                if (supplySide.NodeNumOut == supplyBranch.NodeNumOut) {
+                    continue;
+                }
                 for (int CompNum = 1; CompNum <= supplyBranch.TotalComponents; ++CompNum) {
                     supplyBranch.Comp(CompNum).simulate(state, true);
                     BranchSizFac = max(BranchSizFac, supplyBranch.Comp(CompNum).SizFac);

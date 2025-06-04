@@ -294,6 +294,7 @@
     Heating Coil Load Loop Supply Outlet Node, !-  Hot Water Outlet Node Name
     Cooling Coil Load Loop Intermediate Node , !-  Chilled Water Inlet Node Name
     Cooling Coil Load Loop Supply Outlet Node , !-  Chilled Water Outlet Node Name
+    , !- Maximum Outdoor Dry Bulb Temperature For Defrost Operation
     Timed, !-  Heat Pump Defrost Control
     0.2, !-  Defrost Time Period Fraction
     150, !-  Resistive Defrost Heater Capacity

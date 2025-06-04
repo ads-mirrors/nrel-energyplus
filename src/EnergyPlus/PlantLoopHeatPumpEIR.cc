@@ -3857,7 +3857,7 @@ void HeatPumpAirToWater::processInputForEIRPLHP(EnergyPlusData &state)
                     thisAWHP.defrostStrategy = DefrostControl::None;
                 }
 
-                if (thisAWHP.EIRHPType == DataPlant::PlantEquipmentType::HeatPumpEIRHeating &&
+                if (thisAWHP.EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterHeating &&
                     (thisAWHP.defrostStrategy == DefrostControl::Timed || thisAWHP.defrostStrategy == DefrostControl::TimedEmpirical)) {
                     auto const timePeriod = fields.find("heat_pump_defrost_time_period_fraction");
                     if (timePeriod != fields.end()) {
@@ -3868,13 +3868,18 @@ void HeatPumpAirToWater::processInputForEIRPLHP(EnergyPlusData &state)
                                 state, cCurrentModuleObject, "heat_pump_defrost_time_period_fraction", defaultVal)) {
                             // excluding from coverage
                             ShowSevereError(state, // LCOV_EXCL_LINE
-                                            format("EIR PLHP \"{}\": Heat Pump Defrost Time Period Fraction not entered and default value not found.",
+                                            format("HeatPump:AirToWater \"{}\": Heat Pump Defrost Time Period Fraction not entered and default value not found.",
                                                    thisAWHP.name)); // LCOV_EXCL_LINE
                             errorsFound = true;                     // LCOV_EXCL_LINE
                         } else {
                             thisAWHP.defrostTime = defaultVal;
                         }
                     }
+                }
+
+                if (thisAWHP.EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterHeating &&
+                    thisAWHP.defrostStrategy != DefrostControl::None) {
+                    thisAWHP.defrostAvailable = true;
                 }
 
                 if (thisAWHP.defrostStrategy == DefrostControl::TimedEmpirical) {
@@ -3902,7 +3907,7 @@ void HeatPumpAirToWater::processInputForEIRPLHP(EnergyPlusData &state)
                     }
                 }
 
-                if (thisAWHP.EIRHPType == DataPlant::PlantEquipmentType::HeatPumpEIRHeating) {
+                if (thisAWHP.EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterHeating) {
                     thisAWHP.maxOutdoorTemperatureDefrost = state.dataInputProcessing->inputProcessor->getRealFieldValue(
                         fields, schemaProps, "maximum_outdoor_dry_bulb_temperature_for_defrost_operation");
                     auto const defrostCapRatioCurveName = fields.find("defrost_capacity_ratio_function_of_temperature curve name");

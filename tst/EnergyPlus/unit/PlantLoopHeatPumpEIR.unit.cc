@@ -466,9 +466,10 @@ TEST_F(EnergyPlusFixture, HeatingSimulate_AirSource_AWHP)
                                                       "Heating Coil Load Loop Supply Outlet Node, !-  Hot Water Outlet Node Name",
                                                       "Cooling Coil Load Loop Intermediate Node , !-  Chilled Water Inlet Node Name",
                                                       "Cooling Coil Load Loop Supply Outlet Node , !-  Chilled Water Outlet Node Name",
-                                                      "Timed, !-  Heat Pump Defrost Control",
-                                                      "0.2, !-  Defrost Time Period Fraction",
-                                                      "150, !-  Resistive Defrost Heater Capacity",
+                                                      ", !- Maximum Outdoor Dry Bulb Temperature For Defrost Operation",
+                                                      ", !-  Heat Pump Defrost Control",
+                                                      ", !-  Defrost Time Period Fraction",
+                                                      ", !-  Resistive Defrost Heater Capacity",
                                                       ", !-  Defrost Energy Input Ratio Function of Temperature Curve Name",
                                                       ", !-  Defrost Capacity Ratio Function of Temperature Curve Name",
                                                       "1 , !- Compressor Multiplier",
@@ -564,7 +565,7 @@ TEST_F(EnergyPlusFixture, HeatingSimulate_AirSource_AWHP)
     EXPECT_EQ(2u, state->dataHeatPumpAirToWater->heatPumps.size());
 
     // for now we know the order is maintained, so get each heat pump object
-    EIRPlantLoopHeatPump *thisAWHPHeating = &state->dataHeatPumpAirToWater->heatPumps[1];
+    HeatPumpAirToWater *thisAWHPHeating = &state->dataHeatPumpAirToWater->heatPumps[1];
 
     // do a bit of extra wiring up to the plant
     PLHPPlantLoadSideComp.Name = thisAWHPHeating->name;
@@ -603,6 +604,8 @@ TEST_F(EnergyPlusFixture, HeatingSimulate_AirSource_AWHP)
         state->dataLoopNodes->Node(thisAWHPHeating->loadSideNodes.outlet).TempSetPoint = specifiedLoadSetpoint;
         state->dataLoopNodes->Node(thisAWHPHeating->loadSideNodes.inlet).Temp = calculatedLoadInletTemp;
         state->dataLoopNodes->Node(thisAWHPHeating->sourceSideNodes.inlet).Temp = 30;
+        // if need to test defrost, uncomment this
+        // state->dataEnvrn->OutBaroPress = 98934;
         thisAWHPHeating->simulate(*state, myLoadLocation, firstHVAC, curLoad, runFlag);
         // expect it to meet setpoint and have some pre-evaluated conditions
         EXPECT_NEAR(specifiedLoadSetpoint, thisAWHPHeating->loadSideOutletTemp, 0.001);
@@ -680,6 +683,7 @@ TEST_F(EnergyPlusFixture, processInputForEIRPLHP_AWHP)
         "Heating Coil Load Loop Supply Outlet Node, !-  Hot Water Outlet Node Name",
         "Cooling Coil Load Loop Intermediate Node , !-  Chilled Water Inlet Node Name",
         "Cooling Coil Load Loop Supply Outlet Node , !-  Chilled Water Outlet Node Name",
+        "10, !- Maximum Outdoor Dry Bulb Temperature For Defrost Operation",
         "Timed, !-  Heat Pump Defrost Control",
         "0.2, !-  Defrost Time Period Fraction",
         "150, !-  Resistive Defrost Heater Capacity",
@@ -3761,6 +3765,7 @@ TEST_F(EnergyPlusFixture, Test_DoPhysics_AWHP)
                           "Heating Coil Load Loop Supply Outlet Node, !-  Hot Water Outlet Node Name",
                           "Cooling Coil Load Loop Intermediate Node , !-  Chilled Water Inlet Node Name",
                           "Cooling Coil Load Loop Supply Outlet Node , !-  Chilled Water Outlet Node Name",
+                          "10, !- Maximum Outdoor Dry Bulb Temperature For Defrost Operation",
                           "Timed, !-  Heat Pump Defrost Control",
                           "0.2, !-  Defrost Time Period Fraction",
                           "150, !-  Resistive Defrost Heater Capacity",

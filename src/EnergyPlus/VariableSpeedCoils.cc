@@ -284,24 +284,12 @@ namespace VariableSpeedCoils {
                 }
                 varSpeedCoil.NumOfSpeeds = s_ip->getIntFieldValue(fields, schemaProps, "number_of_speeds");
                 varSpeedCoil.NormSpedLevel = s_ip->getIntFieldValue(fields, schemaProps, "nominal_speed_level");
-
-                auto &tCap = fields.at("gross_rated_total_cooling_capacity_at_selected_nominal_speed_level");
                 varSpeedCoil.RatedCapCoolTotal =
-                    (tCap.type() == nlohmann::detail::value_t::string && Util::SameString(tCap.get<std::string>(), "Autosize")) ? DataSizing::AutoSize
-                                                                                                                                : tCap.get<Real64>();
-
-                auto &aVdot = fields.at("rated_air_flow_rate_at_selected_nominal_speed_level");
+                    s_ip->getRealFieldValue(fields, schemaProps, "gross_rated_total_cooling_capacity_at_selected_nominal_speed_level");
                 varSpeedCoil.RatedAirVolFlowRate =
-                    (aVdot.type() == nlohmann::detail::value_t::string && Util::SameString(aVdot.get<std::string>(), "Autosize"))
-                        ? DataSizing::AutoSize
-                        : aVdot.get<Real64>();
-
-                auto &wVdot = fields.at("rated_water_flow_rate_at_selected_nominal_speed_level");
+                    s_ip->getRealFieldValue(fields, schemaProps, "rated_air_flow_rate_at_selected_nominal_speed_level");
                 varSpeedCoil.RatedWaterVolFlowRate =
-                    (wVdot.type() == nlohmann::detail::value_t::string && Util::SameString(wVdot.get<std::string>(), "Autosize"))
-                        ? DataSizing::AutoSize
-                        : wVdot.get<Real64>();
-
+                    s_ip->getRealFieldValue(fields, schemaProps, "rated_water_flow_rate_at_selected_nominal_speed_level");
                 varSpeedCoil.Twet_Rated = s_ip->getRealFieldValue(fields, schemaProps, "nominal_time_for_condensate_to_begin_leaving_the_coil");
                 varSpeedCoil.Gamma_Rated =
                     s_ip->getRealFieldValue(fields, schemaProps, "initial_moisture_evaporation_rate_divided_by_steady_state_ac_latent_capacity");
@@ -711,20 +699,13 @@ namespace VariableSpeedCoils {
                 }
                 varSpeedCoil.NumOfSpeeds = s_ip->getIntFieldValue(fields, schemaProps, "number_of_speeds");
                 varSpeedCoil.NormSpedLevel = s_ip->getIntFieldValue(fields, schemaProps, "nominal_speed_level");
-
                 if (fields.find("gross_rated_total_cooling_capacity_at_selected_nominal_speed_level") != fields.end()) {
-                    auto &tCap = fields.at("gross_rated_total_cooling_capacity_at_selected_nominal_speed_level");
                     varSpeedCoil.RatedCapCoolTotal =
-                        (tCap.type() == nlohmann::detail::value_t::string && Util::SameString(tCap.get<std::string>(), "Autosize"))
-                            ? DataSizing::AutoSize
-                            : tCap.get<Real64>();
+                        s_ip->getRealFieldValue(fields, schemaProps, "gross_rated_total_cooling_capacity_at_selected_nominal_speed_level");
                 }
                 if (fields.find("rated_air_flow_rate_at_selected_nominal_speed_level") != fields.end()) {
-                    auto &aVdot = fields.at("rated_air_flow_rate_at_selected_nominal_speed_level");
                     varSpeedCoil.RatedAirVolFlowRate =
-                        (aVdot.type() == nlohmann::detail::value_t::string && Util::SameString(aVdot.get<std::string>(), "Autosize"))
-                            ? DataSizing::AutoSize
-                            : aVdot.get<Real64>();
+                        s_ip->getRealFieldValue(fields, schemaProps, "rated_air_flow_rate_at_selected_nominal_speed_level");
                 }
                 varSpeedCoil.Twet_Rated = s_ip->getRealFieldValue(fields, schemaProps, "nominal_time_for_condensate_to_begin_leaving_the_coil");
                 varSpeedCoil.Gamma_Rated =
@@ -968,7 +949,9 @@ namespace VariableSpeedCoils {
                         fieldName = format("speed_{}{}", std::to_string(I), "_reference_unit_rated_condenser_air_flow_rate");
                     } else {
                         fieldName = format("speed_{}{}", std::to_string(I), "_reference_unit_condenser_air_flow_rate");
-                        if (I == 7) fieldName = format("speed_{}{}", std::to_string(I), "_reference_unit_condenser_flow_rate");
+                        if (I == 7) {
+                            fieldName = format("speed_{}{}", std::to_string(I), "_reference_unit_condenser_flow_rate");
+                        }
                     }
                     varSpeedCoil.EvapCondAirFlow(I) = s_ip->getRealFieldValue(fields, schemaProps, fieldName);
 
@@ -1187,20 +1170,11 @@ namespace VariableSpeedCoils {
                 }
                 varSpeedCoil.NumOfSpeeds = s_ip->getIntFieldValue(fields, schemaProps, "number_of_speeds");
                 varSpeedCoil.NormSpedLevel = s_ip->getIntFieldValue(fields, schemaProps, "nominal_speed_level");
-                auto &hCap = fields.at("rated_heating_capacity_at_selected_nominal_speed_level");
-                varSpeedCoil.RatedCapHeat =
-                    (hCap.type() == nlohmann::detail::value_t::string && Util::SameString(hCap.get<std::string>(), "Autosize")) ? DataSizing::AutoSize
-                                                                                                                                : hCap.get<Real64>();
-                auto &aVdot = fields.at("rated_air_flow_rate_at_selected_nominal_speed_level");
+                varSpeedCoil.RatedCapHeat = s_ip->getRealFieldValue(fields, schemaProps, "rated_heating_capacity_at_selected_nominal_speed_level");
                 varSpeedCoil.RatedAirVolFlowRate =
-                    (aVdot.type() == nlohmann::detail::value_t::string && Util::SameString(aVdot.get<std::string>(), "Autosize"))
-                        ? DataSizing::AutoSize
-                        : aVdot.get<Real64>();
-                auto &wVdot = fields.at("rated_water_flow_rate_at_selected_nominal_speed_level");
+                    s_ip->getRealFieldValue(fields, schemaProps, "rated_air_flow_rate_at_selected_nominal_speed_level");
                 varSpeedCoil.RatedWaterVolFlowRate =
-                    (wVdot.type() == nlohmann::detail::value_t::string && Util::SameString(wVdot.get<std::string>(), "Autosize"))
-                        ? DataSizing::AutoSize
-                        : wVdot.get<Real64>();
+                    s_ip->getRealFieldValue(fields, schemaProps, "rated_water_flow_rate_at_selected_nominal_speed_level");
                 // Previously set by parent objects, but not user-definable
                 varSpeedCoil.MaxONOFFCyclesperHour = 4;
                 varSpeedCoil.LatentCapacityTimeConstant = 0.;
@@ -1604,20 +1578,13 @@ namespace VariableSpeedCoils {
                 varSpeedCoil.FanDelayTime = 0.;
 
                 if (fields.find("rated_heating_capacity_at_selected_nominal_speed_level") != fields.end()) {
-                    auto &tCap = fields.at("rated_heating_capacity_at_selected_nominal_speed_level");
                     varSpeedCoil.RatedCapHeat =
-                        (tCap.type() == nlohmann::detail::value_t::string && Util::SameString(tCap.get<std::string>(), "Autosize"))
-                            ? DataSizing::AutoSize
-                            : tCap.get<Real64>();
+                        s_ip->getRealFieldValue(fields, schemaProps, "rated_heating_capacity_at_selected_nominal_speed_level");
                 }
                 if (fields.find("rated_air_flow_rate_at_selected_nominal_speed_level") != fields.end()) {
-                    auto &aVdot = fields.at("rated_air_flow_rate_at_selected_nominal_speed_level");
                     varSpeedCoil.RatedAirVolFlowRate =
-                        (aVdot.type() == nlohmann::detail::value_t::string && Util::SameString(aVdot.get<std::string>(), "Autosize"))
-                            ? DataSizing::AutoSize
-                            : aVdot.get<Real64>();
+                        s_ip->getRealFieldValue(fields, schemaProps, "rated_air_flow_rate_at_selected_nominal_speed_level");
                 }
-
                 std::string airInletNodeName = s_ip->getAlphaFieldValue(fields, schemaProps, "indoor_air_inlet_node_name");
                 std::string airOutletNodeName = s_ip->getAlphaFieldValue(fields, schemaProps, "indoor_air_outlet_node_name");
                 varSpeedCoil.AirInletNodeNum = GetOnlySingleNode(state,
@@ -1934,7 +1901,9 @@ namespace VariableSpeedCoils {
                     }
                 }
 
-                if (ErrorsFound) continue;
+                if (ErrorsFound) {
+                    continue;
+                }
 
                 for (int I = 1; I <= varSpeedCoil.NumOfSpeeds; ++I) {
                     varSpeedCoil.MSRatedPercentTotCap(I) = varSpeedCoil.MSRatedTotCap(I) / varSpeedCoil.MSRatedTotCap(varSpeedCoil.NumOfSpeeds);
@@ -3400,7 +3369,9 @@ namespace VariableSpeedCoils {
             if ((varSpeedCoil.VSCoilType == HVAC::Coil_CoolingWaterToAirHPVSEquationFit) ||
                 (varSpeedCoil.VSCoilType == HVAC::Coil_CoolingAirToAirVariableSpeed)) {
                 for (int Mode = 1; Mode <= varSpeedCoil.NumOfSpeeds; ++Mode) {
-                    if (varSpeedCoil.RatedCapCoolTotal <= 0.0) break;
+                    if (varSpeedCoil.RatedCapCoolTotal <= 0.0) {
+                        break;
+                    }
                     // Check for zero capacity or zero max flow rate
                     if (varSpeedCoil.MSRatedTotCap(Mode) <= 0.0) {
                         ShowSevereError(
@@ -3982,7 +3953,9 @@ namespace VariableSpeedCoils {
             }
         }
 
-        if (RatedAirFlowAutoSized) varSpeedCoil.RatedAirVolFlowRate = RatedAirVolFlowRateDes;
+        if (RatedAirFlowAutoSized) {
+            varSpeedCoil.RatedAirVolFlowRate = RatedAirVolFlowRateDes;
+        }
 
         RatedCapCoolTotalAutoSized = false;
         RatedCapCoolSensAutoSized = false;
@@ -3993,7 +3966,9 @@ namespace VariableSpeedCoils {
                                                                        varSpeedCoil.VSCoilType == HVAC::Coil_CoolingAirToAirVariableSpeed)) {
             RatedCapCoolTotalAutoSized = true;
         }
-        if (SizingDesRunThisZone || SizingDesRunThisAirSys) HardSizeNoDesRun = false;
+        if (SizingDesRunThisZone || SizingDesRunThisAirSys) {
+            HardSizeNoDesRun = false;
+        }
         if (state.dataSize->CurSysNum > 0) {
             if (!RatedCapCoolTotalAutoSized && !SizingDesRunThisAirSys) { // Simulation continue
                 HardSizeNoDesRun = true;
@@ -4536,7 +4511,7 @@ namespace VariableSpeedCoils {
         //   WSHP condenser can be on either a plant loop or condenser loop. Test each to find plant sizing number.
         //   first check to see if coil is connected to a plant loop, no warning on this CALL
         if (RatedWaterFlowAutoSized) {
-            if (varSpeedCoil.CondenserType == DataHeatBalance::RefrigCondenserType::Water)
+            if (varSpeedCoil.CondenserType == DataHeatBalance::RefrigCondenserType::Water) {
                 PltSizNum = PlantUtilities::MyPlantSizingIndex(state,
                                                                format("COIL:{}{}", varSpeedCoil.CoolHeatType, CurrentObjSubfix),
                                                                varSpeedCoil.Name,
@@ -4544,6 +4519,7 @@ namespace VariableSpeedCoils {
                                                                varSpeedCoil.WaterOutletNodeNum,
                                                                ErrorsFound,
                                                                false);
+            }
 
             if (PltSizNum > 0) {
                 rho = state.dataPlnt->PlantLoop(varSpeedCoil.plantLoc.loopNum)
@@ -4760,12 +4736,13 @@ namespace VariableSpeedCoils {
 
             for (Mode = 1; Mode <= varSpeedCoil.NumOfSpeeds; ++Mode) {
                 // get cooling capacity, without fan power, i.e. total coil cooling
-                if (varSpeedCoil.CondPumpPowerInCOP)
+                if (varSpeedCoil.CondPumpPowerInCOP) {
                     HPWHCoolCapacity = varSpeedCoil.MSRatedTotCap(Mode) * (1.0 - 1.0 / varSpeedCoil.MSRatedCOP(Mode)) +
                                        varSpeedCoil.MSWHPumpPower(Mode) - varSpeedCoil.MSWHPumpPower(Mode) * varSpeedCoil.HPWHCondPumpFracToWater;
-                else
+                } else {
                     HPWHCoolCapacity = varSpeedCoil.MSRatedTotCap(Mode) * (1.0 - 1.0 / varSpeedCoil.MSRatedCOP(Mode)) -
                                        varSpeedCoil.MSWHPumpPower(Mode) * varSpeedCoil.HPWHCondPumpFracToWater;
+                }
 
                 varSpeedCoil.MSRatedCBF(Mode) = DXCoils::CalcCBF(state,
                                                                  varSpeedCoil.VarSpeedCoilType,
@@ -4805,7 +4782,9 @@ namespace VariableSpeedCoils {
                 Psychrometrics::PsyRhoAirFnPbTdbW(state, state.dataEnvrn->StdBaroPress, RatedInletAirTemp, RatedInletAirHumRat, RoutineName);
             RatedInletEnth = Psychrometrics::PsyHFnTdbW(RatedInletAirTemp, RatedInletAirHumRat);
             CBFRated = DXCoils::AdjustCBF(varSpeedCoil.MSRatedCBF(NormSpeed), varSpeedCoil.MSRatedAirMassFlowRate(NormSpeed), RatedAirMassFlowRate);
-            if (CBFRated > 0.999) CBFRated = 0.999;
+            if (CBFRated > 0.999) {
+                CBFRated = 0.999;
+            }
             if (varSpeedCoil.MSRatedAirMassFlowRate(NormSpeed) > 1.0e-10) {
                 AirMassFlowRatio = RatedAirMassFlowRate / varSpeedCoil.MSRatedAirMassFlowRate(NormSpeed);
             } else {
@@ -5347,9 +5326,10 @@ namespace VariableSpeedCoils {
             if (PLF < 0.7) {
                 PLF = 0.7;
             }
-            if (fanOp == HVAC::FanOp::Cycling)
+            if (fanOp == HVAC::FanOp::Cycling) {
                 state.dataHVACGlobal->OnOffFanPartLoadFraction =
                     PLF; // save PLF for fan model, don't change fan power for constant fan mode if coil is off
+            }
             // calculate the run time fraction
             varSpeedCoil.RunFrac = PartLoadRatio / PLF;
             varSpeedCoil.PartLoadRatio = PartLoadRatio;
@@ -5399,7 +5379,9 @@ namespace VariableSpeedCoils {
                                               varSpeedCoil.MSRatedAirMassFlowRate(SpeedCal),
                                               state.dataVariableSpeedCoils->LoadSideMassFlowRate);
 
-                if (CBFSpeed > 0.999) CBFSpeed = 0.999;
+                if (CBFSpeed > 0.999) {
+                    CBFSpeed = 0.999;
+                }
 
                 CalcTotCapSHR_VSWSHP(state,
                                      state.dataVariableSpeedCoils->LoadSideInletDBTemp,
@@ -5446,7 +5428,9 @@ namespace VariableSpeedCoils {
                                               varSpeedCoil.MSRatedAirMassFlowRate(SpeedCal),
                                               state.dataVariableSpeedCoils->LoadSideMassFlowRate);
 
-                if (CBFSpeed > 0.999) CBFSpeed = 0.999;
+                if (CBFSpeed > 0.999) {
+                    CBFSpeed = 0.999;
+                }
 
                 CalcTotCapSHR_VSWSHP(state,
                                      state.dataVariableSpeedCoils->LoadSideInletDBTemp,
@@ -5499,7 +5483,9 @@ namespace VariableSpeedCoils {
 
                 CBFSpeed = std::exp(-AoEff / state.dataVariableSpeedCoils->LoadSideMassFlowRate);
 
-                if (CBFSpeed > 0.999) CBFSpeed = 0.999;
+                if (CBFSpeed > 0.999) {
+                    CBFSpeed = 0.999;
+                }
 
                 CalcTotCapSHR_VSWSHP(state,
                                      state.dataVariableSpeedCoils->LoadSideInletDBTemp,
@@ -5751,8 +5737,9 @@ namespace VariableSpeedCoils {
             varSpeedCoil.OutletWaterTemp = 0.0;
             varSpeedCoil.OutletWaterEnthalpy = 0.0;
             state.dataHeatBal->HeatReclaimVS_Coil(DXCoilNum).AvailCapacity = state.dataVariableSpeedCoils->QSource;
-            if (state.dataHeatBal->HeatReclaimVS_Coil(DXCoilNum).WaterHeatingDesuperheaterReclaimedHeatTotal > 0.0)
+            if (state.dataHeatBal->HeatReclaimVS_Coil(DXCoilNum).WaterHeatingDesuperheaterReclaimedHeatTotal > 0.0) {
                 state.dataVariableSpeedCoils->QSource -= state.dataHeatBal->HeatReclaimVS_Coil(DXCoilNum).WaterHeatingDesuperheaterReclaimedHeatTotal;
+            }
         } else {
             varSpeedCoil.WaterMassFlowRate = state.dataVariableSpeedCoils->SourceSideMassFlowRate;
             varSpeedCoil.OutletWaterTemp = state.dataVariableSpeedCoils->SourceSideInletTemp +
@@ -5760,8 +5747,9 @@ namespace VariableSpeedCoils {
             varSpeedCoil.OutletWaterEnthalpy = state.dataVariableSpeedCoils->SourceSideInletEnth +
                                                state.dataVariableSpeedCoils->QSource / state.dataVariableSpeedCoils->SourceSideMassFlowRate;
             state.dataHeatBal->HeatReclaimVS_Coil(DXCoilNum).AvailCapacity = state.dataVariableSpeedCoils->QSource;
-            if (state.dataHeatBal->HeatReclaimVS_Coil(DXCoilNum).WaterHeatingDesuperheaterReclaimedHeatTotal > 0.0)
+            if (state.dataHeatBal->HeatReclaimVS_Coil(DXCoilNum).WaterHeatingDesuperheaterReclaimedHeatTotal > 0.0) {
                 state.dataVariableSpeedCoils->QSource -= state.dataHeatBal->HeatReclaimVS_Coil(DXCoilNum).WaterHeatingDesuperheaterReclaimedHeatTotal;
+            }
         }
         varSpeedCoil.QSource = state.dataVariableSpeedCoils->QSource;
         varSpeedCoil.EnergySource = state.dataVariableSpeedCoils->QSource * TimeStepSysSec;
@@ -5902,7 +5890,9 @@ namespace VariableSpeedCoils {
             state.dataVariableSpeedCoils->LoadSideInletHumRat = state.dataLoopNodes->Node(EvapInletNode).HumRat;
             LoadPressure = state.dataLoopNodes->Node(EvapInletNode).Press;
             // prevent the air pressure not given
-            if (LoadPressure < 10.0) LoadPressure = state.dataEnvrn->OutBaroPress;
+            if (LoadPressure < 10.0) {
+                LoadPressure = state.dataEnvrn->OutBaroPress;
+            }
 
             state.dataVariableSpeedCoils->LoadSideInletWBTemp = state.dataLoopNodes->Node(EvapInletNode).OutAirWetBulb;
             state.dataVariableSpeedCoils->LoadSideInletEnth = state.dataLoopNodes->Node(EvapInletNode).Enthalpy;
@@ -5945,9 +5935,10 @@ namespace VariableSpeedCoils {
             if (PLF < 0.7) {
                 PLF = 0.7;
             }
-            if (fanOp == HVAC::FanOp::Cycling)
+            if (fanOp == HVAC::FanOp::Cycling) {
                 state.dataHVACGlobal->OnOffFanPartLoadFraction =
                     PLF; // save PLF for fan model, don't change fan power for constant fan mode if coil is off
+            }
             // calculate the run time fraction
             varSpeedCoil.RunFrac = PartLoadRatio / PLF;
             varSpeedCoil.PartLoadRatio = PartLoadRatio;
@@ -6013,23 +6004,28 @@ namespace VariableSpeedCoils {
                 if (varSpeedCoil.CondPumpPowerInCOP) {
                     //       make sure fan power is full load fan power, it isn't though,
                     CompressorPower = OperatingHeatingPower - locFanElecPower / varSpeedCoil.RunFrac - varSpeedCoil.HPWHCondPumpElecNomPower;
-                    if (OperatingHeatingPower > 0.0) TankHeatingCOP = TotalTankHeatingCapacity / OperatingHeatingPower;
+                    if (OperatingHeatingPower > 0.0) {
+                        TankHeatingCOP = TotalTankHeatingCapacity / OperatingHeatingPower;
+                    }
                 } else {
                     CompressorPower = OperatingHeatingPower - locFanElecPower / varSpeedCoil.RunFrac;
-                    if ((OperatingHeatingPower + varSpeedCoil.HPWHCondPumpElecNomPower) > 0.0)
+                    if ((OperatingHeatingPower + varSpeedCoil.HPWHCondPumpElecNomPower) > 0.0) {
                         TankHeatingCOP = TotalTankHeatingCapacity / (OperatingHeatingPower + varSpeedCoil.HPWHCondPumpElecNomPower);
+                    }
                 }
             } else {
                 if (varSpeedCoil.CondPumpPowerInCOP) {
                     //       make sure fan power is full load fan power
                     CompressorPower = OperatingHeatingPower - varSpeedCoil.HPWHCondPumpElecNomPower;
-                    if ((OperatingHeatingPower + locFanElecPower / varSpeedCoil.RunFrac) > 0.0)
+                    if ((OperatingHeatingPower + locFanElecPower / varSpeedCoil.RunFrac) > 0.0) {
                         TankHeatingCOP = TotalTankHeatingCapacity / (OperatingHeatingPower + locFanElecPower / varSpeedCoil.RunFrac);
+                    }
                 } else {
                     CompressorPower = OperatingHeatingPower;
-                    if ((OperatingHeatingPower + locFanElecPower / varSpeedCoil.RunFrac + varSpeedCoil.HPWHCondPumpElecNomPower) > 0.0)
+                    if ((OperatingHeatingPower + locFanElecPower / varSpeedCoil.RunFrac + varSpeedCoil.HPWHCondPumpElecNomPower) > 0.0) {
                         TankHeatingCOP = TotalTankHeatingCapacity /
                                          (OperatingHeatingPower + locFanElecPower / varSpeedCoil.RunFrac + varSpeedCoil.HPWHCondPumpElecNomPower);
+                    }
                 }
             }
 
@@ -6120,23 +6116,28 @@ namespace VariableSpeedCoils {
                 if (varSpeedCoil.CondPumpPowerInCOP) {
                     //       make sure fan power is full load fan power
                     CompressorPower = OperatingHeatingPower - locFanElecPower / HPRTF - varSpeedCoil.HPWHCondPumpElecNomPower;
-                    if (OperatingHeatingPower > 0.0) TankHeatingCOP = TotalTankHeatingCapacity / OperatingHeatingPower;
+                    if (OperatingHeatingPower > 0.0) {
+                        TankHeatingCOP = TotalTankHeatingCapacity / OperatingHeatingPower;
+                    }
                 } else {
                     CompressorPower = OperatingHeatingPower - locFanElecPower / HPRTF;
-                    if ((OperatingHeatingPower + varSpeedCoil.HPWHCondPumpElecNomPower) > 0.0)
+                    if ((OperatingHeatingPower + varSpeedCoil.HPWHCondPumpElecNomPower) > 0.0) {
                         TankHeatingCOP = TotalTankHeatingCapacity / (OperatingHeatingPower + varSpeedCoil.HPWHCondPumpElecNomPower);
+                    }
                 }
             } else {
                 if (varSpeedCoil.CondPumpPowerInCOP) {
                     //       make sure fan power is full load fan power
                     CompressorPower = OperatingHeatingPower - varSpeedCoil.HPWHCondPumpElecNomPower;
-                    if ((OperatingHeatingPower + locFanElecPower / HPRTF) > 0.0)
+                    if ((OperatingHeatingPower + locFanElecPower / HPRTF) > 0.0) {
                         TankHeatingCOP = TotalTankHeatingCapacity / (OperatingHeatingPower + locFanElecPower / HPRTF);
+                    }
                 } else {
                     CompressorPower = OperatingHeatingPower;
-                    if ((OperatingHeatingPower + locFanElecPower / HPRTF + varSpeedCoil.HPWHCondPumpElecNomPower) > 0.0)
+                    if ((OperatingHeatingPower + locFanElecPower / HPRTF + varSpeedCoil.HPWHCondPumpElecNomPower) > 0.0) {
                         TankHeatingCOP =
                             TotalTankHeatingCapacity / (OperatingHeatingPower + locFanElecPower / HPRTF + varSpeedCoil.HPWHCondPumpElecNomPower);
+                    }
                 }
             }
 
@@ -6153,7 +6154,9 @@ namespace VariableSpeedCoils {
         SHR = 1.0;
         // if indoor, calculate SHR
         if (EvapInletNode != 0) {
-            if (CBFSpeed > 0.999) CBFSpeed = 0.999;
+            if (CBFSpeed > 0.999) {
+                CBFSpeed = 0.999;
+            }
 
             if (CBFSpeed < 0.001) {
                 SHR = 1.0;
@@ -6454,9 +6457,10 @@ namespace VariableSpeedCoils {
             if (PLF < 0.7) {
                 PLF = 0.7;
             }
-            if (fanOp == HVAC::FanOp::Cycling)
+            if (fanOp == HVAC::FanOp::Cycling) {
                 state.dataHVACGlobal->OnOffFanPartLoadFraction =
                     PLF; // save PLF for fan model, don't change fan power for constant fan mode if coil is off
+            }
             // calculate the run time fraction
             varSpeedCoil.RunFrac = PartLoadRatio / PLF;
             varSpeedCoil.PartLoadRatio = PartLoadRatio;
@@ -7501,8 +7505,12 @@ namespace VariableSpeedCoils {
         //  Calculate part-load or "effective" sensible heat ratio
         SHReff = 1.0 - (1.0 - SHRss) * LHRmult;
 
-        if (SHReff < SHRss) SHReff = SHRss; // Effective SHR can be less than the steady-state SHR
-        if (SHReff > 1.0) SHReff = 1.0;     // Effective sensible heat ratio can't be greater than 1.0
+        if (SHReff < SHRss) {
+            SHReff = SHRss; // Effective SHR can be less than the steady-state SHR
+        }
+        if (SHReff > 1.0) {
+            SHReff = 1.0; // Effective sensible heat ratio can't be greater than 1.0
+        }
 
         return SHReff;
     }
@@ -7636,7 +7644,9 @@ namespace VariableSpeedCoils {
 
             //   Check for dry evaporator conditions (win < wadp)
             if (wADP > InletHumRatCalc || (Counter >= 1 && Counter < MaxIter)) {
-                if (InletHumRatCalc == 0.0) InletHumRatCalc = 0.00001;
+                if (InletHumRatCalc == 0.0) {
+                    InletHumRatCalc = 0.00001;
+                }
                 werror = (InletHumRatCalc - wADP) / InletHumRatCalc;
                 //     Increase InletHumRatCalc at constant inlet air temp to find coil dry-out point. Then use the
                 //     capacity at the dry-out point to determine exiting conditions from coil. This is required
@@ -7655,7 +7665,9 @@ namespace VariableSpeedCoils {
         } // END LOOP
 
         //  Calculate full load output conditions
-        if (SHRCalc > 1.0 || Counter > 0) SHRCalc = 1.0; // if Counter > 0 means a dry coil so SHR = 1
+        if (SHRCalc > 1.0 || Counter > 0) {
+            SHRCalc = 1.0; // if Counter > 0 means a dry coil so SHR = 1
+        }
 
         SHR = SHRCalc;
         TotCap1 = TotCapCalc1;

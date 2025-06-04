@@ -458,6 +458,7 @@ namespace EIRPlantLoopHeatPumps {
         Real64 MaxOATCrankcaseHeater;          // maximum OAT for crankcase heater operation [C]
         int CrankcaseHeaterCapacityCurveIndex; // Crankcase heater power-temperature curve or table index
         int defrostCapRatioCurveIndex = 0;
+        Real64 referenceCapacityOneUnit = 0.0;
 
         int static constexpr maxNumSpeeds = 5;
         int numSpeeds = 1;
@@ -501,7 +502,7 @@ namespace EIRPlantLoopHeatPumps {
         void doPhysics(EnergyPlusData &state, Real64 currentLoad) override;
         void oneTimeInit(EnergyPlusData &state) override;
         void calcLoadSideHeatTransfer(EnergyPlusData &state, Real64 availableCapacity, Real64 currentLoad);
-        void calcPowerUsage(EnergyPlusData &state, Real64 currentLoad);
+        void calcPowerUsage(EnergyPlusData &state, Real64 availableCapacityBeforeMultiplier);
         void calcOpMode(EnergyPlusData &state, Real64 currentLoad);
         void reportEquipmentSummary(EnergyPlusData &state) override;
         static void pairUpCompanionCoils(EnergyPlusData &state);
@@ -510,7 +511,7 @@ namespace EIRPlantLoopHeatPumps {
         void setUpEMS(EnergyPlusData &state) override;
         static PlantComponent *factory(EnergyPlusData &state, DataPlant::PlantEquipmentType hp_type, const std::string &hp_name);
         static void processInputForEIRPLHP(EnergyPlusData &state);
-    };
+    }; // HeatPumpAirToWater
 } // namespace EIRPlantLoopHeatPumps
 
 struct EIRPlantLoopHeatPumpsData : BaseGlobalStruct

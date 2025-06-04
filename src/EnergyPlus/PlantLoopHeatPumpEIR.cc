@@ -576,20 +576,24 @@ void HeatPumpAirToWater::calcLoadSideHeatTransfer(EnergyPlusData &state, Real64 
     // currentLoad will be met and there should? be some adjustment based on outlet water temp limit?
 }
 
-void HeatPumpAirToWater::calcPowerUsage(EnergyPlusData &state, Real64 const currentLoad)
+void HeatPumpAirToWater::calcPowerUsage(EnergyPlusData &state, Real64 availableCapacityBeforeMultiplier)
 {
+    // check to see how many heat pumps are needed
+    int numHeatPumpUsed = ceil(this->loadSideHeatTransfer / availableCapacityBeforeMultiplier);
+    Real64 currentLoadNthUnit = this->loadSideHeatTransfer - (numHeatPumpUsed - 1) * availableCapacityBeforeMultiplier;
 
     //    calculate speed level
     Real64 capacityLow = 0.0;
     Real64 capacityHigh = 0.0;
     Real64 loadSideOutletSetpointTemp = this->getLoadSideOutletSetPointTemp(state);
+    // get speed level of the nth active heat pump
     int speedLevel = 0;
     for (int i = 0; i < this->numSpeeds; i++) {
         auto capacityModifierFuncTemp =
             Curve::CurveValue(state, this->capFuncTempCurveIndex[i], loadSideOutletSetpointTemp, this->sourceSideInletTemp);
         capacityHigh = this->ratedCapacity[i] * capacityModifierFuncTemp;
         speedLevel = i;
-        if (std::fabs(currentLoad) < capacityHigh) {
+        if (std::fabs(currentLoadNthUnit) < capacityHigh) {
             break;
         } else {
             capacityLow = capacityHigh;
@@ -612,17 +616,19 @@ void HeatPumpAirToWater::calcPowerUsage(EnergyPlusData &state, Real64 const curr
     this->eirModCurveCheck(state, eirModifierFuncTempHigh);
     this->eirModFPLRCurveCheck(state, eirModifierFuncPLRHigh);
     if (speedLevel < this->numSpeeds - 1) { // not at highest speed
-        Real64 interpRatio = (std::fabs(currentLoad) - capacityLow) / (capacityHigh - capacityLow);
+        Real64 interpRatio = (std::fabs(currentLoadNthUnit) - capacityLow) / (capacityHigh - capacityLow);
 
-        Real64 powerUsageLow = (this->loadSideHeatTransfer / this->ratedCOP[speedLevel]) * (eirModifierFuncPLRLow * eirModifierFuncTempLow) *
+        Real64 powerUsageLow = (currentLoadNthUnit / this->ratedCOP[speedLevel]) * (eirModifierFuncPLRLow * eirModifierFuncTempLow) *
                                this->defrostPowerMultiplier * this->cyclingRatio;
-        Real64 powerUsageHigh = (this->loadSideHeatTransfer / this->ratedCOP[speedLevel]) * (eirModifierFuncPLRHigh * eirModifierFuncTempHigh) *
+        Real64 powerUsageHigh = (currentLoadNthUnit / this->ratedCOP[speedLevel]) * (eirModifierFuncPLRHigh * eirModifierFuncTempHigh) *
                                 this->defrostPowerMultiplier * this->cyclingRatio;
         this->powerUsage = (1 - interpRatio) * powerUsageLow + interpRatio * powerUsageHigh;
     } else { // at highest speed level
-        this->powerUsage = (this->loadSideHeatTransfer / this->ratedCOP[this->numSpeeds - 1]) * (eirModifierFuncPLRHigh * eirModifierFuncTempHigh) *
+        this->powerUsage = (currentLoadNthUnit / this->ratedCOP[this->numSpeeds - 1]) * (eirModifierFuncPLRHigh * eirModifierFuncTempHigh) *
                            this->defrostPowerMultiplier * this->cyclingRatio;
     }
+    this->powerUsage += (numHeatPumpUsed - 1) * (availableCapacityBeforeMultiplier / this->ratedCOP[this->numSpeeds - 1]) *
+                        (eirModifierFuncPLRHigh * eirModifierFuncTempHigh) * this->defrostPowerMultiplier * this->cyclingRatio;
 }
 
 void EIRPlantLoopHeatPump::calcPowerUsage(EnergyPlusData &state)
@@ -4021,7 +4027,8 @@ void HeatPumpAirToWater::processInputForEIRPLHP(EnergyPlusData &state)
                         errorsFound = true;
                     }
 
-                    thisAWHP.referenceCapacity = thisAWHP.ratedCapacity[thisAWHP.numSpeeds - 1];
+                    thisAWHP.referenceCapacityOneUnit = thisAWHP.ratedCapacity[thisAWHP.numSpeeds - 1];
+                    thisAWHP.referenceCapacity = thisAWHP.referenceCapacityOneUnit * thisAWHP.compressorMultiplier;
                     thisAWHP.referenceCOP = thisAWHP.referenceCOP = thisAWHP.ratedCOP[thisAWHP.numSpeeds - 1];
                     std::string const eirFtName = Util::makeUPPER(fields.at(eirFtFieldName).get<std::string>());
                     thisAWHP.powerRatioFuncTempCurveIndex[i] = Curve::GetCurveIndex(state, eirFtName);
@@ -4407,11 +4414,12 @@ void HeatPumpAirToWater::doPhysics(EnergyPlusData &state, Real64 currentLoad)
         return;
     }
 
-    Real64 availableCapacity = this->referenceCapacity;
     Real64 partLoadRatio = 0.0;
     int speedLevel = 0;
 
+    Real64 availableCapacity;
     this->calcAvailableCapacity(state, currentLoad, this->capFuncTempCurveIndex[this->numSpeeds - 1], availableCapacity, partLoadRatio);
+    Real64 availableCapacityBeforeMultiplier = availableCapacity / this->compressorMultiplier;
     // fixme: might need to change
     this->setPartLoadAndCyclingRatio(state, partLoadRatio);
 
@@ -4427,8 +4435,8 @@ void HeatPumpAirToWater::doPhysics(EnergyPlusData &state, Real64 currentLoad)
     // evaluate the actual current operating load side heat transfer rate
     this->calcLoadSideHeatTransfer(state, availableCapacity, currentLoad);
 
-    //  calculate power usage from EIR curves
-    this->calcPowerUsage(state, currentLoad);
+    //  calculate power usage from EIR curves for the last heat pump
+    this->calcPowerUsage(state, availableCapacityBeforeMultiplier);
 
     this->calcSourceSideHeatTransferASHP(state);
     this->CrankcaseHeaterPower = 0.0;

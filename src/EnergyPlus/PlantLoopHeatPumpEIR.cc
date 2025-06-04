@@ -3882,10 +3882,11 @@ void HeatPumpAirToWater::processInputForEIRPLHP(EnergyPlusData &state)
                         if (!state.dataInputProcessing->inputProcessor->getDefaultValue(
                                 state, cCurrentModuleObject, "heat_pump_defrost_time_period_fraction", defaultVal)) {
                             // excluding from coverage
-                            ShowSevereError(state, // LCOV_EXCL_LINE
-                                            format("HeatPump:AirToWater \"{}\": Heat Pump Defrost Time Period Fraction not entered and default value not found.",
-                                                   thisAWHP.name)); // LCOV_EXCL_LINE
-                            errorsFound = true;                     // LCOV_EXCL_LINE
+                            ShowSevereError(
+                                state, // LCOV_EXCL_LINE
+                                format("HeatPump:AirToWater \"{}\": Heat Pump Defrost Time Period Fraction not entered and default value not found.",
+                                       thisAWHP.name)); // LCOV_EXCL_LINE
+                            errorsFound = true;         // LCOV_EXCL_LINE
                         } else {
                             thisAWHP.defrostTime = defaultVal;
                         }

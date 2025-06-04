@@ -3834,13 +3834,6 @@ void HeatPumpAirToWater::processInputForEIRPLHP(EnergyPlusData &state)
                     }
                 }
 
-                thisAWHP.referenceCapacity =
-                    state.dataInputProcessing->inputProcessor->getRealFieldValue(fields, schemaProps, format("rated_{}_capacity", modeKeyWord));
-                if (thisAWHP.referenceCapacity == DataSizing::AutoSize) {
-                    thisAWHP.referenceCapacityWasAutoSized = true;
-                }
-                thisAWHP.referenceCOP =
-                    state.dataInputProcessing->inputProcessor->getRealFieldValue(fields, schemaProps, format("reference_cop_for_{}", modeKeyWord));
                 thisAWHP.sourceSideDesignInletTemp = state.dataInputProcessing->inputProcessor->getRealFieldValue(
                     fields, schemaProps, format("rated_inlet_air_temperature_in_{}_mode", modeKeyWord));
                 thisAWHP.sourceSideDesignVolFlowRate = state.dataInputProcessing->inputProcessor->getRealFieldValue(
@@ -4027,6 +4020,9 @@ void HeatPumpAirToWater::processInputForEIRPLHP(EnergyPlusData &state)
                                                eirFtFieldName));
                         errorsFound = true;
                     }
+
+                    thisAWHP.referenceCapacity = thisAWHP.ratedCapacity[thisAWHP.numSpeeds - 1];
+                    thisAWHP.referenceCOP = thisAWHP.referenceCOP = thisAWHP.ratedCOP[thisAWHP.numSpeeds - 1];
                     std::string const eirFtName = Util::makeUPPER(fields.at(eirFtFieldName).get<std::string>());
                     thisAWHP.powerRatioFuncTempCurveIndex[i] = Curve::GetCurveIndex(state, eirFtName);
                     if (thisAWHP.powerRatioFuncTempCurveIndex[i] == 0) {

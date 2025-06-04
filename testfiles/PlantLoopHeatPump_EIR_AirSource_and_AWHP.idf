@@ -270,8 +270,6 @@
     , !- Availability Schedule Name Cooling
     Load , !- Operating Mode Control Method
     , !- Operating Mode Control Schedule Name
-    80000, !-  Rated Heating Capacity
-    3.5, !-  Reference COP for heating
     20 , !-  Rated Inlet Air Temperature in Heating Mode
     autosize, !-  Rated Air Flow Rate in Heating Mode
     50 , !-  Rated Leaving Water Temperature in Heating Mode
@@ -279,8 +277,6 @@
     -20, !-  Minimum Outdoor Air Temperature in Heating Mode
     25, !-  Maximum Outdoor Air Temperature in Heating Mode
     1.0, !-  Sizing Factor for Heating
-    400000, !-  Rated Cooling Capacity
-    3.5, !-  Reference COP for cooling
     25, !-  Rated Inlet Air Temperature in Cooling Mode
     20 , !-  Rated Air Flow Rate in Cooling Mode
     22 , !-  Rated Leaving Water Temperature in Cooling Mode

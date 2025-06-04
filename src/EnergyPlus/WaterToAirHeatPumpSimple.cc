@@ -271,24 +271,9 @@ namespace WaterToAirHeatPumpSimple {
                 } else if ((simpleWAHP.availSched = Sched::GetSchedule(state, availSchedName)) == nullptr) {
                     ShowSevereItemNotFound(state, eoh, "Availability Schedule Name", availSchedName);
                 }
-                auto &aVdot = fields.at("rated_air_flow_rate");
-                simpleWAHP.RatedAirVolFlowRate =
-                    (aVdot.type() == nlohmann::detail::value_t::string && Util::SameString(aVdot.get<std::string>(), "Autosize"))
-                        ? DataSizing::AutoSize
-                        : aVdot.get<Real64>();
-                auto &wVdot = fields.at("rated_water_flow_rate");
-                simpleWAHP.RatedWaterVolFlowRate =
-                    (wVdot.type() == nlohmann::detail::value_t::string && Util::SameString(wVdot.get<std::string>(), "Autosize"))
-                        ? DataSizing::AutoSize
-                        : wVdot.get<Real64>();
-                auto &tCap = fields.at("gross_rated_total_cooling_capacity");
-                simpleWAHP.RatedCapCoolTotal =
-                    (tCap.type() == nlohmann::detail::value_t::string && Util::SameString(tCap.get<std::string>(), "Autosize")) ? DataSizing::AutoSize
-                                                                                                                                : tCap.get<Real64>();
-                auto &sCap = fields.at("gross_rated_sensible_cooling_capacity");
-                simpleWAHP.RatedCapCoolSens =
-                    (sCap.type() == nlohmann::detail::value_t::string && Util::SameString(sCap.get<std::string>(), "Autosize")) ? DataSizing::AutoSize
-                                                                                                                                : sCap.get<Real64>();
+                simpleWAHP.RatedAirVolFlowRate = s_ip->getRealFieldValue(fields, schemaProps, "rated_air_flow_rate");
+                simpleWAHP.RatedCapCoolTotal = s_ip->getRealFieldValue(fields, schemaProps, "gross_rated_total_cooling_capacity");
+                simpleWAHP.RatedCapCoolSens = s_ip->getRealFieldValue(fields, schemaProps, "gross_rated_sensible_cooling_capacity");
                 simpleWAHP.RatedCOPCoolAtRatedCdts = s_ip->getRealFieldValue(fields, schemaProps, "gross_rated_cooling_cop");
                 simpleWAHP.RatedEntWaterTemp = s_ip->getRealFieldValue(fields, schemaProps, "rated_entering_water_temperature");
                 simpleWAHP.RatedEntAirDrybulbTemp = s_ip->getRealFieldValue(fields, schemaProps, "rated_entering_air_dry_bulb_temperature");
@@ -523,21 +508,9 @@ namespace WaterToAirHeatPumpSimple {
                 } else if ((simpleWAHP.availSched = Sched::GetSchedule(state, availSchedName)) == nullptr) {
                     ShowSevereItemNotFound(state, eoh, "Availability Schedule Name", availSchedName);
                 }
-                auto &aVdot = fields.at("rated_air_flow_rate");
-                simpleWAHP.RatedAirVolFlowRate =
-                    (aVdot.type() == nlohmann::detail::value_t::string && Util::SameString(aVdot.get<std::string>(), "Autosize"))
-                        ? DataSizing::AutoSize
-                        : aVdot.get<Real64>();
-                auto &wVdot = fields.at("rated_water_flow_rate");
-                simpleWAHP.RatedWaterVolFlowRate =
-                    (wVdot.type() == nlohmann::detail::value_t::string && Util::SameString(wVdot.get<std::string>(), "Autosize"))
-                        ? DataSizing::AutoSize
-                        : wVdot.get<Real64>();
-                auto &hCap = fields.at("gross_rated_heating_capacity");
-                simpleWAHP.RatedCapHeat = (hCap.type() == nlohmann::detail::value_t::string && Util::SameString(hCap.get<std::string>(), "Autosize"))
-                                              ? DataSizing::AutoSize
-                                              : hCap.get<Real64>();
-
+                simpleWAHP.RatedAirVolFlowRate = s_ip->getRealFieldValue(fields, schemaProps, "rated_air_flow_rate");
+                simpleWAHP.RatedWaterVolFlowRate = s_ip->getRealFieldValue(fields, schemaProps, "rated_water_flow_rate");
+                simpleWAHP.RatedCapHeat = s_ip->getRealFieldValue(fields, schemaProps, "gross_rated_heating_capacity");
                 simpleWAHP.RatedCOPHeatAtRatedCdts = s_ip->getRealFieldValue(fields, schemaProps, "gross_rated_heating_cop");
                 simpleWAHP.RatedEntWaterTemp = s_ip->getRealFieldValue(fields, schemaProps, "rated_entering_water_temperature");
                 simpleWAHP.RatedEntAirDrybulbTemp = s_ip->getRealFieldValue(fields, schemaProps, "rated_entering_air_dry_bulb_temperature");

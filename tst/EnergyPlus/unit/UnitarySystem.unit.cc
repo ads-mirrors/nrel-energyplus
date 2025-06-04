@@ -5514,7 +5514,9 @@ TEST_F(EnergyPlusFixture, UnitarySystemModel_ConfirmUnitarySystemSizingTest)
 
     for (int iSizingType = DataSizing::None; iSizingType <= DataSizing::FlowPerCoolingCapacity; ++iSizingType) {
 
-        if (iSizingType == DataSizing::FractionOfAutosizedHeatingAirflow) continue; // not allowed for cooling air flow
+        if (iSizingType == DataSizing::FractionOfAutosizedHeatingAirflow) {
+            continue; // not allowed for cooling air flow
+        }
 
         thisSys.Name = format("UnitarySystem:CoolingOnly #{}", iSizingType);
         thisSys.m_CoolingSAFMethod = SizingTypes(iSizingType);
@@ -5526,11 +5528,16 @@ TEST_F(EnergyPlusFixture, UnitarySystemModel_ConfirmUnitarySystemSizingTest)
 
         // for FractionOfAutosizedCoolingAirflow, set sizing data to 1.005 and UnitarySystem MaxCoolAirVolFlow to 1, they will multiply and
         // yield 1.005
-        if (iSizingType == DataSizing::FractionOfAutosizedCoolingAirflow)
+        if (iSizingType == DataSizing::FractionOfAutosizedCoolingAirflow) {
             state->dataSize->FinalZoneSizing(state->dataSize->CurZoneEqNum).DesCoolVolFlow = 1.005;
-        if (iSizingType == DataSizing::FractionOfAutosizedCoolingAirflow) thisSys.m_MaxCoolAirVolFlow = 1.0;
+        }
+        if (iSizingType == DataSizing::FractionOfAutosizedCoolingAirflow) {
+            thisSys.m_MaxCoolAirVolFlow = 1.0;
+        }
         // for FlowPerCoolingCapacity, do the division so sizing will yield 1.005
-        if (iSizingType == DataSizing::FlowPerCoolingCapacity) thisSys.m_MaxCoolAirVolFlow = 1.005 / 16192.574019749998;
+        if (iSizingType == DataSizing::FlowPerCoolingCapacity) {
+            thisSys.m_MaxCoolAirVolFlow = 1.005 / 16192.574019749998;
+        }
 
         mySys->sizeSystem(*state, FirstHVACIteration, AirLoopNum);
 
@@ -5573,8 +5580,12 @@ TEST_F(EnergyPlusFixture, UnitarySystemModel_ConfirmUnitarySystemSizingTest)
 
     for (int iSizingType = DataSizing::None; iSizingType <= DataSizing::FlowPerHeatingCapacity; ++iSizingType) {
 
-        if (iSizingType == DataSizing::FractionOfAutosizedCoolingAirflow) continue; // not allowed for heating air flow
-        if (iSizingType == DataSizing::FlowPerCoolingCapacity) continue;            // not allowed for heating air flow
+        if (iSizingType == DataSizing::FractionOfAutosizedCoolingAirflow) {
+            continue; // not allowed for heating air flow
+        }
+        if (iSizingType == DataSizing::FlowPerCoolingCapacity) {
+            continue; // not allowed for heating air flow
+        }
 
         thisSys.Name = format("UnitarySystem:HeatingOnly #{}", iSizingType);
         thisSys.m_HeatingSAFMethod = SizingTypes(iSizingType);
@@ -5586,11 +5597,16 @@ TEST_F(EnergyPlusFixture, UnitarySystemModel_ConfirmUnitarySystemSizingTest)
 
         // for FractionOfAutosizedHeatingAirflow, set sizing data to 1.005 and UnitarySystem MaxHeatAirVolFlow to 1, they will multiply and
         // yield 1.005
-        if (iSizingType == DataSizing::FractionOfAutosizedHeatingAirflow)
+        if (iSizingType == DataSizing::FractionOfAutosizedHeatingAirflow) {
             state->dataSize->FinalZoneSizing(state->dataSize->CurZoneEqNum).DesHeatVolFlow = 1.005;
-        if (iSizingType == DataSizing::FractionOfAutosizedHeatingAirflow) thisSys.m_MaxHeatAirVolFlow = 1.0;
+        }
+        if (iSizingType == DataSizing::FractionOfAutosizedHeatingAirflow) {
+            thisSys.m_MaxHeatAirVolFlow = 1.0;
+        }
         // for FlowPerHeatingCapacity, do the division so sizing will yield 1.005
-        if (iSizingType == DataSizing::FlowPerHeatingCapacity) thisSys.m_MaxHeatAirVolFlow = 1.005 / 15148.243236712493;
+        if (iSizingType == DataSizing::FlowPerHeatingCapacity) {
+            thisSys.m_MaxHeatAirVolFlow = 1.005 / 15148.243236712493;
+        }
 
         mySys->sizeSystem(*state, FirstHVACIteration, AirLoopNum);
 
@@ -5638,10 +5654,18 @@ TEST_F(EnergyPlusFixture, UnitarySystemModel_ConfirmUnitarySystemSizingTest)
 
         iCoolingSizingType = iSizingType;
         iHeatingSizingType = iSizingType;
-        if (iSizingType == DataSizing::FractionOfAutosizedCoolingAirflow) iHeatingSizingType = DataSizing::FractionOfAutosizedHeatingAirflow;
-        if (iSizingType == DataSizing::FractionOfAutosizedHeatingAirflow) iCoolingSizingType = DataSizing::FractionOfAutosizedCoolingAirflow;
-        if (iSizingType == DataSizing::FlowPerCoolingCapacity) iHeatingSizingType = DataSizing::FlowPerHeatingCapacity;
-        if (iSizingType == DataSizing::FlowPerHeatingCapacity) iCoolingSizingType = DataSizing::FlowPerCoolingCapacity;
+        if (iSizingType == DataSizing::FractionOfAutosizedCoolingAirflow) {
+            iHeatingSizingType = DataSizing::FractionOfAutosizedHeatingAirflow;
+        }
+        if (iSizingType == DataSizing::FractionOfAutosizedHeatingAirflow) {
+            iCoolingSizingType = DataSizing::FractionOfAutosizedCoolingAirflow;
+        }
+        if (iSizingType == DataSizing::FlowPerCoolingCapacity) {
+            iHeatingSizingType = DataSizing::FlowPerHeatingCapacity;
+        }
+        if (iSizingType == DataSizing::FlowPerHeatingCapacity) {
+            iCoolingSizingType = DataSizing::FlowPerCoolingCapacity;
+        }
         thisSys.Name = format("UnitarySystem:CoolingAndHeating #{}", iSizingType);
         thisSys.m_CoolingSAFMethod = SizingTypes(iCoolingSizingType);
         thisSys.m_HeatingSAFMethod = SizingTypes(iHeatingSizingType);
@@ -5657,11 +5681,16 @@ TEST_F(EnergyPlusFixture, UnitarySystemModel_ConfirmUnitarySystemSizingTest)
         state->dataSize->ZoneEqSizing(state->dataSize->CurZoneEqNum).DesHeatingLoad = 0.0;
         // for FractionOfAutosizedCoolingAirflow, set sizing data to 1.005 and UnitarySystem MaxCoolAirVolFlow to 1, they will multiply and
         // yield 1.005
-        if (iCoolingSizingType == DataSizing::FractionOfAutosizedCoolingAirflow)
+        if (iCoolingSizingType == DataSizing::FractionOfAutosizedCoolingAirflow) {
             state->dataSize->FinalZoneSizing(state->dataSize->CurZoneEqNum).DesCoolVolFlow = 1.005;
-        if (iCoolingSizingType == DataSizing::FractionOfAutosizedCoolingAirflow) thisSys.m_MaxCoolAirVolFlow = 1.0;
+        }
+        if (iCoolingSizingType == DataSizing::FractionOfAutosizedCoolingAirflow) {
+            thisSys.m_MaxCoolAirVolFlow = 1.0;
+        }
         // for FlowPerCoolingCapacity, do the division so sizing will yield 1.005
-        if (iCoolingSizingType == DataSizing::FlowPerCoolingCapacity) thisSys.m_MaxCoolAirVolFlow = 1.005 / 16192.574019750005;
+        if (iCoolingSizingType == DataSizing::FlowPerCoolingCapacity) {
+            thisSys.m_MaxCoolAirVolFlow = 1.005 / 16192.574019750005;
+        }
         // for FractionOfAutosizedHeatingAirflow, set sizing data to 1.005 and UnitarySystem MaxHeatAirVolFlow to 1, they will multiply and
         // yield 1.005
         if (iHeatingSizingType == DataSizing::FractionOfAutosizedHeatingAirflow) {
@@ -5669,7 +5698,9 @@ TEST_F(EnergyPlusFixture, UnitarySystemModel_ConfirmUnitarySystemSizingTest)
             thisSys.m_MaxHeatAirVolFlow = 1.0;
         }
         // for FlowPerHeatingCapacity, do the division so sizing will yield 1.005
-        if (iHeatingSizingType == DataSizing::FlowPerHeatingCapacity) thisSys.m_MaxHeatAirVolFlow = 1.005 / 1431.9234900374995;
+        if (iHeatingSizingType == DataSizing::FlowPerHeatingCapacity) {
+            thisSys.m_MaxHeatAirVolFlow = 1.005 / 1431.9234900374995;
+        }
 
         mySys->sizeSystem(*state, FirstHVACIteration, AirLoopNum);
 

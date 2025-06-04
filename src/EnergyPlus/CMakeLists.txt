@@ -1230,6 +1230,6 @@ endif()
 
 if(APPLE AND CPACK_CODESIGNING_DEVELOPPER_ID_APPLICATION)
   include("${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/CodeSigning.cmake")
-  register_install_codesign_target(energyplus ".")
-  register_install_codesign_target(energyplusapi ".")
+  register_install_codesign_target(energyplus "." Unspecified ENTITLEMENTS "${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/python_entitlements.xml")
+  register_install_codesign_target(energyplusapi "." Unspecified)
 endif()

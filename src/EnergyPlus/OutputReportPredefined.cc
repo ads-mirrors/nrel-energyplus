@@ -523,10 +523,10 @@ namespace OutputReportPredefined {
         s->pdchBoilerParaElecLoad = newPreDefColumn(state, s->pdstBoiler, "Parasitic Electric Load [W]");
         s->pdchBoilerPlantloopName = newPreDefColumn(state, s->pdstBoiler, "Plantloop Name");
         s->pdchBoilerPlantloopBranchName = newPreDefColumn(state, s->pdstBoiler, "Plantloop Branch Name");
-        
+
         // Heat Pumps in Equipment Summary
         s->pdstAWHP = newPreDefSubTable(state, s->pdrEquip, "AWHPs");
-        
+
         s->pdchAWHPType = newPreDefColumn(state, s->pdstAWHP, "Type");
         s->pdchAWHPRefCap = newPreDefColumn(state, s->pdstAWHP, "Reference Capacity[W]");
         s->pdchAWHPRefCOP = newPreDefColumn(state, s->pdstAWHP, "Reference COP");

@@ -2605,6 +2605,21 @@ void HeatPumpAirToWater::oneTimeInit(EnergyPlusData &state)
                             Constant::eResource::Electricity,
                             OutputProcessor::Group::HVAC,
                             OutputProcessor::EndUseCat::Cooling);
+        // defrost related
+        SetupOutputVariable(state,
+                            "Entering Water Temperature in Heating Mode",
+                            Constant::Units::C,
+                            this->loadSideInletTemp,
+                            OutputProcessor::TimeStepType::System,
+                            OutputProcessor::StoreType::Average,
+                            this->name);
+        SetupOutputVariable(state,
+                            "Leaving Water Temperature in Heating Mode",
+                            Constant::Units::C,
+                            this->loadSideOutletTemp,
+                            OutputProcessor::TimeStepType::System,
+                            OutputProcessor::StoreType::Average,
+                            this->name);
     }
     this->oneTimeInitFlagAWHP = false;
 }
@@ -4057,10 +4072,10 @@ void HeatPumpAirToWater::setUpEMS(EnergyPlusData &state)
         SetupEMSActuator(state,
                          format("HeatPump:AirToWater:{}", mode_keyword),
                          this->name,
-                         "Compressor Suction Temperature",
-                         "[C]",
-                         this->TsucEMSOverrideOn,
-                         this->TsucEMSOverrideValue);
+                         "Defrost Flag",
+                         "[]",
+                         this->DefrosstFlagEMSOverrideOn,
+                         this->DefrosstFlagEMSOverrideValue);
         SetupEMSActuator(state,
                          format("HeatPump:AirToWater:{}", mode_keyword),
                          this->name,
@@ -4075,20 +4090,6 @@ void HeatPumpAirToWater::setUpEMS(EnergyPlusData &state)
                          "[C]",
                          this->LeavingTempEMSOverrideOn,
                          this->LeavingTempEMSOverrideValue);
-        SetupEMSActuator(state,
-                         format("HeatPump:AirToWater:{}", mode_keyword),
-                         this->name,
-                         "Time Since Last Defrost",
-                         "[s]",
-                         this->TimeSinceLastEMSOverrideOn,
-                         this->TimeSinceLastEMSOverrideValue);
-        SetupEMSActuator(state,
-                         format("HeatPump:AirToWater:{}", mode_keyword),
-                         this->name,
-                         "Time Since Defrost Started",
-                         "[s]",
-                         this->TimeSinceStartEMSOverrideOn,
-                         this->TimeSinceStartEMSOverrideValue);
     } else {
         mode_keyword = "Cooling";
     }
@@ -4419,6 +4420,12 @@ void HeatPumpAirToWater::doPhysics(EnergyPlusData &state, Real64 currentLoad)
 
     // do defrost calculation if applicable
     this->doDefrost(state, availableCapacity);
+    // turn off defrost if customize defrost code indicates so
+    if (this->DefrosstFlagEMSOverrideOn && (!this->DefrosstFlagEMSOverrideValue)) {
+        this->loadDueToDefrost = 0.0;
+        this->defrostEnergyRate = 0.0;
+        this->fractionalDefrostTime = 0.0;
+    }
 
     // evaluate the actual current operating load side heat transfer rate
     this->calcLoadSideHeatTransfer(state, availableCapacity, currentLoad);

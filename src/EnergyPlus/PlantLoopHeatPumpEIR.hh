@@ -470,16 +470,12 @@ namespace EIRPlantLoopHeatPumps {
         // EMS variables
         bool OperationModeEMSOverrideOn = false;
         int OperationModeEMSOverrideValue = 0;
-        bool TsucEMSOverrideOn = false; // compressor suction temperature,
-        Real64 TsucEMSOverrideValue = 0.0;
+        bool DefrosstFlagEMSOverrideOn = false;
+        bool DefrosstFlagEMSOverrideValue = false;
         bool EnteringTempEMSOverrideOn = false; // entering water temperature
         Real64 EnteringTempEMSOverrideValue = 0.0;
-        bool TimeSinceLastEMSOverrideOn = false; // time since last defrost
-        Real64 TimeSinceLastEMSOverrideValue = 0.0;
         bool LeavingTempEMSOverrideOn = false; // leaving water temperature
         Real64 LeavingTempEMSOverrideValue = 0.0;
-        bool TimeSinceStartEMSOverrideOn = false; //            time since defrost started
-        Real64 TimeSinceStartEMSOverrideValue = 0.0;
 
         bool oneTimeInitFlagAWHP = true;
 

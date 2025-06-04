@@ -20,7 +20,7 @@
     25,                      !- Maximum Number of Warmup Days
     6;                       !- Minimum Number of Warmup Days
 
-  Timestep,1;
+  Timestep,6;
 
   GlobalGeometryRules,
     UpperLeftCorner,         !- Starting Vertex Position
@@ -296,7 +296,7 @@
     Cooling Coil Load Loop Supply Outlet Node , !-  Chilled Water Outlet Node Name
     , !- Maximum Outdoor Dry Bulb Temperature For Defrost Operation
     Timed, !-  Heat Pump Defrost Control
-    0.2, !-  Defrost Time Period Fraction
+    0.2, !-  Heat Pump Defrost Time Period Fraction
     150, !-  Resistive Defrost Heater Capacity
     , !-  Defrost Energy Input Ratio Function of Temperature Curve Name
     , !-  Defrost Capacity Ratio Function of Temperature Curve Name
@@ -637,7 +637,7 @@
 !-   Output:Variable,*,Heat Pump Electricity Energy in Heating Mode,Hourly;
 !-   Output:Variable,*,Heat Pump Load Side Mass Flow Rate in Heating Mode,Hourly;
 !-   Output:Variable,*,Heat Pump Source Side Mass Flow Rate in Heating Mode,Hourly;
-  Output:Variable,*,Heat Pump Operating Mode is Heating,hourly; !- HVAC Average []
+  Output:Variable,*,Heat Pump Operating Mode is Heating,detailed; !- HVAC Average []
 
 !-   Output:Variable,*,Plant Load Profile Mass Flow Rate in Cooling Mode,Hourly;
 !-   Output:Variable,*,Plant Load Profile Heat Transfer Rate in Cooling Mode,Hourly;
@@ -653,7 +653,7 @@
 !-   Output:Variable,*,Heat Pump Electricity Energy in Cooling Mode,Hourly;
 !-   Output:Variable,*,Heat Pump Load Side Mass Flow Rate in Cooling Mode,Hourly;
 !-   Output:Variable,*,Heat Pump Source Side Mass Flow Rate in Cooling Mode,Hourly;
-  Output:Variable,*,Heat Pump Operating Mode is Cooling,hourly; !- HVAC Average []
+  Output:Variable,*,Heat Pump Operating Mode is Cooling,detailed; !- HVAC Average []
 
 !-   Output:Variable,*,Heat Pump Crankcase Heater Electricity Rate,hourly; !- HVAC Average [W]
 !-   Output:Variable,*,Heat Pump Crankcase Heater Electricity Energy,hourly; !- HVAC Sum [W]
@@ -665,6 +665,15 @@
 !-   Output:Variable,*,Site Outdoor Air Drybulb Temperature,hourly; !- Zone Average [C]
   Output:Variable,*,Operating Model Output Heating,detailed;
   Output:Variable,*,Operating Model Output Cooling,detailed;
+  Output:Variable,*,Entering Water Temperature in Heating Mode,detailed;
+  Output:Variable,*,Leaving Water Temperature in Heating Mode,detailed;
+  Output:Variable,*,EMS Defrost Flag,detailed;
+  Output:Variable,*,Heat Pump Load Due To Defrost,detailed; !- HVAC Average [W]
+  Output:Variable,*,Heat Pump Fractioal Defrost Time,detailed; !- HVAC Average [W]
+  Output:Variable,*,Heat Pump Defrost Electricity Rate,detailed; !- HVAC Average [W]
+  Output:Variable,*,Outdoor Temp,detailed;
+  Output:Variable,*,DefrostOnInternal,detailed;
+  Output:Variable,*,DefrostTimerInternal,detailed;
 
   OutputControl:Table:Style,
     HTML;                    !- Column Separator
@@ -705,6 +714,22 @@
     ,                        !- EMS Program or Subroutine Name
     ;                        !- Units
 
+  EnergyManagementSystem:OutputVariable,
+    DefrostOnInternal,       !- Name
+    DefrostOn,                    !- EMS Variable Name
+    Averaged,                !- Type of Data in Variable
+    SystemTimeStep,          !- Update Frequency
+    ,                        !- EMS Program or Subroutine Name
+    ;                        !- Units
+
+  EnergyManagementSystem:OutputVariable,
+    DefrostTimerInternal,       !- Name
+    DefrostTimer,                    !- EMS Variable Name
+    Averaged,                !- Type of Data in Variable
+    SystemTimeStep,          !- Update Frequency
+    ,                        !- EMS Program or Subroutine Name
+    ;                        !- Units
+
   EnergyManagementSystem:ProgramCallingManager,
     Change_OpMode_EMS_Program_Manager,  !- Name
     InsideHVACSystemIterationLoop,  !- EnergyPlus Model Calling Point
@@ -720,3 +745,96 @@
     SET opModeAct_heating = 0,  !- <none>
     SET opModeAct_cooling = 1,  !- <none>
     ENDIF;                   !- <none>
+
+  !- custom defrost code
+
+  EnergyManagementSystem:Actuator,
+    defrost_on,               !- Name
+    test_AWHP,                !- Actuated Component Unique Name
+    HeatPump:AirToWater:Heating,     !- Actuated Component Type
+    Defrost Flag;             !- Actuated Component Control Type
+
+  EnergyManagementSystem:OutputVariable,
+    EMS Defrost Flag,       !- Name
+    defrost_on,                    !- EMS Variable Name
+    Averaged,                !- Type of Data in Variable
+    SystemTimeStep,          !- Update Frequency
+    ,                        !- EMS Program or Subroutine Name
+    ;                        !- Units
+
+  EnergyManagementSystem:OutputVariable,
+    Outdoor Temp,       !- Name
+    OutdoorTemp,                    !- EMS Variable Name
+    Averaged,                !- Type of Data in Variable
+    SystemTimeStep,          !- Update Frequency
+    ,                        !- EMS Program or Subroutine Name
+    ;                        !- Units
+
+  EnergyManagementSystem:Sensor,
+    OutdoorTemp,    !- Name
+    Environment,               !- Output:Variable or Output:Meter Index Key Name
+    Site Outdoor Air Drybulb Temperature;  !- Output:Variable or Output:Meter Name
+
+  EnergyManagementSystem:Sensor,
+    EnteringTemperature,    !- Name
+    test_AWHP,               !- Output:Variable or Output:Meter Index Key Name
+    Entering Water Temperature in Heating Mode;  !- Output:Variable or Output:Meter Name
+
+  EnergyManagementSystem:Sensor,
+    LeavingTemperature,    !- Name
+    test_AWHP,               !- Output:Variable or Output:Meter Index Key Name
+    Leaving Water Temperature in Heating Mode;  !- Output:Variable or Output:Meter Name
+
+  !- simple version to test out overwriting defrost output with flag
+  !- EnergyManagementSystem:Program,
+  !-   Custom_Defrost, !- Name
+  !-   IF (Hour <= 12),  !- Program Line 2
+  !-   SET defrost_on = 1.0,  !- <none>
+  !-   ELSE,                    !- <none>
+  !-   SET defrost_on = 0.0,  !- <none>
+  !-   ENDIF;                   !- <none>
+
+  EnergyManagementSystem:GlobalVariable,
+      DefrostOn;                       !- Indicates whether defrost is ON (1.0 for ON, 0.0 for OFF)
+
+  EnergyManagementSystem:GlobalVariable,
+      DefrostTimer;                    !- Tracks the cumulative time since defrost started or stopped (seconds)
+
+  EnergyManagementSystem:Program,
+      InitializeGlobalVars,            !- Name
+      SET DefrostOn = 0.0,          !- Program Line 1
+      SET DefrostTimer = 0.0;                    !- Tracks the cumulative time since defrost started or stopped (seconds)
+
+  EnergyManagementSystem:ProgramCallingManager,
+      InitializeGlobalVars_Manager,    !- Name
+      BeginNewEnvironment,             !- EnergyPlus Model Calling Point
+      InitializeGlobalVars;            !- Program Name
+
+  ! EMS Program to control defrost
+  EnergyManagementSystem:Program,
+      ControlDefrost,                  !- Name
+      IF DefrostOn == 0.0,             !- If defrost is OFF
+          SET DefrostTimer = DefrostTimer + SystemTimeStep * 3600,  !- Increment OFF timer
+          IF (OutdoorTemp < 5.0) * (DefrostTimer >= 2400.0),  !- Check conditions to start defrost
+              SET DefrostOn = 1.0,     !- Turn defrost ON
+              SET DefrostTimer = 0.0,  !- Reset timer for ON tracking
+          ENDIF,
+      ELSE,                            !- If defrost is ON
+          SET DefrostTimer = DefrostTimer + SystemTimeStep * 3600,  !- Increment ON timer
+          IF DefrostTimer >= 3600.0,   !- Check condition to stop defrost
+              SET DefrostOn = 0.0,     !- Turn defrost OFF
+              SET DefrostTimer = 0.0,  !- Reset timer for OFF tracking
+          ENDIF,
+      ENDIF;
+
+  ! Assign defrost mode to the actuator
+  EnergyManagementSystem:Program,
+      SetDefrostActuator,              !- Name
+      SET defrost_on = DefrostOn;  !- Write defrost mode to actuator
+
+  ! EMS Program Calling Manager
+  EnergyManagementSystem:ProgramCallingManager,
+      DefrostControl_Manager,          !- Name
+      AfterPredictorAfterHVACManagers, !- EnergyPlus Model Calling Point
+      ControlDefrost,                  !- Program Name
+      SetDefrostActuator;              !- Program Name

@@ -272,6 +272,7 @@ namespace WaterToAirHeatPumpSimple {
                     ShowSevereItemNotFound(state, eoh, "Availability Schedule Name", availSchedName);
                 }
                 simpleWAHP.RatedAirVolFlowRate = s_ip->getRealFieldValue(fields, schemaProps, "rated_air_flow_rate");
+                simpleWAHP.RatedWaterVolFlowRate = s_ip->getRealFieldValue(fields, schemaProps, "rated_water_flow_rate");
                 simpleWAHP.RatedCapCoolTotal = s_ip->getRealFieldValue(fields, schemaProps, "gross_rated_total_cooling_capacity");
                 simpleWAHP.RatedCapCoolSens = s_ip->getRealFieldValue(fields, schemaProps, "gross_rated_sensible_cooling_capacity");
                 simpleWAHP.RatedCOPCoolAtRatedCdts = s_ip->getRealFieldValue(fields, schemaProps, "gross_rated_cooling_cop");

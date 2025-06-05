@@ -3828,6 +3828,10 @@ void HeatPumpAirToWater::processInputForEIRPLHP(EnergyPlusData &state)
                     waterNodePrefix = "chilled";
                     modeKeyWord = "cooling";
                 }
+                // if there's no inlet node for the corresponding component, don't create this object
+                if (fields.find(format("{}_water_inlet_node_name", waterNodePrefix)) == fields.end()) {
+                    continue;
+                }
                 auto availSchedFound = fields.find(format("availability_schedule_name_{}", modeKeyWord));
                 if (availSchedFound == fields.end()) {
                     thisAWHP.availSchedName = "";
@@ -4372,25 +4376,14 @@ Real64 EIRFuelFiredHeatPump::getDynamicMaxCapacity(EnergyPlusData &state)
 
 void HeatPumpAirToWater::calcOpMode(EnergyPlus::EnergyPlusData &state, Real64 currentLoad)
 {
-    if (OperationModeEMSOverrideOn) {
-        if (OperationModeEMSOverrideValue == 1) {
-            this->operatingMode = 1;
-            this->companionHeatPumpCoil->operatingMode = 0;
-        } else {
-            this->operatingMode = 0;
-            this->companionHeatPumpCoil->operatingMode = 1;
+    if (this->companionHeatPumpCoil == nullptr) {
+        this->operatingMode = 1;
+        if (OperationModeEMSOverrideOn) {
+            this->operatingMode = OperationModeEMSOverrideValue;
         }
     } else {
-        if (currentLoad < 0) {
-            if (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterCooling) {
-                this->operatingMode = 1;
-                this->companionHeatPumpCoil->operatingMode = 0;
-            } else {
-                this->operatingMode = 0;
-                this->companionHeatPumpCoil->operatingMode = 1;
-            }
-        } else if (currentLoad > 0) {
-            if (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterHeating) {
+        if (OperationModeEMSOverrideOn) {
+            if (OperationModeEMSOverrideValue == 1) {
                 this->operatingMode = 1;
                 this->companionHeatPumpCoil->operatingMode = 0;
             } else {
@@ -4398,8 +4391,26 @@ void HeatPumpAirToWater::calcOpMode(EnergyPlus::EnergyPlusData &state, Real64 cu
                 this->companionHeatPumpCoil->operatingMode = 1;
             }
         } else {
-            this->operatingMode = 0;
-            this->companionHeatPumpCoil->operatingMode = 0;
+            if (currentLoad < 0) {
+                if (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterCooling) {
+                    this->operatingMode = 1;
+                    this->companionHeatPumpCoil->operatingMode = 0;
+                } else {
+                    this->operatingMode = 0;
+                    this->companionHeatPumpCoil->operatingMode = 1;
+                }
+            } else if (currentLoad > 0) {
+                if (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterHeating) {
+                    this->operatingMode = 1;
+                    this->companionHeatPumpCoil->operatingMode = 0;
+                } else {
+                    this->operatingMode = 0;
+                    this->companionHeatPumpCoil->operatingMode = 1;
+                }
+            } else {
+                this->operatingMode = 0;
+                this->companionHeatPumpCoil->operatingMode = 0;
+            }
         }
     }
 }

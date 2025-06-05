@@ -570,8 +570,6 @@ endif ()
 add_simulation_test(IDF_FILE ShopWithPVandStorage.idf EPW_FILE USA_OK_Oklahoma.City-Will.Rogers.World.AP.723530_TMY3.epw)
 add_simulation_test(IDF_FILE ShopWithSimplePVT.idf EPW_FILE USA_OK_Oklahoma.City-Will.Rogers.World.AP.723530_TMY3.epw)
 add_simulation_test(IDF_FILE ShopWithBIPVT.idf EPW_FILE USA_OK_Oklahoma.City-Will.Rogers.World.AP.723530_TMY3.epw)
-add_simulation_test(IDF_FILE SingleFamilyHouse_HP_Slab.idf EPW_FILE USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw)
-add_simulation_test(IDF_FILE SingleFamilyHouse_HP_Slab_Dehumidification.idf EPW_FILE USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw)
 add_simulation_test(IDF_FILE SingleFamilyHouse_TwoSpeed_ZoneAirBalance.idf EPW_FILE USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw)
 add_simulation_test(IDF_FILE SingleFamilyHouse_TwoSpeed_CutoutTemperature.idf EPW_FILE USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw)
 add_simulation_test(IDF_FILE SingleFamilyHouse_TwoSpeed_MultiStageElectricSuppCoil.idf EPW_FILE USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw)
@@ -687,7 +685,6 @@ add_simulation_test(IDF_FILE VariableRefrigerantFlow_FluidTCtrl_5Zone.idf EPW_FI
 add_simulation_test(IDF_FILE VariableRefrigerantFlow_FluidTCtrl_HR_5Zone.idf EPW_FILE USA_FL_Miami.Intl.AP.722020_TMY3.epw)
 add_simulation_test(IDF_FILE VariableRefrigerantFlow_FluidTCtrl_wSuppHeater_5Zone.idf EPW_FILE USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw)
 add_simulation_test(IDF_FILE VariableRefrigerantFlow_wSuppHeater_5Zone.idf EPW_FILE USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw)
-add_simulation_test(IDF_FILE US+SF+CZ4A+hp+crawlspace+IECC_2006_VRF.idf EPW_FILE USA_NY_New.York-John.F.Kennedy.Intl.AP.744860_TMY3.epw)
 add_simulation_test(IDF_FILE VentilatedSlab.idf EPW_FILE USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw)
 add_simulation_test(IDF_FILE VentilatedSlab_SeriesSlabs.idf EPW_FILE USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw)
 add_simulation_test(IDF_FILE VentilationSimpleTest.idf EPW_FILE USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw)
@@ -1050,6 +1047,9 @@ if (BUILD_FORTRAN)
     # Basement/slab dependent files
     add_simulation_test(IDF_FILE 5ZoneAirCooledWithSlab.idf EPW_FILE USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw COST 10)
     add_simulation_test(IDF_FILE LgOffVAVusingBasement.idf EPW_FILE USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw COST 10)
+    add_simulation_test(IDF_FILE SingleFamilyHouse_HP_Slab.idf EPW_FILE USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw)
+    add_simulation_test(IDF_FILE SingleFamilyHouse_HP_Slab_Dehumidification.idf EPW_FILE USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw)
+    add_simulation_test(IDF_FILE US+SF+CZ4A+hp+crawlspace+IECC_2006_VRF.idf EPW_FILE USA_NY_New.York-John.F.Kennedy.Intl.AP.744860_TMY3.epw)
     # Additional files in subdirectories that depend on ExpandObjects
     add_simulation_test(
             IDF_FILE

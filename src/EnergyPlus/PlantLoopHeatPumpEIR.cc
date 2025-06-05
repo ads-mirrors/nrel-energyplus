@@ -3810,11 +3810,16 @@ void HeatPumpAirToWater::processInputForEIRPLHP(EnergyPlusData &state)
                     getEnumValue(AWHPControlTypeUC, Util::makeUPPER(fields.at("control_type").get<std::string>())));
                 thisAWHP.CrankcaseHeaterCapacity =
                     state.dataInputProcessing->inputProcessor->getRealFieldValue(fields, schemaProps, "crankcase_heater_capacity");
-                std::string const CrankcaseHeaterCapacityCurveName =
-                    Util::makeUPPER(fields.at("crankcase_heater_capacity_function_of_temperature_curve_name").get<std::string>());
-                thisAWHP.CrankcaseHeaterCapacityCurveIndex = Curve::GetCurveIndex(state, CrankcaseHeaterCapacityCurveName);
-                thisAWHP.MaxOATCrankcaseHeater = state.dataInputProcessing->inputProcessor->getRealFieldValue(
-                    fields, schemaProps, "maximum_ambient_temperature_for_crankcase_heater_operation");
+
+                if (fields.find("crankcase_heater_capacity_function_of_temperature_curve_name") !=  fields.end()) {
+                    std::string const CrankcaseHeaterCapacityCurveName =
+                        Util::makeUPPER(fields.at("crankcase_heater_capacity_function_of_temperature_curve_name").get<std::string>());
+                    thisAWHP.CrankcaseHeaterCapacityCurveIndex = Curve::GetCurveIndex(state, CrankcaseHeaterCapacityCurveName);
+                }
+                if (fields.find("maximum_ambient_temperature_for_crankcase_heater_operation") !=  fields.end()) {
+                    thisAWHP.MaxOATCrankcaseHeater = state.dataInputProcessing->inputProcessor->getRealFieldValue(
+                        fields, schemaProps, "maximum_ambient_temperature_for_crankcase_heater_operation");
+                }
 
                 // read heating/cooling specific fields
                 thisAWHP.EIRHPType = classToInput.thisType;

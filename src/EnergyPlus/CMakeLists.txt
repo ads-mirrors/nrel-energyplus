@@ -858,6 +858,11 @@ else() # windows
 endif()
 target_link_libraries(energyplus PRIVATE energyplusapi project_options project_fp_options project_warnings)
 
+add_executable(test_fmt
+  test_fmt.cpp
+)
+target_link_libraries(test_fmt PRIVATE energypluslib project_options project_fp_options project_warnings)
+
 set_target_properties(energyplus PROPERTIES VERSION ${ENERGYPLUS_VERSION})
 set_target_properties(energyplusapi PROPERTIES VERSION ${ENERGYPLUS_VERSION})
 

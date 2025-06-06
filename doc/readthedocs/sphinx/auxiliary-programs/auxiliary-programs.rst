@@ -2115,6 +2115,7 @@ Wind and Wind Chill/Heat Index
 Rain/Albedo:
 
 ::
+
    - Monthly Statistics for Liquid Precipitation mm
                           Jan     Feb     Mar     Apr     May     Jun     Jul     Aug     Sep     Oct     Nov     Dec
             Total         47      0       3       24      22      0       0       0       2       14      21      72  
@@ -2127,6 +2128,7 @@ Rain/Albedo:
 Solar Radiation
 
 ::
+
    - Monthly Statistics for Solar Radiation  (Direct Normal, Diffuse, Global Horizontal) Wh/m$^{2}$
                           Jan     Feb     Mar     Apr     May     Jun     Jul     Aug     Sep     Oct     Nov     Dec
           Direct Avg      2537    3829    4485    5123    5691    6743    6867    6329    6017    4178    3080    3314  
@@ -2287,6 +2289,7 @@ Solar Radiation
 The program calculated “undisturbed” ground temperatures:
 
 ::
+
    - Monthly Calculated "undisturbed" Ground Temperatures**°C
                           Jan     Feb     Mar     Apr     May     Jun     Jul     Aug     Sep     Oct     Nov     Dec
              0.5 m          9.8     9.5    10.1    11.5    13.4    15.1    16.3    16.7    16.0    14.6    12.8    11.0
@@ -2303,6 +2306,7 @@ As noted in the above statistics calculation, the "undisturbed" ground temperatu
 Heating/cooling degree days from the weather file are shown.  Long term heating/cooling degree days are shown earlier if available from ASHRAE HOF for the location/WMO.
 
 ::
+
    - Monthly Weather File Heating/Cooling Degree Days/Hours
                           Jan     Feb     Mar     Apr     May     Jun     Jul     Aug     Sep     Oct     Nov     Dec
           HDD 10C            52       3       7       1       0       0       0       0       0       0       1      36
@@ -2327,6 +2331,7 @@ In the preceding display for degree-days, users more familiar with degree days t
 And then the Köppen, ASHRAE and typical/extreme period calculations:
 
 ::
+   
   - Climate type "Cfb" (Köppen classification)**
   - Marine west coastal (warm summer, mild winter, rain all year, lat. 35-60°N)
   - **Note that the Köppen classification shown here is derived algorithmically from the source weather data.*

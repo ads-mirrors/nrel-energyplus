@@ -1921,7 +1921,6 @@ These are followed by groupings of Monthly temperature data.
 
 ::
 
-
    - Monthly Statistics for Dry Bulb temperatures°C
                    Jan    Feb    Mar    Apr    May    Jun    Jul    Aug    Sep    Oct    Nov    Dec   
      Maximum        16.7   22.2   23.9   28.3   29.4   32.8   26.7   29.4   30.0   26.7   20.6   16.1 
@@ -1954,9 +1953,11 @@ These are followed by groupings of Monthly temperature data.
 
      - Maximum Dew Point temperature of  16.7°C on May 14
      - Minimum Dew Point temperature of  -5.6°C on Dec 19
+
+For the dry bulb and dew point temperatures, an average hourly report, by month, is also given:
+
 ::
-     For the dry bulb and dew point temperatures, an average hourly report, by month, is also given:
-::
+
    - Average Hourly Statistics for Dry Bulb temperatures°C
                         Jan   Feb   Mar   Apr   May   Jun   Jul   Aug   Sep   Oct   Nov   Dec   
            0:01- 1:00    8.9   9.9  10.6  11.6  12.3  12.1  13.4  14.0  14.4  13.3  11.6   9.7 
@@ -2013,9 +2014,12 @@ These are followed by groupings of Monthly temperature data.
           23:01-24:00    6.6   6.5   8.4   8.1   9.6   9.6  10.3  10.7  12.4   9.4   8.5   5.9 
            Max Hour      22    16     9     9     9    10    14    10    11     9    18    19  
            Min Hour       6     6     3    16    16     5     4    24     4    15     3     5  
+
+
+Humidity/precipitation: Relative Humidity (both monthly and average hourly by month)
+
 ::
-     Humidity/precipitation: Relative Humidity (both monthly and average hourly by month)
-::
+
    - Monthly Statistics for Relative Humidity %
                          Jan    Feb    Mar    Apr    May    Jun    Jul    Aug    Sep    Oct    Nov    Dec
           Maximum        100    96     96     100    100    96     93     96     100    96     96     100
@@ -2061,9 +2065,10 @@ These are followed by groupings of Monthly temperature data.
                           Jan     Feb     Mar     Apr     May     Jun     Jul     Aug     Sep     Oct     Nov     Dec
                             0.8     1.1     0.9     1.0     1.1     1.2     1.3     1.3     1.3     1.2     1.1     0.9
 
+Wind and Wind Chill/Heat Index
+
 ::
-     Wind and Wind Chill/Heat Index
-::
+
    - Monthly Statistics for Wind Chill/Heat Index temperatures°C **
                           Jan     Feb     Mar     Apr     May     Jun     Jul     Aug     Sep     Oct     Nov     Dec
           Minimum WC         -1      -1      -6      -1      -2       4                               9       0      -8
@@ -2106,8 +2111,9 @@ These are followed by groupings of Monthly temperature data.
 
      - Maximum Wind Speed of  17.0 m/s on Mar  2
      - Minimum Wind Speed of   0.0 m/s on Jan  1
-::
-     Rain/Albedo:
+
+Rain/Albedo:
+
 ::
    - Monthly Statistics for Liquid Precipitation mm
                           Jan     Feb     Mar     Apr     May     Jun     Jul     Aug     Sep     Oct     Nov     Dec
@@ -2117,8 +2123,9 @@ These are followed by groupings of Monthly temperature data.
    - Monthly Statistics for Albedo
                           Jan     Feb     Mar     Apr     May     Jun     Jul     Aug     Sep     Oct     Nov     Dec
           Average         0.160   0.000   0.130   0.130   0.130   0.140   0.000   0.000   0.180   0.180   0.160   0.210
-::
-     Solar Radiation
+
+Solar Radiation
+
 ::
    - Monthly Statistics for Solar Radiation  (Direct Normal, Diffuse, Global Horizontal) Wh/m$^{2}$
                           Jan     Feb     Mar     Apr     May     Jun     Jul     Aug     Sep     Oct     Nov     Dec
@@ -2276,8 +2283,9 @@ These are followed by groupings of Monthly temperature data.
           23:01-24:00        52      33      35      38      31      26      35      36      33      23      43      43 
            Max Hour          9      10       9       7       7       5       7       8       5       9       7      10  
            Min Hour         17      22      20      20      24      14      16      15      14      20      14       7
-::
+
 The program calculated “undisturbed” ground temperatures:
+
 ::
    - Monthly Calculated "undisturbed" Ground Temperatures**°C
                           Jan     Feb     Mar     Apr     May     Jun     Jul     Aug     Sep     Oct     Nov     Dec
@@ -2290,9 +2298,10 @@ The program calculated “undisturbed” ground temperatures:
      -   The temperatures for 0.5 m depth can be used for GroundTemperatures:Surface.
      -   The temperatures for 4.0 m depth can be used for GroundTemperatures:Deep.
      -   Calculations use a standard soil diffusivity of 2.3225760E-03 {m**2/day}
-::
-     As noted in the above statistics calculation, the "undisturbed" ground temperatures calculated by the weather converter should not be used in building losses but are appropriate to be used in the GroundTemperatures:Surface and GroundTemperatures:Deep objects. The reasoning (for building losses) is that these values are too extreme for the soil under a conditioned building. For best results, use the Slab or Basement program described in this document to calculate custom monthly average ground temperatures (see the Ground Heat Transfer section). This is especially important for residential applications and very small buildings. If one of these ground temperature preprocessors is not used, for typical commercial buildings in the USA, a reasonable default value is 2C less than the average indoor space temperature.
-     Heating/cooling degree days from the weather file are shown.  Long term heating/cooling degree days are shown earlier if available from ASHRAE HOF for the location/WMO.
+
+As noted in the above statistics calculation, the "undisturbed" ground temperatures calculated by the weather converter should not be used in building losses but are appropriate to be used in the GroundTemperatures:Surface and GroundTemperatures:Deep objects. The reasoning (for building losses) is that these values are too extreme for the soil under a conditioned building. For best results, use the Slab or Basement program described in this document to calculate custom monthly average ground temperatures (see the Ground Heat Transfer section). This is especially important for residential applications and very small buildings. If one of these ground temperature preprocessors is not used, for typical commercial buildings in the USA, a reasonable default value is 2C less than the average indoor space temperature.
+Heating/cooling degree days from the weather file are shown.  Long term heating/cooling degree days are shown earlier if available from ASHRAE HOF for the location/WMO.
+
 ::
    - Monthly Weather File Heating/Cooling Degree Days/Hours
                           Jan     Feb     Mar     Apr     May     Jun     Jul     Aug     Sep     Oct     Nov     Dec
@@ -2313,9 +2322,10 @@ The program calculated “undisturbed” ground temperatures:
 
      -   32 annual cooling degree-days (18°C baseline)
      - 1825 annual heating degree-days (18°C baseline)
-::
-     In the preceding display for degree-days, users more familiar with degree days to a Fahrenheit temperature base, may wish to multiply the degree day or degree hour values by 9/5.
-     And then the Köppen, ASHRAE and typical/extreme period calculations:
+
+In the preceding display for degree-days, users more familiar with degree days to a Fahrenheit temperature base, may wish to multiply the degree day or degree hour values by 9/5.
+And then the Köppen, ASHRAE and typical/extreme period calculations:
+
 ::
   - Climate type "Cfb" (Köppen classification)**
   - Marine west coastal (warm summer, mild winter, rain all year, lat. 35-60°N)
@@ -2349,8 +2359,7 @@ The program calculated “undisturbed” ground temperatures:
   - Spring is Apr:Jun
       Typical Spring Week (nearest average temperature for spring)
       Typical Week Period selected: May 13:May 19, Average Temp =  13.59°C, Deviation = | 0.018|°C
-::
-   
+
 As this data is all tab-delimited, putting in a spreadsheet and displaying is not difficult:
 
 .. figure:: media/image008.jpg

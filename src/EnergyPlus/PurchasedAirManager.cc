@@ -616,6 +616,20 @@ void GetPurchasedAir(EnergyPlusData &state)
                 ShowSevereItemNotFound(state, eoh, cAlphaFieldName, heatFuelEfficiencySchedName);
                 ErrorsFound = true;
             }
+            // get heating fuel type
+            cAlphaFieldName = "Heating Fuel Type";
+            fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "heating_fuel_type");
+            PurchAir.heatingFuelType = static_cast<Constant::eFuel>(getEnumValue(Constant::eFuelNamesUC, Util::makeUPPER(fieldValue)));
+            if (PurchAir.heatingFuelType == Constant::eFuel::Invalid) {
+                ShowSevereInvalidKey(state,
+                                     eoh,
+                                     cAlphaFieldName,
+                                     fieldValue,
+                                     "Valid entries are Electricity, NaturalGas, Propane, Diesel, Gasoline, FuelOilNo1, FuelOilNo2, OtherFuel1, "
+                                     "OtherFuel2, DistrictCooling, DistrictHeatingWater, or DistrictHeatingSteam.");
+                ShowContinueError(state, "Heating fuel type is set to DistrictHeatingWater and the simulation continues.");
+                PurchAir.heatingFuelType = static_cast<Constant::eFuel>(getEnumValue(Constant::eFuelNamesUC, "DISTRICTHEATINGWATER"));
+            }
             // get optional cooling fuel efficiency schedule name
             cAlphaFieldName = "Cooling Fuel Efficiency Schedule Name";
             std::string const coolFuelEfficiencySchedName = s_ip->getAlphaFieldValue(fields, schemaProps, "cooling_fuel_efficiency_schedule_name");
@@ -625,9 +639,20 @@ void GetPurchasedAir(EnergyPlusData &state)
                 ShowSevereItemNotFound(state, eoh, cAlphaFieldName, coolFuelEfficiencySchedName);
                 ErrorsFound = true;
             }
-            // assign default heating and cooling fuel type
-            PurchAir.heatingFuelType = static_cast<Constant::eFuel>(getEnumValue(Constant::eFuelNamesUC, "DISTRICTHEATINGWATER"));
-            PurchAir.coolingFuelType = static_cast<Constant::eFuel>(getEnumValue(Constant::eFuelNamesUC, "DISTRICTCOOLING"));
+            // get cooling fuel type
+            cAlphaFieldName = "Cooling Fuel Type";
+            fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "cooling_fuel_type");
+            PurchAir.heatingFuelType = static_cast<Constant::eFuel>(getEnumValue(Constant::eFuelNamesUC, Util::makeUPPER(fieldValue)));
+            if (PurchAir.coolingFuelType == Constant::eFuel::Invalid) {
+                ShowSevereInvalidKey(state,
+                                     eoh,
+                                     cAlphaFieldName,
+                                     fieldValue,
+                                     "Valid entries are Electricity, NaturalGas, Propane, Diesel, Gasoline, FuelOilNo1, FuelOilNo2, OtherFuel1, "
+                                     "OtherFuel2, DistrictCooling, DistrictHeatingWater, or DistrictHeatingSteam.");
+                ShowContinueError(state, "Cooling fuel type is set to DistrictCooling and the simulation continues.");
+                PurchAir.coolingFuelType = static_cast<Constant::eFuel>(getEnumValue(Constant::eFuelNamesUC, "DISTRICTCOOLING"));
+            }
         }
         EndUniqueNodeCheck(state, s_ipsc->cCurrentModuleObject);
     }

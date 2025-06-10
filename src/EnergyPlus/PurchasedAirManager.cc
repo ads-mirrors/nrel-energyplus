@@ -654,10 +654,7 @@ void GetPurchasedAir(EnergyPlusData &state)
                             PurchAir.TotHeatEnergy,
                             OutputProcessor::TimeStepType::System,
                             OutputProcessor::StoreType::Sum,
-                            PurchAir.Name,
-                            Constant::eResource::DistrictHeatingWater,
-                            OutputProcessor::Group::HVAC,
-                            OutputProcessor::EndUseCat::Heating);
+                            PurchAir.Name);
         SetupOutputVariable(state,
                             "Zone Ideal Loads Supply Air Sensible Cooling Energy",
                             Constant::Units::J,
@@ -678,24 +675,27 @@ void GetPurchasedAir(EnergyPlusData &state)
                             PurchAir.TotCoolEnergy,
                             OutputProcessor::TimeStepType::System,
                             OutputProcessor::StoreType::Sum,
-                            PurchAir.Name,
-                            Constant::eResource::DistrictCooling,
-                            OutputProcessor::Group::HVAC,
-                            OutputProcessor::EndUseCat::Cooling);
+                            PurchAir.Name);
         SetupOutputVariable(state,
                             "Zone Ideal Loads Supply Air Total Heating Fuel Energy",
                             Constant::Units::J,
                             PurchAir.TotHeatFuelEnergy,
                             OutputProcessor::TimeStepType::System,
                             OutputProcessor::StoreType::Sum,
-                            PurchAir.Name);
+                            PurchAir.Name,
+                            Constant::eResource::DistrictHeatingWater,
+                            OutputProcessor::Group::HVAC,
+                            OutputProcessor::EndUseCat::Heating);
         SetupOutputVariable(state,
                             "Zone Ideal Loads Supply Air Total Cooling Fuel Energy",
                             Constant::Units::J,
                             PurchAir.TotCoolFuelEnergy,
                             OutputProcessor::TimeStepType::System,
                             OutputProcessor::StoreType::Sum,
-                            PurchAir.Name);
+                            PurchAir.Name,
+                            Constant::eResource::DistrictCooling,
+                            OutputProcessor::Group::HVAC,
+                            OutputProcessor::EndUseCat::Cooling);
         SetupOutputVariable(state,
                             "Zone Ideal Loads Zone Sensible Heating Energy",
                             Constant::Units::J,

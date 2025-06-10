@@ -3811,12 +3811,12 @@ void HeatPumpAirToWater::processInputForEIRPLHP(EnergyPlusData &state)
                 thisAWHP.CrankcaseHeaterCapacity =
                     state.dataInputProcessing->inputProcessor->getRealFieldValue(fields, schemaProps, "crankcase_heater_capacity");
 
-                if (fields.find("crankcase_heater_capacity_function_of_temperature_curve_name") !=  fields.end()) {
+                if (fields.find("crankcase_heater_capacity_function_of_temperature_curve_name") != fields.end()) {
                     std::string const CrankcaseHeaterCapacityCurveName =
                         Util::makeUPPER(fields.at("crankcase_heater_capacity_function_of_temperature_curve_name").get<std::string>());
                     thisAWHP.CrankcaseHeaterCapacityCurveIndex = Curve::GetCurveIndex(state, CrankcaseHeaterCapacityCurveName);
                 }
-                if (fields.find("maximum_ambient_temperature_for_crankcase_heater_operation") !=  fields.end()) {
+                if (fields.find("maximum_ambient_temperature_for_crankcase_heater_operation") != fields.end()) {
                     thisAWHP.MaxOATCrankcaseHeater = state.dataInputProcessing->inputProcessor->getRealFieldValue(
                         fields, schemaProps, "maximum_ambient_temperature_for_crankcase_heater_operation");
                 }
@@ -3910,8 +3910,9 @@ void HeatPumpAirToWater::processInputForEIRPLHP(EnergyPlusData &state)
                     } else {
                         Real64 defaultVal = 0.0;
                         if (!state.dataInputProcessing->inputProcessor->getDefaultValue(
-                            state, cCurrentModuleObject, "resistive_defrost_heater_capacity", defaultVal)) {
-                            ShowSevereError(state, "HeatPump:AirToWater: Resistive Defrost Heater Capacity not entered and could not get default value.");
+                                state, cCurrentModuleObject, "resistive_defrost_heater_capacity", defaultVal)) {
+                            ShowSevereError(state,
+                                            "HeatPump:AirToWater: Resistive Defrost Heater Capacity not entered and could not get default value.");
                             errorsFound = true;
                         } else {
                             thisAWHP.defrostResistiveHeaterCap = defaultVal;

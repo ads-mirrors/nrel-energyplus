@@ -458,6 +458,7 @@ namespace EIRPlantLoopHeatPumps {
         Real64 MaxOATCrankcaseHeater = 10.0;          // maximum OAT for crankcase heater operation [C]
         int CrankcaseHeaterCapacityCurveIndex; // Crankcase heater power-temperature curve or table index
         int defrostCapRatioCurveIndex = 0;
+        Real64 defrostResistiveHeaterCap = 0.0;
         Real64 referenceCapacityOneUnit = 0.0;
 
         int static constexpr maxNumSpeeds = 5;

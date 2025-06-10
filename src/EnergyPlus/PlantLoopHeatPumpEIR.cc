@@ -3901,6 +3901,23 @@ void HeatPumpAirToWater::processInputForEIRPLHP(EnergyPlusData &state)
                     }
                 }
 
+                if (thisAWHP.EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterCooling) {
+                    thisAWHP.defrostResistiveHeaterCap = 0.0;
+                } else {
+                    auto resDefrostHeaterCapFound = fields.find("resistive_defrost_heater_capacity");
+                    if (resDefrostHeaterCapFound != fields.end()) {
+                        thisAWHP.defrostResistiveHeaterCap = resDefrostHeaterCapFound.value().get<Real64>();
+                    } else {
+                        Real64 defaultVal = 0.0;
+                        if (!state.dataInputProcessing->inputProcessor->getDefaultValue(
+                            state, cCurrentModuleObject, "resistive_defrost_heater_capacity", defaultVal)) {
+                            ShowSevereError(state, "HeatPump:AirToWater: Resistive Defrost Heater Capacity not entered and could not get default value.");
+                            errorsFound = true;
+                        } else {
+                            thisAWHP.defrostResistiveHeaterCap = defaultVal;
+                        }
+                    }
+                }
                 if (thisAWHP.EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterHeating &&
                     thisAWHP.defrostStrategy != DefrostControl::None) {
                     thisAWHP.defrostAvailable = true;

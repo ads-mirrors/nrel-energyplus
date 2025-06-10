@@ -13,7 +13,7 @@ The input object ZoneHVAC:IdealLoadsAirSystem provides a model for an ideal HVAC
 
 \subsection{Model}\label{model-002}
 
-The ZoneHVAC:IdealLoadsAirSystem object is modeled as an ideal VAV terminal unit with variable supply temperature and humidity. The supply air flow rate is varied between zero and the maximum in order to satisfy the zone heating or cooling load, zone humidity controls, outdoor air requirements, and other constraints, if specified. The model calculates the total heating and cooling fuel energy (or rate) based on the respective zone loads and the specified fuel efficiency values.
+The ZoneHVAC:IdealLoadsAirSystem object is modeled as an ideal VAV terminal unit with variable supply temperature and humidity. The supply air flow rate is varied between zero and the maximum in order to satisfy the zone heating or cooling load, zone humidity controls, outdoor air requirements, and other constraints, if specified. The model calculates the total heating and cooling fuel energy (or rate) based on the respective zone loads and the specified fuel efficiency values. The heating and cooling fuel types are used for reporting purposes only.
 
 \subsubsection{Inputs and Data}\label{inputs-and-data-002}
 
@@ -47,7 +47,9 @@ The user specifies some or all of the following data for each ZoneHVAC:IdealLoad
   \item sensible heat recovery effectiveness
   \item latent heat recovery effectiveness
   \item heating fuel efficiency schedule name
+  \item heating fuel type
   \item cooling fuel efficiency schedule name
+  \item cooling fuel type
 \end{itemize}
 
 \emph{\textbf{All input data for the ZoneHVAC:IdealLoadsAirSystem is stored in the array PurchAir. The model and data are encapsulated in the module PurchasedAirManager.}}

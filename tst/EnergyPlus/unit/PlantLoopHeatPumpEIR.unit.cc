@@ -854,7 +854,8 @@ TEST_F(EnergyPlusFixture, processInputForEIRPLHP_AWHP)
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].powerRatioFuncPLRCurveIndex[0], Curve::GetCurveIndex(*state, "EIRCURVEFUNCPLR"));
 }
 
-TEST_F(EnergyPlusFixture, calcLoadSideHeatTransfer_AWHP) {
+TEST_F(EnergyPlusFixture, calcLoadSideHeatTransfer_AWHP)
+{
     auto thisAWHP = HeatPumpAirToWater();
 
     state->dataPlnt->PlantLoop.allocate(1);
@@ -888,13 +889,15 @@ TEST_F(EnergyPlusFixture, calcLoadSideHeatTransfer_AWHP) {
     thisAWHP.calcLoadOutletTemp = EIRPlantLoopHeatPumps::HeatPumpAirToWater::subtract;
     thisAWHP.calcLoadSideHeatTransfer(*state, capacity, load);
     EXPECT_EQ(thisAWHP.loadSideHeatTransfer, capacity);
-    EXPECT_NEAR(CpLoad * (thisAWHP.loadSideOutletTemp - thisAWHP.loadSideInletTemp) * thisAWHP.loadSideMassFlowRate, -thisAWHP.loadSideHeatTransfer, 1e-6);
+    EXPECT_NEAR(
+        CpLoad * (thisAWHP.loadSideOutletTemp - thisAWHP.loadSideInletTemp) * thisAWHP.loadSideMassFlowRate, -thisAWHP.loadSideHeatTransfer, 1e-6);
 
     thisAWHP.EIRHPType = EnergyPlus::DataPlant::PlantEquipmentType::HeatPumpAirToWaterHeating;
     thisAWHP.calcLoadOutletTemp = EIRPlantLoopHeatPumps::HeatPumpAirToWater::add;
     thisAWHP.calcLoadSideHeatTransfer(*state, capacity, load);
     EXPECT_EQ(thisAWHP.loadSideHeatTransfer, capacity);
-    EXPECT_NEAR(CpLoad * (thisAWHP.loadSideOutletTemp - thisAWHP.loadSideInletTemp) * thisAWHP.loadSideMassFlowRate, thisAWHP.loadSideHeatTransfer, 1e-6);
+    EXPECT_NEAR(
+        CpLoad * (thisAWHP.loadSideOutletTemp - thisAWHP.loadSideInletTemp) * thisAWHP.loadSideMassFlowRate, thisAWHP.loadSideHeatTransfer, 1e-6);
 
     capacity = 120;
     load = 100;
@@ -902,13 +905,17 @@ TEST_F(EnergyPlusFixture, calcLoadSideHeatTransfer_AWHP) {
     thisAWHP.calcLoadOutletTemp = EIRPlantLoopHeatPumps::HeatPumpAirToWater::subtract;
     thisAWHP.calcLoadSideHeatTransfer(*state, capacity, load);
     EXPECT_EQ(thisAWHP.loadSideHeatTransfer, load);
-    EXPECT_NEAR(CpLoad * (thisAWHP.loadSideOutletTemp - thisAWHP.loadSideInletTemp) * thisAWHP.loadSideMassFlowRate, -thisAWHP.loadSideHeatTransfer, 1e-6);
+    EXPECT_NEAR(
+        CpLoad * (thisAWHP.loadSideOutletTemp - thisAWHP.loadSideInletTemp) * thisAWHP.loadSideMassFlowRate, -thisAWHP.loadSideHeatTransfer, 1e-6);
 
     thisAWHP.EIRHPType = EnergyPlus::DataPlant::PlantEquipmentType::HeatPumpAirToWaterHeating;
     thisAWHP.calcLoadOutletTemp = EIRPlantLoopHeatPumps::HeatPumpAirToWater::add;
     thisAWHP.calcLoadSideHeatTransfer(*state, capacity, load);
     EXPECT_EQ(thisAWHP.loadSideHeatTransfer, load);
-    EXPECT_NEAR(CpLoad * (thisAWHP.loadSideOutletTemp - thisAWHP.loadSideInletTemp) * thisAWHP.loadSideMassFlowRate, thisAWHP.loadSideHeatTransfer, 1e-6);
+    EXPECT_NEAR(
+        CpLoad * (thisAWHP.loadSideOutletTemp - thisAWHP.loadSideInletTemp) * thisAWHP.loadSideMassFlowRate, thisAWHP.loadSideHeatTransfer, 1e-6);
+}
+
 }
 
 TEST_F(EnergyPlusFixture, processInputForEIRPLHP_TestAirSourceDuplicateNodes)

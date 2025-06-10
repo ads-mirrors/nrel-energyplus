@@ -201,6 +201,7 @@ namespace AirflowNetwork {
         DOU = 12, // Damper Outlet Node
         SPI = 13, // Splitter inlet Node
         SPO = 14, // Splitter Outlet Node
+        ZON = 15, // Zone node
         Num
     };
 
@@ -889,6 +890,7 @@ namespace AirflowNetwork {
         Real64 Height;         // Nodal height
         int EPlusNodeNum;      // EPlus node number
         int AirLoopNum;        // AirLoop number
+        int EPlusZoneInletNodeNum; // Air terminal outlet
 
         // Default Constructor
         DisSysNodeProp() : Height(0.0), EPlusNodeNum(0), AirLoopNum(0)

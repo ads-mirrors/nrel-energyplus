@@ -7,6 +7,7 @@ Heating and Cooling Fuel Efficiency for Ideal Loads Air System
 
  - First draft: March 5, 2025
  - Modified Date: April 30, 2025
+ - Modified Date: June 10, 2025
 
 ## Justification for New Feature ##
 
@@ -65,6 +66,8 @@ For both options, the heating and cooling energy rate and energy consumption wil
 	 {E_{heat}}         = Zone Ideal Loads Zone Heating Fuel Energy, [J]	 
 	 {Fuel_Eff_{cool}}  = Cooling Fuel Efficiency, [-]
 	 {Fuel_Eff_{heat}}  = Heating Fuel Efficiency, [-]
+
+** Option II was implemented **
 	 
 ### Questions for Discussion:
 
@@ -180,7 +183,7 @@ ZoneHVAC:IdealLoadsAirSystem,
        \object-list DesignSpecificationZoneHVACSizingName
 ```
 
-  **  The following two optional NEW input fields will be added  **
+  **  The following four optional NEW input fields were added  **
 
 ```
   A18, \field Heating Fuel Efficiency Schedule Name
@@ -191,7 +194,23 @@ ZoneHVAC:IdealLoadsAirSystem,
        \note The minimum schedule value must be greater than 0.0. The maximum value
        \note depends on the technology, and can exceed 1.0.
        \note If blank, heating fuel efficiency value is always 1.0.
-  A19; \field Cooling Fuel Efficiency Schedule Name
+  A19, \field Heating Fuel Type
+       \type choice
+       \key Electricity
+       \key NaturalGas
+       \key Propane
+       \key FuelOilNo1
+       \key FuelOilNo2
+       \key Coal
+       \key Diesel
+       \key Gasoline
+       \key OtherFuel1
+       \key OtherFuel2
+       \key DistrictCooling
+       \key DistrictHeatingWater
+       \key DistrictHeatingSteam
+	   \Default DistrictHeatingWater
+  A20, \field Cooling Fuel Efficiency Schedule Name
        \type object-list
        \object-list ScheduleNames
        \note Reference cooling fuel efficiency value for converting cooling 
@@ -199,6 +218,23 @@ ZoneHVAC:IdealLoadsAirSystem,
        \note The minimum schedule value must be greater than 0.0. The maximum value
        \note depends on the technology, and can exceed 1.0.
        \note If blank, cooling fuel efficiency value is always 1.0.
+  A21; \field Cooling Fuel Type
+       \type choice
+       \key Electricity
+       \key NaturalGas
+       \key Propane
+       \key FuelOilNo1
+       \key FuelOilNo2
+       \key Coal
+       \key Diesel
+       \key Gasoline
+       \key OtherFuel1
+       \key OtherFuel2
+       \key DistrictCooling
+       \key DistrictHeatingWater
+       \key DistrictHeatingSteam
+	   \Default DistrictCooling
+
 ```   
 
 ## Engineering Reference ##
@@ -209,7 +245,7 @@ As needed.
 
 An example file will be modified to demonstrate the use of availability schedule. Simulation results will be examined and sample results will be provided.
 
-Transition is required if option II is selected.
+Transition is not required since the new input fields are optional, have defaults, and are appended at the end.
 
 ## Proposed Report Variables: ##
 
@@ -237,11 +273,14 @@ N/A
 
 (2) * Add new member and report variables
 
-    (2.1) Add two new member variables
+    (2.1) Add four new member variables
 
 ```
         Sched::Schedule *heatFuelEffSched = nullptr; // heating feul efficiency schedule
         Sched::Schedule *coolFuelEffSched = nullptr; // cooling feul efficiency schedule
+		
+        Constant::eFuel heatingFuelType = Constant::eFuel::DistrictHeatingWater; // fuel resource type assignment
+        Constant::eFuel coolingFuelType = Constant::eFuel::DistrictCooling;      // fuel resource type assignment		
 ```
 
     (2.2) Add eight new report variables
@@ -259,11 +298,13 @@ N/A
 
 ### IDD Change ###
 
-(1) * Modified the IDD by adding two new input fields *
+(1) * Modified the IDD by adding four new input fields *
 
     *    - (1.1) Add heating_fuel_efficiency_schedule_name new input field *
-    *    - (1.2) Add cooling_fuel_efficiency_schedule_name new input field *
-    
+    *    - (1.2) Add heating_fuel_type new input field *
+	*    - (1.3) Add cooling_fuel_efficiency_schedule_name new input field *
+	*    - (1.4) Add cooling_fuel_type new input field *
+
     
 ### Modify Reporting Function ###
 

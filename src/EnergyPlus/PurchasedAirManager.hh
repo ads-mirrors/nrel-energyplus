@@ -270,8 +270,8 @@ namespace PurchasedAirManager {
         Real64 TotCoolFuelRate;                                                  // Total cooling fuel consumption rate [W]
         Real64 TotHeatFuelEnergy;                                                // Total heating fuel consumption [J]
         Real64 TotCoolFuelEnergy;                                                // Total cooling fuel consumption [J]
-        Constant::eFuel heatingFuelType = Constant::eFuel::DistrictHeatingWater; // resource type assignment
-        Constant::eFuel coolingFuelType = Constant::eFuel::DistrictCooling;      // resource type assignment
+        Constant::eFuel heatingFuelType = Constant::eFuel::DistrictHeatingWater; // fuel resource type assignment
+        Constant::eFuel coolingFuelType = Constant::eFuel::DistrictCooling;      // fuel resource type assignment
 
         // Default Constructor
         ZonePurchasedAir()

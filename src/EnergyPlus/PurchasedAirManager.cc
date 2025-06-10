@@ -625,6 +625,9 @@ void GetPurchasedAir(EnergyPlusData &state)
                 ShowSevereItemNotFound(state, eoh, cAlphaFieldName, coolFuelEfficiencySchedName);
                 ErrorsFound = true;
             }
+            // assign default heating and cooling fuel type
+            PurchAir.heatingFuelType = static_cast<Constant::eFuel>(getEnumValue(Constant::eFuelNamesUC, "DISTRICTHEATINGWATER"));
+            PurchAir.coolingFuelType = static_cast<Constant::eFuel>(getEnumValue(Constant::eFuelNamesUC, "DISTRICTCOOLING"));
         }
         EndUniqueNodeCheck(state, s_ipsc->cCurrentModuleObject);
     }
@@ -683,7 +686,7 @@ void GetPurchasedAir(EnergyPlusData &state)
                             OutputProcessor::TimeStepType::System,
                             OutputProcessor::StoreType::Sum,
                             PurchAir.Name,
-                            Constant::eResource::DistrictHeatingWater,
+                            Constant::eFuel2eResource[(int)PurchAir.heatingFuelType],
                             OutputProcessor::Group::HVAC,
                             OutputProcessor::EndUseCat::Heating);
         SetupOutputVariable(state,
@@ -693,7 +696,7 @@ void GetPurchasedAir(EnergyPlusData &state)
                             OutputProcessor::TimeStepType::System,
                             OutputProcessor::StoreType::Sum,
                             PurchAir.Name,
-                            Constant::eResource::DistrictCooling,
+                            Constant::eFuel2eResource[(int)PurchAir.coolingFuelType],
                             OutputProcessor::Group::HVAC,
                             OutputProcessor::EndUseCat::Cooling);
         SetupOutputVariable(state,

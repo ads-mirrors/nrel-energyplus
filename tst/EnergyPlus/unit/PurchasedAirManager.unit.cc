@@ -480,8 +480,10 @@ TEST_F(ZoneIdealLoadsTest, IdealLoads_ExhaustNodeTest)
         "  ,                               !- Sensible Heat Recovery Effectiveness{ dimensionless }",
         "  ,                               !- Latent Heat Recovery Effectiveness{ dimensionless }",
         "  ,                               !- Design Specification ZoneHVAC Sizing Object Name }",
-        "  DXHeatingCoilFuelEffSched,      !- Heating Fuel Efficiency Schedule Name }",
-        "  DXCoolingCoilFuelEffSched;      !- Cooling Fuel Efficiency Schedule Name }",
+        "  DXHeatingCoilFuelEffSched,      !- Heating Fuel Efficiency Schedule Name",
+        "  Electricity,                    !- Heating Fuel Type",
+        "  DXCoolingCoilFuelEffSched,      !- Cooling Fuel Efficiency Schedule Name",
+        "  Electricity;                    !- Cooling Fuel Type",
 
         "ZoneHVAC:EquipmentConnections,",
         "  EAST ZONE,                      !- Zone Name",
@@ -546,7 +548,9 @@ TEST_F(ZoneIdealLoadsTest, IdealLoads_ExhaustNodeTest)
     // Ideal loads air system found the plenum it is attached to
     EXPECT_EQ(PurchAir.SupplyAirMassFlowRate, state->dataLoopNodes->Node(PurchAir.ZoneSupplyAirNodeNum).MassFlowRate);
     EXPECT_EQ(PurchAir.SupplyAirMassFlowRate, state->dataLoopNodes->Node(PurchAir.ZoneExhaustAirNodeNum).MassFlowRate);
+    EXPECT_ENUM_EQ(PurchAir.heatingFuelType, Constant::eFuel::Electricity);
     EXPECT_EQ(PurchAir.heatFuelEffSched->getCurrentVal(), 2.0);
+    EXPECT_ENUM_EQ(PurchAir.coolingFuelType, Constant::eFuel::Electricity);
     EXPECT_EQ(PurchAir.coolFuelEffSched->getCurrentVal(), 3.0);
 }
 
@@ -1356,7 +1360,9 @@ TEST_F(ZoneIdealLoadsTest, IdealLoads_Fix_SA_HumRat_Test)
         "  ,                               !- Latent Heat Recovery Effectiveness{ dimensionless }",
         "  ,                               !- Design Specification ZoneHVAC Sizing Object Name }",
         "  DXHeatingCoilFuelEffSched,      !- Heating Fuel Efficiency Schedule Name }",
-        "  DXCoolingCoilFuelEffSched;      !- Cooling Fuel Efficiency Schedule Name }",
+        "  Electricity,                    !- Heating Fuel Type",
+        "  DXCoolingCoilFuelEffSched,      !- Cooling Fuel Efficiency Schedule Name }",
+        "  Electricity;                    !- Cooling Fuel Type",
 
         "ZoneHVAC:EquipmentConnections,",
         "  EAST ZONE,                      !- Zone Name",
@@ -1536,7 +1542,9 @@ TEST_F(ZoneIdealLoadsTest, IdealLoads_Fix_SA_HumRat_Test)
     EXPECT_DOUBLE_EQ(state->dataLoopNodes->Node(1).Temp, 20.228931255157292);
 
     ReportPurchasedAir(*state, 1);
+    EXPECT_ENUM_EQ(PurchAir.heatingFuelType, Constant::eFuel::Electricity);
     EXPECT_EQ(PurchAir.heatFuelEffSched->getCurrentVal(), 2.0);
+    EXPECT_ENUM_EQ(PurchAir.heatingFuelType, Constant::eFuel::Electricity);
     EXPECT_EQ(PurchAir.coolFuelEffSched->getCurrentVal(), 3.0);
     EXPECT_DOUBLE_EQ(PurchAir.TotCoolRate, 1003.6327856486452);
     EXPECT_DOUBLE_EQ(PurchAir.TotCoolFuelRate, 1003.6327856486452 / 3.0);

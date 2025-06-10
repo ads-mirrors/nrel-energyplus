@@ -22,3 +22,17 @@ This will eventually become a more structured file, but currently it isn't clear
 
 See Pull Request [#10995](https://github.com/NREL/EnergyPlus/pull/10995).
 
+* Added new output variables:
+
+```
+   (1) * Zone Ideal Loads Zone Heating Fuel Energy Rate [W] *
+   (2) * Zone Ideal Loads Zone Cooling Fuel Energy Rate [W]            
+   (3) * Zone Ideal Loads Zone Heating Fuel Energy [J]
+   (4) * Zone Ideal Loads Zone Cooling Fuel Energy [J]
+   (5) * Zone Ideal Loads Supply Air Total Heating Fuel Energy Rate [W] *
+   (6) * Zone Ideal Loads Supply Air Total Cooling Fuel Energy Rate [W] *
+   (7) * Zone Ideal Loads Supply Air Total Heating Fuel Energy [J] *
+   (8) * Zone Ideal Loads Supply Air Total Cooling Fuel Energy [J] *
+```
+
+See pull request [#10971] https://github.com/NREL/EnergyPlus/pull/10971

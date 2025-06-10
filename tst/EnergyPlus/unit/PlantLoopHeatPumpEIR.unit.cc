@@ -854,6 +854,63 @@ TEST_F(EnergyPlusFixture, processInputForEIRPLHP_AWHP)
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].powerRatioFuncPLRCurveIndex[0], Curve::GetCurveIndex(*state, "EIRCURVEFUNCPLR"));
 }
 
+TEST_F(EnergyPlusFixture, calcLoadSideHeatTransfer_AWHP) {
+    auto thisAWHP = HeatPumpAirToWater();
+
+    state->dataPlnt->PlantLoop.allocate(1);
+    state->dataPlnt->PlantLoop(1).FluidName = "WATER";
+    state->dataPlnt->PlantLoop(1).glycol = Fluid::GetWater(*state);
+    state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Supply).TotalBranches = 1;
+    state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Supply).Branch.allocate(1);
+    state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Supply).Branch(1).TotalComponents = 1;
+    state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Supply).Branch(1).Comp.allocate(1);
+    auto &PLHPPlantLoadSideComp = state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Supply).Branch(1).Comp(1);
+    PLHPPlantLoadSideComp.Type = DataPlant::PlantEquipmentType::HeatPumpAirToWaterCooling;
+    state->dataLoopNodes->Node.allocate(2);
+    thisAWHP.EIRHPType = EnergyPlus::DataPlant::PlantEquipmentType::HeatPumpAirToWaterCooling;
+    thisAWHP.loadSidePlantLoc.loopSideNum = DataPlant::LoopSideLocation::Supply;
+    thisAWHP.loadSidePlantLoc.branchNum = 1;
+    thisAWHP.loadSidePlantLoc.compNum = 1;
+    PlantUtilities::SetPlantLocationLinks(*state, thisAWHP.loadSidePlantLoc);
+    bool errFlag = false;
+    PlantUtilities::ScanPlantLoopsForObject(
+        *state, thisAWHP.name, thisAWHP.EIRHPType, thisAWHP.loadSidePlantLoc, errFlag, _, _, _, thisAWHP.loadSideNodes.inlet, _);
+    thisAWHP.loadSideNodes.outlet = 2;
+    thisAWHP.loadSideNodes.inlet = 1;
+    thisAWHP.loadSideMassFlowRate = 2;
+    thisAWHP.loadSideInletTemp = 20;
+    thisAWHP.loadSidePlantLoc.loop = &state->dataPlnt->PlantLoop(1);
+    state->dataLoopNodes->Node(thisAWHP.loadSideNodes.inlet).Temp = thisAWHP.loadSideInletTemp;
+    Real64 CpLoad = thisAWHP.loadSidePlantLoc.loop->glycol->getSpecificHeat(
+        *state, state->dataLoopNodes->Node(thisAWHP.loadSideNodes.inlet).Temp, "HeatPumpAirToWater::calcLoadSideHeatTransfer()");
+    Real64 capacity = 100;
+    Real64 load = 120;
+    thisAWHP.calcLoadOutletTemp = EIRPlantLoopHeatPumps::HeatPumpAirToWater::subtract;
+    thisAWHP.calcLoadSideHeatTransfer(*state, capacity, load);
+    EXPECT_EQ(thisAWHP.loadSideHeatTransfer, capacity);
+    EXPECT_NEAR(CpLoad * (thisAWHP.loadSideOutletTemp - thisAWHP.loadSideInletTemp) * thisAWHP.loadSideMassFlowRate, -thisAWHP.loadSideHeatTransfer, 1e-6);
+
+    thisAWHP.EIRHPType = EnergyPlus::DataPlant::PlantEquipmentType::HeatPumpAirToWaterHeating;
+    thisAWHP.calcLoadOutletTemp = EIRPlantLoopHeatPumps::HeatPumpAirToWater::add;
+    thisAWHP.calcLoadSideHeatTransfer(*state, capacity, load);
+    EXPECT_EQ(thisAWHP.loadSideHeatTransfer, capacity);
+    EXPECT_NEAR(CpLoad * (thisAWHP.loadSideOutletTemp - thisAWHP.loadSideInletTemp) * thisAWHP.loadSideMassFlowRate, thisAWHP.loadSideHeatTransfer, 1e-6);
+
+    capacity = 120;
+    load = 100;
+    thisAWHP.EIRHPType = EnergyPlus::DataPlant::PlantEquipmentType::HeatPumpAirToWaterCooling;
+    thisAWHP.calcLoadOutletTemp = EIRPlantLoopHeatPumps::HeatPumpAirToWater::subtract;
+    thisAWHP.calcLoadSideHeatTransfer(*state, capacity, load);
+    EXPECT_EQ(thisAWHP.loadSideHeatTransfer, load);
+    EXPECT_NEAR(CpLoad * (thisAWHP.loadSideOutletTemp - thisAWHP.loadSideInletTemp) * thisAWHP.loadSideMassFlowRate, -thisAWHP.loadSideHeatTransfer, 1e-6);
+
+    thisAWHP.EIRHPType = EnergyPlus::DataPlant::PlantEquipmentType::HeatPumpAirToWaterHeating;
+    thisAWHP.calcLoadOutletTemp = EIRPlantLoopHeatPumps::HeatPumpAirToWater::add;
+    thisAWHP.calcLoadSideHeatTransfer(*state, capacity, load);
+    EXPECT_EQ(thisAWHP.loadSideHeatTransfer, load);
+    EXPECT_NEAR(CpLoad * (thisAWHP.loadSideOutletTemp - thisAWHP.loadSideInletTemp) * thisAWHP.loadSideMassFlowRate, thisAWHP.loadSideHeatTransfer, 1e-6);
+}
+
 TEST_F(EnergyPlusFixture, processInputForEIRPLHP_TestAirSourceDuplicateNodes)
 {
     std::string const idf_objects = delimited_string({"HeatPump:PlantLoop:EIR:Cooling,",

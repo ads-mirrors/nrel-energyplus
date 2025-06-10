@@ -615,20 +615,16 @@ void HeatPumpAirToWater::calcPowerUsage(EnergyPlusData &state, Real64 availableC
     // check curves value and resets to zero if negative
     this->eirModCurveCheck(state, eirModifierFuncTempHigh);
     this->eirModFPLRCurveCheck(state, eirModifierFuncPLRHigh);
-    if (speedLevel < this->numSpeeds - 1) { // not at highest speed
-        Real64 interpRatio = (std::fabs(currentLoadNthUnit) - capacityLow) / (capacityHigh - capacityLow);
+    Real64 interpRatio = (std::fabs(currentLoadNthUnit) - capacityLow) / (capacityHigh - capacityLow);
 
-        Real64 powerUsageLow = (currentLoadNthUnit / this->ratedCOP[speedLevel]) * (eirModifierFuncPLRLow * eirModifierFuncTempLow) *
-                               this->defrostPowerMultiplier * this->cyclingRatio;
-        Real64 powerUsageHigh = (currentLoadNthUnit / this->ratedCOP[speedLevel]) * (eirModifierFuncPLRHigh * eirModifierFuncTempHigh) *
-                                this->defrostPowerMultiplier * this->cyclingRatio;
-        this->powerUsage = (1 - interpRatio) * powerUsageLow + interpRatio * powerUsageHigh;
-    } else { // at highest speed level
-        this->powerUsage = (currentLoadNthUnit / this->ratedCOP[this->numSpeeds - 1]) * (eirModifierFuncPLRHigh * eirModifierFuncTempHigh) *
+    Real64 powerUsageLow = (capacityLow / this->ratedCOP[speedLevel]) * (eirModifierFuncPLRLow * eirModifierFuncTempLow) *
                            this->defrostPowerMultiplier * this->cyclingRatio;
-    }
+    Real64 powerUsageHigh = (capacityHigh / this->ratedCOP[speedLevel]) * (eirModifierFuncPLRHigh * eirModifierFuncTempHigh) *
+                            this->defrostPowerMultiplier * this->cyclingRatio;
+    this->powerUsage = (1 - interpRatio) * powerUsageLow + interpRatio * powerUsageHigh;
     this->powerUsage += (numHeatPumpUsed - 1) * (availableCapacityBeforeMultiplier / this->ratedCOP[this->numSpeeds - 1]) *
                         (eirModifierFuncPLRHigh * eirModifierFuncTempHigh) * this->defrostPowerMultiplier * this->cyclingRatio;
+    this->speedLevel = speedLevel;
 }
 
 void EIRPlantLoopHeatPump::calcPowerUsage(EnergyPlusData &state)

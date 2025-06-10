@@ -916,6 +916,110 @@ TEST_F(EnergyPlusFixture, calcLoadSideHeatTransfer_AWHP)
         CpLoad * (thisAWHP.loadSideOutletTemp - thisAWHP.loadSideInletTemp) * thisAWHP.loadSideMassFlowRate, thisAWHP.loadSideHeatTransfer, 1e-6);
 }
 
+TEST_F(EnergyPlusFixture, calcPowerUsage_AWHP)
+{
+
+    std::string const idf_objects = delimited_string({
+        "Curve:Biquadratic,",
+        "CapCurveFuncTemp,        !- Name",
+        "1.0,                     !- Coefficient1 Constant",
+        "0.0,                     !- Coefficient2 x",
+        "0.0,                     !- Coefficient3 x**2",
+        "0.0,                     !- Coefficient4 y",
+        "0.0,                     !- Coefficient5 y**2",
+        "0.0,                     !- Coefficient6 x*y",
+        "5.0,                     !- Minimum Value of x",
+        "10.0,                    !- Maximum Value of x",
+        "24.0,                    !- Minimum Value of y",
+        "35.0,                    !- Maximum Value of y",
+        ",                        !- Minimum Curve Output",
+        ",                        !- Maximum Curve Output",
+        "Temperature,             !- Input Unit Type for X",
+        "Temperature,             !- Input Unit Type for Y",
+        "Dimensionless;           !- Output Unit Type",
+
+        "Curve:Biquadratic,",
+        "EIRCurveFuncTemp,        !- Name",
+        "1.0,                     !- Coefficient1 Constant",
+        "0.0,                     !- Coefficient2 x",
+        "0.0,                     !- Coefficient3 x**2",
+        "0.0,                     !- Coefficient4 y",
+        "0.0,                     !- Coefficient5 y**2",
+        "0.0,                     !- Coefficient6 x*y",
+        "5.0,                     !- Minimum Value of x",
+        "10.0,                    !- Maximum Value of x",
+        "24.0,                    !- Minimum Value of y",
+        "35.0,                    !- Maximum Value of y",
+        ",                        !- Minimum Curve Output",
+        ",                        !- Maximum Curve Output",
+        "Temperature,             !- Input Unit Type for X",
+        "Temperature,             !- Input Unit Type for Y",
+        "Dimensionless;           !- Output Unit Type",
+
+        "Curve:Quadratic,",
+        "EIRCurveFuncPLR,         !- Name",
+        "1.0,                     !- Coefficient1 Constant",
+        "0.0,                     !- Coefficient2 x",
+        "0.0,                     !- Coefficient3 x**2",
+        "0.0,                     !- Minimum Value of x",
+        "1.0;                     !- Maximum Value of x",
+    });
+    ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
+
+    auto thisAWHP = HeatPumpAirToWater();
+    state->dataPlnt->PlantLoop.allocate(1);
+    state->dataPlnt->PlantLoop(1).FluidName = "WATER";
+    state->dataPlnt->PlantLoop(1).glycol = Fluid::GetWater(*state);
+    state->dataPlnt->PlantLoop(1).LoopDemandCalcScheme = DataPlant::LoopDemandCalcScheme::SingleSetPoint;
+    state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Supply).TotalBranches = 1;
+    state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Supply).Branch.allocate(1);
+    state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Supply).Branch(1).TotalComponents = 1;
+    state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Supply).Branch(1).Comp.allocate(1);
+    auto &PLHPPlantLoadSideComp = state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Supply).Branch(1).Comp(1);
+    PLHPPlantLoadSideComp.Type = DataPlant::PlantEquipmentType::HeatPumpAirToWaterCooling;
+    thisAWHP.loadSidePlantLoc.loop = &state->dataPlnt->PlantLoop(1);
+    thisAWHP.loadSidePlantLoc.comp = &PLHPPlantLoadSideComp;
+    thisAWHP.loadSidePlantLoc.comp->CurOpSchemeType = DataPlant::OpScheme::CompSetPtBased;
+    thisAWHP.EIRHPType = EnergyPlus::DataPlant::PlantEquipmentType::HeatPumpAirToWaterCooling;
+
+    thisAWHP.loadSideNodes.inlet = 1;
+    thisAWHP.loadSideNodes.outlet = 2;
+    state->dataLoopNodes->Node.allocate(2);
+    state->dataLoopNodes->Node(2).TempSetPoint = 20;
+    thisAWHP.sourceSideHeatTransfer = 100;
+    thisAWHP.loadSideHeatTransfer = 90;
+    thisAWHP.numSpeeds = 2;
+    thisAWHP.ratedCapacity[0] = 600;
+    thisAWHP.ratedCOP[0] = 1;
+    thisAWHP.capFuncTempCurveIndex[0] = Curve::GetCurveIndex(*state, "CAPCURVEFUNCTEMP");
+    thisAWHP.powerRatioFuncTempCurveIndex[0] = Curve::GetCurveIndex(*state, "EIRCURVEFUNCTEMP");
+    thisAWHP.powerRatioFuncPLRCurveIndex[0] = Curve::GetCurveIndex(*state, "EIRCURVEFUNCPLR");
+    thisAWHP.ratedCapacity[1] = 1200;
+    thisAWHP.ratedCOP[1] = 1;
+    thisAWHP.capFuncTempCurveIndex[1] = Curve::GetCurveIndex(*state, "CAPCURVEFUNCTEMP");
+    thisAWHP.powerRatioFuncTempCurveIndex[1] = Curve::GetCurveIndex(*state, "EIRCURVEFUNCTEMP");
+    thisAWHP.powerRatioFuncPLRCurveIndex[1] = Curve::GetCurveIndex(*state, "EIRCURVEFUNCPLR");
+    thisAWHP.compressorMultiplier = 2;
+    thisAWHP.cyclingRatio = 1.0;
+    Real64 availableCapacityBeforeMultiplier = thisAWHP.ratedCapacity[1];
+    // when COP = 1, power usage should equal heat transfer
+    thisAWHP.loadSideHeatTransfer = 500;
+    thisAWHP.calcPowerUsage(*state, availableCapacityBeforeMultiplier);
+    EXPECT_EQ(thisAWHP.speedLevel, 0);
+    EXPECT_EQ(thisAWHP.powerUsage, 500);
+    thisAWHP.loadSideHeatTransfer = 1000;
+    thisAWHP.calcPowerUsage(*state, availableCapacityBeforeMultiplier);
+    EXPECT_EQ(thisAWHP.speedLevel, 1);
+    EXPECT_EQ(thisAWHP.powerUsage, 1000);
+    thisAWHP.loadSideHeatTransfer = 1500;
+    thisAWHP.calcPowerUsage(*state, availableCapacityBeforeMultiplier);
+    EXPECT_EQ(thisAWHP.speedLevel, 0);
+    EXPECT_EQ(thisAWHP.powerUsage, 1500);
+    thisAWHP.loadSideHeatTransfer = 2000;
+    thisAWHP.calcPowerUsage(*state, availableCapacityBeforeMultiplier);
+    EXPECT_EQ(thisAWHP.speedLevel, 1);
+    EXPECT_EQ(thisAWHP.powerUsage, 2000);
 }
 
 TEST_F(EnergyPlusFixture, processInputForEIRPLHP_TestAirSourceDuplicateNodes)

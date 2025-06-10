@@ -468,6 +468,7 @@ namespace EIRPlantLoopHeatPumps {
         std::array<int, maxNumSpeeds> capFuncTempCurveIndex = {};
         std::array<int, maxNumSpeeds> powerRatioFuncTempCurveIndex = {};
         std::array<int, maxNumSpeeds> powerRatioFuncPLRCurveIndex = {};
+        int speedLevel = 0; // 0-indexing
 
         // EMS variables
         bool OperationModeEMSOverrideOn = false;

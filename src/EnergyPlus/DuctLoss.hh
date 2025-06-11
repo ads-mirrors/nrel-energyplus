@@ -83,7 +83,7 @@ namespace DuctLoss {
 
     enum class DuctLossSubType
     {
-        Invalid = 0,
+        Invalid = -1,
         SupplyBranch,
         SupplyTrunk,
         ReturnBranch,

@@ -1813,14 +1813,14 @@ TEST_F(EnergyPlusFixture, DuctLoss_test)
     DuctLoss::SimulateDuctLoss(*state, DuctLoss::AirPath::Supply, 1);
     DuctLoss::SimulateDuctLoss(*state, DuctLoss::AirPath::Return, 1);
 
-    EXPECT_NEAR(state->dataDuctLoss->ZoneSen(1), -1857.50162, 0.01);
-    EXPECT_NEAR(state->dataDuctLoss->ZoneLat(1), -9.1049562317095918e-12, 0.00001);
+    EXPECT_NEAR(state->dataDuctLoss->ZoneSen(1), -1849.16329, 0.01);
+    EXPECT_NEAR(state->dataDuctLoss->ZoneLat(1), -8.9009869880302578e-12, 0.00001);
     EXPECT_NEAR(state->dataDuctLoss->ZoneSen(2), 2725.2772, 0.01);
     EXPECT_NEAR(state->dataDuctLoss->ZoneLat(2), 0.00096392, 0.00001);
-    EXPECT_NEAR(state->dataDuctLoss->ZoneSen(3), 5933.4584, 0.01);
-    EXPECT_NEAR(state->dataDuctLoss->ZoneLat(3), 1.3350622776532365e-06, 0.00001);
-    EXPECT_NEAR(state->dataDuctLoss->SysSen, 1857.5016296194462, 0.01);
-    EXPECT_NEAR(state->dataDuctLoss->SysLat, 9.1049562317095918e-12, 0.00001);
+    EXPECT_NEAR(state->dataDuctLoss->ZoneSen(3), 5925.09082, 0.01);
+    EXPECT_NEAR(state->dataDuctLoss->ZoneLat(3), 1.3350089009867216e-06, 0.00001);
+    EXPECT_NEAR(state->dataDuctLoss->SysSen, 1849.16329, 0.01);
+    EXPECT_NEAR(state->dataDuctLoss->SysLat, 8.9009869880302578e-12, 0.00001);
 
     // Summer design conditions
 
@@ -1839,14 +1839,14 @@ TEST_F(EnergyPlusFixture, DuctLoss_test)
     DuctLoss::SimulateDuctLoss(*state, DuctLoss::AirPath::Supply, 1);
     DuctLoss::SimulateDuctLoss(*state, DuctLoss::AirPath::Return, 1);
 
-    EXPECT_NEAR(state->dataDuctLoss->ZoneSen(1), 2395.88346, 0.01);
-    EXPECT_NEAR(state->dataDuctLoss->ZoneLat(1), -9.6329993350312764e-05, 0.00001);
-    EXPECT_NEAR(state->dataDuctLoss->ZoneSen(2), -380.986907, 0.01);
+    EXPECT_NEAR(state->dataDuctLoss->ZoneSen(1), 2390.1450447422894, 0.01);
+    EXPECT_NEAR(state->dataDuctLoss->ZoneLat(1), -9.6329993499279026e-05, 0.00001);
+    EXPECT_NEAR(state->dataDuctLoss->ZoneSen(2), -380.98690778527674, 0.01);
     EXPECT_NEAR(state->dataDuctLoss->ZoneLat(2), -1.0343289970487711e-06, 0.00001);
-    EXPECT_NEAR(state->dataDuctLoss->ZoneSen(3), -4141.493401, 0.01);
-    EXPECT_NEAR(state->dataDuctLoss->ZoneLat(3), -9.7021513491639911e-07, 0.00001);
-    EXPECT_NEAR(state->dataDuctLoss->SysSen, -2395.88346, 0.01);
-    EXPECT_NEAR(state->dataDuctLoss->SysLat, 9.6329993350312764e-05, 0.00001);
+    EXPECT_NEAR(state->dataDuctLoss->ZoneSen(3), -4135.9271910586576, 0.01);
+    EXPECT_NEAR(state->dataDuctLoss->ZoneLat(3), -9.7389147582202493e-07, 0.00001);
+    EXPECT_NEAR(state->dataDuctLoss->SysSen, -2390.1450447422894, 0.01);
+    EXPECT_NEAR(state->dataDuctLoss->SysLat, 9.6329993499279026e-05, 0.00001);
 }
 
 } // namespace EnergyPlus

@@ -1,3 +1,4 @@
+
 if(WIN32)
   configure_file(energyplus.rc.in "${CMAKE_CURRENT_BINARY_DIR}/energyplus.rc")
   configure_file(energyplusapi.rc.in "${CMAKE_CURRENT_BINARY_DIR}/energyplusapi.rc")
@@ -134,6 +135,8 @@ set(SRC
     Coils/CoilCoolingDXCurveFitOperatingMode.hh
     Coils/CoilCoolingDXCurveFitPerformance.cc
     Coils/CoilCoolingDXCurveFitPerformance.hh
+    Coils/CoilCoolingDXAshrae205Performance.cc
+    Coils/CoilCoolingDXAshrae205Performance.hh
     Coils/CoilCoolingDXCurveFitSpeed.cc
     Coils/CoilCoolingDXCurveFitSpeed.hh
     CondenserLoopTowers.cc
@@ -1227,6 +1230,6 @@ endif()
 
 if(APPLE AND CPACK_CODESIGNING_DEVELOPPER_ID_APPLICATION)
   include("${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/CodeSigning.cmake")
-  register_install_codesign_target(energyplus ".")
-  register_install_codesign_target(energyplusapi ".")
+  register_install_codesign_target(energyplus "." Unspecified ENTITLEMENTS "${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/python_entitlements.xml")
+  register_install_codesign_target(energyplusapi "." Unspecified)
 endif()

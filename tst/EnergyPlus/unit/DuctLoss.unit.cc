@@ -179,7 +179,6 @@ TEST_F(EnergyPlusFixture, DuctLoss_test)
     -87.75,                  !- Longitude {deg}
     -6.00,                   !- Time Zone {hr}
     190.00;                  !- Elevation {m}
-
 ! CHICAGO_IL_USA Annual Heating 99% Design Conditions DB, MaxDB= -17.3°C
 
   SizingPeriod:DesignDay,
@@ -209,7 +208,6 @@ TEST_F(EnergyPlusFixture, DuctLoss_test)
     ,                        !- ASHRAE Clear Sky Optical Depth for Beam Irradiance (taub) {dimensionless}
     ,                        !- ASHRAE Clear Sky Optical Depth for Diffuse Irradiance (taud) {dimensionless}
     0.0;                     !- Sky Clearness
-
 ! CHICAGO_IL_USA Annual Cooling 1% Design Conditions, MaxDB=  31.5°C MCWB=  23.0°C
 
   SizingPeriod:DesignDay,

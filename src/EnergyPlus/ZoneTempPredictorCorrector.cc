@@ -3928,7 +3928,7 @@ Real64 ZoneSpaceHeatBalanceData::correctAirTemp(
         if (state.dataDuctLoss->DuctLossSimu) {
             this->TempIndCoef += state.dataDuctLoss->ZoneSen(zoneNum);
         }
- 
+
         // Solve for zone air temperature
         switch (state.dataHeatBal->ZoneAirSolutionAlgo) {
         case DataHeatBalance::SolutionAlgo::ThirdOrder: {

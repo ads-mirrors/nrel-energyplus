@@ -109,20 +109,20 @@ namespace DuctLoss {
         std::string AirLoopName; // Name of the Airloop
         std::string LinkageName; // Name of the Duct linkage
         EnvironmentType EnvType = EnvironmentType::Invalid;
-        std::string ZoneName;      // Name of the zone
-        std::string ScheduleNameT; // Name of the schedule
-        std::string ScheduleNameW; // Name of the schedule
-        Sched::Schedule *tambSched = nullptr;        // ambient temperature schedule pointer
-        Sched::Schedule *wambSched = nullptr;        // ambient humidity ratio schedule pointer
+        std::string ZoneName;                 // Name of the zone
+        std::string ScheduleNameT;            // Name of the schedule
+        std::string ScheduleNameW;            // Name of the schedule
+        Sched::Schedule *tambSched = nullptr; // ambient temperature schedule pointer
+        Sched::Schedule *wambSched = nullptr; // ambient humidity ratio schedule pointer
         DuctLossType LossType = DuctLossType::Invalid;
-        int AirLoopNum;   // AirLoop number
-        int LinkageNum;   // Linkage number
-        int ZoneNum;      // Zone number
+        int AirLoopNum; // AirLoop number
+        int LinkageNum; // Linkage number
+        int ZoneNum;    // Zone number
         DuctLossSubType LossSubType = DuctLossSubType::Invalid;
         Real64 Qsen;        // Sensible load
         Real64 Qlat;        // Latent load
-        Real64 QsenSL;        // Sensible load
-        Real64 QlatSL;        // Latent load
+        Real64 QsenSL;      // Sensible load
+        Real64 QlatSL;      // Latent load
         int RetLeakZoneNum; // Return branch leak source zone number
 
         void CalcDuctLoss(EnergyPlusData &state, int Index);
@@ -158,19 +158,19 @@ struct DuctLossData : BaseGlobalStruct
     bool AirLoopConnectionFlag = true; // Flag set to make sure you get input once
     int AirLoopInNodeNum = 0;
     Array1D<DuctLoss::DuctLossComp> ductloss;
-    Array1D<Real64> ZoneSen; // Sensible zone load
-    Array1D<Real64> ZoneLat; // Latent zone load
-    Real64 SysSen = 0.0; // System sensible load
-    Real64 SysLat = 0.0; // System latent load
-    int CtrlZoneNum;     // Controlled zone number
-    Array1D<bool> SubTypeSimuFlag; // Sub duct loss type simulation flag 
-    Array1D<int> ZoneEquipInletNodes; // Zone inlet nodes used without supply branch 
+    Array1D<Real64> ZoneSen;          // Sensible zone load
+    Array1D<Real64> ZoneLat;          // Latent zone load
+    Real64 SysSen = 0.0;              // System sensible load
+    Real64 SysLat = 0.0;              // System latent load
+    int CtrlZoneNum;                  // Controlled zone number
+    Array1D<bool> SubTypeSimuFlag;    // Sub duct loss type simulation flag
+    Array1D<int> ZoneEquipInletNodes; // Zone inlet nodes used without supply branch
 
     void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
     {
     }
 
-   void init_state([[maybe_unused]] EnergyPlusData &state) override
+    void init_state([[maybe_unused]] EnergyPlusData &state) override
     {
     }
 

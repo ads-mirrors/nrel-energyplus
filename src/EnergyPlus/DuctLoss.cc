@@ -99,7 +99,9 @@ namespace DuctLoss {
             state.dataDuctLoss->GetDuctLossInputFlag = false;
         }
 
-        if (PathNum == 0) return;
+        if (PathNum == 0) {
+            return;
+        }
 
         if (state.dataAirLoop->AirLoopInputsFilled) {
             InitDuctLoss(state);

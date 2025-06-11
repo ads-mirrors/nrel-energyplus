@@ -2069,181 +2069,185 @@ namespace AirflowNetwork {
                 return;
             }
 
-        if (multizone_always_simulated) {
-            if (m_state.dataHeatBal->TotInfiltration > 0) {
-                ShowWarningError(m_state, format("{}{} object, ", RoutineName, CurrentModuleObject));
-                ShowContinueError(m_state,
-                                  "..Specified " + cAlphaFields(2) + " = \"" + SimAirNetworkKey + "\" and ZoneInfiltration:* objects are present.");
-                ShowContinueError(m_state, "..ZoneInfiltration objects will not be simulated.");
+            if (multizone_always_simulated) {
+                if (m_state.dataHeatBal->TotInfiltration > 0) {
+                    ShowWarningError(m_state, format("{}{} object, ", RoutineName, CurrentModuleObject));
+                    ShowContinueError(
+                        m_state, "..Specified " + cAlphaFields(2) + " = \"" + SimAirNetworkKey + "\" and ZoneInfiltration:* objects are present.");
+                    ShowContinueError(m_state, "..ZoneInfiltration objects will not be simulated.");
+                }
+                if (m_state.dataHeatBal->TotVentilation > 0) {
+                    ShowWarningError(m_state, format("{}{} object, ", RoutineName, CurrentModuleObject));
+                    ShowContinueError(
+                        m_state, "..Specified " + cAlphaFields(2) + " = \"" + SimAirNetworkKey + "\" and ZoneVentilation:* objects are present.");
+                    ShowContinueError(m_state, "..ZoneVentilation objects will not be simulated.");
+                }
+                if (m_state.dataHeatBal->TotMixing > 0) {
+                    ShowWarningError(m_state, format("{}{} object, ", RoutineName, CurrentModuleObject));
+                    ShowContinueError(m_state,
+                                      "..Specified " + cAlphaFields(2) + " = \"" + SimAirNetworkKey + "\" and ZoneMixing objects are present.");
+                    ShowContinueError(m_state, "..ZoneMixing objects will not be simulated.");
+                }
+                if (m_state.dataHeatBal->TotCrossMixing > 0) {
+                    ShowWarningError(m_state, format("{}{} object, ", RoutineName, CurrentModuleObject));
+                    ShowContinueError(m_state,
+                                      "..Specified " + cAlphaFields(2) + " = \"" + SimAirNetworkKey + "\" and ZoneCrossMixing objects are present.");
+                    ShowContinueError(m_state, "..ZoneCrossMixing objects will not be simulated.");
+                }
+                if (m_state.dataHeatBal->TotZoneAirBalance > 0) {
+                    ShowWarningError(m_state, format("{}{} object, ", RoutineName, CurrentModuleObject));
+                    ShowContinueError(m_state,
+                                      "..Specified " + cAlphaFields(2) + " = \"" + SimAirNetworkKey +
+                                          "\" and ZoneAirBalance:OutdoorAir objects are present.");
+                    ShowContinueError(m_state, "..ZoneAirBalance:OutdoorAir objects will not be simulated.");
+                }
+                if (m_state.dataInputProcessing->inputProcessor->getNumObjectsFound(m_state, "ZoneEarthtube") > 0) {
+                    ShowWarningError(m_state, format("{}{} object, ", RoutineName, CurrentModuleObject));
+                    ShowContinueError(m_state,
+                                      "..Specified " + cAlphaFields(2) + " = \"" + SimAirNetworkKey + "\" and ZoneEarthtube objects are present.");
+                    ShowContinueError(m_state, "..ZoneEarthtube objects will not be simulated.");
+                }
+                if (m_state.dataInputProcessing->inputProcessor->getNumObjectsFound(m_state, "ZoneThermalChimney") > 0) {
+                    ShowWarningError(m_state, format("{}{} object, ", RoutineName, CurrentModuleObject));
+                    ShowContinueError(
+                        m_state, "..Specified " + cAlphaFields(2) + " = \"" + SimAirNetworkKey + "\" and ZoneThermalChimney objects are present.");
+                    ShowContinueError(m_state, "..ZoneThermalChimney objects will not be simulated.");
+                }
+                if (m_state.dataInputProcessing->inputProcessor->getNumObjectsFound(m_state, "ZoneCoolTower:Shower") > 0) {
+                    ShowWarningError(m_state, format("{}{} object, ", RoutineName, CurrentModuleObject));
+                    ShowContinueError(
+                        m_state, "..Specified " + cAlphaFields(2) + " = \"" + SimAirNetworkKey + "\" and ZoneCoolTower:Shower objects are present.");
+                    ShowContinueError(m_state, "..ZoneCoolTower:Shower objects will not be simulated.");
+                }
             }
-            if (m_state.dataHeatBal->TotVentilation > 0) {
-                ShowWarningError(m_state, format("{}{} object, ", RoutineName, CurrentModuleObject));
-                ShowContinueError(m_state,
-                                  "..Specified " + cAlphaFields(2) + " = \"" + SimAirNetworkKey + "\" and ZoneVentilation:* objects are present.");
-                ShowContinueError(m_state, "..ZoneVentilation objects will not be simulated.");
-            }
-            if (m_state.dataHeatBal->TotMixing > 0) {
-                ShowWarningError(m_state, format("{}{} object, ", RoutineName, CurrentModuleObject));
-                ShowContinueError(m_state, "..Specified " + cAlphaFields(2) + " = \"" + SimAirNetworkKey + "\" and ZoneMixing objects are present.");
-                ShowContinueError(m_state, "..ZoneMixing objects will not be simulated.");
-            }
-            if (m_state.dataHeatBal->TotCrossMixing > 0) {
-                ShowWarningError(m_state, format("{}{} object, ", RoutineName, CurrentModuleObject));
-                ShowContinueError(m_state,
-                                  "..Specified " + cAlphaFields(2) + " = \"" + SimAirNetworkKey + "\" and ZoneCrossMixing objects are present.");
-                ShowContinueError(m_state, "..ZoneCrossMixing objects will not be simulated.");
-            }
-            if (m_state.dataHeatBal->TotZoneAirBalance > 0) {
-                ShowWarningError(m_state, format("{}{} object, ", RoutineName, CurrentModuleObject));
-                ShowContinueError(
-                    m_state, "..Specified " + cAlphaFields(2) + " = \"" + SimAirNetworkKey + "\" and ZoneAirBalance:OutdoorAir objects are present.");
-                ShowContinueError(m_state, "..ZoneAirBalance:OutdoorAir objects will not be simulated.");
-            }
-            if (m_state.dataInputProcessing->inputProcessor->getNumObjectsFound(m_state, "ZoneEarthtube") > 0) {
-                ShowWarningError(m_state, format("{}{} object, ", RoutineName, CurrentModuleObject));
-                ShowContinueError(m_state,
-                                  "..Specified " + cAlphaFields(2) + " = \"" + SimAirNetworkKey + "\" and ZoneEarthtube objects are present.");
-                ShowContinueError(m_state, "..ZoneEarthtube objects will not be simulated.");
-            }
-            if (m_state.dataInputProcessing->inputProcessor->getNumObjectsFound(m_state, "ZoneThermalChimney") > 0) {
-                ShowWarningError(m_state, format("{}{} object, ", RoutineName, CurrentModuleObject));
-                ShowContinueError(m_state,
-                                  "..Specified " + cAlphaFields(2) + " = \"" + SimAirNetworkKey + "\" and ZoneThermalChimney objects are present.");
-                ShowContinueError(m_state, "..ZoneThermalChimney objects will not be simulated.");
-            }
-            if (m_state.dataInputProcessing->inputProcessor->getNumObjectsFound(m_state, "ZoneCoolTower:Shower") > 0) {
-                ShowWarningError(m_state, format("{}{} object, ", RoutineName, CurrentModuleObject));
-                ShowContinueError(m_state,
-                                  "..Specified " + cAlphaFields(2) + " = \"" + SimAirNetworkKey + "\" and ZoneCoolTower:Shower objects are present.");
-                ShowContinueError(m_state, "..ZoneCoolTower:Shower objects will not be simulated.");
-            }
-        }
 
-        SetOutAirNodes(m_state);
-        if (!control_defaulted) {
-            bool SimObjectError = false;
-            if (Util::SameString(simulation_control.WPCCntr, "Input")) {
-                simulation_control.iWPCCnt = iWPCCntr::Input;
-                if (lAlphaBlanks(4)) {
-                    ShowSevereError(m_state, format(RoutineName) + CurrentModuleObject + " object, " + cAlphaFields(3) + " = INPUT.");
-                    ShowContinueError(m_state, ".." + cAlphaFields(4) + " was not entered.");
-                    ErrorsFound = true;
-                    SimObjectError = true;
-                } else {
-                    if (!(Util::SameString(simulation_control.HeightOption, "ExternalNode") ||
-                          Util::SameString(simulation_control.HeightOption, "OpeningHeight"))) {
+            SetOutAirNodes(m_state);
+            if (!control_defaulted) {
+                bool SimObjectError = false;
+                if (Util::SameString(simulation_control.WPCCntr, "Input")) {
+                    simulation_control.iWPCCnt = iWPCCntr::Input;
+                    if (lAlphaBlanks(4)) {
+                        ShowSevereError(m_state, format(RoutineName) + CurrentModuleObject + " object, " + cAlphaFields(3) + " = INPUT.");
+                        ShowContinueError(m_state, ".." + cAlphaFields(4) + " was not entered.");
+                        ErrorsFound = true;
+                        SimObjectError = true;
+                    } else {
+                        if (!(Util::SameString(simulation_control.HeightOption, "ExternalNode") ||
+                              Util::SameString(simulation_control.HeightOption, "OpeningHeight"))) {
+                            ShowSevereError(m_state,
+                                            format(RoutineName) + CurrentModuleObject + " object, " + cAlphaFields(4) + " = " + Alphas(4) +
+                                                " is invalid.");
+                            ShowContinueError(m_state,
+                                              "Valid choices are ExternalNode or OpeningHeight. " + CurrentModuleObject + ": " + cAlphaFields(1) +
+                                                  " = " + simulation_control.name);
+                            ErrorsFound = true;
+                            SimObjectError = true;
+                        }
+                    }
+                } else if (Util::SameString(simulation_control.WPCCntr, "SurfaceAverageCalculation")) {
+                    simulation_control.iWPCCnt = iWPCCntr::SurfAvg;
+                    if (!(Util::SameString(simulation_control.BldgType, "LowRise") || Util::SameString(simulation_control.BldgType, "HighRise"))) {
                         ShowSevereError(
-                            m_state, format(RoutineName) + CurrentModuleObject + " object, " + cAlphaFields(4) + " = " + Alphas(4) + " is invalid.");
+                            m_state, format(RoutineName) + CurrentModuleObject + " object, " + cAlphaFields(5) + " = " + Alphas(5) + " is invalid.");
                         ShowContinueError(m_state,
-                                          "Valid choices are ExternalNode or OpeningHeight. " + CurrentModuleObject + ": " + cAlphaFields(1) + " = " +
+                                          "Valid choices are LowRise or HighRise. " + CurrentModuleObject + ": " + cAlphaFields(1) + " = " +
                                               simulation_control.name);
                         ErrorsFound = true;
                         SimObjectError = true;
                     }
-                }
-            } else if (Util::SameString(simulation_control.WPCCntr, "SurfaceAverageCalculation")) {
-                simulation_control.iWPCCnt = iWPCCntr::SurfAvg;
-                if (!(Util::SameString(simulation_control.BldgType, "LowRise") || Util::SameString(simulation_control.BldgType, "HighRise"))) {
+                    for (k = 1; k <= m_state.dataLoopNodes->NumOfNodes; ++k) {
+                        if (Node(k).IsLocalNode) {
+                            ShowSevereError(m_state, format(RoutineName) + "Invalid " + cAlphaFields(3) + "=" + Alphas(3));
+                            ShowContinueError(
+                                m_state,
+                                "A local air node is defined to INPUT the wind pressure coefficient curve, while Wind Pressure Coefficient "
+                                "Type is set to SurfaceAverageCalculation.");
+                            ShowContinueError(m_state, "It requires  the Wind Pressure Coefficient Type be set to INPUT to use the local air node.");
+                            ErrorsFound = true;
+                            SimObjectError = true;
+                            break;
+                        }
+                    }
+                } else {
                     ShowSevereError(m_state,
-                                    format(RoutineName) + CurrentModuleObject + " object, " + cAlphaFields(5) + " = " + Alphas(5) + " is invalid.");
+                                    format(RoutineName) + CurrentModuleObject + " object, " + cAlphaFields(3) + " = " + simulation_control.WPCCntr +
+                                        " is not valid.");
+                    ShowContinueError(
+                        m_state, "Valid choices are Input or SurfaceAverageCalculation. " + CurrentModuleObject + " = " + simulation_control.name);
+                    ErrorsFound = true;
+                    SimObjectError = true;
+                }
+
+                simulation_control.InitType = Alphas(6);
+                if (Util::SameString(simulation_control.InitType, "LinearInitializationMethod")) {
+                    simulation_control.InitFlag = 0;
+                } else if (Util::SameString(simulation_control.InitType, "ZeroNodePressures")) {
+                    simulation_control.InitFlag = 1;
+                } else if (Util::SameString(simulation_control.InitType, "0")) {
+                    simulation_control.InitFlag = 0;
+                } else if (Util::SameString(simulation_control.InitType, "1")) {
+                    simulation_control.InitFlag = 1;
+                } else {
+                    // Code will never be executed, validation will catch invalid input
+                    ShowSevereError(m_state,
+                                    format(RoutineName) + CurrentModuleObject + " object, " + cAlphaFields(6) + " = " + Alphas(6) + " is invalid.");
                     ShowContinueError(m_state,
-                                      "Valid choices are LowRise or HighRise. " + CurrentModuleObject + ": " + cAlphaFields(1) + " = " +
+                                      "Valid choices are LinearInitializationMethod or ZeroNodePressures. " + CurrentModuleObject + " = " +
                                           simulation_control.name);
                     ErrorsFound = true;
                     SimObjectError = true;
                 }
-                for (k = 1; k <= m_state.dataLoopNodes->NumOfNodes; ++k) {
-                    if (Node(k).IsLocalNode) {
-                        ShowSevereError(m_state, format(RoutineName) + "Invalid " + cAlphaFields(3) + "=" + Alphas(3));
-                        ShowContinueError(m_state,
-                                          "A local air node is defined to INPUT the wind pressure coefficient curve, while Wind Pressure Coefficient "
-                                          "Type is set to SurfaceAverageCalculation.");
-                        ShowContinueError(m_state, "It requires  the Wind Pressure Coefficient Type be set to INPUT to use the local air node.");
-                        ErrorsFound = true;
-                        SimObjectError = true;
-                        break;
-                    }
+
+                if (!lAlphaBlanks(7) && Util::SameString(Alphas(7), "Yes")) {
+                    simulation_control.temperature_height_dependence = true;
                 }
-            } else {
-                ShowSevereError(m_state,
-                                format(RoutineName) + CurrentModuleObject + " object, " + cAlphaFields(3) + " = " + simulation_control.WPCCntr +
-                                    " is not valid.");
-                ShowContinueError(m_state,
-                                  "Valid choices are Input or SurfaceAverageCalculation. " + CurrentModuleObject + " = " + simulation_control.name);
-                ErrorsFound = true;
-                SimObjectError = true;
-            }
 
-            simulation_control.InitType = Alphas(6);
-            if (Util::SameString(simulation_control.InitType, "LinearInitializationMethod")) {
-                simulation_control.InitFlag = 0;
-            } else if (Util::SameString(simulation_control.InitType, "ZeroNodePressures")) {
-                simulation_control.InitFlag = 1;
-            } else if (Util::SameString(simulation_control.InitType, "0")) {
-                simulation_control.InitFlag = 0;
-            } else if (Util::SameString(simulation_control.InitType, "1")) {
-                simulation_control.InitFlag = 1;
-            } else {
-                // Code will never be executed, validation will catch invalid input
-                ShowSevereError(m_state,
-                                format(RoutineName) + CurrentModuleObject + " object, " + cAlphaFields(6) + " = " + Alphas(6) + " is invalid.");
-                ShowContinueError(m_state,
-                                  "Valid choices are LinearInitializationMethod or ZeroNodePressures. " + CurrentModuleObject + " = " +
-                                      simulation_control.name);
-                ErrorsFound = true;
-                SimObjectError = true;
-            }
+                if (lAlphaBlanks(8)) {
+                    simulation_control.solver = SimulationControl::Solver::SkylineLU;
+                } else if (Util::SameString(Alphas(8), "SkylineLU")) {
+                    simulation_control.solver = SimulationControl::Solver::SkylineLU;
+                } else if (Util::SameString(Alphas(8), "ConjugateGradient")) {
+                    simulation_control.solver = SimulationControl::Solver::ConjugateGradient;
+                } else {
+                    simulation_control.solver = SimulationControl::Solver::SkylineLU;
+                    ShowWarningError(m_state, format("{}{} object, ", RoutineName, CurrentModuleObject));
+                    ShowContinueError(m_state, "..Specified " + cAlphaFields(8) + " = \"" + Alphas(8) + "\" is unrecognized.");
+                    ShowContinueError(m_state, "..Default value \"SkylineLU\" will be used.");
+                }
 
-            if (!lAlphaBlanks(7) && Util::SameString(Alphas(7), "Yes")) {
-                simulation_control.temperature_height_dependence = true;
-            }
-
-            if (lAlphaBlanks(8)) {
-                simulation_control.solver = SimulationControl::Solver::SkylineLU;
-            } else if (Util::SameString(Alphas(8), "SkylineLU")) {
-                simulation_control.solver = SimulationControl::Solver::SkylineLU;
-            } else if (Util::SameString(Alphas(8), "ConjugateGradient")) {
-                simulation_control.solver = SimulationControl::Solver::ConjugateGradient;
-            } else {
-                simulation_control.solver = SimulationControl::Solver::SkylineLU;
-                ShowWarningError(m_state, format("{}{} object, ", RoutineName, CurrentModuleObject));
-                ShowContinueError(m_state, "..Specified " + cAlphaFields(8) + " = \"" + Alphas(8) + "\" is unrecognized.");
-                ShowContinueError(m_state, "..Default value \"SkylineLU\" will be used.");
-            }
-
-            // Get inputs for duct sizing
-            simulation_control.autosize_ducts = false;
-            if (NumAlphas == 10) {
-                if (Util::SameString(Alphas(10), "YES")) {
-                    simulation_control.autosize_ducts = true;
-                    if (simulation_control.type == ControlType::MultizoneWithDistribution) {
-                        if (NumAPL > 1) {
-                            ShowWarningError(m_state, format(RoutineName) + CurrentModuleObject + " object, ");
-                            ShowContinueError(
-                                m_state,
-                                format("The number of AirLoopHAVC is greater than 1. The current requirement for Duct Sizing requires a "
-                                       "single AirLoopHVAC."));
-                            ShowContinueError(m_state, format("..Duct sizing is not performed"));
-                            simulation_control.autosize_ducts = false;
+                // Get inputs for duct sizing
+                simulation_control.autosize_ducts = false;
+                if (NumAlphas == 10) {
+                    if (Util::SameString(Alphas(10), "YES")) {
+                        simulation_control.autosize_ducts = true;
+                        if (simulation_control.type == ControlType::MultizoneWithDistribution) {
+                            if (NumAPL > 1) {
+                                ShowWarningError(m_state, format(RoutineName) + CurrentModuleObject + " object, ");
+                                ShowContinueError(
+                                    m_state,
+                                    format("The number of AirLoopHAVC is greater than 1. The current requirement for Duct Sizing requires a "
+                                           "single AirLoopHVAC."));
+                                ShowContinueError(m_state, format("..Duct sizing is not performed"));
+                                simulation_control.autosize_ducts = false;
+                            }
                         }
                     }
                 }
-            }
 
-            if (SimObjectError) {
-                ShowFatalError(
-                    m_state,
-                    format("{}Errors found getting {} object. Previous error(s) cause program termination.", RoutineName, CurrentModuleObject));
-            }
+                if (SimObjectError) {
+                    ShowFatalError(
+                        m_state,
+                        format("{}Errors found getting {} object. Previous error(s) cause program termination.", RoutineName, CurrentModuleObject));
+                }
 
-            simulation_control.maximum_iterations = static_cast<int>(Numbers(1));
-            simulation_control.relative_convergence_tolerance = Numbers(2);
-            simulation_control.absolute_convergence_tolerance = Numbers(3);
-            simulation_control.convergence_acceleration_limit = Numbers(4);
-            simulation_control.azimuth = Numbers(5);
-            simulation_control.aspect_ratio = Numbers(6);
-            simulation_control.MaxPressure = 500.0; // Maximum pressure difference by default
-        }
+                simulation_control.maximum_iterations = static_cast<int>(Numbers(1));
+                simulation_control.relative_convergence_tolerance = Numbers(2);
+                simulation_control.absolute_convergence_tolerance = Numbers(3);
+                simulation_control.convergence_acceleration_limit = Numbers(4);
+                simulation_control.azimuth = Numbers(5);
+                simulation_control.aspect_ratio = Numbers(6);
+                simulation_control.MaxPressure = 500.0; // Maximum pressure difference by default
+            }
         }
 
         CurrentModuleObject = "AirflowNetwork:Distribution:DuctSizing";
@@ -3442,64 +3446,65 @@ namespace AirflowNetwork {
 
         // Write wind pressure coefficients in the EIO file
         if (!simulation_control.DuctLoss) {
-        print(m_state.files.eio, "! <AirflowNetwork Model:Wind Direction>, Wind Direction #1 to n (degree)\n");
-        print(m_state.files.eio, "AirflowNetwork Model:Wind Direction, ");
+            print(m_state.files.eio, "! <AirflowNetwork Model:Wind Direction>, Wind Direction #1 to n (degree)\n");
+            print(m_state.files.eio, "AirflowNetwork Model:Wind Direction, ");
 
-        int numWinDirs = 11;
-        Real64 angleDelta = 30.0;
-        if (AirflowNetworkNumOfSingleSideZones > 0) {
-            numWinDirs = 35;
-            angleDelta = 10.0;
-        }
-
-        for (int i = 0; i < numWinDirs; ++i) {
-            print(m_state.files.eio, "{:.1R},", i * angleDelta);
-        }
-        print(m_state.files.eio, "{:.1R}\n", numWinDirs * angleDelta);
-
-        print(m_state.files.eio, "! <AirflowNetwork Model:Wind Pressure Coefficients>, Name, Wind Pressure Coefficients #1 to n (dimensionless)\n");
-
-        // The old version used to write info with single-sided natural ventilation specific labeling, this version no longer does that.
-        std::set<int> curves;
-        for (int i = 1; i <= AirflowNetworkNumOfExtNode; ++i) {
-            curves.insert(MultizoneExternalNodeData(i).curve);
-        }
-        for (auto index : curves) {
-            print(m_state.files.eio, "AirflowNetwork Model:Wind Pressure Coefficients, {}, ", Curve::GetCurveName(m_state, index));
-
-            for (int j = 0; j < numWinDirs; ++j) {
-                print(m_state.files.eio, "{:.2R},", Curve::CurveValue(m_state, index, j * angleDelta));
+            int numWinDirs = 11;
+            Real64 angleDelta = 30.0;
+            if (AirflowNetworkNumOfSingleSideZones > 0) {
+                numWinDirs = 35;
+                angleDelta = 10.0;
             }
-            print(m_state.files.eio, "{:.2R}\n", Curve::CurveValue(m_state, index, numWinDirs * angleDelta));
-        }
 
-        if (AirflowNetworkNumOfSingleSideZones > 0) {
-            for (int i = 1; i <= AirflowNetworkNumOfZones; ++i) {
-                if (MultizoneZoneData(i).SingleSidedCpType == "ADVANCED") {
-                    print(m_state.files.eio,
-                          "AirflowNetwork: Advanced Single-Sided Model: Difference in Opening Wind Pressure Coefficients (DeltaCP), ");
-                    print(m_state.files.eio, "{}, ", MultizoneZoneData(i).ZoneName);
-                    for (unsigned j = 1; j <= EPDeltaCP(i).WindDir.size() - 1; ++j) {
-                        print(m_state.files.eio, "{:.2R},", EPDeltaCP(i).WindDir(j));
+            for (int i = 0; i < numWinDirs; ++i) {
+                print(m_state.files.eio, "{:.1R},", i * angleDelta);
+            }
+            print(m_state.files.eio, "{:.1R}\n", numWinDirs * angleDelta);
+
+            print(m_state.files.eio,
+                  "! <AirflowNetwork Model:Wind Pressure Coefficients>, Name, Wind Pressure Coefficients #1 to n (dimensionless)\n");
+
+            // The old version used to write info with single-sided natural ventilation specific labeling, this version no longer does that.
+            std::set<int> curves;
+            for (int i = 1; i <= AirflowNetworkNumOfExtNode; ++i) {
+                curves.insert(MultizoneExternalNodeData(i).curve);
+            }
+            for (auto index : curves) {
+                print(m_state.files.eio, "AirflowNetwork Model:Wind Pressure Coefficients, {}, ", Curve::GetCurveName(m_state, index));
+
+                for (int j = 0; j < numWinDirs; ++j) {
+                    print(m_state.files.eio, "{:.2R},", Curve::CurveValue(m_state, index, j * angleDelta));
+                }
+                print(m_state.files.eio, "{:.2R}\n", Curve::CurveValue(m_state, index, numWinDirs * angleDelta));
+            }
+
+            if (AirflowNetworkNumOfSingleSideZones > 0) {
+                for (int i = 1; i <= AirflowNetworkNumOfZones; ++i) {
+                    if (MultizoneZoneData(i).SingleSidedCpType == "ADVANCED") {
+                        print(m_state.files.eio,
+                              "AirflowNetwork: Advanced Single-Sided Model: Difference in Opening Wind Pressure Coefficients (DeltaCP), ");
+                        print(m_state.files.eio, "{}, ", MultizoneZoneData(i).ZoneName);
+                        for (unsigned j = 1; j <= EPDeltaCP(i).WindDir.size() - 1; ++j) {
+                            print(m_state.files.eio, "{:.2R},", EPDeltaCP(i).WindDir(j));
+                        }
+                        print(m_state.files.eio, "{:.2R}\n", EPDeltaCP(i).WindDir(static_cast<int>(EPDeltaCP(i).WindDir.size())));
                     }
-                    print(m_state.files.eio, "{:.2R}\n", EPDeltaCP(i).WindDir(static_cast<int>(EPDeltaCP(i).WindDir.size())));
                 }
             }
-        }
 
-        // If no zone object, exit
-        if (AirflowNetworkNumOfZones == 0) {
-            ShowFatalError(m_state, format("{}Errors found getting inputs. Previous error(s) cause program termination.", RoutineName));
-        }
-        // If zone node number =0, exit.
-        for (int j = 1; j <= AirflowNetworkNumOfSurfaces; ++j) {
-            if (MultizoneSurfaceData(j).NodeNums[0] == 0 && ErrorsFound) {
+            // If no zone object, exit
+            if (AirflowNetworkNumOfZones == 0) {
                 ShowFatalError(m_state, format("{}Errors found getting inputs. Previous error(s) cause program termination.", RoutineName));
             }
-            if (MultizoneSurfaceData(j).NodeNums[1] == 0 && ErrorsFound) {
-                ShowFatalError(m_state, format("{}Errors found getting inputs. Previous error(s) cause program termination.", RoutineName));
+            // If zone node number =0, exit.
+            for (int j = 1; j <= AirflowNetworkNumOfSurfaces; ++j) {
+                if (MultizoneSurfaceData(j).NodeNums[0] == 0 && ErrorsFound) {
+                    ShowFatalError(m_state, format("{}Errors found getting inputs. Previous error(s) cause program termination.", RoutineName));
+                }
+                if (MultizoneSurfaceData(j).NodeNums[1] == 0 && ErrorsFound) {
+                    ShowFatalError(m_state, format("{}Errors found getting inputs. Previous error(s) cause program termination.", RoutineName));
+                }
             }
-        }
         }
 
         // Ensure at least two surfaces are exposed to a zone

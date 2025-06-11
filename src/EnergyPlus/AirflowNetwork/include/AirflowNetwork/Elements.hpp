@@ -884,12 +884,12 @@ namespace AirflowNetwork {
     struct DisSysNodeProp // CP Value
     {
         // Members
-        std::string Name;      // Name of node
-        std::string EPlusName; // EnergyPlus node name
-        std::string EPlusType; // EnergyPlus node type
-        Real64 Height;         // Nodal height
-        int EPlusNodeNum;      // EPlus node number
-        int AirLoopNum;        // AirLoop number
+        std::string Name;          // Name of node
+        std::string EPlusName;     // EnergyPlus node name
+        std::string EPlusType;     // EnergyPlus node type
+        Real64 Height;             // Nodal height
+        int EPlusNodeNum;          // EPlus node number
+        int AirLoopNum;            // AirLoop number
         int EPlusZoneInletNodeNum; // Air terminal outlet
 
         // Default Constructor

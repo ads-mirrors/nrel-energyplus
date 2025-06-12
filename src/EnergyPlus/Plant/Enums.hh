@@ -167,7 +167,6 @@ enum class PlantEquipmentType
     EvapFluidCooler_TwoSpd,
     ChilledWaterTankMixed,
     ChilledWaterTankStratified,
-    HotWaterTankStratified,
     PVTSolarCollectorFlatPlate,
     Baseboard_Conv_Water,
     Baseboard_Rad_Conv_Steam,

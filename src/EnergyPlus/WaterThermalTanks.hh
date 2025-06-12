@@ -565,10 +565,12 @@ namespace WaterThermalTanks {
         TankShape Shape;         // Tank shape:  VERTICAL CYLINDER, HORIZONTAL CYLINDER, or OTHER
         Real64 HeaterHeight1;
         int HeaterNode1;
+        Real64 TempSensorHeight1;
         bool HeaterOn1;
         bool SavedHeaterOn1;
         Real64 HeaterHeight2;
         int HeaterNode2;
+        Real64 TempSensorHeight2;
         bool HeaterOn2;
         bool SavedHeaterOn2;
         Real64 AdditionalCond; // Additional destratification conductivity (W/m K)
@@ -695,8 +697,8 @@ namespace WaterThermalTanks {
               SourceBranchControlType(DataBranchAirLoopPlant::ControlType::Passive), SourceSidePlantSizNum(0), SourceSideSeries(true),
               SrcSidePlantLoc{}, SourceSideControlMode(SourceSideControl::IndirectHeatAltSetpoint), SizingRecoveryTime(0.0), MassFlowRateMax(0.0),
               VolFlowRateMin(0.0), MassFlowRateMin(0.0), TankTemp(0.0), SavedTankTemp(0.0), TankTempAvg(0.0), Height(0.0), HeightWasAutoSized(false),
-              Perimeter(0.0), Shape(TankShape::VertCylinder), HeaterHeight1(0.0), HeaterNode1(0), HeaterOn1(false), SavedHeaterOn1(false),
-              HeaterHeight2(0.0), HeaterNode2(0), HeaterOn2(false), SavedHeaterOn2(false), AdditionalCond(0.0), SetPointTemp2(0.0),
+              Perimeter(0.0), Shape(TankShape::VertCylinder), HeaterHeight1(0.0), HeaterNode1(0), TempSensorHeight1(0), HeaterOn1(false), SavedHeaterOn1(false),
+              HeaterHeight2(0.0), HeaterNode2(0), TempSensorHeight2(0), HeaterOn2(false), SavedHeaterOn2(false), AdditionalCond(0.0), SetPointTemp2(0.0),
               DeadBandDeltaTemp2(0.0), MaxCapacity2(0.0), OffCycParaHeight(0.0), OnCycParaHeight(0.0), SkinLossCoeff(0.0), SkinLossFracToZone(0.0),
               OffCycFlueLossCoeff(0.0), OffCycFlueLossFracToZone(0.0), UseInletHeight(0.0), UseOutletHeight(0.0), UseOutletHeightWasAutoSized(false),
               SourceInletHeight(0.0), SourceInletHeightWasAutoSized(false), SourceOutletHeight(0.0), UseInletStratNode(0), UseOutletStratNode(0),
@@ -980,7 +982,7 @@ namespace WaterThermalTanks {
 
     bool getWaterTankMixedInput(EnergyPlusData &state);
 
-    bool getWaterTankStratifiedInput(EnergyPlusData &state);
+    bool getWaterTankStratifiedInput(EnergyPlusData &state, std::string objectType);
 
     bool GetWaterThermalTankInput(EnergyPlusData &state);
 
@@ -1000,6 +1002,7 @@ struct WaterThermalTanksData : BaseGlobalStruct
 {
     int numChilledWaterMixed = 0;        // number of mixed chilled water tanks
     int numChilledWaterStratified = 0;   // number of stratified chilled water tanks
+    int numHotWaterStratified = 0;   // number of stratified hot water tanks
     int numWaterHeaterMixed = 0;         // number of mixed water heaters
     int numWaterHeaterStratified = 0;    // number of stratified water heaters
     int numWaterThermalTank = 0;         // total number of water thermal tanks, hot and cold (MIXED + STRATIFIED)

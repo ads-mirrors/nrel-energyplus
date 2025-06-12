@@ -34,13 +34,16 @@ Key drawbacks of the existing tank object include,
   temperature sensors can be placed in all layers (at different heights) of the
   stratified tank, providing information for more complex control logic.
 - Simplified Charging Logic: The current object determines tank charges (source
-  side requesting water flow) based on a temperature setpoint (default) or a
+  side requesting water flow) based on one temperature setpoint (default) or a
   temperature upper limit (storage tank mode). However, more complex charging
   control is sometimes needed. For example, in some applications, the charging
-  percentage needs to be a function of the tank temperature, which could involve
-  temperature of all stratified layers. The current object does not allow for
-  such complex charging percentage calculations nor does it permit control of
-  this parameter via EMS or Python plug-ins.
+  percentage needs to be a function of the top and bottom of the tank temperature, 
+  for example, a common logic of charging could be as follows
+  - if the bottom temperature < setpoint at the bottom, request flow. 
+  - if the top temperature > setpoint at the top, stop request flow
+  The current object does not allow for such complex charging percentage 
+  calculations nor does it permit control of this parameter via EMS or Python 
+  plug-ins.
 - **Issue with autosizing**: Tank autosizing capability is present but with
   multiple issues (issue 8412, 8451, 9956). Actuators might need to be added to
   enable auto-sizing with external code (EMS or python API), especially for
@@ -84,9 +87,9 @@ Table 2. Comparison of input and output fields of the hot and water stratified t
 Table 3 and Table 4 compares the input and output fields among the
 ThermalStorage:* objects. The chilled water stratified tank has inputs in most
 input categories except for the charging related ones, where the ice storage
-tank has more information. The new hot water tank will include some charging
-curve fields in the input fields as well some outputs related to the charging
-fraction. This enhancement can facilitate a better model of more complex tank
+tank has more information. The new hot water tank will include setpoints at both 
+the top and bottom of the tank to more flexibly control the tank charging. 
+This enhancement can facilitate a better model of more complex tank
 charging/discharging control.
 
 Table 3. Comparison of input fields of thermal storage tanks
@@ -177,47 +180,36 @@ A passive hot water storage tank object will be added as follows.
     N6,  \field Bottom Temperature Sensor Height
         \units m
         \minimum 0.0
-    A5 , \field Charging Curve Name
-        \note a univariate curve defining the relationship between tank temperature and tank charging percent
-        \note if this field has value, that the control will be based on charging fraction rather than setpoint 
-        \type object-list
-        \object-list UnivariateFunctions
-    A6 , \field Charging Curve Variable Specifications
-        \note specifies which variable is used in the curve above
-        \note when the TemperatureSensor is chosen, the charging percent will be calculated using both the top and bottom tank temperature.
-        \type choice
-        \key TemperatureSensor
-        \key AverageTemperature
     N7 , \field Maximum Temperature Limit
         \type real
         \units C
     N8 , \field Nominal Heating Capacity
         \type real
         \units W
-    A7 , \field Ambient Temperature Indicator
+    A5 , \field Ambient Temperature Indicator
         \required-field
         \type choice
         \key Schedule
         \key Zone
         \key Outdoors
-    A8 , \field Ambient Temperature Schedule Name
+    A6 , \field Ambient Temperature Schedule Name
         \type object-list
         \object-list ScheduleNames
-    A9 , \field Ambient Temperature Zone Name
+    A7 , \field Ambient Temperature Zone Name
         \type object-list
         \object-list ZoneNames
-    A10, \field Ambient Temperature Outdoor Air Node Name
+    A8, \field Ambient Temperature Outdoor Air Node Name
         \type node
         \note required for Ambient Temperature Indicator=Outdoors
     N9 , \field Uniform Skin Loss Coefficient per Unit Area to Ambient Temperature
         \type real
         \units W/m2-K
         \minimum 0.0
-    A11, \field Use Side Inlet Node Name
+    A9, \field Use Side Inlet Node Name
         \type node
-    A12, \field Use Side Outlet Node Name
+    A10, \field Use Side Outlet Node Name
         \type node
-    A13, Use Side Flow Direction Schedule
+    A11, Use Side Flow Direction Schedule
         \note allowed value is -1 and 1. When the value is 1, water flows in from
         \note the inlet and flows out from the outlet node. When the value is -1, water
         \note flows in from the outlet node and flows out from the inlet node (i.e. the
@@ -232,7 +224,7 @@ A passive hot water storage tank object will be added as follows.
         \note use mass flow rate that directly mixes with the tank fluid. And one minus the
         \note effectiveness is the fraction that bypasses the tank. The use side mass flow rate
         \note that bypasses the tank is mixed with the fluid or water leaving the stratified tank.
-    A14, \field Use Side Availability Schedule Name
+    A12, \field Use Side Availability Schedule Name
         \note Availability schedule name for use side. Schedule value > 0 means the system is available.
         \note If this field is blank, the system is always available.
         \type object-list
@@ -257,11 +249,11 @@ A passive hot water storage tank object will be added as follows.
         \units m3/s
         \ip-units gal/min
         \minimum 0.0
-    A15, \field Source Side Inlet Node Name
+    A13, \field Source Side Inlet Node Name
         \type node
-    A16, \field Source Side Outlet Node Name
+    A14, \field Source Side Outlet Node Name
         \type node
-    A17, Source Side Flow Direction Schedule
+    A15, Source Side Flow Direction Schedule
         \type alpha
         \note allowed value is -1 and 1. When the value is 1, water flows in from
         \note the inlet and flows out from the outlet node. When the value is -1, water
@@ -277,7 +269,7 @@ A passive hot water storage tank object will be added as follows.
         \note source mass flow rate that directly mixes with the tank fluid. And one minus the
         \note effectiveness is the fraction that bypasses the tank. The source side mass flow rate
         \note that bypasses the tank is mixed with the fluid or water leaving the stratified tank.
-    A18, \field Source Side Availability Schedule Name
+    A16, \field Source Side Availability Schedule Name
         \note Availability schedule name for use side. Schedule value > 0 means the system is available.
         \note If this field is blank, the system is always available.
         \type object-list
@@ -309,7 +301,7 @@ A passive hot water storage tank object will be added as follows.
         \note time required to lower temperature of entire tank from 14.4C to 9.0C
         \units hr
         \minimum> 0.0
-    A19, \field Inlet Mode
+    A17, \field Inlet Mode
         \type choice
         \key Fixed
         \key Seeking
@@ -371,8 +363,8 @@ The following list of actuators will be added to allow for more complex controls
 
 - Charging percent: specifies how full the tank is charged. It can be a function
   of all temperature nodes in the stratified tank. If this is defined, then the
-  tank control is based on this quantity rather than the temperature at the
-  sensor specified in "Temperature Sensor Height"
+  tank control is based on this quantity rather than the temperature set points 
+  at the top and bottom of the tank.
 - Node k temperature: the temperature at the kth stratified node. "k" ranges
   from 1 to the number of nodes.
 - Sizing-related actuators
@@ -401,8 +393,6 @@ The following output variables will be made available
 - Hot Water Thermal Storage Source Side Heat Transfer Energy
 - Hot Water Thermal Storage Temperature Node <1 - 10>
 - Hot Water Thermal Storage Final Temperature Node <1 -- 10>
-- Hot Water Thermal Storage Final Charge Fraction
-- Hot Water Thermal Storage Charge Fraction Change
 
 ## Testing/Validation/Data Sources ##
 

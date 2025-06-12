@@ -52,6 +52,7 @@
 
 // EnergyPlus Headers
 #include "Fixtures/EnergyPlusFixture.hh"
+#include <EnergyPlus/CurveManager.hh>
 #include <EnergyPlus/DXCoils.hh>
 #include <EnergyPlus/Data/EnergyPlusData.hh>
 #include <EnergyPlus/DataEnvironment.hh>
@@ -1648,6 +1649,92 @@ TEST_F(EnergyPlusFixture, StratifiedTankUseEnergy)
 
     // Energy Use is negative relative to the tank
     ASSERT_LT(Tank.UseRate, 0.0);
+}
+
+TEST_F(EnergyPlusFixture, thermalStorageTankInputReading) {
+    std::string const idf_objects = delimited_string({
+    "ThermalStorage:ChilledWater:Stratified,"
+        "Chilled Water Storage Tank 1,  !- Name",
+        "50.0,                    !- Tank Volume {m3}",
+        "8.0,                     !- Tank Height {m}",
+        "VerticalCylinder,        !- Tank Shape",
+        ",                        !- Tank Perimeter {m}",
+        "CW Tank Temp Schedule,   !- Setpoint Temperature Schedule Name",
+        "2.5,                     !- Deadband Temperature Difference {deltaC}",
+        "6.5,                     !- Temperature Sensor Height {m}",
+        "1.0,                     !- Minimum Temperature Limit {C}",
+        "50000,                   !- Nominal Cooling Capacity {W}",
+        "Zone,                    !- Ambient Temperature Indicator",
+        ",                        !- Ambient Temperature Schedule Name",
+        "ZN_1_FLR_1_SEC_5,        !- Ambient Temperature Zone Name",
+        ",                        !- Ambient Temperature Outdoor Air Node Name",
+        "0.5,                     !- Uniform Skin Loss Coefficient per Unit Area to Ambient Temperature {W/m2-K}",
+        "CoolSysPrimary TES Use Inlet Node,  !- Use Side Inlet Node Name",
+        "CoolSysPrimary TES Use Outlet Node,  !- Use Side Outlet Node Name",
+        "1.0,                     !- Use Side Heat Transfer Effectiveness",
+        "ALWAYS_ON,               !- Use Side Availability Schedule Name",
+        "7.85,                    !- Use Side Inlet Height {m}",
+        "0.15,                    !- Use Side Outlet Height {m}",
+        "autosize,                !- Use Side Design Flow Rate {m3/s}",
+        ",                        !- Source Side Inlet Node Name",
+        ",                        !- Source Side Outlet Node Name",
+        "0.9,                     !- Source Side Heat Transfer Effectiveness",
+        "TES Charge Schedule,     !- Source Side Availability Schedule Name",
+        "0.15,                    !- Source Side Inlet Height {m}",
+        "7.85,                    !- Source Side Outlet Height {m}",
+        "5.0E-3,                  !- Source Side Design Flow Rate {m3/s}",
+        "4.0,                     !- Tank Recovery Time {hr}",
+        "Seeking,                 !- Inlet Mode",
+        "6,                       !- Number of Nodes",
+        "0.0;                     !- Additional Destratification Conductivity {W/m-K}",
+
+    "Schedule:Compact,",
+        "CW Tank Temp Schedule,   !- Name",
+        "Temperature,             !- Schedule Type Limits Name",
+        "Through: 12/31,          !- Field 1",
+        "For: AllDays,            !- Field 2",
+        "Until: 24:00,50;         !- Field 3",
+    });
+
+    ASSERT_TRUE(process_idf(idf_objects));
+    state->dataGlobal->TimeStepsInHour = 1;    // must initialize this to get schedules initialized
+    state->dataGlobal->MinutesInTimeStep = 60; // must initialize this to get schedules initialized
+    state->init_state(*state);
+    std::string const cStratifiedCWTankModuleObj = "ThermalStorage:ChilledWater:Stratified";
+    state->dataWaterThermalTanks->numWaterHeaterMixed = 0;
+    state->dataWaterThermalTanks->numWaterHeaterStratified = 0;
+    state->dataWaterThermalTanks->numChilledWaterMixed = 0;
+    state->dataWaterThermalTanks->numChilledWaterStratified = 1;
+    state->dataWaterThermalTanks->numHotWaterStratified = 1;
+    state->dataWaterThermalTanks->WaterThermalTank.allocate(1);
+    WaterThermalTanks::getWaterTankStratifiedInput(*state, cStratifiedCWTankModuleObj);
+
+    auto &Tank = state->dataWaterThermalTanks->WaterThermalTank(1);
+    EXPECT_EQ(Tank.Name, "CHILLED WATER STORAGE TANK 1");
+    EXPECT_EQ(Tank.Volume, 50.0);
+    EXPECT_EQ(Tank.Height, 8.0);
+    EXPECT_EQ(Tank.Shape, WaterThermalTanks::TankShape::VertCylinder);
+    EXPECT_EQ(Tank.setptTempSched, Sched::GetSchedule(*state, "CW TANK TEMP SCHEDULE"));
+    EXPECT_EQ(Tank.DeadBandDeltaTemp, 2.5);
+    EXPECT_EQ(Tank.TempSensorHeight1, 6.5);
+    EXPECT_EQ(Tank.TankTempLimit, 1.0);
+    EXPECT_EQ(Tank.MaxCapacity, 50000);
+    EXPECT_EQ(Tank.AmbientTempIndicator, WaterThermalTanks::WTTAmbientTemp::TempZone);
+    EXPECT_EQ(Tank.ambientTempSched, nullptr);
+    EXPECT_EQ(Tank.SkinLossCoeff, 0.5);
+    EXPECT_EQ(Tank.UseEffectiveness, 1.0);
+    //    EXPECT_EQ(Tank.useSideAvailSched, Sched::GetSchedule(*state, "ALWAYS_ON"));
+    EXPECT_EQ(Tank.UseInletHeight, 7.85);
+    EXPECT_EQ(Tank.UseOutletHeight, 0.15);
+    EXPECT_EQ(Tank.UseDesignVolFlowRate, DataSizing::AutoSize);
+    EXPECT_EQ(Tank.SourceEffectiveness, 0.9);
+    //    EXPECT_EQ(Tank.sourceSideAvailSched, Sched::GetSchedule(*state, "TES CHARGE SCHEDULE"));
+    EXPECT_EQ(Tank.SourceInletHeight, 0.15);
+    EXPECT_EQ(Tank.SourceOutletHeight, 7.85);
+    EXPECT_EQ(Tank.SourceDesignVolFlowRate, 5.0E-3);
+    EXPECT_EQ(Tank.InletMode, WaterThermalTanks::InletPositionMode::Seeking);
+    EXPECT_EQ(Tank.Nodes, 6);
+    EXPECT_EQ(Tank.AdditionalCond, 0.0);
 }
 
 TEST_F(EnergyPlusFixture, StratifiedTankSourceTemperatures)

@@ -2511,6 +2511,10 @@ namespace Sched {
 
         auto const *weekSched = this->weekScheds[thisDayOfYear];
         auto const *daySched = (thisHolidayNum > 0) ? weekSched->dayScheds[thisHolidayNum] : weekSched->dayScheds[thisDayOfWeek];
+        if (daySched == nullptr) {
+            // We already warned in ProcessScheduleInput that there were missing days: Missing day types will have 0.0 as Schedule Values
+            return 0.0;
+        }
 
         // If Unspecified or equal to zero, use NumOfTimeStepInHour, otherwise use supplied
         if (ts <= 0) {

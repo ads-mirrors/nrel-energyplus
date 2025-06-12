@@ -268,7 +268,7 @@ namespace AirLoopHVACDOAS {
                 }
 
                 state.dataAirLoopHVACDOAS->airloopMixer.push_back(thisMixer);
-                
+
                 if (thisMixer.numOfInletNodes < 1) { // No inlet nodes specified--this is not possible
                     ShowSevereError(state, format("{}, \"{}\" does not have any inlet nodes.", cCurrentModuleObject, thisMixer.name));
                     ShowContinueError(state, "All mixers must have at least one inlet node.");
@@ -438,7 +438,7 @@ namespace AirLoopHVACDOAS {
                 }
 
                 state.dataAirLoopHVACDOAS->airloopSplitter.push_back(thisSplitter);
-                
+
                 if (thisSplitter.numOfOutletNodes < 1) { // No outlet nodes specified--this is not possible
                     ShowSevereError(state, format("{}, \"{}\" does not have any outlet nodes.", cCurrentModuleObject, thisSplitter.name));
                     ShowContinueError(state, "All splitters must have at least one outlet node.");

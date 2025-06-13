@@ -3965,8 +3965,9 @@ bool getWaterTankStratifiedInput(EnergyPlusData &state, std::string objectType)
         auto const &UseInletNodeName = fields.find("use_side_inlet_node_name");
         auto const &UseOutletNodeName = fields.find("use_side_outlet_node_name");
         if ((UseInletNodeName != fields.end()) || (UseOutletNodeName != fields.end())) {
+            Tank.InletNodeName1 = Util::makeUPPER( UseInletNodeName.value().get<std::string>());
             Tank.UseInletNode = NodeInputManager::GetOnlySingleNode(state,
-                                                                    UseInletNodeName.value().get<std::string>(),
+                                                                    Tank.InletNodeName1,
                                                                     ErrorsFound,
                                                                     DataLoopNode::ConnectionObjectType::ThermalStorageChilledWaterStratified,
                                                                     thisObjectName,
@@ -3974,7 +3975,7 @@ bool getWaterTankStratifiedInput(EnergyPlusData &state, std::string objectType)
                                                                     DataLoopNode::ConnectionType::Inlet,
                                                                     NodeInputManager::CompFluidStream::Primary,
                                                                     DataLoopNode::ObjectIsNotParent);
-            Tank.InletNodeName1 = UseInletNodeName.value().get<std::string>();
+            Tank.OutletNodeName1 = Util::makeUPPER(UseOutletNodeName.value().get<std::string>());
             Tank.UseOutletNode = NodeInputManager::GetOnlySingleNode(state,
                                                                      UseOutletNodeName.value().get<std::string>(),
                                                                      ErrorsFound,
@@ -3984,14 +3985,14 @@ bool getWaterTankStratifiedInput(EnergyPlusData &state, std::string objectType)
                                                                      DataLoopNode::ConnectionType::Outlet,
                                                                      NodeInputManager::CompFluidStream::Primary,
                                                                      DataLoopNode::ObjectIsNotParent);
-            Tank.OutletNodeName1 = UseOutletNodeName.value().get<std::string>();
         }
 
         auto const &SourceInletNodeName = fields.find("source_side_inlet_node_name");
         auto const &SourceOutletNodeName = fields.find("source_side_outlet_node_name");
         if ((SourceInletNodeName != fields.end()) || (SourceOutletNodeName != fields.end())) {
+            Tank.InletNodeName2 = Util::makeUPPER(SourceInletNodeName.value().get<std::string>());
             Tank.SourceInletNode = NodeInputManager::GetOnlySingleNode(state,
-                                                                       SourceInletNodeName.value().get<std::string>(),
+                                                                       Tank.InletNodeName2,
                                                                        ErrorsFound,
                                                                        DataLoopNode::ConnectionObjectType::ThermalStorageChilledWaterStratified,
                                                                        thisObjectName,
@@ -3999,9 +4000,9 @@ bool getWaterTankStratifiedInput(EnergyPlusData &state, std::string objectType)
                                                                        DataLoopNode::ConnectionType::Inlet,
                                                                        NodeInputManager::CompFluidStream::Secondary,
                                                                        DataLoopNode::ObjectIsNotParent);
-            Tank.InletNodeName2 = SourceInletNodeName.value().get<std::string>();
+            Tank.OutletNodeName2 = Util::makeUPPER(SourceOutletNodeName.value().get<std::string>());
             Tank.SourceOutletNode = NodeInputManager::GetOnlySingleNode(state,
-                                                                        SourceOutletNodeName.value().get<std::string>(),
+                                                                        Tank.OutletNodeName2,
                                                                         ErrorsFound,
                                                                         DataLoopNode::ConnectionObjectType::ThermalStorageChilledWaterStratified,
                                                                         thisObjectName,
@@ -4009,7 +4010,6 @@ bool getWaterTankStratifiedInput(EnergyPlusData &state, std::string objectType)
                                                                         DataLoopNode::ConnectionType::Outlet,
                                                                         NodeInputManager::CompFluidStream::Secondary,
                                                                         DataLoopNode::ObjectIsNotParent);
-            Tank.OutletNodeName2 = SourceOutletNodeName.value().get<std::string>();
         }
 
         auto const &useSideAvailSched = fields.find("use_side_availability_schedule_name");

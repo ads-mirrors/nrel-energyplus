@@ -3646,12 +3646,15 @@ bool getWaterTankStratifiedInput(EnergyPlusData &state, std::string objectType)
     static constexpr std::string_view routineName = "getWaterTankStratifiedInput";
 
     auto cCurrentModuleObject = objectType;
-    auto const instances = state.dataInputProcessing->inputProcessor->epJSON.find(cCurrentModuleObject );
+    auto const instances = state.dataInputProcessing->inputProcessor->epJSON.find(cCurrentModuleObject);
     if (instances == state.dataInputProcessing->inputProcessor->epJSON.end()) {
         return false;
     }
     int endIndexPrev = state.dataWaterThermalTanks->numWaterHeaterMixed + state.dataWaterThermalTanks->numWaterHeaterStratified +
                        state.dataWaterThermalTanks->numChilledWaterMixed;
+    if (objectType == "ThermalStorage:HotWater:Stratified") {
+        endIndexPrev += state.dataWaterThermalTanks->numChilledWaterStratified;
+    }
     int startIndex = endIndexPrev + 1;
     auto &instancesValue = instances.value();
     auto const &schemaProps = state.dataInputProcessing->inputProcessor->getObjectSchemaProps(state, cCurrentModuleObject);
@@ -3663,12 +3666,8 @@ bool getWaterTankStratifiedInput(EnergyPlusData &state, std::string objectType)
 
         ErrorObjectHeader eoh{routineName, cCurrentModuleObject, thisObjectName};
 
-        GlobalNames::VerifyUniqueInterObjectName(state,
-                                                 state.dataWaterThermalTanks->UniqueWaterThermalTankNames,
-                                                 thisObjectName,
-                                                 cCurrentModuleObject,
-                                                 "NAME",
-                                                 ErrorsFound);
+        GlobalNames::VerifyUniqueInterObjectName(
+            state, state.dataWaterThermalTanks->UniqueWaterThermalTankNames, thisObjectName, cCurrentModuleObject, "NAME", ErrorsFound);
 
         auto &Tank = state.dataWaterThermalTanks->WaterThermalTank(WaterThermalTankNum);
 
@@ -3697,7 +3696,8 @@ bool getWaterTankStratifiedInput(EnergyPlusData &state, std::string objectType)
             Tank.HeightWasAutoSized = true;
         }
 
-        Tank.Shape = static_cast<TankShape>(getEnumValue(TankShapeNamesUC, Util::makeUPPER(Util::makeUPPER(fields.at("tank_shape").get<std::string>()))));
+        Tank.Shape =
+            static_cast<TankShape>(getEnumValue(TankShapeNamesUC, Util::makeUPPER(Util::makeUPPER(fields.at("tank_shape").get<std::string>()))));
         switch (Tank.Shape) {
         case TankShape::HorizCylinder:
         case TankShape::VertCylinder: {
@@ -3725,25 +3725,70 @@ bool getWaterTankStratifiedInput(EnergyPlusData &state, std::string objectType)
             break;
         }
         }
-        Real64 TankTempLimit =  state.dataInputProcessing->inputProcessor->getRealFieldValue(fields, schemaProps, "minimum_temperature_limit");
+        Real64 TankTempLimit;
+        std::string kwHeatingCooling = "";
+        if (objectType == "ThermalStorage:ChilledWater:Stratified") {
+            TankTempLimit = state.dataInputProcessing->inputProcessor->getRealFieldValue(fields, schemaProps, "minimum_temperature_limit");
+            auto const &setpointTempScheduleName = fields.find("setpoint_temperature_schedule_name");
+            if (setpointTempScheduleName == fields.end() || setpointTempScheduleName->empty()) {
+                ShowSevereEmptyField(state, eoh, "setpoint_temperature_schedule_name");
+                ErrorsFound = true;
+            } else if ((Tank.setptTempSched = Sched::GetSchedule(state, Util::makeUPPER(setpointTempScheduleName.value().get<std::string>()))) ==
+                       nullptr) {
+                ShowSevereItemNotFound(state, eoh, "setpoint_temperature_schedule_name", setpointTempScheduleName.value().get<std::string>());
+                ErrorsFound = true;
+            }
+            Tank.HeaterHeight1 = state.dataInputProcessing->inputProcessor->getRealFieldValue(fields, schemaProps, "temperature_sensor_height");
+            Tank.TempSensorHeight1 = Tank.HeaterHeight1;
+            kwHeatingCooling = "cooling";
+        } else { // "ThermalStorage:HotWater:Stratified"
+            TankTempLimit = state.dataInputProcessing->inputProcessor->getRealFieldValue(fields, schemaProps, "maximum_temperature_limit");
+            auto const &topTempScheduleFieldName = "top_setpoint_temperature_schedule_name";
+            auto const &topSetpointTempScheduleName = fields.find(topTempScheduleFieldName);
+            if (topSetpointTempScheduleName == fields.end() || topSetpointTempScheduleName->empty()) {
+                ShowSevereEmptyField(state, eoh, topTempScheduleFieldName);
+                ErrorsFound = true;
+            } else if ((Tank.setptTempSchedTop =
+                            Sched::GetSchedule(state, Util::makeUPPER(topSetpointTempScheduleName.value().get<std::string>()))) == nullptr) {
+                ShowSevereItemNotFound(state, eoh, topTempScheduleFieldName, topSetpointTempScheduleName.value().get<std::string>());
+                ErrorsFound = true;
+            }
+
+            auto const &bottomTempScheduleFieldName = "bottom_setpoint_temperature_schedule_name";
+            auto const &bottomSetpointTempScheduleName = fields.find(bottomTempScheduleFieldName);
+            if (bottomSetpointTempScheduleName == fields.end() || bottomSetpointTempScheduleName->empty()) {
+                ShowSevereEmptyField(state, eoh, bottomTempScheduleFieldName);
+                ErrorsFound = true;
+            } else if ((Tank.setptTempSchedBottom =
+                            Sched::GetSchedule(state, Util::makeUPPER(bottomSetpointTempScheduleName.value().get<std::string>()))) == nullptr) {
+                ShowSevereItemNotFound(state, eoh, bottomTempScheduleFieldName, bottomSetpointTempScheduleName.value().get<std::string>());
+                ErrorsFound = true;
+            }
+            Tank.HeaterHeight1 = state.dataInputProcessing->inputProcessor->getRealFieldValue(fields, schemaProps, "top_temperature_sensor_height");
+            Tank.TempSensorHeight1 = Tank.HeaterHeight1;
+            Tank.HeaterHeight2 =
+                state.dataInputProcessing->inputProcessor->getRealFieldValue(fields, schemaProps, "bottom_temperature_sensor_height");
+            Tank.TempSensorHeight2 = Tank.HeaterHeight2;
+            // use side
+            auto const &UseFlowDirectionScheName = fields.find("use_side_flow_direction_schedule");
+            if (UseFlowDirectionScheName == fields.end() || UseFlowDirectionScheName->empty()) {
+                Tank.UseFlowDirectionSched = Sched::GetScheduleAlwaysOn(state);
+            } else if ((Tank.UseFlowDirectionSched =
+                            Sched::GetSchedule(state, Util::makeUPPER(UseFlowDirectionScheName.value().get<std::string>()))) == nullptr) {
+                ShowSevereItemNotFound(state, eoh, "use_side_flow_direction_schedule", UseFlowDirectionScheName.value().get<std::string>());
+                ErrorsFound = true;
+            }
+            kwHeatingCooling = "heating";
+        }
 
         if (TankTempLimit > 0.0) {
             Tank.TankTempLimit = TankTempLimit;
         } else {
-            // default to just above freezing
             Tank.TankTempLimit = 1.0;
         }
 
-        auto const setpointTempScheduleName = fields.find("setpoint_temperature_schedule_name");
-        if (setpointTempScheduleName == fields.end() || setpointTempScheduleName->empty()) {
-            ShowSevereEmptyField(state, eoh, "setpoint_temperature_schedule_name");
-            ErrorsFound = true;
-        } else if ((Tank.setptTempSched = Sched::GetSchedule(state, Util::makeUPPER(setpointTempScheduleName.value().get<std::string>()))) == nullptr) {
-            ShowSevereItemNotFound(state, eoh, "setpoint_temperature_schedule_name", setpointTempScheduleName.value().get<std::string>());
-            ErrorsFound = true;
-        }
-
-        auto const DeadBandDeltaTemp = state.dataInputProcessing->inputProcessor->getRealFieldValue(fields, schemaProps, "deadband_temperature_difference");
+        auto const DeadBandDeltaTemp =
+            state.dataInputProcessing->inputProcessor->getRealFieldValue(fields, schemaProps, "deadband_temperature_difference");
         if (DeadBandDeltaTemp > 0.0) {
             Tank.DeadBandDeltaTemp = DeadBandDeltaTemp;
         } else {
@@ -3751,11 +3796,12 @@ bool getWaterTankStratifiedInput(EnergyPlusData &state, std::string objectType)
             Tank.DeadBandDeltaTemp = 0.0001;
         }
 
-        Tank.HeaterHeight1 = state.dataInputProcessing->inputProcessor->getRealFieldValue(fields, schemaProps, "temperature_sensor_height");
-        Tank.TempSensorHeight1 = Tank.HeaterHeight1;
-        Tank.MaxCapacity = state.dataInputProcessing->inputProcessor->getRealFieldValue(fields, schemaProps, "nominal_cooling_capacity");
-        if (Tank.MaxCapacity == DataSizing::AutoSize) {
+        auto const &MaxCapacity = fields.at(format("nominal_{}_capacity", kwHeatingCooling));
+        if (MaxCapacity == "Autosize") {
+            Tank.MaxCapacity = DataSizing::AutoSize;
             Tank.MaxCapacityWasAutoSized = true;
+        } else {
+            Tank.MaxCapacity = MaxCapacity.get<Real64>();
         }
 
         Tank.Efficiency = 1.0;
@@ -3773,8 +3819,8 @@ bool getWaterTankStratifiedInput(EnergyPlusData &state, std::string objectType)
         Tank.OnCycParaFracToTank = 0.0;
         Tank.OnCycParaHeight = 0.0;
 
-        Tank.AmbientTempIndicator =
-            static_cast<WTTAmbientTemp>(getEnumValue(TankAmbientTempNamesUC, Util::makeUPPER(fields.at("ambient_temperature_indicator").get<std::string>())));
+        Tank.AmbientTempIndicator = static_cast<WTTAmbientTemp>(
+            getEnumValue(TankAmbientTempNamesUC, Util::makeUPPER(fields.at("ambient_temperature_indicator").get<std::string>())));
         auto const ambientTempSched = fields.find("ambient_temperature_schedule_name");
         std::string fieldName = "";
         switch (Tank.AmbientTempIndicator) {
@@ -3792,11 +3838,10 @@ bool getWaterTankStratifiedInput(EnergyPlusData &state, std::string objectType)
         case WTTAmbientTemp::TempZone: {
             fieldName = "ambient_temperature_zone_name";
             auto const ambientTempZoneName = Util::makeUPPER(fields.at(fieldName).get<std::string>());
-            Tank.AmbientTempZone = Util::FindItemInList(ambientTempZoneName , state.dataHeatBal->Zone);
+            Tank.AmbientTempZone = Util::FindItemInList(ambientTempZoneName, state.dataHeatBal->Zone);
             if (Tank.AmbientTempZone == 0) {
                 ShowSevereError(state, format("Invalid, {} = {}", "ambient_temperature_zone_name", ambientTempZoneName));
-                ShowContinueError(state,
-                                  format("Entered in {} = {}", cCurrentModuleObject, Tank.Name));
+                ShowContinueError(state, format("Entered in {} = {}", cCurrentModuleObject, Tank.Name));
                 ShowContinueError(state, "Zone was not found.");
                 ErrorsFound = true;
             }
@@ -3820,10 +3865,8 @@ bool getWaterTankStratifiedInput(EnergyPlusData &state, std::string objectType)
                                                         NodeInputManager::CompFluidStream::Primary,
                                                         DataLoopNode::ObjectIsNotParent);
                 if (!OutAirNodeManager::CheckOutAirNodeNumber(state, Tank.AmbientTempOutsideAirNode)) {
-                    ShowSevereError(state,
-                                    format("Invalid, {} = {}", fieldName, fieldValue));
-                    ShowContinueError(state,
-                                      format("Entered in {} = {}", cCurrentModuleObject, fieldValue));
+                    ShowSevereError(state, format("Invalid, {} = {}", fieldName, fieldValue));
+                    ShowContinueError(state, format("Entered in {} = {}", cCurrentModuleObject, fieldValue));
                     ShowContinueError(state, "Outdoor Air Node not on OutdoorAir:NodeList or OutdoorAir:Node");
                     ErrorsFound = true;
                 }
@@ -3856,7 +3899,8 @@ bool getWaterTankStratifiedInput(EnergyPlusData &state, std::string objectType)
         Tank.MassFlowRateMax = 0.0;
         Tank.flowRateSched = nullptr;
         Tank.useInletTempSched = nullptr;
-        Tank.UseEffectiveness = state.dataInputProcessing->inputProcessor->getRealFieldValue(fields, schemaProps, "use_side_heat_transfer_effectiveness");
+        Tank.UseEffectiveness =
+            state.dataInputProcessing->inputProcessor->getRealFieldValue(fields, schemaProps, "use_side_heat_transfer_effectiveness");
         Tank.UseInletHeight = state.dataInputProcessing->inputProcessor->getRealFieldValue(fields, schemaProps, "use_side_inlet_height");
 
         // default to always on
@@ -3870,10 +3914,7 @@ bool getWaterTankStratifiedInput(EnergyPlusData &state, std::string objectType)
             Tank.UseOutletHeight = UseOutletHeight.get<Real64>();
         }
         if (Tank.UseInletHeight > Tank.Height) {
-            ShowSevereError(state,
-                            format("{} = {}: Use inlet is located higher than overall tank height.",
-                                   cCurrentModuleObject,
-                                   thisObjectName));
+            ShowSevereError(state, format("{} = {}: Use inlet is located higher than overall tank height.", cCurrentModuleObject, thisObjectName));
             ShowContinueError(state, format("{} = {:.4R}", "tank_height", Tank.Height));
             ShowContinueError(state, format("{} = {:.4R}", "use_side_inlet_height", Tank.UseInletHeight));
             ErrorsFound = true;
@@ -3881,31 +3922,23 @@ bool getWaterTankStratifiedInput(EnergyPlusData &state, std::string objectType)
 
         Tank.UseOutletHeight = state.dataInputProcessing->inputProcessor->getRealFieldValue(fields, schemaProps, "use_side_outlet_height");
         if (Tank.UseOutletHeight > Tank.Height) {
-            ShowSevereError(state,
-                            format("{} = {}: Use outlet is located higher than overall tank height.",
-                                   cCurrentModuleObject,
-                                   thisObjectName));
+            ShowSevereError(state, format("{} = {}: Use outlet is located higher than overall tank height.", cCurrentModuleObject, thisObjectName));
             ShowContinueError(state, format("{} = {:.4R}", "tank_height", Tank.Height));
             ShowContinueError(state, format("{} = {:.4R}", "use_side_outlet_height", Tank.UseOutletHeight));
             ErrorsFound = true;
         }
 
-        Tank.SourceEffectiveness = state.dataInputProcessing->inputProcessor->getRealFieldValue(fields, schemaProps, "source_side_heat_transfer_effectiveness");
+        Tank.SourceEffectiveness =
+            state.dataInputProcessing->inputProcessor->getRealFieldValue(fields, schemaProps, "source_side_heat_transfer_effectiveness");
         if ((Tank.SourceEffectiveness > 1) || (Tank.SourceEffectiveness <= 0)) {
-            ShowSevereError(state,
-                            format("{} = {}:  Source Side Effectiveness is out of bounds (>0 to 1)",
-                                   cCurrentModuleObject,
-                                   thisObjectName));
+            ShowSevereError(state, format("{} = {}:  Source Side Effectiveness is out of bounds (>0 to 1)", cCurrentModuleObject, thisObjectName));
             ErrorsFound = true;
         }
 
         Tank.SourceInletHeight = state.dataInputProcessing->inputProcessor->getRealFieldValue(fields, schemaProps, "source_side_inlet_height");
         if (Tank.SourceInletHeight > Tank.Height) {
-            ShowSevereError(state,
-                            format("{} = {}: Source inlet is located higher than overall tank height.",
-                                   cCurrentModuleObject,
-                                   thisObjectName));
-            ShowContinueError(state, format("{} = {:.4R}", "tank_height",  Tank.Height));
+            ShowSevereError(state, format("{} = {}: Source inlet is located higher than overall tank height.", cCurrentModuleObject, thisObjectName));
+            ShowContinueError(state, format("{} = {:.4R}", "tank_height", Tank.Height));
             ShowContinueError(state, format("{} = {:.4R}", "source_side_inlet_height", Tank.SourceInletHeight));
             ErrorsFound = true;
         }
@@ -3920,9 +3953,7 @@ bool getWaterTankStratifiedInput(EnergyPlusData &state, std::string objectType)
         }
         if (Tank.SourceOutletHeight > Tank.Height) {
             ShowSevereError(state,
-                            format("{} = {}: Source outlet is located higher than overall tank height.",
-                                   cCurrentModuleObject,
-                                   thisObjectName));
+                            format("{} = {}: Source outlet is located higher than overall tank height.", cCurrentModuleObject, thisObjectName));
             ShowContinueError(state, format("{} = {:.4R}", "tank_height", Tank.Height));
             ShowContinueError(state, format("{} = {:.4R}", "source_side_outlet_height", Tank.SourceOutletHeight));
             ErrorsFound = true;
@@ -3965,7 +3996,7 @@ bool getWaterTankStratifiedInput(EnergyPlusData &state, std::string objectType)
         auto const &UseInletNodeName = fields.find("use_side_inlet_node_name");
         auto const &UseOutletNodeName = fields.find("use_side_outlet_node_name");
         if ((UseInletNodeName != fields.end()) || (UseOutletNodeName != fields.end())) {
-            Tank.InletNodeName1 = Util::makeUPPER( UseInletNodeName.value().get<std::string>());
+            Tank.InletNodeName1 = Util::makeUPPER(UseInletNodeName.value().get<std::string>());
             Tank.UseInletNode = NodeInputManager::GetOnlySingleNode(state,
                                                                     Tank.InletNodeName1,
                                                                     ErrorsFound,
@@ -4027,7 +4058,8 @@ bool getWaterTankStratifiedInput(EnergyPlusData &state, std::string objectType)
         auto const &sourceSideAvailSched = fields.find("source_side_availability_schedule_name");
         if (sourceSideAvailSched != fields.end()) {
             Tank.sourceSideAvailSched = Sched::GetScheduleAlwaysOn(state);
-        } else if ((Tank.sourceSideAvailSched = Sched::GetSchedule(state, Util::makeUPPER(sourceSideAvailSched.value().get<std::string>()))) == nullptr) {
+        } else if ((Tank.sourceSideAvailSched = Sched::GetSchedule(state, Util::makeUPPER(sourceSideAvailSched.value().get<std::string>()))) ==
+                   nullptr) {
             ShowSevereItemNotFound(state, eoh, "source_side_availability_schedule_name", sourceSideAvailSched.value().get<std::string>());
             ErrorsFound = true;
         }
@@ -4037,7 +4069,8 @@ bool getWaterTankStratifiedInput(EnergyPlusData &state, std::string objectType)
             static_cast<InletPositionMode>(getEnumValue(InletPositionModeNamesUC, Util::makeUPPER(fields.at("inlet_mode").get<std::string>())));
 
         Tank.Nodes = state.dataInputProcessing->inputProcessor->getRealFieldValue(fields, schemaProps, "number_of_nodes");
-        Tank.AdditionalCond = state.dataInputProcessing->inputProcessor->getRealFieldValue(fields, schemaProps, "additional_destratification_conductivity");
+        Tank.AdditionalCond =
+            state.dataInputProcessing->inputProcessor->getRealFieldValue(fields, schemaProps, "additional_destratification_conductivity");
 
         Tank.AdditionalLossCoeff.allocate(Tank.Nodes);
         Tank.AdditionalLossCoeff = 0.0;

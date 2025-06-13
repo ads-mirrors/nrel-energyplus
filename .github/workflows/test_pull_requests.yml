@@ -184,6 +184,13 @@ jobs:
         name: "regressions-${{ matrix.os }}"
         path: "${{ github.workspace }}/regressions"
 
+    - uses: actions/upload-artifact@v4
+      id: upload_regression_plotter
+      if: always() && matrix.run_regressions && steps.regressions.outcome == 'failure'  # only run this if regressions were encountered "failed"
+      with:
+        name: "regressions-plotter-${{ matrix.os }}"
+        path: "${{ github.workspace }}/regression_plotter.html"
+
     - name: Generate Regression Summary GitHub Script
       if: always() && matrix.run_regressions && steps.regressions.outcome == 'failure'
       run: >

@@ -4219,7 +4219,7 @@ void ElectricStorage::simulateLiIonNmcBatteryModel(EnergyPlusData &state,
     }
 
 #ifdef DEBUG_ARITHM_GCC_OR_CLANG
-    hqfeenableexcept(old_excepts);
+    feenableexcept(old_excepts);
 #endif
 
 #ifdef DEBUG_ARITHM_MSVC

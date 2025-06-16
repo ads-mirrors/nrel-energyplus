@@ -173,8 +173,8 @@
     CoolSysPrimary Chiller,  !- Component 1 Name
     CoolSysPrimary Chiller Inlet Node,  !- Component 1 Inlet Node Name
     CoolSysPrimary TES Use Inlet Node,  !- Component 1 Outlet Node Name
-    ThermalStorage:ChilledWater:Stratified,  !- Component 2 Object Type
-    Chilled Water Storage Tank 1,  !- Component 2 Name
+    ThermalStorage:HotWater:Stratified,  !- Component 2 Object Type
+    Hot Water Storage Tank 1,  !- Component 2 Name
     CoolSysPrimary TES Use Inlet Node,  !- Component 2 Inlet Node Name
     CoolSysPrimary TES Use Outlet Node;  !- Component 2 Outlet Node Name
 
@@ -519,8 +519,8 @@
 
   PlantEquipmentList,
     CoolSysSecondary TES supply,  !- Name
-    ThermalStorage:ChilledWater:Stratified,  !- Equipment 1 Object Type
-    Chilled Water Storage Tank 1;  !- Equipment 1 Name
+    ThermalStorage:HotWater:Stratified,  !- Equipment 1 Object Type
+    Hot Water Storage Tank 1;  !- Equipment 1 Name
 
 !--------------------------------------------------------------------------------------------
 !------------------------------------SPECIFIC SCHEDULES--------------------------------------
@@ -542,6 +542,20 @@
 
   Schedule:Compact,
     CW Tank Temp Schedule,   !- Name
+    Temperature,             !- Schedule Type Limits Name
+    Through: 12/31,          !- Field 1
+    For: AllDays,            !- Field 2
+    Until: 24:00,7.5;        !- Field 3
+
+  Schedule:Compact,
+    CW Tank Temp Top Schedule,   !- Name
+    Temperature,             !- Schedule Type Limits Name
+    Through: 12/31,          !- Field 1
+    For: AllDays,            !- Field 2
+    Until: 24:00,7.5;        !- Field 3
+
+  Schedule:Compact,
+    CW Tank Temp Bottom Schedule,   !- Name
     Temperature,             !- Schedule Type Limits Name
     Through: 12/31,          !- Field 1
     For: AllDays,            !- Field 2
@@ -5499,13 +5513,28 @@
 
   Output:Constructions,Constructions;
 
-  Output:Variable,*,Heating Coil Heating Rate,hourly;
+!-   Output:Variable,*,Heating Coil Heating Rate,hourly;
+!-
+!-   Output:Variable,*,Zone Heating Setpoint Not Met Time,hourly;
+!-
+!-   Output:Variable,*,Zone Mean Air Temperature,hourly;
+!-
+!-   Output:Variable,*,Zone Heating Setpoint Not Met While Occupied Time,hourly;
 
-  Output:Variable,*,Zone Heating Setpoint Not Met Time,hourly;
-
-  Output:Variable,*,Zone Mean Air Temperature,hourly;
-
-  Output:Variable,*,Zone Heating Setpoint Not Met While Occupied Time,hourly;
+Output:Variable,*,Hot Water Thermal Storage Tank Temperature,hourly; !- HVAC Average [C]
+Output:Variable,*,Hot Water Thermal Storage Final Tank Temperature,hourly; !- HVAC Average [C]
+Output:Variable,*,Hot Water Thermal Storage Tank Heat Gain Rate,hourly; !- HVAC Average [W]
+Output:Variable,*,Hot Water Thermal Storage Tank Heat Gain Energy,hourly; !- HVAC Sum [J]
+Output:Variable,*,Hot Water Thermal Storage Use Side Mass Flow Rate,hourly; !- HVAC Average [kg/s]
+Output:Variable,*,Hot Water Thermal Storage Use Side Inlet Temperature,hourly; !- HVAC Average [C]
+Output:Variable,*,Hot Water Thermal Storage Use Side Outlet Temperature,hourly; !- HVAC Average [C]
+Output:Variable,*,Hot Water Thermal Storage Use Side Heat Transfer Rate,hourly; !- HVAC Average [W]
+Output:Variable,*,Hot Water Thermal Storage Use Side Heat Transfer Energy,hourly; !- HVAC Sum [J]
+Output:Variable,*,Hot Water Thermal Storage Source Side Mass Flow Rate,hourly; !- HVAC Average [kg/s]
+Output:Variable,*,Hot Water Thermal Storage Source Side Inlet Temperature,hourly; !- HVAC Average [C]
+Output:Variable,*,Hot Water Thermal Storage Source Side Outlet Temperature,hourly; !- HVAC Average [C]
+Output:Variable,*,Hot Water Thermal Storage Source Side Heat Transfer Rate,hourly; !- HVAC Average [W]
+Output:Variable,*,Hot Water Thermal Storage Source Side Heat Transfer Energy,hourly; !- HVAC Sum [J]
 
   Output:Diagnostics,
     DisplayUnusedObjects;    !- Key 1

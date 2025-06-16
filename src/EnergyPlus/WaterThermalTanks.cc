@@ -3673,7 +3673,6 @@ bool getWaterTankStratifiedInput(EnergyPlusData &state, std::string objectType)
 
         Tank.Name = Util::makeUPPER(thisObjectName);
         Tank.Type = cCurrentModuleObject;
-        Tank.WaterThermalTankType = DataPlant::PlantEquipmentType::ChilledWaterTankStratified;
 
         if ((Tank.water = Fluid::GetWater(state)) == nullptr) {
             ShowSevereError(state, "Fluid properties for WATER not found");
@@ -3728,6 +3727,7 @@ bool getWaterTankStratifiedInput(EnergyPlusData &state, std::string objectType)
         Real64 TankTempLimit;
         std::string kwHeatingCooling = "";
         if (objectType == "ThermalStorage:ChilledWater:Stratified") {
+            Tank.WaterThermalTankType = DataPlant::PlantEquipmentType::ChilledWaterTankStratified;
             TankTempLimit = state.dataInputProcessing->inputProcessor->getRealFieldValue(fields, schemaProps, "minimum_temperature_limit");
             auto const &setpointTempScheduleName = fields.find("setpoint_temperature_schedule_name");
             if (setpointTempScheduleName == fields.end() || setpointTempScheduleName->empty()) {
@@ -3742,6 +3742,7 @@ bool getWaterTankStratifiedInput(EnergyPlusData &state, std::string objectType)
             Tank.TempSensorHeight1 = Tank.HeaterHeight1;
             kwHeatingCooling = "cooling";
         } else { // "ThermalStorage:HotWater:Stratified"
+            Tank.WaterThermalTankType = DataPlant::PlantEquipmentType::HotWaterTankStratified;
             TankTempLimit = state.dataInputProcessing->inputProcessor->getRealFieldValue(fields, schemaProps, "maximum_temperature_limit");
             auto const &topTempScheduleFieldName = "top_setpoint_temperature_schedule_name";
             auto const &topSetpointTempScheduleName = fields.find(topTempScheduleFieldName);
@@ -4981,6 +4982,8 @@ void WaterThermalTankData::setupOutputVars(EnergyPlusData &state)
     if ((this->WaterThermalTankType == DataPlant::PlantEquipmentType::ChilledWaterTankMixed) ||
         (this->WaterThermalTankType == DataPlant::PlantEquipmentType::ChilledWaterTankStratified)) {
         this->setupChilledWaterTankOutputVars(state);
+    } else if (this->WaterThermalTankType == DataPlant::PlantEquipmentType::HotWaterTankStratified){
+        this->setupHotWaterTankOutputVars(state);
     } else {
         // moving setupWaterHeaterOutputVars to here causes big table diffs...
         this->setupWaterHeaterOutputVars(state);
@@ -4989,12 +4992,12 @@ void WaterThermalTankData::setupOutputVars(EnergyPlusData &state)
     // this->setupZoneInternalGains();
 }
 
-void WaterThermalTankData::setupChilledWaterTankOutputVars(EnergyPlusData &state)
+void WaterThermalTankData::setupChilledWaterTankOutputVars(EnergyPlusData &state, std::string ChilledOrHotKw)
 {
 
     // CurrentModuleObject='ThermalStorage:ChilledWater:Mixed/ThermalStorage:ChilledWater:Stratified'
     SetupOutputVariable(state,
-                        "Chilled Water Thermal Storage Tank Temperature",
+                        format("{} Water Thermal Storage Tank Temperature", ChilledOrHotKw),
                         Constant::Units::C,
                         this->TankTempAvg,
                         OutputProcessor::TimeStepType::System,
@@ -5002,7 +5005,7 @@ void WaterThermalTankData::setupChilledWaterTankOutputVars(EnergyPlusData &state
                         this->Name);
 
     SetupOutputVariable(state,
-                        "Chilled Water Thermal Storage Final Tank Temperature",
+                        format("{} Water Thermal Storage Final Tank Temperature", ChilledOrHotKw),
                         Constant::Units::C,
                         this->TankTemp,
                         OutputProcessor::TimeStepType::System,
@@ -5010,14 +5013,14 @@ void WaterThermalTankData::setupChilledWaterTankOutputVars(EnergyPlusData &state
                         this->Name);
 
     SetupOutputVariable(state,
-                        "Chilled Water Thermal Storage Tank Heat Gain Rate",
+                        format("{} Water Thermal Storage Tank Heat Gain Rate", ChilledOrHotKw),
                         Constant::Units::W,
                         this->LossRate,
                         OutputProcessor::TimeStepType::System,
                         OutputProcessor::StoreType::Average,
                         this->Name);
     SetupOutputVariable(state,
-                        "Chilled Water Thermal Storage Tank Heat Gain Energy",
+                        format("{} Water Thermal Storage Tank Heat Gain Energy", ChilledOrHotKw),
                         Constant::Units::J,
                         this->LossEnergy,
                         OutputProcessor::TimeStepType::System,
@@ -5025,7 +5028,7 @@ void WaterThermalTankData::setupChilledWaterTankOutputVars(EnergyPlusData &state
                         this->Name);
 
     SetupOutputVariable(state,
-                        "Chilled Water Thermal Storage Use Side Mass Flow Rate",
+                        format("{} Water Thermal Storage Use Side Mass Flow Rate", ChilledOrHotKw),
                         Constant::Units::kg_s,
                         this->UseMassFlowRate,
                         OutputProcessor::TimeStepType::System,
@@ -5033,7 +5036,7 @@ void WaterThermalTankData::setupChilledWaterTankOutputVars(EnergyPlusData &state
                         this->Name);
 
     SetupOutputVariable(state,
-                        "Chilled Water Thermal Storage Use Side Inlet Temperature",
+                        format("{} Water Thermal Storage Use Side Inlet Temperature", ChilledOrHotKw),
                         Constant::Units::C,
                         this->UseInletTemp,
                         OutputProcessor::TimeStepType::System,
@@ -5041,7 +5044,7 @@ void WaterThermalTankData::setupChilledWaterTankOutputVars(EnergyPlusData &state
                         this->Name);
 
     SetupOutputVariable(state,
-                        "Chilled Water Thermal Storage Use Side Outlet Temperature",
+                        format("{} Water Thermal Storage Use Side Outlet Temperature", ChilledOrHotKw),
                         Constant::Units::C,
                         this->UseOutletTemp,
                         OutputProcessor::TimeStepType::System,
@@ -5049,14 +5052,14 @@ void WaterThermalTankData::setupChilledWaterTankOutputVars(EnergyPlusData &state
                         this->Name);
 
     SetupOutputVariable(state,
-                        "Chilled Water Thermal Storage Use Side Heat Transfer Rate",
+                        format("{} Water Thermal Storage Use Side Heat Transfer Rate", ChilledOrHotKw),
                         Constant::Units::W,
                         this->UseRate,
                         OutputProcessor::TimeStepType::System,
                         OutputProcessor::StoreType::Average,
                         this->Name);
     SetupOutputVariable(state,
-                        "Chilled Water Thermal Storage Use Side Heat Transfer Energy",
+                        format("{} Water Thermal Storage Use Side Heat Transfer Energy", ChilledOrHotKw),
                         Constant::Units::J,
                         this->UseEnergy,
                         OutputProcessor::TimeStepType::System,
@@ -5064,7 +5067,7 @@ void WaterThermalTankData::setupChilledWaterTankOutputVars(EnergyPlusData &state
                         this->Name);
 
     SetupOutputVariable(state,
-                        "Chilled Water Thermal Storage Source Side Mass Flow Rate",
+                        format("{} Water Thermal Storage Source Side Mass Flow Rate", ChilledOrHotKw),
                         Constant::Units::kg_s,
                         this->SourceMassFlowRate,
                         OutputProcessor::TimeStepType::System,
@@ -5072,7 +5075,7 @@ void WaterThermalTankData::setupChilledWaterTankOutputVars(EnergyPlusData &state
                         this->Name);
 
     SetupOutputVariable(state,
-                        "Chilled Water Thermal Storage Source Side Inlet Temperature",
+                        format("{} Water Thermal Storage Source Side Inlet Temperature", ChilledOrHotKw),
                         Constant::Units::C,
                         this->SourceInletTemp,
                         OutputProcessor::TimeStepType::System,
@@ -5080,7 +5083,7 @@ void WaterThermalTankData::setupChilledWaterTankOutputVars(EnergyPlusData &state
                         this->Name);
 
     SetupOutputVariable(state,
-                        "Chilled Water Thermal Storage Source Side Outlet Temperature",
+                        format("{} Water Thermal Storage Source Side Outlet Temperature", ChilledOrHotKw),
                         Constant::Units::C,
                         this->SourceOutletTemp,
                         OutputProcessor::TimeStepType::System,
@@ -5088,14 +5091,14 @@ void WaterThermalTankData::setupChilledWaterTankOutputVars(EnergyPlusData &state
                         this->Name);
 
     SetupOutputVariable(state,
-                        "Chilled Water Thermal Storage Source Side Heat Transfer Rate",
+                        format("{} Water Thermal Storage Source Side Heat Transfer Rate", ChilledOrHotKw),
                         Constant::Units::W,
                         this->SourceRate,
                         OutputProcessor::TimeStepType::System,
                         OutputProcessor::StoreType::Average,
                         this->Name);
     SetupOutputVariable(state,
-                        "Chilled Water Thermal Storage Source Side Heat Transfer Energy",
+                        format("{} Water Thermal Storage Source Side Heat Transfer Energy", ChilledOrHotKw),
                         Constant::Units::J,
                         this->SourceEnergy,
                         OutputProcessor::TimeStepType::System,
@@ -5106,7 +5109,7 @@ void WaterThermalTankData::setupChilledWaterTankOutputVars(EnergyPlusData &state
 
         for (int NodeNum = 1; NodeNum <= this->Nodes; ++NodeNum) {
             SetupOutputVariable(state,
-                                format("Chilled Water Thermal Storage Temperature Node {}", NodeNum),
+                                format("{} Water Thermal Storage Temperature Node {}", ChilledOrHotKw, NodeNum),
                                 Constant::Units::C,
                                 this->Node(NodeNum).TempAvg,
                                 OutputProcessor::TimeStepType::System,
@@ -5116,7 +5119,7 @@ void WaterThermalTankData::setupChilledWaterTankOutputVars(EnergyPlusData &state
 
         for (int NodeNum = 1; NodeNum <= this->Nodes; ++NodeNum) {
             SetupOutputVariable(state,
-                                format("Chilled Water Thermal Storage Final Temperature Node {}", NodeNum),
+                                format("{} Water Thermal Storage Final Temperature Node {}", ChilledOrHotKw, NodeNum),
                                 Constant::Units::C,
                                 this->Node(NodeNum).Temp,
                                 OutputProcessor::TimeStepType::System,
@@ -5125,9 +5128,11 @@ void WaterThermalTankData::setupChilledWaterTankOutputVars(EnergyPlusData &state
         }
     }
 
-    if (this->WaterThermalTankType == DataPlant::PlantEquipmentType::ChilledWaterTankStratified) {
+    if (this->WaterThermalTankType == DataPlant::PlantEquipmentType::ChilledWaterTankStratified ||
+        this->WaterThermalTankType == DataPlant::PlantEquipmentType::HotWaterTankStratified) {
 
         for (int NodeNum = 1; NodeNum <= this->Nodes; ++NodeNum) {
+            // fixme: change this chilled water term
             static constexpr std::string_view Format_724("Chilled Water Tank Stratified Node Information,{},{:.4T},{:.4T},{:.4T},{},{}\n");
 
             print(state.files.eio,
@@ -5140,6 +5145,10 @@ void WaterThermalTankData::setupChilledWaterTankOutputVars(EnergyPlusData &state
                   this->Node(NodeNum).Outlets);
         }
     }
+}
+
+void WaterThermalTankData::setupHotWaterTankOutputVars(EnergyPlusData &state) {
+    setupChilledWaterTankOutputVars(state, "Hot");
 }
 
 void WaterThermalTankData::setupZoneInternalGains(EnergyPlusData &state)
@@ -6316,7 +6325,12 @@ void WaterThermalTankData::initialize(EnergyPlusData &state, bool const FirstHVA
 
     if (FirstHVACIteration) {
         // Get all scheduled values
-        this->SetPointTemp = this->setptTempSched->getCurrentVal();
+        if (this->WaterThermalTankType == DataPlant::PlantEquipmentType::HotWaterTankStratified) {
+            //  yujie: change it to this for testing input output for now
+            this->SetPointTemp = this->setptTempSchedTop->getCurrentVal();
+        } else {
+            this->SetPointTemp = this->setptTempSched->getCurrentVal();
+        }
 
         if (!this->IsChilledWaterTank) {
             if (this->SetPointTemp > this->TankTempLimit) {

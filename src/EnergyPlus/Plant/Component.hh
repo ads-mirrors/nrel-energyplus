@@ -121,6 +121,7 @@ namespace DataPlant {
         false, //	"EvaporativeFluidCooler:TwoSpeed"
         false, //	"ThermalStorage:ChilledWater:Mixed"
         false, //	"ThermalStorage:ChilledWater:Stratified"
+        false, //	"ThermalStorage:HotWater:Stratified"
         false, //	"SolarCollector:FlatPlate:PhotovoltaicThermal"
         false, //	"ZoneHVAC:Baseboard:Convective:Water"
         false, //	"ZoneHVAC:Baseboard:RadiantConvective:Steam"

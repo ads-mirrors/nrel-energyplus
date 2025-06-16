@@ -387,6 +387,7 @@ namespace DataLoopNode {
         TemperingValve,
         ThermalStorageChilledWaterMixed,
         ThermalStorageChilledWaterStratified,
+        ThermalStorageHotWaterStratified,
         ThermalStorageIceDetailed,
         ThermalStorageIceSimple,
         WaterHeaterHeatPump,

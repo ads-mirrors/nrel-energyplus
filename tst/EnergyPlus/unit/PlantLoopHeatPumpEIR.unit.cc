@@ -1022,6 +1022,31 @@ TEST_F(EnergyPlusFixture, calcPowerUsage_AWHP)
     EXPECT_EQ(thisAWHP.powerUsage, 2000);
 }
 
+TEST_F(EnergyPlusFixture, crankcaseHeater_AWHP)
+{
+    std::string const idf_objects = delimited_string({
+        "Curve:Linear,",
+        "heaterCapCurve,          !- Name",
+        "10.0,                    !- Coefficient1 Constant",
+        "2.,                      !- Coefficient2 x",
+        "-10.0,                    !- Minimum Value of x",
+        "70;                      !- Maximum Value of x",
+    });
+    ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
+    auto thisAWHP = HeatPumpAirToWater();
+    thisAWHP.CrankcaseHeaterCapacity = 100;
+    thisAWHP.CrankcaseHeaterCapacityCurveIndex = Curve::GetCurveIndex(*state, "HEATERCAPCURVE");
+    // when outdoor temperature is higher than temperature threshold, crankcase heater is off
+    state->dataEnvrn->OutDryBulbTemp = 15;
+    thisAWHP.MaxOATCrankcaseHeater = 10;
+    thisAWHP.CrankcaseHeaterPower = thisAWHP.calcCrankcaseHeaterPower(*state);
+    ASSERT_EQ(thisAWHP.CrankcaseHeaterPower, 0.0);
+    state->dataEnvrn->OutDryBulbTemp = 9;
+    thisAWHP.CrankcaseHeaterPower = thisAWHP.calcCrankcaseHeaterPower(*state);
+    ASSERT_EQ(thisAWHP.CrankcaseHeaterPower, 100 * (10 + 2 * 9));
+}
+
 TEST_F(EnergyPlusFixture, processInputForEIRPLHP_TestAirSourceDuplicateNodes)
 {
     std::string const idf_objects = delimited_string({"HeatPump:PlantLoop:EIR:Cooling,",

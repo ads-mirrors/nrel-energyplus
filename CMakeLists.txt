@@ -30,8 +30,6 @@ if(${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} VERSION_GREATER "3.0")
   cmake_policy(SET CMP0054 NEW) # CMake 3.1 added this policy
 endif()
 
-cmake_policy(SET CMP0012 NEW) # if() recognizes boolean constants
-
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)

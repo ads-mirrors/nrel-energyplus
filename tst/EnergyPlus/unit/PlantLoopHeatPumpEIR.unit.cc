@@ -442,6 +442,7 @@ TEST_F(EnergyPlusFixture, HeatingSimulate_AirSource_AWHP)
                                                       ", !- Availability Schedule Name Cooling",
                                                       "Load , !- Operating Mode Control Method",
                                                       ", !- Operating Mode Control Schedule Name",
+                                                      "SingleMode, !- Operating Mode Control Option for Multiple Unit",
                                                       "20 , !-  Rated Inlet Air Temperature in Heating Mode",
                                                       "1.0, !-  Rated Air Flow Rate in Heating Mode",
                                                       "50 , !-  Rated Leaving Water Temperature in Heating Mode",
@@ -655,6 +656,7 @@ TEST_F(EnergyPlusFixture, processInputForEIRPLHP_AWHP)
         ", !- Availability Schedule Name Cooling",
         "Load , !- Operating Mode Control Method",
         ", !- Operating Mode Control Schedule Name",
+        "SingleMode, !- Operating Mode Control Option for Multiple Unit",
         "20 , !-  Rated Inlet Air Temperature in Heating Mode",
         "0.1 , !-  Rated Air Flow Rate in Heating Mode",
         "50 , !-  Rated Leaving Water Temperature in Heating Mode",
@@ -792,7 +794,6 @@ TEST_F(EnergyPlusFixture, processInputForEIRPLHP_AWHP)
     EXPECT_ENUM_EQ(state->dataHeatPumpAirToWater->heatPumps[0].EIRHPType, DataPlant::PlantEquipmentType::HeatPumpAirToWaterCooling);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].availSchedName, "");
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].availSched, Sched::GetScheduleAlwaysOn(*state));
-    EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].operatingModeControlMethod, HeatPumpAirToWater::OperatingModeControlMethod::Load);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].operationModeControlSche, nullptr);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].sourceSideDesignInletTemp, 25);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].sourceSideDesignVolFlowRate, 0.1);
@@ -815,13 +816,14 @@ TEST_F(EnergyPlusFixture, processInputForEIRPLHP_AWHP)
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].powerRatioFuncTempCurveIndex[0], Curve::GetCurveIndex(*state, "EIRCURVEFUNCTEMP"));
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].powerRatioFuncPLRCurveIndex[0], Curve::GetCurveIndex(*state, "EIRCURVEFUNCPLR"));
     EXPECT_ENUM_EQ(state->dataHeatPumpAirToWater->heatPumps[0].operatingModeControlMethod, HeatPumpAirToWater::OperatingModeControlMethod::Load);
+    EXPECT_ENUM_EQ(state->dataHeatPumpAirToWater->heatPumps[0].operatingModeControlOptionMultipleUnit,
+                   HeatPumpAirToWater::OperatingModeControlOptionMultipleUnit::SingleMode);
 
     EXPECT_ENUM_EQ(state->dataHeatPumpAirToWater->heatPumps[1].EIRHPType, DataPlant::PlantEquipmentType::HeatPumpAirToWaterHeating);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].name, "TEST_AWHP");
     EXPECT_ENUM_EQ(state->dataHeatPumpAirToWater->heatPumps[1].operatingModeControlMethod, HeatPumpAirToWater::OperatingModeControlMethod::Load);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].availSchedName, "");
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].availSched, Sched::GetScheduleAlwaysOn(*state));
-    EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].operatingModeControlMethod, HeatPumpAirToWater::OperatingModeControlMethod::Load);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].operationModeControlSche, nullptr);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].sourceSideDesignInletTemp, 20);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].sourceSideDesignVolFlowRate, 0.1);
@@ -852,6 +854,9 @@ TEST_F(EnergyPlusFixture, processInputForEIRPLHP_AWHP)
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].capFuncTempCurveIndex[0], Curve::GetCurveIndex(*state, "CAPCURVEFUNCTEMP"));
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].powerRatioFuncTempCurveIndex[0], Curve::GetCurveIndex(*state, "EIRCURVEFUNCTEMP"));
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].powerRatioFuncPLRCurveIndex[0], Curve::GetCurveIndex(*state, "EIRCURVEFUNCPLR"));
+    EXPECT_ENUM_EQ(state->dataHeatPumpAirToWater->heatPumps[1].operatingModeControlMethod, HeatPumpAirToWater::OperatingModeControlMethod::Load);
+    EXPECT_ENUM_EQ(state->dataHeatPumpAirToWater->heatPumps[1].operatingModeControlOptionMultipleUnit,
+                   HeatPumpAirToWater::OperatingModeControlOptionMultipleUnit::SingleMode);
 }
 
 TEST_F(EnergyPlusFixture, calcLoadSideHeatTransfer_AWHP)
@@ -3979,6 +3984,7 @@ TEST_F(EnergyPlusFixture, Test_DoPhysics_AWHP)
                           ", !- Availability Schedule Name Cooling",
                           "Load , !- Operating Mode Control Method",
                           ", !- Operating Mode Control Schedule Name",
+                          "SingleMode, !- Operating Mode Control Option for Multiple Unit",
                           "20 , !-  Rated Inlet Air Temperature in Heating Mode",
                           "0.002, !-  Rated Air Flow Rate in Heating Mode",
                           "50 , !-  Rated Leaving Water Temperature in Heating Mode",

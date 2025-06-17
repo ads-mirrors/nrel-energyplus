@@ -443,19 +443,29 @@ namespace EIRPlantLoopHeatPumps {
             Load,
             Num
         };
+        enum class OperatingModeControlOptionMultipleUnit
+        {
+            Invalid = -1,
+            SingleMode,
+            CoolingPriority,
+            HeatingPriority,
+            Balanced,
+            Num
+        };
 
         // additional variables
         HeatPumpAirToWater *companionHeatPumpCoil = nullptr;
         std::string availSchedName;            // availability schedule
         Sched::Schedule *availSched = nullptr; // availability schedule
         OperatingModeControlMethod operatingModeControlMethod = OperatingModeControlMethod::Load;
+        OperatingModeControlOptionMultipleUnit operatingModeControlOptionMultipleUnit = OperatingModeControlOptionMultipleUnit::SingleMode;
         std::string operationModeControlScheName;
         Sched::Schedule *operationModeControlSche = nullptr; // availability schedule
         int compressorMultiplier = 1;
         Real64 minOutdoorAirTempLimit = 0.0;
         Real64 maxOutdoorAirTempLimit = 0.0;
-        Real64 CrankcaseHeaterCapacity = 0.0;        // total crankcase heater capacity [W]
-        Real64 MaxOATCrankcaseHeater = 10.0;          // maximum OAT for crankcase heater operation [C]
+        Real64 CrankcaseHeaterCapacity = 0.0;  // total crankcase heater capacity [W]
+        Real64 MaxOATCrankcaseHeater = 10.0;   // maximum OAT for crankcase heater operation [C]
         int CrankcaseHeaterCapacityCurveIndex; // Crankcase heater power-temperature curve or table index
         int defrostCapRatioCurveIndex = 0;
         Real64 defrostResistiveHeaterCap = 0.0;
@@ -505,7 +515,7 @@ namespace EIRPlantLoopHeatPumps {
         void oneTimeInit(EnergyPlusData &state) override;
         void calcLoadSideHeatTransfer(EnergyPlusData &state, Real64 availableCapacity, Real64 currentLoad);
         void calcPowerUsage(EnergyPlusData &state, Real64 availableCapacityBeforeMultiplier);
-        void calcOpMode(EnergyPlusData &state, Real64 currentLoad);
+        void calcOpMode(EnergyPlusData &state, Real64 currentLoad, OperatingModeControlOptionMultipleUnit modeCalcMethod);
         void reportEquipmentSummary(EnergyPlusData &state) override;
         static void pairUpCompanionCoils(EnergyPlusData &state);
         void resetReportingVariables() override;

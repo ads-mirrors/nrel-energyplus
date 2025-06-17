@@ -3764,6 +3764,8 @@ void HeatPumpAirToWater::processInputForEIRPLHP(EnergyPlusData &state)
 
     constexpr std::array<std::string_view, static_cast<int>(OperatingModeControlMethod::Num)> AWHPOperatingModeControlMethodUC = {
         "SCHEDULEDMODES", "EMSCONTROLLED", "LOAD"};
+    constexpr std::array<std::string_view, static_cast<int>(OperatingModeControlOptionMultipleUnit::Num)>
+        AWHPOperatingModeControlOptionMultipleUnitUC = {"SINGLEMODE", "COOLINGPRIORITY", "HEATINGPRIORITY", "BALANCED"};
     constexpr std::array<std::string_view, static_cast<int>(ControlType::Num)> AWHPControlTypeUC = {"FIXEDSPEED", "VARIABLESPEED"};
     if (instances != state.dataInputProcessing->inputProcessor->epJSON.end()) {
         auto &instancesValue = instances.value();
@@ -3788,6 +3790,9 @@ void HeatPumpAirToWater::processInputForEIRPLHP(EnergyPlusData &state)
                     state.dataInputProcessing->inputProcessor->getRealFieldValue(fields, schemaProps, "compressor_multiplier");
                 thisAWHP.operatingModeControlMethod = static_cast<HeatPumpAirToWater::OperatingModeControlMethod>(
                     getEnumValue(AWHPOperatingModeControlMethodUC, Util::makeUPPER(fields.at("operating_mode_control_method").get<std::string>())));
+                thisAWHP.operatingModeControlOptionMultipleUnit = static_cast<HeatPumpAirToWater::OperatingModeControlOptionMultipleUnit>(
+                    getEnumValue(AWHPOperatingModeControlOptionMultipleUnitUC,
+                                 Util::makeUPPER(fields.at("operating_mode_control_option_for_multiple_unit").get<std::string>())));
                 if (thisAWHP.operatingModeControlMethod == HeatPumpAirToWater::OperatingModeControlMethod::ScheduledModes) {
                     auto operatingModeControlSchedFound = fields.find("operating_mode_control_schedule_name");
                     if (operatingModeControlSchedFound == fields.end()) {
@@ -4393,7 +4398,7 @@ Real64 EIRFuelFiredHeatPump::getDynamicMaxCapacity(EnergyPlusData &state)
     return this->referenceCapacity * capacityModifierFuncTemp;
 }
 
-void HeatPumpAirToWater::calcOpMode(EnergyPlus::EnergyPlusData &state, Real64 currentLoad)
+void HeatPumpAirToWater::calcOpMode(EnergyPlus::EnergyPlusData &state, Real64 currentLoad, OperatingModeControlOptionMultipleUnit modeCalcMethod)
 {
     if (this->companionHeatPumpCoil == nullptr) {
         this->operatingMode = 1;
@@ -4410,23 +4415,28 @@ void HeatPumpAirToWater::calcOpMode(EnergyPlus::EnergyPlusData &state, Real64 cu
                 this->companionHeatPumpCoil->operatingMode = 1;
             }
         } else {
-            if (currentLoad < 0) {
-                if (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterCooling) {
-                    this->operatingMode = 1;
-                    this->companionHeatPumpCoil->operatingMode = 0;
-                } else {
+            auto LoopNum = this->companionHeatPumpCoil->loadSidePlantLoc.loopNum;
+            auto LoopSideNum = this->companionHeatPumpCoil->loadSidePlantLoc.loopSideNum;
+            auto BranchNum = this->companionHeatPumpCoil->loadSidePlantLoc.branchNum;
+            auto CompNum = this->companionHeatPumpCoil->loadSidePlantLoc.compNum;
+            auto &this_loop(state.dataPlnt->PlantLoop(LoopNum));
+            auto &this_loop_side(this_loop.LoopSide(LoopSideNum));
+            auto &this_component = this_loop_side.Branch(BranchNum).Comp(CompNum);
+            auto companionLoad = this_component.MyLoad;
+            if (modeCalcMethod == OperatingModeControlOptionMultipleUnit::SingleMode) {
+                if (fabs(currentLoad) < fabs(companionLoad)) {
                     this->operatingMode = 0;
                     this->companionHeatPumpCoil->operatingMode = 1;
-                }
-            } else if (currentLoad > 0) {
-                if (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterHeating) {
+                } else {
                     this->operatingMode = 1;
                     this->companionHeatPumpCoil->operatingMode = 0;
-                } else {
-                    this->operatingMode = 0;
-                    this->companionHeatPumpCoil->operatingMode = 1;
                 }
-            } else {
+                if (currentLoad == companionLoad == 0.0) {
+                    this->operatingMode = 0;
+                    this->companionHeatPumpCoil->operatingMode = 0;
+                }
+            } else if (modeCalcMethod == OperatingModeControlOptionMultipleUnit::CoolingPriority) {
+                // fixme: to be implemented, need op mode array
                 this->operatingMode = 0;
                 this->companionHeatPumpCoil->operatingMode = 0;
             }
@@ -4436,7 +4446,7 @@ void HeatPumpAirToWater::calcOpMode(EnergyPlus::EnergyPlusData &state, Real64 cu
 
 void HeatPumpAirToWater::doPhysics(EnergyPlusData &state, Real64 currentLoad)
 {
-    this->calcOpMode(state, currentLoad);
+    this->calcOpMode(state, currentLoad, OperatingModeControlOptionMultipleUnit::SingleMode);
     // add free cooling at some point, compressor is off during free cooling, temp limits restrict free cooling range
     if ((this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterCooling && currentLoad >= 0.0) ||
         (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterHeating && currentLoad <= 0.0)) {

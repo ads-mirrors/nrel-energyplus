@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.19)
+cmake_minimum_required(VERSION 3.19...4.0.3)  # policy_max is set, so that will impliclty invoke cmake_policy(VERSION <min>[...<max>])
 
 # Use ccache if available, has to be before "project()"
 find_program(CCACHE_PROGRAM NAMES ccache sccache)
@@ -10,8 +10,6 @@ if(CCACHE_PROGRAM)
   set(CMAKE_CXX_COMPILER_LAUNCHER ${CCACHE_PROGRAM} CACHE FILEPATH "CXX compiler cache used")
   set(CMAKE_C_COMPILER_LAUNCHER ${CCACHE_PROGRAM} CACHE FILEPATH "C compiler cache used")
 endif()
-
-cmake_policy(SET CMP0177 NEW)
 
 project(EnergyPlus)
 

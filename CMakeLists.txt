@@ -11,8 +11,6 @@ if(CCACHE_PROGRAM)
   set(CMAKE_C_COMPILER_LAUNCHER ${CCACHE_PROGRAM} CACHE FILEPATH "C compiler cache used")
 endif()
 
-cmake_policy(SET CMP0087 NEW) # install(CODE) and install(SCRIPT) support generator expressions.
-
 project(EnergyPlus)
 
 # Raise an error if attempting to compile on macOS older than 10.15 - it does not work

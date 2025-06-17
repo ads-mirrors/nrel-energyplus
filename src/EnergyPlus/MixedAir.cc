@@ -1066,12 +1066,6 @@ void GetOutsideAirSysInputs(EnergyPlusData &state)
                 ShowSevereError(state,
                                 format("{} = \"{}\" invalid {} is blank and must be entered.", CurrentModuleObject, AlphArray(1), cAlphaFields(2)));
                 ErrorsFound = true;
-            } else {
-                ShowWarningError(state,
-                                 format("{} = \"{}\": blank {} must be used with AirLoopHVAC:DedicatedOutdoorAirSystem.",
-                                        CurrentModuleObject,
-                                        AlphArray(1),
-                                        cAlphaFields(2)));
             }
         }
         OASys.ControllerListNum = ListNum;

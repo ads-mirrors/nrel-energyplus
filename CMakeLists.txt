@@ -11,6 +11,8 @@ if(CCACHE_PROGRAM)
   set(CMAKE_C_COMPILER_LAUNCHER ${CCACHE_PROGRAM} CACHE FILEPATH "C compiler cache used")
 endif()
 
+cmake_policy(SET CMP0177 NEW)
+
 project(EnergyPlus)
 
 # Raise an error if attempting to compile on macOS older than 10.15 - it does not work

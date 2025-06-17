@@ -1,6 +1,6 @@
 project(ReadVars Fortran)
 
-cmake_minimum_required(VERSION 3.5.1)
+cmake_minimum_required(VERSION 3.5.1...4.0.3)
 
 if(POLICY CMP0087)
   cmake_policy(SET CMP0087 NEW) # install(CODE) and install(SCRIPT) support generator expressions.

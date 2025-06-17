@@ -4402,12 +4402,12 @@ void HeatPumpAirToWater::calcOpMode(EnergyPlus::EnergyPlusData &state, Real64 cu
 {
     if (this->companionHeatPumpCoil == nullptr) {
         this->operatingMode = 1;
-        if (OperationModeEMSOverrideOn) {
+        if (this->OperationModeEMSOverrideOn) {
             this->operatingMode = OperationModeEMSOverrideValue;
         }
     } else {
-        if (OperationModeEMSOverrideOn) {
-            if (OperationModeEMSOverrideValue == 1) {
+        if (this->OperationModeEMSOverrideOn) { // fixme: need to change this to relate to the number of units
+            if (this->OperationModeEMSOverrideValue == 1) {
                 this->operatingMode = 1;
                 this->companionHeatPumpCoil->operatingMode = 0;
             } else {
@@ -4424,21 +4424,68 @@ void HeatPumpAirToWater::calcOpMode(EnergyPlus::EnergyPlusData &state, Real64 cu
             auto &this_component = this_loop_side.Branch(BranchNum).Comp(CompNum);
             auto companionLoad = this_component.MyLoad;
             if (modeCalcMethod == OperatingModeControlOptionMultipleUnit::SingleMode) {
+                // all HP unit either all in heating or all in cooling mode
                 if (fabs(currentLoad) < fabs(companionLoad)) {
                     this->operatingMode = 0;
-                    this->companionHeatPumpCoil->operatingMode = 1;
+                    this->companionHeatPumpCoil->operatingMode = ceil(fabs(companionLoad) / this->companionHeatPumpCoil->referenceCapacityOneUnit);
                 } else {
-                    this->operatingMode = 1;
+                    this->operatingMode = ceil(fabs(currentLoad) / this->referenceCapacityOneUnit);
                     this->companionHeatPumpCoil->operatingMode = 0;
                 }
-                if (currentLoad == companionLoad == 0.0) {
-                    this->operatingMode = 0;
-                    this->companionHeatPumpCoil->operatingMode = 0;
+            } else {
+                Real64 coolingLoad = 0.0;
+                Real64 heatingLoad = 0.0;
+                Real64 coolCapacity = 0.0;
+                Real64 heatCapacity = 0.0;
+                if (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterCooling) {
+                    assert(currentLoad <= 0);
+                    coolingLoad = fabs(currentLoad);
+                    heatingLoad = companionLoad;
+                    heatCapacity = this->companionHeatPumpCoil->referenceCapacityOneUnit;
+                    coolCapacity = this->referenceCapacityOneUnit;
+                } else {
+                    assert(companionLoad <= 0);
+                    coolingLoad = fabs(companionLoad);
+                    heatingLoad = currentLoad;
+                    heatCapacity = this->referenceCapacityOneUnit;
+                    coolCapacity = this->companionHeatPumpCoil->referenceCapacityOneUnit;
                 }
-            } else if (modeCalcMethod == OperatingModeControlOptionMultipleUnit::CoolingPriority) {
-                // fixme: to be implemented, need op mode array
-                this->operatingMode = 0;
-                this->companionHeatPumpCoil->operatingMode = 0;
+                int numCoolingUnit = 0;
+                int numHeatingUnit = 0;
+                int numCoolingUnitNeeded = 0;
+                int numHeatingUnitNeeded = 0;
+                if (modeCalcMethod == OperatingModeControlOptionMultipleUnit::CoolingPriority) {
+                    // prioritize satisfy cooling need
+                    numCoolingUnit = int(ceil(coolingLoad / coolCapacity));
+                    numCoolingUnit = min(numCoolingUnit, this->compressorMultiplier);
+                    numHeatingUnitNeeded = int(ceil(heatingLoad / heatCapacity));
+                    numHeatingUnit = min(this->compressorMultiplier - numCoolingUnit, numHeatingUnitNeeded);
+                } else if (modeCalcMethod == OperatingModeControlOptionMultipleUnit::HeatingPriority) {
+                    // prioritize satisfy heating need
+                    numHeatingUnit = int(ceil(heatingLoad / heatCapacity));
+                    numHeatingUnit = min(numHeatingUnit, this->compressorMultiplier);
+                    numCoolingUnitNeeded = int(ceil(coolingLoad / coolCapacity));
+                    numCoolingUnit = min(this->compressorMultiplier - numHeatingUnit, numCoolingUnitNeeded);
+                } else if (modeCalcMethod == OperatingModeControlOptionMultipleUnit::Balanced) {
+                    // balance the percent satisfied heating or cooling load
+                    numCoolingUnitNeeded = int(ceil(coolingLoad / coolCapacity));
+                    numHeatingUnitNeeded = int(ceil(heatingLoad / heatCapacity));
+                    if (numCoolingUnitNeeded + numHeatingUnitNeeded <= this->compressorMultiplier) {
+                        numCoolingUnit = numCoolingUnitNeeded;
+                        numHeatingUnit = numHeatingUnitNeeded;
+                    } else {
+                        numCoolingUnit =
+                            numCoolingUnitNeeded - int(floor((numCoolingUnitNeeded + numHeatingUnitNeeded - this->compressorMultiplier) / 2));
+                        numHeatingUnit = this->compressorMultiplier - numCoolingUnit;
+                    }
+                }
+                if (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterHeating) {
+                    this->operatingMode = numHeatingUnit;
+                    this->companionHeatPumpCoil->operatingMode = numCoolingUnit;
+                } else {
+                    this->operatingMode = numCoolingUnit;
+                    this->companionHeatPumpCoil->operatingMode = numHeatingUnit;
+                }
             }
         }
     }

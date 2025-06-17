@@ -1052,6 +1052,125 @@ TEST_F(EnergyPlusFixture, crankcaseHeater_AWHP)
     ASSERT_EQ(thisAWHP.CrankcaseHeaterPower, 100 * (10 + 2 * 9));
 }
 
+TEST_F(EnergyPlusFixture, calcOpMode_AWHP)
+{
+    auto thisAWHP = HeatPumpAirToWater();
+    auto companionAWHP = HeatPumpAirToWater();
+    thisAWHP.companionHeatPumpCoil = &companionAWHP;
+    companionAWHP.companionHeatPumpCoil = &thisAWHP;
+    thisAWHP.compressorMultiplier = 6;
+    companionAWHP.compressorMultiplier = 6;
+    thisAWHP.referenceCapacityOneUnit = 100;
+    companionAWHP.referenceCapacityOneUnit = 150;
+    thisAWHP.EIRHPType = EnergyPlus::DataPlant::PlantEquipmentType::HeatPumpAirToWaterCooling;
+    companionAWHP.EIRHPType = EnergyPlus::DataPlant::PlantEquipmentType::HeatPumpAirToWaterHeating;
+
+    state->dataPlnt->PlantLoop.allocate(2);
+    state->dataPlnt->PlantLoop(1).FluidName = "WATER";
+    state->dataPlnt->PlantLoop(1).glycol = Fluid::GetWater(*state);
+    state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Supply).TotalBranches = 1;
+    state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Supply).Branch.allocate(1);
+    state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Supply).Branch(1).TotalComponents = 1;
+    state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Supply).Branch(1).Comp.allocate(1);
+    auto &PLHPPlantLoadSideComp = state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Supply).Branch(1).Comp(1);
+    PLHPPlantLoadSideComp.Type = DataPlant::PlantEquipmentType::HeatPumpAirToWaterCooling;
+    thisAWHP.loadSidePlantLoc.loop = &state->dataPlnt->PlantLoop(1);
+    thisAWHP.loadSidePlantLoc.comp = &PLHPPlantLoadSideComp;
+    thisAWHP.loadSidePlantLoc.loopNum = 1;
+    thisAWHP.loadSidePlantLoc.loopSideNum = EnergyPlus::DataPlant::LoopSideLocation::Supply;
+    thisAWHP.loadSidePlantLoc.branchNum = 1;
+    thisAWHP.loadSidePlantLoc.compNum = 1;
+    thisAWHP.OperationModeEMSOverrideOn = false;
+
+    state->dataPlnt->PlantLoop(2).FluidName = "WATER";
+    state->dataPlnt->PlantLoop(2).glycol = Fluid::GetWater(*state);
+    state->dataPlnt->PlantLoop(2).LoopSide(DataPlant::LoopSideLocation::Supply).TotalBranches = 1;
+    state->dataPlnt->PlantLoop(2).LoopSide(DataPlant::LoopSideLocation::Supply).Branch.allocate(1);
+    state->dataPlnt->PlantLoop(2).LoopSide(DataPlant::LoopSideLocation::Supply).Branch(1).TotalComponents = 1;
+    state->dataPlnt->PlantLoop(2).LoopSide(DataPlant::LoopSideLocation::Supply).Branch(1).Comp.allocate(1);
+    auto &companionPLHPPlantLoadSideComp = state->dataPlnt->PlantLoop(2).LoopSide(DataPlant::LoopSideLocation::Supply).Branch(1).Comp(1);
+    companionPLHPPlantLoadSideComp.Type = DataPlant::PlantEquipmentType::HeatPumpAirToWaterHeating;
+    companionAWHP.loadSidePlantLoc.loop = &state->dataPlnt->PlantLoop(2);
+    companionAWHP.loadSidePlantLoc.comp = &companionPLHPPlantLoadSideComp;
+    companionAWHP.loadSidePlantLoc.loopNum = 2;
+    companionAWHP.loadSidePlantLoc.loopSideNum = EnergyPlus::DataPlant::LoopSideLocation::Supply;
+    companionAWHP.loadSidePlantLoc.branchNum = 1;
+    companionAWHP.loadSidePlantLoc.compNum = 1;
+    companionAWHP.OperationModeEMSOverrideOn = false;
+
+    Real64 currentLoad = -300;
+    companionPLHPPlantLoadSideComp.MyLoad = 400;
+    thisAWHP.calcOpMode(*state, currentLoad, HeatPumpAirToWater::OperatingModeControlOptionMultipleUnit::SingleMode);
+    EXPECT_EQ(thisAWHP.operatingMode, 0);
+    EXPECT_EQ(companionAWHP.operatingMode, 3);
+
+    currentLoad = -500;
+    companionPLHPPlantLoadSideComp.MyLoad = 300;
+    thisAWHP.calcOpMode(*state, currentLoad, HeatPumpAirToWater::OperatingModeControlOptionMultipleUnit::SingleMode);
+    EXPECT_EQ(thisAWHP.operatingMode, 5);
+    EXPECT_EQ(companionAWHP.operatingMode, 0);
+
+    currentLoad = -300;
+    companionPLHPPlantLoadSideComp.MyLoad = 400;
+    thisAWHP.calcOpMode(*state, currentLoad, HeatPumpAirToWater::OperatingModeControlOptionMultipleUnit::CoolingPriority);
+    EXPECT_EQ(thisAWHP.operatingMode, 3);
+    EXPECT_EQ(companionAWHP.operatingMode, 3);
+
+    currentLoad = -500;
+    companionPLHPPlantLoadSideComp.MyLoad = 300;
+    thisAWHP.calcOpMode(*state, currentLoad, HeatPumpAirToWater::OperatingModeControlOptionMultipleUnit::CoolingPriority);
+    EXPECT_EQ(thisAWHP.operatingMode, 5);
+    EXPECT_EQ(companionAWHP.operatingMode, 1);
+
+    currentLoad = -250;
+    companionPLHPPlantLoadSideComp.MyLoad = 250;
+    thisAWHP.calcOpMode(*state, currentLoad, HeatPumpAirToWater::OperatingModeControlOptionMultipleUnit::CoolingPriority);
+    EXPECT_EQ(thisAWHP.operatingMode, 3);
+    EXPECT_EQ(companionAWHP.operatingMode, 2);
+
+    currentLoad = -300;
+    companionPLHPPlantLoadSideComp.MyLoad = 400;
+    thisAWHP.calcOpMode(*state, currentLoad, HeatPumpAirToWater::OperatingModeControlOptionMultipleUnit::HeatingPriority);
+    EXPECT_EQ(thisAWHP.operatingMode, 3);
+    EXPECT_EQ(companionAWHP.operatingMode, 3);
+
+    currentLoad = -500;
+    companionPLHPPlantLoadSideComp.MyLoad = 300;
+    thisAWHP.calcOpMode(*state, currentLoad, HeatPumpAirToWater::OperatingModeControlOptionMultipleUnit::HeatingPriority);
+    EXPECT_EQ(thisAWHP.operatingMode, 4);
+    EXPECT_EQ(companionAWHP.operatingMode, 2);
+
+    currentLoad = -250;
+    companionPLHPPlantLoadSideComp.MyLoad = 250;
+    thisAWHP.calcOpMode(*state, currentLoad, HeatPumpAirToWater::OperatingModeControlOptionMultipleUnit::HeatingPriority);
+    EXPECT_EQ(thisAWHP.operatingMode, 3);
+    EXPECT_EQ(companionAWHP.operatingMode, 2);
+
+    currentLoad = -200;
+    companionPLHPPlantLoadSideComp.MyLoad = 1000;
+    thisAWHP.calcOpMode(*state, currentLoad, HeatPumpAirToWater::OperatingModeControlOptionMultipleUnit::HeatingPriority);
+    EXPECT_EQ(thisAWHP.operatingMode, 0);
+    EXPECT_EQ(companionAWHP.operatingMode, 6);
+
+    currentLoad = -300;
+    companionPLHPPlantLoadSideComp.MyLoad = 400;
+    thisAWHP.calcOpMode(*state, currentLoad, HeatPumpAirToWater::OperatingModeControlOptionMultipleUnit::Balanced);
+    EXPECT_EQ(thisAWHP.operatingMode, 3);
+    EXPECT_EQ(companionAWHP.operatingMode, 3);
+
+    currentLoad = -500;
+    companionPLHPPlantLoadSideComp.MyLoad = 300;
+    thisAWHP.calcOpMode(*state, currentLoad, HeatPumpAirToWater::OperatingModeControlOptionMultipleUnit::Balanced);
+    EXPECT_EQ(thisAWHP.operatingMode, 5);
+    EXPECT_EQ(companionAWHP.operatingMode, 1);
+
+    currentLoad = -1000;
+    companionPLHPPlantLoadSideComp.MyLoad = 1500;
+    thisAWHP.calcOpMode(*state, currentLoad, HeatPumpAirToWater::OperatingModeControlOptionMultipleUnit::Balanced);
+    EXPECT_EQ(thisAWHP.operatingMode, 3);
+    EXPECT_EQ(companionAWHP.operatingMode, 3);
+}
+
 TEST_F(EnergyPlusFixture, processInputForEIRPLHP_TestAirSourceDuplicateNodes)
 {
     std::string const idf_objects = delimited_string({"HeatPump:PlantLoop:EIR:Cooling,",

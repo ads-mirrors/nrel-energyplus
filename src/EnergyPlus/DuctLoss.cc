@@ -415,7 +415,7 @@ namespace DuctLoss {
                                 state.dataHeatBal->Zone(ZoneNum).Name);
             SetupOutputVariable(state,
                                 "Zone Added Latent Rate Due to Duct Loss",
-                                Constant::Units::W,
+                                Constant::Units::kgWater_s,
                                 state.dataDuctLoss->ZoneLat(ZoneNum),
                                 OutputProcessor::TimeStepType::System,
                                 OutputProcessor::StoreType::Average,
@@ -927,15 +927,15 @@ namespace DuctLoss {
             }
 
             SetupOutputVariable(state,
-                                "System Added Sensible Rate Due to DuctLoss",
+                                "System Added Sensible Rate Due to Duct Loss",
                                 Constant::Units::W,
                                 state.dataDuctLoss->SysSen,
                                 OutputProcessor::TimeStepType::System,
                                 OutputProcessor::StoreType::Average,
                                 state.dataAirSystemsData->PrimaryAirSystems(1).Name);
             SetupOutputVariable(state,
-                                "System Added Latent Rate Due to DuctLoss",
-                                Constant::Units::W,
+                                "System Added Latent Rate Due to Duct Loss",
+                                Constant::Units::kgWater_s,
                                 state.dataDuctLoss->SysLat,
                                 OutputProcessor::TimeStepType::System,
                                 OutputProcessor::StoreType::Average,

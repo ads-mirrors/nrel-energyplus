@@ -3537,3 +3537,57 @@ Duct:Loss:MakeupAir,
 
 \end{lstlisting}
 
+\subsection{Outputs}\label{outputs-simple-duct-model}
+
+The simple duct model provides outputs described below.
+
+\begin{itemize}
+\item
+  HVAC,Average,Duct Loss Node Temperature {[}C{]}
+\item
+  HVAC,Average,Duct Loss Node Humidity Ratio {[}kgWater/kgDryAir{]}
+\item
+  HVAC,Average,Duct Loss Sensible Loss Rate {[}W{]}
+\item
+  HVAC,Average,Duct Loss Latent Loss Rate {[}kgWater/s{]}
+\item
+  HVAC,Average,Zone Added Sensible Rate Due to Duct Loss {[}W{]}
+\item
+  HVAC,Average,Zone Added Latent Rate Due to Duct Loss {[}kgWater/s{]}
+\item
+  HVAC,Average,System Added Sensible Rate Due to Duct Loss {[}W{]}
+\item
+  HVAC,Average,System Added Latent Rate Due to Duct Loss {[}kgWater/s{]}
+\end{itemize}
+
+\paragraph{Duct Loss Node Temperature {[}C{]}}\label{duct-loss--node-temperature-c}
+
+This is the simple duct model node temperature output in degrees C based on AirflowNetwork:Distribution:Node inputs.
+
+\paragraph{Duct Loss Node Humidity Ratio {[}kgWater/kgDryAir{]}}\label{roomairflownetwork-node-humidity-ratio-kgwaterkgdryair}
+
+This is the simple duct model node humidity ratio output in kgWater/kgDryAir based on AirflowNetwork:Distribution:Node inputs.
+
+\paragraph{Duct Loss Sensible Loss Rate {[}W{]}}\label{duct-loss-sensible-rate-w}
+
+This is the duct loass sensible ratee output in W for the simple duct model for each duct loss object.
+
+\paragraph{Duct Loss Latent Loss Rate {[}kgWater/kgDryAir{]}}\label{duct-loss-latent-rate-kgwaterkgdryair}
+
+This is the duct loass latent ratee output in kgWater/kgDryAir for the simple duct model for each duct loss object.
+
+\paragraph{Zone Added Sensible Rate Due to Duct Losse {[}W{]}}\label{zone-added-sensible-rate-to-duct-loss-w}
+
+This is a additional zone sensible load due to duct loss, summed by duct sensible loss from associated duct loss objects. The sensible load will be a part of zone energy balance.
+
+\paragraph{Zone Added Latent Rate Due to Duct Loss {[}kgWater/kgDryAir{]}}\label{zone-added-latent-rate-to-duct-loss-kgwaterkgdryair}
+
+This is a additional zone latent load due to duct loss, summed by duct latent loss from associated duct loss objects. The sensible load will be a part of zone moisture balance.
+
+\paragraph{System Added Sensible Rate Due to Duct Loss {[}W{]}}\label{system-added-sensible-rate-to-duct-loss-w}
+
+This is a additional system sensible load due to duct loss, summed by duct sensible loss from associated duct loss objects. The sensible load will be a part of system energy load.
+
+\paragraph{System Added Latent Rate Due to Duct Loss {[}kgWater/kgDryAir{]}}\label{system-added-latent-rate-to-duct-loss-w-kgwaterkgdryair}
+
+This is a additional system latent load due to duct loss, summed by duct latent loss from associated duct loss objects. The sensible load will be a part of system moisture load.

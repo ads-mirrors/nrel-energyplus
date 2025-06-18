@@ -1,9 +1,9 @@
-Controls for Dual Fuel (Hybrid) HVAC System
+Controls for Dual-Fuel (Hybrid) HVAC Systems
 ================
 
 **Michael J. Witte, GARD Analytics, Inc.**
 
- - Original June 17, 2025
+ - Original June 18, 2025
  - Revision Date
  
 
@@ -49,9 +49,12 @@ DemandManager:FuelSwitching,
   ,                   !- Availability Schedule Name
   Electricity,        !- Primary Fuel Type
   NaturalGas,         !- Secondary Fuel Type
-  60,                 !- Minimum Duration
+  Heating,            !- End-Use Category
+  60,                 !- Minimum Duration {minutes}
   None,               !- Capacity Control Type
-  ,                   !- Heating Switchover Outdoor Dry Bulb Temperature
+  ,                   !- Outdoor Dry Bulb Switchover Temperature {C}
+  None,               !- Above Switchover Temperature Control Type
+  None,               !- Below Switchover Temperature Control Type
   Cost,               !- Criteria 1
   PreferLowest,       !- Criteria 1 Control Type
   CO2,                !- Criteria 2
@@ -87,6 +90,8 @@ So, what happens when different criteria favor different fuel types? The criteri
 
 *This seems overly complicated??*
 
+EMS/Python actuators will be set up to allow direct control of the availability status for each fuel type.
+
 
 
 ## Testing/Validation/Data Sources ##
@@ -114,21 +119,51 @@ The control criteria include equipment capacity (ability to meet the current loa
 
 *Secondary Fuel Type* - This is the secondary fuel type which should be used only as needed unless the demand manager changes the availability. The default is NaturalGas.
 
+*End-Use Category* - This optional field allows the demand manager to apply for a particular end use. If left blank, the demand manager applies to all end-uses.
+
 *Minimum Duration* - The minimum duration in minutes before a change in control status is allowed.
 
 *Control Action When Primary Capacity is Inadequate* - If the equipment powered by the primary fuel type has adequate capacity to meet the load, then no action is taken. If the primary fuel type is inadequate to meet the current load, then take the specified action. There are four choices:
 
-  - *PrimaryThenSecondary* - use the primary fuel type first then supplement with secondary fuel type
-  
-  - *SecondaryOnly* - lock out the primary fuel type if capacity is inadequate to meet the current load
+  - *PrimaryFirst* - use the primary fuel type first then supplement with secondary fuel type
   
   - *SecondaryFirst* - use secondary fuel type first then supplement with primary fuel type
   
+  - *SecondaryOnly* - lock out the primary fuel type if capacity is inadequate to meet the current load
+  
   - *None* - disable control based on capacity
 
-The default is SecondaryOnly.
+The default is None.
 
-*Heating Switchover Outdoor Dry Bulb Temperature* - If the outdoor dry bulb temperature is below the switchover temperature, then set the primary fuel type to `NotAvailable` and set the secondary fuel type to `Available` for heating. The default is -99 [C] which indicates no switchover temperature.
+*Outdoor Dry Bulb Switchover Temperature* - The outdoor dry bulb temperature used to control switchover between fuel types. The default is -99 [C].
+
+*Above Switchover Temperature Control Type* - Control action when the outdoor dry bulb temperature is equal to or greater than the Switchover Temperature.
+
+  - *PreferPrimary* - Sets the primary fuel type to "Preferred" and allows the secondary fuel-type to supplement ("Available"). 
+  
+  - *PrimaryFirst* - Locks out the secondary fuel-type ("NotAvailable").
+  
+  - *PreferSecondary* - Sets the secondary fuel type to "Preferred" and allows the primray fuel-type to supplement ("Available"). 
+  
+  - *SecondaryFirst* - Locks out the primary fuel-type ("NotAvailable").
+  
+  - *None* - Disables control on Criteria 1. This option is for convenience in paramatric analyses or optimization.
+  
+The default is None.
+
+*Below Switchover Temperature Control Type* - Control action when the outdoor dry bulb temperature is less than the Switchover Temperature.
+
+  - *PreferPrimary* - Sets the primary fuel type to "Preferred" and allows the secondary fuel-type to supplement ("Available"). 
+  
+  - *PrimaryFirst* - Locks out the secondary fuel-type ("NotAvailable").
+  
+  - *PreferSecondary* - Sets the secondary fuel type to "Preferred" and allows the primray fuel-type to supplement ("Available"). 
+  
+  - *SecondaryFirst* - Locks out the primary fuel-type ("NotAvailable").
+  
+  - *None* - Disables control on Criteria 1. This option is for convenience in paramatric analyses or optimization.
+  
+The default is None.
 
 *Criteria N* - Criteria used to compare the primary and secondary fuel types to determine which one to use or prefer. The choices are: Cost, SourceEnergy, CO2, CO, CH4, NOx, N2O, SO2, PM, PM10, PM2.5, NH3, NMVOC, Hg, Pb, Water, NuclearHighLevel, NuclearLowLevel. There is no default. If this field is blank, then there is no control action. This field and the next one may be repeated for as many control types as desired.
 
@@ -187,18 +222,69 @@ DemandManager:FuelSwitching,
        \key DistrictHeatingSteam
        \key DistrictCooling
        \default NaturalGas
+   A5, \field End-Use Category
+       \note This optional field allows the demand manager to apply for a particular end use.
+       \note If left blank, the demand manager applies to all end-uses.
+       \type choice
+       \key Heating
+       \key Cooling
+       \key InteriorLights
+       \key ExteriorLights
+       \key InteriorEquipment
+       \key ExteriorEquipment
+       \key Fans
+       \key Pumps
+       \key HeatRejection
+       \key Humidifier
+       \key HeatRecovery
+       \key WaterSystems
+       \key Refrigeration
+       \key OnSiteGeneration
+       \key HeatingCoils
+       \key CoolingCoils
+       \key Chillers
+       \key Boilers
+       \key Baseboard
+       \key HeatRecoveryForCooling
+       \key HeatRecoveryForHeating
   N1 , \field Minimum Duration
        \note The minimum duration before a change in control status is allowed.
        \type integer
        \minimum 0
        \units minutes
        \note If blank, duration defaults to the zone timestep
-  A5 , \field Heating Switchover Outdoor Dry Bulb Temperature
+  N2 , \field Outdoor Dry Bulb Switchover Temperature
        \note If the outdoor dry bulb temperature is below the switchover temperature, then use only the secondary fuel type for heating. 
        \type real
        \units C
        \default -99.0
-  A5 , \field Control Action When Primary Capacity is Inadequate
+  A6 , \field Above Switchover Temperature Control Type
+       \type choice
+       \note PrimaryFirst - Use the primary fuel type first, then secondary. 
+       \note PrimaryOnly - Use the primary fuel type only. Lock out the secondary fuel type.
+       \note SecondaryFirst - Use the secondary fuel type first, then primary. 
+       \note SecondaryOnly - Use the secondary fuel type only. Lock out the primary fuel type.
+       \note None - Disables control on outdoor dry bult temperature.
+       \key PrimaryFirst
+       \key PrimaryOnly
+       \key SecondaryFirst
+       \key SecondaryOnly
+       \key None
+       \default None  
+  A7 , \field Below Switchover Temperature Control Type
+       \type choice
+       \note PrimaryFirst - Use the primary fuel type first, then secondary. 
+       \note PrimaryOnly - Use the primary fuel type only. Lock out the secondary fuel type.
+       \note SecondaryFirst - Use the secondary fuel type first, then primary. 
+       \note SecondaryOnly - Use the secondary fuel type only. Lock out the primary fuel type.
+       \note None - Disables control on outdoor dry bult temperature.
+       \key PrimaryFirst
+       \key PrimaryOnly
+       \key SecondaryFirst
+       \key SecondaryOnly
+       \key None
+       \default None  
+  A8 , \field Control Action When Primary Capacity is Inadequate
        \note When the primary fuel type capacity is inadequate to meet the current load:
        \note PrimaryThenSecondary use the primary fuel type first then supplement with secondary fuel type
        \note SecondaryOnly lock out the primary fuel type if capacity is inadequate to meet the current load
@@ -209,7 +295,7 @@ DemandManager:FuelSwitching,
        \key SecondaryFirst
        \key None
        \default SecondaryOnly
-  A6 , \field Criteria 1
+  A9 , \field Criteria 1
        \begin-extensible
        \choice
        \key Cost
@@ -230,7 +316,7 @@ DemandManager:FuelSwitching,
        \key Water
        \key NuclearHighLevel
        \key NuclearLowLevel
-  A7 , \field Criteria 1 Control Type
+  A10, \field Criteria 1 Control Type
        \note PreferLowest allows the higher value fuel to supplement
        \note UseOnlyLowest locks out the higher value fuel
        \note None disables control on Criteria 1
@@ -239,7 +325,7 @@ DemandManager:FuelSwitching,
        \key PreferLowest
        \key UseOnlyLowest
        \default None
-  A8 , \field Criteria 2
+  A11, \field Criteria 2
        \choice
        \key None
        \key Cost
@@ -260,7 +346,7 @@ DemandManager:FuelSwitching,
        \key Water
        \key NuclearHighLevel
        \key NuclearLowLevel
-  A9 ; \field Criteria 2 Control Type
+  A12; \field Criteria 2 Control Type
        \note PreferLowest allows the higher value fuel to supplement
        \note UseOnlyLowest locks out the higher value fuel
        \note None disables control on Criteria 2

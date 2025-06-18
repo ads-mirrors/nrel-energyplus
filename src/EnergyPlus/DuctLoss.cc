@@ -201,6 +201,7 @@ namespace DuctLoss {
         static constexpr std::string_view RoutineName("GetDuctLossInput: "); // include trailing bla
 
         std::string CurrentModuleObject; // for ease in getting objects
+        std::string LinkageName;         // Name of the Duct linkage
 
         CurrentModuleObject = "Duct:Loss:Conduction";
 
@@ -220,15 +221,15 @@ namespace DuctLoss {
 
                 thisDuctLoss.Name = Util::makeUPPER(thisObjectName);
                 thisDuctLoss.AirLoopName = Util::makeUPPER(fields.at("airloophavc_name").get<std::string>());
-                thisDuctLoss.LinkageName = Util::makeUPPER(fields.at("airflownetwork_distribution_linkage_name").get<std::string>());
-                thisDuctLoss.LinkageNum = Util::FindItemInList(thisDuctLoss.LinkageName, state.afn->AirflowNetworkLinkageData);
+                LinkageName = Util::makeUPPER(fields.at("airflownetwork_distribution_linkage_name").get<std::string>());
+                thisDuctLoss.LinkageNum = Util::FindItemInList(LinkageName, state.afn->AirflowNetworkLinkageData);
                 if (thisDuctLoss.LinkageNum == 0) {
                     ShowSevereError(state,
                                     format("{}, \"{}\" {} not found: {}",
                                            CurrentModuleObject,
                                            thisDuctLoss.Name,
                                            "Airflownetwork:Distribution:Linkage = ",
-                                           thisDuctLoss.LinkageName));
+                                           LinkageName));
                     errorsFound = true;
                 }
                 std::string EnvType = Util::makeUPPER(fields.at("environment_type").get<std::string>());
@@ -286,15 +287,15 @@ namespace DuctLoss {
 
                 thisDuctLoss.Name = Util::makeUPPER(thisObjectName);
                 thisDuctLoss.AirLoopName = Util::makeUPPER(fields.at("airloophavc_name").get<std::string>());
-                thisDuctLoss.LinkageName = Util::makeUPPER(fields.at("airflownetwork_distribution_linkage_name").get<std::string>());
-                thisDuctLoss.LinkageNum = Util::FindItemInList(thisDuctLoss.LinkageName, state.afn->AirflowNetworkLinkageData);
+                LinkageName = Util::makeUPPER(fields.at("airflownetwork_distribution_linkage_name").get<std::string>());
+                thisDuctLoss.LinkageNum = Util::FindItemInList(LinkageName, state.afn->AirflowNetworkLinkageData);
                 if (thisDuctLoss.LinkageNum == 0) {
                     ShowSevereError(state,
                                     format("{}, \"{}\" {} not found: {}",
                                            CurrentModuleObject,
                                            thisDuctLoss.Name,
                                            "Airflownetwork:Distribution:Linkage = ",
-                                           thisDuctLoss.LinkageName));
+                                           LinkageName));
                     errorsFound = true;
                 }
                 thisDuctLoss.LossType = DuctLossType::Leakage;
@@ -324,15 +325,15 @@ namespace DuctLoss {
 
                 thisDuctLoss.Name = Util::makeUPPER(thisObjectName);
                 thisDuctLoss.AirLoopName = Util::makeUPPER(fields.at("airloophavc_name").get<std::string>());
-                thisDuctLoss.LinkageName = Util::makeUPPER(fields.at("airflownetwork_distribution_linkage_name").get<std::string>());
-                thisDuctLoss.LinkageNum = Util::FindItemInList(thisDuctLoss.LinkageName, state.afn->AirflowNetworkLinkageData);
+                LinkageName = Util::makeUPPER(fields.at("airflownetwork_distribution_linkage_name").get<std::string>());
+                thisDuctLoss.LinkageNum = Util::FindItemInList(LinkageName, state.afn->AirflowNetworkLinkageData);
                 if (thisDuctLoss.LinkageNum == 0) {
                     ShowSevereError(state,
                                     format("{}, \"{}\" {} not found: {}",
                                            CurrentModuleObject,
                                            thisDuctLoss.Name,
                                            "Airflownetwork:Distribution:Linkage = ",
-                                           thisDuctLoss.LinkageName));
+                                           LinkageName));
                     errorsFound = true;
                 }
                 thisDuctLoss.LossType = DuctLossType::MakeupAir;
@@ -372,14 +373,14 @@ namespace DuctLoss {
 
         for (int NodeNum = 1; NodeNum <= state.afn->AirflowNetworkNumOfNodes; ++NodeNum) {
             SetupOutputVariable(state,
-                                "DuctLoss Node Temperature",
+                                "Duct Loss Node Temperature",
                                 Constant::Units::C,
                                 state.afn->AirflowNetworkNodeSimu(NodeNum).TZ,
                                 OutputProcessor::TimeStepType::System,
                                 OutputProcessor::StoreType::Average,
                                 state.afn->AirflowNetworkNodeData(NodeNum).Name);
             SetupOutputVariable(state,
-                                "DuctLoss Node Humidity Ratio",
+                                "Duct Loss Node Humidity Ratio",
                                 Constant::Units::kgWater_kgDryAir,
                                 state.afn->AirflowNetworkNodeSimu(NodeNum).WZ,
                                 OutputProcessor::TimeStepType::System,
@@ -389,14 +390,14 @@ namespace DuctLoss {
 
         for (int DuctLossNum = 1; DuctLossNum <= state.dataDuctLoss->NumOfDuctLosses; DuctLossNum++) {
             SetupOutputVariable(state,
-                                "DuctLoss Sensible Loss Rate",
+                                "Duct Loss Sensible Loss Rate",
                                 Constant::Units::W,
                                 state.dataDuctLoss->ductloss(DuctLossNum).Qsen,
                                 OutputProcessor::TimeStepType::System,
                                 OutputProcessor::StoreType::Average,
                                 state.dataDuctLoss->ductloss(DuctLossNum).Name);
             SetupOutputVariable(state,
-                                "DuctLoss Latent Loss Rate",
+                                "Duct Loss Latent Loss Rate",
                                 Constant::Units::kgWater_s,
                                 state.dataDuctLoss->ductloss(DuctLossNum).Qlat,
                                 OutputProcessor::TimeStepType::System,
@@ -406,14 +407,14 @@ namespace DuctLoss {
 
         for (int ZoneNum = 1; ZoneNum <= state.dataGlobal->NumOfZones; ZoneNum++) {
             SetupOutputVariable(state,
-                                "Zone Added Sensible Rate Due to DuctLoss",
+                                "Zone Added Sensible Rate Due to Duct Loss",
                                 Constant::Units::W,
                                 state.dataDuctLoss->ZoneSen(ZoneNum),
                                 OutputProcessor::TimeStepType::System,
                                 OutputProcessor::StoreType::Average,
                                 state.dataHeatBal->Zone(ZoneNum).Name);
             SetupOutputVariable(state,
-                                "Zone Added Latent Rate Due to DuctLoss",
+                                "Zone Added Latent Rate Due to Duct Loss",
                                 Constant::Units::W,
                                 state.dataDuctLoss->ZoneLat(ZoneNum),
                                 OutputProcessor::TimeStepType::System,
@@ -495,10 +496,14 @@ namespace DuctLoss {
             state.afn->AirflowNetworkNodeSimu(NodeNum2).WZ = Wout;
             if (!state.dataDuctLoss->SubTypeSimuFlag(int(DuctLossSubType::SupplyBranch) + 1)) {
                 enthalpy = Psychrometrics::PsyHFnTdbW(Tout, Wout);
-                for (int OutNodeNum = 1; OutNodeNum <= state.dataSplitterComponent->SplitterCond(1).NumOutletNodes; OutNodeNum++) {
-                    state.dataLoopNodes->Node(state.dataSplitterComponent->SplitterCond(1).OutletNode(OutNodeNum)).Temp = Tout;
-                    state.dataLoopNodes->Node(state.dataSplitterComponent->SplitterCond(1).OutletNode(OutNodeNum)).HumRat = Wout;
-                    state.dataLoopNodes->Node(state.dataSplitterComponent->SplitterCond(1).OutletNode(OutNodeNum)).Enthalpy = enthalpy;
+                for (int OutNodeNum = 1; OutNodeNum <= state.dataSplitterComponent->SplitterCond(state.dataDuctLoss->SplitterNum).NumOutletNodes;
+                     OutNodeNum++) {
+                    state.dataLoopNodes->Node(state.dataSplitterComponent->SplitterCond(state.dataDuctLoss->SplitterNum).OutletNode(OutNodeNum))
+                        .Temp = Tout;
+                    state.dataLoopNodes->Node(state.dataSplitterComponent->SplitterCond(state.dataDuctLoss->SplitterNum).OutletNode(OutNodeNum))
+                        .HumRat = Wout;
+                    state.dataLoopNodes->Node(state.dataSplitterComponent->SplitterCond(state.dataDuctLoss->SplitterNum).OutletNode(OutNodeNum))
+                        .Enthalpy = enthalpy;
                     state.dataLoopNodes->Node(state.dataDuctLoss->ZoneEquipInletNodes(OutNodeNum)).Temp = Tout;
                     state.dataLoopNodes->Node(state.dataDuctLoss->ZoneEquipInletNodes(OutNodeNum)).HumRat = Wout;
                     state.dataLoopNodes->Node(state.dataDuctLoss->ZoneEquipInletNodes(OutNodeNum)).Enthalpy = enthalpy;
@@ -530,16 +535,14 @@ namespace DuctLoss {
                 Tin = state.afn->AirflowNetworkNodeSimu(NodeNum1).TZ;
                 Win = state.afn->AirflowNetworkNodeSimu(NodeNum1).WZ;
             } else {
-                Tin = state.dataMixerComponent->MixerCond(1).OutletTemp;
-                Win = state.dataMixerComponent->MixerCond(1).OutletHumRat;
+                Tin = state.dataMixerComponent->MixerCond(state.dataDuctLoss->MixerNum).OutletTemp;
+                Win = state.dataMixerComponent->MixerCond(state.dataDuctLoss->MixerNum).OutletHumRat;
             }
             CpAir = Psychrometrics::PsyCpAirFnW(state.dataLoopNodes->Node(NodeNum).HumRat);
             Tout = Tamb + (Tin - Tamb) * General::epexp(-UThermal * DuctSurfArea, (MassFlowRate * CpAir));
             Wout = Wamb + (Win - Wamb) * General::epexp(-UMoisture * DuctSurfArea, (MassFlowRate * CpAir));
             this->Qsen = -MassFlowRate * CpAir * (Tamb - Tin) * (1.0 - General::epexp(-UThermal * DuctSurfArea, (MassFlowRate * CpAir)));
             this->Qlat = -MassFlowRate * (Wamb - Win) * (1.0 - General::epexp(-UMoisture * DuctSurfArea, MassFlowRate));
-            // this->Qsen = MassFlowRate * CpAir * (Tout - Tin);
-            // this->Qlat = MassFlowRate * (Wout - Win);
             state.afn->AirflowNetworkNodeSimu(NodeNum2).TZ = Tout;
             state.afn->AirflowNetworkNodeSimu(NodeNum2).WZ = Wout;
         } break;
@@ -558,8 +561,8 @@ namespace DuctLoss {
             state.afn->AirflowNetworkNodeSimu(NodeNum2).TZ = Tout;
             state.afn->AirflowNetworkNodeSimu(NodeNum2).WZ = Wout;
             if (!state.dataDuctLoss->SubTypeSimuFlag(int(DuctLossSubType::ReturnTrunk) + 1)) {
-                state.dataLoopNodes->Node(state.dataMixerComponent->MixerCond(1).OutletNode).Temp = Tout;
-                state.dataLoopNodes->Node(state.dataMixerComponent->MixerCond(1).OutletNode).HumRat = Wout;
+                state.dataLoopNodes->Node(state.dataMixerComponent->MixerCond(state.dataDuctLoss->MixerNum).OutletNode).Temp = Tout;
+                state.dataLoopNodes->Node(state.dataMixerComponent->MixerCond(state.dataDuctLoss->MixerNum).OutletNode).HumRat = Wout;
             }
         } break;
 
@@ -599,31 +602,32 @@ namespace DuctLoss {
             Tin = state.afn->AirflowNetworkNodeSimu(NodeNum1).TZ;
             Win = state.afn->AirflowNetworkNodeSimu(NodeNum1).WZ;
             CpAir = Psychrometrics::PsyCpAirFnW(Win);
+            MassFlowRate = state.dataLoopNodes->Node(state.dataDuctLoss->AirLoopInNodeNum).MassFlowRate;
             // Zone only
-            this->Qsen = state.dataLoopNodes->Node(state.dataDuctLoss->AirLoopInNodeNum).MassFlowRate * CpAir * LeakRatio *
+            this->Qsen = MassFlowRate * CpAir * LeakRatio *
                          (Tin - state.dataZoneTempPredictorCorrector->zoneHeatBalance(state.afn->AirflowNetworkNodeData(NodeNum2).EPlusZoneNum).MAT);
             this->Qlat =
-                state.dataLoopNodes->Node(state.dataDuctLoss->AirLoopInNodeNum).MassFlowRate * LeakRatio *
+                MassFlowRate * LeakRatio *
                 (Win - state.dataZoneTempPredictorCorrector->zoneHeatBalance(state.afn->AirflowNetworkNodeData(NodeNum2).EPlusZoneNum).airHumRat);
-            this->QsenSL = state.dataLoopNodes->Node(state.dataDuctLoss->AirLoopInNodeNum).MassFlowRate * CpAir * LeakRatio *
-                           (Tin - state.dataZoneTempPredictorCorrector->zoneHeatBalance(state.dataDuctLoss->CtrlZoneNum).MAT);
-            this->QlatSL = state.dataLoopNodes->Node(state.dataDuctLoss->AirLoopInNodeNum).MassFlowRate * LeakRatio *
-                           (Win - state.dataZoneTempPredictorCorrector->zoneHeatBalance(state.dataDuctLoss->CtrlZoneNum).airHumRat);
+            this->QsenSL =
+                MassFlowRate * CpAir * LeakRatio * (Tin - state.dataZoneTempPredictorCorrector->zoneHeatBalance(state.dataDuctLoss->CtrlZoneNum).MAT);
+            this->QlatSL =
+                MassFlowRate * LeakRatio * (Win - state.dataZoneTempPredictorCorrector->zoneHeatBalance(state.dataDuctLoss->CtrlZoneNum).airHumRat);
         } break;
         case DuctLossSubType::SupLeakBranch: {
             Tin = state.afn->AirflowNetworkNodeSimu(NodeNum1).TZ;
             Win = state.afn->AirflowNetworkNodeSimu(NodeNum1).WZ;
             CpAir = Psychrometrics::PsyCpAirFnW(Win);
-            // Outdoor????
-            this->Qsen = state.dataLoopNodes->Node(state.dataDuctLoss->AirLoopInNodeNum).MassFlowRate * CpAir * LeakRatio *
+            MassFlowRate = state.dataLoopNodes->Node(state.dataDuctLoss->AirLoopInNodeNum).MassFlowRate;
+            this->Qsen = MassFlowRate * CpAir * LeakRatio *
                          (Tin - state.dataZoneTempPredictorCorrector->zoneHeatBalance(state.afn->AirflowNetworkNodeData(NodeNum2).EPlusZoneNum).MAT);
             this->Qlat =
-                state.dataLoopNodes->Node(state.dataDuctLoss->AirLoopInNodeNum).MassFlowRate * LeakRatio *
+                MassFlowRate * LeakRatio *
                 (Win - state.dataZoneTempPredictorCorrector->zoneHeatBalance(state.afn->AirflowNetworkNodeData(NodeNum2).EPlusZoneNum).airHumRat);
-            this->QsenSL = state.dataLoopNodes->Node(state.dataDuctLoss->AirLoopInNodeNum).MassFlowRate * CpAir * LeakRatio *
-                           (Tin - state.dataZoneTempPredictorCorrector->zoneHeatBalance(state.dataDuctLoss->CtrlZoneNum).MAT);
-            this->QlatSL = state.dataLoopNodes->Node(state.dataDuctLoss->AirLoopInNodeNum).MassFlowRate * LeakRatio *
-                           (Win - state.dataZoneTempPredictorCorrector->zoneHeatBalance(state.dataDuctLoss->CtrlZoneNum).airHumRat);
+            this->QsenSL =
+                MassFlowRate * CpAir * LeakRatio * (Tin - state.dataZoneTempPredictorCorrector->zoneHeatBalance(state.dataDuctLoss->CtrlZoneNum).MAT);
+            this->QlatSL =
+                MassFlowRate * LeakRatio * (Win - state.dataZoneTempPredictorCorrector->zoneHeatBalance(state.dataDuctLoss->CtrlZoneNum).airHumRat);
         } break;
         case DuctLossSubType::RetLeakTrunk: {
             MassFlowRate = state.dataLoopNodes->Node(state.dataDuctLoss->AirLoopInNodeNum).MassFlowRate;
@@ -731,6 +735,19 @@ namespace DuctLoss {
                     errorsFound = true;
                 }
             }
+            // Get an index of splitter and mixer for a single AirLoop
+            for (int SupAirPath = 1; SupAirPath <= state.dataZoneEquip->NumSupplyAirPaths; ++SupAirPath) {
+                for (int CompNum = 1; CompNum <= state.dataZoneEquip->SupplyAirPath(SupAirPath).NumOfComponents; ++CompNum) {
+                    state.dataDuctLoss->SplitterNum = state.dataZoneEquip->SupplyAirPath(SupAirPath).SplitterIndex(CompNum);
+                    break;
+                }
+            }
+            for (int RetAirPath = 1; RetAirPath <= state.dataZoneEquip->NumReturnAirPaths; ++RetAirPath) {
+                for (int CompNum = 1; CompNum <= state.dataZoneEquip->ReturnAirPath(RetAirPath).NumOfComponents; ++CompNum) {
+                    state.dataDuctLoss->MixerNum = state.dataZoneEquip->SupplyAirPath(RetAirPath).SplitterIndex(CompNum);
+                    break;
+                }
+            }
 
             // Setup duct subtype
             int AFNNodeNum1;
@@ -756,8 +773,9 @@ namespace DuctLoss {
                                 state.dataDuctLoss->AirLoopInNodeNum = NodeNum1;
                             }
                         } else if (Util::SameString(state.afn->DisSysNodeData(AFNNodeNum2).EPlusType, "AirLoopHVAC:ZoneMixer")) {
-                            for (int InNodeNum = 1; InNodeNum <= state.dataMixerComponent->MixerCond(1).NumInletNodes; InNodeNum++) {
-                                if (NodeNum1 == state.dataMixerComponent->MixerCond(1).InletNode(InNodeNum) + 1) {
+                            for (int InNodeNum = 1; InNodeNum <= state.dataMixerComponent->MixerCond(state.dataDuctLoss->MixerNum).NumInletNodes;
+                                 InNodeNum++) {
+                                if (NodeNum1 == state.dataMixerComponent->MixerCond(state.dataDuctLoss->MixerNum).InletNode(InNodeNum) + 1) {
                                     thisDuctLoss.LossSubType = DuctLossSubType::ReturnBranch;
                                     state.dataDuctLoss->SubTypeSimuFlag(int(DuctLossSubType::ReturnBranch)) = true;
                                     break;
@@ -773,8 +791,11 @@ namespace DuctLoss {
                         }
                         if (NodeNum2 > 0) {
                             if (Util::SameString(state.afn->DisSysNodeData(AFNNodeNum1).EPlusType, "AirLoopHVAC:ZoneSplitter")) {
-                                for (int OutNodeNum = 1; OutNodeNum <= state.dataSplitterComponent->SplitterCond(1).NumOutletNodes; OutNodeNum++) {
-                                    if (NodeNum2 == state.dataSplitterComponent->SplitterCond(1).OutletNode(OutNodeNum)) {
+                                for (int OutNodeNum = 1;
+                                     OutNodeNum <= state.dataSplitterComponent->SplitterCond(state.dataDuctLoss->SplitterNum).NumOutletNodes;
+                                     OutNodeNum++) {
+                                    if (NodeNum2 ==
+                                        state.dataSplitterComponent->SplitterCond(state.dataDuctLoss->SplitterNum).OutletNode(OutNodeNum)) {
                                         thisDuctLoss.LossSubType = DuctLossSubType::SupplyBranch;
                                         state.dataDuctLoss->SubTypeSimuFlag(int(DuctLossSubType::SupplyBranch) + 1) = true;
                                         // find zone inlet node
@@ -923,18 +944,21 @@ namespace DuctLoss {
             state.dataDuctLoss->AirLoopConnectionFlag = false;
 
             if (!state.dataDuctLoss->SubTypeSimuFlag(int(DuctLossSubType::SupplyTrunk) + 1)) {
-                state.dataDuctLoss->AirLoopInNodeNum = state.dataSplitterComponent->SplitterCond(1).InletNode;
+                state.dataDuctLoss->AirLoopInNodeNum = state.dataSplitterComponent->SplitterCond(state.dataDuctLoss->SplitterNum).InletNode;
             }
 
             if (!state.dataDuctLoss->SubTypeSimuFlag(int(DuctLossSubType::SupplyBranch) + 1)) {
-                state.dataDuctLoss->ZoneEquipInletNodes.allocate(state.dataSplitterComponent->SplitterCond(1).NumOutletNodes);
-                for (int OutNodeNum = 1; OutNodeNum <= state.dataSplitterComponent->SplitterCond(1).NumOutletNodes; OutNodeNum++) {
+                state.dataDuctLoss->ZoneEquipInletNodes.allocate(
+                    state.dataSplitterComponent->SplitterCond(state.dataDuctLoss->SplitterNum).NumOutletNodes);
+                for (int OutNodeNum = 1; OutNodeNum <= state.dataSplitterComponent->SplitterCond(state.dataDuctLoss->SplitterNum).NumOutletNodes;
+                     OutNodeNum++) {
                     // find zone inlet node
                     for (int ZoneNum = 1; ZoneNum <= state.dataGlobal->NumOfZones; ZoneNum++) {
                         for (int inletNum = 1; inletNum <= state.dataZoneEquip->ZoneEquipConfig(ZoneNum).NumInletNodes; ++inletNum) {
                             if (state.dataZoneEquip->ZoneEquipConfig(ZoneNum).InletNodeADUNum(inletNum) > 0) {
                                 if (state.dataDefineEquipment->AirDistUnit(state.dataZoneEquip->ZoneEquipConfig(ZoneNum).InletNodeADUNum(inletNum))
-                                        .InletNodeNum == state.dataSplitterComponent->SplitterCond(1).OutletNode(OutNodeNum)) {
+                                        .InletNodeNum ==
+                                    state.dataSplitterComponent->SplitterCond(state.dataDuctLoss->SplitterNum).OutletNode(OutNodeNum)) {
                                     state.dataDuctLoss->ZoneEquipInletNodes(OutNodeNum) =
                                         state.dataDefineEquipment
                                             ->AirDistUnit(state.dataZoneEquip->ZoneEquipConfig(ZoneNum).InletNodeADUNum(inletNum))

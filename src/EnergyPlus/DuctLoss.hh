@@ -107,7 +107,6 @@ namespace DuctLoss {
     {
         std::string Name;        // Name of the DuctLoss
         std::string AirLoopName; // Name of the Airloop
-        std::string LinkageName; // Name of the Duct linkage
         EnvironmentType EnvType = EnvironmentType::Invalid;
         std::string ZoneName;                 // Name of the zone
         std::string ScheduleNameT;            // Name of the schedule
@@ -150,8 +149,6 @@ namespace DuctLoss {
 
 struct DuctLossData : BaseGlobalStruct
 {
-    int NumDDAirTerminal = 0; // The Number of Dampers found in the Input //Autodesk Poss used uninitialized in ReportDualDuctConnections
-    int NumDualDuctVarVolOA = 0;
     bool DuctLossSimu = false;
     int NumOfDuctLosses = 0;           // Number of duct loss objects
     bool GetDuctLossInputFlag = true;  // Flag set to make sure you get input once
@@ -165,6 +162,8 @@ struct DuctLossData : BaseGlobalStruct
     int CtrlZoneNum;                  // Controlled zone number
     Array1D<bool> SubTypeSimuFlag;    // Sub duct loss type simulation flag
     Array1D<int> ZoneEquipInletNodes; // Zone inlet nodes used without supply branch
+    int SplitterNum = 0;              // Splitter component number
+    int MixerNum = 0;                 // Mixer component number
 
     void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
     {

@@ -1061,12 +1061,6 @@ void GetOutsideAirSysInputs(EnergyPlusData &state)
                                 format("{} = \"{}\" invalid {}=\"{}\" not found.", CurrentModuleObject, AlphArray(1), cAlphaFields(2), AlphArray(2)));
                 ErrorsFound = true;
             }
-        } else {
-            if (state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, "AirLoopHVAC:DedicatedOutdoorAirSystem") == 0) {
-                ShowSevereError(state,
-                                format("{} = \"{}\" invalid {} is blank and must be entered.", CurrentModuleObject, AlphArray(1), cAlphaFields(2)));
-                ErrorsFound = true;
-            }
         }
         OASys.ControllerListNum = ListNum;
         OASys.NumSimpleControllers = NumSimpControllers;

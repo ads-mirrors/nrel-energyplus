@@ -220,7 +220,8 @@ namespace DuctLoss {
             ShowSevereError(state, "The simple duct model allows a single AirLoopHVAC:ZoneSplitter. No AirLoopHVAC:ZoneSplitter object is found");
             errorsFound = true;
         } else if (NumOfSplitters > 1) {
-            ShowSevereError(state, "The simple duct model allows a single AirLoopHVAC:ZoneSplitter. Multiple objects of AirLoopHVAC:ZoneSplitter are found");
+            ShowSevereError(state,
+                            "The simple duct model allows a single AirLoopHVAC:ZoneSplitter. Multiple objects of AirLoopHVAC:ZoneSplitter are found");
             errorsFound = true;
         }
         int NumOfMixers = state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, "AirLoopHVAC:ZoneMixer");

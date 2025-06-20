@@ -1755,21 +1755,21 @@
     Air Loop Inlet Node,     !- Air Inlet Node Name
     Cooling Coil Air Inlet Node;  !- Air Outlet Node Name
 
-  Output:Variable,*,DuctLoss Node Temperature,TimeStep,ReportSch;
+  Output:Variable,*,Duct Loss Node Temperature,TimeStep,ReportSch;
 
-  Output:Variable,*,DuctLoss Node Humidity Ratio,TimeStep,ReportSch;
+  Output:Variable,*,Duct Loss Node Humidity Ratio,TimeStep,ReportSch;
 
-  Output:Variable,*,DuctLoss Sensible Loss Rate,TimeStep,ReportSch;
+  Output:Variable,*,Duct Loss Sensible Loss Rate,TimeStep,ReportSch;
 
-  Output:Variable,*,DuctLoss Latent Loss Rate,TimeStep,ReportSch;
+  Output:Variable,*,Duct Loss Latent Loss Rate,TimeStep,ReportSch;
 
-  Output:Variable,*,Zone Added Sensible Rate Due to DuctLoss,TimeStep,ReportSch;
+  Output:Variable,*,Zone Added Sensible Rate Due to Duct Loss,TimeStep,ReportSch;
 
-  Output:Variable,*,Zone Added Latent Rate Due to DuctLoss,TimeStep,ReportSch;
+  Output:Variable,*,Zone Added Latent Rate Due to Duct Loss,TimeStep,ReportSch;
 
-  Output:Variable,*,System Added Sensible Rate Due to DuctLoss,TimeStep,ReportSch;
+  Output:Variable,*,System Added Sensible Rate Due to Duct Loss,TimeStep,ReportSch;
 
-  Output:Variable,*,System Added Latent Rate Due to DuctLoss,TimeStep,ReportSch;
+  Output:Variable,*,System Added Latent Rate Due to Duct Loss,TimeStep,ReportSch;
 
   Output:Variable,*,System Node Temperature,TimeStep,ReportSch;
 

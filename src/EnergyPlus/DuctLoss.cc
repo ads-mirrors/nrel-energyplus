@@ -203,6 +203,13 @@ namespace DuctLoss {
         std::string CurrentModuleObject; // for ease in getting objects
         std::string LinkageName;         // Name of the Duct linkage
 
+        int NumDuctLossConduction = state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, cCMO_DuctLossConduction);
+        int NumDuctLossLeakage = state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, cCMO_DuctLossLeakage);
+        int NumDuctLossMakeupAir = state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, cCMO_DuctLossMakeupAir);
+        if (NumDuctLossConduction + NumDuctLossLeakage + NumDuctLossMakeupAir == 0) {
+            return;
+        }
+
         CurrentModuleObject = "Duct:Loss:Conduction";
 
         auto instances = state.dataInputProcessing->inputProcessor->epJSON.find(CurrentModuleObject);

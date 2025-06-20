@@ -2262,7 +2262,7 @@ namespace SimulationManager {
                 ShowContinueError(state, "  Node Types are still UNDEFINED -- See Branch/Node Details file for further information");
                 ShowContinueError(state, format("  Inlet Node : {}", state.dataBranchNodeConnections->CompSets(Count).InletNodeName));
                 ShowContinueError(state, format("  Outlet Node: {}", state.dataBranchNodeConnections->CompSets(Count).OutletNodeName));
-                ShowFatalError(state, "Testing this out for funsies");
+                ShowFatalError(state, "Please correct either the branch nodes or the component nodes so that they match.");
                 ++state.dataBranchNodeConnections->NumNodeConnectionErrors;
             }
         }

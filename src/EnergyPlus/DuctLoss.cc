@@ -202,12 +202,38 @@ namespace DuctLoss {
 
         std::string CurrentModuleObject; // for ease in getting objects
         std::string LinkageName;         // Name of the Duct linkage
+        bool errorsFound(false);
 
         int NumDuctLossConduction = state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, cCMO_DuctLossConduction);
         int NumDuctLossLeakage = state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, cCMO_DuctLossLeakage);
         int NumDuctLossMakeupAir = state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, cCMO_DuctLossMakeupAir);
         if (NumDuctLossConduction + NumDuctLossLeakage + NumDuctLossMakeupAir == 0) {
             return;
+        }
+        int NumOfAirloops = state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, "AirLoopHVAC");
+        if (NumOfAirloops == 0) {
+            ShowSevereError(state, "The simple duct model allows a single AirLoop. No AirLoopHVAC object is found");
+            errorsFound = true;
+        }
+        int NumOfSplitters = state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, "AirLoopHVAC:ZoneSplitter");
+        if (NumOfSplitters == 0) {
+            ShowSevereError(state, "The simple duct model allows a single AirLoopHVAC:ZoneSplitter. No AirLoopHVAC:ZoneSplitter object is found");
+            errorsFound = true;
+        } else if (NumOfSplitters > 1) {
+            ShowSevereError(state, "The simple duct model allows a single AirLoopHVAC:ZoneSplitter. Multiple objects of AirLoopHVAC:ZoneSplitter are found");
+            errorsFound = true;
+        }
+        int NumOfMixers = state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, "AirLoopHVAC:ZoneMixer");
+        if (NumOfMixers == 0) {
+            ShowSevereError(state, "The simple duct model allows a single AirLoopHVAC:ZoneMixers. No AirLoopHVAC:ZoneNumOfMixer object is found");
+            errorsFound = true;
+        } else if (NumOfMixers > 1) {
+            ShowSevereError(state,
+                            "The simple duct model allows a single AirLoopHVAC:ZonefMixer. Multiple objects of AirLoopHVAC:ZoneMixer are found");
+            errorsFound = true;
+        }
+        if (errorsFound) {
+            ShowFatalError(state, "GetDuctLossLeakageInput: Previous errors cause termination.");
         }
 
         CurrentModuleObject = "Duct:Loss:Conduction";
@@ -358,7 +384,6 @@ namespace DuctLoss {
             state.afn->AirflowNetworkGetInputFlag = false;
             // return;
         }
-        bool errorsFound(false);
         // Validation of AirLoopHVAC
         bool airLoopFound = true;
         for (int DuctLossNum = 2; DuctLossNum <= state.dataDuctLoss->NumOfDuctLosses; DuctLossNum++) {
@@ -370,6 +395,8 @@ namespace DuctLoss {
             ShowSevereError(state, "Multiple AirLoopHVAC names are found. A single AirLoopHVAC is required");
             errorsFound = true;
         }
+        state.dataDuctLoss->SplitterNum = 1;
+        state.dataDuctLoss->MixerNum = 1;
         // Allocate
         state.dataDuctLoss->ZoneSen.allocate(state.dataGlobal->NumOfZones);
         state.dataDuctLoss->ZoneLat.allocate(state.dataGlobal->NumOfZones);
@@ -720,10 +747,6 @@ namespace DuctLoss {
 
         if (state.dataDuctLoss->AirLoopConnectionFlag) {
 
-            // constexpr std::string_view cCMO_DuctLossConduction = "Duct:Loss:Conduction";
-            // constexpr std::string_view cCMO_DuctLossLeakage = "Duct:Loss:Leakage";
-            // constexpr std::string_view cCMO_DuctLossMakeupAir = "Duct:Loss:MakeupAir";
-
             for (int DuctLossNum = 1; DuctLossNum <= state.dataDuctLoss->NumOfDuctLosses; DuctLossNum++) {
                 auto &thisDuctLoss(state.dataDuctLoss->ductloss(DuctLossNum));
 
@@ -740,19 +763,6 @@ namespace DuctLoss {
                         state,
                         format("{}, \"{}\" {} not found: {}", CurrentModuleObject, thisDuctLoss.Name, "AirLoopHVAC = ", thisDuctLoss.AirLoopName));
                     errorsFound = true;
-                }
-            }
-            // Get an index of splitter and mixer for a single AirLoop
-            for (int SupAirPath = 1; SupAirPath <= state.dataZoneEquip->NumSupplyAirPaths; ++SupAirPath) {
-                for (int CompNum = 1; CompNum <= state.dataZoneEquip->SupplyAirPath(SupAirPath).NumOfComponents; ++CompNum) {
-                    state.dataDuctLoss->SplitterNum = state.dataZoneEquip->SupplyAirPath(SupAirPath).SplitterIndex(CompNum);
-                    break;
-                }
-            }
-            for (int RetAirPath = 1; RetAirPath <= state.dataZoneEquip->NumReturnAirPaths; ++RetAirPath) {
-                for (int CompNum = 1; CompNum <= state.dataZoneEquip->ReturnAirPath(RetAirPath).NumOfComponents; ++CompNum) {
-                    state.dataDuctLoss->MixerNum = state.dataZoneEquip->SupplyAirPath(RetAirPath).SplitterIndex(CompNum);
-                    break;
                 }
             }
 

@@ -33,3 +33,7 @@ See Pull Request [#11106](https://github.com/NREL/EnergyPlus/pull/11106).
 When `Output:Diagnostics` has the `ReportDetailedWarmupConvergence` enabled, both the regular report and the detailed one were named `Warmup Convergence Information` resulting in duplicated HTML tables that would include lines from the other report.
 
 The `ReportDetailedWarmupConvergence` report (the one that shows the status at each timestep/hour until convergence is reached) was renamed to `Warmup Convergence Information - Detailed`.
+
+#### Material:Air
+
+The `Output:Constructions` has two possible keys: `Materials` and `Constructions`. Both were adding a table named `Material:Air`. The Constructions one was renamed to `Material:Air CTF Summary` to match the surrounding tables.

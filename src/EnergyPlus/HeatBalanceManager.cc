@@ -3022,12 +3022,13 @@ namespace HeatBalanceManager {
                 if (state.dataSysVars->ReportDetailedWarmupConvergence) { // only do this detailed thing when requested by user is on
                     // Write Warmup Convergence Information to the initialization output file
                     if (state.dataHeatBalMgr->FirstWarmupWrite) {
-                        constexpr const char *Format_732{"! <Warmup Convergence Information>,Zone Name,Time Step,Hour of Day,Warmup Temperature "
-                                                         "Difference {{deltaC}},Warmup Load Difference {{W}}\n"};
+                        constexpr const char *Format_732{
+                            "! <Warmup Convergence Information - Detailed>,Zone Name,Time Step,Hour of Day,Warmup Temperature "
+                            "Difference {{deltaC}},Warmup Load Difference {{W}}\n"};
                         print(state.files.eio, Format_732);
                         state.dataHeatBalMgr->FirstWarmupWrite = false;
                     }
-                    constexpr const char *Format_731{" Warmup Convergence Information, {},{},{},{:.10R},{:.10R}\n"};
+                    constexpr const char *Format_731{" Warmup Convergence Information - Detailed, {},{},{},{:.10R},{:.10R}\n"};
                     print(state.files.eio,
                           Format_731,
                           state.dataHeatBal->Zone(ZoneNum).Name,

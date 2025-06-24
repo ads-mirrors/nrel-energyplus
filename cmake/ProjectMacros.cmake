@@ -163,6 +163,9 @@ function(ADD_SIMULATION_TEST)
     set_tests_properties("reverseDD.${IDF_NAME}" PROPERTIES FAIL_REGULAR_EXPRESSION "ERROR;FAIL;Test Failed")
   endif()
 
+  add_test(NAME "${TEST_CATEGORY}.${IDF_NAME}.EnsureUniqueTableNames"
+           COMMAND ${Python_EXECUTABLE} "${PROJECT_SOURCE_DIR}/scripts/dev/ensure_unique_html_tables.py" "--skip-missing" "${PROJECT_BINARY_DIR}/testfiles/${IDF_NAME}/")
+  set_tests_properties("${TEST_CATEGORY}.${IDF_NAME}.EnsureUniqueTableNames" PROPERTIES DEPENDS "${TEST_CATEGORY}.${IDF_NAME}")
 endfunction()
 
 function(ADD_API_SIMULATION_TEST)

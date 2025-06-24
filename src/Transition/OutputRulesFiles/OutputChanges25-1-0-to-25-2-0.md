@@ -37,3 +37,7 @@ The `ReportDetailedWarmupConvergence` report (the one that shows the status at e
 #### Material:Air
 
 The `Output:Constructions` has two possible keys: `Materials` and `Constructions`. Both were adding a table named `Material:Air`. The Constructions one was renamed to `Material:Air CTF Summary` to match the surrounding tables.
+
+#### Fuel Supply
+
+When using `Generator:FuelSupply`, the header was written twice in the EIO Initialization Summary as `! <Fuel Supply>,...` leading to two identical tables in the HTML report.

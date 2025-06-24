@@ -134,8 +134,8 @@ function(ADD_SIMULATION_TEST)
       ${CMAKE_COMMAND} -DSOURCE_DIR=${PROJECT_SOURCE_DIR} -DBINARY_DIR=${PROJECT_BINARY_DIR} -DENERGYPLUS_EXE=$<TARGET_FILE:energyplus>
       -DIDF_FILE=${ADD_SIM_TEST_IDF_FILE} -DEPW_FILE=${ADD_SIM_TEST_EPW_FILE} -DENERGYPLUS_FLAGS=${ENERGYPLUS_FLAGS} -DBUILD_FORTRAN=${BUILD_FORTRAN}
       -DTEST_FILE_FOLDER=${TEST_FILE_FOLDER} -DRUN_CALLGRIND:BOOL=${RUN_CALLGRIND} -DVALGRIND=${VALGRIND} -DRUN_PERF_STAT:BOOL=${RUN_PERF_STAT}
-      -DPERF=${PERF} -P
-      ${PROJECT_SOURCE_DIR}/cmake/RunSimulation.cmake)
+      -DPERF=${PERF} -DPython_EXECUTABLE=${Python_EXECUTABLE}
+      -P ${PROJECT_SOURCE_DIR}/cmake/RunSimulation.cmake)
 
   if(ADD_SIM_TEST_COST AND NOT ADD_SIM_TEST_COST STREQUAL "")
     set_tests_properties("${TEST_CATEGORY}.${IDF_NAME}" PROPERTIES COST ${ADD_SIM_TEST_COST})
@@ -161,12 +161,6 @@ function(ADD_SIMULATION_TEST)
             ${PROJECT_SOURCE_DIR}/cmake/RunReverseDD.cmake)
     set_tests_properties("reverseDD.${IDF_NAME}" PROPERTIES PASS_REGULAR_EXPRESSION "Success;Test Passed")
     set_tests_properties("reverseDD.${IDF_NAME}" PROPERTIES FAIL_REGULAR_EXPRESSION "ERROR;FAIL;Test Failed")
-  endif()
-
-  if(NOT ADD_SIM_TEST_EXPECT_FATAL)
-    add_test(NAME "${TEST_CATEGORY}.${IDF_NAME}.EnsureUniqueTableNames"
-             COMMAND ${Python_EXECUTABLE} "${PROJECT_SOURCE_DIR}/scripts/dev/ensure_unique_html_tables.py" "--skip-missing" "${PROJECT_BINARY_DIR}/${TEST_FILE_FOLDER}/${IDF_NAME}/")
-    set_tests_properties("${TEST_CATEGORY}.${IDF_NAME}.EnsureUniqueTableNames" PROPERTIES DEPENDS "${TEST_CATEGORY}.${IDF_NAME}")
   endif()
 
 endfunction()

@@ -152,7 +152,7 @@ TEST_F(EnergyPlusFixture, OutputReportTabularTest_RealToStr)
     EXPECT_EQ("  123456.789", RealToStr(123456.789, 3));
     EXPECT_EQ(" 123456.7890", RealToStr(123456.789, 4));
 
-    EXPECT_EQ("0.123457E+06", RealToStr(123456.789, 5));
+    EXPECT_EQ("1.234568E+05", RealToStr(123456.789, 5));
 }
 
 TEST_F(EnergyPlusFixture, OutputReportTabularTest_isNumber)

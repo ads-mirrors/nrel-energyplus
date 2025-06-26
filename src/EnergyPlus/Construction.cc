@@ -1900,7 +1900,7 @@ void ConstructionProps::calculateFinalCoefficients()
 void ConstructionProps::reportTransferFunction(EnergyPlusData &state, int const cCounter)
 {
 
-    static constexpr std::string_view Format_700{" Construction CTF,{},{:4},{:4},{:4},{:8.3F},{:15.4F},{:8.3F},{:8.3F},{:8.3F},{:8.3F},{}\n"};
+    static constexpr std::string_view Format_700{" Construction CTF,{},{:4},{:4},{:4},{:8.3F},{:15.4G},{:8.3F},{:8.3F},{:8.3F},{:8.3F},{}\n"};
     print(state.files.eio,
           Format_700,
           this->Name,
@@ -1924,7 +1924,7 @@ void ConstructionProps::reportTransferFunction(EnergyPlusData &state, int const 
             print(state.files.eio, Format_702, thisMaterial->Name, thisMaterial->Resistance);
         } break;
         default: {
-            static constexpr std::string_view Format_701(" Material CTF Summary,{},{:8.4F},{:14.3F},{:11.3F},{:13.3F},{:12.4F}\n");
+            static constexpr std::string_view Format_701(" Material CTF Summary,{},{:8.4F},{:14.3F},{:11.3F},{:13.3F},{:12.4G}\n");
             Material::MaterialBase const *mp = thisMaterial;
             print(state.files.eio, Format_701, mp->Name, mp->Thickness, mp->Conductivity, mp->Density, mp->SpecHeat, mp->Resistance);
         } break;

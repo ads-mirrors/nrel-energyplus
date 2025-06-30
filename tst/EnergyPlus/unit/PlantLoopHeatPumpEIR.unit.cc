@@ -920,6 +920,7 @@ TEST_F(EnergyPlusFixture, calcLoadSideHeatTransfer_AWHP)
     state->dataLoopNodes->Node(thisAWHP.loadSideNodes.inlet).Temp = thisAWHP.loadSideInletTemp;
     Real64 CpLoad = thisAWHP.loadSidePlantLoc.loop->glycol->getSpecificHeat(
         *state, state->dataLoopNodes->Node(thisAWHP.loadSideNodes.inlet).Temp, "HeatPumpAirToWater::calcLoadSideHeatTransfer()");
+    // if capacity is less than load, heat transfer is just capacity
     Real64 capacity = 100;
     Real64 load = 120;
     thisAWHP.calcLoadOutletTemp = EIRPlantLoopHeatPumps::HeatPumpAirToWater::subtract;
@@ -935,6 +936,7 @@ TEST_F(EnergyPlusFixture, calcLoadSideHeatTransfer_AWHP)
     EXPECT_NEAR(
         CpLoad * (thisAWHP.loadSideOutletTemp - thisAWHP.loadSideInletTemp) * thisAWHP.loadSideMassFlowRate, thisAWHP.loadSideHeatTransfer, 1e-6);
 
+    // if capacity is less than load, heat transfer is load
     capacity = 120;
     load = 100;
     thisAWHP.EIRHPType = EnergyPlus::DataPlant::PlantEquipmentType::HeatPumpAirToWaterCooling;
@@ -950,6 +952,16 @@ TEST_F(EnergyPlusFixture, calcLoadSideHeatTransfer_AWHP)
     EXPECT_EQ(thisAWHP.loadSideHeatTransfer, load);
     EXPECT_NEAR(
         CpLoad * (thisAWHP.loadSideOutletTemp - thisAWHP.loadSideInletTemp) * thisAWHP.loadSideMassFlowRate, thisAWHP.loadSideHeatTransfer, 1e-6);
+
+    // if load is smaller than minimum load (minimumPLR * availableCapacity), heat transfer is minimum load
+    capacity = 120;
+    load = 10;
+    thisAWHP.minimumPLR = 0.1;
+    thisAWHP.referenceCapacity = capacity;
+    thisAWHP.EIRHPType = EnergyPlus::DataPlant::PlantEquipmentType::HeatPumpAirToWaterCooling;
+    thisAWHP.calcLoadOutletTemp = EIRPlantLoopHeatPumps::HeatPumpAirToWater::subtract;
+    thisAWHP.calcLoadSideHeatTransfer(*state, capacity, load);
+    EXPECT_EQ(thisAWHP.loadSideHeatTransfer, capacity * thisAWHP.minimumPLR);
 }
 
 TEST_F(EnergyPlusFixture, calcPowerUsage_AWHP)
@@ -1044,18 +1056,29 @@ TEST_F(EnergyPlusFixture, calcPowerUsage_AWHP)
     thisAWHP.calcPowerUsage(*state, availableCapacityBeforeMultiplier);
     EXPECT_EQ(thisAWHP.speedLevel, 0);
     EXPECT_EQ(thisAWHP.powerUsage, 500);
+    EXPECT_EQ(thisAWHP.cyclingRatio, 500.0/600.0);
+    EXPECT_EQ(thisAWHP.numUnitUsed, 1);
     thisAWHP.loadSideHeatTransfer = 1000;
+    thisAWHP.cyclingRatio = 1.0;  // reset cycling ratio back to 1
     thisAWHP.calcPowerUsage(*state, availableCapacityBeforeMultiplier);
     EXPECT_EQ(thisAWHP.speedLevel, 1);
     EXPECT_EQ(thisAWHP.powerUsage, 1000);
+    EXPECT_EQ(thisAWHP.cyclingRatio, 1.0);
+    EXPECT_EQ(thisAWHP.numUnitUsed, 1);
     thisAWHP.loadSideHeatTransfer = 1500;
+    thisAWHP.cyclingRatio = 1.0;  // reset cycling ratio back to 1
     thisAWHP.calcPowerUsage(*state, availableCapacityBeforeMultiplier);
     EXPECT_EQ(thisAWHP.speedLevel, 0);
     EXPECT_EQ(thisAWHP.powerUsage, 1500);
+    EXPECT_EQ(thisAWHP.numUnitUsed, 2);
+    EXPECT_EQ(thisAWHP.cyclingRatio, 300.0/600.0);
     thisAWHP.loadSideHeatTransfer = 2000;
+    thisAWHP.cyclingRatio = 1.0;  // reset cycling ratio back to 1
     thisAWHP.calcPowerUsage(*state, availableCapacityBeforeMultiplier);
     EXPECT_EQ(thisAWHP.speedLevel, 1);
     EXPECT_EQ(thisAWHP.powerUsage, 2000);
+    EXPECT_EQ(thisAWHP.numUnitUsed, 2);
+    EXPECT_EQ(thisAWHP.cyclingRatio, 1.0);
 }
 
 TEST_F(EnergyPlusFixture, crankcaseHeater_AWHP)

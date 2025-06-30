@@ -441,8 +441,8 @@ TEST_F(EnergyPlusFixture, HeatingSimulate_AirSource_AWHP)
                                                       ", !- Availability Schedule Name Heating",
                                                       ", !- Availability Schedule Name Cooling",
                                                       "Load , !- Operating Mode Control Method",
-                                                      ", !- Operating Mode Control Schedule Name",
                                                       "SingleMode, !- Operating Mode Control Option for Multiple Unit",
+                                                      ", !- Operating Mode Control Schedule Name",
                                                       "20 , !-  Rated Inlet Air Temperature in Heating Mode",
                                                       "1.0, !-  Rated Air Flow Rate in Heating Mode",
                                                       "50 , !-  Rated Leaving Water Temperature in Heating Mode",
@@ -677,8 +677,8 @@ TEST_F(EnergyPlusFixture, processInputForEIRPLHP_AWHP)
         ", !- Availability Schedule Name Heating",
         ", !- Availability Schedule Name Cooling",
         "Load , !- Operating Mode Control Method",
-        ", !- Operating Mode Control Schedule Name",
         "SingleMode, !- Operating Mode Control Option for Multiple Unit",
+        ", !- Operating Mode Control Schedule Name",
         "20 , !-  Rated Inlet Air Temperature in Heating Mode",
         "0.1 , !-  Rated Air Flow Rate in Heating Mode",
         "50 , !-  Rated Leaving Water Temperature in Heating Mode",
@@ -902,8 +902,6 @@ TEST_F(EnergyPlusFixture, calcLoadSideHeatTransfer_AWHP)
     thisAWHP.loadSidePlantLoc.compNum = 1;
     PlantUtilities::SetPlantLocationLinks(*state, thisAWHP.loadSidePlantLoc);
     bool errFlag = false;
-    PlantUtilities::ScanPlantLoopsForObject(
-        *state, thisAWHP.name, thisAWHP.EIRHPType, thisAWHP.loadSidePlantLoc, errFlag, _, _, _, thisAWHP.loadSideNodes.inlet, _);
     thisAWHP.loadSideNodes.outlet = 2;
     thisAWHP.loadSideNodes.inlet = 1;
     thisAWHP.loadSideMassFlowRate = 2;
@@ -4125,8 +4123,8 @@ TEST_F(EnergyPlusFixture, Test_DoPhysics_AWHP)
                           ", !- Availability Schedule Name Heating",
                           ", !- Availability Schedule Name Cooling",
                           "Load , !- Operating Mode Control Method",
-                          ", !- Operating Mode Control Schedule Name",
                           "SingleMode, !- Operating Mode Control Option for Multiple Unit",
+                          ", !- Operating Mode Control Schedule Name",
                           "20 , !-  Rated Inlet Air Temperature in Heating Mode",
                           "0.002, !-  Rated Air Flow Rate in Heating Mode",
                           "50 , !-  Rated Leaving Water Temperature in Heating Mode",

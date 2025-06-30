@@ -571,9 +571,6 @@ void HeatPumpAirToWater::calcLoadSideHeatTransfer(EnergyPlusData &state, Real64 
     // calculate load side outlet conditions
     Real64 const loadMCp = this->loadSideMassFlowRate * CpLoad;
     this->loadSideOutletTemp = this->calcLoadOutletTemp(this->loadSideInletTemp, this->loadSideHeatTransfer / loadMCp);
-
-    // now what to do here if outlet water temp exceeds limit based on HW supply temp limit curves?
-    // currentLoad will be met and there should? be some adjustment based on outlet water temp limit?
 }
 
 void HeatPumpAirToWater::calcPowerUsage(EnergyPlusData &state, Real64 availableCapacityBeforeMultiplier)
@@ -3821,6 +3818,7 @@ void HeatPumpAirToWater::processInputForEIRPLHP(EnergyPlusData &state)
                     thisAWHP.MaxOATCrankcaseHeater = state.dataInputProcessing->inputProcessor->getRealFieldValue(
                         fields, schemaProps, "maximum_ambient_temperature_for_crankcase_heater_operation");
                 }
+                thisAWHP.minimumPLR = state.dataInputProcessing->inputProcessor->getRealFieldValue(fields, schemaProps, "minimum_part_load_ratio");
 
                 // read heating/cooling specific fields
                 thisAWHP.EIRHPType = classToInput.thisType;
@@ -4493,7 +4491,7 @@ void HeatPumpAirToWater::calcOpMode(EnergyPlus::EnergyPlusData &state, Real64 cu
 
 void HeatPumpAirToWater::doPhysics(EnergyPlusData &state, Real64 currentLoad)
 {
-    this->calcOpMode(state, currentLoad, OperatingModeControlOptionMultipleUnit::SingleMode);
+    this->calcOpMode(state, currentLoad, this->operatingModeControlOptionMultipleUnit);
     // add free cooling at some point, compressor is off during free cooling, temp limits restrict free cooling range
     if ((this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterCooling && currentLoad >= 0.0) ||
         (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterHeating && currentLoad <= 0.0)) {

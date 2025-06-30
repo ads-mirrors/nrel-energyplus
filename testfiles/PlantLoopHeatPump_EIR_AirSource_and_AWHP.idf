@@ -277,6 +277,7 @@
     autosize, !-  Rated Water Flow Rate in Heating Mode
     -20, !-  Minimum Outdoor Air Temperature in Heating Mode
     25, !-  Maximum Outdoor Air Temperature in Heating Mode
+    ,    !- Minimum Part Load Ratio
     1.0, !-  Sizing Factor for Heating
     25, !-  Rated Inlet Air Temperature in Cooling Mode
     20 , !-  Rated Air Flow Rate in Cooling Mode

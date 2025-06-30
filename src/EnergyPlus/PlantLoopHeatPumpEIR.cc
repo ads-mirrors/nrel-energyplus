@@ -542,6 +542,7 @@ void EIRPlantLoopHeatPump::setPartLoadAndCyclingRatio([[maybe_unused]] EnergyPlu
     // update class member variables
     this->partLoadRatio = partLoadRatio;
     this->cyclingRatio = cyclingRatio;
+    //    note that cycling ratio for the HeatPump:AirToWater is updated in the power calcPower function as it computes the speed level
 }
 
 void EIRPlantLoopHeatPump::calcLoadSideHeatTransfer(EnergyPlusData &state, Real64 const availableCapacity)
@@ -626,6 +627,7 @@ void HeatPumpAirToWater::calcPowerUsage(EnergyPlusData &state, Real64 availableC
     this->powerUsage += (numHeatPumpUsed - 1) * (availableCapacityBeforeMultiplier / this->ratedCOP[this->numSpeeds - 1]) *
                         (eirModifierFuncPLRHigh * eirModifierFuncTempHigh) * this->defrostPowerMultiplier * this->cyclingRatio;
     this->speedLevel = speedLevel;
+    this->numUnitUsed = numHeatPumpUsed;
     if (this->speedLevel == 0) {
         this->cyclingRatio = interpRatio;
     }

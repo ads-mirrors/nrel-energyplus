@@ -462,6 +462,7 @@ namespace EIRPlantLoopHeatPumps {
         std::string operationModeControlScheName;
         Sched::Schedule *operationModeControlSche = nullptr; // availability schedule
         int compressorMultiplier = 1;
+        int numUnitUsed = 1;
         Real64 minOutdoorAirTempLimit = 0.0;
         Real64 maxOutdoorAirTempLimit = 0.0;
         Real64 CrankcaseHeaterCapacity = 0.0;  // total crankcase heater capacity [W]

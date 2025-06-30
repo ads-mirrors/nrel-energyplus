@@ -539,8 +539,8 @@ TEST_F(EnergyPlusFixture, HeatingSimulate_AirSource_AWHP)
 
     // set up the plant loops
     // first the load side
-    state->dataPlnt->TotNumLoops = 1;
-    state->dataPlnt->PlantLoop.allocate(1);
+    state->dataPlnt->TotNumLoops = 2;
+    state->dataPlnt->PlantLoop.allocate(state->dataPlnt->TotNumLoops);
 
     state->dataPlnt->PlantLoop(1).FluidName = "WATER";
     state->dataPlnt->PlantLoop(1).glycol = Fluid::GetWater(*state);
@@ -549,10 +549,20 @@ TEST_F(EnergyPlusFixture, HeatingSimulate_AirSource_AWHP)
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Supply).Branch.allocate(1);
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Supply).Branch(1).TotalComponents = 1;
     state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Supply).Branch(1).Comp.allocate(1);
-    auto &PLHPPlantLoadSideComp = state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Supply).Branch(1).Comp(1);
-    PLHPPlantLoadSideComp.Type = DataPlant::PlantEquipmentType::HeatPumpAirToWaterHeating;
-    PLHPPlantLoadSideComp.CurOpSchemeType = DataPlant::OpScheme::CompSetPtBased;
+    auto &PLHPPlantLoadSideCompHeating = state->dataPlnt->PlantLoop(1).LoopSide(DataPlant::LoopSideLocation::Supply).Branch(1).Comp(1);
+    PLHPPlantLoadSideCompHeating.Type = DataPlant::PlantEquipmentType::HeatPumpAirToWaterHeating;
+    PLHPPlantLoadSideCompHeating.CurOpSchemeType = DataPlant::OpScheme::CompSetPtBased;
 
+    state->dataPlnt->PlantLoop(2).FluidName = "WATER";
+    state->dataPlnt->PlantLoop(2).glycol = Fluid::GetWater(*state);
+    state->dataPlnt->PlantLoop(2).LoopDemandCalcScheme = DataPlant::LoopDemandCalcScheme::SingleSetPoint;
+    state->dataPlnt->PlantLoop(2).LoopSide(DataPlant::LoopSideLocation::Supply).TotalBranches = 1;
+    state->dataPlnt->PlantLoop(2).LoopSide(DataPlant::LoopSideLocation::Supply).Branch.allocate(1);
+    state->dataPlnt->PlantLoop(2).LoopSide(DataPlant::LoopSideLocation::Supply).Branch(1).TotalComponents = 1;
+    state->dataPlnt->PlantLoop(2).LoopSide(DataPlant::LoopSideLocation::Supply).Branch(1).Comp.allocate(1);
+    auto &PLHPPlantLoadSideCompCooling = state->dataPlnt->PlantLoop(2).LoopSide(DataPlant::LoopSideLocation::Supply).Branch(1).Comp(1);
+    PLHPPlantLoadSideCompCooling.Type = DataPlant::PlantEquipmentType::HeatPumpAirToWaterCooling;
+    PLHPPlantLoadSideCompCooling.CurOpSchemeType = DataPlant::OpScheme::CompSetPtBased;
     // the init call expects a "from" calling point
     PlantLocation myLoadLocation = PlantLocation(1, DataPlant::LoopSideLocation::Supply, 1, 1);
 
@@ -564,15 +574,26 @@ TEST_F(EnergyPlusFixture, HeatingSimulate_AirSource_AWHP)
 
     // for now we know the order is maintained, so get each heat pump object
     HeatPumpAirToWater *thisAWHPHeating = &state->dataHeatPumpAirToWater->heatPumps[1];
+    HeatPumpAirToWater *thisAWHPCooling = &state->dataHeatPumpAirToWater->heatPumps[0];
 
     // do a bit of extra wiring up to the plant
-    PLHPPlantLoadSideComp.Name = thisAWHPHeating->name;
-    PLHPPlantLoadSideComp.NodeNumIn = thisAWHPHeating->loadSideNodes.inlet;
+    PLHPPlantLoadSideCompHeating.Name = thisAWHPHeating->name;
+    PLHPPlantLoadSideCompHeating.NodeNumIn = thisAWHPHeating->loadSideNodes.inlet;
+    PLHPPlantLoadSideCompCooling.Name = thisAWHPCooling->name;
+    PLHPPlantLoadSideCompCooling.NodeNumIn = thisAWHPCooling->loadSideNodes.inlet;
 
     // call for all initialization
     state->dataGlobal->BeginEnvrnFlag = true;
     state->dataPlnt->PlantFirstSizesOkayToFinalize = true;
     thisAWHPHeating->onInitLoopEquip(*state, myLoadLocation);
+    thisAWHPHeating->loadSidePlantLoc.loopNum = 1;
+    thisAWHPHeating->loadSidePlantLoc.loopSideNum = EnergyPlus::DataPlant::LoopSideLocation::Supply;
+    thisAWHPHeating->loadSidePlantLoc.branchNum = 1;
+    thisAWHPHeating->loadSidePlantLoc.compNum = 1;
+    thisAWHPCooling->loadSidePlantLoc.loopNum = 2;
+    thisAWHPCooling->loadSidePlantLoc.loopSideNum = EnergyPlus::DataPlant::LoopSideLocation::Supply;
+    thisAWHPCooling->loadSidePlantLoc.branchNum = 1;
+    thisAWHPCooling->loadSidePlantLoc.compNum = 1;
 
     // call it from the load side, but this time there is a negative (cooling) load - shouldn't try to run
     {

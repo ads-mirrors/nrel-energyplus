@@ -594,7 +594,7 @@ void HeatPumpAirToWater::calcPowerUsage(EnergyPlusData &state, Real64 availableC
             Curve::CurveValue(state, this->capFuncTempCurveIndex[i], loadSideOutletSetpointTemp, this->sourceSideInletTemp);
         capacityHigh = this->ratedCapacity[i] * capacityModifierFuncTemp;
         speedLevel = i;
-        if (std::fabs(currentLoadNthUnit) < capacityHigh) {
+        if (std::fabs(currentLoadNthUnit) <= capacityHigh) {
             break;
         } else {
             capacityLow = capacityHigh;

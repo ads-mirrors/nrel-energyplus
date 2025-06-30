@@ -567,6 +567,10 @@ void HeatPumpAirToWater::calcLoadSideHeatTransfer(EnergyPlusData &state, Real64 
         state, state.dataLoopNodes->Node(this->loadSideNodes.inlet).Temp, "HeatPumpAirToWater::calcLoadSideHeatTransfer()");
 
     this->loadSideHeatTransfer = min(availableCapacity, std::fabs(currentLoad));
+    auto minLoad = this->minimumPLR * availableCapacity;
+    if (currentLoad < minLoad) {
+        this->loadSideHeatTransfer = minLoad;
+    }
 
     // calculate load side outlet conditions
     Real64 const loadMCp = this->loadSideMassFlowRate * CpLoad;
@@ -622,6 +626,9 @@ void HeatPumpAirToWater::calcPowerUsage(EnergyPlusData &state, Real64 availableC
     this->powerUsage += (numHeatPumpUsed - 1) * (availableCapacityBeforeMultiplier / this->ratedCOP[this->numSpeeds - 1]) *
                         (eirModifierFuncPLRHigh * eirModifierFuncTempHigh) * this->defrostPowerMultiplier * this->cyclingRatio;
     this->speedLevel = speedLevel;
+    if (this->speedLevel == 0) {
+        this->cyclingRatio = interpRatio;
+    }
 }
 
 void EIRPlantLoopHeatPump::calcPowerUsage(EnergyPlusData &state)
@@ -4508,7 +4515,13 @@ void HeatPumpAirToWater::doPhysics(EnergyPlusData &state, Real64 currentLoad)
     // fixme: might need to change
     this->setPartLoadAndCyclingRatio(state, partLoadRatio);
 
-    // do defrost calculation if applicable
+    // evaluate the actual current operating load side heat transfer rate
+    this->calcLoadSideHeatTransfer(state, availableCapacity, currentLoad);
+
+    //  calculate power usage from EIR curves for the last heat pump
+    this->calcPowerUsage(state, availableCapacityBeforeMultiplier);
+
+    // do defrost calculation if applicable, move it to after calcPowerUsage as cyclingRatio might be updated there
     this->doDefrost(state, availableCapacity);
     // turn off defrost if customize defrost code indicates so
     if (this->DefrosstFlagEMSOverrideOn && (!this->DefrosstFlagEMSOverrideValue)) {
@@ -4516,12 +4529,6 @@ void HeatPumpAirToWater::doPhysics(EnergyPlusData &state, Real64 currentLoad)
         this->defrostEnergyRate = 0.0;
         this->fractionalDefrostTime = 0.0;
     }
-
-    // evaluate the actual current operating load side heat transfer rate
-    this->calcLoadSideHeatTransfer(state, availableCapacity, currentLoad);
-
-    //  calculate power usage from EIR curves for the last heat pump
-    this->calcPowerUsage(state, availableCapacityBeforeMultiplier);
 
     this->calcSourceSideHeatTransferASHP(state);
     this->CrankcaseHeaterPower = 0.0;

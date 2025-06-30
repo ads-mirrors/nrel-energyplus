@@ -567,9 +567,10 @@ void HeatPumpAirToWater::calcLoadSideHeatTransfer(EnergyPlusData &state, Real64 
     Real64 CpLoad = this->loadSidePlantLoc.loop->glycol->getSpecificHeat(
         state, state.dataLoopNodes->Node(this->loadSideNodes.inlet).Temp, "HeatPumpAirToWater::calcLoadSideHeatTransfer()");
 
+    // note loadSideHeatTransfer is non-negative, currentLoad is negative for cooling
     this->loadSideHeatTransfer = min(availableCapacity, std::fabs(currentLoad));
     auto minLoad = this->minimumPLR * availableCapacity;
-    if (currentLoad < minLoad) {
+    if (fabs(currentLoad) < minLoad) {
         this->loadSideHeatTransfer = minLoad;
     }
 

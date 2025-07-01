@@ -945,14 +945,7 @@ namespace VariableSpeedCoils {
                     varSpeedCoil.MSRatedEvaporatorFanPowerPerVolumeFlowRate2017(I) = s_ip->getRealFieldValue(fields, schemaProps, fieldName);
                     fieldName = format("2023_speed_{}{}", std::to_string(I), "_rated_evaporator_fan_power_per_volume_flow_rate");
                     varSpeedCoil.MSRatedEvaporatorFanPowerPerVolumeFlowRate2023(I) = s_ip->getRealFieldValue(fields, schemaProps, fieldName);
-                    if (I < 6) {
-                        fieldName = format("speed_{}{}", std::to_string(I), "_reference_unit_rated_condenser_air_flow_rate");
-                    } else {
-                        fieldName = format("speed_{}{}", std::to_string(I), "_reference_unit_condenser_air_flow_rate");
-                        if (I == 7) {
-                            fieldName = format("speed_{}{}", std::to_string(I), "_reference_unit_condenser_flow_rate");
-                        }
-                    }
+                    fieldName = format("speed_{}{}", std::to_string(I), "_reference_unit_rated_condenser_air_flow_rate");
                     varSpeedCoil.EvapCondAirFlow(I) = s_ip->getRealFieldValue(fields, schemaProps, fieldName);
 
                     fieldName = format("speed_{}{}", std::to_string(I), "_reference_unit_rated_pad_effectiveness_of_evap_precooling");
@@ -967,7 +960,7 @@ namespace VariableSpeedCoils {
                     }
 
                     std::string fieldValue = format("speed_{}{}", std::to_string(I), "_total_cooling_capacity_function_of_temperature_curve_name");
-                    std::string cFieldName = format("Speed_{}{}", std::to_string(I), " Reference Unit Gross Rated Total Cooling Capacity");
+                    std::string cFieldName = format("Speed_{}{}", std::to_string(I), " Total Cooling Capacity Function of Temperature Curve Name");
                     std::string const cCapFTCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
                     if (cCapFTCurveName.empty()) {
                         ShowWarningEmptyField(state, eoh, cFieldName, "Required field is blank.");
@@ -1274,11 +1267,7 @@ namespace VariableSpeedCoils {
                     varSpeedCoil.MSRatedTotCap(I) = s_ip->getRealFieldValue(fields, schemaProps, fieldName);
                     fieldName = format("speed_{}{}", std::to_string(I), "_reference_unit_gross_rated_heating_cop");
                     varSpeedCoil.MSRatedCOP(I) = s_ip->getRealFieldValue(fields, schemaProps, fieldName);
-                    if (I == 1) {
-                        fieldName = format("speed_{}{}", std::to_string(I), "_reference_unit_rated_air_flow");
-                    } else {
-                        fieldName = format("speed_{}{}", std::to_string(I), "_reference_unit_rated_air_flow_rate");
-                    }
+                    fieldName = format("speed_{}{}", std::to_string(I), "_reference_unit_rated_air_flow_rate");
                     varSpeedCoil.MSRatedAirVolFlowRate(I) = s_ip->getRealFieldValue(fields, schemaProps, fieldName);
                     fieldName = format("speed_{}{}", std::to_string(I), "_reference_unit_rated_water_flow_rate");
                     varSpeedCoil.MSRatedWaterVolFlowRate(I) = s_ip->getRealFieldValue(fields, schemaProps, fieldName);
@@ -1315,7 +1304,7 @@ namespace VariableSpeedCoils {
                     }
 
                     fieldValue = format("speed_{}{}", std::to_string(I), "_total_heating_capacity_function_of_air_flow_fraction_curve_name");
-                    cFieldName = format("Speed_{}{}", std::to_string(I), " Heating Capacity Function of Temperature Curve Name");
+                    cFieldName = format("Speed_{}{}", std::to_string(I), " Total Heating Capacity Function of Air Flow Fraction Curve Name");
                     std::string const heatCapFFFCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
                     if (heatCapFFFCurveName.empty()) {
                         ShowWarningEmptyField(state, eoh, cFieldName, "Required field is blank.");
@@ -1806,13 +1795,8 @@ namespace VariableSpeedCoils {
                     }
 
                     // Speed 1 Total  Heating Capacity Function of Air Flow Fraction Curve Name
-                    if (I < 4) {
-                        fieldValue = format("speed_{}{}", std::to_string(I), "_total_heating_capacity_function_of_air_flow_fraction_curve_name");
-                        cFieldName = format("Speed_{}{}", std::to_string(I), " Total  Heating Capacity Function of Air Flow Fraction Curve Name");
-                    } else {
-                        fieldValue = format("speed_{}{}", std::to_string(I), "_heating_capacity_function_of_air_flow_fraction_curve_name");
-                        cFieldName = format("Speed_{}{}", std::to_string(I), " Heating Capacity Function of Air Flow Fraction Curve Name");
-                    }
+                    fieldValue = format("speed_{}{}", std::to_string(I), "_total_heating_capacity_function_of_air_flow_fraction_curve_name");
+                    cFieldName = format("Speed_{}{}", std::to_string(I), " Total  Heating Capacity Function of Air Flow Fraction Curve Name");
                     std::string const hCapFFFCurveName = s_ip->getAlphaFieldValue(fields, schemaProps, fieldValue);
                     if (hCapFFFCurveName.empty()) {
                         ShowWarningEmptyField(state, eoh, cFieldName, "Required field is blank.");

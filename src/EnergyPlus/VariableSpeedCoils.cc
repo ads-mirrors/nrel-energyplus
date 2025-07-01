@@ -2195,11 +2195,11 @@ namespace VariableSpeedCoils {
 
                 std::string jfieldName;
                 for (int I = 1; I <= varSpeedCoil.NumOfSpeeds; ++I) {
-                    jfieldName = format("{}{}", "rated_water_heating_capacity_at_speed_", std::to_string(I));
+                    jfieldName = format("speed_{}{}", std::to_string(I), "_rated_water_heating_capacity");
                     varSpeedCoil.MSRatedTotCap(I) = s_ip->getRealFieldValue(fields, schemaProps, jfieldName);
-                    jfieldName = format("{}{}", "rated_water_heating_cop_at_speed_", std::to_string(I));
+                    jfieldName = format("speed_{}{}", std::to_string(I), "_rated_water_heating_cop");
                     varSpeedCoil.MSRatedCOP(I) = s_ip->getRealFieldValue(fields, schemaProps, jfieldName);
-                    jfieldName = format("{}{}", "rated_sensible_heat_ratio_at_speed_", std::to_string(I));
+                    jfieldName = format("speed_{}{}", std::to_string(I), "_rated_sensible_heat_ratio");
                     varSpeedCoil.MSRatedSHR(I) = s_ip->getRealFieldValue(fields, schemaProps, jfieldName);
                     jfieldName = format("speed_{}{}", std::to_string(I), "_reference_unit_rated_air_flow_rate");
                     varSpeedCoil.MSRatedAirVolFlowRate(I) = s_ip->getRealFieldValue(fields, schemaProps, jfieldName);

@@ -447,16 +447,16 @@ TEST_F(EnergyPlusFixture, HeatingSimulate_AirSource_AWHP)
                                                       "1.0, !-  Rated Air Flow Rate in Heating Mode",
                                                       "50 , !-  Rated Leaving Water Temperature in Heating Mode",
                                                       "0.0001, !-  Rated Water Flow Rate in Heating Mode",
-                                                      "-20, !-  Minimum Outdoor Air Temperature in Heating Mode",
-                                                      "25, !-  Maximum Outdoor Air Temperature in Heating Mode",
+                                                      ", !-  Minimum Outdoor Air Temperature in Heating Mode",
+                                                      ", !-  Maximum Outdoor Air Temperature in Heating Mode",
                                                       ",    !- Minimum Part Load Ratio",
                                                       "1.0, !-  Sizing Factor for Heating",
                                                       "25, !-  Rated Inlet Air Temperature in Cooling Mode",
                                                       "0.002, !-  Rated Air Flow Rate in Cooling Mode",
                                                       "22 , !-  Rated Leaving Water Temperature in Cooling Mode",
                                                       "0.005, !-  Rated Water Flow Rate in Cooling Mode",
-                                                      "18 , !-  Minimum Outdoor Air Temperature in Cooling Mode",
-                                                      "40, !-  Maximum Outdoor Air Temperature in Cooling Mode",
+                                                      ", !-  Minimum Outdoor Air Temperature in Cooling Mode",
+                                                      ", !-  Maximum Outdoor Air Temperature in Cooling Mode",
                                                       "0.9, !-  Sizing Factor for Cooling",
                                                       "Outdoor Air Inlet Node , !-  Air Inlet Node Name",
                                                       "Outdoor Air Outlet Node, !-  Air Outlet Node Name",
@@ -822,7 +822,7 @@ TEST_F(EnergyPlusFixture, processInputForEIRPLHP_AWHP)
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].sourceSideDesignVolFlowRate, 0.1);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].ratedLeavingWaterTemperature, 22);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].loadSideDesignVolFlowRate, 0.05);
-    EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].minOutdoorAirTempLimit, 18);
+    EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].minSourceTempLimit, 18);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].maxSourceTempLimit , 40);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].sizingFactor, 0.9);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].loadSideNodes.inlet, 1);
@@ -857,7 +857,7 @@ TEST_F(EnergyPlusFixture, processInputForEIRPLHP_AWHP)
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].sourceSideDesignVolFlowRate, 0.1);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].ratedLeavingWaterTemperature, 50);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].loadSideDesignVolFlowRate, 0.02);
-    EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].minOutdoorAirTempLimit, -20);
+    EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].minSourceTempLimit, -20);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].maxSourceTempLimit , 25);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].sizingFactor, 1.0);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].loadSideNodes.inlet, 5);
@@ -4289,8 +4289,8 @@ TEST_F(EnergyPlusFixture, Test_DoPhysics_AWHP)
 
     // set up the plant loops
     // first the load side
-    state->dataPlnt->TotNumLoops = 4;
-    state->dataPlnt->PlantLoop.allocate(4);
+    state->dataPlnt->TotNumLoops = 5;
+    state->dataPlnt->PlantLoop.allocate(5);
 
     state->dataPlnt->PlantLoop(1).FluidName = "WATER";
     state->dataPlnt->PlantLoop(1).glycol = Fluid::GetWater(*state);
@@ -4334,6 +4334,16 @@ TEST_F(EnergyPlusFixture, Test_DoPhysics_AWHP)
     auto &PLHPPlantLoadSourceComp = state->dataPlnt->PlantLoop(2).LoopSide(DataPlant::LoopSideLocation::Demand).Branch(1).Comp(1);
     PLHPPlantLoadSourceComp.Type = DataPlant::PlantEquipmentType::HeatPumpEIRCooling;
 
+    state->dataPlnt->PlantLoop(5).FluidName = "WATER";
+    state->dataPlnt->PlantLoop(5).glycol = Fluid::GetWater(*state);
+    state->dataPlnt->PlantLoop(5).LoopSide(DataPlant::LoopSideLocation::Supply).TotalBranches = 1;
+    state->dataPlnt->PlantLoop(5).LoopSide(DataPlant::LoopSideLocation::Supply).Branch.allocate(1);
+    state->dataPlnt->PlantLoop(5).LoopSide(DataPlant::LoopSideLocation::Supply).Branch(1).TotalComponents = 1;
+    state->dataPlnt->PlantLoop(5).LoopSide(DataPlant::LoopSideLocation::Supply).Branch(1).Comp.allocate(1);
+    auto &AWHPHeatPlantLoadSideLoop = state->dataPlnt->PlantLoop(5);
+    auto &AWHPHeatPlantLoadSideComp = state->dataPlnt->PlantLoop(5).LoopSide(DataPlant::LoopSideLocation::Supply).Branch(1).Comp(1);
+    AWHPHeatPlantLoadSideComp.Type = DataPlant::PlantEquipmentType::HeatPumpAirToWaterHeating;
+
     // call the factory with a valid name to trigger reading inputs
     EIRPlantLoopHeatPump::factory(*state, DataPlant::PlantEquipmentType::HeatPumpEIRCooling, "hp cooling side");
 
@@ -4344,12 +4354,20 @@ TEST_F(EnergyPlusFixture, Test_DoPhysics_AWHP)
     // for now we know the order is maintained, so get each heat pump object
     HeatPumpAirToWater *thisCoolingAWHP = &state->dataHeatPumpAirToWater->heatPumps[0];
     EIRPlantLoopHeatPump *thisCoolingPLHP = &state->dataEIRPlantLoopHeatPump->heatPumps[0];
+    HeatPumpAirToWater *thisHeatingAWHP = &state->dataHeatPumpAirToWater->heatPumps[1];
+    EIRPlantLoopHeatPump *thisHeatingPLHP = &state->dataEIRPlantLoopHeatPump->heatPumps[1];
+    thisCoolingAWHP->companionHeatPumpCoil = thisHeatingAWHP;
+    thisHeatingAWHP->companionHeatPumpCoil = thisCoolingAWHP;
 
     // do a little setup here
     thisCoolingAWHP->loadSidePlantLoc.loopNum = 1;
     thisCoolingAWHP->loadSidePlantLoc.loopSideNum = DataPlant::LoopSideLocation::Supply;
     thisCoolingAWHP->loadSidePlantLoc.branchNum = 1;
     thisCoolingAWHP->loadSidePlantLoc.compNum = 1;
+    thisHeatingAWHP->loadSidePlantLoc.loopNum = 5;
+    thisHeatingAWHP->loadSidePlantLoc.loopSideNum = DataPlant::LoopSideLocation::Supply;
+    thisHeatingAWHP->loadSidePlantLoc.branchNum = 1;
+    thisHeatingAWHP->loadSidePlantLoc.compNum = 1;
     PlantUtilities::SetPlantLocationLinks(*state, thisCoolingAWHP->loadSidePlantLoc);
     thisCoolingAWHP->loadSideNodes.outlet = 1;
     thisCoolingAWHP->sourceSidePlantLoc.loopNum = 2;

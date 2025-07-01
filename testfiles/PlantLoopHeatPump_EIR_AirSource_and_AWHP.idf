@@ -128,7 +128,7 @@
     UNTIL: 24:00,36000,      !- Field 11
     THROUGH: 09/30,          !- Field 13
     FOR: AllDays,            !- Field 14
-    UNTIL: 24:00,30000.0,        !- Field 15
+    UNTIL: 24:00,0.0,        !- Field 15
     THROUGH: 12/31,          !- Field 17
     FOR: AllDays,            !- Field 18
     UNTIL:  4:00,62000,      !- Field 19
@@ -145,7 +145,7 @@
     UNTIL: 24:00,1.0,        !- Field 3
     THROUGH: 09/30,          !- Field 5
     FOR: AllDays,            !- Field 6
-    UNTIL: 24:00,1.0,        !- Field 7
+    UNTIL: 24:00,0.0,        !- Field 7
     THROUGH: 12/31,          !- Field 9
     FOR: AllDays,            !- Field 10
     UNTIL: 24:00,1.0;        !- Field 11
@@ -157,7 +157,7 @@
     Any Number,              !- Schedule Type Limits Name
     THROUGH: 03/31,          !- Field 1
     FOR: AllDays,            !- Field 2
-    UNTIL: 24:00,-30000.0,        !- Field 3
+    UNTIL: 24:00,0.0,        !- Field 3
     THROUGH: 09/30,          !- Field 5
     FOR: AllDays,            !- Field 6
     UNTIL:  9:00,-200000,    !- Field 7
@@ -172,13 +172,13 @@
     Any Number,              !- Schedule Type Limits Name
     THROUGH: 03/31,          !- Field 1
     FOR: AllDays,            !- Field 2
-    UNTIL: 24:00,1.0,        !- Field 3
+    UNTIL: 24:00,0.0,        !- Field 3
     THROUGH: 09/30,          !- Field 5
     FOR: AllDays,            !- Field 6
     UNTIL: 24:00,1.0,        !- Field 7
     THROUGH: 12/31,          !- Field 9
     FOR: AllDays,            !- Field 10
-    UNTIL: 24:00,1.0;        !- Field 11
+    UNTIL: 24:00,0.0;        !- Field 11
 
 ! *** Heating Coil Loop
 

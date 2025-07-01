@@ -4508,6 +4508,13 @@ void HeatPumpAirToWater::doPhysics(EnergyPlusData &state, Real64 currentLoad)
         return;
     }
 
+    if (this->operatingMode == 0) {
+        this->loadSideMassFlowRate = 0.0;
+        this->sourceSideMassFlowRate = 0.0;
+        this->running = false;
+        this->resetReportingVariables();
+        return;
+    }
     Real64 partLoadRatio = 0.0;
     int speedLevel = 0;
 

@@ -2588,9 +2588,23 @@ void HeatPumpAirToWater::oneTimeInit(EnergyPlusData &state)
                             OutputProcessor::StoreType::Average,
                             this->name);
         SetupOutputVariable(state,
-                            format("Heat Pump Operating Mode is {}", mode_keyword),
+                            format("Heat Pump Number Of {} Unit On", mode_keyword),
                             Constant::Units::None,
                             this->operatingMode,
+                            OutputProcessor::TimeStepType::System,
+                            OutputProcessor::StoreType::Average,
+                            this->name);
+        SetupOutputVariable(state,
+                            format("Entering Water Temperature in {} Mode", mode_keyword),
+                            Constant::Units::C,
+                            this->loadSideInletTemp,
+                            OutputProcessor::TimeStepType::System,
+                            OutputProcessor::StoreType::Average,
+                            this->name);
+        SetupOutputVariable(state,
+                            format("Leaving Water Temperature in {} Mode", mode_keyword),
+                            Constant::Units::C,
+                            this->loadSideOutletTemp,
                             OutputProcessor::TimeStepType::System,
                             OutputProcessor::StoreType::Average,
                             this->name);
@@ -2614,21 +2628,6 @@ void HeatPumpAirToWater::oneTimeInit(EnergyPlusData &state)
                             Constant::eResource::Electricity,
                             OutputProcessor::Group::HVAC,
                             OutputProcessor::EndUseCat::Cooling);
-        // defrost related
-        SetupOutputVariable(state,
-                            "Entering Water Temperature in Heating Mode",
-                            Constant::Units::C,
-                            this->loadSideInletTemp,
-                            OutputProcessor::TimeStepType::System,
-                            OutputProcessor::StoreType::Average,
-                            this->name);
-        SetupOutputVariable(state,
-                            "Leaving Water Temperature in Heating Mode",
-                            Constant::Units::C,
-                            this->loadSideOutletTemp,
-                            OutputProcessor::TimeStepType::System,
-                            OutputProcessor::StoreType::Average,
-                            this->name);
     }
     this->oneTimeInitFlagAWHP = false;
 }
@@ -4515,7 +4514,6 @@ void HeatPumpAirToWater::doPhysics(EnergyPlusData &state, Real64 currentLoad)
     Real64 availableCapacity;
     this->calcAvailableCapacity(state, currentLoad, this->capFuncTempCurveIndex[this->numSpeeds - 1], availableCapacity, partLoadRatio);
     Real64 availableCapacityBeforeMultiplier = availableCapacity / this->compressorMultiplier;
-    // fixme: might need to change
     this->setPartLoadAndCyclingRatio(state, partLoadRatio);
 
     // evaluate the actual current operating load side heat transfer rate

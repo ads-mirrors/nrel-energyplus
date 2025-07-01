@@ -634,7 +634,6 @@
 !-   Output:Variable,*,Heat Pump Electricity Energy in Heating Mode,Hourly;
 !-   Output:Variable,*,Heat Pump Load Side Mass Flow Rate in Heating Mode,Hourly;
 !-   Output:Variable,*,Heat Pump Source Side Mass Flow Rate in Heating Mode,Hourly;
-  Output:Variable,*,Heat Pump Operating Mode is Heating,detailed; !- HVAC Average []
 
 !-   Output:Variable,*,Plant Load Profile Mass Flow Rate in Cooling Mode,Hourly;
    Output:Variable,*,Plant Load Profile Heat Transfer Rate in Cooling Mode,detailed;
@@ -650,7 +649,8 @@
 !-   Output:Variable,*,Heat Pump Electricity Energy in Cooling Mode,Hourly;
 !-   Output:Variable,*,Heat Pump Load Side Mass Flow Rate in Cooling Mode,Hourly;
 !-   Output:Variable,*,Heat Pump Source Side Mass Flow Rate in Cooling Mode,Hourly;
-  Output:Variable,*,Heat Pump Operating Mode is Cooling,detailed; !- HVAC Average []
+  Output:Variable,*,Heat Pump Number Of Heating Unit On,detailed; !- HVAC Average []
+  Output:Variable,*,Heat Pump Number Of Cooling Unit On,detailed; !- HVAC Average []
 
 !-   Output:Variable,*,Heat Pump Crankcase Heater Electricity Rate,hourly; !- HVAC Average [W]
 !-   Output:Variable,*,Heat Pump Crankcase Heater Electricity Energy,hourly; !- HVAC Sum [W]
@@ -664,6 +664,8 @@
   Output:Variable,*,Operating Model Output Cooling,detailed;
   Output:Variable,*,Entering Water Temperature in Heating Mode,detailed;
   Output:Variable,*,Leaving Water Temperature in Heating Mode,detailed;
+  Output:Variable,*,Entering Water Temperature in Cooling Mode,detailed;
+  Output:Variable,*,Leaving Water Temperature in Cooling Mode,detailed;
   !- Output:Variable,*,EMS Defrost Flag,detailed;
   !- Output:Variable,*,Heat Pump Load Due To Defrost,detailed; !- HVAC Average [W]
   !- Output:Variable,*,Heat Pump Fractioal Defrost Time,detailed; !- HVAC Average [W]

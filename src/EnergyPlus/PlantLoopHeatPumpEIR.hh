@@ -499,6 +499,7 @@ namespace EIRPlantLoopHeatPumps {
         Real64 coolingCOP = 0.0;
         Real64 heatingRate = 0.0;
         Real64 coolingRate = 0.0;
+        // this can be 0, 1, ..., number of HP unit (specified in Compressor Multiplier)
         int operatingMode = 0;
         Real64 sourceSideDesignInletTemp = 0.0;     // Rated Inlet Air Temperature in xx Mode
         Real64 ratedLeavingWaterTemperature = 0.0;  // rated_leaving_water_temperature_in_xx_mode

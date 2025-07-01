@@ -3868,9 +3868,9 @@ void HeatPumpAirToWater::processInputForEIRPLHP(EnergyPlusData &state)
                     fields, schemaProps, format("rated_leaving_water_temperature_in_{}_mode", modeKeyWord));
                 thisAWHP.loadSideDesignVolFlowRate = state.dataInputProcessing->inputProcessor->getRealFieldValue(
                     fields, schemaProps, format("rated_water_flow_rate_in_{}_mode", modeKeyWord));
-                thisAWHP.minOutdoorAirTempLimit = state.dataInputProcessing->inputProcessor->getRealFieldValue(
+                thisAWHP.minSourceTempLimit = state.dataInputProcessing->inputProcessor->getRealFieldValue(
                     fields, schemaProps, format("minimum_outdoor_air_temperature_in_{}_mode", modeKeyWord));
-                thisAWHP.maxOutdoorAirTempLimit = state.dataInputProcessing->inputProcessor->getRealFieldValue(
+                thisAWHP.maxSourceTempLimit  = state.dataInputProcessing->inputProcessor->getRealFieldValue(
                     fields, schemaProps, format("maximum_outdoor_air_temperature_in_{}_mode", modeKeyWord));
                 thisAWHP.sizingFactor =
                     state.dataInputProcessing->inputProcessor->getRealFieldValue(fields, schemaProps, format("sizing_factor_for_{}", modeKeyWord));

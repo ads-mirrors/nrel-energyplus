@@ -823,7 +823,7 @@ TEST_F(EnergyPlusFixture, processInputForEIRPLHP_AWHP)
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].ratedLeavingWaterTemperature, 22);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].loadSideDesignVolFlowRate, 0.05);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].minOutdoorAirTempLimit, 18);
-    EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].maxOutdoorAirTempLimit, 40);
+    EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].maxSourceTempLimit , 40);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].sizingFactor, 0.9);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].loadSideNodes.inlet, 1);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].loadSideNodes.outlet, 2);
@@ -858,7 +858,7 @@ TEST_F(EnergyPlusFixture, processInputForEIRPLHP_AWHP)
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].ratedLeavingWaterTemperature, 50);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].loadSideDesignVolFlowRate, 0.02);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].minOutdoorAirTempLimit, -20);
-    EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].maxOutdoorAirTempLimit, 25);
+    EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].maxSourceTempLimit , 25);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].sizingFactor, 1.0);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].loadSideNodes.inlet, 5);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].loadSideNodes.outlet, 6);

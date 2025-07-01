@@ -2583,7 +2583,7 @@ void HeatPumpAirToWater::oneTimeInit(EnergyPlusData &state)
         SetupOutputVariable(state,
                             format("Heat Pump Total {} Rate", mode_keyword),
                             Constant::Units::None,
-                            this->heatingRate,
+                            this->loadSideHeatTransfer,
                             OutputProcessor::TimeStepType::System,
                             OutputProcessor::StoreType::Average,
                             this->name);

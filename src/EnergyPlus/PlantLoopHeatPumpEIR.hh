@@ -497,8 +497,6 @@ namespace EIRPlantLoopHeatPumps {
         Real64 CrankcaseHeaterPower = 0.0;
         Real64 heatingCOP = 0.0;
         Real64 coolingCOP = 0.0;
-        Real64 heatingRate = 0.0;
-        Real64 coolingRate = 0.0;
         // this can be 0, 1, ..., number of HP unit (specified in Compressor Multiplier)
         int operatingMode = 0;
         Real64 sourceSideDesignInletTemp = 0.0;     // Rated Inlet Air Temperature in xx Mode

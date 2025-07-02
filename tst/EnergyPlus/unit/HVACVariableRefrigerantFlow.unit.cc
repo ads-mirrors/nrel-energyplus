@@ -2660,17 +2660,17 @@ TEST_F(EnergyPlusFixture, VRF_FluidTCtrl_VRFOU_Compressor)
                                                                 Ncomp,
                                                                 CyclingRatio);
 
-    // Test
-    auto const &thisVRF = state->dataHVACVarRefFlow->VRF(VRFCond);
-    Real64 CompEvaporatingCAPSpdMin =
-        thisVRF.RatedEvapCapacity * CurveValue(*state, thisVRF.OUCoolingCAPFT(1), thisVRF.CondensingTemp, thisVRF.EvaporatingTemp);
-    Real64 CompEvaporatingPWRSpdMin =
-        thisVRF.RatedCompPower * CurveValue(*state, thisVRF.OUCoolingPWRFT(1), thisVRF.CondensingTemp, thisVRF.EvaporatingTemp);
-    EXPECT_NEAR(0.37, CyclingRatio, 0.01);
-    EXPECT_NEAR(OUEvapHeatExtract, CompEvaporatingCAPSpdMin + Ncomp, 1e-4);
-    EXPECT_NEAR(1500, CompSpdActual, 1);
-    EXPECT_NEAR(Ncomp, CompEvaporatingPWRSpdMin, 1e-4);
-}
+        // Test
+        auto const &thisVRF = state->dataHVACVarRefFlow->VRF(VRFCond);
+        Real64 CompEvaporatingCAPSpdMin =
+            thisVRF.RatedEvapCapacity * CurveValue(*state, thisVRF.OUCoolingCAPFT(1), thisVRF.CondensingTemp, thisVRF.EvaporatingTemp);
+        Real64 CompEvaporatingPWRSpdMin =
+            thisVRF.RatedCompPower * CurveValue(*state, thisVRF.OUCoolingPWRFT(1), thisVRF.CondensingTemp, thisVRF.EvaporatingTemp);
+        EXPECT_NEAR(0.37, CyclingRatio, 0.01);
+        EXPECT_NEAR(OUEvapHeatExtract, CompEvaporatingCAPSpdMin + Ncomp, 1e-4);
+        EXPECT_NEAR(1500, CompSpdActual, 1);
+        EXPECT_NEAR(Ncomp, CompEvaporatingPWRSpdMin, 1e-4);
+    }
 }
 
 TEST_F(EnergyPlusFixture, VRF_FluidTCtrl_VRFOU_Coil)

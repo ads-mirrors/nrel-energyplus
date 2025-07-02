@@ -4130,8 +4130,10 @@ void ElectricStorage::simulateLiIonNmcBatteryModel(EnergyPlusData &state,
 
 // Disable floating point exceptions around SSC battery calculations, which uses quiet_NaN in particular
 #ifdef DEBUG_ARITHM_GCC_OR_CLANG
-    int old_excepts = fegetexcept();
-    fedisableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW);
+    #ifndef __APPLE__
+        int old_excepts = fegetexcept();
+        fedisableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW);
+    #endif
 #endif
 
 #ifdef DEBUG_ARITHM_MSVC
@@ -4219,7 +4221,9 @@ void ElectricStorage::simulateLiIonNmcBatteryModel(EnergyPlusData &state,
     }
 
 #ifdef DEBUG_ARITHM_GCC_OR_CLANG
-    feenableexcept(old_excepts);
+    #ifndef __APPLE__
+        feenableexcept(old_excepts);
+    #endif
 #endif
 
 #ifdef DEBUG_ARITHM_MSVC

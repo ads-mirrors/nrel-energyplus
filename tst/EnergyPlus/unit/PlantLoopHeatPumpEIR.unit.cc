@@ -711,6 +711,8 @@ TEST_F(EnergyPlusFixture, processInputForEIRPLHP_AWHP)
         "100 , !- Crankcase Heater Capacity",
         "EIRCurveFuncPLR, !- Crankcase Heater Capacity Function of Temperature Curve Name",
         "20 , !- Maximum Ambient Temperature for Crankcase Heater Operation",
+        "Yes,   !- Booster Mode On Heating",
+        "1.1,   !- Booster Mode Heating Multiplier",
         "2 , !- Number of Speeds for Heating",
         "100 , !-  Rated Heating Capacity at Speed 1",
         "3, !-  Rated COP for Heating at Speed 1",
@@ -737,6 +739,8 @@ TEST_F(EnergyPlusFixture, processInputForEIRPLHP_AWHP)
         ", !-  Normalized Heating Capacity Function of Temperature Curve Name at Speed 5",
         ", !-  Heating Energy Input Ratio Function of Temperature Curve Name at Speed 5",
         ", !-  Heating Energy Input Ratio Function of PLR Curve Name at Speed 5",
+        ", !-  Booster Mode On Cooling",
+        ", !-  Booster Mode Cooling Multiplier",
         "2, !-  Number of Speeds for Cooling",
         "120 , !-  Rated Cooling Capacity at Speed 1",
         "4, !-  Rated COP for Cooling at Speed 1",
@@ -831,6 +835,8 @@ TEST_F(EnergyPlusFixture, processInputForEIRPLHP_AWHP)
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].sourceSideNodes.outlet, 4);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].compressorMultiplier, 1);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].controlType, HeatPumpAirToWater::CompressorControlType::FixedSpeed);
+    EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].boosterOn, false);
+    EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].boosterMult, 1.0);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].numSpeeds, 2);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].referenceCapacity, 240);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].ratedCapacity[0], 120);
@@ -875,6 +881,8 @@ TEST_F(EnergyPlusFixture, processInputForEIRPLHP_AWHP)
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].CrankcaseHeaterCapacity, 100);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].CrankcaseHeaterCapacityCurveIndex, Curve::GetCurveIndex(*state, "EIRCURVEFUNCPLR"));
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].MaxOATCrankcaseHeater, 20);
+    EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].boosterOn, true);
+    EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].boosterMult, 1.1);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].numSpeeds, 2);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].referenceCapacity, 200);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].ratedCapacity[0], 100);

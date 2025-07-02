@@ -3857,6 +3857,22 @@ void HeatPumpAirToWater::processInputForEIRPLHP(EnergyPlusData &state)
                     }
                 }
 
+                auto boosterOnFound = fields.find(format("booster_mode_on_{}", modeKeyWord));
+                thisAWHP.boosterOn = false;
+                thisAWHP.boosterMult = 1.0;
+                if (boosterOnFound != fields.end()) {
+                    auto boosterOnStr = boosterOnFound.value().get<std::string>();
+                    if (Util::SameString(boosterOnStr, "YES")) {
+                        thisAWHP.boosterOn = true;
+                    }
+                }
+
+                auto const boosterMult = fields.find(format("booster_mode_{}_multiplier", modeKeyWord));
+                if (boosterMult != fields.end()) {
+                    thisAWHP.boosterMult = boosterMult.value().get<Real64>();
+                } else {
+                    thisAWHP.boosterMult = 1.0;
+                }
                 thisAWHP.sourceSideDesignInletTemp = state.dataInputProcessing->inputProcessor->getRealFieldValue(
                     fields, schemaProps, format("rated_inlet_air_temperature_in_{}_mode", modeKeyWord));
                 thisAWHP.sourceSideDesignVolFlowRate = state.dataInputProcessing->inputProcessor->getRealFieldValue(

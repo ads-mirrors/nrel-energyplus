@@ -471,6 +471,8 @@ namespace EIRPlantLoopHeatPumps {
         int defrostCapRatioCurveIndex = 0;
         Real64 defrostResistiveHeaterCap = 0.0;
         Real64 referenceCapacityOneUnit = 0.0;
+        bool boosterOn = false;
+        Real64 boosterMult = 1.0;
 
         int static constexpr maxNumSpeeds = 5;
         int numSpeeds = 1;

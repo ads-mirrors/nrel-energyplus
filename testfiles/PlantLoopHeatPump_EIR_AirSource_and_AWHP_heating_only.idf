@@ -162,7 +162,7 @@
     3,                       !- Minimum Loop Temperature {C}
     0.005,                   !- Maximum Loop Flow Rate {m3/s}
     0,                       !- Minimum Loop Flow Rate {m3/s}
-    1,                       !- Plant Loop Volume {m3}
+    2,                       !- Plant Loop Volume {m3}
     Heating Coil Load Loop Supply Inlet Node,  !- Plant Side Inlet Node Name
     Heating Coil Load Loop Supply Outlet Node,  !- Plant Side Outlet Node Name
     Heating Coil Load Loop Supply Branches,  !- Plant Side Branch List Name
@@ -239,6 +239,7 @@
     , !- Availability Schedule Name Heating
     , !- Availability Schedule Name Cooling
     Load , !- Operating Mode Control Method
+    SingleMode, !- Operating Mode Control Option for Multiple Unit
     , !- Operating Mode Control Schedule Name
     20 , !-  Rated Inlet Air Temperature in Heating Mode
     autosize, !-  Rated Air Flow Rate in Heating Mode
@@ -246,6 +247,7 @@
     autosize, !-  Rated Water Flow Rate in Heating Mode
     -20, !-  Minimum Outdoor Air Temperature in Heating Mode
     25, !-  Maximum Outdoor Air Temperature in Heating Mode
+    ,    !- Minimum Part Load Ratio
     1.0, !-  Sizing Factor for Heating
     , !-  Rated Inlet Air Temperature in Cooling Mode
     , !-  Rated Air Flow Rate in Cooling Mode

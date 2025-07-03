@@ -1013,6 +1013,23 @@ void GatherForPredefinedReport(EnergyPlusData &state)
                             }
                         }
                     }
+                } else { // frameDivNum != 0 (no frame or divider)
+                    for (unsigned int i = 0; i < totalStates; ++i) {
+                        const int stateConstrNum = surface.shadedConstructionList[i];
+                        std::string const &constructionName = state.dataConstruction->Construct(stateConstrNum).Name;
+
+                        OutputReportPredefined::PreDefTableEntry(state,
+                                                                 state.dataOutRptPredefined->pdchFenShdUfact,
+                                                                 constructionName,
+                                                                 state.dataHeatBal->NominalU(surface.Construction),
+                                                                 3);
+                        OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchFenShdSHGC, constructionName, SHGCSummer, 3);
+                        OutputReportPredefined::PreDefTableEntry(state,
+                                                                 state.dataOutRptPredefined->pdchFenShdVisTr,
+                                                                 constructionName,
+                                                                 state.dataConstruction->Construct(stateConstrNum).VisTransNorm,
+                                                                 3);
+                    }
                 }
 
                 curWSC = surface.activeWindowShadingControl;

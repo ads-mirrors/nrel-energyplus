@@ -230,6 +230,7 @@ void CoilCoolingDXCurveFitPerformance::simulate(EnergyPlus::EnergyPlusData &stat
     Real64 reportingConstant = state.dataHVACGlobal->TimeStepSys * Constant::rSecsInHour;
     this->recoveredEnergyRate = 0.0;
     this->NormalSHR = 0.0;
+    this->oneTimeAvailSchedSetup(state);
 
     if (currentCoilMode == HVAC::CoilMode::SubcoolReheat) {
         Real64 totalCoolingRate;
@@ -674,5 +675,15 @@ void CoilCoolingDXCurveFitPerformance::setOperMode(EnergyPlus::EnergyPlusData &s
         ShowFatalError(state,
                        format("CoilCoolingDXCurveFitPerformance: Errors found in getting {} input. Preceding condition(s) causes termination.",
                               this->object_name));
+    }
+}
+void CoilCoolingDXCurveFitPerformance::oneTimeAvailSchedSetup(EnergyPlus::EnergyPlusData &state)
+{
+    if (this->myOneTimeAvailSchedInitFlag) {
+        // set avail schedule for each mode
+        this->normalMode.coilCoolingDXAvailSched = static_cast<EnergyPlus::CoilCoolingDXPerformanceBase *>(this)->coilCoolingDXAvailSched;
+        this->alternateMode.coilCoolingDXAvailSched = this->normalMode.coilCoolingDXAvailSched;
+        this->alternateMode2.coilCoolingDXAvailSched = this->normalMode.coilCoolingDXAvailSched;
+        this->myOneTimeAvailSchedInitFlag = false;
     }
 }

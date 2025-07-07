@@ -64,6 +64,7 @@
 #include <EnergyPlus/DataHVACGlobals.hh>
 #include <EnergyPlus/DataSizing.hh>
 #include <EnergyPlus/General.hh>
+#include <EnergyPlus/Coils/CoilCoolingDXCurveFitPerformance.hh>
 
 using namespace EnergyPlus;
 
@@ -325,6 +326,13 @@ TEST_F(CoilCoolingDXTest, CoilCoolingDXAlternateModePerformanceHitsSaturation)
         EXPECT_NEAR(10.238, evapOutletNode.Temp, 0.01);
         EXPECT_NEAR(0.007748, evapOutletNode.HumRat, 0.0001);
     }
+    EXPECT_EQ(thisCoil.availSched->currentVal, 1.0);
+    EXPECT_EQ(thisCoil.performance->coilCoolingDXAvailSched->currentVal, 1.0);
+    auto coilPerformance{dynamic_cast<EnergyPlus::CoilCoolingDXCurveFitPerformance *>(thisCoil.performance.get())};
+    EXPECT_EQ(coilPerformance->normalMode.coilCoolingDXAvailSched->currentVal, 1.0);
+    EXPECT_EQ(coilPerformance->alternateMode.coilCoolingDXAvailSched->currentVal, 1.0);
+    EXPECT_EQ(coilPerformance->alternateMode2.coilCoolingDXAvailSched->currentVal, 1.0);
+
     // alter values and run at rated conditions normal mode speed 2
     evapInletNode.MassFlowRate = thisCoil.performance->ratedAirMassFlowRateMaxSpeed(*state);
     speedNum = 2;

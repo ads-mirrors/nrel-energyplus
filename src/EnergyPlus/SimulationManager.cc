@@ -2192,6 +2192,7 @@ namespace SimulationManager {
         static constexpr std::string_view Format_723 =
             "! <Zone Equipment Component>,<Component Count>,<Component Type>,<Component Name>,<Zone Name>,<Heating "
             "Priority>,<Cooling Priority>";
+        bool nodeConnectionErrorFlag = false;
 
         // Report outside air node names on the Branch-Node Details file
         print(state.files.bnd, "{}\n", "! ===============================================================");
@@ -2262,7 +2263,7 @@ namespace SimulationManager {
                 ShowContinueError(state, "  Node Types are still UNDEFINED -- See Branch/Node Details file for further information");
                 ShowContinueError(state, format("  Inlet Node : {}", state.dataBranchNodeConnections->CompSets(Count).InletNodeName));
                 ShowContinueError(state, format("  Outlet Node: {}", state.dataBranchNodeConnections->CompSets(Count).OutletNodeName));
-                ShowFatalError(state, "Please correct either the branch nodes or the component nodes so that they match.");
+                nodeConnectionErrorFlag = true;
                 ++state.dataBranchNodeConnections->NumNodeConnectionErrors;
             }
         }
@@ -2724,6 +2725,10 @@ namespace SimulationManager {
         }
 
         state.dataErrTracking->AskForConnectionsReport = false;
+
+        if (nodeConnectionErrorFlag) {
+            ShowFatalError(state, "Please see severe error(s) and correct either the branch nodes or the component nodes so that they match.");
+        }
     }
 
     void PostIPProcessing(EnergyPlusData &state)

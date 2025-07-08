@@ -410,7 +410,7 @@ namespace Dayltg {
                       state.dataSurface->Surface(WinSurf).Name,
                       state.dataSurface->Surface(WinSurf).ViewFactorSky,
                       state.dataSurface->Surface(WinSurf).ViewFactorGround);
-                //      CALL SetupOutputVariable(state, 'View Factor To Outside Shelf []', &
+                //      CALL Setup Output Variable(state, 'View Factor To Outside Shelf []', &
                 //        Shelf(ShelfNum)%ViewFactor,'Zone','Average',Shelf(ShelfNum)%Name)
             }
         }

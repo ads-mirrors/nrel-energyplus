@@ -1013,7 +1013,7 @@ void GatherForPredefinedReport(EnergyPlusData &state)
                             }
                         }
                     }
-                } else { // frameDivNum != 0 (no frame or divider)
+                } else { // frameDivNum = 0 (no frame or divider)
                     for (unsigned int i = 0; i < totalStates; ++i) {
                         const int stateConstrNum = surface.shadedConstructionList[i];
                         std::string const &constructionName = state.dataConstruction->Construct(stateConstrNum).Name;

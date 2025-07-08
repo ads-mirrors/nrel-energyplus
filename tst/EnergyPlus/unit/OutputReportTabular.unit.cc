@@ -13754,3 +13754,87 @@ TEST_F(EnergyPlusFixture, OutputReportTabularMonthly_HandleMultipleDuringHoursSh
         EXPECT_EQ(expectedTotalConditionA + expectedTotalConditionNotA, ort->MonthlyColumns(colValue).reslt(12));
     }
 }
+
+TEST_F(EnergyPlusFixture, ExteriorFenestrationShadedStateTest)
+{
+    // Test for Fix of Defect #10919
+    // Allocations and setting of test data
+    auto &dHB = state->dataHeatBal;
+    auto &dCon = state->dataConstruction;
+    auto &dSurf = state->dataSurface;
+    dHB->space.allocate(1);
+    dHB->Zone.allocate(1);
+    dHB->Zone(1).ListMultiplier = 1;
+    dCon->Construct.allocate(2);
+    dCon->Construct(1).Name = "LowTalker";
+    dCon->Construct(1).OutsideAbsorpSolar = 0.1;
+    dCon->Construct(1).VisTransNorm = 0.3;
+    dCon->Construct(1).SummerSHGC = 0.1;
+    dCon->Construct(2).Name = "CloseTalker";
+    dCon->Construct(2).OutsideAbsorpSolar = 0.9;
+    dCon->Construct(2).VisTransNorm = 0.7;
+    dCon->Construct(2).SummerSHGC = 0.9;
+
+    dHB->NominalU.allocate(2);
+    dHB->NominalU(1) = 1.1;
+    dHB->NominalU(2) = 2.2;
+    dHB->NominalUBeforeAdjusted.allocate(2);
+    dHB->NominalUBeforeAdjusted(1) = 1.1;
+    dHB->NominalUBeforeAdjusted(2) = 2.2;
+
+    dSurf->TotSurfaces = 4;
+    dSurf->Surface.allocate(dSurf->TotSurfaces);
+    dSurf->Surface(2).windowShadingControlList.resize(1);
+    dSurf->Surface(2).windowShadingControlList[0] = 1;
+    dSurf->Surface(4).windowShadingControlList.resize(1);
+    dSurf->Surface(4).windowShadingControlList[0] = 2;
+    dSurf->Surface(2).shadedConstructionList.resize(1);
+    dSurf->Surface(2).shadedConstructionList[0] = 1;
+    dSurf->Surface(4).shadedConstructionList.resize(1);
+    dSurf->Surface(4).shadedConstructionList[0] = 2;
+
+    // first surface, exterior walls and doors
+    for (int i = 1; i <= dSurf->TotSurfaces; i++) {
+        dSurf->Surface(i).HeatTransSurf = true;
+        dSurf->Surface(i).Azimuth = 180.;
+        dSurf->Surface(i).Tilt = 90.;
+        dSurf->Surface(i).ExtBoundCond = 0;
+        dSurf->Surface(i).FrameDivider = 0;
+        dSurf->Surface(i).spaceNum = 1;
+        dSurf->Surface(i).Zone = 1;
+        if ((i == 1) || (i == 2)) {
+            dSurf->Surface(i).Construction = 1;
+        } else {
+            dSurf->Surface(i).Construction = 2;
+        }
+        // odd number - wall, even number - window
+        if (i % 2 == 1) {
+            dSurf->Surface(i).Name = "Exterior_Wall_" + fmt::to_string((i + 1) / 2);
+            dSurf->Surface(i).GrossArea = 200.;
+            dSurf->Surface(i).Class = DataSurfaces::SurfaceClass::Wall;
+            dSurf->AllSurfaceListReportOrder.push_back(i);
+        } else {
+            dSurf->Surface(i).Name = "Window_" + fmt::to_string((i + 1) / 2);
+            dSurf->Surface(i).BaseSurfName = dSurf->Surface(i - 1).Name;
+            dSurf->Surface(i).BaseSurf = i - 1;
+            dSurf->Surface(i).GrossArea = 50.;
+            dSurf->Surface(i).Class = DataSurfaces::SurfaceClass::Window;
+            dSurf->AllSurfaceListReportOrder.push_back(i);
+        }
+    }
+
+    // Setup pre def tables
+    OutputReportPredefined::SetPredefinedTables(*state);
+
+    // Call the routine that fills up the table we care about
+    HeatBalanceSurfaceManager::GatherForPredefinedReport(*state);
+
+    // Check output to see that it matches expectations
+    auto &dORP = state->dataOutRptPredefined;
+    EXPECT_EQ(OutputReportPredefined::RetrievePreDefTableEntry(*state, dORP->pdchFenShdUfact, dCon->Construct(1).Name), "1.100");
+    EXPECT_EQ(OutputReportPredefined::RetrievePreDefTableEntry(*state, dORP->pdchFenShdSHGC, dCon->Construct(1).Name), "0.100");
+    EXPECT_EQ(OutputReportPredefined::RetrievePreDefTableEntry(*state, dORP->pdchFenShdVisTr, dCon->Construct(1).Name), "0.300");
+    EXPECT_EQ(OutputReportPredefined::RetrievePreDefTableEntry(*state, dORP->pdchFenShdUfact, dCon->Construct(2).Name), "2.200");
+    EXPECT_EQ(OutputReportPredefined::RetrievePreDefTableEntry(*state, dORP->pdchFenShdSHGC, dCon->Construct(2).Name), "0.900");
+    EXPECT_EQ(OutputReportPredefined::RetrievePreDefTableEntry(*state, dORP->pdchFenShdVisTr, dCon->Construct(2).Name), "0.700");
+}

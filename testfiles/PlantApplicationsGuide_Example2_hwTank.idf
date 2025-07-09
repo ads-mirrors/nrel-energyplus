@@ -1487,9 +1487,24 @@
     Yes,                     !- Do System Sizing Calculation
     Yes,                     !- Do Plant Sizing Calculation
     Yes,                     !- Run Simulation for Sizing Periods
-    No,                      !- Run Simulation for Weather File Run Periods
+    Yes,                      !- Run Simulation for Weather File Run Periods
     No,                      !- Do HVAC Sizing Simulation for Sizing Periods
     1;                       !- Maximum Number of HVAC Sizing Simulation Passes
+
+  RunPeriod,
+    Run Period 1,            !- Name
+    7,                       !- Begin Month
+    11,                      !- Begin Day of Month
+    ,                        !- Begin Year
+    7,                       !- End Month
+    18,                      !- End Day of Month
+    ,                        !- End Year
+    Sunday,                  !- Day of Week for Start Day
+    No,                      !- Use Weather File Holidays and Special Days
+    No,                      !- Use Weather File Daylight Saving Period
+    No,                      !- Apply Weekend Holiday Rule
+    Yes,                     !- Use Weather File Rain Indicators
+    Yes;                     !- Use Weather File Snow Indicators
 
   SurfaceConvectionAlgorithm:Inside,TARP;
 
@@ -5542,3 +5557,30 @@ Output:Variable,*,Hot Water Thermal Storage Source Side Heat Transfer Energy,hou
   OutputControl:Table:Style,
     HTML;                    !- Column Separator
 
+  Output:Table:Monthly,
+    Hot Water Tank Source Flow Report,  !- Name
+    6,                       !- Digits After Decimal
+    Hot Water Thermal Storage Source Side Mass Flow Rate,  !- Variable or Meter 1 Name
+    SumOrAverage,            !- Aggregation Type for Variable or Meter 1
+    Hot Water Thermal Storage Source Side Inlet Temperature,  !- Variable or Meter 2 Name
+    SumOrAverage,            !- Aggregation Type for Variable or Meter 2
+    Hot Water Thermal Storage Source Side Outlet Temperature,  !- Variable or Meter 3 Name
+    SumOrAverage;            !- Aggregation Type for Variable or Meter 3
+
+  Output:Table:Monthly,
+    Hot Water Tank Use Flow Report,  !- Name
+    6,                       !- Digits After Decimal
+    Hot Water Thermal Storage Use Side Mass Flow Rate,  !- Variable or Meter 1 Name
+    SumOrAverage,            !- Aggregation Type for Variable or Meter 1
+    Hot Water Thermal Storage Use Side Inlet Temperature,  !- Variable or Meter 2 Name
+    SumOrAverage,            !- Aggregation Type for Variable or Meter 2
+    Hot Water Thermal Storage Use Side Outlet Temperature,  !- Variable or Meter 3 Name
+    SumOrAverage;            !- Aggregation Type for Variable or Meter 3
+
+  Output:Table:SummaryReports,
+    AnnualBuildingUtilityPerformanceSummary,  !- Report 1 Name
+    ComponentCostEconomicsSummary,  !- Report 2 Name
+    InputVerificationandResultsSummary,  !- Report 3 Name
+    ClimaticDataSummary,     !- Report 4 Name
+    EquipmentSummary,        !- Report 5 Name
+    EnvelopeSummary;         !- Report 6 Name

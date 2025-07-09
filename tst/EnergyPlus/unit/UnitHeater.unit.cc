@@ -93,7 +93,6 @@ using namespace EnergyPlus::HeatBalanceManager;
 using namespace EnergyPlus::OutputProcessor;
 using namespace EnergyPlus::OutputReportPredefined;
 using namespace EnergyPlus::Psychrometrics;
-using namespace EnergyPlus::ScheduleManager;
 using namespace EnergyPlus::SimulationManager;
 using namespace EnergyPlus::SizingManager;
 using namespace EnergyPlus::SurfaceGeometry;
@@ -1100,10 +1099,9 @@ TEST_F(EnergyPlusFixture, UnitHeater_HWHeatingCoilUAAutoSizingTest)
         "    ;                        !- Rated Ratio for Air and Water Convection",
     });
     ASSERT_TRUE(process_idf(idf_objects));
-
-    state->dataGlobal->NumOfTimeStepInHour = 4; // must initialize this to get schedules initialized
-    state->dataGlobal->MinutesPerTimeStep = 15; // must initialize this to get schedules initialized
-    ProcessScheduleInput(*state);               // read schedule data
+    state->dataGlobal->TimeStepsInHour = 4;    // must initialize this to get schedules initialized
+    state->dataGlobal->MinutesInTimeStep = 15; // must initialize this to get schedules initialized
+    state->init_state(*state);
 
     ErrorsFound = false;
     HeatBalanceManager::GetProjectControlData(*state, ErrorsFound); // read project control data
@@ -1123,7 +1121,7 @@ TEST_F(EnergyPlusFixture, UnitHeater_HWHeatingCoilUAAutoSizingTest)
 
     state->dataLoopNodes->MoreNodeInfo.allocate(20);
     state->dataHVACGlobal->TimeStepSys = state->dataGlobal->TimeStepZone;
-    state->dataHVACGlobal->TimeStepSysSec = state->dataHVACGlobal->TimeStepSys * Constant::SecInHour;
+    state->dataHVACGlobal->TimeStepSysSec = state->dataHVACGlobal->TimeStepSys * Constant::rSecsInHour;
     SetupTimePointers(*state, OutputProcessor::TimeStepType::Zone, state->dataGlobal->TimeStepZone);
     SetupTimePointers(*state, OutputProcessor::TimeStepType::System, state->dataHVACGlobal->TimeStepSys);
 
@@ -1281,9 +1279,9 @@ TEST_F(EnergyPlusFixture, UnitHeater_SimUnitHeaterTest)
     });
     ASSERT_TRUE(process_idf(idf_objects));
 
-    state->dataGlobal->NumOfTimeStepInHour = 4; // must initialize this to get schedules initialized
-    state->dataGlobal->MinutesPerTimeStep = 15; // must initialize this to get schedules initialized
-    ProcessScheduleInput(*state);               // read schedule data
+    state->dataGlobal->TimeStepsInHour = 4;    // must initialize this to get schedules initialized
+    state->dataGlobal->MinutesInTimeStep = 15; // must initialize this to get schedules initialized
+    state->init_state(*state);
 
     ErrorsFound = false;
     HeatBalanceManager::GetZoneData(*state, ErrorsFound); // read zone data
@@ -1346,7 +1344,7 @@ TEST_F(EnergyPlusFixture, UnitHeater_SimUnitHeaterTest)
     state->dataHVACGlobal->TurnFansOn = true;
     state->dataHVACGlobal->TurnFansOff = false;
 
-    state->dataScheduleMgr->Schedule(1).CurrentValue = 1;
+    Sched::GetSchedule(*state, "UNITHEATAVAILABILITY")->currentVal = 1;
     state->dataZoneEnergyDemand->CurDeadBandOrSetback.allocate(1);
     state->dataZoneEnergyDemand->CurDeadBandOrSetback(ZoneNum) = false;
 

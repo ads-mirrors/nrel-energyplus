@@ -50,7 +50,6 @@
 
 // ObjexxFCL Headers
 #include <ObjexxFCL/Array.functions.hh>
-#include <ObjexxFCL/Fmath.hh>
 
 // EnergyPlus Headers
 #include <EnergyPlus/Autosizing/HeatingAirFlowSizing.hh>
@@ -265,23 +264,12 @@ namespace UnitHeater {
             Util::IsNameEmpty(state, Alphas(1), CurrentModuleObject, ErrorsFound);
 
             state.dataUnitHeaters->UnitHeat(UnitHeatNum).Name = Alphas(1);
-            state.dataUnitHeaters->UnitHeat(UnitHeatNum).SchedName = Alphas(2);
+
             if (lAlphaBlanks(2)) {
-                state.dataUnitHeaters->UnitHeat(UnitHeatNum).SchedPtr = ScheduleManager::ScheduleAlwaysOn;
-            } else {
-                state.dataUnitHeaters->UnitHeat(UnitHeatNum).SchedPtr =
-                    ScheduleManager::GetScheduleIndex(state, Alphas(2)); // convert schedule name to pointer
-                if (state.dataUnitHeaters->UnitHeat(UnitHeatNum).SchedPtr == 0) {
-                    ShowSevereError(state,
-                                    format("{}{}: invalid {} entered ={} for {}={}",
-                                           RoutineName,
-                                           CurrentModuleObject,
-                                           cAlphaFields(2),
-                                           Alphas(2),
-                                           cAlphaFields(1),
-                                           Alphas(1)));
-                    ErrorsFound = true;
-                }
+                state.dataUnitHeaters->UnitHeat(UnitHeatNum).availSched = Sched::GetScheduleAlwaysOn(state);
+            } else if ((state.dataUnitHeaters->UnitHeat(UnitHeatNum).availSched = Sched::GetSchedule(state, Alphas(2))) == nullptr) {
+                ShowSevereItemNotFound(state, eoh, cAlphaFields(2), Alphas(2));
+                ErrorsFound = true;
             }
 
             // Main air nodes (except outside air node):
@@ -349,7 +337,7 @@ namespace UnitHeater {
                     ShowContinueError(state, "...the unit heater flow rate is autosized while the fan flow rate is not.");
                     ShowContinueError(state, "...this can lead to unexpected results where the fan flow rate is less than required.");
                 }
-                unitHeat.FanAvailSchedPtr = fan->availSchedNum;
+                unitHeat.fanAvailSched = fan->availSched;
             }
 
             // Heating coil information:
@@ -373,6 +361,7 @@ namespace UnitHeater {
                 }
                 }
             }
+
             if (!errFlag) {
                 unitHeat.HCoilTypeCh = Alphas(7);
                 unitHeat.HCoilName = Alphas(8);
@@ -402,29 +391,17 @@ namespace UnitHeater {
                 }
             }
 
-            unitHeat.FanSchedPtr = ScheduleManager::GetScheduleIndex(state, Alphas(9));
-            // Default to cycling fan when fan operating mode schedule is not present
-            if (!lAlphaBlanks(9) && unitHeat.FanSchedPtr == 0) {
-                ShowSevereError(state, format("{} \"{}\" {} not found: {}", CurrentModuleObject, unitHeat.Name, cAlphaFields(9), Alphas(9)));
+            if (lAlphaBlanks(9)) {
+                unitHeat.fanOp = (unitHeat.fanType == HVAC::FanType::OnOff || unitHeat.fanType == HVAC::FanType::SystemModel)
+                                     ? HVAC::FanOp::Cycling
+                                     : HVAC::FanOp::Continuous;
+            } else if ((state.dataUnitHeaters->UnitHeat(UnitHeatNum).fanOpModeSched = Sched::GetSchedule(state, Alphas(9))) == nullptr) {
+                ShowSevereItemNotFound(state, eoh, cAlphaFields(9), Alphas(9));
                 ErrorsFound = true;
-            } else if (lAlphaBlanks(9)) {
-                if (unitHeat.fanType == HVAC::FanType::OnOff || unitHeat.fanType == HVAC::FanType::SystemModel) {
-                    unitHeat.fanOp = HVAC::FanOp::Cycling;
-                } else {
-                    unitHeat.fanOp = HVAC::FanOp::Continuous;
-                }
-            }
-
-            // Check fan's schedule for cycling fan operation if constant volume fan is used
-            if (unitHeat.FanSchedPtr > 0 && unitHeat.fanType == HVAC::FanType::Constant) {
-                if (!ScheduleManager::CheckScheduleValueMinMax(state, unitHeat.FanSchedPtr, ">", 0.0, "<=", 1.0)) {
-                    ShowSevereError(state, format("{} = {}", CurrentModuleObject, Alphas(1)));
-                    ShowContinueError(state, format("For {} = {}", cAlphaFields(5), Alphas(5)));
-                    ShowContinueError(state, "Fan operating mode must be continuous (fan operating mode schedule values > 0).");
-                    ShowContinueError(state, format("Error found in {} = {}", cAlphaFields(9), Alphas(9)));
-                    ShowContinueError(state, "...schedule values must be (>0., <=1.)");
-                    ErrorsFound = true;
-                }
+            } else if (state.dataUnitHeaters->UnitHeat(UnitHeatNum).fanType == HVAC::FanType::Constant &&
+                       !state.dataUnitHeaters->UnitHeat(UnitHeatNum).fanOpModeSched->checkMinMaxVals(state, Clusive::In, 0.0, Clusive::In, 1.0)) {
+                Sched::ShowSevereBadMinMax(state, eoh, cAlphaFields(9), Alphas(9), Clusive::In, 0.0, Clusive::In, 1.0);
+                ErrorsFound = true;
             }
 
             unitHeat.FanOperatesDuringNoHeating = Alphas(10);
@@ -464,7 +441,9 @@ namespace UnitHeater {
             // check that unit heater air inlet node must be the same as a zone exhaust node
             bool ZoneNodeNotFound = true;
             for (CtrlZone = 1; CtrlZone <= state.dataGlobal->NumOfZones; ++CtrlZone) {
-                if (!state.dataZoneEquip->ZoneEquipConfig(CtrlZone).IsControlled) continue;
+                if (!state.dataZoneEquip->ZoneEquipConfig(CtrlZone).IsControlled) {
+                    continue;
+                }
                 for (NodeNum = 1; NodeNum <= state.dataZoneEquip->ZoneEquipConfig(CtrlZone).NumExhaustNodes; ++NodeNum) {
                     if (unitHeat.AirInNode == state.dataZoneEquip->ZoneEquipConfig(CtrlZone).ExhaustNode(NodeNum)) {
                         ZoneNodeNotFound = false;
@@ -484,7 +463,9 @@ namespace UnitHeater {
             // check that unit heater air outlet node is a zone inlet node.
             ZoneNodeNotFound = true;
             for (CtrlZone = 1; CtrlZone <= state.dataGlobal->NumOfZones; ++CtrlZone) {
-                if (!state.dataZoneEquip->ZoneEquipConfig(CtrlZone).IsControlled) continue;
+                if (!state.dataZoneEquip->ZoneEquipConfig(CtrlZone).IsControlled) {
+                    continue;
+                }
                 for (NodeNum = 1; NodeNum <= state.dataZoneEquip->ZoneEquipConfig(CtrlZone).NumInletNodes; ++NodeNum) {
                     if (unitHeat.AirOutNode == state.dataZoneEquip->ZoneEquipConfig(CtrlZone).InletNode(NodeNum)) {
                         unitHeat.ZonePtr = CtrlZone;
@@ -530,7 +511,9 @@ namespace UnitHeater {
         lAlphaBlanks.deallocate();
         lNumericBlanks.deallocate();
 
-        if (ErrorsFound) ShowFatalError(state, format("{}Errors found in input", RoutineName));
+        if (ErrorsFound) {
+            ShowFatalError(state, format("{}Errors found in input", RoutineName));
+        }
 
         // Setup Report variables for the Unit Heaters, CurrentModuleObject='ZoneHVAC:UnitHeater'
         for (int UnitHeatNum = 1; UnitHeatNum <= state.dataUnitHeaters->NumOfUnitHeats; ++UnitHeatNum) {
@@ -670,7 +653,9 @@ namespace UnitHeater {
         if (!state.dataUnitHeaters->ZoneEquipmentListChecked && state.dataZoneEquip->ZoneEquipInputsFilled) {
             state.dataUnitHeaters->ZoneEquipmentListChecked = true;
             for (int Loop = 1; Loop <= state.dataUnitHeaters->NumOfUnitHeats; ++Loop) {
-                if (DataZoneEquipment::CheckZoneEquipmentList(state, "ZoneHVAC:UnitHeater", state.dataUnitHeaters->UnitHeat(Loop).Name)) continue;
+                if (DataZoneEquipment::CheckZoneEquipmentList(state, "ZoneHVAC:UnitHeater", state.dataUnitHeaters->UnitHeat(Loop).Name)) {
+                    continue;
+                }
                 ShowSevereError(state,
                                 format("InitUnitHeater: Unit=[UNIT HEATER,{}] is not on any ZoneHVAC:EquipmentList.  It will not be simulated.",
                                        state.dataUnitHeaters->UnitHeat(Loop).Name));
@@ -731,15 +716,17 @@ namespace UnitHeater {
             state.dataUnitHeaters->MyEnvrnFlag(UnitHeatNum) = false;
         } // ...end start of environment inits
 
-        if (!state.dataGlobal->BeginEnvrnFlag) state.dataUnitHeaters->MyEnvrnFlag(UnitHeatNum) = true;
+        if (!state.dataGlobal->BeginEnvrnFlag) {
+            state.dataUnitHeaters->MyEnvrnFlag(UnitHeatNum) = true;
+        }
 
         // These initializations are done every iteration...
         InNode = state.dataUnitHeaters->UnitHeat(UnitHeatNum).AirInNode;
         OutNode = state.dataUnitHeaters->UnitHeat(UnitHeatNum).AirOutNode;
 
         state.dataUnitHeaters->QZnReq = state.dataZoneEnergyDemand->ZoneSysEnergyDemand(ZoneNum).RemainingOutputReqToHeatSP; // zone load needed
-        if (state.dataUnitHeaters->UnitHeat(UnitHeatNum).FanSchedPtr > 0) {
-            if (ScheduleManager::GetCurrentScheduleValue(state, state.dataUnitHeaters->UnitHeat(UnitHeatNum).FanSchedPtr) == 0.0 &&
+        if (state.dataUnitHeaters->UnitHeat(UnitHeatNum).fanOpModeSched != nullptr) {
+            if (state.dataUnitHeaters->UnitHeat(UnitHeatNum).fanOpModeSched->getCurrentVal() == 0.0 &&
                 state.dataUnitHeaters->UnitHeat(UnitHeatNum).fanType == HVAC::FanType::OnOff) {
                 state.dataUnitHeaters->UnitHeat(UnitHeatNum).fanOp = HVAC::FanOp::Cycling;
             } else {
@@ -748,16 +735,15 @@ namespace UnitHeater {
             if ((state.dataUnitHeaters->QZnReq < HVAC::SmallLoad) || state.dataZoneEnergyDemand->CurDeadBandOrSetback(ZoneNum)) {
                 // Unit is available, but there is no load on it or we are in setback/deadband
                 if (!state.dataUnitHeaters->UnitHeat(UnitHeatNum).FanOffNoHeating &&
-                    ScheduleManager::GetCurrentScheduleValue(state, state.dataUnitHeaters->UnitHeat(UnitHeatNum).FanSchedPtr) > 0.0) {
+                    state.dataUnitHeaters->UnitHeat(UnitHeatNum).fanOpModeSched->getCurrentVal() > 0.0) {
                     state.dataUnitHeaters->UnitHeat(UnitHeatNum).fanOp = HVAC::FanOp::Continuous;
                 }
             }
         }
 
         state.dataUnitHeaters->SetMassFlowRateToZero = false;
-        if (ScheduleManager::GetCurrentScheduleValue(state, state.dataUnitHeaters->UnitHeat(UnitHeatNum).SchedPtr) > 0) {
-            if ((ScheduleManager::GetCurrentScheduleValue(state, state.dataUnitHeaters->UnitHeat(UnitHeatNum).FanAvailSchedPtr) > 0 ||
-                 state.dataHVACGlobal->TurnFansOn) &&
+        if (state.dataUnitHeaters->UnitHeat(UnitHeatNum).availSched->getCurrentVal() > 0) {
+            if ((state.dataUnitHeaters->UnitHeat(UnitHeatNum).fanAvailSched->getCurrentVal() > 0 || state.dataHVACGlobal->TurnFansOn) &&
                 !state.dataHVACGlobal->TurnFansOff) {
                 if (state.dataUnitHeaters->UnitHeat(UnitHeatNum).FanOffNoHeating &&
                     ((state.dataZoneEnergyDemand->ZoneSysEnergyDemand(ZoneNum).RemainingOutputReqToHeatSP < HVAC::SmallLoad) ||
@@ -1286,9 +1272,8 @@ namespace UnitHeater {
 
         if (fanOp != HVAC::FanOp::Cycling) {
 
-            if (ScheduleManager::GetCurrentScheduleValue(state, state.dataUnitHeaters->UnitHeat(UnitHeatNum).SchedPtr) <= 0 ||
-                ((ScheduleManager::GetCurrentScheduleValue(state, state.dataUnitHeaters->UnitHeat(UnitHeatNum).FanAvailSchedPtr) <= 0 &&
-                  !state.dataHVACGlobal->TurnFansOn) ||
+            if (state.dataUnitHeaters->UnitHeat(UnitHeatNum).availSched->getCurrentVal() <= 0 ||
+                ((state.dataUnitHeaters->UnitHeat(UnitHeatNum).fanAvailSched->getCurrentVal() <= 0 && !state.dataHVACGlobal->TurnFansOn) ||
                  state.dataHVACGlobal->TurnFansOff)) {
                 // Case 1: OFF-->unit schedule says that it it not available
                 //         OR child fan in not available OR child fan not being cycled ON by sys avail manager
@@ -1426,9 +1411,8 @@ namespace UnitHeater {
             }
         } else { // OnOff fan and cycling
             if ((state.dataUnitHeaters->QZnReq < HVAC::SmallLoad) || (state.dataZoneEnergyDemand->CurDeadBandOrSetback(ZoneNum)) ||
-                ScheduleManager::GetCurrentScheduleValue(state, state.dataUnitHeaters->UnitHeat(UnitHeatNum).SchedPtr) <= 0 ||
-                ((ScheduleManager::GetCurrentScheduleValue(state, state.dataUnitHeaters->UnitHeat(UnitHeatNum).FanAvailSchedPtr) <= 0 &&
-                  !state.dataHVACGlobal->TurnFansOn) ||
+                state.dataUnitHeaters->UnitHeat(UnitHeatNum).availSched->getCurrentVal() <= 0 ||
+                ((state.dataUnitHeaters->UnitHeat(UnitHeatNum).fanAvailSched->getCurrentVal() <= 0 && !state.dataHVACGlobal->TurnFansOn) ||
                  state.dataHVACGlobal->TurnFansOff)) {
                 // Case 1: OFF-->unit schedule says that it it not available
                 //         OR child fan in not available OR child fan not being cycled ON by sys avail manager
@@ -1465,8 +1449,9 @@ namespace UnitHeater {
                             // Calculate residual based on output calculation flag
                             if (state.dataUnitHeaters->QZnReq != 0.0) {
                                 return (QUnitOut - state.dataUnitHeaters->QZnReq) / state.dataUnitHeaters->QZnReq;
-                            } else
+                            } else {
                                 return 0.0;
+                            }
                         };
 
                         // Tolerance is in fraction of load, MaxIter = 30, SolFalg = # of iterations or error as appropriate
@@ -1559,7 +1544,9 @@ namespace UnitHeater {
                                                             (state.dataLoopNodes->Node(HCoilInAirNode).Temp -
                                                              state.dataLoopNodes->Node(state.dataUnitHeaters->UnitHeat(UnitHeatNum).AirInNode).Temp);
                 }
-                if (QCoilReq < 0.0) QCoilReq = 0.0; // a heating coil can only heat, not cool
+                if (QCoilReq < 0.0) {
+                    QCoilReq = 0.0; // a heating coil can only heat, not cool
+                }
                 SteamCoils::SimulateSteamCoilComponents(state,
                                                         state.dataUnitHeaters->UnitHeat(UnitHeatNum).HCoilName,
                                                         FirstHVACIteration,
@@ -1580,7 +1567,9 @@ namespace UnitHeater {
                                                             (state.dataLoopNodes->Node(HCoilInAirNode).Temp -
                                                              state.dataLoopNodes->Node(state.dataUnitHeaters->UnitHeat(UnitHeatNum).AirInNode).Temp);
                 }
-                if (QCoilReq < 0.0) QCoilReq = 0.0; // a heating coil can only heat, not cool
+                if (QCoilReq < 0.0) {
+                    QCoilReq = 0.0; // a heating coil can only heat, not cool
+                }
                 HeatingCoils::SimulateHeatingCoilComponents(state,
                                                             state.dataUnitHeaters->UnitHeat(UnitHeatNum).HCoilName,
                                                             FirstHVACIteration,
@@ -1604,7 +1593,9 @@ namespace UnitHeater {
             // Set the fan inlet node maximum available mass flow rates for cycling fans
             state.dataLoopNodes->Node(InletNode).MassFlowRateMaxAvail = AirMassFlow;
 
-            if (QCoilReq < 0.0) QCoilReq = 0.0; // a heating coil can only heat, not cool
+            if (QCoilReq < 0.0) {
+                QCoilReq = 0.0; // a heating coil can only heat, not cool
+            }
             state.dataFans->fans(state.dataUnitHeaters->UnitHeat(UnitHeatNum).Fan_Index)->simulate(state, FirstHVACIteration, _, _);
 
             switch (state.dataUnitHeaters->UnitHeat(UnitHeatNum).Type) {
@@ -1623,7 +1614,9 @@ namespace UnitHeater {
                                                              state.dataLoopNodes->Node(state.dataUnitHeaters->UnitHeat(UnitHeatNum).AirInNode).Temp);
                     mdot = state.dataUnitHeaters->UnitHeat(UnitHeatNum).MaxHotWaterFlow * PartLoadRatio;
                 }
-                if (QCoilReq < 0.0) QCoilReq = 0.0; // a heating coil can only heat, not cool
+                if (QCoilReq < 0.0) {
+                    QCoilReq = 0.0; // a heating coil can only heat, not cool
+                }
                 PlantUtilities::SetComponentFlowRate(state,
                                                      mdot,
                                                      state.dataUnitHeaters->UnitHeat(UnitHeatNum).HotControlNode,
@@ -1651,7 +1644,9 @@ namespace UnitHeater {
                                                              state.dataLoopNodes->Node(state.dataUnitHeaters->UnitHeat(UnitHeatNum).AirInNode).Temp);
                     mdot = state.dataUnitHeaters->UnitHeat(UnitHeatNum).MaxHotSteamFlow * PartLoadRatio;
                 }
-                if (QCoilReq < 0.0) QCoilReq = 0.0; // a heating coil can only heat, not cool
+                if (QCoilReq < 0.0) {
+                    QCoilReq = 0.0; // a heating coil can only heat, not cool
+                }
                 PlantUtilities::SetComponentFlowRate(state,
                                                      mdot,
                                                      state.dataUnitHeaters->UnitHeat(UnitHeatNum).HotControlNode,
@@ -1680,7 +1675,9 @@ namespace UnitHeater {
                                                             (state.dataLoopNodes->Node(HCoilInAirNode).Temp -
                                                              state.dataLoopNodes->Node(state.dataUnitHeaters->UnitHeat(UnitHeatNum).AirInNode).Temp);
                 }
-                if (QCoilReq < 0.0) QCoilReq = 0.0; // a heating coil can only heat, not cool
+                if (QCoilReq < 0.0) {
+                    QCoilReq = 0.0; // a heating coil can only heat, not cool
+                }
                 HeatingCoils::SimulateHeatingCoilComponents(state,
                                                             state.dataUnitHeaters->UnitHeat(UnitHeatNum).HCoilName,
                                                             FirstHVACIteration,

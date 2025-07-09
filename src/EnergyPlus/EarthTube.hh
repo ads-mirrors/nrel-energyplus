@@ -55,6 +55,7 @@
 #include <EnergyPlus/Data/BaseData.hh>
 #include <EnergyPlus/DataGlobals.hh>
 #include <EnergyPlus/EnergyPlus.hh>
+#include <EnergyPlus/ScheduleManager.hh>
 
 namespace EnergyPlus {
 
@@ -84,7 +85,7 @@ namespace EarthTube {
     struct EarthTubeData
     {
         int ZonePtr = 0;
-        int SchedPtr = 0;
+        Sched::Schedule *availSched = nullptr; // Assuming this is an availability schedule
         Real64 DesignLevel = 0.0;
         Real64 MinTemperature = 0.0;
         Real64 MaxTemperature = 0.0;
@@ -205,6 +206,10 @@ struct EarthTubeData : BaseGlobalStruct
     EPVector<EarthTube::EarthTubeData> EarthTubeSys;
     EPVector<EarthTube::EarthTubeZoneReportVars> ZnRptET;
     EPVector<EarthTube::EarthTubeParameters> EarthTubePars;
+
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
 
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {

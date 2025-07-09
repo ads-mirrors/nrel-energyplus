@@ -182,6 +182,10 @@ struct HeatBalanceIntRadExchgData : BaseGlobalStruct
     bool ViewFactorReport = false; // Flag to output view factor report in eio file
     int LargestSurf = 0;
 
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
+
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {
     }

@@ -292,7 +292,7 @@ namespace SurfaceGeometry {
 
     void GetWindowShadingControlData(EnergyPlusData &state, bool &ErrorsFound); // If errors found in input
 
-    void InitialAssociateWindowShadingControlFenestration(EnergyPlusData &state, bool &ErrorsFound, int &SurfNum);
+    void InitialAssociateWindowShadingControlFenestration(EnergyPlusData &state, bool &ErrorsFound, int SurfNum);
 
     void FinalAssociateWindowShadingControlFenestration(EnergyPlusData &state, bool &ErrorsFound);
 
@@ -497,6 +497,10 @@ struct SurfaceGeometryData : BaseGlobalStruct
     Array1D<Real64> A; // containers for convexity test
     Array1D<Real64> B;
     int VertSize = 0; // size of X,Y,Z,A,B arrays
+
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
 
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {

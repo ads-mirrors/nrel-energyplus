@@ -54,7 +54,7 @@
 #include <ObjexxFCL/Array.functions.hh>
 #include <ObjexxFCL/Array1D.hh>
 #include <ObjexxFCL/Array2D.hh>
-#include <ObjexxFCL/Fmath.hh>
+// #include <ObjexxFCL/Fmath.hh>
 
 // EnergyPlus Headers
 #include <AirflowNetwork/Solver.hpp>
@@ -143,7 +143,9 @@ namespace RoomAir {
             state.dataRoomAir->GetAirModelData = false;
         }
 
-        if (!state.dataRoomAir->anyNonMixingRoomAirModel) return;
+        if (!state.dataRoomAir->anyNonMixingRoomAirModel) {
+            return;
+        }
 
         if (state.dataRoomAir->UCSDModelUsed) {
             SharedDVCVUFDataInit(state, ZoneNum);
@@ -257,8 +259,6 @@ namespace RoomAir {
         // Using/Aliasing
         using DataZoneEquipment::EquipConfiguration;
 
-        using ScheduleManager::GetScheduleIndex;
-
         // SUBROUTINE PARAMETER DEFINITIONS:
         static constexpr std::string_view routineName = "GetUserDefinedPatternData: ";
 
@@ -323,20 +323,15 @@ namespace RoomAir {
             airPatternZoneInfo.Name = ipsc->cAlphaArgs(1);     // Name of this Control Object
             airPatternZoneInfo.ZoneName = ipsc->cAlphaArgs(2); // Zone Name
 
-            airPatternZoneInfo.AvailSched = ipsc->cAlphaArgs(3);
             if (ipsc->lAlphaFieldBlanks(3)) {
-                airPatternZoneInfo.AvailSchedID = ScheduleManager::ScheduleAlwaysOn;
-            } else {
-                airPatternZoneInfo.AvailSchedID = GetScheduleIndex(state, ipsc->cAlphaArgs(3));
-                if (airPatternZoneInfo.AvailSchedID == 0) {
-                    ShowSevereItemNotFound(state, eoh, ipsc->cAlphaFieldNames(3), ipsc->cAlphaArgs(3));
-                    ErrorsFound = true;
-                }
+                airPatternZoneInfo.availSched = Sched::GetScheduleAlwaysOn(state);
+            } else if ((airPatternZoneInfo.availSched = Sched::GetSchedule(state, ipsc->cAlphaArgs(3))) == nullptr) {
+                ShowSevereItemNotFound(state, eoh, ipsc->cAlphaFieldNames(3), ipsc->cAlphaArgs(3));
+                ErrorsFound = true;
             }
 
-            airPatternZoneInfo.PatternCntrlSched = ipsc->cAlphaArgs(4); // Schedule Name for Leading Pattern Control for this Zone
-            airPatternZoneInfo.PatternSchedID = GetScheduleIndex(state, ipsc->cAlphaArgs(4));
-            if (airPatternZoneInfo.PatternSchedID == 0) {
+            if (ipsc->lAlphaFieldBlanks(4)) {
+            } else if ((airPatternZoneInfo.patternSched = Sched::GetSchedule(state, ipsc->cAlphaArgs(4))) == nullptr) {
                 ShowSevereItemNotFound(state, eoh, ipsc->cAlphaFieldNames(4), ipsc->cAlphaArgs(4));
                 ErrorsFound = true;
             }
@@ -374,8 +369,12 @@ namespace RoomAir {
 
         // Check against AirModel.  Make sure there is a match here.
         for (int iZone = 1; iZone <= state.dataGlobal->NumOfZones; ++iZone) {
-            if (state.dataRoomAir->AirModel(iZone).AirModel != RoomAirModel::UserDefined) continue;
-            if (state.dataRoomAir->AirPatternZoneInfo(iZone).IsUsed) continue; // There is a Room Air Temperatures object for this zone
+            if (state.dataRoomAir->AirModel(iZone).AirModel != RoomAirModel::UserDefined) {
+                continue;
+            }
+            if (state.dataRoomAir->AirPatternZoneInfo(iZone).IsUsed) {
+                continue; // There is a Room Air Temperatures object for this zone
+            }
             ShowSevereError(state,
                             format("{}AirModel for Zone=[{}] is indicated as \"User Defined\".", routineName, state.dataHeatBal->Zone(iZone).Name));
             ShowContinueError(state, format("...but missing a {} object for control.", ipsc->cCurrentModuleObject));
@@ -616,7 +615,7 @@ namespace RoomAir {
                             state.dataZoneEquip->ZoneEquipConfig(found).NumExhaustNodes);
                         state.dataRoomAir->AirPatternZoneInfo(i).ExhaustAirNodeID = state.dataZoneEquip->ZoneEquipConfig(found).ExhaustNode;
                     } // exhaust nodes present
-                }     // found ZoneEquipConf
+                } // found ZoneEquipConf
 
                 // second get zone height values
                 state.dataRoomAir->AirPatternZoneInfo(i).ZoneHeight = state.dataHeatBal->Zone(i).CeilingHeight;
@@ -645,7 +644,9 @@ namespace RoomAir {
         int NumNumbers; // Number of numbers encountered
         int Status;     // Notes if there was an error in processing the input
 
-        if (!state.dataRoomAir->DispVent1NodeModelUsed) return;
+        if (!state.dataRoomAir->DispVent1NodeModelUsed) {
+            return;
+        }
 
         auto &ipsc = state.dataIPShortCut;
 
@@ -772,7 +773,9 @@ namespace RoomAir {
                             break;
                         }
                     }
-                    if (SurfCount > 0) break;
+                    if (SurfCount > 0) {
+                        break;
+                    }
                 }
             }
 
@@ -788,8 +791,9 @@ namespace RoomAir {
         for (int AirNodeNum = 1; AirNodeNum <= state.dataRoomAir->TotNumOfAirNodes; ++AirNodeNum) {
             auto const &airNode = state.dataRoomAir->AirNode(AirNodeNum);
             // this zone uses other air model so skip the rest
-            if (state.dataRoomAir->AirModel(airNode.ZonePtr).AirModel == RoomAirModel::DispVent1Node)
+            if (state.dataRoomAir->AirModel(airNode.ZonePtr).AirModel == RoomAirModel::DispVent1Node) {
                 ++state.dataRoomAir->TotNumOfZoneAirNodes(airNode.ZonePtr);
+            }
         }
     }
 
@@ -821,7 +825,9 @@ namespace RoomAir {
 
         auto &ipsc = state.dataIPShortCut;
 
-        if (!state.dataRoomAir->DispVent1NodeModelUsed) return;
+        if (!state.dataRoomAir->DispVent1NodeModelUsed) {
+            return;
+        }
 
         // Initialize default values for Mundt model controls
         state.dataRoomAir->ConvectiveFloorSplit.allocate(state.dataGlobal->NumOfZones);
@@ -891,9 +897,6 @@ namespace RoomAir {
         // METHODOLOGY EMPLOYED:
         // Use input processor to get input from idf file
 
-        // Using/Aliasing
-        using namespace ScheduleManager;
-
         // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
         constexpr std::string_view routineName = "GetDisplacementVentData";
         int IOStat;
@@ -902,11 +905,15 @@ namespace RoomAir {
 
         auto &ipsc = state.dataIPShortCut;
 
-        if (!state.dataRoomAir->UCSDModelUsed) return;
+        if (!state.dataRoomAir->UCSDModelUsed) {
+            return;
+        }
         ipsc->cCurrentModuleObject = "RoomAirSettings:ThreeNodeDisplacementVentilation";
         state.dataRoomAir->TotDispVent3Node = state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, ipsc->cCurrentModuleObject);
 
-        if (state.dataRoomAir->TotDispVent3Node <= 0) return;
+        if (state.dataRoomAir->TotDispVent3Node <= 0) {
+            return;
+        }
 
         state.dataRoomAir->ZoneDispVent3Node.allocate(state.dataRoomAir->TotDispVent3Node);
 
@@ -941,7 +948,7 @@ namespace RoomAir {
             if (ipsc->lAlphaFieldBlanks(2)) {
                 ShowSevereEmptyField(state, eoh, ipsc->cAlphaFieldNames(2));
                 ErrorsFound = true;
-            } else if ((zoneDV3N.SchedGainsPtr = GetScheduleIndex(state, ipsc->cAlphaArgs(2))) == 0) {
+            } else if ((zoneDV3N.gainsSched = Sched::GetSchedule(state, ipsc->cAlphaArgs(2))) == nullptr) {
                 ShowSevereItemNotFound(state, eoh, ipsc->cAlphaFieldNames(2), ipsc->cAlphaArgs(2));
                 ErrorsFound = true;
             }
@@ -966,9 +973,6 @@ namespace RoomAir {
         // METHODOLOGY EMPLOYED:
         // Use input processor to get input from idf file
 
-        // Using/Aliasing
-        using namespace ScheduleManager;
-
         // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
         constexpr std::string_view routineName = "GetCrossVentData";
 
@@ -977,11 +981,15 @@ namespace RoomAir {
         int NumNumber;
 
         auto &ipsc = state.dataIPShortCut;
-        if (!state.dataRoomAir->UCSDModelUsed) return;
+        if (!state.dataRoomAir->UCSDModelUsed) {
+            return;
+        }
         ipsc->cCurrentModuleObject = "RoomAirSettings:CrossVentilation";
         state.dataRoomAir->TotCrossVent = state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, ipsc->cCurrentModuleObject);
 
-        if (state.dataRoomAir->TotCrossVent <= 0) return;
+        if (state.dataRoomAir->TotCrossVent <= 0) {
+            return;
+        }
 
         state.dataRoomAir->ZoneCrossVent.allocate(state.dataRoomAir->TotCrossVent);
 
@@ -1015,7 +1023,7 @@ namespace RoomAir {
             if (ipsc->lAlphaFieldBlanks(2)) {
                 ShowSevereEmptyField(state, eoh, ipsc->cAlphaFieldNames(2));
                 ErrorsFound = true;
-            } else if ((zoneCV.SchedGainsPtr = GetScheduleIndex(state, ipsc->cAlphaArgs(2))) == 0) {
+            } else if ((zoneCV.gainsSched = Sched::GetSchedule(state, ipsc->cAlphaArgs(2))) == nullptr) {
                 ShowSevereItemNotFound(state, eoh, ipsc->cAlphaFieldNames(2), ipsc->cAlphaArgs(2));
                 ErrorsFound = true;
             }
@@ -1023,8 +1031,12 @@ namespace RoomAir {
             // Third Alpha is a string: JET or RECIRCULATION
             if (ipsc->lAlphaFieldBlanks(3)) {
                 for (int Loop2 = 1; Loop2 <= state.dataHeatBal->TotPeople; ++Loop2) {
-                    if (state.dataHeatBal->People(Loop2).ZonePtr != zoneCV.ZonePtr) continue;
-                    if (!state.dataHeatBal->People(Loop2).Fanger) continue;
+                    if (state.dataHeatBal->People(Loop2).ZonePtr != zoneCV.ZonePtr) {
+                        continue;
+                    }
+                    if (!state.dataHeatBal->People(Loop2).Fanger) {
+                        continue;
+                    }
                     ShowSevereEmptyField(state, eoh, ipsc->cAlphaFieldNames(3));
                     ErrorsFound = true;
                 }
@@ -1034,7 +1046,9 @@ namespace RoomAir {
                 ErrorsFound = true;
             }
 
-            if (zoneCV.ZonePtr == 0) continue;
+            if (zoneCV.ZonePtr == 0) {
+                continue;
+            }
 
             // Following depend on valid zone
 
@@ -1069,8 +1083,8 @@ namespace RoomAir {
                         }
                     }
                 } // if
-            }     // for (iLink)
-        }         // for (Loop)
+            } // for (iLink)
+        } // for (Loop)
     }
 
     void GetUFADZoneData(EnergyPlusData &state, bool &ErrorsFound) // True if errors found during this get input routine
@@ -1085,9 +1099,6 @@ namespace RoomAir {
 
         // METHODOLOGY EMPLOYED:
         // Use input processor to get input from idf file
-
-        // Using/Aliasing
-        using namespace ScheduleManager;
 
         // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
         constexpr std::string_view routineName = "GetUFADZoneData";
@@ -1109,7 +1120,9 @@ namespace RoomAir {
         ipsc->cCurrentModuleObject = "RoomAirSettings:UnderFloorAirDistributionExterior";
         state.dataRoomAir->TotUFADExt = state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, ipsc->cCurrentModuleObject);
 
-        if (state.dataRoomAir->TotUFADInt <= 0 && state.dataRoomAir->TotUFADExt <= 0) return;
+        if (state.dataRoomAir->TotUFADInt <= 0 && state.dataRoomAir->TotUFADExt <= 0) {
+            return;
+        }
 
         state.dataRoomAir->ZoneUFAD.allocate(state.dataRoomAir->TotUFADInt + state.dataRoomAir->TotUFADExt);
         state.dataRoomAir->ZoneUFADPtr.dimension(state.dataGlobal->NumOfZones, 0);
@@ -1252,7 +1265,6 @@ namespace RoomAir {
 
         // Using/Aliasing
         using InternalHeatGains::GetInternalGainDeviceIndex;
-        using ScheduleManager::GetScheduleIndex;
 
         // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
         constexpr std::string_view routineName = "GetRoomAirflowNetworkData";
@@ -1268,7 +1280,9 @@ namespace RoomAir {
         auto &ipsc = state.dataIPShortCut;
         ipsc->cCurrentModuleObject = "RoomAirSettings:AirflowNetwork";
         state.dataRoomAir->NumOfRoomAFNControl = state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, ipsc->cCurrentModuleObject);
-        if (state.dataRoomAir->NumOfRoomAFNControl == 0) return;
+        if (state.dataRoomAir->NumOfRoomAFNControl == 0) {
+            return;
+        }
         if (state.dataRoomAir->NumOfRoomAFNControl > state.dataGlobal->NumOfZones) {
             ShowSevereError(state, format("Too many {} objects in input file", ipsc->cCurrentModuleObject));
             ShowContinueError(state, format("There cannot be more {} objects than number of zones.", ipsc->cCurrentModuleObject));
@@ -1422,7 +1436,9 @@ namespace RoomAir {
                         ipsc->cAlphaArgs(1), roomAFNZoneInfo.Node, &AFNAirNodeNested::NodeSurfListName, roomAFNZoneInfo.NumOfAirNodes);
                 }
 
-                if (RAFNNodeNum == 0) continue;
+                if (RAFNNodeNum == 0) {
+                    continue;
+                }
 
                 // found it
                 foundList = true;
@@ -1460,7 +1476,9 @@ namespace RoomAir {
                                 break;
                             }
                         }
-                        if (SurfCount > 0) break;
+                        if (SurfCount > 0) {
+                            break;
+                        }
                     }
                 }
                 if (NumSurfsThisNode != SurfCount) {
@@ -1514,7 +1532,9 @@ namespace RoomAir {
                     RAFNNodeNum = Util::FindItemInList(
                         ipsc->cAlphaArgs(1), roomAFNZoneInfo.Node, &AFNAirNodeNested::NodeIntGainsListName, roomAFNZoneInfo.NumOfAirNodes);
                 }
-                if (RAFNNodeNum == 0) continue;
+                if (RAFNNodeNum == 0) {
+                    continue;
+                }
 
                 // found it
                 foundList = true;
@@ -1573,8 +1593,8 @@ namespace RoomAir {
                         ErrorsFound = true;
                     }
                 } // for (gainsLoop)
-            }     // for (iZone)
-        }         // loop thru TotNumOfRAFNNodeGainsLists
+            } // for (iZone)
+        } // loop thru TotNumOfRAFNNodeGainsLists
 
         // Get data of HVAC equipment
         std::string const cCurrentModuleObject = "RoomAir:Node:AirflowNetwork:HVACEquipment";
@@ -1613,7 +1633,9 @@ namespace RoomAir {
                         ipsc->cAlphaArgs(1), roomAFNZoneInfo.Node, &AFNAirNodeNested::NodeHVACListName, roomAFNZoneInfo.NumOfAirNodes);
                 }
 
-                if (RAFNNodeNum == 0) continue;
+                if (RAFNNodeNum == 0) {
+                    continue;
+                }
 
                 // found it
                 auto &roomAFNNode = roomAFNZoneInfo.Node(RAFNNodeNum);
@@ -1672,13 +1694,15 @@ namespace RoomAir {
                     // TYPE RoomAirflowNetworkHVACStruct
                     // INTEGER::EquipConfigIndex = 0
                 } // for (iEquip)
-            }     // for (Zone)
-        }         // loop thru TotNumOfRAFNNodeHVACLists
+            } // for (Zone)
+        } // loop thru TotNumOfRAFNNodeHVACLists
 
         // do some checks on input data
         for (int iZone = 1; iZone <= state.dataGlobal->NumOfZones; ++iZone) {
             auto &roomAFNZoneInfo = state.dataRoomAir->AFNZoneInfo(iZone);
-            if (roomAFNZoneInfo.NumOfAirNodes == 0) continue;
+            if (roomAFNZoneInfo.NumOfAirNodes == 0) {
+                continue;
+            }
 
             // Check zone volume fraction
             Real64 SumFraction = 0.0;
@@ -1698,7 +1722,9 @@ namespace RoomAir {
                 auto &roomAFNNode = roomAFNZoneInfo.Node(iRoomAFNNode);
                 for (int iGain = 1; iGain <= roomAFNNode.NumIntGains; ++iGain) {
                     auto &intGain = roomAFNNode.IntGain(iGain);
-                    if (intGain.FractionCheck) continue;
+                    if (intGain.FractionCheck) {
+                        continue;
+                    }
                     SumFraction = roomAFNNode.IntGainsFractions(iGain);
                     intGain.FractionCheck = true;
 
@@ -1706,7 +1732,9 @@ namespace RoomAir {
                         auto &roomAFNNode2 = roomAFNZoneInfo.Node(iRoomAFNNode2);
                         for (int iGain2 = 1; iGain2 <= roomAFNNode2.NumIntGains; ++iGain2) {
                             auto &intGain2 = roomAFNNode2.IntGain(iGain2);
-                            if (intGain2.FractionCheck) continue;
+                            if (intGain2.FractionCheck) {
+                                continue;
+                            }
                             if (intGain.type == intGain2.type && Util::SameString(intGain.Name, intGain2.Name)) {
                                 SumFraction += roomAFNNode2.IntGainsFractions(iGain2);
                                 intGain2.FractionCheck = true;
@@ -1724,14 +1752,18 @@ namespace RoomAir {
                         ErrorsFound = true;
                     }
                 } // for (iGain)
-            }     // for (iRoomAFNNode)
-        }         // for (iZone)
+            } // for (iRoomAFNNode)
+        } // for (iZone)
 
-        if (ErrorsFound) return;
+        if (ErrorsFound) {
+            return;
+        }
 
         for (int iZone = 1; iZone <= state.dataGlobal->NumOfZones; ++iZone) {
             auto &roomAFNZoneInfo = state.dataRoomAir->AFNZoneInfo(iZone);
-            if (!roomAFNZoneInfo.IsUsed || roomAFNZoneInfo.NumOfAirNodes == 0) continue;
+            if (!roomAFNZoneInfo.IsUsed || roomAFNZoneInfo.NumOfAirNodes == 0) {
+                continue;
+            }
 
             for (int iAirNode = 1; iAirNode <= roomAFNZoneInfo.NumOfAirNodes; ++iAirNode) {
                 auto &roomAFNZoneNode = roomAFNZoneInfo.Node(iAirNode);
@@ -1757,7 +1789,7 @@ namespace RoomAir {
                                     OutputProcessor::StoreType::Average,
                                     roomAFNZoneNode.Name);
             } // for (iAirNodE)
-        }     // for (iZone)
+        } // for (iZone)
     }
 
     void SharedDVCVUFDataInit(EnergyPlusData &state, int const ZoneNum)
@@ -1942,7 +1974,9 @@ namespace RoomAir {
             // calculate maximum number of airflow network surfaces in a single zone
             int MaxSurf = AuxSurf(1);
             for (int iZone = 2; iZone <= state.dataGlobal->NumOfZones; ++iZone) {
-                if (AuxSurf(iZone) > MaxSurf) MaxSurf = AuxSurf(iZone);
+                if (AuxSurf(iZone) > MaxSurf) {
+                    MaxSurf = AuxSurf(iZone);
+                }
             }
 
             if (!allocated(state.dataRoomAir->AFNSurfaceCrossVent)) {
@@ -1962,7 +1996,9 @@ namespace RoomAir {
             for (int iZone = 1; iZone <= state.dataGlobal->NumOfZones; ++iZone) {
                 // the 0 component of the array has the number of relevant AirflowNetwork surfaces for the zone
                 state.dataRoomAir->AFNSurfaceCrossVent(0, iZone) = AuxSurf(iZone);
-                if (AuxSurf(iZone) == 0) continue;
+                if (AuxSurf(iZone) == 0) {
+                    continue;
+                }
 
                 Real64 const ceilingHeight = state.dataRoomAir->ZoneCeilingHeight1(iZone);
                 int SurfNum = 1;
@@ -2048,7 +2084,7 @@ namespace RoomAir {
                         }
                     }
                 } // for (Loop2)
-            }     // for (iZone)
+            } // for (iZone)
 
             AuxSurf.deallocate();
 
@@ -2143,8 +2179,9 @@ namespace RoomAir {
                 state.dataRoomAir->ZoneDispVent3NodeMixedFlag = 0;
                 // Output variables and DV zone flag
                 for (int iZone = 1; iZone <= state.dataGlobal->NumOfZones; ++iZone) {
-                    if (state.dataRoomAir->AirModel(iZone).AirModel != RoomAirModel::DispVent3Node)
+                    if (state.dataRoomAir->AirModel(iZone).AirModel != RoomAirModel::DispVent3Node) {
                         continue; // don't set these up if they don't make sense
+                    }
                     // CurrentModuleObject='RoomAirSettings:ThreeNodeDisplacementVentilation'
                     SetupOutputVariable(state,
                                         "Room Air Zone Mixed Subzone Temperature",
@@ -2217,7 +2254,7 @@ namespace RoomAir {
                                         OutputProcessor::StoreType::Average,
                                         state.dataHeatBal->Zone(iZone).Name);
                 } // for (iZone)
-            }     // if (any(IsZoneDV))
+            } // if (any(IsZoneDV))
 
             if (any(state.dataRoomAir->IsZoneUFAD)) {
                 state.dataRoomAir->ZoneUFADMixedFlag.allocate(state.dataGlobal->NumOfZones);
@@ -2235,7 +2272,9 @@ namespace RoomAir {
 
                 // Output variables and UF zone flag
                 for (int iZone = 1; iZone <= state.dataGlobal->NumOfZones; ++iZone) {
-                    if (state.dataRoomAir->AirModel(iZone).AirModel != RoomAirModel::UFADInt) continue; // don't set these up if they don't make sense
+                    if (state.dataRoomAir->AirModel(iZone).AirModel != RoomAirModel::UFADInt) {
+                        continue; // don't set these up if they don't make sense
+                    }
 
                     auto &zone = state.dataHeatBal->Zone(iZone);
                     // CurrentModuleObject='RoomAirSettings:UnderFloorAirDistributionInterior'
@@ -2315,7 +2354,9 @@ namespace RoomAir {
                 } // for (iZone)
 
                 for (int iZone = 1; iZone <= state.dataGlobal->NumOfZones; ++iZone) {
-                    if (state.dataRoomAir->AirModel(iZone).AirModel != RoomAirModel::UFADExt) continue; // don't set these up if they don't make sense
+                    if (state.dataRoomAir->AirModel(iZone).AirModel != RoomAirModel::UFADExt) {
+                        continue; // don't set these up if they don't make sense
+                    }
                     // CurrentModuleObject='RoomAirSettings:UnderFloorAirDistributionExterior'
                     auto const &zone = state.dataHeatBal->Zone(iZone);
                     SetupOutputVariable(state,
@@ -2445,8 +2486,9 @@ namespace RoomAir {
                 state.dataRoomAir->HDoor = 0.0;
 
                 for (int iZone = 1; iZone <= state.dataGlobal->NumOfZones; ++iZone) {
-                    if (state.dataRoomAir->AirModel(iZone).AirModel != RoomAirModel::CrossVent)
+                    if (state.dataRoomAir->AirModel(iZone).AirModel != RoomAirModel::CrossVent) {
                         continue; // don't set these up if they don't make sense
+                    }
 
                     int ZoneEquipConfigNum = ZoneNum; // Where does this ZoneNum come from?
 
@@ -2537,7 +2579,7 @@ namespace RoomAir {
                         }
                     }
                 } // for (iZone)
-            }     // if (any(isZoneCV))
+            } // if (any(isZoneCV))
 
             state.dataRoomAir->MyEnvrnFlag = true;
 
@@ -2708,70 +2750,94 @@ namespace RoomAir {
         SupplyNodeName = "";
         int EquipIndex;
 
-        if (zoneEquipType == DataZoneEquipment::ZoneEquipType::Invalid) return EquipFind;
+        if (zoneEquipType == DataZoneEquipment::ZoneEquipType::Invalid) {
+            return EquipFind;
+        }
 
         switch (zoneEquipType) {
         case DataZoneEquipment::ZoneEquipType::VariableRefrigerantFlowTerminal: { // ZoneHVAC:TerminalUnit : VariableRefrigerantFlow
             EquipIndex = HVACVariableRefrigerantFlow::getEqIndex(state, EquipName);
-            if (EquipIndex == 0) return EquipFind;
+            if (EquipIndex == 0) {
+                return EquipFind;
+            }
             SupplyNodeNum = state.dataHVACVarRefFlow->VRFTU(EquipIndex).VRFTUOutletNodeNum;
         } break;
         case DataZoneEquipment::ZoneEquipType::EnergyRecoveryVentilator: { // ZoneHVAC : EnergyRecoveryVentilator
             EquipIndex = HVACStandAloneERV::getEqIndex(state, EquipName);
-            if (EquipIndex == 0) return EquipFind;
+            if (EquipIndex == 0) {
+                return EquipFind;
+            }
             SupplyNodeNum = state.dataHVACStandAloneERV->StandAloneERV(EquipIndex).SupplyAirInletNode;
         } break;
         case DataZoneEquipment::ZoneEquipType::FourPipeFanCoil: { // ZoneHVAC : FourPipeFanCoil
             EquipIndex = FanCoilUnits::getEqIndex(state, EquipName);
-            if (EquipIndex == 0) return EquipFind;
+            if (EquipIndex == 0) {
+                return EquipFind;
+            }
             SupplyNodeNum = state.dataFanCoilUnits->FanCoil(EquipIndex).AirOutNode;
             ReturnNodeNum = state.dataFanCoilUnits->FanCoil(EquipIndex).AirInNode;
         } break;
         case DataZoneEquipment::ZoneEquipType::OutdoorAirUnit: { // ZoneHVAC : OutdoorAirUnit
             EquipIndex = OutdoorAirUnit::getOutdoorAirUnitEqIndex(state, EquipName);
-            if (EquipIndex == 0) return EquipFind;
+            if (EquipIndex == 0) {
+                return EquipFind;
+            }
             SupplyNodeNum = state.dataOutdoorAirUnit->OutAirUnit(EquipIndex).AirOutletNode;
             ReturnNodeNum = state.dataOutdoorAirUnit->OutAirUnit(EquipIndex).AirInletNode;
         } break;
         case DataZoneEquipment::ZoneEquipType::PackagedTerminalAirConditioner: { // ZoneHVAC : PackagedTerminalAirConditioner
             EquipIndex = UnitarySystems::getZoneEqIndex(state, EquipName, zoneEquipType);
-            if (EquipIndex == -1) return EquipFind;
+            if (EquipIndex == -1) {
+                return EquipFind;
+            }
             SupplyNodeNum = state.dataUnitarySystems->unitarySys[EquipIndex].AirOutNode;
             ReturnNodeNum = state.dataUnitarySystems->unitarySys[EquipIndex].AirInNode;
         } break;
         case DataZoneEquipment::ZoneEquipType::PackagedTerminalHeatPump: { // ZoneHVAC : PackagedTerminalHeatPump
             EquipIndex = UnitarySystems::getZoneEqIndex(state, EquipName, zoneEquipType);
-            if (EquipIndex == -1) return EquipFind;
+            if (EquipIndex == -1) {
+                return EquipFind;
+            }
             SupplyNodeNum = state.dataUnitarySystems->unitarySys[EquipIndex].AirOutNode;
             ReturnNodeNum = state.dataUnitarySystems->unitarySys[EquipIndex].AirInNode;
         } break;
         case DataZoneEquipment::ZoneEquipType::UnitHeater: { // ZoneHVAC : UnitHeater
             EquipIndex = UnitHeater::getUnitHeaterIndex(state, EquipName);
-            if (EquipIndex == 0) return EquipFind;
+            if (EquipIndex == 0) {
+                return EquipFind;
+            }
             ReturnNodeNum = state.dataUnitHeaters->UnitHeat(EquipIndex).AirInNode;
             SupplyNodeNum = state.dataUnitHeaters->UnitHeat(EquipIndex).AirOutNode;
         } break;
         case DataZoneEquipment::ZoneEquipType::UnitVentilator: { // ZoneHVAC : UnitVentilator
             EquipIndex = UnitVentilator::getUnitVentilatorIndex(state, EquipName);
-            if (EquipIndex == 0) return EquipFind;
+            if (EquipIndex == 0) {
+                return EquipFind;
+            }
             ReturnNodeNum = state.dataUnitVentilators->UnitVent(EquipIndex).AirInNode;
             SupplyNodeNum = state.dataUnitVentilators->UnitVent(EquipIndex).AirOutNode;
         } break;
         case DataZoneEquipment::ZoneEquipType::VentilatedSlab: { // ZoneHVAC : VentilatedSlab
             EquipIndex = VentilatedSlab::getVentilatedSlabIndex(state, EquipName);
-            if (EquipIndex == 0) return EquipFind;
+            if (EquipIndex == 0) {
+                return EquipFind;
+            }
             ReturnNodeNum = state.dataVentilatedSlab->VentSlab(EquipIndex).ReturnAirNode;
             SupplyNodeNum = state.dataVentilatedSlab->VentSlab(EquipIndex).ZoneAirInNode;
         } break;
         case DataZoneEquipment::ZoneEquipType::PackagedTerminalHeatPumpWaterToAir: { // ZoneHVAC : WaterToAirHeatPump
             EquipIndex = UnitarySystems::getZoneEqIndex(state, EquipName, zoneEquipType);
-            if (EquipIndex == -1) return EquipFind;
+            if (EquipIndex == -1) {
+                return EquipFind;
+            }
             SupplyNodeNum = state.dataUnitarySystems->unitarySys[EquipIndex].AirOutNode;
             ReturnNodeNum = state.dataUnitarySystems->unitarySys[EquipIndex].AirInNode;
         } break;
         case DataZoneEquipment::ZoneEquipType::WindowAirConditioner: { // ZoneHVAC : WindowAirConditioner
             EquipIndex = WindowAC::getWindowACIndex(state, EquipName);
-            if (EquipIndex == 0) return EquipFind;
+            if (EquipIndex == 0) {
+                return EquipFind;
+            }
             ReturnNodeNum = state.dataWindowAC->WindAC(EquipIndex).AirInNode;
             SupplyNodeNum = state.dataWindowAC->WindAC(EquipIndex).AirOutNode;
         } break;
@@ -2801,13 +2867,17 @@ namespace RoomAir {
         } break;
         case DataZoneEquipment::ZoneEquipType::DehumidifierDX: { // ZoneHVAC : Dehumidifier : DX
             EquipIndex = ZoneDehumidifier::getZoneDehumidifierIndex(state, EquipName);
-            if (EquipIndex == 0) return EquipFind;
+            if (EquipIndex == 0) {
+                return EquipFind;
+            }
             ReturnNodeNum = state.dataZoneDehumidifier->ZoneDehumid(EquipIndex).AirInletNodeNum;
             SupplyNodeNum = state.dataZoneDehumidifier->ZoneDehumid(EquipIndex).AirOutletNodeNum;
         } break;
         case DataZoneEquipment::ZoneEquipType::PurchasedAir: { // ZoneHVAC : IdealLoadsAirSystem
             EquipIndex = PurchasedAirManager::getPurchasedAirIndex(state, EquipName);
-            if (EquipIndex == 0) return EquipFind;
+            if (EquipIndex == 0) {
+                return EquipFind;
+            }
             ReturnNodeNum = state.dataPurchasedAirMgr->PurchAir(EquipIndex).ZoneExhaustAirNodeNum;
             SupplyNodeNum = state.dataPurchasedAirMgr->PurchAir(EquipIndex).ZoneSupplyAirNodeNum;
         } break;
@@ -2818,7 +2888,9 @@ namespace RoomAir {
         } break;
         case DataZoneEquipment::ZoneEquipType::HybridEvaporativeCooler: { // ZoneHVAC : HybridUnitaryAirConditioners
             EquipIndex = HybridUnitaryAirConditioners::getHybridUnitaryACIndex(state, EquipName);
-            if (EquipIndex == 0) return EquipFind;
+            if (EquipIndex == 0) {
+                return EquipFind;
+            }
             ReturnNodeNum = state.dataHybridUnitaryAC->ZoneHybridUnitaryAirConditioner(EquipIndex).InletNode;
             SupplyNodeNum = state.dataHybridUnitaryAC->ZoneHybridUnitaryAirConditioner(EquipIndex).OutletNode;
         } break;
@@ -2829,7 +2901,9 @@ namespace RoomAir {
         case DataZoneEquipment::ZoneEquipType::HeatPumpWaterHeaterPumpedCondenser:
         case DataZoneEquipment::ZoneEquipType::HeatPumpWaterHeaterWrappedCondenser: { // WaterHeater : HeatPump
             EquipIndex = WaterThermalTanks::getHeatPumpWaterHeaterIndex(state, EquipName);
-            if (EquipIndex == 0) return EquipFind;
+            if (EquipIndex == 0) {
+                return EquipFind;
+            }
             ReturnNodeNum = state.dataWaterThermalTanks->HPWaterHeater(EquipIndex).HeatPumpAirInletNode;
             SupplyNodeNum = state.dataWaterThermalTanks->HPWaterHeater(EquipIndex).HeatPumpAirOutletNode;
             // For AirTerminals, find matching return node later

@@ -152,6 +152,10 @@ struct SystemVarsData : BaseGlobalStruct
     bool Threading = false;
     bool ciForceTimeStep = false;
 
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
+
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {
     }

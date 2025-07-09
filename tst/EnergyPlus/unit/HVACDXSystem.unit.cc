@@ -422,10 +422,11 @@ TEST_F(EnergyPlusFixture, VariableSpeedCoils_DOASDXCoilTest)
 
     ASSERT_TRUE(process_idf(idf_objects));
 
-    state->dataGlobal->NumOfTimeStepInHour = 1;
-    state->dataGlobal->MinutesPerTimeStep = 60;
+    state->dataGlobal->TimeStepsInHour = 1;
+    state->dataGlobal->MinutesInTimeStep = 60;
+    state->init_state(*state);
+
     state->dataZoneEquip->ZoneEquipInputsFilled = true;
-    ScheduleManager::ProcessScheduleInput(*state);
 
     std::string compName = "DX COOLING COIL SYSTEM";
     bool zoneEquipment = false;
@@ -556,10 +557,11 @@ TEST_F(EnergyPlusFixture, VariableSpeedCoils_RHControl)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->dataGlobal->TimeStepsInHour = 1;
+    state->dataGlobal->MinutesInTimeStep = 60;
+    state->init_state(*state);
 
     std::string compName = "DX COOLING COIL SYSTEM";
-    state->dataGlobal->NumOfTimeStepInHour = 1;
-    state->dataGlobal->MinutesPerTimeStep = 60;
     state->dataZoneEquip->ZoneEquipInputsFilled = true;
     state->dataGlobal->NumOfZones = 1;
     state->dataZoneEquip->ZoneEquipConfig.allocate(1);
@@ -577,8 +579,7 @@ TEST_F(EnergyPlusFixture, VariableSpeedCoils_RHControl)
     state->dataAirSystemsData->PrimaryAirSystems(1).Branch(1).Comp(1).Name = compName;
     state->dataAirSystemsData->PrimaryAirSystems(1).Branch(1).Comp(1).CompType_Num = SimAirServingZones::CompType::DXSystem;
     OutputReportPredefined::SetPredefinedTables(*state);
-    ScheduleManager::ProcessScheduleInput(*state);
-    state->dataScheduleMgr->Schedule(1).CurrentValue = 1.0; // Enable schedule without calling schedule manager
+    Sched::GetSchedule(*state, "AVAILSCHED")->currentVal = 1.0; // Enable schedule without calling schedule manager
 
     bool FirstHVACIteration = true;
     bool HXUnitOn = false;
@@ -755,10 +756,11 @@ TEST_F(EnergyPlusFixture, VariableSpeedCoils_LatentDegradation_Test)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->dataGlobal->TimeStepsInHour = 1;
+    state->dataGlobal->MinutesInTimeStep = 60;
+    state->init_state(*state);
 
     std::string compName = "DX COOLING COIL SYSTEM";
-    state->dataGlobal->NumOfTimeStepInHour = 1;
-    state->dataGlobal->MinutesPerTimeStep = 60;
     state->dataZoneEquip->ZoneEquipInputsFilled = true;
     state->dataGlobal->NumOfZones = 1;
     state->dataZoneEquip->ZoneEquipConfig.allocate(1);
@@ -776,8 +778,7 @@ TEST_F(EnergyPlusFixture, VariableSpeedCoils_LatentDegradation_Test)
     state->dataAirSystemsData->PrimaryAirSystems(1).Branch(1).Comp(1).Name = compName;
     state->dataAirSystemsData->PrimaryAirSystems(1).Branch(1).Comp(1).CompType_Num = SimAirServingZones::CompType::DXSystem;
     OutputReportPredefined::SetPredefinedTables(*state);
-    ScheduleManager::ProcessScheduleInput(*state);
-    state->dataScheduleMgr->Schedule(1).CurrentValue = 1.0; // Enable schedule without calling schedule manager
+    Sched::GetSchedule(*state, "AVAILSCHED")->currentVal = 1.0; // Enable schedule without calling schedule manager
 
     bool FirstHVACIteration = true;
     bool HXUnitOn = false;
@@ -1029,10 +1030,11 @@ TEST_F(EnergyPlusFixture, NewDXCoilModel_RHControl)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->dataGlobal->TimeStepsInHour = 1;
+    state->dataGlobal->MinutesInTimeStep = 60;
+    state->init_state(*state);
 
     std::string compName = "DX COOLING COIL SYSTEM";
-    state->dataGlobal->NumOfTimeStepInHour = 1;
-    state->dataGlobal->MinutesPerTimeStep = 60;
     state->dataZoneEquip->ZoneEquipInputsFilled = true;
     state->dataGlobal->NumOfZones = 1;
     state->dataZoneEquip->ZoneEquipConfig.allocate(1);
@@ -1051,8 +1053,7 @@ TEST_F(EnergyPlusFixture, NewDXCoilModel_RHControl)
     state->dataAirSystemsData->PrimaryAirSystems(1).Branch(1).Comp(1).Name = compName;
     state->dataAirSystemsData->PrimaryAirSystems(1).Branch(1).Comp(1).CompType_Num = SimAirServingZones::CompType::DXSystem;
     OutputReportPredefined::SetPredefinedTables(*state);
-    ScheduleManager::ProcessScheduleInput(*state);
-    state->dataScheduleMgr->Schedule(1).CurrentValue = 1.0; // Enable schedule without calling schedule manager
+    Sched::GetSchedule(*state, "AVAILSCHED")->currentVal = 1.0; // Enable schedule without calling schedule manager
 
     bool FirstHVACIteration = true;
     bool HXUnitOn = false;

@@ -72,6 +72,8 @@ TEST_F(EnergyPlusFixture, TestPlantComponentTemperatureSource)
                                                       " ;                        !- Source Temperature Schedule Name"});
     ASSERT_TRUE(process_idf(idf_objects));
 
+    state->init_state(*state);
+
     // Setup the plant itself manually
     state->dataPlnt->TotNumLoops = 1;
     state->dataPlnt->PlantLoop.allocate(1);
@@ -118,10 +120,5 @@ TEST_F(EnergyPlusFixture, TestPlantComponentTemperatureSource)
     myLoad = 1696.55;
     waterSource1.simulate(*state, loc, firstHVACIteration, myLoad, runFlag);
     EXPECT_NEAR(0.05, waterSource1.MassFlowRate, 0.001);
-
-    // Do this for scheduled temperature
-    // NumOfTimeStepInHour = 1; // must initialize this to get schedules initialized
-    // MinutesPerTimeStep = 60; // must initialize this to get schedules initialized
-    // ProcessScheduleInput(); // read schedules
 }
 } // namespace EnergyPlus

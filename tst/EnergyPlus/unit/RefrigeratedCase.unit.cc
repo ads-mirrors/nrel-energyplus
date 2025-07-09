@@ -384,6 +384,7 @@ Schedule:Compact,
 )IDF";
 
     ASSERT_TRUE(process_idf(fmt::format("{}\n{}", oneZoneBuildingWithIdealLoads, idf_objects))); // read idf objects
+    state->init_state(*state);
 
     state->dataZoneEquip->ZoneEquipInputsFilled = true;
     state->dataEnvrn->OutBaroPress = 101325.0;
@@ -391,7 +392,7 @@ Schedule:Compact,
     HeatBalanceManager::GetZoneData(*state, ErrorsFound);
     ASSERT_FALSE(ErrorsFound);
     DataZoneEquipment::GetZoneEquipmentData(*state);
-    ScheduleManager::ProcessScheduleInput(*state);
+
     // ZoneAirLoopEquipmentManager::GetZoneAirLoopEquipment(*state);
     InternalHeatGains::ManageInternalHeatGains(*state, true);
     RefrigeratedCase::ManageRefrigeratedCaseRacks(*state);
@@ -479,6 +480,7 @@ Refrigeration:WalkIn,
 )IDF";
 
     ASSERT_TRUE(process_idf(fmt::format("{}\n{}", oneZoneBuildingWithIdealLoads, idf_objects))); // read idf objects
+    state->init_state(*state);
 
     state->dataZoneEquip->ZoneEquipInputsFilled = true;
     state->dataEnvrn->OutBaroPress = 101325.0;
@@ -486,7 +488,6 @@ Refrigeration:WalkIn,
     HeatBalanceManager::GetZoneData(*state, ErrorsFound);
     ASSERT_FALSE(ErrorsFound);
     DataZoneEquipment::GetZoneEquipmentData(*state);
-    ScheduleManager::ProcessScheduleInput(*state);
     // ZoneAirLoopEquipmentManager::GetZoneAirLoopEquipment(*state);
     InternalHeatGains::ManageInternalHeatGains(*state, true);
     RefrigeratedCase::ManageRefrigeratedCaseRacks(*state);
@@ -577,6 +578,7 @@ Refrigeration:WalkIn,
 )IDF";
 
     ASSERT_TRUE(process_idf(fmt::format("{}\n{}", oneZoneBuildingWithIdealLoads, idf_objects))); // read idf objects
+    state->init_state(*state);
 
     state->dataZoneEquip->ZoneEquipInputsFilled = true;
     state->dataEnvrn->OutBaroPress = 101325.0;
@@ -584,7 +586,6 @@ Refrigeration:WalkIn,
     HeatBalanceManager::GetZoneData(*state, ErrorsFound);
     ASSERT_FALSE(ErrorsFound);
     DataZoneEquipment::GetZoneEquipmentData(*state);
-    ScheduleManager::ProcessScheduleInput(*state);
     // ZoneAirLoopEquipmentManager::GetZoneAirLoopEquipment(*state);
     InternalHeatGains::ManageInternalHeatGains(*state, true);
     RefrigeratedCase::ManageRefrigeratedCaseRacks(*state);
@@ -735,6 +736,7 @@ Schedule:Compact,
 )IDF";
 
     ASSERT_TRUE(process_idf(fmt::format("{}\n{}", oneZoneBuildingWithIdealLoads, idf_objects))); // read idf objects
+    state->init_state(*state);
 
     state->dataZoneEquip->ZoneEquipInputsFilled = true;
     state->dataEnvrn->OutBaroPress = 101325.0;
@@ -742,7 +744,6 @@ Schedule:Compact,
     HeatBalanceManager::GetZoneData(*state, ErrorsFound);
     ASSERT_FALSE(ErrorsFound);
     DataZoneEquipment::GetZoneEquipmentData(*state);
-    ScheduleManager::ProcessScheduleInput(*state);
     // ZoneAirLoopEquipmentManager::GetZoneAirLoopEquipment(*state);
     InternalHeatGains::ManageInternalHeatGains(*state, true);
     RefrigeratedCase::ManageRefrigeratedCaseRacks(*state);

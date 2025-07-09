@@ -196,8 +196,8 @@ namespace CondenserLoopTowers {
         int OutdoorAirInletNodeNum = 0;                // Node number of outdoor air inlet for the tower
         ModelType TowerModelType = ModelType::Invalid; // Type of empirical model (1=CoolTools)
         int FanPowerfAirFlowCurve = 0;                 // Index to fan power correlation curve for VS Towers
-        int BlowDownSchedulePtr = 0;                   // Pointer to blow down schedule
-        int BasinHeaterSchedulePtr = 0;                // Pointer to basin heater schedule
+        Sched::Schedule *blowDownSched = nullptr;      // Pointer to blow down schedule
+        Sched::Schedule *basinHeaterSched = nullptr;   // Pointer to basin heater schedule
         int HighMassFlowErrorCount = 0;                // Counter when mass flow rate is > Design*TowerMassFlowRateMultiplier
         int HighMassFlowErrorIndex = 0;                // Index for high mass flow recurring error message
         int OutletWaterTempErrorCount = 0;             // Counter when outlet water temperature is < minimum allowed temperature
@@ -228,7 +228,7 @@ namespace CondenserLoopTowers {
         Real64 DriftLossFraction = 0.008;                // default value is 0.008%
         Blowdown BlowdownMode = Blowdown::Concentration; // sets how tower water blowdown is modeled
         Real64 ConcentrationRatio = 3.0;                 // ratio of solids in blowdown vs make up water
-        int SchedIDBlowdown = 0;                         // index "pointer" to schedule of blowdown in [m3/s]
+        Sched::Schedule *blowdownSched = nullptr;        // index "pointer" to schedule of blowdown in [m3/s]
         bool SuppliedByWaterSystem = false;
         int WaterTankID = 0;          // index "pointer" to WaterStorage structure
         int WaterTankDemandARRID = 0; // index "pointer" to demand array inside WaterStorage structure
@@ -247,9 +247,6 @@ namespace CondenserLoopTowers {
         Real64 DesInletWaterTemp = 0.0;          // design tower inlet water temperature (C)
         Real64 DesOutletWaterTemp = 0.0;         // design tower outlet water temperature (C)
         Real64 DesInletAirDBTemp = 0.0;          // design tower inlet air dry-bulb temperature (C)
-        Real64 DesInletAirWBTemp = 0.0;          // design tower outlet air wet-bulb temperature (C)
-        Real64 DesApproach = 0.0;                // design tower approach temperature (deltaC)
-        Real64 DesRange = 0.0;                   // design tower range temperature (deltaC)
         bool TowerInletCondsAutoSize = false;    // true if tower inlet condition is autosized or defaulted to autosize
         // Operational fault parameters
         bool FaultyCondenserSWTFlag = false;   // True if the condenser has SWT sensor fault
@@ -441,6 +438,10 @@ struct CondenserLoopTowersData : BaseGlobalStruct
 {
     bool GetInput = true;
     Array1D<CondenserLoopTowers::CoolingTower> towers; // dimension to number of machines
+
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
 
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {

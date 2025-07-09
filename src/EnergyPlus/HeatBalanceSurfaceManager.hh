@@ -236,9 +236,6 @@ struct HeatBalSurfMgr : BaseGlobalStruct
 
     Array2D<Real64> DiffuseArray;
 
-    Real64 curQL = 0.0; // radiant value prior to adjustment for pulse for load component report
-    Real64 adjQL = 0.0; // radiant value including adjustment for pulse for load component report
-
     bool ManageSurfaceHeatBalancefirstTime = true;
     bool InitSurfaceHeatBalancefirstTime = true;
     bool UpdateThermalHistoriesFirstTimeFlag = true;
@@ -267,6 +264,10 @@ struct HeatBalSurfMgr : BaseGlobalStruct
     Array1D<Real64> AbsDiffWinSky =
         Array1D<Real64>(DataWindowEquivalentLayer::CFSMAXNL); // Sky diffuse solar absorptance of glass layers //Tuned Made static
 
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
+
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {
     }
@@ -286,8 +287,6 @@ struct HeatBalSurfMgr : BaseGlobalStruct
         ZoneAESum.clear();
 
         DiffuseArray.clear();
-        curQL = 0.0;
-        adjQL = 0.0;
 
         ManageSurfaceHeatBalancefirstTime = true;
         InitSurfaceHeatBalancefirstTime = true;

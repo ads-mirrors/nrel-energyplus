@@ -120,6 +120,10 @@ struct TARCOGCommonData : BaseGlobalStruct
 {
     Array1D<Real64> vv = Array1D<Real64>(TARCOGCommon::NMAX);
 
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
+
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {
     }

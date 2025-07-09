@@ -168,6 +168,10 @@ struct MundtSimMgrData : BaseGlobalStruct
     Array2D<RoomAir::DefineSurfaceSettings> MundtAirSurf; // surfaces
     Array1D<RoomAir::DefineSurfaceSettings> FloorSurf;    // floor
 
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
+
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {
     }

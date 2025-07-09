@@ -102,7 +102,6 @@ namespace HVACCooledBeam {
 
     // Using/Aliasing
     using namespace DataLoopNode;
-    using namespace ScheduleManager;
     using HVAC::SmallAirVolFlow;
     using HVAC::SmallLoad;
     using HVAC::SmallMassFlow;
@@ -209,6 +208,7 @@ namespace HVACCooledBeam {
 
         // SUBROUTINE PARAMETER DEFINITIONS:
         static constexpr std::string_view RoutineName("GetCoolBeams "); // include trailing blank space
+        static constexpr std::string_view routineName = "GetCoolBeams";
 
         int CBIndex;                     // loop index
         std::string CurrentModuleObject; // for ease in getting objects
@@ -267,6 +267,8 @@ namespace HVACCooledBeam {
                                                                      lAlphaBlanks,
                                                                      cAlphaFields,
                                                                      cNumericFields);
+
+            ErrorObjectHeader eoh{routineName, CurrentModuleObject, Alphas(1)};
             int CBNum = CBIndex;
 
             CoolBeam(CBNum).Name = Alphas(1);
@@ -282,22 +284,12 @@ namespace HVACCooledBeam {
                 ShowContinueError(state, format("Occurs in {} = {}", CurrentModuleObject, CoolBeam(CBNum).Name));
                 ErrorsFound = true;
             }
-            CoolBeam(CBNum).Sched = Alphas(2);
+
             if (lAlphaBlanks(2)) {
-                CoolBeam(CBNum).SchedPtr = ScheduleManager::ScheduleAlwaysOn;
-            } else {
-                CoolBeam(CBNum).SchedPtr = GetScheduleIndex(state, Alphas(2)); // convert schedule name to pointer
-                if (CoolBeam(CBNum).SchedPtr == 0) {
-                    ShowSevereError(state,
-                                    format("{}{}: invalid {} entered ={} for {}={}",
-                                           RoutineName,
-                                           CurrentModuleObject,
-                                           cAlphaFields(2),
-                                           Alphas(2),
-                                           cAlphaFields(1),
-                                           Alphas(1)));
-                    ErrorsFound = true;
-                }
+                CoolBeam(CBNum).availSched = Sched::GetScheduleAlwaysOn(state);
+            } else if ((CoolBeam(CBNum).availSched = Sched::GetSchedule(state, Alphas(2))) == nullptr) { // convert schedule name to pointer
+                ShowSevereItemNotFound(state, eoh, cAlphaFields(2), Alphas(2));
+                ErrorsFound = true;
             }
             CoolBeam(CBNum).AirInNode = GetOnlySingleNode(state,
                                                           Alphas(4),
@@ -454,7 +446,9 @@ namespace HVACCooledBeam {
                 // Fill the Zone Equipment data with the supply air inlet node number of this unit.
                 AirNodeFound = false;
                 for (CtrlZone = 1; CtrlZone <= state.dataGlobal->NumOfZones; ++CtrlZone) {
-                    if (!state.dataZoneEquip->ZoneEquipConfig(CtrlZone).IsControlled) continue;
+                    if (!state.dataZoneEquip->ZoneEquipConfig(CtrlZone).IsControlled) {
+                        continue;
+                    }
                     for (SupAirIn = 1; SupAirIn <= state.dataZoneEquip->ZoneEquipConfig(CtrlZone).NumInletNodes; ++SupAirIn) {
                         if (CoolBeam(CBNum).AirOutNode == state.dataZoneEquip->ZoneEquipConfig(CtrlZone).InletNode(SupAirIn)) {
                             state.dataZoneEquip->ZoneEquipConfig(CtrlZone).AirDistUnitCool(SupAirIn).InNode = CoolBeam(CBNum).AirInNode;
@@ -543,9 +537,12 @@ namespace HVACCooledBeam {
             ZoneEquipmentListChecked = true;
             // Check to see if there is a Air Distribution Unit on the Zone Equipment List
             for (int Loop = 1; Loop <= NumCB; ++Loop) {
-                if (coolBeam.ADUNum == 0) continue;
-                if (CheckZoneEquipmentList(state, "ZONEHVAC:AIRDISTRIBUTIONUNIT", state.dataDefineEquipment->AirDistUnit(coolBeam.ADUNum).Name))
+                if (coolBeam.ADUNum == 0) {
                     continue;
+                }
+                if (CheckZoneEquipmentList(state, "ZONEHVAC:AIRDISTRIBUTIONUNIT", state.dataDefineEquipment->AirDistUnit(coolBeam.ADUNum).Name)) {
+                    continue;
+                }
                 ShowSevereError(state,
                                 format("InitCoolBeam: ADU=[Air Distribution Unit,{}] is not on any ZoneHVAC:EquipmentList.",
                                        state.dataDefineEquipment->AirDistUnit(coolBeam.ADUNum).Name));
@@ -602,13 +599,13 @@ namespace HVACCooledBeam {
         // Do the start of HVAC time step initializations
         if (FirstHVACIteration) {
             // check for upstream zero flow. If nonzero and schedule ON, set primary flow to max
-            if (GetCurrentScheduleValue(state, coolBeam.SchedPtr) > 0.0 && state.dataLoopNodes->Node(InAirNode).MassFlowRate > 0.0) {
+            if (coolBeam.availSched->getCurrentVal() > 0.0 && state.dataLoopNodes->Node(InAirNode).MassFlowRate > 0.0) {
                 state.dataLoopNodes->Node(InAirNode).MassFlowRate = coolBeam.MaxAirMassFlow;
             } else {
                 state.dataLoopNodes->Node(InAirNode).MassFlowRate = 0.0;
             }
             // reset the max and min avail flows
-            if (GetCurrentScheduleValue(state, coolBeam.SchedPtr) > 0.0 && state.dataLoopNodes->Node(InAirNode).MassFlowRateMaxAvail > 0.0) {
+            if (coolBeam.availSched->getCurrentVal() > 0.0 && state.dataLoopNodes->Node(InAirNode).MassFlowRateMaxAvail > 0.0) {
                 state.dataLoopNodes->Node(InAirNode).MassFlowRateMaxAvail = coolBeam.MaxAirMassFlow;
                 state.dataLoopNodes->Node(InAirNode).MassFlowRateMinAvail = coolBeam.MaxAirMassFlow;
             } else {
@@ -796,7 +793,9 @@ namespace HVACCooledBeam {
                                     (WaterVel / MinWaterVel);
                             }
                             Length = DesLoadPerBeam / (K * coolBeam.CoilArea * DT);
-                            if (coolBeam.Kin <= 0.0) break;
+                            if (coolBeam.Kin <= 0.0) {
+                                break;
+                            }
                             // Check for convergence
                             if (std::abs(Length - LengthX) > 0.01) {
                                 // New guess for length
@@ -906,8 +905,12 @@ namespace HVACCooledBeam {
         MinColdWaterFlow = 0.0;
         SetComponentFlowRate(state, MinColdWaterFlow, coolBeam.CWInNode, coolBeam.CWOutNode, coolBeam.CWPlantLoc);
 
-        if (GetCurrentScheduleValue(state, coolBeam.SchedPtr) <= 0.0) UnitOn = false;
-        if (MaxColdWaterFlow <= SmallMassFlow) UnitOn = false;
+        if (coolBeam.availSched->getCurrentVal() <= 0.0) {
+            UnitOn = false;
+        }
+        if (MaxColdWaterFlow <= SmallMassFlow) {
+            UnitOn = false;
+        }
 
         // Set the unit's air inlet nodes mass flow rates
         state.dataLoopNodes->Node(InAirNode).MassFlowRate = AirMassFlow;

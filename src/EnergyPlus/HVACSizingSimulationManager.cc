@@ -219,17 +219,29 @@ void ManageHVACSizingSimulation(EnergyPlusData &state, bool &ErrorsFound)
         for (int i = 1; i <= state.dataWeather->NumOfEnvrn; ++i) { // loop over environments
 
             Weather::GetNextEnvironment(state, Available, ErrorsFound);
-            if (ErrorsFound) break;
-            if (!Available) continue;
+            if (ErrorsFound) {
+                break;
+            }
+            if (!Available) {
+                continue;
+            }
 
             hvacSizingSimulationManager->sizingLogger.SetupSizingLogsNewEnvironment(state);
 
             //    if (!DoDesDaySim) continue; // not sure about this, may need to force users to set this on input for this method, but maybe not
-            if (state.dataGlobal->KindOfSim == Constant::KindOfSim::RunPeriodWeather) continue;
-            if (state.dataGlobal->KindOfSim == Constant::KindOfSim::DesignDay) continue;
-            if (state.dataGlobal->KindOfSim == Constant::KindOfSim::RunPeriodDesign) continue;
+            if (state.dataGlobal->KindOfSim == Constant::KindOfSim::RunPeriodWeather) {
+                continue;
+            }
+            if (state.dataGlobal->KindOfSim == Constant::KindOfSim::DesignDay) {
+                continue;
+            }
+            if (state.dataGlobal->KindOfSim == Constant::KindOfSim::RunPeriodDesign) {
+                continue;
+            }
 
-            if (state.dataWeather->Environment(state.dataWeather->Envrn).HVACSizingIterationNum != HVACSizingIterCount) continue;
+            if (state.dataWeather->Environment(state.dataWeather->Envrn).HVACSizingIterationNum != HVACSizingIterCount) {
+                continue;
+            }
 
             if (state.dataSysVars->ReportDuringHVACSizingSimulation) {
                 if (state.dataSQLiteProcedures->sqlite) {
@@ -258,7 +270,9 @@ void ManageHVACSizingSimulation(EnergyPlusData &state, bool &ErrorsFound)
 
                 // Let's always do a transaction, except we'll roll it back if need be
                 // if (ReportDuringHVACSizingSimulation) {
-                if (state.dataSQLiteProcedures->sqlite) state.dataSQLiteProcedures->sqlite->sqliteBegin(); // setup for one transaction per day
+                if (state.dataSQLiteProcedures->sqlite) {
+                    state.dataSQLiteProcedures->sqlite->sqliteBegin(); // setup for one transaction per day
+                }
                 // }
                 ++state.dataGlobal->DayOfSim;
                 state.dataGlobal->DayOfSimChr = fmt::to_string(state.dataGlobal->DayOfSim);
@@ -291,7 +305,7 @@ void ManageHVACSizingSimulation(EnergyPlusData &state, bool &ErrorsFound)
                     state.dataGlobal->BeginHourFlag = true;
                     state.dataGlobal->EndHourFlag = false;
 
-                    for (state.dataGlobal->TimeStep = 1; state.dataGlobal->TimeStep <= state.dataGlobal->NumOfTimeStepInHour;
+                    for (state.dataGlobal->TimeStep = 1; state.dataGlobal->TimeStep <= state.dataGlobal->TimeStepsInHour;
                          ++state.dataGlobal->TimeStep) {
                         if (state.dataGlobal->AnySlabsInModel || state.dataGlobal->AnyBasementsInModel) {
                             PlantPipingSystemsManager::SimulateGroundDomains(state, false);
@@ -306,7 +320,7 @@ void ManageHVACSizingSimulation(EnergyPlusData &state, bool &ErrorsFound)
                         // Note also that BeginTimeStepFlag, EndTimeStepFlag, and the
                         // SubTimeStepFlags can/will be set/reset in the HVAC Manager.
 
-                        if (state.dataGlobal->TimeStep == state.dataGlobal->NumOfTimeStepInHour) {
+                        if (state.dataGlobal->TimeStep == state.dataGlobal->TimeStepsInHour) {
                             state.dataGlobal->EndHourFlag = true;
                             if (state.dataGlobal->HourOfDay == 24) {
                                 state.dataGlobal->EndDayFlag = true;

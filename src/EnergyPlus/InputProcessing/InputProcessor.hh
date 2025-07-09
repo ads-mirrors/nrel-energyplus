@@ -92,7 +92,9 @@ public:
     template <typename T> T *objectFactory(EnergyPlusData &state, std::string const &objectName)
     {
         T *p = data->objectFactory<T>(objectName);
-        if (p != nullptr) return p;
+        if (p != nullptr) {
+            return p;
+        }
         auto const &fields = getFields(state, T::canonicalObjectType(), objectName);
         p = data->addObject<T>(objectName, fields);
         return p;
@@ -101,7 +103,9 @@ public:
     template <typename T> T *objectFactory(EnergyPlusData &state)
     {
         T *p = data->objectFactory<T>();
-        if (p != nullptr) return p;
+        if (p != nullptr) {
+            return p;
+        }
         auto const &fields = getFields(state, T::canonicalObjectType());
         p = data->addObject<T>(fields);
         return p;
@@ -323,6 +327,10 @@ private:
 struct DataInputProcessing : BaseGlobalStruct
 {
     std::unique_ptr<InputProcessor> inputProcessor = InputProcessor::factory();
+
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
 
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {

@@ -121,6 +121,10 @@ struct PlantValvesData : BaseGlobalStruct
     int NumTemperingValves = 0;
     EPVector<PlantValves::TemperValveData> TemperValve; // dimension to No. of TemperingValve objects
 
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
+
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {
     }

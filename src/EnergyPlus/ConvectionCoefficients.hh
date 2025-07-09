@@ -743,23 +743,6 @@ namespace Convect {
     CalcASTMC1340ConvCoeff(EnergyPlusData &state, int const SurfNum, Real64 const Tsurf, Real64 const Tair, Real64 const Vair, Real64 const Tilt);
 
     SurfOrientation GetSurfConvOrientation(Real64 const Tilt);
-
-    void ShowSevereValueOutOfRange(EnergyPlusData &state,
-                                   ErrorObjectHeader const &eoh,
-                                   std::string_view fieldName,
-                                   Real64 fieldVal,
-                                   Real64 lo,
-                                   Real64 hi,
-                                   std::string const &msg);
-
-    void ShowSevereScheduleOutOfRange(EnergyPlusData &state,
-                                      ErrorObjectHeader const &eoh,
-                                      std::string_view fieldName,
-                                      std::string_view fieldVal,
-                                      Real64 lo,
-                                      Real64 hi,
-                                      std::string const &msg);
-
 } // namespace Convect
 
 struct ConvectionCoefficientsData : BaseGlobalStruct
@@ -807,6 +790,10 @@ struct ConvectionCoefficientsData : BaseGlobalStruct
     Convect::ExtAdaptiveConvAlgo extAdaptiveConvAlgo;
     Array1D<Convect::HcIntUserCurve> hcIntUserCurve;
     Array1D<Convect::HcExtUserCurve> hcExtUserCurve;
+
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
 
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {

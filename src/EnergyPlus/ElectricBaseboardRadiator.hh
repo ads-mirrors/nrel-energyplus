@@ -72,7 +72,7 @@ namespace ElectricBaseboardRadiator {
         Array1D_string SurfaceName;
         Array1D_int SurfacePtr;
         int ZonePtr = 0;
-        int SchedPtr = 0;
+        Sched::Schedule *availSched = nullptr; // Assuming availability schedule
         int TotSurfToDistrib = 0;
         Real64 NominalCapacity = 0.0;
         Real64 BaseboardEfficiency = 0.0;
@@ -159,6 +159,10 @@ struct ElectricBaseboardRadiatorData : BaseGlobalStruct
     Array1D<ElectricBaseboardRadiator::ElecBaseboardParams> ElecBaseboard;
     Array1D<ElectricBaseboardRadiator::ElecBaseboardNumericFieldData> ElecBaseboardNumericFields;
     bool GetInputFlag = true; // One time get input flag
+
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
 
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {

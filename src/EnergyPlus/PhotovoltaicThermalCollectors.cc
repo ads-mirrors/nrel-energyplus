@@ -163,22 +163,31 @@ namespace PhotovoltaicThermalCollectors {
         // first load the 'Simple' performance object info into temporary structure
         state.dataIPShortCut->cCurrentModuleObject = "SolarCollectorPerformance:PhotovoltaicThermal:Simple";
         int NumSimplePVTPerform = state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, state.dataIPShortCut->cCurrentModuleObject);
-        if (NumSimplePVTPerform > 0) GetPVTSimpleCollectorsInput(state, NumSimplePVTPerform, tmpSimplePVTperf);
+        if (NumSimplePVTPerform > 0) {
+            GetPVTSimpleCollectorsInput(state, NumSimplePVTPerform, tmpSimplePVTperf);
+        }
 
         // load the 'BIPVT' performance object info into temporary structure
         state.dataIPShortCut->cCurrentModuleObject = "SolarCollectorPerformance:PhotovoltaicThermal:BIPVT";
         int NumBIPVTPerform = state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, state.dataIPShortCut->cCurrentModuleObject);
-        if (NumBIPVTPerform > 0) GetBIPVTCollectorsInput(state, NumBIPVTPerform, tmpBIPVTperf);
+        if (NumBIPVTPerform > 0) {
+            GetBIPVTCollectorsInput(state, NumBIPVTPerform, tmpBIPVTperf);
+        }
 
         // now get main PVT objects
         state.dataIPShortCut->cCurrentModuleObject = "SolarCollector:FlatPlate:PhotovoltaicThermal";
         state.dataPhotovoltaicThermalCollector->NumPVT =
             state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, state.dataIPShortCut->cCurrentModuleObject);
-        if (state.dataPhotovoltaicThermalCollector->NumPVT > 0)
+        if (state.dataPhotovoltaicThermalCollector->NumPVT > 0) {
             GetMainPVTInput(
                 state, state.dataPhotovoltaicThermalCollector->NumPVT, state.dataPhotovoltaicThermalCollector->PVT, tmpSimplePVTperf, tmpBIPVTperf);
-        if (allocated(tmpSimplePVTperf)) tmpSimplePVTperf.deallocate();
-        if (allocated(tmpBIPVTperf)) tmpBIPVTperf.deallocate();
+        }
+        if (allocated(tmpSimplePVTperf)) {
+            tmpSimplePVTperf.deallocate();
+        }
+        if (allocated(tmpBIPVTperf)) {
+            tmpBIPVTperf.deallocate();
+        }
     }
 
     void GetPVTSimpleCollectorsInput(EnergyPlusData &state, int NumSimplePVTPerform, Array1D<SimplePVTModelStruct> &tmpSimplePVTperf)
@@ -186,10 +195,13 @@ namespace PhotovoltaicThermalCollectors {
         // PURPOSE OF THIS SUBROUTINE:
         // Get input for PVT Simple objects
 
-        int Item;       // Item to be "gotten"
-        int NumAlphas;  // Number of Alphas for each GetObjectItem call
-        int NumNumbers; // Number of Numbers for each GetObjectItem call
-        int IOStatus;   // Used in GetObjectItem
+        static constexpr std::string_view routineName = "GetPVTSimpleCollectorsInput";
+
+        int Item;                // Item to be "gotten"
+        int NumAlphas;           // Number of Alphas for each GetObjectItem call
+        int NumNumbers;          // Number of Numbers for each GetObjectItem call
+        int IOStatus;            // Used in GetObjectItem
+        bool ErrorsFound(false); // Set to true if errors in input, fatal at end of routine
 
         tmpSimplePVTperf.allocate(NumSimplePVTPerform);
         for (Item = 1; Item <= NumSimplePVTPerform; ++Item) {
@@ -205,19 +217,24 @@ namespace PhotovoltaicThermalCollectors {
                                                                      state.dataIPShortCut->lAlphaFieldBlanks,
                                                                      state.dataIPShortCut->cAlphaFieldNames,
                                                                      state.dataIPShortCut->cNumericFieldNames);
+
+            ErrorObjectHeader eoh{routineName, state.dataIPShortCut->cCurrentModuleObject, state.dataIPShortCut->cAlphaArgs(1)};
+
             auto &thisTmpSimplePVTperf = tmpSimplePVTperf(Item);
             thisTmpSimplePVTperf.Name = state.dataIPShortCut->cAlphaArgs(1);
             thisTmpSimplePVTperf.ThermEfficMode =
                 static_cast<ThermEfficEnum>(getEnumValue(ThermEfficTypeNamesUC, Util::makeUPPER(state.dataIPShortCut->cAlphaArgs(2))));
             thisTmpSimplePVTperf.ThermalActiveFract = state.dataIPShortCut->rNumericArgs(1);
             thisTmpSimplePVTperf.ThermEffic = state.dataIPShortCut->rNumericArgs(2);
-            thisTmpSimplePVTperf.ThermEffSchedNum = ScheduleManager::GetScheduleIndex(state, state.dataIPShortCut->cAlphaArgs(3));
-            if ((thisTmpSimplePVTperf.ThermEffSchedNum == 0) && (thisTmpSimplePVTperf.ThermEfficMode == ThermEfficEnum::SCHEDULED)) {
-                ShowSevereError(state,
-                                format("GetPVTSimpleCollectorsInput: Invalid efficiency schedule name passed={}, object type={}, object name={}",
-                                       state.dataIPShortCut->cAlphaArgs(3),
-                                       state.dataIPShortCut->cCurrentModuleObject,
-                                       thisTmpSimplePVTperf.Name));
+
+            if (thisTmpSimplePVTperf.ThermEfficMode == ThermEfficEnum::SCHEDULED) {
+                if (state.dataIPShortCut->lAlphaFieldBlanks(3)) {
+                    ShowSevereEmptyField(state, eoh, state.dataIPShortCut->cAlphaFieldNames(3));
+                    ErrorsFound = true;
+                } else if ((thisTmpSimplePVTperf.thermEffSched = Sched::GetSchedule(state, state.dataIPShortCut->cAlphaArgs(3))) == nullptr) {
+                    ShowSevereItemNotFound(state, eoh, state.dataIPShortCut->cAlphaFieldNames(3), state.dataIPShortCut->cAlphaArgs(3));
+                    ErrorsFound = true;
+                }
             }
             thisTmpSimplePVTperf.SurfEmissivity = state.dataIPShortCut->rNumericArgs(3);
         }
@@ -227,14 +244,13 @@ namespace PhotovoltaicThermalCollectors {
     {
         // PURPOSE OF THIS SUBROUTINE:
         // Get input for BIPVT objects
+        static constexpr std::string_view routineName = "GetBIPVTCollectorsInput";
 
         int Item;       // Item to be "gotten"
         int NumAlphas;  // Number of Alphas for each GetObjectItem call
         int NumNumbers; // Number of Numbers for each GetObjectItem call
         int IOStatus;   // Used in GetObjectItem
         using DataSurfaces::OSCMData;
-        using ScheduleManager::GetScheduleIndex;
-        using ScheduleManager::ScheduleAlwaysOn;
 
         tmpBIPVTperf.allocate(NumBIPVTPerform);
         for (Item = 1; Item <= NumBIPVTPerform; ++Item) {
@@ -250,6 +266,9 @@ namespace PhotovoltaicThermalCollectors {
                                                                      state.dataIPShortCut->lAlphaFieldBlanks,
                                                                      state.dataIPShortCut->cAlphaFieldNames,
                                                                      state.dataIPShortCut->cNumericFieldNames);
+
+            ErrorObjectHeader eoh{routineName, state.dataIPShortCut->cCurrentModuleObject, state.dataIPShortCut->cAlphaArgs(1)};
+
             auto &thisTmpBIPVTperf = tmpBIPVTperf(Item);
             thisTmpBIPVTperf.Name = state.dataIPShortCut->cAlphaArgs(1);
             thisTmpBIPVTperf.OSCMName = state.dataIPShortCut->cAlphaArgs(2);
@@ -275,18 +294,12 @@ namespace PhotovoltaicThermalCollectors {
             thisTmpBIPVTperf.ThGlass = state.dataIPShortCut->rNumericArgs(11);
             thisTmpBIPVTperf.RIndGlass = state.dataIPShortCut->rNumericArgs(12);
             thisTmpBIPVTperf.ECoffGlass = state.dataIPShortCut->rNumericArgs(13);
+
             if (state.dataIPShortCut->lAlphaFieldBlanks(3)) {
-                thisTmpBIPVTperf.SchedPtr = ScheduleAlwaysOn;
-            } else {
-                thisTmpBIPVTperf.SchedPtr = GetScheduleIndex(state, state.dataIPShortCut->cAlphaArgs(3));
-                if (thisTmpBIPVTperf.SchedPtr == 0) {
-                    ShowSevereError(state,
-                                    format("GetBIPVTCollectorsInput: Invalid schedule name ={}, object type={}, object name={}",
-                                           state.dataIPShortCut->cAlphaArgs(3),
-                                           state.dataIPShortCut->cCurrentModuleObject,
-                                           thisTmpBIPVTperf.Name));
-                    continue;
-                }
+                thisTmpBIPVTperf.availSched = Sched::GetScheduleAlwaysOn(state);
+            } else if ((thisTmpBIPVTperf.availSched = Sched::GetSchedule(state, state.dataIPShortCut->cAlphaArgs(3))) == nullptr) {
+                ShowSevereItemNotFound(state, eoh, state.dataIPShortCut->cAlphaFieldNames(3), state.dataIPShortCut->cAlphaArgs(3));
+                continue;
             }
         }
     }
@@ -713,7 +726,9 @@ namespace PhotovoltaicThermalCollectors {
 
             this->EnvrnInit = false;
         }
-        if (!state.dataGlobal->BeginEnvrnFlag) this->EnvrnInit = true;
+        if (!state.dataGlobal->BeginEnvrnFlag) {
+            this->EnvrnInit = true;
+        }
 
         switch (this->WorkingFluidType) {
         case WorkingFluidEnum::LIQUID: {
@@ -766,8 +781,12 @@ namespace PhotovoltaicThermalCollectors {
 
         if (this->WorkingFluidType == WorkingFluidEnum::LIQUID) {
 
-            if (!allocated(state.dataSize->PlantSizData)) return;
-            if (!allocated(state.dataPlnt->PlantLoop)) return;
+            if (!allocated(state.dataSize->PlantSizData)) {
+                return;
+            }
+            if (!allocated(state.dataPlnt->PlantLoop)) {
+                return;
+            }
             int PltSizNum = 0; // Plant Sizing index corresponding to CurLoopNum
 
             if (this->WPlantLoc.loopNum > 0) {
@@ -1042,7 +1061,7 @@ namespace PhotovoltaicThermalCollectors {
                 Eff = this->Simple.ThermEffic;
             } break;
             case ThermEfficEnum::SCHEDULED: {
-                Eff = ScheduleManager::GetCurrentScheduleValue(state, this->Simple.ThermEffSchedNum);
+                Eff = this->Simple.thermEffSched->getCurrentVal();
                 this->Simple.ThermEffic = Eff;
             } break;
             default:
@@ -1180,7 +1199,6 @@ namespace PhotovoltaicThermalCollectors {
         // ???
 
         static std::string const RoutineName("CalcBIPVTcollectors");
-        using ScheduleManager::GetCurrentScheduleValue;
 
         int InletNode = this->HVACInletNodeNum;
         Real64 mdot = this->MassFlowRate;
@@ -1192,7 +1210,7 @@ namespace PhotovoltaicThermalCollectors {
         Real64 Tcollector(Tinlet);
         this->OperatingMode = PVTMode::Heating;
 
-        if (this->HeatingUseful && this->BypassDamperOff && (GetCurrentScheduleValue(state, this->BIPVT.SchedPtr) > 0.0)) {
+        if (this->HeatingUseful && this->BypassDamperOff && (this->BIPVT.availSched->getCurrentVal() > 0.0)) {
 
             if ((state.dataLoopNodes->Node(this->HVACOutletNodeNum).TempSetPoint - Tinlet) > 0.1) {
                 calculateBIPVTMaxHeatGain(state,
@@ -1217,9 +1235,11 @@ namespace PhotovoltaicThermalCollectors {
             this->Report.MdotWorkFluid = mdot;
             this->Report.ToutletWorkFluid = PotentialOutletTemp;
             this->Report.BypassStatus = BypassFraction;
-            if (PotentialHeatGain > 0.0) this->BIPVT.LastCollectorTemp = Tcollector;
+            if (PotentialHeatGain > 0.0) {
+                this->BIPVT.LastCollectorTemp = Tcollector;
+            }
 
-        } else if (this->CoolingUseful && this->BypassDamperOff && (GetCurrentScheduleValue(state, this->BIPVT.SchedPtr) > 0.0)) {
+        } else if (this->CoolingUseful && this->BypassDamperOff && (this->BIPVT.availSched->getCurrentVal() > 0.0)) {
 
             this->OperatingMode = PVTMode::Cooling;
             if ((Tinlet - state.dataLoopNodes->Node(this->HVACOutletNodeNum).TempSetPoint) > 0.1) {
@@ -1261,7 +1281,9 @@ namespace PhotovoltaicThermalCollectors {
             this->Report.ThermHeatGain = 0.0;
             this->Report.ThermPower = -1.0 * this->Report.ThermHeatLoss;
             this->Report.ThermEnergy = this->Report.ThermPower * state.dataHVACGlobal->TimeStepSysSec;
-            if (PotentialHeatGain < 0.0) this->BIPVT.LastCollectorTemp = Tcollector;
+            if (PotentialHeatGain < 0.0) {
+                this->BIPVT.LastCollectorTemp = Tcollector;
+            }
             this->Report.BypassStatus = BypassFraction;
         } else {
             this->Report.TinletWorkFluid = Tinlet;
@@ -1451,7 +1473,9 @@ namespace PhotovoltaicThermalCollectors {
             hconvt_nat = 0.15 * std::pow(raleigh, 0.333) * k_air / dhyd; // Incropera et al. 6th ed.
 
             wind_incidence = std::abs(wind_dir - surf_azimuth);
-            if ((wind_incidence - 180.0) > 0.001) wind_incidence -= 360.0;
+            if ((wind_incidence - 180.0) > 0.001) {
+                wind_incidence -= 360.0;
+            }
 
             if (slope > 75.0 * pi / 180.0) { // If slope of surface if greater than 75deg, assume it's a wall and use wall external htc
                 if (wind_incidence <= 45) {
@@ -1619,8 +1643,9 @@ namespace PhotovoltaicThermalCollectors {
             }
         }
         ThEff = 0.0;
-        if ((q > small_num) && (state.dataHeatBal->SurfQRadSWOutIncident(SurfNum) > small_num))
+        if ((q > small_num) && (state.dataHeatBal->SurfQRadSWOutIncident(SurfNum) > small_num)) {
             ThEff = q / (area_wall_total * state.dataHeatBal->SurfQRadSWOutIncident(SurfNum) + small_num); // Thermal efficiency of BIPVT
+        }
         this->BIPVT.Tcoll = t1;
         this->BIPVT.HrPlen = hrad12;
         this->BIPVT.Tplen = tfavg;
@@ -1662,7 +1687,9 @@ namespace PhotovoltaicThermalCollectors {
                     }
                 }
                 for (int j = (i + 1); j <= (m - 1); j++) {
-                    if (std::abs(jj[i * m + i]) < small) jj[i * m + i] = small;
+                    if (std::abs(jj[i * m + i]) < small) {
+                        jj[i * m + i] = small;
+                    }
                     Real64 mm = jj[j * m + i] / jj[i * m + i];
                     f[j] = f[j] - mm * f[i];
                     for (int k = 0; k <= (m - 1); k++) {
@@ -1671,7 +1698,9 @@ namespace PhotovoltaicThermalCollectors {
                 }
             }
         }
-        if (std::abs(jj[(m - 1) * m + m - 1]) < small) jj[(m - 1) * m + m - 1] = small;
+        if (std::abs(jj[(m - 1) * m + m - 1]) < small) {
+            jj[(m - 1) * m + m - 1] = small;
+        }
         y[m - 1] = f[m - 1] / jj[(m - 1) * m + m - 1];
         Real64 sum = 0.0;
         for (int i = 0; i <= (m - 2); i++) {
@@ -1679,7 +1708,9 @@ namespace PhotovoltaicThermalCollectors {
             for (int j = ii; j <= (m - 1); j++) {
                 sum = sum + jj[ii * m + j] * y[j];
             }
-            if (std::abs(jj[ii * m + ii]) < small) jj[ii * m + ii] = small;
+            if (std::abs(jj[ii * m + ii]) < small) {
+                jj[ii * m + ii] = small;
+            }
             y[ii] = (f[ii] - sum) / jj[ii * m + ii];
             sum = 0.0;
         }
@@ -1804,7 +1835,9 @@ namespace PhotovoltaicThermalCollectors {
 
         // first find PVT index that is associated with this PV generator
         for (int loop = 1; loop <= state.dataPhotovoltaicThermalCollector->NumPVT; ++loop) {
-            if (!state.dataPhotovoltaicThermalCollector->PVT(loop).PVfound) continue;
+            if (!state.dataPhotovoltaicThermalCollector->PVT(loop).PVfound) {
+                continue;
+            }
             if (state.dataPhotovoltaicThermalCollector->PVT(loop).PVnum == PVindex) { // we found it
                 PVTnum = loop;
             }

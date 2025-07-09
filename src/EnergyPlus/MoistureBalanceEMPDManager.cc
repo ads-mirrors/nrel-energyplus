@@ -200,8 +200,7 @@ void GetMoistureBalanceEMPDInput(EnergyPlusData &state)
 
         auto *mat = s_mat->materials(matNum);
         if (mat->group != Material::Group::Regular || mat->ROnly) {
-            ShowSevereCustomMessage(
-                state, eoh, "Reference Material is not appropriate type for EMPD properties, must have regular properties (L,Cp,K,D)");
+            ShowSevereCustom(state, eoh, "Reference Material is not appropriate type for EMPD properties, must have regular properties (L,Cp,K,D)");
             ErrorsFound = true;
             continue;
         }
@@ -244,8 +243,12 @@ void GetMoistureBalanceEMPDInput(EnergyPlusData &state)
     EMPDzone.dimension(state.dataGlobal->NumOfZones, false);
     for (int SurfNum = 1; SurfNum <= state.dataSurface->TotSurfaces; ++SurfNum) {
         auto const &surf = state.dataSurface->Surface(SurfNum);
-        if (!surf.HeatTransSurf || surf.Class == DataSurfaces::SurfaceClass::Window) continue; // Heat transfer surface only and not a window
-        if (surf.HeatTransferAlgorithm != DataSurfaces::HeatTransferModel::EMPD) continue;
+        if (!surf.HeatTransSurf || surf.Class == DataSurfaces::SurfaceClass::Window) {
+            continue; // Heat transfer surface only and not a window
+        }
+        if (surf.HeatTransferAlgorithm != DataSurfaces::HeatTransferModel::EMPD) {
+            continue;
+        }
 
         auto const &constr = state.dataConstruction->Construct(surf.Construction);
         auto const *mat = dynamic_cast<const MaterialEMPD *>(s_mat->materials(constr.LayerPoint(constr.TotLayers)));
@@ -266,7 +269,9 @@ void GetMoistureBalanceEMPDInput(EnergyPlusData &state)
             }
         }
 
-        if (constr.TotLayers == 1) continue; // One layer construction
+        if (constr.TotLayers == 1) {
+            continue; // One layer construction
+        }
 
         // Multiple layer construction
         auto const *mat1 = s_mat->materials(constr.LayerPoint(1));
@@ -339,7 +344,9 @@ void InitMoistureBalanceEMPD(EnergyPlusData &state)
 
     for (int SurfNum = 1; SurfNum <= state.dataSurface->TotSurfaces; ++SurfNum) {
         int ZoneNum = state.dataSurface->Surface(SurfNum).Zone;
-        if (!state.dataSurface->Surface(SurfNum).HeatTransSurf) continue;
+        if (!state.dataSurface->Surface(SurfNum).HeatTransSurf) {
+            continue;
+        }
         Real64 const rv_air_in_initval =
             min(PsyRhovFnTdbWPb_fast(state.dataZoneTempPredictorCorrector->zoneHeatBalance(ZoneNum).MAT,
                                      max(state.dataZoneTempPredictorCorrector->zoneHeatBalance(ZoneNum).airHumRat, 1.0e-5),
@@ -353,14 +360,20 @@ void InitMoistureBalanceEMPD(EnergyPlusData &state)
         state.dataMstBalEMPD->RVdeepOld(SurfNum) = rv_air_in_initval;
         state.dataMstBalEMPD->RVwall(SurfNum) = rv_air_in_initval;
     }
-    if (!state.dataMoistureBalEMPD->InitEnvrnFlag) return;
+    if (!state.dataMoistureBalEMPD->InitEnvrnFlag) {
+        return;
+    }
     // Initialize the report variable
 
     GetMoistureBalanceEMPDInput(state);
 
     for (int SurfNum = 1; SurfNum <= state.dataSurface->TotSurfaces; ++SurfNum) {
-        if (!state.dataSurface->Surface(SurfNum).HeatTransSurf) continue;
-        if (state.dataSurface->Surface(SurfNum).Class == DataSurfaces::SurfaceClass::Window) continue;
+        if (!state.dataSurface->Surface(SurfNum).HeatTransSurf) {
+            continue;
+        }
+        if (state.dataSurface->Surface(SurfNum).Class == DataSurfaces::SurfaceClass::Window) {
+            continue;
+        }
         EMPDReportVarsData &rvd = state.dataMoistureBalEMPD->EMPDReportVars(SurfNum);
         const std::string surf_name = state.dataSurface->Surface(SurfNum).Name;
         SetupOutputVariable(state,
@@ -428,7 +441,9 @@ void InitMoistureBalanceEMPD(EnergyPlusData &state)
                             surf_name);
     }
 
-    if (state.dataMoistureBalEMPD->InitEnvrnFlag) state.dataMoistureBalEMPD->InitEnvrnFlag = false;
+    if (state.dataMoistureBalEMPD->InitEnvrnFlag) {
+        state.dataMoistureBalEMPD->InitEnvrnFlag = false;
+    }
 }
 
 void CalcMoistureBalanceEMPD(EnergyPlusData &state,
@@ -631,8 +646,9 @@ void CalcMoistureBalanceEMPD(EnergyPlusData &state,
             RH_surf_layer = RHZone;
         } else if (RH_surf_layer_tmp < RH_deep_layer_old) {
             RH_surf_layer = RH_deep_layer_old;
-        } else
+        } else {
             RH_surf_layer = RH_surf_layer_tmp;
+        }
     } else if (RHZone < RH_deep_layer_old) {
         if (RH_surf_layer_tmp < RHZone) {
             RH_surf_layer = RHZone;
@@ -721,7 +737,9 @@ void ReportMoistureBalanceEMPD(EnergyPlusData &state)
 
     ScanForReports(state, "Constructions", DoReport, "Constructions");
 
-    if (!DoReport) return;
+    if (!DoReport) {
+        return;
+    }
     //   Write Descriptions
     print(state.files.eio,
           "{}",
@@ -731,10 +749,14 @@ void ReportMoistureBalanceEMPD(EnergyPlusData &state)
 
     for (int ConstrNum = 1; ConstrNum <= state.dataHeatBal->TotConstructs; ++ConstrNum) {
         auto const &constr = state.dataConstruction->Construct(ConstrNum);
-        if (constr.TypeIsWindow) continue;
+        if (constr.TypeIsWindow) {
+            continue;
+        }
 
         auto const *mat = s_mat->materials(constr.LayerPoint(constr.TotLayers));
-        if (!mat->hasEMPD) continue;
+        if (!mat->hasEMPD) {
+            continue;
+        }
 
         auto const *matEMPD = dynamic_cast<MaterialEMPD const *>(mat);
         assert(matEMPD != nullptr);

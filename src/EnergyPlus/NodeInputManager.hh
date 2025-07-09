@@ -176,15 +176,19 @@ struct NodeInputManagerData : BaseGlobalStruct
 
     Real64 RhoAirStdInit;
     Real64 RhoWaterStdInit;
-    Array1D_int NodeWetBulbSchedPtr;
+    Array1D<Sched::Schedule *> NodeWetBulbScheds;
     Array1D_bool NodeRelHumidityRepReq;
-    Array1D_int NodeRelHumiditySchedPtr;
+    Array1D<Sched::Schedule *> NodeRelHumidityScheds;
     Array1D_bool NodeDewPointRepReq;
-    Array1D_int NodeDewPointSchedPtr;
+    Array1D<Sched::Schedule *> NodeDewPointScheds;
     Array1D_bool NodeSpecificHeatRepReq;
-    Array1D_int NodeSpecificHeatSchedPtr;
+    Array1D<Sched::Schedule *> NodeSpecificHeatScheds;
     std::vector<std::string> nodeReportingStrings;
     std::vector<Fluid::GlycolProps *> nodeFluids;
+
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
 
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {

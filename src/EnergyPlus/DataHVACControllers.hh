@@ -120,6 +120,10 @@ struct HVACCtrlData : BaseGlobalStruct
                                                                "Active min-constrained controller mode",
                                                                "Active max-constrained controller mode"});
 
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
+
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {
     }

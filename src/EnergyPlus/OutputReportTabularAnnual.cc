@@ -56,7 +56,6 @@
 #include <ObjexxFCL/Array1D.hh>
 #include <ObjexxFCL/Array2D.hh>
 #include <ObjexxFCL/Array2S.hh>
-#include <ObjexxFCL/Array3D.hh>
 
 // EnergyPlus Headers
 #include <EnergyPlus/CostEstimateManager.hh>
@@ -333,10 +332,8 @@ void AnnualTable::gatherForTimestep(EnergyPlusData &state, OutputProcessor::Time
     bool activeMinMax = false;
     bool activeHoursShown = false;
     // if schedule is used and the current value is zero, don't gather values
-    if (m_scheduleNum != 0) {
-        if (ScheduleManager::GetCurrentScheduleValue(state, m_scheduleNum) == 0.0) {
-            return;
-        }
+    if (m_sched != nullptr && m_sched->getCurrentVal() == 0.0) {
+        return;
     }
     // loop through the fields
     std::vector<AnnualFieldSet>::iterator fldStIt;
@@ -638,9 +635,14 @@ void WriteAnnualTables(EnergyPlusData &state)
         OutputReportTabular::UnitsStyle unitsStyle_cur = state.dataOutRptTab->unitsStyle;
         bool produceTabular = true;
         bool produceSQLite = false;
-        if (produceDualUnitsFlags(
-                iUnitSystem, state.dataOutRptTab->unitsStyle, state.dataOutRptTab->unitsStyle_SQLite, unitsStyle_cur, produceTabular, produceSQLite))
+        if (produceDualUnitsFlags(iUnitSystem,
+                                  state.dataOutRptTab->unitsStyle,
+                                  state.dataOutRptTab->unitsStyle_SQLite,
+                                  unitsStyle_cur,
+                                  produceTabular,
+                                  produceSQLite)) {
             break;
+        }
 
         // Jason Glazer, August 2015
         // This function is not part of the class but acts as an interface between procedural code and the class by
@@ -760,8 +762,12 @@ void AnnualTable::writeTable(EnergyPlusData &state, OutputReportTabular::UnitsSt
                         sumVal += curVal;
                     }
                     tableBody(columnRecount, row + 1) = OutputReportTabular::RealToStr(curVal, fldStIt->m_showDigits);
-                    if (curVal > maxVal) maxVal = curVal;
-                    if (curVal < minVal) minVal = curVal;
+                    if (curVal > maxVal) {
+                        maxVal = curVal;
+                    }
+                    if (curVal < minVal) {
+                        minVal = curVal;
+                    }
                 } else {
                     tableBody(columnRecount, row + 1) = "-";
                 }
@@ -796,8 +802,12 @@ void AnnualTable::writeTable(EnergyPlusData &state, OutputReportTabular::UnitsSt
                 curVal = curVal * curConversionFactor + curConversionOffset;
                 tableBody(columnRecount, row + 1) = OutputReportTabular::RealToStr(curVal, fldStIt->m_showDigits);
                 sumVal += curVal;
-                if (curVal > maxVal) maxVal = curVal;
-                if (curVal < minVal) minVal = curVal;
+                if (curVal > maxVal) {
+                    maxVal = curVal;
+                }
+                if (curVal < minVal) {
+                    minVal = curVal;
+                }
             } // row
             // add the summary to bottom
             tableBody(columnRecount, rowSumAvg) = OutputReportTabular::RealToStr(sumVal, fldStIt->m_showDigits);
@@ -819,8 +829,12 @@ void AnnualTable::writeTable(EnergyPlusData &state, OutputReportTabular::UnitsSt
                 curVal = fldStIt->m_cell[row].result;
                 curVal = curVal * curConversionFactor + curConversionOffset;
                 tableBody(columnRecount, row + 1) = OutputReportTabular::RealToStr(curVal, fldStIt->m_showDigits);
-                if (curVal > maxVal) maxVal = curVal;
-                if (curVal < minVal) minVal = curVal;
+                if (curVal > maxVal) {
+                    maxVal = curVal;
+                }
+                if (curVal < minVal) {
+                    minVal = curVal;
+                }
             } // row
             // add the summary to bottom
             if (minVal != storedMaxVal) {
@@ -848,8 +862,12 @@ void AnnualTable::writeTable(EnergyPlusData &state, OutputReportTabular::UnitsSt
                 // restructured the following lines to hide showing HUGE and -HUGE values in output table CR8154 Glazer
                 if ((curVal < veryLarge) && (curVal > verySmall)) {
                     curVal = curVal * curConversionFactor + curConversionOffset;
-                    if (curVal > maxVal) maxVal = curVal;
-                    if (curVal < minVal) minVal = curVal;
+                    if (curVal > maxVal) {
+                        maxVal = curVal;
+                    }
+                    if (curVal < minVal) {
+                        minVal = curVal;
+                    }
                     if (curVal < veryLarge && curVal > verySmall) {
                         tableBody(columnRecount - 1, row + 1) = OutputReportTabular::RealToStr(curVal, fldStIt->m_showDigits);
                     } else {
@@ -1167,7 +1185,9 @@ std::string AnnualTable::trim(const std::string &str)
 {
     std::string whitespace = " \t";
     const size_t strBegin = str.find_first_not_of(whitespace);
-    if (strBegin == std::string::npos) return ""; // no content
+    if (strBegin == std::string::npos) {
+        return ""; // no content
+    }
 
     const size_t strEnd = str.find_last_not_of(whitespace);
     const size_t strRange = strEnd - strBegin + 1;
@@ -1190,9 +1210,7 @@ void AddAnnualTableOfContents(EnergyPlusData &state, std::ostream &nameOfStream)
 void AnnualTable::addTableOfContents(std::ostream &nameOfStream)
 {
     nameOfStream << "<p><b>" << m_name << "</b></p> |\n";
-    nameOfStream << "<a href=\"#" << OutputReportTabular::MakeAnchorName(m_name, "Entire Facility") << "\">"
-                 << "Entire Facility"
-                 << "</a>    |   \n";
+    nameOfStream << "<a href=\"#" << OutputReportTabular::MakeAnchorName(m_name, "Entire Facility") << "\">" << "Entire Facility" << "</a>    |   \n";
 }
 
 void AnnualTable::computeBinColumns(EnergyPlusData &state, OutputReportTabular::UnitsStyle const unitsStyle_para)
@@ -1382,8 +1400,7 @@ void AnnualTable::clearTable()
 {
     m_name = "";
     m_filter = "";
-    m_scheduleName = "";
-    m_scheduleNum = 0;
+    m_sched = nullptr;
     m_objectNames.clear();
     m_annualFields.clear();
 }
@@ -1395,7 +1412,7 @@ std::vector<std::string> AnnualTable::inspectTable()
     std::vector<std::string> ret;
     ret.push_back(m_name);
     ret.push_back(m_filter);
-    ret.push_back(m_scheduleName);
+    ret.push_back(m_sched->Name);
     return ret;
 }
 

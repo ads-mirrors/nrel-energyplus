@@ -82,8 +82,8 @@ namespace Window {
         Real64 Phi = 0;
 
         // get window tilt and azimuth
-        Real64 Gamma = Constant::DegToRadians * state.dataSurface->Surface(t_SurfNum).Tilt;
-        Real64 Alpha = Constant::DegToRadians * state.dataSurface->Surface(t_SurfNum).Azimuth;
+        Real64 Gamma = Constant::DegToRad * state.dataSurface->Surface(t_SurfNum).Tilt;
+        Real64 Alpha = Constant::DegToRad * state.dataSurface->Surface(t_SurfNum).Azimuth;
 
         RayIdentificationType RadType = RayIdentificationType::Front_Incident;
 

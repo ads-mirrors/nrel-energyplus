@@ -176,6 +176,10 @@ struct PlantMgrData : BaseGlobalStruct
     int newCallingIndex = 0;
     PlantManager::EmptyPlantComponent dummyPlantComponent;
 
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
+
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {
     }

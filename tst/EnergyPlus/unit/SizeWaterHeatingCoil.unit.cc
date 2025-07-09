@@ -81,7 +81,6 @@ using namespace EnergyPlus::DataSizing;
 using namespace EnergyPlus::DataZoneEquipment;
 using namespace EnergyPlus::HeatBalanceManager;
 using namespace EnergyPlus::Psychrometrics;
-using namespace EnergyPlus::ScheduleManager;
 using namespace EnergyPlus::SimAirServingZones;
 using namespace EnergyPlus::SingleDuct;
 using namespace EnergyPlus::SizingManager;
@@ -100,7 +99,6 @@ TEST_F(EnergyPlusFixture, TestSizingRoutineForHotWaterCoils1)
 
     bool ErrorsFound(false);
 
-    InitializePsychRoutines(*state);
     state->dataEnvrn->StdRhoAir = 1.20;
 
     std::string const idf_objects = delimited_string({
@@ -217,6 +215,7 @@ TEST_F(EnergyPlusFixture, TestSizingRoutineForHotWaterCoils1)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     state->dataSize->FinalZoneSizing.allocate(1);
     state->dataSize->TermUnitFinalZoneSizing.allocate(1);
@@ -244,8 +243,6 @@ TEST_F(EnergyPlusFixture, TestSizingRoutineForHotWaterCoils1)
     GetZoneAirDistribution(*state); // get zone air distribution objects
     GetZoneSizingInput(*state);
     GetZoneEquipmentData(*state);
-    ProcessScheduleInput(*state);
-    state->dataScheduleMgr->ScheduleInputProcessed = true;
     GetZoneAirLoopEquipment(*state);
     GetWaterCoilInput(*state);
     state->dataWaterCoils->GetWaterCoilsInputFlag = false;
@@ -352,7 +349,6 @@ TEST_F(EnergyPlusFixture, TestSizingRoutineForHotWaterCoils2)
 
     bool ErrorsFound(false);
 
-    InitializePsychRoutines(*state);
     state->dataEnvrn->StdRhoAir = 1.20;
 
     std::string const idf_objects = delimited_string({
@@ -469,6 +465,7 @@ TEST_F(EnergyPlusFixture, TestSizingRoutineForHotWaterCoils2)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     state->dataSize->FinalZoneSizing.allocate(1);
     state->dataSize->TermUnitFinalZoneSizing.allocate(1);
@@ -496,8 +493,6 @@ TEST_F(EnergyPlusFixture, TestSizingRoutineForHotWaterCoils2)
     GetZoneAirDistribution(*state); // get zone air distribution objects
     GetZoneSizingInput(*state);
     GetZoneEquipmentData(*state);
-    ProcessScheduleInput(*state);
-    state->dataScheduleMgr->ScheduleInputProcessed = true;
     GetZoneAirLoopEquipment(*state);
     GetWaterCoilInput(*state);
     state->dataWaterCoils->GetWaterCoilsInputFlag = false;
@@ -603,7 +598,6 @@ TEST_F(EnergyPlusFixture, TestSizingRoutineForHotWaterCoils3)
     // with all inputs set by user except rated capacity is autosized
     bool ErrorsFound(false);
 
-    InitializePsychRoutines(*state);
     state->dataEnvrn->StdRhoAir = 1.20;
 
     std::string const idf_objects = delimited_string({
@@ -720,6 +714,7 @@ TEST_F(EnergyPlusFixture, TestSizingRoutineForHotWaterCoils3)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     state->dataSize->FinalZoneSizing.allocate(1);
     state->dataSize->TermUnitFinalZoneSizing.allocate(1);
@@ -747,8 +742,6 @@ TEST_F(EnergyPlusFixture, TestSizingRoutineForHotWaterCoils3)
     GetZoneAirDistribution(*state); // get zone air distribution objects
     GetZoneSizingInput(*state);
     GetZoneEquipmentData(*state);
-    ProcessScheduleInput(*state);
-    state->dataScheduleMgr->ScheduleInputProcessed = true;
     GetZoneAirLoopEquipment(*state);
     GetWaterCoilInput(*state);
     state->dataWaterCoils->GetWaterCoilsInputFlag = false;
@@ -854,7 +847,6 @@ TEST_F(EnergyPlusFixture, TestSizingRoutineForHotWaterCoils4)
 
     bool ErrorsFound(false);
 
-    InitializePsychRoutines(*state);
     state->dataEnvrn->StdRhoAir = 1.20;
 
     std::string const idf_objects = delimited_string({
@@ -971,6 +963,7 @@ TEST_F(EnergyPlusFixture, TestSizingRoutineForHotWaterCoils4)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     state->dataSize->FinalZoneSizing.allocate(1);
     state->dataSize->TermUnitFinalZoneSizing.allocate(1);
@@ -998,8 +991,6 @@ TEST_F(EnergyPlusFixture, TestSizingRoutineForHotWaterCoils4)
     GetZoneAirDistribution(*state); // get zone air distribution objects
     GetZoneSizingInput(*state);
     GetZoneEquipmentData(*state);
-    ProcessScheduleInput(*state);
-    state->dataScheduleMgr->ScheduleInputProcessed = true;
     GetZoneAirLoopEquipment(*state);
     GetWaterCoilInput(*state);
     state->dataWaterCoils->GetWaterCoilsInputFlag = false;
@@ -1104,7 +1095,6 @@ TEST_F(EnergyPlusFixture, TestSizingRoutineForHotWaterCoils5)
 
     bool ErrorsFound(false);
 
-    InitializePsychRoutines(*state);
     state->dataEnvrn->StdRhoAir = 1.20;
 
     std::string const idf_objects = delimited_string({
@@ -1187,6 +1177,7 @@ TEST_F(EnergyPlusFixture, TestSizingRoutineForHotWaterCoils5)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     state->dataSize->FinalSysSizing.allocate(1);
     state->dataSize->UnitarySysEqSizing.allocate(1);
@@ -1209,8 +1200,6 @@ TEST_F(EnergyPlusFixture, TestSizingRoutineForHotWaterCoils5)
     }
     GetZoneData(*state, ErrorsFound);
     EXPECT_EQ("SPACE1-1", state->dataHeatBal->Zone(1).Name);
-    ProcessScheduleInput(*state);
-    state->dataScheduleMgr->ScheduleInputProcessed = true;
     GetWaterCoilInput(*state);
     state->dataWaterCoils->GetWaterCoilsInputFlag = false;
     state->dataWaterCoils->MySizeFlag(1) = true;
@@ -1275,7 +1264,6 @@ TEST_F(EnergyPlusFixture, TestSizingRoutineForHotWaterCoils6)
 
     bool ErrorsFound(false);
 
-    InitializePsychRoutines(*state);
     state->dataEnvrn->StdRhoAir = 1.20;
 
     std::string const idf_objects = delimited_string({
@@ -1403,6 +1391,7 @@ TEST_F(EnergyPlusFixture, TestSizingRoutineForHotWaterCoils6)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     state->dataSize->TermUnitSizing.allocate(1);
     state->dataPlnt->TotNumLoops = 1;
@@ -1424,8 +1413,6 @@ TEST_F(EnergyPlusFixture, TestSizingRoutineForHotWaterCoils6)
     GetZoneAirDistribution(*state); // get zone air distribution objects
     GetZoneSizingInput(*state);
     GetZoneEquipmentData(*state);
-    ProcessScheduleInput(*state);
-    state->dataScheduleMgr->ScheduleInputProcessed = true;
     GetZoneAirLoopEquipment(*state);
     GetWaterCoilInput(*state);
     state->dataWaterCoils->GetWaterCoilsInputFlag = false;

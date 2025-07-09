@@ -155,9 +155,9 @@ namespace ZoneEquipmentManager {
     void writeZszSpsz(EnergyPlusData &state,
                       EnergyPlus::InputOutputFile &outputFile,
                       int const numSpacesOrZones,
-                      Array1D<DataZoneEquipment::EquipConfiguration> const &zsEquipConfig,
                       EPVector<DataSizing::ZoneSizingData> const &zsCalcFinalSizing,
-                      Array2D<DataSizing::ZoneSizingData> const &zsCalcSizing);
+                      Array2D<DataSizing::ZoneSizingData> const &zsCalcSizing,
+                      bool const forSpaces);
 
     std::string sizingPeakTimeStamp(EnergyPlusData const &state, int timeStepIndex);
 
@@ -279,6 +279,10 @@ struct ZoneEquipmentManagerData : BaseGlobalStruct
     bool InitZoneEquipmentOneTimeFlag = true;
     bool InitZoneEquipmentEnvrnFlag = true;
     bool FirstPassZoneEquipFlag = true; // indicates first pass through zone equipment, used to reset selected ZoneEqSizing variables
+
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
 
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {

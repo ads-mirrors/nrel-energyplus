@@ -192,6 +192,10 @@ struct ZonePlenumData : BaseGlobalStruct
     EPVector<ZonePlenum::ZoneReturnPlenumConditions> ZoneRetPlenCond;
     EPVector<ZonePlenum::ZoneSupplyPlenumConditions> ZoneSupPlenCond;
 
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
+
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {
     }

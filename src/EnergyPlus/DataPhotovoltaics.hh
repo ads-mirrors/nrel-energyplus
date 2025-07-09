@@ -102,15 +102,15 @@ namespace DataPhotovoltaics {
     struct SimplePVParamsStruct
     {
         // Members
-        std::string Name;              // name as identified in Sandia database
-        Real64 AreaCol;                // effective area of solar collection
-        Real64 ActiveFraction;         // fraction of parent surface that has active solar cells
-        Efficiency EfficencyInputMode; // to schedule or not
-        int EffSchedPtr;               // index pointer for efficiency schedule
-        Real64 PVEfficiency;           // fixed or current PV efficiency
+        std::string Name;                    // name as identified in Sandia database
+        Real64 AreaCol;                      // effective area of solar collection
+        Real64 ActiveFraction;               // fraction of parent surface that has active solar cells
+        Efficiency EfficencyInputMode;       // to schedule or not
+        Sched::Schedule *effSched = nullptr; // index pointer for efficiency schedule
+        Real64 PVEfficiency;                 // fixed or current PV efficiency
 
         // Default Constructor
-        SimplePVParamsStruct() : AreaCol(0.0), ActiveFraction(0.0), EfficencyInputMode(Efficiency::Invalid), EffSchedPtr(0), PVEfficiency(0.0)
+        SimplePVParamsStruct() : AreaCol(0.0), ActiveFraction(0.0), EfficencyInputMode(Efficiency::Invalid), PVEfficiency(0.0)
         {
         }
     };
@@ -338,17 +338,16 @@ namespace DataPhotovoltaics {
 struct PhotovoltaicsData : BaseGlobalStruct
 {
 
-    std::string const cPVGeneratorObjectName = "Generator:Photovoltaic";
-    std::string const cPVSimplePerfObjectName = "PhotovoltaicPerformance:Simple";
-    std::string const cPVEquiv1DiodePerfObjectName = "PhotovoltaicPerformance:EquivalentOne-Diode";
-    std::string const cPVSandiaPerfObjectName = "PhotovoltaicPerformance:Sandia";
-
     int NumPVs = 0;                 // count of number of PV generators
     int Num1DiodePVModuleTypes = 0; // count for Equivalent one-diode model
     int NumSimplePVModuleTypes = 0; // count of number of input objs for simple model
     int NumSNLPVModuleTypes = 0;    // count of number of input objs for Sandia model
     Real64 ShuntResistance = 0.0;   // old "RSH" in common block of trnsys code
     Array1D<DataPhotovoltaics::PVArrayStruct> PVarray;
+
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
 
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {

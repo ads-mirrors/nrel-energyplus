@@ -60,21 +60,24 @@ namespace EnergyPlus {
 // Forward declarations
 struct EnergyPlusData;
 
-// Derived class for Site:GroundTemperature:Shallow
-struct SiteShallowGroundTemps final : BaseGroundTempsModel
-{
-    int timeOfSimInMonths = 0;
-    std::array<Real64, 12> surfaceGroundTemps = {13.0};
+namespace GroundTemp {
 
-    static SiteShallowGroundTemps *ShallowGTMFactory(EnergyPlusData &state, const std::string &objectName);
+    // Derived class for Site:GroundTemperature:Shallow
+    struct SiteShallowGroundTemps final : BaseGroundTempsModel
+    {
+        int timeOfSimInMonths = 0;
+        std::array<Real64, 12> surfaceGroundTemps = {13.0};
 
-    Real64 getGroundTemp([[maybe_unused]] EnergyPlusData &state) override;
+        static SiteShallowGroundTemps *ShallowGTMFactory(EnergyPlusData &state, const std::string &objectName);
 
-    Real64 getGroundTempAtTimeInSeconds(EnergyPlusData &state, Real64 depth, Real64 timeInSecondsOfSim) override;
+        Real64 getGroundTemp([[maybe_unused]] EnergyPlusData &state) override;
 
-    Real64 getGroundTempAtTimeInMonths(EnergyPlusData &state, Real64 depth, int monthOfSim) override;
-};
+        Real64 getGroundTempAtTimeInSeconds(EnergyPlusData &state, Real64 depth, Real64 timeInSecondsOfSim) override;
 
+        Real64 getGroundTempAtTimeInMonths(EnergyPlusData &state, Real64 depth, int monthOfSim) override;
+    };
+
+} // namespace GroundTemp
 } // namespace EnergyPlus
 
 #endif

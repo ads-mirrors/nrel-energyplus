@@ -71,7 +71,6 @@
 
 using namespace EnergyPlus::MixedAir;
 using namespace EnergyPlus::HVACControllers;
-using namespace EnergyPlus::ScheduleManager;
 using namespace EnergyPlus::SetPointManager;
 using namespace EnergyPlus::WaterCoils;
 
@@ -130,6 +129,7 @@ TEST_F(EnergyPlusFixture, HVACControllers_ResetHumidityRatioCtrlVarType)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     GetSetPointManagerInputs(*state);
     // check specified control variable type is "HumidityRatio"
@@ -206,6 +206,7 @@ TEST_F(EnergyPlusFixture, HVACControllers_TestTempAndHumidityRatioCtrlVarType)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     GetSetPointManagerInputs(*state);
     // check specified control variable type is "HumidityRatio"
@@ -348,6 +349,7 @@ TEST_F(EnergyPlusFixture, HVACControllers_SchSetPointMgrsOrderTest)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     GetSetPointManagerInputs(*state);
     // There are two setpoint managers and are schedule type
@@ -412,6 +414,7 @@ TEST_F(EnergyPlusFixture, HVACControllers_WaterCoilOnPrimaryLoopCheckTest)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     GetControllerInput(*state);
 
@@ -505,6 +508,7 @@ TEST_F(EnergyPlusFixture, HVACControllers_WaterCoilOnOutsideAirSystemCheckTest)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     GetControllerInput(*state);
 
@@ -637,6 +641,7 @@ TEST_F(EnergyPlusFixture, HVACControllers_CoilSystemCoolingWaterOnOutsideAirSyst
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     GetControllerInput(*state);
 
@@ -844,7 +849,7 @@ TEST_F(EnergyPlusFixture, HVACControllers_BlankAutosized)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
-
+    state->init_state(*state);
     GetSetPointManagerInputs(*state);
 
     GetControllerInput(*state);
@@ -919,6 +924,7 @@ TEST_F(EnergyPlusFixture, HVACControllers_MaxFlowZero)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     GetSetPointManagerInputs(*state);
 

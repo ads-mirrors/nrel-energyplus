@@ -85,6 +85,8 @@ TEST_F(EnergyPlusFixture, ExerciseBaseboardElectric)
 
     ASSERT_TRUE(process_idf(idf_objects));
 
+    state->init_state(*state);
+
     state->dataZoneEquip->ZoneEquipConfig.allocate(1);
     state->dataZoneEquip->ZoneEquipConfig(1).ZoneNode = 1;
     state->dataLoopNodes->Node.allocate(1);

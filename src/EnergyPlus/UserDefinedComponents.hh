@@ -365,6 +365,10 @@ struct UserDefinedComponentsData : BaseGlobalStruct
     bool lDummy_EMSActuatedPlantComp = false;
     bool lDummy_GetUserDefComp = false;
 
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
+
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {
     }

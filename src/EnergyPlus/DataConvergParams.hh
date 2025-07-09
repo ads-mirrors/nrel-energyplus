@@ -183,6 +183,10 @@ struct ConvergParamsData : BaseGlobalStruct
     Array1D<DataConvergParams::HVACAirLoopIterationConvergenceStruct> AirLoopConvergence;
     Array1D<DataConvergParams::PlantIterationConvergenceStruct> PlantConvergence;
 
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
+
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {
     }

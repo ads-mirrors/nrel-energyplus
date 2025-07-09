@@ -106,6 +106,10 @@ struct BaseSizerWithFanHeatInputs : BaseSizer
 
 struct BaseSizerWithFanHeatInputsData : BaseGlobalStruct
 {
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
+
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {
     }

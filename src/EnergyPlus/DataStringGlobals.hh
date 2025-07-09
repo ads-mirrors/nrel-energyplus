@@ -76,7 +76,7 @@ namespace DataStringGlobals {
     char constexpr pathChar('/');
     char constexpr altpathChar('\\');
 #else
-#error "Invalid platform detection in DataStringGlobals."
+#    error "Invalid platform detection in DataStringGlobals."
 #endif
     char constexpr CharComma(',');     // comma
     char constexpr CharSemicolon(';'); // semicolon
@@ -128,6 +128,10 @@ struct DataStringGlobalsData : BaseGlobalStruct
     std::string IDDVerString;    // Version information from the IDD (line 1)
     std::string CurrentDateTime; // For printing current date and time at start of run
     std::string VerStringVar;
+
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
 
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {

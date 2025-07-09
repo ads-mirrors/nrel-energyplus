@@ -63,6 +63,7 @@
 #include <EnergyPlus/DisplayRoutines.hh>
 #include <EnergyPlus/EPVector.hh>
 #include <EnergyPlus/EnergyPlus.hh>
+#include <EnergyPlus/ScheduleManager.hh>
 
 // Third party Headers
 #include "re2/re2.h"
@@ -444,7 +445,7 @@ namespace OutputProcessor {
         int maxValueDate = 0;               // Date stamp of maximum
         int minValueDate = 0;               // Date stamp of minimum
         int ReportID = 0;                   // Report variable ID number
-        int SchedPtr = 0;                   // If scheduled, this points to the schedule
+        Sched::Schedule *sched = nullptr;   // If scheduled, this is schedule
         int ZoneMult = 1;                   // If metered, Zone Multiplier is applied
         int ZoneListMult = 1;               // If metered, Zone List Multiplier is applied
 
@@ -463,7 +464,7 @@ namespace OutputProcessor {
 
         std::vector<int> meterNums; // Meter Numbers
 
-        virtual ~OutVar(){};
+        virtual ~OutVar() = default;
 
         std::string multiplierString() const;
 
@@ -517,8 +518,7 @@ namespace OutputProcessor {
         std::string key = "";               // Could be blank or "*"
         std::string name = "";              // Name of Variable
         ReportFreq freq = ReportFreq::Hour; // Reporting Frequency
-        int SchedPtr = 0;                   // Index of the Schedule
-        std::string SchedName = "";         // Schedule Name
+        Sched::Schedule *sched = nullptr;   // Schedule
         bool Used = false;                  // True when this combination (key, varname, frequency) has been set
 
         bool is_simple_string = true; // Whether the Key potentially includes a Regular Expression pattern
@@ -942,6 +942,10 @@ struct OutputProcessorData : BaseGlobalStruct
     int maxNumEndUseSpaceTypes = 1;
     EPVector<OutputProcessor::EndUseCategoryType> EndUseCategory;
 
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
+
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {
     }
@@ -977,24 +981,29 @@ struct OutputProcessorData : BaseGlobalStruct
         this->GetMeterIndexFirstCall = true;
         this->InitFlag = true;
 
-        for (int i = 0; i < (int)OutputProcessor::TimeStepType::Num; ++i)
+        for (int i = 0; i < (int)OutputProcessor::TimeStepType::Num; ++i) {
             new (&this->TimeValue[i]) OutputProcessor::TimeSteps();
+        }
 
-        for (int i = 0; i < (int)this->outVars.size(); ++i)
+        for (int i = 0; i < (int)this->outVars.size(); ++i) {
             delete this->outVars[i];
+        }
         this->outVars.clear();
 
-        for (int i = 0; i < (int)this->ddOutVars.size(); ++i)
+        for (int i = 0; i < (int)this->ddOutVars.size(); ++i) {
             delete this->ddOutVars[i];
+        }
         this->ddOutVars.clear();
         this->ddOutVarMap.clear();
 
-        for (int i = 0; i < (int)this->reqVars.size(); ++i)
+        for (int i = 0; i < (int)this->reqVars.size(); ++i) {
             delete this->reqVars[i];
+        }
         this->reqVars.clear();
 
-        for (int i = 0; i < (int)this->meters.size(); ++i)
+        for (int i = 0; i < (int)this->meters.size(); ++i) {
             delete this->meters[i];
+        }
         this->meters.clear();
         this->meterMap.clear();
 

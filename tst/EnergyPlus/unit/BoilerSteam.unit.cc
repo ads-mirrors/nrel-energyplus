@@ -91,6 +91,9 @@ TEST_F(EnergyPlusFixture, BoilerSteam_GetInput)
     });
 
     ASSERT_TRUE(process_idf(idf_objects, false));
+
+    state->init_state(*state);
+
     GetBoilerInput(*state);
     auto &thisBoiler = state->dataBoilerSteam->Boiler((int)state->dataBoilerSteam->Boiler.size());
     EXPECT_EQ(thisBoiler.Name, "STEAM BOILER PLANT BOILER");
@@ -130,6 +133,8 @@ TEST_F(EnergyPlusFixture, BoilerSteam_Simulate)
     });
 
     ASSERT_TRUE(process_idf(idf_objects, false));
+
+    state->init_state(*state);
 
     BoilerSpecs *ptr = BoilerSteam::BoilerSpecs::factory(*state, "BOILER");
     EXPECT_EQ(ptr->Name, "BOILER");
@@ -173,19 +178,6 @@ TEST_F(EnergyPlusFixture, BoilerSteam_Simulate)
 
 TEST_F(EnergyPlusFixture, BoilerSteam_BoilerEfficiency)
 {
-
-    bool RunFlag(true);
-    Real64 MyLoad(1000000.0);
-
-    state->dataPlnt->TotNumLoops = 2;
-    state->dataEnvrn->OutBaroPress = 101325.0;
-    state->dataEnvrn->StdRhoAir = 1.20;
-    state->dataGlobal->NumOfTimeStepInHour = 1;
-    state->dataGlobal->TimeStep = 1;
-    state->dataGlobal->MinutesPerTimeStep = 60;
-
-    Psychrometrics::InitializePsychRoutines(*state);
-
     std::string const idf_objects = delimited_string({
         "  Boiler:Steam,                                                                                            ",
         "    Steam Boiler Plant Boiler,  !- Name                                                                    ",
@@ -205,6 +197,18 @@ TEST_F(EnergyPlusFixture, BoilerSteam_BoilerEfficiency)
     });
 
     EXPECT_TRUE(process_idf(idf_objects, false));
+
+    state->dataGlobal->TimeStepsInHour = 1;
+    state->dataGlobal->MinutesInTimeStep = 60;
+    state->init_state(*state);
+
+    bool RunFlag(true);
+    Real64 MyLoad(1000000.0);
+
+    state->dataPlnt->TotNumLoops = 2;
+    state->dataEnvrn->OutBaroPress = 101325.0;
+    state->dataEnvrn->StdRhoAir = 1.20;
+    state->dataGlobal->TimeStep = 1;
 
     state->dataPlnt->PlantLoop.allocate(state->dataPlnt->TotNumLoops);
     for (int l = 1; l <= state->dataPlnt->TotNumLoops; ++l) {

@@ -58,25 +58,28 @@ namespace EnergyPlus {
 // Forward declarations
 struct EnergyPlusData;
 
-// Derived class for Kusuda-Achenbach model
-struct KusudaGroundTempsModel final : BaseGroundTempsModel
-{
-    Real64 depth = 0.0;
-    Real64 groundThermalDiffusivity = 0.0;
-    Real64 simTimeInSeconds = 0.0;
-    Real64 aveGroundTemp = 0.0;
-    Real64 aveGroundTempAmplitude = 0.0;
-    Real64 phaseShiftInSecs = 0.0;
+namespace GroundTemp {
 
-    static KusudaGroundTempsModel *KusudaGTMFactory(EnergyPlusData &state, const std::string &objectName);
+    // Derived class for Kusuda-Achenbach model
+    struct KusudaGroundTempsModel final : BaseGroundTempsModel
+    {
+        Real64 depth = 0.0;
+        Real64 groundThermalDiffusivity = 0.0;
+        Real64 simTimeInSeconds = 0.0;
+        Real64 aveGroundTemp = 0.0;
+        Real64 aveGroundTempAmplitude = 0.0;
+        Real64 phaseShiftInSecs = 0.0;
 
-    Real64 getGroundTemp(EnergyPlusData &state) override;
+        static KusudaGroundTempsModel *KusudaGTMFactory(EnergyPlusData &state, const std::string &objectName);
 
-    Real64 getGroundTempAtTimeInSeconds(EnergyPlusData &state, Real64 depth, Real64 timeInSecondsOfSim) override;
+        Real64 getGroundTemp(EnergyPlusData &state) override;
 
-    Real64 getGroundTempAtTimeInMonths(EnergyPlusData &state, Real64 depth, int monthOfSim) override;
-};
+        Real64 getGroundTempAtTimeInSeconds(EnergyPlusData &state, Real64 depth, Real64 timeInSecondsOfSim) override;
 
+        Real64 getGroundTempAtTimeInMonths(EnergyPlusData &state, Real64 depth, int monthOfSim) override;
+    };
+
+} // namespace GroundTemp
 } // namespace EnergyPlus
 
 #endif

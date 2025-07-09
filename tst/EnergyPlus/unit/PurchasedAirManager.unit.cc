@@ -99,10 +99,9 @@ protected:
     {
         EnergyPlusFixture::SetUp(); // Sets up the base fixture first.
 
-        state->dataHeatBalFanSys->ZoneThermostatSetPointHi.allocate(1);
-        state->dataHeatBalFanSys->ZoneThermostatSetPointHi(1) = 23.9; // 75F
-        state->dataHeatBalFanSys->ZoneThermostatSetPointLo.allocate(1);
-        state->dataHeatBalFanSys->ZoneThermostatSetPointLo(1) = 23.0; // 73.4F
+        state->dataHeatBalFanSys->zoneTstatSetpts.allocate(1);
+        state->dataHeatBalFanSys->zoneTstatSetpts(1).setptHi = 23.9; // 75F
+        state->dataHeatBalFanSys->zoneTstatSetpts(1).setptLo = 23.0; // 73.4F
 
         state->dataSize->FinalZoneSizing.allocate(1);
         state->dataSize->ZoneEqSizing.allocate(1);
@@ -125,7 +124,7 @@ protected:
         state->dataHeatBal->RefrigCaseCredit.allocate(1);
 
         state->dataHeatBalFanSys->TempControlType.allocate(1);
-        state->dataHeatBalFanSys->TempControlType(1) = HVAC::ThermostatType::SingleHeating;
+        state->dataHeatBalFanSys->TempControlType(1) = HVAC::SetptType::SingleHeat;
         state->dataZoneEnergyDemand->CurDeadBandOrSetback.allocate(1);
         state->dataZoneEnergyDemand->DeadBandOrSetback.allocate(1);
         state->dataZoneEnergyDemand->DeadBandOrSetback(1) = false;
@@ -181,10 +180,10 @@ TEST_F(EnergyPlusFixture, SizePurchasedAirTest_Test1)
 
     state->dataSize->ZoneSizingRunDone = true;
 
-    state->dataPurchasedAirMgr->PurchAir(PurchAirNum).HeatingLimit = LimitType::LimitFlowRateAndCapacity;
+    state->dataPurchasedAirMgr->PurchAir(PurchAirNum).HeatingLimit = LimitType::FlowRateAndCapacity;
     state->dataPurchasedAirMgr->PurchAir(PurchAirNum).MaxHeatVolFlowRate = AutoSize;
     state->dataPurchasedAirMgr->PurchAir(PurchAirNum).MaxHeatSensCap = AutoSize;
-    state->dataPurchasedAirMgr->PurchAir(PurchAirNum).CoolingLimit = LimitType::LimitFlowRateAndCapacity;
+    state->dataPurchasedAirMgr->PurchAir(PurchAirNum).CoolingLimit = LimitType::FlowRateAndCapacity;
     state->dataPurchasedAirMgr->PurchAir(PurchAirNum).MaxCoolVolFlowRate = AutoSize;
     state->dataPurchasedAirMgr->PurchAir(PurchAirNum).MaxCoolTotCap = AutoSize;
     state->dataPurchasedAirMgr->PurchAir(PurchAirNum).cObjectName = "ZONEHVAC:IDEALLOADSAIRSYSTEM";
@@ -237,10 +236,10 @@ TEST_F(EnergyPlusFixture, SizePurchasedAirTest_Test2)
 
     state->dataSize->ZoneSizingRunDone = true;
 
-    state->dataPurchasedAirMgr->PurchAir(PurchAirNum).HeatingLimit = LimitType::LimitFlowRateAndCapacity;
+    state->dataPurchasedAirMgr->PurchAir(PurchAirNum).HeatingLimit = LimitType::FlowRateAndCapacity;
     state->dataPurchasedAirMgr->PurchAir(PurchAirNum).MaxHeatVolFlowRate = AutoSize;
     state->dataPurchasedAirMgr->PurchAir(PurchAirNum).MaxHeatSensCap = AutoSize;
-    state->dataPurchasedAirMgr->PurchAir(PurchAirNum).CoolingLimit = LimitType::LimitFlowRateAndCapacity;
+    state->dataPurchasedAirMgr->PurchAir(PurchAirNum).CoolingLimit = LimitType::FlowRateAndCapacity;
     state->dataPurchasedAirMgr->PurchAir(PurchAirNum).MaxCoolVolFlowRate = AutoSize;
     state->dataPurchasedAirMgr->PurchAir(PurchAirNum).MaxCoolTotCap = AutoSize;
     state->dataPurchasedAirMgr->PurchAir(PurchAirNum).cObjectName = "ZONEHVAC:IDEALLOADSAIRSYSTEM";
@@ -287,6 +286,7 @@ TEST_F(EnergyPlusFixture, IdealLoadsAirSystem_GetInput)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     state->dataGlobal->DoWeathSim = true;
 
@@ -299,8 +299,8 @@ TEST_F(EnergyPlusFixture, IdealLoadsAirSystem_GetInput)
     EXPECT_EQ(PurchAir(1).MinCoolSuppAirTemp, 13.0);
     EXPECT_EQ(PurchAir(1).MaxHeatSuppAirHumRat, 0.015);
     EXPECT_EQ(PurchAir(1).MinCoolSuppAirHumRat, 0.009);
-    EXPECT_ENUM_EQ(PurchAir(1).HeatingLimit, LimitType::NoLimit);
-    EXPECT_ENUM_EQ(PurchAir(1).CoolingLimit, LimitType::NoLimit);
+    EXPECT_ENUM_EQ(PurchAir(1).HeatingLimit, LimitType::None);
+    EXPECT_ENUM_EQ(PurchAir(1).CoolingLimit, LimitType::None);
     EXPECT_ENUM_EQ(PurchAir(1).DehumidCtrlType, HumControl::ConstantSupplyHumidityRatio);
     EXPECT_ENUM_EQ(PurchAir(1).HumidCtrlType, HumControl::ConstantSupplyHumidityRatio);
 }
@@ -388,6 +388,7 @@ TEST_F(ZoneIdealLoadsTest, IdealLoads_PlenumTest)
     });
 
     ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
+    state->init_state(*state);
 
     state->dataGlobal->DoWeathSim = true;
 
@@ -396,7 +397,6 @@ TEST_F(ZoneIdealLoadsTest, IdealLoads_PlenumTest)
 
     state->dataHeatBal->space(1).HTSurfaceFirst = 1;
     state->dataHeatBal->space(1).HTSurfaceLast = 1;
-    state->dataScheduleMgr->Schedule.allocate(1);
     state->dataEnvrn->StdRhoAir = 1.0; // Prevent divide by zero
 
     AllocateHeatBalArrays(*state);
@@ -502,6 +502,7 @@ TEST_F(ZoneIdealLoadsTest, IdealLoads_ExhaustNodeTest)
     });
 
     ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
+    state->init_state(*state);
 
     state->dataGlobal->DoWeathSim = true;
 
@@ -510,7 +511,6 @@ TEST_F(ZoneIdealLoadsTest, IdealLoads_ExhaustNodeTest)
 
     state->dataHeatBal->space(1).HTSurfaceFirst = 1;
     state->dataHeatBal->space(1).HTSurfaceLast = 1;
-    state->dataScheduleMgr->Schedule.allocate(1);
     state->dataEnvrn->StdRhoAir = 1.0; // Prevent divide by zero
     AllocateHeatBalArrays(*state);
     EXPECT_FALSE(ErrorsFound); // expect no errors
@@ -627,6 +627,7 @@ TEST_F(ZoneIdealLoadsTest, IdealLoads_IntermediateOutputVarsTest)
     });
 
     ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
+    state->init_state(*state);
 
     state->dataGlobal->DoWeathSim = true;
 
@@ -634,7 +635,6 @@ TEST_F(ZoneIdealLoadsTest, IdealLoads_IntermediateOutputVarsTest)
     GetZoneData(*state, ErrorsFound);
     state->dataHeatBal->space(1).HTSurfaceFirst = 1;
     state->dataHeatBal->space(1).HTSurfaceLast = 1;
-    state->dataScheduleMgr->Schedule.allocate(1);
     state->dataEnvrn->StdRhoAir = 1.0; // Prevent divide by zero
     AllocateHeatBalArrays(*state);
     EXPECT_FALSE(ErrorsFound); // expect no errors
@@ -799,6 +799,7 @@ TEST_F(ZoneIdealLoadsTest, IdealLoads_EMSOverrideTest)
     });
 
     ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
+    state->init_state(*state);
 
     state->dataGlobal->DoWeathSim = true;
 
@@ -806,7 +807,6 @@ TEST_F(ZoneIdealLoadsTest, IdealLoads_EMSOverrideTest)
     GetZoneData(*state, ErrorsFound);
     state->dataHeatBal->space(1).HTSurfaceFirst = 1;
     state->dataHeatBal->space(1).HTSurfaceLast = 1;
-    state->dataScheduleMgr->Schedule.allocate(1);
     state->dataEnvrn->StdRhoAir = 1.0; // Prevent divide by zero
     AllocateHeatBalArrays(*state);
     EXPECT_FALSE(ErrorsFound); // expect no errors
@@ -908,6 +908,7 @@ TEST_F(ZoneIdealLoadsTest, IdealLoads_NoCapacityTest)
     });
 
     ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
+    state->init_state(*state);
 
     state->dataGlobal->DoWeathSim = true;
 
@@ -915,7 +916,6 @@ TEST_F(ZoneIdealLoadsTest, IdealLoads_NoCapacityTest)
     GetZoneData(*state, ErrorsFound);
     state->dataHeatBal->space(1).HTSurfaceFirst = 1;
     state->dataHeatBal->space(1).HTSurfaceLast = 1;
-    state->dataScheduleMgr->Schedule.allocate(1);
     state->dataEnvrn->StdRhoAir = 1.0; // Prevent divide by zero
     AllocateHeatBalArrays(*state);
     EXPECT_FALSE(ErrorsFound); // expect no errors
@@ -1057,6 +1057,7 @@ TEST_F(ZoneIdealLoadsTest, IdealLoads_EMSOverrideTest_Revised)
     });
 
     ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
+    state->init_state(*state);
 
     state->dataGlobal->DoWeathSim = true;
 
@@ -1064,7 +1065,6 @@ TEST_F(ZoneIdealLoadsTest, IdealLoads_EMSOverrideTest_Revised)
     GetZoneData(*state, ErrorsFound);
     state->dataHeatBal->space(1).HTSurfaceFirst = 1;
     state->dataHeatBal->space(1).HTSurfaceLast = 1;
-    state->dataScheduleMgr->Schedule.allocate(1);
     state->dataEnvrn->StdRhoAir = 1.0; // Prevent divide by zero
     AllocateHeatBalArrays(*state);
     EXPECT_FALSE(ErrorsFound); // expect no errors
@@ -1229,6 +1229,7 @@ TEST_F(ZoneIdealLoadsTest, IdealLoads_EMSOverrideTest_Revised_ZeroFlow)
     });
 
     ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
+    state->init_state(*state);
 
     state->dataGlobal->DoWeathSim = true;
 
@@ -1236,7 +1237,6 @@ TEST_F(ZoneIdealLoadsTest, IdealLoads_EMSOverrideTest_Revised_ZeroFlow)
     GetZoneData(*state, ErrorsFound);
     state->dataHeatBal->space(1).HTSurfaceFirst = 1;
     state->dataHeatBal->space(1).HTSurfaceLast = 1;
-    state->dataScheduleMgr->Schedule.allocate(1);
     AllocateHeatBalArrays(*state);
     EXPECT_FALSE(ErrorsFound); // expect no errors
     state->dataZoneEquip->ZoneEquipConfig.allocate(1);
@@ -1403,12 +1403,12 @@ TEST_F(ZoneIdealLoadsTest, IdealLoads_Fix_SA_HumRat_Test)
     });
 
     ASSERT_TRUE(process_idf(idf_objects)); // read idf objects
+    state->init_state(*state);
 
     state->dataGlobal->DoWeathSim = true;
 
     bool ErrorsFound = false;
     GetZoneData(*state, ErrorsFound);
-    state->dataScheduleMgr->Schedule.allocate(1);
     AllocateHeatBalArrays(*state);
     EXPECT_FALSE(ErrorsFound); // expect no errors
     state->dataZoneEquip->ZoneEquipConfig.allocate(1);
@@ -1453,7 +1453,7 @@ TEST_F(ZoneIdealLoadsTest, IdealLoads_Fix_SA_HumRat_Test)
     int ControlledZoneNum = 1;
     state->dataZoneEnergyDemand->ZoneSysEnergyDemand(ControlledZoneNum).RemainingOutputReqToCoolSP = -1000.0;
     state->dataZoneEnergyDemand->ZoneSysMoistureDemand(ControlledZoneNum).RemainingOutputReqToDehumidSP = -0.0002;
-    state->dataHeatBalFanSys->TempControlType(ControlledZoneNum) = HVAC::ThermostatType::SingleCooling;
+    state->dataHeatBalFanSys->TempControlType(ControlledZoneNum) = HVAC::SetptType::SingleCool;
 
     state->dataLoopNodes->Node(1).Temp = 30;
     state->dataLoopNodes->Node(1).HumRat = 0.012;

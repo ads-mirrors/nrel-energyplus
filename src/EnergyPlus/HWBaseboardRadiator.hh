@@ -77,7 +77,7 @@ namespace HWBaseboardRadiator {
         int DesignObjectPtr = 0;
         Array1D_int SurfacePtr;
         int ZonePtr = 0;
-        int SchedPtr = 0;
+        Sched::Schedule *availSched = nullptr;
         int WaterInletNode = 0;
         int WaterOutletNode = 0;
         int TotSurfToDistrib = 0;
@@ -218,6 +218,10 @@ struct HWBaseboardRadiatorData : BaseGlobalStruct
     int Iter = 0;
     bool MyEnvrnFlag2 = true;
     Array1D_bool MyEnvrnFlag;
+
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
 
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {

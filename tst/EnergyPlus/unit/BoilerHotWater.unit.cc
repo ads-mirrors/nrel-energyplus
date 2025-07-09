@@ -71,7 +71,8 @@ using namespace EnergyPlus::Psychrometrics;
 
 TEST_F(EnergyPlusFixture, Boiler_HotWaterSizingTest)
 {
-    state->dataFluid->init_state(*state);
+    state->dataFluid->init_state(*state); // Still necessary?
+
     // unit test for autosizing boiler nominal capacity in Boiler:HotWater
     state->dataBoilers->Boiler.allocate(1);
     // Hardsized Hot Water Boiler
@@ -117,7 +118,7 @@ TEST_F(EnergyPlusFixture, Boiler_HotWaterSizingTest)
 }
 TEST_F(EnergyPlusFixture, Boiler_HotWaterAutoSizeTempTest)
 {
-    state->dataFluid->init_state(*state);
+    state->dataFluid->init_state(*state); // Still necessary?
     // unit test for checking hot water temperature for autosizing
     // boiler nominal capacity in Boiler:HotWater
     state->dataBoilers->Boiler.allocate(1);
@@ -181,6 +182,7 @@ TEST_F(EnergyPlusFixture, Boiler_HotWater_BlankDesignWaterFlowRate)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+
     GetBoilerInput(*state);
 
     EXPECT_EQ(1, (int)state->dataBoilers->Boiler.size());
@@ -199,11 +201,9 @@ TEST_F(EnergyPlusFixture, Boiler_HotWater_BoilerEfficiency)
     state->dataPlnt->TotNumLoops = 2;
     state->dataEnvrn->OutBaroPress = 101325.0;
     state->dataEnvrn->StdRhoAir = 1.20;
-    state->dataGlobal->NumOfTimeStepInHour = 1;
+    state->dataGlobal->TimeStepsInHour = 1;
     state->dataGlobal->TimeStep = 1;
-    state->dataGlobal->MinutesPerTimeStep = 60;
-
-    Psychrometrics::InitializePsychRoutines(*state);
+    state->dataGlobal->MinutesInTimeStep = 60;
 
     std::string const idf_objects = delimited_string({
         "Boiler:HotWater,",
@@ -234,6 +234,7 @@ TEST_F(EnergyPlusFixture, Boiler_HotWater_BoilerEfficiency)
     });
 
     EXPECT_TRUE(process_idf(idf_objects, false));
+    state->init_state(*state);
 
     state->dataPlnt->PlantLoop.allocate(state->dataPlnt->TotNumLoops);
     for (int l = 1; l <= state->dataPlnt->TotNumLoops; ++l) {

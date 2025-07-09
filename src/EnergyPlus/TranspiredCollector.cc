@@ -51,7 +51,6 @@
 
 // ObjexxFCL Headers
 #include <ObjexxFCL/Array.functions.hh>
-#include <ObjexxFCL/Fmath.hh>
 #include <ObjexxFCL/member.functions.hh>
 
 // EnergyPlus Headers
@@ -141,8 +140,6 @@ namespace TranspiredCollector {
         // Using/Aliasing
         using HVAC::TempControlTol;
 
-        using ScheduleManager::GetCurrentScheduleValue;
-
         // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
 
         int UTSCNum(0); // local number index for UTSC
@@ -188,24 +185,26 @@ namespace TranspiredCollector {
         auto &InletNode = UTSC_CI.InletNode;
         auto &ControlNode = UTSC_CI.ControlNode;
         UTSC_CI.IsOn = false;
-        if ((GetCurrentScheduleValue(state, UTSC_CI.SchedPtr) > 0.0) &&
-            (UTSC_CI.InletMDot > 0.0)) { // availability Schedule | OA system is setting mass flow
+        if ((UTSC_CI.availSched->getCurrentVal() > 0.0) && (UTSC_CI.InletMDot > 0.0)) { // availability Schedule | OA system is setting mass flow
             bool ControlLTSet(false);
             bool ControlLTSchedule(false);
             bool ZoneLTSchedule(false);
             assert(equal_dimensions(InletNode, ControlNode));
             assert(equal_dimensions(InletNode, UTSC_CI.ZoneNode));
             for (int i = InletNode.l(), e = InletNode.u(); i <= e; ++i) {
-                if (state.dataLoopNodes->Node(InletNode(i)).Temp + TempControlTol < state.dataLoopNodes->Node(ControlNode(i)).TempSetPoint)
+                if (state.dataLoopNodes->Node(InletNode(i)).Temp + TempControlTol < state.dataLoopNodes->Node(ControlNode(i)).TempSetPoint) {
                     ControlLTSet = true;
-                if (state.dataLoopNodes->Node(InletNode(i)).Temp + TempControlTol < GetCurrentScheduleValue(state, UTSC_CI.FreeHeatSetPointSchedPtr))
+                }
+                if (state.dataLoopNodes->Node(InletNode(i)).Temp + TempControlTol < UTSC_CI.freeHeatSetPointSched->getCurrentVal()) {
                     ControlLTSchedule = true;
-                if (state.dataLoopNodes->Node(UTSC_CI.ZoneNode(i)).Temp + TempControlTol <
-                    GetCurrentScheduleValue(state, UTSC_CI.FreeHeatSetPointSchedPtr))
+                }
+                if (state.dataLoopNodes->Node(UTSC_CI.ZoneNode(i)).Temp + TempControlTol < UTSC_CI.freeHeatSetPointSched->getCurrentVal()) {
                     ZoneLTSchedule = true;
+                }
             }
-            if (ControlLTSet || (ControlLTSchedule && ZoneLTSchedule))
+            if (ControlLTSet || (ControlLTSchedule && ZoneLTSchedule)) {
                 UTSC_CI.IsOn = true; // heating required | free heating helpful | free heating helpful
+            }
         }
 
         if (state.dataTranspiredCollector->UTSC(UTSCNum).IsOn) {
@@ -233,13 +232,14 @@ namespace TranspiredCollector {
         // usual EnergyPlus input
         // Extensible UTSC object for underlying heat transfer surfaces and for multisystem
 
+        static constexpr std::string_view routineName = "GetTranspiredCollectorInput";
+
         // Using/Aliasing
         using BranchNodeConnections::TestCompSet;
         using DataLoopNode::ObjectIsNotParent;
         using DataSurfaces::OtherSideCondModeledExt;
         using DataSurfaces::SurfaceData;
         using NodeInputManager::GetOnlySingleNode;
-        using ScheduleManager::GetScheduleIndex;
 
         // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
 
@@ -315,6 +315,8 @@ namespace TranspiredCollector {
                                                                      state.dataIPShortCut->cAlphaFieldNames,
                                                                      state.dataIPShortCut->cNumericFieldNames);
 
+            ErrorObjectHeader eoh{routineName, CurrentModuleObject, Alphas(1)};
+
             // first handle alphas
             state.dataTranspiredCollector->UTSC(Item).Name = Alphas(1);
 
@@ -330,13 +332,17 @@ namespace TranspiredCollector {
                                            MaxNumNumbersSplit));
                     ErrorsFound = true;
                 }
-                if (!allocated(AlphasSplit)) AlphasSplit.allocate(MaxNumAlphasSplit);
+                if (!allocated(AlphasSplit)) {
+                    AlphasSplit.allocate(MaxNumAlphasSplit);
+                }
                 NumbersSplit = 0.0;
                 AlphasSplit = "";
                 for (ItemSplit = 1; ItemSplit <= NumUTSCSplitter; ++ItemSplit) {
                     state.dataInputProcessing->inputProcessor->getObjectItem(
                         state, CurrentModuleMultiObject, ItemSplit, AlphasSplit, NumAlphasSplit, NumbersSplit, NumNumbersSplit, IOStatusSplit);
-                    if (!(Util::SameString(AlphasSplit(1), Alphas(1)))) continue;
+                    if (!(Util::SameString(AlphasSplit(1), Alphas(1)))) {
+                        continue;
+                    }
                     SplitterNameOK(ItemSplit) = true;
                     state.dataTranspiredCollector->UTSC(Item).NumOASysAttached = std::floor(NumAlphasSplit / 4.0);
                     if (mod((NumAlphasSplit), 4) != 1) {
@@ -407,8 +413,8 @@ namespace TranspiredCollector {
 
                     } // Each OA System in a Multisystem
                       // DEALLOCATE(AlphasSplit)
-                }     // each Multisystem present
-            }         // any UTSC Multisystem present
+                } // each Multisystem present
+            } // any UTSC Multisystem present
 
             state.dataTranspiredCollector->UTSC(Item).OSCMName = Alphas(2);
             Found = Util::FindItemInList(state.dataTranspiredCollector->UTSC(Item).OSCMName, state.dataSurface->OSCM);
@@ -423,19 +429,11 @@ namespace TranspiredCollector {
             }
             state.dataTranspiredCollector->UTSC(Item).OSCMPtr = Found;
             if (state.dataIPShortCut->lAlphaFieldBlanks(3)) {
-                state.dataTranspiredCollector->UTSC(Item).SchedPtr = ScheduleManager::ScheduleAlwaysOn;
-            } else {
-                state.dataTranspiredCollector->UTSC(Item).SchedPtr = GetScheduleIndex(state, Alphas(3));
-                if (state.dataTranspiredCollector->UTSC(Item).SchedPtr == 0) {
-                    ShowSevereError(state,
-                                    format("{}not found={} in {} ={}",
-                                           state.dataIPShortCut->cAlphaFieldNames(3),
-                                           Alphas(3),
-                                           CurrentModuleObject,
-                                           state.dataTranspiredCollector->UTSC(Item).Name));
-                    ErrorsFound = true;
-                    continue;
-                }
+                state.dataTranspiredCollector->UTSC(Item).availSched = Sched::GetScheduleAlwaysOn(state);
+            } else if ((state.dataTranspiredCollector->UTSC(Item).availSched = Sched::GetSchedule(state, Alphas(3))) == nullptr) {
+                ShowSevereItemNotFound(state, eoh, state.dataIPShortCut->cAlphaFieldNames(3), Alphas(3));
+                ErrorsFound = true;
+                continue;
             }
 
             // now if UTSC(Item)%NumOASysAttached still not set, assume no multisystem
@@ -494,14 +492,11 @@ namespace TranspiredCollector {
                                       ObjectIsNotParent);
             } // no splitter
 
-            state.dataTranspiredCollector->UTSC(Item).FreeHeatSetPointSchedPtr = GetScheduleIndex(state, Alphas(8));
-            if (state.dataTranspiredCollector->UTSC(Item).FreeHeatSetPointSchedPtr == 0) {
-                ShowSevereError(state,
-                                format("{} not found={} in {} ={}",
-                                       state.dataIPShortCut->cAlphaFieldNames(8),
-                                       Alphas(8),
-                                       CurrentModuleObject,
-                                       state.dataTranspiredCollector->UTSC(Item).Name));
+            if (state.dataIPShortCut->lAlphaFieldBlanks(8)) {
+                ShowSevereEmptyField(state, eoh, state.dataIPShortCut->cAlphaFieldNames(8));
+                ErrorsFound = true;
+            } else if ((state.dataTranspiredCollector->UTSC(Item).freeHeatSetPointSched = Sched::GetSchedule(state, Alphas(8))) == nullptr) {
+                ShowSevereItemNotFound(state, eoh, state.dataIPShortCut->cAlphaFieldNames(8), Alphas(8));
                 ErrorsFound = true;
                 continue;
             }
@@ -538,16 +533,24 @@ namespace TranspiredCollector {
 
             Roughness = Alphas(11);
             // Select the correct Number for the associated ascii name for the roughness type
-            if (Util::SameString(Roughness, "VeryRough"))
+            if (Util::SameString(Roughness, "VeryRough")) {
                 state.dataTranspiredCollector->UTSC(Item).CollRoughness = Material::SurfaceRoughness::VeryRough;
-            if (Util::SameString(Roughness, "Rough")) state.dataTranspiredCollector->UTSC(Item).CollRoughness = Material::SurfaceRoughness::Rough;
-            if (Util::SameString(Roughness, "MediumRough"))
+            }
+            if (Util::SameString(Roughness, "Rough")) {
+                state.dataTranspiredCollector->UTSC(Item).CollRoughness = Material::SurfaceRoughness::Rough;
+            }
+            if (Util::SameString(Roughness, "MediumRough")) {
                 state.dataTranspiredCollector->UTSC(Item).CollRoughness = Material::SurfaceRoughness::MediumRough;
-            if (Util::SameString(Roughness, "MediumSmooth"))
+            }
+            if (Util::SameString(Roughness, "MediumSmooth")) {
                 state.dataTranspiredCollector->UTSC(Item).CollRoughness = Material::SurfaceRoughness::MediumSmooth;
-            if (Util::SameString(Roughness, "Smooth")) state.dataTranspiredCollector->UTSC(Item).CollRoughness = Material::SurfaceRoughness::Smooth;
-            if (Util::SameString(Roughness, "VerySmooth"))
+            }
+            if (Util::SameString(Roughness, "Smooth")) {
+                state.dataTranspiredCollector->UTSC(Item).CollRoughness = Material::SurfaceRoughness::Smooth;
+            }
+            if (Util::SameString(Roughness, "VerySmooth")) {
                 state.dataTranspiredCollector->UTSC(Item).CollRoughness = Material::SurfaceRoughness::VerySmooth;
+            }
 
             // Was it set?
             if (state.dataTranspiredCollector->UTSC(Item).CollRoughness == Material::SurfaceRoughness::Invalid) {
@@ -632,7 +635,9 @@ namespace TranspiredCollector {
                 state.dataTranspiredCollector->UTSC(Item).SurfPtrs(ThisSurf) = Found;
             }
 
-            if (ErrorsFound) continue; // previous inner do loop may have detected problems that need to be cycle'd again to avoid crash
+            if (ErrorsFound) {
+                continue; // previous inner do loop may have detected problems that need to be cycle'd again to avoid crash
+            }
 
             // now that we should have all the surfaces, do some preparations and checks.
 
@@ -740,7 +745,7 @@ namespace TranspiredCollector {
             default:
                 break;
             }
-            TiltRads = std::abs(AvgTilt) * Constant::DegToRadians;
+            TiltRads = std::abs(AvgTilt) * Constant::DegToRad;
             tempHdeltaNPL = std::sin(TiltRads) * state.dataTranspiredCollector->UTSC(Item).Height / 4.0;
             state.dataTranspiredCollector->UTSC(Item).HdeltaNPL = max(tempHdeltaNPL, state.dataTranspiredCollector->UTSC(Item).PlenGapThick);
 
@@ -1243,7 +1248,9 @@ namespace TranspiredCollector {
             HcWind = 0.0;
         }
 
-        if (state.dataEnvrn->IsRain) HcWind = 1000.0;
+        if (state.dataEnvrn->IsRain) {
+            HcWind = 1000.0;
+        }
 
         HXeff = 0.0; // init
 
@@ -1439,7 +1446,7 @@ namespace TranspiredCollector {
         state.dataTranspiredCollector->UTSC(UTSCNum).PassiveACH =
             (MdotVent / RhoAir) *
             (1.0 / (state.dataTranspiredCollector->UTSC(UTSCNum).ProjArea * state.dataTranspiredCollector->UTSC(UTSCNum).PlenGapThick)) *
-            Constant::SecInHour;
+            Constant::rSecsInHour;
         state.dataTranspiredCollector->UTSC(UTSCNum).PassiveMdotVent = MdotVent;
         state.dataTranspiredCollector->UTSC(UTSCNum).PassiveMdotWind = VdotWind * RhoAir;
         state.dataTranspiredCollector->UTSC(UTSCNum).PassiveMdotTherm = VdotThermal * RhoAir;
@@ -1857,7 +1864,9 @@ namespace TranspiredCollector {
         HExtARR.deallocate();
         HSrdSurfARR.deallocate();
 
-        if (state.dataEnvrn->IsRain) HExt = 1000.0;
+        if (state.dataEnvrn->IsRain) {
+            HExt = 1000.0;
+        }
 
         // temperature of underlying surface, area-weighted average
         Real64 Tso =
@@ -1905,12 +1914,24 @@ namespace TranspiredCollector {
 
         TaGap = (HcPlen * A * Tso + MdotVent * CpAir * Tamb + HcPlen * A * TsBaffle) / (HcPlen * A + MdotVent * CpAir + HcPlen * A);
 
-        if (present(HcGapRpt)) HcGapRpt = HcPlen;
-        if (present(HrGapRpt)) HrGapRpt = HrPlen;
-        if (present(IscRpt)) IscRpt = Isc;
-        if (present(MdotVentRpt)) MdotVentRpt = MdotVent;
-        if (present(VdotWindRpt)) VdotWindRpt = VdotWind;
-        if (present(VdotBuoyRpt)) VdotBuoyRpt = VdotThermal;
+        if (present(HcGapRpt)) {
+            HcGapRpt = HcPlen;
+        }
+        if (present(HrGapRpt)) {
+            HrGapRpt = HrPlen;
+        }
+        if (present(IscRpt)) {
+            IscRpt = Isc;
+        }
+        if (present(MdotVentRpt)) {
+            MdotVentRpt = MdotVent;
+        }
+        if (present(VdotWindRpt)) {
+            VdotWindRpt = VdotWind;
+        }
+        if (present(VdotBuoyRpt)) {
+            VdotBuoyRpt = VdotThermal;
+        }
     }
 
     //****************************************************************************
@@ -1945,14 +1966,18 @@ namespace TranspiredCollector {
         // SUBROUTINE LOCAL VARIABLE DECLARATIONS
         Real64 gnu901; // Nusselt number temporary variables for
 
-        Real64 tiltr = Tilt * Constant::DegToRadians;
+        Real64 tiltr = Tilt * Constant::DegToRad;
         Real64 Ra = Gr * Pr; // Rayleigh number
 
         if (Ra <= 1.0e4) {
             gnu901 = 1.0 + 1.7596678e-10 * std::pow(Ra, 2.2984755); // eq. 51
         }
-        if (Ra > 1.0e4 && Ra <= 5.0e4) gnu901 = 0.028154 * std::pow(Ra, 0.4134); // eq. 50
-        if (Ra > 5.0e4) gnu901 = 0.0673838 * std::pow(Ra, 1.0 / 3.0);            // eq. 49
+        if (Ra > 1.0e4 && Ra <= 5.0e4) {
+            gnu901 = 0.028154 * std::pow(Ra, 0.4134); // eq. 50
+        }
+        if (Ra > 5.0e4) {
+            gnu901 = 0.0673838 * std::pow(Ra, 1.0 / 3.0); // eq. 49
+        }
 
         Real64 gnu902 = 0.242 * std::pow(Ra / AspRat, 0.272); // eq. 52
         Real64 gnu90 = max(gnu901, gnu902);

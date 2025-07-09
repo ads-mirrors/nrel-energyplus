@@ -203,6 +203,10 @@ struct ChillerAbsorberData : BaseGlobalStruct
     bool getInput = true;
     Array1D<ChillerAbsorption::BLASTAbsorberSpecs> absorptionChillers;
 
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
+
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {
     }

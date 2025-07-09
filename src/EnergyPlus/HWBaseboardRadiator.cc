@@ -236,6 +236,8 @@ namespace HWBaseboardRadiator {
 
         // SUBROUTINE PARAMETER DEFINITIONS:
         static constexpr std::string_view RoutineName("GetHWBaseboardInput:");
+        static constexpr std::string_view routineName = "GetHWBaseboardInput";
+
         Real64 constexpr MaxFraction(1.0);
         Real64 constexpr MinFraction(0.0);
         Real64 constexpr MaxWaterTempAvg(150.0);              // Maximum limit of average water temperature in degree C
@@ -439,6 +441,8 @@ namespace HWBaseboardRadiator {
                                                                      state.dataIPShortCut->cAlphaFieldNames,
                                                                      state.dataIPShortCut->cNumericFieldNames);
 
+            ErrorObjectHeader eoh{routineName, cCMO_BBRadiator_Water, state.dataIPShortCut->cAlphaArgs(1)};
+
             HWBaseboardNumericFields.FieldNames.allocate(NumNumbers);
             HWBaseboardNumericFields.FieldNames = state.dataIPShortCut->cNumericFieldNames;
 
@@ -456,19 +460,10 @@ namespace HWBaseboardRadiator {
 
             // Get schedule
             if (state.dataIPShortCut->lAlphaFieldBlanks(3)) {
-                thisHWBaseboard.SchedPtr = ScheduleManager::ScheduleAlwaysOn;
-            } else {
-                thisHWBaseboard.SchedPtr = ScheduleManager::GetScheduleIndex(state, state.dataIPShortCut->cAlphaArgs(3));
-                if (thisHWBaseboard.SchedPtr == 0) {
-                    ShowSevereError(state,
-                                    format("{}{}=\"{}\", {}=\"{}\" not found.",
-                                           RoutineName,
-                                           cCMO_BBRadiator_Water,
-                                           state.dataIPShortCut->cAlphaArgs(1),
-                                           state.dataIPShortCut->cAlphaFieldNames(3),
-                                           state.dataIPShortCut->cAlphaArgs(3)));
-                    ErrorsFound = true;
-                }
+                thisHWBaseboard.availSched = Sched::GetScheduleAlwaysOn(state);
+            } else if ((thisHWBaseboard.availSched = Sched::GetSchedule(state, state.dataIPShortCut->cAlphaArgs(3))) == nullptr) {
+                ShowSevereItemNotFound(state, eoh, state.dataIPShortCut->cAlphaFieldNames(3), state.dataIPShortCut->cAlphaArgs(3));
+                ErrorsFound = true;
             }
 
             // Get inlet node number
@@ -1261,8 +1256,8 @@ namespace HWBaseboardRadiator {
         Real64 WaterInletTemp = hWBaseboard.WaterInletTemp;
         Real64 WaterMassFlowRate = state.dataLoopNodes->Node(hWBaseboard.WaterInletNode).MassFlowRate;
 
-        if (QZnReq > HVAC::SmallLoad && !state.dataZoneEnergyDemand->CurDeadBandOrSetback(ZoneNum) &&
-            (ScheduleManager::GetCurrentScheduleValue(state, hWBaseboard.SchedPtr) > 0) && (WaterMassFlowRate > 0.0)) {
+        if (QZnReq > HVAC::SmallLoad && !state.dataZoneEnergyDemand->CurDeadBandOrSetback(ZoneNum) && (hWBaseboard.availSched->getCurrentVal() > 0) &&
+            (WaterMassFlowRate > 0.0)) {
 
             HWBaseboardDesignData const &HWBaseboardDesignDataObject{
                 state.dataHWBaseboardRad->HWBaseboardDesignObject(hWBaseboard.DesignObjectPtr)}; // Contains the data for the design object
@@ -1425,12 +1420,16 @@ namespace HWBaseboardRadiator {
         HWBaseboardSysOn = false;
 
         // If there are no baseboards in this input file, just RETURN
-        if (state.dataHWBaseboardRad->NumHWBaseboards == 0) return;
+        if (state.dataHWBaseboardRad->NumHWBaseboards == 0) {
+            return;
+        }
 
         // If there are baseboards, then we have to check to see if this was running at all...
         for (auto &thisHWBaseboard : state.dataHWBaseboardRad->HWBaseboard) {
             thisHWBaseboard.QBBRadSource = thisHWBaseboard.QBBRadSrcAvg;
-            if (thisHWBaseboard.QBBRadSrcAvg != 0.0) HWBaseboardSysOn = true;
+            if (thisHWBaseboard.QBBRadSrcAvg != 0.0) {
+                HWBaseboardSysOn = true;
+            }
         }
 
         DistributeBBRadGains(state); // QBBRadSource has been modified so we need to redistribute gains
@@ -1474,7 +1473,9 @@ namespace HWBaseboardRadiator {
             HWBaseboardDesignData const &HWBaseboardDesignDataObject =
                 state.dataHWBaseboardRad->HWBaseboardDesignObject(thisHWBB.DesignObjectPtr); // Contains the data for the design object
             int ZoneNum = thisHWBB.ZonePtr;
-            if (ZoneNum <= 0) continue;
+            if (ZoneNum <= 0) {
+                continue;
+            }
             state.dataHeatBalFanSys->ZoneQHWBaseboardToPerson(ZoneNum) += thisHWBB.QBBRadSource * HWBaseboardDesignDataObject.FracDistribPerson;
 
             for (int RadSurfNum = 1; RadSurfNum <= thisHWBB.TotSurfToDistrib; ++RadSurfNum) {

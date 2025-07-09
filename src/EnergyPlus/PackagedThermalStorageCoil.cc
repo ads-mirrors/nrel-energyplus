@@ -200,7 +200,6 @@ void GetTESCoilInput(EnergyPlusData &state)
     using DataZoneEquipment::FindControlledZoneIndexFromSystemNodeNumberForZone;
     using GlobalNames::VerifyUniqueCoilName;
     using NodeInputManager::GetOnlySingleNode;
-    using ScheduleManager::GetScheduleIndex;
     using WaterManager::SetupTankDemandComponent;
     using WaterManager::SetupTankSupplyComponent;
 
@@ -247,15 +246,12 @@ void GetTESCoilInput(EnergyPlusData &state)
 
         thisTESCoil.Name = state.dataIPShortCut->cAlphaArgs(1);
         if (state.dataIPShortCut->lAlphaFieldBlanks(2)) {
-            thisTESCoil.AvailSchedNum = ScheduleManager::ScheduleAlwaysOn;
-        } else {
-            thisTESCoil.AvailSchedNum = GetScheduleIndex(state, state.dataIPShortCut->cAlphaArgs(2));
-            if (thisTESCoil.AvailSchedNum == 0) {
-                ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, cCurrentModuleObject, thisTESCoil.Name));
-                ShowContinueError(state, format("...{}=\"{}\".", state.dataIPShortCut->cAlphaFieldNames(2), state.dataIPShortCut->cAlphaArgs(2)));
-                ErrorsFound = true;
-            }
+            thisTESCoil.availSched = Sched::GetScheduleAlwaysOn(state);
+        } else if ((thisTESCoil.availSched = Sched::GetSchedule(state, state.dataIPShortCut->cAlphaArgs(2))) == nullptr) {
+            ShowSevereItemNotFound(state, eoh, state.dataIPShortCut->cAlphaFieldNames(2), state.dataIPShortCut->cAlphaArgs(2));
+            ErrorsFound = true;
         }
+
         thisTESCoil.ModeControlType = static_cast<PTSCCtrlType>(getEnumValue(modeControlStrings, state.dataIPShortCut->cAlphaArgs(3)));
         if (thisTESCoil.ModeControlType == PTSCCtrlType::Invalid) {
             ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, cCurrentModuleObject, thisTESCoil.Name));
@@ -263,17 +259,13 @@ void GetTESCoilInput(EnergyPlusData &state)
             ShowContinueError(state, "Available choices are ScheduledModes or EMSControlled");
             ErrorsFound = true;
         }
-        if (state.dataIPShortCut->lAlphaFieldBlanks(4)) {
-            if (thisTESCoil.ModeControlType == PTSCCtrlType::ScheduledOpModes) {
-                ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, cCurrentModuleObject, thisTESCoil.Name));
-                ShowContinueError(state, format("{} is blank but a schedule is needed", state.dataIPShortCut->cAlphaFieldNames(4)));
+
+        if (thisTESCoil.ModeControlType == PTSCCtrlType::ScheduledOpModes) {
+            if (state.dataIPShortCut->lAlphaFieldBlanks(4)) {
+                ShowSevereEmptyField(state, eoh, state.dataIPShortCut->cAlphaFieldNames(4));
                 ErrorsFound = true;
-            }
-        } else {
-            thisTESCoil.ControlModeSchedNum = GetScheduleIndex(state, state.dataIPShortCut->cAlphaArgs(4));
-            if (thisTESCoil.ControlModeSchedNum == 0 && thisTESCoil.ModeControlType == PTSCCtrlType::ScheduledOpModes) {
-                ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, cCurrentModuleObject, thisTESCoil.Name));
-                ShowContinueError(state, format("...{}=\"{}\".", state.dataIPShortCut->cAlphaFieldNames(4), state.dataIPShortCut->cAlphaArgs(4)));
+            } else if ((thisTESCoil.controlModeSched = Sched::GetSchedule(state, state.dataIPShortCut->cAlphaArgs(4))) == nullptr) {
+                ShowSevereItemNotFound(state, eoh, state.dataIPShortCut->cAlphaFieldNames(4), state.dataIPShortCut->cAlphaArgs(4));
                 ErrorsFound = true;
             }
         }
@@ -1448,14 +1440,10 @@ void GetTESCoilInput(EnergyPlusData &state)
         thisTESCoil.BasinHeaterSetpointTemp = state.dataIPShortCut->rNumericArgs(39);
 
         if (state.dataIPShortCut->lAlphaFieldBlanks(59)) {
-            thisTESCoil.BasinHeaterAvailSchedNum = ScheduleManager::ScheduleAlwaysOn;
-        } else {
-            thisTESCoil.BasinHeaterAvailSchedNum = GetScheduleIndex(state, state.dataIPShortCut->cAlphaArgs(59));
-            if (thisTESCoil.BasinHeaterAvailSchedNum == 0) {
-                ShowSevereError(state, format("{}{}=\"{}\", invalid", RoutineName, cCurrentModuleObject, thisTESCoil.Name));
-                ShowContinueError(state, format("...{}=\"{}\".", state.dataIPShortCut->cAlphaFieldNames(59), state.dataIPShortCut->cAlphaArgs(59)));
-                ErrorsFound = true;
-            }
+            thisTESCoil.basinHeaterAvailSched = Sched::GetScheduleAlwaysOn(state);
+        } else if ((thisTESCoil.basinHeaterAvailSched = Sched::GetSchedule(state, state.dataIPShortCut->cAlphaArgs(59))) == nullptr) {
+            ShowSevereItemNotFound(state, eoh, state.dataIPShortCut->cAlphaFieldNames(59), state.dataIPShortCut->cAlphaArgs(59));
+            ErrorsFound = true;
         }
 
         if (state.dataIPShortCut->lAlphaFieldBlanks(60)) {
@@ -1872,7 +1860,6 @@ void InitTESCoil(EnergyPlusData &state, int &TESCoilNum)
     // Using/Aliasing
 
     using PlantUtilities::ScanPlantLoopsForObject;
-    using ScheduleManager::GetCurrentScheduleValue;
 
     // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
     auto &thisTESCoil = state.dataPackagedThermalStorageCoil->TESCoil(TESCoilNum);
@@ -1985,9 +1972,9 @@ void InitTESCoil(EnergyPlusData &state, int &TESCoilNum)
     }
 
     // determine control mode
-    if (GetCurrentScheduleValue(state, thisTESCoil.AvailSchedNum) != 0.0) {
+    if (thisTESCoil.availSched->getCurrentVal() != 0.0) {
         if (thisTESCoil.ModeControlType == PTSCCtrlType::ScheduledOpModes) {
-            Real64 const tmpSchedValue = GetCurrentScheduleValue(state, thisTESCoil.ControlModeSchedNum);
+            Real64 const tmpSchedValue = thisTESCoil.controlModeSched->getCurrentVal();
             // check if value is valid
             if (tmpSchedValue > static_cast<int>(PTSCOperatingMode::Invalid) && tmpSchedValue < static_cast<int>(PTSCOperatingMode::Num)) {
                 thisTESCoil.CurControlMode = static_cast<PTSCOperatingMode>(tmpSchedValue);
@@ -2357,11 +2344,11 @@ void SizeTESCoil(EnergyPlusData &state, int &TESCoilNum)
             Cp = thisTESCoil.glycol->getSpecificHeat(state, Constant::CWInitConvTemp, calcTESWaterStorageTank);
             if (thisTESCoil.DischargeOnlyRatedDischargeCap > 0.0 && thisTESCoil.DischargeOnlyModeAvailable) {
                 thisTESCoil.FluidStorageVolume =
-                    (thisTESCoil.DischargeOnlyRatedDischargeCap * thisTESCoil.StorageCapacitySizingFactor * Constant::SecInHour) /
+                    (thisTESCoil.DischargeOnlyRatedDischargeCap * thisTESCoil.StorageCapacitySizingFactor * Constant::rSecsInHour) /
                     (rho * Cp * deltaT);
             } else {
                 thisTESCoil.FluidStorageVolume =
-                    (thisTESCoil.CoolingOnlyRatedTotCap * thisTESCoil.StorageCapacitySizingFactor * Constant::SecInHour) / (rho * Cp * deltaT);
+                    (thisTESCoil.CoolingOnlyRatedTotCap * thisTESCoil.StorageCapacitySizingFactor * Constant::rSecsInHour) / (rho * Cp * deltaT);
             }
             BaseSizer::reportSizerOutput(
                 state, "Coil:Cooling:DX:SingleSpeed:ThermalStorage", thisTESCoil.Name, "Fluid Storage Volume [m3]", thisTESCoil.FluidStorageVolume);
@@ -2371,9 +2358,9 @@ void SizeTESCoil(EnergyPlusData &state, int &TESCoilNum)
         if (thisTESCoil.IceStorageCapacity == Constant::AutoCalculate) {
             if (thisTESCoil.DischargeOnlyRatedDischargeCap > 0.0 && thisTESCoil.DischargeOnlyModeAvailable) {
                 thisTESCoil.IceStorageCapacity =
-                    thisTESCoil.DischargeOnlyRatedDischargeCap * thisTESCoil.StorageCapacitySizingFactor * Constant::SecInHour;
+                    thisTESCoil.DischargeOnlyRatedDischargeCap * thisTESCoil.StorageCapacitySizingFactor * Constant::rSecsInHour;
             } else {
-                thisTESCoil.IceStorageCapacity = thisTESCoil.CoolingOnlyRatedTotCap * thisTESCoil.StorageCapacitySizingFactor * Constant::SecInHour;
+                thisTESCoil.IceStorageCapacity = thisTESCoil.CoolingOnlyRatedTotCap * thisTESCoil.StorageCapacitySizingFactor * Constant::rSecsInHour;
             }
             BaseSizer::reportSizerOutput(state,
                                          "Coil:Cooling:DX:SingleSpeed:ThermalStorage",
@@ -2418,8 +2405,6 @@ void CalcTESCoilOffMode(EnergyPlusData &state, int const TESCoilNum)
     //       MODIFIED       na
     //       RE-ENGINEERED  na
 
-    // Using/Aliasing
-    using ScheduleManager::GetCurrentScheduleValue;
     Real64 const TimeStepSysSec = state.dataHVACGlobal->TimeStepSysSec;
     // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
 
@@ -2427,7 +2412,7 @@ void CalcTESCoilOffMode(EnergyPlusData &state, int const TESCoilNum)
 
     // coil is off; just pass through conditions
     Real64 StandbyAncillaryPower = 0.0;
-    if (GetCurrentScheduleValue(state, thisTESCoil.AvailSchedNum) != 0.0) {
+    if (thisTESCoil.availSched->getCurrentVal() != 0.0) {
         StandbyAncillaryPower = thisTESCoil.AncillaryControlsPower;
     }
 
@@ -2909,7 +2894,7 @@ void CalcTESCoilCoolingAndChargeMode(EnergyPlusData &state,
 
         // total cooling capacity modification factors
         Real64 const SHRTempFac =
-            (state.dataCurveManager->PerfCurve(thisTESCoil.CoolingAndChargeSHRFTempCurve)->numDims == 2)
+            (state.dataCurveManager->curves(thisTESCoil.CoolingAndChargeSHRFTempCurve)->numDims == 2)
                 ? EnergyPlus::Curve::CurveValue(state, thisTESCoil.CoolingAndChargeSHRFTempCurve, EvapInletWetBulb, EvapInletDryBulb)
                 : EnergyPlus::Curve::CurveValue(state, thisTESCoil.CoolingAndChargeSHRFTempCurve, EvapInletWetBulb, EvapInletDryBulb, sTES);
         Real64 const SHRFlowFac = EnergyPlus::Curve::CurveValue(state, thisTESCoil.CoolingAndChargeSHRFFlowCurve, AirMassFlowRatio);
@@ -3311,7 +3296,7 @@ void CalcTESCoilCoolingAndDischargeMode(EnergyPlusData &state,
 
         // total cooling capacity modification factors
         Real64 const SHRTempFac =
-            (state.dataCurveManager->PerfCurve(thisTESCoil.CoolingAndDischargeSHRFTempCurve)->numDims == 2)
+            (state.dataCurveManager->curves(thisTESCoil.CoolingAndDischargeSHRFTempCurve)->numDims == 2)
                 ? EnergyPlus::Curve::CurveValue(state, thisTESCoil.CoolingAndDischargeSHRFTempCurve, EvapInletWetBulb, EvapInletDryBulb)
                 : EnergyPlus::Curve::CurveValue(state, thisTESCoil.CoolingAndDischargeSHRFTempCurve, EvapInletWetBulb, EvapInletDryBulb, sTES);
         Real64 const SHRFlowFac = EnergyPlus::Curve::CurveValue(state, thisTESCoil.CoolingAndDischargeSHRFFlowCurve, AirMassFlowRatio);
@@ -3814,7 +3799,7 @@ void CalcTESCoilDischargeOnlyMode(EnergyPlusData &state, int const TESCoilNum, R
 
         // total cooling capacity modification factors
         Real64 SHRTempFac;
-        if (state.dataCurveManager->PerfCurve(thisTESCoil.DischargeOnlySHRFTempCurve)->numDims == 2) {
+        if (state.dataCurveManager->curves(thisTESCoil.DischargeOnlySHRFTempCurve)->numDims == 2) {
             SHRTempFac = EnergyPlus::Curve::CurveValue(state, thisTESCoil.DischargeOnlySHRFTempCurve, EvapInletWetBulb, EvapInletDryBulb);
         } else {
             SHRTempFac = EnergyPlus::Curve::CurveValue(state, thisTESCoil.DischargeOnlySHRFTempCurve, EvapInletWetBulb, EvapInletDryBulb, sTES);
@@ -4139,11 +4124,10 @@ void UpdateColdWeatherProtection(EnergyPlusData &state, int const TESCoilNum)
 
     // Using/Aliasing
     Real64 const TimeStepSysSec = state.dataHVACGlobal->TimeStepSysSec;
-    using ScheduleManager::GetCurrentScheduleValue;
 
     if ((state.dataLoopNodes->Node(state.dataPackagedThermalStorageCoil->TESCoil(TESCoilNum).StorageAmbientNodeNum).Temp <
          state.dataPackagedThermalStorageCoil->TESCoil(TESCoilNum).ColdWeatherMinimumTempLimit) &&
-        (GetCurrentScheduleValue(state, state.dataPackagedThermalStorageCoil->TESCoil(TESCoilNum).AvailSchedNum) != 0.0)) {
+        (state.dataPackagedThermalStorageCoil->TESCoil(TESCoilNum).availSched->getCurrentVal() != 0.0)) {
         state.dataPackagedThermalStorageCoil->TESCoil(TESCoilNum).ElectColdWeatherPower =
             state.dataPackagedThermalStorageCoil->TESCoil(TESCoilNum).ColdWeatherAncillaryPower;
 
@@ -4171,7 +4155,7 @@ void UpdateEvaporativeCondenserBasinHeater(EnergyPlusData &state, int const TESC
 
     CalcBasinHeaterPower(state,
                          state.dataPackagedThermalStorageCoil->TESCoil(TESCoilNum).BasinHeaterPowerFTempDiff,
-                         state.dataPackagedThermalStorageCoil->TESCoil(TESCoilNum).BasinHeaterAvailSchedNum,
+                         state.dataPackagedThermalStorageCoil->TESCoil(TESCoilNum).basinHeaterAvailSched,
                          state.dataPackagedThermalStorageCoil->TESCoil(TESCoilNum).BasinHeaterSetpointTemp,
                          state.dataPackagedThermalStorageCoil->TESCoil(TESCoilNum).ElectEvapCondBasinHeaterPower);
 

@@ -100,6 +100,7 @@ namespace GeneratorFuelSupply {
         //       RE-ENGINEERED  this module extracted from older SOFC module for
         //                      reuse with both Annex 42 models,
 
+        static constexpr std::string_view routineName = "GetGeneratorFuelSupplyInput";
         // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
         //  INTEGER                     :: GeneratorNum !Generator counter
         Array1D_string AlphArray(25);  // character string data
@@ -134,6 +135,7 @@ namespace GeneratorFuelSupply {
                                                                          state.dataIPShortCut->cAlphaFieldNames,
                                                                          state.dataIPShortCut->cNumericFieldNames);
 
+                ErrorObjectHeader eoh{routineName, cCurrentModuleObject, AlphArray(1)};
                 state.dataGenerator->FuelSupply(FuelSupNum).Name = AlphArray(1);
                 if (Util::SameString("TemperatureFromAirNode", AlphArray(2))) {
                     state.dataGenerator->FuelSupply(FuelSupNum).FuelTempMode = DataGenerators::FuelTemperatureMode::FuelInTempFromNode;
@@ -157,13 +159,11 @@ namespace GeneratorFuelSupply {
                                                         NodeInputManager::CompFluidStream::Primary,
                                                         DataLoopNode::ObjectIsNotParent);
 
-                state.dataGenerator->FuelSupply(FuelSupNum).SchedNum = ScheduleManager::GetScheduleIndex(state, AlphArray(4));
-                if ((state.dataGenerator->FuelSupply(FuelSupNum).SchedNum == 0) &&
-                    (state.dataGenerator->FuelSupply(FuelSupNum).FuelTempMode == DataGenerators::FuelTemperatureMode::FuelInTempSchedule)) {
-                    ShowSevereError(state, format("Invalid, {} = {}", state.dataIPShortCut->cAlphaFieldNames(4), AlphArray(4)));
-                    ShowContinueError(state, format("Entered in {}={}", cCurrentModuleObject, AlphArray(1)));
-                    ShowContinueError(state, "Schedule named was not found");
-                    ErrorsFound = true;
+                if (state.dataGenerator->FuelSupply(FuelSupNum).FuelTempMode == DataGenerators::FuelTemperatureMode::FuelInTempSchedule) {
+                    if ((state.dataGenerator->FuelSupply(FuelSupNum).sched = Sched::GetSchedule(state, AlphArray(4))) == nullptr) {
+                        ShowSevereItemNotFound(state, eoh, state.dataIPShortCut->cAlphaFieldNames(4), AlphArray(4));
+                        ErrorsFound = true;
+                    }
                 }
 
                 state.dataGenerator->FuelSupply(FuelSupNum).CompPowerCurveID = Curve::GetCurveIndex(state, AlphArray(5));
@@ -174,8 +174,9 @@ namespace GeneratorFuelSupply {
                     ErrorsFound = true;
                 }
 
-                for (auto &e : state.dataGenerator->FuelSupply)
+                for (auto &e : state.dataGenerator->FuelSupply) {
                     e.CompPowerLossFactor = NumArray(1);
+                }
 
                 if (Util::SameString(AlphArray(6), "GaseousConstituents")) {
                     state.dataGenerator->FuelSupply(FuelSupNum).FuelTypeMode = DataGenerators::FuelMode::GaseousConstituents;

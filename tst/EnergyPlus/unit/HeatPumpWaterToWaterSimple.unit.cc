@@ -735,10 +735,10 @@ TEST_F(EnergyPlusFixture, PlantLoopSourceSideTest)
 
     ASSERT_TRUE(process_idf(idf_objects));
     SimulationManager::PostIPProcessing(*state);
+    state->init_state(*state);
     bool ErrorsFound = false;
 
     state->dataGlobal->BeginSimFlag = true;
-    SimulationManager::GetProjectData(*state);
 
     OutputReportPredefined::SetPredefinedTables(*state);
     HeatBalanceManager::SetPreConstructionInputParameters(*state); // establish array bounds for constructions early
@@ -767,8 +767,12 @@ TEST_F(EnergyPlusFixture, PlantLoopSourceSideTest)
 
         Weather::GetNextEnvironment(*state, Available, ErrorsFound);
 
-        if (!Available) break;
-        if (ErrorsFound) break;
+        if (!Available) {
+            break;
+        }
+        if (ErrorsFound) {
+            break;
+        }
 
         ++EnvCount;
 
@@ -794,7 +798,7 @@ TEST_F(EnergyPlusFixture, PlantLoopSourceSideTest)
                 state->dataGlobal->BeginHourFlag = true;
                 state->dataGlobal->EndHourFlag = false;
 
-                for (state->dataGlobal->TimeStep = 1; state->dataGlobal->TimeStep <= state->dataGlobal->NumOfTimeStepInHour;
+                for (state->dataGlobal->TimeStep = 1; state->dataGlobal->TimeStep <= state->dataGlobal->TimeStepsInHour;
                      ++state->dataGlobal->TimeStep) {
 
                     state->dataGlobal->BeginTimeStepFlag = true;
@@ -806,7 +810,7 @@ TEST_F(EnergyPlusFixture, PlantLoopSourceSideTest)
                     // Note also that BeginTimeStepFlag, EndTimeStepFlag, and the
                     // SubTimeStepFlags can/will be set/reset in the HVAC Manager.
 
-                    if (state->dataGlobal->TimeStep == state->dataGlobal->NumOfTimeStepInHour) {
+                    if (state->dataGlobal->TimeStep == state->dataGlobal->TimeStepsInHour) {
                         state->dataGlobal->EndHourFlag = true;
                         if (state->dataGlobal->HourOfDay == 24) {
                             state->dataGlobal->EndDayFlag = true;
@@ -1514,10 +1518,11 @@ TEST_F(EnergyPlusFixture, WWHP_AutosizeTest1)
 
     ASSERT_TRUE(process_idf(idf_objects));
     SimulationManager::PostIPProcessing(*state);
+    state->init_state(*state);
+
     bool ErrorsFound = false;
 
     state->dataGlobal->BeginSimFlag = true;
-    SimulationManager::GetProjectData(*state);
 
     OutputReportPredefined::SetPredefinedTables(*state);
     HeatBalanceManager::SetPreConstructionInputParameters(*state); // establish array bounds for constructions early

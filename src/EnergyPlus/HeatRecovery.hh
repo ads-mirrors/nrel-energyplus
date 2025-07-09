@@ -111,7 +111,7 @@ namespace HeatRecovery {
         std::string Name; // name of component
         HVAC::HXType type = HVAC::HXType::Invalid;
         std::string HeatExchPerfName;                       // Desiccant balanced heat exchanger performance data name
-        int SchedPtr = 0;                                   // index of schedule
+        Sched::Schedule *availSched = nullptr;              // schedule // availability ?
         HXConfiguration FlowArr = HXConfiguration::Invalid; // flow Arrangement:
         bool EconoLockOut = false;
         Real64 hARatio = 0.0;          // ratio of supply side h*A to secondary side h*A
@@ -501,6 +501,10 @@ struct HeatRecoveryData : BaseGlobalStruct
     std::unordered_map<std::string, std::string> HeatExchangerUniqueNames;
     Array1D<HeatRecovery::HeatExchCond> ExchCond;
     Array1D<HeatRecovery::BalancedDesDehumPerfData> BalDesDehumPerfData;
+
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
 
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {

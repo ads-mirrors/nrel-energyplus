@@ -53,7 +53,6 @@
 
 // ObjexxFCL Headers
 #include <ObjexxFCL/Array1D.hh>
-#include <ObjexxFCL/Fmath.hh>
 
 // EnergyPlus Headers
 #include <EnergyPlus/Data/BaseData.hh>
@@ -406,6 +405,10 @@ struct DataPlantData : BaseGlobalStruct
     std::array<Array1D<DataPlant::ReportLoopData>, static_cast<int>(DataPlant::LoopSideLocation::Num)> VentRepPlant;
     std::array<Array1D<DataPlant::ReportLoopData>, static_cast<int>(DataPlant::LoopSideLocation::Num)> VentRepCond;
     Array1D<DataPlant::PlantCallingOrderInfoStruct> PlantCallingOrderInfo;
+
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
 
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {

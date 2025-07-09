@@ -57,6 +57,7 @@
 #include <EnergyPlus/FluidProperties.hh>
 #include <EnergyPlus/Plant/DataPlant.hh>
 #include <EnergyPlus/PlantCentralGSHP.hh>
+#include <EnergyPlus/PlantUtilities.hh>
 
 using namespace EnergyPlus;
 
@@ -75,7 +76,7 @@ TEST_F(EnergyPlusFixture, ChillerHeater_Autosize)
 
     state->dataPlantCentralGSHP->Wrapper(1).WrapperComp(1).WrapperPerformanceObjectType = "CHILLERHEATERPERFORMANCE:ELECTRIC:EIR";
     state->dataPlantCentralGSHP->Wrapper(1).WrapperComp(1).WrapperIdenticalObjectNum = 2;
-    state->dataPlantCentralGSHP->Wrapper(1).WrapperComp(1).CHSchedPtr = ScheduleManager::ScheduleAlwaysOn;
+    state->dataPlantCentralGSHP->Wrapper(1).WrapperComp(1).chSched = Sched::GetScheduleAlwaysOn(*state);
     state->dataPlantCentralGSHP->Wrapper(1).ChillerHeaterNums = 2;
     state->dataPlantCentralGSHP->Wrapper(1).ChillerHeater.allocate(2);
     // First test in SizeWrapper, so need to set that
@@ -126,6 +127,7 @@ TEST_F(EnergyPlusFixture, ChillerHeater_Autosize)
     state->dataSize->PlantSizData(PltSizNum).LoopType = DataSizing::TypeOfPlantLoop::Cooling;
     // Assign to the wrapper
     state->dataPlantCentralGSHP->Wrapper(1).CWPlantLoc.loopNum = PltSizNum;
+    PlantUtilities::SetPlantLocationLinks(*state, state->dataPlantCentralGSHP->Wrapper(1).CWPlantLoc);
 
     // Condenser Loop
     int PltSizCondNum = 2;
@@ -136,6 +138,7 @@ TEST_F(EnergyPlusFixture, ChillerHeater_Autosize)
     state->dataSize->PlantSizData(PltSizCondNum).LoopType = DataSizing::TypeOfPlantLoop::Condenser;
     // Assign to the wrapper
     state->dataPlantCentralGSHP->Wrapper(1).GLHEPlantLoc.loopNum = PltSizCondNum;
+    PlantUtilities::SetPlantLocationLinks(*state, state->dataPlantCentralGSHP->Wrapper(1).GLHEPlantLoc);
 
     // Calculate expected values
     Real64 rho_evap = state->dataPlnt->PlantLoop(PltSizNum).glycol->getDensity(*state, Constant::CWInitConvTemp, "ChillerHeater_Autosize_TEST");
@@ -340,6 +343,8 @@ TEST_F(EnergyPlusFixture, Test_CentralHeatPumpSystem_Control_Schedule_fix)
 
     ASSERT_TRUE(process_idf(idf_objects));
 
+    state->init_state(*state);
+
     // May not need for direct wrapper input processing call (need when caling factory)
     state->dataPlantCentralGSHP->getWrapperInputFlag = true;
 
@@ -347,7 +352,7 @@ TEST_F(EnergyPlusFixture, Test_CentralHeatPumpSystem_Control_Schedule_fix)
     PlantCentralGSHP::GetWrapperInput(*state);
 
     // verify that under this scenario of not finding a schedule match, ScheduleAlwaysOn is the treated default
-    EXPECT_EQ(state->dataPlantCentralGSHP->Wrapper(1).WrapperComp(1).CHSchedPtr, ScheduleManager::ScheduleAlwaysOn);
+    EXPECT_EQ(state->dataPlantCentralGSHP->Wrapper(1).WrapperComp(1).chSched, Sched::GetScheduleAlwaysOn(*state));
 }
 
 TEST_F(EnergyPlusFixture, Test_CentralHeatPumpSystem_adjustChillerHeaterCondFlowTemp)
@@ -362,6 +367,7 @@ TEST_F(EnergyPlusFixture, Test_CentralHeatPumpSystem_adjustChillerHeaterCondFlow
     state->dataPlnt->PlantLoop(1).FluidName = "WATER";
     state->dataPlnt->PlantLoop(1).glycol = Fluid::GetWater(*state);
     thisWrap.HWPlantLoc.loopNum = 1;
+    PlantUtilities::SetPlantLocationLinks(*state, thisWrap.HWPlantLoc);
 
     Real64 qCondenser;
     Real64 condMassFlowRate;
@@ -446,6 +452,7 @@ TEST_F(EnergyPlusFixture, Test_CentralHeatPumpSystem_adjustChillerHeaterEvapFlow
     state->dataPlnt->PlantLoop(1).FluidName = "WATER";
     state->dataPlnt->PlantLoop(1).glycol = Fluid::GetWater(*state);
     thisWrap.HWPlantLoc.loopNum = 1;
+    PlantUtilities::SetPlantLocationLinks(*state, thisWrap.HWPlantLoc);
 
     Real64 qEvaporator;
     Real64 evapMassFlowRate;

@@ -120,8 +120,8 @@ TEST_F(AutoSizingFixture, SystemAirFlowSizingGauntlet)
     state->dataSize->FinalZoneSizing(1).HeatDDNum = 2;
     state->dataSize->FinalZoneSizing(1).TimeStepNumAtCoolMax = 12;
     state->dataSize->FinalZoneSizing(1).TimeStepNumAtHeatMax = 6;
-    state->dataGlobal->NumOfTimeStepInHour = 1;
-    state->dataGlobal->MinutesPerTimeStep = 60;
+    state->dataGlobal->TimeStepsInHour = 1;
+    state->dataGlobal->MinutesInTimeStep = 60;
     state->dataEnvrn->TotDesDays = 2;
     state->dataWeather->DesDayInput.allocate(2);
     state->dataWeather->DesDayInput(1).Month = 7;

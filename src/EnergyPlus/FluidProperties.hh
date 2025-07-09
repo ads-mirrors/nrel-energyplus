@@ -232,6 +232,8 @@ namespace Fluid {
                                  Real64 Temperature,           // actual temperature given as input
                                  Real64 Pressure,              // actual pressure given as input
                                  std::string_view CalledFrom); // routine this function was called from (error messages)
+
+        void setTempLimits(EnergyPlusData &state, bool &ErrorsFound);
     };
 
     enum class GlycolError
@@ -376,6 +378,8 @@ namespace Fluid {
                             Real64 Temperature,           // actual temperature given as input
                             std::string_view CalledFrom); // routine this function was called from (error messages)
 
+        void setTempLimits(EnergyPlusData &state, bool &ErrorsFound);
+
         void getDensityTemperatureLimits(EnergyPlusData &state, Real64 &MinTempLimit, Real64 &MaxTempLimit);
 
         void getSpecificHeatTemperatureLimits(EnergyPlusData &state, Real64 &MinTempLimit, Real64 &MaxTempLimit);
@@ -389,6 +393,8 @@ namespace Fluid {
     };
 
     void GetFluidPropertiesData(EnergyPlusData &state);
+
+    void InitConstantFluidPropertiesData(EnergyPlusData &state);
 
     template <size_t NumOfTemps, size_t NumOfConcs>
     void InterpDefValuesForGlycolConc(
@@ -407,10 +413,6 @@ namespace Fluid {
                                    Real64 Concentration,               // concentration of actual fluid mix
                                    Array1D<Real64> &InterpData         // interpolated output data at proper concentration
     );
-
-    void InitializeGlycolTempLimits(EnergyPlusData &state, bool &ErrorsFound); // set to true if errors found here
-
-    void InitializeRefrigerantLimits(EnergyPlusData &state, bool &ErrorsFound); // set to true if errors found here
 
     void ReportAndTestGlycols(EnergyPlusData &state);
 
@@ -596,6 +598,11 @@ struct FluidData : BaseGlobalStruct
     std::array<Fluid::cached_tsh, Fluid::t_sh_cache_size> cached_t_sh;
 #endif
 
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+        Fluid::InitConstantFluidPropertiesData(state);
+    }
+
     void init_state(EnergyPlusData &state) override
     {
         Fluid::GetFluidPropertiesData(state);
@@ -604,12 +611,17 @@ struct FluidData : BaseGlobalStruct
     void clear_state() override
     {
 
-        for (int i = 1; i <= refrigs.isize(); ++i)
+        for (int i = 1; i <= refrigs.isize(); ++i) {
+            refrigs(i)->HshValues.deallocate();
+            refrigs(i)->RhoshValues.deallocate();
             delete refrigs(i);
-        for (int i = 1; i <= glycolsRaw.isize(); ++i)
+        }
+        for (int i = 1; i <= glycolsRaw.isize(); ++i) {
             delete glycolsRaw(i);
-        for (int i = 1; i <= glycols.isize(); ++i)
+        }
+        for (int i = 1; i <= glycols.isize(); ++i) {
             delete glycols(i);
+        }
 
         new (this) FluidData();
     }

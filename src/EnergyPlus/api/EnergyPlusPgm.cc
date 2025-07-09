@@ -173,7 +173,7 @@
 // from the SQLite project (http://www.sqlite.org/).
 
 #ifdef _WIN32
-#include <Windows.h>
+#    include <Windows.h>
 #endif
 
 // C++ Headers
@@ -183,11 +183,11 @@
 #include <vector>
 
 #ifdef DEBUG_ARITHM_GCC_OR_CLANG
-#include <EnergyPlus/fenv_missing.h>
+#    include <EnergyPlus/fenv_missing.h>
 #endif
 
 #ifdef DEBUG_ARITHM_MSVC
-#include <cfloat>
+#    include <cfloat>
 #endif
 
 // ObjexxFCL Headers
@@ -218,10 +218,10 @@
 #include <EnergyPlus/api/EnergyPlusPgm.hh>
 
 #ifdef _WIN32
-#include <direct.h>
-#include <stdlib.h>
+#    include <direct.h>
+#    include <stdlib.h>
 #else // Mac or Linux
-#include <unistd.h>
+#    include <unistd.h>
 #endif
 
 int EnergyPlusPgm(const std::vector<std::string> &args, std::string const &filepath)
@@ -269,12 +269,12 @@ void commonInitialize(EnergyPlus::EnergyPlusData &state)
 #endif
 
 #ifdef _MSC_VER
-#ifndef _DEBUG
+#    ifndef _DEBUG
     // If _MSC_VER and not debug then prevent dialogs on error
     SetErrorMode(SEM_NOGPFAULTERRORBOX);
     _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_DEBUG);
     _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_DEBUG);
-#endif
+#    endif
 #endif
 
     state.dataSysVars->runtimeTimer.tick();
@@ -367,8 +367,10 @@ int wrapUpEnergyPlus(EnergyPlus::EnergyPlusData &state)
         Psychrometrics::ShowPsychrometricSummary(state, state.files.audit);
 
         state.dataInputProcessing->inputProcessor->reportOrphanRecordObjects(state);
+
         Fluid::ReportOrphanFluids(state);
-        ScheduleManager::ReportOrphanSchedules(state);
+        Sched::ReportOrphanSchedules(state);
+
         if (state.dataSQLiteProcedures->sqlite) {
             state.dataSQLiteProcedures->sqlite.reset();
         }
@@ -414,7 +416,9 @@ int RunEnergyPlus(EnergyPlus::EnergyPlusData &state, std::string const &filepath
     // as possible and contain all "simulation" code in other modules and files.
     using namespace EnergyPlus;
     int status = initializeEnergyPlus(state, filepath);
-    if (status || state.dataGlobal->outputEpJSONConversionOnly) return status;
+    if (status || state.dataGlobal->outputEpJSONConversionOnly) {
+        return status;
+    }
     try {
         EnergyPlus::SimulationManager::ManageSimulation(state);
     } catch (const EnergyPlus::FatalError &e) {
@@ -448,9 +452,15 @@ int runEnergyPlusAsLibrary(EnergyPlus::EnergyPlusData &state, const std::vector<
     state.dataGlobal->eplusRunningViaAPI = true;
 
     // clean out any stdin, stderr, stdout flags from a prior call
-    if (!std::cin.good()) std::cin.clear();
-    if (!std::cerr.good()) std::cerr.clear();
-    if (!std::cout.good()) std::cout.clear();
+    if (!std::cin.good()) {
+        std::cin.clear();
+    }
+    if (!std::cerr.good()) {
+        std::cerr.clear();
+    }
+    if (!std::cout.good()) {
+        std::cout.clear();
+    }
 
     int return_code = EnergyPlus::CommandLineInterface::ProcessArgs(state, args);
     if (return_code == static_cast<int>(EnergyPlus::CommandLineInterface::ReturnCodes::Failure)) {

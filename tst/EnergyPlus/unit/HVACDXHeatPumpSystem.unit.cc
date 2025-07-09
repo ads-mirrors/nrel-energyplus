@@ -100,6 +100,7 @@ TEST_F(EnergyPlusFixture, ExerciseHVACDXHeatPumpSystem)
                           "    Heat Pump 1 Evaporator Node;  !- Evaporator Air Inlet Node Name"});
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     state->dataLoopNodes->NodeID.allocate(2);
     state->dataLoopNodes->Node.allocate(2);
@@ -109,6 +110,7 @@ TEST_F(EnergyPlusFixture, ExerciseHVACDXHeatPumpSystem)
     state->dataDXCoils->GetCoilsInputFlag = false;
     state->dataDXCoils->DXCoil.allocate(1);
     state->dataDXCoils->DXCoil(1).Name = "HEAT PUMP DX HEATING COIL 1";
+    state->dataDXCoils->DXCoil(1).availSched = Sched::GetScheduleAlwaysOn(*state);
     state->dataDXCoils->DXCoil(1).AirInNode = 1;
     state->dataDXCoils->DXCoil(1).AirOutNode = 2;
     state->dataDXCoils->DXCoil(1).DXCoilType = "COIL:HEATING:DX:SINGLESPEED";
@@ -136,8 +138,7 @@ TEST_F(EnergyPlusFixture, ExerciseHVACDXHeatPumpSystem)
     state->dataDXCoils->DXCoil(1).DXCoilType_Num = HVAC::CoilDX_HeatingEmpirical;
 
     // manually add a curve
-    state->dataCurveManager->allocateCurveVector(1);
-    state->dataCurveManager->PerfCurve(1)->interpolationType = Curve::InterpType::EvaluateCurveToLimits;
+    auto *curve = Curve::AddCurve(*state, "Curve1");
 
     // setup some outputs
     OutputReportPredefined::SetPredefinedTables(*state);

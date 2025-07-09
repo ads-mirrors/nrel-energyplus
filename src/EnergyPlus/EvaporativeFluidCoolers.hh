@@ -171,7 +171,7 @@ namespace EvaporativeFluidCoolers {
         // begin water system interactions
         EvapLoss EvapLossMode = EvapLoss::ByMoistTheory;   // sets how evaporative fluid cooler water evaporation is modeled
         Blowdown BlowdownMode = Blowdown::ByConcentration; // sets how evaporative fluid cooler water blowdown is modeled
-        int SchedIDBlowdown = 0;                           // index "pointer" to schedule of blowdown in [m3/s]
+        Sched::Schedule *blowdownSched = nullptr;          // schedule of blowdown in [m3/s]
         int WaterTankID = 0;                               // index "pointer" to WaterStorage structure
         int WaterTankDemandARRID = 0;                      // index "pointer" to demand array inside WaterStorage structure
         Real64 UserEvapLossFactor = 0.0;                   // simple model [%/Delt C]
@@ -257,6 +257,10 @@ struct EvaporativeFluidCoolersData : BaseGlobalStruct
     bool GetEvapFluidCoolerInputFlag = true;
     Array1D<EvaporativeFluidCoolers::EvapFluidCoolerSpecs> SimpleEvapFluidCooler; // dimension to number of machines
     std::unordered_map<std::string, std::string> UniqueSimpleEvapFluidCoolerNames;
+
+    void init_constant_state([[maybe_unused]] EnergyPlusData &state) override
+    {
+    }
 
     void init_state([[maybe_unused]] EnergyPlusData &state) override
     {

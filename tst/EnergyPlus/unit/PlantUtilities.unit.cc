@@ -95,7 +95,11 @@ TEST_F(EnergyPlusFixture, TestRegulateCondenserCompFlowReqOp)
     EXPECT_EQ(1, state->dataFluid->refrigs.isize());
     EXPECT_EQ(1, state->dataFluid->glycols.isize());
 
-    Fluid::GetFluidPropertiesData(*state); // should never happen but if it does it's safe
+    // should never happen but if it does it's safe
+
+    // This is the second unit test that does this, when really we
+    // should just ensure that it never happens.
+    Fluid::GetFluidPropertiesData(*state);
     EXPECT_EQ(1, state->dataFluid->refrigs.isize());
     EXPECT_EQ(1, state->dataFluid->glycols.isize());
 

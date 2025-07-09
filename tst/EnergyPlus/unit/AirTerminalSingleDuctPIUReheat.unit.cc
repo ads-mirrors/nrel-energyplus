@@ -67,7 +67,6 @@ using namespace EnergyPlus::DataEnvironment;
 using namespace EnergyPlus::DataZoneEquipment;
 using namespace EnergyPlus::HeatBalanceManager;
 using namespace EnergyPlus::PoweredInductionUnits;
-using namespace EnergyPlus::ScheduleManager;
 using namespace EnergyPlus::SimulationManager;
 using namespace EnergyPlus::ZoneAirLoopEquipmentManager;
 
@@ -176,9 +175,9 @@ TEST_F(EnergyPlusFixture, AirTerminalSingleDuctSeriesPIUReheat_GetInputtest)
 
     ASSERT_TRUE(process_idf(idf_objects));
 
-    state->dataGlobal->NumOfTimeStepInHour = 1; // must initialize this to get schedules initialized
-    state->dataGlobal->MinutesPerTimeStep = 60; // must initialize this to get schedules initialized
-    ProcessScheduleInput(*state);               // read schedules
+    state->dataGlobal->TimeStepsInHour = 1;    // must initialize this to get schedules initialized
+    state->dataGlobal->MinutesInTimeStep = 60; // must initialize this to get schedules initialized
+    state->init_state(*state);
 
     GetZoneData(*state, ErrorsFound);
     ASSERT_FALSE(ErrorsFound);
@@ -286,9 +285,9 @@ TEST_F(EnergyPlusFixture, AirTerminalSingleDuctSeriesPIU_SetADUInletNodeTest)
 
     ASSERT_TRUE(process_idf(idf_objects));
 
-    state->dataGlobal->NumOfTimeStepInHour = 1; // must initialize this to get schedules initialized
-    state->dataGlobal->MinutesPerTimeStep = 60; // must initialize this to get schedules initialized
-    ProcessScheduleInput(*state);               // read schedules
+    state->dataGlobal->TimeStepsInHour = 1;    // must initialize this to get schedules initialized
+    state->dataGlobal->MinutesInTimeStep = 60; // must initialize this to get schedules initialized
+    state->init_state(*state);
 
     GetZoneData(*state, ErrorsFound);
     ASSERT_FALSE(ErrorsFound);

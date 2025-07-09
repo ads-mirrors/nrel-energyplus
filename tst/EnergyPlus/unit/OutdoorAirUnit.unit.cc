@@ -91,7 +91,6 @@ using namespace EnergyPlus::Fans;
 using namespace EnergyPlus::HeatBalanceManager;
 using namespace OutputReportPredefined;
 using namespace EnergyPlus::Psychrometrics;
-using namespace EnergyPlus::ScheduleManager;
 using namespace EnergyPlus::SteamCoils;
 using namespace EnergyPlus::WaterCoils;
 
@@ -287,6 +286,7 @@ TEST_F(EnergyPlusFixture, OutdoorAirUnit_AutoSize)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
 
     state->dataGlobal->CurrentTime = 0.25;
     state->dataGlobal->BeginEnvrnFlag = true;
@@ -302,8 +302,6 @@ TEST_F(EnergyPlusFixture, OutdoorAirUnit_AutoSize)
 
     state->dataZoneEnergyDemand->ZoneSysEnergyDemand.allocate(1);
 
-    ProcessScheduleInput(*state);     // read schedules
-    GetCurveInput(*state);            // read curves
     GetZoneData(*state, ErrorsFound); // read zone data
     EXPECT_FALSE(ErrorsFound);
 
@@ -334,9 +332,9 @@ TEST_F(EnergyPlusFixture, OutdoorAirUnit_AutoSize)
     ZoneInletNode = OutdoorAirUnit::GetOutdoorAirUnitZoneInletNode(*state, OAUnitNum);
 
     // schedule values will get reset to 0 if initialized before GetInput
-    state->dataScheduleMgr->Schedule(1).CurrentValue = 1.0; // enable the VRF condenser
-    state->dataScheduleMgr->Schedule(2).CurrentValue = 1.0; // enable the terminal unit
-    state->dataScheduleMgr->Schedule(3).CurrentValue = 1.0; // turn on fan
+    Sched::GetSchedule(*state, "AVAILSCHED")->currentVal = 1.0;    // enable the VRF condenser
+    Sched::GetSchedule(*state, "OAULOCTRLTEMP")->currentVal = 1.0; // enable the terminal unit
+    Sched::GetSchedule(*state, "OAUHICTRLTEMP")->currentVal = 1.0; // turn on fan
     int EAFanInletNode = state->dataFans->fans(2)->inletNodeNum;
     state->dataLoopNodes->Node(EAFanInletNode).MassFlowRate = 0.60215437;         // zone exhaust flow rate
     state->dataLoopNodes->Node(EAFanInletNode).MassFlowRateMaxAvail = 0.60215437; // exhaust fan will not turn on unless max avail is set
@@ -559,14 +557,13 @@ TEST_F(EnergyPlusFixture, OutdoorAirUnit_WaterCoolingCoilAutoSizeTest)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->dataGlobal->TimeStepsInHour = 1;
+    state->dataGlobal->MinutesInTimeStep = 60;
+    state->init_state(*state);
 
     state->dataEnvrn->OutBaroPress = 101325.0;
     state->dataGlobal->TimeStep = 1;
-    state->dataGlobal->NumOfTimeStepInHour = 1;
-    state->dataGlobal->MinutesPerTimeStep = 60;
     state->dataGlobal->DoingSizing = true;
-
-    InitializePsychRoutines(*state);
 
     bool ErrorsFound(false);
     GetZoneData(*state, ErrorsFound);
@@ -574,8 +571,6 @@ TEST_F(EnergyPlusFixture, OutdoorAirUnit_WaterCoolingCoilAutoSizeTest)
     EXPECT_EQ("THERMAL ZONE 1", state->dataHeatBal->Zone(1).Name);
 
     GetZoneEquipmentData(*state);
-    ProcessScheduleInput(*state);
-    state->dataScheduleMgr->ScheduleInputProcessed = true;
     Fans::GetFanInput(*state);
 
     OutdoorAirUnit::GetOutdoorAirUnitInputs(*state);
@@ -637,13 +632,13 @@ TEST_F(EnergyPlusFixture, OutdoorAirUnit_WaterCoolingCoilAutoSizeTest)
     state->dataEnvrn->HolidayIndex = 0;
     state->dataEnvrn->DayOfYear_Schedule = General::OrdinalDay(state->dataEnvrn->Month, state->dataEnvrn->DayOfMonth, state->dataGlobal->HourOfDay);
 
-    UpdateScheduleValues(*state);
+    Sched::UpdateScheduleVals(*state);
 
     state->dataSize->ZoneEqSizing.allocate(1);
     state->dataZoneEnergyDemand->CurDeadBandOrSetback.allocate(1);
     state->dataZoneEnergyDemand->CurDeadBandOrSetback(1) = false;
     state->dataHeatBalFanSys->TempControlType.allocate(1);
-    state->dataHeatBalFanSys->TempControlType(1) = HVAC::ThermostatType::DualSetPointWithDeadBand;
+    state->dataHeatBalFanSys->TempControlType(1) = HVAC::SetptType::DualHeatCool;
 
     state->dataSize->ZoneSizingRunDone = true;
     state->dataSize->CurZoneEqNum = 1;
@@ -869,15 +864,14 @@ TEST_F(EnergyPlusFixture, OutdoorAirUnit_SteamHeatingCoilAutoSizeTest)
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
+    state->dataGlobal->TimeStepsInHour = 1;
+    state->dataGlobal->MinutesInTimeStep = 60;
+    state->init_state(*state);
 
     state->dataEnvrn->StdRhoAir = 1.20;
     state->dataEnvrn->OutBaroPress = 101325.0;
     state->dataGlobal->TimeStep = 1;
-    state->dataGlobal->NumOfTimeStepInHour = 1;
-    state->dataGlobal->MinutesPerTimeStep = 60;
     state->dataGlobal->DoingSizing = true;
-
-    InitializePsychRoutines(*state);
 
     bool ErrorsFound(false);
     GetZoneData(*state, ErrorsFound);
@@ -885,8 +879,6 @@ TEST_F(EnergyPlusFixture, OutdoorAirUnit_SteamHeatingCoilAutoSizeTest)
     EXPECT_EQ("THERMAL ZONE 1", state->dataHeatBal->Zone(1).Name);
 
     GetZoneEquipmentData(*state);
-    ProcessScheduleInput(*state);
-    state->dataScheduleMgr->ScheduleInputProcessed = true;
     Fans::GetFanInput(*state);
 
     OutdoorAirUnit::GetOutdoorAirUnitInputs(*state);
@@ -949,13 +941,13 @@ TEST_F(EnergyPlusFixture, OutdoorAirUnit_SteamHeatingCoilAutoSizeTest)
     state->dataEnvrn->HolidayIndex = 0;
     state->dataEnvrn->DayOfYear_Schedule = General::OrdinalDay(state->dataEnvrn->Month, state->dataEnvrn->DayOfMonth, state->dataGlobal->HourOfDay);
 
-    UpdateScheduleValues(*state);
+    Sched::UpdateScheduleVals(*state);
 
     state->dataSize->ZoneEqSizing.allocate(1);
     state->dataZoneEnergyDemand->CurDeadBandOrSetback.allocate(1);
     state->dataZoneEnergyDemand->CurDeadBandOrSetback(1) = false;
     state->dataHeatBalFanSys->TempControlType.allocate(1);
-    state->dataHeatBalFanSys->TempControlType(1) = HVAC::ThermostatType::DualSetPointWithDeadBand;
+    state->dataHeatBalFanSys->TempControlType(1) = HVAC::SetptType::DualHeatCool;
 
     state->dataSize->ZoneSizingRunDone = true;
     state->dataSize->CurZoneEqNum = 1;

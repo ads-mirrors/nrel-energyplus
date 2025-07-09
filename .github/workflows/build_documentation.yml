@@ -20,8 +20,8 @@ jobs:
           - os: ubuntu-24.04
             generator: "Unix Makefiles"
             pretty: 'Ubuntu 24.04'
-          - os: windows-2019
-            generator: "Visual Studio 16 2019"
+          - os: windows-2022
+            generator: "Visual Studio 17 2022"
             pretty: "Windows"
 
     runs-on: ${{ matrix.os }}
@@ -113,34 +113,6 @@ jobs:
     - name: Build Docs
       working-directory: ./doc/build
       run: cmake --build . -j 4
-
-    - name: Upload Acknowledgments
-      uses: actions/upload-artifact@v4
-      if: matrix.os == 'ubuntu-24.04'
-      with:
-        name: Acknowledgments
-        path: ${{ github.workspace }}/doc/build/pdf/Acknowledgments.pdf
-
-    - name: Upload AuxiliaryPrograms
-      uses: actions/upload-artifact@v4
-      if: matrix.os == 'ubuntu-24.04'
-      with:
-        name: AuxiliaryPrograms
-        path: ${{ github.workspace }}/doc/build/pdf/AuxiliaryPrograms.pdf
-
-    - name: Upload EMSApplicationGuide
-      uses: actions/upload-artifact@v4
-      if: matrix.os == 'ubuntu-24.04'
-      with:
-        name: EMSApplicationGuide
-        path: ${{ github.workspace }}/doc/build/pdf/EMSApplicationGuide.pdf
-
-    - name: Upload EnergyPlusEssentials
-      uses: actions/upload-artifact@v4
-      if: matrix.os == 'ubuntu-24.04'
-      with:
-        name: EnergyPlusEssentials
-        path: ${{ github.workspace }}/doc/build/pdf/EnergyPlusEssentials.pdf
 
     - name: Upload EngineeringReference
       uses: actions/upload-artifact@v4

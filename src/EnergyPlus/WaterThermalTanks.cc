@@ -4009,7 +4009,7 @@ bool getWaterTankStratifiedInput(EnergyPlusData &state, std::string objectType)
                                                                     DataLoopNode::ObjectIsNotParent);
             Tank.OutletNodeName1 = Util::makeUPPER(UseOutletNodeName.value().get<std::string>());
             Tank.UseOutletNode = NodeInputManager::GetOnlySingleNode(state,
-                                                                     UseOutletNodeName.value().get<std::string>(),
+                                                                     Tank.OutletNodeName1,
                                                                      ErrorsFound,
                                                                      DataLoopNode::ConnectionObjectType::ThermalStorageChilledWaterStratified,
                                                                      thisObjectName,

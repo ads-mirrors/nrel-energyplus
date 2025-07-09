@@ -4,6 +4,7 @@ Ruleset Project Description Phase 4
 **Jason Glazer, GARD Analytics**
 
  - February 21, 2025
+ - July 9, 2025 - update with focus on EnergyPlus table implementation
 
 ## Justification for New Feature ##
 
@@ -205,48 +206,97 @@ additional programming in createRPD.
 
 Data Elements that Require New Outputs from EnergyPlus
 ------------------------------------------------------
+The following list was updated July 9 when we had a shift to focus on EnergyPlus table enhancements. The 
+list was redone to include all data elements used by the PNNL RCT for 90.1-2019 appendix G based on RDS.
+This included service water heating and refrigation.
 
-- Space.occupant_sensible_heat_gain
-- Space.occupant_latent_heat_gain
-- Subsurface.dynamic_glazing_type (for manual vs automatic)
-- Schedule.hourly_heating_design_day
-- Schedule.hourly_heating_design_year
-- Schedule.hourly_cooling_design_day
-- Schedule.hourly_cooling_design_year
-- HeatingSystem.heatpump_auxiliary_heat_high_shutoff_temperature
-- FanSystem.air_economizer
-- FanSystem.temperature_control
-- FanSystem.operation_during_occupied
-- FanSystem.operation_during_unoccupied
-- FanSystem.reset_differential_temperature
-- FanSystem.supply_air_temperature_reset_load_fraction
-- FanSystem.operating_schedule
-- FanSystem.maximum_outdoor_airflow
-- AirEconomizer.id
-- AirEconomizer.type
-- AirEconomizer.high_limit_shutoff_temperature
-- AirEnergyRecovery.energy_recovery_operation
-- FanSystem.demand_control_ventilation_control
-- FanSystem.fan_volume_reset_type
-- FanSystem.fan_volume_reset_fraction
-- Fan.output_validation_points
-- FanOutputValidationPoint.airflow
-- FanOutputValidationPoint.result
-- Terminal.has_demand_control_ventilation
-- FluidLoopDesignAndControl.temperature_reset_type
-- FluidLoopDesignAndControl.outdoor_high_for_loop_supply_reset_temperature
-- FluidLoopDesignAndControl.outdoor_low_for_loop_supply_reset_temperature
-- FluidLoopDesignAndControl.loop_supply_temperature_at_outdoor_high
-- FluidLoopDesignAndControl.loop_supply_temperature_at_outdoor_low
-- FluidLoopDesignAndControl.loop_supply_temperature_at_low_load
-- Boiler.operation_lower_limit
-- Boiler.operation_upper_limit
-- Zone.non_mechanical_cooling_fan_airflow*
-- Construction.c_factor*
-- Construction.f_factor*
-- Subsurface.has_shading_overhang*
-- Subsurface.has_shading_sidefins*
-- Terminal.is_fan_first_stage_heat*
+  RulesetModelDescription.service_water_heating_distribution_systems
+  RulesetModelDescription.service_water_heating_equipment
+  RulesetModelDescription.service_water_heating_uses
+  Building.refrigerated_cases
+  BuildingSegment.service_water_heating_area_type
+  Space.occupant_sensible_heat_gain
+  Space.occupant_latent_heat_gain
+  Space.service_water_heating_uses
+  Infiltration.modeling_method
+  Infiltration.algorithm_name
+  Infiltration.flow_rate
+  Infiltration.multiplier_schedule
+  Surface.adjacent_to
+  Construction.id
+  Construction.c_factor*
+  Construction.f_factor*
+  Subsurface.classification
+  Subsurface.has_shading_overhang*
+  Subsurface.has_shading_sidefins*
+  Schedule.hourly_heating_design_day
+  Schedule.hourly_cooling_design_day
+  FanSystem.air_energy_recovery
+  FanSystem.temperature_control
+  FanSystem.operation_during_occupied
+  FanSystem.operation_during_unoccupied
+  FanSystem.fan_control
+  FanSystem.reset_differential_temperature
+  FanSystem.supply_air_temperature_reset_load_fraction
+  FanSystem.fan_volume_reset_type
+  FanSystem.fan_volume_reset_fraction
+  FanSystem.operating_schedule
+  FanSystem.maximum_outdoor_airflow
+  FanSystem.demand_control_ventilation_control
+  AirEconomizer.id
+  AirEconomizer.type
+  AirEconomizer.high_limit_shutoff_temperature
+  AirEnergyRecovery.energy_recovery_operation
+  Fan.operating_points
+  FanOperatingPoint.airflow
+  FanOperatingPoint.power
+  Terminal.type
+  Terminal.served_by_heating_ventilating_air_conditioning_system
+  Terminal.heating_capacity
+  Terminal.has_demand_control_ventilation
+  Terminal.is_fan_first_stage_heat*
+  FluidLoopDesignAndControl.temperature_reset_type
+  FluidLoopDesignAndControl.outdoor_high_for_loop_supply_reset_temperature
+  FluidLoopDesignAndControl.outdoor_low_for_loop_supply_reset_temperature
+  FluidLoopDesignAndControl.loop_supply_temperature_at_outdoor_high
+  FluidLoopDesignAndControl.loop_supply_temperature_at_outdoor_low
+  FluidLoopDesignAndControl.loop_supply_temperature_at_low_load
+  Boiler.operation_lower_limit
+  Boiler.operation_upper_limit
+  HeatRejection.fan
+  ServiceWaterHeatingDistributionSystem.id
+  ServiceWaterHeatingDistributionSystem.tanks
+  ServiceWaterHeatingDistributionSystem.service_water_piping
+  ServiceWaterHeatingDistributionSystem.drain_heat_recovery_efficiency
+  ServiceWaterHeatingDistributionSystem.entering_water_mains_temperature_schedule
+  ServiceWaterPiping.id
+  ServiceWaterPiping.is_recirculation_loop
+  ServiceWaterPiping.are_thermal_losses_modeled
+  SolarThermal.id
+  ServiceWaterHeatingEquipment.id
+  ServiceWaterHeatingEquipment.heater_fuel_type
+  ServiceWaterHeatingEquipment.distribution_system
+  ServiceWaterHeatingEquipment.efficiency_metric_types
+  ServiceWaterHeatingEquipment.efficiency_metric_values
+  ServiceWaterHeatingEquipment.draw_pattern
+  ServiceWaterHeatingEquipment.first_hour_rating
+  ServiceWaterHeatingEquipment.input_power
+  ServiceWaterHeatingEquipment.setpoint_temperature
+  ServiceWaterHeatingEquipment.tank
+  ServiceWaterHeatingEquipment.solar_thermal_systems
+  Tank.id
+  Tank.storage_capacity
+  Tank.type
+  ServiceWaterHeatingUse.id
+  ServiceWaterHeatingUse.area_type
+  ServiceWaterHeatingUse.served_by_distribution_system
+  ServiceWaterHeatingUse.use
+  ServiceWaterHeatingUse.use_units
+  ServiceWaterHeatingUse.use_multiplier_schedule
+  ServiceWaterHeatingUse.temperature_at_fixture
+  ServiceWaterHeatingUse.is_heat_recovered_by_drain
+  RefrigeratedCase.id
+  RefrigeratedCase.type
 
 The ones with asterisks* indicate more substantial effort needed to implement. If support for these is added, this NFP
 will be updated to describe the exact report changes made.
@@ -270,6 +320,312 @@ reporting being added (primarily the HVAC Topology report), including:
 - FanSystem.fan_control
 - Terminal.type
 - Terminal.heating_capacity
+
+
+## Enhance Existing EnergyPlus Tabular Output Reports ##
+
+The following sections describe enhancements to the existing reports and new reports that will be added in EnergyPlus
+
+#### Initialization Summary - People Internal Gains Nominal ####
+
+The current columns are:
+- Name
+- Schedule Name
+- Zone Name
+- Zone Floor Area {m2}
+- Number Zone Occupants
+- Number of People {}
+- People/Floor Area {person/m2}
+- Floor Area per person {m2/person}
+- Fraction Radiant
+- Fraction Convected
+- Sensible Fraction Calculation
+- Activity level
+- ASHRAE 55 Warnings
+- Carbon Dioxide Generation Rate
+- Minimum Number of People for All Day Types
+- Maximum Number of People for All Day Types
+- Minimum Number of People for Weekdays
+- Maximum Number of People for Weekdays
+- Minimum Number of People for Weekends/Holidays
+- Maximum Number of People for Weekends /Holidays
+- Minimum Number of People for Summer Design Days
+- Maximum Number of People for Summer Design Days
+- Minimum Number of People for Winter Design Days
+- Maximum Number of People for Winter Design Days
+
+The new columns would be:
+- Sensible heat per occupant
+- Latent heat per occupant
+
+#### Initialization Summary - ZoneInfiltration Airflow Stats Nominal ####
+
+The current columns are:
+- Name
+- Schedule Name
+- Zone Name
+- Zone Floor Area {m2}
+- Number Zone Occupants
+- Design Volume Flow Rate {m3/s}
+- Volume Flow Rate/Floor Area {m3/s-m2}
+- Volume Flow Rate/Exterior Surface Area {m3/s-m2}
+- ACH - Air Changes per Hour
+- Equation A - Constant Term Coefficient {}
+- Equation B - Temperature Term Coefficient {1/C}
+- Equation C - Velocity Term Coefficient {s/m}
+- Equation D - Velocity Squared Term Coefficient {s2/m2}
+
+The new columns would be:
+- Zone Infiltration Type (the type of infiltration object used)
+
+#### Outdoor Air Summary - Airflow Network Infiltration ####
+
+New table
+
+The new columns would be:
+- Name
+- Schedule Name
+- Zone Name
+- Zone Floor Area {m2}
+- Number of Zone Occupants
+- Design Volume Flow Rate {m3/s}
+- Volume Flow Rate/Floor Area {m3/s-m2}
+- Volume Flow Rate/Exterior Surface Area {m3/s-m2}
+
+#### EnvelopeSummary - Exterior Fenestration ####
+
+The current columns are:
+- Construction
+- Zone
+- Space
+- Frame and Divider
+- Glass Area [m2]
+- Frame Area [m2]
+- Divider Area [m2]
+- Area of One Opening [m2]
+- Area of Multiplied Openings [m2]
+- Glass U-Factor [W/m2-K]
+- Glass SHGC
+- Glass Visible Transmittance
+- Frame Conductance [W/m2-K]
+- Divider Conductance [W/m2-K]
+- NFRC Product Type
+- Assembly U-Factor [W/m2-K]
+- Assembly SHGC
+- Assembly Visible Transmittance
+- Shade Control
+- Parent Surface
+- Azimuth [deg]
+- Tilt [deg]
+- Cardinal Direction
+
+The new columns would be:
+- Surface Type (Window, Door, Glassdoor, etc.)
+- Overhand Depth
+- Fin Depth
+
+
+#### report name - table name ####
+
+The current columns are:
+- x
+
+The new columns would be:
+- x
+#### report name - table name ####
+
+The current columns are:
+- x
+
+The new columns would be:
+- x
+#### report name - table name ####
+
+The current columns are:
+- x
+
+The new columns would be:
+- x
+#### report name - table name ####
+
+The current columns are:
+- x
+
+The new columns would be:
+- x
+#### report name - table name ####
+
+The current columns are:
+- x
+
+The new columns would be:
+- x
+#### report name - table name ####
+
+The current columns are:
+- x
+
+The new columns would be:
+- x
+#### report name - table name ####
+
+The current columns are:
+- x
+
+The new columns would be:
+- x
+#### report name - table name ####
+
+The current columns are:
+- x
+
+The new columns would be:
+- x
+#### report name - table name ####
+
+The current columns are:
+- x
+
+The new columns would be:
+- x
+#### report name - table name ####
+
+The current columns are:
+- x
+
+The new columns would be:
+- x
+#### report name - table name ####
+
+The current columns are:
+- x
+
+The new columns would be:
+- x
+#### report name - table name ####
+
+The current columns are:
+- x
+
+The new columns would be:
+- x
+#### report name - table name ####
+
+The current columns are:
+- x
+
+The new columns would be:
+- x
+#### report name - table name ####
+
+The current columns are:
+- x
+
+The new columns would be:
+- x
+#### report name - table name ####
+
+The current columns are:
+- x
+
+The new columns would be:
+- x
+#### report name - table name ####
+
+The current columns are:
+- x
+
+The new columns would be:
+- x
+#### report name - table name ####
+
+The current columns are:
+- x
+
+The new columns would be:
+- x
+#### report name - table name ####
+
+The current columns are:
+- x
+
+The new columns would be:
+- x
+#### report name - table name ####
+
+The current columns are:
+- x
+
+The new columns would be:
+- x
+#### report name - table name ####
+
+The current columns are:
+- x
+
+The new columns would be:
+- x
+#### report name - table name ####
+
+The current columns are:
+- x
+
+The new columns would be:
+- x
+#### report name - table name ####
+
+The current columns are:
+- x
+
+The new columns would be:
+- x
+#### report name - table name ####
+
+The current columns are:
+- x
+
+The new columns would be:
+- x
+#### report name - table name ####
+
+The current columns are:
+- x
+
+The new columns would be:
+- x
+#### report name - table name ####
+
+The current columns are:
+- x
+
+The new columns would be:
+- x
+#### report name - table name ####
+
+The current columns are:
+- x
+
+The new columns would be:
+- x
+#### report name - table name ####
+
+The current columns are:
+- x
+
+The new columns would be:
+- x
+#### report name - table name ####
+
+The current columns are:
+- x
+
+The new columns would be:
+- x
+
+
+The following sections describe entirely new reports that will be added in EnergyPlus
+
+
 
 ## EnergyPlus Bugs to be Fixed ##
 

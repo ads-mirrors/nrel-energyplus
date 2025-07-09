@@ -6462,13 +6462,26 @@ void WaterThermalTankData::initialize(EnergyPlusData &state, bool const FirstHVA
         }
 
         Real64 sensedTemp;
-        if (this->WaterThermalTankType == DataPlant::PlantEquipmentType::ChilledWaterTankStratified) {
-            int tmpNodeNum = this->HeaterNode1;
-            sensedTemp = this->Node(tmpNodeNum).SavedTemp;
+        bool NeedsHeatOrCool = false;
+        if (this->WaterThermalTankType == DataPlant::PlantEquipmentType::HotWaterTankStratified) {
+            int tmpNodeNumTop = max(this->HeaterNode1, this->HeaterNode2);
+            Real64 sensedTempTop = this->Node(tmpNodeNumTop).SavedTemp;
+            int tmpNodeNumBottom = min(this->HeaterNode1, this->HeaterNode2);
+            Real64 sensedTempBottom = this->Node(tmpNodeNumBottom).SavedTemp;
+            Real64 DeadBandTempTop = this->SetPointTemp + this->DeadBandDeltaTemp;
+            Real64 DeadBandTempBottom = this->SetPointTemp2 - this->DeadBandDeltaTemp2;
+            this->SourceHeatNeedTwoSetpoint(sensedTempTop, DeadBandTempTop, sensedTempBottom, DeadBandTempBottom, this->NeedsHeatOrCool);
+            // consider previous charging state
+            NeedsHeatOrCool = this->NeedsHeatOrCool;
         } else {
-            sensedTemp = this->SavedSourceOutletTemp;
+            if (this->WaterThermalTankType == DataPlant::PlantEquipmentType::ChilledWaterTankStratified) {
+                int tmpNodeNum = this->HeaterNode1;
+                sensedTemp = this->Node(tmpNodeNum).SavedTemp;
+            } else {
+                sensedTemp = this->SavedSourceOutletTemp;
+            }
+            NeedsHeatOrCool = this->SourceHeatNeed(state, sensedTemp, DeadBandTemp, this->SetPointTemp);
         }
-        bool NeedsHeatOrCool = this->SourceHeatNeed(state, sensedTemp, DeadBandTemp, this->SetPointTemp);
 
         Real64 mdotSource = this->PlantMassFlowRatesFunc(state,
                                                          this->SourceInletNode,
@@ -10410,6 +10423,19 @@ Real64 WaterThermalTankData::PLRResidualHPWH(
     }
     Real64 NewTankTemp = this->GetHPWHSensedTankTemp(state);
     return desTankTemp - NewTankTemp;
+}
+
+void WaterThermalTankData::SourceHeatNeedTwoSetpoint(Real64 const OutletTempTop,
+                                          Real64 const DeadBandTempTop,
+                                          Real64 const OutletTempBottom,
+                                          Real64 const DeadBandTempBottom,
+                                          bool &NeedsHeatOrCool)
+{
+    if (OutletTempTop > DeadBandTempTop) {
+        NeedsHeatOrCool = false;
+    } else if (OutletTempBottom < DeadBandTempBottom) {
+        NeedsHeatOrCool = true;
+    }
 }
 
 bool WaterThermalTankData::SourceHeatNeed([[maybe_unused]] EnergyPlusData &state,

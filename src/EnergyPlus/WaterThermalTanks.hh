@@ -728,7 +728,7 @@ namespace WaterThermalTanks {
 
         void setupZoneInternalGains(EnergyPlusData &state);
 
-        void setupChilledWaterTankOutputVars(EnergyPlusData &state, std::string ChilledOrHotKw="Chilled");
+        void setupChilledWaterTankOutputVars(EnergyPlusData &state, std::string ChilledOrHotKw = "Chilled");
 
         void setupHotWaterTankOutputVars(EnergyPlusData &state);
 
@@ -786,9 +786,7 @@ namespace WaterThermalTanks {
                                       DataPlant::LoopSideLocation PlantLoopSide,
                                       bool PlumbedInSeries, // !unused1208
                                       DataBranchAirLoopPlant::ControlType BranchControlType,
-                                      Real64 OutletTemp,
-                                      Real64 DeadBandTemp,
-                                      Real64 SetPointTemp_loc);
+                                      bool const NeedsHeatOrCool);
 
         static Real64 CalcTimeNeeded(Real64 Ti, // Initial tank temperature (C)
                                      Real64 Tf, // Final tank temperature (C)

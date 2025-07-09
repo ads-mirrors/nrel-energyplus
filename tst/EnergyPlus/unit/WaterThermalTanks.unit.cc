@@ -6063,6 +6063,9 @@ TEST_F(EnergyPlusFixture, PlantMassFlowRatesFuncTest)
     Real64 answerTolerance = 1.0e-35;
     Tank.useSideAvailSched = Sched::GetScheduleAlwaysOn(*state);
 
+    bool NeedsHeatOrCool = Tank.SourceHeatNeed(*state, outletTemp,
+                                         deadbandTemp,
+                                         setPtTemp);
     result = Tank.PlantMassFlowRatesFunc(*state,
                                          inNodeNum,
                                          false,
@@ -6070,9 +6073,7 @@ TEST_F(EnergyPlusFixture, PlantMassFlowRatesFuncTest)
                                          plantLoopSide,
                                          false,
                                          DataBranchAirLoopPlant::ControlType::Bypass,
-                                         outletTemp,
-                                         deadbandTemp,
-                                         setPtTemp);
+                                         NeedsHeatOrCool);
     EXPECT_NEAR(result, expected, answerTolerance);
 }
 

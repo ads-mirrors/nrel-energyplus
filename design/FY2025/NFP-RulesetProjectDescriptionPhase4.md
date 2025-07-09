@@ -425,13 +425,23 @@ The new columns would be:
 - Fin Depth
 
 
-#### report name - table name ####
+#### Equipment Summary - Air Heat Recovery ####
 
 The current columns are:
-- x
+- Name
+- Input object type
+- Plate/Rotary
+- Sensible Effectiveness at 100% Heating Air Flow
+- Sensible Effectiveness at 100% Cooling Air Flow
+- Latent Effectiveness at 100% Heating Air Flow
+- Latent Effectiveness at 100% Cooling Air Flow
+- Exhaust Airflow [kg/s]
+- Outdoor Airflow [kg/s]
 
 The new columns would be:
-- x
+- Operation With Economizer (WHEN_FANS_ON, WHEN_MINIMUM_OUTSIDE_AIR, SCHEDULED)
+
+
 #### report name - table name ####
 
 The current columns are:

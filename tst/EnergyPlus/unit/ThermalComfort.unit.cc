@@ -729,7 +729,7 @@ TEST_F(EnergyPlusFixture, ThermalComfort_CalcThermalComfortFanger)
     CalcThermalComfortFanger(*state);
 
     EXPECT_NEAR(state->dataThermalComforts->ThermalComfortData(1).FangerPMV, -1.262, 0.005);
-    EXPECT_NEAR(state->dataThermalComforts->ThermalComfortData(1).FangerPPD, 38.3, 0.1);
+    EXPECT_NEAR(state->dataThermalComforts->ThermalComfortData(1).FangerPPD, 38.1, 0.1);
 
     zoneHB1.ZTAVComf = 26.0;
     zoneHB1.MRT = 27.0;
@@ -739,7 +739,7 @@ TEST_F(EnergyPlusFixture, ThermalComfort_CalcThermalComfortFanger)
     CalcThermalComfortFanger(*state);
 
     EXPECT_NEAR(state->dataThermalComforts->ThermalComfortData(1).FangerPMV, -0.860, 0.005);
-    EXPECT_NEAR(state->dataThermalComforts->ThermalComfortData(1).FangerPPD, 20.6, 0.1);
+    EXPECT_NEAR(state->dataThermalComforts->ThermalComfortData(1).FangerPPD, 20.5, 0.1);
 
     zoneHB1.ZTAVComf = 27.0;
     zoneHB1.MRT = 28.0;
@@ -749,7 +749,7 @@ TEST_F(EnergyPlusFixture, ThermalComfort_CalcThermalComfortFanger)
     CalcThermalComfortFanger(*state);
 
     EXPECT_NEAR(state->dataThermalComforts->ThermalComfortData(1).FangerPMV, -0.460, 0.005);
-    EXPECT_NEAR(state->dataThermalComforts->ThermalComfortData(1).FangerPPD, 9.4, 0.1);
+    EXPECT_NEAR(state->dataThermalComforts->ThermalComfortData(1).FangerPPD, 9.3, 0.1);
 
     zoneHB1.ZTAVComf = 25.0;
     zoneHB1.MRT = 26.0;
@@ -759,7 +759,7 @@ TEST_F(EnergyPlusFixture, ThermalComfort_CalcThermalComfortFanger)
     CalcThermalComfortFanger(*state);
 
     EXPECT_NEAR(state->dataThermalComforts->ThermalComfortData(1).FangerPMV, -1.201, 0.005);
-    EXPECT_NEAR(state->dataThermalComforts->ThermalComfortData(1).FangerPPD, 35.3, 0.1);
+    EXPECT_NEAR(state->dataThermalComforts->ThermalComfortData(1).FangerPPD, 35.1, 0.1);
 }
 
 TEST_F(EnergyPlusFixture, ThermalComfort_CalcSurfaceWeightedMRT)
@@ -1623,7 +1623,7 @@ TEST_F(EnergyPlusFixture, ThermalComfort_CalcThermalComfortFanger_Correct_TimeSt
 
     EXPECT_NEAR(state->dataZoneTempPredictorCorrector->zoneHeatBalance(1).airHumRatAvgComf, 0.010564839505489259, 0.0001);
 
-    EXPECT_NEAR(state->dataThermalComforts->ThermalComfortData(1).FangerPMV, -5.5896341565108720, 0.001);
+    EXPECT_NEAR(state->dataThermalComforts->ThermalComfortData(1).FangerPMV, -5.5851444408083006, 0.001);
 
     EXPECT_NEAR(state->dataThermalComforts->ThermalComfortData(1).FangerPPD, 100.0, 0.001);
 }

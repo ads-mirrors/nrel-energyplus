@@ -5105,7 +5105,8 @@ void WaterThermalTankData::setupChilledWaterTankOutputVars(EnergyPlusData &state
                         OutputProcessor::StoreType::Sum,
                         this->Name);
 
-    if (this->WaterThermalTankType == DataPlant::PlantEquipmentType::ChilledWaterTankStratified) {
+    if (this->WaterThermalTankType == DataPlant::PlantEquipmentType::ChilledWaterTankStratified ||
+        this->WaterThermalTankType == DataPlant::PlantEquipmentType::HotWaterTankStratified) {
 
         for (int NodeNum = 1; NodeNum <= this->Nodes; ++NodeNum) {
             SetupOutputVariable(state,
@@ -5126,10 +5127,6 @@ void WaterThermalTankData::setupChilledWaterTankOutputVars(EnergyPlusData &state
                                 OutputProcessor::StoreType::Average,
                                 this->Name);
         }
-    }
-
-    if (this->WaterThermalTankType == DataPlant::PlantEquipmentType::ChilledWaterTankStratified ||
-        this->WaterThermalTankType == DataPlant::PlantEquipmentType::HotWaterTankStratified) {
 
         for (int NodeNum = 1; NodeNum <= this->Nodes; ++NodeNum) {
             // fixme: change this chilled water term
@@ -10425,11 +10422,8 @@ Real64 WaterThermalTankData::PLRResidualHPWH(
     return desTankTemp - NewTankTemp;
 }
 
-void WaterThermalTankData::SourceHeatNeedTwoSetpoint(Real64 const OutletTempTop,
-                                          Real64 const DeadBandTempTop,
-                                          Real64 const OutletTempBottom,
-                                          Real64 const DeadBandTempBottom,
-                                          bool &NeedsHeatOrCool)
+void WaterThermalTankData::SourceHeatNeedTwoSetpoint(
+    Real64 const OutletTempTop, Real64 const DeadBandTempTop, Real64 const OutletTempBottom, Real64 const DeadBandTempBottom, bool &NeedsHeatOrCool)
 {
     if (OutletTempTop > DeadBandTempTop) {
         NeedsHeatOrCool = false;

@@ -94,10 +94,25 @@
     No,                      !- Do Zone Sizing Calculation
     No,                      !- Do System Sizing Calculation
     No,                      !- Do Plant Sizing Calculation
-    Yes,                     !- Run Simulation for Sizing Periods
-    No,                      !- Run Simulation for Weather File Run Periods
+    No,                     !- Run Simulation for Sizing Periods
+    Yes,                      !- Run Simulation for Weather File Run Periods
     No,                      !- Do HVAC Sizing Simulation for Sizing Periods
     1;                       !- Maximum Number of HVAC Sizing Simulation Passes
+
+  RunPeriod,
+    Run Period 1,            !- Name
+    7,                       !- Begin Month
+    11,                      !- Begin Day of Month
+    ,                        !- Begin Year
+    7,                       !- End Month
+    18,                      !- End Day of Month
+    ,                        !- End Year
+    Sunday,                  !- Day of Week for Start Day
+    No,                      !- Use Weather File Holidays and Special Days
+    No,                      !- Use Weather File Daylight Saving Period
+    No,                      !- Apply Weekend Holiday Rule
+    Yes,                     !- Use Weather File Rain Indicators
+    Yes;                     !- Use Weather File Snow Indicators
 
   ScheduleTypeLimits,
     Any Number;              !- Name
@@ -495,31 +510,30 @@
 
   Output:VariableDictionary,IDF;
 
-  Output:Variable,*,Plant Load Profile Mass Flow Rate,Hourly;
-
-  Output:Variable,*,Plant Load Profile Heat Transfer Rate,Hourly;
-
-  Output:Variable,*,Heat Pump Load Side Heat Transfer Rate,Hourly;
-
-  Output:Variable,*,Heat Pump Load Side Heat Transfer Energy,Hourly;
-
-  Output:Variable,*,Heat Pump Source Side Heat Transfer Rate,Hourly;
-
-  Output:Variable,*,Heat Pump Source Side Heat Transfer Energy,Hourly;
-
-  Output:Variable,*,Heat Pump Load Side Inlet Temperature,Hourly;
-
-  Output:Variable,*,Heat Pump Load Side Outlet Temperature,Hourly;
-
-  Output:Variable,*,Heat Pump Source Side Inlet Temperature,Hourly;
-
-  Output:Variable,*,Heat Pump Source Side Outlet Temperature,Hourly;
-
-  Output:Variable,*,Heat Pump Electricity Rate,Hourly;
-
-  Output:Variable,*,Heat Pump Electricity Energy,Hourly;
-
-  Output:Variable,*,Heat Pump Load Side Mass Flow Rate,Hourly;
-
-  Output:Variable,*,Heat Pump Source Side Mass Flow Rate,Hourly;
+  Output:Variable,*,Hot Water Thermal Storage Tank Temperature,hourly; !- HVAC Average [C]
+  Output:Variable,*,Hot Water Thermal Storage Final Tank Temperature,hourly; !- HVAC Average [C]
+  Output:Variable,*,Hot Water Thermal Storage Tank Heat Gain Rate,hourly; !- HVAC Average [W]
+  Output:Variable,*,Hot Water Thermal Storage Tank Heat Gain Energy,hourly; !- HVAC Sum [J]
+  Output:Variable,*,Hot Water Thermal Storage Use Side Mass Flow Rate,hourly; !- HVAC Average [kg/s]
+  Output:Variable,*,Hot Water Thermal Storage Use Side Inlet Temperature,hourly; !- HVAC Average [C]
+  Output:Variable,*,Hot Water Thermal Storage Use Side Outlet Temperature,hourly; !- HVAC Average [C]
+  Output:Variable,*,Hot Water Thermal Storage Use Side Heat Transfer Rate,hourly; !- HVAC Average [W]
+  Output:Variable,*,Hot Water Thermal Storage Use Side Heat Transfer Energy,hourly; !- HVAC Sum [J]
+  Output:Variable,*,Hot Water Thermal Storage Source Side Mass Flow Rate,hourly; !- HVAC Average [kg/s]
+  Output:Variable,*,Hot Water Thermal Storage Source Side Inlet Temperature,hourly; !- HVAC Average [C]
+  Output:Variable,*,Hot Water Thermal Storage Source Side Outlet Temperature,hourly; !- HVAC Average [C]
+  Output:Variable,*,Hot Water Thermal Storage Source Side Heat Transfer Rate,hourly; !- HVAC Average [W]
+  Output:Variable,*,Hot Water Thermal Storage Source Side Heat Transfer Energy,hourly; !- HVAC Sum [J]
+  Output:Variable,*,Hot Water Thermal Storage Temperature Node 1,hourly; !- HVAC Average [C]
+  Output:Variable,*,Hot Water Thermal Storage Temperature Node 2,hourly; !- HVAC Average [C]
+  Output:Variable,*,Hot Water Thermal Storage Temperature Node 3,hourly; !- HVAC Average [C]
+  Output:Variable,*,Hot Water Thermal Storage Temperature Node 4,hourly; !- HVAC Average [C]
+  Output:Variable,*,Hot Water Thermal Storage Temperature Node 5,hourly; !- HVAC Average [C]
+  Output:Variable,*,Hot Water Thermal Storage Temperature Node 6,hourly; !- HVAC Average [C]
+  Output:Variable,*,Hot Water Thermal Storage Final Temperature Node 1,hourly; !- HVAC Average [C]
+  Output:Variable,*,Hot Water Thermal Storage Final Temperature Node 2,hourly; !- HVAC Average [C]
+  Output:Variable,*,Hot Water Thermal Storage Final Temperature Node 3,hourly; !- HVAC Average [C]
+  Output:Variable,*,Hot Water Thermal Storage Final Temperature Node 4,hourly; !- HVAC Average [C]
+  Output:Variable,*,Hot Water Thermal Storage Final Temperature Node 5,hourly; !- HVAC Average [C]
+  Output:Variable,*,Hot Water Thermal Storage Final Temperature Node 6,hourly; !- HVAC Average [C]
 

@@ -1294,7 +1294,6 @@ namespace ThermalComfort {
                                                state.dataThermalComforts->CloUnit,
                                                state.dataThermalComforts->WorkEff);
 
-        // TODO - This should use the ASHRAE55-2017 PMV calc program. The current Fanger PMV program are not consistent with the new standard.
         Real64 ASHRAE55PMV = CalcFangerPMV(state,
                                            state.dataThermalComforts->AirTemp,
                                            state.dataThermalComforts->RadTemp,

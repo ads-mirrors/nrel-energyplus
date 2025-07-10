@@ -2074,3 +2074,42 @@ TEST_F(EnergyPlusFixture, ThermalComfort_CalcSurfaceWeightedMRT_Enclosure_Based)
     RadTemp = CalcSurfaceWeightedMRT(*state, SurfNum, false);
     EXPECT_NEAR(RadTemp, 14.545, 0.1);
 }
+
+TEST_F(EnergyPlusFixture, CalcFangerPMVTest)
+{
+    // Test of Fix for Defect #11112 (update PMV calculation to match current ASHRAE 55/ISO 7730
+    Real64 airTemp;
+    Real64 radTemp;
+    Real64 relHum;
+    Real64 airVel;
+    Real64 actLevel;
+    Real64 cloUnit;
+    Real64 workEff;
+    Real64 expectedAnswer;
+    Real64 actualAnswer;
+    Real64 constexpr closeEnough = 0.00001;
+
+    // Test 1: representative winter-ish conditions
+    airTemp = 20.0;
+    radTemp = 18.0;
+    relHum = 0.50;
+    airVel = 1.0;
+    actLevel = 58.2;
+    cloUnit = 1.5;
+    workEff = 0.0;
+    expectedAnswer = -0.715102;
+    actualAnswer = CalcFangerPMV(*state, airTemp, radTemp, relHum, airVel, actLevel, cloUnit, workEff);
+    EXPECT_NEAR(actualAnswer, expectedAnswer, closeEnough);
+
+    // Test 2: representative summer-ish conditions
+    airTemp = 25.0;
+    radTemp = 28.0;
+    relHum = 0.75;
+    airVel = 1.0;
+    actLevel = 80.0;
+    cloUnit = 0.8;
+    workEff = 0.0;
+    expectedAnswer = 0.644378;
+    actualAnswer = CalcFangerPMV(*state, airTemp, radTemp, relHum, airVel, actLevel, cloUnit, workEff);
+    EXPECT_NEAR(actualAnswer, expectedAnswer, closeEnough);
+}

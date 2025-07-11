@@ -301,6 +301,14 @@ This field is the name of the schedule that approximates the amount of air movem
 
 The following IDF example allows for a maximum of 31 people with scheduled occupancy of ``Office Occupancy'', 60\% radiant using an Activity Schedule of ``Activity Sch''. The example allows for thermal comfort reporting.
 
+\paragraph{Field: Cold Stress Temperature Threshold}\label{field-cold-stress-temperature-threshold}
+
+This field establishes a temperature below which cold stress will be a factor for occupants of the zone/space.  EnergyPlus keeps track of when the zone temperature drops below this value for reporting purposes.
+
+\paragraph{Field: Heat Stress Temperature Threshold}\label{field-heat-stress-temperature-threshold}
+
+This field establishes a temperature above which heat stress will be a factor for occupants of the zone/space.  EnergyPlus keeps track of when the zone temperature rises above this value for reporting purposes.
+
 \begin{lstlisting}
 
 People,
@@ -473,6 +481,8 @@ People specific outputs include:
   Zone,Average,Zone Thermal Comfort Fanger Model PPD {[}\%{]}
 \item
   Zone,Average,Zone Thermal Comfort Clothing Surface Temperature {[}C{]}
+\item
+  Zone,Average,Zone Thermal Comfort Clothing Value {[}clo{]}
 \item
   Zone,Average,Zone Thermal Comfort Pierce Model Effective Temperature PMV {[]}
 \item

@@ -1246,6 +1246,7 @@ namespace ThermalComfort {
 
             comfort.ThermalComfortMRT = state.dataThermalComforts->RadTemp;
             comfort.ThermalComfortOpTemp = (state.dataThermalComforts->RadTemp + state.dataThermalComforts->AirTemp) / 2.0;
+            comfort.ClothingValue = state.dataThermalComforts->CloUnit;
             comfort.PierceSET = SET;
         }
     }

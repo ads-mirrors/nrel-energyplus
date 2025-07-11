@@ -593,6 +593,7 @@ namespace ThermalComfort {
             switch (people.clothingType) {
             case DataHeatBalance::ClothingType::InsulationSchedule:
                 state.dataThermalComforts->CloUnit = people.clothingSched->getCurrentVal();
+                comfort.ClothingValue = state.dataThermalComforts->CloUnit;
                 break;
             case DataHeatBalance::ClothingType::DynamicAshrae55:
                 comfort.ThermalComfortOpTemp = (state.dataThermalComforts->RadTemp + state.dataThermalComforts->AirTemp) / 2.0;
@@ -850,6 +851,7 @@ namespace ThermalComfort {
         switch (people.clothingType) {
         case DataHeatBalance::ClothingType::InsulationSchedule:
             state.dataThermalComforts->CloUnit = people.clothingSched->getCurrentVal();
+            comfort.ClothingValue = state.dataThermalComforts->CloUnit;
             break;
         case DataHeatBalance::ClothingType::DynamicAshrae55:
             comfort.ThermalComfortOpTemp = (state.dataThermalComforts->RadTemp + state.dataThermalComforts->AirTemp) / 2.0;
@@ -1503,6 +1505,7 @@ namespace ThermalComfort {
             switch (people.clothingType) {
             case DataHeatBalance::ClothingType::InsulationSchedule: {
                 state.dataThermalComforts->CloUnit = people.clothingSched->getCurrentVal();
+                comfort.ClothingValue = state.dataThermalComforts->CloUnit;
             } break;
             case DataHeatBalance::ClothingType::DynamicAshrae55: {
                 comfort.ThermalComfortOpTemp = (state.dataThermalComforts->RadTemp + state.dataThermalComforts->AirTemp) / 2.0;

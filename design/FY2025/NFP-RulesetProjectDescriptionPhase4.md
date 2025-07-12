@@ -241,8 +241,6 @@ This included service water heating and refrigation.
   FanSystem.fan_volume_reset_type
   FanSystem.fan_volume_reset_fraction
   FanSystem.operating_schedule
-  FanSystem.maximum_outdoor_airflow
-  FanSystem.demand_control_ventilation_control
   AirEconomizer.id
   AirEconomizer.type
   AirEconomizer.high_limit_shutoff_temperature
@@ -250,9 +248,6 @@ This included service water heating and refrigation.
   Fan.operating_points
   FanOperatingPoint.airflow
   FanOperatingPoint.power
-  Terminal.type
-  Terminal.served_by_heating_ventilating_air_conditioning_system
-  Terminal.heating_capacity
   Terminal.has_demand_control_ventilation
   Terminal.is_fan_first_stage_heat*
   FluidLoopDesignAndControl.temperature_reset_type
@@ -263,7 +258,6 @@ This included service water heating and refrigation.
   FluidLoopDesignAndControl.loop_supply_temperature_at_low_load
   Boiler.operation_lower_limit
   Boiler.operation_upper_limit
-  HeatRejection.fan
   ServiceWaterHeatingDistributionSystem.id
   ServiceWaterHeatingDistributionSystem.tanks
   ServiceWaterHeatingDistributionSystem.service_water_piping
@@ -273,20 +267,14 @@ This included service water heating and refrigation.
   ServiceWaterPiping.is_recirculation_loop
   ServiceWaterPiping.are_thermal_losses_modeled
   SolarThermal.id
-  ServiceWaterHeatingEquipment.id
   ServiceWaterHeatingEquipment.heater_fuel_type
   ServiceWaterHeatingEquipment.distribution_system
   ServiceWaterHeatingEquipment.efficiency_metric_types
   ServiceWaterHeatingEquipment.efficiency_metric_values
   ServiceWaterHeatingEquipment.draw_pattern
   ServiceWaterHeatingEquipment.first_hour_rating
-  ServiceWaterHeatingEquipment.input_power
   ServiceWaterHeatingEquipment.setpoint_temperature
-  ServiceWaterHeatingEquipment.tank
   ServiceWaterHeatingEquipment.solar_thermal_systems
-  Tank.id
-  Tank.storage_capacity
-  Tank.type
   ServiceWaterHeatingUse.id
   ServiceWaterHeatingUse.area_type
   ServiceWaterHeatingUse.served_by_distribution_system
@@ -358,6 +346,11 @@ The new columns would be:
 - Sensible heat per occupant
 - Latent heat per occupant
 
+This suppports:
+- Space.occupant_sensible_heat_gain
+- Space.occupant_latent_heat_gain
+
+
 #### Initialization Summary - ZoneInfiltration Airflow Stats Nominal ####
 
 The current columns are:
@@ -378,6 +371,10 @@ The current columns are:
 The new columns would be:
 - Zone Infiltration Type (the type of infiltration object used)
 
+This suppports:
+- Infiltration.modeling_method
+- Infiltration.algorithm_name
+
 #### Outdoor Air Summary - Airflow Network Infiltration ####
 
 New table
@@ -391,6 +388,12 @@ The new columns would be:
 - Design Volume Flow Rate {m3/s}
 - Volume Flow Rate/Floor Area {m3/s-m2}
 - Volume Flow Rate/Exterior Surface Area {m3/s-m2}
+
+This suppports:
+- Infiltration.modeling_method
+- Infiltration.algorithm_name
+- Infiltration.flow_rate
+- Infiltration.multiplier_schedule
 
 #### EnvelopeSummary - Exterior Fenestration ####
 
@@ -424,6 +427,11 @@ The new columns would be:
 - Overhand Depth
 - Fin Depth
 
+This suppports:
+- Subsurface.classification
+- Subsurface.has_shading_overhang
+- Subsurface.has_shading_sidefins
+
 
 #### Equipment Summary - Air Heat Recovery ####
 
@@ -440,7 +448,233 @@ The current columns are:
 
 The new columns would be:
 - Operation With Economizer (WHEN_FANS_ON, WHEN_MINIMUM_OUTSIDE_AIR, SCHEDULED)
+- AirLoop Name
 
+This suppports (indirectly):
+- FanSystem.air_energy_recovery
+
+#### Equipment Summary - Air Terminals ####
+
+The current columns are:
+- Zone Name
+- Minimum Flow [m3/s]
+- Minimum Outdoor Flow [m3/s]
+- Supply Cooling Setpoint [C]
+- Supply Heating Setpoint [C]
+- Heating Capacity [W]
+- Cooling Capacity [W]
+- Type of Input Object
+- Heat/Reheat Coil Object Type
+- Chilled Water Coil Object Type
+- Fan Object Type
+- Fan Name
+- Primary Air Flow Rate [m3/s]
+- Secondary Air Flow Rate [m3/s]
+- Minimum Flow Schedule Name
+- Maximum Flow During Reheat [m3/s]
+- Minimum Outdoor Flow Schedule Name
+
+The new columns would be:
+- Heating Control Type (staged or modulated for AirTerminal:SingleDuct:SeriesPIU:Reheat and AirTerminal:SingleDuct:ParallelPIU:Reheat only)
+
+This suppports:
+- Terminal.is_fan_first_stage_heat
+
+#### Equipment Summary - Fans ####
+
+The current columns are:
+- Type
+- Total Efficiency [W/W]
+- Delta Pressure [pa]
+- Max Air Flow Rate [m3/s]
+- Rated Electricity Rate [W]
+- Rated Power Per Max Air Flow Rate [W-s/m3]
+- Motor Heat In Air Fraction
+- Fan Energy Index
+- End Use Subcategory
+- Design Day Name for Fan Sizing Peak
+- Date/Time for Fan Sizing Peak
+- Purpose
+- Is Autosized
+- Motor Efficiency
+- Motor Heat to Zone Fraction
+- Motor Loss Zone Name
+- Airloop Name
+
+The new columns would be:
+- Speed Control Method
+- Number of Speeds
+
+This suppports:
+- FanSystem.operation_during_occupied
+- FanSystem.operation_during_unoccupied
+
+#### Equipment Summary - Fan Operating Points ####
+
+New table
+
+The new columns would be:
+- Fan Name
+- Airflow
+- Power
+
+This suppports:
+- Fan.operating_points
+- FanOperatingPoint.airflow
+- FanOperatingPoint.power
+
+
+#### System Summary - Economizer ####
+
+The current columns are:
+- High Limit Shutoff Control
+- Minimum Outdoor Air [m3/s]
+- Maximum Outdoor Air [m3/s]
+- Return Air Temp Limit
+- Return Air Enthalpy Limit
+- Outdoor Air Temperature Limit [C]
+- Outdoor Air Enthalpy Limit [C]
+
+The new columns would be:
+- AirLoop Name
+- AirLoopHVAC:OutdoorAirSystem Name 
+
+This suppports (indirectly):
+- AirEconomizer.id
+- AirEconomizer.type
+- AirEconomizer.high_limit_shutoff_temperature
+
+#### Controls Summary - PlantEquipment:HeatingLoad ####
+
+New table
+
+The new columns would be:
+- Name (of PlantEquipmentOperation:HeatingLoad)
+- PlantLoop Name
+- Load Range Index
+- Lower Limit
+- Upper Limit
+- Equipment List (equipment names separated by semicolons or else multiple columns
+
+This suppports:
+- Boiler.operation_lower_limit
+- Boiler.operation_upper_limit
+
+
+#### Controls Summary - SetpointManager:SystemNodeReset:Temperature ####
+
+New Table
+
+The new columns would be:
+- Name
+- Control Variable
+- Setpoint at Low Reference Temperature {C}
+- Setpoint at High Reference Temperature {C}
+- Low Reference Temperature {C}
+- High Reference Temperature {C}
+- Reference Node Name
+- Is Reference Node Outdoors
+- Setpoint Node or NodeList Name
+- Setpoint Node Loop Name
+
+This suppports:
+  FluidLoopDesignAndControl.outdoor_high_for_loop_supply_reset_temperature
+  FluidLoopDesignAndControl.outdoor_low_for_loop_supply_reset_temperature
+  FluidLoopDesignAndControl.loop_supply_temperature_at_outdoor_high
+  FluidLoopDesignAndControl.loop_supply_temperature_at_outdoor_low
+  FluidLoopDesignAndControl.temperature_reset_type
+
+#### System Summary - Demand Controlled Ventilation using Controller:MechanicalVentilation ####
+
+The current columns are:
+- Controller:MechanicalVentilation Name
+- Outdoor Air Per Person [m3/s-person]
+- Outdoor Air Per Area [m3/s-m2]
+- Outdoor Air Per Zone [m3/s]
+- Outdoor Air ACH [ach]
+- Outdoor Air Method
+- Outdoor Air Schedule Name
+- Air Distribution Effectiveness in Cooling Mode
+- Air Distribution Effectiveness in Heating Mode
+- Air Distribution Effectiveness Schedule Name
+- Type
+
+The new columns would be:
+- Demand Controlled Ventilation Active (Yes or No)
+
+This suppports:
+- Terminal.has_demand_control_ventilation
+
+
+#### System Summary - AirLoop Availability Manager Operation ####
+
+New Table 
+
+The new columns would be:
+- Name
+- AirLoop Name
+- Hours Supply Fan Operating Mode Continuous
+- Hours Supply Fan Operating Mode Cycling
+
+This suppports:
+- FanSystem.operating_schedule
+
+
+#### EquipmentSummary - Unitary ####
+
+New Table
+
+The new columns would be:
+- Name
+- Hours Supply Air Fan Operating Mode Continuous
+- Hours Supply Air Fan Operating Mode Cycling
+
+This suppports:
+- FanSystem.operation_during_occupied
+- FanSystem.operation_during_unoccupied
+
+
+#### Controls Summary - AvailabilityManager:NightCycle ####
+
+New Table
+
+The new columns would be:
+- Name
+- AirLoop Name
+- Control Type
+
+This suppports:
+- FanSystem.operation_during_unoccupied
+
+
+#### EquipmentSummary -  Service Water Heating ####
+
+The current columns are:
+- Type
+- Storage Volume [m3]
+- Input [W]
+- Thermal Efficiency [W/W]
+- Recovery Efficiency [W/W] 
+- Energy Factor
+
+The new columns would be:
+- Heater Fuel Type
+- Daytime Setpoint Temperature
+- Uniform Energy Factor 
+- Standby Loss Fraction (not needed by 90.1) 
+- Standby Loss Energy (not needed by 90.1)
+- First hour rating (not needed by 90.1)
+
+This suppports:
+- ServiceWaterHeatingEquipment.heater_fuel_type
+- ServiceWaterHeatingEquipment.setpoint_temperature
+- ServiceWaterHeatingEquipment.efficiency_metric_types
+- ServiceWaterHeatingEquipment.efficiency_metric_values
+- ServiceWaterHeatingEquipment.first_hour_rating
+- RulesetModelDescription.service_water_heating_equipment
+
+Note: Recovery Efficiency and Energy Factor do not seem to be working for WaterHeater:Stratified.
+ 
 
 #### report name - table name ####
 
@@ -449,181 +683,10 @@ The current columns are:
 
 The new columns would be:
 - x
-#### report name - table name ####
 
-The current columns are:
+This suppports:
 - x
 
-The new columns would be:
-- x
-#### report name - table name ####
-
-The current columns are:
-- x
-
-The new columns would be:
-- x
-#### report name - table name ####
-
-The current columns are:
-- x
-
-The new columns would be:
-- x
-#### report name - table name ####
-
-The current columns are:
-- x
-
-The new columns would be:
-- x
-#### report name - table name ####
-
-The current columns are:
-- x
-
-The new columns would be:
-- x
-#### report name - table name ####
-
-The current columns are:
-- x
-
-The new columns would be:
-- x
-#### report name - table name ####
-
-The current columns are:
-- x
-
-The new columns would be:
-- x
-#### report name - table name ####
-
-The current columns are:
-- x
-
-The new columns would be:
-- x
-#### report name - table name ####
-
-The current columns are:
-- x
-
-The new columns would be:
-- x
-#### report name - table name ####
-
-The current columns are:
-- x
-
-The new columns would be:
-- x
-#### report name - table name ####
-
-The current columns are:
-- x
-
-The new columns would be:
-- x
-#### report name - table name ####
-
-The current columns are:
-- x
-
-The new columns would be:
-- x
-#### report name - table name ####
-
-The current columns are:
-- x
-
-The new columns would be:
-- x
-#### report name - table name ####
-
-The current columns are:
-- x
-
-The new columns would be:
-- x
-#### report name - table name ####
-
-The current columns are:
-- x
-
-The new columns would be:
-- x
-#### report name - table name ####
-
-The current columns are:
-- x
-
-The new columns would be:
-- x
-#### report name - table name ####
-
-The current columns are:
-- x
-
-The new columns would be:
-- x
-#### report name - table name ####
-
-The current columns are:
-- x
-
-The new columns would be:
-- x
-#### report name - table name ####
-
-The current columns are:
-- x
-
-The new columns would be:
-- x
-#### report name - table name ####
-
-The current columns are:
-- x
-
-The new columns would be:
-- x
-#### report name - table name ####
-
-The current columns are:
-- x
-
-The new columns would be:
-- x
-#### report name - table name ####
-
-The current columns are:
-- x
-
-The new columns would be:
-- x
-#### report name - table name ####
-
-The current columns are:
-- x
-
-The new columns would be:
-- x
-#### report name - table name ####
-
-The current columns are:
-- x
-
-The new columns would be:
-- x
-#### report name - table name ####
-
-The current columns are:
-- x
-
-The new columns would be:
-- x
 #### report name - table name ####
 
 The current columns are:
@@ -632,10 +695,218 @@ The current columns are:
 The new columns would be:
 - x
 
+This suppports:
+- x
 
-The following sections describe entirely new reports that will be added in EnergyPlus
+#### report name - table name ####
+
+The current columns are:
+- x
+
+The new columns would be:
+- x
+
+This suppports:
+- x
+
+#### report name - table name ####
+
+The current columns are:
+- x
+
+The new columns would be:
+- x
+
+This suppports:
+- x
+
+#### report name - table name ####
+
+The current columns are:
+- x
+
+The new columns would be:
+- x
+
+This suppports:
+- x
+
+#### report name - table name ####
+
+The current columns are:
+- x
+
+The new columns would be:
+- x
+
+This suppports:
+- x
+
+#### report name - table name ####
+
+The current columns are:
+- x
+
+The new columns would be:
+- x
+
+This suppports:
+- x
+
+#### report name - table name ####
+
+The current columns are:
+- x
+
+The new columns would be:
+- x
+
+This suppports:
+- x
+
+#### report name - table name ####
+
+The current columns are:
+- x
+
+The new columns would be:
+- x
+
+This suppports:
+- x
+
+#### report name - table name ####
+
+The current columns are:
+- x
+
+The new columns would be:
+- x
+
+This suppports:
+- x
+
+#### report name - table name ####
+
+The current columns are:
+- x
+
+The new columns would be:
+- x
+
+This suppports:
+- x
+
+#### report name - table name ####
+
+The current columns are:
+- x
+
+The new columns would be:
+- x
+
+This suppports:
+- x
+
+#### report name - table name ####
+
+The current columns are:
+- x
+
+The new columns would be:
+- x
+
+This suppports:
+- x
+
+#### report name - table name ####
+
+The current columns are:
+- x
+
+The new columns would be:
+- x
+
+This suppports:
+- x
+
+#### report name - table name ####
+
+The current columns are:
+- x
+
+The new columns would be:
+- x
+
+This suppports:
+- x
+
+#### report name - table name ####
+
+The current columns are:
+- x
+
+The new columns would be:
+- x
+
+This suppports:
+- x
+
+#### report name - table name ####
+
+The current columns are:
+- x
+
+The new columns would be:
+- x
+
+This suppports:
+- x
+
+#### report name - table name ####
+
+The current columns are:
+- x
+
+The new columns would be:
+- x
+
+This suppports:
+- x
+
+#### report name - table name ####
+
+The current columns are:
+- x
+
+The new columns would be:
+- x
+
+This suppports:
+- x
 
 
+## New Output for Echoing Inputs ##
+
+In order fill in any gaps that might have been found, a new output object is recommended
+
+Output:Table:InputEcho
+- Input Object Name 
+- Show number of extensible sets of fields
+ 
+These would appear in a new report called "InputEcho" which would simply echo the input from the IDF or epJSON
+file into the output. A table for each type of input object. Within each table, one column for each field. For 
+extensible input objects it would be specified by user how many to produce
+
+A second table would be created that would show uses of the each input object and would contain:
+- Input Object Name 
+- Used by Input Object Class
+- Used by Input Object Name
+- Used by Object Field Name
+
+These would list when the original input object is used by other input objects.
+
+This new input echo report may not be necessary if reading the epJSON is done instead.
 
 ## EnergyPlus Bugs to be Fixed ##
 

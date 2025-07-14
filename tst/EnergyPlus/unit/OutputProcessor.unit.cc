@@ -4841,22 +4841,17 @@ namespace OutputProcessor {
                             fakeVar,
                             TimeStepType::System,
                             StoreType::Average,
-                            // TODO: is that supposed to look like a regex?!
-                            // SetupOutputVariable is the only one that used to call BuildKeyVarList
-                            // So it should pass actual NodeID(NodeNum)
                             "Air Loop 1 InletNode");
+        // TODO: is that supposed to look like a regex?!
+        // Setup Output Variable is the only one that used to call BuildKeyVarList
+        // So it should pass actual NodeID(NodeNum)
         // BuildKeyVarList(*state, "Air Loop 1|AirSupply InletNode", "SYSTEM NODE SETPOINT TEMPERATURE", 1, 2); // TODO: WHAT?
         EXPECT_TRUE(varSetpTempRegex->Used);
         EXPECT_FALSE(varTempRegex->Used);
 
-        SetupOutputVariable(*state,
-                            "System Node Temperature",
-                            Constant::Units::C,
-                            fakeVar,
-                            TimeStepType::System,
-                            StoreType::Average,
-                            // TODO: is that supposed to look like a regex?!
-                            "Air Loop 1 InletNode");
+        SetupOutputVariable(
+            *state, "System Node Temperature", Constant::Units::C, fakeVar, TimeStepType::System, StoreType::Average, "Air Loop 1 InletNode");
+        // TODO: is that supposed to look like a regex?!
         // BuildKeyVarList(*state, "Air Loop 1|AirSupply InletNode", "SYSTEM NODE TEMPERATURE", 1, 2);
         EXPECT_TRUE(varSetpTempRegex->Used);
         EXPECT_TRUE(varTempRegex->Used);

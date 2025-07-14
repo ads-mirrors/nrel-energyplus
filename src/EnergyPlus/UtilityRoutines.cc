@@ -390,6 +390,28 @@ namespace Util {
         return false;
     }
 
+    void setDesignObjectNameAndPointer(EnergyPlusData &state,
+                                       std::string &nameToBeSet,
+                                       int &ptrToBeSet,
+                                       std::string const userName,
+                                       Array1S_string const listOfNames,
+                                       std::string const itemType,
+                                       std::string const itemName)
+    {
+        nameToBeSet = userName;
+        ptrToBeSet = FindItemInList(nameToBeSet, listOfNames);
+        // If ptrToBeSet is greater than zero, everything is fine--a valid match was found, continue on.
+        // If ptrToBeSet is less than or equal to zero, either the user entered a blank or an invalid name.  When this
+        // happens, error out and provide user with some indication as to what the problem was using the type and names
+        // sent to this routine.
+        if (ptrToBeSet <= 0) { // No valid pointer--error in user input
+            ShowSevereError(state, format("Object = {} with the Name = {} has an invalid Design Object Name = {}.", itemType, itemName, nameToBeSet));
+            ShowContinueError(state, format("  The Design Object Name was not found or was left blank.  This is not allowed."));
+            ShowContinueError(state, format("  A valid Design Object Name must be provided for any {} object.", itemType));
+            ShowFatalError(state, format("Error found causes program termination.  Please correct this error and re-run your simulation."));
+        }
+    }
+
     size_t case_insensitive_hasher::operator()(std::string_view const key) const noexcept
     {
         std::string keyCopy = makeUPPER(key);

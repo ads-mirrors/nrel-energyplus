@@ -791,6 +791,14 @@ namespace Util {
 
     bool IsNameEmpty(EnergyPlusData &state, std::string &NameToVerify, std::string_view StringToDisplay, bool &ErrorFound);
 
+    void setDesignObjectNameAndPointer(EnergyPlusData &state,
+                                       std::string &nameToBeSet,         // field that is being set once a match is found
+                                       int &ptrToBeSet,                  // pointer that is being set once a match is found
+                                       std::string const userName,       // name to be found searching through the list
+                                       Array1S_string const listOfNames, // list of names in which the userName must be found
+                                       std::string const itemType,       // string containing type of base object
+                                       std::string const itemName);      // string containing name of base object
+
     // Two structs for case insensitive containers.
     // Eg: for unordered_map, we need to have a case insenstive hasher and a case insensitive comparator
     // (The default allocator for unordered_map is fine)

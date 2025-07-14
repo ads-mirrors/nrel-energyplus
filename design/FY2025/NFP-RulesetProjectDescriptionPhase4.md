@@ -584,6 +584,23 @@ This suppports:
   FluidLoopDesignAndControl.loop_supply_temperature_at_outdoor_low
   FluidLoopDesignAndControl.temperature_reset_type
 
+#### Controls Summary - SetpointManager:ReturnTemperature ####
+
+New Table
+
+The new columns would be:
+- Name
+- Type (chilledwater or hotwater)
+- Minimum Supply Temperature Setpoint
+- Maximum Supply Temperature Setpoint
+- Return Temperature Setpoint Input Type (Constant, Scheduled or ReturnTemperatureSetpoint)
+- Return Temperature Setpoint (C)
+- Return Temperature Setpoint Schedule Name
+
+This suppports:
+  FluidLoopDesignAndControl.loop_supply_temperature_at_low_load
+
+
 #### System Summary - Demand Controlled Ventilation using Controller:MechanicalVentilation ####
 
 The current columns are:
@@ -660,10 +677,14 @@ The current columns are:
 The new columns would be:
 - Heater Fuel Type
 - Daytime Setpoint Temperature
-- Uniform Energy Factor 
+- Draw pattern (this is a new input for Uniform Energy Factor calculation)
+- Uniform Energy Factor (this will require new calculations and new input)
 - Standby Loss Fraction (not needed by 90.1) 
 - Standby Loss Energy (not needed by 90.1)
 - First hour rating (not needed by 90.1)
+- Peak Use Flow Rate (for water heaters in stand-alone operation)
+- Use Flow Rate Fraction Schedule Name (for water heaters in stand-alone operation)
+- Ambient Temperature Zone Name
 
 This suppports:
 - ServiceWaterHeatingEquipment.heater_fuel_type
@@ -671,131 +692,118 @@ This suppports:
 - ServiceWaterHeatingEquipment.efficiency_metric_types
 - ServiceWaterHeatingEquipment.efficiency_metric_values
 - ServiceWaterHeatingEquipment.first_hour_rating
+- ServiceWaterHeatingEquipment.draw_pattern (new input or new compliance parameter)
 - RulesetModelDescription.service_water_heating_equipment
+- ServiceWaterHeatingUse.use (in stand-alone operation)
+- ServiceWaterHeatingUse.use_units (in stand-alone operation)
+- ServiceWaterHeatingUse.use_multiplier_schedule (in stand-alone operation)
 
-Note: Recovery Efficiency and Energy Factor do not seem to be working for WaterHeater:Stratified.
+Note: Recovery Efficiency and Energy Factor do not seem to be working for WaterHeater:Stratified. Uniform 
+Energy Factor calculation would need to be added which, I believe uses draw factor as an input.
  
 
-#### report name - table name ####
+#### EquipmentSummary -  Water Use Equipment ####
 
-The current columns are:
-- x
-
-The new columns would be:
-- x
-
-This suppports:
-- x
-
-#### report name - table name ####
-
-The current columns are:
-- x
+NEW REPORT
 
 The new columns would be:
-- x
+- Name
+- Zone Name
+- End-Use Subcategory
+- Peak Flow Rate [m3/s]
+- Flow Rate Faction Schedule Name
+- Target Temperature Schedule Name
+- WaterUse Connection Name
 
 This suppports:
-- x
+- ServiceWaterHeatingUse.id
+- RulesetModelDescription.service_water_heating_uses
+- Space.service_water_heating_uses
+- ServiceWaterHeatingUse.area_type (end-use subcategory or compliance parameter)
+- BuildingSegment.service_water_heating_area_type (end-use subcategory or compliance parameter)
+- ServiceWaterHeatingUse.use
+- ServiceWaterHeatingUse.use_units
+- ServiceWaterHeatingUse.use_multiplier_schedule
+- ServiceWaterHeatingUse.temperature_at_fixture
 
-#### report name - table name ####
+#### EquipmentSummary -  Water Use Connections ####
 
-The current columns are:
-- x
+NEW REPORT
 
 The new columns would be:
-- x
+- Name
+- PlantLoop Name
+- Drain Water Heat Exchanger Type
+- Drain Water Heat Exchanger Destination
+- Drain Water Heat Exchanger U-Factor Times Area
+- Average Heat Recovery Effectiveness
+- Cold Water Supply Temperature Schedule Name (if missing use Site:WaterMainsTemperature)
+- Pipe:Indoor are used (Yes or No)
+- Pipe:Outdoor are used (Yes or No)
 
 This suppports:
-- x
+- ServiceWaterHeatingDistributionSystem.drain_heat_recovery_efficiency
+- ServiceWaterHeatingUse.is_heat_recovered_by_drain
+- ServiceWaterHeatingUse.served_by_distribution_system
+- ServiceWaterHeatingDistributionSystem.entering_water_mains_temperature_schedule
+- RulesetModelDescription.service_water_heating_distribution_systems
+- ServiceWaterHeatingDistributionSystem.id
+- ServiceWaterHeatingEquipment.distribution_system
+- ServiceWaterHeatingDistributionSystem.service_water_piping
+- ServiceWaterPiping.id
+- ServiceWaterPiping.are_thermal_losses_modeled
 
-#### report name - table name ####
+#### EquipmentSummary -  Refrigeration:Case ####
 
-The current columns are:
-- x
+NEW TABLE
 
 The new columns would be:
-- x
+- Name
+- Zone Name
+- Case Operating Temperature
+- Case Length
+- Case Height
+
+(this table is primarly needed to establish the list of cases so additional values should be added that are easy)
 
 This suppports:
-- x
+- Building.refrigerated_cases
+- RefrigeratedCase.id 
 
-#### report name - table name ####
+#### Envelope Summary - At or Below Grade Constructions ####
 
-The current columns are:
-- x
+NEW TABLE
 
 The new columns would be:
-- x
+- Name
+- Location (on-grade or below-grade)
+- C-Factor
+- F-Factor
+
+(note the calculation of these may require additional inputs for all the different ways to 
+describe slab-on-grade and below-grade surfaces)
 
 This suppports:
-- x
+- Construction.id
+- Construction.c_factor
+- Construction.f_factor
 
-#### report name - table name ####
+
+#### Initialization Summary - Schedule ####
 
 The current columns are:
-- x
+- Name
+- ScheduleType
+- Until Date
+- WeekSchedule
 
 The new columns would be:
-- x
+- Cooling Design Day Schedule Name
+- Heating Design Day Schedule Name
 
 This suppports:
-- x
-
-#### report name - table name ####
-
-The current columns are:
-- x
-
-The new columns would be:
-- x
-
-This suppports:
-- x
-
-#### report name - table name ####
-
-The current columns are:
-- x
-
-The new columns would be:
-- x
-
-This suppports:
-- x
-
-#### report name - table name ####
-
-The current columns are:
-- x
-
-The new columns would be:
-- x
-
-This suppports:
-- x
-
-#### report name - table name ####
-
-The current columns are:
-- x
-
-The new columns would be:
-- x
-
-This suppports:
-- x
-
-#### report name - table name ####
-
-The current columns are:
-- x
-
-The new columns would be:
-- x
-
-This suppports:
-- x
+- Schedule.hourly_heating_design_day
+- Schedule.hourly_cooling_design_day
 
 #### report name - table name ####
 
@@ -807,84 +815,6 @@ The new columns would be:
 
 This suppports:
 - x
-
-#### report name - table name ####
-
-The current columns are:
-- x
-
-The new columns would be:
-- x
-
-This suppports:
-- x
-
-#### report name - table name ####
-
-The current columns are:
-- x
-
-The new columns would be:
-- x
-
-This suppports:
-- x
-
-#### report name - table name ####
-
-The current columns are:
-- x
-
-The new columns would be:
-- x
-
-This suppports:
-- x
-
-#### report name - table name ####
-
-The current columns are:
-- x
-
-The new columns would be:
-- x
-
-This suppports:
-- x
-
-#### report name - table name ####
-
-The current columns are:
-- x
-
-The new columns would be:
-- x
-
-This suppports:
-- x
-
-#### report name - table name ####
-
-The current columns are:
-- x
-
-The new columns would be:
-- x
-
-This suppports:
-- x
-
-#### report name - table name ####
-
-The current columns are:
-- x
-
-The new columns would be:
-- x
-
-This suppports:
-- x
-
 
 ## New Output for Echoing Inputs ##
 

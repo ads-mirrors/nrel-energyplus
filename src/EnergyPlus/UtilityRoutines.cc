@@ -408,7 +408,7 @@ namespace Util {
         if (ptrToBeSet <= 0) { // No valid pointer--error in user input
             errorFound = true;
             ShowSevereError(state, format("Object = {} with the Name = {} has an invalid Design Object Name = {}.", itemType, itemName, nameToBeSet));
-            ShowContinueError(state, format("  The Design Object Name was not found or was left blank.  This is not allowed."));
+            ShowContinueError(state, "  The Design Object Name was not found or was left blank.  This is not allowed.");
             ShowContinueError(state, format("  A valid Design Object Name must be provided for any {} object.", itemType));
         }
     }

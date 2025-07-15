@@ -686,10 +686,10 @@ void HeatPumpAirToWater::calcPowerUsage(EnergyPlusData &state, Real64 availableC
     this->eirModFPLRCurveCheck(state, eirModifierFuncPLRHigh);
     Real64 interpRatio = (std::fabs(currentLoadNthUnit) - capacityLow) / (capacityHigh - capacityLow);
 
-    Real64 powerUsageLow = (capacityLow / this->ratedCOP[speedLevel]) * (eirModifierFuncPLRLow * eirModifierFuncTempLow) *
-                           this->defrostPowerMultiplier * this->cyclingRatio;
-    Real64 powerUsageHigh = (capacityHigh / this->ratedCOP[speedLevel]) * (eirModifierFuncPLRHigh * eirModifierFuncTempHigh) *
-                            this->defrostPowerMultiplier * this->cyclingRatio;
+    Real64 powerUsageLow =
+        (capacityLow / this->ratedCOP[speedLevel]) * (eirModifierFuncPLRLow * eirModifierFuncTempLow) * this->defrostPowerMultiplier;
+    Real64 powerUsageHigh =
+        (capacityHigh / this->ratedCOP[speedLevel]) * (eirModifierFuncPLRHigh * eirModifierFuncTempHigh) * this->defrostPowerMultiplier;
     this->powerUsage = (1 - interpRatio) * powerUsageLow + interpRatio * powerUsageHigh;
     this->powerUsage += (numHeatPumpUsed - 1) * (availableCapacityBeforeMultiplier / this->ratedCOP[this->numSpeeds - 1]) *
                         (eirModifierFuncPLRHigh * eirModifierFuncTempHigh) * this->defrostPowerMultiplier * this->cyclingRatio;
@@ -3834,7 +3834,7 @@ void HeatPumpAirToWater::processInputForEIRPLHP(EnergyPlusData &state)
                     fields, schemaProps, format("rated_water_flow_rate_in_{}_mode", modeKeyWord));
                 thisAWHP.minSourceTempLimit = state.dataInputProcessing->inputProcessor->getRealFieldValue(
                     fields, schemaProps, format("minimum_outdoor_air_temperature_in_{}_mode", modeKeyWord));
-                thisAWHP.maxSourceTempLimit  = state.dataInputProcessing->inputProcessor->getRealFieldValue(
+                thisAWHP.maxSourceTempLimit = state.dataInputProcessing->inputProcessor->getRealFieldValue(
                     fields, schemaProps, format("maximum_outdoor_air_temperature_in_{}_mode", modeKeyWord));
                 thisAWHP.sizingFactor =
                     state.dataInputProcessing->inputProcessor->getRealFieldValue(fields, schemaProps, format("sizing_factor_for_{}", modeKeyWord));

@@ -459,7 +459,11 @@ namespace HWBaseboardRadiator {
                                                 state.dataIPShortCut->cAlphaArgs(2),
                                                 HWBaseboardDesignNames,
                                                 cCMO_BBRadiator_Water,
-                                                state.dataIPShortCut->cAlphaArgs(1));
+                                                state.dataIPShortCut->cAlphaArgs(1),
+                                                ErrorsFound);
+            if (ErrorsFound) {
+                break;
+            }
             HWBaseboardDesignData &HWBaseboardDesignDataObject =
                 state.dataHWBaseboardRad->HWBaseboardDesignObject(thisHWBaseboard.DesignObjectPtr); // Contains the data for the design object
 

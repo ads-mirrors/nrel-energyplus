@@ -396,7 +396,8 @@ namespace Util {
                                        std::string const userName,
                                        Array1S_string const listOfNames,
                                        std::string const itemType,
-                                       std::string const itemName)
+                                       std::string const itemName,
+                                       bool &errorFound)
     {
         nameToBeSet = userName;
         ptrToBeSet = FindItemInList(nameToBeSet, listOfNames);
@@ -405,10 +406,10 @@ namespace Util {
         // happens, error out and provide user with some indication as to what the problem was using the type and names
         // sent to this routine.
         if (ptrToBeSet <= 0) { // No valid pointer--error in user input
+            errorFound = true;
             ShowSevereError(state, format("Object = {} with the Name = {} has an invalid Design Object Name = {}.", itemType, itemName, nameToBeSet));
             ShowContinueError(state, format("  The Design Object Name was not found or was left blank.  This is not allowed."));
             ShowContinueError(state, format("  A valid Design Object Name must be provided for any {} object.", itemType));
-            ShowFatalError(state, format("Error found causes program termination.  Please correct this error and re-run your simulation."));
         }
     }
 

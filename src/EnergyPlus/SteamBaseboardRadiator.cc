@@ -540,7 +540,11 @@ namespace SteamBaseboardRadiator {
                                                 state.dataIPShortCut->cAlphaArgs(2),
                                                 state.dataSteamBaseboardRadiator->SteamBaseboardDesignNames,
                                                 state.dataSteamBaseboardRadiator->cCMO_BBRadiator_Steam,
-                                                state.dataIPShortCut->cAlphaArgs(1));
+                                                state.dataIPShortCut->cAlphaArgs(1),
+                                                ErrorsFound);
+            if (ErrorsFound) {
+                break;
+            }
             SteamBaseboardDesignData SteamBaseboardDesignDataObject{
                 state.dataSteamBaseboardRadiator->SteamBaseboardDesign(state.dataSteamBaseboardRadiator->SteamBaseboard(BaseboardNum)
                                                                            .DesignObjectPtr)}; // Contains the design data for steam baseboard object

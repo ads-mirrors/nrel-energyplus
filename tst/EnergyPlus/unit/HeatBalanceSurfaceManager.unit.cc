@@ -8945,10 +8945,13 @@ TEST_F(EnergyPlusFixture, HeatBalanceSurfaceManager_ZoneFaceConductionVariableTe
     dHB->space.allocate(dG->NumOfZones);
     dS->Surface.allocate(dS->TotSurfaces);
     dS->SurfSunlitFrac.allocate(dS->TotSurfaces);
+    dS->SurfSunlitFrac = 0.0;
     dS->SurfSunlitArea.allocate(dS->TotSurfaces);
+    dS->SurfSunlitArea = 0.0;
     int constexpr NumTimeSteps(6);
     int constexpr HoursInDay(24);
     dHB->SurfSunlitFrac.allocate(HoursInDay, NumTimeSteps, dS->TotSurfaces);
+    dHB->SurfSunlitFrac = 0.0;
     dHB->Zone(1).numSpaces = 1;
     dHB->Zone(1).spaceIndexes.allocate(dHB->Zone(1).numSpaces);
     dHB->Zone(1).spaceIndexes(1) = 1;

@@ -3416,14 +3416,14 @@ namespace InternalHeatGains {
 
     Real64 setDesignLevel(EnergyPlusData &state,
                           bool &ErrorsFound,
-                          std::string_view objectType,
-                          InternalHeatGains::GlobalInternalGainMiscObject &inputObject,
+                          std::string_view const objectType,
+                          InternalHeatGains::GlobalInternalGainMiscObject const &inputObject,
                           DesignLevelMethod const method,
                           int const zoneNum,
                           int const spaceNum,
-                          Real64 inputValue,
-                          bool inputBlank,
-                          std::string_view fieldName)
+                          Real64 const inputValue,
+                          bool const inputBlank,
+                          std::string_view const fieldName)
     {
         static constexpr std::string_view RoutineName("GetInternalHeatGains: "); // Use this for now to avoid error diffs
 
@@ -3467,7 +3467,9 @@ namespace InternalHeatGains {
             }
         } break;
         }
-        if (ErrorsFound) return designLevel;
+        if (ErrorsFound) {
+            return designLevel;
+        }
 
         switch (method) {
         case DesignLevelMethod::People:
@@ -3476,7 +3478,7 @@ namespace InternalHeatGains {
             // Set space load fraction
             Real64 spaceFrac = 1.0;
             if (inputObject.numOfSpaces > 1) {
-                auto &zone = state.dataHeatBal->Zone(zoneNum);
+                auto const &zone = state.dataHeatBal->Zone(zoneNum);
                 if (inputObject.spaceListActive) {
                     spaceFrac = 1.0; // apply the full amount to every space in the SpaceList
                 } else if (zone.numSpaces == 1) {
@@ -3497,7 +3499,7 @@ namespace InternalHeatGains {
         case DesignLevelMethod::WattsPerArea:
         case DesignLevelMethod::PowerPerArea: {
             if (spaceNum != 0) {
-                auto &space = state.dataHeatBal->space(spaceNum);
+                auto const &space = state.dataHeatBal->space(spaceNum);
                 designLevel = inputValue * space.FloorArea;
                 if ((space.FloorArea <= 0.0) && !space.isRemainderSpace) {
                     ShowWarningError(state,
@@ -3512,7 +3514,7 @@ namespace InternalHeatGains {
         } break;
         case DesignLevelMethod::AreaPerPerson: {
             if (spaceNum != 0) {
-                auto &space = state.dataHeatBal->space(spaceNum);
+                auto const &space = state.dataHeatBal->space(spaceNum);
                 designLevel = space.FloorArea / inputValue;
                 if ((space.FloorArea <= 0.0) && !space.isRemainderSpace) {
                     ShowWarningError(state,
@@ -3528,7 +3530,7 @@ namespace InternalHeatGains {
         case DesignLevelMethod::WattsPerPerson:
         case DesignLevelMethod::PowerPerPerson: {
             if (spaceNum != 0) {
-                auto &space = state.dataHeatBal->space(spaceNum);
+                auto const &space = state.dataHeatBal->space(spaceNum);
                 designLevel = inputValue * space.TotOccupants;
                 if (space.TotOccupants <= 0.0) {
                     ShowWarningError(state,

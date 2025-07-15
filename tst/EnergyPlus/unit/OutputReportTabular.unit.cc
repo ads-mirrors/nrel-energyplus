@@ -82,6 +82,7 @@
 #include <EnergyPlus/IOFiles.hh>
 #include <EnergyPlus/InputProcessing/InputProcessor.hh>
 #include <EnergyPlus/InternalHeatGains.hh>
+#include <EnergyPlus/Material.hh>
 #include <EnergyPlus/MixedAir.hh>
 #include <EnergyPlus/OutputProcessor.hh>
 #include <EnergyPlus/OutputReportPredefined.hh>
@@ -94,6 +95,7 @@
 #include <EnergyPlus/SimulationManager.hh>
 #include <EnergyPlus/SurfaceGeometry.hh>
 #include <EnergyPlus/WeatherManager.hh>
+#include <EnergyPlus/WindowModel.hh>
 
 // C++ Headers
 #include <algorithm>
@@ -13762,6 +13764,7 @@ TEST_F(EnergyPlusFixture, ExteriorFenestrationShadedStateTest)
     auto &dHB = state->dataHeatBal;
     auto &dCon = state->dataConstruction;
     auto &dSurf = state->dataSurface;
+    auto &dMat = state->dataMaterial;
     dHB->space.allocate(1);
     dHB->Zone.allocate(1);
     dHB->Zone(1).ListMultiplier = 1;
@@ -13770,10 +13773,54 @@ TEST_F(EnergyPlusFixture, ExteriorFenestrationShadedStateTest)
     dCon->Construct(1).OutsideAbsorpSolar = 0.1;
     dCon->Construct(1).VisTransNorm = 0.3;
     dCon->Construct(1).SummerSHGC = 0.1;
+    dCon->Construct(1).TotLayers = 1;
+    dCon->Construct(1).TotGlassLayers = 1;
+    dCon->Construct(1).LayerPoint.allocate(dCon->Construct(1).TotLayers);
+    dCon->Construct(1).LayerPoint(1) = 1;
+    dCon->Construct(1).AbsDiff.allocate(dCon->Construct(1).TotLayers);
+    dCon->Construct(1).AbsDiff(1) = 0.75;
     dCon->Construct(2).Name = "CloseTalker";
     dCon->Construct(2).OutsideAbsorpSolar = 0.9;
     dCon->Construct(2).VisTransNorm = 0.7;
     dCon->Construct(2).SummerSHGC = 0.9;
+    dCon->Construct(2).TotLayers = 1;
+    dCon->Construct(2).TotGlassLayers = 1;
+    dCon->Construct(2).LayerPoint.allocate(dCon->Construct(2).TotLayers);
+    dCon->Construct(2).LayerPoint(1) = 2;
+    dCon->Construct(2).AbsDiff.allocate(dCon->Construct(1).TotLayers);
+    dCon->Construct(2).AbsDiff(1) = 0.75;
+
+    state->init_state(*state);
+    auto &s_mat = state->dataMaterial;
+
+    auto *mat1 = new Material::MaterialGlass;
+    s_mat->materials.push_back(mat1);
+    mat1->Thickness = 0.1;
+    mat1->Conductivity = 0.125;
+    mat1->Resistance = 1.25;
+    mat1->Roughness = Material::SurfaceRoughness::VerySmooth;
+    mat1->group = Material::Group::Glass;
+    mat1->AbsorpSolar = 0.75;
+    mat1->AbsorpThermal = 0.75;
+    mat1->Trans = 0.25;
+    mat1->ReflectSolBeamFront = 0.20;
+
+    auto *mat2 = new Material::MaterialGlass;
+    s_mat->materials.push_back(mat2);
+    mat2->Thickness = 0.1;
+    mat2->Conductivity = 0.25;
+    mat2->Resistance = 2.5;
+    mat2->Roughness = Material::SurfaceRoughness::VerySmooth;
+    mat2->group = Material::Group::Glass;
+    mat2->AbsorpSolar = 0.25;
+    mat2->AbsorpThermal = 0.25;
+    mat2->Trans = 0.5;
+    mat2->ReflectSolBeamFront = 0.20;
+
+    EnergyPlus::Window::initWindowModel(*state);
+
+    // auto aModel = std::make_unique<WindowModel>(); // (AUTO_OK)
+    // aModel->m_Model = static_cast<WindowModel>(getEnumValue(EnergyPlus::Window::windowsModelNamesUC, "BUILTINWINDOWSMODEL"));
 
     dHB->NominalU.allocate(2);
     dHB->NominalU(1) = 1.1;
@@ -13784,6 +13831,7 @@ TEST_F(EnergyPlusFixture, ExteriorFenestrationShadedStateTest)
 
     dSurf->TotSurfaces = 4;
     dSurf->Surface.allocate(dSurf->TotSurfaces);
+    dSurf->SurfaceWindow.allocate(dSurf->TotSurfaces);
     dSurf->Surface(2).windowShadingControlList.resize(1);
     dSurf->Surface(2).windowShadingControlList[0] = 1;
     dSurf->Surface(4).windowShadingControlList.resize(1);
@@ -13831,10 +13879,10 @@ TEST_F(EnergyPlusFixture, ExteriorFenestrationShadedStateTest)
 
     // Check output to see that it matches expectations
     auto &dORP = state->dataOutRptPredefined;
-    EXPECT_EQ(OutputReportPredefined::RetrievePreDefTableEntry(*state, dORP->pdchFenShdUfact, dCon->Construct(1).Name), "1.100");
-    EXPECT_EQ(OutputReportPredefined::RetrievePreDefTableEntry(*state, dORP->pdchFenShdSHGC, dCon->Construct(1).Name), "0.100");
+    EXPECT_EQ(OutputReportPredefined::RetrievePreDefTableEntry(*state, dORP->pdchFenShdUfact, dCon->Construct(1).Name), "0.805");
+    EXPECT_EQ(OutputReportPredefined::RetrievePreDefTableEntry(*state, dORP->pdchFenShdSHGC, dCon->Construct(1).Name), "0.309");
     EXPECT_EQ(OutputReportPredefined::RetrievePreDefTableEntry(*state, dORP->pdchFenShdVisTr, dCon->Construct(1).Name), "0.300");
-    EXPECT_EQ(OutputReportPredefined::RetrievePreDefTableEntry(*state, dORP->pdchFenShdUfact, dCon->Construct(2).Name), "2.200");
-    EXPECT_EQ(OutputReportPredefined::RetrievePreDefTableEntry(*state, dORP->pdchFenShdSHGC, dCon->Construct(2).Name), "0.900");
+    EXPECT_EQ(OutputReportPredefined::RetrievePreDefTableEntry(*state, dORP->pdchFenShdUfact, dCon->Construct(2).Name), "1.237");
+    EXPECT_EQ(OutputReportPredefined::RetrievePreDefTableEntry(*state, dORP->pdchFenShdSHGC, dCon->Construct(2).Name), "0.272");
     EXPECT_EQ(OutputReportPredefined::RetrievePreDefTableEntry(*state, dORP->pdchFenShdVisTr, dCon->Construct(2).Name), "0.700");
 }

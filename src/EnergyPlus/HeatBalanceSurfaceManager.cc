@@ -1017,13 +1017,14 @@ void GatherForPredefinedReport(EnergyPlusData &state)
                     for (unsigned int i = 0; i < totalStates; ++i) {
                         const int stateConstrNum = surface.shadedConstructionList[i];
                         std::string const &constructionName = state.dataConstruction->Construct(stateConstrNum).Name;
+                        const Real64 windowWidth = NfrcWidth[0];
+                        const Real64 windowHeight = NfrcHeight[0];
+                        const Real64 stateUValue = Window::GetIGUUValueForNFRCReport(state, iSurf, stateConstrNum, windowWidth, windowHeight);
+                        const Real64 stateSHGC = Window::GetSHGCValueForNFRCReporting(state, iSurf, stateConstrNum, windowWidth, windowHeight);
 
-                        OutputReportPredefined::PreDefTableEntry(state,
-                                                                 state.dataOutRptPredefined->pdchFenShdUfact,
-                                                                 constructionName,
-                                                                 state.dataHeatBal->NominalU(surface.Construction),
-                                                                 3);
-                        OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchFenShdSHGC, constructionName, SHGCSummer, 3);
+                        OutputReportPredefined::PreDefTableEntry(
+                            state, state.dataOutRptPredefined->pdchFenShdUfact, constructionName, stateUValue, 3);
+                        OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchFenShdSHGC, constructionName, stateSHGC, 3);
                         OutputReportPredefined::PreDefTableEntry(state,
                                                                  state.dataOutRptPredefined->pdchFenShdVisTr,
                                                                  constructionName,

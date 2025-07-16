@@ -1492,7 +1492,7 @@ namespace Sched {
         //         \type choice
         //         \key Comma
         //         \key Tab
-        //         \key Fixed
+        //         \key Space
         //         \key Semicolon
         //         \default Comma
         //    A5 , \field Interpolate to Timestep

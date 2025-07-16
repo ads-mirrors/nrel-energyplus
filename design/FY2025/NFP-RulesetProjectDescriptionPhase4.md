@@ -384,20 +384,22 @@ This suppports:
 New table
 
 The new columns would be:
-- Name
-- Schedule Name
-- Zone Name
-- Zone Floor Area {m2}
-- Number of Zone Occupants
-- Design Volume Flow Rate {m3/s}
-- Volume Flow Rate/Floor Area {m3/s-m2}
-- Volume Flow Rate/Exterior Surface Area {m3/s-m2}
+- Name%
+- Schedule Name^
+- Zone Name%
+- Zone Floor Area {m2}^
+- Number of Zone Occupants%
+- Design Volume Flow Rate {m3/s}^
+- Volume Flow Rate/Floor Area {m3/s-m2}^
+- Volume Flow Rate/Exterior Surface Area {m3/s-m2}^
 
 This suppports:
-- Infiltration.modeling_method%
-- Infiltration.algorithm_name%
-- Infiltration.flow_rate^
-- Infiltration.multiplier_schedule^
+- Infiltration.modeling_method
+- Infiltration.algorithm_name
+- Infiltration.flow_rate
+- Infiltration.multiplier_schedule
+
+Would need to require hourly output for zone infiltration from airflownetwork
 
 #### EnvelopeSummary - Exterior Fenestration ####
 
@@ -584,11 +586,11 @@ The new columns would be:
 - Setpoint Node Loop Name^
 
 This suppports:
-  FluidLoopDesignAndControl.outdoor_high_for_loop_supply_reset_temperature
-  FluidLoopDesignAndControl.outdoor_low_for_loop_supply_reset_temperature
-  FluidLoopDesignAndControl.loop_supply_temperature_at_outdoor_high
-  FluidLoopDesignAndControl.loop_supply_temperature_at_outdoor_low
-  FluidLoopDesignAndControl.temperature_reset_type
+- FluidLoopDesignAndControl.outdoor_high_for_loop_supply_reset_temperature
+- FluidLoopDesignAndControl.outdoor_low_for_loop_supply_reset_temperature
+- FluidLoopDesignAndControl.loop_supply_temperature_at_outdoor_high
+- FluidLoopDesignAndControl.loop_supply_temperature_at_outdoor_low
+- FluidLoopDesignAndControl.temperature_reset_type
 
 #### Controls Summary - SetpointManager:ReturnTemperature ####
 
@@ -604,7 +606,7 @@ The new columns would be:
 - Return Temperature Setpoint Schedule Name%
 
 This suppports:
-  FluidLoopDesignAndControl.loop_supply_temperature_at_low_load
+- FluidLoopDesignAndControl.loop_supply_temperature_at_low_load
 
 
 #### System Summary - Demand Controlled Ventilation using Controller:MechanicalVentilation ####

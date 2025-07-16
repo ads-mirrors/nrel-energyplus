@@ -33,7 +33,7 @@ See Pull Request [#11106](https://github.com/NREL/EnergyPlus/pull/11106).
 The `Output:Schedules` object controls whether the schedules are reported to the EIO, which would end up in the Initialization Summary report of the HTML if the `Output:Table:SummaryReports` asks for it.
 The `Output:Schedules` object has a `Key Field` which can be either `Timestep` or `Hourly`, and it is **not** a unique object, meaning you can request **both**.
 
-A few issues where occurring with the former EIO report (which is parsed to produce the HTML tables):
+A few issues were occurring with the former EIO report (which is parsed to produce the HTML tables):
 
 * The headers where not specific to a given `Key Field` (= Report Level), so if you requested both they would show in both reports in the HTML table
 * The headers were NOT aligned with the data rows, so some tables were not present in the HTML (WeekSchedule, ScheduleTypeLimots=

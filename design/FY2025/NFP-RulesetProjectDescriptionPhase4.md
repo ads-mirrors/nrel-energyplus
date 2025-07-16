@@ -4,7 +4,7 @@ Ruleset Project Description Phase 4
 **Jason Glazer, GARD Analytics**
 
  - February 21, 2025
- - July 9, 2025 - update with focus on EnergyPlus table implementation
+ - July 16, 2025 - update with focus on EnergyPlus table implementation
 
 ## Justification for New Feature ##
 
@@ -210,81 +210,81 @@ The following list was updated July 9 when we had a shift to focus on EnergyPlus
 list was redone to include all data elements used by the PNNL RCT for 90.1-2019 appendix G based on RDS.
 This included service water heating and refrigation.
 
-  RulesetModelDescription.service_water_heating_distribution_systems
-  RulesetModelDescription.service_water_heating_equipment
-  RulesetModelDescription.service_water_heating_uses
-  Building.refrigerated_cases
-  BuildingSegment.service_water_heating_area_type
-  Space.occupant_sensible_heat_gain
-  Space.occupant_latent_heat_gain
-  Space.service_water_heating_uses
-  Infiltration.modeling_method
-  Infiltration.algorithm_name
-  Infiltration.flow_rate
-  Infiltration.multiplier_schedule
-  Surface.adjacent_to
-  Construction.id
-  Construction.c_factor*
-  Construction.f_factor*
-  Subsurface.classification
-  Subsurface.has_shading_overhang*
-  Subsurface.has_shading_sidefins*
-  Schedule.hourly_heating_design_day
-  Schedule.hourly_cooling_design_day
-  FanSystem.air_energy_recovery
-  FanSystem.temperature_control
-  FanSystem.operation_during_occupied
-  FanSystem.operation_during_unoccupied
-  FanSystem.fan_control
-  FanSystem.reset_differential_temperature
-  FanSystem.supply_air_temperature_reset_load_fraction
-  FanSystem.fan_volume_reset_type
-  FanSystem.fan_volume_reset_fraction
-  FanSystem.operating_schedule
-  AirEconomizer.id
-  AirEconomizer.type
-  AirEconomizer.high_limit_shutoff_temperature
-  AirEnergyRecovery.energy_recovery_operation
-  Fan.operating_points
-  FanOperatingPoint.airflow
-  FanOperatingPoint.power
-  Terminal.has_demand_control_ventilation
-  Terminal.is_fan_first_stage_heat*
-  FluidLoopDesignAndControl.temperature_reset_type
-  FluidLoopDesignAndControl.outdoor_high_for_loop_supply_reset_temperature
-  FluidLoopDesignAndControl.outdoor_low_for_loop_supply_reset_temperature
-  FluidLoopDesignAndControl.loop_supply_temperature_at_outdoor_high
-  FluidLoopDesignAndControl.loop_supply_temperature_at_outdoor_low
-  FluidLoopDesignAndControl.loop_supply_temperature_at_low_load
-  Boiler.operation_lower_limit
-  Boiler.operation_upper_limit
-  ServiceWaterHeatingDistributionSystem.id
-  ServiceWaterHeatingDistributionSystem.tanks
-  ServiceWaterHeatingDistributionSystem.service_water_piping
-  ServiceWaterHeatingDistributionSystem.drain_heat_recovery_efficiency
-  ServiceWaterHeatingDistributionSystem.entering_water_mains_temperature_schedule
-  ServiceWaterPiping.id
-  ServiceWaterPiping.is_recirculation_loop
-  ServiceWaterPiping.are_thermal_losses_modeled
-  SolarThermal.id
-  ServiceWaterHeatingEquipment.heater_fuel_type
-  ServiceWaterHeatingEquipment.distribution_system
-  ServiceWaterHeatingEquipment.efficiency_metric_types
-  ServiceWaterHeatingEquipment.efficiency_metric_values
-  ServiceWaterHeatingEquipment.draw_pattern
-  ServiceWaterHeatingEquipment.first_hour_rating
-  ServiceWaterHeatingEquipment.setpoint_temperature
-  ServiceWaterHeatingEquipment.solar_thermal_systems
-  ServiceWaterHeatingUse.id
-  ServiceWaterHeatingUse.area_type
-  ServiceWaterHeatingUse.served_by_distribution_system
-  ServiceWaterHeatingUse.use
-  ServiceWaterHeatingUse.use_units
-  ServiceWaterHeatingUse.use_multiplier_schedule
-  ServiceWaterHeatingUse.temperature_at_fixture
-  ServiceWaterHeatingUse.is_heat_recovered_by_drain
-  RefrigeratedCase.id
-  RefrigeratedCase.type
+- RulesetModelDescription.service_water_heating_distribution_systems
+- RulesetModelDescription.service_water_heating_equipment
+- RulesetModelDescription.service_water_heating_uses
+- Building.refrigerated_cases
+- BuildingSegment.service_water_heating_area_type
+- Space.occupant_sensible_heat_gain
+- Space.occupant_latent_heat_gain
+- Space.service_water_heating_uses
+- Infiltration.modeling_method
+- Infiltration.algorithm_name
+- Infiltration.flow_rate
+- Infiltration.multiplier_schedule
+- Surface.adjacent_to
+- Construction.id
+- Construction.c_factor*
+- Construction.f_factor*
+- Subsurface.classification
+- Subsurface.has_shading_overhang*
+- Subsurface.has_shading_sidefins*
+- Schedule.hourly_heating_design_day
+- Schedule.hourly_cooling_design_day
+- FanSystem.air_energy_recovery
+- FanSystem.temperature_control
+- FanSystem.operation_during_occupied
+- FanSystem.operation_during_unoccupied
+- FanSystem.fan_control
+- FanSystem.reset_differential_temperature
+- FanSystem.supply_air_temperature_reset_load_fraction
+- FanSystem.fan_volume_reset_type
+- FanSystem.fan_volume_reset_fraction
+- FanSystem.operating_schedule
+- AirEconomizer.id
+- AirEconomizer.type
+- AirEconomizer.high_limit_shutoff_temperature
+- AirEnergyRecovery.energy_recovery_operation
+- Fan.operating_points
+- FanOperatingPoint.airflow
+- FanOperatingPoint.power
+- Terminal.has_demand_control_ventilation
+- Terminal.is_fan_first_stage_heat*
+- FluidLoopDesignAndControl.temperature_reset_type
+- FluidLoopDesignAndControl.outdoor_high_for_loop_supply_reset_temperature
+- FluidLoopDesignAndControl.outdoor_low_for_loop_supply_reset_temperature
+- FluidLoopDesignAndControl.loop_supply_temperature_at_outdoor_high
+- FluidLoopDesignAndControl.loop_supply_temperature_at_outdoor_low
+- FluidLoopDesignAndControl.loop_supply_temperature_at_low_load
+- Boiler.operation_lower_limit
+- Boiler.operation_upper_limit
+- ServiceWaterHeatingDistributionSystem.id
+- ServiceWaterHeatingDistributionSystem.tanks
+- ServiceWaterHeatingDistributionSystem.service_water_piping
+- ServiceWaterHeatingDistributionSystem.drain_heat_recovery_efficiency
+- ServiceWaterHeatingDistributionSystem.entering_water_mains_temperature_schedule
+- ServiceWaterPiping.id
+- ServiceWaterPiping.is_recirculation_loop
+- ServiceWaterPiping.are_thermal_losses_modeled
+- SolarThermal.id
+- ServiceWaterHeatingEquipment.heater_fuel_type
+- ServiceWaterHeatingEquipment.distribution_system
+- ServiceWaterHeatingEquipment.efficiency_metric_types
+- ServiceWaterHeatingEquipment.efficiency_metric_values
+- ServiceWaterHeatingEquipment.draw_pattern
+- ServiceWaterHeatingEquipment.first_hour_rating
+- ServiceWaterHeatingEquipment.setpoint_temperature
+- ServiceWaterHeatingEquipment.solar_thermal_systems
+- ServiceWaterHeatingUse.id
+- ServiceWaterHeatingUse.area_type
+- ServiceWaterHeatingUse.served_by_distribution_system
+- ServiceWaterHeatingUse.use
+- ServiceWaterHeatingUse.use_units
+- ServiceWaterHeatingUse.use_multiplier_schedule
+- ServiceWaterHeatingUse.temperature_at_fixture
+- ServiceWaterHeatingUse.is_heat_recovered_by_drain
+- RefrigeratedCase.id
+- RefrigeratedCase.type
 
 The ones with asterisks* indicate more substantial effort needed to implement. If support for these is added, this NFP
 will be updated to describe the exact report changes made.
@@ -313,6 +313,10 @@ reporting being added (primarily the HVAC Topology report), including:
 ## Enhance Existing EnergyPlus Tabular Output Reports ##
 
 The following sections describe enhancements to the existing reports and new reports that will be added in EnergyPlus
+
+New columns shown with:
+- Percent % are based directly on input and could be pulled from epJSON file.
+- Caret ^ are outputs from EnergyPlus that cannot be found within epJSON file.
 
 #### Initialization Summary - People Internal Gains Nominal ####
 
@@ -343,8 +347,8 @@ The current columns are:
 - Maximum Number of People for Winter Design Days
 
 The new columns would be:
-- Sensible heat per occupant
-- Latent heat per occupant
+- Sensible heat per occupant^
+- Latent heat per occupant^
 
 This suppports:
 - Space.occupant_sensible_heat_gain
@@ -369,7 +373,7 @@ The current columns are:
 - Equation D - Velocity Squared Term Coefficient {s2/m2}
 
 The new columns would be:
-- Zone Infiltration Type (the type of infiltration object used)
+- Zone Infiltration Type% (the type of infiltration object used)
 
 This suppports:
 - Infiltration.modeling_method
@@ -390,10 +394,10 @@ The new columns would be:
 - Volume Flow Rate/Exterior Surface Area {m3/s-m2}
 
 This suppports:
-- Infiltration.modeling_method
-- Infiltration.algorithm_name
-- Infiltration.flow_rate
-- Infiltration.multiplier_schedule
+- Infiltration.modeling_method%
+- Infiltration.algorithm_name%
+- Infiltration.flow_rate^
+- Infiltration.multiplier_schedule^
 
 #### EnvelopeSummary - Exterior Fenestration ####
 
@@ -423,9 +427,9 @@ The current columns are:
 - Cardinal Direction
 
 The new columns would be:
-- Surface Type (Window, Door, Glassdoor, etc.)
-- Overhand Depth
-- Fin Depth
+- Surface Type% (Window, Door, Glassdoor, etc.)
+- Overhand Depth^
+- Fin Depth^
 
 This suppports:
 - Subsurface.classification
@@ -447,11 +451,13 @@ The current columns are:
 - Outdoor Airflow [kg/s]
 
 The new columns would be:
-- Operation With Economizer (WHEN_FANS_ON, WHEN_MINIMUM_OUTSIDE_AIR, SCHEDULED)
-- AirLoop Name
+- Operation With Economizer%
+- AirLoop Name^
 
 This suppports (indirectly):
 - FanSystem.air_energy_recovery
+- AirEnergyRecovery.energy_recovery_operation  (WHEN_FANS_ON, WHEN_MINIMUM_OUTSIDE_AIR, SCHEDULED)
+
 
 #### Equipment Summary - Air Terminals ####
 
@@ -475,7 +481,7 @@ The current columns are:
 - Minimum Outdoor Flow Schedule Name
 
 The new columns would be:
-- Heating Control Type (staged or modulated for AirTerminal:SingleDuct:SeriesPIU:Reheat and AirTerminal:SingleDuct:ParallelPIU:Reheat only)
+- Heating Control Type% (staged or modulated for AirTerminal:SingleDuct:SeriesPIU:Reheat and AirTerminal:SingleDuct:ParallelPIU:Reheat only)
 
 This suppports:
 - Terminal.is_fan_first_stage_heat
@@ -502,8 +508,8 @@ The current columns are:
 - Airloop Name
 
 The new columns would be:
-- Speed Control Method
-- Number of Speeds
+- Speed Control Method^
+- Number of Speeds%
 
 This suppports:
 - FanSystem.operation_during_occupied
@@ -514,9 +520,9 @@ This suppports:
 New table
 
 The new columns would be:
-- Fan Name
-- Airflow
-- Power
+- Fan Name%
+- Airflow^
+- Power^
 
 This suppports:
 - Fan.operating_points
@@ -536,8 +542,8 @@ The current columns are:
 - Outdoor Air Enthalpy Limit [C]
 
 The new columns would be:
-- AirLoop Name
-- AirLoopHVAC:OutdoorAirSystem Name 
+- AirLoop Name^
+- AirLoopHVAC:OutdoorAirSystem Name^ 
 
 This suppports (indirectly):
 - AirEconomizer.id
@@ -549,12 +555,12 @@ This suppports (indirectly):
 New table
 
 The new columns would be:
-- Name (of PlantEquipmentOperation:HeatingLoad)
-- PlantLoop Name
-- Load Range Index
-- Lower Limit
-- Upper Limit
-- Equipment List (equipment names separated by semicolons or else multiple columns
+- Name% (of PlantEquipmentOperation:HeatingLoad)
+- PlantLoop Name^
+- Load Range Index%
+- Lower Limit%
+- Upper Limit%
+- Equipment List% (equipment names separated by semicolons or else multiple columns
 
 This suppports:
 - Boiler.operation_lower_limit
@@ -566,16 +572,16 @@ This suppports:
 New Table
 
 The new columns would be:
-- Name
-- Control Variable
-- Setpoint at Low Reference Temperature {C}
-- Setpoint at High Reference Temperature {C}
-- Low Reference Temperature {C}
-- High Reference Temperature {C}
-- Reference Node Name
-- Is Reference Node Outdoors
-- Setpoint Node or NodeList Name
-- Setpoint Node Loop Name
+- Name%
+- Control Variable%
+- Setpoint at Low Reference Temperature% {C}
+- Setpoint at High Reference Temperature% {C}
+- Low Reference Temperature% {C}
+- High Reference Temperature% {C}
+- Reference Node Name%
+- Is Reference Node Outdoors%
+- Setpoint Node or NodeList Name%
+- Setpoint Node Loop Name^
 
 This suppports:
   FluidLoopDesignAndControl.outdoor_high_for_loop_supply_reset_temperature
@@ -589,13 +595,13 @@ This suppports:
 New Table
 
 The new columns would be:
-- Name
-- Type (chilledwater or hotwater)
-- Minimum Supply Temperature Setpoint
-- Maximum Supply Temperature Setpoint
-- Return Temperature Setpoint Input Type (Constant, Scheduled or ReturnTemperatureSetpoint)
-- Return Temperature Setpoint (C)
-- Return Temperature Setpoint Schedule Name
+- Name%
+- Type^ (chilledwater or hotwater)
+- Minimum Supply Temperature Setpoint%
+- Maximum Supply Temperature Setpoint%
+- Return Temperature Setpoint Input Type% (Constant, Scheduled or ReturnTemperatureSetpoint)
+- Return Temperature Setpoint% (C)
+- Return Temperature Setpoint Schedule Name%
 
 This suppports:
   FluidLoopDesignAndControl.loop_supply_temperature_at_low_load
@@ -617,38 +623,43 @@ The current columns are:
 - Type
 
 The new columns would be:
-- Demand Controlled Ventilation Active (Yes or No)
+- Demand Controlled Ventilation Active% (Yes or No)
 
 This suppports:
 - Terminal.has_demand_control_ventilation
 
 
-#### System Summary - AirLoop Availability Manager Operation ####
+#### Controls Summary - AvailabilityManager:Scheduled #### 
 
 New Table 
 
 The new columns would be:
-- Name
-- AirLoop Name
-- Hours Supply Fan Operating Mode Continuous
-- Hours Supply Fan Operating Mode Cycling
+- Name%
+- AirLoop Name%
+- Schedule Name%
+- Hours Supply Fan Operating Mode Cycling^
 
 This suppports:
 - FanSystem.operating_schedule
 
+Covers AvailabilityManager:Scheduled, AvailabilityManager:ScheduledOn, AvailabilityManager:ScheduledOff
 
-#### EquipmentSummary - Unitary ####
+#### EquipmentSummary - Unitary Fan Mode ####
 
 New Table
 
 The new columns would be:
-- Name
-- Hours Supply Air Fan Operating Mode Continuous
-- Hours Supply Air Fan Operating Mode Cycling
+- Name%
+- Hours Supply Air Fan Operating Mode Continuous When Occupied^
+- Hours Supply Air Fan Operating Mode Cycling When Occupied^
+- Hours Supply Air Fan Operating Mode Continuous When Unoccupied^
+- Hours Supply Air Fan Operating Mode Cycling When Unoccupied^
 
 This suppports:
 - FanSystem.operation_during_occupied
 - FanSystem.operation_during_unoccupied
+
+We would need to develop way to differentiate occupied vs unoccupied times.
 
 
 #### Controls Summary - AvailabilityManager:NightCycle ####
@@ -656,9 +667,9 @@ This suppports:
 New Table
 
 The new columns would be:
-- Name
-- AirLoop Name
-- Control Type
+- Name%
+- AirLoop Name%
+- Control Type%
 
 This suppports:
 - FanSystem.operation_during_unoccupied
@@ -675,16 +686,16 @@ The current columns are:
 - Energy Factor
 
 The new columns would be:
-- Heater Fuel Type
-- Daytime Setpoint Temperature
+- Heater Fuel Type%
+- Daytime Setpoint Temperature^
 - Draw pattern (this is a new input for Uniform Energy Factor calculation)
-- Uniform Energy Factor (this will require new calculations and new input)
-- Standby Loss Fraction (not needed by 90.1) 
-- Standby Loss Energy (not needed by 90.1)
-- First hour rating (not needed by 90.1)
-- Peak Use Flow Rate (for water heaters in stand-alone operation)
-- Use Flow Rate Fraction Schedule Name (for water heaters in stand-alone operation)
-- Ambient Temperature Zone Name
+- Uniform Energy Factor^ (this will require new calculations and new input)
+- Standby Loss Fraction^ (not needed by 90.1) 
+- Standby Loss Energy^ (not needed by 90.1)
+- First hour rating^ (not needed by 90.1)
+- Peak Use Flow Rate% (for water heaters in stand-alone operation)
+- Use Flow Rate Fraction Schedule Name% (for water heaters in stand-alone operation)
+- Ambient Temperature Zone Name%
 
 This suppports:
 - ServiceWaterHeatingEquipment.heater_fuel_type
@@ -707,13 +718,13 @@ Energy Factor calculation would need to be added which, I believe uses draw fact
 NEW REPORT
 
 The new columns would be:
-- Name
-- Zone Name
-- End-Use Subcategory
-- Peak Flow Rate [m3/s]
-- Flow Rate Faction Schedule Name
-- Target Temperature Schedule Name
-- WaterUse Connection Name
+- Name%
+- Zone Name%
+- End-Use Subcategory%
+- Peak Flow Rate% [m3/s]
+- Flow Rate Faction Schedule Name%
+- Target Temperature Schedule Name%
+- WaterUse Connection Name%
 
 This suppports:
 - ServiceWaterHeatingUse.id
@@ -731,15 +742,15 @@ This suppports:
 NEW REPORT
 
 The new columns would be:
-- Name
+- Name%
 - PlantLoop Name
-- Drain Water Heat Exchanger Type
-- Drain Water Heat Exchanger Destination
-- Drain Water Heat Exchanger U-Factor Times Area
-- Average Heat Recovery Effectiveness
-- Cold Water Supply Temperature Schedule Name (if missing use Site:WaterMainsTemperature)
-- Pipe:Indoor are used (Yes or No)
-- Pipe:Outdoor are used (Yes or No)
+- Drain Water Heat Exchanger Type%
+- Drain Water Heat Exchanger Destination%
+- Drain Water Heat Exchanger U-Factor Times Area%
+- Average Heat Recovery Effectiveness^
+- Cold Water Supply Temperature Schedule Name% (if missing use Site:WaterMainsTemperature)
+- Pipe:Indoor are used^ (Yes or No)
+- Pipe:Outdoor are used^ (Yes or No)
 
 This suppports:
 - ServiceWaterHeatingDistributionSystem.drain_heat_recovery_efficiency
@@ -758,11 +769,11 @@ This suppports:
 NEW TABLE
 
 The new columns would be:
-- Name
-- Zone Name
-- Case Operating Temperature
-- Case Length
-- Case Height
+- Name%
+- Zone Name%
+- Case Operating Temperature%
+- Case Length%
+- Case Height%
 
 (this table is primarly needed to establish the list of cases so additional values should be added that are easy)
 
@@ -775,10 +786,10 @@ This suppports:
 NEW TABLE
 
 The new columns would be:
-- Name
-- Location (on-grade or below-grade)
-- C-Factor
-- F-Factor
+- Name%
+- Location^ (on-grade or below-grade)
+- C-Factor^
+- F-Factor^
 
 (note the calculation of these may require additional inputs for all the different ways to 
 describe slab-on-grade and below-grade surfaces)
@@ -798,8 +809,10 @@ The current columns are:
 - WeekSchedule
 
 The new columns would be:
-- Cooling Design Day Schedule Name
-- Heating Design Day Schedule Name
+- Cooling Design Day Schedule Name^
+- Heating Design Day Schedule Name^
+
+These might be able to be extracted from input but it would be complicated.
 
 This suppports:
 - Schedule.hourly_heating_design_day

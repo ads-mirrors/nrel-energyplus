@@ -528,6 +528,11 @@ namespace EcoRoofManager {
             ShowSevereError(state,
                             "initEcoRoofFirstTime: EcoRoof simulation but HeatBalanceAlgorithm is not ConductionTransferFunction(CTF). EcoRoof model "
                             "currently works only with CTF heat balance solution algorithm.");
+            ShowContinueError(state, format("Occurs for surface named {}", state.dataSurface->Surface(SurfNum).Name));
+            ShowContinueError(state, "Check input syntax for HeatBalanceAlgorithm, SurfaceProperty:HeatTransferAlgorithm,");
+            ShowContinueError(state, "SurfaceProperty:HeatTransferAlgorithm:MultipleSurface, and SurfaceProperty:HeatTransferAlgorithm:SurfaceList ");
+            ShowContinueError(state, "to verify that the solution method is set to CTF for the surface that is an EcoRoof.");
+            ShowFatalError(state, "initEcoRoofFirstTime: Program terminates due to preceding conditions.");
         }
 
         // ONLY READ ECOROOF PROPERTIES IN THE FIRST TIME

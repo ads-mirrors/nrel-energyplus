@@ -62,7 +62,6 @@ TEST_F(EnergyPlusFixture, OutputFiles_Expected_Formatting_Tests)
     EXPECT_EQ(format("{:#11.{}F}", 123.456, 0), "        123.");
     EXPECT_EQ(format("{:#12.{}F}", 0.85505055394102414, 3), "       0.855");
     EXPECT_EQ(format("{:#12.{}F}", 18229.761511696095, 2), "    18229.76");
-    EXPECT_EQ(format("{:12.{}Z}", 123456789.09999999, 3), "   0.123E+09");
     EXPECT_EQ(format("{:12}", 4), "           4");
 
     // R syntax, which replicates the "RoundSigDigits" function

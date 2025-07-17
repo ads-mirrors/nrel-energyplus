@@ -4491,16 +4491,20 @@ void HeatPumpAirToWater::doPhysics(EnergyPlusData &state, Real64 currentLoad)
     // evaluate the actual current operating load side heat transfer rate
     this->calcLoadSideHeatTransfer(state, availableCapacity, currentLoad);
 
-    //  calculate power usage from EIR curves for the last heat pump
-    this->calcPowerUsage(state, availableCapacityBeforeMultiplier);
-
-    // do defrost calculation if applicable, move it to after calcPowerUsage as cyclingRatio might be updated there
     this->doDefrost(state, availableCapacity);
     // turn off defrost if customize defrost code indicates so
     if (this->DefrosstFlagEMSOverrideOn && (!this->DefrosstFlagEMSOverrideValue)) {
         this->loadDueToDefrost = 0.0;
         this->defrostEnergyRate = 0.0;
         this->fractionalDefrostTime = 0.0;
+    }
+
+    //  calculate power usage from EIR curves for the last heat pump
+    this->calcPowerUsage(state, availableCapacityBeforeMultiplier);
+    // cycling ratio might have updated in calcPowerUsage, need to adjust defrost with the updated cycling ratio
+    if (this->defrostStrategy == DefrostControl::TimedEmpirical) {
+        this->loadDueToDefrost *= this->cyclingRatio;
+        this->defrostEnergyRate *= this->cyclingRatio;
     }
 
     this->calcSourceSideHeatTransferASHP(state);

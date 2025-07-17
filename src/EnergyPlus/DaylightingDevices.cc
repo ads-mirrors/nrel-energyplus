@@ -404,7 +404,7 @@ namespace Dayltg {
                     state.dataDaylightingDevices->ShelfReported = true;
                 }
                 print(state.files.eio,
-                      "{},{:.2R},{},{:.2R},{:.2R}\n",
+                      "Shelf Details,{},{:.2R},{},{:.2R},{:.2R}\n",
                       state.dataDaylightingDevicesData->Shelf(ShelfNum).Name,
                       state.dataDaylightingDevicesData->Shelf(ShelfNum).ViewFactor,
                       state.dataSurface->Surface(WinSurf).Name,

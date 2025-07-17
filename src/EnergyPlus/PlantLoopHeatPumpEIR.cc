@@ -2652,13 +2652,6 @@ void HeatPumpAirToWater::oneTimeInit(EnergyPlusData &state)
     if (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterHeating ||
         this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterCooling) {
         SetupOutputVariable(state,
-                            format("Heat Pump {} COP", mode_keyword),
-                            Constant::Units::None,
-                            this->heatingCOP,
-                            OutputProcessor::TimeStepType::System,
-                            OutputProcessor::StoreType::Average,
-                            this->name);
-        SetupOutputVariable(state,
                             format("Heat Pump Total {} Rate", mode_keyword),
                             Constant::Units::None,
                             this->loadSideHeatTransfer,
@@ -2673,16 +2666,24 @@ void HeatPumpAirToWater::oneTimeInit(EnergyPlusData &state)
                             OutputProcessor::StoreType::Average,
                             this->name);
         SetupOutputVariable(state,
-                            format("Entering Water Temperature in {} Mode", mode_keyword),
+                            format("Heat Pump Entering Water Temperature in {} Mode", mode_keyword),
                             Constant::Units::C,
                             this->loadSideInletTemp,
                             OutputProcessor::TimeStepType::System,
                             OutputProcessor::StoreType::Average,
                             this->name);
         SetupOutputVariable(state,
-                            format("Leaving Water Temperature in {} Mode", mode_keyword),
+                            format("Heat Pump Leaving Water Temperature in {} Mode", mode_keyword),
                             Constant::Units::C,
                             this->loadSideOutletTemp,
+                            OutputProcessor::TimeStepType::System,
+                            OutputProcessor::StoreType::Average,
+                            this->name);
+        // note this is 0-indexed
+        SetupOutputVariable(state,
+                            format("Heat Pump Speed Level in {} Mode", mode_keyword),
+                            Constant::Units::C,
+                            this->speedLevel,
                             OutputProcessor::TimeStepType::System,
                             OutputProcessor::StoreType::Average,
                             this->name);
@@ -2706,6 +2707,21 @@ void HeatPumpAirToWater::oneTimeInit(EnergyPlusData &state)
                             Constant::eResource::Electricity,
                             OutputProcessor::Group::HVAC,
                             OutputProcessor::EndUseCat::Cooling);
+        SetupOutputVariable(state,
+                            format("Heat Pump {} COP", mode_keyword),
+                            Constant::Units::None,
+                            this->heatingCOP,
+                            OutputProcessor::TimeStepType::System,
+                            OutputProcessor::StoreType::Average,
+                            this->name);
+    } else if (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterCooling) {
+        SetupOutputVariable(state,
+                            format("Heat Pump {} COP", mode_keyword),
+                            Constant::Units::None,
+                            this->coolingCOP,
+                            OutputProcessor::TimeStepType::System,
+                            OutputProcessor::StoreType::Average,
+                            this->name);
     }
     this->oneTimeInitFlagAWHP = false;
 }
@@ -3121,6 +3137,8 @@ void HeatPumpAirToWater::resetReportingVariables()
     EIRPlantLoopHeatPump::resetReportingVariables();
     this->CrankcaseHeaterPower = 0.0;
     this->operatingMode = 0.0;
+    this->heatingCOP = 0.0;
+    this->coolingCOP = 0.0;
 }
 
 PlantComponent *EIRFuelFiredHeatPump::factory(EnergyPlusData &state, DataPlant::PlantEquipmentType hp_type, const std::string &hp_name)
@@ -3979,7 +3997,9 @@ void HeatPumpAirToWater::processInputForEIRPLHP(EnergyPlusData &state)
                                                                                       NodeInputManager::CompFluidStream::Secondary,
                                                                                       DataLoopNode::ObjectIsNotParent);
 
-                if (nodeErrorsFound) errorsFound = true;
+                if (nodeErrorsFound) {
+                    errorsFound = true;
+                }
                 BranchNodeConnections::TestCompSet(state,
                                                    Util::makeUPPER(format("{}:{}", cCurrentModuleObject, modeKeyWord)),
                                                    thisAWHP.name,
@@ -4487,6 +4507,9 @@ void HeatPumpAirToWater::doPhysics(EnergyPlusData &state, Real64 currentLoad)
     this->CrankcaseHeaterPower = 0.0;
     if (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterHeating) {
         this->CrankcaseHeaterPower = calcCrankcaseHeaterPower(state);
+        this->heatingCOP = this->loadSideHeatTransfer / this->powerUsage;
+    } else {
+        this->coolingCOP = this->loadSideHeatTransfer / this->powerUsage;
     }
 }
 

@@ -1120,6 +1120,27 @@ TEST_F(EnergyPlusFixture, crankcaseHeater_AWHP)
 
 TEST_F(EnergyPlusFixture, calcOpMode_AWHP)
 {
+    std::string const idf_objects = delimited_string({
+      "Curve:Biquadratic,"
+        "CapCurveFuncTemp,        !- Name",
+        "1.0,                     !- Coefficient1 Constant",
+        "0.0,                     !- Coefficient2 x",
+        "0.0,                     !- Coefficient3 x**2",
+        "0.0,                     !- Coefficient4 y",
+        "0.0,                     !- Coefficient5 y**2",
+        "0.0,                     !- Coefficient6 x*y",
+        "5.0,                     !- Minimum Value of x",
+        "10.0,                    !- Maximum Value of x",
+        "24.0,                    !- Minimum Value of y",
+        "35.0,                    !- Maximum Value of y",
+        ",                        !- Minimum Curve Output",
+        ",                        !- Maximum Curve Output",
+        "Temperature,             !- Input Unit Type for X",
+        "Temperature,             !- Input Unit Type for Y",
+        "Dimensionless;           !- Output Unit Type",
+    });
+    ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
     auto thisAWHP = HeatPumpAirToWater();
     auto companionAWHP = HeatPumpAirToWater();
     thisAWHP.companionHeatPumpCoil = &companionAWHP;
@@ -1163,6 +1184,13 @@ TEST_F(EnergyPlusFixture, calcOpMode_AWHP)
     companionAWHP.loadSidePlantLoc.branchNum = 1;
     companionAWHP.loadSidePlantLoc.compNum = 1;
     companionAWHP.OperationModeEMSOverrideOn = false;
+
+    thisAWHP.capFuncTempCurveIndex[0] = 1;
+    thisAWHP.loadSideOutletTemp = 65;
+    thisAWHP.sourceSideInletTemp = 20;
+    companionAWHP.capFuncTempCurveIndex[0] = 1;
+    companionAWHP.loadSideOutletTemp = 65;
+    companionAWHP.sourceSideInletTemp = 20;
 
     Real64 currentLoad = -300;
     companionPLHPPlantLoadSideComp.MyLoad = 400;

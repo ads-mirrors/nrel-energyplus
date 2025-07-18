@@ -3397,9 +3397,9 @@ Duct conduction definitions:
 \item
  Supply Trunk duct: The connection of SupplyTrunk is between the inlet node (AirloopHVAC Demand Side Inlet Node) of AirLoopHVAC and the AirLoopHVAC:ZoneSplitter. A single supply trunk is specified. In other words, there is a single supply trunk for each AirLoopHVAC.
 \item
- Supply Branch duct: The connection of SupplyBranch is between the AirLoopHVAC:ZoneSplitter and the inlet node of a zone terminal. Each outlet of the AirLoopHVAC:ZoneSplitter has a single branch duct. The number of Supply Brnach ducts are the same as the number of outlets of the AirLoopHVAC:ZoneSplitter for each AirLoopHVAC.
+ Supply Branch duct: The connection of SupplyBranch is between the AirLoopHVAC:ZoneSplitter and the inlet node of a zone terminal. Each outlet of the AirLoopHVAC:ZoneSplitter has a single branch duct. The number of Supply Branch ducts are the same as the number of outlets of the AirLoopHVAC:ZoneSplitter for each AirLoopHVAC.
 \item
- Return Branch duct: The connection of ReturnBranch is between the zone outlet node and the AirLoopHVAC:ZoneMixer.  Each outlet of the AirLoopHVAC:ZoneMixer has a single branch duct.The number of Return Brnach ducts are the same as the number of inlets of the AirLoopHVAC:ZoneMixer for each AirLoopHVAC
+ Return Branch duct: The connection of ReturnBranch is between the zone outlet node and the AirLoopHVAC:ZoneMixer.  Each outlet of the AirLoopHVAC:ZoneMixer has a single branch duct.The number of Return Branch ducts are the same as the number of inlets of the AirLoopHVAC:ZoneMixer for each AirLoopHVAC
 \item
  Retun Trunk duct: The connection of ReturnTrunk is between AirLoopHVAC:ZoneMixer and the outlet node (AirloopHVAC Demand Side Outlet Node) of AirLoopHVAC. A single return trunk is specified. In other words, there is a single return trunk for each AirLoopHVAC.
 \end{itemize}
@@ -3408,13 +3408,13 @@ Duct leakage definitions:
 
 \begin{itemize}
 \item
-  Supply Trunk leak: The supply trunk duct leak occurs at the end of supply trunk duct. The leak is originated at the AirLoopHVAC:ZoneSplitter and terminated at a zone or outdoor.
+  Supply Trunk leak: The supply trunk duct leak occurs at the end of supply trunk duct. The leak is originated at the AirLoopHVAC:ZoneSplitter and terminated at a zone or outdoors.
 \item
-  Supply Branch leak: The supply branch duct leak occurs at the end of supply branch duct. The leak is originated at the zone terminal inlet node and terminated at a zone or outdoor.
+  Supply Branch leak: The supply branch duct leak occurs at the end of supply branch duct. The leak is originated at the zone terminal inlet node and terminated at a zone or outdoors.
 \item
-  Return Branch leak: The return branch duct leak occurs at the beginning of return branch duct. The leak is originated at a zone or outdoor and terminated at the zone outlet node.
+  Return Branch leak: The return branch duct leak occurs at the beginning of return branch duct. The leak is originated at a zone or outdoors and terminated at the zone outlet node.
 \item
-  Return Trunk leak: The return trunk duct leak occurs at the beginning of return trunk duct. The leak is originated at a zone or outdoor and terminated at the AirLoopHVAC:ZoneMixer.
+  Return Trunk leak: The return trunk duct leak occurs at the beginning of return trunk duct. The leak is originated at a zone or outdoors and terminated at the AirLoopHVAC:ZoneMixer.
 
 \end{itemize}
 
@@ -3434,11 +3434,20 @@ Model assumptions are provided below:
 
 Other input rules
 
-The inputs for Duct:Loss:Leakage require inputs of a corresponding Duct:Loss:Conduction. For instance, a Supply Trunk leak must have an associated Supply Trunk duct. However, a Supply Trunk duct is allowed to exist without a corresponding Supply Trunk leak.
+\begin{itemize}
+\item
+Every Duct:Loss:* object requires a corresponding AirflowNetwork:Distribution:Linkage object.
+\item
+The AirflowNetwork:Distribution:Linkage objects must reference an AirflowNetwork:Distribution:Component:Duct object which specifies the duct properties.
+\item
+The Duct:Loss:Conduction objects for a given duct linkage should reference the same AirflowNetwork:Distribution:Component:Duct object.
+\item
+The Duct:Loss:Leakage objects for a given duct linkage should reference the same AirflowNetwork:Distribution:Component:LeakageRatio object.
+\end{itemize}
 
 \subsection{Duct:Loss:Conduction}\label{ductlossconduction}
 
-This object allows users to input ducts with conduction loss only for simplified duct model. The object is used without using Airflow Network model exclusively. 
+This object allows users to input ducts with conduction loss only for simplified duct model.
 
 \subsubsection{Field: Name}\label{field-name-duct-conduction}
 
@@ -3475,17 +3484,60 @@ An IDF example is provided below:
 Duct:Loss:Conduction,
   Main duct,    !- Name
   Main AirLoopHVAC,    !- AirLoopHAVC Name
-  Mail Duct Linkage,   !- AirflowNetwork:Distribution:Linkage Name
-  Zone,         !- Environment Type
+  Main Link,    !- AirflowNetwork:Distribution:Linkage Name
+  Zone,          !- Environment Type
   Zone 1,       !- Ambient Zone Name
-  ,             !- Ambient Temperature Schedule Name
-  ;             !- Ambient Humidity Ratio Schedule Name
+  ,                  !- Ambient Temperature Schedule Name
+  ;                  !- Ambient Humidity Ratio Schedule Name
+
+  AirflowNetwork:Distribution:Linkage,
+    Main Link,               !- Name
+    EquipmentInletNode,      !- Node 1 Name
+    SplitterNode,            !- Node 2 Name
+    MainTruck,               !- Component Name
+    Attic Zone;              !- Thermal Zone Name
+
+  AirflowNetwork:Distribution:Node,
+    EquipmentInletNode,      !- Name
+    Zone Equipment Inlet Node,  !- Component Name or Node Name
+    Other,                   !- Component Object Type or Node Type
+    3.0;                     !- Node Height {m}
+
+  AirflowNetwork:Distribution:Node,
+    SplitterNode,            !- Name
+    ,                        !- Component Name or Node Name
+    AirLoopHVAC:ZoneSplitter,!- Component Object Type or Node Type
+    3.0;                     !- Node Height {m}
+
+  AirflowNetwork:Distribution:Component:Duct,
+    MainTruck,               !- Name
+    2.0,                     !- Duct Length {m}
+    0.4064,                  !- Hydraulic Diameter {m}
+    0.1297,                  !- Cross Section Area {m2}
+    0.0009,                  !- Surface Roughness {m}
+    0.01,                    !- Coefficient for Local Dynamic Loss Due to Fitting {dimensionless}
+    0.946792,                !- Heat Transmittance Coefficient (U-Factor) for Duct Wall Construction {W/m2-K}
+    0.0000001,               !- Overall Moisture Transmittance Coefficient from Air to Air {kg/m2}
+    5.018000,                !- Outside Convection Coefficient {W/m2-K}
+    25.090000;               !- Inside Convection Coefficient {W/m2-K}
 
 \end{lstlisting}
 
+The objects required for a complete set of inputs to simulate duct conduction losses are listed below
+
+\begin{lstlisting}
+
+Duct:Loss:Conduction
+AirflowNetwork:Distribution:Linkage
+AirflowNetwork:Distribution:Node
+AirflowNetwork:Distribution:Component:Duct
+
+\end{lstlisting}
+
+
 \subsection{Duct:Loss:Leakage}\label{ductlossleakage}
 
-This object allows users to input duct leaks only for simplified duct model. The object is used without using Airflow Network model exclusively. 
+This object allows users to input duct leaks only for simplified duct model. 
 
 \subsubsection{Field: Name}\label{ductloss-field-name-duct-leakage}
 
@@ -3503,16 +3555,53 @@ An IDF example is provided below:
 
 \begin{lstlisting}
 
-Duct:Loss:Leakage,
-  Main duct leak,    !- Name
-  Main AirLoopHVAC,    !- AirLoopHAVC Name
-  Mail Duct Leak;   !- AirflowNetwork:Distribution:Linkage Name
+  Duct:Loss:Leakage,
+    Supply leak,      !- Name
+    Typical Residential System,  !- AirLoopHVAC name
+    ZoneSupplyLeakLink;  !- AirflowNetwork:Distribution:Linkage name
+
+  AirflowNetwork:Distribution:Linkage,
+    ZoneSupplyLeakLink,      !- Name
+    SplitterNode,          !- Node 1 Name
+    Attic Zone,              !- Node 2 Name
+    SupplyLeak;              !- Component Name
+
+  AirflowNetwork:Distribution:Node,
+    SplitterNode,            !- Name
+    ,                        !- Component Name or Node Name
+    AirLoopHVAC:ZoneSplitter,!- Component Object Type or Node Type
+    3.0;                     !- Node Height {m}
+
+  AirflowNetwork:Distribution:Node,
+    Attic Zone,          !- Name
+    Attic Zone, !- Component Name or Node Name
+    Zone,                   !- Component Object Type or Node Type
+    3.0;                     !- Node Height {m}
+
+  AirflowNetwork:Distribution:Component:LeakageRatio,
+    SupplyLeak,              !- Name
+    0.1,                     !- Effective Leakage Ratio {dimensionless}
+    1.9,                     !- Maximum Flow Rate {m3/s}
+    60,                      !- Reference Pressure Difference {Pa}
+    0.65;                    !- Air Mass Flow Exponent {dimensionless}
 
 \end{lstlisting}
 
+The objects required for a complete set of inputs to simulate duct leakage losses are listed below
+
+\begin{lstlisting}
+
+Duct:Loss:Leakage
+AirflowNetwork:Distribution:Linkage
+AirflowNetwork:Distribution:Node
+ AirflowNetwork:Distribution:Component:LeakageRatio
+
+\end{lstlisting}
+
+
 \subsection{Duct:Loss:MakeupAir}\label{ductlossmakeupair}
 
-This object allows users to input makeup air caused by a sum of supply leaks greater than a sum of return leaks only for simplified duct model. The object is used without using Airflow Network model exclusively. 
+This object allows users to input makeup air caused by a sum of supply leaks greater than a sum of return leaks only for simplified duct model. 
 
 \subsubsection{Field: Name}\label{duct-leakage-field-name-duct-000}
 
@@ -3530,12 +3619,49 @@ An IDF example is provided below:
 
 \begin{lstlisting}
 
-Duct:Loss:MakeupAir,
-  Makeup air,    !- Name
-  Main AirLoopHVAC,    !- AirLoopHAVC Name
-  Duct Leak Makeup;   !- AirflowNetwork:Distribution:Linkage Name
+  Duct:Loss:MakeupAir,
+    ReturnMakeup,      !- Name
+    Typical Residential System,  !- AirLoopHVAC name
+    ReturnMakeupLink;  !- AirflowNetwork:Distribution:Linkage name
+
+  AirflowNetwork:Distribution:Linkage,
+    ReturnMakeupLink,      !- Name
+    OutdoorNode,             !- Node 1 Name
+    Garage Zone,          !- Node 2 Name
+    ReturnMakeupAir;              !- Component Name
+
+  AirflowNetwork:Distribution:Node,
+    Garage Zone,          !- Name
+    Garage Zone, !- Component Name or Node Name
+    Zone,                   !- Component Object Type or Node Type
+    3.0;                     !- Node Height {m}
+
+  AirflowNetwork:Distribution:Node,
+    OutdoorNode,          !- Name
+    Outside Air Inlet Node, !- Component Name or Node Name
+    OutdoorAir:Node,        !- Component Object Type or Node Type
+    3.0;                     !- Node Height {m}
+
+  AirflowNetwork:Distribution:Component:LeakageRatio,
+    ReturnMakeupAir,              !- Name
+    0.07,                    !- Effective Leakage Ratio {dimensionless}
+    1.9,                     !- Maximum Flow Rate {m3/s}
+    15,                      !- Reference Pressure Difference {Pa}
+    0.65;                    !- Air Mass Flow Exponent {dimensionless}
 
 \end{lstlisting}
+
+The objects required for a complete set of inputs to simulate duct makeup air losses are listed below
+
+\begin{lstlisting}
+
+Duct:Loss:Leakage
+AirflowNetwork:Distribution:Linkage
+AirflowNetwork:Distribution:Node
+AirflowNetwork:Distribution:Component:LeakageRatio
+
+\end{lstlisting}
+
 
 \subsection{Outputs}\label{outputs-simple-duct-model}
 
@@ -3570,11 +3696,11 @@ This is the simple duct model node humidity ratio output in kgWater/kgDryAir bas
 
 \paragraph{Duct Loss Sensible Loss Rate {[}W{]}}\label{duct-loss-sensible-rate-w}
 
-This is the duct loass sensible ratee output in W for the simple duct model for each duct loss object.
+This is the duct loss sensible rate output in W for the simple duct model for each duct loss object.
 
 \paragraph{Duct Loss Latent Loss Rate {[}kgWater/kgDryAir{]}}\label{duct-loss-latent-rate-kgwaterkgdryair}
 
-This is the duct loass latent ratee output in kgWater/kgDryAir for the simple duct model for each duct loss object.
+This is the duct loas latent rate output in kgWater/kgDryAir for the simple duct model for each duct loss object.
 
 \paragraph{Zone Added Sensible Rate Due to Duct Losse {[}W{]}}\label{zone-added-sensible-rate-to-duct-loss-w}
 

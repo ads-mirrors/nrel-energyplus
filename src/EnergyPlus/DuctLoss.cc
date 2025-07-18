@@ -254,7 +254,7 @@ namespace DuctLoss {
                 DuctLossComp thisDuctLoss;
 
                 thisDuctLoss.Name = Util::makeUPPER(thisObjectName);
-                thisDuctLoss.AirLoopName = Util::makeUPPER(fields.at("airloophavc_name").get<std::string>());
+                thisDuctLoss.AirLoopName = Util::makeUPPER(fields.at("airloophvac_name").get<std::string>());
                 LinkageName = Util::makeUPPER(fields.at("airflownetwork_distribution_linkage_name").get<std::string>());
                 thisDuctLoss.LinkageNum = Util::FindItemInList(LinkageName, state.afn->AirflowNetworkLinkageData);
                 if (thisDuctLoss.LinkageNum == 0) {
@@ -320,7 +320,7 @@ namespace DuctLoss {
                 DuctLossComp thisDuctLoss;
 
                 thisDuctLoss.Name = Util::makeUPPER(thisObjectName);
-                thisDuctLoss.AirLoopName = Util::makeUPPER(fields.at("airloophavc_name").get<std::string>());
+                thisDuctLoss.AirLoopName = Util::makeUPPER(fields.at("airloophvac_name").get<std::string>());
                 LinkageName = Util::makeUPPER(fields.at("airflownetwork_distribution_linkage_name").get<std::string>());
                 thisDuctLoss.LinkageNum = Util::FindItemInList(LinkageName, state.afn->AirflowNetworkLinkageData);
                 if (thisDuctLoss.LinkageNum == 0) {
@@ -358,7 +358,7 @@ namespace DuctLoss {
                 DuctLossComp thisDuctLoss;
 
                 thisDuctLoss.Name = Util::makeUPPER(thisObjectName);
-                thisDuctLoss.AirLoopName = Util::makeUPPER(fields.at("airloophavc_name").get<std::string>());
+                thisDuctLoss.AirLoopName = Util::makeUPPER(fields.at("airloophvac_name").get<std::string>());
                 LinkageName = Util::makeUPPER(fields.at("airflownetwork_distribution_linkage_name").get<std::string>());
                 thisDuctLoss.LinkageNum = Util::FindItemInList(LinkageName, state.afn->AirflowNetworkLinkageData);
                 if (thisDuctLoss.LinkageNum == 0) {

@@ -684,7 +684,13 @@ void HeatPumpAirToWater::calcPowerUsage(EnergyPlusData &state, Real64 availableC
     // check curves value and resets to zero if negative
     this->eirModCurveCheck(state, eirModifierFuncTempHigh);
     this->eirModFPLRCurveCheck(state, eirModifierFuncPLRHigh);
-    Real64 interpRatio = (std::fabs(currentLoadNthUnit) - capacityLow) / (capacityHigh - capacityLow);
+    Real64 interpRatio;
+    if (capacityHigh == capacityLow) { // at highest speed level, still cannot meet demand
+        interpRatio = 1.0;
+    } else {
+        // interpRatio cannot be 0 (std::fabs(currentLoadNthUnit) != capacityLow) from the calculation above
+        interpRatio = (std::fabs(currentLoadNthUnit) - capacityLow) / (capacityHigh - capacityLow);
+    }
 
     Real64 powerUsageLow =
         (capacityLow / this->ratedCOP[speedLevel]) * (eirModifierFuncPLRLow * eirModifierFuncTempLow) * this->defrostPowerMultiplier;

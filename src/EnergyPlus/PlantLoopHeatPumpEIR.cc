@@ -699,10 +699,16 @@ void HeatPumpAirToWater::calcPowerUsage(EnergyPlusData &state, Real64 availableC
     this->powerUsage = (1 - interpRatio) * powerUsageLow + interpRatio * powerUsageHigh;
     this->powerUsage += (numHeatPumpUsed - 1) * (availableCapacityBeforeMultiplier / this->ratedCOP[this->numSpeeds - 1]) *
                         (eirModifierFuncPLRHigh * eirModifierFuncTempHigh) * this->defrostPowerMultiplier * this->cyclingRatio;
-    this->speedLevel = speedLevel;
     this->numUnitUsed = numHeatPumpUsed;
-    if (this->speedLevel == 0) {
+    if (speedLevel == 0) {
+        this->speedLevel = 0;
         this->cyclingRatio = interpRatio;
+    } else {
+        if (this->controlType == CompressorControlType::FixedSpeed) {
+            this->speedLevel = speedLevel;
+        } else {
+            this->speedLevel = (1 - interpRatio) * (speedLevel - 1) + interpRatio * speedLevel;
+        }
     }
 }
 
@@ -3145,6 +3151,7 @@ void HeatPumpAirToWater::resetReportingVariables()
     this->operatingMode = 0.0;
     this->heatingCOP = 0.0;
     this->coolingCOP = 0.0;
+    this->speedLevel = 0.0;
 }
 
 PlantComponent *EIRFuelFiredHeatPump::factory(EnergyPlusData &state, DataPlant::PlantEquipmentType hp_type, const std::string &hp_name)

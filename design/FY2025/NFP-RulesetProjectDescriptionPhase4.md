@@ -820,6 +820,8 @@ This suppports:
 - Schedule.hourly_heating_design_day
 - Schedule.hourly_cooling_design_day
 
+(this change is not needed with a fix to the EIO/Schedule-Hourly table) 
+
 #### report name - table name ####
 
 The current columns are:

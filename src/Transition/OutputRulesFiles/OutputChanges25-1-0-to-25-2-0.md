@@ -107,3 +107,16 @@ Changed
 ```
 ! <Schedule - Hourly>,Name,ScheduleType,Until Date 1,WeekSchedule 1,Until Date 2,WeekSchedule 2,Until Date 3,WeekSchedule 3,Until Date 4,WeekSchedule 4,Until Date 5,WeekSchedule 5,Until Date 6,WeekSchedule 6,Until Date 7,WeekSchedule 7,Until Date 8,WeekSchedule 8,Until Date 9,WeekSchedule 9,
 ```
+
+#### EIO and HTML Table Output - Airflow Stats Nominal
+
+The EIO tables related to Airflow Stats Nominal and the Initialization Summary which include:
+
+- ZoneInfiltration Airflow Stats Nominal
+- ZoneVentilation Airflow Stats Nominal
+- Mixing Airflow Stats Nominal
+- CrossMixing Airflow Stats Nominal
+
+Have been updated to add the input object name. This was done to identify the type of algorithm used.
+
+

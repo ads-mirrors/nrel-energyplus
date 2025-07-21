@@ -1249,6 +1249,8 @@ void fillZoneSizingFromInput(EnergyPlusData &state,
         zoneSizing.zoneRHHumidifySched = zoneSizingInput.zoneRHHumidifySched;
         zoneSizing.ZnLatCoolDgnSAMethod = zoneSizingInput.ZnLatCoolDgnSAMethod;
         zoneSizing.ZnLatHeatDgnSAMethod = zoneSizingInput.ZnLatHeatDgnSAMethod;
+        zoneSizing.heatCoilSizingMethod = zoneSizingInput.heatCoilSizingMethod;
+        zoneSizing.maxHeatCoilToCoolingLoadSizingRatio = zoneSizingInput.maxHeatCoilToCoolingLoadSizingRatio;
         calcZoneSizing.ZnCoolDgnSAMethod = zoneSizingInput.ZnCoolDgnSAMethod;
         calcZoneSizing.ZnHeatDgnSAMethod = zoneSizingInput.ZnHeatDgnSAMethod;
         calcZoneSizing.CoolDesTemp = zoneSizingInput.CoolDesTemp;
@@ -1286,6 +1288,8 @@ void fillZoneSizingFromInput(EnergyPlusData &state,
         calcZoneSizing.ZnLatHeatDgnSAMethod = zoneSizingInput.ZnLatHeatDgnSAMethod;
         calcZoneSizing.LatentHeatDesHumRat = zoneSizingInput.LatentHeatDesHumRat;
         calcZoneSizing.HeatDesHumRatDiff = zoneSizingInput.HeatDesHumRatDiff;
+        calcZoneSizing.heatCoilSizingMethod = zoneSizingInput.heatCoilSizingMethod;
+        calcZoneSizing.maxHeatCoilToCoolingLoadSizingRatio = zoneSizingInput.maxHeatCoilToCoolingLoadSizingRatio;
 
         zoneSizing.allocateMemberArrays(state.dataZoneEquipmentManager->NumOfTimeStepInDay);
         calcZoneSizing.allocateMemberArrays(state.dataZoneEquipmentManager->NumOfTimeStepInDay);
@@ -1339,6 +1343,8 @@ void fillZoneSizingFromInput(EnergyPlusData &state,
     zsFinalSizing.ZnLatHeatDgnSAMethod = zoneSizingInput.ZnLatHeatDgnSAMethod;
     zsFinalSizing.LatentHeatDesHumRat = zoneSizingInput.LatentHeatDesHumRat;
     zsFinalSizing.HeatDesHumRatDiff = zoneSizingInput.HeatDesHumRatDiff;
+    zsFinalSizing.heatCoilSizingMethod = zoneSizingInput.heatCoilSizingMethod;
+    zsFinalSizing.maxHeatCoilToCoolingLoadSizingRatio = zoneSizingInput.maxHeatCoilToCoolingLoadSizingRatio;
     zsCalcFinalSizing.ZnCoolDgnSAMethod = zoneSizingInput.ZnCoolDgnSAMethod;
     zsCalcFinalSizing.ZnHeatDgnSAMethod = zoneSizingInput.ZnHeatDgnSAMethod;
     zsCalcFinalSizing.CoolDesTemp = zoneSizingInput.CoolDesTemp;
@@ -1380,6 +1386,8 @@ void fillZoneSizingFromInput(EnergyPlusData &state,
     zsCalcFinalSizing.ZnLatHeatDgnSAMethod = zoneSizingInput.ZnLatHeatDgnSAMethod;
     zsCalcFinalSizing.LatentHeatDesHumRat = zoneSizingInput.LatentHeatDesHumRat;
     zsCalcFinalSizing.HeatDesHumRatDiff = zoneSizingInput.HeatDesHumRatDiff;
+    zsCalcFinalSizing.heatCoilSizingMethod = zoneSizingInput.heatCoilSizingMethod;
+    zsCalcFinalSizing.maxHeatCoilToCoolingLoadSizingRatio = zoneSizingInput.maxHeatCoilToCoolingLoadSizingRatio;
 
     zsFinalSizing.allocateMemberArrays(state.dataZoneEquipmentManager->NumOfTimeStepInDay);
     zsCalcFinalSizing.allocateMemberArrays(state.dataZoneEquipmentManager->NumOfTimeStepInDay);

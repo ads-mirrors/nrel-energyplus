@@ -666,6 +666,58 @@ Real64 calcDesignSpecificationOutdoorAir(EnergyPlusData &state,
     }
 }
 
+void setHeatPumpSize(EnergyPlusData &state, Real64 &coolingCap, Real64 &heatingCap, Real64 const sizingRatio)
+{
+    state.dataSize->DataHeatSizeRatio = sizingRatio;
+    if (state.dataSize->CurSysNum > 0) {
+        auto const &finalSysSizing = state.dataSize->FinalSysSizing(state.dataSize->CurSysNum);
+        if (finalSysSizing.heatCoilSizingMethod == DataSizing::HeatCoilSizMethod::HeatingCapacity) {
+            if (heatingCap > coolingCap * finalSysSizing.maxHeatCoilToCoolingLoadSizingRatio * sizingRatio) {
+                coolingCap = heatingCap / (finalSysSizing.maxHeatCoilToCoolingLoadSizingRatio * sizingRatio);
+            } else {
+                coolingCap = heatingCap / sizingRatio;
+            }
+        } else if (finalSysSizing.heatCoilSizingMethod == DataSizing::HeatCoilSizMethod::GreaterOfHeatingOrCooling) {
+            if (heatingCap > coolingCap * finalSysSizing.maxHeatCoilToCoolingLoadSizingRatio * sizingRatio) {
+                coolingCap = heatingCap / (finalSysSizing.maxHeatCoilToCoolingLoadSizingRatio * sizingRatio);
+            } else if (heatingCap > coolingCap * sizingRatio) {
+                coolingCap = heatingCap / sizingRatio;
+            } else {
+                heatingCap = coolingCap;
+            }
+        } else { // finalSysSizing.heatCoilSizingMethod == DataSizing::HeatCoilSizMethod::CoolingCapacity
+            if (heatingCap > coolingCap * finalSysSizing.maxHeatCoilToCoolingLoadSizingRatio * sizingRatio) {
+                heatingCap = coolingCap * finalSysSizing.maxHeatCoilToCoolingLoadSizingRatio;
+            } else {
+                heatingCap = coolingCap / sizingRatio;
+            }
+        }
+    } else if (state.dataSize->CurZoneEqNum > 0) {
+        auto const &finalZoneSizing = state.dataSize->FinalZoneSizing(state.dataSize->CurZoneEqNum);
+        if (finalZoneSizing.heatCoilSizingMethod == DataSizing::HeatCoilSizMethod::HeatingCapacity) {
+            if (heatingCap > coolingCap * finalZoneSizing.maxHeatCoilToCoolingLoadSizingRatio * sizingRatio) {
+                coolingCap = heatingCap / (finalZoneSizing.maxHeatCoilToCoolingLoadSizingRatio * sizingRatio);
+            } else {
+                coolingCap = heatingCap / sizingRatio;
+            }
+        } else if (finalZoneSizing.heatCoilSizingMethod == DataSizing::HeatCoilSizMethod::GreaterOfHeatingOrCooling) {
+            if (heatingCap > coolingCap * finalZoneSizing.maxHeatCoilToCoolingLoadSizingRatio * sizingRatio) {
+                coolingCap = heatingCap / (finalZoneSizing.maxHeatCoilToCoolingLoadSizingRatio * sizingRatio);
+            } else if (heatingCap > coolingCap * sizingRatio) {
+                coolingCap = heatingCap / sizingRatio;
+            } else {
+                heatingCap = coolingCap;
+            }
+        } else { // finalSysSizing.heatCoilSizingMethod == DataSizing::HeatCoilSizMethod::CoolingCapacity
+            if (heatingCap > coolingCap * finalZoneSizing.maxHeatCoilToCoolingLoadSizingRatio * sizingRatio) {
+                heatingCap = coolingCap * finalZoneSizing.maxHeatCoilToCoolingLoadSizingRatio;
+            } else {
+                heatingCap = coolingCap / sizingRatio;
+            }
+        }
+    }
+}
+
 Real64 OARequirementsData::desFlowPerZoneArea(EnergyPlusData &state, int const zoneNum, int const spaceNum)
 {
     Real64 desFlowPA = 0.0;

@@ -92,3 +92,18 @@ The `Output:Constructions` has two possible keys: `Materials` and `Constructions
 #### Fuel Supply
 
 When using `Generator:FuelSupply`, the header was written twice in the EIO Initialization Summary as `! <Fuel Supply>,...` leading to two identical tables in the HTML report.
+
+#### EIO and HTML Table Output - Schedule-Hourly/Schedule-Timestep
+
+Change header to the EIO table to make more compatible with the parsing that the Initialization Summary so that columns for more
+that the first Until Date/WeekSchedule are shown. Made explicit for the first 9 pairs of Until's. The use of 9 pairs of columns is preferred to a report that has a flexible number of columns.
+
+Previous
+```
+! <Schedule - Hourly>,Name,ScheduleType,{Until Date,WeekSchedule}** Repeated until Dec 31
+``` 
+
+Changed
+```
+! <Schedule - Hourly>,Name,ScheduleType,Until Date 1,WeekSchedule 1,Until Date 2,WeekSchedule 2,Until Date 3,WeekSchedule 3,Until Date 4,WeekSchedule 4,Until Date 5,WeekSchedule 5,Until Date 6,WeekSchedule 6,Until Date 7,WeekSchedule 7,Until Date 8,WeekSchedule 8,Until Date 9,WeekSchedule 9,
+```

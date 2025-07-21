@@ -354,6 +354,9 @@ This suppports:
 - Space.occupant_sensible_heat_gain
 - Space.occupant_latent_heat_gain
 
+(this change is not needed with an additional requirement to include an
+Output:Table:Annual named People Internal Gain Annual)
+
 
 #### Initialization Summary - ZoneInfiltration Airflow Stats Nominal ####
 

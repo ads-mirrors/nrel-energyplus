@@ -1303,6 +1303,8 @@ If the input is \emph{coincident} the zone equipment will be sized on the coinci
 
 This input is used for sizing heat pumps and can size the heating coil based on several options. The available options are \emph{None}, \emph{Cooling Capacity}, \emph{Heating Capacity}, or \emph{GreaterOfHeatingOrCooling}. The default value is None. If this field is blank or None is selected, heat pump sizing will not be affected. Otherwise, the heat pump heating coil will size on the required cooling capacity, heating capacity, or larger of these values.
 
+Heat Pump sizing is according to ACCA Manual S requirements. To properly size a heat pump specify this field as either \emph{Cooling Capacity}, \emph{Heating Capacity}, or \emph{GreaterOfHeatingOrCooling} and include a limit for maximum heating capacity to cooling load sizing ratio in the following field if desired. Also specify Sensible And Latent Load in \hyperref[field-zone-load-sizing-method]{Zone Load Sizing Method} above to correctly account for latent loads. 
+
 \paragraph{Field: Maximum Heating Capacity To Cooling Load Sizing Ratio}\label{maximum-heating-capacity-to-cooling-load-sizing-ratio-0101}
 
 This input sets a limit to how much the heating capacity can exceed the cooling load or cooling capacity required to meet the cooling load including the outdoor air load. If the heating capacity is determined to be larger than the cooling load multiplied by this value, and also considers the value of the DX Heating Coil Sizing Ratio specified in parent objects, then the heating capacity will be limited by this input. Otherwise the heating capacity considers only the DX Heating Coil Sizing Ratio specified in parent objects.
@@ -1857,6 +1859,8 @@ The Occupant Diversity (D) as defined in ASHRAE Standard 62.1. The Occupant Dive
 \paragraph{Field: Heating Coil Sizing Methoid}\label{field-heating-coil-sizing-method-0102}
 
 This input is used for sizing heat pumps and can size the heating coil based on several options. The available options are \emph{None}, \emph{Cooling Capacity}, \emph{Heating Capacity}, or \emph{GreaterOfHeatingOrCooling}. The default value is None. If this field is blank or None is selected, heat pump sizing will not be affected. Otherwise, the heat pump heating coil will size on the required cooling capacity, heating capacity, or larger of these values.
+
+Heat Pump sizing is according to ACCA Manual S requirements. To properly size a heat pump specify this field as either \emph{Cooling Capacity}, \emph{Heating Capacity}, or \emph{GreaterOfHeatingOrCooling} and include a limit for maximum heating capacity to cooling load sizing ratio in the following field if desired. Also specify Sensible And Latent Load in \hyperref[field-zone-load-sizing-method]{Zone Load Sizing Method} in the \hyperref[sizingzone]{Sizing:Zone} object to correctly account for latent loads. 
 
 \paragraph{Field: Maximum Heating Capacity To Cooling Load Sizing Ratio}\label{maximum-heating-capacity-to-cooling-load-sizing-ratio-0102}
 

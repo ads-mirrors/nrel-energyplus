@@ -304,7 +304,8 @@
     CrankCaseHeaterPowerCurve, !- Crankcase Heater Capacity Function of Temperature Curve Name
     5 , !- Maximum Ambient Temperature for Crankcase Heater Operation
     ,     !- Booster Mode On Heating
-    ,     !- Booster Mode Heating Multiplier
+    ,     !- Booster Mode Heating Capacity Multiplier
+    ,     !- Booster Mode Heating COP Multiplier
     2 , !- Number of Speeds for Heating
     20000, !-  Rated Heating Capacity at Speed 1
     3.49, !-  Rated COP for Heating at Speed 1
@@ -332,7 +333,8 @@
     , !-  Heating Energy Input Ratio Function of Temperature Curve Name at Speed 5
     , !-  Heating Energy Input Ratio Function of PLR Curve Name at Speed 5
     ,     !- Booster Mode On Cooling
-    ,     !- Booster Mode Cooling Multiplier
+    ,     !- Booster Mode Cooling Capacity Multiplier
+    ,     !- Booster Mode Cooling COP Multiplier
     2, !-  Number of Speeds for Cooling
     200000, !-  Rated Cooling Capacity at Speed 1
     3.5, !-  Rated COP for Cooling at Speed 1

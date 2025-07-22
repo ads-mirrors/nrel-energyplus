@@ -80,9 +80,9 @@ namespace DataSizing {
         Max,          // use the maximum of the outdoor air flow rate of the people component and the space floor area component
         IAQProcedure, // Use ASHRAE Standard 62.1-2007 IAQP to calculate the zone level outdoor air flow rates
         PCOccSch,     // ProportionalControlBasedOnOccupancySchedule, Use ASHRAE Standard 62.1-2004 or Trane Engineer's newsletter (volume 34-5) to
-                  // calculate the zone level outdoor air flow rates based on scheduled occupancy
-        PCDesOcc, // ProportionalControlBasedOnDesignOccupancy, Use ASHRAE Standard 62.1-2004 or Trane Engineer's newsletter (volume 34-5) to
-                  // calculate the zone level outdoor air flow rates based on design occupancy
+                      // calculate the zone level outdoor air flow rates based on scheduled occupancy
+        PCDesOcc,     // ProportionalControlBasedOnDesignOccupancy, Use ASHRAE Standard 62.1-2004 or Trane Engineer's newsletter (volume 34-5) to
+                      // calculate the zone level outdoor air flow rates based on design occupancy
         Num
     };
 

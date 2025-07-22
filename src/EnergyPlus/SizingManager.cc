@@ -3276,7 +3276,8 @@ void GetZoneSizingInput(EnergyPlusData &state)
                                                  state.dataIPShortCut->cAlphaArgs(13)));
                     }
                 }
-                zoneSizingIndex.heatCoilSizingMethod = static_cast<DataSizing::HeatCoilSizMethod>(getEnumValue(DataSizing::HeatCoilSizMethodNamesUC, state.dataIPShortCut->cAlphaArgs(16)));
+                zoneSizingIndex.heatCoilSizingMethod = static_cast<DataSizing::HeatCoilSizMethod>(
+                    getEnumValue(DataSizing::HeatCoilSizMethodNamesUC, state.dataIPShortCut->cAlphaArgs(16)));
                 zoneSizingIndex.maxHeatCoilToCoolingLoadSizingRatio = state.dataIPShortCut->rNumericArgs(23);
             }
         }
@@ -3968,7 +3969,8 @@ void GetSystemSizingInput(EnergyPlusData &state)
             SysSizInput(SysSizIndex).OccupantDiversity = state.dataIPShortCut->rNumericArgs(iOccupantDiversity);
         }
 
-        SysSizInput(SysSizIndex).heatCoilSizingMethod = static_cast<DataSizing::HeatCoilSizMethod>(getEnumValue(DataSizing::HeatCoilSizMethodNamesUC, state.dataIPShortCut->cAlphaArgs(iHeatCoilSizingMethodAlphaNum)));
+        SysSizInput(SysSizIndex).heatCoilSizingMethod = static_cast<DataSizing::HeatCoilSizMethod>(
+            getEnumValue(DataSizing::HeatCoilSizMethodNamesUC, state.dataIPShortCut->cAlphaArgs(iHeatCoilSizingMethodAlphaNum)));
         SysSizInput(SysSizIndex).maxHeatCoilToCoolingLoadSizingRatio = state.dataIPShortCut->rNumericArgs(iHeatToCoolSizingRatioNumericNum);
     }
 

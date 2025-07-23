@@ -1838,7 +1838,7 @@ namespace SimulationManager {
             "Threads, Number of Threads Used (Interior Radiant Exchange), Number Nominal Surfaces, Number "
             "Parallel Sims");
         print(state.files.eio, "{}\n", ThreadingHeader);
-        static constexpr std::string_view ThreadReport("Program Control:Threads/Parallel Sims, {},{}, {}, {}, {}, {}, {}, {}\n");
+        static constexpr std::string_view ThreadReport("Program Control Information:Threads/Parallel Sims, {},{}, {}, {}, {}, {}, {}, {}\n");
         if (state.dataSysVars->Threading) {
             if (state.dataSysVars->iEnvSetThreads == 0) {
                 cEnvSetThreads = "Not Set";

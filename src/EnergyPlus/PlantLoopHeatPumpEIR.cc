@@ -3884,7 +3884,7 @@ void HeatPumpAirToWater::processInputForEIRPLHP(EnergyPlusData &state)
                         thisAWHP.sourceSideDesignVolFlowRate = DataSizing::AutoSize;
                         thisAWHP.sourceSideDesignVolFlowRateWasAutoSized = true;
                     } else {
-                        thisAWHP.sourceSideDesignVolFlowRate = tmpFlowRate.value().get<Real64>();
+                        thisAWHP.sourceSideDesignVolFlowRate = tmpFlowRate.get<Real64>();
                     }
                 }
                 catch (const std::exception& e) {
@@ -4463,31 +4463,31 @@ void HeatPumpAirToWater::calcOpMode(EnergyPlus::EnergyPlusData &state, Real64 cu
             this->operatingMode = OperationModeEMSOverrideValue;
         }
     } else {
-        if (this->OperationModeEMSOverrideOn) { // fixme: need to change this to relate to the number of units
+        auto LoopNum = this->companionHeatPumpCoil->loadSidePlantLoc.loopNum;
+        auto LoopSideNum = this->companionHeatPumpCoil->loadSidePlantLoc.loopSideNum;
+        auto BranchNum = this->companionHeatPumpCoil->loadSidePlantLoc.branchNum;
+        auto CompNum = this->companionHeatPumpCoil->loadSidePlantLoc.compNum;
+        auto &this_loop(state.dataPlnt->PlantLoop(LoopNum));
+        auto &this_loop_side(this_loop.LoopSide(LoopSideNum));
+        auto &this_component = this_loop_side.Branch(BranchNum).Comp(CompNum);
+        auto companionLoad = this_component.MyLoad;
+        auto curveIndex = this->capFuncTempCurveIndex[this->numSpeeds - 1];
+        auto capacityModifierFuncTemp = Curve::CurveValue(state, curveIndex, this->loadSideOutletTemp, this->sourceSideInletTemp);
+        auto availableCapacityOneUnit = this->referenceCapacityOneUnit * capacityModifierFuncTemp;
+        auto &companionCoil = this->companionHeatPumpCoil;
+        auto companionCurveIndex = companionCoil->capFuncTempCurveIndex[this->numSpeeds - 1];
+        auto companionCapacityModifierFuncTemp =
+            Curve::CurveValue(state, curveIndex, companionCoil->loadSideOutletTemp, companionCoil->sourceSideInletTemp);
+        auto companionAvailableCapacityOneUnit = companionCoil->referenceCapacityOneUnit * companionCapacityModifierFuncTemp;
+        if (this->OperationModeEMSOverrideOn) {
             if (this->OperationModeEMSOverrideValue == 1) {
-                this->operatingMode = 1;
+                this->operatingMode = ceil(fabs(currentLoad) / availableCapacityOneUnit);
                 this->companionHeatPumpCoil->operatingMode = 0;
             } else {
                 this->operatingMode = 0;
-                this->companionHeatPumpCoil->operatingMode = 1;
+                this->companionHeatPumpCoil->operatingMode = ceil(fabs(companionLoad) / companionAvailableCapacityOneUnit);
             }
         } else {
-            auto LoopNum = this->companionHeatPumpCoil->loadSidePlantLoc.loopNum;
-            auto LoopSideNum = this->companionHeatPumpCoil->loadSidePlantLoc.loopSideNum;
-            auto BranchNum = this->companionHeatPumpCoil->loadSidePlantLoc.branchNum;
-            auto CompNum = this->companionHeatPumpCoil->loadSidePlantLoc.compNum;
-            auto &this_loop(state.dataPlnt->PlantLoop(LoopNum));
-            auto &this_loop_side(this_loop.LoopSide(LoopSideNum));
-            auto &this_component = this_loop_side.Branch(BranchNum).Comp(CompNum);
-            auto companionLoad = this_component.MyLoad;
-            auto curveIndex = this->capFuncTempCurveIndex[this->numSpeeds - 1];
-            auto capacityModifierFuncTemp = Curve::CurveValue(state, curveIndex, this->loadSideOutletTemp, this->sourceSideInletTemp);
-            auto availableCapacityOneUnit = this->referenceCapacityOneUnit * capacityModifierFuncTemp;
-            auto &companionCoil = this->companionHeatPumpCoil;
-            auto companionCurveIndex = companionCoil->capFuncTempCurveIndex[this->numSpeeds - 1];
-            auto companionCapacityModifierFuncTemp =
-                Curve::CurveValue(state, curveIndex, companionCoil->loadSideOutletTemp, companionCoil->sourceSideInletTemp);
-            auto companionAvailableCapacityOneUnit = companionCoil->referenceCapacityOneUnit * companionCapacityModifierFuncTemp;
             if (modeCalcMethod == OperatingModeControlOptionMultipleUnit::SingleMode) {
                 // all HP unit either all in heating or all in cooling mode
                 if (fabs(currentLoad) < fabs(companionLoad)) {

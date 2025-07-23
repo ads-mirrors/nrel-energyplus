@@ -4033,6 +4033,8 @@ void HeatPumpAirToWater::processInputForEIRPLHP(EnergyPlusData &state)
                 thisAWHP.numSpeeds =
                     state.dataInputProcessing->inputProcessor->getRealFieldValue(fields, schemaProps, format("number_of_speeds_for_{}", modeKeyWord));
 
+                // start from the second speed level as the first speed level might be autosized
+
                 for (int i = 0; i < thisAWHP.numSpeeds; i++) {
                     auto capFtFieldName = format("normalized_{}_capacity_function_of_temperature_curve_name_at_speed_{}", modeKeyWord, i + 1);
                     if (fields.find(capFtFieldName) == fields.end()) {
@@ -4044,8 +4046,20 @@ void HeatPumpAirToWater::processInputForEIRPLHP(EnergyPlusData &state)
                         errorsFound = true;
                     }
                     std::string const capFtName = Util::makeUPPER(fields.at(capFtFieldName).get<std::string>());
-                    thisAWHP.ratedCapacity[i] = state.dataInputProcessing->inputProcessor->getRealFieldValue(
-                        fields, schemaProps, format("rated_{}_capacity_at_speed_{}", modeKeyWord, i + 1));
+                    if (i == 0) {
+                        auto &tmpRefCapacity = fields.at(format("rated_{}_capacity_at_speed_1", modeKeyWord));
+                        if (tmpRefCapacity == "Autosize") {
+                            thisAWHP.ratedCapacity[0] = DataSizing::AutoSize;
+                            thisAWHP.referenceCapacity = DataSizing::AutoSize;
+                            thisAWHP.referenceCapacityWasAutoSized = true;
+                        } else {
+                            thisAWHP.ratedCapacity[0] = tmpRefCapacity.get<Real64>();
+                            thisAWHP.referenceCapacity = tmpRefCapacity.get<Real64>();
+                        }
+                    } else {
+                        thisAWHP.ratedCapacity[i] = state.dataInputProcessing->inputProcessor->getRealFieldValue(
+                            fields, schemaProps, format("rated_{}_capacity_at_speed_{}", modeKeyWord, i + 1));
+                    }
                     thisAWHP.ratedCOP[i] = state.dataInputProcessing->inputProcessor->getRealFieldValue(
                         fields, schemaProps, format("rated_cop_for_{}_at_speed_{}", modeKeyWord, i + 1));
                     thisAWHP.capFuncTempCurveIndex[i] = Curve::GetCurveIndex(state, capFtName);
@@ -4064,9 +4078,6 @@ void HeatPumpAirToWater::processInputForEIRPLHP(EnergyPlusData &state)
                         errorsFound = true;
                     }
 
-                    thisAWHP.referenceCapacityOneUnit = thisAWHP.ratedCapacity[thisAWHP.numSpeeds - 1];
-                    thisAWHP.referenceCapacity = thisAWHP.referenceCapacityOneUnit * thisAWHP.compressorMultiplier;
-                    thisAWHP.referenceCOP = thisAWHP.referenceCOP = thisAWHP.ratedCOP[thisAWHP.numSpeeds - 1];
                     std::string const eirFtName = Util::makeUPPER(fields.at(eirFtFieldName).get<std::string>());
                     thisAWHP.powerRatioFuncTempCurveIndex[i] = Curve::GetCurveIndex(state, eirFtName);
                     if (thisAWHP.powerRatioFuncTempCurveIndex[i] == 0) {
@@ -4091,6 +4102,10 @@ void HeatPumpAirToWater::processInputForEIRPLHP(EnergyPlusData &state)
                         errorsFound = true;
                     }
                 }
+
+                thisAWHP.referenceCapacityOneUnit = thisAWHP.ratedCapacity[thisAWHP.numSpeeds - 1];
+                thisAWHP.referenceCapacity = thisAWHP.referenceCapacityOneUnit * thisAWHP.compressorMultiplier;
+                thisAWHP.referenceCOP = thisAWHP.ratedCOP[thisAWHP.numSpeeds - 1];
                 if (!errorsFound) {
                     state.dataHeatPumpAirToWater->heatPumps.push_back(thisAWHP);
                 }

@@ -3437,15 +3437,17 @@ void EIRFuelFiredHeatPump::oneTimeInit(EnergyPlusData &state)
                             this->name,
                             Constant::eResource::EnergyTransfer,
                             OutputProcessor::Group::Plant);
+        // "Heat Pump Load Side Inlet Temperature"
         SetupOutputVariable(state,
-                            "Fuel-fired Absorption HeatPump Inlet Temperature", // "Heat Pump Load Side Inlet Temperature",
+                            "Fuel-fired Absorption HeatPump Inlet Temperature",
                             Constant::Units::C,
                             this->loadSideInletTemp,
                             OutputProcessor::TimeStepType::System,
                             OutputProcessor::StoreType::Average,
                             this->name);
+        // "Heat Pump Load Side Outlet Temperature"
         SetupOutputVariable(state,
-                            "Fuel-fired Absorption HeatPump Outlet Temperature", // "Heat Pump Load Side Outlet Temperature",
+                            "Fuel-fired Absorption HeatPump Outlet Temperature",
                             Constant::Units::C,
                             this->loadSideOutletTemp,
                             OutputProcessor::TimeStepType::System,

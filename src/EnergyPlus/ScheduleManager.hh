@@ -369,6 +369,9 @@ namespace Sched {
 
     void InitConstantScheduleData(EnergyPlusData &state);
 
+    // If any Output:Schedules object is found, report to EIO
+    void ReportScheduleTypeLimits(EnergyPlusData &state);
+
     void ReportScheduleDetails(EnergyPlusData &state, ReportLevel const LevelOfDetail);
 
     // Returns the CurrentScheduleValue

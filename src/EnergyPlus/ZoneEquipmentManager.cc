@@ -2803,6 +2803,7 @@ void updateZoneSizingEndZoneSizingCalc5(DataSizing::ZoneSizingData &zsFinalSizin
     zsFinalSizing.CoolDDNum = zsCalcFinalSizing.CoolDDNum;
 
     zsFinalSizing.DesHeatLoad = zsCalcFinalSizing.DesHeatLoad;
+    zsFinalSizing.DesLatentHeatLoad = zsCalcFinalSizing.DesLatentHeatLoad;
     zsFinalSizing.NonAirSysDesHeatLoad = zsCalcFinalSizing.DesHeatLoad;
     zsFinalSizing.DesHeatMassFlow = zsCalcFinalSizing.DesHeatMassFlow;
     zsFinalSizing.ZoneTempAtHeatPeak = zsCalcFinalSizing.ZoneTempAtHeatPeak;
@@ -2818,6 +2819,7 @@ void updateZoneSizingEndZoneSizingCalc5(DataSizing::ZoneSizingData &zsFinalSizin
     zsFinalSizing.CoolDesHumRat = zsCalcFinalSizing.CoolDesHumRat;
 
     zsFinalSizing.DesCoolLoad = zsCalcFinalSizing.DesCoolLoad;
+    zsFinalSizing.DesLatentCoolLoad = zsCalcFinalSizing.DesLatentCoolLoad;
     zsFinalSizing.NonAirSysDesCoolLoad = zsCalcFinalSizing.DesCoolLoad;
     zsFinalSizing.DesCoolMassFlow = zsCalcFinalSizing.DesCoolMassFlow;
     zsFinalSizing.ZoneTempAtCoolPeak = zsCalcFinalSizing.ZoneTempAtCoolPeak;

@@ -672,47 +672,49 @@ void setHeatPumpSize(EnergyPlusData &state, Real64 &coolingCap, Real64 &heatingC
     if (state.dataSize->CurSysNum > 0) {
         auto const &finalSysSizing = state.dataSize->FinalSysSizing(state.dataSize->CurSysNum);
         if (finalSysSizing.heatCoilSizingMethod == DataSizing::HeatCoilSizMethod::HeatingCapacity) {
-            if (heatingCap > coolingCap * finalSysSizing.maxHeatCoilToCoolingLoadSizingRatio * sizingRatio) {
-                coolingCap = heatingCap / (finalSysSizing.maxHeatCoilToCoolingLoadSizingRatio * sizingRatio);
+            if (heatingCap > coolingCap * finalSysSizing.maxHeatCoilToCoolingLoadSizingRatio) {
+                heatingCap = (coolingCap * finalSysSizing.maxHeatCoilToCoolingLoadSizingRatio) / sizingRatio;
+                coolingCap = heatingCap;
             } else {
-                coolingCap = heatingCap / sizingRatio;
+                coolingCap = heatingCap; // sizing ratio gets applied when coil sizes
             }
         } else if (finalSysSizing.heatCoilSizingMethod == DataSizing::HeatCoilSizMethod::GreaterOfHeatingOrCooling) {
-            if (heatingCap > coolingCap * finalSysSizing.maxHeatCoilToCoolingLoadSizingRatio * sizingRatio) {
-                coolingCap = heatingCap / (finalSysSizing.maxHeatCoilToCoolingLoadSizingRatio * sizingRatio);
+            if (heatingCap > coolingCap * finalSysSizing.maxHeatCoilToCoolingLoadSizingRatio) {
+                coolingCap = heatingCap / finalSysSizing.maxHeatCoilToCoolingLoadSizingRatio;
             } else if (heatingCap > coolingCap * sizingRatio) {
-                coolingCap = heatingCap / sizingRatio;
+                coolingCap = heatingCap; // sizing ratio gets applied when coil sizes
             } else {
-                heatingCap = coolingCap;
+                heatingCap = coolingCap; // sizing ratio gets applied when coil sizes
             }
-        } else { // finalSysSizing.heatCoilSizingMethod == DataSizing::HeatCoilSizMethod::CoolingCapacity
+        } else if (finalSysSizing.heatCoilSizingMethod == DataSizing::HeatCoilSizMethod::CoolingCapacity) {
             if (heatingCap > coolingCap * finalSysSizing.maxHeatCoilToCoolingLoadSizingRatio * sizingRatio) {
                 heatingCap = coolingCap * finalSysSizing.maxHeatCoilToCoolingLoadSizingRatio;
             } else {
-                heatingCap = coolingCap / sizingRatio;
+                heatingCap = coolingCap; // sizing ratio gets applied when coil sizes
             }
         }
     } else if (state.dataSize->CurZoneEqNum > 0) {
         auto const &finalZoneSizing = state.dataSize->FinalZoneSizing(state.dataSize->CurZoneEqNum);
         if (finalZoneSizing.heatCoilSizingMethod == DataSizing::HeatCoilSizMethod::HeatingCapacity) {
-            if (heatingCap > coolingCap * finalZoneSizing.maxHeatCoilToCoolingLoadSizingRatio * sizingRatio) {
-                coolingCap = heatingCap / (finalZoneSizing.maxHeatCoilToCoolingLoadSizingRatio * sizingRatio);
+            if (heatingCap > coolingCap * finalZoneSizing.maxHeatCoilToCoolingLoadSizingRatio) {
+                heatingCap = (coolingCap * finalZoneSizing.maxHeatCoilToCoolingLoadSizingRatio) / sizingRatio;
+                coolingCap = heatingCap;
             } else {
-                coolingCap = heatingCap / sizingRatio;
+                coolingCap = heatingCap; // sizing ratio gets applied when coil sizes
             }
         } else if (finalZoneSizing.heatCoilSizingMethod == DataSizing::HeatCoilSizMethod::GreaterOfHeatingOrCooling) {
-            if (heatingCap > coolingCap * finalZoneSizing.maxHeatCoilToCoolingLoadSizingRatio * sizingRatio) {
-                coolingCap = heatingCap / (finalZoneSizing.maxHeatCoilToCoolingLoadSizingRatio * sizingRatio);
+            if (heatingCap > coolingCap * finalZoneSizing.maxHeatCoilToCoolingLoadSizingRatio) {
+                coolingCap = heatingCap / finalZoneSizing.maxHeatCoilToCoolingLoadSizingRatio;
             } else if (heatingCap > coolingCap * sizingRatio) {
                 coolingCap = heatingCap / sizingRatio;
             } else {
-                heatingCap = coolingCap;
+                heatingCap = coolingCap; // sizing ratio gets applied when coil sizes
             }
-        } else { // finalSysSizing.heatCoilSizingMethod == DataSizing::HeatCoilSizMethod::CoolingCapacity
-            if (heatingCap > coolingCap * finalZoneSizing.maxHeatCoilToCoolingLoadSizingRatio * sizingRatio) {
-                heatingCap = coolingCap * finalZoneSizing.maxHeatCoilToCoolingLoadSizingRatio;
-            } else {
-                heatingCap = coolingCap / sizingRatio;
+        } else if (finalZoneSizing.heatCoilSizingMethod == DataSizing::HeatCoilSizMethod::CoolingCapacity) {
+            if (heatingCap > coolingCap * finalZoneSizing.maxHeatCoilToCoolingLoadSizingRatio) {
+                heatingCap = (coolingCap * finalZoneSizing.maxHeatCoilToCoolingLoadSizingRatio) / sizingRatio;
+            } else if (heatingCap < coolingCap) {
+                heatingCap = coolingCap; // sizing ratio gets applied when coil sizes
             }
         }
     }

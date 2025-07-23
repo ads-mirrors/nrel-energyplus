@@ -1175,7 +1175,7 @@ namespace UnitarySystems {
                 SysHeatingLoad = state.dataSize->FinalSysSizing(state.dataSize->CurSysNum).HeatCap;
             } else if (state.dataSize->CurZoneEqNum > 0) {
                 SysSensCoolingLoad = state.dataSize->FinalZoneSizing(state.dataSize->CurZoneEqNum).DesCoolLoad;
-                SysLatCoolingLoad = state.dataSize->CalcFinalZoneSizing(state.dataSize->CurZoneEqNum).DesLatentCoolLoad;
+                SysLatCoolingLoad = state.dataSize->FinalZoneSizing(state.dataSize->CurZoneEqNum).DesLatentCoolLoad;
                 SysTotCoolingLoad = SysSensCoolingLoad + SysLatCoolingLoad;
                 SysHeatingLoad = state.dataSize->FinalZoneSizing(state.dataSize->CurZoneEqNum).DesHeatLoad;
             }

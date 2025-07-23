@@ -182,6 +182,18 @@
 
 ! *** Heating Coil Loop
 
+  Sizing:Plant,
+    Heating Coil Load Loop,          !- Plant or Condenser Loop Name
+    heating,                 !- Loop Type
+    82.,                     !- Design Loop Exit Temperature {C}
+    11;                      !- Loop Design Temperature Difference {deltaC}
+
+  Sizing:Plant,
+    Cooling Coil Load Loop,      !- Plant or Condenser Loop Name
+    cooling,                 !- Loop Type
+    7.00,                    !- Design Loop Exit Temperature {C}
+    4.00;                    !- Loop Design Temperature Difference {deltaC}
+
   PlantLoop,
     Heating Coil Load Loop,  !- Name
     WATER,                   !- Fluid Type
@@ -297,7 +309,6 @@
     0.2, !-  Heat Pump Defrost Time Period Fraction
     150, !-  Resistive Defrost Heater Capacity
     , !-  Defrost Energy Input Ratio Function of Temperature Curve Name
-    , !-  Defrost Capacity Ratio Function of Temperature Curve Name
     2 , !- Compressor Multiplier
     FixedSpeed , !- Control Type
     100 , !- Crankcase Heater Capacity

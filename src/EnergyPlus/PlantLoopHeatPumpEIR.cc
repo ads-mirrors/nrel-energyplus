@@ -4011,12 +4011,6 @@ void HeatPumpAirToWater::processInputForEIRPLHP(EnergyPlusData &state)
                 if (thisAWHP.EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterHeating) {
                     thisAWHP.maxOutdoorTemperatureDefrost = state.dataInputProcessing->inputProcessor->getRealFieldValue(
                         fields, schemaProps, "maximum_outdoor_dry_bulb_temperature_for_defrost_operation");
-                    auto const defrostCapRatioCurveName = fields.find("defrost_capacity_ratio_function_of_temperature curve name");
-                    // fixme: should this be specific to a certain strategy?
-                    if (defrostCapRatioCurveName != fields.end()) {
-                        thisAWHP.defrostCapRatioCurveIndex =
-                            Curve::GetCurveIndex(state, Util::makeUPPER(defrostCapRatioCurveName.value().get<std::string>()));
-                    }
                 } else {
                     thisAWHP.maxOutdoorTemperatureDefrost = -999;
                     thisAWHP.defrostStrategy = DefrostControl::None;

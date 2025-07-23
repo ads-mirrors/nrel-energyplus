@@ -469,7 +469,6 @@ TEST_F(EnergyPlusFixture, HeatingSimulate_AirSource_AWHP)
                                                       ", !-  Defrost Time Period Fraction",
                                                       ", !-  Resistive Defrost Heater Capacity",
                                                       ", !-  Defrost Energy Input Ratio Function of Temperature Curve Name",
-                                                      ", !-  Defrost Capacity Ratio Function of Temperature Curve Name",
                                                       "1 , !- Compressor Multiplier",
                                                       "FixedSpeed , !- Control Type",
                                                       "100 , !- Crankcase Heater Capacity",
@@ -711,7 +710,6 @@ TEST_F(EnergyPlusFixture, processInputForEIRPLHP_AWHP)
         "0.2, !-  Defrost Time Period Fraction",
         "150, !-  Resistive Defrost Heater Capacity",
         ", !-  Defrost Energy Input Ratio Function of Temperature Curve Name",
-        ", !-  Defrost Capacity Ratio Function of Temperature Curve Name",
         "1 , !- Compressor Multiplier",
         "FixedSpeed , !- Control Type",
         "100 , !- Crankcase Heater Capacity",
@@ -809,7 +807,6 @@ TEST_F(EnergyPlusFixture, processInputForEIRPLHP_AWHP)
         ", !-  Defrost Time Period Fraction",
         ", !-  Resistive Defrost Heater Capacity",
         ", !-  Defrost Energy Input Ratio Function of Temperature Curve Name",
-        ", !-  Defrost Capacity Ratio Function of Temperature Curve Name",
         ", !- Compressor Multiplier",
         ", !- Control Type",
         ", !- Crankcase Heater Capacity",
@@ -982,7 +979,6 @@ TEST_F(EnergyPlusFixture, processInputForEIRPLHP_AWHP)
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].defrostTime, 0.2);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].defrostResistiveHeaterCap, 150);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].defrostEIRFTIndex, 0);
-    EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].defrostCapRatioCurveIndex, 0);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].compressorMultiplier, 1);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].controlType, HeatPumpAirToWater::CompressorControlType::FixedSpeed);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].CrankcaseHeaterCapacity, 100);
@@ -1057,7 +1053,6 @@ TEST_F(EnergyPlusFixture, processInputForEIRPLHP_AWHP)
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[3].defrostTime, 0.0);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[3].defrostResistiveHeaterCap, 0.0);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[3].defrostEIRFTIndex, 0);
-    EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[3].defrostCapRatioCurveIndex, 0);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[3].compressorMultiplier, 1.0);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[3].controlType, HeatPumpAirToWater::CompressorControlType::VariableSpeed);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[3].CrankcaseHeaterCapacity, 0.0);
@@ -4399,7 +4394,6 @@ TEST_F(EnergyPlusFixture, Test_DoPhysics_AWHP)
                           "0.2, !-  Defrost Time Period Fraction",
                           "150, !-  Resistive Defrost Heater Capacity",
                           ", !-  Defrost Energy Input Ratio Function of Temperature Curve Name",
-                          ", !-  Defrost Capacity Ratio Function of Temperature Curve Name",
                           "1 , !- Compressor Multiplier",
                           "FixedSpeed , !- Control Type",
                           "100 , !- Crankcase Heater Capacity",

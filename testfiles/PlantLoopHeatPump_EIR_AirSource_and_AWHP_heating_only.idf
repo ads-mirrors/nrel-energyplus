@@ -179,6 +179,12 @@
     ,
     HotWater;
 
+  Sizing:Plant,
+    Heating Coil Load Loop,          !- Plant or Condenser Loop Name
+    heating,                 !- Loop Type
+    82.,                     !- Design Loop Exit Temperature {C}
+    11;                      !- Loop Design Temperature Difference {deltaC}
+
   SetpointManager:Scheduled,
     Heating Coil Load Loop Setpoint Manager,  !- Name
     Temperature,             !- Control Variable
@@ -274,7 +280,8 @@
     CrankCaseHeaterPowerCurve, !- Crankcase Heater Capacity Function of Temperature Curve Name
     5 , !- Maximum Ambient Temperature for Crankcase Heater Operation
     ,   !- Booster Mode On Heating
-    ,   !- Booster Mode Heating Multiplier
+    ,   !- Booster Mode Heating Capacity Multiplier
+    ,   !- Booster Mode Heating COP Multiplier
     2 , !- Number of Speeds for Heating
     20000, !-  Rated Heating Capacity at Speed 1
     3.49, !-  Rated COP for Heating at Speed 1
@@ -302,7 +309,8 @@
     , !-  Heating Energy Input Ratio Function of Temperature Curve Name at Speed 5
     , !-  Heating Energy Input Ratio Function of PLR Curve Name at Speed 5
     , !-  Booster Mode On Cooling
-    , !-  Booster Mode Cooling Multiplier
+    , !-  Booster Mode Cooling Capacity Multiplier
+    , !-  Booster Mode Cooling COP Multiplier
     , !-  Number of Speeds for Cooling
     , !-  Rated Cooling Capacity at Speed 1
     , !-  Rated COP for Cooling at Speed 1
@@ -494,8 +502,8 @@
 !-
 !-   Output:Variable,*,Site Outdoor Air Drybulb Temperature,hourly; !- Zone Average [C]
   Output:Variable,*,Operating Model Output Heating,detailed;
-  Output:Variable,*,Entering Water Temperature in Heating Mode,detailed;
-  Output:Variable,*,Leaving Water Temperature in Heating Mode,detailed;
+!- Output:Variable,*,Entering Water Temperature in Heating Mode,detailed;
+!- Output:Variable,*,Leaving Water Temperature in Heating Mode,detailed;
   Output:Variable,*,EMS Defrost Flag,detailed;
   Output:Variable,*,Heat Pump Load Due To Defrost,detailed; !- HVAC Average [W]
   Output:Variable,*,Heat Pump Fractioal Defrost Time,detailed; !- HVAC Average [W]
@@ -587,15 +595,15 @@
     Environment,               !- Output:Variable or Output:Meter Index Key Name
     Site Outdoor Air Drybulb Temperature;  !- Output:Variable or Output:Meter Name
 
-  EnergyManagementSystem:Sensor,
-    EnteringTemperature,    !- Name
-    test_AWHP,               !- Output:Variable or Output:Meter Index Key Name
-    Entering Water Temperature in Heating Mode;  !- Output:Variable or Output:Meter Name
+!-   EnergyManagementSystem:Sensor,
+!-     EnteringTemperature,    !- Name
+!-     test_AWHP,               !- Output:Variable or Output:Meter Index Key Name
+!-     Entering Water Temperature in Heating Mode;  !- Output:Variable or Output:Meter Name
 
-  EnergyManagementSystem:Sensor,
-    LeavingTemperature,    !- Name
-    test_AWHP,               !- Output:Variable or Output:Meter Index Key Name
-    Leaving Water Temperature in Heating Mode;  !- Output:Variable or Output:Meter Name
+!-   EnergyManagementSystem:Sensor,
+!-     LeavingTemperature,    !- Name
+!-     test_AWHP,               !- Output:Variable or Output:Meter Index Key Name
+!-     Leaving Water Temperature in Heating Mode;  !- Output:Variable or Output:Meter Name
 
   !- simple version to test out overwriting defrost output with flag
   !- EnergyManagementSystem:Program,

@@ -656,8 +656,17 @@ namespace LowTempRadiantSystem {
             // General user input data
             thisRadSys.Name = Alphas(1);
 
-            thisRadSys.designObjectName = Alphas(2);
-            thisRadSys.DesignObjectPtr = Util::FindItemInList(thisRadSys.designObjectName, VarFlowRadDesignNames);
+            Util::setDesignObjectNameAndPointer(state,
+                                                thisRadSys.designObjectName,
+                                                thisRadSys.DesignObjectPtr,
+                                                Alphas(2),
+                                                VarFlowRadDesignNames,
+                                                CurrentModuleObject,
+                                                Alphas(1),
+                                                ErrorsFound);
+            if (ErrorsFound) {
+                break;
+            }
             VarFlowRadDesignData variableFlowDesignDataObject{state.dataLowTempRadSys->HydronicRadiantSysDesign(
                 thisRadSys.DesignObjectPtr)}; // Contains the data for variable flow hydronic systems
 
@@ -965,8 +974,17 @@ namespace LowTempRadiantSystem {
             auto &thisCFloSys = state.dataLowTempRadSys->CFloRadSys(Item);
 
             thisCFloSys.Name = Alphas(1);
-            thisCFloSys.designObjectName = Alphas(2);
-            thisCFloSys.DesignObjectPtr = Util::FindItemInList(thisCFloSys.designObjectName, CFlowRadDesignNames);
+            Util::setDesignObjectNameAndPointer(state,
+                                                thisCFloSys.designObjectName,
+                                                thisCFloSys.DesignObjectPtr,
+                                                Alphas(2),
+                                                CFlowRadDesignNames,
+                                                CurrentModuleObject,
+                                                Alphas(1),
+                                                ErrorsFound);
+            if (ErrorsFound) {
+                break;
+            }
             ConstantFlowRadDesignData ConstantFlowRadDesignDataObject{
                 state.dataLowTempRadSys->CflowRadiantSysDesign(thisCFloSys.DesignObjectPtr)}; // Contains the data for variable flow hydronic systems
 

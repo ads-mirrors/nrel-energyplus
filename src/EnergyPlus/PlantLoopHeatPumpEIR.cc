@@ -3775,8 +3775,8 @@ void HeatPumpAirToWater::processInputForEIRPLHP(EnergyPlusData &state)
                     state.dataInputProcessing->inputProcessor->getRealFieldValue(fields, schemaProps, "compressor_multiplier");
                 auto operatingModeControlMethod = fields.find("operating_mode_control_method");
                 if (operatingModeControlMethod != fields.end()) {
-                    thisAWHP.operatingModeControlMethod = static_cast<HeatPumpAirToWater::OperatingModeControlMethod>(
-                        getEnumValue(AWHPOperatingModeControlMethodUC, Util::makeUPPER(fields.at("operating_mode_control_method").get<std::string>())));
+                    thisAWHP.operatingModeControlMethod = static_cast<HeatPumpAirToWater::OperatingModeControlMethod>(getEnumValue(
+                        AWHPOperatingModeControlMethodUC, Util::makeUPPER(fields.at("operating_mode_control_method").get<std::string>())));
                 } else {
                     thisAWHP.operatingModeControlMethod = HeatPumpAirToWater::OperatingModeControlMethod::Load;
                 }
@@ -3886,8 +3886,7 @@ void HeatPumpAirToWater::processInputForEIRPLHP(EnergyPlusData &state)
                     } else {
                         thisAWHP.sourceSideDesignVolFlowRate = tmpFlowRate.get<Real64>();
                     }
-                }
-                catch (const std::exception& e) {
+                } catch (const std::exception &e) {
                     thisAWHP.sourceSideDesignVolFlowRate = DataSizing::AutoSize;
                     thisAWHP.sourceSideDesignVolFlowRateWasAutoSized = true;
                 }
@@ -3906,8 +3905,7 @@ void HeatPumpAirToWater::processInputForEIRPLHP(EnergyPlusData &state)
                     } else {
                         thisAWHP.loadSideDesignVolFlowRate = tmpFlowRate.get<Real64>();
                     }
-                }
-                catch (const std::exception& e) {
+                } catch (const std::exception &e) {
                     thisAWHP.loadSideDesignVolFlowRate = DataSizing::AutoSize;
                     thisAWHP.loadSideDesignVolFlowRateWasAutoSized = true;
                 }
@@ -3920,7 +3918,7 @@ void HeatPumpAirToWater::processInputForEIRPLHP(EnergyPlusData &state)
                 }
                 auto maxSourceTempLimit = fields.find(format("maximum_outdoor_air_temperature_in_{}_mode", modeKeyWord));
                 if (maxSourceTempLimit != fields.end()) {
-                    thisAWHP.maxSourceTempLimit = maxSourceTempLimit.value().get<Real64>(); 
+                    thisAWHP.maxSourceTempLimit = maxSourceTempLimit.value().get<Real64>();
                 } else {
                     thisAWHP.maxSourceTempLimit = 100.0; // default value
                 }
@@ -4102,8 +4100,7 @@ void HeatPumpAirToWater::processInputForEIRPLHP(EnergyPlusData &state)
                                 thisAWHP.ratedCapacity[0] = tmpRefCapacity.get<Real64>();
                                 thisAWHP.referenceCapacity = tmpRefCapacity.get<Real64>();
                             }
-                        }
-                        catch (const std::exception& e) { // no user input, defaults to autosize
+                        } catch (const std::exception &e) { // no user input, defaults to autosize
                             thisAWHP.ratedCapacity[0] = DataSizing::AutoSize;
                             thisAWHP.referenceCapacity = DataSizing::AutoSize;
                             thisAWHP.referenceCapacityWasAutoSized = true;

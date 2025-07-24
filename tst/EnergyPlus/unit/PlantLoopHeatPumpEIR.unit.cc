@@ -930,7 +930,7 @@ TEST_F(EnergyPlusFixture, processInputForEIRPLHP_AWHP)
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].ratedLeavingWaterTemperature, 22);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].loadSideDesignVolFlowRate, 0.05);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].minSourceTempLimit, 18);
-    EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].maxSourceTempLimit , 40);
+    EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].maxSourceTempLimit, 40);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].sizingFactor, 0.9);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].loadSideNodes.inlet, 1);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].loadSideNodes.outlet, 2);
@@ -968,7 +968,7 @@ TEST_F(EnergyPlusFixture, processInputForEIRPLHP_AWHP)
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].ratedLeavingWaterTemperature, 50);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].loadSideDesignVolFlowRate, 0.02);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].minSourceTempLimit, -20);
-    EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].maxSourceTempLimit , 25);
+    EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].maxSourceTempLimit, 25);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].sizingFactor, 1.0);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].loadSideNodes.inlet, 5);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].loadSideNodes.outlet, 6);
@@ -1017,7 +1017,7 @@ TEST_F(EnergyPlusFixture, processInputForEIRPLHP_AWHP)
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[2].ratedLeavingWaterTemperature, 40);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[2].loadSideDesignVolFlowRate, -99999);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[2].minSourceTempLimit, -100);
-    EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[2].maxSourceTempLimit , 100);
+    EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[2].maxSourceTempLimit, 100);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[2].sizingFactor, 1.0);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[2].compressorMultiplier, 1);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[2].controlType, HeatPumpAirToWater::CompressorControlType::VariableSpeed);
@@ -1046,7 +1046,7 @@ TEST_F(EnergyPlusFixture, processInputForEIRPLHP_AWHP)
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[3].ratedLeavingWaterTemperature, 40);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[3].loadSideDesignVolFlowRate, -99999);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[3].minSourceTempLimit, -100);
-    EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[3].maxSourceTempLimit , 100);
+    EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[3].maxSourceTempLimit, 100);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[3].sizingFactor, 1.0);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[3].maxOutdoorTemperatureDefrost, 10);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[3].defrostStrategy, DefrostControl::None);
@@ -1237,24 +1237,24 @@ TEST_F(EnergyPlusFixture, calcPowerUsage_AWHP)
     thisAWHP.calcPowerUsage(*state, availableCapacityBeforeMultiplier);
     EXPECT_EQ(thisAWHP.speedLevel, 0);
     EXPECT_EQ(thisAWHP.powerUsage, 500);
-    EXPECT_EQ(thisAWHP.cyclingRatio, 500.0/600.0);
+    EXPECT_EQ(thisAWHP.cyclingRatio, 500.0 / 600.0);
     EXPECT_EQ(thisAWHP.numUnitUsed, 1);
     thisAWHP.loadSideHeatTransfer = 1000;
-    thisAWHP.cyclingRatio = 1.0;  // reset cycling ratio back to 1
+    thisAWHP.cyclingRatio = 1.0; // reset cycling ratio back to 1
     thisAWHP.calcPowerUsage(*state, availableCapacityBeforeMultiplier);
     EXPECT_EQ(thisAWHP.speedLevel, 1);
     EXPECT_EQ(thisAWHP.powerUsage, 1000);
     EXPECT_EQ(thisAWHP.cyclingRatio, 1.0);
     EXPECT_EQ(thisAWHP.numUnitUsed, 1);
     thisAWHP.loadSideHeatTransfer = 1500;
-    thisAWHP.cyclingRatio = 1.0;  // reset cycling ratio back to 1
+    thisAWHP.cyclingRatio = 1.0; // reset cycling ratio back to 1
     thisAWHP.calcPowerUsage(*state, availableCapacityBeforeMultiplier);
     EXPECT_EQ(thisAWHP.speedLevel, 0);
     EXPECT_EQ(thisAWHP.powerUsage, 1500);
     EXPECT_EQ(thisAWHP.numUnitUsed, 2);
-    EXPECT_EQ(thisAWHP.cyclingRatio, 300.0/600.0);
+    EXPECT_EQ(thisAWHP.cyclingRatio, 300.0 / 600.0);
     thisAWHP.loadSideHeatTransfer = 2000;
-    thisAWHP.cyclingRatio = 1.0;  // reset cycling ratio back to 1
+    thisAWHP.cyclingRatio = 1.0; // reset cycling ratio back to 1
     thisAWHP.calcPowerUsage(*state, availableCapacityBeforeMultiplier);
     EXPECT_EQ(thisAWHP.speedLevel, 1);
     EXPECT_EQ(thisAWHP.powerUsage, 2000);
@@ -1290,7 +1290,7 @@ TEST_F(EnergyPlusFixture, crankcaseHeater_AWHP)
 TEST_F(EnergyPlusFixture, calcOpMode_AWHP)
 {
     std::string const idf_objects = delimited_string({
-      "Curve:Biquadratic,"
+        "Curve:Biquadratic,"
         "CapCurveFuncTemp,        !- Name",
         "1.0,                     !- Coefficient1 Constant",
         "0.0,                     !- Coefficient2 x",

@@ -523,6 +523,7 @@ namespace WaterThermalTanks {
         Real64 UseMassFlowRate;                                    // Mass flow rate on the use side (kg/s)
         Real64 UseEffectiveness;                                   // Heat transfer effectiveness on use side ()
         Real64 PlantUseMassFlowRateMax;                            // Plant demand-side max flow request on use side (kg/s)
+        Real64 PlantUseVolFlowRateMax;                             // Used only in reporting {m3/s)
         Real64 SavedUseOutletTemp;                                 // Use side outlet temp saved for demand-side flow control (C)
         Real64 UseDesignVolFlowRate;                               // Use side plant volume flow rate (input data, autosizable) m3/s
         bool UseDesignVolFlowRateWasAutoSized;                     // true if use flow rate was autosize on input

@@ -484,6 +484,19 @@ namespace OutputReportPredefined {
         s->pdchSWHRecEff = newPreDefColumn(state, s->pdstSWH, "Recovery Efficiency [W/W]");
         s->pdchSWHEnFac = newPreDefColumn(state, s->pdstSWH, "Energy Factor");
 
+        s->pdchSWHFuelType = newPreDefColumn(state, s->pdstSWH, "Fuel Type");
+        s->pdchSWHSchHt1StptName = newPreDefColumn(state, s->pdstSWH, "Set Point Schedule Name for Heater 1");
+        s->pdchSWHSchHt1Stpt11amWedVal = newPreDefColumn(state, s->pdstSWH, "Set Point at 11am First Wednesday for Heater 1 [C]");
+        s->pdchSWHSchHt1Stpt11amWedCnt = newPreDefColumn(state, s->pdstSWH, "Days with Same 11am Value for Heater 1");
+        s->pdchSWHSchHt1StptMonthUsed = newPreDefColumn(state, s->pdstSWH, "Month Assumed for Heater 1");
+        s->pdchSWHSchHt2StptName = newPreDefColumn(state, s->pdstSWH, "Set Point Schedule Name for Heater 2");
+        s->pdchSWHSchHt2Stpt11amWedVal = newPreDefColumn(state, s->pdstSWH, "Set Point at 11am First Wednesday for Heater 2 [C]");
+        s->pdchSWHSchHt2Stpt11amWedCnt = newPreDefColumn(state, s->pdstSWH, "Days with Same 11am Value for Heater 2");
+        s->pdchSWHSchHt2StptMonthUsed = newPreDefColumn(state, s->pdstSWH, "Month Assumed for Heater 2");
+        s->pdchSWHPkUseFlwRt = newPreDefColumn(state, s->pdstSWH, "Peak Use Water Flow Rate [m3/s]");
+        s->pdchSWHUseSch = newPreDefColumn(state, s->pdstSWH, "Use Flow Rate Fraction Schedule Name");
+        s->pdchSWHAmbZoneNm = newPreDefColumn(state, s->pdstSWH, "Ambient Temperature Zone Name");
+
         // Std 229 Chillers in Equipment Summary
         s->pdstChiller = newPreDefSubTable(state, s->pdrEquip, "Chillers");
 

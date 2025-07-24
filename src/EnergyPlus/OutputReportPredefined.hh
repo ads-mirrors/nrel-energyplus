@@ -384,6 +384,18 @@ struct OutputReportPredefinedData : BaseGlobalStruct
     int pdchSWHThEff = 0;
     int pdchSWHRecEff = 0;
     int pdchSWHEnFac = 0;
+    int pdchSWHFuelType = 0;
+    int pdchSWHSchHt1StptName = 0;
+    int pdchSWHSchHt1Stpt11amWedVal = 0;
+    int pdchSWHSchHt1Stpt11amWedCnt = 0;
+    int pdchSWHSchHt1StptMonthUsed = 0;
+    int pdchSWHSchHt2StptName = 0;
+    int pdchSWHSchHt2Stpt11amWedVal = 0;
+    int pdchSWHSchHt2Stpt11amWedCnt = 0;
+    int pdchSWHSchHt2StptMonthUsed = 0;
+    int pdchSWHPkUseFlwRt = 0;
+    int pdchSWHUseSch = 0;
+    int pdchSWHAmbZoneNm = 0;
 
     // Std 229 Chiller Table in Equipment Summary
     int pdstChiller = 0;

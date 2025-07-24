@@ -10720,6 +10720,7 @@ void WaterThermalTankData::SizeSupplySidePlantConnections(EnergyPlusData &state,
                         this->PlantUseMassFlowRateMax = this->UseDesignVolFlowRate * rho;
                     } else {
                         this->PlantUseMassFlowRateMax = tmpUseDesignVolFlowRate * rho;
+                        this->PlantUseVolFlowRateMax = tmpUseDesignVolFlowRate;
                     }
                 }
             } else {
@@ -11482,6 +11483,7 @@ void WaterThermalTankData::SizeDemandSidePlantConnections(EnergyPlusData &state)
                         this->PlantUseMassFlowRateMax = this->UseDesignVolFlowRate * rho;
                     } else {
                         this->PlantUseMassFlowRateMax = tmpUseDesignVolFlowRate * rho;
+                        this->PlantUseVolFlowRateMax = tmpUseDesignVolFlowRate;
                     }
                 } // Demand side
             } else {
@@ -12443,6 +12445,23 @@ void WaterThermalTankData::CalcStandardRatings(EnergyPlusData &state)
         OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchSWHThEff, equipName, this->Efficiency);
         OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchSWHRecEff, equipName, RecoveryEfficiency);
         OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchSWHEnFac, equipName, EnergyFactor);
+
+        OutputReportPredefined::PreDefTableEntry(
+            state, state.dataOutRptPredefined->pdchSWHFuelType, equipName, Constant::eResourceNames[static_cast<int>(this->FuelType)]);
+        // if use nodes are used then the flow rate field and the schedule field are not used
+        if (this->UseInletNode == 0) {
+            OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchSWHPkUseFlwRt, equipName, this->UseDesignVolFlowRate);
+            if (this->flowRateSched != nullptr) {
+                OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchSWHUseSch, equipName, this->flowRateSched->Name);
+            } else {
+                OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchSWHUseSch, equipName, "N/A");
+            }
+        } else {
+            OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchSWHPkUseFlwRt, equipName, this->PlantUseVolFlowRateMax);
+            OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchSWHUseSch, equipName, "N/A");
+        }
+        OutputReportPredefined::PreDefTableEntry(
+            state, state.dataOutRptPredefined->pdchSWHAmbZoneNm, equipName, state.dataHeatBal->Zone(this->AmbientTempZone).Name);
     } else {
         equipName = state.dataWaterThermalTanks->HPWaterHeater(this->HeatPumpNum).Name;
         OutputReportPredefined::PreDefTableEntry(
@@ -12459,6 +12478,27 @@ void WaterThermalTankData::CalcStandardRatings(EnergyPlusData &state)
         OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchSWHRecEff, equipName, RecoveryEfficiency);
         OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchSWHEnFac, equipName, EnergyFactor);
     }
+    if (this->setptTempSched != nullptr) {
+        OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchSWHSchHt1StptName, equipName, this->setptTempSched->Name);
+        Real64 setPointAt11;
+        int numDays;
+        std::string monthAssumed;
+        std::tie(setPointAt11, numDays, monthAssumed) = this->setptTempSched->getValAndCountOnDay(state, false, Sched::DayType::Wednesday, 11);
+        OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchSWHSchHt1Stpt11amWedVal, equipName, setPointAt11);
+        OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchSWHSchHt1Stpt11amWedCnt, equipName, numDays);
+        OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchSWHSchHt1StptMonthUsed, equipName, monthAssumed);
+    }
+    if (this->setptTemp2Sched != nullptr) {
+        OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchSWHSchHt2StptName, equipName, this->setptTemp2Sched->Name);
+        Real64 setPointAt11;
+        int numDays;
+        std::string monthAssumed;
+        std::tie(setPointAt11, numDays, monthAssumed) = this->setptTemp2Sched->getValAndCountOnDay(state, false, Sched::DayType::Wednesday, 11);
+        OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchSWHSchHt2Stpt11amWedVal, equipName, setPointAt11);
+        OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchSWHSchHt2Stpt11amWedCnt, equipName, numDays);
+        OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchSWHSchHt2StptMonthUsed, equipName, monthAssumed);
+    }
+
 
     // Write test results
     if (this->HeatPumpNum == 0) {

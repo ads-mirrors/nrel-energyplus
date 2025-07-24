@@ -1158,8 +1158,9 @@ void HeatPumpAirToWater::reportEquipmentSummary(EnergyPlusData &state)
             OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchAWHPType, objectName, typeNameCompressor);
             OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchAWHPRefCap, objectName, this->referenceCapacity);
             OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchAWHPRefCOP, objectName, this->referenceCOP);
-            OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchAWHPSEER, objectName, "fixme");
-            OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchAWHPHSPF, objectName, "fixme");
+            // implement later
+            // OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchAWHPSEER, objectName, "fixme");
+            // OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchAWHPHSPF, objectName, "fixme");
             OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchAWHPMinPLR, objectName, this->minimumPLR);
             OutputReportPredefined::PreDefTableEntry(
                 state, state.dataOutRptPredefined->pdchAWHPDesSizeRefAirTemp, objectName, this->sourceSideDesignInletTemp);
@@ -1688,6 +1689,7 @@ void EIRPlantLoopHeatPump::sizeSrcSideASHP(EnergyPlusData &state)
         }
     }
 
+    this->reportEquipmentSummary(state);
     if (errorsFound) {
         ShowFatalError(state, "Preceding sizing errors cause program termination"); // LCOV_EXCL_LINE
     }

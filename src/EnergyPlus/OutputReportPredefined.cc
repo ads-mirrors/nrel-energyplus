@@ -530,8 +530,8 @@ namespace OutputReportPredefined {
         s->pdchAWHPType = newPreDefColumn(state, s->pdstAWHP, "Type");
         s->pdchAWHPRefCap = newPreDefColumn(state, s->pdstAWHP, "Reference Capacity[W]");
         s->pdchAWHPRefCOP = newPreDefColumn(state, s->pdstAWHP, "Reference COP");
-        s->pdchAWHPSEER = newPreDefColumn(state, s->pdstAWHP, "SEER");
-        s->pdchAWHPHSPF = newPreDefColumn(state, s->pdstAWHP, "HSPF");
+        // s->pdchAWHPSEER = newPreDefColumn(state, s->pdstAWHP, "SEER");
+        // s->pdchAWHPHSPF = newPreDefColumn(state, s->pdstAWHP, "HSPF");
         s->pdchAWHPMinPLR = newPreDefColumn(state, s->pdstAWHP, "Minimum Part Load Ratio");
         s->pdchAWHPDesSizeRefAirTemp = newPreDefColumn(state, s->pdstAWHP, "Design Size Reference Air Temperature [C]");
         s->pdchAWHPDesEnterWaterTemp = newPreDefColumn(state, s->pdstAWHP, "Entering Water Temperature [C]");

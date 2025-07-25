@@ -2569,6 +2569,7 @@ bool getWaterHeaterMixedInputs(EnergyPlusData &state)
         Tank.OnCycLossFracToZone = state.dataIPShortCut->rNumericArgs(16);
         Real64 rho = Tank.water->getDensity(state, Constant::InitConvTemp, routineName);
 
+        Tank.VolFlowRateMax = state.dataIPShortCut->rNumericArgs(17);
         Tank.MassFlowRateMax = state.dataIPShortCut->rNumericArgs(17) * rho;
 
         if ((state.dataIPShortCut->cAlphaArgs(14).empty()) && (state.dataIPShortCut->cAlphaArgs(15).empty())) {
@@ -10720,7 +10721,7 @@ void WaterThermalTankData::SizeSupplySidePlantConnections(EnergyPlusData &state,
                         this->PlantUseMassFlowRateMax = this->UseDesignVolFlowRate * rho;
                     } else {
                         this->PlantUseMassFlowRateMax = tmpUseDesignVolFlowRate * rho;
-                        this->PlantUseVolFlowRateMax = tmpUseDesignVolFlowRate;
+                        this->VolFlowRateMax = tmpUseDesignVolFlowRate;
                     }
                 }
             } else {
@@ -11483,7 +11484,7 @@ void WaterThermalTankData::SizeDemandSidePlantConnections(EnergyPlusData &state)
                         this->PlantUseMassFlowRateMax = this->UseDesignVolFlowRate * rho;
                     } else {
                         this->PlantUseMassFlowRateMax = tmpUseDesignVolFlowRate * rho;
-                        this->PlantUseVolFlowRateMax = tmpUseDesignVolFlowRate;
+                        this->VolFlowRateMax = tmpUseDesignVolFlowRate;
                     }
                 } // Demand side
             } else {
@@ -12445,23 +12446,6 @@ void WaterThermalTankData::CalcStandardRatings(EnergyPlusData &state)
         OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchSWHThEff, equipName, this->Efficiency);
         OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchSWHRecEff, equipName, RecoveryEfficiency);
         OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchSWHEnFac, equipName, EnergyFactor);
-
-        OutputReportPredefined::PreDefTableEntry(
-            state, state.dataOutRptPredefined->pdchSWHFuelType, equipName, Constant::eResourceNames[static_cast<int>(this->FuelType)]);
-        // if use nodes are used then the flow rate field and the schedule field are not used
-        if (this->UseInletNode == 0) {
-            OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchSWHPkUseFlwRt, equipName, this->UseDesignVolFlowRate);
-            if (this->flowRateSched != nullptr) {
-                OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchSWHUseSch, equipName, this->flowRateSched->Name);
-            } else {
-                OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchSWHUseSch, equipName, "N/A");
-            }
-        } else {
-            OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchSWHPkUseFlwRt, equipName, this->PlantUseVolFlowRateMax);
-            OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchSWHUseSch, equipName, "N/A");
-        }
-        OutputReportPredefined::PreDefTableEntry(
-            state, state.dataOutRptPredefined->pdchSWHAmbZoneNm, equipName, state.dataHeatBal->Zone(this->AmbientTempZone).Name);
     } else {
         equipName = state.dataWaterThermalTanks->HPWaterHeater(this->HeatPumpNum).Name;
         OutputReportPredefined::PreDefTableEntry(
@@ -12477,6 +12461,21 @@ void WaterThermalTankData::CalcStandardRatings(EnergyPlusData &state)
         OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchSWHThEff, equipName, this->Efficiency);
         OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchSWHRecEff, equipName, RecoveryEfficiency);
         OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchSWHEnFac, equipName, EnergyFactor);
+    }
+
+    OutputReportPredefined::PreDefTableEntry(
+        state, state.dataOutRptPredefined->pdchSWHFuelType, equipName, Constant::eResourceNames[static_cast<int>(this->FuelType)]);
+    // if use nodes are used then the flow rate field and the schedule field are not used
+    if (this->UseInletNode == 0) {
+        OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchSWHPkUseFlwRt, equipName, this->VolFlowRateMax);
+    } else {
+        //JG: NOT SURE WHAT I SHOULD BE USING HERE
+        OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchSWHPkUseFlwRt, equipName, this->VolFlowRateMax);
+    }
+    if (this->flowRateSched != nullptr) {
+        OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchSWHUseSch, equipName, this->flowRateSched->Name);
+    } else {
+        OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchSWHUseSch, equipName, "N/A");
     }
     if (this->setptTempSched != nullptr) {
         OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchSWHSchHt1StptName, equipName, this->setptTempSched->Name);
@@ -12497,6 +12496,10 @@ void WaterThermalTankData::CalcStandardRatings(EnergyPlusData &state)
         OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchSWHSchHt2Stpt11amWedVal, equipName, setPointAt11);
         OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchSWHSchHt2Stpt11amWedCnt, equipName, numDays);
         OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchSWHSchHt2StptMonthUsed, equipName, monthAssumed);
+    }
+    if (this->AmbientTempZone > 0) {
+        OutputReportPredefined::PreDefTableEntry(
+            state, state.dataOutRptPredefined->pdchSWHAmbZoneNm, equipName, state.dataHeatBal->Zone(this->AmbientTempZone).Name);
     }
 
 

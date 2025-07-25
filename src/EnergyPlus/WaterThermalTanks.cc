@@ -4106,7 +4106,7 @@ bool GetWaterThermalTankInput(EnergyPlusData &state)
             if (state.dataWaterThermalTanks->numWaterHeaterStratified > 0) {
                 print(state.files.eio, Format_722);
             }
-            if (state.dataWaterThermalTanks->numChilledWaterMixed > 0) {
+            if ((state.dataWaterThermalTanks->numChilledWaterMixed > 0) || (state.dataWaterThermalTanks->numChilledWaterStratified > 0)) {
                 print(state.files.eio, Format_725);
             }
             if (state.dataWaterThermalTanks->numChilledWaterStratified > 0) {

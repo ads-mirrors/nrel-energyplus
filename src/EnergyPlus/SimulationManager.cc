@@ -1838,7 +1838,7 @@ namespace SimulationManager {
             "Threads, Number of Threads Used (Interior Radiant Exchange), Number Nominal Surfaces, Number "
             "Parallel Sims");
         print(state.files.eio, "{}\n", ThreadingHeader);
-        static constexpr std::string_view ThreadReport("Program Control:Threads/Parallel Sims, {},{}, {}, {}, {}, {}, {}, {}\n");
+        static constexpr std::string_view ThreadReport("Program Control Information:Threads/Parallel Sims, {},{}, {}, {}, {}, {}, {}, {}\n");
         if (state.dataSysVars->Threading) {
             if (state.dataSysVars->iEnvSetThreads == 0) {
                 cEnvSetThreads = "Not Set";
@@ -2192,6 +2192,7 @@ namespace SimulationManager {
         static constexpr std::string_view Format_723 =
             "! <Zone Equipment Component>,<Component Count>,<Component Type>,<Component Name>,<Zone Name>,<Heating "
             "Priority>,<Cooling Priority>";
+        bool nodeConnectionErrorFlag = false;
 
         // Report outside air node names on the Branch-Node Details file
         print(state.files.bnd, "{}\n", "! ===============================================================");
@@ -2256,12 +2257,13 @@ namespace SimulationManager {
                                      "been retrieved.");
                     state.dataSimulationManager->WarningOut = false;
                 }
-                ShowWarningError(
+                ShowSevereError(
                     state,
                     format("Potential Node Connection Error for object {}, name={}", CType, state.dataBranchNodeConnections->CompSets(Count).CName));
                 ShowContinueError(state, "  Node Types are still UNDEFINED -- See Branch/Node Details file for further information");
                 ShowContinueError(state, format("  Inlet Node : {}", state.dataBranchNodeConnections->CompSets(Count).InletNodeName));
                 ShowContinueError(state, format("  Outlet Node: {}", state.dataBranchNodeConnections->CompSets(Count).OutletNodeName));
+                nodeConnectionErrorFlag = true;
                 ++state.dataBranchNodeConnections->NumNodeConnectionErrors;
             }
         }
@@ -2723,6 +2725,10 @@ namespace SimulationManager {
         }
 
         state.dataErrTracking->AskForConnectionsReport = false;
+
+        if (nodeConnectionErrorFlag) {
+            ShowFatalError(state, "Please see severe error(s) and correct either the branch nodes or the component nodes so that they match.");
+        }
     }
 
     void PostIPProcessing(EnergyPlusData &state)

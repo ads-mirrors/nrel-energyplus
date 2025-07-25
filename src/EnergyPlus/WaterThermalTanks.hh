@@ -749,12 +749,6 @@ namespace WaterThermalTanks {
 
         bool SourceHeatNeed(EnergyPlusData &state, Real64 OutletTemp, Real64 DeadBandTemp, Real64 SetPointTemp_loc);
 
-        void SourceHeatNeedTwoSetpoint(Real64 const OutletTempTop,
-                                       Real64 const DeadBandTempTop,
-                                       Real64 const OutletTempBottom,
-                                       Real64 const DeadBandTempBottom,
-                                       bool &NeedsHeatOrCool);
-
         void SizeDemandSidePlantConnections(EnergyPlusData &state);
 
         void SizeTankForSupplySide(EnergyPlusData &state);

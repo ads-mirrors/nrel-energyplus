@@ -475,6 +475,7 @@ namespace WaterThermalTanks {
         std::string Type;                                   // Type of water heater (MIXED or STRATIFIED)
         DataPlant::PlantEquipmentType WaterThermalTankType; // integer parameter for water heater(if part of an HPWH,then=HPWH)
         bool IsChilledWaterTank;                            // logical flag, true if for chilled water, false if for hot water
+        bool IsPassiveWaterTank;                            // logical flag, true if for passive water tank (no internal heaters), false if for active water tank
         std::string EndUseSubcategoryName;                  // User-defined end-use subcategory name
         bool Init;                                          // Flag for initialization:  TRUE means do the init
         bool StandAlone;                                    // Flag for operation with no plant connections (no source or use)
@@ -686,7 +687,7 @@ namespace WaterThermalTanks {
 
         // Default Constructor
         WaterThermalTankData()
-            : WaterThermalTankType(DataPlant::PlantEquipmentType::Invalid), IsChilledWaterTank(false), Init(true), StandAlone(false), Volume(0.0),
+            : WaterThermalTankType(DataPlant::PlantEquipmentType::Invalid), IsChilledWaterTank(false), IsPassiveWaterTank(false), Init(true), StandAlone(false), Volume(0.0),
               VolumeWasAutoSized(false), Mass(0.0), TimeElapsed(0.0), AmbientTempIndicator(WTTAmbientTemp::OutsideAir), AmbientTempZone(0),
               AmbientTempOutsideAirNode(0), AmbientTemp(0.0), AmbientZoneGain(0.0), LossCoeff(0.0), OffCycLossCoeff(0.0), OffCycLossFracToZone(0.0),
               OnCycLossCoeff(0.0), OnCycLossFracToZone(0.0), ControlType(HeaterControlMode::Cycle),

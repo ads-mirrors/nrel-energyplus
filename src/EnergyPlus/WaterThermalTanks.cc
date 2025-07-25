@@ -305,7 +305,8 @@ void WaterThermalTankData::simulate(
             (this->WaterThermalTankType == DataPlant::PlantEquipmentType::ChilledWaterTankMixed)) {
             this->CalcWaterThermalTankMixed(state);
         } else if ((this->WaterThermalTankType == DataPlant::PlantEquipmentType::WtrHeaterStratified) ||
-                   (this->WaterThermalTankType == DataPlant::PlantEquipmentType::ChilledWaterTankStratified)) {
+                   (this->WaterThermalTankType == DataPlant::PlantEquipmentType::ChilledWaterTankStratified) ||
+                   (this->WaterThermalTankType == DataPlant::PlantEquipmentType::HotWaterTankStratified)) {
             this->CalcWaterThermalTankStratified(state);
         }
     } else if (this->DesuperheaterNum > 0) {
@@ -3679,8 +3680,15 @@ bool getWaterTankStratifiedInput(EnergyPlusData &state, std::string objectType)
             ErrorsFound = true;
         }
 
-        Tank.IsChilledWaterTank = true;
-        Tank.EndUseSubcategoryName = "Chilled Water Storage";
+        if (objectType == "ThermalStorage:ChilledWater:Stratified") {
+            Tank.IsChilledWaterTank = true;
+            Tank.IsPassiveWaterTank = true;
+            Tank.EndUseSubcategoryName = "Chilled Water Storage";
+        } else if (objectType == "ThermalStorage:HotWater:Stratified") {
+            Tank.IsChilledWaterTank = false;
+            Tank.IsPassiveWaterTank = true;
+            Tank.EndUseSubcategoryName = "Hot Water Storage";
+        }
 
         Tank.Volume = state.dataInputProcessing->inputProcessor->getRealFieldValue(fields, schemaProps, "tank_volume");
         if (Tank.Volume == DataSizing::AutoSize) {
@@ -7823,7 +7831,7 @@ void WaterThermalTankData::CalcWaterThermalTankStratified(EnergyPlusData &state)
         }
 
         // Heater control logic
-        if (this->IsChilledWaterTank) {
+        if (this->IsPassiveWaterTank) {
             // Chilled Water Tank, no heating
             Qheater1 = 0.0;
             Qheater2 = 0.0;
@@ -10450,7 +10458,7 @@ bool WaterThermalTankData::SourceHeatNeed([[maybe_unused]] EnergyPlusData &state
     bool NeedsHeatOrCool = false;
 
     if (!this->IsChilledWaterTank) {
-        if (this->SourceSideControlMode == SourceSideControl::IndirectHeatPrimarySetpoint) {
+        if (this->IsPassiveWaterTank || this->SourceSideControlMode == SourceSideControl::IndirectHeatPrimarySetpoint) {
             if (OutletTemp < DeadBandTemp) {
                 NeedsHeatOrCool = true;
             } else if ((OutletTemp >= DeadBandTemp) && (OutletTemp < SetPointTemp_loc)) {

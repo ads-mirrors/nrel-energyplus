@@ -132,36 +132,20 @@
   Schedule:Compact,
     Heating Coil Load Profile Load Schedule,  !- Name
     Any Number,              !- Schedule Type Limits Name
-    THROUGH: 03/31,          !- Field 1
+    THROUGH: 12/31,          !- Field 1
     FOR: AllDays,            !- Field 2
     UNTIL:  4:00,62000,      !- Field 3
     UNTIL:  8:00,25000,      !- Field 5
     UNTIL:  9:00,15000,      !- Field 7
     UNTIL: 17:00,9000,       !- Field 9
-    UNTIL: 24:00,36000,      !- Field 11
-    THROUGH: 09/30,          !- Field 13
-    FOR: AllDays,            !- Field 14
-    UNTIL: 24:00,0.0,        !- Field 15
-    THROUGH: 12/31,          !- Field 17
-    FOR: AllDays,            !- Field 18
-    UNTIL:  4:00,62000,      !- Field 19
-    UNTIL:  8:00,25000,      !- Field 21
-    UNTIL:  9:00,15000,      !- Field 23
-    UNTIL: 17:00,9000,       !- Field 25
-    UNTIL: 24:00,36000;      !- Field 27
+    UNTIL: 24:00,36000;      !- Field 11
 
   Schedule:Compact,
     Heating Coil Load Profile Flow Frac Schedule,  !- Name
     Any Number,              !- Schedule Type Limits Name
-    THROUGH: 03/31,          !- Field 1
+    THROUGH: 12/31,          !- Field 1
     FOR: AllDays,            !- Field 2
-    UNTIL: 24:00,1.0,        !- Field 3
-    THROUGH: 09/30,          !- Field 5
-    FOR: AllDays,            !- Field 6
-    UNTIL: 24:00,0.0,        !- Field 7
-    THROUGH: 12/31,          !- Field 9
-    FOR: AllDays,            !- Field 10
-    UNTIL: 24:00,1.0;        !- Field 11
+    UNTIL: 24:00,1.0;        !- Field 3
 
   ! Simulate a summer time, daytime hours load, but the pump is always running in that season
 
@@ -276,7 +260,7 @@
     Hot Water Storage Tank,                   !- Component 2 Name
     Tank Use Inlet Node,                      !- Component 2 Inlet Node Name
     Tank Use Outlet Node;                     !- Component 2 Outlet Node Name
-    
+
   Pump:VariableSpeed,
     Heating Coil Load Loop Pump,  !- Name
     Heating Coil Load Loop Supply Inlet Node,  !- Inlet Node Name
@@ -296,7 +280,7 @@
   BranchList,
     Hot Water Loop Supply Branches,  !- Name
     Hot Water Loop Supply Branch;  !- Branch 1 Name
-    
+
   Branch,
     Hot Water Loop Supply Branch,    !- Name
     ,                        !- Pressure Drop Curve Name
@@ -333,7 +317,7 @@
     Outdoor Air Inlet Node,  !- Source Side Inlet Node Name
     Outdoor Air Outlet Node, !- Source Side Outlet Node Name
     ,                        !- Heat Recovery Inlet Node Name
-    ,                        !- Heat Recovery Outlet Node Name      
+    ,                        !- Heat Recovery Outlet Node Name
     ,                        !- Companion Heat Pump Name
     0.005,                   !- Load Side Reference Flow Rate {m3/s}
     2,                       !- Source Side Reference Flow Rate {m3/s}
@@ -388,7 +372,7 @@
     0.0,                     !- Coefficient3 x**2
     0.0,                     !- Minimum Value of x
     1.0;                     !- Maximum Value of x
-    
+
   BranchList,
     Hot Water Loop Demand Branches,  !- Name
     Hot Water Loop Demand Branch;  !- Branch 1 Name
@@ -424,7 +408,7 @@
     2.5,                     !- Deadband Temperature Difference {deltaC}
     8.0,                     !- Top Temperature Sensor Height {m}
     1.0,                     !- Bottom Temperature Sensor Height {m}
-    1.0,                     !- Maximum Temperature Limit {C}
+    82.0,                     !- Maximum Temperature Limit {C}
     0.0,                     !- Nominal Heating Capacity {W}
     Outdoors,                !- Ambient Temperature Indicator
     ,                        !- Ambient Temperature Schedule Name
@@ -467,7 +451,7 @@
     Temperature,             !- Schedule Type Limits Name
     Through: 12/31,          !- Field 1
     For: AllDays,            !- Field 2
-    Until: 24:00,10;        !- Field 3
+    Until: 24:00,15;        !- Field 3
 
   SetpointManager:Scheduled,
     Hot Water Loop Setpoint Manager,  !- Name
@@ -486,16 +470,8 @@
     TES Charge Schedule,     !- Name
     on/off,                  !- Schedule Type Limits Name
     Through: 12/31,          !- Field 1
-    For: Weekdays SummerDesignDay, !- Field 2
-    Until: 10:00,1.0,        !- Field 3
-    Until: 17:00,0.0,        !- Field 5
-    Until: 24:00,1.0,        !- Field 7
-    For: Saturday WinterDesignDay, !- Field 9
-    Until: 12:00,1.0,        !- Field 10
-    Until: 18:00,0.0,        !- Field 12
-    Until: 24:00,1.0,        !- Field 14
-    For: Sunday Holidays AllOtherDays, !- Field 16
-    Until: 24:00,1.0;        !- Field 17
+    FOR: AllDays,            !- Field 2
+    Until: 24:00,1.0;        !- Field 7
 
   LoadProfile:Plant,
     Heating Coil Load Profile,  !- Name
@@ -536,4 +512,21 @@
   Output:Variable,*,Hot Water Thermal Storage Final Temperature Node 4,hourly; !- HVAC Average [C]
   Output:Variable,*,Hot Water Thermal Storage Final Temperature Node 5,hourly; !- HVAC Average [C]
   Output:Variable,*,Hot Water Thermal Storage Final Temperature Node 6,hourly; !- HVAC Average [C]
+  Output:Variable,*,Plant Supply Side Heating Demand Rate,hourly; !- HVAC Average [W]
+  Output:Variable,*,Heat Pump Load Side Heat Transfer Rate,hourly; !- HVAC Average [W]
+
+  Output:Variable,*,Chilled Water Thermal Storage Tank Temperature,hourly; !- HVAC Average [C]
+  Output:Variable,*,Chilled Water Thermal Storage Final Tank Temperature,hourly; !- HVAC Average [C]
+  Output:Variable,*,Chilled Water Thermal Storage Tank Heat Gain Rate,hourly; !- HVAC Average [W]
+  Output:Variable,*,Chilled Water Thermal Storage Tank Heat Gain Energy,hourly; !- HVAC Sum [J]
+  Output:Variable,*,Chilled Water Thermal Storage Use Side Mass Flow Rate,hourly; !- HVAC Average [kg/s]
+  Output:Variable,*,Chilled Water Thermal Storage Use Side Inlet Temperature,hourly; !- HVAC Average [C]
+  Output:Variable,*,Chilled Water Thermal Storage Use Side Outlet Temperature,hourly; !- HVAC Average [C]
+  Output:Variable,*,Chilled Water Thermal Storage Use Side Heat Transfer Rate,hourly; !- HVAC Average [W]
+  Output:Variable,*,Chilled Water Thermal Storage Use Side Heat Transfer Energy,hourly; !- HVAC Sum [J]
+  Output:Variable,*,Chilled Water Thermal Storage Source Side Mass Flow Rate,hourly; !- HVAC Average [kg/s]
+  Output:Variable,*,Chilled Water Thermal Storage Source Side Inlet Temperature,hourly; !- HVAC Average [C]
+  Output:Variable,*,Chilled Water Thermal Storage Source Side Outlet Temperature,hourly; !- HVAC Average [C]
+  Output:Variable,*,Chilled Water Thermal Storage Source Side Heat Transfer Rate,hourly; !- HVAC Average [W]
+  Output:Variable,*,Chilled Water Thermal Storage Source Side Heat Transfer Energy,hourly; !- HVAC Sum [J]
 

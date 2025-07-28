@@ -58,7 +58,7 @@ struct EnergyPlusData;
 namespace GroundHeatExchangers {
 
     static constexpr Real64 hrsPerMonth = 730.0; // Number of hours in month
-    static constexpr Real64 maxTSinHr = 60.0;    // Max number of time step in a hour
+    static constexpr Real64 maxTSinHr = 60.0;    // Max number of time step in an hour
     static constexpr std::array<std::string_view, 2> GFuncCalcMethodsStrs = {"UHFCALC", "UBHWTCALC"};
 
     enum class GFuncCalcMethod

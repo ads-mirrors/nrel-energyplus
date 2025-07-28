@@ -54,7 +54,7 @@ namespace EnergyPlus::GroundHeatExchangers {
 GLHEVertArray::GLHEVertArray(EnergyPlusData &state, std::string const &objName, nlohmann::json const &j)
 {
     // Check for duplicates
-    for (auto &existingObj : state.dataGroundHeatExchanger->vertArraysVector) {
+    for (const auto &existingObj : state.dataGroundHeatExchanger->vertArraysVector) {
         if (objName == existingObj->name) {
             ShowFatalError(state, format("Invalid input for {} object: Duplicate name found: {}", this->moduleName, existingObj->name));
         }
@@ -70,18 +70,15 @@ GLHEVertArray::GLHEVertArray(EnergyPlusData &state, std::string const &objName, 
 std::shared_ptr<GLHEVertArray> GLHEVertArray::GetVertArray(EnergyPlusData &state, std::string const &objectName)
 {
     // Check if this instance of this model has already been retrieved
-    auto thisObj = std::find_if(state.dataGroundHeatExchanger->vertArraysVector.begin(),
-                                state.dataGroundHeatExchanger->vertArraysVector.end(),
-                                [&objectName](const std::shared_ptr<GLHEVertArray> &myObj) { return myObj->name == objectName; });
+    const auto thisObj = std::find_if(state.dataGroundHeatExchanger->vertArraysVector.begin(),
+                                      state.dataGroundHeatExchanger->vertArraysVector.end(),
+                                      [&objectName](const std::shared_ptr<GLHEVertArray> &myObj) { return myObj->name == objectName; });
     if (thisObj != state.dataGroundHeatExchanger->vertArraysVector.end()) {
         return *thisObj;
     }
 
     ShowSevereError(state, fmt::format("Object=GroundHeatExchanger:Vertical:Array, Name={} - not found.", objectName));
     ShowFatalError(state, "Preceding errors cause program termination");
-
-    // needed to silence compiler, but should never get here
-    return nullptr;
 }
 
 } // namespace EnergyPlus::GroundHeatExchangers

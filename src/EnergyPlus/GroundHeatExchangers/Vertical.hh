@@ -58,53 +58,45 @@ namespace GroundHeatExchangers {
     struct GLHEVert : GLHEBase // LCOV_EXCL_LINE
     {
 
-        // Destructor
-        ~GLHEVert() override = default;
-
-        // Members
         std::string const moduleName = "GroundHeatExchanger:System";
-        Real64 bhDiameter;  // Diameter of borehole {m}
-        Real64 bhRadius;    // Radius of borehole {m}
-        Real64 bhLength;    // Length of borehole {m}
-        Real64 bhUTubeDist; // Distance between u-tube legs {m}
-        GFuncCalcMethod gFuncCalcMethod;
+        Real64 bhDiameter = 0.0;  // Diameter of borehole {m}
+        Real64 bhRadius = 0.0;    // Radius of borehole {m}
+        Real64 bhLength = 0.0;    // Length of borehole {m}
+        Real64 bhUTubeDist = 0.0; // Distance between u-tube legs {m}
+        GFuncCalcMethod gFuncCalcMethod = GFuncCalcMethod::Invalid;
 
         // Parameters for the multipole method
-        Real64 theta_1;
-        Real64 theta_2;
-        Real64 theta_3;
-        Real64 sigma;
+        Real64 theta_1 = 0.0;
+        Real64 theta_2 = 0.0;
+        Real64 theta_3 = 0.0;
+        Real64 sigma = 0.0;
 
         nlohmann::json myCacheData;
 
         std::vector<Real64> GFNC_shortTimestep;
         std::vector<Real64> LNTTS_shortTimestep;
 
-        GLHEVert()
-            : bhDiameter(0.0), bhRadius(0.0), bhLength(0.0), bhUTubeDist(0.0), gFuncCalcMethod(GFuncCalcMethod::Invalid), theta_1(0.0), theta_2(0.0),
-              theta_3(0.0), sigma(0.0)
-        {
-        }
-
+        GLHEVert() = default;
         GLHEVert(EnergyPlusData &state, std::string const &objName, nlohmann::json const &j);
+        ~GLHEVert() override = default;
 
         static std::vector<Real64> distances(MyCartesian const &point_i, MyCartesian const &point_j);
 
-        Real64 calcResponse(std::vector<Real64> const &dists, Real64 currTime);
+        Real64 calcResponse(std::vector<Real64> const &dists, Real64 currTime) const;
 
-        Real64 integral(MyCartesian const &point_i, std::shared_ptr<GLHEVertSingle> const &bh_j, Real64 currTime);
+        Real64 integral(MyCartesian const &point_i, std::shared_ptr<GLHEVertSingle> const &bh_j, Real64 currTime) const;
 
-        Real64 doubleIntegral(std::shared_ptr<GLHEVertSingle> const &bh_i, std::shared_ptr<GLHEVertSingle> const &bh_j, Real64 currTime);
+        Real64 doubleIntegral(std::shared_ptr<GLHEVertSingle> const &bh_i, std::shared_ptr<GLHEVertSingle> const &bh_j, Real64 currTime) const;
 
         void calcShortTimestepGFunctions(EnergyPlusData &state);
 
-        void calcLongTimestepGFunctions(EnergyPlusData &state);
+        void calcLongTimestepGFunctions(EnergyPlusData &state) const;
 
         void calcGFunctions(EnergyPlusData &state) override;
 
-        void calcUniformHeatFluxGFunctions(EnergyPlusData &state);
+        void calcUniformHeatFluxGFunctions(EnergyPlusData &state) const;
 
-        void calcUniformBHWallTempGFunctions(EnergyPlusData &state);
+        void calcUniformBHWallTempGFunctions(const EnergyPlusData &state) const;
 
         Real64 calcHXResistance(EnergyPlusData &state) override;
 
@@ -118,7 +110,7 @@ namespace GroundHeatExchangers {
 
         void readCacheFileAndCompareWithThisGLHECache(EnergyPlusData &state) override;
 
-        void writeGLHECacheToFile(EnergyPlusData &state) const;
+        void writeGLHECacheToFile(const EnergyPlusData &state) const;
 
         Real64 calcBHAverageResistance(EnergyPlusData &state);
 
@@ -126,7 +118,7 @@ namespace GroundHeatExchangers {
 
         Real64 calcBHGroutResistance(EnergyPlusData &state);
 
-        Real64 calcPipeConductionResistance();
+        Real64 calcPipeConductionResistance() const;
 
         Real64 calcPipeConvectionResistance(EnergyPlusData &state);
 
@@ -134,7 +126,7 @@ namespace GroundHeatExchangers {
 
         Real64 calcPipeResistance(EnergyPlusData &state);
 
-        void combineShortAndLongTimestepGFunctions();
+        void combineShortAndLongTimestepGFunctions() const;
 
         void initEnvironment(EnergyPlusData &state, [[maybe_unused]] Real64 CurTime) override;
 
@@ -142,7 +134,7 @@ namespace GroundHeatExchangers {
 
         void oneTimeInit_new(EnergyPlusData &state) override;
 
-        void setupTimeVectors();
+        void setupTimeVectors() const;
     };
 
 } // namespace GroundHeatExchangers

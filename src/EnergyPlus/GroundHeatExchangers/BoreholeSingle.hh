@@ -83,7 +83,6 @@ namespace GroundHeatExchangers {
 
         GLHEVertSingle() = default;
         GLHEVertSingle(EnergyPlusData &state, std::string const &objName, nlohmann::json const &j);
-
         static std::shared_ptr<GLHEVertSingle> GetSingleBH(EnergyPlusData &state, std::string const &objectName);
     };
 

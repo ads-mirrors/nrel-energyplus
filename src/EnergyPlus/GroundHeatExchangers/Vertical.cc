@@ -233,7 +233,7 @@ void GLHEVert::getAnnualTimeConstant()
 {
     // SUBROUTINE INFORMATION:
     //       AUTHOR:          Matt Mitchell
-    //       DATE WRITTEN:    February, 2015
+    //       DATE WRITTEN:    February 2015
 
     // PURPOSE OF THIS SUBROUTINE:
     // calculate annual time constant for ground conduction
@@ -244,7 +244,7 @@ void GLHEVert::getAnnualTimeConstant()
     this->timeSSFactor = this->timeSS * 8760.0;
 }
 
-void GLHEVert::combineShortAndLongTimestepGFunctions()
+void GLHEVert::combineShortAndLongTimestepGFunctions() const
 {
     std::vector<Real64> GFNC_combined;
     std::vector<Real64> LNTTS_combined;
@@ -252,7 +252,7 @@ void GLHEVert::combineShortAndLongTimestepGFunctions()
     Real64 const t_s = pow_2(this->bhLength) / (9.0 * this->soil.diffusivity);
 
     // Nothing to do. Just put the short time step g-functions on the combined vector
-    int num_shortTimestepGFunctions = GFNC_shortTimestep.size();
+    const unsigned int num_shortTimestepGFunctions = GFNC_shortTimestep.size();
     for (int index_shortTS = 0; index_shortTS < num_shortTimestepGFunctions; ++index_shortTS) {
         GFNC_combined.push_back(GFNC_shortTimestep[index_shortTS]);
         LNTTS_combined.push_back(LNTTS_shortTimestep[index_shortTS]);
@@ -294,7 +294,7 @@ void GLHEVert::makeThisGLHECacheStruct()
     d["Pipe Thickness"] = this->myRespFactors->props->pipe.thickness;
     d["U-tube Dist"] = this->myRespFactors->props->bhUTubeDist;
     d["Max Simulation Years"] = this->myRespFactors->maxSimYears;
-    d["g-Function Calc Method"] = GroundHeatExchangers::GFuncCalcMethodsStrs[int(this->gFuncCalcMethod)];
+    d["g-Function Calc Method"] = GroundHeatExchangers::GFuncCalcMethodsStrs[static_cast<int>(this->gFuncCalcMethod)];
 
     auto &d_bh_data = d["BH Data"];
     int i = 0;
@@ -339,11 +339,9 @@ void GLHEVert::readCacheFileAndCompareWithThisGLHECache(EnergyPlusData &state)
     }
 }
 
-//******************************************************************************
-
-void GLHEVert::writeGLHECacheToFile(EnergyPlusData &state) const
+void GLHEVert::writeGLHECacheToFile(const EnergyPlusData &state) const
 {
-
+    // TODO: the key is GHLE here, should be GLHE, but could break cache reading, so I'm leaving it for now
     nlohmann::json cached_json;
     if (FileSystem::fileExists(state.dataStrGlobals->outputGLHEFilePath)) {
         // file exists -- add data
@@ -387,17 +385,16 @@ std::vector<Real64> GLHEVert::distances(MyCartesian const &point_i, MyCartesian 
 
 //******************************************************************************
 
-Real64 GLHEVert::calcResponse(std::vector<Real64> const &dists, Real64 const currTime)
+Real64 GLHEVert::calcResponse(std::vector<Real64> const &dists, Real64 const currTime) const
 {
-    Real64 pointToPointResponse = erfc(dists[0] / (2 * sqrt(this->soil.diffusivity * currTime))) / dists[0];
-    Real64 pointToReflectedResponse = erfc(dists[1] / (2 * sqrt(this->soil.diffusivity * currTime))) / dists[1];
-
+    const Real64 pointToPointResponse = erfc(dists[0] / (2 * sqrt(this->soil.diffusivity * currTime))) / dists[0];
+    const Real64 pointToReflectedResponse = erfc(dists[1] / (2 * sqrt(this->soil.diffusivity * currTime))) / dists[1];
     return pointToPointResponse - pointToReflectedResponse;
 }
 
 //******************************************************************************
 
-Real64 GLHEVert::integral(MyCartesian const &point_i, std::shared_ptr<GLHEVertSingle> const &bh_j, Real64 const currTime)
+Real64 GLHEVert::integral(MyCartesian const &point_i, std::shared_ptr<GLHEVertSingle> const &bh_j, Real64 const currTime) const
 {
 
     // This code could be optimized in a number of ways.
@@ -428,9 +425,7 @@ Real64 GLHEVert::integral(MyCartesian const &point_i, std::shared_ptr<GLHEVertSi
     return (bh_j->dl_j / 3.0) * sum_f;
 }
 
-//******************************************************************************
-
-Real64 GLHEVert::doubleIntegral(std::shared_ptr<GLHEVertSingle> const &bh_i, std::shared_ptr<GLHEVertSingle> const &bh_j, Real64 const currTime)
+Real64 GLHEVert::doubleIntegral(std::shared_ptr<GLHEVertSingle> const &bh_i, std::shared_ptr<GLHEVertSingle> const &bh_j, Real64 const currTime) const
 {
 
     // Similar optimizations as discussed above could happen here
@@ -483,9 +478,7 @@ Real64 GLHEVert::doubleIntegral(std::shared_ptr<GLHEVertSingle> const &bh_i, std
     }
 }
 
-//******************************************************************************
-
-void GLHEVert::calcLongTimestepGFunctions(EnergyPlusData &state)
+void GLHEVert::calcLongTimestepGFunctions(EnergyPlusData &state) const
 {
     switch (this->gFuncCalcMethod) {
     case GFuncCalcMethod::UniformHeatFlux:
@@ -499,25 +492,21 @@ void GLHEVert::calcLongTimestepGFunctions(EnergyPlusData &state)
     }
 }
 
-//******************************************************************************
-
-void GLHEVert::calcUniformBHWallTempGFunctions(EnergyPlusData &state)
+void GLHEVert::calcUniformBHWallTempGFunctions(const EnergyPlusData &state) const
 {
     // construct boreholes vector
     std::vector<gt::boreholes::Borehole> boreholes;
-    for (auto &bh : this->myRespFactors->myBorholes) {
+    for (const auto &bh : this->myRespFactors->myBorholes) {
         boreholes.emplace_back(bh->props->bhLength, bh->props->bhTopDepth, bh->props->bhDiameter / 2.0, bh->xLoc, bh->yLoc);
     }
 
     // Obtain number of segments by adaptive discretization
     gt::segments::adaptive adptDisc;
-    int nSegments = adptDisc.discretize(this->bhLength, this->totalTubeLength);
+    const int nSegments = adptDisc.discretize(this->bhLength, this->totalTubeLength);
 
     this->myRespFactors->GFNC = gt::gfunction::uniform_borehole_wall_temperature(
         boreholes, this->myRespFactors->time, this->soil.diffusivity, nSegments, true, state.dataGlobal->numThread);
 }
-
-//******************************************************************************
 
 void GLHEVert::calcGFunctions(EnergyPlusData &state)
 {
@@ -537,14 +526,8 @@ void GLHEVert::calcGFunctions(EnergyPlusData &state)
     }
 }
 
-//******************************************************************************
-
-void GLHEVert::setupTimeVectors()
+void GLHEVert::setupTimeVectors() const
 {
-
-    constexpr int numDaysInYear = 365;
-    constexpr Real64 lnttsStepSize = 0.5;
-
     // Minimum simulation time for which finite line source method is applicable
     constexpr Real64 lntts_min_for_long_timestep = -8.5;
 
@@ -558,8 +541,10 @@ void GLHEVert::setupTimeVectors()
 
     // Determine how many g-function pairs to generate based on user defined maximum simulation time
     while (true) {
-        Real64 maxPossibleSimTime = exp(tempLNTTS.back()) * t_s;
+        const Real64 maxPossibleSimTime = exp(tempLNTTS.back()) * t_s;
+        constexpr int numDaysInYear = 365;
         if (maxPossibleSimTime < this->myRespFactors->maxSimYears * numDaysInYear * Constant::rHoursInDay * Constant::rSecsInHour) {
+            constexpr Real64 lnttsStepSize = 0.5;
             tempLNTTS.push_back(tempLNTTS.back() + lnttsStepSize);
         } else {
             break;
@@ -574,9 +559,7 @@ void GLHEVert::setupTimeVectors()
     this->myRespFactors->GFNC = std::vector<Real64>(tempLNTTS.size(), 0.0);
 }
 
-//******************************************************************************
-
-void GLHEVert::calcUniformHeatFluxGFunctions(EnergyPlusData &state)
+void GLHEVert::calcUniformHeatFluxGFunctions(EnergyPlusData &state) const
 {
     DisplayString(state, "Initializing GroundHeatExchanger:System: " + this->name);
 
@@ -592,18 +575,16 @@ void GLHEVert::calcUniformHeatFluxGFunctions(EnergyPlusData &state)
         this->myRespFactors->GFNC[lntts_index] /= (2 * this->totalTubeLength);
 
         std::stringstream ss;
-        ss << std::fixed << std::setprecision(1) << float(lntts_index) / this->myRespFactors->LNTTS.size() * 100;
+        ss << std::fixed << std::setprecision(1) << static_cast<Real64>(lntts_index) / static_cast<Real64>(this->myRespFactors->LNTTS.size()) * 100.0;
 
         DisplayString(state, "...progress: " + ss.str() + "%");
     }
 }
 
-//******************************************************************************
-
 void GLHEVert::calcShortTimestepGFunctions(EnergyPlusData &state)
 {
     // SUBROUTINE PARAMETER DEFINITIONS:
-    std::string_view const RoutineName = "calcShortTimestepGFunctions";
+    std::string_view constexpr RoutineName = "calcShortTimestepGFunctions";
 
     enum class CellType
     {
@@ -757,14 +738,13 @@ void GLHEVert::calcShortTimestepGFunctions(EnergyPlusData &state)
     Real64 constexpr lntts_max_for_short_timestep = -9.0;
     Real64 const t_s = pow_2(this->bhLength) / (9.0 * this->soil.diffusivity);
 
-    Real64 constexpr time_step = 500.0;
     Real64 const time_max_for_short_timestep = exp(lntts_max_for_short_timestep) * t_s;
     Real64 total_time = 0.0;
 
-    Real64 constexpr heat_flux = 40.4;
-
     // time step loop
     while (total_time < time_max_for_short_timestep) {
+        Real64 constexpr heat_flux = 40.4;
+        Real64 constexpr time_step = 500.0;
 
         for (auto &thisCell : Cells) {
             thisCell.temperature_prev_ts = thisCell.temperature;
@@ -776,7 +756,7 @@ void GLHEVert::calcShortTimestepGFunctions(EnergyPlusData &state)
         std::vector<Real64> d;
 
         // setup tdma matrices
-        int num_cells = Cells.size();
+        unsigned int num_cells = Cells.size();
         for (int cell_index = 0; cell_index < num_cells; ++cell_index) {
             if (cell_index == 0) {
                 // heat flux BC
@@ -836,22 +816,23 @@ void GLHEVert::calcShortTimestepGFunctions(EnergyPlusData &state)
             Cells[cell_index].temperature = new_temps[cell_index];
         }
 
-        // calculate bh wall temp
-        Real64 T_bhWall = 0.0;
-        for (int cell_index = 0; cell_index < num_cells; ++cell_index) {
-            auto const &leftCell = Cells[cell_index];
-            auto const &rightCell = Cells[cell_index + 1];
-
-            if (leftCell.type == CellType::GROUT && rightCell.type == CellType::SOIL) {
-
-                Real64 left_conductance = 2 * Constant::Pi * leftCell.conductivity / log(leftCell.radius_outer / leftCell.radius_inner);
-                Real64 right_conductance = 2 * Constant::Pi * rightCell.conductivity / log(rightCell.radius_center / leftCell.radius_inner);
-
-                T_bhWall =
-                    (left_conductance * leftCell.temperature + right_conductance * rightCell.temperature) / (left_conductance + right_conductance);
-                break;
-            }
-        }
+        // The T_bhWall variable was only ever calculated, ever actually used.  I'm commenting it out for now.
+        // // calculate bh wall temp
+        // Real64 T_bhWall = 0.0;
+        // for (int cell_index = 0; cell_index < num_cells; ++cell_index) {
+        //     auto const &leftCell = Cells[cell_index];
+        //     auto const &rightCell = Cells[cell_index + 1];
+        //
+        //     if (leftCell.type == CellType::GROUT && rightCell.type == CellType::SOIL) {
+        //
+        //         Real64 left_conductance = 2 * Constant::Pi * leftCell.conductivity / log(leftCell.radius_outer / leftCell.radius_inner);
+        //         Real64 right_conductance = 2 * Constant::Pi * rightCell.conductivity / log(rightCell.radius_center / leftCell.radius_inner);
+        //
+        //         T_bhWall =
+        //             (left_conductance * leftCell.temperature + right_conductance * rightCell.temperature) / (left_conductance + right_conductance);
+        //         break;
+        //     }
+        // }
 
         total_time += time_step;
 
@@ -925,18 +906,15 @@ Real64 GLHEVert::calcHXResistance(EnergyPlusData &state)
 
     if (this->massFlowRate <= 0.0) {
         return 0;
-    } else {
-        std::string_view const RoutineName = "calcBHResistance";
-
-        Real64 const cpFluid = state.dataPlnt->PlantLoop(this->plantLoc.loopNum).glycol->getSpecificHeat(state, this->inletTemp, RoutineName);
-        return calcBHAverageResistance(state) +
-               1 / (3 * calcBHTotalInternalResistance(state)) * pow_2(this->bhLength / (this->massFlowRate * cpFluid));
     }
+    constexpr std::string_view RoutineName = "calcBHResistance";
+    Real64 const cpFluid = state.dataPlnt->PlantLoop(this->plantLoc.loopNum).glycol->getSpecificHeat(state, this->inletTemp, RoutineName);
+    return calcBHAverageResistance(state) + 1 / (3 * calcBHTotalInternalResistance(state)) * pow_2(this->bhLength / (this->massFlowRate * cpFluid));
 }
 
 //******************************************************************************
 
-Real64 GLHEVert::calcPipeConductionResistance()
+Real64 GLHEVert::calcPipeConductionResistance() const
 {
     // Calculates the thermal resistance of a pipe, in [K/(W/m)].
     // Javed, S. & Spitler, J.D. 2016. 'Accuracy of Borehole Thermal Resistance Calculation Methods
@@ -954,7 +932,7 @@ Real64 GLHEVert::calcPipeConvectionResistance(EnergyPlusData &state)
     // International Chemical Engineering 16(1976), pp. 359-368.
 
     // SUBROUTINE PARAMETER DEFINITIONS:
-    constexpr const char *RoutineName("calcPipeConvectionResistance");
+    constexpr std::string_view RoutineName("calcPipeConvectionResistance");
 
     // Get fluid props
     this->inletTemp = state.dataLoopNodes->Node(this->inletNodeNum).Temp;
@@ -1017,8 +995,6 @@ Real64 GLHEVert::frictionFactor(Real64 const reynoldsNum)
     }
 }
 
-//******************************************************************************
-
 Real64 GLHEVert::calcPipeResistance(EnergyPlusData &state)
 {
     // Calculates the combined conduction and convection pipe resistance
@@ -1033,7 +1009,7 @@ Real64 GLHEVert::getGFunc(Real64 const time)
 {
     // SUBROUTINE INFORMATION:
     //       AUTHOR:          Matt Mitchell
-    //       DATE WRITTEN:    February, 2015
+    //       DATE WRITTEN:    February 2015
 
     // PURPOSE OF THIS SUBROUTINE:
     // Gets the g-function for vertical GHXs Note: Base e here.
@@ -1096,7 +1072,7 @@ void GLHEVert::initGLHESimVars(EnergyPlusData &state)
 
 void GLHEVert::initEnvironment(EnergyPlusData &state, [[maybe_unused]] Real64 const CurTime)
 {
-    std::string_view const RoutineName = "initEnvironment";
+    constexpr std::string_view RoutineName = "initEnvironment";
     this->myEnvrnFlag = false;
 
     Real64 fluidDensity = state.dataPlnt->PlantLoop(this->plantLoc.loopNum).glycol->getDensity(state, 20.0, RoutineName);

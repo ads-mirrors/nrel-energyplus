@@ -65,7 +65,7 @@ namespace GroundHeatExchangers {
     {
         std::string const moduleName = "GroundHeatExchanger:ResponseFactors";
         std::string name;                                        // Name
-        int numBoreholes = 0;                                    // Number of boreholes
+        unsigned int numBoreholes = 0;                           // Number of boreholes
         int numGFuncPairs = 0;                                   // Number of g-function pairs
         Real64 gRefRatio = 0.0;                                  // Reference ratio of g-function set
         Real64 maxSimYears = 0.0;                                // Maximum length of simulation in years
@@ -87,7 +87,8 @@ namespace GroundHeatExchangers {
                                                                                   std::shared_ptr<GLHEVertArray> const &arrayObjectPtr);
 
     std::shared_ptr<GLHEResponseFactors>
-    BuildAndGetResponseFactorsObjectFromSingleBHs(EnergyPlusData &state, std::vector<std::shared_ptr<GLHEVertSingle>> const &singleBHsForRFVect);
+    BuildAndGetResponseFactorsObjectFromSingleBHs(const EnergyPlusData &state,
+                                                  std::vector<std::shared_ptr<GLHEVertSingle>> const &singleBHsForRFVect);
 
 } // namespace GroundHeatExchangers
 

@@ -57,7 +57,7 @@ namespace EnergyPlus::GroundHeatExchangers {
 GLHESlinky::GLHESlinky(EnergyPlusData &state, std::string const &objName, nlohmann::json const &j)
 {
     // Check for duplicates
-    for (auto &existingObj : state.dataGroundHeatExchanger->singleBoreholesVector) {
+    for (const auto &existingObj : state.dataGroundHeatExchanger->singleBoreholesVector) {
         if (objName == existingObj->name) {
             ShowFatalError(state, format("Invalid input for {} object: Duplicate name found: {}", this->moduleName, existingObj->name));
         }

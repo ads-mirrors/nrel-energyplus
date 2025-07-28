@@ -56,7 +56,7 @@ struct EnergyPlusData;
 
 namespace GroundHeatExchangers {
 
-    struct GLHESlinky : GLHEBase // LCOV_EXCL_LINE
+    struct GLHESlinky : GLHEBase
     {
         std::string const moduleName = "GroundHeatExchanger:Slinky";
         bool verticalConfig = false; // HX Configuration Flag

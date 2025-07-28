@@ -79,7 +79,7 @@ GLHEResponseFactors::GLHEResponseFactors(EnergyPlusData &state, std::string cons
 
     this->numGFuncPairs = static_cast<int>(tmpLntts.size());
 
-    for (int i = 1; i <= (int)tmpLntts.size(); ++i) {
+    for (int i = 1; i <= static_cast<int>(tmpLntts.size()); ++i) {
         this->LNTTS.push_back(tmpLntts[i - 1]);
         this->GFNC.push_back(tmpGvals[i - 1]);
     }
@@ -88,18 +88,15 @@ GLHEResponseFactors::GLHEResponseFactors(EnergyPlusData &state, std::string cons
 std::shared_ptr<GLHEResponseFactors> GetResponseFactor(EnergyPlusData &state, std::string const &objectName)
 {
     // Check if this instance of this model has already been retrieved
-    auto thisObj = std::find_if(state.dataGroundHeatExchanger->responseFactorsVector.begin(),
-                                state.dataGroundHeatExchanger->responseFactorsVector.end(),
-                                [&objectName](const std::shared_ptr<GLHEResponseFactors> &myObj) { return myObj->name == objectName; });
+    const auto thisObj = std::find_if(state.dataGroundHeatExchanger->responseFactorsVector.begin(),
+                                      state.dataGroundHeatExchanger->responseFactorsVector.end(),
+                                      [&objectName](const std::shared_ptr<GLHEResponseFactors> &myObj) { return myObj->name == objectName; });
     if (thisObj != state.dataGroundHeatExchanger->responseFactorsVector.end()) {
         return *thisObj;
     }
 
     ShowSevereError(state, fmt::format("Object=GroundHeatExchanger:ResponseFactors, Name={} - not found.", objectName));
     ShowFatalError(state, "Preceding errors cause program termination");
-
-    // needed to silence compiler, but should never get here
-    return nullptr;
 }
 
 std::shared_ptr<GLHEResponseFactors> BuildAndGetResponseFactorObjectFromArray(EnergyPlusData &state,
@@ -111,10 +108,10 @@ std::shared_ptr<GLHEResponseFactors> BuildAndGetResponseFactorObjectFromArray(En
     thisRF->props = arrayObjectPtr->props;
 
     // Build out new instances of the vertical BH objects which correspond to this object
-    int xLoc = 0;
+    Real64 xLoc = 0;
     int bhCounter = 0;
     for (int xBH = 1; xBH <= arrayObjectPtr->numBHinXDirection; ++xBH) {
-        int yLoc = 0;
+        Real64 yLoc = 0;
         for (int yBH = 1; yBH <= arrayObjectPtr->numBHinYDirection; ++yBH) {
             bhCounter += 1;
             std::shared_ptr<GLHEVertSingle> thisBH(new GLHEVertSingle);
@@ -136,7 +133,7 @@ std::shared_ptr<GLHEResponseFactors> BuildAndGetResponseFactorObjectFromArray(En
 }
 
 std::shared_ptr<GLHEResponseFactors>
-BuildAndGetResponseFactorsObjectFromSingleBHs(EnergyPlusData &state, std::vector<std::shared_ptr<GLHEVertSingle>> const &singleBHsForRFVect)
+BuildAndGetResponseFactorsObjectFromSingleBHs(const EnergyPlusData &state, std::vector<std::shared_ptr<GLHEVertSingle>> const &singleBHsForRFVect)
 {
     // Make new response factor object and store it for later use
     std::shared_ptr<GLHEResponseFactors> thisRF(new GLHEResponseFactors);

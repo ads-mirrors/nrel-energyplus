@@ -60,68 +60,57 @@ struct EnergyPlusData;
 
 namespace GroundHeatExchangers {
 
-    struct GLHEBase : PlantComponent // LCOV_EXCL_LINE
+    struct GLHEBase : PlantComponent
     {
-        // Destructor
-        ~GLHEBase() override = default;
-
-        // Members
-        bool available;   // need an array of logicals--load identifiers of available equipment
-        bool on;          // simulate the machine at it's operating part load ratio
-        std::string name; // user identifier
+        bool available = false; // need an array of logicals--load identifiers of available equipment
+        bool on = false;        // simulate the machine at it's operating part load ratio
+        std::string name;       // user identifier
         PlantLocation plantLoc;
-        int inletNodeNum;  // Node number on the inlet side of the plant
-        int outletNodeNum; // Node number on the outlet side of the plant
+        int inletNodeNum = 0;  // Node number on the inlet side of the plant
+        int outletNodeNum = 0; // Node number on the outlet side of the plant
         ThermophysicalProps soil;
         PipeProps pipe;
         ThermophysicalProps grout;
         std::shared_ptr<GLHEResponseFactors> myRespFactors;
-        Real64 designFlow;            // Design volumetric flow rate [m3/s]
-        Real64 designMassFlow;        // Design mass flow rate [kg/s]
-        Real64 tempGround;            // The far field temperature of the ground [degC]
+        Real64 designFlow = 0.0;      // Design volumetric flow rate [m3/s]
+        Real64 designMassFlow = 0.0;  // Design mass flow rate [kg/s]
+        Real64 tempGround = 0.0;      // The far field temperature of the ground [degC]
         Array1D<Real64> QnMonthlyAgg; // Monthly aggregated normalized heat extraction/rejection rate [W/m]
         Array1D<Real64> QnHr;         // Hourly aggregated normalized heat extraction/rejection rate [W/m]
         Array1D<Real64> QnSubHr; // Contains the sub-hourly heat extraction/rejection rate normalized by the total active length of boreholes [W/m]
-        int prevHour;
-        int AGG;               // Minimum Hourly History required
-        int SubAGG;            // Minimum sub-hourly History
-        Array1D_int LastHourN; // Stores the Previous hour's N for past hours until the minimum sub-hourly history
-        Real64 bhTemp;         // [degC]
-        Real64 massFlowRate;   // [kg/s]
-        Real64 outletTemp;     // [degC]
-        Real64 inletTemp;      // [degC]
-        Real64 aveFluidTemp;   // [degC]
-        Real64 QGLHE;          // [W] heat transfer rate
-        bool myEnvrnFlag;
-        bool gFunctionsExist;
-        Real64 lastQnSubHr;
-        Real64 HXResistance;    // The thermal resistance of the GHX, (K per W/m)
-        Real64 totalTubeLength; // The total length of pipe. NumBoreholes * BoreholeDepth OR Pi * Dcoil * NumCoils
-        Real64 timeSS;          // Steady state time
-        Real64 timeSSFactor;    // Steady state time factor for calculation
+        int prevHour = 1;
+        int AGG = 0;               // Minimum Hourly History required
+        int SubAGG = 0;            // Minimum sub-hourly History
+        Array1D_int LastHourN;     // Stores the Previous hour's N for past hours until the minimum sub-hourly history
+        Real64 bhTemp = 0.0;       // [degC]
+        Real64 massFlowRate = 0.0; // [kg/s]
+        Real64 outletTemp = 0.0;   // [degC]
+        Real64 inletTemp = 0.0;    // [degC]
+        Real64 aveFluidTemp = 0.0; // [degC]
+        Real64 QGLHE = 0.0;        // [W] heat transfer rate
+        bool myEnvrnFlag = true;
+        bool gFunctionsExist = false;
+        Real64 lastQnSubHr = 0.0;
+        Real64 HXResistance = 0.0;    // The thermal resistance of the GHX, (K per W/m)
+        Real64 totalTubeLength = 0.0; // The total length of pipe. NumBoreholes * BoreholeDepth OR Pi * Dcoil * NumCoils
+        Real64 timeSS = 0.0;          // Steady state time
+        Real64 timeSSFactor = 0.0;    // Steady state time factor for calculation
         GroundTemp::BaseGroundTempsModel *groundTempModel = nullptr; // non-owning pointer
 
         // some statics pulled out into member variables
-        bool firstTime;
-        int numErrorCalls;
-        Real64 ToutNew;
-        int PrevN;             // The saved value of N at previous time step
-        bool updateCurSimTime; // Used to reset the CurSimTime to reset after WarmupFlag
-        bool triggerDesignDayReset;
-        bool needToSetupOutputVars;
+        bool firstTime = true;
+        int numErrorCalls = 0;
+        Real64 ToutNew = 19.375;
+        int PrevN = 1;                // The saved value of N at previous time step
+        bool updateCurSimTime = true; // Used to reset the CurSimTime to reset after WarmupFlag
+        bool triggerDesignDayReset = false;
+        bool needToSetupOutputVars = true;
 
-        GLHEBase()
-            : available(false), on(false), plantLoc{}, inletNodeNum(0), outletNodeNum(0), designFlow(0.0), designMassFlow(0.0), tempGround(0.0),
-              prevHour(1), AGG(0), SubAGG(0), bhTemp(0.0), massFlowRate(0.0), outletTemp(0.0), inletTemp(0.0), aveFluidTemp(0.0), QGLHE(0.0),
-              myEnvrnFlag(true), gFunctionsExist(false), lastQnSubHr(0.0), HXResistance(0.0), totalTubeLength(0.0), timeSS(0.0), timeSSFactor(0.0),
-              firstTime(true), numErrorCalls(0), ToutNew(19.375), PrevN(1), updateCurSimTime(true), triggerDesignDayReset(false),
-              needToSetupOutputVars(true)
-        {
-        }
+        ~GLHEBase() override = default;
 
         virtual void calcGFunctions(EnergyPlusData &state) = 0;
 
-        void calcAggregateLoad(EnergyPlusData &state);
+        void calcAggregateLoad(const EnergyPlusData &state);
 
         void updateGHX(EnergyPlusData &state);
 

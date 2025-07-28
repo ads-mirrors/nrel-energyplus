@@ -5013,7 +5013,7 @@ void WaterThermalTankData::setupChilledWaterTankOutputVars(EnergyPlusData &state
                         this->Name);
 
     SetupOutputVariable(state,
-                        format("{} Water Thermal Storage Final Tank Temperature", ChilledOrHotKw),
+                        format("{} Water Thermal Storage Tank Final Tank Temperature", ChilledOrHotKw),
                         Constant::Units::C,
                         this->TankTemp,
                         OutputProcessor::TimeStepType::System,
@@ -5036,7 +5036,7 @@ void WaterThermalTankData::setupChilledWaterTankOutputVars(EnergyPlusData &state
                         this->Name);
 
     SetupOutputVariable(state,
-                        format("{} Water Thermal Storage Use Side Mass Flow Rate", ChilledOrHotKw),
+                        format("{} Water Thermal Storage Tank Use Side Mass Flow Rate", ChilledOrHotKw),
                         Constant::Units::kg_s,
                         this->UseMassFlowRate,
                         OutputProcessor::TimeStepType::System,
@@ -5044,7 +5044,7 @@ void WaterThermalTankData::setupChilledWaterTankOutputVars(EnergyPlusData &state
                         this->Name);
 
     SetupOutputVariable(state,
-                        format("{} Water Thermal Storage Use Side Inlet Temperature", ChilledOrHotKw),
+                        format("{} Water Thermal Storage Tank Use Side Inlet Temperature", ChilledOrHotKw),
                         Constant::Units::C,
                         this->UseInletTemp,
                         OutputProcessor::TimeStepType::System,
@@ -5052,7 +5052,7 @@ void WaterThermalTankData::setupChilledWaterTankOutputVars(EnergyPlusData &state
                         this->Name);
 
     SetupOutputVariable(state,
-                        format("{} Water Thermal Storage Use Side Outlet Temperature", ChilledOrHotKw),
+                        format("{} Water Thermal Storage Tank Use Side Outlet Temperature", ChilledOrHotKw),
                         Constant::Units::C,
                         this->UseOutletTemp,
                         OutputProcessor::TimeStepType::System,
@@ -5060,14 +5060,14 @@ void WaterThermalTankData::setupChilledWaterTankOutputVars(EnergyPlusData &state
                         this->Name);
 
     SetupOutputVariable(state,
-                        format("{} Water Thermal Storage Use Side Heat Transfer Rate", ChilledOrHotKw),
+                        format("{} Water Thermal Storage Tank Use Side Heat Transfer Rate", ChilledOrHotKw),
                         Constant::Units::W,
                         this->UseRate,
                         OutputProcessor::TimeStepType::System,
                         OutputProcessor::StoreType::Average,
                         this->Name);
     SetupOutputVariable(state,
-                        format("{} Water Thermal Storage Use Side Heat Transfer Energy", ChilledOrHotKw),
+                        format("{} Water Thermal Storage Tank Use Side Heat Transfer Energy", ChilledOrHotKw),
                         Constant::Units::J,
                         this->UseEnergy,
                         OutputProcessor::TimeStepType::System,
@@ -5075,7 +5075,7 @@ void WaterThermalTankData::setupChilledWaterTankOutputVars(EnergyPlusData &state
                         this->Name);
 
     SetupOutputVariable(state,
-                        format("{} Water Thermal Storage Source Side Mass Flow Rate", ChilledOrHotKw),
+                        format("{} Water Thermal Storage Tank Source Side Mass Flow Rate", ChilledOrHotKw),
                         Constant::Units::kg_s,
                         this->SourceMassFlowRate,
                         OutputProcessor::TimeStepType::System,
@@ -5083,7 +5083,7 @@ void WaterThermalTankData::setupChilledWaterTankOutputVars(EnergyPlusData &state
                         this->Name);
 
     SetupOutputVariable(state,
-                        format("{} Water Thermal Storage Source Side Inlet Temperature", ChilledOrHotKw),
+                        format("{} Water Thermal Storage Tank Source Side Inlet Temperature", ChilledOrHotKw),
                         Constant::Units::C,
                         this->SourceInletTemp,
                         OutputProcessor::TimeStepType::System,
@@ -5091,7 +5091,7 @@ void WaterThermalTankData::setupChilledWaterTankOutputVars(EnergyPlusData &state
                         this->Name);
 
     SetupOutputVariable(state,
-                        format("{} Water Thermal Storage Source Side Outlet Temperature", ChilledOrHotKw),
+                        format("{} Water Thermal Storage Tank Source Side Outlet Temperature", ChilledOrHotKw),
                         Constant::Units::C,
                         this->SourceOutletTemp,
                         OutputProcessor::TimeStepType::System,
@@ -5099,14 +5099,14 @@ void WaterThermalTankData::setupChilledWaterTankOutputVars(EnergyPlusData &state
                         this->Name);
 
     SetupOutputVariable(state,
-                        format("{} Water Thermal Storage Source Side Heat Transfer Rate", ChilledOrHotKw),
+                        format("{} Water Thermal Storage Tank Source Side Heat Transfer Rate", ChilledOrHotKw),
                         Constant::Units::W,
                         this->SourceRate,
                         OutputProcessor::TimeStepType::System,
                         OutputProcessor::StoreType::Average,
                         this->Name);
     SetupOutputVariable(state,
-                        format("{} Water Thermal Storage Source Side Heat Transfer Energy", ChilledOrHotKw),
+                        format("{} Water Thermal Storage Tank Source Side Heat Transfer Energy", ChilledOrHotKw),
                         Constant::Units::J,
                         this->SourceEnergy,
                         OutputProcessor::TimeStepType::System,
@@ -5118,7 +5118,7 @@ void WaterThermalTankData::setupChilledWaterTankOutputVars(EnergyPlusData &state
 
         for (int NodeNum = 1; NodeNum <= this->Nodes; ++NodeNum) {
             SetupOutputVariable(state,
-                                format("{} Water Thermal Storage Temperature Node {}", ChilledOrHotKw, NodeNum),
+                                format("{} Water Thermal Storage Tank Temperature Node {}", ChilledOrHotKw, NodeNum),
                                 Constant::Units::C,
                                 this->Node(NodeNum).TempAvg,
                                 OutputProcessor::TimeStepType::System,
@@ -5128,7 +5128,7 @@ void WaterThermalTankData::setupChilledWaterTankOutputVars(EnergyPlusData &state
 
         for (int NodeNum = 1; NodeNum <= this->Nodes; ++NodeNum) {
             SetupOutputVariable(state,
-                                format("{} Water Thermal Storage Final Temperature Node {}", ChilledOrHotKw, NodeNum),
+                                format("{} Water Thermal Storage Tank Final Temperature Node {}", ChilledOrHotKw, NodeNum),
                                 Constant::Units::C,
                                 this->Node(NodeNum).Temp,
                                 OutputProcessor::TimeStepType::System,

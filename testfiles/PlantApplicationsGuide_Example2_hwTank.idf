@@ -205,7 +205,7 @@
     2.5,                     !- Deadband Temperature Difference {deltaC}
     8.0,                     !- Top Temperature Sensor Height {m}
     1.0,                     !- Bottom Temperature Sensor Height {m}
-    1.0,                     !- Maximum Temperature Limit {C}
+    82.0,                     !- Maximum Temperature Limit {C}
     50000,                   !- Nominal Heating Capacity {W}
     Zone,                    !- Ambient Temperature Indicator
     ,                        !- Ambient Temperature Schedule Name
@@ -5502,19 +5502,19 @@
 !-   Output:Variable,*,Zone Heating Setpoint Not Met While Occupied Time,hourly;
 
 Output:Variable,*,Hot Water Thermal Storage Tank Temperature,hourly; !- HVAC Average [C]
-Output:Variable,*,Hot Water Thermal Storage Final Tank Temperature,hourly; !- HVAC Average [C]
+Output:Variable,*,Hot Water Thermal Storage Tank Final Tank Temperature,hourly; !- HVAC Average [C]
 Output:Variable,*,Hot Water Thermal Storage Tank Heat Gain Rate,hourly; !- HVAC Average [W]
 Output:Variable,*,Hot Water Thermal Storage Tank Heat Gain Energy,hourly; !- HVAC Sum [J]
-Output:Variable,*,Hot Water Thermal Storage Use Side Mass Flow Rate,hourly; !- HVAC Average [kg/s]
-Output:Variable,*,Hot Water Thermal Storage Use Side Inlet Temperature,hourly; !- HVAC Average [C]
-Output:Variable,*,Hot Water Thermal Storage Use Side Outlet Temperature,hourly; !- HVAC Average [C]
-Output:Variable,*,Hot Water Thermal Storage Use Side Heat Transfer Rate,hourly; !- HVAC Average [W]
-Output:Variable,*,Hot Water Thermal Storage Use Side Heat Transfer Energy,hourly; !- HVAC Sum [J]
-Output:Variable,*,Hot Water Thermal Storage Source Side Mass Flow Rate,hourly; !- HVAC Average [kg/s]
-Output:Variable,*,Hot Water Thermal Storage Source Side Inlet Temperature,hourly; !- HVAC Average [C]
-Output:Variable,*,Hot Water Thermal Storage Source Side Outlet Temperature,hourly; !- HVAC Average [C]
-Output:Variable,*,Hot Water Thermal Storage Source Side Heat Transfer Rate,hourly; !- HVAC Average [W]
-Output:Variable,*,Hot Water Thermal Storage Source Side Heat Transfer Energy,hourly; !- HVAC Sum [J]
+Output:Variable,*,Hot Water Thermal Storage Tank Use Side Mass Flow Rate,hourly; !- HVAC Average [kg/s]
+Output:Variable,*,Hot Water Thermal Storage Tank Use Side Inlet Temperature,hourly; !- HVAC Average [C]
+Output:Variable,*,Hot Water Thermal Storage Tank Use Side Outlet Temperature,hourly; !- HVAC Average [C]
+Output:Variable,*,Hot Water Thermal Storage Tank Use Side Heat Transfer Rate,hourly; !- HVAC Average [W]
+Output:Variable,*,Hot Water Thermal Storage Tank Use Side Heat Transfer Energy,hourly; !- HVAC Sum [J]
+Output:Variable,*,Hot Water Thermal Storage Tank Source Side Mass Flow Rate,hourly; !- HVAC Average [kg/s]
+Output:Variable,*,Hot Water Thermal Storage Tank Source Side Inlet Temperature,hourly; !- HVAC Average [C]
+Output:Variable,*,Hot Water Thermal Storage Tank Source Side Outlet Temperature,hourly; !- HVAC Average [C]
+Output:Variable,*,Hot Water Thermal Storage Tank Source Side Heat Transfer Rate,hourly; !- HVAC Average [W]
+Output:Variable,*,Hot Water Thermal Storage Tank Source Side Heat Transfer Energy,hourly; !- HVAC Sum [J]
 
   Output:Diagnostics,
     DisplayUnusedObjects;    !- Key 1

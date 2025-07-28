@@ -65,6 +65,7 @@
 #include <EnergyPlus/InputProcessing/InputProcessor.hh>
 #include <EnergyPlus/NodeInputManager.hh>
 #include <EnergyPlus/OutputProcessor.hh>
+#include <EnergyPlus/OutputReportPredefined.hh>
 #include <EnergyPlus/Plant/DataPlant.hh>
 #include <EnergyPlus/PlantUtilities.hh>
 #include <EnergyPlus/Psychrometrics.hh>
@@ -100,6 +101,7 @@ namespace WaterUse {
 
         if (state.dataWaterUse->getWaterUseInputFlag) {
             GetWaterUseInput(state);
+            FillPredefinedTableWaterUse(state);
             state.dataWaterUse->getWaterUseInputFlag = false;
         }
 
@@ -187,6 +189,7 @@ namespace WaterUse {
         // Process the input data
         if (state.dataWaterUse->getWaterUseInputFlag) {
             GetWaterUseInput(state);
+            FillPredefinedTableWaterUse(state);
             state.dataWaterUse->getWaterUseInputFlag = false;
         }
 
@@ -555,6 +558,59 @@ namespace WaterUse {
             // if a connections object is used then don't need to hot temp schedule
             waterEquipment.allowHotControl =
                 (waterEquipment.targetTempSched != nullptr && waterEquipment.hotTempSched != nullptr) || waterEquipment.Connections;
+        }
+    }
+
+    void FillPredefinedTableWaterUse(EnergyPlusData &state)
+    {
+        // add values to the Equipment Summary tabular report related to Water Use Equipment
+        // J.Glazer - July 2025
+        using OutputReportPredefined::PreDefTableEntry;
+        auto &orp = state.dataOutRptPredefined;
+        for (int idx = 1; idx <= state.dataWaterUse->numWaterEquipment; ++idx) {
+            auto &thisWEq = state.dataWaterUse->WaterEquipment(idx);
+            if (thisWEq.Zone > 0) {
+                PreDefTableEntry(state, orp->pdchWtEqZone, thisWEq.Name, state.dataHeatBal->Zone(thisWEq.Zone).Name);
+            }
+            PreDefTableEntry(state, orp->pdchWtEqEndUse, thisWEq.Name, thisWEq.EndUseSubcatName);
+            PreDefTableEntry(state, orp->pdchWtEqPkFlw, thisWEq.Name, thisWEq.PeakVolFlowRate);
+            if (thisWEq.flowRateFracSched != nullptr) {
+                PreDefTableEntry(state, orp->pdchWtEqFlwFractSch, thisWEq.Name, thisWEq.flowRateFracSched->Name);
+                OutputReportPredefined::PreDefTableEntry(state, orp->pdchWtEqFlwFractMax, thisWEq.Name, thisWEq.flowRateFracSched->getMaxVal(state));
+            } else {
+                PreDefTableEntry(state, orp->pdchWtEqFlwFractSch, thisWEq.Name, "N/A");
+            }
+            if (thisWEq.targetTempSched != nullptr) {
+                PreDefTableEntry(state, orp->pdchWtEqTargTempSch, thisWEq.Name, thisWEq.targetTempSched->Name);
+                OutputReportPredefined::PreDefTableEntry(state, orp->pdchWtEqTargTempMax, thisWEq.Name, thisWEq.targetTempSched->getMaxVal(state));
+            } else {
+                PreDefTableEntry(state, orp->pdchWtEqTargTempSch, thisWEq.Name, "N/A");
+            }
+            if (thisWEq.hotTempSched != nullptr) {
+                PreDefTableEntry(state, orp->pdchWtEqHotTempSch, thisWEq.Name, thisWEq.hotTempSched->Name);
+                OutputReportPredefined::PreDefTableEntry(state, orp->pdchWtEqHotTempMax, thisWEq.Name, thisWEq.hotTempSched->getMaxVal(state));
+            } else {
+                PreDefTableEntry(state, orp->pdchWtEqHotTempSch, thisWEq.Name, "N/A");
+            }
+            if (thisWEq.coldTempSched != nullptr) {
+                PreDefTableEntry(state, orp->pdchWtEqColdTempSch, thisWEq.Name, thisWEq.coldTempSched->Name);
+                OutputReportPredefined::PreDefTableEntry(state, orp->pdchWtEqColdTempMin, thisWEq.Name, thisWEq.coldTempSched->getMinVal(state));
+            } else {
+                PreDefTableEntry(state, orp->pdchWtEqColdTempSch, thisWEq.Name, "N/A");
+            }
+            if (thisWEq.sensibleFracSched != nullptr) {
+                PreDefTableEntry(state, orp->pdchWtEqSensFracSch, thisWEq.Name, thisWEq.sensibleFracSched->Name);
+                OutputReportPredefined::PreDefTableEntry(
+                    state, orp->pdchWtEqsensFracMax, thisWEq.Name, thisWEq.sensibleFracSched->getMaxVal(state));
+            } else {
+                PreDefTableEntry(state, orp->pdchWtEqSensFracSch, thisWEq.Name, "N/A");
+            }
+            if (thisWEq.latentFracSched != nullptr) {
+                PreDefTableEntry(state, orp->pdchWtEqLatFracSch, thisWEq.Name, thisWEq.latentFracSched->Name);
+                OutputReportPredefined::PreDefTableEntry(state, orp->pdchWtEqLatFracMax, thisWEq.Name, thisWEq.latentFracSched->getMaxVal(state));
+            } else {
+                PreDefTableEntry(state, orp->pdchWtEqLatFracSch, thisWEq.Name, "N/A");
+            }
         }
     }
 

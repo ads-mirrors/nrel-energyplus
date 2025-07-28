@@ -497,6 +497,24 @@ namespace OutputReportPredefined {
         s->pdchSWHUseSch = newPreDefColumn(state, s->pdstSWH, "Use Flow Rate Fraction Schedule Name");
         s->pdchSWHAmbZoneNm = newPreDefColumn(state, s->pdstSWH, "Ambient Temperature Zone Name");
 
+        s->pdstWtEq = newPreDefSubTable(state, s->pdrEquip, "Water Use");
+        s->pdchWtEqZone = newPreDefColumn(state, s->pdstWtEq, "Zone");
+        s->pdchWtEqEndUse = newPreDefColumn(state, s->pdstWtEq, "End-Use Subcategory");
+        s->pdchWtEqConnNm = newPreDefColumn(state, s->pdstWtEq, "WaterUse Connection Name");
+        s->pdchWtEqPkFlw = newPreDefColumn(state, s->pdstWtEq, "Peak Water Flow Rate [m3/s]");
+        s->pdchWtEqFlwFractSch = newPreDefColumn(state, s->pdstWtEq, "Peak Flow Multipler Schedule");
+        s->pdchWtEqFlwFractMax = newPreDefColumn(state, s->pdstWtEq, "Peak Flow Multipler Schedule Maximum");
+        s->pdchWtEqTargTempSch = newPreDefColumn(state, s->pdstWtEq, "Target Temperature Schedule");
+        s->pdchWtEqTargTempMax = newPreDefColumn(state, s->pdstWtEq, "Target Temperature  Schedule Maximum [C]");
+        s->pdchWtEqHotTempSch = newPreDefColumn(state, s->pdstWtEq, "Hot Supply Temperature Schedule");
+        s->pdchWtEqHotTempMax = newPreDefColumn(state, s->pdstWtEq, "Hot Supply Temperature  Schedule Maximum [C]");
+        s->pdchWtEqColdTempSch = newPreDefColumn(state, s->pdstWtEq, "Cold Supply Temperature Schedule");
+        s->pdchWtEqColdTempMin = newPreDefColumn(state, s->pdstWtEq, "Cold Supply Temperature  Schedule Minimum [C]");
+        s->pdchWtEqSensFracSch = newPreDefColumn(state, s->pdstWtEq, "Sensible Fraction Schedule");
+        s->pdchWtEqsensFracMax = newPreDefColumn(state, s->pdstWtEq, "Sensible Fraction  Schedule Maximum");
+        s->pdchWtEqLatFracSch = newPreDefColumn(state, s->pdstWtEq, "Latent Fraction Schedule");
+        s->pdchWtEqLatFracMax = newPreDefColumn(state, s->pdstWtEq, "Latent Fraction  Schedule Maximum");
+
         // Std 229 Chillers in Equipment Summary
         s->pdstChiller = newPreDefSubTable(state, s->pdrEquip, "Chillers");
 

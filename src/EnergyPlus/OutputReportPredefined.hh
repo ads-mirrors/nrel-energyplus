@@ -397,6 +397,25 @@ struct OutputReportPredefinedData : BaseGlobalStruct
     int pdchSWHUseSch = 0;
     int pdchSWHAmbZoneNm = 0;
 
+    // wateruse:equipment table
+    int pdstWtEq = 0;
+    int pdchWtEqZone = 0;
+    int pdchWtEqEndUse = 0;
+    int pdchWtEqPkFlw = 0;
+    int pdchWtEqFlwFractSch = 0;
+    int pdchWtEqFlwFractMax = 0;
+    int pdchWtEqTargTempSch = 0;
+    int pdchWtEqTargTempMax = 0;
+    int pdchWtEqConnNm = 0;
+    int pdchWtEqHotTempSch = 0;
+    int pdchWtEqHotTempMax = 0;
+    int pdchWtEqColdTempSch = 0;
+    int pdchWtEqColdTempMin = 0;
+    int pdchWtEqSensFracSch = 0;
+    int pdchWtEqsensFracMax = 0;
+    int pdchWtEqLatFracSch = 0;
+    int pdchWtEqLatFracMax = 0;
+
     // Std 229 Chiller Table in Equipment Summary
     int pdstChiller = 0;
     int pdchChillerType = 0;                        // Type

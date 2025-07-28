@@ -8103,7 +8103,8 @@ namespace UnitarySystems {
                 this->controlCoolingSystemToSP(state, AirLoopNum, FirstHVACIteration, HXUnitOn, CompressorOn);
                 PartLoadRatio = this->m_CoolingPartLoadFrac;
                 CompressorOn = HVAC::CompressorOp::Off;
-                if ((PartLoadRatio > 0.0) || (PartLoadRatio == 0.0 && this->m_CoolingSpeedRatio > 0.0)) {
+                // if ((PartLoadRatio > 0.0) || (PartLoadRatio == 0.0 && this->m_CoolingSpeedRatio > 0.0)) {
+                if (PartLoadRatio > 0.0) {
                     CompressorOn = HVAC::CompressorOp::On;
                     this->m_LastMode = CoolingMode;
                 }
@@ -8164,7 +8165,8 @@ namespace UnitarySystems {
                 this->controlCoolingSystemToSP(state, AirLoopNum, FirstHVACIteration, HXUnitOn, CompressorOn);
                 PartLoadRatio = this->m_CoolingPartLoadFrac;
                 CompressorOn = HVAC::CompressorOp::Off;
-                if ((PartLoadRatio > 0.0) || (PartLoadRatio == 0.0 && this->m_CoolingSpeedRatio > 0.0)) {
+                // if ((PartLoadRatio > 0.0) || (PartLoadRatio == 0.0 && this->m_CoolingSpeedRatio > 0.0)) {
+                if (PartLoadRatio > 0.0) {
                     CompressorOn = HVAC::CompressorOp::On;
                     this->m_LastMode = CoolingMode;
                 }
@@ -13972,7 +13974,9 @@ namespace UnitarySystems {
                                                                                         HVAC::CompressorOp::On);
                                     };
                                     General::SolveRoot(state, HumRatAcc, MaxIte, SolFla, SpeedRatio, f, 0.0, 1.0);
+                                    CycRatio = 0.0;
                                 }
+                                PartLoadFrac = SpeedRatio;
                             } else {
                                 if (this->m_CoolingSpeedNum == 1) {
                                     CycRatio = 1.0;

@@ -119,4 +119,20 @@ The EIO tables related to Airflow Stats Nominal and the Initialization Summary w
 
 Have been updated to add the input object name. This was done to identify the type of algorithm used.
 
+#### EquipmentSummary Service Water Heating - Additional Columns
+
+Several new columns were added to the Service Water Heating table:
+
+- Fuel Type
+- Set Point Schedule Name for Heater 1
+- Set Point at 11am First Wednesday for Heater 1
+- Days with Same 11am Value for Heater 1
+- Month Assumed for Heater 1
+- Set Point Schedule Name for Heater 2
+- Set Point at 11am First Wednesday for Heater 2
+- Days with Same 11am Value for Heater 2
+- Month Assumed for Heater 2
+- Peak Use Water Flow Rate
+- Use Flow Rate Fraction Schedule Name
+- Ambient Temperature Zone Name
 

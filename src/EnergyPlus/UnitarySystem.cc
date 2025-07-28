@@ -8103,7 +8103,6 @@ namespace UnitarySystems {
                 this->controlCoolingSystemToSP(state, AirLoopNum, FirstHVACIteration, HXUnitOn, CompressorOn);
                 PartLoadRatio = this->m_CoolingPartLoadFrac;
                 CompressorOn = HVAC::CompressorOp::Off;
-                // if ((PartLoadRatio > 0.0) || (PartLoadRatio == 0.0 && this->m_CoolingSpeedRatio > 0.0)) {
                 if (PartLoadRatio > 0.0) {
                     CompressorOn = HVAC::CompressorOp::On;
                     this->m_LastMode = CoolingMode;
@@ -8165,7 +8164,6 @@ namespace UnitarySystems {
                 this->controlCoolingSystemToSP(state, AirLoopNum, FirstHVACIteration, HXUnitOn, CompressorOn);
                 PartLoadRatio = this->m_CoolingPartLoadFrac;
                 CompressorOn = HVAC::CompressorOp::Off;
-                // if ((PartLoadRatio > 0.0) || (PartLoadRatio == 0.0 && this->m_CoolingSpeedRatio > 0.0)) {
                 if (PartLoadRatio > 0.0) {
                     CompressorOn = HVAC::CompressorOp::On;
                     this->m_LastMode = CoolingMode;

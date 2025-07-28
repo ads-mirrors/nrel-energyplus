@@ -47,6 +47,8 @@
 
 #pragma once
 
+#include <EnergyPlus/GroundHeatExchangers/Base.hh>
+
 namespace EnergyPlus {
 
 struct EnergyPlusData;

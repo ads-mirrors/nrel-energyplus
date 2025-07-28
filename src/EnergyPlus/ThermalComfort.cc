@@ -694,6 +694,8 @@ namespace ThermalComfort {
         Real64 PMV; // temporary variable to store calculated Fanger PMV value
         // VapPress    = CalcSatVapPressFromTemp(AirTemp)  !original
         // VapPress    = RelHum*VapPress                   !original might be in torrs
+        
+        // Reference: this subroutine is based on ANSI/ASHRAE Standard 55-2020 and ISO 7730:2005
 
         state.dataThermalComforts->VapPress = PsyPsatFnTemp(state, AirTemp); // use psych routines inside E+ , returns Pa
 

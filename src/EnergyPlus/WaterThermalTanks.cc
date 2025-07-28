@@ -12469,7 +12469,7 @@ void WaterThermalTankData::CalcStandardRatings(EnergyPlusData &state)
     if (this->UseInletNode == 0) {
         OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchSWHPkUseFlwRt, equipName, this->VolFlowRateMax);
     } else {
-        //JG: NOT SURE WHAT I SHOULD BE USING HERE
+        // JG: NOT SURE WHAT I SHOULD BE USING HERE
         OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchSWHPkUseFlwRt, equipName, this->VolFlowRateMax);
     }
     if (this->flowRateSched != nullptr) {
@@ -12501,7 +12501,6 @@ void WaterThermalTankData::CalcStandardRatings(EnergyPlusData &state)
         OutputReportPredefined::PreDefTableEntry(
             state, state.dataOutRptPredefined->pdchSWHAmbZoneNm, equipName, state.dataHeatBal->Zone(this->AmbientTempZone).Name);
     }
-
 
     // Write test results
     if (this->HeatPumpNum == 0) {

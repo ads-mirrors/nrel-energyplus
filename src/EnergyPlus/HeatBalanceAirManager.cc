@@ -3879,13 +3879,13 @@ void GetSimpleAirModelInputs(EnergyPlusData &state, bool &ErrorsFound) // IF err
             break;
         default:
             infilInputObjectType = "unknown";
-        }; 
+        };
 
         print(state.files.eio,
               Format_720,
               "ZoneInfiltration",
               state.dataHeatBal->Infiltration(Loop).Name,
-              infilInputObjectType, 
+              infilInputObjectType,
               state.dataHeatBal->Infiltration(Loop).sched->Name,
               state.dataHeatBal->Zone(ZoneNum).Name,
               state.dataHeatBal->Zone(ZoneNum).FloorArea,
@@ -3941,7 +3941,7 @@ void GetSimpleAirModelInputs(EnergyPlusData &state, bool &ErrorsFound) // IF err
             break;
         default:
             ventInputObjectType = "unknown";
-        }; 
+        };
 
         print(state.files.eio,
               Format_720,

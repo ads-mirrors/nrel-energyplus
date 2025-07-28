@@ -54,7 +54,11 @@
 #include <EnergyPlus/DataEnvironment.hh>
 #include <EnergyPlus/DataSurfaces.hh>
 #include <EnergyPlus/DataSystemVariables.hh>
-#include <EnergyPlus/GroundHeatExchangers.hh>
+#include <EnergyPlus/GroundHeatExchangers/Properties.hh>
+#include <EnergyPlus/GroundHeatExchangers/ResponseFactors.hh>
+#include <EnergyPlus/GroundHeatExchangers/Slinky.hh>
+#include <EnergyPlus/GroundHeatExchangers/Vertical.hh>
+#include <EnergyPlus/GroundHeatExchangers/State.hh>
 #include <EnergyPlus/HeatBalanceManager.hh>
 #include <EnergyPlus/Plant/DataPlant.hh>
 #include <EnergyPlus/Plant/PlantManager.hh>
@@ -4394,11 +4398,11 @@ TEST_F(EnergyPlusFixture, GroundHeatExchangerTest_GetVertProps)
 
     // good object name
     constexpr std::string_view goodObjName = "GHE-1 PROPS";
-    auto foundObject = GetVertProps(*state, std::string(goodObjName));
+    auto foundObject = GLHEVertProps::GetVertProps(*state, std::string(goodObjName));
     ASSERT_EQ(foundObject->name, goodObjName);
 
     // bad object name
-    ASSERT_THROW(GetVertProps(*state, "BAD NAME"), std::runtime_error);
+    ASSERT_THROW(GLHEVertProps::GetVertProps(*state, "BAD NAME"), std::runtime_error);
 
     std::string const errorString = delimited_string({
         "   ** Severe  ** Object=GroundHeatExchanger:Vertical:Properties, Name=BAD NAME - not found.",
@@ -4474,11 +4478,11 @@ TEST_F(EnergyPlusFixture, GroundHeatExchangerTest_GetSingleBH)
 
     // good object name
     constexpr std::string_view goodObjName = "GHE-1";
-    auto foundObject = GetSingleBH(*state, std::string(goodObjName));
+    auto foundObject = GLHEVertSingle::GetSingleBH(*state, std::string(goodObjName));
     ASSERT_EQ(foundObject->name, goodObjName);
 
     // bad object name
-    ASSERT_THROW(GetSingleBH(*state, "BAD NAME"), std::runtime_error);
+    ASSERT_THROW(GLHEVertSingle::GetSingleBH(*state, "BAD NAME"), std::runtime_error);
 
     std::string const errorString = delimited_string({
         "   ** Severe  ** Object=GroundHeatExchanger:Vertical:Single, Name=BAD NAME - not found.",
@@ -4548,11 +4552,11 @@ TEST_F(EnergyPlusFixture, GroundHeatExchangerTest_GetVertArray)
 
     // good object name
     constexpr std::string_view goodObjName = "GHE-ARRAY";
-    auto foundObject = GetVertArray(*state, std::string(goodObjName));
+    auto foundObject = GLHEVertArray::GetVertArray(*state, std::string(goodObjName));
     ASSERT_EQ(foundObject->name, goodObjName);
 
     // bad object name
-    ASSERT_THROW(GetVertArray(*state, "BAD NAME"), std::runtime_error);
+    ASSERT_THROW(GLHEVertArray::GetVertArray(*state, "BAD NAME"), std::runtime_error);
 
     std::string const errorString = delimited_string({
         "   ** Severe  ** Object=GroundHeatExchanger:Vertical:Array, Name=BAD NAME - not found.",

@@ -576,11 +576,13 @@ namespace WaterThermalTanks {
         Real64 HeaterHeight2;
         int HeaterNode2;
         Real64 TempSensorHeight2;
-        bool NeedsHeatOrCool;
+        Real64 NeedsHeatOrCoolReport;
         bool HeaterOn2;
         bool SavedHeaterOn2;
         Real64 AdditionalCond; // Additional destratification conductivity (W/m K)
         Real64 SetPointTemp2;  // Setpoint temperature of auxiliary heater 2 (C)
+        Real64 SensedTemp;
+        Real64 SensedTemp2;
         Sched::Schedule *setptTemp2Sched = nullptr;
         Real64 DeadBandDeltaTemp2;
         Real64 MaxCapacity2;
@@ -704,8 +706,8 @@ namespace WaterThermalTanks {
               SrcSidePlantLoc{}, SourceSideControlMode(SourceSideControl::IndirectHeatAltSetpoint), SizingRecoveryTime(0.0), MassFlowRateMax(0.0),
               VolFlowRateMin(0.0), MassFlowRateMin(0.0), TankTemp(0.0), SavedTankTemp(0.0), TankTempAvg(0.0), Height(0.0), HeightWasAutoSized(false),
               Perimeter(0.0), Shape(TankShape::VertCylinder), HeaterHeight1(0.0), HeaterNode1(0), TempSensorHeight1(0), HeaterOn1(false),
-              SavedHeaterOn1(false), HeaterHeight2(0.0), HeaterNode2(0), TempSensorHeight2(0), NeedsHeatOrCool(false), HeaterOn2(false), SavedHeaterOn2(false),
-              AdditionalCond(0.0), SetPointTemp2(0.0), DeadBandDeltaTemp2(0.0), MaxCapacity2(0.0), OffCycParaHeight(0.0), OnCycParaHeight(0.0),
+              SavedHeaterOn1(false), HeaterHeight2(0.0), HeaterNode2(0), TempSensorHeight2(0), NeedsHeatOrCoolReport(0.0), HeaterOn2(false), SavedHeaterOn2(false),
+              AdditionalCond(0.0), SetPointTemp2(0.0), SensedTemp(0.0), SensedTemp2(0.0), DeadBandDeltaTemp2(0.0), MaxCapacity2(0.0), OffCycParaHeight(0.0), OnCycParaHeight(0.0),
               SkinLossCoeff(0.0), SkinLossFracToZone(0.0), OffCycFlueLossCoeff(0.0), OffCycFlueLossFracToZone(0.0), UseInletHeight(0.0),
               UseOutletHeight(0.0), UseOutletHeightWasAutoSized(false), SourceInletHeight(0.0), SourceInletHeightWasAutoSized(false),
               SourceOutletHeight(0.0), UseInletStratNode(0), UseOutletStratNode(0), SourceInletStratNode(0), SourceOutletStratNode(0),

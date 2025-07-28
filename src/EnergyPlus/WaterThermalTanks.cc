@@ -5149,6 +5149,60 @@ void WaterThermalTankData::setupChilledWaterTankOutputVars(EnergyPlusData &state
                   this->Node(NodeNum).Inlets,
                   this->Node(NodeNum).Outlets);
         }
+
+        if (this->WaterThermalTankType == DataPlant::PlantEquipmentType::ChilledWaterTankStratified) {
+            SetupOutputVariable(state,
+                                format("{} Water Thermal Storage Tank Temperature Setpoint", ChilledOrHotKw),
+                                Constant::Units::C,
+                                this->SetPointTemp,
+                                OutputProcessor::TimeStepType::System,
+                                OutputProcessor::StoreType::Average,
+                                this->Name);
+            SetupOutputVariable(state,
+                                format("{} Water Thermal Storage Tank Temperature Sensor Value", ChilledOrHotKw),
+                                Constant::Units::C,
+                                this->SensedTemp,
+                                OutputProcessor::TimeStepType::System,
+                                OutputProcessor::StoreType::Average,
+                                this->Name);
+        } else if (this->WaterThermalTankType == DataPlant::PlantEquipmentType::HotWaterTankStratified) {
+            SetupOutputVariable(state,
+                                format("{} Water Thermal Storage Tank Top Temperature Setpoint", ChilledOrHotKw),
+                                Constant::Units::C,
+                                this->SetPointTemp,
+                                OutputProcessor::TimeStepType::System,
+                                OutputProcessor::StoreType::Average,
+                                this->Name);
+            SetupOutputVariable(state,
+                                format("{} Water Thermal Storage Tank Top Temperature Sensor Value", ChilledOrHotKw),
+                                Constant::Units::C,
+                                this->SensedTemp,
+                                OutputProcessor::TimeStepType::System,
+                                OutputProcessor::StoreType::Average,
+                                this->Name);
+            SetupOutputVariable(state,
+                                format("{} Water Thermal Storage Tank Bottom Temperature Setpoint", ChilledOrHotKw),
+                                Constant::Units::C,
+                                this->SetPointTemp2,
+                                OutputProcessor::TimeStepType::System,
+                                OutputProcessor::StoreType::Average,
+                                this->Name);
+            SetupOutputVariable(state,
+                                format("{} Water Thermal Storage Tank Bottom Temperature Sensor Value", ChilledOrHotKw),
+                                Constant::Units::C,
+                                this->SensedTemp2,
+                                OutputProcessor::TimeStepType::System,
+                                OutputProcessor::StoreType::Average,
+                                this->Name);
+            // fixme: temp output variable for debugging
+            SetupOutputVariable(state,
+                                format("{} Water Thermal Storage Needs Charge", ChilledOrHotKw),
+                                Constant::Units::C,
+                                this->NeedsHeatOrCoolReport,
+                                OutputProcessor::TimeStepType::System,
+                                OutputProcessor::StoreType::Average,
+                                this->Name);
+        }
     }
 }
 
@@ -6332,8 +6386,9 @@ void WaterThermalTankData::initialize(EnergyPlusData &state, bool const FirstHVA
     if (FirstHVACIteration) {
         // Get all scheduled values
         if (this->WaterThermalTankType == DataPlant::PlantEquipmentType::HotWaterTankStratified) {
-            //  yujie: change it to this for testing input output for now
+            // fixme: may need to deal with missing value
             this->SetPointTemp = this->setptTempSchedTop->getCurrentVal();
+            this->SetPointTemp2 = this->setptTempSchedBottom->getCurrentVal();
         } else {
             this->SetPointTemp = this->setptTempSched->getCurrentVal();
         }
@@ -6443,7 +6498,26 @@ void WaterThermalTankData::initialize(EnergyPlusData &state, bool const FirstHVA
             DeadBandTemp = this->SetPointTemp - this->DeadBandDeltaTemp;
         }
 
-        bool NeedsHeatOrCool = this->SourceHeatNeed(state, this->SavedUseOutletTemp, DeadBandTemp, this->SetPointTemp);
+        bool NeedsHeatOrCool = false;
+        if (this->WaterThermalTankType == DataPlant::PlantEquipmentType::HotWaterTankStratified) {
+            // node 1 is on top, node N is at the bottom, top would be min of the node index
+            int tmpNodeNumTop = min(this->HeaterNode1, this->HeaterNode2);
+            Real64 sensedTempTop = this->Node(tmpNodeNumTop).SavedTemp;
+            int tmpNodeNumBottom = max(this->HeaterNode1, this->HeaterNode2);
+            Real64 sensedTempBottom = this->Node(tmpNodeNumBottom).SavedTemp;
+            Real64 DeadBandTempTop = this->SetPointTemp + this->DeadBandDeltaTemp;
+            // top and bottom of the tank has the same deadband temperature for now
+            Real64 DeadBandTempBottom = this->SetPointTemp2 - this->DeadBandDeltaTemp;
+            bool NeedsHeatOrCoolBottom = this->SourceHeatNeed(state, sensedTempBottom, DeadBandTempBottom, this->SetPointTemp2);
+            bool NeedsHeatOrCoolTop = this->SourceHeatNeed(state, sensedTempTop, DeadBandTempTop, this->SetPointTemp);
+            NeedsHeatOrCool = NeedsHeatOrCoolBottom || NeedsHeatOrCoolTop;
+            this->SensedTemp = sensedTempTop;
+            this->SensedTemp2 = sensedTempBottom;
+        } else {
+            NeedsHeatOrCool = this->SourceHeatNeed(state, this->SavedUseOutletTemp, DeadBandTemp, this->SetPointTemp);
+            this->SensedTemp = this->SavedSourceOutletTemp;
+        }
+        this->NeedsHeatOrCoolReport = (Real64)NeedsHeatOrCool;
         Real64 mdotUse = this->PlantMassFlowRatesFunc(state,
                                                       this->UseInletNode,
                                                       FirstHVACIteration,
@@ -6469,13 +6543,17 @@ void WaterThermalTankData::initialize(EnergyPlusData &state, bool const FirstHVA
         Real64 sensedTemp;
         bool NeedsHeatOrCool = false;
         if (this->WaterThermalTankType == DataPlant::PlantEquipmentType::HotWaterTankStratified) {
-            int tmpNodeNumTop = max(this->HeaterNode1, this->HeaterNode2);
+            int tmpNodeNumTop = min(this->HeaterNode1, this->HeaterNode2);
             Real64 sensedTempTop = this->Node(tmpNodeNumTop).SavedTemp;
-            int tmpNodeNumBottom = min(this->HeaterNode1, this->HeaterNode2);
+            int tmpNodeNumBottom = max(this->HeaterNode1, this->HeaterNode2);
             Real64 sensedTempBottom = this->Node(tmpNodeNumBottom).SavedTemp;
             Real64 DeadBandTempTop = this->SetPointTemp + this->DeadBandDeltaTemp;
             Real64 DeadBandTempBottom = this->SetPointTemp2 - this->DeadBandDeltaTemp2;
-            NeedsHeatOrCool = this->SourceHeatNeed(state, sensedTempTop, DeadBandTempTop, this->NeedsHeatOrCool);
+            bool NeedsHeatOrCoolBottom = this->SourceHeatNeed(state, sensedTempBottom, DeadBandTempBottom, this->SetPointTemp2);
+            bool NeedsHeatOrCoolTop = this->SourceHeatNeed(state, sensedTempTop, DeadBandTempTop, this->SetPointTemp);
+            NeedsHeatOrCool = NeedsHeatOrCoolBottom || NeedsHeatOrCoolTop;
+            this->SensedTemp = sensedTempTop;
+            this->SensedTemp2 = sensedTempBottom;
         } else {
             if (this->WaterThermalTankType == DataPlant::PlantEquipmentType::ChilledWaterTankStratified) {
                 int tmpNodeNum = this->HeaterNode1;
@@ -6483,8 +6561,10 @@ void WaterThermalTankData::initialize(EnergyPlusData &state, bool const FirstHVA
             } else {
                 sensedTemp = this->SavedSourceOutletTemp;
             }
+            this->SensedTemp = sensedTemp;
             NeedsHeatOrCool = this->SourceHeatNeed(state, sensedTemp, DeadBandTemp, this->SetPointTemp);
         }
+        this->NeedsHeatOrCoolReport = (Real64)NeedsHeatOrCool;
 
         Real64 mdotSource = this->PlantMassFlowRatesFunc(state,
                                                          this->SourceInletNode,

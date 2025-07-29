@@ -584,6 +584,7 @@ namespace WaterThermalTanks {
         Real64 SensedTemp;        // Temperature sensor reading for the tank. For ThermalStorage:HotWater:Stratified, it's the temperature on top
         Real64 SensedTemp2;       // Temperature sensor reading for the tank. For ThermalStorage:HotWater:Stratified, it's the temperature on bottom
         int UseSideFlowDirection; // Use side flow direction, 1 = forward, -1 = reverse
+        int SourceSideFlowDirection; // Source side flow direction, 1 = forward, -1 = reverse
         Sched::Schedule *setptTemp2Sched = nullptr;
         Real64 DeadBandDeltaTemp2;
         Real64 MaxCapacity2;
@@ -708,7 +709,7 @@ namespace WaterThermalTanks {
               VolFlowRateMin(0.0), MassFlowRateMin(0.0), TankTemp(0.0), SavedTankTemp(0.0), TankTempAvg(0.0), Height(0.0), HeightWasAutoSized(false),
               Perimeter(0.0), Shape(TankShape::VertCylinder), HeaterHeight1(0.0), HeaterNode1(0), TempSensorHeight1(0), HeaterOn1(false),
               SavedHeaterOn1(false), HeaterHeight2(0.0), HeaterNode2(0), TempSensorHeight2(0), NeedsHeatOrCoolReport(0.0), HeaterOn2(false),
-              SavedHeaterOn2(false), AdditionalCond(0.0), SetPointTemp2(0.0), SensedTemp(0.0), SensedTemp2(0.0), UseSideFlowDirection(1),
+              SavedHeaterOn2(false), AdditionalCond(0.0), SetPointTemp2(0.0), SensedTemp(0.0), SensedTemp2(0.0), UseSideFlowDirection(1), SourceSideFlowDirection(1),
               DeadBandDeltaTemp2(0.0), MaxCapacity2(0.0), OffCycParaHeight(0.0), OnCycParaHeight(0.0), SkinLossCoeff(0.0), SkinLossFracToZone(0.0),
               OffCycFlueLossCoeff(0.0), OffCycFlueLossFracToZone(0.0), UseInletHeight(0.0), UseOutletHeight(0.0), UseOutletHeightWasAutoSized(false),
               SourceInletHeight(0.0), SourceInletHeightWasAutoSized(false), SourceOutletHeight(0.0), UseInletStratNode(0), UseOutletStratNode(0),

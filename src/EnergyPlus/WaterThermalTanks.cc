@@ -5202,6 +5202,20 @@ void WaterThermalTankData::setupChilledWaterTankOutputVars(EnergyPlusData &state
                                 OutputProcessor::TimeStepType::System,
                                 OutputProcessor::StoreType::Average,
                                 this->Name);
+            SetupOutputVariable(state,
+                format("{} Water Thermal Storage Tank Source Side Flow Direction", ChilledOrHotKw),
+                Constant::Units::None,
+                this->SourceSideFlowDirection,
+                OutputProcessor::TimeStepType::System,
+                OutputProcessor::StoreType::Average,
+                this->Name);
+            SetupOutputVariable(state,
+                format("{} Water Thermal Storage Tank Use Side Flow Direction", ChilledOrHotKw),
+                Constant::Units::None,
+                this->UseSideFlowDirection,
+                OutputProcessor::TimeStepType::System,
+                OutputProcessor::StoreType::Average,
+                this->Name);
         }
     }
 }
@@ -7889,9 +7903,22 @@ void WaterThermalTankData::CalcWaterThermalTankStratified(EnergyPlusData &state)
         if (this->UseSideFlowDirection < 0) {
             std::swap(actualUseInletStratNode, actualUseOutletStratNode);
         }
+
+        if (this->SourceFlowDirectionSched != nullptr) {
+            // Source the schedule to determine the flow direction
+            this->SourceSideFlowDirection = this->SourceFlowDirectionSched->getCurrentVal();
+        } else {
+            // Default to forward flow direction
+            this->SourceSideFlowDirection = 1.0;
+        }
+        int actualSourceInletStratNode = this->SourceInletStratNode;
+        int actualSourceOutletStratNode = this->SourceOutletStratNode;
+        if (this->SourceSideFlowDirection < 0) {
+            std::swap(actualSourceInletStratNode, actualSourceOutletStratNode);
+        }
         if (this->InletMode == InletPositionMode::Fixed) {
             CalcNodeMassFlowsWithDirection(
-                InletPositionMode::Fixed, actualUseInletStratNode, actualUseOutletStratNode, this->SourceInletStratNode, this->SourceOutletStratNode);
+                InletPositionMode::Fixed, actualUseInletStratNode, actualUseOutletStratNode, actualSourceInletStratNode, actualSourceOutletStratNode);
         }
     } else {
         if (this->InletMode == InletPositionMode::Fixed) {
@@ -7932,11 +7959,16 @@ void WaterThermalTankData::CalcWaterThermalTankStratified(EnergyPlusData &state)
                 if (this->UseSideFlowDirection < 0) {
                     std::swap(actualUseInletStratNode, actualUseOutletStratNode);
                 }
+                int actualSourceInletStratNode = this->SourceInletStratNode;
+                int actualSourceOutletStratNode = this->SourceOutletStratNode;
+                if (this->SourceSideFlowDirection < 0) {
+                    std::swap(actualSourceInletStratNode, actualSourceOutletStratNode);
+                }
                 CalcNodeMassFlowsWithDirection(InletPositionMode::Seeking,
                                                actualUseInletStratNode,
                                                actualUseOutletStratNode,
-                                               this->SourceInletStratNode,
-                                               this->SourceOutletStratNode);
+                                               actualSourceInletStratNode,
+                                               actualSourceOutletStratNode);
             } else {
                 CalcNodeMassFlows(InletPositionMode::Seeking);
             }

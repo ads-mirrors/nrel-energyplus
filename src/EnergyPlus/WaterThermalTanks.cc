@@ -7874,8 +7874,29 @@ void WaterThermalTankData::CalcWaterThermalTankStratified(EnergyPlusData &state)
     Real64 Qheater1;                      // Heating rate of burner or electric heating element 1 (W)
     Real64 Qheater2;                      // Heating rate of burner or electric heating element 2 (W)
 
-    if (this->InletMode == InletPositionMode::Fixed) {
-        CalcNodeMassFlows(InletPositionMode::Fixed);
+    // Before calling CalcNodeMassFlows, swap inlet/outlet if flow direction is reversed
+    if (this->WaterThermalTankType == DataPlant::PlantEquipmentType::HotWaterTankStratified) {
+        if (this->UseFlowDirectionSched != nullptr) {
+            // Use the schedule to determine the flow direction
+            this->UseSideFlowDirection = this->UseFlowDirectionSched->getCurrentVal();
+        } else {
+            // Default to forward flow direction
+            this->UseSideFlowDirection = 1.0;
+        }
+        // For stratified tanks, inlet and outlet nodes are swapped if flow direction is reversed
+        int actualUseInletStratNode = this->UseInletStratNode;
+        int actualUseOutletStratNode = this->UseOutletStratNode;
+        if (this->UseSideFlowDirection < 0) {
+            std::swap(actualUseInletStratNode, actualUseOutletStratNode);
+        }
+        if (this->InletMode == InletPositionMode::Fixed) {
+            CalcNodeMassFlowsWithDirection(
+                InletPositionMode::Fixed, actualUseInletStratNode, actualUseOutletStratNode, this->SourceInletStratNode, this->SourceOutletStratNode);
+        }
+    } else {
+        if (this->InletMode == InletPositionMode::Fixed) {
+            CalcNodeMassFlows(InletPositionMode::Fixed);
+        }
     }
 
     // Time remaining in the current DataGlobals::TimeStep (s)
@@ -7905,12 +7926,24 @@ void WaterThermalTankData::CalcWaterThermalTankStratified(EnergyPlusData &state)
         bool PrevHeaterOn2 = this->HeaterOn2;
 
         if (this->InletMode == InletPositionMode::Seeking) {
-            CalcNodeMassFlows(InletPositionMode::Seeking);
+            if (this->WaterThermalTankType == DataPlant::PlantEquipmentType::HotWaterTankStratified) {
+                int actualUseInletStratNode = this->UseInletStratNode;
+                int actualUseOutletStratNode = this->UseOutletStratNode;
+                if (this->UseSideFlowDirection < 0) {
+                    std::swap(actualUseInletStratNode, actualUseOutletStratNode);
+                }
+                CalcNodeMassFlowsWithDirection(InletPositionMode::Seeking,
+                                               actualUseInletStratNode,
+                                               actualUseOutletStratNode,
+                                               this->SourceInletStratNode,
+                                               this->SourceOutletStratNode);
+            } else {
+                CalcNodeMassFlows(InletPositionMode::Seeking);
+            }
         }
 
         // Heater control logic
         if (this->IsPassiveWaterTank) {
-            // Chilled Water Tank, no heating
             Qheater1 = 0.0;
             Qheater2 = 0.0;
         } else {
@@ -8437,6 +8470,142 @@ void WaterThermalTankData::CalcWaterThermalTankStratified(EnergyPlusData &state)
     // Add water heater skin losses and venting losses to ambient zone, if specified
     if (this->AmbientTempZone > 0) {
         this->AmbientZoneGain = -this->LossRate * this->SkinLossFracToZone - this->VentRate;
+    }
+}
+
+void WaterThermalTankData::CalcNodeMassFlowsWithDirection(
+    InletPositionMode inletMode, int useInletStratNod, int useOutletStratNode, int sourceInletStratNode, int sourceOutletStratNode)
+{
+    // SUBROUTINE INFORMATION:
+    //       AUTHOR         Peter Graham Ellis
+    //       DATE WRITTEN   January 2007
+    //       MODIFIED       na
+    //       RE-ENGINEERED  na
+
+    // PURPOSE OF THIS SUBROUTINE:
+    // Determines mass flow rates between nodes according to the locations of the use- and source-side inlet and outlet
+    // nodes.
+
+    // METHODOLOGY EMPLOYED:
+    // In 'Seeking' mode, nodes are searched between the user-specified inlet and outlet nodes to find the node closest
+    // in temperature to the inlet fluid temperature.  In 'Fixed' mode, the user-specified nodes are always used.
+    // Upward and downward flows are added to each node between an inlet and outlet.  Flows in both directions cancel out
+    // to leave only the net flow in one direction.
+
+    Real64 useMassFlowRate = this->UseMassFlowRate * this->UseEffectiveness;
+    Real64 sourceMassFlowRate = this->SourceMassFlowRate * this->SourceEffectiveness;
+
+    for (auto &e : this->Node) {
+        e.UseMassFlowRate = 0.0;
+        e.SourceMassFlowRate = 0.0;
+        e.MassFlowFromUpper = 0.0;
+        e.MassFlowFromLower = 0.0;
+        e.MassFlowToUpper = 0.0;
+        e.MassFlowToLower = 0.0;
+    }
+
+    if (inletMode == InletPositionMode::Seeking) {
+        // 'Seek' the node with the temperature closest to the inlet temperature
+        // Start at the user-specified inlet node and search to the user-specified outlet node
+        int Step;
+        if (useMassFlowRate > 0.0) {
+            if (useInletStratNod > useOutletStratNode) {
+                Step = -1;
+            } else {
+                Step = 1;
+            }
+            Real64 MinDeltaTemp = 1.0e6; // Some big number
+            int const NodeNum_stop(floop_end(useInletStratNod, useOutletStratNode, Step));
+            for (int NodeNum = useInletStratNod; NodeNum != NodeNum_stop; NodeNum += Step) {
+                Real64 DeltaTemp = std::abs(this->Node(NodeNum).Temp - this->UseInletTemp);
+                if (DeltaTemp < MinDeltaTemp) {
+                    MinDeltaTemp = DeltaTemp;
+                    useInletStratNod = NodeNum;
+                } else if (DeltaTemp > MinDeltaTemp) {
+                    break;
+                }
+            }
+        }
+
+        if (sourceMassFlowRate > 0.0) {
+            if (sourceInletStratNode > sourceOutletStratNode) {
+                Step = -1;
+            } else {
+                Step = 1;
+            }
+            Real64 MinDeltaTemp = 1.0e6; // Some big number
+            int const NodeNum_stop(floop_end(sourceInletStratNode, sourceOutletStratNode, Step));
+            for (int NodeNum = sourceInletStratNode; NodeNum != NodeNum_stop; NodeNum += Step) {
+                Real64 DeltaTemp = std::abs(this->Node(NodeNum).Temp - this->SourceInletTemp);
+                if (DeltaTemp < MinDeltaTemp) {
+                    MinDeltaTemp = DeltaTemp;
+                    sourceInletStratNode = NodeNum;
+                } else if (DeltaTemp > MinDeltaTemp) {
+                    break;
+                }
+            }
+        }
+    }
+
+    if (useInletStratNod > 0) {
+        this->Node(useInletStratNod).UseMassFlowRate = useMassFlowRate;
+    }
+    if (sourceInletStratNode > 0) {
+        this->Node(sourceInletStratNode).SourceMassFlowRate = sourceMassFlowRate;
+    }
+
+    if (useMassFlowRate > 0.0) {
+        if (useOutletStratNode > useInletStratNod) {
+            // Use-side flow is down
+            for (int NodeNum = useInletStratNod; NodeNum <= useOutletStratNode - 1; ++NodeNum) {
+                this->Node(NodeNum).MassFlowToLower += useMassFlowRate;
+            }
+            for (int NodeNum = useInletStratNod + 1; NodeNum <= useOutletStratNode; ++NodeNum) {
+                this->Node(NodeNum).MassFlowFromUpper += useMassFlowRate;
+            }
+
+        } else if (useOutletStratNode < useInletStratNod) {
+            // Use-side flow is up
+            for (int NodeNum = useOutletStratNode; NodeNum <= useInletStratNod - 1; ++NodeNum) {
+                this->Node(NodeNum).MassFlowFromLower += useMassFlowRate;
+            }
+            for (int NodeNum = useOutletStratNode + 1; NodeNum <= useInletStratNod; ++NodeNum) {
+                this->Node(NodeNum).MassFlowToUpper += useMassFlowRate;
+            }
+
+        } else {
+            // Use-side flow is across the node; no flow to other nodes
+        }
+    }
+
+    if (sourceMassFlowRate > 0.0) {
+        if (sourceOutletStratNode > sourceInletStratNode) {
+            // Source-side flow is down
+            for (int NodeNum = sourceInletStratNode; NodeNum <= sourceOutletStratNode - 1; ++NodeNum) {
+                this->Node(NodeNum).MassFlowToLower += sourceMassFlowRate;
+            }
+            for (int NodeNum = sourceInletStratNode + 1; NodeNum <= sourceOutletStratNode; ++NodeNum) {
+                this->Node(NodeNum).MassFlowFromUpper += sourceMassFlowRate;
+            }
+
+        } else if (sourceOutletStratNode < sourceInletStratNode) {
+            // Source-side flow is up
+            for (int NodeNum = sourceOutletStratNode; NodeNum <= sourceInletStratNode - 1; ++NodeNum) {
+                this->Node(NodeNum).MassFlowFromLower += sourceMassFlowRate;
+            }
+            for (int NodeNum = sourceOutletStratNode + 1; NodeNum <= sourceInletStratNode; ++NodeNum) {
+                this->Node(NodeNum).MassFlowToUpper += sourceMassFlowRate;
+            }
+
+        } else {
+            // Source-side flow is across the node; no flow to other nodes
+        }
+    }
+
+    // Cancel out any up and down flows
+    for (int NodeNum = 1; NodeNum <= this->Nodes; ++NodeNum) {
+        this->Node(NodeNum).MassFlowFromUpper = max((this->Node(NodeNum).MassFlowFromUpper - this->Node(NodeNum).MassFlowToUpper), 0.0);
+        this->Node(NodeNum).MassFlowFromLower = max((this->Node(NodeNum).MassFlowFromLower - this->Node(NodeNum).MassFlowToLower), 0.0);
     }
 }
 

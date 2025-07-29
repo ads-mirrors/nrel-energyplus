@@ -579,10 +579,11 @@ namespace WaterThermalTanks {
         Real64 NeedsHeatOrCoolReport;
         bool HeaterOn2;
         bool SavedHeaterOn2;
-        Real64 AdditionalCond; // Additional destratification conductivity (W/m K)
-        Real64 SetPointTemp2;  // Setpoint temperature of auxiliary heater 2 (C)
-        Real64 SensedTemp;
-        Real64 SensedTemp2;
+        Real64 AdditionalCond;    // Additional destratification conductivity (W/m K)
+        Real64 SetPointTemp2;     // Setpoint temperature of auxiliary heater 2 (C)
+        Real64 SensedTemp;        // Temperature sensor reading for the tank. For ThermalStorage:HotWater:Stratified, it's the temperature on top
+        Real64 SensedTemp2;       // Temperature sensor reading for the tank. For ThermalStorage:HotWater:Stratified, it's the temperature on bottom
+        int UseSideFlowDirection; // Use side flow direction, 1 = forward, -1 = reverse
         Sched::Schedule *setptTemp2Sched = nullptr;
         Real64 DeadBandDeltaTemp2;
         Real64 MaxCapacity2;
@@ -707,13 +708,13 @@ namespace WaterThermalTanks {
               VolFlowRateMin(0.0), MassFlowRateMin(0.0), TankTemp(0.0), SavedTankTemp(0.0), TankTempAvg(0.0), Height(0.0), HeightWasAutoSized(false),
               Perimeter(0.0), Shape(TankShape::VertCylinder), HeaterHeight1(0.0), HeaterNode1(0), TempSensorHeight1(0), HeaterOn1(false),
               SavedHeaterOn1(false), HeaterHeight2(0.0), HeaterNode2(0), TempSensorHeight2(0), NeedsHeatOrCoolReport(0.0), HeaterOn2(false),
-              SavedHeaterOn2(false), AdditionalCond(0.0), SetPointTemp2(0.0), SensedTemp(0.0), SensedTemp2(0.0), DeadBandDeltaTemp2(0.0),
-              MaxCapacity2(0.0), OffCycParaHeight(0.0), OnCycParaHeight(0.0), SkinLossCoeff(0.0), SkinLossFracToZone(0.0), OffCycFlueLossCoeff(0.0),
-              OffCycFlueLossFracToZone(0.0), UseInletHeight(0.0), UseOutletHeight(0.0), UseOutletHeightWasAutoSized(false), SourceInletHeight(0.0),
-              SourceInletHeightWasAutoSized(false), SourceOutletHeight(0.0), UseInletStratNode(0), UseOutletStratNode(0), SourceInletStratNode(0),
-              SourceOutletStratNode(0), InletMode(InletPositionMode::Fixed), InversionMixingRate(0.0), Nodes(0), VolFlowRate(0.0),
-              VolumeConsumed(0.0), UnmetRate(0.0), LossRate(0.0), FlueLossRate(0.0), UseRate(0.0), TotalDemandRate(0.0), SourceRate(0.0),
-              HeaterRate(0.0), HeaterRate1(0.0), HeaterRate2(0.0), FuelRate(0.0), FuelRate1(0.0), FuelRate2(0.0), VentRate(0.0),
+              SavedHeaterOn2(false), AdditionalCond(0.0), SetPointTemp2(0.0), SensedTemp(0.0), SensedTemp2(0.0), UseSideFlowDirection(1),
+              DeadBandDeltaTemp2(0.0), MaxCapacity2(0.0), OffCycParaHeight(0.0), OnCycParaHeight(0.0), SkinLossCoeff(0.0), SkinLossFracToZone(0.0),
+              OffCycFlueLossCoeff(0.0), OffCycFlueLossFracToZone(0.0), UseInletHeight(0.0), UseOutletHeight(0.0), UseOutletHeightWasAutoSized(false),
+              SourceInletHeight(0.0), SourceInletHeightWasAutoSized(false), SourceOutletHeight(0.0), UseInletStratNode(0), UseOutletStratNode(0),
+              SourceInletStratNode(0), SourceOutletStratNode(0), InletMode(InletPositionMode::Fixed), InversionMixingRate(0.0), Nodes(0),
+              VolFlowRate(0.0), VolumeConsumed(0.0), UnmetRate(0.0), LossRate(0.0), FlueLossRate(0.0), UseRate(0.0), TotalDemandRate(0.0),
+              SourceRate(0.0), HeaterRate(0.0), HeaterRate1(0.0), HeaterRate2(0.0), FuelRate(0.0), FuelRate1(0.0), FuelRate2(0.0), VentRate(0.0),
               OffCycParaFuelRate(0.0), OffCycParaRateToTank(0.0), OnCycParaFuelRate(0.0), OnCycParaRateToTank(0.0), NetHeatTransferRate(0.0),
               CycleOnCount(0), CycleOnCount1(0), CycleOnCount2(0), RuntimeFraction(0.0), RuntimeFraction1(0.0), RuntimeFraction2(0.0),
               PartLoadRatio(0.0), UnmetEnergy(0.0), LossEnergy(0.0), FlueLossEnergy(0.0), UseEnergy(0.0), TotalDemandEnergy(0.0), SourceEnergy(0.0),
@@ -744,6 +745,9 @@ namespace WaterThermalTanks {
         Real64 PartLoadFactor(EnergyPlusData &state, Real64 PartLoadRatio_loc);
 
         void CalcNodeMassFlows(InletPositionMode inletMode);
+
+        void CalcNodeMassFlowsWithDirection(
+            InletPositionMode inletMode, int useInletStratNod, int useOutletStratNode, int sourceInletStratNode, int sourceOutletStratNode);
 
         void SetupStratifiedNodes(EnergyPlusData &state);
 

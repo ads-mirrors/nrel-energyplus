@@ -123,6 +123,12 @@
     1,                       !- Upper Limit Value
     Discrete;                !- Numeric Type
 
+  ScheduleTypeLimits,
+    FlowDir,                  !- Name
+    -1,                       !- Lower Limit Value
+    1,                       !- Upper Limit Value
+    Discrete;                !- Numeric Type
+
   Schedule:Constant,Heating Coil Load Loop Setpoint Temperature Schedule,Any Number,65.0;
 
   Schedule:Constant,AlwaysOnSchedule,On/Off,1;
@@ -417,7 +423,7 @@
     0.0,                     !- Uniform Skin Loss Coefficient per Unit Area to Ambient Temperature {W/m2-K}
     Tank Use Inlet Node,     !- Use Side Inlet Node Name
     Tank Use Outlet Node,    !- Use Side Outlet Node Name
-    ,                        !- Use Side Flow Direction Schedule
+    Tank Use Flow Dir Sched, !- Use Side Flow Direction Schedule
     1.0,                     !- Use Side Heat Transfer Effectiveness
     ALWAYS_ON,               !- Use Side Availability Schedule Name
     0.15,                    !- Use Side Inlet Height {m}
@@ -472,6 +478,13 @@
     Through: 12/31,          !- Field 1
     FOR: AllDays,            !- Field 2
     Until: 24:00,1.0;        !- Field 7
+
+  Schedule:Compact,
+    Tank Use Flow Dir Sched, !- Name
+    FlowDir,                 !- Schedule Type Limits Name
+    Through: 12/31,          !- Field 1
+    FOR: AllDays,            !- Field 2
+    Until: 24:00,-1.0;        !- Field 7
 
   LoadProfile:Plant,
     Heating Coil Load Profile,  !- Name

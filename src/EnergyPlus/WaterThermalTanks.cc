@@ -834,7 +834,7 @@ bool getDesuperHtrInput(EnergyPlusData &state)
                                            DesupHtr.HeatReclaimRecoveryEff));
                     ErrorsFound = true;
                 }
-            }    // Blank Num(2)
+            } // Blank Num(2)
         } else { // max is 0.3 for all other sources
             if (lNumericFieldBlanks(2)) {
                 DesupHtr.HeatReclaimRecoveryEff = 0.25;
@@ -851,7 +851,7 @@ bool getDesuperHtrInput(EnergyPlusData &state)
                     ErrorsFound = true;
                 }
             } // Blank Num(2)
-        }     // setting limits on heat recovery efficiency
+        } // setting limits on heat recovery efficiency
 
         //       Find the Refrigeration equipment index associated with the desuperheater heating coil.
         bool errFlag = false;
@@ -4546,7 +4546,7 @@ bool GetWaterThermalTankInput(EnergyPlusData &state)
                                               "Configuration is either ZoneAirOnly or ZoneAndOutdoorAir.");
                             ErrorsFound = true;
                         } // ALLOCATED
-                    }     // InletAirConfiguration
+                    } // InletAirConfiguration
 
                     if (Tank.WaterThermalTankType == DataPlant::PlantEquipmentType::WtrHeaterStratified) {
 
@@ -4909,7 +4909,7 @@ bool GetWaterThermalTankInput(EnergyPlusData &state)
                     }
 
                 } // found water heater num okay
-            }     // loop over sizing objects
+            } // loop over sizing objects
 
         } // any water heater sizing objects
 
@@ -5203,19 +5203,19 @@ void WaterThermalTankData::setupChilledWaterTankOutputVars(EnergyPlusData &state
                                 OutputProcessor::StoreType::Average,
                                 this->Name);
             SetupOutputVariable(state,
-                format("{} Water Thermal Storage Tank Source Side Flow Direction", ChilledOrHotKw),
-                Constant::Units::None,
-                this->SourceSideFlowDirection,
-                OutputProcessor::TimeStepType::System,
-                OutputProcessor::StoreType::Average,
-                this->Name);
+                                format("{} Water Thermal Storage Tank Source Side Flow Direction", ChilledOrHotKw),
+                                Constant::Units::None,
+                                this->SourceSideFlowDirection,
+                                OutputProcessor::TimeStepType::System,
+                                OutputProcessor::StoreType::Average,
+                                this->Name);
             SetupOutputVariable(state,
-                format("{} Water Thermal Storage Tank Use Side Flow Direction", ChilledOrHotKw),
-                Constant::Units::None,
-                this->UseSideFlowDirection,
-                OutputProcessor::TimeStepType::System,
-                OutputProcessor::StoreType::Average,
-                this->Name);
+                                format("{} Water Thermal Storage Tank Use Side Flow Direction", ChilledOrHotKw),
+                                Constant::Units::None,
+                                this->UseSideFlowDirection,
+                                OutputProcessor::TimeStepType::System,
+                                OutputProcessor::StoreType::Average,
+                                this->Name);
         }
     }
 }
@@ -8863,8 +8863,8 @@ void WaterThermalTankData::CalcDesuperheaterWaterHeater(EnergyPlusData &state, b
                                                DesupHtr.InsuffTemperatureWarn);
                 return;
             } // Temp too low
-        }     // desuperheater source is condenser_refrigeration
-    }         // validsourcetype
+        } // desuperheater source is condenser_refrigeration
+    } // validsourcetype
 
     DesupHtr.OffCycParaFuelRate = DesupHtr.OffCycParaLoad;
     DesupHtr.OffCycParaFuelEnergy = DesupHtr.OffCycParaFuelRate * state.dataHVACGlobal->TimeStepSysSec;
@@ -11112,7 +11112,7 @@ void WaterThermalTankData::SizeSupplySidePlantConnections(EnergyPlusData &state,
             this->PlantUseMassFlowRateMax = this->UseDesignVolFlowRate * rho;
 
         } // autosizing needed.
-    }     // connected to plant
+    } // connected to plant
 
     if ((this->SourceInletNode > 0) && (loopNum == this->SrcSidePlantLoc.loopNum)) {
         if (this->SourceDesignVolFlowRateWasAutoSized) {
@@ -11168,7 +11168,7 @@ void WaterThermalTankData::SizeSupplySidePlantConnections(EnergyPlusData &state,
                 this->PlantSourceMassFlowRateMax = this->SourceDesignVolFlowRate * rho;
             }
         } // autosizing needed.
-    }     // connected to plant
+    } // connected to plant
 }
 
 void WaterThermalTankData::SizeTankForDemandSide(EnergyPlusData &state)
@@ -11874,7 +11874,7 @@ void WaterThermalTankData::SizeDemandSidePlantConnections(EnergyPlusData &state)
             }
             this->PlantUseMassFlowRateMax = this->UseDesignVolFlowRate * rho;
         } // autosizing needed.
-    }     // connected to plant
+    } // connected to plant
 
     if (this->SourceInletNode > 0) {
         if (this->SourceDesignVolFlowRateWasAutoSized) {
@@ -11955,7 +11955,7 @@ void WaterThermalTankData::SizeDemandSidePlantConnections(EnergyPlusData &state)
             }
             this->PlantSourceMassFlowRateMax = this->SourceDesignVolFlowRate * rho;
         } // autosizing needed.
-    }     // connected to plant
+    } // connected to plant
 
     if (ErrorsFound) {
         ShowFatalError(state, "Preceding sizing errors cause program termination");

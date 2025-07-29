@@ -2059,7 +2059,9 @@ TEST_F(EnergyPlusFixture, GetZoneAirSetPoints_Test)
 
     ASSERT_THROW(GetZoneAirSetPoints(*state), std::runtime_error);
 
-    EXPECT_TRUE(compare_err_stream_substring("ZoneControl:Thermostat control name=THISISINVALID was not found", true));
+    EXPECT_TRUE(compare_err_stream_substring("ZoneControl:Thermostat = ANOTHERZONE THERMOSTAT, control name = THISISINVALID was not found in "
+                                             "ThermostatSetpoint object type = ThermostatSetpoint:SingleHeating.",
+                                             true));
 }
 
 #ifdef GET_OUT

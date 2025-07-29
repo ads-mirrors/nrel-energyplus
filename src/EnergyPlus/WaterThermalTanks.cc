@@ -5196,7 +5196,7 @@ void WaterThermalTankData::setupChilledWaterTankOutputVars(EnergyPlusData &state
                                 this->Name);
             // fixme: temp output variable for debugging
             SetupOutputVariable(state,
-                                format("{} Water Thermal Storage Needs Charge", ChilledOrHotKw),
+                                format("{} Water Thermal Storage Tank Needs Charge", ChilledOrHotKw),
                                 Constant::Units::C,
                                 this->NeedsHeatOrCoolReport,
                                 OutputProcessor::TimeStepType::System,

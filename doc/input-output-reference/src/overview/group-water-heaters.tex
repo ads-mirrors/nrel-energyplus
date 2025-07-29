@@ -3111,8 +3111,9 @@ The following output variables are reported for stratified hot water thermal sto
 \item Output:Variable,*,Hot Water Thermal Storage Tank Top Temperature Sensor Value,hourly; !- HVAC Average {[}C{]}
 \item Output:Variable,*,Hot Water Thermal Storage Tank Bottom Temperature Setpoint,hourly; !- HVAC Average {[}C{]}
 \item Output:Variable,*,Hot Water Thermal Storage Tank Bottom Temperature Sensor Value,hourly; !- HVAC Average {[}C{]}
-\item Output:Variable,*,Hot Water Thermal Storage Needs Charge,hourly; !- HVAC Average {[}C{]}
-
+\item Output:Variable,*,Hot Water Thermal Storage Tank Needs Charge,hourly; !- HVAC Average {[}C{]}
+\item Output:Variable,*,Hot Water Thermal Storage Tank Source Side Flow Direction,hourly; !- HVAC Average {[}{]}
+\item Output:Variable,*,Hot Water Thermal Storage Tank Use Side Flow Direction,hourly; !- HVAC Average {[}{]}
 \end{itemize}
 \paragraph{Hot Water Thermal Storage Tank Temperature
 {[}C{]}}\label{hot-water-thermal-storage-tank-temperature-thermalstoragehotwaterstratified}
@@ -3217,7 +3218,19 @@ The bottom temperature setpoint temperature for the tank.
 
 The bottom temperature sensor value for the tank.
 
-\paragraph{Hot Water Thermal Storage Needs Charge}\label{hot-water-thermal-storage-needs-charge-thermalstoragehotwaterstratified}
+\paragraph{Hot Water Thermal Storage Tank Needs Charge}\label{hot-water-thermal-storage-needs-charge-thermalstoragehotwaterstratified}
 
 Whether the tank needs to be charged or not. This is a boolean value that is 1
 if the tank needs to be charged, and 0 if it does not.
+
+\paragraph{Hot Water Thermal Storage Tank Source Side Flow Direction}\label{hot-water-thermal-storage-source-side-flow-direction-thermalstoragehotwaterstratified}
+
+The flow direction of the source side water. This is a numeric value that is 1
+if the flow is from the source side inlet to the source side outlet, and -1 if
+the flow is from the source side outlet to the source side inlet.
+
+\paragraph{Hot Water Thermal Storage Tank Use Side Flow Direction}\label{hot-water-thermal-storage-use-side-flow-direction-thermalstoragehotwaterstratified}
+
+The flow direction of the use side water. This is a numeric value that is 1 if
+the flow is from the use side inlet to the use side outlet, and -1 if the flow
+is from the use side outlet to the use side inlet.

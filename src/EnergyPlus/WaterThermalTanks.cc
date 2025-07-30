@@ -3395,6 +3395,7 @@ bool getWaterTankMixedInput(EnergyPlusData &state)
         }
 
         Tank.IsChilledWaterTank = true;
+        Tank.IsPassiveWaterTank = true;
         Tank.EndUseSubcategoryName = "Chilled Water Storage";
 
         Tank.Volume = state.dataIPShortCut->rNumericArgs(1);
@@ -4010,7 +4011,7 @@ bool getWaterTankStratifiedInput(EnergyPlusData &state, std::string objectType)
                                                                     Tank.InletNodeName1,
                                                                     ErrorsFound,
                                                                     DataLoopNode::ConnectionObjectType::ThermalStorageChilledWaterStratified,
-                                                                    thisObjectName,
+                                                                    Util::makeUPPER(thisObjectName),
                                                                     DataLoopNode::NodeFluidType::Water,
                                                                     DataLoopNode::ConnectionType::Inlet,
                                                                     NodeInputManager::CompFluidStream::Primary,
@@ -4020,7 +4021,7 @@ bool getWaterTankStratifiedInput(EnergyPlusData &state, std::string objectType)
                                                                      Tank.OutletNodeName1,
                                                                      ErrorsFound,
                                                                      DataLoopNode::ConnectionObjectType::ThermalStorageChilledWaterStratified,
-                                                                     thisObjectName,
+                                                                     Util::makeUPPER(thisObjectName),
                                                                      DataLoopNode::NodeFluidType::Water,
                                                                      DataLoopNode::ConnectionType::Outlet,
                                                                      NodeInputManager::CompFluidStream::Primary,
@@ -4035,7 +4036,7 @@ bool getWaterTankStratifiedInput(EnergyPlusData &state, std::string objectType)
                                                                        Tank.InletNodeName2,
                                                                        ErrorsFound,
                                                                        DataLoopNode::ConnectionObjectType::ThermalStorageChilledWaterStratified,
-                                                                       thisObjectName,
+                                                                       Util::makeUPPER(thisObjectName),
                                                                        DataLoopNode::NodeFluidType::Water,
                                                                        DataLoopNode::ConnectionType::Inlet,
                                                                        NodeInputManager::CompFluidStream::Secondary,
@@ -4045,7 +4046,7 @@ bool getWaterTankStratifiedInput(EnergyPlusData &state, std::string objectType)
                                                                         Tank.OutletNodeName2,
                                                                         ErrorsFound,
                                                                         DataLoopNode::ConnectionObjectType::ThermalStorageChilledWaterStratified,
-                                                                        thisObjectName,
+                                                                        Util::makeUPPER(thisObjectName),
                                                                         DataLoopNode::NodeFluidType::Water,
                                                                         DataLoopNode::ConnectionType::Outlet,
                                                                         NodeInputManager::CompFluidStream::Secondary,

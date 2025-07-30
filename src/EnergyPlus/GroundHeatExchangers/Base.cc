@@ -630,17 +630,17 @@ void GetGroundHeatExchangerInput(EnergyPlusData &state)
 
     // GET NUMBER OF ALL EQUIPMENT TYPES
     state.dataGroundHeatExchanger->numVerticalGLHEs =
-        state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, "GroundHeatExchanger:System");
+        state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, GLHEVert::moduleName);
     state.dataGroundHeatExchanger->numSlinkyGLHEs =
-        state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, "GroundHeatExchanger:Slinky");
+        state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, GLHESlinky::moduleName);
     state.dataGroundHeatExchanger->numVertArray =
-        state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, "GroundHeatExchanger:Vertical:Array");
+        state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, GLHEVertArray::moduleName);
     state.dataGroundHeatExchanger->numVertProps =
-        state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, "GroundHeatExchanger:Vertical:Properties");
+        state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, GLHEVertProps::moduleName);
     state.dataGroundHeatExchanger->numResponseFactors =
-        state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, "GroundHeatExchanger:ResponseFactors");
+        state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, GLHEResponseFactors::moduleName);
     state.dataGroundHeatExchanger->numSingleBorehole =
-        state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, "GroundHeatExchanger:Vertical:Single");
+        state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, GLHEVertSingle::moduleName);
 
     if (state.dataGroundHeatExchanger->numVerticalGLHEs <= 0 && state.dataGroundHeatExchanger->numSlinkyGLHEs <= 0) {
         ShowSevereError(state, "Error processing inputs for GLHE objects");
@@ -650,120 +650,95 @@ void GetGroundHeatExchangerInput(EnergyPlusData &state)
     }
 
     if (state.dataGroundHeatExchanger->numVertProps > 0) {
-
-        std::string const currObj = "GroundHeatExchanger:Vertical:Properties";
-
-        auto const instances = state.dataInputProcessing->inputProcessor->epJSON.find(currObj);
+        auto const instances = state.dataInputProcessing->inputProcessor->epJSON.find(GLHEVertProps::moduleName);
         if (instances == state.dataInputProcessing->inputProcessor->epJSON.end()) {
-            ShowSevereError(state, format("{}: Somehow getNumObjectsFound was > 0 but epJSON.find found 0", currObj)); // LCOV_EXCL_LINE
+            ShowSevereError(state, format("{}: Somehow getNumObjectsFound was > 0 but epJSON.find found 0", GLHEVertProps::moduleName)); // LCOV_EXCL_LINE
         }
-
         auto &instancesValue = instances.value();
         for (auto it = instancesValue.begin(); it != instancesValue.end(); ++it) {
             auto const &instance = it.value();
             std::string const &objName = it.key();
             std::string const &objNameUC = Util::makeUPPER(objName);
-            state.dataInputProcessing->inputProcessor->markObjectAsUsed(currObj, objName);
+            state.dataInputProcessing->inputProcessor->markObjectAsUsed(GLHEVertProps::moduleName, objName);
             std::shared_ptr<GLHEVertProps> thisObj(new GLHEVertProps(state, objNameUC, instance));
             state.dataGroundHeatExchanger->vertPropsVector.push_back(thisObj);
         }
     }
 
     if (state.dataGroundHeatExchanger->numResponseFactors > 0) {
-
-        std::string const currObj = "GroundHeatExchanger:ResponseFactors";
-
-        auto const instances = state.dataInputProcessing->inputProcessor->epJSON.find(currObj);
+        auto const instances = state.dataInputProcessing->inputProcessor->epJSON.find(GLHEResponseFactors::moduleName);
         if (instances == state.dataInputProcessing->inputProcessor->epJSON.end()) {
-            ShowSevereError(state, format("{}: Somehow getNumObjectsFound was > 0 but epJSON.find found 0", currObj)); // LCOV_EXCL_LINE
+            ShowSevereError(state, format("{}: Somehow getNumObjectsFound was > 0 but epJSON.find found 0", GLHEResponseFactors::moduleName)); // LCOV_EXCL_LINE
         }
-
         auto &instancesValue = instances.value();
         for (auto it = instancesValue.begin(); it != instancesValue.end(); ++it) {
             auto const &instance = it.value();
             std::string const &objName = it.key();
             std::string const &objNameUC = Util::makeUPPER(objName);
-            state.dataInputProcessing->inputProcessor->markObjectAsUsed(currObj, objName);
+            state.dataInputProcessing->inputProcessor->markObjectAsUsed(GLHEResponseFactors::moduleName, objName);
             std::shared_ptr<GLHEResponseFactors> thisObj(new GLHEResponseFactors(state, objNameUC, instance));
             state.dataGroundHeatExchanger->responseFactorsVector.push_back(thisObj);
         }
     }
 
     if (state.dataGroundHeatExchanger->numVertArray > 0) {
-
-        std::string const currObj = "GroundHeatExchanger:Vertical:Array";
-
-        auto const instances = state.dataInputProcessing->inputProcessor->epJSON.find(currObj);
+        auto const instances = state.dataInputProcessing->inputProcessor->epJSON.find(GLHEVertArray::moduleName);
         if (instances == state.dataInputProcessing->inputProcessor->epJSON.end()) {
-            ShowSevereError(state, format("{}: Somehow getNumObjectsFound was > 0 but epJSON.find found 0", currObj)); // LCOV_EXCL_LINE
+            ShowSevereError(state, format("{}: Somehow getNumObjectsFound was > 0 but epJSON.find found 0", GLHEVertArray::moduleName)); // LCOV_EXCL_LINE
         }
-
         auto &instancesValue = instances.value();
         for (auto it = instancesValue.begin(); it != instancesValue.end(); ++it) {
             auto const &instance = it.value();
             std::string const &objName = it.key();
             std::string const &objNameUC = Util::makeUPPER(objName);
-            state.dataInputProcessing->inputProcessor->markObjectAsUsed(currObj, objName);
+            state.dataInputProcessing->inputProcessor->markObjectAsUsed(GLHEVertArray::moduleName, objName);
             std::shared_ptr<GLHEVertArray> thisObj(new GLHEVertArray(state, objNameUC, instance));
             state.dataGroundHeatExchanger->vertArraysVector.push_back(thisObj);
         }
     }
 
     if (state.dataGroundHeatExchanger->numSingleBorehole > 0) {
-
-        std::string const currObj = "GroundHeatExchanger:Vertical:Single";
-
-        auto const instances = state.dataInputProcessing->inputProcessor->epJSON.find(currObj);
+        auto const instances = state.dataInputProcessing->inputProcessor->epJSON.find(GLHEVertSingle::moduleName);
         if (instances == state.dataInputProcessing->inputProcessor->epJSON.end()) {
-            ShowSevereError(state, format("{}: Somehow getNumObjectsFound was > 0 but epJSON.find found 0", currObj)); // LCOV_EXCL_LINE
+            ShowSevereError(state, format("{}: Somehow getNumObjectsFound was > 0 but epJSON.find found 0", GLHEVertSingle::moduleName)); // LCOV_EXCL_LINE
         }
-
         auto &instancesValue = instances.value();
         for (auto it = instancesValue.begin(); it != instancesValue.end(); ++it) {
             auto const &instance = it.value();
             std::string const &objName = it.key();
             std::string const &objNameUC = Util::makeUPPER(objName);
-            state.dataInputProcessing->inputProcessor->markObjectAsUsed(currObj, objName);
+            state.dataInputProcessing->inputProcessor->markObjectAsUsed(GLHEVertSingle::moduleName, objName);
             std::shared_ptr<GLHEVertSingle> thisObj(new GLHEVertSingle(state, objNameUC, instance));
             state.dataGroundHeatExchanger->singleBoreholesVector.push_back(thisObj);
         }
     }
 
     if (state.dataGroundHeatExchanger->numVerticalGLHEs > 0) {
-
-        std::string const currObj = "GroundHeatExchanger:System";
-
-        auto const instances = state.dataInputProcessing->inputProcessor->epJSON.find(currObj);
+        auto const instances = state.dataInputProcessing->inputProcessor->epJSON.find(GLHEVert::moduleName);
         if (instances == state.dataInputProcessing->inputProcessor->epJSON.end()) {
-            ShowSevereError(state, format("{}: Somehow getNumObjectsFound was > 0 but epJSON.find found 0", currObj)); // LCOV_EXCL_LINE
+            ShowSevereError(state, format("{}: Somehow getNumObjectsFound was > 0 but epJSON.find found 0", GLHEVert::moduleName)); // LCOV_EXCL_LINE
         }
-
         auto &instancesValue = instances.value();
         for (auto it = instancesValue.begin(); it != instancesValue.end(); ++it) {
             auto const &instance = it.value();
             std::string const &objName = it.key();
             std::string const &objNameUC = Util::makeUPPER(objName);
-            state.dataInputProcessing->inputProcessor->markObjectAsUsed(currObj, objName);
+            state.dataInputProcessing->inputProcessor->markObjectAsUsed(GLHEVert::moduleName, objName);
             state.dataGroundHeatExchanger->verticalGLHE.emplace_back(state, objNameUC, instance);
         }
     }
 
-    // SLINKY GLHE
     if (state.dataGroundHeatExchanger->numSlinkyGLHEs > 0) {
-
-        std::string const currObj = "GroundHeatExchanger:Slinky";
-
-        auto const instances = state.dataInputProcessing->inputProcessor->epJSON.find(currObj);
+        auto const instances = state.dataInputProcessing->inputProcessor->epJSON.find(GLHESlinky::moduleName);
         if (instances == state.dataInputProcessing->inputProcessor->epJSON.end()) {
-            ShowSevereError(state, format("{}: Somehow getNumObjectsFound was > 0 but epJSON.find found 0", currObj)); // LCOV_EXCL_LINE
+            ShowSevereError(state, format("{}: Somehow getNumObjectsFound was > 0 but epJSON.find found 0", GLHESlinky::moduleName)); // LCOV_EXCL_LINE
         }
-
         auto &instancesValue = instances.value();
         for (auto it = instancesValue.begin(); it != instancesValue.end(); ++it) {
             auto const &instance = it.value();
             std::string const &objName = it.key();
             std::string const &objNameUC = Util::makeUPPER(objName);
-            state.dataInputProcessing->inputProcessor->markObjectAsUsed(currObj, objName);
+            state.dataInputProcessing->inputProcessor->markObjectAsUsed(GLHESlinky::moduleName, objName);
             state.dataGroundHeatExchanger->slinkyGLHE.emplace_back(state, objNameUC, instance);
         }
     }

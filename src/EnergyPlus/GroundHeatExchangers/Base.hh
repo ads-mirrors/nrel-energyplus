@@ -71,7 +71,6 @@ namespace GroundHeatExchangers {
         ThermophysicalProps soil;
         PipeProps pipe;
         ThermophysicalProps grout;
-        std::shared_ptr<GLHEResponseFactors> myRespFactors;
         Real64 designFlow = 0.0;      // Design volumetric flow rate [m3/s]
         Real64 designMassFlow = 0.0;  // Design mass flow rate [kg/s]
         Real64 tempGround = 0.0;      // The far field temperature of the ground [degC]
@@ -95,6 +94,8 @@ namespace GroundHeatExchangers {
         Real64 totalTubeLength = 0.0; // The total length of pipe. NumBoreholes * BoreholeDepth OR Pi * Dcoil * NumCoils
         Real64 timeSS = 0.0;          // Steady state time
         Real64 timeSSFactor = 0.0;    // Steady state time factor for calculation
+
+        std::shared_ptr<GLHEResponseFactors> myRespFactors;
         GroundTemp::BaseGroundTempsModel *groundTempModel = nullptr; // non-owning pointer
 
         // some statics pulled out into member variables

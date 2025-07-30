@@ -63,7 +63,7 @@ namespace GroundHeatExchangers {
 
     struct GLHEResponseFactors
     {
-        std::string const moduleName = "GroundHeatExchanger:ResponseFactors";
+        static constexpr auto moduleName = "GroundHeatExchanger:ResponseFactors";
         std::string name;                                        // Name
         unsigned int numBoreholes = 0;                           // Number of boreholes
         int numGFuncPairs = 0;                                   // Number of g-function pairs

@@ -58,7 +58,7 @@ namespace GroundHeatExchangers {
 
     struct GLHESlinky : GLHEBase
     {
-        std::string const moduleName = "GroundHeatExchanger:Slinky";
+        static constexpr auto moduleName = "GroundHeatExchanger:Slinky";
         bool verticalConfig = false; // HX Configuration Flag
         Real64 coilDiameter = 0.0;   // Diameter of the slinky coils [m]
         Real64 coilPitch = 0.0;      // Center-to-center slinky coil spacing [m]

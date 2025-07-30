@@ -58,7 +58,7 @@ namespace GroundHeatExchangers {
     struct GLHEVert : GLHEBase // LCOV_EXCL_LINE
     {
 
-        std::string const moduleName = "GroundHeatExchanger:System";
+        static constexpr auto moduleName = "GroundHeatExchanger:System";
         Real64 bhDiameter = 0.0;  // Diameter of borehole {m}
         Real64 bhRadius = 0.0;    // Radius of borehole {m}
         Real64 bhLength = 0.0;    // Length of borehole {m}

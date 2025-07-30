@@ -59,30 +59,21 @@ GLHEResponseFactors::GLHEResponseFactors(EnergyPlusData &state, std::string cons
     // Check for duplicates
     for (auto &existingObj : state.dataGroundHeatExchanger->vertPropsVector) {
         if (objName == existingObj->name) {
-            ShowFatalError(state, format("Invalid input for {} object: Duplicate name found: {}", this->moduleName, existingObj->name));
+            ShowFatalError(state, format("Invalid input for {} object: Duplicate name found: {}", moduleName, existingObj->name));
         }
     }
 
     this->name = objName;
-    this->props = GLHEVertProps::GetVertProps(state, Util::makeUPPER(j["ghe_vertical_properties_object_name"].get<std::string>()));
+    this->props = GLHEVertProps::GetVertProps(state, Util::makeUPPER(j["ghe_vertical_properties_object_name"].get<std::string>()));  // TODO: this is one spot a properties object is looked up / assigned
     this->numBoreholes = j["number_of_boreholes"].get<int>();
     this->gRefRatio = j["g_function_reference_ratio"].get<Real64>();
     this->maxSimYears = state.dataEnvrn->MaxNumberSimYears;
-
     auto const &vars = j.at("g_functions");
-    std::vector<Real64> tmpLntts;
-    std::vector<Real64> tmpGvals;
     for (auto const &var : vars) {
-        tmpLntts.push_back(var.at("g_function_ln_t_ts_value").get<Real64>());
-        tmpGvals.push_back(var.at("g_function_g_value").get<Real64>());
+        this->LNTTS.push_back(var.at("g_function_ln_t_ts_value").get<Real64>());
+        this->GFNC.push_back(var.at("g_function_g_value").get<Real64>());
     }
-
-    this->numGFuncPairs = static_cast<int>(tmpLntts.size());
-
-    for (int i = 1; i <= static_cast<int>(tmpLntts.size()); ++i) {
-        this->LNTTS.push_back(tmpLntts[i - 1]);
-        this->GFNC.push_back(tmpGvals[i - 1]);
-    }
+    this->numGFuncPairs = static_cast<int>(this->LNTTS.size());
 }
 
 std::shared_ptr<GLHEResponseFactors> GetResponseFactor(EnergyPlusData &state, std::string const &objectName)
@@ -94,7 +85,6 @@ std::shared_ptr<GLHEResponseFactors> GetResponseFactor(EnergyPlusData &state, st
     if (thisObj != state.dataGroundHeatExchanger->responseFactorsVector.end()) {
         return *thisObj;
     }
-
     ShowSevereError(state, fmt::format("Object=GroundHeatExchanger:ResponseFactors, Name={} - not found.", objectName));
     ShowFatalError(state, "Preceding errors cause program termination");
 }

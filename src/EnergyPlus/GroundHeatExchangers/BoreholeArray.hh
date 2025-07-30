@@ -60,7 +60,7 @@ namespace GroundHeatExchangers {
 
     struct GLHEVertArray
     {
-        std::string const moduleName = "GroundHeatExchanger:Vertical:Array";
+        static constexpr auto moduleName = "GroundHeatExchanger:Vertical:Array";
         std::string name;                     // Name
         int numBHinXDirection = 0;            // Number of boreholes in X direction
         int numBHinYDirection = 0;            // Number of boreholes in Y direction

@@ -65,9 +65,9 @@ namespace EnergyPlus::GroundHeatExchangers {
 GLHEVert::GLHEVert(EnergyPlusData &state, std::string const &objName, nlohmann::json const &j)
 {
     // Check for duplicates
-    for (auto &existingObj : state.dataGroundHeatExchanger->singleBoreholesVector) {
-        if (objName == existingObj->name) {
-            ShowFatalError(state, format("Invalid input for {} object: Duplicate name found: {}", this->moduleName, existingObj->name));
+    for (auto &existingObj : state.dataGroundHeatExchanger->verticalGLHE) {
+        if (objName == existingObj.name) {
+            ShowFatalError(state, format("Invalid input for {} object: Duplicate name found: {}", this->moduleName, existingObj.name));
         }
     }
 
@@ -383,16 +383,12 @@ std::vector<Real64> GLHEVert::distances(MyCartesian const &point_i, MyCartesian 
     return retVals;
 }
 
-//******************************************************************************
-
 Real64 GLHEVert::calcResponse(std::vector<Real64> const &dists, Real64 const currTime) const
 {
     const Real64 pointToPointResponse = erfc(dists[0] / (2 * sqrt(this->soil.diffusivity * currTime))) / dists[0];
     const Real64 pointToReflectedResponse = erfc(dists[1] / (2 * sqrt(this->soil.diffusivity * currTime))) / dists[1];
     return pointToPointResponse - pointToReflectedResponse;
 }
-
-//******************************************************************************
 
 Real64 GLHEVert::integral(MyCartesian const &point_i, std::shared_ptr<GLHEVertSingle> const &bh_j, Real64 const currTime) const
 {

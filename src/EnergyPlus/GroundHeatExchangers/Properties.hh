@@ -89,7 +89,7 @@ namespace GroundHeatExchangers {
 
     struct GLHEVertProps
     {
-        std::string const moduleName = "GroundHeatExchanger:Vertical:Properties";
+        static constexpr auto moduleName = "GroundHeatExchanger:Vertical:Properties";
         std::string name;          // Name
         Real64 bhTopDepth = 0.0;   // Depth of top of borehole {m}
         Real64 bhLength = 0.0;     // Length of borehole from top of borehole {m}

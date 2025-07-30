@@ -67,7 +67,7 @@ namespace GroundHeatExchangers {
 
     struct GLHEVertSingle
     {
-        std::string const moduleName = "GroundHeatExchanger:Vertical:Single";
+        static constexpr auto moduleName = "GroundHeatExchanger:Vertical:Single";
         std::string name;                     // Name
         Real64 xLoc = 0.0;                    // X-direction location {m}
         Real64 yLoc = 0.0;                    // Y-direction location {m}

@@ -780,8 +780,8 @@ std::string CreateSysTimeIntervalString(EnergyPlusData &state)
     //  ActualTimeS=INT(CurrentTime)+(SysTimeElapsed+(CurrentTime - INT(CurrentTime)))
     // CR6902  ActualTimeS=INT(CurrentTime-TimeStepZone)+SysTimeElapsed
     // [DC] TODO: Improve display accuracy up to fractional seconds using hh:mm:ss.0 format
-    Real64 ActualTimeS = state.dataGlobal->CurrentTime - state.dataGlobal->TimeStepZone + SysTimeElapsed;
-    Real64 ActualTimeE = ActualTimeS + TimeStepSys;
+    Real64 ActualTimeE = state.dataGlobal->CurrentTime - state.dataGlobal->TimeStepZone + SysTimeElapsed;
+    Real64 ActualTimeS = ActualTimeE - TimeStepSys;
     int ActualTimeHrS = int(ActualTimeS);
     //  ActualTimeHrE=INT(ActualTimeE)
     int ActualTimeMinS = nint((ActualTimeS - ActualTimeHrS) * FracToMin);

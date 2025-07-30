@@ -3775,6 +3775,12 @@ TEST_F(EnergyPlusFixture, MixedTank_WarnPotentialFreeze)
     // zero source mass flow rate
     Tank.SourceMassFlowRate = 0.0;
 
+    // set time in simulation for time stamp in error message
+    state->dataHVACGlobal->SysTimeElapsed = 0.5;
+    state->dataHVACGlobal->TimeStepSys = 0.5;
+    state->dataGlobal->CurrentTime = 24.0;
+    state->dataGlobal->TimeStepZone = 0.5;
+
     // Calls CalcWaterThermalTankMixed
     Tank.CalcWaterThermalTank(*state);
 
@@ -3791,7 +3797,7 @@ TEST_F(EnergyPlusFixture, MixedTank_WarnPotentialFreeze)
                                                        "   **   ~~~   ** Schedule will not be validated.",
                                                        "   ** Warning ** CalcWaterThermalTankMixed: WaterHeater:Mixed = 'CHILLEDWATERTANK':  "
                                                        "Temperature of tank < 2C indicates of possibility of freeze. Tank Temperature = 1.95 C.",
-                                                       "   **   ~~~   **  Environment=, at Simulation time= 00:-1 - 00:00"});
+                                                       "   **   ~~~   **  Environment=, at Simulation time= 23:30 - 24:00"});
     EXPECT_TRUE(compare_err_stream(error_string, true));
 }
 
@@ -3886,6 +3892,12 @@ TEST_F(EnergyPlusFixture, StratifiedTank_WarnPotentialFreeze)
     // zero source mass flow rate
     Tank.SourceMassFlowRate = 0.0;
 
+    // set time in simulation for time stamp in error message
+    state->dataHVACGlobal->SysTimeElapsed = 0.1;
+    state->dataHVACGlobal->TimeStepSys = 0.1;
+    state->dataGlobal->CurrentTime = 0.1;
+    state->dataGlobal->TimeStepZone = 0.1;
+
     // Calls CalcWaterThermalTankStratified
     Tank.CalcWaterThermalTank(*state);
 
@@ -3907,7 +3919,7 @@ TEST_F(EnergyPlusFixture, StratifiedTank_WarnPotentialFreeze)
                           "   **   ~~~   ** Schedule will not be validated.",
                           "   ** Warning ** CalcWaterThermalTankStratified: WaterHeater:Stratified = 'STRATIFIED CHILLEDWATERTANK':  Temperature of "
                           "tank < 2C indicates of possibility of freeze. Tank Temperature = 1.75 C.",
-                          "   **   ~~~   **  Environment=, at Simulation time= 00:-1 - 00:00"});
+                          "   **   ~~~   **  Environment=, at Simulation time= 00:00 - 00:06"});
     EXPECT_TRUE(compare_err_stream(error_string, true));
 }
 

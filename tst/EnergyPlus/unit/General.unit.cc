@@ -697,4 +697,44 @@ TEST_F(EnergyPlusFixture, General_findReportPeriodIdx)
     EXPECT_FALSE(reportPeriodFlags(1));
     EXPECT_FALSE(reportPeriodFlags(2));
 }
+
+TEST_F(EnergyPlusFixture, General_CreateSysTimeIntervalString_Test)
+{
+    // Unit test created as part of fix for Issue #10801
+    auto &dHVACG = state->dataHVACGlobal;
+    auto &dGlo = state->dataGlobal;
+    std::string resultingString;
+    std::string expectedString;
+
+    // Test 1: Middle of the day/middle of zone timestep (system time step less than zone timestep)
+    dHVACG->SysTimeElapsed = 0.10;
+    dHVACG->TimeStepSys = 0.05;
+    dGlo->CurrentTime = 10.6;
+    dGlo->TimeStepZone = 0.2;
+    expectedString = "10:27 - 10:30";
+
+    resultingString = CreateSysTimeIntervalString(*state);
+    EXPECT_EQ(resultingString, expectedString);
+
+    // Test 2: Beginning of the day/hour/timestep
+    dHVACG->SysTimeElapsed = 0.10;
+    dHVACG->TimeStepSys = 0.10;
+    dGlo->CurrentTime = 0.10;
+    dGlo->TimeStepZone = 0.10;
+    expectedString = "00:00 - 00:06";
+
+    resultingString = CreateSysTimeIntervalString(*state);
+    EXPECT_EQ(resultingString, expectedString);
+
+    // Test 3: End of the day/hour/timestep
+    dHVACG->SysTimeElapsed = 0.2;
+    dHVACG->TimeStepSys = 0.2;
+    dGlo->CurrentTime = 24.0;
+    dGlo->TimeStepZone = 0.2;
+    expectedString = "23:48 - 24:00";
+
+    resultingString = CreateSysTimeIntervalString(*state);
+    EXPECT_EQ(resultingString, expectedString);
+}
+
 } // namespace EnergyPlus

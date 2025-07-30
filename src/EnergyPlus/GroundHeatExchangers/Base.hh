@@ -62,7 +62,7 @@ namespace GroundHeatExchangers {
 
     struct GLHEBase : PlantComponent
     {
-        bool available = false; // need an array of logicals--load identifiers of available equipment
+        bool available = false; // load identifier of available equipment
         bool on = false;        // simulate the machine at it's operating part load ratio
         std::string name;       // user identifier
         PlantLocation plantLoc;
@@ -106,6 +106,15 @@ namespace GroundHeatExchangers {
         bool updateCurSimTime = true; // Used to reset the CurSimTime to reset after WarmupFlag
         bool triggerDesignDayReset = false;
         bool needToSetupOutputVars = true;
+
+        // to enable the calculation of the sub-hourly contribution.
+        // Recommended size, the product of Minimum sub-hourly history required and
+        // the maximum no of system time steps in an hour
+        int N = 1;                   // COUNTER OF TIME STEP
+        Real64 currentSimTime = 0.0; // Current simulation time in hours
+        int locHourOfDay = 0;
+        int locDayOfSim = 0;
+        Array1D<Real64> prevTimeSteps; // This is used to store only the Last Few time step's time
 
         ~GLHEBase() override = default;
 

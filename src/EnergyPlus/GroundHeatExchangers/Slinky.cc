@@ -167,8 +167,8 @@ GLHESlinky::GLHESlinky(EnergyPlusData &state, std::string const &objName, nlohma
     // Thermal diffusivity of the ground
     this->soil.diffusivity = this->soil.k / this->soil.rhoCp;
 
-    state.dataGroundHeatExchanger->prevTimeSteps.allocate(static_cast<int>((this->SubAGG + 1) * maxTSinHr + 1));
-    state.dataGroundHeatExchanger->prevTimeSteps = 0.0;
+    this->prevTimeSteps.allocate(static_cast<int>((this->SubAGG + 1) * maxTSinHr + 1));
+    this->prevTimeSteps = 0.0;
 
     if (this->pipe.thickness >= this->pipe.outDia / 2.0) {
         ShowSevereError(state, format("{}=\"{}\", invalid value in field.", this->moduleName, this->name));
@@ -718,8 +718,8 @@ void GLHESlinky::initEnvironment(EnergyPlusData &state, Real64 const CurTime)
     this->QnMonthlyAgg = 0.0;
     this->QnSubHr = 0.0;
     this->LastHourN = 0;
-    state.dataGroundHeatExchanger->prevTimeSteps = 0.0;
-    state.dataGroundHeatExchanger->currentSimTime = 0.0;
+    this->prevTimeSteps = 0.0;
+    this->currentSimTime = 0.0;
     this->QGLHE = 0.0;
     this->prevHour = 1;
 }

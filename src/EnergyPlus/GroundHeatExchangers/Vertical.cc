@@ -212,8 +212,8 @@ GLHEVert::GLHEVert(EnergyPlusData &state, std::string const &objName, nlohmann::
     this->QnSubHr.dimension(static_cast<int>((this->SubAGG + 1) * maxTSinHr + 1), 0.0);
     this->LastHourN.dimension(this->SubAGG + 1, 0);
 
-    state.dataGroundHeatExchanger->prevTimeSteps.allocate(static_cast<int>((this->SubAGG + 1) * maxTSinHr + 1));
-    state.dataGroundHeatExchanger->prevTimeSteps = 0.0;
+    this->prevTimeSteps.allocate(static_cast<int>((this->SubAGG + 1) * maxTSinHr + 1));
+    this->prevTimeSteps = 0.0;
 
     GroundTemp::ModelType modelType = static_cast<GroundTemp::ModelType>(
         getEnumValue(GroundTemp::modelTypeNamesUC, Util::makeUPPER(j["undisturbed_ground_temperature_model_type"].get<std::string>())));
@@ -1084,8 +1084,8 @@ void GLHEVert::initEnvironment(EnergyPlusData &state, [[maybe_unused]] Real64 co
     this->QnMonthlyAgg = 0.0;
     this->QnSubHr = 0.0;
     this->LastHourN = 0;
-    state.dataGroundHeatExchanger->prevTimeSteps = 0.0;
-    state.dataGroundHeatExchanger->currentSimTime = 0.0;
+    this->prevTimeSteps = 0.0;
+    this->currentSimTime = 0.0;
     this->QGLHE = 0.0;
     this->prevHour = 1;
 }

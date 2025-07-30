@@ -113,25 +113,24 @@ void GLHEBase::calcGroundHeatExchanger(EnergyPlusData &state)
     getAnnualTimeConstant();
 
     if (triggerDesignDayReset && state.dataGlobal->WarmupFlag) {
-        updateCurSimTime = true;
+        this->updateCurSimTime = true;
     }
     if (state.dataGlobal->DayOfSim == 1 && updateCurSimTime) {
-        state.dataGroundHeatExchanger->currentSimTime = 0.0;
-        state.dataGroundHeatExchanger->prevTimeSteps = 0.0;
+        this->currentSimTime = 0.0;
+        this->prevTimeSteps = 0.0;
         this->QnHr = 0.0;
         this->QnMonthlyAgg = 0.0;
         this->QnSubHr = 0.0;
         this->LastHourN = 1;
-        state.dataGroundHeatExchanger->N = 1;
-        updateCurSimTime = false;
-        triggerDesignDayReset = false;
+        this->N = 1;
+        this->updateCurSimTime = false;
+        this->triggerDesignDayReset = false;
     }
 
-    state.dataGroundHeatExchanger->currentSimTime = (state.dataGlobal->DayOfSim - 1) * 24 + state.dataGlobal->HourOfDay - 1 +
-                                                    (state.dataGlobal->TimeStep - 1) * state.dataGlobal->TimeStepZone +
-                                                    state.dataHVACGlobal->SysTimeElapsed; //+ TimeStepSys
-    state.dataGroundHeatExchanger->locHourOfDay = static_cast<int>(mod(state.dataGroundHeatExchanger->currentSimTime, Constant::iHoursInDay) + 1);
-    state.dataGroundHeatExchanger->locDayOfSim = static_cast<int>(state.dataGroundHeatExchanger->currentSimTime / 24 + 1);
+    this->currentSimTime = (state.dataGlobal->DayOfSim - 1) * 24 + state.dataGlobal->HourOfDay - 1 +
+                           (state.dataGlobal->TimeStep - 1) * state.dataGlobal->TimeStepZone + state.dataHVACGlobal->SysTimeElapsed; //+ TimeStepSys
+    this->locHourOfDay = static_cast<int>(mod(this->currentSimTime, Constant::iHoursInDay) + 1);
+    this->locDayOfSim = static_cast<int>(this->currentSimTime / 24 + 1);
 
     if (state.dataGlobal->DayOfSim > 1) {
         updateCurSimTime = true;
@@ -141,21 +140,20 @@ void GLHEBase::calcGroundHeatExchanger(EnergyPlusData &state)
         triggerDesignDayReset = true;
     }
 
-    if (state.dataGroundHeatExchanger->currentSimTime <= 0.0) {
-        state.dataGroundHeatExchanger->prevTimeSteps = 0.0; // This resets history when rounding 24:00 hours during warmup avoids hard crash later
-        calcAggregateLoad(state);                           // Just allocates and initializes prevHour array
+    if (this->currentSimTime <= 0.0) {
+        this->prevTimeSteps = 0.0; // This resets history when rounding 24:00 hours during warmup avoids hard crash later
+        calcAggregateLoad(state);  // Just allocates and initializes prevHour array
         return;
     }
 
     // Store currentSimTime in prevTimeSteps only if a time step occurs
-    if (state.dataGroundHeatExchanger->prevTimeSteps(1) != state.dataGroundHeatExchanger->currentSimTime) {
-        state.dataGroundHeatExchanger->prevTimeSteps =
-            eoshift(state.dataGroundHeatExchanger->prevTimeSteps, -1, state.dataGroundHeatExchanger->currentSimTime);
-        ++state.dataGroundHeatExchanger->N;
+    if (this->prevTimeSteps(1) != this->currentSimTime) {
+        this->prevTimeSteps = eoshift(this->prevTimeSteps, -1, this->currentSimTime);
+        ++this->N;
     }
 
-    if (state.dataGroundHeatExchanger->N != PrevN) {
-        PrevN = state.dataGroundHeatExchanger->N;
+    if (this->N != PrevN) {
+        PrevN = this->N;
         this->QnSubHr = eoshift(this->QnSubHr, -1, this->lastQnSubHr);
     }
 
@@ -164,13 +162,13 @@ void GLHEBase::calcGroundHeatExchanger(EnergyPlusData &state)
     // Update the heat exchanger resistance each time
     this->HXResistance = calcHXResistance(state);
 
-    if (state.dataGroundHeatExchanger->N == 1) {
+    if (this->N == 1) {
         if (this->massFlowRate <= 0.0) {
             tmpQnSubHourly = 0.0;
             fluidAveTemp = this->tempGround;
             this->ToutNew = this->inletTemp;
         } else {
-            Real64 gFuncVal = getGFunc(state.dataGroundHeatExchanger->currentSimTime / (this->timeSSFactor));
+            Real64 gFuncVal = getGFunc(this->currentSimTime / (this->timeSSFactor));
 
             Real64 C_1 = (this->totalTubeLength) / (2.0 * this->massFlowRate * cpFluid);
             tmpQnSubHourly = (this->tempGround - this->inletTemp) / (gFuncVal / (kGroundFactor) + this->HXResistance + C_1);
@@ -179,40 +177,35 @@ void GLHEBase::calcGroundHeatExchanger(EnergyPlusData &state)
         }
     } else {
         // no monthly super position
-        if (state.dataGroundHeatExchanger->currentSimTime < (hrsPerMonth + this->AGG + this->SubAGG)) {
+        if (this->currentSimTime < (hrsPerMonth + this->AGG + this->SubAGG)) {
 
             // Calculate the Sub Hourly Superposition
 
             // same as above for sub-hourly (with no aggregation)
             Real64 sumQnSubHourly = 0.0;
             int IndexN;
-            if (static_cast<int>(state.dataGroundHeatExchanger->currentSimTime) < this->SubAGG) {
-                IndexN = static_cast<int>(state.dataGroundHeatExchanger->currentSimTime) + 1;
+            if (static_cast<int>(this->currentSimTime) < this->SubAGG) {
+                IndexN = static_cast<int>(this->currentSimTime) + 1;
             } else {
                 IndexN = this->SubAGG + 1;
             }
 
-            int subHourlyLimit = state.dataGroundHeatExchanger->N - this->LastHourN(IndexN); // Check this when running simulation
+            int subHourlyLimit = this->N - this->LastHourN(IndexN); // Check this when running simulation
             for (int I = 1; I <= subHourlyLimit; ++I) {
                 if (I == subHourlyLimit) {
-                    if (static_cast<int>(state.dataGroundHeatExchanger->currentSimTime) >= this->SubAGG) {
-                        Real64 gFuncVal =
-                            getGFunc((state.dataGroundHeatExchanger->currentSimTime - state.dataGroundHeatExchanger->prevTimeSteps(I + 1)) /
-                                     (this->timeSSFactor));
+                    if (static_cast<int>(this->currentSimTime) >= this->SubAGG) {
+                        Real64 gFuncVal = getGFunc((this->currentSimTime - this->prevTimeSteps(I + 1)) / (this->timeSSFactor));
                         Real64 RQSubHr = gFuncVal / (kGroundFactor);
                         sumQnSubHourly += (this->QnSubHr(I) - this->QnHr(IndexN)) * RQSubHr;
                     } else {
-                        Real64 gFuncVal =
-                            getGFunc((state.dataGroundHeatExchanger->currentSimTime - state.dataGroundHeatExchanger->prevTimeSteps(I + 1)) /
-                                     (this->timeSSFactor));
+                        Real64 gFuncVal = getGFunc((this->currentSimTime - this->prevTimeSteps(I + 1)) / (this->timeSSFactor));
                         Real64 RQSubHr = gFuncVal / (kGroundFactor);
                         sumQnSubHourly += this->QnSubHr(I) * RQSubHr;
                     }
                     break;
                 }
                 // prevTimeSteps(I+1) This is "I+1" because prevTimeSteps(1) = CurrentTimestep
-                Real64 gFuncVal = getGFunc((state.dataGroundHeatExchanger->currentSimTime - state.dataGroundHeatExchanger->prevTimeSteps(I + 1)) /
-                                           (this->timeSSFactor));
+                Real64 gFuncVal = getGFunc((this->currentSimTime - this->prevTimeSteps(I + 1)) / (this->timeSSFactor));
                 Real64 RQSubHr = gFuncVal / (kGroundFactor);
                 sumQnSubHourly += (this->QnSubHr(I) - this->QnSubHr(I + 1)) * RQSubHr;
             }
@@ -221,17 +214,15 @@ void GLHEBase::calcGroundHeatExchanger(EnergyPlusData &state)
             // same as above for hourly
             Real64 sumQnHourly = 0.0;
 
-            int hourlyLimit = static_cast<int>(state.dataGroundHeatExchanger->currentSimTime);
+            int hourlyLimit = static_cast<int>(this->currentSimTime);
             for (int I = this->SubAGG + 1; I <= hourlyLimit; ++I) {
                 if (I == hourlyLimit) {
-                    Real64 gFuncVal = getGFunc(state.dataGroundHeatExchanger->currentSimTime / (this->timeSSFactor));
+                    Real64 gFuncVal = getGFunc(this->currentSimTime / (this->timeSSFactor));
                     Real64 RQHour = gFuncVal / (kGroundFactor);
                     sumQnHourly += this->QnHr(I) * RQHour;
                     break;
                 }
-                Real64 gFuncVal =
-                    getGFunc((state.dataGroundHeatExchanger->currentSimTime - static_cast<int>(state.dataGroundHeatExchanger->currentSimTime) + I) /
-                             (this->timeSSFactor));
+                Real64 gFuncVal = getGFunc((this->currentSimTime - static_cast<int>(this->currentSimTime) + I) / (this->timeSSFactor));
                 Real64 RQHour = gFuncVal / (kGroundFactor);
                 sumQnHourly += (this->QnHr(I) - this->QnHr(I + 1)) * RQHour;
             }
@@ -240,8 +231,7 @@ void GLHEBase::calcGroundHeatExchanger(EnergyPlusData &state)
             sumTotal = sumQnSubHourly + sumQnHourly;
 
             // Calculate the sub-hourly temperature due the Last Time steps Load
-            Real64 gFuncVal =
-                getGFunc((state.dataGroundHeatExchanger->currentSimTime - state.dataGroundHeatExchanger->prevTimeSteps(2)) / (this->timeSSFactor));
+            Real64 gFuncVal = getGFunc((this->currentSimTime - this->prevTimeSteps(2)) / (this->timeSSFactor));
             Real64 RQSubHr = gFuncVal / kGroundFactor;
 
             if (this->massFlowRate <= 0.0) {
@@ -262,12 +252,12 @@ void GLHEBase::calcGroundHeatExchanger(EnergyPlusData &state)
         } else { // Monthly Aggregation and super position
 
             // the number of months of simulation elapsed
-            int numOfMonths = static_cast<int>((state.dataGroundHeatExchanger->currentSimTime + 1) / hrsPerMonth);
+            int numOfMonths = static_cast<int>((this->currentSimTime + 1) / hrsPerMonth);
 
             // The Month up to which the monthly blocks are superposed
             int currentMonth;
 
-            if (state.dataGroundHeatExchanger->currentSimTime < ((numOfMonths)*hrsPerMonth) + this->AGG + this->SubAGG) {
+            if (this->currentSimTime < ((numOfMonths)*hrsPerMonth) + this->AGG + this->SubAGG) {
                 currentMonth = numOfMonths - 1;
             } else {
                 currentMonth = numOfMonths;
@@ -279,48 +269,42 @@ void GLHEBase::calcGroundHeatExchanger(EnergyPlusData &state)
 
             for (int I = 1; I <= currentMonth; ++I) {
                 if (I == 1) {
-                    Real64 gFuncVal = getGFunc(state.dataGroundHeatExchanger->currentSimTime / (this->timeSSFactor));
+                    Real64 gFuncVal = getGFunc(this->currentSimTime / (this->timeSSFactor));
                     Real64 RQMonth = gFuncVal / (kGroundFactor);
                     sumQnMonthly += this->QnMonthlyAgg(I) * RQMonth;
                     continue;
                 }
-                Real64 gFuncVal = getGFunc((state.dataGroundHeatExchanger->currentSimTime - (I - 1) * hrsPerMonth) / (this->timeSSFactor));
+                Real64 gFuncVal = getGFunc((this->currentSimTime - (I - 1) * hrsPerMonth) / (this->timeSSFactor));
                 Real64 RQMonth = gFuncVal / (kGroundFactor);
                 sumQnMonthly += (this->QnMonthlyAgg(I) - this->QnMonthlyAgg(I - 1)) * RQMonth;
             }
 
             // Hourly Superposition
             Real64 sumQnHourly = 0.0;
-            int hourlyLimit = static_cast<int>(state.dataGroundHeatExchanger->currentSimTime - currentMonth * hrsPerMonth);
+            int hourlyLimit = static_cast<int>(this->currentSimTime - currentMonth * hrsPerMonth);
             for (int I = 1 + this->SubAGG; I <= hourlyLimit; ++I) {
                 if (I == hourlyLimit) {
-                    Real64 gFuncVal = getGFunc(
-                        (state.dataGroundHeatExchanger->currentSimTime - static_cast<int>(state.dataGroundHeatExchanger->currentSimTime) + I) /
-                        (this->timeSSFactor));
+                    Real64 gFuncVal = getGFunc((this->currentSimTime - static_cast<int>(this->currentSimTime) + I) / (this->timeSSFactor));
                     Real64 RQHour = gFuncVal / (kGroundFactor);
                     sumQnHourly += (this->QnHr(I) - this->QnMonthlyAgg(currentMonth)) * RQHour;
                     break;
                 }
-                Real64 gFuncVal =
-                    getGFunc((state.dataGroundHeatExchanger->currentSimTime - static_cast<int>(state.dataGroundHeatExchanger->currentSimTime) + I) /
-                             (this->timeSSFactor));
+                Real64 gFuncVal = getGFunc((this->currentSimTime - static_cast<int>(this->currentSimTime) + I) / (this->timeSSFactor));
                 Real64 RQHour = gFuncVal / (kGroundFactor);
                 sumQnHourly += (this->QnHr(I) - this->QnHr(I + 1)) * RQHour;
             }
 
             // sub-hourly Superposition
-            int subHourlyLimit = state.dataGroundHeatExchanger->N - this->LastHourN(this->SubAGG + 1);
+            int subHourlyLimit = this->N - this->LastHourN(this->SubAGG + 1);
             Real64 sumQnSubHourly = 0.0;
             for (int I = 1; I <= subHourlyLimit; ++I) {
                 if (I == subHourlyLimit) {
-                    Real64 gFuncVal = getGFunc((state.dataGroundHeatExchanger->currentSimTime - state.dataGroundHeatExchanger->prevTimeSteps(I + 1)) /
-                                               (this->timeSSFactor));
+                    Real64 gFuncVal = getGFunc((this->currentSimTime - this->prevTimeSteps(I + 1)) / (this->timeSSFactor));
                     Real64 RQSubHr = gFuncVal / (kGroundFactor);
                     sumQnSubHourly += (this->QnSubHr(I) - this->QnHr(this->SubAGG + 1)) * RQSubHr;
                     break;
                 }
-                Real64 gFuncVal = getGFunc((state.dataGroundHeatExchanger->currentSimTime - state.dataGroundHeatExchanger->prevTimeSteps(I + 1)) /
-                                           (this->timeSSFactor));
+                Real64 gFuncVal = getGFunc((this->currentSimTime - this->prevTimeSteps(I + 1)) / (this->timeSSFactor));
                 Real64 RQSubHr = gFuncVal / (kGroundFactor);
                 sumQnSubHourly += (this->QnSubHr(I) - this->QnSubHr(I + 1)) * RQSubHr;
             }
@@ -328,8 +312,7 @@ void GLHEBase::calcGroundHeatExchanger(EnergyPlusData &state)
             sumTotal = sumQnMonthly + sumQnHourly + sumQnSubHourly;
 
             // Calculate the sub-hourly temperature due the Last Time steps Load
-            Real64 gFuncVal =
-                getGFunc((state.dataGroundHeatExchanger->currentSimTime - state.dataGroundHeatExchanger->prevTimeSteps(2)) / (this->timeSSFactor));
+            Real64 gFuncVal = getGFunc((this->currentSimTime - this->prevTimeSteps(2)) / (this->timeSSFactor));
             Real64 RQSubHr = gFuncVal / (kGroundFactor);
 
             if (this->massFlowRate <= 0.0) {
@@ -412,7 +395,7 @@ void GLHEBase::calcAggregateLoad(const EnergyPlusData &state)
     // Yavuzturk, C., J.D. Spitler. 1999. 'A Short Time Step Response Factor Model
     //   for Vertical Ground Loop Heat Exchangers'. ASHRAE Transactions. 105(2): 475-485.
 
-    if (state.dataGroundHeatExchanger->currentSimTime <= 0.0) {
+    if (this->currentSimTime <= 0.0) {
         return;
     }
 
@@ -421,28 +404,24 @@ void GLHEBase::calcAggregateLoad(const EnergyPlusData &state)
     // AND STORING IT IN  verticalGLHE(GLHENum)%QnHr(J)
 
     // sub-hourly Qn IS NOT AGGREGATED . IT IS THE BASIC LOAD
-    if (this->prevHour != state.dataGroundHeatExchanger->locHourOfDay) {
+    if (this->prevHour != this->locHourOfDay) {
         Real64 SumQnHr = 0.0;
         int J;
-        for (J = 1; J <= (state.dataGroundHeatExchanger->N - this->LastHourN(1)); ++J) {
-            SumQnHr +=
-                this->QnSubHr(J) * std::abs(state.dataGroundHeatExchanger->prevTimeSteps(J) - state.dataGroundHeatExchanger->prevTimeSteps(J + 1));
+        for (J = 1; J <= (this->N - this->LastHourN(1)); ++J) {
+            SumQnHr += this->QnSubHr(J) * std::abs(this->prevTimeSteps(J) - this->prevTimeSteps(J + 1));
         }
-        if (state.dataGroundHeatExchanger->prevTimeSteps(1) != state.dataGroundHeatExchanger->prevTimeSteps(J)) {
-            SumQnHr /= std::abs(state.dataGroundHeatExchanger->prevTimeSteps(1) - state.dataGroundHeatExchanger->prevTimeSteps(J));
+        if (this->prevTimeSteps(1) != this->prevTimeSteps(J)) {
+            SumQnHr /= std::abs(this->prevTimeSteps(1) - this->prevTimeSteps(J));
         } else {
             SumQnHr /= 0.05; // estimated small timestep
         }
         this->QnHr = eoshift(this->QnHr, -1, SumQnHr);
-        this->LastHourN = eoshift(this->LastHourN, -1, state.dataGroundHeatExchanger->N);
+        this->LastHourN = eoshift(this->LastHourN, -1, this->N);
     }
 
     // CHECK IF A MONTH PASSES...
-    if (mod(((state.dataGroundHeatExchanger->locDayOfSim - 1) * Constant::iHoursInDay + (state.dataGroundHeatExchanger->locHourOfDay)),
-            hrsPerMonth) == 0 &&
-        this->prevHour != state.dataGroundHeatExchanger->locHourOfDay) {
-        int const MonthNum = static_cast<int>(
-            (state.dataGroundHeatExchanger->locDayOfSim * Constant::iHoursInDay + state.dataGroundHeatExchanger->locHourOfDay) / hrsPerMonth);
+    if (mod(((this->locDayOfSim - 1) * Constant::iHoursInDay + (this->locHourOfDay)), hrsPerMonth) == 0 && this->prevHour != this->locHourOfDay) {
+        int const MonthNum = static_cast<int>((this->locDayOfSim * Constant::iHoursInDay + this->locHourOfDay) / hrsPerMonth);
         Real64 SumQnMonth = 0.0;
         for (int J = 1; J <= static_cast<int>(hrsPerMonth); ++J) {
             SumQnMonth += this->QnHr(J);
@@ -450,7 +429,7 @@ void GLHEBase::calcAggregateLoad(const EnergyPlusData &state)
         SumQnMonth /= hrsPerMonth;
         this->QnMonthlyAgg(MonthNum) = SumQnMonth;
     }
-    this->prevHour = state.dataGroundHeatExchanger->locHourOfDay;
+    this->prevHour = this->locHourOfDay;
 }
 
 void GLHEBase::onInitLoopEquip(EnergyPlusData &state, [[maybe_unused]] const PlantLocation &calledFromLocation)
@@ -470,13 +449,14 @@ void GLHEBase::simulate(EnergyPlusData &state,
         this->needToSetupOutputVars = false;
     }
 
+    this->initGLHESimVars(state);
     if (state.dataGlobal->KickOffSimulation) {
-        this->initGLHESimVars(state);
-    } else {
-        this->initGLHESimVars(state);
-        this->calcGroundHeatExchanger(state);
-        this->updateGHX(state);
+        return;
     }
+
+    this->initGLHESimVars(state);
+    this->calcGroundHeatExchanger(state);
+    this->updateGHX(state);
 }
 
 GLHEBase *GLHEBase::factory(EnergyPlusData &state, DataPlant::PlantEquipmentType objectType, std::string const &objectName)
@@ -629,14 +609,10 @@ void GetGroundHeatExchangerInput(EnergyPlusData &state)
     //       MODIFIED         Arun Murugappan
 
     // GET NUMBER OF ALL EQUIPMENT TYPES
-    state.dataGroundHeatExchanger->numVerticalGLHEs =
-        state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, GLHEVert::moduleName);
-    state.dataGroundHeatExchanger->numSlinkyGLHEs =
-        state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, GLHESlinky::moduleName);
-    state.dataGroundHeatExchanger->numVertArray =
-        state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, GLHEVertArray::moduleName);
-    state.dataGroundHeatExchanger->numVertProps =
-        state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, GLHEVertProps::moduleName);
+    state.dataGroundHeatExchanger->numVerticalGLHEs = state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, GLHEVert::moduleName);
+    state.dataGroundHeatExchanger->numSlinkyGLHEs = state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, GLHESlinky::moduleName);
+    state.dataGroundHeatExchanger->numVertArray = state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, GLHEVertArray::moduleName);
+    state.dataGroundHeatExchanger->numVertProps = state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, GLHEVertProps::moduleName);
     state.dataGroundHeatExchanger->numResponseFactors =
         state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, GLHEResponseFactors::moduleName);
     state.dataGroundHeatExchanger->numSingleBorehole =
@@ -652,7 +628,8 @@ void GetGroundHeatExchangerInput(EnergyPlusData &state)
     if (state.dataGroundHeatExchanger->numVertProps > 0) {
         auto const instances = state.dataInputProcessing->inputProcessor->epJSON.find(GLHEVertProps::moduleName);
         if (instances == state.dataInputProcessing->inputProcessor->epJSON.end()) {
-            ShowSevereError(state, format("{}: Somehow getNumObjectsFound was > 0 but epJSON.find found 0", GLHEVertProps::moduleName)); // LCOV_EXCL_LINE
+            ShowSevereError(state,
+                            format("{}: Somehow getNumObjectsFound was > 0 but epJSON.find found 0", GLHEVertProps::moduleName)); // LCOV_EXCL_LINE
         }
         auto &instancesValue = instances.value();
         for (auto it = instancesValue.begin(); it != instancesValue.end(); ++it) {
@@ -668,7 +645,8 @@ void GetGroundHeatExchangerInput(EnergyPlusData &state)
     if (state.dataGroundHeatExchanger->numResponseFactors > 0) {
         auto const instances = state.dataInputProcessing->inputProcessor->epJSON.find(GLHEResponseFactors::moduleName);
         if (instances == state.dataInputProcessing->inputProcessor->epJSON.end()) {
-            ShowSevereError(state, format("{}: Somehow getNumObjectsFound was > 0 but epJSON.find found 0", GLHEResponseFactors::moduleName)); // LCOV_EXCL_LINE
+            ShowSevereError(
+                state, format("{}: Somehow getNumObjectsFound was > 0 but epJSON.find found 0", GLHEResponseFactors::moduleName)); // LCOV_EXCL_LINE
         }
         auto &instancesValue = instances.value();
         for (auto it = instancesValue.begin(); it != instancesValue.end(); ++it) {
@@ -684,7 +662,8 @@ void GetGroundHeatExchangerInput(EnergyPlusData &state)
     if (state.dataGroundHeatExchanger->numVertArray > 0) {
         auto const instances = state.dataInputProcessing->inputProcessor->epJSON.find(GLHEVertArray::moduleName);
         if (instances == state.dataInputProcessing->inputProcessor->epJSON.end()) {
-            ShowSevereError(state, format("{}: Somehow getNumObjectsFound was > 0 but epJSON.find found 0", GLHEVertArray::moduleName)); // LCOV_EXCL_LINE
+            ShowSevereError(state,
+                            format("{}: Somehow getNumObjectsFound was > 0 but epJSON.find found 0", GLHEVertArray::moduleName)); // LCOV_EXCL_LINE
         }
         auto &instancesValue = instances.value();
         for (auto it = instancesValue.begin(); it != instancesValue.end(); ++it) {
@@ -700,7 +679,8 @@ void GetGroundHeatExchangerInput(EnergyPlusData &state)
     if (state.dataGroundHeatExchanger->numSingleBorehole > 0) {
         auto const instances = state.dataInputProcessing->inputProcessor->epJSON.find(GLHEVertSingle::moduleName);
         if (instances == state.dataInputProcessing->inputProcessor->epJSON.end()) {
-            ShowSevereError(state, format("{}: Somehow getNumObjectsFound was > 0 but epJSON.find found 0", GLHEVertSingle::moduleName)); // LCOV_EXCL_LINE
+            ShowSevereError(state,
+                            format("{}: Somehow getNumObjectsFound was > 0 but epJSON.find found 0", GLHEVertSingle::moduleName)); // LCOV_EXCL_LINE
         }
         auto &instancesValue = instances.value();
         for (auto it = instancesValue.begin(); it != instancesValue.end(); ++it) {
@@ -731,7 +711,8 @@ void GetGroundHeatExchangerInput(EnergyPlusData &state)
     if (state.dataGroundHeatExchanger->numSlinkyGLHEs > 0) {
         auto const instances = state.dataInputProcessing->inputProcessor->epJSON.find(GLHESlinky::moduleName);
         if (instances == state.dataInputProcessing->inputProcessor->epJSON.end()) {
-            ShowSevereError(state, format("{}: Somehow getNumObjectsFound was > 0 but epJSON.find found 0", GLHESlinky::moduleName)); // LCOV_EXCL_LINE
+            ShowSevereError(state,
+                            format("{}: Somehow getNumObjectsFound was > 0 but epJSON.find found 0", GLHESlinky::moduleName)); // LCOV_EXCL_LINE
         }
         auto &instancesValue = instances.value();
         for (auto it = instancesValue.begin(); it != instancesValue.end(); ++it) {

@@ -64,7 +64,10 @@ GLHEResponseFactors::GLHEResponseFactors(EnergyPlusData &state, std::string cons
     }
 
     this->name = objName;
-    this->props = GLHEVertProps::GetVertProps(state, Util::makeUPPER(j["ghe_vertical_properties_object_name"].get<std::string>()));  // TODO: this is one spot a properties object is looked up / assigned
+    this->props = GLHEVertProps::GetVertProps(
+        state,
+        Util::makeUPPER(
+            j["ghe_vertical_properties_object_name"].get<std::string>())); // TODO: this is one spot a properties object is looked up / assigned
     this->numBoreholes = j["number_of_boreholes"].get<int>();
     this->gRefRatio = j["g_function_reference_ratio"].get<Real64>();
     this->maxSimYears = state.dataEnvrn->MaxNumberSimYears;

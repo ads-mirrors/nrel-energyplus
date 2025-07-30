@@ -102,6 +102,7 @@ namespace WaterUse {
         if (state.dataWaterUse->getWaterUseInputFlag) {
             GetWaterUseInput(state);
             FillPredefinedTableWaterUse(state);
+            FillPredefinedTableWaterConnect(state);
             state.dataWaterUse->getWaterUseInputFlag = false;
         }
 
@@ -190,6 +191,7 @@ namespace WaterUse {
         if (state.dataWaterUse->getWaterUseInputFlag) {
             GetWaterUseInput(state);
             FillPredefinedTableWaterUse(state);
+            FillPredefinedTableWaterConnect(state);
             state.dataWaterUse->getWaterUseInputFlag = false;
         }
 
@@ -600,8 +602,7 @@ namespace WaterUse {
             }
             if (thisWEq.sensibleFracSched != nullptr) {
                 PreDefTableEntry(state, orp->pdchWtEqSensFracSch, thisWEq.Name, thisWEq.sensibleFracSched->Name);
-                OutputReportPredefined::PreDefTableEntry(
-                    state, orp->pdchWtEqsensFracMax, thisWEq.Name, thisWEq.sensibleFracSched->getMaxVal(state));
+                OutputReportPredefined::PreDefTableEntry(state, orp->pdchWtEqsensFracMax, thisWEq.Name, thisWEq.sensibleFracSched->getMaxVal(state));
             } else {
                 PreDefTableEntry(state, orp->pdchWtEqSensFracSch, thisWEq.Name, "N/A");
             }
@@ -611,6 +612,72 @@ namespace WaterUse {
             } else {
                 PreDefTableEntry(state, orp->pdchWtEqLatFracSch, thisWEq.Name, "N/A");
             }
+        }
+    }
+
+    void FillPredefinedTableWaterConnect(EnergyPlusData &state)
+    {
+        // add values to the Equipment Summary tabular report related to Water Use Connections
+        // J.Glazer - July 2025
+        using OutputReportPredefined::PreDefTableEntry;
+        auto &orp = state.dataOutRptPredefined;
+        for (int idx = 1; idx <= state.dataWaterUse->numWaterConnections; ++idx) {
+            auto &thisWCn = state.dataWaterUse->WaterConnections(idx);
+            if (thisWCn.HeatRecovery) {
+                switch (thisWCn.HeatRecoveryHX) {
+                case HeatRecovHX::Ideal:
+                    PreDefTableEntry(state, orp->pdchWtCnDrnHxType, thisWCn.Name, "Ideal");
+                    break;
+                case HeatRecovHX::CounterFlow:
+                    PreDefTableEntry(state, orp->pdchWtCnDrnHxType, thisWCn.Name, "Counterflow");
+                    break;
+                case HeatRecovHX::CrossFlow:
+                    PreDefTableEntry(state, orp->pdchWtCnDrnHxType, thisWCn.Name, "Crossflow");
+                    break;
+                default:
+                    PreDefTableEntry(state, orp->pdchWtCnDrnHxType, thisWCn.Name, "unknown");
+                }
+                switch (thisWCn.HeatRecoveryConfig) {
+                case HeatRecovConfig::Equipment:
+                    PreDefTableEntry(state, orp->pdchWtCnDrnHxDest, thisWCn.Name, "Equipment");
+                    break;
+                case HeatRecovConfig::Plant:
+                    PreDefTableEntry(state, orp->pdchWtCnDrnHxDest, thisWCn.Name, "Plant");
+                    break;
+                case HeatRecovConfig::PlantAndEquip:
+                    PreDefTableEntry(state, orp->pdchWtCnDrnHxDest, thisWCn.Name, "Plant/Equipment");
+                    break;
+                default:
+                    PreDefTableEntry(state, orp->pdchWtCnDrnHxDest, thisWCn.Name, "unknown");
+                }
+                PreDefTableEntry(state, orp->pdchWtCnDrnHxUA, thisWCn.Name, thisWCn.HXUA);
+            } else {
+                PreDefTableEntry(state, orp->pdchWtCnDrnHxType, thisWCn.Name, "None");
+                PreDefTableEntry(state, orp->pdchWtCnDrnHxType, thisWCn.Name, "None");
+            }
+            if (thisWCn.hotTempSched != nullptr) {
+                PreDefTableEntry(state, orp->pdchWtCnHotTempSch, thisWCn.Name, thisWCn.hotTempSched->Name);
+                OutputReportPredefined::PreDefTableEntry(state, orp->pdchWtCnHotTempMax, thisWCn.Name, thisWCn.hotTempSched->getMaxVal(state));
+            } else {
+                PreDefTableEntry(state, orp->pdchWtCnHotTempSch, thisWCn.Name, "N/A");
+            }
+            if (thisWCn.coldTempSched != nullptr) {
+                PreDefTableEntry(state, orp->pdchWtCnColdTempSch, thisWCn.Name, thisWCn.coldTempSched->Name);
+                OutputReportPredefined::PreDefTableEntry(state, orp->pdchWtCnColdTempMin, thisWCn.Name, thisWCn.coldTempSched->getMinVal(state));
+            } else {
+                PreDefTableEntry(state, orp->pdchWtCnColdTempSch, thisWCn.Name, "N/A");
+            }
+            if (thisWCn.SupplyTankNum > 0) {
+                PreDefTableEntry(state, orp->pdchWtCnSupTnk, thisWCn.Name, state.dataWaterData->WaterStorage(thisWCn.SupplyTankNum).Name);
+            }
+            if (thisWCn.RecoveryTankNum > 0) {
+                PreDefTableEntry(state, orp->pdchWtCnRecTnk, thisWCn.Name, state.dataWaterData->WaterStorage(thisWCn.RecoveryTankNum).Name);
+            }
+            // JG STILL TO DO:
+            //  s->pdchWtCnDrnHxEff = newPreDefColumn(state, s->pdstWtCn, "Average Heat Recovery Effectiveness");
+            //  s->pdchWtCnPipeInD = newPreDefColumn(state, s->pdstWtCn, "Pipe:Indoor are used");
+            //  s->pdchWtCnPipeOutD = newPreDefColumn(state, s->pdstWtCn, "Pipe:Outdoor are used");
+            //  s->pdchWtCnPipeUndr = newPreDefColumn(state, s->pdstWtCn, "Pipe:Underground are used");
         }
     }
 

@@ -515,6 +515,21 @@ namespace OutputReportPredefined {
         s->pdchWtEqLatFracSch = newPreDefColumn(state, s->pdstWtEq, "Latent Fraction Schedule");
         s->pdchWtEqLatFracMax = newPreDefColumn(state, s->pdstWtEq, "Latent Fraction  Schedule Maximum");
 
+        s->pdstWtCn = newPreDefSubTable(state, s->pdrEquip, "WaterUse Connections");
+        s->pdchWtCnDrnHxType = newPreDefColumn(state, s->pdstWtCn, "Drain Water Heat Exchanger Type");
+        s->pdchWtCnDrnHxDest = newPreDefColumn(state, s->pdstWtCn, "Drain Water Heat Exchanger Destination");
+        s->pdchWtCnDrnHxUA = newPreDefColumn(state, s->pdstWtCn, "Drain Water Heat Exchanger U-Factor Times Area");
+        s->pdchWtCnDrnHxEff = newPreDefColumn(state, s->pdstWtCn, "Average Heat Recovery Effectiveness");
+        s->pdchWtCnHotTempSch = newPreDefColumn(state, s->pdstWtCn, "Hot Water Supply Temperature Schedule ");
+        s->pdchWtCnHotTempMax = newPreDefColumn(state, s->pdstWtCn, "Hot Water Supply Temperature Schedule Maximum [C]");
+        s->pdchWtCnColdTempSch = newPreDefColumn(state, s->pdstWtCn, "Cold Water Supply Temperature Schedule");
+        s->pdchWtCnColdTempMin = newPreDefColumn(state, s->pdstWtCn, "Cold Water Supply Temperature Schedule Minimum [C]");
+        s->pdchWtCnPipeInD = newPreDefColumn(state, s->pdstWtCn, "Pipe:Indoor are used");
+        s->pdchWtCnPipeOutD = newPreDefColumn(state, s->pdstWtCn, "Pipe:Outdoor are used");
+        s->pdchWtCnPipeUndr = newPreDefColumn(state, s->pdstWtCn, "Pipe:Underground are used");
+        s->pdchWtCnSupTnk = newPreDefColumn(state, s->pdstWtCn, "Supply Water Storage Tank Name");
+        s->pdchWtCnRecTnk = newPreDefColumn(state, s->pdstWtCn, "Reclamation Water Storage Tank Name");
+
         // Std 229 Chillers in Equipment Summary
         s->pdstChiller = newPreDefSubTable(state, s->pdrEquip, "Chillers");
 

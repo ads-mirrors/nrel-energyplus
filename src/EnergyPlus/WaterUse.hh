@@ -236,6 +236,8 @@ namespace WaterUse {
 
     void FillPredefinedTableWaterUse(EnergyPlusData &state);
 
+    void FillPredefinedTableWaterConnect(EnergyPlusData &state);
+
     void ReportStandAloneWaterUse(EnergyPlusData &state);
 
     void CalcWaterUseZoneGains(EnergyPlusData &state);

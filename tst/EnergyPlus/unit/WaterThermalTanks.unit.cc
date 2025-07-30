@@ -1831,10 +1831,11 @@ TEST_F(EnergyPlusFixture, thermalStorageTankInputReading)
     EXPECT_EQ(TankHot.AdditionalCond, 0.0);
 }
 
-TEST_F(EnergyPlusFixture, stratifiedTankTwoSetpoint) {
+TEST_F(EnergyPlusFixture, stratifiedTankTwoSetpoint)
+{
 
     std::string const idf_objects = delimited_string({
-    "ThermalStorage:HotWater:Stratified,",
+        "ThermalStorage:HotWater:Stratified,",
         "Hot Water Storage Tank 1,  !- Name",
         "50.0,                    !- Tank Volume {m3}",
         "8.0,                     !- Tank Height {m}",
@@ -1873,28 +1874,161 @@ TEST_F(EnergyPlusFixture, stratifiedTankTwoSetpoint) {
         "8,                       !- Number of Nodes",
         "0.0;                     !- Additional Destratification Conductivity {W/m-K}",
 
-    "OutdoorAir:Node,",
+        "OutdoorAir:Node,",
         "OA Node;   !- Name",
 
-    "Schedule:Compact,",
+        "Schedule:Compact,",
         "CW Tank Temp Schedule,   !- Name",
         "Temperature,             !- Schedule Type Limits Name",
         "Through: 12/31,          !- Field 1",
         "For: AllDays,            !- Field 2",
         "Until: 24:00,50;         !- Field 3",
-    "Schedule:Compact,",
+        "Schedule:Compact,",
         "CW Tank Temp Top Schedule,   !- Name",
         "Temperature,             !- Schedule Type Limits Name",
         "Through: 12/31,          !- Field 1",
         "For: AllDays,            !- Field 2",
         "Until: 24:00,50;         !- Field 3",
-    "Schedule:Compact,",
+        "Schedule:Compact,",
         "CW Tank Temp Bottom Schedule,   !- Name",
         "Temperature,             !- Schedule Type Limits Name",
         "Through: 12/31,          !- Field 1",
         "For: AllDays,            !- Field 2",
         "Until: 24:00,30;         !- Field 3",
     });
+
+    ASSERT_TRUE(process_idf(idf_objects));
+    state->dataGlobal->TimeStepsInHour = 1;    // must initialize this to get schedules initialized
+    state->dataGlobal->MinutesInTimeStep = 60; // must initialize this to get schedules initialized
+    state->init_state(*state);
+    std::string const cStratifiedHWTankModuleObj = "ThermalStorage:HotWater:Stratified";
+
+    state->dataWaterThermalTanks->numWaterHeaterMixed = 0;
+    state->dataWaterThermalTanks->numWaterHeaterStratified = 0;
+    state->dataWaterThermalTanks->numChilledWaterMixed = 0;
+    state->dataWaterThermalTanks->numChilledWaterStratified = 0;
+    state->dataWaterThermalTanks->numHotWaterStratified = 1;
+    state->dataWaterThermalTanks->WaterThermalTank.allocate(1);
+    WaterThermalTanks::getWaterTankStratifiedInput(*state, cStratifiedHWTankModuleObj);
+
+    WaterThermalTanks::WaterThermalTankData &Tank = state->dataWaterThermalTanks->WaterThermalTank(1);
+    state->dataHVACGlobal->TimeStepSys = 1;
+    state->dataHVACGlobal->TimeStepSysSec = state->dataHVACGlobal->TimeStepSys * Constant::rSecsInHour;
+
+    state->dataGlobal->TimeStepsInHour = 1;
+    state->dataGlobal->MinutesInTimeStep = 60 / state->dataGlobal->TimeStepsInHour;
+    state->dataGlobal->TimeStep = 1;
+    state->dataGlobal->HourOfDay = 1;
+    state->dataEnvrn->DayOfWeek = 1;
+    state->dataEnvrn->DayOfYear_Schedule = 1;
+    Sched::UpdateScheduleVals(*state);
+    Tank.Node(1).SavedTemp = 40.0; // top need heat
+    Tank.Node(8).SavedTemp = 20.0; // bottom need heat
+    Tank.initialize(*state, true);
+    EXPECT_EQ(Tank.SetPointTemp, 50.0);  // top
+    EXPECT_EQ(Tank.SetPointTemp2, 30.0); // bottom
+    EXPECT_EQ(Tank.NeedsHeatOrCoolReport, 1);
+
+    Tank.Node(1).SavedTemp = 49.0; // top not need heat
+    Tank.Node(8).SavedTemp = 25.0; // bottom need heat
+    Tank.initialize(*state, true);
+    EXPECT_EQ(Tank.SetPointTemp, 50.0);  // top
+    EXPECT_EQ(Tank.SetPointTemp2, 30.0); // bottom
+    EXPECT_EQ(Tank.NeedsHeatOrCoolReport, 1);
+
+    Tank.Node(1).SavedTemp = 45.0; // top need heat
+    Tank.Node(8).SavedTemp = 31.0; // bottom not need heat
+    Tank.initialize(*state, true);
+    EXPECT_EQ(Tank.SetPointTemp, 50.0);  // top
+    EXPECT_EQ(Tank.SetPointTemp2, 30.0); // bottom
+    EXPECT_EQ(Tank.NeedsHeatOrCoolReport, 1);
+
+    Tank.Node(1).SavedTemp = 50.0; // top not need heat
+    Tank.Node(8).SavedTemp = 30.0; // bottom not need heat
+    Tank.initialize(*state, true);
+    EXPECT_EQ(Tank.SetPointTemp, 50.0);  // top
+    EXPECT_EQ(Tank.SetPointTemp2, 30.0); // bottom
+    EXPECT_EQ(Tank.NeedsHeatOrCoolReport, 0);
+}
+
+TEST_F(EnergyPlusFixture, stratifiedFlowDirection)
+{
+
+    std::string const idf_objects =
+        delimited_string({"ThermalStorage:HotWater:Stratified,",
+                          "Hot Water Storage Tank 1,  !- Name",
+                          "50.0,                    !- Tank Volume {m3}",
+                          "8.0,                     !- Tank Height {m}",
+                          "VerticalCylinder,        !- Tank Shape",
+                          ",                        !- Tank Perimeter {m}",
+                          "CW Tank Temp Top Schedule,   !- Top Setpoint Temperature Schedule Name",
+                          "CW Tank Temp Bottom Schedule,   !- Bottom Setpoint Temperature Schedule Name",
+                          "2.5,                     !- Deadband Temperature Difference {deltaC}",
+                          "8.0,                     !- Top Temperature Sensor Height {m}",
+                          "1.0,                     !- Bottom Temperature Sensor Height {m}",
+                          "82.0,                    !- Maximum Temperature Limit {C}",
+                          "50000,                   !- Nominal Heating Capacity {W}",
+                          "Outdoors,                !- Ambient Temperature Indicator",
+                          ",                        !- Ambient Temperature Schedule Name",
+                          ",                        !- Ambient Temperature Zone Name",
+                          "OA Node,                 !- Ambient Temperature Outdoor Air Node Name",
+                          "0.5,                     !- Uniform Skin Loss Coefficient per Unit Area to Ambient Temperature {W/m2-K}",
+                          "CoolSysPrimary TES Use Inlet Node,  !- Use Side Inlet Node Name",
+                          "CoolSysPrimary TES Use Outlet Node,  !- Use Side Outlet Node Name",
+                          "Tank Use Flow Dir Sched, !- Use Side Flow Direction Schedule",
+                          "1.0,                     !- Use Side Heat Transfer Effectiveness",
+                          "ALWAYS_ON,               !- Use Side Availability Schedule Name",
+                          "7.85,                    !- Use Side Inlet Height {m}",
+                          "0.15,                    !- Use Side Outlet Height {m}",
+                          "autosize,                !- Use Side Design Flow Rate {m3/s}",
+                          ",                        !- Source Side Inlet Node Name",
+                          ",                        !- Source Side Outlet Node Name",
+                          "Tank Source Flow Dir Sched, !- Source Side Flow Direction Schedule",
+                          "0.9,                     !- Source Side Heat Transfer Effectiveness",
+                          "TES Charge Schedule,     !- Source Side Availability Schedule Name",
+                          "0.15,                    !- Source Side Inlet Height {m}",
+                          "7.85,                    !- Source Side Outlet Height {m}",
+                          "5.0E-3,                  !- Source Side Design Flow Rate {m3/s}",
+                          "4.0,                     !- Tank Recovery Time {hr}",
+                          "Seeking,                 !- Inlet Mode",
+                          "8,                       !- Number of Nodes",
+                          "0.0;                     !- Additional Destratification Conductivity {W/m-K}",
+
+                          "OutdoorAir:Node,",
+                          "OA Node;   !- Name",
+
+                          "Schedule:Compact,",
+                          "CW Tank Temp Schedule,   !- Name",
+                          "Temperature,             !- Schedule Type Limits Name",
+                          "Through: 12/31,          !- Field 1",
+                          "For: AllDays,            !- Field 2",
+                          "Until: 24:00,50;         !- Field 3",
+                          "Schedule:Compact,",
+                          "CW Tank Temp Top Schedule,   !- Name",
+                          "Temperature,             !- Schedule Type Limits Name",
+                          "Through: 12/31,          !- Field 1",
+                          "For: AllDays,            !- Field 2",
+                          "Until: 24:00,50;         !- Field 3",
+                          "Schedule:Compact,",
+                          "CW Tank Temp Bottom Schedule,   !- Name",
+                          "Temperature,             !- Schedule Type Limits Name",
+                          "Through: 12/31,          !- Field 1",
+                          "For: AllDays,            !- Field 2",
+                          "Until: 24:00,30;         !- Field 3",
+
+                          "Schedule:Compact,",
+                          "Tank Use Flow Dir Sched, !- Name",
+                          "FlowDir,                 !- Schedule Type Limits Name",
+                          "Through: 12/31,          !- Field 1",
+                          "FOR: AllDays,            !- Field 2",
+                          "Until: 24:00,-1.0;        !- Field 7",
+
+                          "Schedule:Compact,",
+                          "Tank Source Flow Dir Sched, !- Name",
+                          "FlowDir,                 !- Schedule Type Limits Name",
+                          "Through: 12/31,          !- Field 1",
+                          "FOR: AllDays,            !- Field 2",
+                          "Until: 24:00,1.0;        !- Field 7"});
 
     ASSERT_TRUE(process_idf(idf_objects));
     state->dataGlobal->TimeStepsInHour = 1;    // must initialize this to get schedules initialized
@@ -1922,33 +2056,9 @@ TEST_F(EnergyPlusFixture, stratifiedTankTwoSetpoint) {
     state->dataEnvrn->DayOfWeek = 1;
     state->dataEnvrn->DayOfYear_Schedule = 1;
     Sched::UpdateScheduleVals(*state);
-    Tank.Node(1).SavedTemp = 40.0; // top need heat
-    Tank.Node(8).SavedTemp = 20.0; // bottom need heat
-    Tank.initialize(*state, true);
-    EXPECT_EQ(Tank.SetPointTemp, 50.0); // top
-    EXPECT_EQ(Tank.SetPointTemp2, 30.0); // bottom
-    EXPECT_EQ(Tank.NeedsHeatOrCoolReport, 1);
-
-    Tank.Node(1).SavedTemp = 49.0; // top not need heat
-    Tank.Node(8).SavedTemp = 25.0; // bottom need heat
-    Tank.initialize(*state, true);
-    EXPECT_EQ(Tank.SetPointTemp, 50.0); // top
-    EXPECT_EQ(Tank.SetPointTemp2, 30.0); // bottom
-    EXPECT_EQ(Tank.NeedsHeatOrCoolReport, 1);
-
-    Tank.Node(1).SavedTemp = 45.0; // top need heat
-    Tank.Node(8).SavedTemp = 31.0; // bottom not need heat
-    Tank.initialize(*state, true);
-    EXPECT_EQ(Tank.SetPointTemp, 50.0); // top
-    EXPECT_EQ(Tank.SetPointTemp2, 30.0); // bottom
-    EXPECT_EQ(Tank.NeedsHeatOrCoolReport, 1);
-
-    Tank.Node(1).SavedTemp = 50.0; // top not need heat
-    Tank.Node(8).SavedTemp = 30.0; // bottom not need heat
-    Tank.initialize(*state, true);
-    EXPECT_EQ(Tank.SetPointTemp, 50.0); // top
-    EXPECT_EQ(Tank.SetPointTemp2, 30.0); // bottom
-    EXPECT_EQ(Tank.NeedsHeatOrCoolReport, 0);
+    Tank.CalcWaterThermalTankStratified(*state);
+    EXPECT_EQ(Tank.UseSideFlowDirection, -1);
+    EXPECT_EQ(Tank.SourceSideFlowDirection, 1);
 }
 
 TEST_F(EnergyPlusFixture, StratifiedTankSourceTemperatures)

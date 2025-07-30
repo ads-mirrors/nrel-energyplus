@@ -1701,7 +1701,9 @@ namespace HeatRecovery {
                 loopName = state.dataAirLoopHVACDOAS->airloopDOAS[oaSys.AirLoopDOASNum].Name;
                 // no OAcontroller is directly applicable to HX in airLoopDOAS system
             } else {
-                hxBypassControlType = state.dataMixedAir->OAController(oaSys.OAControllerIndex).HeatRecoveryBypassControlType;
+                if (oaSys.OAControllerIndex > 0) {
+                    hxBypassControlType = state.dataMixedAir->OAController(oaSys.OAControllerIndex).HeatRecoveryBypassControlType;
+                }
                 OutputReportPredefined::PreDefTableEntry(
                     state, state.dataOutRptPredefined->pdchAirHROAControllerName, this->Name, oaSys.OAControllerName);
             }

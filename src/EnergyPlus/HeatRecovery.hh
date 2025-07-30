@@ -81,16 +81,6 @@ namespace HeatRecovery {
         Num
     };
 
-    enum class HXOperation
-    {
-        Invalid = -1,
-        WhenFansOn,
-        Scheduled,
-        WhenOutsideEconomizerLimits,
-        WhenMinOA,
-        Num
-    };
-
     enum class FrostControlOption
     {
         Invalid = -1,
@@ -210,6 +200,7 @@ namespace HeatRecovery {
         Array1D_string NumericFieldNames;
         bool MySetPointTest = true;
         bool MySizeFlag = true;
+        bool hasZoneERVController = false; // If this HX is controlled by a ZoneHVAC:EnergyRecoveryVentilator:Controller
 
         void initialize(EnergyPlusData &state, int CompanionCoilIndex, int CompanionCoilType_Num);
 
@@ -464,7 +455,8 @@ namespace HeatRecovery {
 
     HVAC::HXType GetHeatExchangerObjectTypeNum(EnergyPlusData &state,
                                                std::string const &HXName, // must match HX names for the ExchCond type
-                                               bool &ErrorsFound          // set to true if problem
+                                               int &WhichHX,
+                                               bool &ErrorsFound // set to true if problem
     );
 
 } // namespace HeatRecovery

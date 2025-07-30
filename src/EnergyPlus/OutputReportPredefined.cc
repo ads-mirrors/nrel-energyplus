@@ -574,13 +574,14 @@ namespace OutputReportPredefined {
 
         s->pdchAirHRInputObjType = newPreDefColumn(state, s->pdstAirHR, "Type");
         s->pdchAirHRPlateOrRotary = newPreDefColumn(state, s->pdstAirHR, "Plate/Rotary");
-        s->pdchAirHROperation = newPreDefColumn(state, s->pdstAirHR, "Operation Control");
+        s->pdchAirHROperation = newPreDefColumn(state, s->pdstAirHR, "Heat Recovery Active");
         s->pdchAirHRSenEffAt100PerHeatAirFlow = newPreDefColumn(state, s->pdstAirHR, "Sensible Effectiveness at 100% Heating Air Flow");
         s->pdchAirHRSenEffAt100PerCoolAirFlow = newPreDefColumn(state, s->pdstAirHR, "Sensible Effectiveness at 100% Cooling Air Flow");
         s->pdchAirHRLatEffAt100PerHeatAirFlow = newPreDefColumn(state, s->pdstAirHR, "Latent Effectiveness at 100% Heating Air Flow");
         s->pdchAirHRLatEffAt100PerCoolAirFlow = newPreDefColumn(state, s->pdstAirHR, "Latent Effectiveness at 100% Cooling Air Flow");
         s->pdchAirHRSupplyAirflow = newPreDefColumn(state, s->pdstAirHR, "Supply Air Flow Rate [m3/s]");
         s->pdchAirHRExhaustAirflow = newPreDefColumn(state, s->pdstAirHR, "Exhaust Air Flow Rate [m3/s]");
+        s->pdchAirHRZoneHVACName = newPreDefColumn(state, s->pdstAirHR, "Zone HVAC Name");
         s->pdchAirHRAirloopName = newPreDefColumn(state, s->pdstAirHR, "Airloop Name");
         s->pdchAirHROASysName = newPreDefColumn(state, s->pdstAirHR, "OA System Name");
         s->pdchAirHROAControllerName = newPreDefColumn(state, s->pdstAirHR, "OA Controller Name");

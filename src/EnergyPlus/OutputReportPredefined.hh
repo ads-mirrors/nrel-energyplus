@@ -476,6 +476,7 @@ struct OutputReportPredefinedData : BaseGlobalStruct
     int pdchAirHRLatEffAt100PerCoolAirFlow = 0; // Latent Effectiveness at 100% Cooling Air Flow
     int pdchAirHRExhaustAirflow = 0;            // Exhaust (Secondary) airflow
     int pdchAirHRSupplyAirflow = 0;             // Supply (Outdoor) airflow
+    int pdchAirHRZoneHVACName = 0;               // Zone ERV name
     int pdchAirHRAirloopName = 0;               // Airloop name
     int pdchAirHROASysName = 0;                 // OA system name
     int pdchAirHROAControllerName = 0;          // OA controller name

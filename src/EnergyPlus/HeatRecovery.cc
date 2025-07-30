@@ -70,6 +70,7 @@
 #include <EnergyPlus/GlobalNames.hh>
 #include <EnergyPlus/HeatRecovery.hh>
 #include <EnergyPlus/InputProcessing/InputProcessor.hh>
+#include <EnergyPlus/MixedAir.hh>
 #include <EnergyPlus/NodeInputManager.hh>
 #include <EnergyPlus/OutputProcessor.hh>
 #include <EnergyPlus/OutputReportPredefined.hh>
@@ -103,6 +104,16 @@ namespace HeatRecovery {
     // ASHRAE Standard 84, Method of Testing Air-To-Air Heat Exchangers, www.ashrae.org
     // U.S. Environmental Protection Agency software "SAVES" -
     //  School Advanced Ventilation Engineering Software http://www.epa.gov/iaq/schooldesign/saves.html
+
+    enum class HXOperation
+    {
+        Invalid = -1,
+        WhenFansOn,
+        Scheduled,
+        WhenOutsideEconomizerLimits,
+        WhenMinOA,
+        Num
+    };
 
     Real64 constexpr KELVZERO = 273.16;
     Real64 constexpr SMALL = 1.e-10;
@@ -1660,21 +1671,6 @@ namespace HeatRecovery {
         OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchAirHRSupplyAirflow, this->Name, this->NomSupAirVolFlow);
         OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchAirHRExhaustAirflow, this->Name, this->NomSecAirVolFlow);
 
-        // HX operation type
-        HXOperation operation = HXOperation::Invalid;
-        if (!this->EconoLockOut) {
-            if ((this->availSched != nullptr) && (!this->availSched->checkMinVal(state, Clusive::Ex, 0.0))) {
-                operation = HXOperation::Scheduled;
-            } else {
-                operation = HXOperation::WhenFansOn;
-            }
-        } else {
-        }
-        OutputReportPredefined::PreDefTableEntry(state,
-                                                 state.dataOutRptPredefined->pdchAirHROperation,
-                                                 this->Name,
-                                                 (operation != HXOperation::Invalid) ? hxOperationNames[(int)operation] : "N/A");
-
         if (this->type == HVAC::HXType::AirToAir_SensAndLatent) {
             OutputReportPredefined::PreDefTableEntry(
                 state, state.dataOutRptPredefined->pdchAirHRSenEffAt100PerHeatAirFlow, this->Name, this->HeatEffectSensible100);
@@ -1691,20 +1687,44 @@ namespace HeatRecovery {
             OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchAirHRLatEffAt100PerCoolAirFlow, this->Name, "N/A");
         }
 
-        std::string_view loopName = "N/A";
-        std::string_view oaSysName = "N/A";
+        std::string_view loopName = "";
+
         if ((state.dataSize->CurSysNum > 0) && (state.dataSize->CurSysNum <= state.dataHVACGlobal->NumPrimaryAirSys)) {
             loopName = state.dataAirSystemsData->PrimaryAirSystems(state.dataSize->CurSysNum).Name;
         }
+
+        int hxBypassControlType = -1;
         if ((state.dataSize->CurOASysNum > 0) && (state.dataSize->CurOASysNum <= state.dataAirLoop->NumOASystems)) {
             auto const &oaSys = state.dataAirLoop->OutsideAirSys(state.dataSize->CurOASysNum);
-            oaSysName = oaSys.Name;
+            OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchAirHROASysName, this->Name, oaSys.Name);
             if (oaSys.AirLoopDOASNum > -1) {
                 loopName = state.dataAirLoopHVACDOAS->airloopDOAS[oaSys.AirLoopDOASNum].Name;
+                // no OAcontroller is directly applicable to HX in airLoopDOAS system
+            } else {
+                hxBypassControlType = state.dataMixedAir->OAController(oaSys.OAControllerIndex).HeatRecoveryBypassControlType;
+                OutputReportPredefined::PreDefTableEntry(
+                    state, state.dataOutRptPredefined->pdchAirHROAControllerName, this->Name, oaSys.OAControllerName);
             }
         }
         OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchAirHRAirloopName, this->Name, loopName);
-        OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchAirHROASysName, this->Name, oaSysName);
+
+        // HX operation type
+        HXOperation operation = HXOperation::WhenFansOn;
+        if (!this->EconoLockOut) {
+            if ((this->availSched != nullptr) && (!this->availSched->checkMinVal(state, Clusive::Ex, 0.0))) {
+                operation = HXOperation::Scheduled;
+            }
+        } else {
+            if (hxBypassControlType == HVAC::BypassWhenOAFlowGreaterThanMinimum) {
+                operation = HXOperation::WhenMinOA;
+            } else if ((hxBypassControlType == HVAC::BypassWhenWithinEconomizerLimits) || this->hasZoneERVController) {
+                operation = HXOperation::WhenOutsideEconomizerLimits;
+            }
+        }
+        OutputReportPredefined::PreDefTableEntry(state,
+                                                 state.dataOutRptPredefined->pdchAirHROperation,
+                                                 this->Name,
+                                                 (operation != HXOperation::Invalid) ? hxOperationNames[(int)operation] : "N/A");
     }
 
     void
@@ -5009,7 +5029,8 @@ namespace HeatRecovery {
 
     HVAC::HXType GetHeatExchangerObjectTypeNum(EnergyPlusData &state,
                                                std::string const &HXName, // must match HX names for the state.dataHeatRecovery->ExchCond type
-                                               bool &ErrorsFound          // set to true if problem
+                                               int &WhichHX,
+                                               bool &ErrorsFound // set to true if problem
     )
     {
 
@@ -5029,7 +5050,7 @@ namespace HeatRecovery {
             state.dataHeatRecovery->GetInputFlag = false;
         }
 
-        int const WhichHX = Util::FindItemInList(HXName, state.dataHeatRecovery->ExchCond);
+        WhichHX = Util::FindItemInList(HXName, state.dataHeatRecovery->ExchCond);
         if (WhichHX != 0) {
             return state.dataHeatRecovery->ExchCond(WhichHX).type;
         } else {

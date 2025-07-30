@@ -230,7 +230,6 @@ void CoilCoolingDXCurveFitPerformance::simulate(EnergyPlus::EnergyPlusData &stat
     Real64 reportingConstant = state.dataHVACGlobal->TimeStepSys * Constant::rSecsInHour;
     this->recoveredEnergyRate = 0.0;
     this->NormalSHR = 0.0;
-    this->oneTimeMinOATSetup(state);
 
     if (currentCoilMode == HVAC::CoilMode::SubcoolReheat) {
         Real64 totalCoolingRate;
@@ -404,6 +403,7 @@ void CoilCoolingDXCurveFitPerformance::size(EnergyPlus::EnergyPlusData &state)
         }
         this->mySizeFlag = false;
     }
+    this->oneTimeMinOATSetup(state);
 }
 
 void CoilCoolingDXCurveFitPerformance::calculate(EnergyPlus::EnergyPlusData &state,

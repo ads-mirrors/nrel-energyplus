@@ -6519,7 +6519,7 @@ void WaterThermalTankData::initialize(EnergyPlusData &state, bool const FirstHVA
             Real64 sensedTempTop = this->Node(tmpNodeNumTop).SavedTemp;
             int tmpNodeNumBottom = max(this->HeaterNode1, this->HeaterNode2);
             Real64 sensedTempBottom = this->Node(tmpNodeNumBottom).SavedTemp;
-            Real64 DeadBandTempTop = this->SetPointTemp + this->DeadBandDeltaTemp;
+            Real64 DeadBandTempTop = this->SetPointTemp - this->DeadBandDeltaTemp;
             // top and bottom of the tank has the same deadband temperature for now
             Real64 DeadBandTempBottom = this->SetPointTemp2 - this->DeadBandDeltaTemp;
             bool NeedsHeatOrCoolBottom = this->SourceHeatNeed(state, sensedTempBottom, DeadBandTempBottom, this->SetPointTemp2);
@@ -6561,7 +6561,7 @@ void WaterThermalTankData::initialize(EnergyPlusData &state, bool const FirstHVA
             Real64 sensedTempTop = this->Node(tmpNodeNumTop).SavedTemp;
             int tmpNodeNumBottom = max(this->HeaterNode1, this->HeaterNode2);
             Real64 sensedTempBottom = this->Node(tmpNodeNumBottom).SavedTemp;
-            Real64 DeadBandTempTop = this->SetPointTemp + this->DeadBandDeltaTemp;
+            Real64 DeadBandTempTop = this->SetPointTemp - this->DeadBandDeltaTemp;
             Real64 DeadBandTempBottom = this->SetPointTemp2 - this->DeadBandDeltaTemp2;
             bool NeedsHeatOrCoolBottom = this->SourceHeatNeed(state, sensedTempBottom, DeadBandTempBottom, this->SetPointTemp2);
             bool NeedsHeatOrCoolTop = this->SourceHeatNeed(state, sensedTempTop, DeadBandTempTop, this->SetPointTemp);

@@ -109,9 +109,12 @@ namespace HeatRecovery {
     constexpr std::array<std::string_view, static_cast<int>(FrostControlOption::Num)> frostControlNamesUC = {
         "NONE", "EXHAUSTONLY", "EXHAUSTAIRRECIRCULATION", "MINIMUMEXHAUSTTEMPERATURE"};
 
-    constexpr std::array<std::string_view, static_cast<int>(HXConfigurationType::Num)> hxConfigurationNames = {"Plate", "Rotary"};
+    constexpr std::array<std::string_view, static_cast<int>(HXExchConfigType::Num)> hxExchConfigTypeNames = {"Plate", "Rotary"};
 
-    constexpr std::array<std::string_view, static_cast<int>(HXConfigurationType::Num)> hxConfigurationNamesUC = {"PLATE", "ROTARY"};
+    constexpr std::array<std::string_view, static_cast<int>(HXExchConfigType::Num)> hxExchConfigTypeNamesUC = {"PLATE", "ROTARY"};
+
+    constexpr std::array<std::string_view, static_cast<int>(HXOperation::Num)> hxOperationNames = {
+        "WhenFansOn", "Scheduled", "WhenOutsideEconomizerLimits", "WhenMinimumOutdoorAir"};
 
     void SimHeatRecovery(EnergyPlusData &state,
                          std::string_view CompName,                          // name of the heat exchanger unit
@@ -304,7 +307,7 @@ namespace HeatRecovery {
 
             thisExchanger.Name = state.dataIPShortCut->cAlphaArgs(1);
             thisExchanger.type = HVAC::HXType::AirToAir_FlatPlate;
-            thisExchanger.ExchConfig = HXConfigurationType::Plate;
+            thisExchanger.ExchConfig = HXExchConfigType::Plate;
             if (state.dataIPShortCut->lAlphaFieldBlanks(2)) {
                 thisExchanger.availSched = Sched::GetScheduleAlwaysOn(state);
             } else if ((thisExchanger.availSched = Sched::GetSchedule(state, state.dataIPShortCut->cAlphaArgs(2))) == nullptr) {
@@ -474,7 +477,7 @@ namespace HeatRecovery {
                 }
             }
 
-            thisExchanger.ExchConfig = static_cast<HXConfigurationType>(getEnumValue(hxConfigurationNamesUC, state.dataIPShortCut->cAlphaArgs(8)));
+            thisExchanger.ExchConfig = static_cast<HXExchConfigType>(getEnumValue(hxExchConfigTypeNamesUC, state.dataIPShortCut->cAlphaArgs(8)));
 
             // Added additional inputs for frost control
             thisExchanger.FrostControlType = static_cast<FrostControlOption>(getEnumValue(frostControlNamesUC, state.dataIPShortCut->cAlphaArgs(9)));
@@ -545,7 +548,7 @@ namespace HeatRecovery {
 
             thisExchanger.Name = state.dataIPShortCut->cAlphaArgs(1);
             thisExchanger.type = HVAC::HXType::Desiccant_Balanced;
-            thisExchanger.ExchConfig = HXConfigurationType::Rotary;
+            thisExchanger.ExchConfig = HXExchConfigType::Rotary;
             if (state.dataIPShortCut->lAlphaFieldBlanks(2)) {
                 thisExchanger.availSched = Sched::GetScheduleAlwaysOn(state);
             } else if ((thisExchanger.availSched = Sched::GetSchedule(state, state.dataIPShortCut->cAlphaArgs(2))) == nullptr) {
@@ -1649,13 +1652,28 @@ namespace HeatRecovery {
         }
 
         // std 229 new heat recovery table variables
-        assert((this->type != HVAC::HXType::Invalid) && (this->ExchConfig != HXConfigurationType::Invalid));
+        assert((this->type != HVAC::HXType::Invalid) && (this->ExchConfig != HXExchConfigType::Invalid));
         OutputReportPredefined::PreDefTableEntry(
             state, state.dataOutRptPredefined->pdchAirHRInputObjType, this->Name, HVAC::hxTypeNames[(int)this->type]);
         OutputReportPredefined::PreDefTableEntry(
-            state, state.dataOutRptPredefined->pdchAirHRPlateOrRotary, this->Name, hxConfigurationNames[(int)this->ExchConfig]);
+            state, state.dataOutRptPredefined->pdchAirHRPlateOrRotary, this->Name, hxExchConfigTypeNames[(int)this->ExchConfig]);
         OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchAirHRSupplyAirflow, this->Name, this->NomSupAirVolFlow);
         OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchAirHRExhaustAirflow, this->Name, this->NomSecAirVolFlow);
+
+        // HX operation type
+        HXOperation operation = HXOperation::Invalid;
+        if (!this->EconoLockOut) {
+            if ((this->availSched != nullptr) && (!this->availSched->checkMinVal(state, Clusive::Ex, 0.0))) {
+                operation = HXOperation::Scheduled;
+            } else {
+                operation = HXOperation::WhenFansOn;
+            }
+        } else {
+        }
+        OutputReportPredefined::PreDefTableEntry(state,
+                                                 state.dataOutRptPredefined->pdchAirHROperation,
+                                                 this->Name,
+                                                 (operation != HXOperation::Invalid) ? hxOperationNames[(int)operation] : "N/A");
 
         if (this->type == HVAC::HXType::AirToAir_SensAndLatent) {
             OutputReportPredefined::PreDefTableEntry(
@@ -1672,6 +1690,21 @@ namespace HeatRecovery {
             OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchAirHRLatEffAt100PerHeatAirFlow, this->Name, "N/A");
             OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchAirHRLatEffAt100PerCoolAirFlow, this->Name, "N/A");
         }
+
+        std::string_view loopName = "N/A";
+        std::string_view oaSysName = "N/A";
+        if ((state.dataSize->CurSysNum > 0) && (state.dataSize->CurSysNum <= state.dataHVACGlobal->NumPrimaryAirSys)) {
+            loopName = state.dataAirSystemsData->PrimaryAirSystems(state.dataSize->CurSysNum).Name;
+        }
+        if ((state.dataSize->CurOASysNum > 0) && (state.dataSize->CurOASysNum <= state.dataAirLoop->NumOASystems)) {
+            auto const &oaSys = state.dataAirLoop->OutsideAirSys(state.dataSize->CurOASysNum);
+            oaSysName = oaSys.Name;
+            if (oaSys.AirLoopDOASNum > -1) {
+                loopName = state.dataAirLoopHVACDOAS->airloopDOAS[oaSys.AirLoopDOASNum].Name;
+            }
+        }
+        OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchAirHRAirloopName, this->Name, loopName);
+        OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchAirHROASysName, this->Name, oaSysName);
     }
 
     void
@@ -1955,7 +1988,7 @@ namespace HeatRecovery {
         bool HighHumCtrlActiveFlag = present(HighHumCtrlFlag) && bool(HighHumCtrlFlag); // local representing high humidity control when PRESENT
 
         // Determine mass flow through heat exchanger and mass flow being bypassed (only flat plate bypasses flow)
-        if (((EconomizerActiveFlag || HighHumCtrlActiveFlag) && this->EconoLockOut) && this->ExchConfig == HXConfigurationType::Plate) {
+        if (((EconomizerActiveFlag || HighHumCtrlActiveFlag) && this->EconoLockOut) && this->ExchConfig == HXExchConfigType::Plate) {
             this->SupBypassMassFlow = this->SupInMassFlow;
             this->SupOutMassFlow = this->SupInMassFlow;
             this->SecBypassMassFlow = this->SecInMassFlow;
@@ -2176,7 +2209,7 @@ namespace HeatRecovery {
                     //     ELSE fully bypass HX to maintain supply outlet temp as high as possible
                     ControlFraction = 0.0;
                 }
-                if (this->ExchConfig == HXConfigurationType::Rotary) {
+                if (this->ExchConfig == HXExchConfigType::Rotary) {
                     //       Rotary HX's never get bypassed, rotational speed is modulated
                     this->SensEffectiveness *= ControlFraction;
                     this->LatEffectiveness *= ControlFraction;
@@ -2833,7 +2866,7 @@ namespace HeatRecovery {
             //   sensible and latent effectiveness decrease proportionally with rotary HX speed.
 
             DFFraction = max(0.0, min(1.0, SafeDiv((TempThreshold - this->SecOutTemp), (this->SecInTemp - this->SecOutTemp))));
-            if (this->ExchConfig == HXConfigurationType::Rotary) {
+            if (this->ExchConfig == HXExchConfigType::Rotary) {
                 this->SensEffectiveness *= (1.0 - DFFraction);
                 this->LatEffectiveness *= (1.0 - DFFraction);
             } else { // HX is a plate heat exchanger, bypass air to eliminate frost

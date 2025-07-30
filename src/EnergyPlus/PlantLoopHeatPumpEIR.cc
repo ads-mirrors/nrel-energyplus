@@ -4153,6 +4153,61 @@ void HeatPumpAirToWater::processInputForEIRPLHP(EnergyPlusData &state)
                         errorsFound = true;
                     }
                 }
+                if (thisAWHP.boosterOn) {
+                    thisAWHP.numSpeeds += 1;
+
+                    auto capFtFieldName = format("normalized_{}_capacity_function_of_temperature_curve_name_in_booster_mode", modeKeyWord);
+                    if (fields.find(capFtFieldName) == fields.end()) {
+                        ShowSevereError(state,
+                                        format("curve missing for booster mode of HeatPump:AirToWater (name={}; curve field name: {}",
+                                               thisAWHP.name,
+                                               capFtFieldName));
+                        errorsFound = true;
+                    }
+                    std::string const capFtName = Util::makeUPPER(fields.at(capFtFieldName).get<std::string>());
+                    int speedLevelBooster = thisAWHP.numSpeeds - 1;
+                    thisAWHP.ratedCapacity[speedLevelBooster] = state.dataInputProcessing->inputProcessor->getRealFieldValue(
+                        fields, schemaProps, format("rated_{}_capacity_in_booster_mode", modeKeyWord));
+                    thisAWHP.ratedCOP[speedLevelBooster] = state.dataInputProcessing->inputProcessor->getRealFieldValue(
+                        fields, schemaProps, format("rated_{}_cop_in_booster_mode", modeKeyWord));
+                    thisAWHP.capFuncTempCurveIndex[speedLevelBooster] = Curve::GetCurveIndex(state, capFtName);
+                    if (thisAWHP.capFuncTempCurveIndex[speedLevelBooster] == 0) {
+                        ShowSevereError(
+                            state, format("Invalid curve name for HeatPump:AirToWater (name={}; entered curve name: {}", thisAWHP.name, capFtName));
+                        errorsFound = true;
+                    }
+                    auto eirFtFieldName = format("{}_energy_input_ratio_function_of_temperature_curve_name_in_booster_mode", modeKeyWord);
+                    if (fields.find(eirFtFieldName) == fields.end()) {
+                        ShowSevereError(state,
+                                        format("curve missing for booster mode of HeatPump:AirToWater (name={}; curve field name: {}",
+                                               thisAWHP.name,
+                                               eirFtFieldName));
+                        errorsFound = true;
+                    }
+
+                    std::string const eirFtName = Util::makeUPPER(fields.at(eirFtFieldName).get<std::string>());
+                    thisAWHP.powerRatioFuncTempCurveIndex[speedLevelBooster] = Curve::GetCurveIndex(state, eirFtName);
+                    if (thisAWHP.powerRatioFuncTempCurveIndex[speedLevelBooster] == 0) {
+                        ShowSevereError(
+                            state, format("Invalid curve name for HeatPump:AirToWater (name={}; entered curve name: {}", thisAWHP.name, eirFtName));
+                        errorsFound = true;
+                    }
+                    auto eirFplrFieldName = format("{}_energy_input_ratio_function_of_plr_curve_name_in_booster_mode", modeKeyWord);
+                    if (fields.find(eirFplrFieldName) == fields.end()) {
+                        ShowSevereError(state,
+                                        format("curve missing for booster mode of HeatPump:AirToWater (name={}; curve field name: {}",
+                                               thisAWHP.name,
+                                               eirFplrFieldName));
+                        errorsFound = true;
+                    }
+                    std::string const eirFplrName = Util::makeUPPER(fields.at(eirFplrFieldName).get<std::string>());
+                    thisAWHP.powerRatioFuncPLRCurveIndex[speedLevelBooster] = Curve::GetCurveIndex(state, eirFplrName);
+                    if (thisAWHP.powerRatioFuncPLRCurveIndex[speedLevelBooster] == 0) {
+                        ShowSevereError(
+                            state, format("Invalid curve name for HeatPump:AirToWater (name={}; entered curve name: {}", thisAWHP.name, eirFplrName));
+                        errorsFound = true;
+                    }
+                }
 
                 thisAWHP.referenceCapacityOneUnit = thisAWHP.ratedCapacity[thisAWHP.numSpeeds - 1];
                 thisAWHP.referenceCapacity = thisAWHP.referenceCapacityOneUnit * thisAWHP.compressorMultiplier;

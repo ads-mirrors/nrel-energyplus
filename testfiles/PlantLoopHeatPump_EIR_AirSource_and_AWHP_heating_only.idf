@@ -278,9 +278,6 @@
     100 , !- Crankcase Heater Capacity
     CrankCaseHeaterPowerCurve, !- Crankcase Heater Capacity Function of Temperature Curve Name
     5 , !- Maximum Ambient Temperature for Crankcase Heater Operation
-    ,   !- Booster Mode On Heating
-    ,   !- Booster Mode Heating Capacity Multiplier
-    ,   !- Booster Mode Heating COP Multiplier
     2 , !- Number of Speeds for Heating
     20000, !-  Rated Heating Capacity at Speed 1
     3.49, !-  Rated COP for Heating at Speed 1
@@ -307,9 +304,12 @@
     , !-  Normalized Heating Capacity Function of Temperature Curve Name at Speed 5
     , !-  Heating Energy Input Ratio Function of Temperature Curve Name at Speed 5
     , !-  Heating Energy Input Ratio Function of PLR Curve Name at Speed 5
-    , !-  Booster Mode On Cooling
-    , !-  Booster Mode Cooling Capacity Multiplier
-    , !-  Booster Mode Cooling COP Multiplier
+    , !-  Booster Mode On Heating
+    , !-  Rated Heating Capacity in Booster Mode
+    , !-  Rated Heating COP in Booster Mode
+    , !-  Normalized Heating Capacity Function of Temperature Curve Name in Booster Mode
+    , !-  Heating Energy Input Ratio Function of Temperature Curve Name in Booster Mode
+    , !-  Heating Energy Input Ratio Function of PLR Curve Name in Booster Mode
     , !-  Number of Speeds for Cooling
     , !-  Rated Cooling Capacity at Speed 1
     , !-  Rated COP for Cooling at Speed 1
@@ -335,7 +335,13 @@
     , !-  Rated COP for Cooling at Speed 5
     , !-  Normalized Cooling Capacity Function of Temperature Curve Name at Speed 5
     , !-  Cooling Energy Input Ratio Function of Temperature Curve Name at Speed 5
-    ; !-  Cooling Energy Input Ratio Function of PLR Curve Name at Speed 5
+    , !-  Cooling Energy Input Ratio Function of PLR Curve Name at Speed 5
+    , !-  Booster Mode On Cooling
+    , !-  Rated Cooling Capacity in Booster Mode
+    , !-  Rated Cooling COP in Booster Mode
+    , !-  Normalized Cooling Capacity Function of Temperature Curve Name in Booster Mode
+    , !-  Cooling Energy Input Ratio Function of Temperature Curve Name in Booster Mode
+    ; !-  Cooling Energy Input Ratio Function of PLR Curve Name in Booster Mode
 
   HeatPump:PlantLoop:EIR:Heating,
     Heating Coil,            !- Name

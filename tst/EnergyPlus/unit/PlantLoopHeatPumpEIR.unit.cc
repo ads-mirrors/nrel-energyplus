@@ -474,9 +474,6 @@ TEST_F(EnergyPlusFixture, HeatingSimulate_AirSource_AWHP)
                                                       "100 , !- Crankcase Heater Capacity",
                                                       "EIRCurveFuncPLR, !- Crankcase Heater Capacity Function of Temperature Curve Name",
                                                       "20 , !- Maximum Ambient Temperature for Crankcase Heater Operation",
-                                                      ",   !- Booster Mode On Heating",
-                                                      ",   !- Booster Mode Heating Capacity Multiplier",
-                                                      ",   !- Booster Mode Heating COP Multiplier",
                                                       "1 , !- Number of Speeds for Heating",
                                                       "1000, !-  Rated Heating Capacity at Speed 1",
                                                       "3.14, !-  Rated COP for Heating at Speed 1",
@@ -503,9 +500,12 @@ TEST_F(EnergyPlusFixture, HeatingSimulate_AirSource_AWHP)
                                                       ", !-  Normalized Heating Capacity Function of Temperature Curve Name at Speed 5",
                                                       ", !-  Heating Energy Input Ratio Function of Temperature Curve Name at Speed 5",
                                                       ", !-  Heating Energy Input Ratio Function of PLR Curve Name at Speed 5",
-                                                      ",   !- Booster Mode On Cooling",
-                                                      ",   !- Booster Mode Cooling Capacity Multiplier",
-                                                      ",   !- Booster Mode Cooling COP Multiplier",
+                                                      ", !-  Booster Mode On Heating",
+                                                      ", !-  Rated Heating Capacity in Booster Mode",
+                                                      ", !-  Rated Heating COP in Booster Mode",
+                                                      ", !-  Normalized Heating Capacity Function of Temperature Curve Name in Booster Mode",
+                                                      ", !-  Heating Energy Input Ratio Function of Temperature Curve Name in Booster Mode",
+                                                      ", !-  Heating Energy Input Ratio Function of PLR Curve Name in Booster Mode",
                                                       "1, !-  Number of Speeds for Cooling",
                                                       "20000, !-  Rated Cooling Capacity at Speed 1",
                                                       "3, !-  Rated COP for Cooling at Speed 1",
@@ -531,7 +531,13 @@ TEST_F(EnergyPlusFixture, HeatingSimulate_AirSource_AWHP)
                                                       ", !-  Rated COP for Cooling at Speed 5",
                                                       ", !-  Normalized Cooling Capacity Function of Temperature Curve Name at Speed 5",
                                                       ", !-  Cooling Energy Input Ratio Function of Temperature Curve Name at Speed 5",
-                                                      "; !-  Cooling Energy Input Ratio Function of PLR Curve Name at Speed 5",
+                                                      ", !-  Cooling Energy Input Ratio Function of PLR Curve Name at Speed 5",
+                                                      ", !-  Booster Mode On Cooling",
+                                                      ", !-  Rated Cooling Capacity in Booster Mode",
+                                                      ", !-  Rated Cooling COP in Booster Mode",
+                                                      ", !-  Normalized Cooling Capacity Function of Temperature Curve Name in Booster Mode",
+                                                      ", !-  Cooling Energy Input Ratio Function of Temperature Curve Name in Booster Mode",
+                                                      "; !-  Cooling Energy Input Ratio Function of PLR Curve Name in Booster Mode",
 
                                                       "Curve:Linear,",
                                                       "  dummyCurve,",
@@ -715,9 +721,6 @@ TEST_F(EnergyPlusFixture, processInputForEIRPLHP_AWHP)
         "100 , !- Crankcase Heater Capacity",
         "EIRCurveFuncPLR, !- Crankcase Heater Capacity Function of Temperature Curve Name",
         "20 , !- Maximum Ambient Temperature for Crankcase Heater Operation",
-        "Yes,   !- Booster Mode On Heating",
-        "1.1,   !- Booster Mode Heating Capacity Multiplier",
-        "0.9,   !- Booster Mode Heating COP Multiplier",
         "2 , !- Number of Speeds for Heating",
         "100 , !-  Rated Heating Capacity at Speed 1",
         "3, !-  Rated COP for Heating at Speed 1",
@@ -744,9 +747,12 @@ TEST_F(EnergyPlusFixture, processInputForEIRPLHP_AWHP)
         ", !-  Normalized Heating Capacity Function of Temperature Curve Name at Speed 5",
         ", !-  Heating Energy Input Ratio Function of Temperature Curve Name at Speed 5",
         ", !-  Heating Energy Input Ratio Function of PLR Curve Name at Speed 5",
-        ", !-  Booster Mode On Cooling",
-        ", !-  Booster Mode Cooling Capacity Multiplier",
-        ", !- Booster Mode Cooling COP Multiplier",
+        "Yes, !-  Booster Mode On Heating",
+        "50000, !-  Rated Heating Capacity in Booster Mode",
+        "2.5, !-  Rated Heating COP in Booster Mode",
+        "CapCurveFuncTemp, !-  Normalized Heating Capacity Function of Temperature Curve Name in Booster Mode",
+        "EIRCurveFuncTemp, !-  Heating Energy Input Ratio Function of Temperature Curve Name in Booster Mode",
+        "EIRCurveFuncPLR,  !-  Heating Energy Input Ratio Function of PLR Curve Name in Booster Mode",
         "2, !-  Number of Speeds for Cooling",
         "120 , !-  Rated Cooling Capacity at Speed 1",
         "4, !-  Rated COP for Cooling at Speed 1",
@@ -772,7 +778,13 @@ TEST_F(EnergyPlusFixture, processInputForEIRPLHP_AWHP)
         ", !-  Rated COP for Cooling at Speed 5",
         ", !-  Normalized Cooling Capacity Function of Temperature Curve Name at Speed 5",
         ", !-  Cooling Energy Input Ratio Function of Temperature Curve Name at Speed 5",
-        "; !-  Cooling Energy Input Ratio Function of PLR Curve Name at Speed 5",
+        ", !-  Cooling Energy Input Ratio Function of PLR Curve Name at Speed 5",
+        ", !-  Booster Mode On Cooling",
+        ", !-  Rated Cooling Capacity in Booster Mode",
+        ", !-  Rated Cooling COP in Booster Mode",
+        ", !-  Normalized Cooling Capacity Function of Temperature Curve Name in Booster Mode",
+        ", !-  Cooling Energy Input Ratio Function of Temperature Curve Name in Booster Mode",
+        "; !-  Cooling Energy Input Ratio Function of PLR Curve Name in Booster Mode",
 
         "HeatPump:AirToWater,",
         "test_AWHP_defaults, !- Name",
@@ -812,9 +824,6 @@ TEST_F(EnergyPlusFixture, processInputForEIRPLHP_AWHP)
         ", !- Crankcase Heater Capacity",
         ", !- Crankcase Heater Capacity Function of Temperature Curve Name",
         ", !- Maximum Ambient Temperature for Crankcase Heater Operation",
-        ",   !- Booster Mode On Heating",
-        ",   !- Booster Mode Heating Capacity Multiplier",
-        ",   !- Booster Mode Heating COP Multiplier",
         ", !- Number of Speeds for Heating",
         ", !-  Rated Heating Capacity at Speed 1",
         ", !-  Rated COP for Heating at Speed 1",
@@ -841,9 +850,12 @@ TEST_F(EnergyPlusFixture, processInputForEIRPLHP_AWHP)
         ", !-  Normalized Heating Capacity Function of Temperature Curve Name at Speed 5",
         ", !-  Heating Energy Input Ratio Function of Temperature Curve Name at Speed 5",
         ", !-  Heating Energy Input Ratio Function of PLR Curve Name at Speed 5",
-        ", !-  Booster Mode On Cooling",
-        ", !-  Booster Mode Cooling Capacity Multiplier",
-        ", !- Booster Mode Cooling COP Multiplier",
+        ", !-  Booster Mode On Heating",
+        ", !-  Rated Heating Capacity in Booster Mode",
+        ", !-  Rated Heating COP in Booster Mode",
+        ", !-  Normalized Heating Capacity Function of Temperature Curve Name in Booster Mode",
+        ", !-  Heating Energy Input Ratio Function of Temperature Curve Name in Booster Mode",
+        ", !-  Heating Energy Input Ratio Function of PLR Curve Name in Booster Mode",
         ", !-  Number of Speeds for Cooling",
         ", !-  Rated Cooling Capacity at Speed 1",
         ", !-  Rated COP for Cooling at Speed 1",
@@ -869,7 +881,13 @@ TEST_F(EnergyPlusFixture, processInputForEIRPLHP_AWHP)
         ", !-  Rated COP for Cooling at Speed 5",
         ", !-  Normalized Cooling Capacity Function of Temperature Curve Name at Speed 5",
         ", !-  Cooling Energy Input Ratio Function of Temperature Curve Name at Speed 5",
-        "; !-  Cooling Energy Input Ratio Function of PLR Curve Name at Speed 5",
+        ", !-  Cooling Energy Input Ratio Function of PLR Curve Name at Speed 5",
+        ", !-  Booster Mode On Cooling",
+        ", !-  Rated Cooling Capacity in Booster Mode",
+        ", !-  Rated Cooling COP in Booster Mode",
+        ", !-  Normalized Cooling Capacity Function of Temperature Curve Name in Booster Mode",
+        ", !-  Cooling Energy Input Ratio Function of Temperature Curve Name in Booster Mode",
+        "; !-  Cooling Energy Input Ratio Function of PLR Curve Name in Booster Mode",
 
         "Curve:Biquadratic,",
         "CapCurveFuncTemp,        !- Name",
@@ -939,8 +957,6 @@ TEST_F(EnergyPlusFixture, processInputForEIRPLHP_AWHP)
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].compressorMultiplier, 1);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].controlType, HeatPumpAirToWater::CompressorControlType::FixedSpeed);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].boosterOn, false);
-    EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].boosterMultCap, 1.0);
-    EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].boosterMultCOP, 1.0);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].numSpeeds, 2);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].referenceCapacity, 240);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].ratedCapacity[0], 120);
@@ -985,10 +1001,8 @@ TEST_F(EnergyPlusFixture, processInputForEIRPLHP_AWHP)
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].CrankcaseHeaterCapacityCurveIndex, Curve::GetCurveIndex(*state, "EIRCURVEFUNCPLR"));
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].MaxOATCrankcaseHeater, 20);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].boosterOn, true);
-    EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].boosterMultCap, 1.1);
-    EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].boosterMultCOP, 0.9);
-    EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].numSpeeds, 2);
-    EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].referenceCapacity, 200);
+    EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].numSpeeds, 3); // with booster mode, one more speed level
+    EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].referenceCapacity, 50000);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].ratedCapacity[0], 100);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].ratedCOP[0], 3);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].capFuncTempCurveIndex[0], Curve::GetCurveIndex(*state, "CAPCURVEFUNCTEMP"));
@@ -999,6 +1013,11 @@ TEST_F(EnergyPlusFixture, processInputForEIRPLHP_AWHP)
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].capFuncTempCurveIndex[1], Curve::GetCurveIndex(*state, "CAPCURVEFUNCTEMP"));
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].powerRatioFuncTempCurveIndex[1], Curve::GetCurveIndex(*state, "EIRCURVEFUNCTEMP"));
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].powerRatioFuncPLRCurveIndex[1], Curve::GetCurveIndex(*state, "EIRCURVEFUNCPLR"));
+    EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].ratedCapacity[2], 50000);
+    EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].ratedCOP[2], 2.5);
+    EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].capFuncTempCurveIndex[2], Curve::GetCurveIndex(*state, "CAPCURVEFUNCTEMP"));
+    EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].powerRatioFuncTempCurveIndex[2], Curve::GetCurveIndex(*state, "EIRCURVEFUNCTEMP"));
+    EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].powerRatioFuncPLRCurveIndex[2], Curve::GetCurveIndex(*state, "EIRCURVEFUNCPLR"));
     EXPECT_ENUM_EQ(state->dataHeatPumpAirToWater->heatPumps[1].operatingModeControlMethod, HeatPumpAirToWater::OperatingModeControlMethod::Load);
     EXPECT_ENUM_EQ(state->dataHeatPumpAirToWater->heatPumps[1].operatingModeControlOptionMultipleUnit,
                    HeatPumpAirToWater::OperatingModeControlOptionMultipleUnit::SingleMode);
@@ -4399,9 +4418,6 @@ TEST_F(EnergyPlusFixture, Test_DoPhysics_AWHP)
                           "100 , !- Crankcase Heater Capacity",
                           "EIRCurveFuncPLR, !- Crankcase Heater Capacity Function of Temperature Curve Name",
                           "20 , !- Maximum Ambient Temperature for Crankcase Heater Operation",
-                          ",   !- Booster Mode On Heating",
-                          ",   !- Booster Mode Heating Capacity Multiplier",
-                          ",   !- Booster Mode Heating COP Multiplier",
                           "1 , !- Number of Speeds for Heating",
                           "20000, !-  Rated Heating Capacity at Speed 1",
                           "3, !-  Rated COP for Heating at Speed 1",
@@ -4428,9 +4444,12 @@ TEST_F(EnergyPlusFixture, Test_DoPhysics_AWHP)
                           ", !-  Normalized Heating Capacity Function of Temperature Curve Name at Speed 5",
                           ", !-  Heating Energy Input Ratio Function of Temperature Curve Name at Speed 5",
                           ", !-  Heating Energy Input Ratio Function of PLR Curve Name at Speed 5",
-                          ",   !- Booster Mode On Cooling",
-                          ",   !- Booster Mode Cooling Capacity Multiplier",
-                          ",   !- Booster Mode Cooling COP Multiplier",
+                          ", !-  Booster Mode On Heating",
+                          ", !-  Rated Heating Capacity in Booster Mode",
+                          ", !-  Rated Heating COP in Booster Mode",
+                          ", !-  Normalized Heating Capacity Function of Temperature Curve Name in Booster Mode",
+                          ", !-  Heating Energy Input Ratio Function of Temperature Curve Name in Booster Mode",
+                          ", !-  Heating Energy Input Ratio Function of PLR Curve Name in Booster Mode",
                           "1, !-  Number of Speeds for Cooling",
                           "20000, !-  Rated Cooling Capacity at Speed 1",
                           "3, !-  Rated COP for Cooling at Speed 1",
@@ -4456,7 +4475,13 @@ TEST_F(EnergyPlusFixture, Test_DoPhysics_AWHP)
                           ", !-  Rated COP for Cooling at Speed 5",
                           ", !-  Normalized Cooling Capacity Function of Temperature Curve Name at Speed 5",
                           ", !-  Cooling Energy Input Ratio Function of Temperature Curve Name at Speed 5",
-                          "; !-  Cooling Energy Input Ratio Function of PLR Curve Name at Speed 5",
+                          ", !-  Cooling Energy Input Ratio Function of PLR Curve Name at Speed 5",
+                          ", !-  Booster Mode On Cooling",
+                          ", !-  Rated Cooling Capacity in Booster Mode",
+                          ", !-  Rated Cooling COP in Booster Mode",
+                          ", !-  Normalized Cooling Capacity Function of Temperature Curve Name in Booster Mode",
+                          ", !-  Cooling Energy Input Ratio Function of Temperature Curve Name in Booster Mode",
+                          "; !-  Cooling Energy Input Ratio Function of PLR Curve Name in Booster Mode",
 
                           "Curve:Biquadratic,",
                           "  CapCurveFuncTemp,",

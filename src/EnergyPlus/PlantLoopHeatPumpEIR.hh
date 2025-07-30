@@ -479,11 +479,12 @@ namespace EIRPlantLoopHeatPumps {
 
         int static constexpr maxNumSpeeds = 5;
         int numSpeeds = 1;
-        std::array<Real64, maxNumSpeeds> ratedCapacity = {};
-        std::array<Real64, maxNumSpeeds> ratedCOP = {};
-        std::array<int, maxNumSpeeds> capFuncTempCurveIndex = {};
-        std::array<int, maxNumSpeeds> powerRatioFuncTempCurveIndex = {};
-        std::array<int, maxNumSpeeds> powerRatioFuncPLRCurveIndex = {};
+        //        adding 1 to account for booster mode curves
+        std::array<Real64, maxNumSpeeds + 1> ratedCapacity = {};
+        std::array<Real64, maxNumSpeeds + 1> ratedCOP = {};
+        std::array<int, maxNumSpeeds + 1> capFuncTempCurveIndex = {};
+        std::array<int, maxNumSpeeds + 1> powerRatioFuncTempCurveIndex = {};
+        std::array<int, maxNumSpeeds + 1> powerRatioFuncPLRCurveIndex = {};
         // 0-indexing, if it's fixed speed, it's integer; if it's variable speed, it's continuous
         Real64 speedLevel = 0.0; // 0-indexing
 

@@ -6884,7 +6884,7 @@ void WaterThermalTankData::initialize(EnergyPlusData &state, bool const FirstHVA
 
     // calling CalcStandardRatings early bypasses fan sizing since DataSizing::DataNonZoneNonAirloopValue has not been set yet
     if (!this->AlreadyRated) {
-        if (this->IsChilledWaterTank) {
+        if (this->IsPassiveWaterTank) {
             this->AlreadyRated = true;
         } else {
             if (!state.dataGlobal->AnyPlantInModel || state.dataPlnt->PlantFirstSizesOkayToReport || this->MaxCapacity > 0.0 ||

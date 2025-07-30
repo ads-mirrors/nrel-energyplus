@@ -299,6 +299,7 @@ TEST_F(CoilCoolingDXTest, CoilCoolingDXCurveFitCrankcaseHeaterCurve)
     // change the minimum OA temp for compressor operation to 5.0C
     thisCoil.performance->minOutdoorDrybulb = 5.0;
     performance->myOneTimeMinOATFlag = true;
+    thisCoil.size(*state); // run size() to reset the min OA temp
     thisCoil.performance->simulate(
         *state, evapInletNode, evapOutletNode, coilMode, speedNum, speedRatio, fanOp, condInletNode, condOutletNode, singleMode, LoadSHR);
     EXPECT_EQ(performance->normalMode.minOutdoorDrybulb, 5.0);

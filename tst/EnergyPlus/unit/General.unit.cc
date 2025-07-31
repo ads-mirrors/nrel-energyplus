@@ -735,6 +735,16 @@ TEST_F(EnergyPlusFixture, General_CreateSysTimeIntervalString_Test)
 
     resultingString = CreateSysTimeIntervalString(*state);
     EXPECT_EQ(resultingString, expectedString);
+
+    // Test 4: SysTimeElapsed zero -- before HVAC simulation sets it
+    dHVACG->SysTimeElapsed = 0.0;
+    dHVACG->TimeStepSys = 0.1;
+    dGlo->CurrentTime = 10.9;
+    dGlo->TimeStepZone = 0.1;
+    expectedString = "10:48 - 10:54";
+
+    resultingString = CreateSysTimeIntervalString(*state);
+    EXPECT_EQ(resultingString, expectedString);
 }
 
 } // namespace EnergyPlus

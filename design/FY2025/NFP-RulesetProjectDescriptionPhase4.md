@@ -433,7 +433,7 @@ The current columns are:
 
 The new columns would be:
 - Surface Type% (Window, Door, Glassdoor, etc.)
-- Overhand Depth^
+- Overhang Depth^
 - Fin Depth^
 
 This suppports:

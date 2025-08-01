@@ -8607,9 +8607,7 @@ void WaterThermalTankData::CalcNodeMassFlowsWithDirection(
                 this->Node(NodeNum).MassFlowToUpper += sourceMassFlowRate;
             }
 
-        } else {
-            // Source-side flow is across the node; no flow to other nodes
-        }
+        } // If neither of the above, then source-side flow is across the node; no flow to other nodes
     }
 
     // Cancel out any up and down flows

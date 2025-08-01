@@ -92,3 +92,41 @@ The `Output:Constructions` has two possible keys: `Materials` and `Constructions
 #### Fuel Supply
 
 When using `Generator:FuelSupply`, the header was written twice in the EIO Initialization Summary as `! <Fuel Supply>,...` leading to two identical tables in the HTML report.
+
+### ThermalStorage:*:Stratified, ThermalStorage:ChilledWater:Mixed output variable name change
+
+Change the follwing variable from "... Thermal Storage ..." to "... Thermal Storage Tank ..."
+
+before change:
+- Chilled/Hot Water Thermal Storage Temperature
+- Chilled/Hot Water Thermal Storage Final Tank Temperature
+- Chilled/Hot Water Thermal Storage Use Side Mass Flow Rate
+- Chilled/Hot Water Thermal Storage Use Side Inlet Temperature
+- Chilled/Hot Water Thermal Storage Use Side Outlet Temperature
+- Chilled/Hot Water Thermal Storage Use Side Heat Transfer Rate
+- Chilled/Hot Water Thermal Storage Use Side Heat Transfer Energy
+- Chilled/Hot Water Thermal Storage Source Side Mass Flow Rate
+- Chilled/Hot Water Thermal Storage Source Side Inlet Temperature
+- Chilled/Hot Water Thermal Storage Source Side Outlet Temperature
+- Chilled/Hot Water Thermal Storage Source Side Heat Transfer Rate
+- Chilled/Hot Water Thermal Storage Source Side Heat Transfer Energy
+- Chilled/Hot Water Thermal Storage Temperature Node
+- Chilled/Hot Water Thermal Storage Final Temperature Node
+
+after change:
+- Chilled/Hot Water Thermal Storage Tank Temperature
+- Chilled/Hot Water Thermal Storage Tank Final Tank Temperature
+- Chilled/Hot Water Thermal Storage Tank Use Side Mass Flow Rate
+- Chilled/Hot Water Thermal Storage Tank Use Side Inlet Temperature
+- Chilled/Hot Water Thermal Storage Tank Use Side Outlet Temperature
+- Chilled/Hot Water Thermal Storage Tank Use Side Heat Transfer Rate
+- Chilled/Hot Water Thermal Storage Tank Use Side Heat Transfer Energy
+- Chilled/Hot Water Thermal Storage Tank Source Side Mass Flow Rate
+- Chilled/Hot Water Thermal Storage Tank Source Side Inlet Temperature
+- Chilled/Hot Water Thermal Storage Tank Source Side Outlet Temperature
+- Chilled/Hot Water Thermal Storage Tank Source Side Heat Transfer Rate
+- Chilled/Hot Water Thermal Storage Tank Source Side Heat Transfer Energy
+- Chilled/Hot Water Thermal Storage Tank Temperature Node
+- Chilled/Hot Water Thermal Storage Tank Final Temperature Node
+ 
+See Pull Request [#11033](https://github.com/NREL/EnergyPlus/pull/11033).

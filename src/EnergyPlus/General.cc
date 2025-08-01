@@ -786,7 +786,7 @@ std::string CreateSysTimeIntervalString(EnergyPlusData &state)
     if (SysTimeElapsed == 0.0) {
         ActualTimeE = state.dataGlobal->CurrentTime;
         ActualTimeS = ActualTimeE - state.dataGlobal->TimeStepZone;
-    } else if (abs(state.dataGlobal->TimeStepZone - SysTimeElapsed) <= toleranceTime) {
+    } else if (std::abs(state.dataGlobal->TimeStepZone - SysTimeElapsed) <= toleranceTime) {
         ActualTimeE = state.dataGlobal->CurrentTime;
         ActualTimeS = ActualTimeE - TimeStepSys;
     } else {

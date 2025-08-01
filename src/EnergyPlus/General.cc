@@ -783,12 +783,15 @@ std::string CreateSysTimeIntervalString(EnergyPlusData &state)
     Real64 ActualTimeS;
     Real64 ActualTimeE;
     Real64 constexpr toleranceTime = 0.0001; // less than 1 second (to avoid comparisons that are not exactly identical but are essentially the same
-    if ((SysTimeElapsed == 0.0) || (abs(state.dataGlobal->TimeStepZone - SysTimeElapsed) <= toleranceTime)) {
+    if (SysTimeElapsed == 0.0) {
         ActualTimeE = state.dataGlobal->CurrentTime;
         ActualTimeS = ActualTimeE - state.dataGlobal->TimeStepZone;
-    } else {
-        ActualTimeE = state.dataGlobal->CurrentTime - state.dataGlobal->TimeStepZone + SysTimeElapsed;
+    } else if (abs(state.dataGlobal->TimeStepZone - SysTimeElapsed) <= toleranceTime) {
+        ActualTimeE = state.dataGlobal->CurrentTime;
         ActualTimeS = ActualTimeE - TimeStepSys;
+    } else {
+        ActualTimeS = state.dataGlobal->CurrentTime - state.dataGlobal->TimeStepZone + SysTimeElapsed;
+        ActualTimeE = ActualTimeS + TimeStepSys;
     }
     int ActualTimeHrS = int(ActualTimeS);
     //  ActualTimeHrE=INT(ActualTimeE)

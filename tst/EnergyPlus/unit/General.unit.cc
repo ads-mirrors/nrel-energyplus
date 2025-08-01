@@ -711,7 +711,7 @@ TEST_F(EnergyPlusFixture, General_CreateSysTimeIntervalString_Test)
     dHVACG->TimeStepSys = 0.05;
     dGlo->CurrentTime = 10.6;
     dGlo->TimeStepZone = 0.2;
-    expectedString = "10:27 - 10:30";
+    expectedString = "10:30 - 10:33";
 
     resultingString = CreateSysTimeIntervalString(*state);
     EXPECT_EQ(resultingString, expectedString);

@@ -3806,12 +3806,9 @@ bool getWaterTankStratifiedInput(EnergyPlusData &state, std::string objectType)
             Tank.DeadBandDeltaTemp = 0.0001;
         }
 
-        auto const &MaxCapacity = fields.at(format("nominal_{}_capacity", kwHeatingCooling));
-        if (MaxCapacity == "Autosize") {
-            Tank.MaxCapacity = DataSizing::AutoSize;
+        Tank.MaxCapacity = state.dataInputProcessing->inputProcessor->getRealFieldValue(fields, schemaProps, format("nominal_{}_capacity", kwHeatingCooling));
+        if (Tank.MaxCapacity == DataSizing::AutoSize) {
             Tank.MaxCapacityWasAutoSized = true;
-        } else {
-            Tank.MaxCapacity = MaxCapacity.get<Real64>();
         }
 
         Tank.Efficiency = 1.0;
@@ -3971,32 +3968,16 @@ bool getWaterTankStratifiedInput(EnergyPlusData &state, std::string objectType)
 
         Tank.StandAlone = false;
 
-        auto const &UseDesignVolFlowRate = fields.find("use_side_design_flow_rate");
-        if (UseDesignVolFlowRate == fields.end()) {
-            Tank.UseDesignVolFlowRate = 0.0;
-        } else {
-            auto const &UseDesignVolFlowRate = fields.at("use_side_design_flow_rate");
-            if (UseDesignVolFlowRate == "Autosize") {
-                Tank.UseDesignVolFlowRate = DataSizing::AutoSize;
-                Tank.UseDesignVolFlowRateWasAutoSized = true;
-            } else {
-                Tank.UseDesignVolFlowRate = UseDesignVolFlowRate.get<Real64>();
-            }
+        Tank.UseDesignVolFlowRate = state.dataInputProcessing->inputProcessor->getRealFieldValue(fields, schemaProps, "use_side_design_flow_rate");
+        if (Tank.UseDesignVolFlowRate == DataSizing::AutoSize) {
+            Tank.UseDesignVolFlowRateWasAutoSized = true;
         }
 
         Tank.UseSidePlantLoc.loopSideNum = DataPlant::LoopSideLocation::Invalid;
 
-        auto const &SourceDesignVolFlowRate = fields.find("source_side_design_flow_rate");
-        if (SourceDesignVolFlowRate == fields.end()) {
-            Tank.SourceDesignVolFlowRate = 0.0;
-        } else {
-            auto const &SourceDesignVolFlowRate = fields.at("source_side_design_flow_rate");
-            if (SourceDesignVolFlowRate == "Autosize") {
-                Tank.SourceDesignVolFlowRate = DataSizing::AutoSize;
-                Tank.SourceDesignVolFlowRateWasAutoSized = true;
-            } else {
-                Tank.SourceDesignVolFlowRate = SourceDesignVolFlowRate.get<Real64>();
-            }
+        Tank.SourceDesignVolFlowRate = state.dataInputProcessing->inputProcessor->getRealFieldValue(fields, schemaProps, "source_side_design_flow_rate");
+        if (Tank.SourceDesignVolFlowRate == DataSizing::AutoSize) {
+            Tank.SourceDesignVolFlowRateWasAutoSized = true;
         }
 
         Tank.SizingRecoveryTime = state.dataInputProcessing->inputProcessor->getRealFieldValue(fields, schemaProps, "tank_recovery_time");

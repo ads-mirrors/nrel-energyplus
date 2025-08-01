@@ -706,6 +706,11 @@ TEST_F(EnergyPlusFixture, General_CreateSysTimeIntervalString_Test)
     std::string resultingString;
     std::string expectedString;
 
+    // NOTE: SysTimeElapsed is updated at the END of the HVAC time step (loop), so it's current value is
+    //       the end of the last HVAC time step not the end of the current HVAC time step.  The other
+    //       conditions below are for when we are in the zone heat balance (SysTimeElapsed = 0) or after
+    //       we have finished the last HVAC time step.
+
     // Test 1: Middle of the day/middle of zone timestep (system time step less than zone timestep)
     dHVACG->SysTimeElapsed = 0.10;
     dHVACG->TimeStepSys = 0.05;

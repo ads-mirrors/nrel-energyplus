@@ -3794,7 +3794,8 @@ bool getWaterTankStratifiedInput(EnergyPlusData &state, std::string objectType)
         if (TankTempLimit > 0.0) {
             Tank.TankTempLimit = TankTempLimit;
         } else {
-            Tank.TankTempLimit = 1.0;
+            // Default to very large number, boiling point of water
+            Tank.TankTempLimit = 100.0;
         }
 
         auto const DeadBandDeltaTemp =
@@ -4971,9 +4972,9 @@ void WaterThermalTankData::setupOutputVars(EnergyPlusData &state)
 {
     if ((this->WaterThermalTankType == DataPlant::PlantEquipmentType::ChilledWaterTankMixed) ||
         (this->WaterThermalTankType == DataPlant::PlantEquipmentType::ChilledWaterTankStratified)) {
-        this->setupChilledWaterTankOutputVars(state);
+        this->setupWaterTankOutputVars(state, "Chilled");
     } else if (this->WaterThermalTankType == DataPlant::PlantEquipmentType::HotWaterTankStratified) {
-        this->setupHotWaterTankOutputVars(state);
+        this->setupWaterTankOutputVars(state, "Hot");
     } else {
         // moving setupWaterHeaterOutputVars to here causes big table diffs...
         this->setupWaterHeaterOutputVars(state);
@@ -4982,7 +4983,7 @@ void WaterThermalTankData::setupOutputVars(EnergyPlusData &state)
     // this->setupZoneInternalGains();
 }
 
-void WaterThermalTankData::setupChilledWaterTankOutputVars(EnergyPlusData &state, std::string ChilledOrHotKw)
+void WaterThermalTankData::setupWaterTankOutputVars(EnergyPlusData &state, std::string_view ChilledOrHotKw)
 {
 
     // CurrentModuleObject='ThermalStorage:ChilledWater:Mixed/ThermalStorage:ChilledWater:Stratified'
@@ -5200,11 +5201,6 @@ void WaterThermalTankData::setupChilledWaterTankOutputVars(EnergyPlusData &state
                                 this->Name);
         }
     }
-}
-
-void WaterThermalTankData::setupHotWaterTankOutputVars(EnergyPlusData &state)
-{
-    setupChilledWaterTankOutputVars(state, "Hot");
 }
 
 void WaterThermalTankData::setupZoneInternalGains(EnergyPlusData &state)

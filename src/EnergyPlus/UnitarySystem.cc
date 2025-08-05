@@ -7067,7 +7067,8 @@ namespace UnitarySystems {
 
             // only allowed for water and DX cooling coils at this time
             if (this->m_CoolCoilExists && this->m_CoolingCoilType_Num != HVAC::Coil_CoolingWater &&
-                this->m_CoolingCoilType_Num != HVAC::Coil_CoolingWaterDetailed && this->m_CoolingCoilType_Num != HVAC::CoilDX_CoolingSingleSpeed) {
+                this->m_CoolingCoilType_Num != HVAC::Coil_CoolingWaterDetailed && this->m_CoolingCoilType_Num != HVAC::CoilDX_CoolingSingleSpeed &&
+                this->m_CoolingCoilType_Num != HVAC::Coil_CoolingAirToAirVariableSpeed) {
                 if (state.dataGlobal->DisplayExtraWarnings) {
                     ShowWarningError(state, format("{}: {}", cCurrentModuleObject, thisObjectName));
                     ShowContinueError(state, "ASHRAE90.1 control method requires specific cooling coil types.");
@@ -8332,7 +8333,7 @@ namespace UnitarySystems {
                 }
 
                 this->m_SimASHRAEModel = false; // flag used to invoke ASHRAE 90.1 model calculations
-                // allows non-ASHSRAE compliant coil types to be modeled using non-ASHAR90 method. Constant fan operating mode is required.
+                // allows non-ASHRAE compliant coil types to be modeled using non-ASHAR90 method. Constant fan operating mode is required.
                 if (this->m_FanOpMode == HVAC::FanOp::Continuous) {
                     if (state.dataUnitarySystems->CoolingLoad) {
                         if (this->m_ValidASHRAECoolCoil) {
@@ -9807,7 +9808,10 @@ namespace UnitarySystems {
                 this->m_CoolingCycRatio = PartLoadRatio;
                 this->m_CoolingSpeedRatio = 0.0;
             } else {
-                if (this->m_SingleMode == 0) {
+                if (this->m_SimASHRAEModel) {
+                    this->m_CoolingCycRatio = PartLoadRatio;
+                    this->m_CoolingSpeedRatio = 1.0;
+                } else if (this->m_SingleMode == 0) {
                     this->m_CoolingCycRatio = 1.0;
                     this->m_CoolingSpeedRatio = PartLoadRatio;
                 } else {
@@ -10933,6 +10937,10 @@ namespace UnitarySystems {
                     state.dataUnitarySystems->CompOnMassFlow = this->m_CoolMassFlowRate[this->m_EconoSpeedNum];
                     state.dataUnitarySystems->CompOnFlowRatio = this->m_MSCoolingSpeedRatio[this->m_EconoSpeedNum];
                     state.dataUnitarySystems->OACompOnMassFlow = this->m_CoolOutAirMassFlow;
+                } else if (this->m_SimASHRAEModel) {
+                    state.dataUnitarySystems->CompOnMassFlow = this->m_CoolMassFlowRate[this->m_NumOfSpeedCooling];
+                    state.dataUnitarySystems->CompOnFlowRatio = this->m_MSCoolingSpeedRatio[this->m_NumOfSpeedCooling];
+                    state.dataUnitarySystems->OACompOnMassFlow = this->m_CoolOutAirMassFlow;
                 } else if (CoolSpeedNum > 0) {
                     state.dataUnitarySystems->CompOnMassFlow = this->m_CoolMassFlowRate[CoolSpeedNum];
                     state.dataUnitarySystems->CompOnFlowRatio = this->m_MSCoolingSpeedRatio[CoolSpeedNum];
@@ -10948,6 +10956,10 @@ namespace UnitarySystems {
                     } else if (this->m_EconoSpeedNum > 0) { // multi-stage economizer operation
                         state.dataUnitarySystems->CompOffMassFlow = this->m_CoolMassFlowRate[this->m_EconoSpeedNum];
                         state.dataUnitarySystems->CompOffFlowRatio = this->m_MSCoolingSpeedRatio[this->m_EconoSpeedNum];
+                        state.dataUnitarySystems->OACompOffMassFlow = this->m_CoolOutAirMassFlow;
+                    } else if (this->m_SimASHRAEModel) {
+                        state.dataUnitarySystems->CompOffMassFlow = this->m_CoolMassFlowRate[1];
+                        state.dataUnitarySystems->CompOffFlowRatio = this->m_MSCoolingSpeedRatio[1];
                         state.dataUnitarySystems->OACompOffMassFlow = this->m_CoolOutAirMassFlow;
                     } else if (CoolSpeedNum == 1) {
                         state.dataUnitarySystems->CompOffMassFlow = this->m_CoolMassFlowRate[CoolSpeedNum];
@@ -11969,7 +11981,9 @@ namespace UnitarySystems {
         } break;
         case HVAC::Coil_CoolingAirToAirVariableSpeed:
         case HVAC::Coil_CoolingWaterToAirHPVSEquationFit: {
-            if (this->m_CoolingSpeedNum > 1) {
+            if (this->m_SimASHRAEModel) {
+                CoilPLR = PartLoadRatio;
+            } else if (this->m_CoolingSpeedNum > 1) {
                 CoilPLR = 1.0;
             } else {
                 CoilPLR = PartLoadRatio;

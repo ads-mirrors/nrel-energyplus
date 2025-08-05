@@ -61,6 +61,7 @@
 #include <EnergyPlus/PlantUtilities.hh>
 #include <EnergyPlus/Psychrometrics.hh>
 #include <EnergyPlus/SZVAVModel.hh>
+#include <EnergyPlus/SizingManager.hh>
 #include <EnergyPlus/UnitarySystem.hh>
 #include <EnergyPlus/UtilityRoutines.hh>
 
@@ -849,7 +850,43 @@ namespace SZVAVModel {
                 };
                 General::SolveRoot(state, 0.001, MaxIter, SolFlag, PartLoadRatio, f, 0.0, 1.0);
                 if (SolFlag < 0) {
-                    MessagePrefix = "Step 2: ";
+                    if (SZVAVModel.m_CoolingSpeedNum < SZVAVModel.m_NumOfSpeedCooling) { // attempt to meet the load with the next speed
+                        SZVAVModel.m_CoolingSpeedNum += 1;
+                        auto f = [&state,
+                                  SysIndex,
+                                  FirstHVACIteration,
+                                  ZoneLoad,
+                                  &SZVAVModel,
+                                  OnOffAirFlowRatio,
+                                  AirLoopNum,
+                                  coilFluidInletNode,
+                                  lowSpeedFanRatio,
+                                  AirMassFlow,
+                                  maxAirMassFlow,
+                                  CoolingLoad,
+                                  maxCoilFluidFlow](Real64 const PartLoadRatio) {
+                            return UnitarySystems::UnitarySys::calcUnitarySystemWaterFlowResidual(state,
+                                                                                                  PartLoadRatio,
+                                                                                                  SysIndex,
+                                                                                                  FirstHVACIteration,
+                                                                                                  ZoneLoad,
+                                                                                                  SZVAVModel.AirInNode,
+                                                                                                  OnOffAirFlowRatio,
+                                                                                                  AirLoopNum,
+                                                                                                  coilFluidInletNode,
+                                                                                                  maxCoilFluidFlow,
+                                                                                                  lowSpeedFanRatio,
+                                                                                                  AirMassFlow,
+                                                                                                  0.0,
+                                                                                                  maxAirMassFlow,
+                                                                                                  CoolingLoad,
+                                                                                                  1.0);
+                        };
+                        General::SolveRoot(state, 0.001, MaxIter, SolFlag, PartLoadRatio, f, 0.0, 1.0);
+                        if (SolFlag < 0) {
+                            MessagePrefix = "Step 2: ";
+                        }
+                    }
                 }
 
             } else { // in region 3 of figure

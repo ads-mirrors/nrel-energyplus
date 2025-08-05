@@ -6294,7 +6294,7 @@ TEST_F(EnergyPlusFixture, PlantMassFlowRatesFuncTest)
     Tank.useSideAvailSched = Sched::GetScheduleAlwaysOn(*state);
 
     bool NeedsHeatOrCool = false;
-    if (Tank.sourceSideAltSetpointSched != NULL) {
+    if (Tank.sourceSideAltSetpointSched != nullptr) {
         NeedsHeatOrCool = Tank.SourceHeatNeed(*state, outletTemp, deadbandTemp, setPtTemp);
     }
     result = Tank.PlantMassFlowRatesFunc(*state,

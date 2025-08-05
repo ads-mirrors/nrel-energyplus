@@ -734,7 +734,8 @@ namespace WaterThermalTanks {
 
         void setupZoneInternalGains(EnergyPlusData &state);
 
-        void setupWaterTankOutputVars(EnergyPlusData &state, std::string_view ChilledOrHotKw);
+        void setupHotWaterTankOutputVars(EnergyPlusData &state);
+        void setupChilledWaterTankOutputVars(EnergyPlusData &state);
 
         void setupWaterHeaterOutputVars(EnergyPlusData &state);
 

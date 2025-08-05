@@ -4038,7 +4038,7 @@ bool getWaterTankStratifiedInput(EnergyPlusData &state, std::string objectType)
         }
 
         auto const &useSideAvailSched = fields.find("use_side_availability_schedule_name");
-        if (useSideAvailSched != fields.end()) {
+        if (useSideAvailSched == fields.end()) {
             Tank.useSideAvailSched = Sched::GetScheduleAlwaysOn(state);
         } else if ((Tank.useSideAvailSched = Sched::GetSchedule(state, Util::makeUPPER(useSideAvailSched.value().get<std::string>()))) == nullptr) {
             ShowSevereItemNotFound(state, eoh, "use_side_availability_schedule_name", useSideAvailSched.value().get<std::string>());
@@ -4050,7 +4050,7 @@ bool getWaterTankStratifiedInput(EnergyPlusData &state, std::string objectType)
         }
 
         auto const &sourceSideAvailSched = fields.find("source_side_availability_schedule_name");
-        if (sourceSideAvailSched != fields.end()) {
+        if (sourceSideAvailSched == fields.end()) {
             Tank.sourceSideAvailSched = Sched::GetScheduleAlwaysOn(state);
         } else if ((Tank.sourceSideAvailSched = Sched::GetSchedule(state, Util::makeUPPER(sourceSideAvailSched.value().get<std::string>()))) ==
                    nullptr) {

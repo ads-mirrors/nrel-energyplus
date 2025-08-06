@@ -1746,6 +1746,18 @@ TEST_F(EnergyPlusFixture, thermalStorageTankInputReading)
         "Through: 12/31,          !- Field 1",
         "For: AllDays,            !- Field 2",
         "Until: 24:00,50;         !- Field 3",
+        "Schedule:Compact,",
+        "  TES Charge Schedule,     !- Name",
+        "  On/Off,                  !- Schedule Type Limits Name",
+        "  Through: 12/31,          !- Field 1",
+        "  For: AllDays,            !- Field 2",
+        "  Until: 24:00,1;          !- Field 3",
+        "Schedule:Compact,",
+        "  ALWAYS_ON,               !- Name",
+        "  On/Off,                  !- Schedule Type Limits Name",
+        "  Through: 12/31,          !- Field 1",
+        "  For: AllDays,            !- Field 2",
+        "  Until: 24:00,1;          !- Field 3",
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
@@ -1781,12 +1793,12 @@ TEST_F(EnergyPlusFixture, thermalStorageTankInputReading)
     EXPECT_EQ(TankChilled.InletNodeName2, "");
     EXPECT_EQ(TankChilled.OutletNodeName2, "");
     EXPECT_EQ(TankChilled.UseEffectiveness, 1.0);
-    //    EXPECT_EQ(Tank.useSideAvailSched, Sched::GetSchedule(*state, "ALWAYS_ON"));
+    EXPECT_EQ(TankChilled.useSideAvailSched, Sched::GetSchedule(*state, "ALWAYS_ON"));
     EXPECT_EQ(TankChilled.UseInletHeight, 7.85);
     EXPECT_EQ(TankChilled.UseOutletHeight, 0.15);
     EXPECT_EQ(TankChilled.UseDesignVolFlowRate, DataSizing::AutoSize);
     EXPECT_EQ(TankChilled.SourceEffectiveness, 0.9);
-    //    EXPECT_EQ(Tank.sourceSideAvailSched, Sched::GetSchedule(*state, "TES CHARGE SCHEDULE"));
+    EXPECT_EQ(TankChilled.sourceSideAvailSched, Sched::GetSchedule(*state, "TES CHARGE SCHEDULE"));
     EXPECT_EQ(TankChilled.SourceInletHeight, 0.15);
     EXPECT_EQ(TankChilled.SourceOutletHeight, 7.85);
     EXPECT_EQ(TankChilled.SourceDesignVolFlowRate, 5.0E-3);
@@ -1895,6 +1907,18 @@ TEST_F(EnergyPlusFixture, stratifiedTankTwoSetpoint)
         "Through: 12/31,          !- Field 1",
         "For: AllDays,            !- Field 2",
         "Until: 24:00,30;         !- Field 3",
+        "Schedule:Compact,",
+        "  TES Charge Schedule,     !- Name",
+        "  On/Off,                  !- Schedule Type Limits Name",
+        "  Through: 12/31,          !- Field 1",
+        "  For: AllDays,            !- Field 2",
+        "  Until: 24:00,1;          !- Field 3",
+        "Schedule:Compact,",
+        "  ALWAYS_ON,               !- Name",
+        "  On/Off,                  !- Schedule Type Limits Name",
+        "  Through: 12/31,          !- Field 1",
+        "  For: AllDays,            !- Field 2",
+        "  Until: 24:00,1;          !- Field 3",
     });
 
     ASSERT_TRUE(process_idf(idf_objects));

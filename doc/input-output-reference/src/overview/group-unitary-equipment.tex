@@ -1561,9 +1561,9 @@ This alpha field contains the identifying type of heating coil specified in the 
 
 This alpha field contains the identifying name given to the DX heating coil, and should match the name specified in the corresponding DX heating coil object.
 
-\paragraph{Field: Minimum Outdoor Dry-Bulb Temperature for Compressor Operation}\label{field-minimum-outdoor-dry-bulb-temperature-for-compressor-operation-000}
+\paragraph{Field: DX Heating Coil Sizing Ratio}\label{field-dx-heating-coil-sizing-ratio-0303}
 
-\textbf{Deprecated field}. The Minimum Outdoor Dry-Bulb Temperature for Compressor Operation is now controlled by the \hyperref[coilcoolingdxmultispeed]{Coil:Cooling:DX:MultiSpeed} and \hyperref[coilheatingdxmultispeed]{Coil:Heating:DX:MultiSpeed} (if used) coil objects.
+This input specifies the ratio of heat pump heating to cooling capacity. The default value is 1.0.
 
 \paragraph{Field: Cooling Coil Object Type}\label{field-cooling-coil-object-type-4}
 
@@ -1687,7 +1687,7 @@ AirLoopHVAC:UnitaryHeatPump:AirToAir:MultiSpeed,
   BlowThrough,             !- Supply air fan placement
   FanModeSchedule,         !- Supply air fan operating mode schedule name
   Coil:Heating:DX:MultiSpeed, Heat Pump DX Heating Coil 1,  !- Heating coil type & name
-  -8.0,                    !- Minimum outdoor dry-bulb temperature for compressor operation
+  ,                        !- DX Heating Coil Sizing Ratio
   Coil:Cooling:DX:MultiSpeed, Heat Pump ACDXCoil 1,    !- Cooling coil type & name
   Coil:Heating:Fuel,        !- Supplemental heating coil type
   Supp Gas Heating Coil 1, !- Supplemental heating coil name

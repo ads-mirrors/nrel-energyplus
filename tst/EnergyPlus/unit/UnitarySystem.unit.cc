@@ -5532,8 +5532,6 @@ TEST_F(EnergyPlusFixture, UnitarySystemModel_ConfirmUnitarySystemSizingTest)
         // yield 1.005
         if (iSizingType == DataSizing::FractionOfAutosizedCoolingAirflow) {
             state->dataSize->FinalZoneSizing(state->dataSize->CurZoneEqNum).DesCoolVolFlow = 1.005;
-        }
-        if (iSizingType == DataSizing::FractionOfAutosizedCoolingAirflow) {
             thisSys.m_MaxCoolAirVolFlow = 1.0;
         }
         // for FlowPerCoolingCapacity, do the division so sizing will yield 1.005
@@ -5685,8 +5683,6 @@ TEST_F(EnergyPlusFixture, UnitarySystemModel_ConfirmUnitarySystemSizingTest)
         // yield 1.005
         if (iCoolingSizingType == DataSizing::FractionOfAutosizedCoolingAirflow) {
             state->dataSize->FinalZoneSizing(state->dataSize->CurZoneEqNum).DesCoolVolFlow = 1.005;
-        }
-        if (iCoolingSizingType == DataSizing::FractionOfAutosizedCoolingAirflow) {
             thisSys.m_MaxCoolAirVolFlow = 1.0;
         }
         // for FlowPerCoolingCapacity, do the division so sizing will yield 1.005
@@ -5753,8 +5749,6 @@ TEST_F(EnergyPlusFixture, UnitarySystemModel_ConfirmUnitarySystemSizingTest)
         // yield 1.005
         if (iCoolingSizingType == DataSizing::FractionOfAutosizedCoolingAirflow) {
             state->dataSize->FinalZoneSizing(state->dataSize->CurZoneEqNum).DesCoolVolFlow = 1.005;
-        }
-        if (iCoolingSizingType == DataSizing::FractionOfAutosizedCoolingAirflow) {
             thisSys.m_MaxCoolAirVolFlow = 1.0;
         }
         // for FlowPerCoolingCapacity, do the division so sizing will yield 1.005
@@ -5818,8 +5812,6 @@ TEST_F(EnergyPlusFixture, UnitarySystemModel_ConfirmUnitarySystemSizingTest)
         // yield 1.005
         if (iCoolingSizingType == DataSizing::FractionOfAutosizedCoolingAirflow) {
             state->dataSize->FinalZoneSizing(state->dataSize->CurZoneEqNum).DesCoolVolFlow = 1.005;
-        }
-        if (iCoolingSizingType == DataSizing::FractionOfAutosizedCoolingAirflow) {
             thisSys.m_MaxCoolAirVolFlow = 1.0;
         }
         // for FlowPerCoolingCapacity, do the division so sizing will yield 1.005
@@ -5885,8 +5877,6 @@ TEST_F(EnergyPlusFixture, UnitarySystemModel_ConfirmUnitarySystemSizingTest)
         // yield 1.005
         if (iCoolingSizingType == DataSizing::FractionOfAutosizedCoolingAirflow) {
             state->dataSize->FinalZoneSizing(state->dataSize->CurZoneEqNum).DesCoolVolFlow = 1.005;
-        }
-        if (iCoolingSizingType == DataSizing::FractionOfAutosizedCoolingAirflow) {
             thisSys.m_MaxCoolAirVolFlow = 1.0;
         }
         // for FlowPerCoolingCapacity, do the division so sizing will yield 1.005
@@ -5950,8 +5940,6 @@ TEST_F(EnergyPlusFixture, UnitarySystemModel_ConfirmUnitarySystemSizingTest)
         // yield 1.005
         if (iCoolingSizingType == DataSizing::FractionOfAutosizedCoolingAirflow) {
             state->dataSize->FinalZoneSizing(state->dataSize->CurZoneEqNum).DesCoolVolFlow = 1.005;
-        }
-        if (iCoolingSizingType == DataSizing::FractionOfAutosizedCoolingAirflow) {
             thisSys.m_MaxCoolAirVolFlow = 1.0;
         }
         // for FlowPerCoolingCapacity, do the division so sizing will yield 1.005
@@ -6017,8 +6005,6 @@ TEST_F(EnergyPlusFixture, UnitarySystemModel_ConfirmUnitarySystemSizingTest)
         // yield 1.005
         if (iCoolingSizingType == DataSizing::FractionOfAutosizedCoolingAirflow) {
             state->dataSize->FinalZoneSizing(state->dataSize->CurZoneEqNum).DesCoolVolFlow = 1.005;
-        }
-        if (iCoolingSizingType == DataSizing::FractionOfAutosizedCoolingAirflow) {
             thisSys.m_MaxCoolAirVolFlow = 1.0;
         }
         // for FlowPerCoolingCapacity, do the division so sizing will yield 1.005
@@ -6082,8 +6068,6 @@ TEST_F(EnergyPlusFixture, UnitarySystemModel_ConfirmUnitarySystemSizingTest)
         // yield 1.005
         if (iCoolingSizingType == DataSizing::FractionOfAutosizedCoolingAirflow) {
             state->dataSize->FinalZoneSizing(state->dataSize->CurZoneEqNum).DesCoolVolFlow = 1.005;
-        }
-        if (iCoolingSizingType == DataSizing::FractionOfAutosizedCoolingAirflow) {
             thisSys.m_MaxCoolAirVolFlow = 1.0;
         }
         // for FlowPerCoolingCapacity, do the division so sizing will yield 1.005

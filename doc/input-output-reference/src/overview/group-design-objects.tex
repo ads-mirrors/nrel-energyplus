@@ -1299,7 +1299,7 @@ associated with this zone.
 
 If the input is \emph{coincident} the zone equipment will be sized on the coincident zone load across all spaces in the zone. If the input is \emph{noncoincident} the zone equipment will be sized on the sum of the noncoincident space loads. The default is \emph{coincident}. This field is ignored unless \hyperref[zoneairheatbalancealgorithm]{ZoneAirHeatBalanceAlgorithm} ``Do Space Heat Balance for Sizing'' is Yes.
 
-\paragraph{Field: Heating Coil Sizing Methoid}\label{field-heating-coil-sizing-method-0101}
+\paragraph{Field: Heating Coil Sizing Method}\label{field-heating-coil-sizing-method-0101}
 
 This input is used for sizing heat pumps and can size the heating coil based on several options. The available options are \emph{None}, \emph{Cooling Capacity}, \emph{Heating Capacity}, or \emph{GreaterOfHeatingOrCooling}. The default value is None. If this field is blank or None is selected, heat pump sizing will not be affected. Otherwise, the heat pump heating coil will size on the required cooling capacity, heating capacity, or larger of these values.
 
@@ -1856,7 +1856,7 @@ Specifies how the central cooling coil will be controlled, which affects the coi
 
 The Occupant Diversity (D) as defined in ASHRAE Standard 62.1. The Occupant Diversity is a ratio of the expected peak population to the design zone population for all zones attached to the air system. If left blank or set to autosize, EnergyPlus will calculate it by using the people schedules and design levels included in the model.
 
-\paragraph{Field: Heating Coil Sizing Methoid}\label{field-heating-coil-sizing-method-0102}
+\paragraph{Field: Heating Coil Sizing Method}\label{field-heating-coil-sizing-method-0102}
 
 This input is used for sizing heat pumps and can size the heating coil based on several options. The available options are \emph{None}, \emph{Cooling Capacity}, \emph{Heating Capacity}, or \emph{GreaterOfHeatingOrCooling}. The default value is None. If this field is blank or None is selected, heat pump sizing will not be affected. Otherwise, the heat pump heating coil will size on the required cooling capacity, heating capacity, or larger of these values.
 

@@ -1222,6 +1222,10 @@ namespace HVACMultiSpeedHeatPump {
             }
 
             thisMSHP.HeatingSizingRatio = Numbers(1);
+            if (thisMSHP.HeatCoilType == HVAC::CoilDX_MultiSpeedHeating) {
+                OutputReportPredefined::PreDefTableEntry(
+                    state, state.dataOutRptPredefined->pdchDXHeatCoilSizingRatio, thisMSHP.DXHeatCoilName, thisMSHP.HeatingSizingRatio);
+            }
             thisMSHP.SuppMaxAirTemp = Numbers(2);
             thisMSHP.SuppMaxOATemp = Numbers(3);
             if (thisMSHP.SuppMaxOATemp > 21.0) {

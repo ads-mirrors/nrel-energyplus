@@ -1189,11 +1189,13 @@ namespace UnitarySystems {
 
                 std::string_view cCoilName;
                 std::string_view hCoilName;
-                Real64 coilSHR = 1.0;
+                Real64 coilSHR = 0.8;
                 if (this->m_CoolingCoilType_Num == HVAC::Coil_CoolingWaterToAirHPSimple) {
                     auto const &thisCoil = state.dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(this->m_CoolingCoilIndex);
                     cCoilName = thisCoil.Name;
-                    coilSHR = 0.8;
+                    if (thisCoil.RatedCapCoolTotal > 0.0) {
+                        coilSHR = thisCoil.RatedCapCoolSens / thisCoil.RatedCapCoolTotal;
+                    }
                 } else if (this->m_CoolingCoilType_Num == HVAC::Coil_CoolingWaterToAirHPVSEquationFit ||
                            this->m_CoolingCoilType_Num == HVAC::Coil_CoolingAirToAirVariableSpeed) {
                     auto const &thisCoil = state.dataVariableSpeedCoils->VarSpeedCoil(this->m_CoolingCoilIndex);
@@ -1229,7 +1231,7 @@ namespace UnitarySystems {
                         hCoilName = thisCoil.Name;
                     } else {
                         ShowSevereError(state,
-                                        format("Developer Error in Heat Pump ACCA Sizing: cooling coil not found for {}:{} with coil type = {}.",
+                                        format("Developer Error in Heat Pump ACCA Sizing: heating coil not found for {}:{} with coil type = {}.",
                                                this->UnitType,
                                                this->Name,
                                                HVAC::cAllCoilTypes(this->m_HeatingCoilType_Num)));
@@ -4721,6 +4723,10 @@ namespace UnitarySystems {
             ShowContinueError(state, format("Illegal Heating Coil Object Type = {}", this->m_HeatingCoilTypeName));
             errorsFound = true;
         } // IF (this->m_HeatingCoilType_Num == Coil_HeatingGasOrOtherFuel .OR. &, etc.
+        if (this->m_DXHeatingCoil) {
+            OutputReportPredefined::PreDefTableEntry(
+                state, state.dataOutRptPredefined->pdchDXHeatCoilSizingRatio, this->m_HeatingCoilName, this->m_HeatingSizingRatio);
+        }
 
         // coil outlet node set point has priority, IF not exist, then use system outlet node
         if (SetPointManager::NodeHasSPMCtrlVarType(state, this->AirOutNode, HVAC::CtrlVarType::Temp)) {

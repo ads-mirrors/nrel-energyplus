@@ -1968,23 +1968,18 @@ namespace HVACMultiSpeedHeatPump {
             Real64 SysTotCoolingLoad = 0.0;
             Real64 SysLatCoolingLoad = 0.0;
             Real64 SysHeatingLoad = 0.0;
-            if (state.dataSize->CurSysNum > 0) {
-                SysTotCoolingLoad = state.dataSize->FinalSysSizing(state.dataSize->CurSysNum).TotCoolCap;
-                SysSensCoolingLoad = state.dataSize->FinalSysSizing(state.dataSize->CurSysNum).SensCoolCap;
-                SysLatCoolingLoad = SysTotCoolingLoad - SysSensCoolingLoad;
-                SysHeatingLoad = state.dataSize->FinalSysSizing(state.dataSize->CurSysNum).HeatCap;
-            } else if (state.dataSize->CurZoneEqNum > 0) {
-                SysSensCoolingLoad = state.dataSize->FinalZoneSizing(state.dataSize->CurZoneEqNum).DesCoolLoad;
-                SysLatCoolingLoad = state.dataSize->FinalZoneSizing(state.dataSize->CurZoneEqNum).DesLatentCoolLoad;
-                SysTotCoolingLoad = SysSensCoolingLoad + SysLatCoolingLoad;
-                SysHeatingLoad = state.dataSize->FinalZoneSizing(state.dataSize->CurZoneEqNum).DesHeatLoad;
-            }
 
             if (MSHeatPump(MSHeatPumpNum).isHeatPump &&
-                ((state.dataSize->CurSysNum > 0 && !state.dataSize->FinalSysSizing.empty() &&
-                  state.dataSize->FinalSysSizing(state.dataSize->CurSysNum).heatCoilSizingMethod != DataSizing::HeatCoilSizMethod::None) ||
-                 (state.dataSize->CurZoneEqNum > 0 && !state.dataSize->FinalZoneSizing.empty() &&
-                  state.dataSize->FinalZoneSizing(state.dataSize->CurZoneEqNum).heatCoilSizingMethod != DataSizing::HeatCoilSizMethod::None))) {
+                (state.dataSize->CurSysNum > 0 && !state.dataSize->FinalSysSizing.empty() &&
+                  state.dataSize->FinalSysSizing(state.dataSize->CurSysNum).heatCoilSizingMethod != DataSizing::HeatCoilSizMethod::None)) {
+
+                if (state.dataSize->CurSysNum > 0) {
+                    SysTotCoolingLoad = state.dataSize->FinalSysSizing(state.dataSize->CurSysNum).TotCoolCap;
+                    SysSensCoolingLoad = state.dataSize->FinalSysSizing(state.dataSize->CurSysNum).SensCoolCap;
+                    SysLatCoolingLoad = SysTotCoolingLoad - SysSensCoolingLoad;
+                    SysHeatingLoad = state.dataSize->FinalSysSizing(state.dataSize->CurSysNum).HeatCap;
+                }
+
                 Real64 coilSHR = 1.0;
                 auto const &thisCoolCoil = state.dataDXCoils->DXCoil(MSHeatPump(MSHeatPumpNum).DXCoolCoilIndex);
                 std::string_view cCoilName = thisCoolCoil.Name;

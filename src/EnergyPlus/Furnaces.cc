@@ -6079,7 +6079,7 @@ namespace Furnaces {
         }
 
         // ACCA Manual S reporting
-        if (isHeatPump && !state.dataSize->FinalSysSizing.empty() &&
+        if (isHeatPump && state.dataSize->CurSysNum > 0 && !state.dataSize->FinalSysSizing.empty() &&
             state.dataSize->FinalSysSizing(state.dataSize->CurSysNum).heatCoilSizingMethod != DataSizing::HeatCoilSizMethod::None &&
             !thisFurnace.bIsIHP) {
             std::string_view cCoilName;

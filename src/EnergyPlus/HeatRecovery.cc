@@ -1694,6 +1694,7 @@ namespace HeatRecovery {
         }
 
         int hxBypassControlType = -1;
+        bool hasEconomizerControl = false;
         if ((state.dataSize->CurOASysNum > 0) && (state.dataSize->CurOASysNum <= state.dataAirLoop->NumOASystems)) {
             auto const &oaSys = state.dataAirLoop->OutsideAirSys(state.dataSize->CurOASysNum);
             OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchAirHROASysName, this->Name, oaSys.Name);
@@ -1702,7 +1703,11 @@ namespace HeatRecovery {
                 // no OAcontroller is directly applicable to HX in airLoopDOAS system
             } else {
                 if (oaSys.OAControllerIndex > 0) {
-                    hxBypassControlType = state.dataMixedAir->OAController(oaSys.OAControllerIndex).HeatRecoveryBypassControlType;
+                    auto &oaCntrlr = state.dataMixedAir->OAController(oaSys.OAControllerIndex);
+                    if (oaCntrlr.Econo != MixedAir::EconoOp::NoEconomizer) {
+                        hasEconomizerControl = true;
+                        hxBypassControlType = oaCntrlr.HeatRecoveryBypassControlType;
+                    }
                 }
                 OutputReportPredefined::PreDefTableEntry(
                     state, state.dataOutRptPredefined->pdchAirHROAControllerName, this->Name, oaSys.OAControllerName);
@@ -1712,7 +1717,7 @@ namespace HeatRecovery {
 
         // HX operation type
         HXOperation operation = HXOperation::WhenFansOn;
-        if (!this->EconoLockOut) {
+        if (!this->EconoLockOut || !hasEconomizerControl) {
             if ((this->availSched != nullptr) && (!this->availSched->checkMinVal(state, Clusive::Ex, 0.0))) {
                 operation = HXOperation::Scheduled;
             }

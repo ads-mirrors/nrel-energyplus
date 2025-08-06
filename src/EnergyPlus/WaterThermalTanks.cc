@@ -5331,14 +5331,14 @@ void WaterThermalTankData::setupChilledWaterTankOutputVars(EnergyPlusData &state
         }
 
         SetupOutputVariable(state,
-                            format("Chilled Water Thermal Storage Tank Temperature Setpoint"),
+                            "Chilled Water Thermal Storage Tank Temperature Setpoint",
                             Constant::Units::C,
                             this->SetPointTemp,
                             OutputProcessor::TimeStepType::System,
                             OutputProcessor::StoreType::Average,
                             this->Name);
         SetupOutputVariable(state,
-                            format("Chilled Water Thermal Storage Tank Temperature Sensor Value"),
+                            "Chilled Water Thermal Storage Tank Temperature Sensor Value",
                             Constant::Units::C,
                             this->SensedTemp,
                             OutputProcessor::TimeStepType::System,

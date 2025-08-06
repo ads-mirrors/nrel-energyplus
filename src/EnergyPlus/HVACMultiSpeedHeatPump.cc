@@ -1971,7 +1971,7 @@ namespace HVACMultiSpeedHeatPump {
 
             if (MSHeatPump(MSHeatPumpNum).isHeatPump &&
                 (state.dataSize->CurSysNum > 0 && !state.dataSize->FinalSysSizing.empty() &&
-                  state.dataSize->FinalSysSizing(state.dataSize->CurSysNum).heatCoilSizingMethod != DataSizing::HeatCoilSizMethod::None)) {
+                 state.dataSize->FinalSysSizing(state.dataSize->CurSysNum).heatCoilSizingMethod != DataSizing::HeatCoilSizMethod::None)) {
 
                 if (state.dataSize->CurSysNum > 0) {
                     SysTotCoolingLoad = state.dataSize->FinalSysSizing(state.dataSize->CurSysNum).TotCoolCap;

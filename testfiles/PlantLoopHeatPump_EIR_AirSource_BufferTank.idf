@@ -446,6 +446,13 @@
     Dummy Tank OA Node;  !- Name
 
   Schedule:Compact,
+    ALWAYS_ON,               !- Name
+    Fraction,                !- Schedule Type Limits Name
+    Through: 12/31,          !- Field 1
+    For: AllDays,            !- Field 2
+    Until: 24:00,1.0;        !- Field 3
+
+  Schedule:Compact,
     CW Tank Temp Top Schedule,   !- Name
     Temperature,             !- Schedule Type Limits Name
     Through: 12/31,          !- Field 1

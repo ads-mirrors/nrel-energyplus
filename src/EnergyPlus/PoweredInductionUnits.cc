@@ -116,6 +116,14 @@ using Psychrometrics::PsyCpAirFnW;
 using Psychrometrics::PsyHFnTdbW;
 using SteamCoils::SimulateSteamCoilComponents;
 
+constexpr std::array<std::string_view, static_cast<int>(FanCntrlType::Num)> fanCntrlTypeNames = {"ConstantSpeed", "VariableSpeed"};
+
+constexpr std::array<std::string_view, static_cast<int>(FanCntrlType::Num)> fanCntrlTypeNamesUC = {"CONSTANTSPEED", "VARIABLESPEED"};
+
+constexpr std::array<std::string_view, static_cast<int>(HeatCntrlBehaviorType::Num)> heatCntrlTypeNames = {"Staged", "Modulated"};
+
+constexpr std::array<std::string_view, static_cast<int>(HeatCntrlBehaviorType::Num)> heatCntrlTypeNamesUC = {"STAGED", "MODULATED"};
+
 void SimPIU(EnergyPlusData &state,
             std::string_view CompName,     // name of the PIU
             bool const FirstHVACIteration, // TRUE if first HVAC iteration in time step
@@ -431,30 +439,24 @@ void GetPIUs(EnergyPlusData &state)
                 // Variable speed fan inputs
                 std::string fan_control_type = "ConstantSpeed";
                 fan_control_type = ip->getAlphaFieldValue(fields, objectSchemaProps, "fan_control_type");
-                thisPIU.fanControlType = FanCntrlType::ConstantSpeedFan;
-                if (Util::SameString(fan_control_type, "VariableSpeed")) {
-                    thisPIU.fanControlType = FanCntrlType::VariableSpeedFan;
+                thisPIU.fanControlType = static_cast<FanCntrlType>(getEnumValue(fanCntrlTypeNamesUC, Util::makeUPPER(fan_control_type)));
+
+                if (thisPIU.fanControlType == FanCntrlType::Invalid) {
+                    ShowSevereError(state, format("Illegal Fan Control Type = {}", fan_control_type));
+                    ShowContinueError(state, format("Occurs in {} = {}", cCurrentModuleObject, thisPIU.Name));
+                    ErrorsFound = true;
+                }
+                if (thisPIU.fanControlType == FanCntrlType::VariableSpeedFan) {
                     if (thisPIU.fanType != HVAC::FanType::SystemModel) {
                         ErrorsFound = true;
                         ShowSevereError(state, format("Fan type must be Fan:SystemModel when Fan Control Type = {}", fan_control_type));
                         ShowContinueError(state, format("Occurs in {} = {}", cCurrentModuleObject, thisPIU.Name));
                     }
-                } else if (Util::SameString(fan_control_type, "ConstantSpeed")) {
-                    thisPIU.fanControlType = FanCntrlType::ConstantSpeedFan;
-                } else {
-                    ShowSevereError(state, format("Illegal Fan Control Type = {}", fan_control_type));
-                    ShowContinueError(state, format("Occurs in {} = {}", cCurrentModuleObject, thisPIU.Name));
-                    ErrorsFound = true;
-                }
+                    // Heating Control Type is only applicable for variable speed fans
+                    thisPIU.heatingControlType = static_cast<HeatCntrlBehaviorType>(getEnumValue(
+                        heatCntrlTypeNamesUC, Util::makeUPPER(ip->getAlphaFieldValue(fields, objectSchemaProps, "heating_control_type"))));
 
-                std::string const heating_control_type = ip->getAlphaFieldValue(fields, objectSchemaProps, "heating_control_type");
-                thisPIU.heatingControlType = HeatCntrlBehaviorType::Invalid;
-                if (thisPIU.fanControlType == FanCntrlType::VariableSpeedFan) {
-                    if (Util::SameString(heating_control_type, "Staged")) {
-                        thisPIU.heatingControlType = HeatCntrlBehaviorType::StagedHeaterBehavior;
-                    } else if (Util::SameString(heating_control_type, "Modulated")) {
-                        thisPIU.heatingControlType = HeatCntrlBehaviorType::ModulatedHeaterBehavior;
-                    } else {
+                    if (thisPIU.heatingControlType == HeatCntrlBehaviorType::Invalid) {
                         ShowSevereError(state, "Heating Control Type should either be Staged or Modulated");
                         ShowContinueError(state, format("Occurs in {} = {}", cCurrentModuleObject, thisPIU.Name));
                         ErrorsFound = true;
@@ -2574,6 +2576,11 @@ void PowIndUnitData::reportTerminalUnit(EnergyPlusData &state)
     OutputReportPredefined::PreDefTableEntry(state, orp->pdchAirTermCoolCoilType, adu.Name, "n/a");
     OutputReportPredefined::PreDefTableEntry(state, orp->pdchAirTermFanType, adu.Name, HVAC::fanTypeNames[(int)this->fanType]);
     OutputReportPredefined::PreDefTableEntry(state, orp->pdchAirTermFanName, adu.Name, this->FanName);
+    OutputReportPredefined::PreDefTableEntry(state, orp->pdchAirTermFanCtrlType, adu.Name, fanCntrlTypeNames[static_cast<int>(this->fanControlType)]);
+    if (this->fanControlType == FanCntrlType::VariableSpeedFan) {
+        OutputReportPredefined::PreDefTableEntry(
+            state, orp->pdchAirTermPIUHeatCtrlType, adu.Name, heatCntrlTypeNames[static_cast<int>(this->heatingControlType)]);
+    }
 }
 
 } // namespace EnergyPlus::PoweredInductionUnits

@@ -22,13 +22,20 @@ This will eventually become a more structured file, but currently it isn't clear
     
 * Add more new columns:
 
-    "Heat Recovery Active" ("WhenFansOn", "Scheduled", "WhenOutsideEconomizerLimits", "WhenMinimumOutdoorAir")
-    "Zone HVAC Name"
-    "Airloop Name"
-    "OA System Name"
-    "OA Controller Name"
+  - Heat Recovery Active ("WhenFansOn", "Scheduled", "WhenOutsideEconomizerLimits", "WhenMinimumOutdoorAir")
+  - Zone HVAC Name
+  - Airloop Name
+  - OA System Name
+  - OA Controller Name
 
 See Pull Request [#10995](https://github.com/NREL/EnergyPlus/pull/10995).
+See Pull Request [#11138](https://github.com/NREL/EnergyPlus/pull/11138).
+
+### Table Output, Equipment Summary Report, Air Terminals subtable
+Add two new columns:
+- PIU Heating Control Type
+- PIU Fan Control Type
+
 See Pull Request [#11138](https://github.com/NREL/EnergyPlus/pull/11138).
 
 ### EIO and HTML Table Output: Initialization Summary
@@ -101,3 +108,8 @@ The `Output:Constructions` has two possible keys: `Materials` and `Constructions
 #### Fuel Supply
 
 When using `Generator:FuelSupply`, the header was written twice in the EIO Initialization Summary as `! <Fuel Supply>,...` leading to two identical tables in the HTML report.
+
+### Table Output, Equipment Summary Report, Air Heat Recovery subtable
+* Delete "Name" column.
+
+* Change "Input Object Type" heading to "Type".

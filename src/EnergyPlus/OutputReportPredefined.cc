@@ -561,8 +561,10 @@ namespace OutputReportPredefined {
         s->pdchAirTermTypeInp = newPreDefColumn(state, s->pdstAirTerm, "Type of Input Object");
         s->pdchAirTermHeatCoilType = newPreDefColumn(state, s->pdstAirTerm, "Heat/Reheat Coil Object Type");
         s->pdchAirTermCoolCoilType = newPreDefColumn(state, s->pdstAirTerm, "Chilled Water Coil Object Type");
+        s->pdchAirTermPIUHeatCtrlType = newPreDefColumn(state, s->pdstAirTerm, "PIU Heating Control Type");
         s->pdchAirTermFanType = newPreDefColumn(state, s->pdstAirTerm, "Fan Object Type");
         s->pdchAirTermFanName = newPreDefColumn(state, s->pdstAirTerm, "Fan Name");
+        s->pdchAirTermFanCtrlType = newPreDefColumn(state, s->pdstAirTerm, "PIU Fan Control Type");
         s->pdchAirTermPrimFlow = newPreDefColumn(state, s->pdstAirTerm, "Primary Air Flow Rate [m3/s]");
         s->pdchAirTermSecdFlow = newPreDefColumn(state, s->pdstAirTerm, "Secondary Air Flow Rate [m3/s]");
         s->pdchAirTermMinFlowSch = newPreDefColumn(state, s->pdstAirTerm, "Minimum Flow Schedule Name");

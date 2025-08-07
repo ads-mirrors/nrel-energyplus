@@ -355,7 +355,10 @@ This suppports:
 - Space.occupant_latent_heat_gain
 
 (this change is not needed with an additional requirement to include an
-Output:Table:Annual named People Internal Gain Annual)
+Output:Table:Annual named People Internal Gain Annual
+
+https://github.com/JasonGlazer/createRulesetProjectDescription/issues/75
+)
 
 
 #### Initialization Summary - ZoneInfiltration Airflow Stats Nominal ####
@@ -403,6 +406,13 @@ This suppports:
 - Infiltration.multiplier_schedule
 
 Would need to require hourly output for zone infiltration from airflownetwork
+
+(this change is not needed with an additional requirement to include an
+Output:Table:Annual named AFN Zone Infiltration Annual
+
+https://github.com/JasonGlazer/createRulesetProjectDescription/issues/76
+)
+
 
 #### EnvelopeSummary - Exterior Fenestration ####
 
@@ -716,6 +726,8 @@ This suppports:
 
 Note: Recovery Efficiency and Energy Factor do not seem to be working for WaterHeater:Stratified. Uniform 
 Energy Factor calculation would need to be added which, I believe uses draw factor as an input.
+(For Peak Use Flow Rate need to add some Output:Table:Annual reports when water use equipment/connections 
+are used see https://github.com/JasonGlazer/createRulesetProjectDescription/issues/77)
  
 
 #### EquipmentSummary -  Water Use Equipment ####

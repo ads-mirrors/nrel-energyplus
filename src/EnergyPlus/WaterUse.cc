@@ -673,6 +673,13 @@ namespace WaterUse {
             if (thisWCn.RecoveryTankNum > 0) {
                 PreDefTableEntry(state, orp->pdchWtCnRecTnk, thisWCn.Name, state.dataWaterData->WaterStorage(thisWCn.RecoveryTankNum).Name);
             }
+            for (int jCn = 1; jCn <= thisWCn.NumWaterEquipment; ++jCn) {
+                int waterEq = thisWCn.myWaterEquipArr(jCn);
+                if (waterEq > 0) {
+                    auto &thisWEq = state.dataWaterUse->WaterEquipment(waterEq);
+                    PreDefTableEntry(state, orp->pdchWtEqConnNm, thisWEq.Name, thisWCn.Name);
+                }
+            }
             // JG STILL TO DO:
             //  s->pdchWtCnDrnHxEff = newPreDefColumn(state, s->pdstWtCn, "Average Heat Recovery Effectiveness");
             //  s->pdchWtCnPipeInD = newPreDefColumn(state, s->pdstWtCn, "Pipe:Indoor are used");

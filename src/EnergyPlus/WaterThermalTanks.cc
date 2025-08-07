@@ -12466,12 +12466,7 @@ void WaterThermalTankData::CalcStandardRatings(EnergyPlusData &state)
     OutputReportPredefined::PreDefTableEntry(
         state, state.dataOutRptPredefined->pdchSWHFuelType, equipName, Constant::eResourceNames[static_cast<int>(this->FuelType)]);
     // if use nodes are used then the flow rate field and the schedule field are not used
-    if (this->UseInletNode == 0) {
-        OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchSWHPkUseFlwRt, equipName, this->VolFlowRateMax);
-    } else {
-        // JG: NOT SURE WHAT I SHOULD BE USING HERE
-        OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchSWHPkUseFlwRt, equipName, this->VolFlowRateMax);
-    }
+    OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchSWHPkUseFlwRt, equipName, this->VolFlowRateMax);
     if (this->flowRateSched != nullptr) {
         OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchSWHUseSch, equipName, this->flowRateSched->Name);
     } else {

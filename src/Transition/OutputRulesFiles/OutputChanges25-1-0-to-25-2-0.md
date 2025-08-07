@@ -19,8 +19,17 @@ This will eventually become a more structured file, but currently it isn't clear
     "Exhaust Airflow [kg/s]" --> "Exhaust Air Flow Rate [m3/s]
 
     "Outdoor Airflow [kg/s]" --> "Supply Air Flow Rate [m3/s]"
+    
+* Add more new columns:
+
+    "Heat Recovery Active" ("WhenFansOn", "Scheduled", "WhenOutsideEconomizerLimits", "WhenMinimumOutdoorAir")
+    "Zone HVAC Name"
+    "Airloop Name"
+    "OA System Name"
+    "OA Controller Name"
 
 See Pull Request [#10995](https://github.com/NREL/EnergyPlus/pull/10995).
+See Pull Request [#11138](https://github.com/NREL/EnergyPlus/pull/11138).
 
 ### EIO and HTML Table Output: Initialization Summary
 

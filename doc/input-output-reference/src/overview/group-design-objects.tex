@@ -1350,7 +1350,9 @@ An IDF example:
       0.005,                   !- Zone Heating Design Supply Air Humidity Ratio Difference
       ,                        !- Zone Humidistat Dehumidification Set Point Schedule Name
       ,                        !- Zone Humidistat Humidification Set Point Schedule Name
-      Coincident;              !- Type of Space Sum to Use
+      Coincident,              !- Type of Space Sum to Use
+      Cooling,                 !- Heating Coil Sizing Method
+      1.1;                     !- Maximum Heating Capacity To Cooling Load Sizing Ratio
       
   DesignSpecification:OutdoorAir,
       DSOA1,                   !- Name
@@ -1906,7 +1908,12 @@ Sizing:System,
   HeatingDesignCapacity,   !- Heating Design Capacity Method
   autosize,                !- Heating Design Capacity {W}
   ,                        !- Heating Design Capacity Per Floor Area {W/m2}
-  ;                        !- Fraction of Autosized Cooling Design Capacity {-}
+  ,                        !- Fraction of Autosized Cooling Design Capacity {-}
+  ,                        !- Central Cooling Capacity Control Method
+  ,                        !- Occupant Diversity
+  ,                        !- Heating Coil Sizing Method
+  ;                        !- Maximum Heating Capacity To Cooling Capacity Sizing Ratio
+
 \end{lstlisting}
 
 \subsubsection{Outputs}\label{outputs-2-006}

@@ -687,8 +687,8 @@ void setHeatPumpSize(EnergyPlusData &state, Real64 &coolingCap, Real64 &heatingC
                 heatingCap = coolingCap; // sizing ratio gets applied when coil sizes
             }
         } else if (finalSysSizing.heatCoilSizingMethod == DataSizing::HeatCoilSizMethod::CoolingCapacity) {
-            if (heatingCap > coolingCap * finalSysSizing.maxHeatCoilToCoolingLoadSizingRatio * sizingRatio) {
-                heatingCap = coolingCap * finalSysSizing.maxHeatCoilToCoolingLoadSizingRatio;
+            if (heatingCap > coolingCap * finalSysSizing.maxHeatCoilToCoolingLoadSizingRatio) {
+                heatingCap = (coolingCap * finalSysSizing.maxHeatCoilToCoolingLoadSizingRatio) / sizingRatio;
             } else {
                 heatingCap = coolingCap; // sizing ratio gets applied when coil sizes
             }

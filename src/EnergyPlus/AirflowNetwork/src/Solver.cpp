@@ -4829,12 +4829,17 @@ namespace AirflowNetwork {
             for (auto &e : AirflowNetworkLinkageData) {
                 e.ZoneNum = 0;
             }
+            int shiftLinkageInput = calcGetInputShift(CurrentModuleObject, DisSysNumOfLinks, DisSysNumOfNodes);
 
             for (count = AirflowNetworkNumOfSurfaces + 1; count <= AirflowNetworkNumOfLinks; ++count) {
 
+                int objectNum = count - AirflowNetworkNumOfSurfaces + shiftLinkageInput - 1;
+                if (objectNum > DisSysNumOfLinks) {
+                    objectNum -= DisSysNumOfLinks;
+                }
                 m_state.dataInputProcessing->inputProcessor->getObjectItem(m_state,
                                                                            CurrentModuleObject,
-                                                                           count - AirflowNetworkNumOfSurfaces,
+                                                                           objectNum,
                                                                            Alphas,
                                                                            NumAlphas,
                                                                            Numbers,
@@ -12287,6 +12292,72 @@ namespace AirflowNetwork {
         }
 
         return AirLoopNumber;
+    }
+
+    int Solver::calcGetInputShift(std::string currentModuleObject, int numObjects, int numNodes)
+    {
+        int shiftResult = 1; // function result
+
+        int NumAlphas;                 // Number of Alphas for each GetObjectItem call
+        int NumNumbers;                // Number of Numbers for each GetObjectItem call
+        int IOStatus;                  // Used in GetObjectItem
+        Array1D_string Alphas;         // Alpha input items for object
+        Array1D_string cAlphaFields;   // Alpha field names
+        Array1D_string cNumericFields; // Numeric field names
+        Array1D<Real64> Numbers;       // Numeric input items for object
+        Array1D_bool lAlphaBlanks;     // Logical array, alpha field input BLANK = .TRUE.
+        Array1D_bool lNumericBlanks;   // Logical array, numeric field input BLANK = .TRUE.
+        int TotalArgs(0);              // Total number of alpha and numeric arguments (max) for a
+
+        m_state.dataInputProcessing->inputProcessor->getObjectDefMaxArgs(m_state, currentModuleObject, TotalArgs, NumAlphas, NumNumbers);
+
+        Alphas.allocate(NumAlphas);
+        cAlphaFields.allocate(NumAlphas);
+        cNumericFields.allocate(NumNumbers);
+        Numbers.dimension(NumNumbers, 0.0);
+        lAlphaBlanks.dimension(NumAlphas, true);
+        lNumericBlanks.dimension(NumNumbers, true);
+
+        for (int linkageNum = 1; linkageNum <= numObjects; ++linkageNum) {
+            m_state.dataInputProcessing->inputProcessor->getObjectItem(m_state,
+                                                                       currentModuleObject,
+                                                                       linkageNum,
+                                                                       Alphas,
+                                                                       NumAlphas,
+                                                                       Numbers,
+                                                                       NumNumbers,
+                                                                       IOStatus,
+                                                                       lNumericBlanks,
+                                                                       lAlphaBlanks,
+                                                                       cAlphaFields,
+                                                                       cNumericFields);
+            // check Alphas(2) and Alphas(3) (node names) to see what the
+            bool validFirstLinkage2 = false;
+            for (int nodeNum = 1; nodeNum <= numNodes; ++nodeNum) {
+                if (Util::SameString(Alphas(2), DisSysNodeData(nodeNum).Name)) { // found the match
+                    if (!Util::SameString(DisSysNodeData(nodeNum).EPlusType, "Other") && !Util::SameString(DisSysNodeData(nodeNum).EPlusType, "")) {
+                        validFirstLinkage2 = true;
+                    }
+                    break;
+                }
+            }
+            bool validFirstLinkage3 = false;
+            for (int nodeNum = 1; nodeNum <= numNodes; ++nodeNum) {
+                std::string a3 = Alphas(3);
+                std::string ePN = DisSysNodeData(nodeNum).Name;
+                if (Util::SameString(Alphas(3), DisSysNodeData(nodeNum).Name)) { // found the match
+                    if (!Util::SameString(DisSysNodeData(nodeNum).EPlusType, "Other") && !Util::SameString(DisSysNodeData(nodeNum).EPlusType, "")) {
+                        validFirstLinkage3 = true;
+                    }
+                    break;
+                }
+            }
+            if (validFirstLinkage2 || validFirstLinkage3) {
+                shiftResult = linkageNum;
+                break;
+            }
+        }
+        return shiftResult;
     }
 
     void Solver::SizeDucts()

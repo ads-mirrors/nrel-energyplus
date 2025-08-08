@@ -147,6 +147,8 @@ namespace WaterUse {
         void CalcEquipmentDrainTemp(EnergyPlusData &state);
 
         void setupOutputVars(EnergyPlusData &state);
+
+        void FillPredefinedTable(EnergyPlusData &state);
     };
 
     struct WaterConnectionsType : PlantComponent
@@ -228,6 +230,8 @@ namespace WaterUse {
         void oneTimeInit(EnergyPlusData &state) override;
 
         void oneTimeInit_new(EnergyPlusData &state) override;
+
+        void FillPredefinedTable(EnergyPlusData &state);
     };
 
     void SimulateWaterUse(EnergyPlusData &state, bool FirstHVACIteration);
@@ -235,8 +239,6 @@ namespace WaterUse {
     void GetWaterUseInput(EnergyPlusData &state);
 
     void FillPredefinedTableWaterUse(EnergyPlusData &state);
-
-    void FillPredefinedTableWaterConnect(EnergyPlusData &state);
 
     void ReportStandAloneWaterUse(EnergyPlusData &state);
 

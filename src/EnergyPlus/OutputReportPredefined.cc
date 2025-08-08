@@ -524,6 +524,8 @@ namespace OutputReportPredefined {
         s->pdchWtCnHotTempMax = newPreDefColumn(state, s->pdstWtCn, "Hot Water Supply Temperature Schedule Maximum [C]");
         s->pdchWtCnColdTempSch = newPreDefColumn(state, s->pdstWtCn, "Cold Water Supply Temperature Schedule");
         s->pdchWtCnColdTempMin = newPreDefColumn(state, s->pdstWtCn, "Cold Water Supply Temperature Schedule Minimum [C]");
+        s->pdchWtCnPltLpNm = newPreDefColumn(state, s->pdstWtCn, "PlantLoop Name");
+        s->pdchWtCnBrchNm = newPreDefColumn(state, s->pdstWtCn, "Branch Name");
         s->pdchWtCnPipeInD = newPreDefColumn(state, s->pdstWtCn, "Pipe:Indoor are used");
         s->pdchWtCnPipeOutD = newPreDefColumn(state, s->pdstWtCn, "Pipe:Outdoor are used");
         s->pdchWtCnPipeUndr = newPreDefColumn(state, s->pdstWtCn, "Pipe:Underground are used");

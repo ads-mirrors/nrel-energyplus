@@ -426,6 +426,8 @@ struct OutputReportPredefinedData : BaseGlobalStruct
     int pdchWtCnHotTempMax = 0;
     int pdchWtCnColdTempSch = 0;
     int pdchWtCnColdTempMin = 0;
+    int pdchWtCnPltLpNm = 0;
+    int pdchWtCnBrchNm = 0;
     int pdchWtCnPipeInD = 0;
     int pdchWtCnPipeOutD = 0;
     int pdchWtCnPipeUndr = 0;

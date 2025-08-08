@@ -129,6 +129,7 @@
 #include <EnergyPlus/VentilatedSlab.hh>
 #include <EnergyPlus/WaterManager.hh>
 #include <EnergyPlus/WaterThermalTanks.hh>
+#include <EnergyPlus/WaterUse.hh>
 #include <EnergyPlus/WeatherManager.hh>
 #include <EnergyPlus/ZonePlenum.hh>
 #include <EnergyPlus/ZoneTempPredictorCorrector.hh>
@@ -6930,6 +6931,11 @@ void FillRemainingPredefinedEntries(EnergyPlusData &state)
     // fill the LEED setpoint table
     ZoneTempPredictorCorrector::FillPredefinedTableOnThermostatSetpoints(state);
     ZoneTempPredictorCorrector::FillPredefinedTableOnThermostatSchedules(state);
+
+    // fill water use equipment table
+    for (auto &we : state.dataWaterUse->WaterEquipment) {
+        we.FillPredefinedTable(state);
+    }
 }
 
 void WriteMonthlyTables(EnergyPlusData &state)

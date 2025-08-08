@@ -559,58 +559,6 @@ namespace WaterUse {
         }
     }
 
-    void FillPredefinedTableWaterUse(EnergyPlusData &state)
-    {
-        // add values to the Equipment Summary tabular report related to Water Use Equipment
-        // J.Glazer - July 2025
-        using OutputReportPredefined::PreDefTableEntry;
-        auto &orp = state.dataOutRptPredefined;
-        for (int idx = 1; idx <= state.dataWaterUse->numWaterEquipment; ++idx) {
-            auto &thisWEq = state.dataWaterUse->WaterEquipment(idx);
-            if (thisWEq.Zone > 0) {
-                PreDefTableEntry(state, orp->pdchWtEqZone, thisWEq.Name, state.dataHeatBal->Zone(thisWEq.Zone).Name);
-            }
-            PreDefTableEntry(state, orp->pdchWtEqEndUse, thisWEq.Name, thisWEq.EndUseSubcatName);
-            PreDefTableEntry(state, orp->pdchWtEqPkFlw, thisWEq.Name, thisWEq.PeakVolFlowRate);
-            if (thisWEq.flowRateFracSched != nullptr) {
-                PreDefTableEntry(state, orp->pdchWtEqFlwFractSch, thisWEq.Name, thisWEq.flowRateFracSched->Name);
-                OutputReportPredefined::PreDefTableEntry(state, orp->pdchWtEqFlwFractMax, thisWEq.Name, thisWEq.flowRateFracSched->getMaxVal(state));
-            } else {
-                PreDefTableEntry(state, orp->pdchWtEqFlwFractSch, thisWEq.Name, "N/A");
-            }
-            if (thisWEq.targetTempSched != nullptr) {
-                PreDefTableEntry(state, orp->pdchWtEqTargTempSch, thisWEq.Name, thisWEq.targetTempSched->Name);
-                OutputReportPredefined::PreDefTableEntry(state, orp->pdchWtEqTargTempMax, thisWEq.Name, thisWEq.targetTempSched->getMaxVal(state));
-            } else {
-                PreDefTableEntry(state, orp->pdchWtEqTargTempSch, thisWEq.Name, "N/A");
-            }
-            if (thisWEq.hotTempSched != nullptr) {
-                PreDefTableEntry(state, orp->pdchWtEqHotTempSch, thisWEq.Name, thisWEq.hotTempSched->Name);
-                OutputReportPredefined::PreDefTableEntry(state, orp->pdchWtEqHotTempMax, thisWEq.Name, thisWEq.hotTempSched->getMaxVal(state));
-            } else {
-                PreDefTableEntry(state, orp->pdchWtEqHotTempSch, thisWEq.Name, "N/A");
-            }
-            if (thisWEq.coldTempSched != nullptr) {
-                PreDefTableEntry(state, orp->pdchWtEqColdTempSch, thisWEq.Name, thisWEq.coldTempSched->Name);
-                OutputReportPredefined::PreDefTableEntry(state, orp->pdchWtEqColdTempMin, thisWEq.Name, thisWEq.coldTempSched->getMinVal(state));
-            } else {
-                PreDefTableEntry(state, orp->pdchWtEqColdTempSch, thisWEq.Name, "N/A");
-            }
-            if (thisWEq.sensibleFracSched != nullptr) {
-                PreDefTableEntry(state, orp->pdchWtEqSensFracSch, thisWEq.Name, thisWEq.sensibleFracSched->Name);
-                OutputReportPredefined::PreDefTableEntry(state, orp->pdchWtEqsensFracMax, thisWEq.Name, thisWEq.sensibleFracSched->getMaxVal(state));
-            } else {
-                PreDefTableEntry(state, orp->pdchWtEqSensFracSch, thisWEq.Name, "N/A");
-            }
-            if (thisWEq.latentFracSched != nullptr) {
-                PreDefTableEntry(state, orp->pdchWtEqLatFracSch, thisWEq.Name, thisWEq.latentFracSched->Name);
-                OutputReportPredefined::PreDefTableEntry(state, orp->pdchWtEqLatFracMax, thisWEq.Name, thisWEq.latentFracSched->getMaxVal(state));
-            } else {
-                PreDefTableEntry(state, orp->pdchWtEqLatFracSch, thisWEq.Name, "N/A");
-            }
-        }
-    }
-
     void WaterEquipmentType::setupOutputVars(EnergyPlusData &state)
     {
         SetupOutputVariable(state,
@@ -1329,8 +1277,6 @@ namespace WaterUse {
             PreDefTableEntry(state, orp->pdchWtEqLatFracSch, this->Name, "N/A");
         }
     }
-
-
 
     void WaterConnectionsType::InitConnections(EnergyPlusData &state)
     {

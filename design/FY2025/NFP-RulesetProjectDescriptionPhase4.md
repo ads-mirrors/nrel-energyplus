@@ -781,6 +781,10 @@ This suppports:
 - ServiceWaterPiping.id
 - ServiceWaterPiping.are_thermal_losses_modeled
 
+(Note Pipe:Indoor, Pipe:Outdoor, Pipe:Underground, PipingSystem:Underground:PipeCircuit were not 
+added to the report since they are in the HVAC Topology report - if present. So this report just 
+has the PlantLoop and Branch Names)
+
 #### EquipmentSummary -  Refrigeration:Case ####
 
 NEW TABLE

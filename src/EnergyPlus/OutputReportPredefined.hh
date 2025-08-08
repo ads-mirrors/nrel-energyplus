@@ -416,7 +416,7 @@ struct OutputReportPredefinedData : BaseGlobalStruct
     int pdchWtEqLatFracSch = 0;
     int pdchWtEqLatFracMax = 0;
 
-    //WaterUse:Connections table
+    // WaterUse:Connections table
     int pdstWtCn = 0;
     int pdchWtCnDrnHxType = 0;
     int pdchWtCnDrnHxDest = 0;
@@ -428,9 +428,6 @@ struct OutputReportPredefinedData : BaseGlobalStruct
     int pdchWtCnColdTempMin = 0;
     int pdchWtCnPltLpNm = 0;
     int pdchWtCnBrchNm = 0;
-    int pdchWtCnPipeInD = 0;
-    int pdchWtCnPipeOutD = 0;
-    int pdchWtCnPipeUndr = 0;
     int pdchWtCnSupTnk = 0;
     int pdchWtCnRecTnk = 0;
 

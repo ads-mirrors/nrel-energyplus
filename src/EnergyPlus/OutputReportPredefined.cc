@@ -526,9 +526,6 @@ namespace OutputReportPredefined {
         s->pdchWtCnColdTempMin = newPreDefColumn(state, s->pdstWtCn, "Cold Water Supply Temperature Schedule Minimum [C]");
         s->pdchWtCnPltLpNm = newPreDefColumn(state, s->pdstWtCn, "PlantLoop Name");
         s->pdchWtCnBrchNm = newPreDefColumn(state, s->pdstWtCn, "Branch Name");
-        s->pdchWtCnPipeInD = newPreDefColumn(state, s->pdstWtCn, "Pipe:Indoor are used");
-        s->pdchWtCnPipeOutD = newPreDefColumn(state, s->pdstWtCn, "Pipe:Outdoor are used");
-        s->pdchWtCnPipeUndr = newPreDefColumn(state, s->pdstWtCn, "Pipe:Underground are used");
         s->pdchWtCnSupTnk = newPreDefColumn(state, s->pdstWtCn, "Supply Water Storage Tank Name");
         s->pdchWtCnRecTnk = newPreDefColumn(state, s->pdstWtCn, "Reclamation Water Storage Tank Name");
 

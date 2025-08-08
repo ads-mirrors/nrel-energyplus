@@ -248,6 +248,8 @@ struct OutputReportPredefinedData : BaseGlobalStruct
     int pdchFanMotorEff = 0;
     int pdchFanMotorHeatToZoneFrac = 0; // Motor Heat to Zone Fraction
     int pdchFanMotorHeatZone = 0;       // Motor Loss Zone Name
+    int pdchFanSpeedCtrlMethod = 0;
+    int pdchFanNumSpeeds = 0;
     int pdchFanAirLoopName = 0;
 
     // Pump subtable

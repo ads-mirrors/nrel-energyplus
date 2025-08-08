@@ -460,6 +460,8 @@ namespace OutputReportPredefined {
         s->pdchFanMotorEff = newPreDefColumn(state, s->pdstFan, "Motor Efficiency");
         s->pdchFanMotorHeatToZoneFrac = newPreDefColumn(state, s->pdstFan, "Motor Heat to Zone Fraction");
         s->pdchFanMotorHeatZone = newPreDefColumn(state, s->pdstFan, "Motor Loss Zone Name");
+        s->pdchFanSpeedCtrlMethod = newPreDefColumn(state, s->pdstFan, "Speed Control Method");
+        s->pdchFanNumSpeeds = newPreDefColumn(state, s->pdstFan, "Number of Speeds");
         s->pdchFanAirLoopName = newPreDefColumn(state, s->pdstFan, "Airloop Name");
 
         s->pdstPump = newPreDefSubTable(state, s->pdrEquip, "Pumps");

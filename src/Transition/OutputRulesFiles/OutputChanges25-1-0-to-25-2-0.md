@@ -38,6 +38,13 @@ Add two new columns:
 
 See Pull Request [#11138](https://github.com/NREL/EnergyPlus/pull/11138).
 
+### Table Output, Equipment Summary Report, Fans subtable
+Add two new columns:
+- Speed Control Method
+- Number of Speeds
+
+See Pull Request [#11138](https://github.com/NREL/EnergyPlus/pull/11138).
+
 ### EIO and HTML Table Output: Initialization Summary
 
 A number of changes related to finding duplicated HTML tables (based on FullName) have been made.

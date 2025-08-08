@@ -437,8 +437,7 @@ void GetPIUs(EnergyPlusData &state)
                 }
 
                 // Variable speed fan inputs
-                std::string fan_control_type = "ConstantSpeed";
-                fan_control_type = ip->getAlphaFieldValue(fields, objectSchemaProps, "fan_control_type");
+                std::string const fan_control_type = ip->getAlphaFieldValue(fields, objectSchemaProps, "fan_control_type");
                 thisPIU.fanControlType = static_cast<FanCntrlType>(getEnumValue(fanCntrlTypeNamesUC, Util::makeUPPER(fan_control_type)));
 
                 if (thisPIU.fanControlType == FanCntrlType::Invalid) {

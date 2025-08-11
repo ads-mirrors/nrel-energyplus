@@ -45,6 +45,19 @@ Add two new columns:
 
 See Pull Request [#11138](https://github.com/NREL/EnergyPlus/pull/11138).
 
+### Table Output, System Summary Report, Fan Operation subtable
+New subtable with the following columns:
+- Occupied Time [hr]
+- Occupied Continuous Fan [hr]
+- Occupied Cycling Fan [hr]
+- Occupied Fan Off [hr]
+- Unoccupied Time [hr]
+- Unoccupied Continuous Fan [hr]
+- Unoccupied Cycling Fan [hr]
+- Unoccupied Fan Off [hr]
+
+See Pull Request [#11138](https://github.com/NREL/EnergyPlus/pull/11138).
+
 ### EIO and HTML Table Output: Initialization Summary
 
 A number of changes related to finding duplicated HTML tables (based on FullName) have been made.

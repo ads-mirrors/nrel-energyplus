@@ -115,8 +115,3 @@ The `Output:Constructions` has two possible keys: `Materials` and `Constructions
 #### Fuel Supply
 
 When using `Generator:FuelSupply`, the header was written twice in the EIO Initialization Summary as `! <Fuel Supply>,...` leading to two identical tables in the HTML report.
-
-### Table Output, Equipment Summary Report, Air Heat Recovery subtable
-* Delete "Name" column.
-
-* Change "Input Object Type" heading to "Type".

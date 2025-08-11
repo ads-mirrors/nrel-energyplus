@@ -912,6 +912,16 @@ struct OutputReportPredefinedData : BaseGlobalStruct
     int pdchStatSchdHeatName = 0;
     int pdchStatSchdCoolName = 0;
 
+    int pdstFanOper = 0.0;
+    int pdchFanOpOccHrs = 0.0;
+    int pdchFanOpOccCont = 0.0;
+    int pdchFanOpOccCyc = 0.0;
+    int pdchFanOpOccOff = 0.0;
+    int pdchFanOpUnoccHrs = 0.0;
+    int pdchFanOpUnoccCont = 0.0;
+    int pdchFanOpUnoccCyc = 0.0;
+    int pdchFanOpUnoccOff = 0.0;
+
     // HVAC Topology
     int pdrTopology = 0;
 

@@ -951,6 +951,16 @@ namespace OutputReportPredefined {
         s->pdchStatSchdHeatName = newPreDefColumn(state, s->pdstStatSchd, "Heating Schedule");
         s->pdchStatSchdCoolName = newPreDefColumn(state, s->pdstStatSchd, "Cooling Schedule");
 
+        s->pdstFanOper = newPreDefSubTable(state, s->pdrSystem, "Fan Operation");
+        s->pdchFanOpOccHrs = newPreDefColumn(state, s->pdstFanOper, "Occupied Time [hr]");
+        s->pdchFanOpOccCont = newPreDefColumn(state, s->pdstFanOper, "Occupied Continuous Fan [hr]");
+        s->pdchFanOpOccCyc = newPreDefColumn(state, s->pdstFanOper, "Occupied Cycling Fan [hr]");
+        s->pdchFanOpOccOff = newPreDefColumn(state, s->pdstFanOper, "Occupied Fan Off [hr]");
+        s->pdchFanOpUnoccHrs = newPreDefColumn(state, s->pdstFanOper, "Unoccupied Time [hr]");
+        s->pdchFanOpUnoccCont = newPreDefColumn(state, s->pdstFanOper, "Unoccupied Continuous Fan [hr]");
+        s->pdchFanOpUnoccCyc = newPreDefColumn(state, s->pdstFanOper, "Unoccupied Cycling Fan [hr]");
+        s->pdchFanOpUnoccOff = newPreDefColumn(state, s->pdstFanOper, "Unoccupied Fan Off [hr]");
+
         // HVAC Topology Report
         s->pdrTopology = newPreDefReport(state, "HVACTopology", "Top", "HVAC Topology");
 

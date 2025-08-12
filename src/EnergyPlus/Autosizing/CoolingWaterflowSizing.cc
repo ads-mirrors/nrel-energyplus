@@ -166,6 +166,41 @@ Real64 CoolingWaterflowSizer::size(EnergyPlusData &state, Real64 _originalValue,
             state.dataRptCoilSelection->coilSelectionReportObj->setCoilLvgWaterTemp(
                 state, this->compName, this->compType, Constant::CWInitConvTemp + CoilDesWaterDeltaT);
         }
+        // calculate hourly design water flow rate for plant TES sizing
+        if (this->dataCoilNum > 0) {
+            state.dataSize->PlantSizData(this->dataPltSizCoolNum).plantCoilObjectNames[this->dataCoilNum - 1] = this->compName;
+            auto &plntSizData = state.dataSize->PlantSizData(this->dataPltSizCoolNum).coilDesWaterFlowRate[this->dataCoilNum - 1];
+            if (this->curZoneEqNum > 0) {
+                Real64 peakAirFlow = 0.0;
+                for (auto &coolFlowSeq : this->finalZoneSizing(this->curSysNum).CoolFlowSeq) {
+                    if (coolFlowSeq > peakAirFlow) {
+                        peakAirFlow = coolFlowSeq;
+                    }
+                }
+                for (int ts = 1; ts <= this->finalZoneSizing(this->curSysNum).CoolFlowSeq.size(); ++ts) {
+                    // water flow rate will be proportional to autosized water flow rate * (design air flow rate / peak air flow rate)
+                    plntSizData.tsDesWaterFlowRate[ts - 1] =
+                        this->autoSizedValue * (this->finalZoneSizing(this->curSysNum).CoolFlowSeq(ts) / peakAirFlow);
+                }
+            } else if (this->curOASysNum > 0) {
+                for (int ts = 0; ts < this->finalSysSizing(this->curSysNum).CoolFlowSeq.size(); ++ts) {
+                    // water flow rate will be proportional to autosized water flow rate * (design air flow rate / peak air flow rate)
+                    plntSizData.tsDesWaterFlowRate[ts] = this->autoSizedValue;
+                }
+            } else if (this->curSysNum > 0) {
+                Real64 peakAirFlow = 0.0;
+                for (auto &coolFlowSeq : this->finalSysSizing(this->curSysNum).CoolFlowSeq) {
+                    if (coolFlowSeq > peakAirFlow) {
+                        peakAirFlow = coolFlowSeq;
+                    }
+                }
+                for (int ts = 1; ts <= this->finalSysSizing(this->curSysNum).CoolFlowSeq.size(); ++ts) {
+                    // water flow rate will be proportional to autosized water flow rate * (design air flow rate / peak air flow rate)
+                    plntSizData.tsDesWaterFlowRate[ts - 1] =
+                        this->autoSizedValue * (this->finalSysSizing(this->curSysNum).CoolFlowSeq(ts) / peakAirFlow);
+                }
+            }
+        }
     }
     return this->autoSizedValue;
 }

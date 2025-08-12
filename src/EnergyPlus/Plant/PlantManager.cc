@@ -3199,6 +3199,81 @@ void SizePlantLoop(EnergyPlusData &state,
             state.dataSize->PlantSizData(PlantSizNum).DesVolFlowRate =
                 std::min(state.dataSize->PlantSizData(PlantSizNum).DesVolFlowRate, state.dataPlnt->PlantLoop(LoopNum).MaxVolFlowRate);
         }
+
+        // sum coil water flow rate time series
+        state.dataSize->PlantSizData(PlantSizNum).plantDesWaterFlowRate.resize(24 * state.dataGlobal->TimeStepsInHour);
+        for (int ts = 0; ts < 24 * state.dataGlobal->TimeStepsInHour; ++ts) {
+            state.dataSize->PlantSizData(PlantSizNum).plantDesWaterFlowRate[ts] = 0.0;
+            for (auto &thisCoil : state.dataSize->PlantSizData(PlantSizNum).coilDesWaterFlowRate) {
+                state.dataSize->PlantSizData(PlantSizNum).plantDesWaterFlowRate[ts] += thisCoil.tsDesWaterFlowRate[ts];
+            }
+        }
+        if (state.dataPlnt->PlantFinalSizesOkayToReport) {
+            if (state.dataSize->SizingFileColSep == DataStringGlobals::CharComma) {
+                state.files.psz.filePath = state.files.outputPszCsvFilePath;
+            } else if (state.dataSize->SizingFileColSep == DataStringGlobals::CharTab) {
+                state.files.psz.filePath = state.files.outputPszTabFilePath;
+            } else {
+                state.files.psz.filePath = state.files.outputPszTxtFilePath;
+            }
+            state.files.psz.ensure_open(state, "SizePlantLoop", state.files.outputControl.psz);
+            // write out the sys design calc results
+
+            print(state.files.psz, "Time");
+            for (int I = 1; I <= int(state.dataSize->PlantSizData.size()); ++I) {
+                if (state.dataSize->PlantSizData(I).plantDesWaterFlowRate.empty() ||
+                    !Util::SameString(state.dataPlnt->PlantLoop(LoopNum).Name, state.dataSize->PlantSizData(I).PlantLoopName)) {
+                    continue;
+                }
+                for (int J = 0; J < state.dataSize->PlantSizData(I).plantCoilObjectNames.size(); ++J) {
+                    constexpr const char *PSizeFmt12("{}{}{}{:2}{}{}{}");
+                    print(state.files.psz,
+                          PSizeFmt12,
+                          state.dataSize->SizingFileColSep,
+                          state.dataSize->PlantSizData(I).PlantLoopName,
+                          ":Plant:",
+                          I,
+                          ":Coil:",
+                          state.dataSize->PlantSizData(I).plantCoilObjectNames[J],
+                          ":Des Cool Volume Flow [m3/s]");
+                }
+            }
+            print(state.files.psz, "\n");
+            //      HourFrac = 0.0
+            int HourPrint;
+            int Minutes = 0;
+            int TimeStepIndex = 0;
+            for (int HourCounter = 1; HourCounter <= 24; ++HourCounter) {
+                for (int TimeStepCounter = 1; TimeStepCounter <= state.dataGlobal->TimeStepsInHour; ++TimeStepCounter) {
+                    ++TimeStepIndex;
+                    Minutes += state.dataGlobal->MinutesInTimeStep;
+                    if (Minutes == 60) {
+                        Minutes = 0;
+                        HourPrint = HourCounter;
+                    } else {
+                        HourPrint = HourCounter - 1;
+                    }
+                    constexpr const char *PSizeFmt20("{:02}:{:02}:00");
+                    print(state.files.psz, PSizeFmt20, HourPrint, Minutes);
+                    for (int I = 1; I <= int(state.dataSize->PlantSizData.size()); ++I) {
+                        if (state.dataSize->PlantSizData(I).plantDesWaterFlowRate.empty() ||
+                            !Util::SameString(state.dataPlnt->PlantLoop(LoopNum).Name, state.dataSize->PlantSizData(I).PlantLoopName)) {
+                            continue;
+                        }
+                        constexpr const char *PSizeFmt22("{}{:12.6E}");
+
+                        for (int J = 0; J < state.dataSize->PlantSizData(I).plantCoilObjectNames.size(); ++J) {
+                            print(state.files.psz,
+                                  PSizeFmt22,
+                                  state.dataSize->SizingFileColSep,
+                                  state.dataSize->PlantSizData(I).coilDesWaterFlowRate[J].tsDesWaterFlowRate[TimeStepIndex - 1]);
+                        }
+                    }
+                    print(state.files.psz, "\n");
+                }
+            }
+            print(state.files.psz, "\n");
+        }
     }
 
     if (state.dataPlnt->PlantLoop(LoopNum).MaxVolFlowRateWasAutoSized) {

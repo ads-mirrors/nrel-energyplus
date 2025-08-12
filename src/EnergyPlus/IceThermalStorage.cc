@@ -53,6 +53,7 @@
 #include <ObjexxFCL/Fmath.hh>
 
 // EnergyPlus Headers
+#include <EnergyPlus/Autosizing/Base.hh>
 #include <EnergyPlus/BranchNodeConnections.hh>
 #include <EnergyPlus/CurveManager.hh>
 #include <EnergyPlus/Data/EnergyPlusData.hh>
@@ -60,6 +61,7 @@
 #include <EnergyPlus/DataHVACGlobals.hh>
 #include <EnergyPlus/DataIPShortCuts.hh>
 #include <EnergyPlus/DataLoopNode.hh>
+#include <EnergyPlus/DataSizing.hh>
 #include <EnergyPlus/FluidProperties.hh>
 #include <EnergyPlus/General.hh>
 #include <EnergyPlus/IceThermalStorage.hh>
@@ -286,13 +288,20 @@ namespace IceThermalStorage {
             this->MyEnvrnFlag = true;
         }
 
-        this->oneTimeInit(state); // Initialize detailed ice storage
+        this->initialize(state); // Initialize detailed ice storage
 
         this->SimDetailedIceStorage(state); // Simulate detailed ice storage
 
         this->UpdateDetailedIceStorage(state); // Update detailed ice storage
 
         this->ReportDetailedIceStorage(state); // Report detailed ice storage
+    }
+
+    void DetailedIceStorageData::onInitLoopEquip(EnergyPlusData &state, const PlantLocation &calledFromLocation)
+    {
+        this->oneTimeInit(state); // Initialize detailed ice storage
+
+        this->size(state);
     }
 
     void DetailedIceStorageData::SimDetailedIceStorage(EnergyPlusData &state)
@@ -845,8 +854,9 @@ namespace IceThermalStorage {
             // Convert J to W-hr by dividing by number of seconds in an hour (3600)
             state.dataIceThermalStorage->DetailedIceStorage(iceNum).NomCapacity =
                 state.dataIPShortCut->rNumericArgs(1) * (1.e+09) / Constant::rSecsInHour;
-
-            if (state.dataIPShortCut->rNumericArgs(1) <= 0.0) {
+            if (state.dataIPShortCut->rNumericArgs(1) == DataSizing::AutoSize) {
+                state.dataIceThermalStorage->DetailedIceStorage(iceNum).NomCapacityWasAutoSized = true;
+            } else if (state.dataIPShortCut->rNumericArgs(1) <= 0.0) {
                 ShowSevereError(state,
                                 format("Invalid {}={:.2R}", state.dataIPShortCut->cNumericFieldNames(1), state.dataIPShortCut->rNumericArgs(1)));
                 ShowContinueError(state, format("Entered in {}={}", state.dataIPShortCut->cCurrentModuleObject, state.dataIPShortCut->cAlphaArgs(1)));
@@ -1291,18 +1301,6 @@ namespace IceThermalStorage {
     void DetailedIceStorageData::oneTimeInit(EnergyPlusData &state)
     {
 
-        // SUBROUTINE INFORMATION:
-        //       AUTHOR         Rick Strand
-        //       DATE WRITTEN   February 2006
-        //       MODIFIED       na
-        //       RE-ENGINEERED  na
-
-        // PURPOSE OF THIS SUBROUTINE:
-        // This subroutine initializes variables for the detailed ice storage model.
-
-        // METHODOLOGY EMPLOYED:
-        // Initializes parameters based on current status flag values.
-
         if (this->MyPlantScanFlag) {
             bool errFlag = false;
             PlantUtilities::ScanPlantLoopsForObject(state, this->Name, DataPlant::PlantEquipmentType::TS_IceDetailed, this->plantLoc, errFlag);
@@ -1314,6 +1312,10 @@ namespace IceThermalStorage {
             this->setupOutputVars(state);
             this->MyPlantScanFlag = false;
         }
+    }
+
+    void DetailedIceStorageData::initialize(EnergyPlusData &state)
+    {
 
         if (state.dataGlobal->BeginEnvrnFlag && this->MyEnvrnFlag2) { // Beginning of environment initializations
             // Make sure all state variables are reset at the beginning of every environment to avoid problems.
@@ -1366,6 +1368,54 @@ namespace IceThermalStorage {
         this->TankMassFlowRate = 0.0;
         this->ParasiticElecRate = 0.0;
         this->ParasiticElecEnergy = 0.0;
+    }
+
+    void DetailedIceStorageData::size(EnergyPlusData &state)
+    {
+        std::string_view const tankType = "ThermalStorage:Ice:Detailed";
+        std::string_view const callingRoutine = "DetailedIceStorageData::size";
+        Real64 constexpr tankHeatOfFusion = 334000.0; // J/Kg
+        int loopNum = this->plantLoc.loopNum;
+        int PltSizNum = state.dataPlnt->PlantLoop(loopNum).PlantSizNum;
+        auto &plntSizData = state.dataSize->PlantSizData(PltSizNum);
+        int startPeak = 9 * state.dataGlobal->TimeStepsInHour; //  9:00 AM
+        int endPeak = 22 * state.dataGlobal->TimeStepsInHour;  // 10:00 PM
+        Real64 sizingFactor = 0.36;
+        Real64 onPeakSumWaterFlow = 0.0;
+        Real64 offPeakSumWaterFlow = 0.0;
+        if (!plntSizData.plantDesWaterFlowRate.empty()) {
+            for (int ts = 0; ts < 24 * state.dataGlobal->TimeStepsInHour; ++ts) {
+                if (ts > startPeak && ts <= endPeak) {
+                    onPeakSumWaterFlow += plntSizData.plantDesWaterFlowRate[ts] / state.dataGlobal->TimeStepsInHour;
+                } else {
+                    offPeakSumWaterFlow += plntSizData.plantDesWaterFlowRate[ts] / state.dataGlobal->TimeStepsInHour;
+                }
+            }
+        }
+        Real64 Cp = state.dataPlnt->PlantLoop(loopNum).glycol->getSpecificHeat(state, plntSizData.ExitTemp, callingRoutine);
+        Real64 rho = state.dataPlnt->PlantLoop(loopNum).glycol->getDensity(state, plntSizData.ExitTemp, callingRoutine);
+        Real64 onPeakEnergy =
+            onPeakSumWaterFlow * rho * Cp * plntSizData.DeltaT * Constant::rSecsInHour; // need Joules here, J = m3/s * kg/m3 * J/kg-C * C * sec
+        Real64 offPeakEnergy = offPeakSumWaterFlow * rho * Cp * plntSizData.DeltaT * Constant::rSecsInHour;
+        Real64 aveOnPeakLoad =
+            onPeakEnergy / (((endPeak - startPeak) / state.dataGlobal->TimeStepsInHour) * Constant::rSecsInHour); // need Watts here = J / s
+        Real64 aveOffPeakLoad = offPeakEnergy / ((24 - ((endPeak - startPeak) / state.dataGlobal->TimeStepsInHour)) * Constant::rSecsInHour);
+
+        // now apply the heat of fusion J/Kg and size tank
+        Real64 tankCapacityKg = onPeakEnergy * sizingFactor / tankHeatOfFusion;    // kg
+        Real64 tankCapacityM3 = tankCapacityKg / rho;                              // m3
+        Real64 tankCapacity = onPeakEnergy * sizingFactor / Constant::rSecsInHour; // kWh - 383.1 kWh, 2.75x
+
+        if (this->NomCapacityWasAutoSized) {
+            this->NomCapacity = tankCapacity;
+        }
+        if (state.dataPlnt->PlantFinalSizesOkayToReport) {
+            if (!this->NomCapacityWasAutoSized) {
+                BaseSizer::reportSizerOutput(
+                    state, tankType, this->Name, "User-Specified Capacity [GJ]", this->NomCapacity * Constant::rSecsInHour / 1.0E9);
+            }
+            BaseSizer::reportSizerOutput(state, tankType, this->Name, "Design Size Capacity [GJ]", tankCapacity * Constant::rSecsInHour / 1.0E9);
+        }
     }
 
     void SimpleIceStorageData::oneTimeInit(EnergyPlusData &state)

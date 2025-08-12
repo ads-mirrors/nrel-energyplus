@@ -281,6 +281,13 @@ void GetWaterCoilInput(EnergyPlusData &state)
     NumFlatFin = state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, "Coil:Cooling:Water:DetailedGeometry");
     NumCooling = state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, "Coil:Cooling:Water");
     state.dataWaterCoils->NumWaterCoils = NumSimpHeat + NumFlatFin + NumCooling;
+    for (auto &plntSizData : state.dataSize->PlantSizData) {
+        plntSizData.coilDesWaterFlowRate.resize(state.dataWaterCoils->NumWaterCoils);
+        plntSizData.plantCoilObjectNames.resize(state.dataWaterCoils->NumWaterCoils);
+        for (int coil = 0; coil < state.dataWaterCoils->NumWaterCoils; ++coil) {
+            plntSizData.coilDesWaterFlowRate[coil].tsDesWaterFlowRate.resize(24 * state.dataGlobal->TimeStepsInHour);
+        }
+    }
 
     if (state.dataWaterCoils->NumWaterCoils > 0) {
         state.dataWaterCoils->WaterCoil.allocate(state.dataWaterCoils->NumWaterCoils);
@@ -2276,10 +2283,12 @@ void SizeWaterCoil(EnergyPlusData &state, int const CoilNum)
             // Why isn't the water volume flow rate based on the user inputs for inlet/outlet air/water temps? Water volume flow rate is
             // always based on autosized inputs.
             bPRINT = true;
+            state.dataSize->DataCoilNum = CoilNum;
             TempSize = waterCoil.MaxWaterVolFlowRate;
             sizerCWWaterflow.initializeWithinEP(state, CompType, CompName, bPRINT, RoutineName);
             waterCoil.MaxWaterVolFlowRate = sizerCWWaterflow.size(state, TempSize, ErrorsFound);
             state.dataSize->DataWaterFlowUsedForSizing = waterCoil.MaxWaterVolFlowRate;
+            state.dataSize->DataCoilNum = 0;
 
             if (waterCoil.WaterCoilModel == CoilModel::CoolingDetailed) { // 'DETAILED FLAT FIN'
                 bPRINT = false; // do not print this sizing request since this coil does not have a design air flow rate input field (we

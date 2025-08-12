@@ -12354,6 +12354,10 @@ namespace AirflowNetwork {
                 shiftResult = linkageNum;
                 break;
             }
+            if (!lAlphaBlanks(5)) { // There might be a valid zone here which will also make this a "first" linkage in the input
+                shiftResult = linkageNum;
+                break;
+            }
         }
         return shiftResult;
     }

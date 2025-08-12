@@ -2190,7 +2190,7 @@ TEST_F(EnergyPlusFixture, AirflowNetwork_TestPressureStat)
         state->afn->DisSysCompReliefAirData(1).OutletNode = 5;
     }
     state->afn->AirflowNetworkNodeData(3).AirLoopNum = 1;
-    state->afn->AirflowNetworkLinkageData(44).AirLoopNum = 1;
+    state->afn->AirflowNetworkLinkageData(46).AirLoopNum = 1;
 
     state->dataAirLoop->AirLoopAFNInfo.allocate(1);
     //    state->dataAirLoop->LoopOnOffFanPartLoadRatio.allocate(1);
@@ -5984,11 +5984,11 @@ TEST_F(EnergyPlusFixture, AirflowNetwork_MultiAirLoopTest)
     }
 
     state->afn->AirflowNetworkNodeData(3).AirLoopNum = 1;
-    state->afn->AirflowNetworkLinkageData(49).AirLoopNum = 1;
-    state->afn->AirflowNetworkLinkageData(50).AirLoopNum = 1;
-    state->afn->AirflowNetworkLinkageData(64).AirLoopNum = 2;
-    state->afn->AirflowNetworkLinkageData(40).AirLoopNum = 1;
-    state->afn->AirflowNetworkLinkageData(65).AirLoopNum = 2;
+    state->afn->AirflowNetworkLinkageData(51).AirLoopNum = 1;
+    state->afn->AirflowNetworkLinkageData(52).AirLoopNum = 1;
+    state->afn->AirflowNetworkLinkageData(66).AirLoopNum = 2;
+    state->afn->AirflowNetworkLinkageData(42).AirLoopNum = 1;
+    state->afn->AirflowNetworkLinkageData(67).AirLoopNum = 2;
 
     state->dataAirLoop->AirLoopAFNInfo.allocate(2);
     state->dataAirLoop->AirLoopAFNInfo(1).LoopFanOperationMode = HVAC::FanOp::Invalid;
@@ -6002,10 +6002,10 @@ TEST_F(EnergyPlusFixture, AirflowNetwork_MultiAirLoopTest)
     state->afn->calculate_balance();
 
     // Check mass flow rate
-    EXPECT_NEAR(1.40, state->afn->AirflowNetworkLinkSimu(40).FLOW, 0.0001);
-    EXPECT_NEAR(0.52, state->afn->AirflowNetworkLinkSimu(65).FLOW, 0.0001);
-    EXPECT_NEAR(0.2795108, state->afn->AirflowNetworkLinkSimu(49).FLOW, 0.0001);
-    EXPECT_NEAR(0.1095108, state->afn->AirflowNetworkLinkSimu(64).FLOW, 0.0001);
+    EXPECT_NEAR(1.40, state->afn->AirflowNetworkLinkSimu(42).FLOW, 0.0001);
+    EXPECT_NEAR(0.52, state->afn->AirflowNetworkLinkSimu(67).FLOW, 0.0001);
+    EXPECT_NEAR(0.2795108, state->afn->AirflowNetworkLinkSimu(51).FLOW, 0.0001);
+    EXPECT_NEAR(0.1095108, state->afn->AirflowNetworkLinkSimu(66).FLOW, 0.0001);
     EXPECT_NEAR(0.1005046, state->afn->AirflowNetworkLinkSimu(15).FLOW, 0.0001);
 
     state->afn->AirflowNetworkFanActivated = false;

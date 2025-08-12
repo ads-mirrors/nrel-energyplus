@@ -14167,7 +14167,7 @@ void ReportRefrigerationComponents(EnergyPlusData &state)
         "!  <Refrigeration Air Chiller>,Refrigeration Chiller Number, Refrigeration Chiller Name,Zone Name,Zone "
         "Node #,Zone Node Name,Sensible Capacity (W/C),Sensible Capacity (W),Evaporating Temperature (C),DT1 (C),Fan "
         "Power (W),Heater (W),Defrost (W), Air Flow Rate (m3/s)");
-    static constexpr std::string_view Format_152("!  <Air Chiller Load>, Air Chiller Name, Air Chiller Number, Zone Name,");
+    static constexpr std::string_view Format_152("!  <Air Chiller Load>, Air Chiller Name, Air Chiller Number, Zone Name");
     static constexpr std::string_view Format_160(
         "!  <Refrigeration GasCooler:Air-Cooled>,Gas Cooler Number, Gas Cooler Name, Rated Outlet Pressure "
         "(Pa),Rated Outlet Temperature (C), Rated Approach Temperature (C), Rated Capacity (W), Rated Fan Power (W)");

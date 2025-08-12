@@ -12343,8 +12343,6 @@ namespace AirflowNetwork {
             }
             bool validFirstLinkage3 = false;
             for (int nodeNum = 1; nodeNum <= numNodes; ++nodeNum) {
-                std::string a3 = Alphas(3);
-                std::string ePN = DisSysNodeData(nodeNum).Name;
                 if (Util::SameString(Alphas(3), DisSysNodeData(nodeNum).Name)) { // found the match
                     if (!Util::SameString(DisSysNodeData(nodeNum).EPlusType, "Other") && !Util::SameString(DisSysNodeData(nodeNum).EPlusType, "")) {
                         validFirstLinkage3 = true;

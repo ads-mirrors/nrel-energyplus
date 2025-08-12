@@ -4485,4 +4485,99 @@ TEST_F(EnergyPlusFixture, AirflowNetwork_TestFanModel)
     state->dataAirLoop->AirLoopAFNInfo.deallocate();
 }
 
+TEST_F(EnergyPlusFixture, AirflowNetwork_calcGetInputShiftTest)
+{
+
+    // Unit test for Defect #10652 (order dependence of input issue)
+
+    std::string const idf_objects = delimited_string({
+        "  Building,",
+        "    Fan Energy;              !- End-Use Subcategory",
+        "  AirflowNetwork:Distribution:Linkage,",
+        "      HeatingCoilLink_unit1,   !- Name",
+        "      HeatingInletNode_unit1,  !- Node 1 Name",
+        "      HeatingOutletNode_unit1, !- Node 2 Name",
+        "      Main electric Heating Coil_unit1;  !- Component Name",
+
+        "  AirflowNetwork:Distribution:Linkage,",
+        "      ZoneSupplyLeakLink_unit1,!- Name",
+        "      ZoneSupplyNode_unit1,    !- Node 1 Name",
+        "      attic_unit1,             !- Node 2 Name",
+        "      SupplyLeak;              !- Component Name",
+
+        "   AirflowNetwork:Distribution:Linkage,",
+        "      ZoneReturnLeakLink_unit1,!- Name",
+        "      crawlspace_unit1,        !- Node 1 Name",
+        "      ZoneReturnNode_unit1,    !- Node 2 Name",
+        "      ReturnLeak;              !- Component Name",
+
+        "  AirflowNetwork:Distribution:Linkage,",
+        "      MainSupplyLink_unit1,    !- Name",
+        "      EquipmentInletNode_unit1,!- Node 1 Name",
+        "      SplitterNode_unit1,      !- Node 2 Name",
+        "      MainTrunk_unit1,         !- Component Name",
+        "      attic_unit1;             !- Thermal Zone Name",
+    });
+
+    ASSERT_TRUE(process_idf(idf_objects));
+    state->init_state(*state);
+
+    state->afn->DisSysNodeData.allocate(8);
+    state->afn->DisSysNodeData(1).Name = "HeatingInletNode_unit1";
+    state->afn->DisSysNodeData(1).EPlusType = "Other";
+    state->afn->DisSysNodeData(2).Name = "HeatingOutletNode_unit1";
+    state->afn->DisSysNodeData(2).EPlusType = "Other";
+    state->afn->DisSysNodeData(3).Name = "ZoneSupplyNode_unit1";
+    state->afn->DisSysNodeData(3).EPlusType = "Other";
+    state->afn->DisSysNodeData(4).Name = "attic_unit1";
+    state->afn->DisSysNodeData(4).EPlusType = "Other";
+    state->afn->DisSysNodeData(5).Name = "crawlspace_unit1";
+    state->afn->DisSysNodeData(5).EPlusType = "Other";
+    state->afn->DisSysNodeData(6).Name = "ZoneReturnNode_unit1";
+    state->afn->DisSysNodeData(6).EPlusType = "Other";
+    state->afn->DisSysNodeData(7).Name = "EquipmentInletNode_unit1";
+    state->afn->DisSysNodeData(7).EPlusType = "Other";
+    state->afn->DisSysNodeData(8).Name = "SplitterNode_unit1";
+    state->afn->DisSysNodeData(8).EPlusType = "Other";
+
+    std::string inputObjectName = "AirflowNetwork:Distribution:Linkage";
+    int numLinkageInputs = 4;
+    int numSysNodes = 8;
+    int functionResult;
+    int expectedAnswer;
+
+    // Test 0: Only "others"--function should return 1 (existing error messages will alert user of an issue with severe/fatal)
+    expectedAnswer = 1;
+    functionResult = state->afn->calcGetInputShift(inputObjectName, numLinkageInputs, numSysNodes);
+    EXPECT_EQ(expectedAnswer, functionResult);
+
+    // Test 1: First link has something other than "other" (DisSysNodeData(2) is the second node of the first linkage statement
+    state->afn->DisSysNodeData(2).EPlusType = "AirLoopHVAC:ZoneMixer";
+    expectedAnswer = 1;
+    functionResult = state->afn->calcGetInputShift(inputObjectName, numLinkageInputs, numSysNodes);
+    EXPECT_EQ(expectedAnswer, functionResult);
+    state->afn->DisSysNodeData(2).EPlusType = "Other"; // reset
+
+    // Test 2: Second link has something other than "other" (DisSysNodeData(3) is the first node of the second linkage statement
+    state->afn->DisSysNodeData(3).EPlusType = "AirLoopHVAC:ZoneMixer";
+    expectedAnswer = 2;
+    functionResult = state->afn->calcGetInputShift(inputObjectName, numLinkageInputs, numSysNodes);
+    EXPECT_EQ(expectedAnswer, functionResult);
+    state->afn->DisSysNodeData(3).EPlusType = "Other"; // reset
+
+    // Test 3: Third link has something other than "other" (DisSysNodeData(6) is the second node of the third linkage statement
+    state->afn->DisSysNodeData(6).EPlusType = "AirLoopHVAC:ZoneMixer";
+    expectedAnswer = 3;
+    functionResult = state->afn->calcGetInputShift(inputObjectName, numLinkageInputs, numSysNodes);
+    EXPECT_EQ(expectedAnswer, functionResult);
+    state->afn->DisSysNodeData(6).EPlusType = "Other"; // reset
+
+    // Test 3: Fourth link has something other than "other" (DisSysNodeData(7) is the first node of the fourth linkage statement
+    state->afn->DisSysNodeData(7).EPlusType = "AirLoopHVAC:ZoneMixer";
+    expectedAnswer = 4;
+    functionResult = state->afn->calcGetInputShift(inputObjectName, numLinkageInputs, numSysNodes);
+    EXPECT_EQ(expectedAnswer, functionResult);
+    state->afn->DisSysNodeData(7).EPlusType = "Other"; // reset (not really necessary since this is the last test)
+}
+
 } // namespace EnergyPlus

@@ -4258,7 +4258,7 @@ void HeatPumpAirToWater::setUpEMS(EnergyPlusData &state)
     SetupEMSActuator(state,
                      format("HeatPump:AirToWater:{}", mode_keyword),
                      this->name,
-                     "Operation Mode",
+                     "Operating Mode",
                      "[ ]",
                      this->OperationModeEMSOverrideOn,
                      this->OperationModeEMSOverrideValue);
@@ -4514,7 +4514,15 @@ void HeatPumpAirToWater::calcOpMode(EnergyPlus::EnergyPlusData &state, Real64 cu
     if (this->companionHeatPumpCoil == nullptr) {
         this->operatingMode = 1;
         if (this->OperationModeEMSOverrideOn) {
-            this->operatingMode = OperationModeEMSOverrideValue;
+            auto curveIndex = this->capFuncTempCurveIndex[this->numSpeeds - 1];
+            auto capacityModifierFuncTemp = Curve::CurveValue(state, curveIndex, this->loadSideOutletTemp, this->sourceSideInletTemp);
+            auto availableCapacityOneUnit = this->referenceCapacityOneUnit * capacityModifierFuncTemp;
+            this->operatingMode = ceil(fabs(currentLoad) / availableCapacityOneUnit);
+            if (this->OperationModeEMSOverrideValue == 1) {
+                this->operatingMode = ceil(fabs(currentLoad) / availableCapacityOneUnit);
+            } else {
+                this->operatingMode = 0;
+            }
         }
     } else {
         auto LoopNum = this->companionHeatPumpCoil->loadSidePlantLoc.loopNum;
@@ -4534,12 +4542,18 @@ void HeatPumpAirToWater::calcOpMode(EnergyPlus::EnergyPlusData &state, Real64 cu
             Curve::CurveValue(state, curveIndex, companionCoil->loadSideOutletTemp, companionCoil->sourceSideInletTemp);
         auto companionAvailableCapacityOneUnit = companionCoil->referenceCapacityOneUnit * companionCapacityModifierFuncTemp;
         if (this->OperationModeEMSOverrideOn) {
-            if (this->OperationModeEMSOverrideValue == 1) {
-                this->operatingMode = ceil(fabs(currentLoad) / availableCapacityOneUnit);
+            if (this->OperationModeEMSOverrideValue > 0) {
+                this->operatingMode = min(this->compressorMultiplier, this->OperationModeEMSOverrideValue);
+                this->companionHeatPumpCoil->operatingMode = 0;
+            }
+        } else if (this->operatingModeControlMethod == OperatingModeControlMethod::ScheduledModes){
+            auto numUnitsOn = static_cast<int>(this->operationModeControlSche->getCurrentVal());
+            if (numUnitsOn > 0) {
+                this->operatingMode = min(this->compressorMultiplier, numUnitsOn);
                 this->companionHeatPumpCoil->operatingMode = 0;
             } else {
                 this->operatingMode = 0;
-                this->companionHeatPumpCoil->operatingMode = ceil(fabs(companionLoad) / companionAvailableCapacityOneUnit);
+                this->companionHeatPumpCoil->operatingMode = min(this->companionHeatPumpCoil->compressorMultiplier, -numUnitsOn);
             }
         } else {
             if (modeCalcMethod == OperatingModeControlOptionMultipleUnit::SingleMode) {

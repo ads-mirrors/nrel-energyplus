@@ -6287,7 +6287,7 @@ cooling but not at the same time.
 \subsubsection{Inputs}
 \paragraph{Field: Name} The name of the air-to-water heat pump.
 
-\paragraph{Availability Schedule Name Heating} A schedule that defines the
+\paragraph{Field: Availability Schedule Name Heating} A schedule that defines the
 availability of the unit in heating mode. Schedule values of 0 denote the unit
 is off. All other values denote the unit is available. If this field is left
 blank, the unit is available the entire simulation.
@@ -6298,9 +6298,27 @@ available. If this field is left blank, the unit is available the entire
 simulation.
 \paragraph{Field: Operating Mode Control Method} There are three options,
 ScheduledModes, EMSControlled, and Load.
-\paragraph{Field: Operating Mode Control Option for Multiple Unit} This
-determines how the operation mode is assigned when the load is too large to be
-met by multiple heat pump units. The default is SingleMode.
+\begin{itemize}
+\item ScheduledModes: the operating mode is controlled by a schedule. The
+schedule values are: 0 for off, positive integer k for k heating units being on,
+negative integer -k for k cooling units being on.
+\item EMSControlled: the operating mode is controlled by an Energy Management
+System (EMS) program setting value in an actuator called ``Operating Mode''
+defined for a HeatPump:AirToWater:Heating or HeatPump:AirToWater:Cooling. The
+EMS program must set the operating mode to 0 for off, or an integer k for the
+number of units on. When the value is k, k corresponding heating or cooling
+component will be on. When the value is 0, the corresponding heating or cooling
+component will be off.
+\item Load: the operating mode is determined by the load on the water side of
+the heat pump. If the load is positive, the unit will operate in heating mode.
+If the load is negative, the unit will operate in cooling mode. If the load is
+zero, the unit will be off.
+\end{itemize}
+\paragraph{Field: Operating Mode Control Option for Multiple Unit} 
+This field describes the modular behavior of the AWHP, where a few units are
+connected in parallel to supply larger capacity. This determines how many units
+are in heating mode and how many are in cooling mode when the load is too large
+to be met. The following four options are available. The default is SingleMode.
 \begin{itemize}
     \item SingleMode: when the load is too large to be met by multiple heat pump
 units, all units will operate in the same mode (either all cooling or all
@@ -6308,26 +6326,34 @@ heating).
     \item CoolingPriority: each unit will be staged one by one based on cooling
 demand first, after all cooling demand is met, if there are remaining heat
 pumps, they will be used to fulfill the remaining heating demand.
-    \item HeatingPriority: similar to the previous cooling priority one, but
-will prioritize to meet the heating demand first.
-    \item Balanced: balance the percent satisfied heating or cooling load.
+\item HeatingPriority: similar to CoolingPriority, but will prioritize to meet
+  the heating demand first.
+\item Balanced: it balances the available compressors between cooling and heating
+  when both are needed, but not enough compressors are available to fully
+  satisfy both. It splits the shortfall as evenly as possible between the two
+  demands. For example, if 7 units are needed but only 4 are available, it will
+  allocate 2 units to cooling and 2 units to heating.
 \end{itemize}
 \paragraph{Field: Operating Mode Control Schedule Name} This field is used if
-the control method is set to ScheduledModes Schedule values control operating
-mode: 0=off, -1=cooling, 1=heating. Note that this only applies to the
-simplified case where all units are in the same mode.
+the Operating Mode Control Method is set to ScheduledModes. Schedule values
+control operating mode as follows: 0=off, -1=cooling, 1=heating when there's
+only one unit (compressor multiplier is 1). When there are multiple units, the
+schedule values are: 0=off, positive integer k=number of heating units on,
+negative integer -k=number of cooling units on. Note that this only applies to
+the simplified case where all units are in the same mode.
 \paragraph{Field: Rated Inlet Air Temperature in Heating Mode} This field is the
 inlet air dry-bulb temperature corresponding to rated heat pump performance
-(capacity, COP, and SHR). The default value is 8$^\circ$C. The minimum value is
+(capacity, COP). The default value is 8$^\circ$C. The minimum value is
 5$^\circ$C.
 \paragraph{Field: Rated Air Flow Rate in Heating Mode} This field is the air
-flow rate corresponding to rated heat pump performance (capacity, COP, and SHR).
+flow rate in m3/s corresponding to rated heat pump performance (capacity, COP).
 The default value is autosize, which means the air flow rate will be autosized.
-(fixme: based on what?)
+The autosize process first calculates the required heat transfer on the source
+side, then assumes a 10C temperature difference, finally use the sensible heat
+equation to solve for the flow rate.
 \paragraph{Field: Rated Leaving Water Temperature in Heating Mode} This field is
 the outlet water temperature corresponding to rated heat pump performance
-(heating capacity, COP, and SHR). The default value is 40$^\circ$C. The minimum
-value is 25$^\circ$C.
+(heating capacity, COP). The default value is 40$^\circ$C.
 \paragraph{Field: Rated Water Flow Rate in Heating Mode} This field is the
 condenser water flow rate corresponding to rated heat pump performance
 (capacity, COP and SHR). The default value is autosize, which means the water
@@ -6340,24 +6366,27 @@ the maximum outdoor temperature allowed for heating operation. Default value is
 100$^\circ$C. Heating is disabled above this temperature.
 \paragraph{Field: Minimum Part Load Ratio} This field is the minimum part load
 ratio of the heat pump. The default value is 0.1. Below this operating limit,
-compressor cycling will occur
+compressor cycling will occur.
 \paragraph{Field: Sizing Factor for Heating} This field is a multiplier for the
 autosized capacity and flow rates. The default value is 1.0.
 \paragraph{Field: Rated Inlet Air Temperature in Cooling Mode} This field is the
 inlet air dry-bulb temperature corresponding to rated heat pump performance
-(capacity, COP, and SHR). The default value is 30$^\circ$C. The minimum value is
-5$^\circ$C.
+(capacity, COP). The default value is 30$^\circ$C.
 \paragraph{Field: Rated Air Flow Rate in Cooling Mode} This field is the air
-flow rate corresponding to rated heat pump performance (capacity, COP, and SHR).
+flow rate in m3/s corresponding to rated heat pump performance (capacity, COP).
 The default value is autosize, which means the air flow rate will be autosized.
+The autosize process first calculates the required heat transfer on the source
+side, then assumes a 10C temperature difference, finally use the sensible heat
+equation to solve for the flow rate.
 \paragraph{Field: Rated Leaving Water Temperature in Cooling Mode} This field is
 the outlet water temperature corresponding to rated heat pump performance
-(heating capacity, COP, and SHR). The default value is 8$^\circ$C. The minimum
-value is 0$^\circ$C.
+(heating capacity, COP). The default value is 8$^\circ$C.
 \paragraph{Field: Rated Water Flow Rate in Cooling Mode} This field is the
 condenser water flow rate corresponding to rated heat pump performance
-(capacity, COP, and SHR). The default value is autosize, which means the water
-flow rate will be autosized.
+(capacity, COP). The default value is autosize, which means the water flow rate
+will be autosized. The autosized value is calculated based on the design volume
+flow rate for the plant loop. It could be either user-specified or autosized based 
+on peak load and design temperature difference.
 \paragraph{Field: Minimum Outdoor Air Temperature in Cooling Mode} This field is
 the minimum outdoor temperature allowed for cooling operation. Default value is
 -100$^\circ$C. Cooling is disabled below this temperature.

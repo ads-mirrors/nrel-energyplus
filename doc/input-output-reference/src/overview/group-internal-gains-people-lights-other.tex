@@ -283,8 +283,6 @@ The final one to five fields are optional and are intended to trigger various th
 
 This field is the name of the schedule that approximates the amount of air movement at the occupants' ankle level (0.1 m above floor level) as a function of time throughout the simulation period. The user has control over this parameter through the schedule that requires the individual numbers in the schedule to be positive real numbers having units of meters per second. This field is required to run the AnkleDraftASH55 thermal comfort model. If a schedule is listed here but no thermal comfort model is selected, then a warning message will be produced and this schedule will be listed as unused in the error file.
 
-The following IDF example allows for a maximum of 31 people with scheduled occupancy of ``Office Occupancy'', 60\% radiant using an Activity Schedule of ``Activity Sch''. The example allows for thermal comfort reporting.
-
 \paragraph{Field: Cold Stress Temperature Threshold}\label{cold-stress-temperature-threshold}
 
 This field is used in the calculation of hours of safety for cold events, which
@@ -300,6 +298,8 @@ is defined as the longest duration (number of hours), starting from the
 beginning time of the risk period (e.g., the start time of a power outage) to
 not above a certain temperature threshold (specified in this field). If not
 specified, 86$^\circ$F (or 30$^\circ$C) will be used as the default temperature threshold.
+
+The following IDF example allows for a maximum of 31 people with scheduled occupancy of ``Office Occupancy'', 60\% radiant using an Activity Schedule of ``Activity Sch''. The example allows for thermal comfort reporting.
 
 \begin{lstlisting}
 

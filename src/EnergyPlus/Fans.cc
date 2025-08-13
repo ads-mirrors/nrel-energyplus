@@ -1350,7 +1350,9 @@ void FanComponent::set_size(EnergyPlusData &state)
     state.dataSize->DataAutosizable = maxAirFlowRateIsAutosized;
     state.dataSize->DataEMSOverrideON = EMSMaxAirFlowRateOverrideOn;
     state.dataSize->DataEMSOverride = EMSMaxAirFlowRateValue;
-    airLoopNum = state.dataSize->CurSysNum;
+    if (state.dataSize->CurSysNum > 0) {
+        airLoopNum = state.dataSize->CurSysNum;
+    }
 
     bool errorsFound = false;
     SystemAirFlowSizer sizerSystemAirFlow;
@@ -2600,7 +2602,9 @@ void FanSystem::set_size(EnergyPlusData &state)
     state.dataSize->DataAutosizable = true;
     state.dataSize->DataEMSOverrideON = EMSMaxAirFlowRateOverrideOn;
     state.dataSize->DataEMSOverride = EMSMaxAirFlowRateValue;
-    airLoopNum = state.dataSize->CurSysNum;
+    if (state.dataSize->CurSysNum > 0) {
+        airLoopNum = state.dataSize->CurSysNum;
+    }
 
     bool ErrorsFound = false;
     SystemAirFlowSizer sizerSystemAirFlow;

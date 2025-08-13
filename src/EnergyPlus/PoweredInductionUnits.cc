@@ -775,6 +775,8 @@ void InitPIU(EnergyPlusData &state,
             if (thisPIU.CtrlZoneNum > 0 && thisPIU.ctrlZoneInNodeIndex > 0) {
                 thisPIU.AirLoopNum = state.dataZoneEquip->ZoneEquipConfig(thisPIU.CtrlZoneNum).InletNodeAirLoopNum(thisPIU.ctrlZoneInNodeIndex);
                 state.dataDefineEquipment->AirDistUnit(thisPIU.ADUNum).AirLoopNum = thisPIU.AirLoopNum;
+                // Set the airloopnum for the PIU fan
+                state.dataFans->fans(thisPIU.Fan_Index)->airLoopNum = thisPIU.AirLoopNum;
             }
         }
 
@@ -2579,6 +2581,8 @@ void PowIndUnitData::reportTerminalUnit(EnergyPlusData &state)
     if (this->fanControlType == FanCntrlType::VariableSpeedFan) {
         OutputReportPredefined::PreDefTableEntry(
             state, orp->pdchAirTermPIUHeatCtrlType, adu.Name, heatCntrlTypeNames[static_cast<int>(this->heatingControlType)]);
+    } else {
+        OutputReportPredefined::PreDefTableEntry(state, orp->pdchAirTermPIUHeatCtrlType, adu.Name, "n/a");
     }
 }
 

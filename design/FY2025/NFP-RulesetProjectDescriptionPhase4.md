@@ -557,7 +557,7 @@ The current columns are:
 - Outdoor Air Enthalpy Limit [C]
 
 The new columns would be:
-- AirLoop Name^
+- AirLoop Name^ (not done because connection alreaady appears in HVAC Topology)
 - AirLoopHVAC:OutdoorAirSystem Name^ 
 
 This suppports (indirectly):
@@ -565,13 +565,13 @@ This suppports (indirectly):
 - AirEconomizer.type
 - AirEconomizer.high_limit_shutoff_temperature
 
-#### Controls Summary - PlantEquipment:HeatingLoad ####
+#### Controls Summary - PlantEquipmentOperation:HeatingLoad ####
 
 New table
 
 The new columns would be:
 - Name% (of PlantEquipmentOperation:HeatingLoad)
-- PlantLoop Name^
+- PlantLoop Name%
 - Load Range Index%
 - Lower Limit%
 - Upper Limit%
@@ -581,29 +581,35 @@ This suppports:
 - Boiler.operation_lower_limit
 - Boiler.operation_upper_limit
 
+(these inputs can be pulled from epJSON file including the name of PlantLoop since it also includes
+the name of the operation schema from PlantLoop)
 
-#### Controls Summary - SetpointManager:SystemNodeReset:Temperature ####
+
+#### Controls Summary - SetpointManager:OutdoorAirReset ####
 
 New Table
 
 The new columns would be:
 - Name%
 - Control Variable%
-- Setpoint at Low Reference Temperature% {C}
-- Setpoint at High Reference Temperature% {C}
-- Low Reference Temperature% {C}
-- High Reference Temperature% {C}
-- Reference Node Name%
-- Is Reference Node Outdoors%
+- Setpoint at Outdoor Low Temperature% {C}
+- Setpoint at Outdoor High Temperature% {C}
+- Outdoor Low Temperature% {C}
+- Outdoor High Temperature% {C}
 - Setpoint Node or NodeList Name%
 - Setpoint Node Loop Name^
+- Schedule Name%
+- Setpoint at Outdoor Low Temperature 2% {C}
+- Setpoint at Outdoor High Temperature 2% {C}
+- Outdoor Low Temperature 2% {C}
+- Outdoor High Temperature 2% {C}
 
 This suppports:
 - FluidLoopDesignAndControl.outdoor_high_for_loop_supply_reset_temperature
 - FluidLoopDesignAndControl.outdoor_low_for_loop_supply_reset_temperature
 - FluidLoopDesignAndControl.loop_supply_temperature_at_outdoor_high
 - FluidLoopDesignAndControl.loop_supply_temperature_at_outdoor_low
-- FluidLoopDesignAndControl.temperature_reset_type
+- FluidLoopDesignAndControl.temperature_reset_type (OUTSIDE_AIR_RESET) 
 
 #### Controls Summary - SetpointManager:ReturnTemperature ####
 
@@ -620,6 +626,7 @@ The new columns would be:
 
 This suppports:
 - FluidLoopDesignAndControl.loop_supply_temperature_at_low_load
+- FluidLoopDesignAndControl.temperature_reset_type (LOAD_RESET) 
 
 
 #### System Summary - Demand Controlled Ventilation using Controller:MechanicalVentilation ####

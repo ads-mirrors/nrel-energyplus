@@ -3202,7 +3202,7 @@ void SizePlantLoop(EnergyPlusData &state,
 
         // sum coil water flow rate time series
         state.dataSize->PlantSizData(PlantSizNum).plantDesWaterFlowRate.resize(24 * state.dataGlobal->TimeStepsInHour);
-        for (int ts = 0; ts < 24 * state.dataGlobal->TimeStepsInHour; ++ts) {
+        for (size_t ts = 0; ts < size_t(24 * state.dataGlobal->TimeStepsInHour); ++ts) {
             state.dataSize->PlantSizData(PlantSizNum).plantDesWaterFlowRate[ts] = 0.0;
             for (auto &thisCoil : state.dataSize->PlantSizData(PlantSizNum).coilDesWaterFlowRate) {
                 state.dataSize->PlantSizData(PlantSizNum).plantDesWaterFlowRate[ts] += thisCoil.tsDesWaterFlowRate[ts];
@@ -3225,7 +3225,7 @@ void SizePlantLoop(EnergyPlusData &state,
                     !Util::SameString(state.dataPlnt->PlantLoop(LoopNum).Name, state.dataSize->PlantSizData(I).PlantLoopName)) {
                     continue;
                 }
-                for (int J = 0; J < state.dataSize->PlantSizData(I).plantCoilObjectNames.size(); ++J) {
+                for (size_t J = 0; J < state.dataSize->PlantSizData(I).plantCoilObjectNames.size(); ++J) {
                     constexpr const char *PSizeFmt12("{}{}{}{:2}{}{}{}");
                     print(state.files.psz,
                           PSizeFmt12,
@@ -3242,7 +3242,7 @@ void SizePlantLoop(EnergyPlusData &state,
             //      HourFrac = 0.0
             int HourPrint;
             int Minutes = 0;
-            int TimeStepIndex = 0;
+            size_t TimeStepIndex = 0;
             for (int HourCounter = 1; HourCounter <= 24; ++HourCounter) {
                 for (int TimeStepCounter = 1; TimeStepCounter <= state.dataGlobal->TimeStepsInHour; ++TimeStepCounter) {
                     ++TimeStepIndex;
@@ -3262,7 +3262,7 @@ void SizePlantLoop(EnergyPlusData &state,
                         }
                         constexpr const char *PSizeFmt22("{}{:12.6E}");
 
-                        for (int J = 0; J < state.dataSize->PlantSizData(I).plantCoilObjectNames.size(); ++J) {
+                        for (size_t J = 0; J < state.dataSize->PlantSizData(I).plantCoilObjectNames.size(); ++J) {
                             print(state.files.psz,
                                   PSizeFmt22,
                                   state.dataSize->SizingFileColSep,

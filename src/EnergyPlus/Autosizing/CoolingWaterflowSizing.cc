@@ -177,15 +177,22 @@ Real64 CoolingWaterflowSizer::size(EnergyPlusData &state, Real64 _originalValue,
                         peakAirFlow = coolFlowSeq;
                     }
                 }
-                for (int ts = 1; ts <= this->finalZoneSizing(this->curZoneEqNum).CoolFlowSeq.size(); ++ts) {
+                for (size_t ts = 1; ts <= this->finalZoneSizing(this->curZoneEqNum).CoolFlowSeq.size(); ++ts) {
                     // water flow rate will be proportional to autosized water flow rate * (design air flow rate / peak air flow rate)
                     plntSizData.tsDesWaterFlowRate[ts - 1] =
                         this->autoSizedValue * (this->finalZoneSizing(this->curZoneEqNum).CoolFlowSeq(ts) / peakAirFlow);
                 }
-            } else if (this->curOASysNum > 0) {
-                for (int ts = 0; ts < this->finalSysSizing(this->curSysNum).CoolFlowSeq.size(); ++ts) {
+            } else if (this->curSysNum > state.dataHVACGlobal->NumPrimaryAirSys && this->curOASysNum > 0) {
+                int DOASSysNum = state.dataAirLoop->OutsideAirSys(this->curOASysNum).AirLoopDOASNum;
+                Real64 peakAirFlow = state.dataAirLoopHVACDOAS->airloopDOAS[DOASSysNum].SizingMassFlow;
+                for (size_t ts = 1; ts <= 24 * state.dataGlobal->TimeStepsInHour; ++ts) {
                     // water flow rate will be proportional to autosized water flow rate * (design air flow rate / peak air flow rate)
-                    plntSizData.tsDesWaterFlowRate[ts] = this->autoSizedValue;
+                    plntSizData.tsDesWaterFlowRate[ts - 1] = peakAirFlow; // how to scale DOAS loads?
+                }
+            } else if (this->curOASysNum > 0) {
+                for (size_t ts = 0; ts < this->finalSysSizing(this->curSysNum).CoolFlowSeq.size(); ++ts) {
+                    // water flow rate will be proportional to autosized water flow rate * (design air flow rate / peak air flow rate)
+                    plntSizData.tsDesWaterFlowRate[ts] = this->autoSizedValue; // how to scale OA loads?
                 }
             } else if (this->curSysNum > 0) {
                 Real64 peakAirFlow = 0.0;
@@ -194,7 +201,7 @@ Real64 CoolingWaterflowSizer::size(EnergyPlusData &state, Real64 _originalValue,
                         peakAirFlow = coolFlowSeq;
                     }
                 }
-                for (int ts = 1; ts <= this->finalSysSizing(this->curSysNum).CoolFlowSeq.size(); ++ts) {
+                for (size_t ts = 1; ts <= this->finalSysSizing(this->curSysNum).CoolFlowSeq.size(); ++ts) {
                     // water flow rate will be proportional to autosized water flow rate * (design air flow rate / peak air flow rate)
                     plntSizData.tsDesWaterFlowRate[ts - 1] =
                         this->autoSizedValue * (this->finalSysSizing(this->curSysNum).CoolFlowSeq(ts) / peakAirFlow);

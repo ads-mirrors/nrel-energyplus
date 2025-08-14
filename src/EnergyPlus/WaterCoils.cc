@@ -284,8 +284,8 @@ void GetWaterCoilInput(EnergyPlusData &state)
     for (auto &plntSizData : state.dataSize->PlantSizData) {
         plntSizData.coilDesWaterFlowRate.resize(state.dataWaterCoils->NumWaterCoils);
         plntSizData.plantCoilObjectNames.resize(state.dataWaterCoils->NumWaterCoils);
-        for (int coil = 0; coil < state.dataWaterCoils->NumWaterCoils; ++coil) {
-            plntSizData.coilDesWaterFlowRate[coil].tsDesWaterFlowRate.resize(24 * state.dataGlobal->TimeStepsInHour);
+        for (size_t coil = 0; coil < state.dataWaterCoils->NumWaterCoils; ++coil) {
+            plntSizData.coilDesWaterFlowRate[coil].tsDesWaterFlowRate.resize(size_t(24 * state.dataGlobal->TimeStepsInHour));
         }
     }
 

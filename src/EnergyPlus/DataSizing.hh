@@ -1051,7 +1051,7 @@ namespace DataSizing {
         Real64 PlantSizFac = 0.0;    // hold the loop and pump sizing factor
         Real64 DesCapacity = 0.0;    // final capacity in W
         std::vector<Real64> plantDesWaterFlowRate;
-        std::vector<std::string> plantCoilObjectNames;
+        std::vector<std::string_view> plantCoilObjectNames;
         std::vector<PlantCoilData> coilDesWaterFlowRate;
     };
 

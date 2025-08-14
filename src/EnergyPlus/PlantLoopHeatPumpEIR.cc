@@ -2667,7 +2667,7 @@ void HeatPumpAirToWater::oneTimeInit(EnergyPlusData &state)
         this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterCooling) {
         SetupOutputVariable(state,
                             format("Heat Pump Total {} Rate", mode_keyword),
-                            Constant::Units::None,
+                            Constant::Units::W,
                             this->loadSideHeatTransfer,
                             OutputProcessor::TimeStepType::System,
                             OutputProcessor::StoreType::Average,
@@ -2679,24 +2679,10 @@ void HeatPumpAirToWater::oneTimeInit(EnergyPlusData &state)
                             OutputProcessor::TimeStepType::System,
                             OutputProcessor::StoreType::Average,
                             this->name);
-        SetupOutputVariable(state,
-                            format("Heat Pump Entering Water Temperature in {} Mode", mode_keyword),
-                            Constant::Units::C,
-                            this->loadSideInletTemp,
-                            OutputProcessor::TimeStepType::System,
-                            OutputProcessor::StoreType::Average,
-                            this->name);
-        SetupOutputVariable(state,
-                            format("Heat Pump Leaving Water Temperature in {} Mode", mode_keyword),
-                            Constant::Units::C,
-                            this->loadSideOutletTemp,
-                            OutputProcessor::TimeStepType::System,
-                            OutputProcessor::StoreType::Average,
-                            this->name);
         // note this is 0-indexed
         SetupOutputVariable(state,
                             format("Heat Pump Speed Level in {} Mode", mode_keyword),
-                            Constant::Units::C,
+                            Constant::Units::None,
                             this->speedLevel,
                             OutputProcessor::TimeStepType::System,
                             OutputProcessor::StoreType::Average,
@@ -2713,7 +2699,7 @@ void HeatPumpAirToWater::oneTimeInit(EnergyPlusData &state)
                             this->name);
         SetupOutputVariable(state,
                             "Heat Pump Crankcase Heater Electricity Energy",
-                            Constant::Units::W,
+                            Constant::Units::J,
                             this->CrankcaseHeaterPower,
                             OutputProcessor::TimeStepType::System,
                             OutputProcessor::StoreType::Sum,

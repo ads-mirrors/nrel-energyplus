@@ -784,7 +784,9 @@ void GatherForPredefinedReport(EnergyPlusData &state)
 
     // set up for EIO <FenestrationShadedState> output
     bool fenestrationShadedStateHeaderShown(false);
+    bool fenestrationShadedStateHeaderShownNoFrameDivider(false);
     static constexpr std::string_view FenestrationShadedStateFormat("FenestrationShadedState,{},{:.3R},{:.3R},{:.3R},{},{},{:.3R},{:.3R},{:.3R}\n");
+    static constexpr std::string_view FenestrationShadedStateFormatNoFrameDivider("FenestrationShadedState,{},{:.3R},{:.3R},{:.3R}\n");
     std::vector<std::pair<int, int>> uniqShdConsFrame;
     std::pair<int, int> shdConsAndFrame;
 
@@ -1030,6 +1032,21 @@ void GatherForPredefinedReport(EnergyPlusData &state)
                                                                  constructionName,
                                                                  state.dataConstruction->Construct(stateConstrNum).VisTransNorm,
                                                                  3);
+                        if (state.dataGeneral->Constructions) {
+                            if (!fenestrationShadedStateHeaderShownNoFrameDivider) {
+                                print(state.files.eio,
+                                      "{}\n",
+                                      "! <FenestrationShadedState>,Construction Name,Glass U-Factor {W/m2-K},"
+                                      "Glass SHGC, Glass Visible Transmittance");
+                                fenestrationShadedStateHeaderShownNoFrameDivider = true;
+                            }
+                            print(state.files.eio,
+                                  FenestrationShadedStateFormatNoFrameDivider,
+                                  constructionName,
+                                  stateUValue,
+                                  stateSHGC,
+                                  state.dataConstruction->Construct(stateConstrNum).VisTransNorm);
+                        }
                     }
                 }
 

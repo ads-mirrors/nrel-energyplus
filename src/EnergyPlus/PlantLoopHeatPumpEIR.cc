@@ -655,22 +655,25 @@ void HeatPumpAirToWater::calcPowerUsage(EnergyPlusData &state, Real64 availableC
     Real64 capacityLow = 0.0;
     Real64 capacityHigh = 0.0;
     Real64 loadSideOutletSetpointTemp = this->getLoadSideOutletSetPointTemp(state);
+    Real64 capacityModifierFuncTempLow = 1.0;
+    Real64 capacityModifierFuncTempHigh = 1.0;
     // get speed level of the nth active heat pump
     int speedLevel = 0;
     for (int i = 0; i < this->numSpeeds; i++) {
-        auto capacityModifierFuncTemp =
+        capacityModifierFuncTempHigh =
             Curve::CurveValue(state, this->capFuncTempCurveIndex[i], loadSideOutletSetpointTemp, this->sourceSideInletTemp);
-        capacityHigh = this->ratedCapacity[i] * capacityModifierFuncTemp;
+        capacityHigh = this->ratedCapacity[i] * capacityModifierFuncTempHigh;
         speedLevel = i;
         if (std::fabs(currentLoadNthUnit) <= capacityHigh) {
             break;
         } else {
             capacityLow = capacityHigh;
+            capacityModifierFuncTempLow = capacityModifierFuncTempHigh;
         }
     }
     // calculate power usage from EIR curves
-    Real64 eirModifierFuncTempLow = 0.0;
-    Real64 eirModifierFuncPLRLow = 0.0;
+    Real64 eirModifierFuncTempLow = 1.0;
+    Real64 eirModifierFuncPLRLow = 1.0;
     if (speedLevel > 0) {
         eirModifierFuncTempLow =
             Curve::CurveValue(state, this->powerRatioFuncTempCurveIndex[speedLevel - 1], this->loadSideOutletTemp, this->sourceSideInletTemp);
@@ -706,8 +709,14 @@ void HeatPumpAirToWater::calcPowerUsage(EnergyPlusData &state, Real64 availableC
     } else {
         if (this->controlType == CompressorControlType::FixedSpeed) {
             this->speedLevel = speedLevel;
+            this->capFuncTempCurveValue = capacityModifierFuncTempHigh;
+            this->eirFuncTempCurveValue = eirModifierFuncTempHigh;
+            this->eirFuncPLRModifierValue = eirModifierFuncPLRHigh;
         } else {
             this->speedLevel = (1 - interpRatio) * (speedLevel - 1) + interpRatio * speedLevel;
+            this->capFuncTempCurveValue = (1 - interpRatio) * capacityModifierFuncTempLow + interpRatio * capacityModifierFuncTempHigh;
+            this->eirFuncTempCurveValue = (1 - interpRatio) * eirModifierFuncTempLow + interpRatio * eirModifierFuncTempHigh;
+            this->eirFuncPLRModifierValue = (1 - interpRatio) * eirModifierFuncPLRLow + interpRatio * eirModifierFuncPLRHigh;
         }
     }
 }
@@ -2684,6 +2693,50 @@ void HeatPumpAirToWater::oneTimeInit(EnergyPlusData &state)
                             format("Heat Pump Speed Level in {} Mode", mode_keyword),
                             Constant::Units::None,
                             this->speedLevel,
+                            OutputProcessor::TimeStepType::System,
+                            OutputProcessor::StoreType::Average,
+                            this->name);
+        SetupOutputVariable(state,
+                            format("Heat Pump Air Flow Rate in {} Mode", mode_keyword),
+                            Constant::Units::m3_s,
+                            this->sourceSideMassFlowRate,
+                            OutputProcessor::TimeStepType::System,
+                            OutputProcessor::StoreType::Average,
+                            this->name);
+        SetupOutputVariable(state,
+                            format("Heat Pump Inlet Air Temperature in {} Mode", mode_keyword),
+                            Constant::Units::C,
+                            this->sourceSideInletTemp,
+                            OutputProcessor::TimeStepType::System,
+                            OutputProcessor::StoreType::Average,
+                            this->name);
+        SetupOutputVariable(state,
+                            format("Heat Pump Outlet Air Temperature in {} Mode", mode_keyword),
+                            Constant::Units::C,
+                            this->sourceSideOutletTemp,
+                            OutputProcessor::TimeStepType::System,
+                            OutputProcessor::StoreType::Average,
+                            this->name);
+        // fixme add these variables and compute their values
+        SetupOutputVariable(state,
+                            format("Heat Pump Capacity Temperature Modifier in {} Mode", mode_keyword),
+                            Constant::Units::None,
+                            this->capFuncTempCurveValue,
+                            OutputProcessor::TimeStepType::System,
+                            OutputProcessor::StoreType::Average,
+                            this->name);
+        // fixme add these variables and compute their values
+        SetupOutputVariable(state,
+                            format("Heat Pump EIR Temperature Modifier in {} Mode", mode_keyword),
+                            Constant::Units::None,
+                            this->eirFuncTempCurveValue,
+                            OutputProcessor::TimeStepType::System,
+                            OutputProcessor::StoreType::Average,
+                            this->name);
+        SetupOutputVariable(state,
+                            format("Heat Pump EIR PLR Modifier in {} Mode", mode_keyword),
+                            Constant::Units::None,
+                            this->eirFuncPLRModifierValue,
                             OutputProcessor::TimeStepType::System,
                             OutputProcessor::StoreType::Average,
                             this->name);

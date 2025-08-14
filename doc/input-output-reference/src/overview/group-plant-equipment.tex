@@ -6628,6 +6628,12 @@ Mode} This field is the cooling energy input ratio function of part load ratio
 \item Heat Pump Total Heating Rate {[}W{]}
 \item Heat Pump Number Of Heating Unit On {[}{]}
 \item Heat Pump Speed Level in Heating Mode {[}C{]}
+\item Heat Pump Air Flow Rate in Heating Mode {[}m3/s{]}
+\item Heat Pump Inlet Air Temperature in Heating Mode {[}C{]}
+\item Heat Pump Outlet Air Temperature in Heating Mode {[}C{]}
+\item Heat Pump Capacity Temperature Modifier in Heating Mode {[}{]}
+\item Heat Pump EIR Temperature Modifier in Heating Mode {[}{]}
+\item Heat Pump EIR PLR Modifier in Heating Mode {[}{]}
 \item Heat Pump Crankcase Heater Electricity Rate {[}W{]}
 \item Heat Pump Crankcase Heater Electricity Energy {[}J{]}
 \item Heat Pump Heating COP {[}{]}
@@ -6648,6 +6654,12 @@ Mode} This field is the cooling energy input ratio function of part load ratio
 \item Heat Pump Total Cooling Rate {[}W{]}
 \item Heat Pump Number Of Cooling Unit On {[}{]}
 \item Heat Pump Speed Level in Cooling Mode {[}C{]}
+\item Heat Pump Air Flow Rate in Cooling Mode {[}m3/s{]}
+\item Heat Pump Inlet Air Temperature in Cooling Mode {[}C{]}
+\item Heat Pump Outlet Air Temperature in Cooling Mode {[}C{]}
+\item Heat Pump Capacity Temperature Modifier in Cooling Mode {[}{]}
+\item Heat Pump EIR Temperature Modifier in Cooling Mode {[}{]}
+\item Heat Pump EIR PLR Modifier in Cooling Mode {[}{]}
 \item Heat Pump Cooling COP {[}{]}
 \end{itemize}
 \paragraph{Heat Pump Part Load Ratio in Heating Mode {[}{]}} The part load ratio
@@ -6714,6 +6726,30 @@ this value will be either 0 (off) or 1 (on).
 heat pump in heating mode. It is the current speed level of the compressor. For
 fixed-speed heat pumps, this value is integers. For variable-speed heat pumps,
 this value is a continuous non-negative value.
+\paragraph{Heat Pump Air Flow Rate in Heating Mode {[}m3/s{]}}
+The air flow rate of the heat pump in heating mode in m3/s.
+\paragraph{Heat Pump Inlet Air Temperature in Heating Mode {[}C{]}}
+The inlet air dry-bulb temperature of the heat pump in heating mode.
+\paragraph{Heat Pump Outlet Air Temperature in Heating Mode {[}C{]}}
+The outlet air dry-bulb temperature of the heat pump in heating mode.
+\paragraph{Heat Pump Capacity Temperature Modifier in Heating Mode {[}{]}}
+The capacity temperature modifier function value of the heat pump in heating
+mode. When the load is between the capacity of two speed levels, if the heat
+pump is fixed-speed, this value is the capacity temperature modifier curve value
+at the higher speed level; if the heat pump is variable-speed, this value is the
+interpolated capacity temperature modifier between those two speed levels.
+\paragraph{Heat Pump EIR Temperature Modifier in Heating Mode {[}{]}}
+The EIR temperature modifier function value of the heat pump in heating
+mode. When the load is between the capacity of two speed levels, if the heat
+pump is fixed-speed, this value is the EIR temperature modifier curve value
+at the higher speed level; if the heat pump is variable-speed, this value is the
+interpolated EIR temperature modifier between those two speed levels.
+\paragraph{Heat Pump EIR PLR Modifier in Heating Mode {[}{]}}
+The EIR part load ratio (PLR) modifier function value of the heat pump in heating
+mode. When the load is between the capacity of two speed levels, if the heat
+pump is fixed-speed, this value is the EIR PLR modifier curve value
+at the higher speed level; if the heat pump is variable-speed, this value is the
+interpolated EIR PLR modifier between those two speed levels.
 \paragraph{Heat Pump Crankcase Heater Electricity Rate {[}W{]}} The electricity
 rate of the heat pump crankcase heater in heating mode.
 \paragraph{Heat Pump Crankcase Heater Electricity Energy {[}W{]}} The
@@ -6761,6 +6797,30 @@ this value will be either 0 (off) or 1 (on).
 heat pump in cooling mode. It is the current speed level of the compressor. For
 fixed-speed heat pumps, this value is integers. For variable-speed heat pumps,
 this value is a continuous non-negative value.
+\paragraph{Heat Pump Air Flow Rate in Cooling Mode {[}m3/s{]}}
+The air flow rate of the heat pump in heating mode in m3/s.
+\paragraph{Heat Pump Inlet Air Temperature in Cooling Mode {[}C{]}}
+The inlet air dry-bulb temperature of the heat pump in heating mode.
+\paragraph{Heat Pump Outlet Air Temperature in Cooling Mode {[}C{]}}
+The outlet air dry-bulb temperature of the heat pump in heating mode.
+\paragraph{Heat Pump Capacity Temperature Modifier in Cooling Mode {[}{]}}
+The capacity temperature modifier function value of the heat pump in heating
+mode. When the load is between the capacity of two speed levels, if the heat
+pump is fixed-speed, this value is the capacity temperature modifier curve value
+at the higher speed level; if the heat pump is variable-speed, this value is the
+interpolated capacity temperature modifier between those two speed levels.
+\paragraph{Heat Pump EIR Temperature Modifier in Cooling Mode {[}{]}}
+The EIR temperature modifier function value of the heat pump in heating
+mode. When the load is between the capacity of two speed levels, if the heat
+pump is fixed-speed, this value is the EIR temperature modifier curve value
+at the higher speed level; if the heat pump is variable-speed, this value is the
+interpolated EIR temperature modifier between those two speed levels.
+\paragraph{Heat Pump EIR PLR Modifier in Cooling Mode {[}{]}}
+The EIR part load ratio (PLR) modifier function value of the heat pump in cooling
+mode. When the load is between the capacity of two speed levels, if the heat
+pump is fixed-speed, this value is the EIR PLR modifier curve value
+at the higher speed level; if the heat pump is variable-speed, this value is the
+interpolated EIR PLR modifier between those two speed levels.
 \paragraph{Heat Pump Cooling COP {[}{]}} The coefficient of performance (COP) of
 the heat pump in cooling mode.
 

@@ -4585,7 +4585,7 @@ void HeatPumpAirToWater::calcOpMode(EnergyPlus::EnergyPlusData &state, Real64 cu
                 this->operatingMode = min(this->compressorMultiplier, this->OperationModeEMSOverrideValue);
                 this->companionHeatPumpCoil->operatingMode = 0;
             }
-        } else if (this->operatingModeControlMethod == OperatingModeControlMethod::ScheduledModes){
+        } else if (this->operatingModeControlMethod == OperatingModeControlMethod::ScheduledModes) {
             auto numUnitsOn = static_cast<int>(this->operationModeControlSche->getCurrentVal());
             if (numUnitsOn > 0) {
                 this->operatingMode = min(this->compressorMultiplier, numUnitsOn);

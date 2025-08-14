@@ -917,6 +917,7 @@ struct OutputReportPredefinedData : BaseGlobalStruct
     int pdchEcoRetEnth = 0;
     int pdchEcoOATempLim = 0;
     int pdchEcoOAEnthLim = 0;
+    int pdchEcoOAsysNm = 0;
     int pdstDemCntlVent = 0;
     int pdchDCVventMechName = 0;
     int pdchDCVperPerson = 0;

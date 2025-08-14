@@ -136,3 +136,10 @@ Several new columns were added to the Service Water Heating table:
 - Use Flow Rate Fraction Schedule Name
 - Ambient Temperature Zone Name
 
+#### SystemSummary Economizer - Additional Column
+
+A new column was added to the System Summary Economizer table:
+
+- AirLoopHVAC:OutdoorAirSystem Name
+
+

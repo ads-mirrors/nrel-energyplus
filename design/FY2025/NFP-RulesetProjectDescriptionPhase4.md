@@ -650,7 +650,7 @@ New Table
 
 The new columns would be:
 - Name%
-- AirLoop Name%
+- AirLoop Name^
 - Schedule Name%
 - Hours Supply Fan Operating Mode Cycling^
 

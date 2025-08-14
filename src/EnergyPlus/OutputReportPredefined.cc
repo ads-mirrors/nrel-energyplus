@@ -953,6 +953,7 @@ namespace OutputReportPredefined {
         s->pdchEcoRetEnth = newPreDefColumn(state, s->pdstEconomizer, "Return Air Enthalpy Limit");
         s->pdchEcoOATempLim = newPreDefColumn(state, s->pdstEconomizer, "Outdoor Air Temperature Limit [C]");
         s->pdchEcoOAEnthLim = newPreDefColumn(state, s->pdstEconomizer, "Outdoor Air Enthalpy Limit [C]");
+        s->pdchEcoOAsysNm = newPreDefColumn(state, s->pdstEconomizer, "AirLoopHVAC:OutdoorAirSystem Name");
 
         s->pdstDemCntlVent = newPreDefSubTable(state, s->pdrSystem, "Demand Controlled Ventilation using Controller:MechanicalVentilation");
         s->pdchDCVventMechName = newPreDefColumn(state, s->pdstDemCntlVent, "Controller:MechanicalVentilation Name");

@@ -1488,7 +1488,7 @@ namespace IceThermalStorage {
         // now apply the heat of fusion J/Kg and size tank
         Real64 tankCapacityKg = onPeakEnergy * sizingFactor / tankHeatOfFusion;    // kg
         Real64 tankCapacityM3 = tankCapacityKg / rho;                              // m3
-        Real64 tankCapacity = onPeakEnergy * sizingFactor / Constant::rSecsInHour; // kWh
+        Real64 tankCapacity = onPeakEnergy * sizingFactor / Constant::rSecsInHour; // kWh for detailed model
 
         if (this->NomCapacityWasAutoSized) {
             this->NomCapacity = tankCapacity;
@@ -1542,7 +1542,7 @@ namespace IceThermalStorage {
         // now apply the heat of fusion J/Kg and size tank
         Real64 tankCapacityKg = onPeakEnergy * sizingFactor / tankHeatOfFusion; // kg
         Real64 tankCapacityM3 = tankCapacityKg / rho;                           // m3
-        Real64 tankCapacity = onPeakEnergy * sizingFactor;                      // J
+        Real64 tankCapacity = onPeakEnergy * sizingFactor;                      // J for simple model
 
         if (this->NomCapacityWasAutoSized) {
             this->ITSNomCap = tankCapacity;

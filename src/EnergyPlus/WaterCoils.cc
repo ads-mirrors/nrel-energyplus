@@ -281,13 +281,6 @@ void GetWaterCoilInput(EnergyPlusData &state)
     NumFlatFin = state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, "Coil:Cooling:Water:DetailedGeometry");
     NumCooling = state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, "Coil:Cooling:Water");
     state.dataWaterCoils->NumWaterCoils = NumSimpHeat + NumFlatFin + NumCooling;
-    for (auto &plntSizData : state.dataSize->PlantSizData) {
-        plntSizData.coilDesWaterFlowRate.resize(state.dataWaterCoils->NumWaterCoils);
-        plntSizData.plantCoilObjectNames.resize(state.dataWaterCoils->NumWaterCoils);
-        for (size_t coil = 0; coil < state.dataWaterCoils->NumWaterCoils; ++coil) {
-            plntSizData.coilDesWaterFlowRate[coil].tsDesWaterFlowRate.resize(size_t(24 * state.dataGlobal->TimeStepsInHour));
-        }
-    }
 
     if (state.dataWaterCoils->NumWaterCoils > 0) {
         state.dataWaterCoils->WaterCoil.allocate(state.dataWaterCoils->NumWaterCoils);

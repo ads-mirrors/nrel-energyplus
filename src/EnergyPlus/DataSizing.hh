@@ -1030,10 +1030,6 @@ namespace DataSizing {
         {
         }
     };
-    struct PlantCoilData
-    {
-        std::vector<Real64> tsDesWaterFlowRate;
-    };
 
     struct PlantSizingData
     {
@@ -1050,9 +1046,6 @@ namespace DataSizing {
         bool VolFlowSizingDone = 0;  // flag to indicate when this loop has finished sizing flow rate
         Real64 PlantSizFac = 0.0;    // hold the loop and pump sizing factor
         Real64 DesCapacity = 0.0;    // final capacity in W
-        std::vector<Real64> plantDesWaterFlowRate;
-        std::vector<std::string_view> plantCoilObjectNames;
-        std::vector<PlantCoilData> coilDesWaterFlowRate;
     };
 
     // based on ZoneSizingData but only have member variables that are related to the CheckSum/

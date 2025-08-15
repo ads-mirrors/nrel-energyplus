@@ -1458,8 +1458,8 @@ namespace IceThermalStorage {
         std::string_view const tankType = "ThermalStorage:Ice:Detailed";
         std::string_view const callingRoutine = "DetailedIceStorageData::size";
         Real64 constexpr tankHeatOfFusion = 334000.0; // J/Kg
-        int loopNum = this->plantLoc.loopNum;
-        int PltSizNum = state.dataPlnt->PlantLoop(loopNum).PlantSizNum;
+        auto &plntLoop = state.dataPlnt->PlantLoop(this->plantLoc.loopNum);
+        int PltSizNum = plntLoop.PlantSizNum;
         auto &plntSizData = state.dataSize->PlantSizData(PltSizNum);
 
         int startPeak = state.dataIceThermalStorage->ThermalStorageSizing(TESSizingIndex).onPeakStart * state.dataGlobal->TimeStepsInHour;
@@ -1467,23 +1467,23 @@ namespace IceThermalStorage {
         Real64 sizingFactor = state.dataIceThermalStorage->ThermalStorageSizing(TESSizingIndex).sizingFactor;
         Real64 onPeakSumWaterFlow = 0.0;
         Real64 offPeakSumWaterFlow = 0.0;
-        if (!plntSizData.plantDesWaterFlowRate.empty()) {
+        if (!plntLoop.plantDesWaterFlowRate.empty()) {
             for (int ts = 0; ts < 24 * state.dataGlobal->TimeStepsInHour; ++ts) {
                 if (ts > startPeak && ts <= endPeak) {
-                    onPeakSumWaterFlow += plntSizData.plantDesWaterFlowRate[ts] / state.dataGlobal->TimeStepsInHour;
+                    onPeakSumWaterFlow += plntLoop.plantDesWaterFlowRate[ts] / state.dataGlobal->TimeStepsInHour;
                 } else {
-                    offPeakSumWaterFlow += plntSizData.plantDesWaterFlowRate[ts] / state.dataGlobal->TimeStepsInHour;
+                    offPeakSumWaterFlow += plntLoop.plantDesWaterFlowRate[ts] / state.dataGlobal->TimeStepsInHour;
                 }
             }
         }
-        Real64 Cp = state.dataPlnt->PlantLoop(loopNum).glycol->getSpecificHeat(state, plntSizData.ExitTemp, callingRoutine);
-        Real64 rho = state.dataPlnt->PlantLoop(loopNum).glycol->getDensity(state, plntSizData.ExitTemp, callingRoutine);
+        Real64 Cp = plntLoop.glycol->getSpecificHeat(state, plntSizData.ExitTemp, callingRoutine);
+        Real64 rho = plntLoop.glycol->getDensity(state, plntSizData.ExitTemp, callingRoutine);
         Real64 onPeakEnergy =
             onPeakSumWaterFlow * rho * Cp * plntSizData.DeltaT * Constant::rSecsInHour; // need Joules here, J = m3/s * kg/m3 * J/kg-C * C * sec
         Real64 offPeakEnergy = offPeakSumWaterFlow * rho * Cp * plntSizData.DeltaT * Constant::rSecsInHour;
         Real64 aveOnPeakLoad =
             onPeakEnergy / (((endPeak - startPeak) / state.dataGlobal->TimeStepsInHour) * Constant::rSecsInHour); // need Watts here = J / s
-        Real64 aveOffPeakLoad = offPeakEnergy / ((24 - ((endPeak - startPeak) / state.dataGlobal->TimeStepsInHour)) * Constant::rSecsInHour);
+        Real64 aveOffPeakLoad = offPeakEnergy / (Real64((24 - ((endPeak - startPeak) / state.dataGlobal->TimeStepsInHour))) * Constant::rSecsInHour);
 
         // now apply the heat of fusion J/Kg and size tank
         Real64 tankCapacityKg = onPeakEnergy * sizingFactor / tankHeatOfFusion;    // kg
@@ -1491,7 +1491,7 @@ namespace IceThermalStorage {
         Real64 tankCapacity = onPeakEnergy * sizingFactor / Constant::rSecsInHour; // kWh for detailed model
 
         if (this->NomCapacityWasAutoSized) {
-            this->NomCapacity = tankCapacity;
+            this->NomCapacity = std::max(1.0, tankCapacity);
         }
         if (state.dataPlnt->PlantFirstSizesOkayToFinalize) {
             if (!this->NomCapacityWasAutoSized) {
@@ -1512,8 +1512,8 @@ namespace IceThermalStorage {
         std::string_view const tankType = "ThermalStorage:Ice:Simple";
         std::string_view const callingRoutine = "SimpleIceStorageData::size";
         Real64 constexpr tankHeatOfFusion = 334000.0; // J/Kg
-        int loopNum = this->plantLoc.loopNum;
-        int PltSizNum = state.dataPlnt->PlantLoop(loopNum).PlantSizNum;
+        auto &plntLoop = state.dataPlnt->PlantLoop(this->plantLoc.loopNum);
+        int PltSizNum = plntLoop.PlantSizNum;
         auto &plntSizData = state.dataSize->PlantSizData(PltSizNum);
 
         int startPeak = state.dataIceThermalStorage->ThermalStorageSizing(TESSizingIndex).onPeakStart * state.dataGlobal->TimeStepsInHour;
@@ -1521,23 +1521,23 @@ namespace IceThermalStorage {
         Real64 sizingFactor = state.dataIceThermalStorage->ThermalStorageSizing(TESSizingIndex).sizingFactor;
         Real64 onPeakSumWaterFlow = 0.0;
         Real64 offPeakSumWaterFlow = 0.0;
-        if (!plntSizData.plantDesWaterFlowRate.empty()) {
+        if (!plntLoop.plantDesWaterFlowRate.empty()) {
             for (int ts = 0; ts < 24 * state.dataGlobal->TimeStepsInHour; ++ts) {
                 if (ts > startPeak && ts <= endPeak) {
-                    onPeakSumWaterFlow += plntSizData.plantDesWaterFlowRate[ts] / state.dataGlobal->TimeStepsInHour;
+                    onPeakSumWaterFlow += plntLoop.plantDesWaterFlowRate[ts] / state.dataGlobal->TimeStepsInHour;
                 } else {
-                    offPeakSumWaterFlow += plntSizData.plantDesWaterFlowRate[ts] / state.dataGlobal->TimeStepsInHour;
+                    offPeakSumWaterFlow += plntLoop.plantDesWaterFlowRate[ts] / state.dataGlobal->TimeStepsInHour;
                 }
             }
         }
-        Real64 Cp = state.dataPlnt->PlantLoop(loopNum).glycol->getSpecificHeat(state, plntSizData.ExitTemp, callingRoutine);
-        Real64 rho = state.dataPlnt->PlantLoop(loopNum).glycol->getDensity(state, plntSizData.ExitTemp, callingRoutine);
+        Real64 Cp = plntLoop.glycol->getSpecificHeat(state, plntSizData.ExitTemp, callingRoutine);
+        Real64 rho = plntLoop.glycol->getDensity(state, plntSizData.ExitTemp, callingRoutine);
         Real64 onPeakEnergy =
             onPeakSumWaterFlow * rho * Cp * plntSizData.DeltaT * Constant::rSecsInHour; // need Joules here, J = m3/s * kg/m3 * J/kg-C * C * sec
         Real64 offPeakEnergy = offPeakSumWaterFlow * rho * Cp * plntSizData.DeltaT * Constant::rSecsInHour;
         Real64 aveOnPeakLoad =
             onPeakEnergy / (((endPeak - startPeak) / state.dataGlobal->TimeStepsInHour) * Constant::rSecsInHour); // need Watts here = J / s
-        Real64 aveOffPeakLoad = offPeakEnergy / ((24 - ((endPeak - startPeak) / state.dataGlobal->TimeStepsInHour)) * Constant::rSecsInHour);
+        Real64 aveOffPeakLoad = offPeakEnergy / (Real64((24 - ((endPeak - startPeak) / state.dataGlobal->TimeStepsInHour))) * Constant::rSecsInHour);
 
         // now apply the heat of fusion J/Kg and size tank
         Real64 tankCapacityKg = onPeakEnergy * sizingFactor / tankHeatOfFusion; // kg
@@ -1545,12 +1545,11 @@ namespace IceThermalStorage {
         Real64 tankCapacity = onPeakEnergy * sizingFactor;                      // J for simple model
 
         if (this->NomCapacityWasAutoSized) {
-            this->ITSNomCap = tankCapacity;
+            this->ITSNomCap = std::max(1.0, tankCapacity);
         }
         if (state.dataPlnt->PlantFirstSizesOkayToFinalize) {
             if (!this->NomCapacityWasAutoSized) {
-                BaseSizer::reportSizerOutput(
-                    state, tankType, this->Name, "User-Specified Capacity [GJ]", this->ITSNomCap / 1.0E9);
+                BaseSizer::reportSizerOutput(state, tankType, this->Name, "User-Specified Capacity [GJ]", this->ITSNomCap / 1.0E9);
             }
             BaseSizer::reportSizerOutput(state, tankType, this->Name, "Design Size Capacity [GJ]", tankCapacity / 1.0E9);
         }

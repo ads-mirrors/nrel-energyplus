@@ -101,6 +101,7 @@
 #include <EnergyPlus/ElectricPowerServiceManager.hh>
 #include <EnergyPlus/EvaporativeCoolers.hh>
 #include <EnergyPlus/EvaporativeFluidCoolers.hh>
+#include <EnergyPlus/Fans.hh>
 #include <EnergyPlus/FileSystem.hh>
 #include <EnergyPlus/FluidCoolers.hh>
 #include <EnergyPlus/General.hh>
@@ -6930,6 +6931,36 @@ void FillRemainingPredefinedEntries(EnergyPlusData &state)
     // fill the LEED setpoint table
     ZoneTempPredictorCorrector::FillPredefinedTableOnThermostatSetpoints(state);
     ZoneTempPredictorCorrector::FillPredefinedTableOnThermostatSchedules(state);
+
+    // Fan Operating Points
+    constexpr std::array<Real64, 10> flowFrac = {0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9};
+    state.dataHVACGlobal->NightVentOn = false;
+    state.dataHVACGlobal->TurnFansOn = true;
+
+    for (auto *fan : state.dataFans->fans) {
+        OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchFanPowerType, fan->Name, HVAC::fanTypeNames[(int)fan->type]);
+        // Set some node values so the fan init function works as expected
+        auto &outletNode = state.dataLoopNodes->Node(fan->outletNodeNum);
+        auto &inletNode = state.dataLoopNodes->Node(fan->inletNodeNum);
+        outletNode.MassFlowRateMax = inletNode.MassFlowRateMaxAvail = fan->maxAirMassFlowRate;
+        outletNode.MassFlowRateMin = inletNode.MassFlowRateMinAvail = 0.0;
+        inletNode.MassFlowRate = fan->maxAirMassFlowRate;
+        fan->simulate(state, false);
+        Real64 const fullLoadPower = fan->totalPower;
+        OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchFanPower10, fan->Name, 1.0);
+
+        int columnIndex = state.dataOutRptPredefined->pdchFanPower00;
+        for (Real64 frac : flowFrac) {
+            Real64 fanPowerFrac = 0.0;
+            if (fullLoadPower > 0.0) {
+                inletNode.MassFlowRate = frac * fan->maxAirMassFlowRate;
+                fan->simulate(state, false);
+                fanPowerFrac = fan->totalPower / fullLoadPower;
+            }
+            PreDefTableEntry(state, columnIndex, fan->Name, fanPowerFrac);
+            ++columnIndex;
+        }
+    }
 }
 
 void WriteMonthlyTables(EnergyPlusData &state)

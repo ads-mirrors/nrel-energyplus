@@ -250,6 +250,20 @@ struct OutputReportPredefinedData : BaseGlobalStruct
     int pdchFanMotorHeatZone = 0;       // Motor Loss Zone Name
     int pdchFanAirLoopName = 0;
 
+    int pdstFanPower = 0;
+    int pdchFanPowerType = 0;
+    int pdchFanPower00 = 0;
+    int pdchFanPower01 = 0;
+    int pdchFanPower02 = 0;
+    int pdchFanPower03 = 0;
+    int pdchFanPower04 = 0;
+    int pdchFanPower05 = 0;
+    int pdchFanPower06 = 0;
+    int pdchFanPower07 = 0;
+    int pdchFanPower08 = 0;
+    int pdchFanPower09 = 0;
+    int pdchFanPower10 = 0;
+
     // Pump subtable
     int pdstPump = 0;
     int pdchPumpType = 0;

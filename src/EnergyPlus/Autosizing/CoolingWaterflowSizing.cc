@@ -179,7 +179,7 @@ Real64 CoolingWaterflowSizer::size(EnergyPlusData &state, Real64 _originalValue,
             } else {
                 state.dataPlnt->PlantLoop(this->dataWaterLoopNum).plantCoilObjectNames.emplace_back(this->compName);
             }
-            
+
             std::vector<Real64> tmpFlowData;
             tmpFlowData.resize(size_t(24 * state.dataGlobal->TimeStepsInHour + 1));
             tmpFlowData[0] = this->dataCoilNum;
@@ -192,8 +192,7 @@ Real64 CoolingWaterflowSizer::size(EnergyPlusData &state, Real64 _originalValue,
                 }
                 for (size_t ts = 1; ts <= this->finalZoneSizing(this->curZoneEqNum).CoolFlowSeq.size(); ++ts) {
                     // water flow rate will be proportional to autosized water flow rate * (design air flow rate / peak air flow rate)
-                    tmpFlowData[ts] =
-                        this->autoSizedValue * (this->finalZoneSizing(this->curZoneEqNum).CoolFlowSeq(ts) / peakAirFlow);
+                    tmpFlowData[ts] = this->autoSizedValue * (this->finalZoneSizing(this->curZoneEqNum).CoolFlowSeq(ts) / peakAirFlow);
                 }
             } else if (this->curSysNum > state.dataHVACGlobal->NumPrimaryAirSys && this->curOASysNum > 0) {
                 int DOASSysNum = state.dataAirLoop->OutsideAirSys(this->curOASysNum).AirLoopDOASNum;
@@ -216,8 +215,7 @@ Real64 CoolingWaterflowSizer::size(EnergyPlusData &state, Real64 _originalValue,
                 }
                 for (size_t ts = 1; ts <= this->finalSysSizing(this->curSysNum).CoolFlowSeq.size(); ++ts) {
                     // water flow rate will be proportional to autosized water flow rate * (design air flow rate / peak air flow rate)
-                    tmpFlowData[ts] =
-                        this->autoSizedValue * (this->finalSysSizing(this->curSysNum).CoolFlowSeq(ts) / peakAirFlow);
+                    tmpFlowData[ts] = this->autoSizedValue * (this->finalSysSizing(this->curSysNum).CoolFlowSeq(ts) / peakAirFlow);
                 }
             }
             auto &plntCoilData = state.dataPlnt->PlantLoop(this->dataWaterLoopNum).compDesWaterFlowRate;

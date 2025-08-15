@@ -1482,7 +1482,7 @@ namespace IceThermalStorage {
             onPeakSumWaterFlow * rho * Cp * plntSizData.DeltaT * Constant::rSecsInHour; // need Joules here, J = m3/s * kg/m3 * J/kg-C * C * sec
         Real64 offPeakEnergy = offPeakSumWaterFlow * rho * Cp * plntSizData.DeltaT * Constant::rSecsInHour;
         Real64 aveOnPeakLoad =
-            onPeakEnergy / (((endPeak - startPeak) / state.dataGlobal->TimeStepsInHour) * Constant::rSecsInHour); // need Watts here = J / s
+            onPeakEnergy / (((endPeak - startPeak) / state.dataGlobal->TimeStepsInHour) * Constant::rSecsInHour); // need Watts here = avg J / s
         Real64 aveOffPeakLoad = offPeakEnergy / (Real64((24 - ((endPeak - startPeak) / state.dataGlobal->TimeStepsInHour))) * Constant::rSecsInHour);
 
         // now apply the heat of fusion J/Kg and size tank
@@ -1536,7 +1536,7 @@ namespace IceThermalStorage {
             onPeakSumWaterFlow * rho * Cp * plntSizData.DeltaT * Constant::rSecsInHour; // need Joules here, J = m3/s * kg/m3 * J/kg-C * C * sec
         Real64 offPeakEnergy = offPeakSumWaterFlow * rho * Cp * plntSizData.DeltaT * Constant::rSecsInHour;
         Real64 aveOnPeakLoad =
-            onPeakEnergy / (((endPeak - startPeak) / state.dataGlobal->TimeStepsInHour) * Constant::rSecsInHour); // need Watts here = J / s
+            onPeakEnergy / (((endPeak - startPeak) / state.dataGlobal->TimeStepsInHour) * Constant::rSecsInHour); // need Watts here = avg J / s
         Real64 aveOffPeakLoad = offPeakEnergy / (Real64((24 - ((endPeak - startPeak) / state.dataGlobal->TimeStepsInHour))) * Constant::rSecsInHour);
 
         // now apply the heat of fusion J/Kg and size tank

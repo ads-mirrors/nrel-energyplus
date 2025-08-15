@@ -106,6 +106,7 @@ namespace GroundHeatExchangers {
         bool updateCurSimTime = true; // Used to reset the CurSimTime to reset after WarmupFlag
         bool triggerDesignDayReset = false;
         bool needToSetupOutputVars = true;
+        bool runGheDesigner = true;
 
         // to enable the calculation of the sub-hourly contribution.
         // Recommended size, the product of Minimum sub-hourly history required and

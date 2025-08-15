@@ -454,7 +454,7 @@ void GLHEBase::simulate(EnergyPlusData &state,
         return;
     }
 
-    this->initGLHESimVars(state);
+    // this->initGLHESimVars(state);
     this->calcGroundHeatExchanger(state);
     this->updateGHX(state);
 }

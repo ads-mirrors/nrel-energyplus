@@ -243,6 +243,7 @@ constexpr std::array<std::string_view, (int)DataEnvironment::GroundTempType::Num
     "SITE:GROUNDTEMPERATURE:DEEP",
     "SITE:GROUNDTEMPERATURE:FCFACTORMETHOD"};
 
+constexpr std::array<std::string_view, (int)ReturnTempType::Num> returnTempTypeNames = {"Scheduled", "Constant", "RetrunTemperatureSetpoint"};
 constexpr std::array<std::string_view, (int)ReturnTempType::Num> returnTempTypeNamesUC = {"SCHEDULED", "CONSTANT", "RETURNTEMPERATURESETPOINT"};
 
 void ManageSetPoints(EnergyPlusData &state)
@@ -1457,61 +1458,21 @@ void GetSetPointManagerInputData(EnergyPlusData &state, bool &ErrorsFound)
             default:
                 break;
             } // switch (spm->type)
-
-            // populate predefined reports
-//            switch (spm->type) {
-            // SetpointManager:OutdoorAirReset
-            //case SPMType::OutsideAir: {
-            //    auto *spmOA = dynamic_cast<SPMOutsideAir *>(spm);
-            //    assert(spmOA != nullptr);
-            //    auto &orp = state.dataOutRptPredefined;
-            //    OutputReportPredefined::PreDefTableEntry(state, orp->pdchSPMOArType, spmOA->Name, ctrlVarTypeNames[(int)spm->ctrlVar]);
-            //    OutputReportPredefined::PreDefTableEntry(state, orp->pdchSPMOArStLo1, spmOA->Name, spmOA->lowSetPt1);
-            //    OutputReportPredefined::PreDefTableEntry(state, orp->pdchSPMOArStHi1, spmOA->Name, spmOA->highSetPt1);
-            //    OutputReportPredefined::PreDefTableEntry(state, orp->pdchSPMOArOutLo1, spmOA->Name, spmOA->low1);
-            //    OutputReportPredefined::PreDefTableEntry(state, orp->pdchSPMOArOutHi1, spmOA->Name, spmOA->high1);
-            //    if (spmOA->sched != nullptr) {
-            //        OutputReportPredefined::PreDefTableEntry(state, orp->pdchSPMOArSchNm, spmOA->Name, spmOA->sched->Name);
-            //        OutputReportPredefined::PreDefTableEntry(state, orp->pdchSPMOArStLo2, spmOA->Name, spmOA->lowSetPt2);
-            //        OutputReportPredefined::PreDefTableEntry(state, orp->pdchSPMOArStHi2, spmOA->Name, spmOA->highSetPt2);
-            //        OutputReportPredefined::PreDefTableEntry(state, orp->pdchSPMOArOutLo2, spmOA->Name, spmOA->low2);
-            //        OutputReportPredefined::PreDefTableEntry(state, orp->pdchSPMOArOutHi2, spmOA->Name, spmOA->high2);
-            //    }
-            //    if (spm->ctrlNodeNums.size() == 1) {
-            //        OutputReportPredefined::PreDefTableEntry(
-            //            state, orp->pdchSPMOArStPtNd, spmOA->Name, state.dataLoopNodes->NodeID(spm->ctrlNodeNums[0]));
-            //        PlantLocation plantLoc;
-            //        PlantUtilities::ScanPlantLoopsForNodeNum(state, routineName, spm->ctrlNodeNums[0], plantLoc);
-            //        if (plantLoc.loopNum > 0) {
-            //            OutputReportPredefined::PreDefTableEntry(state, orp->pdchSPMOArStPtLp, spmOA->Name, plantLoc.loop->Name);
-            //        }
-            //    } else if (spm->ctrlNodeNums.size() > 1) {
-            //        std::string nodeNames = state.dataLoopNodes->NodeID(spm->ctrlNodeNums[0]);
-            //        for (std::size_t i = 1; i < spm->ctrlNodeNums.size(); ++i) {
-            //            nodeNames += "; " + state.dataLoopNodes->NodeID(spm->ctrlNodeNums[i]);
-            //        }
-            //        OutputReportPredefined::PreDefTableEntry(state, orp->pdchSPMOArStPtNd, spmOA->Name, nodeNames);
-            //    }
-            //} break;
-            //default:
-            //    break;
-            //} // switch (spm->type)
-
-
         } // for (instance)
     } // for (iSPM)
 
 } // GetSetPointManagerInputData()
 
-void FillPredefinedTablesForSetPointManagers(EnergyPlusData &state) {
+void FillPredefinedTablesForSetPointManagers(EnergyPlusData &state)
+{
     static constexpr std::string_view routineName = "FillPredefinedTablesForSetPointManagers";
+    auto &orp = state.dataOutRptPredefined;
     for (auto *spm : state.dataSetPointManager->spms) {
         switch (spm->type) {
-        // SetpointManager:OutdoorAirReset
+            // SetpointManager:OutdoorAirReset
         case SPMType::OutsideAir: {
             auto *spmOA = dynamic_cast<SPMOutsideAir *>(spm);
             assert(spmOA != nullptr);
-            auto &orp = state.dataOutRptPredefined;
             OutputReportPredefined::PreDefTableEntry(state, orp->pdchSPMOArType, spmOA->Name, ctrlVarTypeNames[(int)spm->ctrlVar]);
             OutputReportPredefined::PreDefTableEntry(state, orp->pdchSPMOArStLo1, spmOA->Name, spmOA->lowSetPt1);
             OutputReportPredefined::PreDefTableEntry(state, orp->pdchSPMOArStHi1, spmOA->Name, spmOA->highSetPt1);
@@ -1538,15 +1499,19 @@ void FillPredefinedTablesForSetPointManagers(EnergyPlusData &state) {
                 std::string lastPlantLoopName = "";
                 PlantLocation plantLoc;
                 for (std::size_t i = 0; i < spm->ctrlNodeNums.size(); ++i) {
-                    if (!nodeNames.empty()) nodeNames += "; ";
+                    if (!nodeNames.empty()) {
+                        nodeNames += "; ";
+                    }
                     nodeNames += state.dataLoopNodes->NodeID(spm->ctrlNodeNums[i]);
                     PlantUtilities::ScanPlantLoopsForNodeNum(state, routineName, spm->ctrlNodeNums[i], plantLoc);
                     if (plantLoc.loopNum > 0) {
                         std::string curPlantLoopName = plantLoc.loop->Name;
                         if (curPlantLoopName != lastPlantLoopName) {
-                             if (!plantLoopNames.empty()) plantLoopNames += "; ";
-                             plantLoopNames += curPlantLoopName;
-                             lastPlantLoopName = curPlantLoopName;
+                            if (!plantLoopNames.empty()) {
+                                plantLoopNames += "; ";
+                            }
+                            plantLoopNames += curPlantLoopName;
+                            lastPlantLoopName = curPlantLoopName;
                         }
                     }
                 }
@@ -1554,9 +1519,35 @@ void FillPredefinedTablesForSetPointManagers(EnergyPlusData &state) {
                 OutputReportPredefined::PreDefTableEntry(state, orp->pdchSPMOArStPtLp, spmOA->Name, plantLoopNames);
             }
         } break;
+
+        // SetpointManager:ReturnTemperature:ChilledWater
+        // SetpointManager:ReturnTemperature:HotWater
+        case SPMType::ChilledWaterReturnTemp:
+        case SPMType::HotWaterReturnTemp: {
+            auto *spmRWT = dynamic_cast<SPMReturnWaterTemp *>(spm);
+            assert(spmRWT != nullptr);
+            if (spm->type == SPMType::ChilledWaterReturnTemp) {
+                OutputReportPredefined::PreDefTableEntry(state, orp->pdchSPMRetType, spmRWT->Name, "Chilled Water");
+            } else {
+                OutputReportPredefined::PreDefTableEntry(state, orp->pdchSPMRetType, spmRWT->Name, "Hot Water");
+            }
+            OutputReportPredefined::PreDefTableEntry(state, orp->pdchSPMRetMinT, spmRWT->Name, spmRWT->minSetTemp);
+            OutputReportPredefined::PreDefTableEntry(state, orp->pdchSPMRetMaxT, spmRWT->Name, spmRWT->maxSetTemp);
+            OutputReportPredefined::PreDefTableEntry(state, orp->pdchSPMRetRetT, spmRWT->Name, spmRWT->returnTempConstantTarget);
+            OutputReportPredefined::PreDefTableEntry(state, orp->pdchSPMRetRetType, spmRWT->Name, returnTempTypeNames[(int)spmRWT->returnTempType]);
+            if (spmRWT->returnTempSched != nullptr) {
+                OutputReportPredefined::PreDefTableEntry(state, orp->pdchSPMOArSchNm, spmRWT->Name, spmRWT->returnTempSched->Name);
+            }
+            OutputReportPredefined::PreDefTableEntry(state, orp->pdchSPMRetOutNd, spmRWT->Name, state.dataLoopNodes->NodeID(spmRWT->supplyNodeNum));
+            OutputReportPredefined::PreDefTableEntry(state, orp->pdchSPMRetInNd, spmRWT->Name, state.dataLoopNodes->NodeID(spmRWT->returnNodeNum));
+            if (spmRWT->plantLoopNum != 0) {
+                OutputReportPredefined::PreDefTableEntry(
+                    state, orp->pdchSPMRetPltLp, spmRWT->Name, state.dataPlnt->PlantLoop(spmRWT->plantLoopNum).Name);
+            }
+        } break;
         default:
             break;
-        } 
+        }
     }
 }
 

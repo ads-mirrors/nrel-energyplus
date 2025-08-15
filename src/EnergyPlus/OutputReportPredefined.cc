@@ -635,15 +635,26 @@ namespace OutputReportPredefined {
         s->pdchSPMOArStPtNd = newPreDefColumn(state, s->pdstStPtOAR, "Setpoint Nodes");
         s->pdchSPMOArStPtLp = newPreDefColumn(state, s->pdstStPtOAR, "Setpoint Node PlantLoop Name");
         s->pdchSPMOArType = newPreDefColumn(state, s->pdstStPtOAR, "Control Type");
-        s->pdchSPMOArStLo1 = newPreDefColumn(state, s->pdstStPtOAR, "Setpoint at Outdoor Low Temperature");
-        s->pdchSPMOArStHi1 = newPreDefColumn(state, s->pdstStPtOAR, "Setpoint at Outdoor High Temperature");
-        s->pdchSPMOArOutLo1 = newPreDefColumn(state, s->pdstStPtOAR, "Outdoor Low Temperature");
-        s->pdchSPMOArOutHi1 = newPreDefColumn(state, s->pdstStPtOAR, "Outdoor High Temperature");
+        s->pdchSPMOArStLo1 = newPreDefColumn(state, s->pdstStPtOAR, "Setpoint at Outdoor Low Temperature [C]");
+        s->pdchSPMOArStHi1 = newPreDefColumn(state, s->pdstStPtOAR, "Setpoint at Outdoor High Temperature [C]");
+        s->pdchSPMOArOutLo1 = newPreDefColumn(state, s->pdstStPtOAR, "Outdoor Low Temperature [C]");
+        s->pdchSPMOArOutHi1 = newPreDefColumn(state, s->pdstStPtOAR, "Outdoor High Temperature [C]");
         s->pdchSPMOArSchNm = newPreDefColumn(state, s->pdstStPtOAR, "Schedule Name");
-        s->pdchSPMOArStLo2 = newPreDefColumn(state, s->pdstStPtOAR, "Setpoint at Outdoor Low Temperature 2");
-        s->pdchSPMOArStHi2 = newPreDefColumn(state, s->pdstStPtOAR, "Setpoint at Outdoor High Temperature 2");
-        s->pdchSPMOArOutLo2 = newPreDefColumn(state, s->pdstStPtOAR, "Outdoor Low Temperature 2");
-        s->pdchSPMOArOutHi2 = newPreDefColumn(state, s->pdstStPtOAR, "Outdoor High Temperature 2");
+        s->pdchSPMOArStLo2 = newPreDefColumn(state, s->pdstStPtOAR, "Setpoint at Outdoor Low Temperature 2 [C]");
+        s->pdchSPMOArStHi2 = newPreDefColumn(state, s->pdstStPtOAR, "Setpoint at Outdoor High Temperature 2 [C]");
+        s->pdchSPMOArOutLo2 = newPreDefColumn(state, s->pdstStPtOAR, "Outdoor Low Temperature 2 [C]");
+        s->pdchSPMOArOutHi2 = newPreDefColumn(state, s->pdstStPtOAR, "Outdoor High Temperature 2 [C]");
+
+        s->pdstStPtRetT = newPreDefSubTable(state, s->pdrCtrl, "SetpointManager:ReturnTemperature");
+        s->pdchSPMRetType = newPreDefColumn(state, s->pdstStPtRetT, "Type"); //chilled or hot water
+        s->pdchSPMRetOutNd = newPreDefColumn(state, s->pdstStPtRetT, "Plant Loop Supply Outlet Node");
+        s->pdchSPMRetInNd = newPreDefColumn(state, s->pdstStPtRetT, "Plant Loop Supply Inlet Node");
+        s->pdchSPMRetPltLp = newPreDefColumn(state, s->pdstStPtRetT, "PlantLoop Name");
+        s->pdchSPMRetMinT = newPreDefColumn(state, s->pdstStPtRetT, "Minimum Supply Temperature Setpoint [C]");
+        s->pdchSPMRetMaxT = newPreDefColumn(state, s->pdstStPtRetT, "Maximum Supply Temperature Setpoint [C]");
+        s->pdchSPMRetRetType = newPreDefColumn(state, s->pdstStPtRetT, "Return Temperature Setpoint Input Type"); // Constant, Scheduled or ReturnTemperatureSetpoint
+        s->pdchSPMRetRetT = newPreDefColumn(state, s->pdstStPtRetT, "Return Temperature Setpoint [C]");
+        s->pdchSPMRetRetSch = newPreDefColumn(state, s->pdstStPtRetT, "Return Temperature Setpoint Schedule Name");
 
         // Sizing Report
 

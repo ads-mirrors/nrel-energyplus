@@ -969,6 +969,17 @@ struct OutputReportPredefinedData : BaseGlobalStruct
     int pdchSPMOArOutLo2 = 0;
     int pdchSPMOArOutHi2 = 0;
 
+    int pdstStPtRetT = 0;
+    int pdchSPMRetType = 0;
+    int pdchSPMRetOutNd = 0;
+    int pdchSPMRetInNd = 0;
+    int pdchSPMRetPltLp = 0;
+    int pdchSPMRetMinT = 0;
+    int pdchSPMRetMaxT = 0;
+    int pdchSPMRetRetType = 0;
+    int pdchSPMRetRetT = 0;
+    int pdchSPMRetRetSch = 0;
+
     // HVAC Topology
     int pdrTopology = 0;
 

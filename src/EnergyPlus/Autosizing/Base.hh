@@ -320,6 +320,16 @@ public:
     static Real64 setCoolCoilInletHumRatForZoneEqSizing(Real64 outAirFrac,
                                                         DataSizing::ZoneEqSizingData const &zoneEqSizing,
                                                         DataSizing::ZoneSizingData const &finalZoneSizing);
+    static void calcCoilWaterFlowRates(EnergyPlusData &state,
+                                       int const compNum,
+                                       std::string const &compName,
+                                       Real64 const peakWaterFlow,
+                                       int const loopNum,
+                                       int const curZoneEqNum,
+                                       int const curSysNum,
+                                       int const curOASysNum,
+                                       EPVector<DataSizing::ZoneSizingData> const &finalZoneSizing,
+                                       EPVector<DataSizing::SystemSizingData> const &finalSysSizing);
 };
 
 } // namespace EnergyPlus

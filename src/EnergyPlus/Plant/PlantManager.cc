@@ -4645,14 +4645,12 @@ void ReportPlantCompWaterFlowData(EnergyPlusData &state)
                     continue;
                 }
                 for (size_t J = 0; J < state.dataPlnt->PlantLoop(I).plantCoilObjectNames.size(); ++J) {
-                    constexpr const char *PSizeFmt12("{}{}{}{:2}{}{}{}");
+                    constexpr const char *PSizeFmt12("{}{}{}{}{}");
                     print(state.files.psz,
                           PSizeFmt12,
                           state.dataSize->SizingFileColSep,
                           state.dataPlnt->PlantLoop(I).Name,
-                          ":Plant:",
-                          I,
-                          ":Coil:",
+                          ":",
                           state.dataPlnt->PlantLoop(I).plantCoilObjectNames[J],
                           ":Des Cool Volume Flow [m3/s]");
                 }
@@ -4680,11 +4678,12 @@ void ReportPlantCompWaterFlowData(EnergyPlusData &state)
                         }
                         constexpr const char *PSizeFmt22("{}{:12.6E}");
 
-                        for (size_t J = 0; J < state.dataPlnt->PlantLoop(I).plantCoilObjectNames.size(); ++J) {
+                        for (size_t J = 0; J < state.dataPlnt->PlantLoop(I).compDesWaterFlowRate.size(); ++J) {
+                            auto &tsData = state.dataPlnt->PlantLoop(I).compDesWaterFlowRate[J].tsDesWaterFlowRate;
                             print(state.files.psz,
                                   PSizeFmt22,
                                   state.dataSize->SizingFileColSep,
-                                  state.dataPlnt->PlantLoop(I).compDesWaterFlowRate[J].tsDesWaterFlowRate[TimeStepIndex]);
+                                  (tsData.size() >= TimeStepIndex) ? tsData[TimeStepIndex] : 0.0);
                         }
                     }
                     print(state.files.psz, "\n");

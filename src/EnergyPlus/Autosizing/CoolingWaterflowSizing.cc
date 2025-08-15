@@ -166,79 +166,16 @@ Real64 CoolingWaterflowSizer::size(EnergyPlusData &state, Real64 _originalValue,
             state.dataRptCoilSelection->coilSelectionReportObj->setCoilLvgWaterTemp(
                 state, this->compName, this->compType, Constant::CWInitConvTemp + CoilDesWaterDeltaT);
         }
-        // calculate hourly design water flow rate for plant TES sizing
-        if (this->dataCoilNum > 0 && this->dataWaterLoopNum > 0 && this->dataWaterLoopNum <= state.dataHVACGlobal->NumPlantLoops) {
-            auto &plntLoop = state.dataPlnt->PlantLoop(this->dataWaterLoopNum).plantCoilObjectNames;
-            if (std::find(plntLoop.begin(), plntLoop.end(), this->compName) != plntLoop.end()) {
-                for (auto &thisName : state.dataPlnt->PlantLoop(this->dataWaterLoopNum).plantCoilObjectNames) {
-                    if (thisName == this->compName) {
-                        thisName = this->compName;
-                        break;
-                    }
-                }
-            } else {
-                state.dataPlnt->PlantLoop(this->dataWaterLoopNum).plantCoilObjectNames.emplace_back(this->compName);
-            }
-
-            std::vector<Real64> tmpFlowData;
-            tmpFlowData.resize(size_t(24 * state.dataGlobal->TimeStepsInHour + 1));
-            tmpFlowData[0] = this->dataCoilNum;
-            if (this->curZoneEqNum > 0) {
-                Real64 peakAirFlow = 0.0;
-                for (auto &coolFlowSeq : this->finalZoneSizing(this->curZoneEqNum).CoolFlowSeq) {
-                    if (coolFlowSeq > peakAirFlow) {
-                        peakAirFlow = coolFlowSeq;
-                    }
-                }
-                for (size_t ts = 1; ts <= this->finalZoneSizing(this->curZoneEqNum).CoolFlowSeq.size(); ++ts) {
-                    // water flow rate will be proportional to autosized water flow rate * (design air flow rate / peak air flow rate)
-                    tmpFlowData[ts] = this->autoSizedValue * (this->finalZoneSizing(this->curZoneEqNum).CoolFlowSeq(ts) / peakAirFlow);
-                }
-            } else if (this->curSysNum > state.dataHVACGlobal->NumPrimaryAirSys && this->curOASysNum > 0) {
-                int DOASSysNum = state.dataAirLoop->OutsideAirSys(this->curOASysNum).AirLoopDOASNum;
-                Real64 peakAirFlow = state.dataAirLoopHVACDOAS->airloopDOAS[DOASSysNum].SizingMassFlow;
-                for (size_t ts = 1; ts <= 24 * state.dataGlobal->TimeStepsInHour; ++ts) {
-                    // water flow rate will be proportional to autosized water flow rate * (design air flow rate / peak air flow rate)
-                    tmpFlowData[ts] = peakAirFlow; // how to scale DOAS loads?
-                }
-            } else if (this->curOASysNum > 0) {
-                for (size_t ts = 0; ts < this->finalSysSizing(this->curSysNum).CoolFlowSeq.size(); ++ts) {
-                    // water flow rate will be proportional to autosized water flow rate * (design air flow rate / peak air flow rate)
-                    tmpFlowData[ts] = this->autoSizedValue; // how to scale OA loads?
-                }
-            } else if (this->curSysNum > 0) {
-                Real64 peakAirFlow = 0.0;
-                for (auto &coolFlowSeq : this->finalSysSizing(this->curSysNum).CoolFlowSeq) {
-                    if (coolFlowSeq > peakAirFlow) {
-                        peakAirFlow = coolFlowSeq;
-                    }
-                }
-                for (size_t ts = 1; ts <= this->finalSysSizing(this->curSysNum).CoolFlowSeq.size(); ++ts) {
-                    // water flow rate will be proportional to autosized water flow rate * (design air flow rate / peak air flow rate)
-                    tmpFlowData[ts] = this->autoSizedValue * (this->finalSysSizing(this->curSysNum).CoolFlowSeq(ts) / peakAirFlow);
-                }
-            }
-            auto &plntCoilData = state.dataPlnt->PlantLoop(this->dataWaterLoopNum).compDesWaterFlowRate;
-            if (plntCoilData.empty()) {
-                plntCoilData.resize(1);
-                plntCoilData[0].tsDesWaterFlowRate.resize(size_t(24 * state.dataGlobal->TimeStepsInHour));
-                plntCoilData[0].tsDesWaterFlowRate = tmpFlowData;
-            } else {
-                bool foundCoil = false;
-                for (size_t i; i < state.dataHVACGlobal->NumPlantLoops; ++i) {
-                    for (size_t j; j < plntCoilData.size(); ++j) {
-                        if (plntCoilData[j].tsDesWaterFlowRate[0] == this->dataCoilNum) {
-                            plntCoilData[j].tsDesWaterFlowRate = tmpFlowData;
-                            foundCoil = true;
-                            break;
-                        }
-                    }
-                    if (foundCoil) {
-                        break;
-                    }
-                }
-            }
-        }
+        this->calcCoilWaterFlowRates(state,
+                                     this->dataCoilNum,
+                                     this->compName,
+                                     this->autoSizedValue,
+                                     this->dataWaterLoopNum,
+                                     this->curZoneEqNum,
+                                     this->curSysNum,
+                                     this->curOASysNum,
+                                     this->finalZoneSizing,
+                                     this->finalSysSizing);
     }
     return this->autoSizedValue;
 }

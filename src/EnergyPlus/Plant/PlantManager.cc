@@ -4615,6 +4615,8 @@ void CheckOngoingPlantWarnings(EnergyPlusData &state)
 
 void ReportPlantCompWaterFlowData(EnergyPlusData &state)
 {
+    // Reporting will be 24 hrs of data by plant loop for each component connected to that loop. Then the next loop's components will be reported.
+    // Could be changed to report all loop's and components at the same time (i.e., as single group from 00:15 to 24:00 instead of multiple groups)
     state.dataGlobal->ReportPlantCompWaterFlowDataFlag = false;
     // sum equipment water flow rate time series
     for (int LoopNum = 1; LoopNum <= state.dataPlnt->TotNumLoops; ++LoopNum) {
@@ -4641,9 +4643,6 @@ void ReportPlantCompWaterFlowData(EnergyPlusData &state)
 
             print(state.files.psz, "Time");
             for (int I = 1; I <= int(state.dataPlnt->PlantLoop.size()); ++I) {
-                if (state.dataPlnt->PlantLoop(LoopNum).compDesWaterFlowRate.empty()) {
-                    continue;
-                }
                 for (size_t J = 0; J < state.dataPlnt->PlantLoop(I).plantCoilObjectNames.size(); ++J) {
                     constexpr const char *PSizeFmt12("{}{}{}{}{}");
                     print(state.files.psz,
@@ -4656,7 +4655,6 @@ void ReportPlantCompWaterFlowData(EnergyPlusData &state)
                 }
             }
             print(state.files.psz, "\n");
-            //      HourFrac = 0.0
             int HourPrint;
             int Minutes = 0;
             size_t TimeStepIndex = 0;
@@ -4673,9 +4671,6 @@ void ReportPlantCompWaterFlowData(EnergyPlusData &state)
                     constexpr const char *PSizeFmt20("{:02}:{:02}:00");
                     print(state.files.psz, PSizeFmt20, HourPrint, Minutes);
                     for (int I = 1; I <= int(state.dataSize->PlantSizData.size()); ++I) {
-                        if (state.dataPlnt->PlantLoop(I).plantDesWaterFlowRate.empty()) {
-                            continue;
-                        }
                         constexpr const char *PSizeFmt22("{}{:12.6E}");
 
                         for (size_t J = 0; J < state.dataPlnt->PlantLoop(I).compDesWaterFlowRate.size(); ++J) {

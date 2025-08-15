@@ -951,6 +951,24 @@ struct OutputReportPredefinedData : BaseGlobalStruct
     int pdchStatSchdHeatName = 0;
     int pdchStatSchdCoolName = 0;
 
+    // Controls Summary 
+
+    int pdrCtrl = 0;
+
+    int pdstStPtOAR = 0;
+    int pdchSPMOArStPtNd = 0;
+    int pdchSPMOArStPtLp = 0;
+    int pdchSPMOArType = 0;
+    int pdchSPMOArStLo1 = 0;
+    int pdchSPMOArStHi1 = 0;
+    int pdchSPMOArOutLo1 = 0;
+    int pdchSPMOArOutHi1 = 0;
+    int pdchSPMOArSchNm = 0;
+    int pdchSPMOArStLo2 = 0;
+    int pdchSPMOArStHi2 = 0;
+    int pdchSPMOArOutLo2 = 0;
+    int pdchSPMOArOutHi2 = 0;
+
     // HVAC Topology
     int pdrTopology = 0;
 

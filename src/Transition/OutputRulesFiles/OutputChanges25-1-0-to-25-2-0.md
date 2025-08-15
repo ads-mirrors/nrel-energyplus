@@ -142,4 +142,20 @@ A new column was added to the System Summary Economizer table:
 
 - AirLoopHVAC:OutdoorAirSystem Name
 
+#### Control Summary - SetpointManager:OutdoorAirReset
+
+This is entirely new table
+
+- Setpoint Nodes
+- Setpoint Node PlantLoop Name
+- Control Type
+- Setpoint at Outdoor Low Temperature
+- Setpoint at Outdoor High Temperature
+- Outdoor Low Temperature
+- Outdoor High Temperature
+- Schedule Name
+- Setpoint at Outdoor Low Temperature 2
+- Setpoint at Outdoor High Temperature 2
+- Outdoor Low Temperature 2
+- Outdoor High Temperature 2
 

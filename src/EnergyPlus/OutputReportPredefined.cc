@@ -626,6 +626,25 @@ namespace OutputReportPredefined {
         s->pdchAirHRSupplyAirflow = newPreDefColumn(state, s->pdstAirHR, "Supply Air Flow Rate [m3/s]");
         s->pdchAirHRExhaustAirflow = newPreDefColumn(state, s->pdstAirHR, "Exhaust Air Flow Rate [m3/s]");
 
+        // Controls Summary 
+
+        s->pdrCtrl = newPreDefReport(state, "ControlSummary", "Ctrl", "Control Summary");
+
+        s->pdstStPtOAR = newPreDefSubTable(state, s->pdrCtrl, "SetpointManager:OutdoorAirReset");
+
+        s->pdchSPMOArStPtNd = newPreDefColumn(state, s->pdstStPtOAR, "Setpoint Nodes");
+        s->pdchSPMOArStPtLp = newPreDefColumn(state, s->pdstStPtOAR, "Setpoint Node PlantLoop Name");
+        s->pdchSPMOArType = newPreDefColumn(state, s->pdstStPtOAR, "Control Type");
+        s->pdchSPMOArStLo1 = newPreDefColumn(state, s->pdstStPtOAR, "Setpoint at Outdoor Low Temperature");
+        s->pdchSPMOArStHi1 = newPreDefColumn(state, s->pdstStPtOAR, "Setpoint at Outdoor High Temperature");
+        s->pdchSPMOArOutLo1 = newPreDefColumn(state, s->pdstStPtOAR, "Outdoor Low Temperature");
+        s->pdchSPMOArOutHi1 = newPreDefColumn(state, s->pdstStPtOAR, "Outdoor High Temperature");
+        s->pdchSPMOArSchNm = newPreDefColumn(state, s->pdstStPtOAR, "Schedule Name");
+        s->pdchSPMOArStLo2 = newPreDefColumn(state, s->pdstStPtOAR, "Setpoint at Outdoor Low Temperature 2");
+        s->pdchSPMOArStHi2 = newPreDefColumn(state, s->pdstStPtOAR, "Setpoint at Outdoor High Temperature 2");
+        s->pdchSPMOArOutLo2 = newPreDefColumn(state, s->pdstStPtOAR, "Outdoor Low Temperature 2");
+        s->pdchSPMOArOutHi2 = newPreDefColumn(state, s->pdstStPtOAR, "Outdoor High Temperature 2");
+
         // Sizing Report
 
         s->pdrSizing = newPreDefReport(state, "HVACSizingSummary", "Size", "HVAC Sizing Summary");

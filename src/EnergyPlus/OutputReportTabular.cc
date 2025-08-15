@@ -124,6 +124,7 @@
 #include <EnergyPlus/ResultsFramework.hh>
 #include <EnergyPlus/SQLiteProcedures.hh>
 #include <EnergyPlus/ScheduleManager.hh>
+#include <EnergyPlus/SetPointManager.hh>
 #include <EnergyPlus/ThermalComfort.hh>
 #include <EnergyPlus/UtilityRoutines.hh>
 #include <EnergyPlus/VentilatedSlab.hh>
@@ -6936,6 +6937,8 @@ void FillRemainingPredefinedEntries(EnergyPlusData &state)
     for (auto &we : state.dataWaterUse->WaterEquipment) {
         we.FillPredefinedTable(state);
     }
+    // fill the setpoint manager tables
+    SetPointManager::FillPredefinedTablesForSetPointManagers(state);
 }
 
 void WriteMonthlyTables(EnergyPlusData &state)

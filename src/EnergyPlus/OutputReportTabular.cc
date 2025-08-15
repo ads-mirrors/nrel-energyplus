@@ -6934,14 +6934,19 @@ void FillRemainingPredefinedEntries(EnergyPlusData &state)
 
     // Fan Operating Points
     constexpr std::array<Real64, 10> flowFrac = {0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9};
+    bool const saveNightVentOn = state.dataHVACGlobal->NightVentOn;
+    bool const saveTurnFansOn = state.dataHVACGlobal->TurnFansOn;
     state.dataHVACGlobal->NightVentOn = false;
     state.dataHVACGlobal->TurnFansOn = true;
 
     for (auto *fan : state.dataFans->fans) {
         OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchFanPowerType, fan->Name, HVAC::fanTypeNames[(int)fan->type]);
-        // Set some node values so the fan init function works as expected
+        // Save node data to restore later
         auto &outletNode = state.dataLoopNodes->Node(fan->outletNodeNum);
         auto &inletNode = state.dataLoopNodes->Node(fan->inletNodeNum);
+        auto const saveOutletNode = outletNode;
+        auto const saveInletNode = inletNode;
+        // Set some node values so the fan init function works as expected
         outletNode.MassFlowRateMax = inletNode.MassFlowRateMaxAvail = fan->maxAirMassFlowRate;
         outletNode.MassFlowRateMin = inletNode.MassFlowRateMinAvail = 0.0;
         inletNode.MassFlowRate = fan->maxAirMassFlowRate;
@@ -6960,7 +6965,13 @@ void FillRemainingPredefinedEntries(EnergyPlusData &state)
             PreDefTableEntry(state, columnIndex, fan->Name, fanPowerFrac);
             ++columnIndex;
         }
+        // Restore Nodes
+        outletNode = saveOutletNode;
+        inletNode = saveInletNode;
     }
+    // Restore flags
+    state.dataHVACGlobal->NightVentOn = saveNightVentOn;
+    state.dataHVACGlobal->TurnFansOn = saveTurnFansOn;
 }
 
 void WriteMonthlyTables(EnergyPlusData &state)

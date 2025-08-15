@@ -4619,7 +4619,7 @@ void ReportPlantCompWaterFlowData(EnergyPlusData &state)
     // Could be changed to report all loop's and components at the same time (i.e., as single group from 00:15 to 24:00 instead of multiple groups)
     state.dataGlobal->ReportPlantCompWaterFlowDataFlag = false;
     // sum equipment water flow rate time series
-    for (int LoopNum = 1; LoopNum <= state.dataPlnt->TotNumLoops; ++LoopNum) {
+    for (int LoopNum = 1; LoopNum <= state.dataHVACGlobal->NumPlantLoops; ++LoopNum) {
         if (state.dataPlnt->PlantLoop(LoopNum).compDesWaterFlowRate.size() == 0) {
             continue;
         }
@@ -4670,7 +4670,7 @@ void ReportPlantCompWaterFlowData(EnergyPlusData &state)
                     }
                     constexpr const char *PSizeFmt20("{:02}:{:02}:00");
                     print(state.files.psz, PSizeFmt20, HourPrint, Minutes);
-                    for (int I = 1; I <= int(state.dataSize->PlantSizData.size()); ++I) {
+                    for (int I = 1; I <= int(state.dataPlnt->PlantLoop.size()); ++I) {
                         constexpr const char *PSizeFmt22("{}{:12.6E}");
 
                         for (size_t J = 0; J < state.dataPlnt->PlantLoop(I).compDesWaterFlowRate.size(); ++J) {

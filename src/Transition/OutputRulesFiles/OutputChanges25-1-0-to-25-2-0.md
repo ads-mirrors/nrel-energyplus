@@ -159,3 +159,16 @@ This is entirely new table
 - Outdoor Low Temperature 2
 - Outdoor High Temperature 2
 
+#### Control Summary - SetpointManager:ReturnTemperature
+
+This is entirely new table
+
+- Type
+- Plant Loop Supply Outlet Node
+- Plant Loop Supply Inlet Node
+- PlantLoop Name
+- Minimum Supply Temperature Setpoint [C]
+- Maximum Supply Temperature Setpoint [C]
+- Return Temperature Setpoint Input Type
+- Return Temperature Setpoint [C]
+- Return Temperature Setpoint Schedule Name

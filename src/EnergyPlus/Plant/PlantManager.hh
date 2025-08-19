@@ -142,7 +142,7 @@ namespace PlantManager {
 
     void CheckOngoingPlantWarnings(EnergyPlusData &state);
 
-    void ReportPlantCompWaterFlowData(EnergyPlusData &state);
+    void ReportPlantCompWaterFlowData(EnergyPlusData &state, bool const reportFlag);
 
     struct EmptyPlantComponent : PlantComponent
     {

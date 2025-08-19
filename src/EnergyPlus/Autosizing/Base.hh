@@ -323,6 +323,7 @@ public:
     static void calcCoilWaterFlowRates(EnergyPlusData &state,
                                        int const compNum,
                                        std::string const &compName,
+                                       std::string const &compType,
                                        Real64 const peakWaterFlow,
                                        int const loopNum,
                                        int const curZoneEqNum,

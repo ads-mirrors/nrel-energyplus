@@ -721,6 +721,7 @@ Real64 BaseSizer::setCoolCoilInletHumRatForZoneEqSizing(Real64 const outAirFrac,
 void BaseSizer::calcCoilWaterFlowRates(EnergyPlusData &state,
                                        int const compNum,
                                        std::string const &compName,
+                                       std::string const &compType,
                                        Real64 const peakWaterFlow,
                                        int const loopNum,
                                        int const curZoneEqNum,
@@ -731,23 +732,29 @@ void BaseSizer::calcCoilWaterFlowRates(EnergyPlusData &state,
 {
     // calculate hourly design water flow rate for plant TES sizing
     if (compNum > 0 && loopNum > 0 && loopNum <= state.dataHVACGlobal->NumPlantLoops) {
-        auto &plntLoop = state.dataPlnt->PlantLoop(loopNum).plantCoilObjectNames;
-        if (std::find(plntLoop.begin(), plntLoop.end(), compName) != plntLoop.end()) {
-            for (auto &thisName : state.dataPlnt->PlantLoop(loopNum).plantCoilObjectNames) {
-                if (thisName == compName) {
-                    thisName = compName;
+        auto &plntComps = state.dataPlnt->PlantLoop(loopNum).plantCoilObjectNames;
+        auto &cmpType = state.dataPlnt->PlantLoop(loopNum).plantCoilObjectTypes;
+        int arrayIndex = -1;
+        if (plntComps.size() > 0) {
+            for (int i = 0; i < plntComps.size(); ++i) {
+                if (plntComps[i] == compName &&
+                    cmpType[i] == static_cast<DataPlant::PlantEquipmentType>(getEnumValue(DataPlant::PlantEquipTypeNames, compType))) {
+                    arrayIndex = i;
                     break;
                 }
             }
-        } else {
+        }
+        if (arrayIndex == -1) {
             state.dataPlnt->PlantLoop(loopNum).plantCoilObjectNames.emplace_back(compName);
+            state.dataPlnt->PlantLoop(loopNum).plantCoilObjectTypes.emplace_back(
+                static_cast<DataPlant::PlantEquipmentType>(getEnumValue(DataPlant::PlantEquipTypeNames, compType)));
         }
 
         std::vector<Real64> tmpFlowData;
         tmpFlowData.resize(size_t(24 * state.dataGlobal->TimeStepsInHour + 1));
         tmpFlowData[0] = compNum;
         if (curZoneEqNum > 0) {
-            Real64 peakAirFlow = 0.0;
+            Real64 peakAirFlow = 0.0; 
             for (auto &coolFlowSeq : finalZoneSizing(curZoneEqNum).CoolFlowSeq) {
                 if (coolFlowSeq > peakAirFlow) {
                     peakAirFlow = coolFlowSeq;
@@ -782,17 +789,13 @@ void BaseSizer::calcCoilWaterFlowRates(EnergyPlusData &state,
             }
         }
         auto &plntCoilData = state.dataPlnt->PlantLoop(loopNum).compDesWaterFlowRate;
-        if (plntCoilData.empty()) {
-            plntCoilData.resize(1);
-            plntCoilData[0].tsDesWaterFlowRate.resize(size_t(24 * state.dataGlobal->TimeStepsInHour));
-            plntCoilData[0].tsDesWaterFlowRate = tmpFlowData;
+        if (arrayIndex == -1) {
+            size_t arrayIndex = plntCoilData.size() + 1;
+            plntCoilData.resize(arrayIndex);
+            plntCoilData[arrayIndex - 1].tsDesWaterFlowRate.resize(size_t(24 * state.dataGlobal->TimeStepsInHour));
+            plntCoilData[arrayIndex - 1].tsDesWaterFlowRate = tmpFlowData;
         } else {
-            for (size_t j = 0; j < plntCoilData.size(); ++j) {
-                if (plntCoilData[j].tsDesWaterFlowRate[0] == compNum) {
-                    plntCoilData[j].tsDesWaterFlowRate = tmpFlowData;
-                    break;
-                }
-            }
+            plntCoilData[arrayIndex].tsDesWaterFlowRate = tmpFlowData;
         }
     }
 }

@@ -158,6 +158,7 @@ namespace DataPlant {
         std::vector<Real64> plantDesWaterFlowRate;
         std::vector<std::string> plantCoilObjectNames;
         std::vector<PlantCoilData> compDesWaterFlowRate;
+        std::vector<PlantEquipmentType> plantCoilObjectTypes;
 
         // Default Constructor
         PlantLoopData()

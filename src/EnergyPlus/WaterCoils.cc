@@ -2059,6 +2059,7 @@ void SizeWaterCoil(EnergyPlusData &state, int const CoilNum)
     Real64 DesCoilAirFlow = 0.0;
     Real64 DesCoilExitTemp = 0.0;
     Real64 CpAirStd = PsyCpAirFnW(0.0);
+    state.dataSize->DataCoilNum = CoilNum;
 
     auto &waterCoil = state.dataWaterCoils->WaterCoil(CoilNum);
     // cooling coils
@@ -2276,7 +2277,6 @@ void SizeWaterCoil(EnergyPlusData &state, int const CoilNum)
             // Why isn't the water volume flow rate based on the user inputs for inlet/outlet air/water temps? Water volume flow rate is
             // always based on autosized inputs.
             bPRINT = true;
-            state.dataSize->DataCoilNum = CoilNum;
             TempSize = waterCoil.MaxWaterVolFlowRate;
             sizerCWWaterflow.initializeWithinEP(state, CompType, CompName, bPRINT, RoutineName);
             waterCoil.MaxWaterVolFlowRate = sizerCWWaterflow.size(state, TempSize, ErrorsFound);
@@ -2575,9 +2575,11 @@ void SizeWaterCoil(EnergyPlusData &state, int const CoilNum)
                 state.dataSize->DataConstantUsedForSizing = waterCoil.MaxWaterVolFlowRate;
                 state.dataSize->DataFractionUsedForSizing = 1.0;
             }
+            state.dataSize->DataCoilNum = CoilNum;
             HeatingWaterflowSizer sizerHWWaterflow;
             sizerHWWaterflow.initializeWithinEP(state, CompType, CompName, bPRINT, RoutineName);
             Real64 sizedMaxWaterVolFlowRate = sizerHWWaterflow.size(state, TempSize, ErrorsFound);
+            state.dataSize->DataCoilNum = 0;
             // Check if the water flow rate is defined in parent HVAC equipment and set water coil design water flow rate accordingly
             if (state.dataSize->CurZoneEqNum > 0) {
                 auto const &ZoneEqSizing = state.dataSize->ZoneEqSizing(state.dataSize->CurZoneEqNum);

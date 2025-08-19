@@ -626,7 +626,7 @@ namespace OutputReportPredefined {
         s->pdchAirHRSupplyAirflow = newPreDefColumn(state, s->pdstAirHR, "Supply Air Flow Rate [m3/s]");
         s->pdchAirHRExhaustAirflow = newPreDefColumn(state, s->pdstAirHR, "Exhaust Air Flow Rate [m3/s]");
 
-        // Controls Summary 
+        // Controls Summary
 
         s->pdrCtrl = newPreDefReport(state, "ControlSummary", "Ctrl", "Control Summary");
 
@@ -646,13 +646,14 @@ namespace OutputReportPredefined {
         s->pdchSPMOArOutHi2 = newPreDefColumn(state, s->pdstStPtOAR, "Outdoor High Temperature 2 [C]");
 
         s->pdstStPtRetT = newPreDefSubTable(state, s->pdrCtrl, "SetpointManager:ReturnTemperature");
-        s->pdchSPMRetType = newPreDefColumn(state, s->pdstStPtRetT, "Type"); //chilled or hot water
+        s->pdchSPMRetType = newPreDefColumn(state, s->pdstStPtRetT, "Type"); // chilled or hot water
         s->pdchSPMRetOutNd = newPreDefColumn(state, s->pdstStPtRetT, "Plant Loop Supply Outlet Node");
         s->pdchSPMRetInNd = newPreDefColumn(state, s->pdstStPtRetT, "Plant Loop Supply Inlet Node");
         s->pdchSPMRetPltLp = newPreDefColumn(state, s->pdstStPtRetT, "PlantLoop Name");
         s->pdchSPMRetMinT = newPreDefColumn(state, s->pdstStPtRetT, "Minimum Supply Temperature Setpoint [C]");
         s->pdchSPMRetMaxT = newPreDefColumn(state, s->pdstStPtRetT, "Maximum Supply Temperature Setpoint [C]");
-        s->pdchSPMRetRetType = newPreDefColumn(state, s->pdstStPtRetT, "Return Temperature Setpoint Input Type"); // Constant, Scheduled or ReturnTemperatureSetpoint
+        s->pdchSPMRetRetType =
+            newPreDefColumn(state, s->pdstStPtRetT, "Return Temperature Setpoint Input Type"); // Constant, Scheduled or ReturnTemperatureSetpoint
         s->pdchSPMRetRetT = newPreDefColumn(state, s->pdstStPtRetT, "Return Temperature Setpoint [C]");
         s->pdchSPMRetRetSch = newPreDefColumn(state, s->pdstStPtRetT, "Return Temperature Setpoint Schedule Name");
 

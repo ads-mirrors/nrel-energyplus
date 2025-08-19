@@ -951,7 +951,7 @@ struct OutputReportPredefinedData : BaseGlobalStruct
     int pdchStatSchdHeatName = 0;
     int pdchStatSchdCoolName = 0;
 
-    // Controls Summary 
+    // Controls Summary
 
     int pdrCtrl = 0;
 

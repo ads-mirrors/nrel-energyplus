@@ -7467,10 +7467,10 @@ TEST_F(SQLiteFixture, OutputReportTabularTest_PredefinedTableCoilHumRat)
     PreDefTableEntry(*state, state->dataOutRptPredefined->pdchCoilLvgHumRatIdealPeak, CompName, 0.006, 8);
 
     // We enable the reports we care about, making sure we have the right ones
-    EXPECT_EQ("HVACSizingSummary", state->dataOutRptPredefined->reportName(6).name);
-    state->dataOutRptPredefined->reportName(6).show = true;
-    EXPECT_EQ("CoilSizingDetails", state->dataOutRptPredefined->reportName(7).name);
+    EXPECT_EQ("HVACSizingSummary", state->dataOutRptPredefined->reportName(7).name);
     state->dataOutRptPredefined->reportName(7).show = true;
+    EXPECT_EQ("CoilSizingDetails", state->dataOutRptPredefined->reportName(8).name);
+    state->dataOutRptPredefined->reportName(8).show = true;
 
     WritePredefinedTables(*state);
     state->dataSQLiteProcedures->sqlite->initializeIndexes();
@@ -9803,8 +9803,8 @@ TEST_F(SQLiteFixture, OutputReportTabularTest_EscapeHTML)
                      "My Design Day where it's >= 8\u00B0"); // this is >= 8 degree sign
 
     // We enable the reports we care about, making sure we have the right ones
-    EXPECT_EQ("HVACSizingSummary", state->dataOutRptPredefined->reportName(6).name);
-    state->dataOutRptPredefined->reportName(6).show = true;
+    EXPECT_EQ("HVACSizingSummary", state->dataOutRptPredefined->reportName(7).name);
+    state->dataOutRptPredefined->reportName(7).show = true;
 
     OutputReportTabular::OpenOutputTabularFile(*state);
 

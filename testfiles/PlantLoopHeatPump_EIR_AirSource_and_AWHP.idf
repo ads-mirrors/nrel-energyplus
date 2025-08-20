@@ -289,8 +289,8 @@
     autosize, !-  Rated Water Flow Rate in Heating Mode
     -20, !-  Minimum Outdoor Air Temperature in Heating Mode
     25, !-  Maximum Outdoor Air Temperature in Heating Mode
-    ,    !- Minimum Leaving Water Temperature Curve Name in Heating Mode
-    ,    !- Maximum Leaving Water Temperature Curve Name in Heating Mode
+    MinHeatingSWTvsOAT,    !- Minimum Leaving Water Temperature Curve Name in Heating Mode
+    MaxHeatingSWTvsOAT,    !- Maximum Leaving Water Temperature Curve Name in Heating Mode
     ,    !- Minimum Part Load Ratio
     1.0, !-  Sizing Factor for Heating
     25, !-  Rated Inlet Air Temperature in Cooling Mode
@@ -299,8 +299,8 @@
     autosize , !-  Rated Water Flow Rate in Cooling Mode
     18 , !-  Minimum Outdoor Air Temperature in Cooling Mode
     40, !-  Maximum Outdoor Air Temperature in Cooling Mode
-    ,    !- Minimum Leaving Water Temperature Curve Name in Cooling Mode
-    ,    !- Maximum Leaving Water Temperature Curve Name in Cooling Mode
+    MinCoolingSWTvsOAT,    !- Minimum Leaving Water Temperature Curve Name in Cooling Mode
+    MaxCoolingSWTvsOAT,    !- Maximum Leaving Water Temperature Curve Name in Cooling Mode
     0.9, !-  Sizing Factor for Cooling
     Outdoor Air Inlet Node , !-  Air Inlet Node Name
     Outdoor Air Outlet Node, !-  Air Outlet Node Name
@@ -382,6 +382,54 @@
     , !-  Normalized Cooling Capacity Function of Temperature Curve Name in Booster Mode
     , !-  Cooling Energy Input Ratio Function of Temperature Curve Name in Booster Mode
     ; !-  Cooling Energy Input Ratio Function of PLR Curve Name in Booster Mode
+
+  Curve:Quadratic,
+    MinHeatingSWTvsOAT,             !- Name
+    0.0,                     !- Coefficient1 Constant
+    1.0,                     !- Coefficient2 x
+    0.0,                     !- Coefficient3 x**2
+    -17.77778,               !- Minimum Value of x !- 0 F
+    35.0,                    !- Maximum Value of x !- 95 F
+    20.0,                    !- Minimum Curve Output
+    35.0,                    !- Maximum Curve Output
+    Temperature,             !- Input Unit Type for X
+    Temperature;             !- Output Unit Type
+
+  Curve:Quadratic,
+    MaxHeatingSWTvsOAT,             !- Name
+    100.0,                      !- Coefficient1 Constant
+    0.85,                    !- Coefficient2 x
+    0.0,                     !- Coefficient3 x**2
+    -17.777778,              !- Minimum Value of x !- 0 F
+    35.0,                    !- Maximum Value of x !- 95 F
+    20.0,                    !- Minimum Curve Output
+    150.0,                    !- Maximum Curve Output
+    Temperature,             !- Input Unit Type for X
+    Temperature;             !- Output Unit Type
+
+  Curve:Quadratic,
+    MinCoolingSWTvsOAT,             !- Name
+    -100.0,                     !- Coefficient1 Constant
+    0.0,                     !- Coefficient2 x
+    0.0,                     !- Coefficient3 x**2
+    -17.77778,               !- Minimum Value of x !- 0 F
+    35.0,                    !- Maximum Value of x !- 95 F
+    -100.0,                    !- Minimum Curve Output
+    35.0,                    !- Maximum Curve Output
+    Temperature,             !- Input Unit Type for X
+    Temperature;             !- Output Unit Type
+
+  Curve:Quadratic,
+    MaxCoolingSWTvsOAT,             !- Name
+    53.1666666666667,        !- Coefficient1 Constant
+    0.85,                    !- Coefficient2 x
+    0.0,                     !- Coefficient3 x**2
+    -17.777778,              !- Minimum Value of x !- 0 F
+    35.0,                    !- Maximum Value of x !- 95 F
+    20.0,                    !- Minimum Curve Output
+    60.0,                    !- Maximum Curve Output
+    Temperature,             !- Input Unit Type for X
+    Temperature;             !- Output Unit Type
 
   Curve:Biquadratic,
     CapCurveFuncTemp,        !- Name

@@ -148,6 +148,7 @@ namespace EIRPlantLoopHeatPumps {
         int maxSupplyWaterTempCurveIndex = 0;
         int heatRecoveryCapFTempCurveIndex = 0;
         int heatRecoveryEIRFTempCurveIndex = 0;
+        bool waterTempExceeded = false; // flag to indicate if water temperature exceeded the limits
 
         // flow rate terms
         Real64 loadSideDesignVolFlowRate = 0.0;
@@ -464,10 +465,6 @@ namespace EIRPlantLoopHeatPumps {
         OperatingModeControlOptionMultipleUnit operatingModeControlOptionMultipleUnit = OperatingModeControlOptionMultipleUnit::SingleMode;
         std::string operationModeControlScheName;
         Sched::Schedule *operationModeControlSche = nullptr; // availability schedule
-        std::string minLeavingWaterTempCurveName;
-        int minLeavingWaterTempCurveIndex = 0; // minimum leaving water temperature
-        std::string maxLeavingWaterTempCurveName;
-        int maxLeavingWaterTempCurveIndex = 0; // maximum leaving water temperature
         int compressorMultiplier = 1;
         int numUnitUsed = 1;
         Real64 minOutdoorAirTempLimit = 0.0;

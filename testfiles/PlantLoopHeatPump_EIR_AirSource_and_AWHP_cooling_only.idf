@@ -157,6 +157,8 @@
     , !-  Rated Water Flow Rate in Heating Mode
     , !-  Minimum Outdoor Air Temperature in Heating Mode
     , !-  Maximum Outdoor Air Temperature in Heating Mode
+    , !- Minimum Leaving Water Temperature Curve Name in Heating Mode
+    , !- Maximum Leaving Water Temperature Curve Name in Heating Mode
     , !- Minimum Part Load Ratio
     , !-  Sizing Factor for Heating
     25, !-  Rated Inlet Air Temperature in Cooling Mode
@@ -165,6 +167,8 @@
     autosize , !-  Rated Water Flow Rate in Cooling Mode
     18 , !-  Minimum Outdoor Air Temperature in Cooling Mode
     40, !-  Maximum Outdoor Air Temperature in Cooling Mode
+    , !- Minimum Leaving Water Temperature Curve Name in Cooling Mode
+    , !- Maximum Leaving Water Temperature Curve Name in Cooling Mode
     0.9, !-  Sizing Factor for Cooling
     Outdoor Air Inlet Node , !-  Air Inlet Node Name
     Outdoor Air Outlet Node, !-  Air Outlet Node Name

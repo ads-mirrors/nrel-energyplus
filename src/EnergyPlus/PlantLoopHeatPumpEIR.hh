@@ -464,6 +464,10 @@ namespace EIRPlantLoopHeatPumps {
         OperatingModeControlOptionMultipleUnit operatingModeControlOptionMultipleUnit = OperatingModeControlOptionMultipleUnit::SingleMode;
         std::string operationModeControlScheName;
         Sched::Schedule *operationModeControlSche = nullptr; // availability schedule
+        std::string minLeavingWaterTempCurveName;
+        int minLeavingWaterTempCurveIndex = 0; // minimum leaving water temperature
+        std::string maxLeavingWaterTempCurveName;
+        int maxLeavingWaterTempCurveIndex = 0; // maximum leaving water temperature
         int compressorMultiplier = 1;
         int numUnitUsed = 1;
         Real64 minOutdoorAirTempLimit = 0.0;

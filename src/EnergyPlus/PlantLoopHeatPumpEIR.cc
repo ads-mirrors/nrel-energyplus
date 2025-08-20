@@ -3965,23 +3965,25 @@ void HeatPumpAirToWater::processInputForEIRPLHP(EnergyPlusData &state)
                 }
                 auto minLeavingWaterTempCurveName = fields.find(format("minimum_leaving_water_temperature_curve_name_in_{}_mode", modeKeyWord));
                 if (minLeavingWaterTempCurveName != fields.end()) {
-                    thisAWHP.minSupplyWaterTempCurveIndex = Curve::GetCurveIndex(
-                        state, Util::makeUPPER(minLeavingWaterTempCurveName.value().get<std::string>()));
+                    thisAWHP.minSupplyWaterTempCurveIndex =
+                        Curve::GetCurveIndex(state, Util::makeUPPER(minLeavingWaterTempCurveName.value().get<std::string>()));
                     if (thisAWHP.minSupplyWaterTempCurveIndex == 0) {
-                        ShowSevereError(state, format("Invalid curve name for HeatPump:AirToWater (name={}; entered curve name: {})",
-                                                      thisAWHP.name,
-                                                      minLeavingWaterTempCurveName.value().get<std::string>()));
+                        ShowSevereError(state,
+                                        format("Invalid curve name for HeatPump:AirToWater (name={}; entered curve name: {})",
+                                               thisAWHP.name,
+                                               minLeavingWaterTempCurveName.value().get<std::string>()));
                         errorsFound = true;
                     }
                 }
                 auto maxLeavingWaterTempCurveName = fields.find(format("maximum_leaving_water_temperature_curve_name_in_{}_mode", modeKeyWord));
                 if (maxLeavingWaterTempCurveName != fields.end()) {
-                    thisAWHP.maxSupplyWaterTempCurveIndex = Curve::GetCurveIndex(
-                        state, Util::makeUPPER(maxLeavingWaterTempCurveName.value().get<std::string>()));
+                    thisAWHP.maxSupplyWaterTempCurveIndex =
+                        Curve::GetCurveIndex(state, Util::makeUPPER(maxLeavingWaterTempCurveName.value().get<std::string>()));
                     if (thisAWHP.maxSupplyWaterTempCurveIndex == 0) {
-                        ShowSevereError(state, format("Invalid curve name for HeatPump:AirToWater (name={}; entered curve name: {})",
-                                                      thisAWHP.name,
-                                                      maxLeavingWaterTempCurveName.value().get<std::string>()));
+                        ShowSevereError(state,
+                                        format("Invalid curve name for HeatPump:AirToWater (name={}; entered curve name: {})",
+                                               thisAWHP.name,
+                                               maxLeavingWaterTempCurveName.value().get<std::string>()));
                         errorsFound = true;
                     }
                 }

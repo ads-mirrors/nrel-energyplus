@@ -912,7 +912,7 @@ TEST_F(EnergyPlusFixture, processInputForEIRPLHP_AWHP)
         "  35.0,                    !- Maximum Curve Output",
         "  Temperature,             !- Input Unit Type for X",
         "  Temperature;             !- Output Unit Type",
-      
+
         "Curve:Quadratic,",
         "  MaxLWTvsOAT,             !- Name",
         "  53.1666666666667,        !- Coefficient1 Constant",

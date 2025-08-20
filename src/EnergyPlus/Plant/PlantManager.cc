@@ -2378,7 +2378,7 @@ void InitializeLoops(EnergyPlusData &state, bool const FirstHVACIteration) // tr
         } // iterative passes thru sizing related routines.  end while?
 
         if (state.dataGlobal->ReportPlantCompWaterFlowDataFlag) {
-            ReportPlantCompWaterFlowData(state, false);
+            ReportPlantCompWaterFlowData(state, state.dataPlnt->PlantFinalSizesOkayToReport);
         }
         // Step 5 now one more time for the final
         for (int HalfLoopNum = 1; HalfLoopNum <= state.dataPlnt->TotNumHalfLoops; ++HalfLoopNum) {
@@ -2422,7 +2422,7 @@ void InitializeLoops(EnergyPlusData &state, bool const FirstHVACIteration) // tr
     // END First Pass SIZING INIT
     //*****************************************************************
     if (state.dataGlobal->ReportPlantCompWaterFlowDataFlag) {
-        ReportPlantCompWaterFlowData(state, false);
+        ReportPlantCompWaterFlowData(state, state.dataPlnt->PlantFinalSizesOkayToReport);
     }
     //*****************************************************************
     // BEGIN Resizing Pass for HVAC Sizing Simulation Adjustments
@@ -2475,15 +2475,15 @@ void InitializeLoops(EnergyPlusData &state, bool const FirstHVACIteration) // tr
             state.dataPlnt->PlantLoop(LoopNum).LoopSide(LoopSideNum).SimulateAllLoopSidePumps(state);
         }
 
+        if (state.dataGlobal->ReportPlantCompWaterFlowDataFlag) {
+            ReportPlantCompWaterFlowData(state, state.dataPlnt->PlantFinalSizesOkayToReport);
+        }
         state.dataPlnt->PlantReSizingCompleted = true;
         state.dataPlnt->PlantFinalSizesOkayToReport = false;
     }
     //*****************************************************************
     // END Resizing Pass for HVAC Sizing Simulation Adjustments
     //*****************************************************************
-    if (state.dataGlobal->ReportPlantCompWaterFlowDataFlag) {
-        ReportPlantCompWaterFlowData(state, true);
-    }
     //*****************************************************************
     // BEGIN ONE TIME ENVIRONMENT INITS
     //*****************************************************************

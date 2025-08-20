@@ -735,6 +735,17 @@ namespace HVACCooledBeam {
                         if (coolBeam.MaxCoolWaterVolFlow < SmallWaterVolFlow) {
                             coolBeam.MaxCoolWaterVolFlow = 0.0;
                         }
+                        BaseSizer::calcCoilWaterFlowRates(state,
+                                                          CBNum,
+                                                          coolBeam.Name,
+                                                          coolBeam.UnitType,
+                                                          coolBeam.MaxCoolWaterVolFlow,
+                                                          coolBeam.CWPlantLoc.loopNum,
+                                                          state.dataSize->CurZoneEqNum,
+                                                          state.dataSize->CurSysNum,
+                                                          state.dataSize->CurOASysNum,
+                                                          state.dataSize->FinalZoneSizing,
+                                                          state.dataSize->FinalSysSizing);
                     } else {
                         coolBeam.MaxCoolWaterVolFlow = 0.0;
                     }

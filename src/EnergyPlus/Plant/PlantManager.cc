@@ -4621,7 +4621,7 @@ void CheckOngoingPlantWarnings(EnergyPlusData &state)
 
 void ReportPlantCompWaterFlowData(EnergyPlusData &state, bool const reportFlag)
 {
-    // Reporting will be 24 hrs of data by plant loop for each component connected to that loop. Then the next loop's components will be reported.
+    // Reporting will be 24 hrs of data by plant loop for each component connected to that loop. Then the next loop's component will be reported.
     // Could be changed to report all loop's and components at the same time (i.e., as single group from 00:15 to 24:00 instead of multiple groups)
     // sum equipment water flow rate time series
     for (int LoopNum = 1; LoopNum <= state.dataHVACGlobal->NumPlantLoops; ++LoopNum) {
@@ -4629,7 +4629,7 @@ void ReportPlantCompWaterFlowData(EnergyPlusData &state, bool const reportFlag)
             continue;
         }
         state.dataPlnt->PlantLoop(LoopNum).plantDesWaterFlowRate.resize(size_t(24 * state.dataGlobal->TimeStepsInHour));
-        for (size_t ts = 0; ts <= size_t(24 * state.dataGlobal->TimeStepsInHour); ++ts) {
+        for (size_t ts = 0; ts < state.dataPlnt->PlantLoop(LoopNum).plantDesWaterFlowRate.size(); ++ts) {
             state.dataPlnt->PlantLoop(LoopNum).plantDesWaterFlowRate[ts] = 0.0;
             for (auto &thisCoil : state.dataPlnt->PlantLoop(LoopNum).compDesWaterFlowRate) {
                 state.dataPlnt->PlantLoop(LoopNum).plantDesWaterFlowRate[ts] += thisCoil.tsDesWaterFlowRate[ts];
@@ -4662,7 +4662,7 @@ void ReportPlantCompWaterFlowData(EnergyPlusData &state, bool const reportFlag)
                       state.dataPlnt->PlantLoop(LoopNum).Name,
                       ":",
                       state.dataPlnt->PlantLoop(LoopNum).plantCoilObjectNames[J],
-                      ":Des Cool Volume Flow [m3/s]");
+                      ":Design Water Volume Flow Rate [m3/s]");
             }
             print(state.files.psz, "\n");
             int HourPrint;
@@ -4683,7 +4683,7 @@ void ReportPlantCompWaterFlowData(EnergyPlusData &state, bool const reportFlag)
                     constexpr const char *PSizeFmt22("{}{:12.6E}");
 
                     for (size_t J = 0; J < state.dataPlnt->PlantLoop(LoopNum).compDesWaterFlowRate.size(); ++J) {
-                        Real64 tsData = state.dataPlnt->PlantLoop(LoopNum).compDesWaterFlowRate[J].tsDesWaterFlowRate[TimeStepIndex];
+                        Real64 const tsData = state.dataPlnt->PlantLoop(LoopNum).compDesWaterFlowRate[J].tsDesWaterFlowRate[TimeStepIndex - 1];
                         print(state.files.psz, PSizeFmt22, state.dataSize->SizingFileColSep, tsData);
                     }
                     print(state.files.psz, "\n");

@@ -793,7 +793,7 @@ void BaseSizer::calcCoilWaterFlowRates(EnergyPlusData &state,
         if (arrayIndex == -1) {
             size_t arrayIndex = plntCoilData.size() + 1;
             plntCoilData.resize(arrayIndex);
-            plntCoilData[arrayIndex - 1].tsDesWaterFlowRate.resize(size_t(24 * state.dataGlobal->TimeStepsInHour));
+            plntCoilData[arrayIndex - 1].tsDesWaterFlowRate.resize(size_t(24 * state.dataGlobal->TimeStepsInHour + 1));
             plntCoilData[arrayIndex - 1].tsDesWaterFlowRate = tmpFlowData;
         } else {
             plntCoilData[arrayIndex].tsDesWaterFlowRate = tmpFlowData;

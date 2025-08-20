@@ -1051,6 +1051,17 @@ void SizeCoolingPanel(EnergyPlusData &state, int const CoolingPanelNum)
     }
 
     PlantUtilities::RegisterPlantCompDesignFlow(state, thisCP.WaterInletNode, thisCP.WaterVolFlowRateMax);
+    BaseSizer::calcCoilWaterFlowRates(state,
+                                      CoolingPanelNum,
+                                      thisCP.Name,
+                                      "ZoneHVAC:CoolingPanel:RadiantConvective:Water",
+                                      thisCP.WaterVolFlowRateMax,
+                                      thisCP.plantLoc.loopNum,
+                                      state.dataSize->CurZoneEqNum,
+                                      state.dataSize->CurSysNum,
+                                      state.dataSize->CurOASysNum,
+                                      state.dataSize->FinalZoneSizing,
+                                      state.dataSize->FinalSysSizing);
 
     if (!thisCP.SizeCoolingPanelUA(state)) {
         ShowFatalError(state, "SizeCoolingPanelUA: Program terminated for previous conditions.");

@@ -750,7 +750,6 @@ namespace HVACCooledBeam {
         }
 
         BaseSizer::calcCoilWaterFlowRates(state,
-                                          CBNum,
                                           coolBeam.Name,
                                           coolBeam.UnitType,
                                           coolBeam.MaxCoolWaterVolFlow,

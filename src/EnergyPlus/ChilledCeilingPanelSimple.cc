@@ -1052,7 +1052,6 @@ void SizeCoolingPanel(EnergyPlusData &state, int const CoolingPanelNum)
 
     PlantUtilities::RegisterPlantCompDesignFlow(state, thisCP.WaterInletNode, thisCP.WaterVolFlowRateMax);
     BaseSizer::calcCoilWaterFlowRates(state,
-                                      CoolingPanelNum,
                                       thisCP.Name,
                                       "ZoneHVAC:CoolingPanel:RadiantConvective:Water",
                                       thisCP.WaterVolFlowRateMax,

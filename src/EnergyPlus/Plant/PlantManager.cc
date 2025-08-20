@@ -4629,10 +4629,10 @@ void ReportPlantCompWaterFlowData(EnergyPlusData &state, bool const reportFlag)
             continue;
         }
         state.dataPlnt->PlantLoop(LoopNum).plantDesWaterFlowRate.resize(size_t(24 * state.dataGlobal->TimeStepsInHour));
-        for (size_t ts = 0; ts < size_t(24 * state.dataGlobal->TimeStepsInHour); ++ts) {
+        for (size_t ts = 0; ts <= size_t(24 * state.dataGlobal->TimeStepsInHour); ++ts) {
             state.dataPlnt->PlantLoop(LoopNum).plantDesWaterFlowRate[ts] = 0.0;
             for (auto &thisCoil : state.dataPlnt->PlantLoop(LoopNum).compDesWaterFlowRate) {
-                state.dataPlnt->PlantLoop(LoopNum).plantDesWaterFlowRate[ts] += thisCoil.tsDesWaterFlowRate[ts + 1];
+                state.dataPlnt->PlantLoop(LoopNum).plantDesWaterFlowRate[ts] += thisCoil.tsDesWaterFlowRate[ts];
             }
         }
     }

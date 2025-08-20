@@ -1012,7 +1012,6 @@ namespace FourPipeBeam {
         if (this->vDotDesignCW > 0.0 && this->beamCoolingPresent) {
             RegisterPlantCompDesignFlow(state, this->cWInNodeNum, this->vDotDesignCW);
             BaseSizer::calcCoilWaterFlowRates(state,
-                                              -1,
                                               this->name,
                                               this->unitType,
                                               this->vDotDesignCW,
@@ -1027,7 +1026,6 @@ namespace FourPipeBeam {
         if (this->vDotDesignHW > 0.0 && this->beamHeatingPresent) {
             RegisterPlantCompDesignFlow(state, this->hWInNodeNum, this->vDotDesignHW);
             BaseSizer::calcCoilWaterFlowRates(state,
-                                              -1,
                                               this->name,
                                               this->unitType,
                                               this->vDotDesignHW,

@@ -321,7 +321,6 @@ public:
                                                         DataSizing::ZoneEqSizingData const &zoneEqSizing,
                                                         DataSizing::ZoneSizingData const &finalZoneSizing);
     static void calcCoilWaterFlowRates(EnergyPlusData &state,
-                                       int const compNum,
                                        std::string const &compName,
                                        std::string const &compType,
                                        Real64 const peakWaterFlow,

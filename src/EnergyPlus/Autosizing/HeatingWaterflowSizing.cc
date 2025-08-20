@@ -155,7 +155,6 @@ Real64 HeatingWaterflowSizer::size(EnergyPlusData &state, Real64 _originalValue,
                 state, this->compName, this->compType, Constant::HWInitConvTemp - this->plantSizData(this->dataPltSizHeatNum).DeltaT);
         }
         this->calcCoilWaterFlowRates(state,
-                                     this->dataCoilNum,
                                      this->compName,
                                      this->compType,
                                      this->autoSizedValue,

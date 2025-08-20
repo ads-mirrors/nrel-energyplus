@@ -167,7 +167,6 @@ Real64 CoolingWaterflowSizer::size(EnergyPlusData &state, Real64 _originalValue,
                 state, this->compName, this->compType, Constant::CWInitConvTemp + CoilDesWaterDeltaT);
         }
         this->calcCoilWaterFlowRates(state,
-                                     this->dataCoilNum,
                                      this->compName,
                                      this->compType,
                                      this->autoSizedValue,

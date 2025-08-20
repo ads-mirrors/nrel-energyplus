@@ -709,8 +709,6 @@ void HeatExchangerStruct::size(EnergyPlusData &state)
     // first deal with Loop Supply Side
     int PltSizNumSupSide = this->SupplySideLoop.loop->PlantSizNum;
     int PltSizNumDmdSide = this->DemandSideLoop.loop->PlantSizNum;
-    auto compSupData = state.dataPlnt->PlantLoop(this->SupplySideLoop.loopNum).compDesWaterFlowRate;
-    auto compDemData = state.dataPlnt->PlantLoop(this->DemandSideLoop.loopNum).compDesWaterFlowRate;
     Real64 tmpSupSideDesignVolFlowRate = this->SupplySideLoop.DesignVolumeFlowRate;
     if (this->SupplySideLoop.DesignVolumeFlowRateWasAutoSized) {
         if (PltSizNumSupSide > 0) {

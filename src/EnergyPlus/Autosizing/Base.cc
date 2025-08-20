@@ -731,7 +731,8 @@ void BaseSizer::calcCoilWaterFlowRates(EnergyPlusData &state,
                                        EPVector<DataSizing::SystemSizingData> const &finalSysSizing)
 {
     // calculate hourly design water flow rate for plant TES sizing
-    if (compNum > 0 && loopNum > 0 && loopNum <= state.dataHVACGlobal->NumPlantLoops) {
+    if (compNum > 0 && loopNum > 0 && loopNum <= state.dataHVACGlobal->NumPlantLoops &&
+        ((curZoneEqNum > 0 && finalZoneSizing.size() > 0) || (curSysNum > 0 && finalSysSizing.size() > 0) || curOASysNum > 0)) {
         auto &plntComps = state.dataPlnt->PlantLoop(loopNum).plantCoilObjectNames;
         auto &cmpType = state.dataPlnt->PlantLoop(loopNum).plantCoilObjectTypes;
         int arrayIndex = -1;
@@ -754,7 +755,7 @@ void BaseSizer::calcCoilWaterFlowRates(EnergyPlusData &state,
         tmpFlowData.resize(size_t(24 * state.dataGlobal->TimeStepsInHour + 1));
         tmpFlowData[0] = compNum;
         if (curZoneEqNum > 0) {
-            Real64 peakAirFlow = 0.0; 
+            Real64 peakAirFlow = 0.0;
             for (auto &coolFlowSeq : finalZoneSizing(curZoneEqNum).CoolFlowSeq) {
                 if (coolFlowSeq > peakAirFlow) {
                     peakAirFlow = coolFlowSeq;

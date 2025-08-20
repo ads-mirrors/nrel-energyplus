@@ -1946,7 +1946,7 @@ This alpha field specifies the type of ice storage tank to be modeled. There are
 
 \paragraph{Field: Capacity}\label{field-capacity-000}
 
-This required numeric field contains the nominal capacity of the ice storage in GJ (Giga is 10\(^{9}\)). This field is autosizable when Coil:Cooling:Water or Coil:Cooling:Water:DetailedGeometry objects are used within the plant. Other plant equipment have not yet been added to the autosizing capability (e.g., zone or air loop water source heat pumps).
+This required numeric field contains the nominal capacity of the ice storage in GJ (Giga is 10\(^{9}\)). This field is autosizable when Coil:Cooling:Water, Coil:Cooling:Water:DetailedGeometry, AirTerminal:SingleDuct:ConstantVolume:CooledBeam or AirTerminal:SingleDuct:ConstantVolume:FourPipeBeam objects are used within the plant. Other plant equipment have not yet been added to the autosizing capability. If other plant equipment types are connected to the thermal energy storage plant loops and the TES capacity is insufficent to meet the load the work around for capacity sizing is to enter a value here instead of using autosize.
 
 \paragraph{Field: Inlet Node Name}\label{field-inlet-node-name-004}
 
@@ -2049,7 +2049,7 @@ This field is the name of the schedule (ref: Schedule) that determines whether o
 
 \paragraph{Field: Capacity}\label{field-capacity-1-000}
 
-This number is the maximum amount of latent thermal storage available in the ice storage system. This model does not allow the removal or addition of sensible energy from the tank. Thus, it is always assumed to be at the freezing temperature of the storage material. The capacity is expressed in units of GJ. This field is autosizable when Coil:Cooling:Water or Coil:Cooling:Water:DetailedGeometry objects are used within the plant. Other plant equipment have not yet been added to the autosizing capability (e.g., zone or air loop water source heat pumps).
+This number is the maximum amount of latent thermal storage available in the ice storage system. This model does not allow the removal or addition of sensible energy from the tank. Thus, it is always assumed to be at the freezing temperature of the storage material. The capacity is expressed in units of GJ. This field is autosizable when Coil:Cooling:Water, Coil:Cooling:Water:DetailedGeometry, AirTerminal:SingleDuct:ConstantVolume:CooledBeam or AirTerminal:SingleDuct:ConstantVolume:FourPipeBeam objects are used within the plant. Other plant equipment have not yet been added to the autosizing capability. If other plant equipment types are connected to the thermal energy storage plant loops and the TES capacity is insufficent to meet the load the work around for capacity sizing is to enter a value here instead of using autosize.
 
 \paragraph{Field: Inlet Node Name}\label{field-inlet-node-name-1-001}
 

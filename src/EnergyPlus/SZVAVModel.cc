@@ -849,9 +849,26 @@ namespace SZVAVModel {
                                                                                           1.0);
                 };
                 General::SolveRoot(state, 0.001, MaxIter, SolFlag, PartLoadRatio, f, 0.0, 1.0);
-                if (SolFlag < 0) {
-                    if (SZVAVModel.m_CoolingSpeedNum < SZVAVModel.m_NumOfSpeedCooling) { // attempt to meet the load with the next speed
-                        SZVAVModel.m_CoolingSpeedNum += 1;
+                if (SolFlag == -2 && ((CoolingLoad && SZVAVModel.m_CoolingSpeedNum < SZVAVModel.m_NumOfSpeedCooling) ||
+                                      (HeatingLoad && SZVAVModel.m_HeatingSpeedNum < SZVAVModel.m_NumOfSpeedHeating))) {
+                    // attempt to meet the load with the next speed
+                    Real64 sysLoad = 0.0;
+                    int szVAVModelSpeed = 0;
+                    int szVAVModelSpeedMax = 0;
+                    if (CoolingLoad) {
+                        szVAVModelSpeed = SZVAVModel.m_CoolingSpeedNum + 1;
+                        szVAVModelSpeedMax = SZVAVModel.m_NumOfSpeedCooling;
+                        sysLoad = CoolingLoad;
+                    } else {
+                        szVAVModelSpeed = SZVAVModel.m_HeatingSpeedNum + 1;
+                        szVAVModelSpeedMax = SZVAVModel.m_NumOfSpeedHeating;
+                    }
+                    for (int szVAVSpeed = szVAVModelSpeed; szVAVSpeed <= szVAVModelSpeedMax; ++szVAVSpeed) {
+                        if (CoolingLoad) {
+                            SZVAVModel.m_CoolingSpeedNum = szVAVSpeed;
+                        } else {
+                            SZVAVModel.m_HeatingSpeedNum = szVAVSpeed;
+                        }
                         auto f = [&state,
                                   SysIndex,
                                   FirstHVACIteration,
@@ -863,7 +880,7 @@ namespace SZVAVModel {
                                   lowSpeedFanRatio,
                                   AirMassFlow,
                                   maxAirMassFlow,
-                                  CoolingLoad,
+                                  sysLoad,
                                   maxCoilFluidFlow](Real64 const PartLoadRatio) {
                             return UnitarySystems::UnitarySys::calcUnitarySystemWaterFlowResidual(state,
                                                                                                   PartLoadRatio,
@@ -879,13 +896,16 @@ namespace SZVAVModel {
                                                                                                   AirMassFlow,
                                                                                                   0.0,
                                                                                                   maxAirMassFlow,
-                                                                                                  CoolingLoad,
+                                                                                                  sysLoad,
                                                                                                   1.0);
                         };
                         General::SolveRoot(state, 0.001, MaxIter, SolFlag, PartLoadRatio, f, 0.0, 1.0);
-                        if (SolFlag < 0) {
-                            MessagePrefix = "Step 2: ";
+                        if (SolFlag > 0) {
+                            break;
                         }
+                    }
+                    if (SolFlag < 0) {
+                        MessagePrefix = "Step 2: ";
                     }
                 }
 

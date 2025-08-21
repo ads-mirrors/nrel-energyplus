@@ -7085,7 +7085,8 @@ namespace UnitarySystems {
             // only allow for water, fuel, or electric at this time
             if (this->m_HeatCoilExists && this->m_HeatingCoilType_Num != HVAC::Coil_HeatingWater &&
                 this->m_HeatingCoilType_Num != HVAC::Coil_HeatingGasOrOtherFuel && this->m_HeatingCoilType_Num != HVAC::Coil_HeatingElectric &&
-                this->m_HeatingCoilType_Num != HVAC::CoilDX_HeatingEmpirical) {
+                this->m_HeatingCoilType_Num != HVAC::CoilDX_HeatingEmpirical &&
+                this->m_HeatingCoilType_Num != HVAC::Coil_HeatingAirToAirVariableSpeed) {
                 if (state.dataGlobal->DisplayExtraWarnings) {
                     ShowWarningError(state, format("{}: {}", cCurrentModuleObject, thisObjectName));
                     ShowContinueError(state, "ASHRAE90.1 control method requires specific heating coil types.");
@@ -8333,7 +8334,7 @@ namespace UnitarySystems {
                 }
 
                 this->m_SimASHRAEModel = false; // flag used to invoke ASHRAE 90.1 model calculations
-                // allows non-ASHRAE compliant coil types to be modeled using non-ASHAR90 method. Constant fan operating mode is required.
+                // allows non-ASHRAE compliant coil types to be modeled using non-ASHARE 90.1 method. Constant fan operating mode is required.
                 if (this->m_FanOpMode == HVAC::FanOp::Continuous) {
                     if (state.dataUnitarySystems->CoolingLoad) {
                         if (this->m_ValidASHRAECoolCoil) {
@@ -9791,7 +9792,10 @@ namespace UnitarySystems {
                 this->m_HeatingCycRatio = PartLoadRatio;
                 this->m_HeatingSpeedRatio = 0.0;
             } else {
-                if (this->m_SingleMode == 0) {
+                if (this->m_SimASHRAEModel) {
+                    this->m_HeatingCycRatio = PartLoadRatio;
+                    this->m_HeatingSpeedRatio = 1.0;
+                } else if (this->m_SingleMode == 0) {
                     this->m_HeatingCycRatio = 1.0;
                     this->m_HeatingSpeedRatio = PartLoadRatio;
                 } else {
@@ -10783,6 +10787,9 @@ namespace UnitarySystems {
                 if (HeatSpeedNum == 0) {
                     state.dataUnitarySystems->CompOnMassFlow = this->MaxNoCoolHeatAirMassFlow;
                     state.dataUnitarySystems->CompOnFlowRatio = this->m_NoLoadAirFlowRateRatio;
+                } else if (this->m_SimASHRAEModel) {
+                    state.dataUnitarySystems->CompOnMassFlow = this->m_HeatMassFlowRate[this->m_NumOfSpeedHeating];
+                    state.dataUnitarySystems->CompOnFlowRatio = this->m_MSHeatingSpeedRatio[this->m_NumOfSpeedHeating];
                 } else if (HeatSpeedNum == 1) {
                     state.dataUnitarySystems->CompOnMassFlow = this->m_HeatMassFlowRate[1];
                     state.dataUnitarySystems->CompOnFlowRatio = this->m_MSHeatingSpeedRatio[1];
@@ -10801,6 +10808,10 @@ namespace UnitarySystems {
                                 state.dataUnitarySystems->CompOnMassFlow = this->MaxNoCoolHeatAirMassFlow;
                                 state.dataUnitarySystems->CompOffMassFlow = this->MaxNoCoolHeatAirMassFlow;
                                 state.dataUnitarySystems->CompOffFlowRatio = this->m_NoLoadAirFlowRateRatio;
+                            } else if (this->m_SimASHRAEModel) {
+                                state.dataUnitarySystems->CompOnMassFlow = this->m_CoolMassFlowRate[1];
+                                state.dataUnitarySystems->CompOffMassFlow = this->m_CoolMassFlowRate[1];
+                                state.dataUnitarySystems->CompOffFlowRatio = this->m_MSCoolingSpeedRatio[1];
                             } else if (CoolSpeedNum == 1) {
                                 state.dataUnitarySystems->CompOnMassFlow = this->m_CoolMassFlowRate[1];
                                 state.dataUnitarySystems->CompOffMassFlow = this->m_CoolMassFlowRate[1];
@@ -10819,6 +10830,9 @@ namespace UnitarySystems {
                         if (HeatSpeedNum == 0) {
                             state.dataUnitarySystems->CompOffMassFlow = this->MaxNoCoolHeatAirMassFlow;
                             state.dataUnitarySystems->CompOffFlowRatio = this->m_NoLoadAirFlowRateRatio;
+                        } else if (this->m_SimASHRAEModel) {
+                            state.dataUnitarySystems->CompOffMassFlow = this->m_HeatMassFlowRate[1];
+                            state.dataUnitarySystems->CompOffFlowRatio = this->m_MSHeatingSpeedRatio[1];
                         } else if (HeatSpeedNum == 1) {
                             state.dataUnitarySystems->CompOffMassFlow = this->m_HeatMassFlowRate[HeatSpeedNum];
                             state.dataUnitarySystems->CompOffFlowRatio = this->m_HeatMassFlowRate[HeatSpeedNum];
@@ -12169,7 +12183,9 @@ namespace UnitarySystems {
         } break;
         case HVAC::Coil_HeatingAirToAirVariableSpeed:
         case HVAC::Coil_HeatingWaterToAirHPVSEquationFit: {
-            if (this->m_HeatingSpeedNum > 1) {
+            if (this->m_SimASHRAEModel) {
+                HeatPLR = PartLoadRatio;
+            } else if (this->m_HeatingSpeedNum > 1) {
                 HeatPLR = 1.0;
                 if (this->m_sysType == SysType::PackagedAC || this->m_sysType == SysType::PackagedHP || this->m_sysType == SysType::PackagedWSHP) {
                     this->m_HeatingSpeedRatio = PartLoadRatio;

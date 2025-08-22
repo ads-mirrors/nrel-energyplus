@@ -8631,6 +8631,7 @@ namespace UnitarySystems {
 
         std::string CompName = this->Name;
         int OutletNode = this->AirOutNode;
+        this->m_SimASHRAEModelOn = false;
 
         if (this->m_sysAvailSched->getCurrentVal() <= 0.0) {
             return;
@@ -10787,7 +10788,7 @@ namespace UnitarySystems {
                 if (HeatSpeedNum == 0) {
                     state.dataUnitarySystems->CompOnMassFlow = this->MaxNoCoolHeatAirMassFlow;
                     state.dataUnitarySystems->CompOnFlowRatio = this->m_NoLoadAirFlowRateRatio;
-                } else if (this->m_SimASHRAEModel) {
+                } else if (this->m_SimASHRAEModel && this->m_SimASHRAEModelOn) {
                     state.dataUnitarySystems->CompOnMassFlow = this->m_HeatMassFlowRate[this->m_NumOfSpeedHeating];
                     state.dataUnitarySystems->CompOnFlowRatio = this->m_MSHeatingSpeedRatio[this->m_NumOfSpeedHeating];
                 } else if (HeatSpeedNum == 1) {
@@ -10808,8 +10809,8 @@ namespace UnitarySystems {
                                 state.dataUnitarySystems->CompOnMassFlow = this->MaxNoCoolHeatAirMassFlow;
                                 state.dataUnitarySystems->CompOffMassFlow = this->MaxNoCoolHeatAirMassFlow;
                                 state.dataUnitarySystems->CompOffFlowRatio = this->m_NoLoadAirFlowRateRatio;
-                            } else if (this->m_SimASHRAEModel) {
-                                state.dataUnitarySystems->CompOnMassFlow = this->m_CoolMassFlowRate[1];
+                            } else if (this->m_SimASHRAEModel && this->m_SimASHRAEModelOn) {
+                                state.dataUnitarySystems->CompOnMassFlow = this->m_CoolMassFlowRate[this->m_NumOfSpeedCooling];
                                 state.dataUnitarySystems->CompOffMassFlow = this->m_CoolMassFlowRate[1];
                                 state.dataUnitarySystems->CompOffFlowRatio = this->m_MSCoolingSpeedRatio[1];
                             } else if (CoolSpeedNum == 1) {
@@ -10830,7 +10831,7 @@ namespace UnitarySystems {
                         if (HeatSpeedNum == 0) {
                             state.dataUnitarySystems->CompOffMassFlow = this->MaxNoCoolHeatAirMassFlow;
                             state.dataUnitarySystems->CompOffFlowRatio = this->m_NoLoadAirFlowRateRatio;
-                        } else if (this->m_SimASHRAEModel) {
+                        } else if (this->m_SimASHRAEModel && this->m_SimASHRAEModelOn) {
                             state.dataUnitarySystems->CompOffMassFlow = this->m_HeatMassFlowRate[1];
                             state.dataUnitarySystems->CompOffFlowRatio = this->m_MSHeatingSpeedRatio[1];
                         } else if (HeatSpeedNum == 1) {
@@ -10951,7 +10952,7 @@ namespace UnitarySystems {
                     state.dataUnitarySystems->CompOnMassFlow = this->m_CoolMassFlowRate[this->m_EconoSpeedNum];
                     state.dataUnitarySystems->CompOnFlowRatio = this->m_MSCoolingSpeedRatio[this->m_EconoSpeedNum];
                     state.dataUnitarySystems->OACompOnMassFlow = this->m_CoolOutAirMassFlow;
-                } else if (this->m_SimASHRAEModel) {
+                } else if (this->m_SimASHRAEModel && this->m_SimASHRAEModelOn) {
                     state.dataUnitarySystems->CompOnMassFlow = this->m_CoolMassFlowRate[this->m_NumOfSpeedCooling];
                     state.dataUnitarySystems->CompOnFlowRatio = this->m_MSCoolingSpeedRatio[this->m_NumOfSpeedCooling];
                     state.dataUnitarySystems->OACompOnMassFlow = this->m_CoolOutAirMassFlow;
@@ -10971,7 +10972,7 @@ namespace UnitarySystems {
                         state.dataUnitarySystems->CompOffMassFlow = this->m_CoolMassFlowRate[this->m_EconoSpeedNum];
                         state.dataUnitarySystems->CompOffFlowRatio = this->m_MSCoolingSpeedRatio[this->m_EconoSpeedNum];
                         state.dataUnitarySystems->OACompOffMassFlow = this->m_CoolOutAirMassFlow;
-                    } else if (this->m_SimASHRAEModel) {
+                    } else if (this->m_SimASHRAEModel && this->m_SimASHRAEModelOn) {
                         state.dataUnitarySystems->CompOffMassFlow = this->m_CoolMassFlowRate[1];
                         state.dataUnitarySystems->CompOffFlowRatio = this->m_MSCoolingSpeedRatio[1];
                         state.dataUnitarySystems->OACompOffMassFlow = this->m_CoolOutAirMassFlow;

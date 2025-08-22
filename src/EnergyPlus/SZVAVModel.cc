@@ -643,6 +643,7 @@ namespace SZVAVModel {
         int OutletNode = SZVAVModel.AirOutNode;
         Real64 ZoneTemp = state.dataLoopNodes->Node(SZVAVModel.NodeNumOfControlledZone).Temp;
         Real64 ZoneHumRat = state.dataLoopNodes->Node(SZVAVModel.NodeNumOfControlledZone).HumRat;
+        SZVAVModel.m_SimASHRAEModelOn = true;
 
         // model attempts to control air flow rate and coil capacity in specific operating regions:
         // Region 1 (R1) - minimum air flow rate at modulated coil capacity (up to min/max temperature limits)

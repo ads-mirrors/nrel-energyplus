@@ -59,8 +59,9 @@ import platform
 import subprocess
 import sys
 from tempfile import mkdtemp, mkstemp
-from typing import List
+from typing import List, Optional
 
+from ep_testing.constants import MSVC, OS, Bitness
 from ep_testing.tests.base import BaseTest
 
 
@@ -144,55 +145,45 @@ class TestPythonAPIAccess(BaseTest):
             raise e
 
 
-def make_build_dir_and_build(cmake_build_dir: str, verbose: bool, bitness: str, msvc_version: int):
+def make_build_dir_and_build(cmake_build_dir: str, verbose: bool, bitness: Bitness, msvc_version: MSVC):
+
+    os.makedirs(cmake_build_dir)
+    my_env = os.environ.copy()
+    if platform.system() == "Darwin":  # my local comp didn't have cmake in path except in interact shells
+        my_env["PATH"] = "/usr/local/bin:" + my_env["PATH"]
+    command_line = ["cmake", ".."]
+    is_windows = platform.system() == "Windows"
+    if is_windows:
+        command_line.extend(["-G", msvc_version.generator_name(), "-A", bitness.value])
+
     try:
-        os.makedirs(cmake_build_dir)
-        my_env = os.environ.copy()
-        if platform.system() == "Darwin":  # my local comp didn't have cmake in path except in interact shells
-            my_env["PATH"] = "/usr/local/bin:" + my_env["PATH"]
-        command_line = ["cmake", ".."]
-        if platform.system() == "Windows":
-            if bitness not in ["x32", "x64"]:
-                raise Exception("Bad bitness sent to make_build_dir_and_build, should be x32 or x64")
-            if msvc_version == 15:
-                if bitness == "x64":
-                    command_line.extend(["-G", "Visual Studio 15 Win64"])
-                elif bitness == "x32":
-                    command_line.extend(["-G", "Visual Studio 15"])  # defaults to 32
-            elif msvc_version == 16:
-                if bitness == "x64":
-                    command_line.extend(["-G", "Visual Studio 16 2019", "-A", "x64"])  # default to 64, but be explicit
-                elif bitness == "x32":
-                    command_line.extend(["-G", "Visual Studio 16 2019", "-A", "x86"])
-
-            elif msvc_version == 17:
-                if bitness == "x64":
-                    command_line.extend(["-G", "Visual Studio 17 2022", "-A", "x64"])  # default to 64, but be explicit
-                elif bitness == "x32":
-                    command_line.extend(["-G", "Visual Studio 17 2022", "-A", "x86"])
-            else:
-                raise Exception("Unknown msvc_version passed to make_build_dir_and_build")
-
         my_check_call(verbose, command_line, cwd=cmake_build_dir, env=my_env)
-        command_line = ["cmake", "--build", "."]
-        if platform.system() == "Windows":
-            command_line.extend(["--config", "Release"])
+    except Exception as e:
+        print("C API Wrapper Configuration Failed!")
+        raise e
+
+    command_line = ["cmake", "--build", "."]
+    if platform.system() == "Windows":
+        command_line.extend(["--config", "Release"])
+    try:
         my_check_call(verbose, command_line, env=my_env, cwd=cmake_build_dir)
-        print(" [COMPILED] ", end="")
     except Exception as e:
         print("C API Wrapper Compilation Failed!")
         raise e
+    print(" [COMPILED] ", end="")
 
 
 class TestCAPIAccess(BaseTest):
 
-    def __init__(self):
+    def __init__(self, os: OS, bitness: Bitness, msvc_version: Optional[MSVC] = None):
         super().__init__()
-        self.os = None
-        self.bitness = None
+        self.os = os
+        self.bitness = bitness
+        self.msvc_version = msvc_version
         self.source_file_name = "func.c"
         self.target_name = "TestCAPIAccess"
-        self.msvc_version = None
+        if self.os == OS.Windows and self.msvc_version is None:
+            raise Exception("Must pass msvc_version if os is Windows")
 
     def name(self):
         return "Test running an API script against energyplus in C"
@@ -226,16 +217,9 @@ class TestCAPIAccess(BaseTest):
         template = open(template_file).read()
         return template
 
-    def run(self, install_root: str, verbose: bool, kwargs: dict):
+    def run(self, install_root: str, verbose: bool):
         self.verbose = verbose
         print('* Running test class "%s"... ' % self.__class__.__name__, end="")
-        if "os" not in kwargs:
-            raise Exception("Bad call to %s -- must pass os in kwargs" % self.__class__.__name__)
-        if "bitness" not in kwargs:
-            raise Exception("Bad call to %s -- must pass bitness in kwargs" % self.__class__.__name__)
-        self.os = kwargs["os"]
-        self.bitness = kwargs["bitness"]
-        self.msvc_version = kwargs["msvc_version"]
         build_dir = mkdtemp()
         c_file_name = self.source_file_name
         c_file_path = os.path.join(build_dir, c_file_name)
@@ -251,7 +235,9 @@ class TestCAPIAccess(BaseTest):
             f.write(self._api_fixup_content())
         print(" [FIXUP CMAKE WRITTEN] ", end="")
         cmake_build_dir = os.path.join(build_dir, "build")
-        make_build_dir_and_build(cmake_build_dir, self.verbose, self.bitness, self.msvc_version)
+        make_build_dir_and_build(
+            cmake_build_dir=cmake_build_dir, verbose=self.verbose, bitness=self.bitness, msvc_version=self.msvc_version
+        )
         try:
             new_binary_path = os.path.join(cmake_build_dir, self.target_name)
             if platform.system() == "Windows":  # override the path/name for Windows
@@ -266,13 +252,15 @@ class TestCAPIAccess(BaseTest):
 
 class TestCppAPIDelayedAccess(BaseTest):
 
-    def __init__(self):
+    def __init__(self, os: OS, bitness: Bitness, msvc_version: Optional[MSVC] = None):
         super().__init__()
-        self.os = None
-        self.bitness = None
+        self.os = os
+        self.bitness = bitness
+        self.msvc_version = msvc_version
         self.source_file_name = "func.cpp"
         self.target_name = "TestCAPIAccess"
-        self.msvc_version = None
+        if self.os == OS.Windows and self.msvc_version is None:
+            raise Exception("Must pass msvc_version if os is Windows")
 
     def name(self):
         return "Test running an API script against energyplus in C++ but with delayed DLL loading"
@@ -302,16 +290,9 @@ class TestCppAPIDelayedAccess(BaseTest):
         template = open(template_file).read()
         return template.replace("{EPLUS_INSTALL_NO_SLASH}", install_path).replace("{LIB_FILE_NAME}", lib_file_name)
 
-    def run(self, install_root: str, verbose: bool, kwargs: dict):
+    def run(self, install_root: str, verbose: bool):
         self.verbose = verbose
         print('* Running test class "%s"... ' % self.__class__.__name__, end="")
-        if "os" not in kwargs:
-            raise Exception("Bad call to %s -- must pass os in kwargs" % self.__class__.__name__)
-        if "bitness" not in kwargs:
-            raise Exception("Bad call to %s -- must pass bitness in kwargs" % self.__class__.__name__)
-        self.os = kwargs["os"]
-        self.bitness = kwargs["bitness"]
-        self.msvc_version = kwargs["msvc_version"]
         build_dir = mkdtemp()
         c_file_name = "func.cpp"
         c_file_path = os.path.join(build_dir, c_file_name)
@@ -326,7 +307,9 @@ class TestCppAPIDelayedAccess(BaseTest):
             f.write(self._api_cmakelists_content())
         print(" [CMAKE FILE WRITTEN] ", end="")
         cmake_build_dir = os.path.join(build_dir, "build")
-        make_build_dir_and_build(cmake_build_dir, self.verbose, self.bitness, self.msvc_version)
+        make_build_dir_and_build(
+            cmake_build_dir=cmake_build_dir, verbose=self.verbose, bitness=self.bitness, msvc_version=self.msvc_version
+        )
         if platform.system() == "Windows":
             built_binary_path = os.path.join(cmake_build_dir, "Release", "TestCAPIAccess")
         else:

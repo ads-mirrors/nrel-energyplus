@@ -55,18 +55,18 @@
 
 
 import argparse
-from os import chdir, devnull, scandir, getcwd
+from os import chdir, devnull, getcwd, scandir
 from pathlib import Path
 from re import search
 from shutil import rmtree
-from subprocess import check_call, CalledProcessError, STDOUT
+from subprocess import STDOUT, CalledProcessError, check_call
 from sys import exit, path
 
 this_file_path = Path(__file__).resolve()
 package_test_root_dir = this_file_path.parent
 path.insert(0, str(package_test_root_dir))
 
-from ep_testing.tests.api import TestPythonAPIAccess, TestCAPIAccess, TestCppAPIDelayedAccess
+from ep_testing.tests.api import TestCAPIAccess, TestCppAPIDelayedAccess, TestPythonAPIAccess
 from ep_testing.tests.energyplus import TestPlainDDRunEPlusFile
 from ep_testing.tests.expand_objects import TestExpandObjectsAndRun
 from ep_testing.tests.hvacdiagram import HVACDiagram
@@ -79,6 +79,7 @@ class OS:
     Mac = 3
 
 
+# fmt: off
 CONFIGURATIONS = {
     'ubuntu2004': {
         'os': OS.Linux, 'bitness': 'x64', 'asset_pattern': 'Linux-Ubuntu20.04-x86_64.tar.gz', 'os_version': '20.04'
@@ -114,6 +115,7 @@ CONFIGURATIONS = {
         'os': OS.Windows, 'bitness': 'x64', 'asset_pattern': 'Windows-x86_64.zip', 'os_version': '2022'
     },
 }
+# fmt: on
 
 
 class TestRunner:
@@ -122,17 +124,17 @@ class TestRunner:
 
         # invalid keys are protected in the command's finalize_options method
         this_config = CONFIGURATIONS[run_config_key]
-        self.os_version = this_config['os_version']
-        self.os = this_config['os']
+        self.os_version = this_config["os_version"]
+        self.os = this_config["os"]
         self.msvc_version = None
-        if msvc_version in ['16', '17', '18']:
+        if msvc_version in ["16", "17", "18"]:
             self.msvc_version = msvc_version
-        elif self.os == OS.Windows and self.os_version == '2022':
+        elif self.os == OS.Windows and self.os_version == "2022":
             self.msvc_version = 17
         elif self.os == OS.Windows:
             self.msvc_version = 16
-        self.asset_pattern = this_config['asset_pattern']
-        self.bitness = this_config['bitness']
+        self.asset_pattern = this_config["asset_pattern"]
+        self.bitness = this_config["bitness"]
 
         self.this_version = this_version
         # self.tag_this_version = 'v24.1.0-RC2'
@@ -140,28 +142,28 @@ class TestRunner:
         self.tag_last_version = last_tag
 
     def find_and_extract_package(self, artifact_folder: Path) -> str:
-        extract_path = Path.cwd() / 'ep_package'
+        extract_path = Path.cwd() / "ep_package"
         saved_working_directory = Path.cwd()
         chdir(artifact_folder)
-        package_file_name = str(list(artifact_folder.rglob('*'))[0])
+        package_file_name = str(list(artifact_folder.rglob("*"))[0])
         if self.os == OS.Linux:
             # tar -xzf ep.tar.gz -C ep_package
-            extract_command = ['tar', '-xzf', package_file_name, '-C', str(extract_path)]
+            extract_command = ["tar", "-xzf", package_file_name, "-C", str(extract_path)]
         elif self.os == OS.Mac:
             # tar -xzf ep.tar.gz -C ep_package
-            extract_command = ['tar', '-xzf', package_file_name, '-C', str(extract_path)]
+            extract_command = ["tar", "-xzf", package_file_name, "-C", str(extract_path)]
         else:  # if config.os == OS.Windows:
             # 7z x ep.zip -oep_package
-            extract_command = ['7z.exe', 'x', package_file_name, '-o' + str(extract_path)]
+            extract_command = ["7z.exe", "x", package_file_name, "-o" + str(extract_path)]
         if extract_path.exists():
             rmtree(extract_path)
         try:
             extract_path.mkdir(parents=True)
         except Exception as e:
-            raise Exception('Could not create extraction path at %s; error: %s' % (extract_path, str(e)))
+            raise Exception("Could not create extraction path at %s; error: %s" % (extract_path, str(e)))
         try:
             print("Extracting asset...")
-            dev_null = open(devnull, 'w')
+            dev_null = open(devnull, "w")
             check_call(extract_command, stdout=dev_null, stderr=STDOUT)
             print(" ...Extraction Complete")
         except CalledProcessError as e:
@@ -169,58 +171,47 @@ class TestRunner:
         # should result in a single new directory inside the extract path, like: /extract/path/EnergyPlus-V1-abc-Linux
         all_sub_folders = [f.path for f in scandir(extract_path) if f.is_dir()]
         if len(all_sub_folders) > 1:
-            raise Exception('Extracted EnergyPlus package has more than one directory, problem.')
+            raise Exception("Extracted EnergyPlus package has more than one directory, problem.")
         chdir(saved_working_directory)
         return all_sub_folders[0]
-
 
     def run_all_tests(self, install_path_path: Path, verbose: bool) -> int:
         saved_path = getcwd()
         install_path = str(install_path_path)
-        TestPlainDDRunEPlusFile().run(
-            install_path, verbose, {'test_file': '1ZoneUncontrolled.idf'}
-        )
-        TestPlainDDRunEPlusFile().run(
-            install_path, verbose, {'test_file': 'PythonPluginCustomOutputVariable.idf'}
-        )
-        TestExpandObjectsAndRun().run(
-            install_path, verbose, {'test_file': 'HVACTemplate-5ZoneFanCoil.idf'}
-        )
-        TransitionOldFile().run(
-            install_path, verbose, {'last_version': self.tag_last_version}
-        )
-        HVACDiagram().run(
-            install_path, verbose, {}
-        )
+        TestPlainDDRunEPlusFile().run(install_path, verbose, {"test_file": "1ZoneUncontrolled.idf"})
+        TestPlainDDRunEPlusFile().run(install_path, verbose, {"test_file": "PythonPluginCustomOutputVariable.idf"})
+        TestExpandObjectsAndRun().run(install_path, verbose, {"test_file": "HVACTemplate-5ZoneFanCoil.idf"})
+        TransitionOldFile().run(install_path, verbose, {"last_version": self.tag_last_version})
+        HVACDiagram().run(install_path, verbose, {})
         if self.os == OS.Windows:
             print("Windows Symlink runs are not testable on Travis, I think the user needs symlink privilege.")
         else:
             TestPlainDDRunEPlusFile().run(
-                install_path, verbose, {'test_file': '1ZoneUncontrolled.idf', 'binary_sym_link': True}
+                install_path, verbose, {"test_file": "1ZoneUncontrolled.idf", "binary_sym_link": True}
             )
         TestCAPIAccess().run(
-            install_path, verbose, {'os': self.os, 'bitness': self.bitness, 'msvc_version': self.msvc_version}
+            install_path, verbose, {"os": self.os, "bitness": self.bitness, "msvc_version": self.msvc_version}
         )
         TestCppAPIDelayedAccess().run(
-            install_path, verbose, {'os': self.os, 'bitness': self.bitness, 'msvc_version': self.msvc_version}
+            install_path, verbose, {"os": self.os, "bitness": self.bitness, "msvc_version": self.msvc_version}
         )
-        if self.bitness == 'x32':
+        if self.bitness == "x32":
             print("Travis does not have a 32-bit Python package readily available, so not testing Python API")
         else:
-            TestPythonAPIAccess().run(install_path, verbose, {'os': self.os})
+            TestPythonAPIAccess().run(install_path, verbose, {"os": self.os})
         chdir(saved_path)
         return 0  # do better?
 
 
 def get_version_info() -> tuple:
     repo_root = package_test_root_dir.parent.parent
-    version_file = repo_root / 'cmake' / 'Version.cmake'
+    version_file = repo_root / "cmake" / "Version.cmake"
     contents = version_file.read_text()
-    major = search(r'CMAKE_VERSION_MAJOR [0-9]+', contents).group(0).split(' ')[1]
-    minor = search(r'CMAKE_VERSION_MINOR [0-9]+', contents).group(0).split(' ')[1]
-    last_major = search(r'PREV_RELEASE_MAJOR [0-9]+', contents).group(0).split(' ')[1]
-    last_minor = search(r'PREV_RELEASE_MINOR [0-9]+', contents).group(0).split(' ')[1]
-    last_patch = search(r'PREV_RELEASE_PATCH [0-9]+', contents).group(0).split(' ')[1]
+    major = search(r"CMAKE_VERSION_MAJOR [0-9]+", contents).group(0).split(" ")[1]
+    minor = search(r"CMAKE_VERSION_MINOR [0-9]+", contents).group(0).split(" ")[1]
+    last_major = search(r"PREV_RELEASE_MAJOR [0-9]+", contents).group(0).split(" ")[1]
+    last_minor = search(r"PREV_RELEASE_MINOR [0-9]+", contents).group(0).split(" ")[1]
+    last_patch = search(r"PREV_RELEASE_PATCH [0-9]+", contents).group(0).split(" ")[1]
     this_version = f"{major}.{minor}"
     last_version = f"{last_major}.{last_minor}"
     last_tag = f"v{last_major}.{last_minor}.{last_patch}"
@@ -230,11 +221,10 @@ def get_version_info() -> tuple:
 def main() -> int:
     # Handle some command line arguments
     parser = argparse.ArgumentParser(description="Run Package Tests on EnergyPlus")
-    arg = parser.add_argument  # readability
-    arg('config', choices=CONFIGURATIONS.keys(), help="Specify the run configuration")
-    arg('package_dir', help="Path to the extracted EnergyPlus package directory")
-    arg('--msvc', type=str, default='', help="For MSVC builds, this is the VS 'year', like '2022'")
-    arg('--verbose', action='store_true', help="If specified, get verbose output")
+    parser.add_argument("config", choices=CONFIGURATIONS.keys(), help="Specify the run configuration")
+    parser.add_argument("package_dir", help="Path to the extracted EnergyPlus package directory")
+    parser.add_argument("--msvc", type=str, default="", help="For MSVC builds, this is the VS 'year', like '2022'")
+    parser.add_argument("--verbose", action="store_true", help="If specified, get verbose output")
     args = parser.parse_args()
     # Dynamically get the version information instead of hard-coding it
     this, last, last_tag = get_version_info()

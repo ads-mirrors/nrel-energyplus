@@ -56,6 +56,7 @@
 
 import argparse
 import os
+import platform
 from enum import Enum
 from pathlib import Path
 from re import search
@@ -127,9 +128,10 @@ class TestRunner:
         self.os_version = this_config["os_version"]
         self.os = this_config["os"]
         self.msvc_version = None
-        if self.os == OS.Windows and msvc_version is None:
-            self.msvc_version = MSVC.V17
-            print(f"MSVC version not specified, assuming {self.msvc_version}")
+        if self.os == OS.Windows:
+            self.msvc_version = msvc_version
+            if not isinstance(self.msvc_version, MSVC):
+                raise ValueError("On Windows, an MSVC (Enum) version must be provided.")
 
         self.asset_pattern = this_config["asset_pattern"]
         self.bitness = this_config["bitness"]
@@ -165,7 +167,7 @@ class TestRunner:
             check_call(extract_command, stdout=dev_null, stderr=STDOUT)
             print(" ...Extraction Complete")
         except CalledProcessError as e:
-            raise Exception("Extraction failed with this error: " + str(e))
+            raise Exception(f"Extraction failed with this error: {e}\nCommand: {extract_command}")
         # should result in a single new directory inside the extract path, like: /extract/path/EnergyPlus-V1-abc-Linux
         all_sub_folders = [f.path for f in os.scandir(extract_path) if f.is_dir()]
         if len(all_sub_folders) > 1:
@@ -246,13 +248,17 @@ def main() -> int:
     )
     parser.add_argument("--verbose", action="store_true", help="If specified, get verbose output")
     args = parser.parse_args()
+    if platform.system() == "Windows" and args.msvc is None:
+        parser.error("On Windows, the --msvc argument is required to specify the Visual Studio version.")
     # Dynamically get the version information instead of hard-coding it
     this, last, last_tag = get_version_info()
     # Validate the path and prepare it for operations
     tentative_path = Path(args.package_dir)
     raw_artifact_path = tentative_path if tentative_path.is_absolute() else Path.cwd() / tentative_path
     # Instantiate the runner class based on the command line arguments
-    runner = TestRunner(args.config, this, last, last_tag, args.msvc)
+    runner = TestRunner(
+        run_config_key=args.config, this_version=this, last_version=last, last_tag=last_tag, msvc_version=args.msvc
+    )
     # Extract the package using the runner utility
     extracted_package_dir = runner.find_and_extract_package(raw_artifact_path)
     # Run all tests and return an exit code

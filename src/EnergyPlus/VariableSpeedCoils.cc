@@ -4749,8 +4749,12 @@ namespace VariableSpeedCoils {
                         TotCapTempModFac =
                             Curve::CurveValue(state, varSpeedCoil.MSCCapFTemp(varSpeedCoil.NormSpedLevel), MixWetBulb, RatedSourceTempCool);
 
-                        //       The mixed air temp for zone equipment without an OA mixer is 0.
-                        //       This test avoids a negative capacity until a solution can be found.
+                        if (MixTemp < SupTemp) {
+                            ShowSevereError(state,
+                                "On design day, cooling coil entering air temperature is less than design outlet air temperature. This will "
+                                "yield negative coil capacity sizing.");
+                            ShowContinueError(state, "Cooling capacity is set to zero during sizing; simulation continues.");
+                        }
                         if (MixEnth > SupEnth) {
                             CoolCapAtPeak = (rhoair * VolFlowRate * (MixEnth - SupEnth)) + FanCoolLoad;
                         } else {

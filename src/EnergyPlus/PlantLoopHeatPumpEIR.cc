@@ -3812,8 +3812,8 @@ void HeatPumpAirToWater::processInputForEIRPLHP(EnergyPlusData &state)
                 thisAWHP.airSource = true;
                 thisAWHP.waterSource = false;
                 ErrorObjectHeader eoh{routineName, "HeatPump:AirToWater", thisAWHP.name};
-                thisAWHP.compressorMultiplier =
-                    state.dataInputProcessing->inputProcessor->getRealFieldValue(fields, schemaProps, "compressor_multiplier");
+                thisAWHP.heatPumpMultiplier =
+                    state.dataInputProcessing->inputProcessor->getRealFieldValue(fields, schemaProps, "heat_pump_multiplier");
                 auto operatingModeControlMethod = fields.find("operating_mode_control_method");
                 if (operatingModeControlMethod != fields.end()) {
                     thisAWHP.operatingModeControlMethod = static_cast<HeatPumpAirToWater::OperatingModeControlMethod>(getEnumValue(
@@ -4273,7 +4273,7 @@ void HeatPumpAirToWater::processInputForEIRPLHP(EnergyPlusData &state)
                 }
 
                 thisAWHP.referenceCapacityOneUnit = thisAWHP.ratedCapacity[thisAWHP.numSpeeds - 1];
-                thisAWHP.referenceCapacity = thisAWHP.referenceCapacityOneUnit * thisAWHP.compressorMultiplier;
+                thisAWHP.referenceCapacity = thisAWHP.referenceCapacityOneUnit * thisAWHP.heatPumpMultiplier;
                 thisAWHP.referenceCOP = thisAWHP.ratedCOP[thisAWHP.numSpeeds - 1];
                 if (!errorsFound) {
                     state.dataHeatPumpAirToWater->heatPumps.push_back(thisAWHP);
@@ -4606,17 +4606,17 @@ void HeatPumpAirToWater::calcOpMode(EnergyPlus::EnergyPlusData &state, Real64 cu
         auto companionAvailableCapacityOneUnit = companionCoil->referenceCapacityOneUnit * companionCapacityModifierFuncTemp;
         if (this->OperationModeEMSOverrideOn) {
             if (this->OperationModeEMSOverrideValue > 0) {
-                this->operatingMode = min(this->compressorMultiplier, this->OperationModeEMSOverrideValue);
+                this->operatingMode = min(this->heatPumpMultiplier, this->OperationModeEMSOverrideValue);
                 this->companionHeatPumpCoil->operatingMode = 0;
             }
         } else if (this->operatingModeControlMethod == OperatingModeControlMethod::ScheduledModes) {
             auto numUnitsOn = static_cast<int>(this->operationModeControlSche->getCurrentVal());
             if (numUnitsOn > 0) {
-                this->operatingMode = min(this->compressorMultiplier, numUnitsOn);
+                this->operatingMode = min(this->heatPumpMultiplier, numUnitsOn);
                 this->companionHeatPumpCoil->operatingMode = 0;
             } else {
                 this->operatingMode = 0;
-                this->companionHeatPumpCoil->operatingMode = min(this->companionHeatPumpCoil->compressorMultiplier, -numUnitsOn);
+                this->companionHeatPumpCoil->operatingMode = min(this->companionHeatPumpCoil->heatPumpMultiplier, -numUnitsOn);
             }
         } else {
             if (modeCalcMethod == OperatingModeControlOptionMultipleUnit::SingleMode) {
@@ -4653,26 +4653,26 @@ void HeatPumpAirToWater::calcOpMode(EnergyPlus::EnergyPlusData &state, Real64 cu
                 if (modeCalcMethod == OperatingModeControlOptionMultipleUnit::CoolingPriority) {
                     // prioritize satisfy cooling need
                     numCoolingUnit = int(ceil(coolingLoad / coolCapacity));
-                    numCoolingUnit = min(numCoolingUnit, this->compressorMultiplier);
+                    numCoolingUnit = min(numCoolingUnit, this->heatPumpMultiplier);
                     numHeatingUnitNeeded = int(ceil(heatingLoad / heatCapacity));
-                    numHeatingUnit = min(this->compressorMultiplier - numCoolingUnit, numHeatingUnitNeeded);
+                    numHeatingUnit = min(this->heatPumpMultiplier - numCoolingUnit, numHeatingUnitNeeded);
                 } else if (modeCalcMethod == OperatingModeControlOptionMultipleUnit::HeatingPriority) {
                     // prioritize satisfy heating need
                     numHeatingUnit = int(ceil(heatingLoad / heatCapacity));
-                    numHeatingUnit = min(numHeatingUnit, this->compressorMultiplier);
+                    numHeatingUnit = min(numHeatingUnit, this->heatPumpMultiplier);
                     numCoolingUnitNeeded = int(ceil(coolingLoad / coolCapacity));
-                    numCoolingUnit = min(this->compressorMultiplier - numHeatingUnit, numCoolingUnitNeeded);
+                    numCoolingUnit = min(this->heatPumpMultiplier - numHeatingUnit, numCoolingUnitNeeded);
                 } else if (modeCalcMethod == OperatingModeControlOptionMultipleUnit::Balanced) {
                     // balance the percent satisfied heating or cooling load
                     numCoolingUnitNeeded = int(ceil(coolingLoad / coolCapacity));
                     numHeatingUnitNeeded = int(ceil(heatingLoad / heatCapacity));
-                    if (numCoolingUnitNeeded + numHeatingUnitNeeded <= this->compressorMultiplier) {
+                    if (numCoolingUnitNeeded + numHeatingUnitNeeded <= this->heatPumpMultiplier) {
                         numCoolingUnit = numCoolingUnitNeeded;
                         numHeatingUnit = numHeatingUnitNeeded;
                     } else {
                         numCoolingUnit =
-                            numCoolingUnitNeeded - int(floor((numCoolingUnitNeeded + numHeatingUnitNeeded - this->compressorMultiplier) / 2));
-                        numHeatingUnit = this->compressorMultiplier - numCoolingUnit;
+                            numCoolingUnitNeeded - int(floor((numCoolingUnitNeeded + numHeatingUnitNeeded - this->heatPumpMultiplier) / 2));
+                        numHeatingUnit = this->heatPumpMultiplier - numCoolingUnit;
                     }
                 }
                 if (this->EIRHPType == DataPlant::PlantEquipmentType::HeatPumpAirToWaterHeating) {
@@ -4683,8 +4683,8 @@ void HeatPumpAirToWater::calcOpMode(EnergyPlus::EnergyPlusData &state, Real64 cu
                     this->companionHeatPumpCoil->operatingMode = numHeatingUnit;
                 }
             }
-            this->operatingMode = min(this->compressorMultiplier, this->operatingMode);
-            companionCoil->operatingMode = min(companionCoil->compressorMultiplier, companionCoil->operatingMode);
+            this->operatingMode = min(this->heatPumpMultiplier, this->operatingMode);
+            companionCoil->operatingMode = min(companionCoil->heatPumpMultiplier, companionCoil->operatingMode);
         }
     }
 }
@@ -4718,7 +4718,7 @@ void HeatPumpAirToWater::doPhysics(EnergyPlusData &state, Real64 currentLoad)
         this->resetReportingVariables();
         return;
     }
-    Real64 availableCapacityBeforeMultiplier = availableCapacity / this->compressorMultiplier;
+    Real64 availableCapacityBeforeMultiplier = availableCapacity / this->heatPumpMultiplier;
     this->setPartLoadAndCyclingRatio(state, partLoadRatio);
 
     // evaluate the actual current operating load side heat transfer rate

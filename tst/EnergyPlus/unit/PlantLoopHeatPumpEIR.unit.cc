@@ -992,7 +992,7 @@ TEST_F(EnergyPlusFixture, processInputForEIRPLHP_AWHP)
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].loadSideNodes.outlet, 2);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].sourceSideNodes.inlet, 3);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].sourceSideNodes.outlet, 4);
-    EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].compressorMultiplier, 1);
+    EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].heatPumpMultiplier, 1);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].controlType, HeatPumpAirToWater::CompressorControlType::FixedSpeed);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].boosterOn, false);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].numSpeeds, 2);
@@ -1035,7 +1035,7 @@ TEST_F(EnergyPlusFixture, processInputForEIRPLHP_AWHP)
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].defrostTime, 0.2);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].defrostResistiveHeaterCap, 150);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].defrostEIRFTIndex, 0);
-    EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].compressorMultiplier, 1);
+    EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].heatPumpMultiplier, 1);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].controlType, HeatPumpAirToWater::CompressorControlType::FixedSpeed);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].CrankcaseHeaterCapacity, 100);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[1].CrankcaseHeaterCapacityCurveIndex, Curve::GetCurveIndex(*state, "EIRCURVEFUNCPLR"));
@@ -1080,7 +1080,7 @@ TEST_F(EnergyPlusFixture, processInputForEIRPLHP_AWHP)
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[2].minSupplyWaterTempCurveIndex, 0);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[2].maxSupplyWaterTempCurveIndex, 0);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[2].sizingFactor, 1.0);
-    EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[2].compressorMultiplier, 1);
+    EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[2].heatPumpMultiplier, 1);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[2].controlType, HeatPumpAirToWater::CompressorControlType::VariableSpeed);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[2].boosterOn, false);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[2].boosterMultCap, 1.0);
@@ -1116,7 +1116,7 @@ TEST_F(EnergyPlusFixture, processInputForEIRPLHP_AWHP)
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[3].defrostTime, 0.0);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[3].defrostResistiveHeaterCap, 0.0);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[3].defrostEIRFTIndex, 0);
-    EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[3].compressorMultiplier, 1.0);
+    EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[3].heatPumpMultiplier, 1.0);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[3].controlType, HeatPumpAirToWater::CompressorControlType::VariableSpeed);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[3].CrankcaseHeaterCapacity, 0.0);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[3].CrankcaseHeaterCapacityCurveIndex, 0);
@@ -1292,7 +1292,7 @@ TEST_F(EnergyPlusFixture, calcPowerUsage_AWHP)
     thisAWHP.capFuncTempCurveIndex[1] = Curve::GetCurveIndex(*state, "CAPCURVEFUNCTEMP");
     thisAWHP.powerRatioFuncTempCurveIndex[1] = Curve::GetCurveIndex(*state, "EIRCURVEFUNCTEMP");
     thisAWHP.powerRatioFuncPLRCurveIndex[1] = Curve::GetCurveIndex(*state, "EIRCURVEFUNCPLR");
-    thisAWHP.compressorMultiplier = 2;
+    thisAWHP.heatPumpMultiplier = 2;
     thisAWHP.cyclingRatio = 1.0;
     Real64 availableCapacityBeforeMultiplier = thisAWHP.ratedCapacity[1];
     // when COP = 1, power usage should equal heat transfer
@@ -1377,8 +1377,8 @@ TEST_F(EnergyPlusFixture, calcOpMode_AWHP)
     auto companionAWHP = HeatPumpAirToWater();
     thisAWHP.companionHeatPumpCoil = &companionAWHP;
     companionAWHP.companionHeatPumpCoil = &thisAWHP;
-    thisAWHP.compressorMultiplier = 6;
-    companionAWHP.compressorMultiplier = 6;
+    thisAWHP.heatPumpMultiplier = 6;
+    companionAWHP.heatPumpMultiplier = 6;
     thisAWHP.referenceCapacityOneUnit = 100;
     companionAWHP.referenceCapacityOneUnit = 150;
     thisAWHP.EIRHPType = EnergyPlus::DataPlant::PlantEquipmentType::HeatPumpAirToWaterCooling;

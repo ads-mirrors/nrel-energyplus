@@ -11470,7 +11470,8 @@ namespace AirflowNetwork {
 
     void Solver::get_people_index(int &indexResult, int &mzZoneDataPtr, int ventCtrlNum, bool isThisSurface, int arrayIndex, bool &errorFound)
     {
-        indexResult = 0;
+        indexResult = 0;   // reset
+        mzZoneDataPtr = 0; // reset
         int zoneNum = 0;
 
         // Find the zoneNum and potentially the MultizoneZoneData index (surface only)

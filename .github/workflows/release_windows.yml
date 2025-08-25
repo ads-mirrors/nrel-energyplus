@@ -52,7 +52,7 @@ jobs:
       contents: write
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
 
     - name: Set up Python ${{ env.Python_REQUIRED_VERSION }}
       uses: jmarrec/setup-python@v5.4.0
@@ -181,7 +181,7 @@ jobs:
     runs-on: windows-2019
 
     steps:
-      - uses: actions/checkout@v4  # Still need E+ checked out to get testing scripts
+      - uses: actions/checkout@v5  # Still need E+ checked out to get testing scripts
         with:
           path: checkout
 

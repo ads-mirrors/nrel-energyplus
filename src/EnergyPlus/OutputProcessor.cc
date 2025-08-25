@@ -4100,6 +4100,7 @@ Real64 GetCurrentMeterValue(EnergyPlusData const &state, int const MeterNumber) 
 
     // PURPOSE OF THIS FUNCTION:
     // This function returns the current meter value (timestep) for the meter number indicated.
+
     return (MeterNumber != -1) ? state.dataOutputProcessor->meters[MeterNumber]->CurTSValue : 0.0;
 } // GetCurrentMeterValue()
 

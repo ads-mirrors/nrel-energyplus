@@ -3396,7 +3396,8 @@ void UpdateDataandReport(EnergyPlusData &state, OutputProcessor::TimeStepType co
         }
 
         // Update meters on the TimeStep  (Zone)
-        if (op->meterValues.capacity() > 0) {
+        if (op->meterValues.capacity() > 0 and
+            (!state.dataSysVars->ReportDuringWarmup || (state.dataSysVars->ReportDuringWarmup and !state.dataGlobal->WarmupFlag))) {
             for (int iMeter = 0; iMeter < (int)op->meters.size(); ++iMeter) {
                 auto *meter = op->meters[iMeter];
                 if (meter->type == MeterType::Normal || meter->type == MeterType::Custom) {
@@ -4099,7 +4100,6 @@ Real64 GetCurrentMeterValue(EnergyPlusData const &state, int const MeterNumber) 
 
     // PURPOSE OF THIS FUNCTION:
     // This function returns the current meter value (timestep) for the meter number indicated.
-
     return (MeterNumber != -1) ? state.dataOutputProcessor->meters[MeterNumber]->CurTSValue : 0.0;
 } // GetCurrentMeterValue()
 

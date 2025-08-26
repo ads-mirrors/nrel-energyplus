@@ -1247,20 +1247,23 @@ TEST_F(EnergyPlusFixture, HPWHOutdoorAirMissingNodeNameWarning)
     ASSERT_TRUE(process_idf(idf_objects));
     state->init_state(*state);
 
-    bool ErrorsFound = WaterThermalTanks::GetWaterThermalTankInput(*state);
-    EXPECT_TRUE(ErrorsFound);
-    ASSERT_TRUE(ErrorsFound);
+    EXPECT_THROW(WaterThermalTanks::GetWaterThermalTankInput(*state), EnergyPlus::FatalError);
 
-    std::string const error_string =
-        delimited_string({"   ** Warning ** ProcessScheduleInput: Schedule:Constant = DUMMYSCH",
-                          "   **   ~~~   ** Schedule Type Limits Name is empty.",
-                          "   **   ~~~   ** Schedule will not be validated.",
-                          "   ** Severe  ** WaterHeater:HeatPump:PumpedCondenser=\"ZONE4HEATPUMPWATERHEATER\":",
-                          "   **   ~~~   ** When Inlet Air Configuration=\"OUTDOORAIRONLY\".",
-                          "   **   ~~~   ** Outdoor Air Node Name and Exhaust Air Node Name must be specified.",
-                          "   ** Severe  ** WaterHeater:HeatPump:PumpedCondenser=\"ZONE4HEATPUMPWATERHEATER\":",
-                          "   **   ~~~   ** Heat pump water heater fan outlet node name does not match next connected component.",
-                          "   **   ~~~   ** Fan outlet node name = ZONE4AIRINLETNODE"});
+    std::string const error_string = delimited_string({
+        "   ** Warning ** ProcessScheduleInput: Schedule:Constant = DUMMYSCH",
+        "   **   ~~~   ** Schedule Type Limits Name is empty.",
+        "   **   ~~~   ** Schedule will not be validated.",
+        "   ** Severe  ** WaterHeater:HeatPump:PumpedCondenser=\"ZONE4HEATPUMPWATERHEATER\":",
+        "   **   ~~~   ** When Inlet Air Configuration=\"OUTDOORAIRONLY\".",
+        "   **   ~~~   ** Outdoor Air Node Name and Exhaust Air Node Name must be specified.",
+        "   ** Severe  ** WaterHeater:HeatPump:PumpedCondenser=\"ZONE4HEATPUMPWATERHEATER\":",
+        "   **   ~~~   ** Heat pump water heater fan outlet node name does not match next connected component.",
+        "   **   ~~~   ** Fan outlet node name = ZONE4AIRINLETNODE",
+        "   **  Fatal  ** GetWaterThermalTankInput: Errors found in processing Water Thermal Tank input.",
+        "   ...Summary of Errors that led to program termination:",
+        "   ..... Reference severe error count=2",
+        "   ..... Last severe error=WaterHeater:HeatPump:PumpedCondenser=\"ZONE4HEATPUMPWATERHEATER\":",
+    });
 
     EXPECT_TRUE(compare_err_stream(error_string, true));
 }

@@ -6939,6 +6939,9 @@ void FillRemainingPredefinedEntries(EnergyPlusData &state)
     }
     // fill the setpoint manager tables
     SetPointManager::FillPredefinedTablesForSetPointManagers(state);
+
+    // fill the available manager tables
+    Avail::FillPredefinedTablesForAvailManager(state);
 }
 
 void WriteMonthlyTables(EnergyPlusData &state)

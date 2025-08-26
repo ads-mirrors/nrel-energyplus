@@ -657,14 +657,18 @@ New Table
 
 The new columns would be:
 - Name%
+- Type (Scheduled, ScheduledOn, ScheduledOff)
 - AirLoop Name^
 - Schedule Name%
-- Hours Supply Fan Operating Mode Cycling^
 
 This suppports:
 - FanSystem.operating_schedule
 
 Covers AvailabilityManager:Scheduled, AvailabilityManager:ScheduledOn, AvailabilityManager:ScheduledOff
+
+Note: Hours Supply Fan Operating Mode Cycling was previously part of this planned table but it seems to be 
+covered separately by new System Summary - Fan Operation report under MJW PR#11138.
+
 
 #### EquipmentSummary - Unitary Fan Mode ####
 

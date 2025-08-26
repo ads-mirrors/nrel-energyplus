@@ -657,6 +657,12 @@ namespace OutputReportPredefined {
         s->pdchSPMRetRetT = newPreDefColumn(state, s->pdstStPtRetT, "Return Temperature Setpoint [C]");
         s->pdchSPMRetRetSch = newPreDefColumn(state, s->pdstStPtRetT, "Return Temperature Setpoint Schedule Name");
 
+        s->pdstAvlMgrSch = newPreDefSubTable(state, s->pdrCtrl, "AvailabilityManager:Scheduled");
+
+        s->pdchAvlMgrSchAvailNm = newPreDefColumn(state, s->pdstAvlMgrSch, "AvailabilityManager Name");
+        s->pdchAvlMgrSchType = newPreDefColumn(state, s->pdstAvlMgrSch, "Type");
+        s->pdchAvlMgrSchSchNm = newPreDefColumn(state, s->pdstAvlMgrSch, "Schedule Name");
+
         // Sizing Report
 
         s->pdrSizing = newPreDefReport(state, "HVACSizingSummary", "Size", "HVAC Sizing Summary");

@@ -1789,24 +1789,31 @@ TEST_F(EnergyPlusFixture, ScheduleCompact_MissingDayTypes)
     EXPECT_EQ((int)Sched::DayType::Num, weekSched->dayScheds.size());
 
     EXPECT_EQ(nullptr, weekSched->dayScheds[(int)Sched::DayType::Unused]);
-    EXPECT_EQ(nullptr, weekSched->dayScheds[(int)Sched::DayType::Sunday]);
 
-    ASSERT_NE(nullptr, weekSched->dayScheds[(int)Sched::DayType::Monday]);
-    ASSERT_NE(nullptr, weekSched->dayScheds[(int)Sched::DayType::Tuesday]);
-    ASSERT_NE(nullptr, weekSched->dayScheds[(int)Sched::DayType::Wednesday]);
-    ASSERT_NE(nullptr, weekSched->dayScheds[(int)Sched::DayType::Thursday]);
-    ASSERT_NE(nullptr, weekSched->dayScheds[(int)Sched::DayType::Friday]);
-    ASSERT_NE(nullptr, weekSched->dayScheds[(int)Sched::DayType::Saturday]);
+    Sched::DaySchedule const *const missingDaySchedule = state->dataSched->daySchedules[Sched::SchedNum_AlwaysOff];
+    EXPECT_EQ(0, missingDaySchedule->minVal);
+    EXPECT_EQ(0, missingDaySchedule->maxVal);
+    EXPECT_EQ(4 * 24, missingDaySchedule->tsVals.size());
+    for (auto v : missingDaySchedule->tsVals) {
+        EXPECT_EQ(0.0, v);
+    }
+
+    EXPECT_EQ(0, weekSched->minVal);
+    EXPECT_EQ(1, weekSched->maxVal);
+
+    EXPECT_EQ(missingDaySchedule, weekSched->dayScheds[(int)Sched::DayType::Sunday]);
+
     auto const &daySched = weekSched->dayScheds[(int)Sched::DayType::Monday];
     for (int i = (int)Sched::DayType::Monday; i <= (int)Sched::DayType::Saturday; ++i) {
+        ASSERT_NE(nullptr, weekSched->dayScheds[i]);
         EXPECT_EQ(daySched, weekSched->dayScheds[i]);
     }
 
-    EXPECT_EQ(nullptr, weekSched->dayScheds[(int)Sched::DayType::Holiday]);
-    EXPECT_EQ(nullptr, weekSched->dayScheds[(int)Sched::DayType::SummerDesignDay]);
-    EXPECT_EQ(nullptr, weekSched->dayScheds[(int)Sched::DayType::WinterDesignDay]);
-    EXPECT_EQ(nullptr, weekSched->dayScheds[(int)Sched::DayType::CustomDay1]);
-    EXPECT_EQ(nullptr, weekSched->dayScheds[(int)Sched::DayType::CustomDay2]);
+    EXPECT_EQ(missingDaySchedule, weekSched->dayScheds[(int)Sched::DayType::Holiday]);
+    EXPECT_EQ(missingDaySchedule, weekSched->dayScheds[(int)Sched::DayType::SummerDesignDay]);
+    EXPECT_EQ(missingDaySchedule, weekSched->dayScheds[(int)Sched::DayType::WinterDesignDay]);
+    EXPECT_EQ(missingDaySchedule, weekSched->dayScheds[(int)Sched::DayType::CustomDay1]);
+    EXPECT_EQ(missingDaySchedule, weekSched->dayScheds[(int)Sched::DayType::CustomDay2]);
 
     state->dataEnvrn->Month = 1;
     state->dataEnvrn->DayOfMonth = 1;

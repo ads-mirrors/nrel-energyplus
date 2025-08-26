@@ -172,3 +172,12 @@ This is entirely new table
 - Return Temperature Setpoint Input Type
 - Return Temperature Setpoint [C]
 - Return Temperature Setpoint Schedule Name
+
+#### Control Summary - AvailabilityManager:Scheduled
+
+This is entirely new table
+
+- AirLoop Name
+- AvailabilityManager Name
+- Type
+- Schedule Name

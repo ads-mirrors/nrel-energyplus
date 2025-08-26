@@ -658,10 +658,20 @@ namespace OutputReportPredefined {
         s->pdchSPMRetRetSch = newPreDefColumn(state, s->pdstStPtRetT, "Return Temperature Setpoint Schedule Name");
 
         s->pdstAvlMgrSch = newPreDefSubTable(state, s->pdrCtrl, "AvailabilityManager:Scheduled");
-
         s->pdchAvlMgrSchAvailNm = newPreDefColumn(state, s->pdstAvlMgrSch, "AvailabilityManager Name");
         s->pdchAvlMgrSchType = newPreDefColumn(state, s->pdstAvlMgrSch, "Type");
         s->pdchAvlMgrSchSchNm = newPreDefColumn(state, s->pdstAvlMgrSch, "Schedule Name");
+
+        s->pdstPLtEqOpLb = newPreDefSubTable(state, s->pdrCtrl, "PlantEquipmentOperation Load Based");
+        s->pdchPLtEqOpLbPltLpNm = newPreDefColumn(state, s->pdstPLtEqOpLb, "Plant Loop Name");
+        s->pdchPLtEqOpLbNm = newPreDefColumn(state, s->pdstPLtEqOpLb, "Name");
+        s->pdchPLtEqOpLbType = newPreDefColumn(state, s->pdstPLtEqOpLb, "Type");
+        s->pdchPLtEqOpLbSchNm = newPreDefColumn(state, s->pdstPLtEqOpLb, "Schedule Name");
+        s->pdchPLtEqOpLbIndex = newPreDefColumn(state, s->pdstPLtEqOpLb, "Index");
+        s->pdchPLtEqOpLbLow = newPreDefColumn(state, s->pdstPLtEqOpLb, "Lower Limit [W]");
+        s->pdchPLtEqOpLbUp = newPreDefColumn(state, s->pdstPLtEqOpLb, "Upper Limit [W]");
+        s->pdchPLtEqOpLbEqLstNm = newPreDefColumn(state, s->pdstPLtEqOpLb, "Equipment List Name");
+        s->pdchPLtEqOpLbEquip = newPreDefColumn(state, s->pdstPLtEqOpLb, "Equipment");
 
         // Sizing Report
 

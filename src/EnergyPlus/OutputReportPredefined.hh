@@ -985,6 +985,17 @@ struct OutputReportPredefinedData : BaseGlobalStruct
     int pdchAvlMgrSchType = 0;
     int pdchAvlMgrSchSchNm = 0;
 
+    int pdstPLtEqOpLb = 0;
+    int pdchPLtEqOpLbPltLpNm = 0;
+    int pdchPLtEqOpLbNm = 0;
+    int pdchPLtEqOpLbType = 0;
+    int pdchPLtEqOpLbSchNm = 0;
+    int pdchPLtEqOpLbIndex = 0;
+    int pdchPLtEqOpLbLow = 0;
+    int pdchPLtEqOpLbUp = 0;
+    int pdchPLtEqOpLbEqLstNm = 0;
+    int pdchPLtEqOpLbEquip = 0;
+
     // HVAC Topology
     int pdrTopology = 0;
 

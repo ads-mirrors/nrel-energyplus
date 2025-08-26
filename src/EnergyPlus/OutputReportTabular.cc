@@ -117,6 +117,7 @@
 #include <EnergyPlus/OutputReportTabularAnnual.hh>
 #include <EnergyPlus/PackagedThermalStorageCoil.hh>
 #include <EnergyPlus/PlantChillers.hh>
+#include <EnergyPlus/Plant/PlantManager.hh>
 #include <EnergyPlus/PollutionModule.hh>
 #include <EnergyPlus/Psychrometrics.hh>
 #include <EnergyPlus/RefrigeratedCase.hh>
@@ -6942,6 +6943,9 @@ void FillRemainingPredefinedEntries(EnergyPlusData &state)
 
     // fill the available manager tables
     Avail::FillPredefinedTablesForAvailManager(state);
+
+    // fill the plant equipment operation load based 
+    PlantManager::FillPlantEquipmentOperationLoad(state);
 }
 
 void WriteMonthlyTables(EnergyPlusData &state)

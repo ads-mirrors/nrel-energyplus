@@ -628,7 +628,7 @@ if(WIN32 AND NOT UNIX)
 
 
   # ConvertInputFormat is added via add_subdirectory, and in there we set CMAKE_INSTALL_OPENMP_LIBRARIES at parent scope already
-  # Otherwise, if either cpgfunctionEP (yes by default) or kiva (no by default) **actually** linked to OpenMP, we need to ship the libs
+  # Otherwise, if kiva (no by default) **actually** linked to OpenMP, we need to ship the libs
   if (NOT ${CMAKE_INSTALL_OPENMP_LIBRARIES} AND (${USE_OpenMP} OR ${ENABLE_OPENMP}))
     # Need to install vcomp140.dll or similar
     find_package(OpenMP COMPONENTS CXX)

@@ -45,11 +45,12 @@
 // OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#include <cpgfunction/boreholes.h>
-#include <cpgfunction/gfunction.h>
-#include <cpgfunction/segments.h>
+// #include <cpgfunction/boreholes.h>
+// #include <cpgfunction/gfunction.h>
+// #include <cpgfunction/segments.h>
 
 #include <EnergyPlus/BranchNodeConnections.hh>
+#include <EnergyPlus/Data/EnergyPlusData.hh>
 #include <EnergyPlus/DataLoopNode.hh>
 #include <EnergyPlus/DataStringGlobals.hh>
 #include <EnergyPlus/DataSystemVariables.hh>
@@ -244,8 +245,35 @@ void GLHEVert::getAnnualTimeConstant()
     this->timeSSFactor = this->timeSS * 8760.0;
 }
 
+void write_vectors_as_csv(const std::vector<std::vector<double>> &columns, const std::string &filename)
+{
+    // find the maximum length
+    size_t max_len = 0;
+    for (const auto &col : columns) {
+        if (col.size() > max_len) {
+            max_len = col.size();
+        }
+    }
+
+    std::ofstream out(filename);
+
+    for (size_t row = 0; row < max_len; ++row) {
+        for (size_t col = 0; col < columns.size(); ++col) {
+            if (row < columns[col].size()) {
+                out << columns[col][row];
+            }
+            if (col + 1 < columns.size()) {
+                out << ","; // separator
+            }
+        }
+        out << "\n";
+    }
+}
+
 void GLHEVert::combineShortAndLongTimestepGFunctions() const
 {
+    write_vectors_as_csv({LNTTS_shortTimestep, GFNC_shortTimestep, this->myRespFactors->LNTTS, this->myRespFactors->GFNC}, "/tmp/g-func-before.csv");
+
     std::vector<Real64> GFNC_combined;
     std::vector<Real64> LNTTS_combined;
 
@@ -258,8 +286,14 @@ void GLHEVert::combineShortAndLongTimestepGFunctions() const
         LNTTS_combined.push_back(LNTTS_shortTimestep[index_shortTS]);
     }
 
+    // the LTS may calculate small values, but let's favor the STS ones up to the high limit of STS calculation
+    Real64 const highest_lntts_from_sts = LNTTS_shortTimestep.back();
+
     // Add the rest of the long time-step g-functions to the combined curve
     for (int index_longTS = 0; index_longTS < this->myRespFactors->GFNC.size(); ++index_longTS) {
+        if (this->myRespFactors->LNTTS[index_longTS] <= highest_lntts_from_sts) {
+            continue;
+        }
         GFNC_combined.push_back(this->myRespFactors->GFNC[index_longTS]);
         LNTTS_combined.push_back(this->myRespFactors->LNTTS[index_longTS]);
     }
@@ -271,6 +305,8 @@ void GLHEVert::combineShortAndLongTimestepGFunctions() const
 
     this->myRespFactors->LNTTS = LNTTS_combined;
     this->myRespFactors->GFNC = GFNC_combined;
+
+    write_vectors_as_csv({this->myRespFactors->time, this->myRespFactors->LNTTS, this->myRespFactors->GFNC}, "/tmp/g-func-after.csv");
 }
 
 void GLHEVert::makeThisGLHECacheStruct()
@@ -484,7 +520,7 @@ void GLHEVert::calcLongTimestepGFunctions(EnergyPlusData &state) const
     }
 }
 
-void GLHEVert::calcUniformBHWallTempGFunctions2(EnergyPlusData &state) const
+void GLHEVert::calcUniformBHWallTempGFunctions(EnergyPlusData &state) const
 {
     nlohmann::json gheDesignerInputs;
     gheDesignerInputs["version"] = 2;
@@ -543,7 +579,8 @@ void GLHEVert::calcUniformBHWallTempGFunctions2(EnergyPlusData &state) const
     if (state.dataGlobal->installRootOverride) {
         exePath = state.dataStrGlobals->exeDirectoryPath / "energyplus";
     } else {
-        exePath = FileSystem::getAbsolutePath(FileSystem::getProgramPath());
+        exePath = FileSystem::getAbsolutePath(FileSystem::getProgramPath()); // could be /path/to/energyplus(.exe) or /path/to/energyplus_tests(.exe)
+        exePath = exePath.parent_path() / ("energyplus" + FileSystem::exeExtension);
     }
     std::string const cmd = exePath.string() + " auxiliary ghedesigner /tmp/ghedesigner_input.json /tmp/outputs";
     int const status = FileSystem::systemCall(cmd);
@@ -562,21 +599,21 @@ void GLHEVert::calcUniformBHWallTempGFunctions2(EnergyPlusData &state) const
     this->myRespFactors->GFNC = g;
 }
 
-void GLHEVert::calcUniformBHWallTempGFunctions(EnergyPlusData &state) const
-{
-    // construct boreholes vector
-    std::vector<gt::boreholes::Borehole> boreholes;
-    for (const auto &bh : this->myRespFactors->myBorholes) {
-        boreholes.emplace_back(bh->props->bhLength, bh->props->bhTopDepth, bh->props->bhDiameter / 2.0, bh->xLoc, bh->yLoc);
-    }
-
-    // Obtain number of segments by adaptive discretization
-    gt::segments::adaptive adptDisc;
-    const int nSegments = adptDisc.discretize(this->bhLength, this->totalTubeLength);
-
-    this->myRespFactors->GFNC = gt::gfunction::uniform_borehole_wall_temperature(
-        boreholes, this->myRespFactors->time, this->soil.diffusivity, nSegments, true, state.dataGlobal->numThread);
-}
+// void GLHEVert::calcUniformBHWallTempGFunctions(EnergyPlusData &state) const
+// {
+//     // construct boreholes vector
+//     std::vector<gt::boreholes::Borehole> boreholes;
+//     for (const auto &bh : this->myRespFactors->myBorholes) {
+//         boreholes.emplace_back(bh->props->bhLength, bh->props->bhTopDepth, bh->props->bhDiameter / 2.0, bh->xLoc, bh->yLoc);
+//     }
+//
+//     // Obtain number of segments by adaptive discretization
+//     gt::segments::adaptive adptDisc;
+//     const int nSegments = adptDisc.discretize(this->bhLength, this->totalTubeLength);
+//
+//     this->myRespFactors->GFNC = gt::gfunction::uniform_borehole_wall_temperature(
+//         boreholes, this->myRespFactors->time, this->soil.diffusivity, nSegments, true, state.dataGlobal->numThread);
+// }
 
 void GLHEVert::calcGFunctions(EnergyPlusData &state)
 {

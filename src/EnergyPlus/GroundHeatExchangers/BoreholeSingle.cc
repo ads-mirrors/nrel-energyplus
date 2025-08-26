@@ -45,6 +45,7 @@
 // OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+#include <EnergyPlus/Data/EnergyPlusData.hh>
 #include <EnergyPlus/GroundHeatExchangers/BoreholeSingle.hh>
 #include <EnergyPlus/GroundHeatExchangers/State.hh>
 #include <EnergyPlus/UtilityRoutines.hh>

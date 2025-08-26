@@ -46,6 +46,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 #include <EnergyPlus/BranchNodeConnections.hh>
+#include <EnergyPlus/Data/EnergyPlusData.hh>
 #include <EnergyPlus/GroundHeatExchangers/Slinky.hh>
 #include <EnergyPlus/GroundHeatExchangers/State.hh>
 #include <EnergyPlus/NodeInputManager.hh>

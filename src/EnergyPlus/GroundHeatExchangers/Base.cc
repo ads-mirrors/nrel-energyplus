@@ -45,6 +45,7 @@
 // OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+#include <EnergyPlus/Data/EnergyPlusData.hh>
 #include <EnergyPlus/DataLoopNode.hh>
 #include <EnergyPlus/DataSystemVariables.hh>
 #include <EnergyPlus/GroundHeatExchangers/Base.hh>
@@ -544,6 +545,19 @@ Real64 GLHEBase::interpGFunc(Real64 const x_val) const
 
     auto const &x = this->myRespFactors->LNTTS;
     auto const &y = this->myRespFactors->GFNC;
+    if (std::is_sorted(x.begin(), x.end())) {
+        std::cout << "Vector is sorted" << std::endl;
+    } else {
+        auto const it = std::is_sorted_until(x.begin(), x.end());
+        auto prev = std::prev(it);
+        std::cout << "Vector is NOT sorted: " << *prev << " > " << *it << " at positions " << std::distance(x.begin(), prev) << " and "
+                  << std::distance(x.begin(), it) << "\n";
+        std::ofstream out("/tmp/g-func.csv");
+        for (unsigned i = 0; i < x.size(); i++) {
+            out << x[i] << "," << y[i] << "\n";
+        }
+        out.close();
+    }
     auto const &upper_it = std::upper_bound(x.begin(), x.end(), x_val);
 
     unsigned int l_idx = 0;

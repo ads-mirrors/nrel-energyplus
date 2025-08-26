@@ -403,20 +403,6 @@ void GLHESlinky::calcGFunctions(EnergyPlusData &state)
     } // NT time
 }
 
-//******************************************************************************
-
-void GLHESlinky::makeThisGLHECacheStruct()
-{
-}
-
-//******************************************************************************
-
-void GLHESlinky::readCacheFileAndCompareWithThisGLHECache([[maybe_unused]] EnergyPlusData &state)
-{
-}
-
-//******************************************************************************
-
 Real64
 GLHESlinky::nearFieldResponseFunction(int const m, int const n, int const m1, int const n1, Real64 const eta, Real64 const theta, Real64 const t)
 {

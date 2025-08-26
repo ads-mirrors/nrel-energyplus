@@ -100,9 +100,6 @@ TEST_F(EnergyPlusFixture, GroundHeatExchangerTest_GetVertProps)
         "    8;                       !- Phase Shift of Minimum Surface Temperature {days}",
     });
 
-    // Envr variable
-    state->dataSysVars->DisableGLHECaching = true;
-
     // Setup
     ASSERT_TRUE(process_idf(idf_objects));
     state->init_state(*state);

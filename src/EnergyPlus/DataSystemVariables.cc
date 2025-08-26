@@ -216,9 +216,6 @@ namespace DataSystemVariables {
         get_environment_variable(ReverseDDEnvVar, cEnvValue);
         state.dataSysVars->ReverseDD = env_var_on(cEnvValue); // Yes or True
 
-        get_environment_variable(DisableGLHECachingEnvVar, cEnvValue);
-        state.dataSysVars->DisableGLHECaching = env_var_on(cEnvValue); // Yes or True
-
         get_environment_variable(FullAnnualSimulation, cEnvValue);
         state.dataSysVars->FullAnnualRun = env_var_on(cEnvValue); // Yes or True
         if (state.dataGlobal->AnnualSimulation) {
@@ -270,9 +267,6 @@ namespace DataSystemVariables {
         get_environment_variable(cReportDuringWarmup, cEnvValue);
         if (!cEnvValue.empty()) {
             state.dataSysVars->ReportDuringWarmup = env_var_on(cEnvValue); // Yes or True
-        }
-        if (state.dataSysVars->DisableGLHECaching) {
-            state.dataSysVars->ReportDuringWarmup = true; // force to true for standard runs runs
         }
 
         get_environment_variable(cReportDuringHVACSizingSimulation, cEnvValue);

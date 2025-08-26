@@ -1093,9 +1093,6 @@ TEST_F(EnergyPlusFixture, GroundHeatExchangerTest_System_calcGFunction_UHF)
                           "    For: AllDays,            !- Field 2",
                           "    Until: 24:00,20;         !- Field 3"});
 
-    // Envr variable
-    state->dataSysVars->DisableGLHECaching = true;
-
     // Setup
     ASSERT_TRUE(process_idf(idf_objects));
     state->init_state(*state);

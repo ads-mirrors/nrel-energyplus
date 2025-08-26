@@ -134,12 +134,6 @@ namespace GroundHeatExchangers {
 
         [[nodiscard]] Real64 interpGFunc(Real64) const;
 
-        void makeThisGLHECacheAndCompareWithFileCache(EnergyPlusData &state);
-
-        virtual void makeThisGLHECacheStruct() = 0;
-
-        virtual void readCacheFileAndCompareWithThisGLHECache(EnergyPlusData &state) = 0;
-
         void onInitLoopEquip([[maybe_unused]] EnergyPlusData &state, const PlantLocation &calledFromLocation) override;
 
         void simulate([[maybe_unused]] EnergyPlusData &state,

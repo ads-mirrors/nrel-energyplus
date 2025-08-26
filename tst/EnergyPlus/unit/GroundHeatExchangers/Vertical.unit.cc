@@ -428,9 +428,6 @@ TEST_F(EnergyPlusFixture, GroundHeatExchangerTest_System_calcGFunction_UBHWT)
                           "    For: AllDays,            !- Field 2",
                           "    Until: 24:00,20;         !- Field 3"});
 
-    // Envr variable
-    state->dataSysVars->DisableGLHECaching = true;
-
     // Setup
     ASSERT_TRUE(process_idf(idf_objects));
     state->init_state(*state);
@@ -591,8 +588,6 @@ TEST_F(EnergyPlusFixture, GroundHeatExchangerTest_System_calc_pipe_conduction_re
                           "    UHFCalc,            !- g-Function Calculation Method",
                           "    GHE-Array;          !- GHE Array Object Name"});
 
-    state->dataSysVars->DisableGLHECaching = true;
-
     ASSERT_TRUE(process_idf(idf_objects));
     state->init_state(*state);
 
@@ -651,9 +646,6 @@ TEST_F(EnergyPlusFixture, GroundHeatExchangerTest_System_friction_factor)
                           "    ,                   !- Response Factors Object Name",
                           "    UHFCalc,            !- g-Function Calculation Method",
                           "    GHE-Array;          !- GHE Array Object Name"});
-
-    // Envr variable
-    state->dataSysVars->DisableGLHECaching = true;
 
     // Setup
     ASSERT_TRUE(process_idf(idf_objects));
@@ -969,9 +961,6 @@ TEST_F(EnergyPlusFixture, GroundHeatExchangerTest_System_calc_pipe_convection_re
                           "    For: AllDays,            !- Field 2",
                           "    Until: 24:00,20;         !- Field 3"});
 
-    // Envr variable
-    state->dataSysVars->DisableGLHECaching = true;
-
     // Setup
     ASSERT_TRUE(process_idf(idf_objects));
     state->init_state(*state);
@@ -1274,9 +1263,6 @@ TEST_F(EnergyPlusFixture, GroundHeatExchangerTest_System_calc_pipe_resistance)
                           "    For: AllDays,            !- Field 2",
                           "    Until: 24:00,20;         !- Field 3"});
 
-    // Envr variable
-    state->dataSysVars->DisableGLHECaching = true;
-
     // Setup
     ASSERT_TRUE(process_idf(idf_objects));
     state->init_state(*state);
@@ -1570,9 +1556,6 @@ TEST_F(EnergyPlusFixture, GroundHeatExchangerTest_System_calcBHGroutResistance_1
         "    ,                   !- Response Factors Object Name",
         "    UHFCalc,            !- g-Function Calculation Method",
         "    GHE-Array;          !- GHE Array Object Name"});
-
-    // Envr variable
-    state->dataSysVars->DisableGLHECaching = true;
 
     // Setup
     ASSERT_TRUE(process_idf(idf_objects));
@@ -1870,9 +1853,6 @@ TEST_F(EnergyPlusFixture, GroundHeatExchangerTest_System_calcBHGroutResistance_2
         "    UHFCalc,            !- g-Function Calculation Method",
         "    GHE-Array;          !- GHE Array Object Name"});
 
-    // Envr variable
-    state->dataSysVars->DisableGLHECaching = true;
-
     // Setup
     ASSERT_TRUE(process_idf(idf_objects));
     state->init_state(*state);
@@ -2167,9 +2147,6 @@ TEST_F(EnergyPlusFixture, GroundHeatExchangerTest_System_calcBHGroutResistance_3
         "    ,                   !- Response Factors Object Name",
         "    UHFCalc,            !- g-Function Calculation Method",
         "    GHE-Array;          !- GHE Array Object Name"});
-
-    // Envr variable
-    state->dataSysVars->DisableGLHECaching = true;
 
     // Setup
     ASSERT_TRUE(process_idf(idf_objects));
@@ -2467,9 +2444,6 @@ TEST_F(EnergyPlusFixture, GroundHeatExchangerTest_System_calcBHTotalInternalResi
         "    UHFCalc,            !- g-Function Calculation Method",
         "    GHE-Array;          !- GHE Array Object Name"});
 
-    // Envr variable
-    state->dataSysVars->DisableGLHECaching = true;
-
     // Setup
     ASSERT_TRUE(process_idf(idf_objects));
     state->init_state(*state);
@@ -2765,9 +2739,6 @@ TEST_F(EnergyPlusFixture, GroundHeatExchangerTest_System_calcBHTotalInternalResi
         "    UHFCalc,            !- g-Function Calculation Method",
         "    GHE-Array;          !- GHE Array Object Name"});
 
-    // Envr variable
-    state->dataSysVars->DisableGLHECaching = true;
-
     // Setup
     ASSERT_TRUE(process_idf(idf_objects));
     state->init_state(*state);
@@ -3062,9 +3033,6 @@ TEST_F(EnergyPlusFixture, GroundHeatExchangerTest_System_calcBHTotalInternalResi
         "    ,                   !- Response Factors Object Name",
         "    UHFCalc,            !- g-Function Calculation Method",
         "    GHE-Array;          !- GHE Array Object Name"});
-
-    // Envr variable
-    state->dataSysVars->DisableGLHECaching = true;
 
     // Setup
     ASSERT_TRUE(process_idf(idf_objects));

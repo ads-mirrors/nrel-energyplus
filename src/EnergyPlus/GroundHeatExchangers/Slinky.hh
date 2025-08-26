@@ -102,10 +102,6 @@ namespace GroundHeatExchangers {
 
         Real64 getGFunc(Real64 time) override;
 
-        void makeThisGLHECacheStruct() override;
-
-        void readCacheFileAndCompareWithThisGLHECache(EnergyPlusData &state) override;
-
         void initEnvironment(EnergyPlusData &state, Real64 CurTime) override;
 
         void oneTimeInit(EnergyPlusData &state) override;

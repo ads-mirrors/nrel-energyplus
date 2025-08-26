@@ -111,9 +111,6 @@ TEST_F(EnergyPlusFixture, GroundHeatExchangerTest_GetResponseFactor)
         "0.412345;                    !- g-Function g Value 3",
     });
 
-    // Envr variable
-    state->dataSysVars->DisableGLHECaching = true;
-
     // Setup
     ASSERT_TRUE(process_idf(idf_objects));
     state->init_state(*state);

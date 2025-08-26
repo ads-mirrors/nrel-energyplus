@@ -241,35 +241,8 @@ void GLHEVert::getAnnualTimeConstant()
     this->timeSSFactor = this->timeSS * 8760.0;
 }
 
-void write_vectors_as_csv(const std::vector<std::vector<double>> &columns, const std::string &filename)
-{
-    // find the maximum length
-    size_t max_len = 0;
-    for (const auto &col : columns) {
-        if (col.size() > max_len) {
-            max_len = col.size();
-        }
-    }
-
-    std::ofstream out(filename);
-
-    for (size_t row = 0; row < max_len; ++row) {
-        for (size_t col = 0; col < columns.size(); ++col) {
-            if (row < columns[col].size()) {
-                out << columns[col][row];
-            }
-            if (col + 1 < columns.size()) {
-                out << ","; // separator
-            }
-        }
-        out << "\n";
-    }
-}
-
 void GLHEVert::combineShortAndLongTimestepGFunctions() const
 {
-    write_vectors_as_csv({LNTTS_shortTimestep, GFNC_shortTimestep, this->myRespFactors->LNTTS, this->myRespFactors->GFNC}, "/tmp/g-func-before.csv");
-
     std::vector<Real64> GFNC_combined;
     std::vector<Real64> LNTTS_combined;
 
@@ -301,89 +274,6 @@ void GLHEVert::combineShortAndLongTimestepGFunctions() const
 
     this->myRespFactors->LNTTS = LNTTS_combined;
     this->myRespFactors->GFNC = GFNC_combined;
-
-    write_vectors_as_csv({this->myRespFactors->time, this->myRespFactors->LNTTS, this->myRespFactors->GFNC}, "/tmp/g-func-after.csv");
-}
-
-void GLHEVert::makeThisGLHECacheStruct()
-{
-    // For convenience
-    auto &d = myCacheData["Phys Data"];
-
-    d["Flow Rate"] = this->designFlow;
-    d["Soil k"] = this->soil.k;
-    d["Soil rhoCp"] = this->soil.rhoCp;
-    d["BH Top Depth"] = this->myRespFactors->props->bhTopDepth;
-    d["BH Length"] = this->myRespFactors->props->bhLength;
-    d["BH Diameter"] = this->myRespFactors->props->bhDiameter;
-    d["Grout k"] = this->myRespFactors->props->grout.k;
-    d["Grout rhoCp"] = this->myRespFactors->props->grout.rhoCp;
-    d["Pipe k"] = this->myRespFactors->props->pipe.k;
-    d["Pipe rhoCP"] = this->myRespFactors->props->pipe.rhoCp;
-    d["Pipe Diameter"] = this->myRespFactors->props->pipe.outDia;
-    d["Pipe Thickness"] = this->myRespFactors->props->pipe.thickness;
-    d["U-tube Dist"] = this->myRespFactors->props->bhUTubeDist;
-    d["Max Simulation Years"] = this->myRespFactors->maxSimYears;
-    d["g-Function Calc Method"] = GroundHeatExchangers::GFuncCalcMethodsStrs[static_cast<int>(this->gFuncCalcMethod)];
-
-    auto &d_bh_data = d["BH Data"];
-    int i = 0;
-    for (auto const &thisBH : this->myRespFactors->myBorholes) {
-        ++i;
-        auto &d_bh = d_bh_data[fmt::format("BH {}", i)];
-        d_bh["X-Location"] = thisBH->xLoc;
-        d_bh["Y-Location"] = thisBH->yLoc;
-    }
-}
-
-void GLHEVert::readCacheFileAndCompareWithThisGLHECache(EnergyPlusData &state)
-{
-
-    if (!(state.files.outputControl.glhe && FileSystem::fileExists(state.dataStrGlobals->outputGLHEFilePath))) {
-        // if the file doesn't exist, there are no data to read
-        return;
-    }
-    // file exists -- read data and load if possible
-
-    nlohmann::json const cached_json = FileSystem::readJSON(state.dataStrGlobals->outputGLHEFilePath);
-
-    for (auto const &existing_data : cached_json) {
-        if (myCacheData["Phys Data"] == existing_data["Phys Data"]) {
-            myCacheData["Response Factors"] = existing_data["Response Factors"];
-            gFunctionsExist = true;
-            break;
-        }
-    }
-
-    if (gFunctionsExist) {
-        // Populate the time array
-        this->myRespFactors->time = std::vector<Real64>(myCacheData["Response Factors"]["time"].get<std::vector<Real64>>());
-
-        // Populate the lntts array
-        this->myRespFactors->LNTTS = std::vector<Real64>(myCacheData["Response Factors"]["LNTTS"].get<std::vector<Real64>>());
-
-        // Populate the g-function array
-        this->myRespFactors->GFNC = std::vector<Real64>(myCacheData["Response Factors"]["GFNC"].get<std::vector<Real64>>());
-    }
-}
-
-void GLHEVert::writeGLHECacheToFile(const EnergyPlusData &state) const
-{
-    // TODO: the key is GHLE here, should be GLHE, but could break cache reading, so I'm leaving it for now
-    nlohmann::json cached_json;
-    if (FileSystem::fileExists(state.dataStrGlobals->outputGLHEFilePath)) {
-        // file exists -- add data
-        // open file
-        cached_json = FileSystem::readJSON(state.dataStrGlobals->outputGLHEFilePath);
-
-        // add current data
-        cached_json.emplace(fmt::format("GHLE {}", cached_json.size() + 1), myCacheData);
-    } else {
-        // file doesn't exist -- add data
-        // add current data
-        cached_json.emplace("GHLE 1", myCacheData);
-    }
-    FileSystem::writeFile<FileSystem::FileTypes::GLHE>(state.dataStrGlobals->outputGLHEFilePath, cached_json, 2);
 }
 
 std::vector<Real64> GLHEVert::distances(MyCartesian const &point_i, MyCartesian const &point_j)
@@ -620,14 +510,6 @@ void GLHEVert::calcGFunctions(EnergyPlusData &state)
     this->calcShortTimestepGFunctions(state);
     this->calcLongTimestepGFunctions(state);
     this->combineShortAndLongTimestepGFunctions();
-
-    // save data for later
-    if (state.files.outputControl.glhe && !state.dataSysVars->DisableGLHECaching) {
-        myCacheData["Response Factors"]["time"] = std::vector<Real64>(this->myRespFactors->time);
-        myCacheData["Response Factors"]["LNTTS"] = std::vector<Real64>(this->myRespFactors->LNTTS);
-        myCacheData["Response Factors"]["GFNC"] = std::vector<Real64>(this->myRespFactors->GFNC.begin(), this->myRespFactors->GFNC.end());
-        writeGLHECacheToFile(state);
-    }
 }
 
 void GLHEVert::setupTimeVectors() const

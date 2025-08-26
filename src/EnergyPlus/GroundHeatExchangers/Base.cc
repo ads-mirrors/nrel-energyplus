@@ -95,11 +95,8 @@ void GLHEBase::calcGroundHeatExchanger(EnergyPlusData &state)
     // Calculate G-Functions
     if (this->firstTime) {
         if (!gFunctionsExist) {
-            makeThisGLHECacheAndCompareWithFileCache(state);
-            if (!gFunctionsExist) {
-                calcGFunctions(state);
-                gFunctionsExist = true;
-            }
+            calcGFunctions(state);
+            gFunctionsExist = true;
         }
         this->firstTime = false;
     }
@@ -583,14 +580,6 @@ Real64 GLHEBase::interpGFunc(Real64 const x_val) const
     Real64 const y_high = y[u_idx];
 
     return (x_val - x_low) / (x_high - x_low) * (y_high - y_low) + y_low;
-}
-
-void GLHEBase::makeThisGLHECacheAndCompareWithFileCache(EnergyPlusData &state)
-{
-    if (state.files.outputControl.glhe && !state.dataSysVars->DisableGLHECaching) {
-        makeThisGLHECacheStruct();
-        readCacheFileAndCompareWithThisGLHECache(state);
-    }
 }
 
 std::vector<Real64> TDMA(std::vector<Real64> const &a, std::vector<Real64> const &b, std::vector<Real64> &c, std::vector<Real64> &d)

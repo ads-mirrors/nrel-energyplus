@@ -71,8 +71,6 @@ namespace GroundHeatExchangers {
         Real64 theta_3 = 0.0;
         Real64 sigma = 0.0;
 
-        nlohmann::json myCacheData;
-
         std::vector<Real64> GFNC_shortTimestep;
         std::vector<Real64> LNTTS_shortTimestep;
 
@@ -105,12 +103,6 @@ namespace GroundHeatExchangers {
         void getAnnualTimeConstant() override;
 
         Real64 getGFunc(Real64 time) override;
-
-        void makeThisGLHECacheStruct() override;
-
-        void readCacheFileAndCompareWithThisGLHECache(EnergyPlusData &state) override;
-
-        void writeGLHECacheToFile(const EnergyPlusData &state) const;
 
         Real64 calcBHAverageResistance(EnergyPlusData &state);
 

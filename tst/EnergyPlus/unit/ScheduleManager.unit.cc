@@ -1741,11 +1741,15 @@ TEST_F(EnergyPlusFixture, ScheduleCompact_MissingDayTypes)
     // Test for #11054
     std::string const idf_objects = delimited_string({
         "ScheduleTypeLimits,",
-        "  Any Number;              !- Name",
+        "  Fraction,                !- Name",
+        "  0,                       !- Lower Limit Value",
+        "  1,                       !- Upper Limit Value",
+        "  Continuous,              !- Numeric Type",
+        "  percent;                 !- Unit Type",
 
         "Schedule:Compact,",
         "  WindowVentSched,         !- Name",
-        "  Any Number,              !- Schedule Type Limits Name",
+        "  Fraction,                !- Schedule Type Limits Name",
         "  Through: 12/31,          !- Field 1",
         "  For: Monday Tuesday Wednesday Thursday Friday Saturday, !- Field 2",
         "  Until: 24:00,1;          !- Field 3",

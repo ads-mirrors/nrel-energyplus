@@ -368,7 +368,7 @@ TEST_F(EnergyPlusFixture, HPWHZoneEquipSeqenceNumberWarning)
     HeatBalanceManager::GetZoneData(*state, ErrorsFound);
     ASSERT_FALSE(ErrorsFound);
     ZoneEquipmentManager::GetZoneEquipment(*state);
-    EXPECT_FALSE(WaterThermalTanks::GetWaterThermalTankInput(*state));
+    EXPECT_NO_THROW(WaterThermalTanks::GetWaterThermalTankInput(*state));
 }
 
 TEST_F(EnergyPlusFixture, HPWHWrappedDummyNodeConfig)
@@ -732,7 +732,7 @@ TEST_F(EnergyPlusFixture, HPWHEnergyBalance)
     state->init_state(*state);
     state->dataEnvrn->StdRhoAir = 1.0;
 
-    ASSERT_FALSE(WaterThermalTanks::GetWaterThermalTankInput(*state));
+    WaterThermalTanks::GetWaterThermalTankInput(*state);
 
     WaterThermalTanks::WaterThermalTankData &Tank = state->dataWaterThermalTanks->WaterThermalTank(1);
     WaterThermalTanks::HeatPumpWaterHeaterData &HPWH = state->dataWaterThermalTanks->HPWaterHeater(Tank.HeatPumpNum);
@@ -1428,7 +1428,7 @@ TEST_F(EnergyPlusFixture, HPWHTestSPControl)
     SetPredefinedTables(*state);
     Sched::UpdateScheduleVals(*state);
 
-    EXPECT_FALSE(WaterThermalTanks::GetWaterThermalTankInput(*state));
+    WaterThermalTanks::GetWaterThermalTankInput(*state);
 
     WaterThermalTanks::WaterThermalTankData &Tank = state->dataWaterThermalTanks->WaterThermalTank(1);
     WaterThermalTanks::HeatPumpWaterHeaterData &HeatPump = state->dataWaterThermalTanks->HPWaterHeater(1);
@@ -1619,7 +1619,7 @@ TEST_F(EnergyPlusFixture, StratifiedTankUseEnergy)
     ASSERT_TRUE(process_idf(idf_objects));
     state->init_state(*state);
 
-    EXPECT_FALSE(WaterThermalTanks::GetWaterThermalTankInput(*state));
+    WaterThermalTanks::GetWaterThermalTankInput(*state);
 
     WaterThermalTanks::WaterThermalTankData &Tank = state->dataWaterThermalTanks->WaterThermalTank(1);
 
@@ -1737,7 +1737,7 @@ TEST_F(EnergyPlusFixture, StratifiedTankSourceTemperatures)
     Sched::UpdateScheduleVals(*state);
 
     int TankNum(1);
-    EXPECT_FALSE(WaterThermalTanks::GetWaterThermalTankInput(*state));
+    WaterThermalTanks::GetWaterThermalTankInput(*state);
 
     WaterThermalTanks::WaterThermalTankData &Tank = state->dataWaterThermalTanks->WaterThermalTank(TankNum);
 
@@ -1836,7 +1836,7 @@ TEST_F(EnergyPlusFixture, MixedTankTimeNeededCalc)
     EXPECT_FALSE(ErrorsFound);
 
     InternalHeatGains::GetInternalHeatGainsInput(*state);
-    EXPECT_FALSE(WaterThermalTanks::GetWaterThermalTankInput(*state));
+    WaterThermalTanks::GetWaterThermalTankInput(*state);
 
     int TankNum(1);
     WaterThermalTanks::WaterThermalTankData &Tank = state->dataWaterThermalTanks->WaterThermalTank(TankNum);
@@ -1949,7 +1949,7 @@ TEST_F(EnergyPlusFixture, StratifiedTankCalc)
     EXPECT_FALSE(ErrorsFound);
 
     InternalHeatGains::GetInternalHeatGainsInput(*state);
-    EXPECT_FALSE(WaterThermalTanks::GetWaterThermalTankInput(*state));
+    WaterThermalTanks::GetWaterThermalTankInput(*state);
 
     state->dataGlobal->HourOfDay = 0;
     state->dataGlobal->TimeStep = 1;
@@ -2146,7 +2146,7 @@ TEST_F(EnergyPlusFixture, StratifiedTankSourceFlowRateCalc)
 
     InternalHeatGains::GetInternalHeatGainsInput(*state);
 
-    EXPECT_FALSE(WaterThermalTanks::GetWaterThermalTankInput(*state));
+    WaterThermalTanks::GetWaterThermalTankInput(*state);
     constexpr int TankNum = 1;
     WaterThermalTanks::WaterThermalTankData &Tank = state->dataWaterThermalTanks->WaterThermalTank(TankNum);
     Tank.SourceInletNode = 1;
@@ -2398,7 +2398,7 @@ TEST_F(EnergyPlusFixture, DesuperheaterTimeAdvanceCheck)
     int DXNum = 1;
     bool FirstHVAC = true;
 
-    EXPECT_FALSE(WaterThermalTanks::GetWaterThermalTankInput(*state));
+    WaterThermalTanks::GetWaterThermalTankInput(*state);
 
     WaterThermalTanks::WaterThermalTankData &Tank = state->dataWaterThermalTanks->WaterThermalTank(TankNum);
     WaterThermalTanks::WaterHeaterDesuperheaterData &Desuperheater = state->dataWaterThermalTanks->WaterHeaterDesuperheater(Tank.DesuperheaterNum);
@@ -2679,7 +2679,7 @@ TEST_F(EnergyPlusFixture, StratifiedTank_GSHP_DesuperheaterSourceHeat)
     int CompNum(1);
     Real64 PLR(0.5);
 
-    EXPECT_FALSE(WaterThermalTanks::GetWaterThermalTankInput(*state));
+    WaterThermalTanks::GetWaterThermalTankInput(*state);
     // Test if the new data Structure for water to air heat pump coils successfully initialized
     EXPECT_EQ(state->dataHeatBal->HeatReclaimSimple_WAHPCoil(1).Name, "GSHP_COIL1");
     EXPECT_EQ(state->dataHeatBal->HeatReclaimSimple_WAHPCoil(1).SourceType, "Coil:Cooling:WaterToAirHeatPump:EquationFit");
@@ -3064,7 +3064,7 @@ TEST_F(EnergyPlusFixture, Desuperheater_Multispeed_Coil_Test)
     int TankNum(1);
     int DXNum(1);
 
-    EXPECT_FALSE(WaterThermalTanks::GetWaterThermalTankInput(*state));
+    WaterThermalTanks::GetWaterThermalTankInput(*state);
     // Source name and type successfully passed to DataHeatBalance::HeatReclaimDXCoil data struct
     EXPECT_EQ(state->dataHeatBal->HeatReclaimDXCoil(1).Name, "MULTISPEED_COIL");
     EXPECT_EQ(state->dataHeatBal->HeatReclaimDXCoil(1).SourceType, "Coil:Cooling:DX:MultiSpeed");
@@ -3474,7 +3474,7 @@ TEST_F(EnergyPlusFixture, Desuperheater_WAHP_VSEQ_Coil_Test)
     int DXNum(1);
     int PlantLoopNum(1);
 
-    EXPECT_FALSE(WaterThermalTanks::GetWaterThermalTankInput(*state));
+    WaterThermalTanks::GetWaterThermalTankInput(*state);
     // Source name and type successfully passed to DataHeatBalance::HeatReclaimVS_Coil data struct
 
     DataHeatBalance::HeatReclaimDataBase &HeatReclaim = state->dataHeatBal->HeatReclaimVS_Coil(DXNum);
@@ -3663,7 +3663,7 @@ TEST_F(EnergyPlusFixture, MixedTankAlternateSchedule)
     state->dataEnvrn->DayOfYear_Schedule = General::OrdinalDay(state->dataEnvrn->Month, state->dataEnvrn->DayOfMonth, 1);
     Sched::UpdateScheduleVals(*state);
 
-    EXPECT_FALSE(WaterThermalTanks::GetWaterThermalTankInput(*state));
+    WaterThermalTanks::GetWaterThermalTankInput(*state);
 
     int TankNum(1);
     Real64 rho;
@@ -3753,7 +3753,7 @@ TEST_F(EnergyPlusFixture, MixedTank_WarnPotentialFreeze)
     ASSERT_TRUE(process_idf(idf_objects));
     state->init_state(*state);
 
-    EXPECT_FALSE(WaterThermalTanks::GetWaterThermalTankInput(*state));
+    WaterThermalTanks::GetWaterThermalTankInput(*state);
 
     int TankNum(1);
     WaterThermalTanks::WaterThermalTankData &Tank = state->dataWaterThermalTanks->WaterThermalTank(TankNum);
@@ -3859,7 +3859,7 @@ TEST_F(EnergyPlusFixture, StratifiedTank_WarnPotentialFreeze)
 
     ASSERT_TRUE(process_idf(idf_objects));
     state->init_state(*state);
-    EXPECT_FALSE(WaterThermalTanks::GetWaterThermalTankInput(*state));
+    WaterThermalTanks::GetWaterThermalTankInput(*state);
 
     int TankNum(1);
     WaterThermalTanks::WaterThermalTankData &Tank = state->dataWaterThermalTanks->WaterThermalTank(TankNum);
@@ -4176,7 +4176,7 @@ TEST_F(EnergyPlusFixture, MultipleDesuperheaterSingleSource)
     int DXNum = 1;
     bool FirstHVAC = true;
 
-    EXPECT_FALSE(WaterThermalTanks::GetWaterThermalTankInput(*state));
+    WaterThermalTanks::GetWaterThermalTankInput(*state);
 
     // first tank
     WaterThermalTanks::WaterThermalTankData &Tank1 = state->dataWaterThermalTanks->WaterThermalTank(1);
@@ -4914,7 +4914,7 @@ TEST_F(EnergyPlusFixture, CrashCalcStandardRatings_HPWH_and_Standalone)
     SetPredefinedTables(*state);
     Sched::UpdateScheduleVals(*state);
 
-    EXPECT_FALSE(WaterThermalTanks::GetWaterThermalTankInput(*state));
+    WaterThermalTanks::GetWaterThermalTankInput(*state);
 
     {
         auto &HPWH = state->dataWaterThermalTanks->HPWaterHeater(1);
@@ -5197,8 +5197,8 @@ TEST_F(EnergyPlusFixture, HPWH_Wrapped_Stratified_Simultaneous)
     ASSERT_TRUE(process_idf(idf_objects));
     state->init_state(*state);
 
-    // This returns true if ErrorsFound
-    EXPECT_FALSE(WaterThermalTanks::GetWaterThermalTankInput(*state));
+    // This throws a FatalError if ErrorsFound
+    WaterThermalTanks::GetWaterThermalTankInput(*state);
 
     // Previous warning before fix
     std::string const error_string =
@@ -5492,8 +5492,8 @@ TEST_F(EnergyPlusFixture, HPWH_Pumped_Stratified_Simultaneous)
 
     ASSERT_TRUE(process_idf(idf_objects));
     state->init_state(*state);
-    // This returns true if ErrorsFound
-    EXPECT_FALSE(WaterThermalTanks::GetWaterThermalTankInput(*state));
+    // This throws a FatalError if ErrorsFound
+    WaterThermalTanks::GetWaterThermalTankInput(*state);
 
     // Previous warning before fix
     // std::string const error_string = delimited_string({
@@ -5609,7 +5609,7 @@ TEST_F(EnergyPlusFixture, StratifiedTank_WarningNumberOfNodes_FalsePositiveBlank
     EXPECT_FALSE(ErrorsFound);
 
     InternalHeatGains::GetInternalHeatGainsInput(*state);
-    EXPECT_FALSE(WaterThermalTanks::GetWaterThermalTankInput(*state));
+    WaterThermalTanks::GetWaterThermalTankInput(*state);
 
     EXPECT_EQ(1, state->dataWaterThermalTanks->numWaterHeaterStratified);
     WaterThermalTanks::WaterThermalTankData &Tank = state->dataWaterThermalTanks->WaterThermalTank(1);
@@ -5720,7 +5720,7 @@ TEST_F(EnergyPlusFixture, StratifiedTank_WarningNumberOfNodes_FalsePositiveZeroe
     EXPECT_FALSE(ErrorsFound);
 
     InternalHeatGains::GetInternalHeatGainsInput(*state);
-    EXPECT_FALSE(WaterThermalTanks::GetWaterThermalTankInput(*state));
+    WaterThermalTanks::GetWaterThermalTankInput(*state);
 
     EXPECT_EQ(1, state->dataWaterThermalTanks->numWaterHeaterStratified);
     WaterThermalTanks::WaterThermalTankData &Tank = state->dataWaterThermalTanks->WaterThermalTank(1);
@@ -5830,7 +5830,7 @@ TEST_F(EnergyPlusFixture, StratifiedTank_WarningNumberOfNodes_ExpectedWarning)
     EXPECT_FALSE(ErrorsFound);
 
     InternalHeatGains::GetInternalHeatGainsInput(*state);
-    EXPECT_FALSE(WaterThermalTanks::GetWaterThermalTankInput(*state));
+    WaterThermalTanks::GetWaterThermalTankInput(*state);
 
     EXPECT_EQ(1, state->dataWaterThermalTanks->numWaterHeaterStratified);
     WaterThermalTanks::WaterThermalTankData &Tank = state->dataWaterThermalTanks->WaterThermalTank(1);
@@ -6157,7 +6157,7 @@ TEST_F(EnergyPlusFixture, MixedTank_PVT_Per_VolumeSizing_PerSolarCollectorArea)
     EXPECT_EQ(10.0 * 0.5, pvt.AreaCol);
     InternalHeatGains::GetInternalHeatGainsInput(*state);
     has_err_output(true);
-    EXPECT_FALSE(WaterThermalTanks::GetWaterThermalTankInput(*state)); // This returns true if ErrorsFound
+    WaterThermalTanks::GetWaterThermalTankInput(*state); // This throws a FatalError if ErrorsFound
     EXPECT_TRUE(compare_err_stream(""));
 
     EXPECT_EQ(4, state->dataLoopNodes->NumOfNodes);

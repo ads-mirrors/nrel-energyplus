@@ -1024,7 +1024,8 @@ TEST_F(EnergyPlusFixture, Schedule_GetCurrentScheduleValue_DST_RampUp_Leap)
     }
 
     EXPECT_EQ(365, sched1->weekScheds[366]->Num);
-    EXPECT_EQ(365, Sched::GetWeekSchedule(*state, format("WEEK_{}", 366))->dayScheds[2]->Num);
+    constexpr int num_internal_day_schedules = 1;
+    EXPECT_EQ(num_internal_day_schedules + 365, Sched::GetWeekSchedule(*state, format("WEEK_{}", 366))->dayScheds[2]->Num);
     EXPECT_EQ(8784.0, Sched::GetDaySchedule(*state, format("DAY_{}", 366))->tsVals[23 * s_glob->TimeStepsInHour + 3]);
 
     s_glob->TimeStepsInHour = s_glob->TimeStepsInHour; // must initialize this to get schedules initialized
@@ -1211,9 +1212,11 @@ TEST_F(EnergyPlusFixture, Schedule_GetCurrentScheduleValue_DST_RampUp_NoLeap)
         }
     }
 
+    constexpr int num_internal_day_schedules = 1;
+
     // Feb 28
     EXPECT_EQ(58, sched1->weekScheds[59]->Num);
-    EXPECT_EQ(58, Sched::GetWeekSchedule(*state, "WEEK_59")->dayScheds[1]->Num);
+    EXPECT_EQ(num_internal_day_schedules + 58, Sched::GetWeekSchedule(*state, "WEEK_59")->dayScheds[1]->Num);
     EXPECT_EQ(59 * Constant::rHoursInDay, Sched::GetDaySchedule(*state, "DAY_59")->tsVals[23 * s_glob->TimeStepsInHour + 3]);
 
     // Feb 29: doesn't exist, and I default initialized everything above to -1
@@ -1223,11 +1226,11 @@ TEST_F(EnergyPlusFixture, Schedule_GetCurrentScheduleValue_DST_RampUp_NoLeap)
 
     // March 1
     EXPECT_EQ(60, sched1->weekScheds[61]->Num);
-    EXPECT_EQ(59, sched1->weekScheds[61]->dayScheds[1]->Num);
+    EXPECT_EQ(num_internal_day_schedules + 59, sched1->weekScheds[61]->dayScheds[1]->Num);
     EXPECT_EQ(60 * Constant::rHoursInDay, sched1->weekScheds[61]->dayScheds[1]->tsVals[23 * s_glob->TimeStepsInHour + 3]);
 
     EXPECT_EQ(365, sched1->weekScheds[366]->Num);
-    EXPECT_EQ(364, sched1->weekScheds[366]->dayScheds[1]->Num);
+    EXPECT_EQ(num_internal_day_schedules + 364, sched1->weekScheds[366]->dayScheds[1]->Num);
     EXPECT_EQ(8760.0, sched1->weekScheds[366]->dayScheds[1]->tsVals[23 * s_glob->TimeStepsInHour + 3]);
 
     s_glob->TimeStepsInHour = s_glob->TimeStepsInHour; // must initialize this to get schedules initialized
@@ -1538,7 +1541,9 @@ TEST_F(EnergyPlusFixture, ShadowCalculation_CSV_extra_parenthesis)
     EXPECT_TRUE(s_sched->ScheduleFileShadingProcessed);
     EXPECT_EQ(3, s_sched->schedules.size()); // AlwaysOn, AlwaysOff, plus file
     EXPECT_EQ(365, s_sched->weekSchedules.size());
-    EXPECT_EQ(365, s_sched->daySchedules.size());
+    // MissingDaySchedule-0.0 is daySchedules[0]
+    constexpr int num_internal_day_schedules = 1;
+    EXPECT_EQ(num_internal_day_schedules + 365, s_sched->daySchedules.size());
     EXPECT_EQ(1, s_sched->UniqueProcessedExternalFiles.size());
 
     auto &[fPath, root] = *(s_sched->UniqueProcessedExternalFiles.begin());
@@ -1566,11 +1571,11 @@ TEST_F(EnergyPlusFixture, ShadowCalculation_CSV_extra_parenthesis)
     EXPECT_EQ(Sched::GetWeekScheduleNum(*state, "EAST SIDE TREE_SHADING_WK_62"), 60);
     EXPECT_EQ(Sched::GetWeekScheduleNum(*state, "EAST SIDE TREE_SHADING_WK_366"), 364);
 
-    EXPECT_EQ(Sched::GetDayScheduleNum(*state, "EAST SIDE TREE_SHADING_DY_1"), 0);
-    EXPECT_EQ(Sched::GetDayScheduleNum(*state, "EAST SIDE TREE_SHADING_DY_59"), 58);
-    EXPECT_EQ(Sched::GetDayScheduleNum(*state, "EAST SIDE TREE_SHADING_DY_61"), 59);
-    EXPECT_EQ(Sched::GetDayScheduleNum(*state, "EAST SIDE TREE_SHADING_DY_62"), 60);
-    EXPECT_EQ(Sched::GetDayScheduleNum(*state, "EAST SIDE TREE_SHADING_DY_366"), 364);
+    EXPECT_EQ(Sched::GetDayScheduleNum(*state, "EAST SIDE TREE_SHADING_DY_1"), num_internal_day_schedules + 0);
+    EXPECT_EQ(Sched::GetDayScheduleNum(*state, "EAST SIDE TREE_SHADING_DY_59"), num_internal_day_schedules + 58);
+    EXPECT_EQ(Sched::GetDayScheduleNum(*state, "EAST SIDE TREE_SHADING_DY_61"), num_internal_day_schedules + 59);
+    EXPECT_EQ(Sched::GetDayScheduleNum(*state, "EAST SIDE TREE_SHADING_DY_62"), num_internal_day_schedules + 60);
+    EXPECT_EQ(Sched::GetDayScheduleNum(*state, "EAST SIDE TREE_SHADING_DY_366"), num_internal_day_schedules + 364);
 
     auto const *sched = dynamic_cast<Sched::ScheduleDetailed const *>(Sched::GetSchedule(*state, "EAST SIDE TREE_SHADING"));
 
@@ -1582,10 +1587,10 @@ TEST_F(EnergyPlusFixture, ShadowCalculation_CSV_extra_parenthesis)
     for (int iDay = 0; iDay < 365; ++iDay) {
         if (iDay <= 58) {
             EXPECT_EQ(fmt::format("EAST SIDE TREE_shading_wk_{}", iDay + 1), s_sched->weekSchedules[iDay]->Name);
-            EXPECT_EQ(fmt::format("EAST SIDE TREE_shading_dy_{}", iDay + 1), s_sched->daySchedules[iDay]->Name);
+            EXPECT_EQ(fmt::format("EAST SIDE TREE_shading_dy_{}", iDay + 1), s_sched->daySchedules[num_internal_day_schedules + iDay]->Name);
         } else {
             EXPECT_EQ(fmt::format("EAST SIDE TREE_shading_wk_{}", iDay + 2), s_sched->weekSchedules[iDay]->Name);
-            EXPECT_EQ(fmt::format("EAST SIDE TREE_shading_dy_{}", iDay + 2), s_sched->daySchedules[iDay]->Name);
+            EXPECT_EQ(fmt::format("EAST SIDE TREE_shading_dy_{}", iDay + 2), s_sched->daySchedules[num_internal_day_schedules + iDay]->Name);
         }
     }
 
@@ -1593,25 +1598,25 @@ TEST_F(EnergyPlusFixture, ShadowCalculation_CSV_extra_parenthesis)
     int iDay = 1;
     int TS = 1;
     int iHour = 1;
-    EXPECT_EQ(0.00000000, s_sched->daySchedules[(iDay - 1)]->tsVals[(iHour - 1) * s_glob->TimeStepsInHour + (TS - 1)]);
+    EXPECT_EQ(0.00000000, s_sched->daySchedules[(num_internal_day_schedules + iDay - 1)]->tsVals[(iHour - 1) * s_glob->TimeStepsInHour + (TS - 1)]);
 
     // 01/01 13:00
     iDay = 1;
     TS = 4;
     iHour = 13;
-    EXPECT_EQ(0.96107882, s_sched->daySchedules[(iDay - 1)]->tsVals[(iHour - 1) * s_glob->TimeStepsInHour + (TS - 1)]);
+    EXPECT_EQ(0.96107882, s_sched->daySchedules[(num_internal_day_schedules + iDay - 1)]->tsVals[(iHour - 1) * s_glob->TimeStepsInHour + (TS - 1)]);
 
     // 12/31 16:15,0.19556231,
     iDay = 365;
     TS = 1;
     iHour = 17;
-    EXPECT_EQ(0.19556231, s_sched->daySchedules[(iDay - 1)]->tsVals[(iHour - 1) * s_glob->TimeStepsInHour + (TS - 1)]);
+    EXPECT_EQ(0.19556231, s_sched->daySchedules[(num_internal_day_schedules + iDay - 1)]->tsVals[(iHour - 1) * s_glob->TimeStepsInHour + (TS - 1)]);
 
     // 12/31 24:00
     iDay = 365;
     TS = 4;
     iHour = 24;
-    EXPECT_EQ(0.00000000, s_sched->daySchedules[(iDay - 1)]->tsVals[(iHour - 1) * s_glob->TimeStepsInHour + (TS - 1)]);
+    EXPECT_EQ(0.00000000, s_sched->daySchedules[(num_internal_day_schedules + iDay - 1)]->tsVals[(iHour - 1) * s_glob->TimeStepsInHour + (TS - 1)]);
 }
 
 TEST_F(EnergyPlusFixture, getScheduleMinMaxByDayType_test)

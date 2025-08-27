@@ -3400,8 +3400,7 @@ void UpdateDataandReport(EnergyPlusData &state, OutputProcessor::TimeStepType co
         }
 
         // Update meters on the TimeStep  (Zone)
-        if (op->meterValues.capacity() > 0 and
-            (!state.dataSysVars->ReportDuringWarmup || (state.dataSysVars->ReportDuringWarmup and !state.dataGlobal->WarmupFlag))) {
+        if (op->meterValues.capacity() > 0) {
             for (int iMeter = 0; iMeter < (int)op->meters.size(); ++iMeter) {
                 auto *meter = op->meters[iMeter];
                 if (meter->type == MeterType::Normal || meter->type == MeterType::Custom) {

@@ -4903,7 +4903,7 @@ void GetWaterThermalTankInput(EnergyPlusData &state)
     } // get input flag
 
     if (ErrorsFound) {
-        ShowFatalError(state, format("GetWaterThermalTankInput: Errors found in processing Water Thermal Tank input."));
+        ShowFatalError(state, "GetWaterThermalTankInput: Errors found in processing Water Thermal Tank input.");
     }
 }
 

@@ -28,7 +28,7 @@ IF (UNIX)
   ADD_DEFINITIONS("-fPIC")
 ENDIF()
 
-TARGET_LINK_LIBRARIES( epfmiimport epexpat miniziplib )
+TARGET_LINK_LIBRARIES( epfmiimport PRIVATE epexpat miniziplib )
 
 if( UNIX )
 set_target_properties(

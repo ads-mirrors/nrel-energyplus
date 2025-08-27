@@ -181,3 +181,17 @@ This is entirely new table
 - AvailabilityManager Name
 - Type
 - Schedule Name
+
+#### Control Summary -  PlantEquipmentOperation Load Based
+
+This is entirely new table
+
+- Plant Loop Name
+- Name
+- Type
+- Schedule Name
+- Index
+- Lower Limit [W]
+- Upper Limit [W]
+- Equipment List Name
+- Equipment

@@ -6450,11 +6450,11 @@ defrost control strategy is set to Timed.
 This optional alpha field specifies the name of a bivariate curve or table that
 defines the defrost energy based on outdoor air moisture content. This curve is
 used only when Timed or OnDemand defrost control is selected.
-\paragraph{Field: Heat Pump Multiplier} This field specifies the number of
-compressors in the heat pump. The value must be an integer greater than or equal
-to 1. The default value is 1.0, which means only one compressor is used. It is
-used to model modular compressors where multiple heat pump units are connected
-in parallel to provide larger heating/cooling capacity.
+\paragraph{Field: Heat Pump Multiplier} This field specifies the number of heat 
+pumps being modeled. The value must be an integer greater than or equal to 1. 
+The default value is 1.0, which means only one heat pump is used. This input 
+field is used to model modular heat pumps where multiple heat pump units are 
+connected in parallel to provide larger heating/cooling capacity.
 \paragraph{Field: Control Type} This field is the compressor control type for
 the heat pump. There are two options:
 

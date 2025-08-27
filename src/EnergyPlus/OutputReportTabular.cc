@@ -18515,6 +18515,18 @@ int digitsAferDecimal(std::string const &s)
     return int(numDigits);
 }
 
+std::string stringJoinDelimiter(const std::vector<std::string> &in_strings, const std::string &delimiter)
+{
+    if (in_strings.empty()) {
+        return "";
+    }
+    std::string result = in_strings[0];
+    for (int i = 1; i < in_strings.size(); ++i) {
+        result += delimiter + in_strings[i];
+    }
+    return result;
+}
+
 void AddTOCEntry(EnergyPlusData &state, std::string const &nameSection, std::string const &nameReport)
 {
     // SUBROUTINE INFORMATION:

@@ -202,6 +202,20 @@ TEST_F(EnergyPlusFixture, OutputReportTabularTest_splitCommaString)
     EXPECT_EQ(actual, splitCommaString(" part1 , part2 , part3 "));
 }
 
+TEST_F(EnergyPlusFixture, OutputReportTabularTest_stringJoinDelimiter)
+{
+    std::vector<std::string> original;
+    EXPECT_EQ("", stringJoinDelimiter(original, ";"));
+    original.push_back("part1");
+    EXPECT_EQ("part1", stringJoinDelimiter(original, ";"));
+    original.push_back("part2");
+    EXPECT_EQ("part1;part2", stringJoinDelimiter(original, ";"));
+    EXPECT_EQ("part1 ; part2", stringJoinDelimiter(original, " ; "));
+    original.push_back("part3");
+    EXPECT_EQ("part1;part2;part3", stringJoinDelimiter(original, ";"));
+    EXPECT_EQ("part1 ; part2 ; part3", stringJoinDelimiter(original, " ; "));
+}
+
 TEST_F(EnergyPlusFixture, OutputReportTabularTest_unitsFromHeading)
 {
     std::string unitString;

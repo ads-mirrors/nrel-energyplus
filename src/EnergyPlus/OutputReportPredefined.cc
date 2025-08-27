@@ -2199,7 +2199,6 @@ namespace OutputReportPredefined {
         newPreDefColumn = state.dataOutRptPredefined->numColumnTag;
         return newPreDefColumn;
     }
-
 } // namespace OutputReportPredefined
 
 } // namespace EnergyPlus

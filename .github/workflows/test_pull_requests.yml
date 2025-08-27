@@ -79,7 +79,7 @@ jobs:
 
     - name: Baseline Checkout
       if: matrix.run_regressions
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         ref: develop
         path: baseline
@@ -128,7 +128,7 @@ jobs:
     # BUILD AND TEST EVERYTHING ON THE CURRENT BRANCH
 
     - name: Branch Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         path: branch
 

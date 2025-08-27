@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 # EnergyPlus, Copyright (c) 1996-2025, The Board of Trustees of the University
 # of Illinois, The Regents of the University of California, through Lawrence
 # Berkeley National Laboratory (subject to receipt of any required approvals
@@ -53,35 +55,71 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+import argparse
+import re
+from collections import Counter
+from pathlib import Path
 
-import os
-from subprocess import STDOUT, CalledProcessError, check_call
-
-from ep_testing.tests.base import BaseTest
+RE_FULLNAME = re.compile(r"<!-- FullName:(?P<activeReportName>[^_]+)_(?P<activeForName>[^_]+)_(?P<subtitle>[^_]+)-->")
 
 
-class HVACDiagram(BaseTest):
+def format_row(row, col_widths):
+    return "| " + " | ".join(f"{str(cell):<{col_widths[i]}}" for i, cell in enumerate(row)) + " |"
 
-    def name(self):
-        return "Test running 5ZoneAirCooled.idf, then HVACDiagram and make sure the SVG is created"
 
-    def run(self, install_root: str, verbose: bool, kwargs: dict):
-        idf_path = os.path.join(install_root, "ExampleFiles", "5ZoneAirCooled.idf")
-        print('* Running test class "%s" on file "%s"... ' % (self.__class__.__name__, "5ZoneAirCooled.idf"), end="")
-        eplus_binary = os.path.join(install_root, "energyplus")
-        dev_null = open(os.devnull, "w")
-        try:
-            check_call([eplus_binary, "-D", idf_path], stdout=dev_null, stderr=STDOUT)
-            print(" [E+ FINISHED] ", end="")
-        except CalledProcessError:
-            raise Exception("EnergyPlus failed!") from None
-        hvac_diagram_binary = os.path.join(install_root, "PostProcess", "HVAC-Diagram")
-        try:
-            check_call([hvac_diagram_binary], stdout=dev_null, stderr=STDOUT)
-            print(" [HVAC DIAGRAM FINISHED] ", end="")
-        except CalledProcessError:
-            raise Exception("Transition failed!") from None
-        if os.path.exists("eplusout.svg"):
-            print(" [SVG FILE EXISTS] [DONE]!")
-        else:
-            raise Exception("SVG Did not exist!")
+def ensure_unique_html_tables(html_path: Path):
+    """
+    Ensure that each HTML table in the report has a unique name.
+    If duplicates are found, append a number to the duplicate names.
+    """
+    content = html_path.read_text()
+
+    matches = RE_FULLNAME.findall(content)
+    if not matches:
+        raise ValueError("No HTML tables found with FullName pattern")
+
+    # Filter only duplicates (count > 1)
+    duplicates = [
+        (activeReportName, activeForName, subtitle, count)
+        for (activeReportName, activeForName, subtitle), count in Counter(matches).items()
+        if count > 1
+    ]
+
+    # Include header row in width calculation
+    if duplicates:
+        print(f"Found {len(duplicates)} duplicate HTML table(s) based on FullName\n")
+        header = [("activeReportName", "activeForName", "subtitle", "count")]
+        rows = header + duplicates
+        # Compute max width for each column
+        col_widths = [max(len(str(row[i])) for row in rows) for i in range(len(header[0]))]
+
+        print(format_row(rows[0], col_widths))
+        print("|-" + "-|-".join("-" * w for w in col_widths) + "-|")
+        for row in duplicates:
+            print(format_row(row, col_widths))
+
+        exit(1)
+    else:
+        print("No duplicates found.")
+        exit(0)
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Compare Output Reports.")
+    parser.add_argument("out_dir", type=Path, help="Output directory where to find the reports")
+    parser.add_argument(
+        "--skip-missing", action="store_true", default=False, help="Do not raise if the eplustbl.htm isn't found"
+    )
+    args = parser.parse_args()
+
+    out_dir = args.out_dir.resolve()
+    if not (out_dir.exists() and out_dir.is_dir()):
+        raise IOError(f"'{out_dir}' is not a valid directory")
+    html_path = out_dir / "eplustbl.htm"
+    if not html_path.exists():
+        if args.skip_missing:
+            print(f"Skipping missing HTML file: {html_path}")
+            exit(0)
+        raise IOError(f"HTML '{html_path}' does not exist")
+
+    ensure_unique_html_tables(html_path=html_path)

@@ -427,8 +427,6 @@ void CoilCoolingDX::oneTimeInit(EnergyPlusData &state)
                         OutputProcessor::TimeStepType::System,
                         OutputProcessor::StoreType::Average,
                         this->name);
-    DISABLE_WARNING_PUSH
-    DISABLE_WARNING_STRICT_ALIASING
     SetupOutputVariable(state,
                         "Cooling Coil Dehumidification Mode",
                         Constant::Units::None,
@@ -436,7 +434,6 @@ void CoilCoolingDX::oneTimeInit(EnergyPlusData &state)
                         OutputProcessor::TimeStepType::System,
                         OutputProcessor::StoreType::Average,
                         this->name);
-    DISABLE_WARNING_POP
     SetupOutputVariable(state,
                         "Cooling Coil Waste Heat Power",
                         Constant::Units::W,

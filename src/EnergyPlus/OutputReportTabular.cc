@@ -6944,7 +6944,7 @@ void FillRemainingPredefinedEntries(EnergyPlusData &state)
     // fill the available manager tables
     Avail::FillPredefinedTablesForAvailManager(state);
 
-    // fill the plant equipment operation load based 
+    // fill the plant equipment operation load based
     PlantManager::FillPlantEquipmentOperationLoad(state);
 }
 

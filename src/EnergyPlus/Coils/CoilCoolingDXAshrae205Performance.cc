@@ -195,7 +195,7 @@ void CoilCoolingDX205Performance::calculate_air_mass_flow(EnergyPlus::EnergyPlus
 
 void CoilCoolingDX205Performance::size(EnergyPlusData &state)
 {
-    for (int index = 0; index < speeds.size(); index++) {
+    for (int index = 0; index < static_cast<int>(speeds.size()); index++) {
         calculate_air_mass_flow(state, index);
     }
 }
@@ -303,7 +303,7 @@ void CoilCoolingDX205Performance::calculate(EnergyPlus::EnergyPlusData &state,
             // compressor_sequence_number = speed - 1 + ratio
             // For example, a speed number of 2 with a ratio between (0,1) indicates that the compressor is modulating between speeds 1 and 2 with the
             // given ratio. The ASHRAE205 model simply interpolates using a decimal fraction speed.
-            const auto &[gross_total_capacity, gross_sensible_capacity, gross_power] =
+            [[maybe_unused]] const auto &[gross_total_capacity, gross_sensible_capacity, gross_power] =
                 representation->performance.performance_map_cooling.calculate_performance(outdoor_coil_entering_dry_bulb_temperature_K,
                                                                                           indoor_coil_entering_relative_humidity,
                                                                                           indoor_coil_entering_dry_bulb_temperature_K,

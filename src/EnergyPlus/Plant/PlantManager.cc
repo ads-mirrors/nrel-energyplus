@@ -304,7 +304,6 @@ void GetPlantLoopData(EnergyPlusData &state)
     int NumAlphas; // Number of elements in the alpha array
     int NumNums;   // Number of elements in the numeric array
     int IOStat;    // IO Status when calling get input subroutine
-    int NumFluids; // number of fluids in sim
     int PlantLoopNum;
     int CondLoopNum;
     Array1D_string Alpha(18); // dimension to num of alpha fields in input

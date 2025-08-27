@@ -938,14 +938,11 @@ namespace EMSManager {
         //  so here we do a final pass and throw the errors that would usually occur during get input.
 
         // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-        OutputProcessor::VariableType VarType;
+        OutputProcessor::VariableType VarType = OutputProcessor::VariableType::Invalid;
         bool ErrorsFound(false);
-        bool FoundObjectType;
-        bool FoundObjectName;
-        bool FoundActuatorName;
-        int ActuatorVariableNum;
-        int InternVarNum;        // local do loop index
-        int InternalVarAvailNum; // local do loop index
+        bool FoundObjectType = false;
+        bool FoundObjectName = false;
+        int InternalVarAvailNum = 0; // local do loop index
         std::string cCurrentModuleObject;
 
         cCurrentModuleObject = "EnergyManagementSystem:Sensor";
@@ -1093,7 +1090,7 @@ namespace EMSManager {
         } // ActuatorNum
 
         cCurrentModuleObject = "EnergyManagementSystem:InternalVariable";
-        for (InternVarNum = 1; InternVarNum <= state.dataRuntimeLang->NumInternalVariablesUsed; ++InternVarNum) {
+        for (int InternVarNum = 1; InternVarNum <= state.dataRuntimeLang->NumInternalVariablesUsed; ++InternVarNum) {
             if (state.dataRuntimeLang->EMSInternalVarsUsed(InternVarNum).CheckedOkay) {
                 continue;
             }

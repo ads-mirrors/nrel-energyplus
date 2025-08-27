@@ -6684,7 +6684,7 @@ void CalcInteriorSolarDistribution(EnergyPlusData &state)
 
             if (s_surf->SurfWinWindowModelType(SurfNum) != WindowModel::EQL && ANY_BLIND(ShadeFlag)) {
                 auto const &surfShade = s_surf->surfShades(SurfNum);
-                auto const *matBlind = dynamic_cast<Material::MaterialBlind const *>(s_mat->materials(surfShade.blind.matNum));
+                [[maybe_unused]] auto const *matBlind = dynamic_cast<Material::MaterialBlind const *>(s_mat->materials(surfShade.blind.matNum));
                 assert(matBlind != nullptr);
 
                 int profIdxLo = surfShade.blind.profAngIdxLo;

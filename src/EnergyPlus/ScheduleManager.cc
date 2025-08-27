@@ -394,7 +394,6 @@ namespace Sched {
         std::string subString;
         int MaxNums1;
         char ColumnSep;
-        bool FileIntervalInterpolated;
         int rowLimitCount;
         int skiprowCount;
         int curcolCount;
@@ -2529,7 +2528,8 @@ namespace Sched {
         isMinMaxSet = true;
     }
 
-    std::vector<Real64> const &ScheduleConstant::getDayVals(EnergyPlusData &state, [[maybe_unused]] int jDay, [[maybe_unused]] int dayofWeek)
+    std::vector<Real64> const &
+    ScheduleConstant::getDayVals([[maybe_unused]] EnergyPlusData &state, [[maybe_unused]] int jDay, [[maybe_unused]] int dayofWeek)
     {
         assert((int)tsVals.size() == Constant::iHoursInDay * state.dataGlobal->TimeStepsInHour);
         return this->tsVals;
@@ -2827,7 +2827,6 @@ namespace Sched {
         // representation.
 
         // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-        Real64 rRetHH; // real Returned "hour"
         std::string hHour;
         std::string mMinute;
 

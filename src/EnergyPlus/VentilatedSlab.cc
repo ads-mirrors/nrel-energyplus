@@ -2170,7 +2170,6 @@ namespace VentilatedSlab {
                                 EnthSteamOutWet = steam->getSatEnthalpy(state, TempSteamIn, 0.0, RoutineName);
                                 LatentHeatSteam = EnthSteamInDry - EnthSteamOutWet;
                                 SteamDensity = steam->getSatDensity(state, TempSteamIn, 1.0, RoutineName);
-                                int DummyWaterIndex = 1;
 
                                 auto *water = Fluid::GetWater(state);
                                 Cp = water->getSpecificHeat(state, Constant::HWInitConvTemp, RoutineName);

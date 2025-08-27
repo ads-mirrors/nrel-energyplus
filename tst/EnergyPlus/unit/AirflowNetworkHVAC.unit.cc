@@ -20709,9 +20709,9 @@ TEST_F(EnergyPlusFixture, AirflowNetwork_TestZoneEqpSupportZonePTHP)
     thisSys.m_sysType = UnitarySystems::UnitarySys::SysType::PackagedWSHP;
     state->dataUnitarySystems->unitarySys.push_back(thisSys);
     state->dataUnitarySystems->unitarySys[0].Name = "ZonalWAHP";
-    state->dataUnitarySystems->unitarySys[0].m_CoolOutAirVolFlow == 0;
-    state->dataUnitarySystems->unitarySys[0].m_HeatOutAirVolFlow == 0;
-    state->dataUnitarySystems->unitarySys[0].m_NoCoolHeatOutAirVolFlow == 0;
+    state->dataUnitarySystems->unitarySys[0].m_CoolOutAirVolFlow = 0;
+    state->dataUnitarySystems->unitarySys[0].m_HeatOutAirVolFlow = 0;
+    state->dataUnitarySystems->unitarySys[0].m_NoCoolHeatOutAirVolFlow = 0;
     state->dataUnitarySystems->unitarySys[0].m_FanIndex = 1;
     state->dataUnitarySystems->unitarySys[0].AirInNode = 3;
     state->dataUnitarySystems->unitarySys[0].m_OAMixerNodes[0] = 4;

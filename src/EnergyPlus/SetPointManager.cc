@@ -75,6 +75,7 @@
 #include <EnergyPlus/OutAirNodeManager.hh>
 #include <EnergyPlus/OutputProcessor.hh>
 #include <EnergyPlus/OutputReportPredefined.hh>
+#include <EnergyPlus/OutputReportTabular.hh>
 #include <EnergyPlus/Plant/DataPlant.hh>
 #include <EnergyPlus/PlantUtilities.hh>
 #include <EnergyPlus/Psychrometrics.hh>
@@ -1485,41 +1486,21 @@ void FillPredefinedTablesForSetPointManagers(EnergyPlusData &state)
                 OutputReportPredefined::PreDefTableEntry(state, orp->pdchSPMOArOutLo2, spmOA->Name, spmOA->low2);
                 OutputReportPredefined::PreDefTableEntry(state, orp->pdchSPMOArOutHi2, spmOA->Name, spmOA->high2);
             }
-            if (spm->ctrlNodeNums.size() == 1) {
-                OutputReportPredefined::PreDefTableEntry(
-                    state, orp->pdchSPMOArStPtNd, spmOA->Name, state.dataLoopNodes->NodeID(spm->ctrlNodeNums[0]));
-                PlantLocation plantLoc;
-                PlantUtilities::ScanPlantLoopsForNodeNum(state, routineName, spm->ctrlNodeNums[0], plantLoc);
+            std::vector<std::string> namesOfNodes;
+            std::vector<std::string> namesOfLoops;
+            PlantLocation plantLoc;
+            for (std::size_t i = 0; i < spm->ctrlNodeNums.size(); ++i) {
+                namesOfNodes.push_back(state.dataLoopNodes->NodeID(spm->ctrlNodeNums[i]));
+                PlantUtilities::ScanPlantLoopsForNodeNum(state, routineName, spm->ctrlNodeNums[i], plantLoc);
                 if (plantLoc.loopNum > 0) {
-                    OutputReportPredefined::PreDefTableEntry(state, orp->pdchSPMOArStPtLp, spmOA->Name, plantLoc.loop->Name);
+                    namesOfLoops.push_back(plantLoc.loop->Name);
                 }
-            } else if (spm->ctrlNodeNums.size() > 1) {
-                std::string nodeNames = "";
-                std::string plantLoopNames = "";
-                std::string lastPlantLoopName = "";
-                PlantLocation plantLoc;
-                for (std::size_t i = 0; i < spm->ctrlNodeNums.size(); ++i) {
-                    if (!nodeNames.empty()) {
-                        nodeNames += "; ";
-                    }
-                    nodeNames += state.dataLoopNodes->NodeID(spm->ctrlNodeNums[i]);
-                    PlantUtilities::ScanPlantLoopsForNodeNum(state, routineName, spm->ctrlNodeNums[i], plantLoc);
-                    if (plantLoc.loopNum > 0) {
-                        std::string curPlantLoopName = plantLoc.loop->Name;
-                        if (curPlantLoopName != lastPlantLoopName) {
-                            if (!plantLoopNames.empty()) {
-                                plantLoopNames += "; ";
-                            }
-                            plantLoopNames += curPlantLoopName;
-                            lastPlantLoopName = curPlantLoopName;
-                        }
-                    }
-                }
-                OutputReportPredefined::PreDefTableEntry(state, orp->pdchSPMOArStPtNd, spmOA->Name, nodeNames);
-                OutputReportPredefined::PreDefTableEntry(state, orp->pdchSPMOArStPtLp, spmOA->Name, plantLoopNames);
+                OutputReportPredefined::PreDefTableEntry(
+                    state, orp->pdchSPMOArStPtNd, spmOA->Name, OutputReportTabular::stringJoinDelimiter(namesOfNodes, "; "));
+                OutputReportPredefined::PreDefTableEntry(
+                    state, orp->pdchSPMOArStPtLp, spmOA->Name, OutputReportTabular::stringJoinDelimiter(namesOfLoops, "; "));
             }
         } break;
-
         // SetpointManager:ReturnTemperature:ChilledWater
         // SetpointManager:ReturnTemperature:HotWater
         case SPMType::ChilledWaterReturnTemp:

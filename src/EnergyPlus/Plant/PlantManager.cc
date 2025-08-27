@@ -2280,7 +2280,8 @@ void FillPlantEquipmentOperationLoad(EnergyPlusData &state)
                 for (int lComp = 1; lComp <= thisLoop.OpScheme(jScheme).EquipList(kList).NumComps; ++lComp) {
                     componentNames.push_back(thisLoop.OpScheme(jScheme).EquipList(kList).Comp(lComp).Name);
                 }
-                OutputReportPredefined::PreDefTableEntry(state, orp->pdchPLtEqOpLbEquip, rowS, OutputReportTabular::stringJoinDelimiter(componentNames, ";"));
+                OutputReportPredefined::PreDefTableEntry(
+                    state, orp->pdchPLtEqOpLbEquip, rowS, OutputReportTabular::stringJoinDelimiter(componentNames, "; "));
             }
         }
     }

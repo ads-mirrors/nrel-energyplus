@@ -1570,7 +1570,6 @@ namespace Avail {
         }
     }
 
-
     void InitSysAvailManagers(EnergyPlusData &state)
     {
 

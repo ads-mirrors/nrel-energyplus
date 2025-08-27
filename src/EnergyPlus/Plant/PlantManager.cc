@@ -94,6 +94,7 @@
 #include <EnergyPlus/NodeInputManager.hh>
 #include <EnergyPlus/OutputProcessor.hh>
 #include <EnergyPlus/OutputReportPredefined.hh>
+#include <EnergyPlus/OutputReportTabular.hh>
 #include <EnergyPlus/OutsideEnergySources.hh>
 #include <EnergyPlus/PhotovoltaicThermalCollectors.hh>
 #include <EnergyPlus/PipeHeatTransfer.hh>
@@ -2275,6 +2276,11 @@ void FillPlantEquipmentOperationLoad(EnergyPlusData &state)
                     state, orp->pdchPLtEqOpLbLow, rowS, thisLoop.OpScheme(jScheme).EquipList(kList).RangeLowerLimit);
                 OutputReportPredefined::PreDefTableEntry(
                     state, orp->pdchPLtEqOpLbUp, rowS, thisLoop.OpScheme(jScheme).EquipList(kList).RangeUpperLimit);
+                std::vector<std::string> componentNames;
+                for (int lComp = 1; lComp <= thisLoop.OpScheme(jScheme).EquipList(kList).NumComps; ++lComp) {
+                    componentNames.push_back(thisLoop.OpScheme(jScheme).EquipList(kList).Comp(lComp).Name);
+                }
+                OutputReportPredefined::PreDefTableEntry(state, orp->pdchPLtEqOpLbEquip, rowS, OutputReportTabular::stringJoinDelimiter(componentNames, ";"));
             }
         }
     }

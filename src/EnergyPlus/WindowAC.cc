@@ -678,7 +678,7 @@ namespace WindowAC {
             SetupOutputVariable(state,
                                 "Zone Window Air Conditioner Fan Availability Status",
                                 Constant::Units::None,
-                                (int &)state.dataWindowAC->WindAC(WindACNum).availStatus,
+                                state.dataWindowAC->WindAC(WindACNum).availStatus,
                                 OutputProcessor::TimeStepType::System,
                                 OutputProcessor::StoreType::Average,
                                 state.dataWindowAC->WindAC(WindACNum).Name);

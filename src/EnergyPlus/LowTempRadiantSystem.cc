@@ -1561,7 +1561,7 @@ namespace LowTempRadiantSystem {
             SetupOutputVariable(state,
                                 "Zone Radiant HVAC Operation Mode",
                                 Constant::Units::None,
-                                (int &)thisHydrSys.opMode,
+                                thisHydrSys.opMode,
                                 OutputProcessor::TimeStepType::System,
                                 OutputProcessor::StoreType::Average,
                                 thisHydrSys.Name);
@@ -1736,7 +1736,7 @@ namespace LowTempRadiantSystem {
             SetupOutputVariable(state,
                                 "Zone Radiant HVAC Operation Mode",
                                 Constant::Units::None,
-                                (int &)thisCFloSys.opMode,
+                                thisCFloSys.opMode,
                                 OutputProcessor::TimeStepType::System,
                                 OutputProcessor::StoreType::Average,
                                 thisCFloSys.Name);

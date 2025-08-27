@@ -1387,7 +1387,7 @@ namespace VentilatedSlab {
             SetupOutputVariable(state,
                                 "Zone Ventilated Slab Fan Availability Status",
                                 Constant::Units::None,
-                                (int &)ventSlab.availStatus,
+                                ventSlab.availStatus,
                                 OutputProcessor::TimeStepType::System,
                                 OutputProcessor::StoreType::Average,
                                 ventSlab.Name);

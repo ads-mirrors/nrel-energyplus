@@ -1049,7 +1049,6 @@ TEST_F(EnergyPlusFixture, HPWHSizing)
     HeatBalanceManager::GetZoneData(*state, ErrorsFound);
     ASSERT_FALSE(ErrorsFound);
     DataZoneEquipment::GetZoneEquipmentData(*state);
-    ASSERT_FALSE(ErrorsFound);
 
     state->dataHVACGlobal->TimeStepSys = 1;
     state->dataHVACGlobal->TimeStepSysSec = state->dataHVACGlobal->TimeStepSys * Constant::rSecsInHour;

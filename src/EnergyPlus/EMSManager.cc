@@ -2019,7 +2019,7 @@ void SetupEMSActuator(EnergyPlusData &state,
 
     auto &s_lang = state.dataRuntimeLang;
 
-    auto tup = std::make_tuple(std::move(Util::makeUPPER(objType)), std::move(Util::makeUPPER(objName)), std::move(Util::makeUPPER(controlTypeName)));
+    auto tup = std::make_tuple(Util::makeUPPER(objType), Util::makeUPPER(objName), Util::makeUPPER(controlTypeName));
 
     // DataRuntimeLanguage::EMSActuatorKey const key(UpperCaseObjectType, UpperCaseObjectName, UpperCaseActuatorName);
     if (s_lang->EMSActuatorAvailableMap.find(tup) != s_lang->EMSActuatorAvailableMap.end()) {

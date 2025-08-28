@@ -212,7 +212,6 @@ void CoilCoolingDX205Performance::simulate(EnergyPlus::EnergyPlusData &state,
                                            bool const, // singleMode,
                                            Real64)     // LoadSHR)
 {
-    static constexpr std::string_view RoutineName = "CoilCoolingDX205Performance::simulate";
     Real64 reportingConstant = state.dataHVACGlobal->TimeStepSys * Constant::iSecsInHour;
     recoveredEnergyRate = 0.0;
     NormalSHR = 0.0;
@@ -246,7 +245,6 @@ void CoilCoolingDX205Performance::calculate(EnergyPlus::EnergyPlusData &state,
     // if not cycling (discrete): compressor_sequence_number = speed -1 & speed, MFR is different for each call to
     // performance. Results are interpolated between the 2 performance calls;
     // if not cycling (continuous): compressor_sequence_number = speed - 1 + ratio, MFR is scaled using the ratio
-    static constexpr std::string_view RoutineName = "CoilCoolingDX205Performance::calculate";
 
     const auto this_speed = max(speedNum, 1); // 1 for single-speed, speedNum for multispeed. Disallow speed = 0
 

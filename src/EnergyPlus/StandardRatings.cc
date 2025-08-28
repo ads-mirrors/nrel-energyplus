@@ -6383,7 +6383,7 @@ namespace StandardRatings {
                     q_low = Q_H2_Int(spnum) + ((Q_H0_Low(spnum) - Q_H1_Low(spnum)) * ratio);
                     // equation 11.183
                     p_low = P_H2_Int(spnum) + ((P_H0_Low(spnum) - P_H1_Low(spnum)) * ratio);
-                } else if (t < 1.67) {
+                } else { // if (t < 1.67)
                     // for now Q_H2_Int is replaced with Q_H_Int, no equation for the later
                     // equation 11.181
                     q_low = Q_H2_Int(spnum);

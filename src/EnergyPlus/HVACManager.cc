@@ -2317,8 +2317,6 @@ void ReportAirHeatBalance(EnergyPlusData &state)
     // PURPOSE OF THIS SUBROUTINE:
     // This subroutine updates the report variables for the AirHeatBalance.
 
-    static constexpr std::string_view RoutineName3("ReportAirHeatBalance:3");
-
     // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
 
     state.dataHeatBal->ZoneTotalExfiltrationHeatLoss = 0.0;

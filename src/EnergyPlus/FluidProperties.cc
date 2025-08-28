@@ -508,8 +508,6 @@ namespace Fluid {
 
     void InitConstantFluidPropertiesData(EnergyPlusData &state)
     {
-        constexpr std::string_view routineName = "InitConstantFluidPropertiesData";
-
         auto &df = state.dataFluid;
         bool ErrorsFound = false;
 

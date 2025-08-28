@@ -1661,7 +1661,7 @@ namespace Avail {
         // Loop over all the System Availability Managers and invoke the correct
         // System Availability Manager algorithm.
 
-        Status availStatus;
+        Status availStatus = Status::Invalid;
 
         switch (type) {
         case ManagerType::Scheduled: { // 'AvailabilityManager:Scheduled'
@@ -2280,7 +2280,7 @@ namespace Avail {
         Real64 NumHoursBeforeOccupancy; // Variable to store the number of hours before occupancy in optimum start period
         bool exitLoop;                  // exit loop on found data
 
-        Status availStatus;
+        Status availStatus = Status::Invalid;
 
         auto &OptStartMgr = state.dataAvail->OptimumStartData(SysAvailNum);
 

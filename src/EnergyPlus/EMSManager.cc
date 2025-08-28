@@ -1630,6 +1630,8 @@ namespace EMSManager {
         if (allocated(state.dataAirLoop->PriAirSysAvailMgr)) {
             int numAirLoops = isize(state.dataAirLoop->PriAirSysAvailMgr);
             for (int Loop = 1; Loop <= numAirLoops; ++Loop) {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstrict-aliasing"
                 SetupEMSActuator(state,
                                  "AirLoopHVAC",
                                  state.dataAirSystemsData->PrimaryAirSystems(Loop).Name,
@@ -1637,6 +1639,7 @@ namespace EMSManager {
                                  "[ ]",
                                  state.dataEMSMgr->lDummy2,
                                  (int &)state.dataAirLoop->PriAirSysAvailMgr(Loop).availStatus);
+#pragma GCC diagnostic pop
             }
         }
     }

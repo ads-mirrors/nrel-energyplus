@@ -1430,7 +1430,7 @@ void parseComputeLine(EnergyPlusData &state, std::string const &lineOfCompute, i
         // first see if word is an operator
         Op op = static_cast<Op>(getEnumValue(opNamesUC, word));
         if (op == Op::Invalid) {
-            static_cast<Op>(getEnumValue(opNames2UC, word));
+            op = static_cast<Op>(getEnumValue(opNames2UC, word));
         }
 
         // if not an operator then look for

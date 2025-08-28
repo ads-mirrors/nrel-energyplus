@@ -285,7 +285,7 @@ void EIRPlantLoopHeatPump::setOperatingFlowRatesWSHP(EnergyPlusData &state, bool
     }
 }
 
-void EIRPlantLoopHeatPump::setOperatingFlowRatesASHP(EnergyPlusData &state, bool FirstHVACIteration, Real64 const /*currentLoad*/)
+void EIRPlantLoopHeatPump::setOperatingFlowRatesASHP(EnergyPlusData &state, bool FirstHVACIteration, [[maybe_unused]] Real64 const currentLoad)
 {
     if (!this->running) {
         this->loadSideMassFlowRate = 0.0;

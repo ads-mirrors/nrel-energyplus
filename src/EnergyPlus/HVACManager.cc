@@ -2372,7 +2372,7 @@ void reportAirHeatBal1(EnergyPlusData &state,
                        DataHeatBalance::AirReportVars &szAirRpt,
                        DataZoneEquipment::EquipConfiguration const &szEquipConfig,
                        int const zoneNum,
-                       int const /*spaceNum*/)
+                       [[maybe_unused]] int const spaceNum)
 {
     Real64 CpAir = Psychrometrics::PsyCpAirFnW(state.dataEnvrn->OutHumRat); // Heat capacity of air (J/kg-C)
     Real64 outDB = state.dataHeatBal->Zone(zoneNum).OutDryBulbTemp;

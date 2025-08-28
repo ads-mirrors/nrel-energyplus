@@ -5008,13 +5008,13 @@ namespace Fluid {
         }
     }
 
-    void GlycolProps::getDensityTemperatureLimits(EnergyPlusData & /*state*/, Real64 &MinTempLimit, Real64 &MaxTempLimit)
+    void GlycolProps::getDensityTemperatureLimits([[maybe_unused]] EnergyPlusData &state, Real64 &MinTempLimit, Real64 &MaxTempLimit)
     {
         MinTempLimit = this->RhoLowTempValue;
         MaxTempLimit = this->RhoHighTempValue;
     }
 
-    void GlycolProps::getSpecificHeatTemperatureLimits(EnergyPlusData & /*state*/, Real64 &MinTempLimit, Real64 &MaxTempLimit)
+    void GlycolProps::getSpecificHeatTemperatureLimits([[maybe_unused]] EnergyPlusData &state, Real64 &MinTempLimit, Real64 &MaxTempLimit)
     {
         MinTempLimit = this->CpLowTempValue;
         MaxTempLimit = this->CpHighTempValue;

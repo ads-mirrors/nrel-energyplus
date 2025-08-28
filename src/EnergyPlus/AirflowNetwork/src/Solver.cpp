@@ -3313,26 +3313,27 @@ namespace AirflowNetwork {
                     if (MultizoneSurfaceData(i).VentSurfCtrNum == VentControlType::ASH55 ||
                         MultizoneSurfaceData(i).VentSurfCtrNum == VentControlType::CEN15251) {
                         int zoneNum = MultizoneSurfaceData(i).NodeNums[0];
-                        if (MultizoneSurfaceData(i).RAFNflag) {
-                            zoneNum = MultizoneSurfaceData(i).ZonePtr;
-                        }
-                        if (m_state.dataSurface->Surface(MultizoneSurfaceData(i).SurfNum).Zone <= 0) {
-                            MultizoneSurfaceData(i).ZonePtr = zoneNum;
-                        }
-                        int mzPtr = 0;
-                        for (int mzIndex = 1; mzIndex <= AirflowNetworkNumOfZones; ++mzIndex) {
-                            if (zoneNum == MultizoneZoneData(mzIndex).ZoneNum) {
-                                mzPtr = mzIndex;
-                                break;
+                        if (zoneNum > 0) {
+                            int mzPtr = 0;
+                            for (int mzIndex = 1; mzIndex <= AirflowNetworkNumOfZones; ++mzIndex) {
+                                if (zoneNum == MultizoneZoneData(mzIndex).ZoneNum) {
+                                    mzPtr = mzIndex;
+                                    break;
+                                }
                             }
-                        }
-                        if (MultizoneSurfaceData(i).VentSurfCtrNum == VentControlType::ASH55) {
-                            MultizoneZoneData(mzPtr).ASH55PeopleInd =
-                                Solver::get_people_index(MultizoneZoneData(mzPtr).ZoneNum, VentControlType::ASH55, ErrorsFound);
-                        }
-                        if (MultizoneSurfaceData(i).VentSurfCtrNum == VentControlType::CEN15251) {
-                            MultizoneZoneData(mzPtr).CEN15251PeopleInd =
-                                Solver::get_people_index(MultizoneZoneData(mzPtr).ZoneNum, VentControlType::CEN15251, ErrorsFound);
+                            if (MultizoneSurfaceData(i).VentSurfCtrNum == VentControlType::ASH55) {
+                                MultizoneZoneData(mzPtr).ASH55PeopleInd =
+                                    Solver::get_people_index(MultizoneZoneData(mzPtr).ZoneNum, VentControlType::ASH55, ErrorsFound);
+                            }
+                            if (MultizoneSurfaceData(i).VentSurfCtrNum == VentControlType::CEN15251) {
+                                MultizoneZoneData(mzPtr).CEN15251PeopleInd =
+                                    Solver::get_people_index(MultizoneZoneData(mzPtr).ZoneNum, VentControlType::CEN15251, ErrorsFound);
+                            }
+                        } else {
+                            ShowSevereError(m_state,
+                                            format(RoutineName) + "No zone number was found for AFN Surface " + MultizoneSurfaceData(i).SurfName);
+                            ShowContinueError(m_state,
+                                              "Check the " + CurrentModuleObject + " and Surface objects to verify they are connected to a zone.");
                         }
                     }
                 } break;

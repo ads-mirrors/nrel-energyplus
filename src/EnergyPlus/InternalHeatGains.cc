@@ -183,10 +183,10 @@ namespace InternalHeatGains {
         DataHeatBalance::IntGainType::ElectricLoadCenterStorageSimple,
         DataHeatBalance::IntGainType::ElectricLoadCenterConverter};
     // Explicitly list internal gains not gathered here
-    static constexpr std::array<DataHeatBalance::IntGainType, 3> ExcludedIntGainTypes = {
-        DataHeatBalance::IntGainType::ZoneContaminantSourceAndSinkCarbonDioxide,
-        DataHeatBalance::IntGainType::DaylightingDeviceTubular,
-        DataHeatBalance::IntGainType::ZoneContaminantSourceAndSinkGenericContam};
+    // static constexpr std::array<DataHeatBalance::IntGainType, 3> ExcludedIntGainTypes = {
+    //     DataHeatBalance::IntGainType::ZoneContaminantSourceAndSinkCarbonDioxide,
+    //     DataHeatBalance::IntGainType::DaylightingDeviceTubular,
+    //     DataHeatBalance::IntGainType::ZoneContaminantSourceAndSinkGenericContam};
 
     void ManageInternalHeatGains(EnergyPlusData &state,
                                  ObjexxFCL::Optional_bool_const InitOnly) // when true, just calls the get input, if appropriate and returns.

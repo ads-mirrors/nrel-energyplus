@@ -4490,10 +4490,7 @@ TEST_F(EnergyPlusFixture, AirflowNetwork_get_people_indexTest)
     // Unit test added for fix to Defect #11027
     int expectedIndexResult;
     int actualIndexResult;
-    int expectedZonePtrResult;
-    int actualZonePtrResult;
     bool errFlag = false;
-    int arrayIndex;
 
     state->afn->MultizoneSurfaceData.allocate(10);
     state->afn->MultizoneZoneData.allocate(3);
@@ -4512,164 +4509,92 @@ TEST_F(EnergyPlusFixture, AirflowNetwork_get_people_indexTest)
     state->dataHeatBal->People(3).AdaptiveASH55 = false;
     state->dataHeatBal->People(3).AdaptiveCEN15251 = false;
 
-    state->dataSurface->Surface(1).Zone = 1;
-    state->dataSurface->Surface(2).Zone = 2;
-    state->dataSurface->Surface(3).Zone = 3;
-    state->dataSurface->Surface(4).Zone = 1;
-    state->dataSurface->Surface(5).Zone = 2;
-    state->dataSurface->Surface(6).Zone = 3;
-    state->dataSurface->Surface(7).Zone = 0;
-    state->dataSurface->Surface(8).Zone = 0;
-    state->dataSurface->Surface(9).Zone = 0;
-    state->dataSurface->Surface(10).Zone = 0;
-
     state->afn->MultizoneZoneData(1).ZoneNum = 3;
     state->afn->MultizoneZoneData(2).ZoneNum = 1;
     state->afn->MultizoneZoneData(3).ZoneNum = 2;
 
-    state->afn->MultizoneSurfaceData(1).NodeNums[0] = 1;
     state->afn->MultizoneSurfaceData(1).ZonePtr = 1;
-    state->afn->MultizoneSurfaceData(1).RAFNflag = false;
-    state->afn->MultizoneSurfaceData(1).SurfNum = 1;
-    state->afn->MultizoneSurfaceData(2).NodeNums[0] = 2;
     state->afn->MultizoneSurfaceData(2).ZonePtr = 2;
-    state->afn->MultizoneSurfaceData(2).RAFNflag = false;
-    state->afn->MultizoneSurfaceData(2).SurfNum = 2;
-    state->afn->MultizoneSurfaceData(3).NodeNums[0] = 3;
     state->afn->MultizoneSurfaceData(3).ZonePtr = 3;
-    state->afn->MultizoneSurfaceData(3).RAFNflag = false;
-    state->afn->MultizoneSurfaceData(3).SurfNum = 3;
-    state->afn->MultizoneSurfaceData(4).NodeNums[0] = 1;
     state->afn->MultizoneSurfaceData(4).ZonePtr = 1;
-    state->afn->MultizoneSurfaceData(4).RAFNflag = false;
-    state->afn->MultizoneSurfaceData(4).SurfNum = 4;
-    state->afn->MultizoneSurfaceData(5).NodeNums[0] = 2;
     state->afn->MultizoneSurfaceData(5).ZonePtr = 2;
-    state->afn->MultizoneSurfaceData(5).RAFNflag = false;
-    state->afn->MultizoneSurfaceData(5).SurfNum = 5;
-    state->afn->MultizoneSurfaceData(6).NodeNums[0] = 3;
     state->afn->MultizoneSurfaceData(6).ZonePtr = 3;
-    state->afn->MultizoneSurfaceData(6).RAFNflag = false;
-    state->afn->MultizoneSurfaceData(6).SurfNum = 6;
-    state->afn->MultizoneSurfaceData(7).NodeNums[0] = 1;
     state->afn->MultizoneSurfaceData(7).ZonePtr = 1;
-    state->afn->MultizoneSurfaceData(7).RAFNflag = false;
-    state->afn->MultizoneSurfaceData(7).SurfNum = 7;
-    state->afn->MultizoneSurfaceData(8).NodeNums[0] = 2;
     state->afn->MultizoneSurfaceData(8).ZonePtr = 2;
-    state->afn->MultizoneSurfaceData(8).RAFNflag = false;
-    state->afn->MultizoneSurfaceData(8).SurfNum = 8;
-    state->afn->MultizoneSurfaceData(9).NodeNums[0] = 3;
     state->afn->MultizoneSurfaceData(9).ZonePtr = 3;
-    state->afn->MultizoneSurfaceData(9).RAFNflag = false;
-    state->afn->MultizoneSurfaceData(9).SurfNum = 9;
-    state->afn->MultizoneSurfaceData(10).NodeNums[0] = 2;
     state->afn->MultizoneSurfaceData(10).ZonePtr = 1;
-    state->afn->MultizoneSurfaceData(10).RAFNflag = true;
-    state->afn->MultizoneSurfaceData(10).SurfNum = 10;
 
     // Tests S1A/C: Surface--AFN Surface 1 (points to Zone 1 which is People 3 which does not use ASH55 or CEN15251)
-    arrayIndex = 1;
     expectedIndexResult = 0;
-    expectedZonePtrResult = 2;
-    state->afn->get_people_index(actualIndexResult, actualZonePtrResult, VentControlType::ASH55, true, arrayIndex, errFlag);
+    actualIndexResult = state->afn->get_people_index(state->afn->MultizoneSurfaceData(1).ZonePtr, VentControlType::ASH55, errFlag);
     EXPECT_EQ(expectedIndexResult, actualIndexResult);
-    EXPECT_EQ(expectedZonePtrResult, actualZonePtrResult);
     EXPECT_TRUE(errFlag);
     errFlag = false; // reset
     expectedIndexResult = 0;
-    expectedZonePtrResult = 2;
-    state->afn->get_people_index(actualIndexResult, actualZonePtrResult, VentControlType::CEN15251, true, arrayIndex, errFlag);
+    actualIndexResult = state->afn->get_people_index(state->afn->MultizoneSurfaceData(1).ZonePtr, VentControlType::CEN15251, errFlag);
     EXPECT_EQ(expectedIndexResult, actualIndexResult);
-    EXPECT_EQ(expectedZonePtrResult, actualZonePtrResult);
     EXPECT_TRUE(errFlag);
     errFlag = false; // reset
 
     // Tests S2A/C: Surface--AFN Surface 2 (points to Zone 2 which is People 1 which uses ASH55)
-    arrayIndex = 2;
     expectedIndexResult = 1;
-    expectedZonePtrResult = 3;
-    state->afn->get_people_index(actualIndexResult, actualZonePtrResult, VentControlType::ASH55, true, arrayIndex, errFlag);
+    actualIndexResult = state->afn->get_people_index(state->afn->MultizoneSurfaceData(2).ZonePtr, VentControlType::ASH55, errFlag);
     EXPECT_EQ(expectedIndexResult, actualIndexResult);
-    EXPECT_EQ(expectedZonePtrResult, actualZonePtrResult);
     EXPECT_FALSE(errFlag);
     expectedIndexResult = 0;
-    expectedZonePtrResult = 3;
-    state->afn->get_people_index(actualIndexResult, actualZonePtrResult, VentControlType::CEN15251, true, arrayIndex, errFlag);
+    actualIndexResult = state->afn->get_people_index(state->afn->MultizoneSurfaceData(2).ZonePtr, VentControlType::CEN15251, errFlag);
     EXPECT_EQ(expectedIndexResult, actualIndexResult);
-    EXPECT_EQ(expectedZonePtrResult, actualZonePtrResult);
     EXPECT_TRUE(errFlag);
     errFlag = false; // reset
 
-    // Tests S3A/C: Surface--AFN Surface 3 (points to Zone 3 which is People 2 which uses CEN15251)
-    arrayIndex = 3;
-    expectedIndexResult = 0;
-    expectedZonePtrResult = 1;
-    state->afn->get_people_index(actualIndexResult, actualZonePtrResult, VentControlType::ASH55, true, arrayIndex, errFlag);
+    // Tests S3A/C: Surface--AFN Surface 3 (points to Zone 3 which is People 2 which uses CEN15251)    expectedIndexResult = 0;
+    actualIndexResult = state->afn->get_people_index(state->afn->MultizoneSurfaceData(3).ZonePtr, VentControlType::ASH55, errFlag);
     EXPECT_EQ(expectedIndexResult, actualIndexResult);
-    EXPECT_EQ(expectedZonePtrResult, actualZonePtrResult);
     EXPECT_TRUE(errFlag);
     errFlag = false; // reset
     expectedIndexResult = 2;
-    expectedZonePtrResult = 1;
-    state->afn->get_people_index(actualIndexResult, actualZonePtrResult, VentControlType::CEN15251, true, arrayIndex, errFlag);
+    actualIndexResult = state->afn->get_people_index(state->afn->MultizoneSurfaceData(3).ZonePtr, VentControlType::CEN15251, errFlag);
     EXPECT_EQ(expectedIndexResult, actualIndexResult);
-    EXPECT_EQ(expectedZonePtrResult, actualZonePtrResult);
     EXPECT_FALSE(errFlag);
 
     // Tests S10C: Surface--AFN Surface 10 (points to Zone 2 but RAFN is set so this goes to Zone 1 which is People 3 which is rest to use CEN15251)
     state->dataHeatBal->People(3).AdaptiveCEN15251 = true;
-    arrayIndex = 10;
     expectedIndexResult = 3;
-    expectedZonePtrResult = 2;
-    state->afn->get_people_index(actualIndexResult, actualZonePtrResult, VentControlType::CEN15251, true, arrayIndex, errFlag);
+    actualIndexResult = state->afn->get_people_index(state->afn->MultizoneSurfaceData(10).ZonePtr, VentControlType::CEN15251, errFlag);
     EXPECT_EQ(expectedIndexResult, actualIndexResult);
-    EXPECT_EQ(expectedZonePtrResult, actualZonePtrResult);
     EXPECT_FALSE(errFlag);
     state->dataHeatBal->People(3).AdaptiveCEN15251 = false;
 
     // Tests Z1A/C: Zone--Array 1 (points to Zone 3 which is People 2 which uses CEN15251)
-    arrayIndex = 1;
     expectedIndexResult = 0;
-    expectedZonePtrResult = 1;
-    state->afn->get_people_index(actualIndexResult, actualZonePtrResult, VentControlType::ASH55, false, arrayIndex, errFlag);
+    actualIndexResult = state->afn->get_people_index(state->afn->MultizoneZoneData(1).ZoneNum, VentControlType::ASH55, errFlag);
     EXPECT_EQ(expectedIndexResult, actualIndexResult);
-    EXPECT_EQ(expectedZonePtrResult, actualZonePtrResult);
     EXPECT_TRUE(errFlag);
     errFlag = false; // reset
     expectedIndexResult = 2;
-    state->afn->get_people_index(actualIndexResult, actualZonePtrResult, VentControlType::CEN15251, false, arrayIndex, errFlag);
+    actualIndexResult = state->afn->get_people_index(state->afn->MultizoneZoneData(1).ZoneNum, VentControlType::CEN15251, errFlag);
     EXPECT_EQ(expectedIndexResult, actualIndexResult);
-    EXPECT_EQ(expectedZonePtrResult, actualZonePtrResult);
     EXPECT_FALSE(errFlag);
 
     // Tests Z2A/C: Zone--Array 2 (points to Zone 1 which is People 3 which uses neither ASH55 nor CEN15251)
-    arrayIndex = 2;
     expectedIndexResult = 0;
-    expectedZonePtrResult = 2;
-    state->afn->get_people_index(actualIndexResult, actualZonePtrResult, VentControlType::ASH55, false, arrayIndex, errFlag);
+    actualIndexResult = state->afn->get_people_index(state->afn->MultizoneZoneData(2).ZoneNum, VentControlType::ASH55, errFlag);
     EXPECT_EQ(expectedIndexResult, actualIndexResult);
-    EXPECT_EQ(expectedZonePtrResult, actualZonePtrResult);
     EXPECT_TRUE(errFlag);
     errFlag = false; // reset
-    state->afn->get_people_index(actualIndexResult, actualZonePtrResult, VentControlType::CEN15251, false, arrayIndex, errFlag);
+    actualIndexResult = state->afn->get_people_index(state->afn->MultizoneZoneData(2).ZoneNum, VentControlType::CEN15251, errFlag);
     EXPECT_EQ(expectedIndexResult, actualIndexResult);
-    EXPECT_EQ(expectedZonePtrResult, actualZonePtrResult);
     EXPECT_TRUE(errFlag);
     errFlag = false; // reset
 
     // Tests Z3A/C: Zone--Array 3 (points to Zone 2 which is People 1 which uses ASH55)
-    arrayIndex = 3;
     expectedIndexResult = 1;
-    expectedZonePtrResult = 3;
-    state->afn->get_people_index(actualIndexResult, actualZonePtrResult, VentControlType::ASH55, false, arrayIndex, errFlag);
+    actualIndexResult = state->afn->get_people_index(state->afn->MultizoneZoneData(3).ZoneNum, VentControlType::ASH55, errFlag);
     EXPECT_EQ(expectedIndexResult, actualIndexResult);
-    EXPECT_EQ(expectedZonePtrResult, actualZonePtrResult);
     EXPECT_FALSE(errFlag);
     expectedIndexResult = 0;
-    state->afn->get_people_index(actualIndexResult, actualZonePtrResult, VentControlType::CEN15251, false, arrayIndex, errFlag);
+    actualIndexResult = state->afn->get_people_index(state->afn->MultizoneZoneData(3).ZoneNum, VentControlType::CEN15251, errFlag);
     EXPECT_EQ(expectedIndexResult, actualIndexResult);
-    EXPECT_EQ(expectedZonePtrResult, actualZonePtrResult);
     EXPECT_TRUE(errFlag);
     errFlag = false; // reset (not really necessary unless more tests are added)
 }

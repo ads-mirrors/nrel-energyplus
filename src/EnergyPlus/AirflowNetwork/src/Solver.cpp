@@ -2500,12 +2500,11 @@ namespace AirflowNetwork {
                     }
                 } else if (SELECT_CASE_var == "ASHRAE55ADAPTIVE") {
                     // Check that for the given zone, there is a people object for which ASHRAE 55 calculations are carried out
-                    int mzZoneDataPtr;
-                    Solver::get_people_index(MultizoneZoneData(i).ASH55PeopleInd, mzZoneDataPtr, VentControlType::ASH55, false, i, ErrorsFound);
+                    MultizoneZoneData(i).ASH55PeopleInd = Solver::get_people_index(MultizoneZoneData(i).ZoneNum, VentControlType::ASH55, ErrorsFound);
                 } else if (SELECT_CASE_var == "CEN15251ADAPTIVE") {
                     // Check that for the given zone, there is a people object for which CEN-15251 calculations are carried out
-                    int mzZoneDataPtr;
-                    Solver::get_people_index(MultizoneZoneData(i).CEN15251PeopleInd, mzZoneDataPtr, VentControlType::CEN15251, false, i, ErrorsFound);
+                    MultizoneZoneData(i).CEN15251PeopleInd =
+                        Solver::get_people_index(MultizoneZoneData(i).ZoneNum, VentControlType::CEN15251, ErrorsFound);
                 } else {
                 }
             }
@@ -3304,24 +3303,40 @@ namespace AirflowNetwork {
 
                 } break;
 
+                case VentControlType::Const:
+                case VentControlType::NoVent:
+                case VentControlType::ZoneLevel:
                 case VentControlType::ASH55:
                 case VentControlType::CEN15251: {
-                    int peopleIndex;
-                    int mzPtr;
-                    Solver::get_people_index(peopleIndex, mzPtr, MultizoneSurfaceData(i).VentSurfCtrNum, true, i, ErrorsFound);
-                    if (MultizoneSurfaceData(i).VentSurfCtrNum == VentControlType::ASH55) {
-                        MultizoneZoneData(mzPtr).ASH55PeopleInd = peopleIndex;
-                    } else if (MultizoneSurfaceData(i).VentSurfCtrNum == VentControlType::CEN15251) {
-                        MultizoneZoneData(mzPtr).CEN15251PeopleInd = peopleIndex;
+                    MultizoneSurfaceData(i).ventTempControlSched = nullptr;
+                    MultizoneSurfaceData(i).VentTempControlSchName = "";
+                    if (MultizoneSurfaceData(i).VentSurfCtrNum == VentControlType::ASH55 ||
+                        MultizoneSurfaceData(i).VentSurfCtrNum == VentControlType::CEN15251) {
+                        int zoneNum = MultizoneSurfaceData(i).NodeNums[0];
+                        if (MultizoneSurfaceData(i).RAFNflag) {
+                            zoneNum = MultizoneSurfaceData(i).ZonePtr;
+                        }
+                        if (m_state.dataSurface->Surface(MultizoneSurfaceData(i).SurfNum).Zone <= 0) {
+                            MultizoneSurfaceData(i).ZonePtr = zoneNum;
+                        }
+                        int mzPtr = 0;
+                        for (int mzIndex = 1; mzIndex <= AirflowNetworkNumOfZones; ++mzIndex) {
+                            if (zoneNum == MultizoneZoneData(mzIndex).ZoneNum) {
+                                mzPtr = mzIndex;
+                                break;
+                            }
+                        }
+                        if (MultizoneSurfaceData(i).VentSurfCtrNum == VentControlType::ASH55) {
+                            MultizoneZoneData(mzPtr).ASH55PeopleInd =
+                                Solver::get_people_index(MultizoneZoneData(mzPtr).ZoneNum, VentControlType::ASH55, ErrorsFound);
+                        }
+                        if (MultizoneSurfaceData(i).VentSurfCtrNum == VentControlType::CEN15251) {
+                            MultizoneZoneData(mzPtr).CEN15251PeopleInd =
+                                Solver::get_people_index(MultizoneZoneData(mzPtr).ZoneNum, VentControlType::CEN15251, ErrorsFound);
+                        }
                     }
                 } break;
 
-                case VentControlType::Const:
-                case VentControlType::NoVent:
-                case VentControlType::ZoneLevel: {
-                    MultizoneSurfaceData(i).ventTempControlSched = nullptr;
-                    MultizoneSurfaceData(i).VentTempControlSchName = "";
-                } break;
                 default:
                     break;
                 }
@@ -11468,34 +11483,9 @@ namespace AirflowNetwork {
         } // End if OneTimeFlag_FindFirstLastPtr
     }
 
-    void Solver::get_people_index(int &indexResult, int &mzZoneDataPtr, int ventCtrlNum, bool isThisSurface, int arrayIndex, bool &errorFound)
+    int Solver::get_people_index(int const zoneNum, int ventCtrlNum, bool &errorFound)
     {
-        indexResult = 0;   // reset
-        mzZoneDataPtr = 0; // reset
-        int zoneNum = 0;
-
-        // Find the zoneNum and potentially the MultizoneZoneData index (surface only)
-        if (isThisSurface) { // called from Surface input object
-            zoneNum = MultizoneSurfaceData(arrayIndex).NodeNums[0];
-            if (MultizoneSurfaceData(arrayIndex).RAFNflag) {
-                zoneNum = MultizoneSurfaceData(arrayIndex).ZonePtr;
-            }
-            int surfNum = MultizoneSurfaceData(arrayIndex).SurfNum;
-            if (m_state.dataSurface->Surface(surfNum).Zone <= 0) {
-                MultizoneSurfaceData(arrayIndex).ZonePtr = zoneNum;
-            }
-            for (int mzIndex = 1; mzIndex <= AirflowNetworkNumOfZones; ++mzIndex) {
-                if (zoneNum == MultizoneZoneData(mzIndex).ZoneNum) {
-                    mzZoneDataPtr = mzIndex;
-                    break;
-                }
-            }
-        } else { // called from Zone input object
-            if (arrayIndex > 0) {
-                zoneNum = MultizoneZoneData(arrayIndex).ZoneNum;
-                mzZoneDataPtr = arrayIndex; // not used for the Zone input object but setting this for completeness
-            }
-        }
+        int indexResult = 0; // result/reset
 
         if (zoneNum > 0) { // Find the people data index that matches this zone (if a zone was actually found)
             for (int j = 1; j <= m_state.dataHeatBal->TotPeople; ++j) {
@@ -11508,31 +11498,19 @@ namespace AirflowNetwork {
                 }
             }
         }
-
         if (indexResult == 0) { // Can result from either not find a zone match in the People statements or not finding a zone
             errorFound = true;
             if (ventCtrlNum == VentControlType::ASH55) {
-                if (!isThisSurface) {
-                    ShowSevereError(m_state,
-                                    "ASHRAE55 ventilation control for zone " + MultizoneZoneData(arrayIndex).ZoneName +
-                                        " requires connection to a people object that uses ASHRAE55 model calculations.");
-                } else {
-                    ShowSevereError(m_state,
-                                    "ASHRAE55 ventilation control for surface " + MultizoneSurfaceData(arrayIndex).SurfName +
-                                        " requires connection to a zone with a people object that uses ASHRAE55 model calculations.");
-                }
+                ShowSevereError(m_state,
+                                "ASHRAE55 ventilation control for zone " + MultizoneZoneData(zoneNum).ZoneName +
+                                    " requires connection to a people object that uses ASHRAE55 model calculations.");
             } else if (ventCtrlNum == VentControlType::CEN15251) {
-                if (!isThisSurface) {
-                    ShowSevereError(m_state,
-                                    "CEN15251 ventilation control for zone " + MultizoneZoneData(arrayIndex).ZoneName +
-                                        " requires connection to a people object that uses CEN15251 model calculations.");
-                } else {
-                    ShowSevereError(m_state,
-                                    "CEN15251 ventilation control for surface " + MultizoneSurfaceData(arrayIndex).SurfName +
-                                        " requires connection to a zone with a people object that uses CEN15251 model calculations.");
-                }
+                ShowSevereError(m_state,
+                                "CEN15251 ventilation control for zone " + MultizoneZoneData(zoneNum).ZoneName +
+                                    " requires connection to a people object that uses CEN15251 model calculations.");
             }
         }
+        return indexResult;
     }
 
     void Solver::hybrid_ventilation_control()

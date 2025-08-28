@@ -825,10 +825,14 @@ void SetupOutputVariable(EnergyPlusData &state,
                          OutputProcessor::ReportFreq freq = OutputProcessor::ReportFreq::Hour // Internal use -- causes reporting at this freqency
 )
 {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wstrict-aliasing"
+#if defined(__GNUC__) || defined(__clang__)
+#    pragma GCC diagnostic push
+#    pragma GCC diagnostic ignored "-Wstrict-aliasing"
+#endif
     SetupOutputVariable(state, VariableName, VariableUnit, (int &)ActualVariable, TimeStepType, VariableType, KeyedValue, indexGroupKey, freq);
-#pragma GCC diagnostic pop
+#if defined(__GNUC__) || defined(__clang__)
+#    pragma GCC diagnostic pop
+#endif
 };
 
 void UpdateDataandReport(EnergyPlusData &state, OutputProcessor::TimeStepType TimeStepTypeKey); // What kind of data to update (Zone, HVAC)

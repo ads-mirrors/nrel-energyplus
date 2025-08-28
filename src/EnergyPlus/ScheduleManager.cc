@@ -2198,7 +2198,7 @@ namespace Sched {
             }
             times.emplace_back(fmt::format("{}:00", HrField[hr + 1]));
         }
-        assert(times.size() == NumTimesInDay);
+        assert(static_cast<int>(times.size()) == NumTimesInDay);
 
         std::string_view const &reportLevelName = reportLevelNames[(int)LevelOfDetail];
         std::string const dayScheduleTableName = format("DaySchedule - {}", reportLevelName);

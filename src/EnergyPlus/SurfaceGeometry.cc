@@ -2917,7 +2917,7 @@ namespace SurfaceGeometry {
                 if (anySurfacesWithSpace(zoneNum)) {
                     // Add new space
                     ++state.dataGlobal->numSpaces;
-                    assert(state.dataHeatBal->space.size() >= state.dataGlobal->numSpaces);
+                    assert(static_cast<int>(state.dataHeatBal->space.size()) >= state.dataGlobal->numSpaces);
                     state.dataHeatBal->space(state.dataGlobal->numSpaces).zoneNum = zoneNum;
                     // Add to zone's list of spaces
                     thisZone.spaceIndexes.emplace_back(state.dataGlobal->numSpaces);

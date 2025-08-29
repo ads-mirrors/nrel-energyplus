@@ -629,7 +629,13 @@ void GLHEVert::calcShortTimestepGFunctions(EnergyPlusData &state)
 
     struct Cell
     {
-        CellType type;
+        // NOTE, in the previous code, this was value-initialized in the initializer list for the
+        // struct constructor like this:  Cell() : type() ... {}
+        // During value initialization, the underlying integral memory will be initialized to zero
+        // This will result in the default value being set to FLUID based on the way the enum is
+        // set up above.  I'm putting fluid here, and maybe it doesn't matter, but maybe it should
+        // be invalid?
+        CellType type = CellType::FLUID;
         Real64 radius_center = 0.0;
         Real64 radius_outer = 0.0;
         Real64 radius_inner = 0.0;

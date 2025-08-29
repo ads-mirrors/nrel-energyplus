@@ -410,16 +410,35 @@ void GLHEVert::calcUniformBHWallTempGFunctions(EnergyPlusData &state) const
 {
     nlohmann::json gheDesignerInputs;
     gheDesignerInputs["version"] = 2;
-    gheDesignerInputs["topology"] = {{{"type", "ground-heat-exchanger"}, {"name", "ghe1"}}};
-    gheDesignerInputs["fluid"] = {// TODO: Get from Plant Loop
-                                  {"fluid_name", "WATER"},
-                                  {"concentration_percent", 0},
-                                  {"temperature", 20}};
+    gheDesignerInputs["topology"] = {{{"type", "ground_heat_exchanger"}, {"name", "ghe1"}}};
+    nlohmann::json fluidObject;
+    if (state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidName == "WATER") {
+        gheDesignerInputs["fluid"] = {{"fluid_name", "WATER"}, {"concentration_percent", 0}, {"temperature", 20}};
+    } else if (state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidName == "STEAM") {
+        ShowFatalError(state, "Could not set up GHEDesigner run for a steam fluid loop, aborting.");
+    } else {
+        auto thisGlycol = state.dataPlnt->PlantLoop(this->plantLoc.loopNum).glycol;
+        if (auto const &n = thisGlycol->GlycolName; n == "WATER" || n == "ETHYLENEGLYCOL" || n == "PROPYLENEGLYCOL") {
+            Real64 c = thisGlycol->Concentration;
+            if (c > 0.6) {
+                ShowWarningMessage(state,
+                                   "GLHE Fluid has glycol concentration greater than 60%, GHEDesigner has a max of 60%.  Reducing it to 60% for "
+                                   "calculation purposes");
+                c = 0.6;
+            }
+            gheDesignerInputs["fluid"] = {{"fluid_name", n},
+                                          {"concentration_percent", c * 100.0}, // E+ uses 0.0 to 1.0, GHEDesigner uses 0.0 to 100.0
+                                          {"temperature", 20}};
+        } else {
+            ShowFatalError(state, "Could not identify glycol for setting up GHEDesigner run");
+        }
+    }
+
     nlohmann::json gheObjectInputs;
-    // TODO: Detect if there are differences and error
+    // TODO: Detect if there are borehole variations and error
     // TODO: GHEDesigner seems to just want one height, check this
     Real64 const height = this->myRespFactors->myBorholes[0]->props->bhLength;
-    Real64 const plantMasMassFlow = this->designMassFlow; // this->plantLoc.loop->MaxMassFlowRate; // TODO: Check if it is auto-sized?
+    Real64 const plantMasMassFlow = this->designMassFlow; // TODO: Check if it is auto-sized?
     nlohmann::json grout = {{"conductivity", this->grout.k}, {"rho_cp", this->grout.rhoCp}};
     nlohmann::json soil = {
         {"conductivity", this->soil.k},
@@ -440,7 +459,6 @@ void GLHEVert::calcUniformBHWallTempGFunctions(EnergyPlusData &state) const
     for (const auto &bh : this->myRespFactors->myBorholes) {
         x.push_back(bh->xLoc);
         y.push_back(bh->yLoc);
-        // boreholes.emplace_back(bh->props->bhLength, bh->props->bhTopDepth, bh->props->bhDiameter / 2.0, bh->xLoc, bh->yLoc);
     }
     nlohmann::json preDesigned = {{"arrangement", "MANUAL"}, {"H", height}, {"x", x}, {"y", y}};
     nlohmann::json ghe1 = {{"flow_rate", plantMasMassFlow},
@@ -450,14 +468,37 @@ void GLHEVert::calcUniformBHWallTempGFunctions(EnergyPlusData &state) const
                            {"pipe", pipe},
                            {"borehole", borehole},
                            {"pre_designed", preDesigned}};
-    gheDesignerInputs["ground-heat-exchanger"] = {{"ghe1", ghe1}};
+    gheDesignerInputs["ground_heat_exchanger"] = {{"ghe1", ghe1}};
 
-    std::ofstream output_file("/tmp/ghedesigner_input.json");
-    if (!output_file.is_open()) {
-        std::cout << "\n Failed to open output file";
-    } else {
-        output_file << gheDesignerInputs;
-        output_file.close();
+    // we'll plan on dropping this file in the same folder as the input file
+    auto ghe_designer_input_file_path = state.dataStrGlobals->inputDirPath / "eplus_ghedesigner_input.json";
+    auto ghe_designer_output_directory = state.dataStrGlobals->inputDirPath / "eplus_ghedesigner_outputs";
+    try {
+        // If file already exists, try removing it
+        if (fs::exists(ghe_designer_input_file_path)) {
+            std::error_code ec;
+            if (!fs::remove(ghe_designer_input_file_path, ec)) {
+                if (ec) {
+                    ShowFatalError(state, "Failed to remove existing GHEDesigner input: " + ec.message());
+                }
+                // If remove returned false but no error, it wasn't a regular file
+                ShowFatalError(state, "Path exists but is not a removable file.");
+            }
+        }
+
+        // Now create the file fresh
+        std::ofstream ghe_designer_input_file(ghe_designer_input_file_path, std::ios::out | std::ios::trunc);
+        if (!ghe_designer_input_file) {
+            ShowFatalError(state, "Failed to create file: " + ghe_designer_input_file_path.string());
+        }
+        if (!ghe_designer_input_file.is_open()) {
+            ShowFatalError(state, "Failed to open output file");
+        }
+        ghe_designer_input_file << gheDesignerInputs;
+        ghe_designer_input_file.close();
+
+    } catch (const fs::filesystem_error &e) {
+        ShowFatalError(state, "Filesystem error");
     }
 
     DisplayString(state, "Starting up GHEDesigner");
@@ -468,13 +509,16 @@ void GLHEVert::calcUniformBHWallTempGFunctions(EnergyPlusData &state) const
         exePath = FileSystem::getAbsolutePath(FileSystem::getProgramPath()); // could be /path/to/energyplus(.exe) or /path/to/energyplus_tests(.exe)
         exePath = exePath.parent_path() / ("energyplus" + FileSystem::exeExtension);
     }
-    std::string const cmd = exePath.string() + " auxiliary ghedesigner /tmp/ghedesigner_input.json /tmp/outputs";
+    std::string const cmd = fmt::format(
+        "\"{}\" {} {} \"{}\" \"{}\"", exePath.string(), "auxiliary", "ghedesigner ", ghe_designer_input_file_path, ghe_designer_output_directory);
     int const status = FileSystem::systemCall(cmd);
     if (status != 0) {
         ShowFatalError(state, "GHEDesigner failed to calculate G-functions.");
     }
     DisplayString(state, "GHEDesigner complete");
-    std::ifstream file("/tmp/outputs/SimulationSummary.json");
+    auto output_json_file = ghe_designer_output_directory / "SimulationSummary.json";
+    std::ifstream file(output_json_file);
+    // TODO: Check if it exists
     nlohmann::json data = nlohmann::json::parse(file);
     std::vector<double> t = data["log_time"];
     std::vector<double> g = data["g_values"];

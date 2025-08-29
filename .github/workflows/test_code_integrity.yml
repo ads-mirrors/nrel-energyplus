@@ -64,7 +64,7 @@ jobs:
             git diff > clang_format.patch
             echo "::endgroup::"
 
-            # Delete if nothhing otherwise exit 1 to indicate a failed job
+            # Delete if nothing otherwise exit 1 to indicate a failed job
             if [ ! -s clang_format.patch ]; then
               rm clang_format.patch
               exit 0
@@ -72,7 +72,7 @@ jobs:
               incorrect_count=$(git diff --name-only | wc -l)
               incorrect_percent=$(awk "BEGIN { printf \"%.2f\", ($incorrect_count/$file_count)*100 }")
               begin_group "clang-format auto corrected $incorrect_count files:"
-              git diff --name-only --diff-filter=AM 
+              git diff --name-only
               echo "::endgroup::"
               echo "::error title=Clang Format Check Failed::Formatting issues detected in $incorrect_count files"
               echo -e "\nPlease correct these files by running clang-format-19 locally, or download the artifact "

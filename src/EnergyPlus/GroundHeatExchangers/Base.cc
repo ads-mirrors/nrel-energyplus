@@ -371,7 +371,7 @@ void GLHEBase::updateGHX(EnergyPlusData &state)
     }
 }
 
-void GLHEBase::calcAggregateLoad(const EnergyPlusData &state)
+void GLHEBase::calcAggregateLoad([[maybe_unused]] const EnergyPlusData &state)
 {
 
     // SUBROUTINE INFORMATION:

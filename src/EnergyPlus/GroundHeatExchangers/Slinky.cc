@@ -232,7 +232,7 @@ Real64 GLHESlinky::doubleIntegral(int const m, int const n, int const m1, int co
         g.push_back(integral(m, n, m1, n1, t, eta, J0));
     }
 
-    for (int i = 1; i < g.size() - 1; ++i) {
+    for (size_t i = 1; i < g.size() - 1; ++i) {
         if (!isEven(i)) {
             g[i] = 4 * g[i];
         } else {

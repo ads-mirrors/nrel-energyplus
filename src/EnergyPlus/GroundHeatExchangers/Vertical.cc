@@ -250,7 +250,7 @@ void GLHEVert::combineShortAndLongTimestepGFunctions() const
 
     // Nothing to do. Just put the short time step g-functions on the combined vector
     const unsigned int num_shortTimestepGFunctions = GFNC_shortTimestep.size();
-    for (int index_shortTS = 0; index_shortTS < num_shortTimestepGFunctions; ++index_shortTS) {
+    for (size_t index_shortTS = 0; index_shortTS < num_shortTimestepGFunctions; ++index_shortTS) {
         GFNC_combined.push_back(GFNC_shortTimestep[index_shortTS]);
         LNTTS_combined.push_back(LNTTS_shortTimestep[index_shortTS]);
     }
@@ -259,7 +259,7 @@ void GLHEVert::combineShortAndLongTimestepGFunctions() const
     Real64 const highest_lntts_from_sts = LNTTS_shortTimestep.back();
 
     // Add the rest of the long time-step g-functions to the combined curve
-    for (int index_longTS = 0; index_longTS < this->myRespFactors->GFNC.size(); ++index_longTS) {
+    for (size_t index_longTS = 0; index_longTS < this->myRespFactors->GFNC.size(); ++index_longTS) {
         if (this->myRespFactors->LNTTS[index_longTS] <= highest_lntts_from_sts) {
             continue;
         }
@@ -784,7 +784,7 @@ void GLHEVert::calcShortTimestepGFunctions(EnergyPlusData &state)
 
         // setup tdma matrices
         unsigned int num_cells = Cells.size();
-        for (int cell_index = 0; cell_index < num_cells; ++cell_index) {
+        for (size_t cell_index = 0; cell_index < num_cells; ++cell_index) {
             if (cell_index == 0) {
                 // heat flux BC
 
@@ -839,7 +839,7 @@ void GLHEVert::calcShortTimestepGFunctions(EnergyPlusData &state)
         // solve for new temperatures
         std::vector<Real64> new_temps = TDMA(a, b, c, d);
 
-        for (int cell_index = 0; cell_index < num_cells; ++cell_index) {
+        for (size_t cell_index = 0; cell_index < num_cells; ++cell_index) {
             Cells[cell_index].temperature = new_temps[cell_index];
         }
 

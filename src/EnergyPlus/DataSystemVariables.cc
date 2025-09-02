@@ -75,9 +75,8 @@ namespace DataSystemVariables {
     // This data-only module is a repository for system (such as environment) variables that are set
     // before a run or set of runs.
 
-    constexpr const char *DDOnlyEnvVar("DDONLY");       // Only run design days
-    constexpr const char *ReverseDDEnvVar("REVERSEDD"); // Reverse DD during run
-    constexpr const char *DisableGLHECachingEnvVar("DISABLEGLHECACHING");
+    constexpr const char *DDOnlyEnvVar("DDONLY");                // Only run design days
+    constexpr const char *ReverseDDEnvVar("REVERSEDD");          // Reverse DD during run
     constexpr const char *FullAnnualSimulation("FULLANNUALRUN"); // Generate annual run
     constexpr const char *cDeveloperFlag("DeveloperFlag");
     constexpr const char *cDisplayAllWarnings("DisplayAllWarnings");

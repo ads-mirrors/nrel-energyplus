@@ -47,6 +47,7 @@
 #include "../Fixtures/EnergyPlusFixture.hh"
 #include <gtest/gtest.h>
 
+#include <EnergyPlus/DataGlobalConstants.hh>
 #include <EnergyPlus/DataSystemVariables.hh>
 #include <EnergyPlus/GroundHeatExchangers/ResponseFactors.hh>
 #include <EnergyPlus/GroundHeatExchangers/State.hh>
@@ -138,6 +139,7 @@ TEST_F(EnergyPlusFixture, GHE_InterpTest2)
 
 TEST_F(EnergyPlusFixture, GroundHeatExchangerTest_System_calcGFunction_UBHWT)
 {
+
     using namespace DataSystemVariables;
 
     std::string const idf_objects =
@@ -447,44 +449,49 @@ TEST_F(EnergyPlusFixture, GroundHeatExchangerTest_System_calcGFunction_UBHWT)
 
     thisGLHE.myRespFactors->maxSimYears = 1;
 
-    thisGLHE.calcGFunctions(*state);
+    if constexpr (!Constant::python_cli_enabled) {
+        // GTEST_SKIP() << "Skipping because PYTHON_CLI is disabled in CMake.";
+        // Kinda silly, I don't really want the skip emitted every time.
+    } else {
+        thisGLHE.calcGFunctions(*state);
 
-    Real64 constexpr tolerance = 0.1;
+        Real64 constexpr tolerance = 0.1;
 
-    // Test g-function values from GLHEPro
-    EXPECT_NEAR(thisGLHE.interpGFunc(-11.939864), 0.37, tolerance);
-    EXPECT_NEAR(thisGLHE.interpGFunc(-11.802269), 0.48, tolerance);
-    EXPECT_NEAR(thisGLHE.interpGFunc(-11.664675), 0.59, tolerance);
-    EXPECT_NEAR(thisGLHE.interpGFunc(-11.52708), 0.69, tolerance);
-    EXPECT_NEAR(thisGLHE.interpGFunc(-11.389486), 0.79, tolerance);
-    EXPECT_NEAR(thisGLHE.interpGFunc(-11.251891), 0.89, tolerance);
-    EXPECT_NEAR(thisGLHE.interpGFunc(-11.114296), 0.99, tolerance);
-    EXPECT_NEAR(thisGLHE.interpGFunc(-10.976702), 1.09, tolerance);
-    EXPECT_NEAR(thisGLHE.interpGFunc(-10.839107), 1.18, tolerance);
-    EXPECT_NEAR(thisGLHE.interpGFunc(-10.701513), 1.27, tolerance);
-    EXPECT_NEAR(thisGLHE.interpGFunc(-10.563918), 1.36, tolerance);
-    EXPECT_NEAR(thisGLHE.interpGFunc(-10.426324), 1.44, tolerance);
-    EXPECT_NEAR(thisGLHE.interpGFunc(-10.288729), 1.53, tolerance);
-    EXPECT_NEAR(thisGLHE.interpGFunc(-10.151135), 1.61, tolerance);
-    EXPECT_NEAR(thisGLHE.interpGFunc(-10.01354), 1.69, tolerance);
-    EXPECT_NEAR(thisGLHE.interpGFunc(-9.875946), 1.77, tolerance);
-    EXPECT_NEAR(thisGLHE.interpGFunc(-9.738351), 1.85, tolerance);
-    EXPECT_NEAR(thisGLHE.interpGFunc(-9.600756), 1.93, tolerance);
-    EXPECT_NEAR(thisGLHE.interpGFunc(-9.463162), 2.00, tolerance);
-    EXPECT_NEAR(thisGLHE.interpGFunc(-9.325567), 2.08, tolerance);
-    EXPECT_NEAR(thisGLHE.interpGFunc(-9.187973), 2.15, tolerance);
-    EXPECT_NEAR(thisGLHE.interpGFunc(-9.050378), 2.23, tolerance);
-    EXPECT_NEAR(thisGLHE.interpGFunc(-8.912784), 2.30, tolerance);
-    EXPECT_NEAR(thisGLHE.interpGFunc(-8.775189), 2.37, tolerance);
-    EXPECT_NEAR(thisGLHE.interpGFunc(-8.637595), 2.45, tolerance);
-    EXPECT_NEAR(thisGLHE.interpGFunc(-8.5), 2.53, tolerance);
-    EXPECT_NEAR(thisGLHE.interpGFunc(-7.8), 2.90, tolerance);
-    EXPECT_NEAR(thisGLHE.interpGFunc(-7.2), 3.17, tolerance);
-    EXPECT_NEAR(thisGLHE.interpGFunc(-6.5), 3.52, tolerance);
-    EXPECT_NEAR(thisGLHE.interpGFunc(-5.9), 3.85, tolerance);
-    EXPECT_NEAR(thisGLHE.interpGFunc(-5.2), 4.37, tolerance);
-    EXPECT_NEAR(thisGLHE.interpGFunc(-4.5), 5.11, tolerance);
-    EXPECT_NEAR(thisGLHE.interpGFunc(-3.963), 5.82, tolerance);
+        // Test g-function values from GLHEPro
+        EXPECT_NEAR(thisGLHE.interpGFunc(-11.939864), 0.37, tolerance);
+        EXPECT_NEAR(thisGLHE.interpGFunc(-11.802269), 0.48, tolerance);
+        EXPECT_NEAR(thisGLHE.interpGFunc(-11.664675), 0.59, tolerance);
+        EXPECT_NEAR(thisGLHE.interpGFunc(-11.52708), 0.69, tolerance);
+        EXPECT_NEAR(thisGLHE.interpGFunc(-11.389486), 0.79, tolerance);
+        EXPECT_NEAR(thisGLHE.interpGFunc(-11.251891), 0.89, tolerance);
+        EXPECT_NEAR(thisGLHE.interpGFunc(-11.114296), 0.99, tolerance);
+        EXPECT_NEAR(thisGLHE.interpGFunc(-10.976702), 1.09, tolerance);
+        EXPECT_NEAR(thisGLHE.interpGFunc(-10.839107), 1.18, tolerance);
+        EXPECT_NEAR(thisGLHE.interpGFunc(-10.701513), 1.27, tolerance);
+        EXPECT_NEAR(thisGLHE.interpGFunc(-10.563918), 1.36, tolerance);
+        EXPECT_NEAR(thisGLHE.interpGFunc(-10.426324), 1.44, tolerance);
+        EXPECT_NEAR(thisGLHE.interpGFunc(-10.288729), 1.53, tolerance);
+        EXPECT_NEAR(thisGLHE.interpGFunc(-10.151135), 1.61, tolerance);
+        EXPECT_NEAR(thisGLHE.interpGFunc(-10.01354), 1.69, tolerance);
+        EXPECT_NEAR(thisGLHE.interpGFunc(-9.875946), 1.77, tolerance);
+        EXPECT_NEAR(thisGLHE.interpGFunc(-9.738351), 1.85, tolerance);
+        EXPECT_NEAR(thisGLHE.interpGFunc(-9.600756), 1.93, tolerance);
+        EXPECT_NEAR(thisGLHE.interpGFunc(-9.463162), 2.00, tolerance);
+        EXPECT_NEAR(thisGLHE.interpGFunc(-9.325567), 2.08, tolerance);
+        EXPECT_NEAR(thisGLHE.interpGFunc(-9.187973), 2.15, tolerance);
+        EXPECT_NEAR(thisGLHE.interpGFunc(-9.050378), 2.23, tolerance);
+        EXPECT_NEAR(thisGLHE.interpGFunc(-8.912784), 2.30, tolerance);
+        EXPECT_NEAR(thisGLHE.interpGFunc(-8.775189), 2.37, tolerance);
+        EXPECT_NEAR(thisGLHE.interpGFunc(-8.637595), 2.45, tolerance);
+        EXPECT_NEAR(thisGLHE.interpGFunc(-8.5), 2.53, tolerance);
+        EXPECT_NEAR(thisGLHE.interpGFunc(-7.8), 2.90, tolerance);
+        EXPECT_NEAR(thisGLHE.interpGFunc(-7.2), 3.17, tolerance);
+        EXPECT_NEAR(thisGLHE.interpGFunc(-6.5), 3.52, tolerance);
+        EXPECT_NEAR(thisGLHE.interpGFunc(-5.9), 3.85, tolerance);
+        EXPECT_NEAR(thisGLHE.interpGFunc(-5.2), 4.37, tolerance);
+        EXPECT_NEAR(thisGLHE.interpGFunc(-4.5), 5.11, tolerance);
+        EXPECT_NEAR(thisGLHE.interpGFunc(-3.963), 5.82, tolerance);
+    }
 }
 
 TEST_F(EnergyPlusFixture, GHE_InterpTest1)

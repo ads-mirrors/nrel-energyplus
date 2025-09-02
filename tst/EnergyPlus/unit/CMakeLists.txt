@@ -6,6 +6,10 @@ if(USE_PSYCH_ERRORS)
   add_compile_definitions(EP_psych_errors)
 endif()
 
+if(PYTHON_CLI)
+  add_compile_definitions(EP_PYTHON_CLI)
+endif()
+
 set(test_src
     TestHelpers/IdfParser.cc
     TestHelpers/IdfParser.hh

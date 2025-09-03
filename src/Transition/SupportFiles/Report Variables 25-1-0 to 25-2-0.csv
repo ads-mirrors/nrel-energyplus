@@ -1,5 +1,5 @@
 25.1.0,25.2.0,Transition notes - some of these are EMS variable names
-62,62,These numbers should be the number of report variables in the following list (including deletes). Two columns/numbers.
+66,66,These numbers should be the number of report variables in the following list (including deletes). Two columns/numbers.
 Chilled Water Thermal Storage Final Tank Temperature,Chilled Water Thermal Storage Tank Final Tank Temperature
 Chilled Water Thermal Storage Use Side Mass Flow Rate,Chilled Water Thermal Storage Tank Use Side Mass Flow Rate
 Chilled Water Thermal Storage Use Side Inlet Temperature,Chilled Water Thermal Storage Tank Use Side Inlet Temperature
@@ -62,4 +62,8 @@ Hot Water Thermal Storage Final Temperature Node 7,Hot Water Thermal Storage Tan
 Hot Water Thermal Storage Final Temperature Node 8,Hot Water Thermal Storage Tank Final Temperature Node 8
 Hot Water Thermal Storage Final Temperature Node 9,Hot Water Thermal Storage Tank Final Temperature Node 9
 Hot Water Thermal Storage Final Temperature Node 10,Hot Water Thermal Storage Tank Final Temperature Node 10
+Zone Opaque Surface Inside Faces Total Conduction Heat Gain Rate,Zone Opaque Surface Inside Faces Conduction Heat Gain Rate,
+Zone Opaque Surface Inside Faces Total Conduction Heat Loss Rate,Zone Opaque Surface Inside Faces Conduction Heat Loss Rate,
+Zone Opaque Surface Inside Faces Total Conduction Heat Gain Energy,Zone Opaque Surface Inside Faces Conduction Heat Gain Energy,
+Zone Opaque Surface Inside Faces Total Conduction Heat Loss Energy,Zone Opaque Surface Inside Faces Conduction Heat Loss Energy,
 old variable name,new variable name,-- add variable names (before this line) and leave off units -- <DELETE> to delete

@@ -752,7 +752,7 @@ namespace RoomAir {
 
     // Explicitly list internal gains not applicable for UFAD
     // Explicitly list internal gains not applicable for Displacement Vent
-    static constexpr std::array<DataHeatBalance::IntGainType, 2> ExcludedIntGainTypes = {
+    [[maybe_unused]] static constexpr std::array<DataHeatBalance::IntGainType, 2> ExcludedIntGainTypes = {
         DataHeatBalance::IntGainType::ZoneContaminantSourceAndSinkCarbonDioxide,
         DataHeatBalance::IntGainType::ZoneContaminantSourceAndSinkGenericContam};
 

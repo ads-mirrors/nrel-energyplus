@@ -64,7 +64,10 @@ GLHEVert::GLHEVert(EnergyPlusData &state, std::string const &objName, nlohmann::
     // Check for duplicates
     for (auto &existingObj : state.dataGroundHeatExchanger->verticalGLHE) {
         if (objName == existingObj.name) {
-            ShowFatalError(state, format("Invalid input for {} object: Duplicate name found: {}", this->moduleName, existingObj.name));
+            ShowFatalError(state,
+                           format("Invalid input for {} object: Duplicate name found: {}",
+                                  EnergyPlus::GroundHeatExchangers::GLHEVert::moduleName,
+                                  existingObj.name));
         }
     }
 
@@ -399,46 +402,55 @@ void GLHEVert::calcLongTimestepGFunctions(EnergyPlusData &state) const
         this->calcUniformHeatFluxGFunctions(state);
         break;
     case GFuncCalcMethod::UniformBoreholeWallTemp:
-        this->calcUniformBHWallTempGFunctions(state);
+        this->calcUniformBHWallTempGFunctionsWithGHEDesigner(state);
         break;
     default:
         assert(false);
     }
 }
 
-void GLHEVert::calcUniformBHWallTempGFunctions(EnergyPlusData &state) const
+void GLHEVert::calcUniformBHWallTempGFunctionsWithGHEDesigner(EnergyPlusData &state) const
 {
     nlohmann::json gheDesignerInputs;
-    gheDesignerInputs["version"] = 2;
+    gheDesignerInputs["version"] = 2; // If you update GHEDesigner, you may need to use a new input version here
     gheDesignerInputs["topology"] = {{{"type", "ground_heat_exchanger"}, {"name", "ghe1"}}};
+
+    std::string const p = fmt::format("[G-Function Calculation for GHE Named: {}] ", this->name);
+
+    // set up the fluid to use in GHEDesigner, note that the concentration is more restrictive than in EnergyPlus
     nlohmann::json fluidObject;
     if (state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidName == "WATER") {
         gheDesignerInputs["fluid"] = {{"fluid_name", "WATER"}, {"concentration_percent", 0}, {"temperature", 20}};
     } else if (state.dataPlnt->PlantLoop(this->plantLoc.loopNum).FluidName == "STEAM") {
-        ShowFatalError(state, "Could not set up GHEDesigner run for a steam fluid loop, aborting.");
+        ShowFatalError(state, p + "Detected steam loop, but GHEDesigner cannot run for a steam fluid loop, aborting.");
     } else {
         auto thisGlycol = state.dataPlnt->PlantLoop(this->plantLoc.loopNum).glycol;
         if (auto const &n = thisGlycol->GlycolName; n == "WATER" || n == "ETHYLENEGLYCOL" || n == "PROPYLENEGLYCOL") {
             Real64 c = thisGlycol->Concentration;
             if (c > 0.6) {
-                ShowWarningMessage(state,
-                                   "GLHE Fluid has glycol concentration greater than 60%, GHEDesigner has a max of 60%.  Reducing it to 60% for "
-                                   "calculation purposes");
+                ShowWarningMessage(state, p + "EnergyPlus fluid concentration > 60% (GHEDesigner max), reducing to 60%, continuing");
                 c = 0.6;
             }
             gheDesignerInputs["fluid"] = {{"fluid_name", n},
                                           {"concentration_percent", c * 100.0}, // E+ uses 0.0 to 1.0, GHEDesigner uses 0.0 to 100.0
                                           {"temperature", 20}};
         } else {
-            ShowFatalError(state, "Could not identify glycol for setting up GHEDesigner run");
+            ShowFatalError(state, p + "Could not identify glycol for setting up GHEDesigner run");
         }
     }
 
-    nlohmann::json gheObjectInputs;
-    // TODO: Detect if there are borehole variations and error
-    // TODO: GHEDesigner seems to just want one height, check this
+    // check the heights of the EnergyPlus boreholes to make sure they don't vary
+    auto const &bhs = this->myRespFactors->myBorholes;
+    auto const &reference = bhs.front();
+    bool const allMatch = std::all_of(bhs.begin(), bhs.end(), [reference](const std::shared_ptr<GLHEVertSingle> &bh) {
+        return std::fabs(bh->props->bhLength - reference->props->bhLength) <= 0.01;
+    });
+    if (!allMatch) {
+        ShowFatalError(state, p + "Multiple borehole heights in EnergyPlus inputs, g-function generation requires uniform, aborting");
+    }
     Real64 const height = this->myRespFactors->myBorholes[0]->props->bhLength;
-    Real64 const plantMasMassFlow = this->designMassFlow; // TODO: Check if it is auto-sized?
+
+    // grab thermal and borehole properties
     nlohmann::json grout = {{"conductivity", this->grout.k}, {"rho_cp", this->grout.rhoCp}};
     nlohmann::json soil = {
         {"conductivity", this->soil.k},
@@ -455,13 +467,17 @@ void GLHEVert::calcUniformBHWallTempGFunctions(EnergyPlusData &state) const
                            {"arrangement", "SINGLEUTUBE"}};
     nlohmann::json borehole = {{"buried_depth", this->myRespFactors->props->bhTopDepth}, // TODO: Confirm this is ready for access
                                {"diameter", this->bhDiameter}};
+
+    // generate lists of x, y locations for the boreholes
     std::vector<Real64> x, y;
     for (const auto &bh : this->myRespFactors->myBorholes) {
         x.push_back(bh->xLoc);
         y.push_back(bh->yLoc);
     }
     nlohmann::json preDesigned = {{"arrangement", "MANUAL"}, {"H", height}, {"x", x}, {"y", y}};
-    nlohmann::json ghe1 = {{"flow_rate", plantMasMassFlow},
+
+    // set up the final borehole structure to fill out the input file
+    nlohmann::json ghe1 = {{"flow_rate", this->designMassFlow},
                            {"flow_type", "SYSTEM"},
                            {"grout", grout},
                            {"soil", soil},
@@ -470,7 +486,7 @@ void GLHEVert::calcUniformBHWallTempGFunctions(EnergyPlusData &state) const
                            {"pre_designed", preDesigned}};
     gheDesignerInputs["ground_heat_exchanger"] = {{"ghe1", ghe1}};
 
-    // we'll plan on dropping this file in the same folder as the input file
+    // we'll drop the ghedesigner input file and output directory in the same folder as the input file
     auto ghe_designer_input_file_path = state.dataStrGlobals->inputDirPath / "eplus_ghedesigner_input.json";
     auto ghe_designer_output_directory = state.dataStrGlobals->inputDirPath / "eplus_ghedesigner_outputs";
     try {
@@ -497,7 +513,7 @@ void GLHEVert::calcUniformBHWallTempGFunctions(EnergyPlusData &state) const
         ghe_designer_input_file << gheDesignerInputs;
         ghe_designer_input_file.close();
 
-    } catch (const fs::filesystem_error &e) {
+    } catch (const fs::filesystem_error &) {
         ShowFatalError(state, "Filesystem error");
     }
 
@@ -510,40 +526,30 @@ void GLHEVert::calcUniformBHWallTempGFunctions(EnergyPlusData &state) const
         exePath = exePath.parent_path() / ("energyplus" + FileSystem::exeExtension);
     }
     std::string const cmd = fmt::format(
-        "\"{}\" {} {} \"{}\" \"{}\"", exePath.string(), "auxiliary", "ghedesigner ", ghe_designer_input_file_path, ghe_designer_output_directory);
+        R"("{}" {} {} "{}" "{}")", exePath.string(), "auxiliary", "ghedesigner ", ghe_designer_input_file_path, ghe_designer_output_directory);
     int const status = FileSystem::systemCall(cmd);
     if (status != 0) {
         ShowFatalError(state, "GHEDesigner failed to calculate G-functions.");
     }
     DisplayString(state, "GHEDesigner complete");
     auto output_json_file = ghe_designer_output_directory / "SimulationSummary.json";
+    if (!exists(output_json_file)) {
+        ShowFatalError(state, "Although GHEDesigner appeared successful, the output file was not found, aborting ");
+    }
+
     std::ifstream file(output_json_file);
-    // TODO: Check if it exists
-    nlohmann::json data = nlohmann::json::parse(file);
-    std::vector<double> t = data["log_time"];
-    std::vector<double> g = data["g_values"];
-    std::vector<double> gbhw = data["g_bhw_values"];
-
-    this->myRespFactors->time = t;
-    this->myRespFactors->LNTTS = t; // TODO: Check this
-    this->myRespFactors->GFNC = g;
+    try {
+        nlohmann::json data = nlohmann::json::parse(file);
+        std::vector<double> t = data["log_time"];
+        std::vector<double> g = data["g_values"];
+        std::vector<double> gbhw = data["g_bhw_values"];
+        this->myRespFactors->time = t;
+        this->myRespFactors->LNTTS = t;
+        this->myRespFactors->GFNC = g;
+    } catch (const nlohmann::json::exception &) {
+        ShowFatalError(state, "GHEDesigner completed, and output file found, but could not parse JSON");
+    }
 }
-
-// void GLHEVert::calcUniformBHWallTempGFunctions(EnergyPlusData &state) const
-// {
-//     // construct boreholes vector
-//     std::vector<gt::boreholes::Borehole> boreholes;
-//     for (const auto &bh : this->myRespFactors->myBorholes) {
-//         boreholes.emplace_back(bh->props->bhLength, bh->props->bhTopDepth, bh->props->bhDiameter / 2.0, bh->xLoc, bh->yLoc);
-//     }
-//
-//     // Obtain number of segments by adaptive discretization
-//     gt::segments::adaptive adptDisc;
-//     const int nSegments = adptDisc.discretize(this->bhLength, this->totalTubeLength);
-//
-//     this->myRespFactors->GFNC = gt::gfunction::uniform_borehole_wall_temperature(
-//         boreholes, this->myRespFactors->time, this->soil.diffusivity, nSegments, true, state.dataGlobal->numThread);
-// }
 
 void GLHEVert::calcGFunctions(EnergyPlusData &state)
 {
@@ -648,7 +654,7 @@ void GLHEVert::calcShortTimestepGFunctions(EnergyPlusData &state)
     };
 
     // vector to hold 1-D cells
-    std::vector<Cell> Cells;
+    std::vector<Cell> Cells; // It may be worthwhile to make this a stack Array since we appear to know the size ahead of time (535?)
 
     // setup pipe, convection, and fluid layer geometries
     constexpr int num_pipe_cells = 4;
@@ -894,10 +900,8 @@ Real64 GLHEVert::calcBHAverageResistance(EnergyPlusData &state)
     Real64 const den_final_term_2 = den_final_term_2_pt_1 + den_final_term_2_pt_2;
     Real64 const final_term_2 = num_final_term_2 / den_final_term_2;
 
-    return (1 / (4 * Constant::Pi * this->grout.k)) * (beta + final_term_1 - final_term_2);
+    return 1 / (4 * Constant::Pi * this->grout.k) * (beta + final_term_1 - final_term_2);
 }
-
-//******************************************************************************
 
 Real64 GLHEVert::calcBHTotalInternalResistance(EnergyPlusData &state)
 {
@@ -906,20 +910,18 @@ Real64 GLHEVert::calcBHTotalInternalResistance(EnergyPlusData &state)
     // for Grouted Single U-tube Ground Heat Exchangers.' Applied Energy. 187:790-806.
     // Equation 26
 
-    Real64 beta = 2 * Constant::Pi * this->grout.k * calcPipeResistance(state);
+    const Real64 beta = 2 * Constant::Pi * this->grout.k * calcPipeResistance(state);
 
-    Real64 final_term_1 = log(pow(1 + pow_2(this->theta_1), this->sigma) / (this->theta_3 * pow(1 - pow_2(this->theta_1), this->sigma)));
-    Real64 num_term_2 = pow_2(this->theta_3) * pow_2(1 - pow_4(this->theta_1) + 4 * this->sigma * pow_2(this->theta_1));
-    Real64 den_term_2_pt_1 = (1 + beta) / (1 - beta) * pow_2(1 - pow_4(this->theta_1));
-    Real64 den_term_2_pt_2 = pow_2(this->theta_3) * pow_2(1 - pow_4(this->theta_1));
-    Real64 den_term_2_pt_3 = 8 * this->sigma * pow_2(this->theta_1) * pow_2(this->theta_3) * (1 + pow_4(this->theta_1));
-    Real64 den_term_2 = den_term_2_pt_1 - den_term_2_pt_2 + den_term_2_pt_3;
-    Real64 final_term_2 = num_term_2 / den_term_2;
+    const Real64 final_term_1 = log(pow(1 + pow_2(this->theta_1), this->sigma) / (this->theta_3 * pow(1 - pow_2(this->theta_1), this->sigma)));
+    const Real64 num_term_2 = pow_2(this->theta_3) * pow_2(1 - pow_4(this->theta_1) + 4 * this->sigma * pow_2(this->theta_1));
+    const Real64 den_term_2_pt_1 = (1 + beta) / (1 - beta) * pow_2(1 - pow_4(this->theta_1));
+    const Real64 den_term_2_pt_2 = pow_2(this->theta_3) * pow_2(1 - pow_4(this->theta_1));
+    const Real64 den_term_2_pt_3 = 8 * this->sigma * pow_2(this->theta_1) * pow_2(this->theta_3) * (1 + pow_4(this->theta_1));
+    const Real64 den_term_2 = den_term_2_pt_1 - den_term_2_pt_2 + den_term_2_pt_3;
+    const Real64 final_term_2 = num_term_2 / den_term_2;
 
-    return (1 / (Constant::Pi * this->grout.k)) * (beta + final_term_1 - final_term_2);
+    return 1 / (Constant::Pi * this->grout.k) * (beta + final_term_1 - final_term_2);
 }
-
-//******************************************************************************
 
 Real64 GLHEVert::calcBHGroutResistance(EnergyPlusData &state)
 {
@@ -930,8 +932,6 @@ Real64 GLHEVert::calcBHGroutResistance(EnergyPlusData &state)
 
     return calcBHAverageResistance(state) - calcPipeResistance(state) / 2.0;
 }
-
-//******************************************************************************
 
 Real64 GLHEVert::calcHXResistance(EnergyPlusData &state)
 {
@@ -948,8 +948,6 @@ Real64 GLHEVert::calcHXResistance(EnergyPlusData &state)
     return calcBHAverageResistance(state) + 1 / (3 * calcBHTotalInternalResistance(state)) * pow_2(this->bhLength / (this->massFlowRate * cpFluid));
 }
 
-//******************************************************************************
-
 Real64 GLHEVert::calcPipeConductionResistance() const
 {
     // Calculates the thermal resistance of a pipe, in [K/(W/m)].
@@ -958,8 +956,6 @@ Real64 GLHEVert::calcPipeConductionResistance() const
 
     return log(this->pipe.outDia / this->pipe.innerDia) / (2 * Constant::Pi * this->pipe.k);
 }
-
-//******************************************************************************
 
 Real64 GLHEVert::calcPipeConvectionResistance(EnergyPlusData &state)
 {
@@ -1000,12 +996,10 @@ Real64 GLHEVert::calcPipeConvectionResistance(EnergyPlusData &state)
         nusseltNum = (f / 8) * (reynoldsNum - 1000) * prandtlNum / (1 + 12.7 * std::sqrt(f / 8) * (pow(prandtlNum, 2.0 / 3.0) - 1));
     }
 
-    Real64 h = nusseltNum * kFluid / this->pipe.innerDia;
+    const Real64 h = nusseltNum * kFluid / this->pipe.innerDia;
 
     return 1 / (h * Constant::Pi * this->pipe.innerDia);
 }
-
-//******************************************************************************
 
 Real64 GLHEVert::frictionFactor(Real64 const reynoldsNum)
 {
@@ -1019,16 +1013,16 @@ Real64 GLHEVert::frictionFactor(Real64 const reynoldsNum)
 
     if (reynoldsNum < lower_limit) {
         return 64.0 / reynoldsNum; // pure laminar flow
-    } else if (reynoldsNum < upper_limit) {
+    }
+    if (reynoldsNum < upper_limit) {
         // pure laminar flow
         Real64 const f_low = 64.0 / reynoldsNum;
         // pure turbulent flow
         Real64 const f_high = pow(0.79 * log(reynoldsNum) - 1.64, -2.0);
         Real64 const sf = 1 / (1 + exp(-(reynoldsNum - 3000.0) / 450.0)); // smoothing function
         return (1 - sf) * f_low + sf * f_high;
-    } else {
-        return pow(0.79 * log(reynoldsNum) - 1.64, -2.0); // pure turbulent flow
     }
+    return pow(0.79 * log(reynoldsNum) - 1.64, -2.0); // pure turbulent flow
 }
 
 Real64 GLHEVert::calcPipeResistance(EnergyPlusData &state)
@@ -1050,9 +1044,9 @@ Real64 GLHEVert::getGFunc(Real64 const time)
     // PURPOSE OF THIS SUBROUTINE:
     // Gets the g-function for vertical GHXs Note: Base e here.
 
-    Real64 LNTTS = std::log(time);
+    const Real64 LNTTS = std::log(time);
     Real64 gFuncVal = interpGFunc(LNTTS);
-    Real64 RATIO = this->bhRadius / this->bhLength;
+    const Real64 RATIO = this->bhRadius / this->bhLength;
 
     if (RATIO != this->myRespFactors->gRefRatio) {
         gFuncVal -= std::log(this->bhRadius / (this->bhLength * this->myRespFactors->gRefRatio));
@@ -1104,8 +1098,6 @@ void GLHEVert::initGLHESimVars(EnergyPlusData &state)
     }
 }
 
-//******************************************************************************
-
 void GLHEVert::initEnvironment(EnergyPlusData &state, [[maybe_unused]] Real64 const CurTime)
 {
     constexpr std::string_view RoutineName = "initEnvironment";
@@ -1129,8 +1121,6 @@ void GLHEVert::initEnvironment(EnergyPlusData &state, [[maybe_unused]] Real64 co
     this->QGLHE = 0.0;
     this->prevHour = 1;
 }
-
-//******************************************************************************
 
 void GLHEVert::oneTimeInit_new(EnergyPlusData &state)
 {

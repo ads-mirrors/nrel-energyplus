@@ -94,7 +94,7 @@ namespace GroundHeatExchangers {
 
         void calcUniformHeatFluxGFunctions(EnergyPlusData &state) const;
 
-        void calcUniformBHWallTempGFunctions(EnergyPlusData &state) const;
+        void calcUniformBHWallTempGFunctionsWithGHEDesigner(EnergyPlusData &state) const;
 
         Real64 calcHXResistance(EnergyPlusData &state) override;
 

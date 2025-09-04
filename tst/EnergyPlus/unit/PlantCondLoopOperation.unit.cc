@@ -1141,7 +1141,7 @@ TEST_F(EnergyPlusFixture, FindRangeBasedOrUncontrolledInputTest)
     // Setup the plant itself manually
     state->dataPlnt->TotNumLoops = 1;
     state->dataPlnt->PlantLoop.allocate(1);
-    state->dataPlnt->PlantLoop(1).TypeOfLoop == EnergyPlus::DataPlant::LoopType::Plant;
+    state->dataPlnt->PlantLoop(1).TypeOfLoop = EnergyPlus::DataPlant::LoopType::Plant;
 
     state->dataPlnt->PlantLoop(1).OpScheme.allocate(3);
     state->dataPlnt->PlantLoop(1).OpScheme(1).Name = "Central Chiller Only";

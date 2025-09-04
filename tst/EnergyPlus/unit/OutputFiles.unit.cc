@@ -413,7 +413,6 @@ OutputControl:Files,
         EXPECT_EQ(end, state->files.outputControl.end);
         EXPECT_EQ(shd, state->files.outputControl.shd);
         EXPECT_EQ(dfs, state->files.outputControl.dfs);
-        EXPECT_EQ(glhe, state->files.outputControl.glhe);
         EXPECT_EQ(delightin, state->files.outputControl.delightin);
         EXPECT_EQ(delighteldmp, state->files.outputControl.delighteldmp);
         EXPECT_EQ(delightdfdmp, state->files.outputControl.delightdfdmp);
@@ -448,7 +447,6 @@ OutputControl:Files,
         state->files.outputControl.end = false;
         state->files.outputControl.shd = false;
         state->files.outputControl.dfs = false;
-        state->files.outputControl.glhe = false;
         state->files.outputControl.delightin = false;
         state->files.outputControl.delighteldmp = false;
         state->files.outputControl.delightdfdmp = false;

@@ -707,7 +707,6 @@ public:
         bool end = true;
         bool shd = true;
         bool dfs = true;
-        bool glhe = true;
         bool delightin = true;
         bool delighteldmp = true;
         bool delightdfdmp = true;

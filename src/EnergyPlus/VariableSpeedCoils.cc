@@ -4629,7 +4629,7 @@ namespace VariableSpeedCoils {
                     }
                 }
             }
-        }
+        } 
 
         if (state.dataSize->CurZoneEqNum > 0) {
             if (!RatedAirFlowAutoSized && !SizingDesRunThisZone) { // Simulation continue

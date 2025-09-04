@@ -6801,10 +6801,10 @@ TEST_F(EnergyPlusFixture, OutputReportTabularTest_LoadSummaryUnitConversion_test
     compLoad.totCapPerArea = 0.15;
 
     state->dataOutRptTab->unitsStyle = OutputReportTabular::UnitsStyle::InchPound;
+    SetupUnitConversions(*state);
     Real64 powerConversion = getSpecificUnitMultiplier(*state, "W", "Btu/h");
     Real64 areaConversion = getSpecificUnitMultiplier(*state, "m2", "ft2");
     Real64 airFlowConversion = getSpecificUnitMultiplier(*state, "m3/s", "ft3/min");
-    Real64 airFlowPerAreaConversion = getSpecificUnitMultiplier(*state, "m3/s-m2", "ft3/min-ft2");
     int tempConvIndx = getSpecificUnitIndex(*state, "C", "F");
 
     LoadSummaryUnitConversion(*state, compLoad);
@@ -6816,7 +6816,7 @@ TEST_F(EnergyPlusFixture, OutputReportTabularTest_LoadSummaryUnitConversion_test
 
     EXPECT_EQ(ConvertIP(*state, tempConvIndx, 20.), compLoad.outsideDryBulb);
     EXPECT_EQ(0.7 * airFlowConversion, compLoad.mainFanAirFlow);
-    EXPECT_EQ(0.2 * airFlowPerAreaConversion / powerConversion, compLoad.airflowPerTotCap);
+    EXPECT_EQ(0.2 * airFlowConversion / powerConversion, compLoad.airflowPerTotCap);
     EXPECT_EQ(0.15 * powerConversion / areaConversion, compLoad.totCapPerArea);
 }
 
@@ -9055,10 +9055,10 @@ TEST_F(EnergyPlusFixture, ORT_LoadSummaryUnitConversion_OverLoad_DualUnits)
     compLoad.totCapPerArea = 0.15;
 
     state->dataOutRptTab->unitsStyle_SQLite = OutputReportTabular::UnitsStyle::InchPound;
+    SetupUnitConversions(*state);
     Real64 powerConversion = getSpecificUnitMultiplier(*state, "W", "Btu/h");
     Real64 areaConversion = getSpecificUnitMultiplier(*state, "m2", "ft2");
     Real64 airFlowConversion = getSpecificUnitMultiplier(*state, "m3/s", "ft3/min");
-    Real64 airFlowPerAreaConversion = getSpecificUnitMultiplier(*state, "m3/s-m2", "ft3/min-ft2");
     int tempConvIndx = getSpecificUnitIndex(*state, "C", "F");
 
     // LoadSummaryUnitConversion(*state, compLoad);
@@ -9071,7 +9071,7 @@ TEST_F(EnergyPlusFixture, ORT_LoadSummaryUnitConversion_OverLoad_DualUnits)
 
     EXPECT_EQ(ConvertIP(*state, tempConvIndx, 20.), compLoad.outsideDryBulb);
     EXPECT_EQ(0.7 * airFlowConversion, compLoad.mainFanAirFlow);
-    EXPECT_EQ(0.2 * airFlowPerAreaConversion / powerConversion, compLoad.airflowPerTotCap);
+    EXPECT_EQ(0.2 * airFlowConversion / powerConversion, compLoad.airflowPerTotCap);
     EXPECT_EQ(0.15 * powerConversion / areaConversion, compLoad.totCapPerArea);
 }
 

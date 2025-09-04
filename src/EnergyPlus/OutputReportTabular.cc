@@ -16671,7 +16671,7 @@ void LoadSummaryUnitConversion(EnergyPlusData &state, CompLoadTablesType &compLo
 
     compLoadTotal.airflowPerFlrArea *= airFlowPerAreaConversion;
     if (powerConversion != 0.) {
-        compLoadTotal.airflowPerTotCap = compLoadTotal.airflowPerTotCap * airFlowPerAreaConversion / powerConversion;
+        compLoadTotal.airflowPerTotCap = compLoadTotal.airflowPerTotCap * airFlowConversion / powerConversion;
         compLoadTotal.areaPerTotCap = compLoadTotal.areaPerTotCap * areaConversion / powerConversion;
     }
     if (areaConversion != 0.) {
@@ -16728,7 +16728,7 @@ void LoadSummaryUnitConversion(EnergyPlusData &state, CompLoadTablesType &compLo
 
         compLoadTotal.airflowPerFlrArea *= airFlowPerAreaConversion;
         if (powerConversion != 0.) {
-            compLoadTotal.airflowPerTotCap = compLoadTotal.airflowPerTotCap * airFlowPerAreaConversion / powerConversion;
+            compLoadTotal.airflowPerTotCap = compLoadTotal.airflowPerTotCap * airFlowConversion / powerConversion;
             compLoadTotal.areaPerTotCap = compLoadTotal.areaPerTotCap * areaConversion / powerConversion;
         }
         if (areaConversion != 0.) {

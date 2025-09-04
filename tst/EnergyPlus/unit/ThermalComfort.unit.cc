@@ -2121,7 +2121,6 @@ TEST_F(EnergyPlusFixture, ThermalComfortClothingValueReportVariableTest)
     Real64 tSet;
     Real64 resultingPMV;
     Real64 constexpr closeEnough = 0.000000001;
-    Real64 expectedResult;
 
     // Allocations/Set-up Data for Tests
     state->dataHeatBal->TotPeople = 1;

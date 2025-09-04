@@ -45,44 +45,65 @@
 // OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef EPLUS_PYTHON_ENGINE_HH
-#define EPLUS_PYTHON_ENGINE_HH
+#pragma once
 
-#include <EnergyPlus/Data/EnergyPlusData.hh>
+#include <nlohmann/json.hpp>
 
-#if LINK_WITH_PYTHON
-#    ifndef PyObject_HEAD
-struct _object;
-using PyObject = _object;
-#    endif
-#endif
+#include <EnergyPlus/EnergyPlus.hh>
 
 namespace EnergyPlus {
 
-namespace Python {
+struct EnergyPlusData;
 
-    class PythonEngine
+namespace GroundHeatExchangers {
+
+    static constexpr Real64 hrsPerMonth = 730.0; // Number of hours in month
+    static constexpr Real64 maxTSinHr = 60.0;    // Max number of time step in an hour
+    static constexpr std::array<std::string_view, 2> GFuncCalcMethodsStrs = {"UHFCALC", "UBHWTCALC"};
+
+    enum class GFuncCalcMethod
     {
-    public:
-        explicit PythonEngine(EnergyPlus::EnergyPlusData &state);
-        PythonEngine(const PythonEngine &) = delete;
-        PythonEngine(PythonEngine &&) = delete;
-        PythonEngine &operator=(const PythonEngine &) = delete;
-        PythonEngine &operator=(PythonEngine &&) = delete;
-        ~PythonEngine();
-
-        static std::string getBasicPreamble();
-        static std::string getTclPreppedPreamble(std::vector<std::string> const &python_fwd_args);
-        void exec(std::string_view sv);
-
-        bool eplusRunningViaPythonAPI = false;
-
-    private:
-#if LINK_WITH_PYTHON
-        PyObject *m_globalDict;
-#endif
+        Invalid = -1,
+        UniformHeatFlux,
+        UniformBoreholeWallTemp,
+        Num
     };
-} // namespace Python
-} // namespace EnergyPlus
 
-#endif // EPLUS_PYTHON_ENGINE_HH
+    struct ThermophysicalProps // LCOV_EXCL_LINE
+    {
+        Real64 k = 0.0;           // Thermal conductivity [W/m-K]
+        Real64 rho = 0.0;         // Density [kg/m3]
+        Real64 cp = 0.0;          // Specific heat [J/kg-K]
+        Real64 rhoCp = 0.0;       // Specific heat capacity [J/kg-K]
+        Real64 diffusivity = 0.0; // Thermal diffusivity [m2/s]
+    };
+
+    struct PipeProps : ThermophysicalProps // LCOV_EXCL_LINE
+    {
+        Real64 outDia = 0.0;      // Outer diameter of the pipe [m]
+        Real64 innerDia = 0.0;    // Inner diameter of the pipe [m]
+        Real64 outRadius = 0.0;   // Outer radius of the pipe [m]
+        Real64 innerRadius = 0.0; // Inner radius of the pipe [m]
+        Real64 thickness = 0.0;   // Thickness of the pipe wall [m]
+    };
+
+    struct GLHEVertProps
+    {
+        static constexpr auto moduleName = "GroundHeatExchanger:Vertical:Properties";
+        std::string name;          // Name
+        Real64 bhTopDepth = 0.0;   // Depth of top of borehole {m}
+        Real64 bhLength = 0.0;     // Length of borehole from top of borehole {m}
+        Real64 bhDiameter = 0.0;   // Diameter of borehole {m}
+        ThermophysicalProps grout; // Grout properties
+        PipeProps pipe;            // Pipe properties
+        Real64 bhUTubeDist = 0.0;  // U-tube, shank-to-shank spacing {m}
+
+        GLHEVertProps() = default;
+        GLHEVertProps(EnergyPlusData &state, std::string const &objName, nlohmann::json const &j);
+
+        static std::shared_ptr<GLHEVertProps> GetVertProps(EnergyPlusData &state, std::string const &objectName);
+    };
+
+} // namespace GroundHeatExchangers
+
+} // namespace EnergyPlus

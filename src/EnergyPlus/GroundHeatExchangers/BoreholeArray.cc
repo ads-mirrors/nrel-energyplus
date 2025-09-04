@@ -45,44 +45,41 @@
 // OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef EPLUS_PYTHON_ENGINE_HH
-#define EPLUS_PYTHON_ENGINE_HH
-
 #include <EnergyPlus/Data/EnergyPlusData.hh>
+#include <EnergyPlus/GroundHeatExchangers/BoreholeArray.hh>
+#include <EnergyPlus/GroundHeatExchangers/State.hh>
+#include <EnergyPlus/UtilityRoutines.hh>
 
-#if LINK_WITH_PYTHON
-#    ifndef PyObject_HEAD
-struct _object;
-using PyObject = _object;
-#    endif
-#endif
+namespace EnergyPlus::GroundHeatExchangers {
 
-namespace EnergyPlus {
+GLHEVertArray::GLHEVertArray(EnergyPlusData &state, std::string const &objName, nlohmann::json const &j)
+{
+    // Check for duplicates
+    for (const auto &existingObj : state.dataGroundHeatExchanger->vertArraysVector) {
+        if (objName == existingObj->name) {
+            ShowFatalError(state, format("Invalid input for {} object: Duplicate name found: {}", this->moduleName, existingObj->name));
+        }
+    }
 
-namespace Python {
+    this->name = objName;
+    this->props = GLHEVertProps::GetVertProps(state, Util::makeUPPER(j["ghe_vertical_properties_object_name"].get<std::string>()));
+    this->numBHinXDirection = j["number_of_boreholes_in_x_direction"].get<int>();
+    this->numBHinYDirection = j["number_of_boreholes_in_y_direction"].get<int>();
+    this->bhSpacing = j["borehole_spacing"].get<Real64>();
+}
 
-    class PythonEngine
-    {
-    public:
-        explicit PythonEngine(EnergyPlus::EnergyPlusData &state);
-        PythonEngine(const PythonEngine &) = delete;
-        PythonEngine(PythonEngine &&) = delete;
-        PythonEngine &operator=(const PythonEngine &) = delete;
-        PythonEngine &operator=(PythonEngine &&) = delete;
-        ~PythonEngine();
+std::shared_ptr<GLHEVertArray> GLHEVertArray::GetVertArray(EnergyPlusData &state, std::string const &objectName)
+{
+    // Check if this instance of this model has already been retrieved
+    const auto thisObj = std::find_if(state.dataGroundHeatExchanger->vertArraysVector.begin(),
+                                      state.dataGroundHeatExchanger->vertArraysVector.end(),
+                                      [&objectName](const std::shared_ptr<GLHEVertArray> &myObj) { return myObj->name == objectName; });
+    if (thisObj != state.dataGroundHeatExchanger->vertArraysVector.end()) {
+        return *thisObj;
+    }
 
-        static std::string getBasicPreamble();
-        static std::string getTclPreppedPreamble(std::vector<std::string> const &python_fwd_args);
-        void exec(std::string_view sv);
+    ShowSevereError(state, fmt::format("Object=GroundHeatExchanger:Vertical:Array, Name={} - not found.", objectName));
+    ShowFatalError(state, "Preceding errors cause program termination");
+}
 
-        bool eplusRunningViaPythonAPI = false;
-
-    private:
-#if LINK_WITH_PYTHON
-        PyObject *m_globalDict;
-#endif
-    };
-} // namespace Python
-} // namespace EnergyPlus
-
-#endif // EPLUS_PYTHON_ENGINE_HH
+} // namespace EnergyPlus::GroundHeatExchangers

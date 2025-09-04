@@ -45,44 +45,60 @@
 // OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef EPLUS_PYTHON_ENGINE_HH
-#define EPLUS_PYTHON_ENGINE_HH
-
 #include <EnergyPlus/Data/EnergyPlusData.hh>
+#include <EnergyPlus/GroundHeatExchangers/Properties.hh>
+#include <EnergyPlus/GroundHeatExchangers/State.hh>
+#include <EnergyPlus/UtilityRoutines.hh>
 
-#if LINK_WITH_PYTHON
-#    ifndef PyObject_HEAD
-struct _object;
-using PyObject = _object;
-#    endif
-#endif
+namespace EnergyPlus::GroundHeatExchangers {
 
-namespace EnergyPlus {
+GLHEVertProps::GLHEVertProps(EnergyPlusData &state, std::string const &objName, nlohmann::json const &j)
+{
 
-namespace Python {
+    // Check for duplicates
+    for (const auto &existingObj : state.dataGroundHeatExchanger->vertPropsVector) {
+        if (objName == existingObj->name) {
+            ShowFatalError(state, format("Invalid input for {} object: Duplicate name found: {}", moduleName, existingObj->name));
+        }
+    }
 
-    class PythonEngine
-    {
-    public:
-        explicit PythonEngine(EnergyPlus::EnergyPlusData &state);
-        PythonEngine(const PythonEngine &) = delete;
-        PythonEngine(PythonEngine &&) = delete;
-        PythonEngine &operator=(const PythonEngine &) = delete;
-        PythonEngine &operator=(PythonEngine &&) = delete;
-        ~PythonEngine();
+    // Load data from JSON
+    this->name = objName;
+    this->bhTopDepth = j["depth_of_top_of_borehole"].get<Real64>();
+    this->bhLength = j["borehole_length"].get<Real64>();
+    this->bhDiameter = j["borehole_diameter"].get<Real64>();
+    this->grout.k = j["grout_thermal_conductivity"].get<Real64>();
+    this->grout.rhoCp = j["grout_thermal_heat_capacity"].get<Real64>();
+    this->pipe.k = j["pipe_thermal_conductivity"].get<Real64>();
+    this->pipe.rhoCp = j["pipe_thermal_heat_capacity"].get<Real64>();
+    this->pipe.outDia = j["pipe_outer_diameter"].get<Real64>();
+    this->pipe.thickness = j["pipe_thickness"].get<Real64>();
+    this->bhUTubeDist = j["u_tube_distance"].get<Real64>();
 
-        static std::string getBasicPreamble();
-        static std::string getTclPreppedPreamble(std::vector<std::string> const &python_fwd_args);
-        void exec(std::string_view sv);
+    // Verify u-tube spacing is valid
+    if (this->bhUTubeDist < this->pipe.outDia) {
+        ShowWarningError(state, "Borehole shank spacing is less than the pipe diameter. U-tube spacing is reference from the u-tube pipe center.");
+        ShowWarningError(state, "Shank spacing is set to the outer pipe diameter.");
+        this->bhUTubeDist = this->pipe.outDia;
+    }
 
-        bool eplusRunningViaPythonAPI = false;
+    // Set remaining data derived from previous inputs
+    this->pipe.innerDia = this->pipe.outDia - 2 * this->pipe.thickness;
+    this->pipe.outRadius = this->pipe.outDia / 2;
+    this->pipe.innerRadius = this->pipe.innerDia / 2;
+}
 
-    private:
-#if LINK_WITH_PYTHON
-        PyObject *m_globalDict;
-#endif
-    };
-} // namespace Python
-} // namespace EnergyPlus
+std::shared_ptr<GLHEVertProps> GLHEVertProps::GetVertProps(EnergyPlusData &state, std::string const &objectName)
+{
+    // Check if this instance of this model has already been retrieved
+    const auto thisObj = std::find_if(state.dataGroundHeatExchanger->vertPropsVector.begin(),
+                                      state.dataGroundHeatExchanger->vertPropsVector.end(),
+                                      [&objectName](const std::shared_ptr<GLHEVertProps> &myObj) { return myObj->name == objectName; });
+    if (thisObj != state.dataGroundHeatExchanger->vertPropsVector.end()) {
+        return *thisObj;
+    }
+    ShowSevereError(state, fmt::format("Object=GroundHeatExchanger:Vertical:Properties, Name={} - not found.", objectName));
+    ShowFatalError(state, "Preceding errors cause program termination");
+}
 
-#endif // EPLUS_PYTHON_ENGINE_HH
+} // namespace EnergyPlus::GroundHeatExchangers

@@ -45,44 +45,47 @@
 // OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef EPLUS_PYTHON_ENGINE_HH
-#define EPLUS_PYTHON_ENGINE_HH
+#pragma once
 
-#include <EnergyPlus/Data/EnergyPlusData.hh>
+#include <nlohmann/json.hpp>
 
-#if LINK_WITH_PYTHON
-#    ifndef PyObject_HEAD
-struct _object;
-using PyObject = _object;
-#    endif
-#endif
+#include <EnergyPlus/EnergyPlus.hh>
+#include <EnergyPlus/GroundHeatExchangers/Properties.hh>
 
 namespace EnergyPlus {
 
-namespace Python {
+struct EnergyPlusData;
 
-    class PythonEngine
+namespace GroundHeatExchangers {
+
+    struct MyCartesian
     {
-    public:
-        explicit PythonEngine(EnergyPlus::EnergyPlusData &state);
-        PythonEngine(const PythonEngine &) = delete;
-        PythonEngine(PythonEngine &&) = delete;
-        PythonEngine &operator=(const PythonEngine &) = delete;
-        PythonEngine &operator=(PythonEngine &&) = delete;
-        ~PythonEngine();
-
-        static std::string getBasicPreamble();
-        static std::string getTclPreppedPreamble(std::vector<std::string> const &python_fwd_args);
-        void exec(std::string_view sv);
-
-        bool eplusRunningViaPythonAPI = false;
-
-    private:
-#if LINK_WITH_PYTHON
-        PyObject *m_globalDict;
-#endif
+        Real64 x = 0.0;
+        Real64 y = 0.0;
+        Real64 z = 0.0;
     };
-} // namespace Python
-} // namespace EnergyPlus
 
-#endif // EPLUS_PYTHON_ENGINE_HH
+    struct GLHEVertSingle
+    {
+        static constexpr auto moduleName = "GroundHeatExchanger:Vertical:Single";
+        std::string name;                     // Name
+        Real64 xLoc = 0.0;                    // X-direction location {m}
+        Real64 yLoc = 0.0;                    // Y-direction location {m}
+        Real64 dl_i = 0.0;                    // Discretized bh length between points
+        Real64 dl_ii = 0.0;                   // Discretized bh length between points
+        Real64 dl_j = 0.0;                    // Discretized bh length between points
+        std::shared_ptr<GLHEVertProps> props; // Properties
+        std::vector<MyCartesian>
+            pointLocations_i; // Discretized point locations for when computing temperature response of other boreholes on this bh
+        std::vector<MyCartesian> pointLocations_ii; // Discretized point locations for when computing temperature response of this bh on itself
+        std::vector<MyCartesian>
+            pointLocations_j; // Discretized point locations for when other bh are computing the temperature response of this bh on themselves
+
+        GLHEVertSingle() = default;
+        GLHEVertSingle(EnergyPlusData &state, std::string const &objName, nlohmann::json const &j);
+        static std::shared_ptr<GLHEVertSingle> GetSingleBH(EnergyPlusData &state, std::string const &objectName);
+    };
+
+} // namespace GroundHeatExchangers
+
+} // namespace EnergyPlus

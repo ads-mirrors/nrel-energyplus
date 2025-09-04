@@ -45,44 +45,51 @@
 // OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef EPLUS_PYTHON_ENGINE_HH
-#define EPLUS_PYTHON_ENGINE_HH
+#pragma once
 
-#include <EnergyPlus/Data/EnergyPlusData.hh>
+#include <nlohmann/json.hpp>
 
-#if LINK_WITH_PYTHON
-#    ifndef PyObject_HEAD
-struct _object;
-using PyObject = _object;
-#    endif
-#endif
+#include <EnergyPlus/EnergyPlus.hh>
+#include <EnergyPlus/GroundHeatExchangers/BoreholeSingle.hh>
+#include <EnergyPlus/GroundHeatExchangers/Properties.hh>
 
 namespace EnergyPlus {
 
-namespace Python {
+struct EnergyPlusData;
 
-    class PythonEngine
+namespace GroundHeatExchangers {
+
+    struct GLHEVertArray;
+
+    struct GLHEResponseFactors
     {
-    public:
-        explicit PythonEngine(EnergyPlus::EnergyPlusData &state);
-        PythonEngine(const PythonEngine &) = delete;
-        PythonEngine(PythonEngine &&) = delete;
-        PythonEngine &operator=(const PythonEngine &) = delete;
-        PythonEngine &operator=(PythonEngine &&) = delete;
-        ~PythonEngine();
+        static constexpr auto moduleName = "GroundHeatExchanger:ResponseFactors";
+        std::string name;                                        // Name
+        unsigned int numBoreholes = 0;                           // Number of boreholes
+        int numGFuncPairs = 0;                                   // Number of g-function pairs
+        Real64 gRefRatio = 0.0;                                  // Reference ratio of g-function set
+        Real64 maxSimYears = 0.0;                                // Maximum length of simulation in years
+        std::vector<Real64> time;                                // response time in seconds
+        std::vector<Real64> LNTTS;                               // natural log of non-dimensional time Ln(t/ts)
+        std::vector<Real64> GFNC;                                // g-function (non-dimensional temperature response factors)
+        std::shared_ptr<GLHEVertProps> props;                    // Properties
+        std::vector<std::shared_ptr<GLHEVertSingle>> myBorholes; // Boreholes used by this response factors object
 
-        static std::string getBasicPreamble();
-        static std::string getTclPreppedPreamble(std::vector<std::string> const &python_fwd_args);
-        void exec(std::string_view sv);
+        GLHEResponseFactors() = default;
+        GLHEResponseFactors(EnergyPlusData &state, std::string const &objName, nlohmann::json const &j);
 
-        bool eplusRunningViaPythonAPI = false;
-
-    private:
-#if LINK_WITH_PYTHON
-        PyObject *m_globalDict;
-#endif
+        void SetupBHPointsForResponseFactorsObject() const;
     };
-} // namespace Python
-} // namespace EnergyPlus
 
-#endif // EPLUS_PYTHON_ENGINE_HH
+    std::shared_ptr<GLHEResponseFactors> GetResponseFactor(EnergyPlusData &state, std::string const &objectName);
+
+    std::shared_ptr<GLHEResponseFactors> BuildAndGetResponseFactorObjectFromArray(EnergyPlusData &state,
+                                                                                  std::shared_ptr<GLHEVertArray> const &arrayObjectPtr);
+
+    std::shared_ptr<GLHEResponseFactors>
+    BuildAndGetResponseFactorsObjectFromSingleBHs(const EnergyPlusData &state,
+                                                  std::vector<std::shared_ptr<GLHEVertSingle>> const &singleBHsForRFVect);
+
+} // namespace GroundHeatExchangers
+
+} // namespace EnergyPlus

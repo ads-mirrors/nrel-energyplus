@@ -45,44 +45,33 @@
 // OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef EPLUS_PYTHON_ENGINE_HH
-#define EPLUS_PYTHON_ENGINE_HH
+#pragma once
 
-#include <EnergyPlus/Data/EnergyPlusData.hh>
+#include <nlohmann/json.hpp>
 
-#if LINK_WITH_PYTHON
-#    ifndef PyObject_HEAD
-struct _object;
-using PyObject = _object;
-#    endif
-#endif
+#include <EnergyPlus/EnergyPlus.hh>
+#include <EnergyPlus/GroundHeatExchangers/Properties.hh>
 
 namespace EnergyPlus {
 
-namespace Python {
+struct EnergyPlusData;
 
-    class PythonEngine
+namespace GroundHeatExchangers {
+
+    struct GLHEVertArray
     {
-    public:
-        explicit PythonEngine(EnergyPlus::EnergyPlusData &state);
-        PythonEngine(const PythonEngine &) = delete;
-        PythonEngine(PythonEngine &&) = delete;
-        PythonEngine &operator=(const PythonEngine &) = delete;
-        PythonEngine &operator=(PythonEngine &&) = delete;
-        ~PythonEngine();
+        static constexpr auto moduleName = "GroundHeatExchanger:Vertical:Array";
+        std::string name;                     // Name
+        int numBHinXDirection = 0;            // Number of boreholes in X direction
+        int numBHinYDirection = 0;            // Number of boreholes in Y direction
+        Real64 bhSpacing = 0.0;               // Borehole center-to-center spacing {m}
+        std::shared_ptr<GLHEVertProps> props; // Properties
 
-        static std::string getBasicPreamble();
-        static std::string getTclPreppedPreamble(std::vector<std::string> const &python_fwd_args);
-        void exec(std::string_view sv);
+        GLHEVertArray(EnergyPlusData &state, std::string const &objName, nlohmann::json const &j);
 
-        bool eplusRunningViaPythonAPI = false;
-
-    private:
-#if LINK_WITH_PYTHON
-        PyObject *m_globalDict;
-#endif
+        static std::shared_ptr<GLHEVertArray> GetVertArray(EnergyPlusData &state, std::string const &objectName);
     };
-} // namespace Python
-} // namespace EnergyPlus
 
-#endif // EPLUS_PYTHON_ENGINE_HH
+} // namespace GroundHeatExchangers
+
+} // namespace EnergyPlus

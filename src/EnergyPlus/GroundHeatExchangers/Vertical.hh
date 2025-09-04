@@ -45,44 +45,90 @@
 // OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef EPLUS_PYTHON_ENGINE_HH
-#define EPLUS_PYTHON_ENGINE_HH
+#pragma once
 
-#include <EnergyPlus/Data/EnergyPlusData.hh>
-
-#if LINK_WITH_PYTHON
-#    ifndef PyObject_HEAD
-struct _object;
-using PyObject = _object;
-#    endif
-#endif
+#include <EnergyPlus/GroundHeatExchangers/Base.hh>
 
 namespace EnergyPlus {
 
-namespace Python {
+struct EnergyPlusData;
 
-    class PythonEngine
+namespace GroundHeatExchangers {
+
+    struct GLHEVert : GLHEBase // LCOV_EXCL_LINE
     {
-    public:
-        explicit PythonEngine(EnergyPlus::EnergyPlusData &state);
-        PythonEngine(const PythonEngine &) = delete;
-        PythonEngine(PythonEngine &&) = delete;
-        PythonEngine &operator=(const PythonEngine &) = delete;
-        PythonEngine &operator=(PythonEngine &&) = delete;
-        ~PythonEngine();
 
-        static std::string getBasicPreamble();
-        static std::string getTclPreppedPreamble(std::vector<std::string> const &python_fwd_args);
-        void exec(std::string_view sv);
+        static constexpr auto moduleName = "GroundHeatExchanger:System";
+        Real64 bhDiameter = 0.0;  // Diameter of borehole {m}
+        Real64 bhRadius = 0.0;    // Radius of borehole {m}
+        Real64 bhLength = 0.0;    // Length of borehole {m}
+        Real64 bhUTubeDist = 0.0; // Distance between u-tube legs {m}
+        GFuncCalcMethod gFuncCalcMethod = GFuncCalcMethod::Invalid;
 
-        bool eplusRunningViaPythonAPI = false;
+        // Parameters for the multipole method
+        Real64 theta_1 = 0.0;
+        Real64 theta_2 = 0.0;
+        Real64 theta_3 = 0.0;
+        Real64 sigma = 0.0;
 
-    private:
-#if LINK_WITH_PYTHON
-        PyObject *m_globalDict;
-#endif
+        std::vector<Real64> GFNC_shortTimestep;
+        std::vector<Real64> LNTTS_shortTimestep;
+
+        GLHEVert() = default;
+        GLHEVert(EnergyPlusData &state, std::string const &objName, nlohmann::json const &j);
+        ~GLHEVert() override = default;
+
+        static std::vector<Real64> distances(MyCartesian const &point_i, MyCartesian const &point_j);
+
+        Real64 calcResponse(std::vector<Real64> const &dists, Real64 currTime) const;
+
+        Real64 integral(MyCartesian const &point_i, std::shared_ptr<GLHEVertSingle> const &bh_j, Real64 currTime) const;
+
+        Real64 doubleIntegral(std::shared_ptr<GLHEVertSingle> const &bh_i, std::shared_ptr<GLHEVertSingle> const &bh_j, Real64 currTime) const;
+
+        void calcShortTimestepGFunctions(EnergyPlusData &state);
+
+        void calcLongTimestepGFunctions(EnergyPlusData &state) const;
+
+        void calcGFunctions(EnergyPlusData &state) override;
+
+        void calcUniformHeatFluxGFunctions(EnergyPlusData &state) const;
+
+        void calcUniformBHWallTempGFunctionsWithGHEDesigner(EnergyPlusData &state) const;
+
+        Real64 calcHXResistance(EnergyPlusData &state) override;
+
+        void initGLHESimVars(EnergyPlusData &state) override;
+
+        void getAnnualTimeConstant() override;
+
+        Real64 getGFunc(Real64 time) override;
+
+        Real64 calcBHAverageResistance(EnergyPlusData &state);
+
+        Real64 calcBHTotalInternalResistance(EnergyPlusData &state);
+
+        Real64 calcBHGroutResistance(EnergyPlusData &state);
+
+        Real64 calcPipeConductionResistance() const;
+
+        Real64 calcPipeConvectionResistance(EnergyPlusData &state);
+
+        static Real64 frictionFactor(Real64 reynoldsNum);
+
+        Real64 calcPipeResistance(EnergyPlusData &state);
+
+        void combineShortAndLongTimestepGFunctions() const;
+
+        void initEnvironment(EnergyPlusData &state, [[maybe_unused]] Real64 CurTime) override;
+
+        void oneTimeInit(EnergyPlusData &state) override;
+
+        void oneTimeInit_new(EnergyPlusData &state) override;
+
+        void setupTimeVectors() const;
     };
-} // namespace Python
-} // namespace EnergyPlus
 
-#endif // EPLUS_PYTHON_ENGINE_HH
+} // namespace GroundHeatExchangers
+
+} // namespace EnergyPlus

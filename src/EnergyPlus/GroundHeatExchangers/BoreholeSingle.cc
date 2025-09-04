@@ -45,44 +45,43 @@
 // OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef EPLUS_PYTHON_ENGINE_HH
-#define EPLUS_PYTHON_ENGINE_HH
-
 #include <EnergyPlus/Data/EnergyPlusData.hh>
+#include <EnergyPlus/GroundHeatExchangers/BoreholeSingle.hh>
+#include <EnergyPlus/GroundHeatExchangers/State.hh>
+#include <EnergyPlus/UtilityRoutines.hh>
 
-#if LINK_WITH_PYTHON
-#    ifndef PyObject_HEAD
-struct _object;
-using PyObject = _object;
-#    endif
-#endif
+namespace EnergyPlus::GroundHeatExchangers {
 
-namespace EnergyPlus {
+GLHEVertSingle::GLHEVertSingle(EnergyPlusData &state, std::string const &objName, nlohmann::json const &j)
+{
+    // Check for duplicates
+    for (const auto &existingObj : state.dataGroundHeatExchanger->singleBoreholesVector) {
+        if (objName == existingObj->name) {
+            ShowFatalError(state, format("Invalid input for {} object: Duplicate name found: {}", this->moduleName, existingObj->name));
+        }
+    }
 
-namespace Python {
+    this->name = objName;
+    this->props = GLHEVertProps::GetVertProps(state, Util::makeUPPER(j["ghe_vertical_properties_object_name"].get<std::string>()));
+    this->xLoc = j["x_location"].get<Real64>();
+    this->yLoc = j["y_location"].get<Real64>();
+    this->dl_i = 0.0;
+    this->dl_ii = 0.0;
+    this->dl_j = 0.0;
+}
 
-    class PythonEngine
-    {
-    public:
-        explicit PythonEngine(EnergyPlus::EnergyPlusData &state);
-        PythonEngine(const PythonEngine &) = delete;
-        PythonEngine(PythonEngine &&) = delete;
-        PythonEngine &operator=(const PythonEngine &) = delete;
-        PythonEngine &operator=(PythonEngine &&) = delete;
-        ~PythonEngine();
+std::shared_ptr<GLHEVertSingle> GLHEVertSingle::GetSingleBH(EnergyPlusData &state, std::string const &objectName)
+{
+    // Check if this instance of this model has already been retrieved
+    const auto thisObj = std::find_if(state.dataGroundHeatExchanger->singleBoreholesVector.begin(),
+                                      state.dataGroundHeatExchanger->singleBoreholesVector.end(),
+                                      [&objectName](const std::shared_ptr<GLHEVertSingle> &myObj) { return myObj->name == objectName; });
+    if (thisObj != state.dataGroundHeatExchanger->singleBoreholesVector.end()) {
+        return *thisObj;
+    }
 
-        static std::string getBasicPreamble();
-        static std::string getTclPreppedPreamble(std::vector<std::string> const &python_fwd_args);
-        void exec(std::string_view sv);
+    ShowSevereError(state, fmt::format("Object=GroundHeatExchanger:Vertical:Single, Name={} - not found.", objectName));
+    ShowFatalError(state, "Preceding errors cause program termination");
+}
 
-        bool eplusRunningViaPythonAPI = false;
-
-    private:
-#if LINK_WITH_PYTHON
-        PyObject *m_globalDict;
-#endif
-    };
-} // namespace Python
-} // namespace EnergyPlus
-
-#endif // EPLUS_PYTHON_ENGINE_HH
+} // namespace EnergyPlus::GroundHeatExchangers

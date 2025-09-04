@@ -105,7 +105,6 @@ jobs:
         -DBUILD_PACKAGE:BOOL=OFF
         -DDOCUMENTATION_BUILD:STRING=DoNotBuild
         -DENABLE_OPENMP:BOOL=OFF
-        -DUSE_OpenMP:BOOL=OFF
         ../
 
     # During baseline builds, just build specific target list so that we don't waste time building the unit test binary
@@ -151,7 +150,6 @@ jobs:
         -DBUILD_PACKAGE:BOOL=OFF
         -DDOCUMENTATION_BUILD:STRING=DoNotBuild
         -DENABLE_OPENMP:BOOL=OFF
-        -DUSE_OpenMP:BOOL=OFF
         ../
 
     - name: Branch Build

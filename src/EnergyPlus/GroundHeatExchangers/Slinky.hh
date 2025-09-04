@@ -45,44 +45,70 @@
 // OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef EPLUS_PYTHON_ENGINE_HH
-#define EPLUS_PYTHON_ENGINE_HH
+#pragma once
 
-#include <EnergyPlus/Data/EnergyPlusData.hh>
-
-#if LINK_WITH_PYTHON
-#    ifndef PyObject_HEAD
-struct _object;
-using PyObject = _object;
-#    endif
-#endif
+#include <EnergyPlus/EnergyPlus.hh>
+#include <EnergyPlus/GroundHeatExchangers/Base.hh>
 
 namespace EnergyPlus {
 
-namespace Python {
+struct EnergyPlusData;
 
-    class PythonEngine
+namespace GroundHeatExchangers {
+
+    struct GLHESlinky : GLHEBase
     {
-    public:
-        explicit PythonEngine(EnergyPlus::EnergyPlusData &state);
-        PythonEngine(const PythonEngine &) = delete;
-        PythonEngine(PythonEngine &&) = delete;
-        PythonEngine &operator=(const PythonEngine &) = delete;
-        PythonEngine &operator=(PythonEngine &&) = delete;
-        ~PythonEngine();
+        static constexpr auto moduleName = "GroundHeatExchanger:Slinky";
+        bool verticalConfig = false; // HX Configuration Flag
+        Real64 coilDiameter = 0.0;   // Diameter of the slinky coils [m]
+        Real64 coilPitch = 0.0;      // Center-to-center slinky coil spacing [m]
+        Real64 coilDepth = 0.0;      // Average depth of the coil [m]
+        Real64 trenchDepth = 0.0;    // Trench depth from ground surface to trench bottom [m]
+        Real64 trenchLength = 0.0;   // Length of single trench [m]
+        int numTrenches = 0;         // Number of parallel trenches [m]
+        Real64 trenchSpacing = 0.0;  // Spacing between parallel trenches [m]
+        int numCoils = 0;            // Number of coils
+        int monthOfMinSurfTemp = 0;
+        Real64 maxSimYears = 0.0;
+        Real64 minSurfTemp = 0.0;
+        Array1D<Real64> X0;
+        Array1D<Real64> Y0;
+        Real64 Z0 = 0.0;
 
-        static std::string getBasicPreamble();
-        static std::string getTclPreppedPreamble(std::vector<std::string> const &python_fwd_args);
-        void exec(std::string_view sv);
+        GLHESlinky() = default;
+        GLHESlinky(EnergyPlusData &state, std::string const &objName, nlohmann::json const &j);
 
-        bool eplusRunningViaPythonAPI = false;
+        Real64 calcHXResistance(EnergyPlusData &state) override;
 
-    private:
-#if LINK_WITH_PYTHON
-        PyObject *m_globalDict;
-#endif
+        void calcGFunctions(EnergyPlusData &state) override;
+
+        void initGLHESimVars(EnergyPlusData &state) override;
+
+        void getAnnualTimeConstant() override;
+
+        Real64 doubleIntegral(int m, int n, int m1, int n1, Real64 t, int I0, int J0);
+
+        Real64 integral(int m, int n, int m1, int n1, Real64 t, Real64 eta, int J0);
+
+        Real64 distance(int m, int n, int m1, int n1, Real64 eta, Real64 theta);
+
+        Real64 distanceToFictRing(int m, int n, int m1, int n1, Real64 eta, Real64 theta);
+
+        Real64 distToCenter(int m, int n, int m1, int n1);
+
+        Real64 nearFieldResponseFunction(int m, int n, int m1, int n1, Real64 eta, Real64 theta, Real64 t);
+
+        Real64 midFieldResponseFunction(int m, int n, int m1, int n1, Real64 t);
+
+        Real64 getGFunc(Real64 time) override;
+
+        void initEnvironment(EnergyPlusData &state, Real64 CurTime) override;
+
+        void oneTimeInit(EnergyPlusData &state) override;
+
+        void oneTimeInit_new(EnergyPlusData &state) override;
     };
-} // namespace Python
-} // namespace EnergyPlus
 
-#endif // EPLUS_PYTHON_ENGINE_HH
+} // namespace GroundHeatExchangers
+
+} // namespace EnergyPlus

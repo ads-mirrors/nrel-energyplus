@@ -152,7 +152,7 @@ TEST_F(EnergyPlusFixture, OutputReportTabularTest_RealToStr)
     EXPECT_EQ("  123456.789", RealToStr(123456.789, 3));
     EXPECT_EQ(" 123456.7890", RealToStr(123456.789, 4));
 
-    EXPECT_EQ("0.123457E+06", RealToStr(123456.789, 5));
+    EXPECT_EQ("1.234568E+05", RealToStr(123456.789, 5));
 }
 
 TEST_F(EnergyPlusFixture, OutputReportTabularTest_isNumber)
@@ -9889,18 +9889,18 @@ TEST_F(EnergyPlusFixture, OutputReportTabularTest_PredefinedTable_SigDigits_Forc
     value = 123456789.1;
 
     PreDefTableEntry(*state, state->dataOutRptPredefined->pdchPlantSizDesDay, "MyPlant Sizing Pass 1", value, 3);
-    EXPECT_EQ("0.123E+09", RetrievePreDefTableEntry(*state, state->dataOutRptPredefined->pdchPlantSizDesDay, "MyPlant Sizing Pass 1"));
+    EXPECT_EQ("1.235E+08", RetrievePreDefTableEntry(*state, state->dataOutRptPredefined->pdchPlantSizDesDay, "MyPlant Sizing Pass 1"));
 
     PreDefTableEntry(*state, state->dataOutRptPredefined->pdchPlantSizPrevVdot, "MyPlant Sizing Pass 1", value, 2);
-    EXPECT_EQ("0.12E+09", RetrievePreDefTableEntry(*state, state->dataOutRptPredefined->pdchPlantSizPrevVdot, "MyPlant Sizing Pass 1"));
+    EXPECT_EQ("1.23E+08", RetrievePreDefTableEntry(*state, state->dataOutRptPredefined->pdchPlantSizPrevVdot, "MyPlant Sizing Pass 1"));
 
     // Force reset to numSigDigits = 2 since we switch to scientific notation
 
     PreDefTableEntry(*state, state->dataOutRptPredefined->pdchPlantSizMeasVdot, "MyPlant Sizing Pass 1", value, 1);
-    EXPECT_EQ("0.12E+09", RetrievePreDefTableEntry(*state, state->dataOutRptPredefined->pdchPlantSizMeasVdot, "MyPlant Sizing Pass 1"));
+    EXPECT_EQ("1.23E+08", RetrievePreDefTableEntry(*state, state->dataOutRptPredefined->pdchPlantSizMeasVdot, "MyPlant Sizing Pass 1"));
 
     PreDefTableEntry(*state, state->dataOutRptPredefined->pdchPlantSizCalcVdot, "MyPlant Sizing Pass 1", value, 0);
-    EXPECT_EQ("0.12E+09", RetrievePreDefTableEntry(*state, state->dataOutRptPredefined->pdchPlantSizCalcVdot, "MyPlant Sizing Pass 1"));
+    EXPECT_EQ("1.23E+08", RetrievePreDefTableEntry(*state, state->dataOutRptPredefined->pdchPlantSizCalcVdot, "MyPlant Sizing Pass 1"));
 }
 
 TEST_F(EnergyPlusFixture, OutputReportTabularTest_PredefinedTable_Standard62_1_NoSizing)

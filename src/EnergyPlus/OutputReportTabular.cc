@@ -18396,7 +18396,7 @@ std::string RealToStr(Real64 const RealIn, int const numDigits)
     }
 
     if (std::abs(RealIn) > maxvalDigitsA.at(nDigits)) {
-        return format("{:12.6Z}", RealIn);
+        return format("{:12.6E}", RealIn);
     } else {
         return format<FormatSyntax::FMT>(formDigitsA.at(nDigits), RealIn);
     }

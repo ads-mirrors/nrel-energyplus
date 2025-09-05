@@ -527,8 +527,8 @@ void GLHEVert::calcUniformBHWallTempGFunctionsWithGHEDesigner(EnergyPlusData &st
     }
     std::string const cmd = fmt::format(R"("{}" auxiliary ghedesigner "{}" "{}")",
                                         FileSystem::toString(exePath),
-                                        FileSystem::toString(ghe_designer_input_file_path),
-                                        FileSystem::toString(ghe_designer_output_directory));
+                                        FileSystem::toGenericString(ghe_designer_input_file_path),
+                                        FileSystem::toGenericString(ghe_designer_output_directory));
     int const status = FileSystem::systemCall(cmd);
     if (status != 0) {
         ShowFatalError(state, "GHEDesigner failed to calculate G-functions.");

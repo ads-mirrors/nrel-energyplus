@@ -680,6 +680,20 @@ void GetZoneAirSetPoints(EnergyPlusData &state)
             }
 
             int setptIdx = Util::FindItem(setpt.Name, s_ztpc->tempSetptScheds[(int)setptType]);
+            if (setptIdx <= 0) {
+                ShowSevereError(state,
+                                format("ZoneControl:Thermostat = {}, control name = {} was not found in ThermostatSetpoint object type = {}.",
+                                       tempZone.Name,
+                                       setpt.Name,
+                                       setptTypeNames[(int)setptType]));
+                ShowContinueError(state, "  In the input syntax for the ZoneControl:Thermostat, the user must enter valid pairs of control");
+                ShowContinueError(state, "  type and control name.  The ZoneControl:Thermostat control name shown above was either blank or");
+                ShowContinueError(state, "  was not found among the valid ThermostatSetpoint objects.  Either add a ThermostatSetpoint object");
+                ShowContinueError(state, "  and reference it in the ZoneControl:Thermostat object or simply reference a valid, existing");
+                ShowContinueError(state, "  ThermostatSetpoint object in the ZoneControl:Thermostat control name field.");
+                ErrorsFound = true;
+                continue;
+            }
 
             if (setptType == HVAC::SetptType::SingleHeat || setptType == HVAC::SetptType::SingleHeatCool ||
                 setptType == HVAC::SetptType::DualHeatCool) {
@@ -1576,7 +1590,6 @@ void GetZoneAirSetPoints(EnergyPlusData &state)
                 auto const &TStatObjects = state.dataZoneCtrls->TStatObjects(found);
                 for (Item = 1; Item <= TStatObjects.NumOfZones; ++Item) {
                     TempControlledZoneNum = TStatObjects.TempControlledZoneStartPtr + Item - 1;
-                    auto &TempControlledZone = state.dataZoneCtrls->TempControlledZone(TempControlledZoneNum);
                     if (state.dataZoneCtrls->NumTempControlledZones == 0) {
                         continue;
                     }
@@ -2352,13 +2365,11 @@ void InitZoneAirSetPoints(EnergyPlusData &state)
     static constexpr std::string_view RoutineName("InitZoneAirSetpoints: ");
 
     // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-    bool FirstSurfFlag;
     int TRefFlag; // Flag for Reference Temperature process in Zones
 
     auto &s_ztpc = state.dataZoneTempPredictorCorrector;
     auto &s_hbfs = state.dataHeatBalFanSys;
 
-    auto &ZoneList = state.dataHeatBal->ZoneList;
     auto &TempControlType = state.dataHeatBalFanSys->TempControlType;
     auto &TempControlTypeRpt = state.dataHeatBalFanSys->TempControlTypeRpt;
     int NumOfZones = state.dataGlobal->NumOfZones;
@@ -3255,7 +3266,6 @@ void CalcZoneAirTempSetPoints(EnergyPlusData &state)
 
     // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
     int RelativeZoneNum;
-    int ActualZoneNum;
     int OccStartTime; // Occupancy start time - for optimum start
     Real64 DeltaT;    // Temperature difference between cutout and setpoint
 
@@ -6663,6 +6673,11 @@ void FillPredefinedTableOnThermostatSchedules(EnergyPlusData &state)
             case HVAC::SetptType::SingleHeat: {
                 info.heatSchName = setpt.heatSetptSched->Name;
             } break;
+            case HVAC::SetptType::Invalid:
+            case HVAC::SetptType::Uncontrolled:
+            case HVAC::SetptType::Num: {
+                break;
+            }
             }
             infos.emplace_back(std::move(info));
         }

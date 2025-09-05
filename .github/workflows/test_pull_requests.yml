@@ -159,7 +159,7 @@ jobs:
       working-directory: ./build
       shell: bash
       run: |
-        ctest -R integration -j ${{ env.NPROC }} --ouput-on-failure
+        ctest -R integration -j ${{ env.NPROC }} --output-on-failure
 
     - name: Checkout Branch again
       if: matrix.run_regressions && steps.cachebaselineregression.outputs.cache-hit != 'true'

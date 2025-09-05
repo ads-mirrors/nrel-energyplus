@@ -471,27 +471,28 @@ class RegressionManager:
     def check_all_regressions(self, base_testfiles: Path, mod_testfiles: Path, bundle_root: Path) -> bool:
         any_diffs = False
         bundle_root.mkdir(exist_ok=True)
-        idf_files = [baseline.name for baseline in sorted(base_testfiles.iterdir())]
+        idf_files = []
+        for baseline in sorted(base_testfiles.iterdir()):
+            if not baseline.is_dir():
+                continue
+            if baseline.name == 'CMakeFiles':  # add more ignore dirs here
+                continue
+            modified = mod_testfiles / baseline.name
+            if not modified.exists():
+                # print(f"Modified directory missing: '{modified}'")
+                continue  # TODO: Should we warn that it is missing?
+            idf_files.append(baseline.name)
 
         backtrace_shown = False
         for entry_num, idf_file in enumerate(idf_files):
-            baseline = base_testfiles / idf_file
-            if not baseline.is_dir():
-                print(f"Baseline directory missing: '{baseline}'")
-                continue
-            if idf_file == 'CMakeFiles':  # add more ignore dirs here
-                continue
-            modified = mod_testfiles / idf_file
-            if not modified.exists():
-                print(f"Modified directory missing: '{modified}'")
-                continue  # TODO: Should we warn that it is missing?
+
             try:
                 entry = run_single_entry(idf_file, base_testfiles, mod_testfiles, Path(self.threshold_file))
                 entry, diffs = self.process_single_file_regressions(idf_file, entry)
                 if diffs:
                     self.root_index_files_diffs.append(idf_file)
                     any_diffs = True
-                    potential_diff_files = baseline.glob("*.*.*")  # TODO: Could try to get this from the regression tool
+                    potential_diff_files = (base_testfiles / idf_file).glob("*.*.*")  # TODO: Could try to get this from the regression tool
                     target_dir_for_this_file_diffs = bundle_root / idf_file
                     if potential_diff_files:
                         if target_dir_for_this_file_diffs.exists():
@@ -518,6 +519,7 @@ class RegressionManager:
                 so_far = ' Diffs! ' if any_diffs else 'No diffs'
                 if entry_num % 40 == 0:
                     print(f"On file #{entry_num}/{len(idf_files)} ({idf_file}), Diff status so far: {so_far}")
+
             except Exception as e:
                 any_diffs = True
                 print(f"Regression run *failed* trying to process file: {idf_file}; reason: {e}")
@@ -526,6 +528,7 @@ class RegressionManager:
                     print_exc()
                     backtrace_shown = True
                 self.root_index_files_failed.append(idf_file)
+
         meta_data = [
             f"Regression time stamp in UTC: {datetime.now(UTC)}",
             f"Regression time stamp in Central Time: {datetime.now(ZoneInfo('America/Chicago'))}",

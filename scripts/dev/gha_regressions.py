@@ -62,6 +62,8 @@ from pathlib import Path
 from shutil import copy, rmtree
 from traceback import print_exc
 from zoneinfo import ZoneInfo
+import multiprocessing
+from concurrent.futures import ProcessPoolExecutor, as_completed
 
 from energyplus_regressions.builds.base import BuildTree
 from energyplus_regressions.runtests import SuiteRunner
@@ -491,54 +493,68 @@ class RegressionManager:
             idf_files.append(baseline.name)
 
         backtrace_shown = False
-        for entry_num, idf_file in enumerate(idf_files):
 
-            try:
-                entry = run_single_entry(idf_file, base_testfiles, mod_testfiles, Path(self.threshold_file))
-                entry, diffs = self.process_single_file_regressions(idf_file, entry)
-                if diffs:
-                    self.root_index_files_diffs.append(idf_file)
+        max_workers = multiprocessing.cpu_count()
+        with ProcessPoolExecutor(max_workers=max_workers) as executor:
+
+            future_to_idf = {
+                executor.submit(
+                    run_single_entry, idf_file, base_testfiles, mod_testfiles, self.threshold_file
+                ): idf_file
+                for idf_file in idf_files
+            }
+
+            for entry_num, future in enumerate(as_completed(future_to_idf)):
+                idf_file = future_to_idf[future]
+                try:
+                    entry = future.result()
+
+                    entry, diffs = self.process_single_file_regressions(idf_file, entry)
+                    if diffs:
+                        self.root_index_files_diffs.append(idf_file)
+                        any_diffs = True
+                        potential_diff_files = (base_testfiles / idf_file).glob(
+                            "*.*.*"
+                        )  # TODO: Could try to get this from the regression tool
+                        target_dir_for_this_file_diffs = bundle_root / idf_file
+                        if potential_diff_files:
+                            if target_dir_for_this_file_diffs.exists():
+                                rmtree(target_dir_for_this_file_diffs)
+                            target_dir_for_this_file_diffs.mkdir()
+                            index_contents_this_file = ""
+                            for potential_diff_file in potential_diff_files:
+                                copy(potential_diff_file, target_dir_for_this_file_diffs)
+                                diff_file_with_html = target_dir_for_this_file_diffs / (
+                                    potential_diff_file.name + ".html"
+                                )
+                                if potential_diff_file.name.endswith(".htm"):
+                                    # already a html file, just upload the raw contents but renamed as ...htm.html
+                                    copy(potential_diff_file, diff_file_with_html)
+                                else:
+                                    # it's not an HTML file, wrap it inside an HTML wrapper in a temp file and send it
+                                    contents = potential_diff_file.read_text()
+                                    wrapped_contents = self.single_diff_html(contents)
+                                    diff_file_with_html.write_text(wrapped_contents)
+                                index_contents_this_file += self.regression_row_in_single_test_case_html(
+                                    potential_diff_file.name
+                                )
+                            index_file = target_dir_for_this_file_diffs / "index.html"
+                            index_this_file = self.single_test_case_html(index_contents_this_file)
+                            index_file.write_text(index_this_file)
+                    else:
+                        self.root_index_files_no_diff.append(idf_file)
+                    so_far = " Diffs! " if any_diffs else "No diffs"
+                    if entry_num % 40 == 0:
+                        print(f"On file #{entry_num}/{len(idf_files)} ({idf_file}), Diff status so far: {so_far}")
+
+                except Exception as e:
                     any_diffs = True
-                    potential_diff_files = (base_testfiles / idf_file).glob(
-                        "*.*.*"
-                    )  # TODO: Could try to get this from the regression tool
-                    target_dir_for_this_file_diffs = bundle_root / idf_file
-                    if potential_diff_files:
-                        if target_dir_for_this_file_diffs.exists():
-                            rmtree(target_dir_for_this_file_diffs)
-                        target_dir_for_this_file_diffs.mkdir()
-                        index_contents_this_file = ""
-                        for potential_diff_file in potential_diff_files:
-                            copy(potential_diff_file, target_dir_for_this_file_diffs)
-                            diff_file_with_html = target_dir_for_this_file_diffs / (potential_diff_file.name + ".html")
-                            if potential_diff_file.name.endswith(".htm"):
-                                # already a html file, just upload the raw contents but renamed as ...htm.html
-                                copy(potential_diff_file, diff_file_with_html)
-                            else:
-                                # it's not an HTML file, wrap it inside an HTML wrapper in a temp file and send it
-                                contents = potential_diff_file.read_text()
-                                wrapped_contents = self.single_diff_html(contents)
-                                diff_file_with_html.write_text(wrapped_contents)
-                            index_contents_this_file += self.regression_row_in_single_test_case_html(
-                                potential_diff_file.name
-                            )
-                        index_file = target_dir_for_this_file_diffs / "index.html"
-                        index_this_file = self.single_test_case_html(index_contents_this_file)
-                        index_file.write_text(index_this_file)
-                else:
-                    self.root_index_files_no_diff.append(idf_file)
-                so_far = " Diffs! " if any_diffs else "No diffs"
-                if entry_num % 40 == 0:
-                    print(f"On file #{entry_num}/{len(idf_files)} ({idf_file}), Diff status so far: {so_far}")
-
-            except Exception as e:
-                any_diffs = True
-                print(f"Regression run *failed* trying to process file: {idf_file}; reason: {e}")
-                if not backtrace_shown:
-                    print("Traceback shown once:")
-                    print_exc()
-                    backtrace_shown = True
-                self.root_index_files_failed.append(idf_file)
+                    print(f"Regression run *failed* trying to process file: {idf_file}; reason: {e}")
+                    if not backtrace_shown:
+                        print("Traceback shown once:")
+                        print_exc()
+                        backtrace_shown = True
+                    self.root_index_files_failed.append(idf_file)
 
         meta_data = [
             f"Regression time stamp in UTC: {datetime.now(UTC)}",

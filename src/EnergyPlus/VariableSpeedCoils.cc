@@ -4629,7 +4629,7 @@ namespace VariableSpeedCoils {
                     }
                 }
             }
-        } 
+        }
 
         if (state.dataSize->CurZoneEqNum > 0) {
             if (!RatedAirFlowAutoSized && !SizingDesRunThisZone) { // Simulation continue
@@ -4750,7 +4750,8 @@ namespace VariableSpeedCoils {
                             Curve::CurveValue(state, varSpeedCoil.MSCCapFTemp(varSpeedCoil.NormSpedLevel), MixWetBulb, RatedSourceTempCool);
 
                         if (MixTemp < SupTemp) {
-                            ShowSevereError(state,
+                            ShowSevereError(
+                                state,
                                 "On design day, cooling coil entering air temperature is less than design outlet air temperature. This will "
                                 "yield negative coil capacity sizing.");
                             ShowContinueError(state, "Cooling capacity is set to zero during sizing; simulation continues.");

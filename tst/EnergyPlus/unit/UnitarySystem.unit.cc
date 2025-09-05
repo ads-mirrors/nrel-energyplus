@@ -5170,23 +5170,7 @@ SetpointManager:Scheduled,
 TEST_F(EnergyPlusFixture, VSCoilUnitary_NoNegativeCapacity)
 {
     std::string const idf_objects = delimited_string({
-  "Building,",
-    "NONE,                    !- Name",
-    "0,                       !- North Axis {deg}",
-    "Suburbs,                 !- Terrain",
-    "3.9999999E-02,           !- Loads Convergence Tolerance Value {W}",
-    "0.4000000,               !- Temperature Convergence Tolerance Value {deltaC}",
-    "FullInteriorAndExterior, !- Solar Distribution",
-    "25,                      !- Maximum Number of Warmup Days",
-    "6;                       !- Minimum Number of Warmup Days",
-
   "Timestep,6;",
-
-  "SurfaceConvectionAlgorithm:Inside,TARP;",
-
-  "SurfaceConvectionAlgorithm:Outside,DOE-2;",
-
-  "HeatBalanceAlgorithm,ConductionTransferFunction;",
 
   "SimulationControl,",
     "Yes,                     !- Do Zone Sizing Calculation",
@@ -5274,8 +5258,6 @@ TEST_F(EnergyPlusFixture, VSCoilUnitary_NoNegativeCapacity)
     ",                        !- ASHRAE Clear Sky Optical Depth for Beam Irradiance (taub) {dimensionless}",
     ",                        !- ASHRAE Clear Sky Optical Depth for Diffuse Irradiance (taud) {dimensionless}",
     "1.0;                     !- Sky Clearness",
-
-  "Site:GroundTemperature:BuildingSurface,20.03,20.03,20.13,20.30,20.43,20.52,20.62,20.77,20.78,20.55,20.44,20.20;",
 
   "Material,",
     "A1 - 1 IN STUCCO,        !- Name",
@@ -5431,11 +5413,6 @@ TEST_F(EnergyPlusFixture, VSCoilUnitary_NoNegativeCapacity)
     "1,                       !- Multiplier",
     "autocalculate,           !- Ceiling Height {m}",
     "autocalculate;           !- Volume {m3}",
-
-  "GlobalGeometryRules,",
-    "UpperLeftCorner,         !- Starting Vertex Position",
-    "CounterClockWise,        !- Vertex Entry Direction",
-    "World;                   !- Coordinate System",
 
   "BuildingSurface:Detailed,",
     "Zn001:Wall001,           !- Name",
@@ -5777,97 +5754,6 @@ TEST_F(EnergyPlusFixture, VSCoilUnitary_NoNegativeCapacity)
     "9.144000,6.096000,3.048000,  !- X,Y,Z ==> Vertex 3 {m}",
     "9.144000,12.19200,3.048000;  !- X,Y,Z ==> Vertex 4 {m}",
 
-  "ScheduleTypeLimits,",
-    "Any Number;              !- Name",
-
-  "ScheduleTypeLimits,",
-    "Fraction,                !- Name",
-    "0.0,                     !- Lower Limit Value",
-    "1.0,                     !- Upper Limit Value",
-    "CONTINUOUS;              !- Numeric Type",
-
-  "ScheduleTypeLimits,",
-    "Temperature,             !- Name",
-    "-60,                     !- Lower Limit Value",
-    "200,                     !- Upper Limit Value",
-    "CONTINUOUS,              !- Numeric Type",
-    "Temperature;             !- Unit Type",
-
-  "ScheduleTypeLimits,",
-    "Control Type,            !- Name",
-    "0,                       !- Lower Limit Value",
-    "4,                       !- Upper Limit Value",
-    "DISCRETE;                !- Numeric Type",
-
-  "ScheduleTypeLimits,",
-    "On/Off,                  !- Name",
-    "0,                       !- Lower Limit Value",
-    "1,                       !- Upper Limit Value",
-    "DISCRETE;                !- Numeric Type",
-
-  "Schedule:Compact,",
-    "Activity Sch,            !- Name",
-    "Any Number,              !- Schedule Type Limits Name",
-    "Through: 12/31,          !- Field 1",
-    "For: Alldays,            !- Field 2",
-    "Until: 24:00,131.80;     !- Field 3",
-
-  "Schedule:Compact,",
-    "Work Eff Sch,            !- Name",
-    "Any Number,              !- Schedule Type Limits Name",
-    "Through: 12/31,          !- Field 1",
-    "For: Alldays,            !- Field 2",
-    "Until: 24:00,0.00;       !- Field 3",
-
-  "Schedule:Compact,",
-    "Clothing Sch,            !- Name",
-    "Any Number,              !- Schedule Type Limits Name",
-    "Through: 12/31,          !- Field 1",
-    "For: Alldays,            !- Field 2",
-    "Until: 24:00,1.00;       !- Field 3",
-
-  "Schedule:Compact,",
-    "Air Velo Sch,            !- Name",
-    "Any Number,              !- Schedule Type Limits Name",
-    "Through: 12/31,          !- Field 1",
-    "For: Alldays,            !- Field 2",
-    "Until: 24:00,0.137;      !- Field 3",
-
-  "Schedule:Compact,",
-    "Office Occupancy,        !- Name",
-    "ANY NUMBER,              !- Schedule Type Limits Name",
-    "Through: 12/31,          !- Field 1",
-    "For: Weekdays,           !- Field 2",
-    "Until: 6:00,0.00,        !- Field 3",
-    "Until: 7:00,0.10,        !- Field 5",
-    "Until: 8:00,0.50,        !- Field 7",
-    "Until: 12:00,1.00,       !- Field 9",
-    "Until: 13:00,0.50,       !- Field 11",
-    "Until: 16:00,1.00,       !- Field 13",
-    "Until: 17:00,0.50,       !- Field 15",
-    "Until: 18:00,0.10,       !- Field 17",
-    "Until: 24:00,0.00,       !- Field 19",
-    "For: Weekends Holidays CustomDay1 CustomDay2, !- Field 21",
-    "Until: 24:00,0.00,       !- Field 22",
-    "For: SummerDesignDay,    !- Field 24",
-    "Until: 24:00,1.00,       !- Field 25",
-    "For: WinterDesignDay,    !- Field 27",
-    "Until: 24:00,5.00E-002;  !- Field 28",
-
-  "Schedule:Compact,",
-    "Intermittent,            !- Name",
-    "ANY NUMBER,              !- Schedule Type Limits Name",
-    "Through: 12/31,          !- Field 1",
-    "For: Weekdays,           !- Field 2",
-    "Until: 8:00,0.00,        !- Field 3",
-    "Until: 18:00,1.00,       !- Field 5",
-    "Until: 24:00,0.00,       !- Field 7",
-    "For: Weekends Holidays CustomDay1 CustomDay2, !- Field 9",
-    "Until: 24:00,0.00,       !- Field 10",
-    "For: SummerDesignDay,    !- Field 12",
-    "Until: 24:00,1.00,       !- Field 13",
-    "For: WinterDesignDay,    !- Field 15",
-    "Until: 24:00,0.15;       !- Field 16",
 
     "Schedule:Compact,",
     "FANANDCOILAVAILSCHED,    !- Name",
@@ -5957,73 +5843,6 @@ TEST_F(EnergyPlusFixture, VSCoilUnitary_NoNegativeCapacity)
     "Through: 12/31,          !- Field 1",
     "For: AllDays,            !- Field 2",
     "Until: 24:00,0.0;        !- Field 3",
-
-    "People,",
-    "WestPeople,              !- Name",
-    "West Zone,               !- Zone or ZoneList or Space or SpaceList Name",
-    "Office Occupancy,        !- Number of People Schedule Name",
-    "people,                  !- Number of People Calculation Method",
-    "3.000000,                !- Number of People",
-    ",                        !- People per Floor Area {person/m2}",
-    ",                        !- Floor Area per Person {m2/person}",
-    "0.3000000,               !- Fraction Radiant",
-    ",                        !- Sensible Heat Fraction",
-    "Activity Sch,            !- Activity Level Schedule Name",
-    "3.82E-8,                 !- Carbon Dioxide Generation Rate {m3/s-W}",
-    ",                        !- Enable ASHRAE 55 Comfort Warnings",
-    "EnclosureAveraged,       !- Mean Radiant Temperature Calculation Type",
-    ",                        !- Surface Name/Angle Factor List Name",
-    "Work Eff Sch,            !- Work Efficiency Schedule Name",
-    ",                        !- Clothing Insulation Calculation Method",
-    ",                        !- Clothing Insulation Calculation Method Schedule Name",
-    "Clothing Sch,            !- Clothing Insulation Schedule Name",
-    "Air Velo Sch,            !- Air Velocity Schedule Name",
-    "FANGER;                  !- Thermal Comfort Model 1 Type",
-
-    "People,",
-    "EastPeople,              !- Name",
-    "EAST ZONE,               !- Zone or ZoneList or Space or SpaceList Name",
-    "Office Occupancy,        !- Number of People Schedule Name",
-    "people,                  !- Number of People Calculation Method",
-    "3.000000,                !- Number of People",
-    ",                        !- People per Floor Area {person/m2}",
-    ",                        !- Floor Area per Person {m2/person}",
-    "0.3000000,               !- Fraction Radiant",
-    ",                        !- Sensible Heat Fraction",
-    "Activity Sch,            !- Activity Level Schedule Name",
-    "3.82E-8,                 !- Carbon Dioxide Generation Rate {m3/s-W}",
-    ",                        !- Enable ASHRAE 55 Comfort Warnings",
-    "EnclosureAveraged,       !- Mean Radiant Temperature Calculation Type",
-    ",                        !- Surface Name/Angle Factor List Name",
-    "Work Eff Sch,            !- Work Efficiency Schedule Name",
-    ",                        !- Clothing Insulation Calculation Method",
-    ",                        !- Clothing Insulation Calculation Method Schedule Name",
-    "Clothing Sch,            !- Clothing Insulation Schedule Name",
-    "Air Velo Sch,            !- Air Velocity Schedule Name",
-    "FANGER;                  !- Thermal Comfort Model 1 Type",
-
-    "People,",
-    "NorthPeople,             !- Name",
-    "NORTH ZONE,              !- Zone or ZoneList or Space or SpaceList Name",
-    "Office Occupancy,        !- Number of People Schedule Name",
-    "people,                  !- Number of People Calculation Method",
-    "4.000000,                !- Number of People",
-    ",                        !- People per Floor Area {person/m2}",
-    ",                        !- Floor Area per Person {m2/person}",
-    "0.3000000,               !- Fraction Radiant",
-    ",                        !- Sensible Heat Fraction",
-    "Activity Sch,            !- Activity Level Schedule Name",
-    "3.82E-8,                 !- Carbon Dioxide Generation Rate {m3/s-W}",
-    ",                        !- Enable ASHRAE 55 Comfort Warnings",
-    "EnclosureAveraged,       !- Mean Radiant Temperature Calculation Type",
-    ",                        !- Surface Name/Angle Factor List Name",
-    "Work Eff Sch,            !- Work Efficiency Schedule Name",
-    ",                        !- Clothing Insulation Calculation Method",
-    ",                        !- Clothing Insulation Calculation Method Schedule Name",
-    "Clothing Sch,            !- Clothing Insulation Schedule Name",
-    "Air Velo Sch,            !- Air Velocity Schedule Name",
-    "FANGER;                  !- Thermal Comfort Model 1 Type",
-
 
     "Sizing:Zone,",
     "West Zone,               !- Zone or ZoneList Name",
@@ -6926,14 +6745,10 @@ TEST_F(EnergyPlusFixture, VSCoilUnitary_NoNegativeCapacity)
     state->dataGlobal->DoSystemSizing = true;
     state->dataGlobal->DoingSizing = true;
     SizingManager::ManageSizing(*state);
-    state->dataGlobal->DoingSizing = false;
-    state->dataGlobal->SysSizingCalc = false;
-    state->dataSize->CurZoneEqNum = 1;
-    state->dataSize->ZoneEqSizing.allocate(1);
 
-    std::string compName = "DXAC Heat Pump 1";
-    bool zoneEquipment = true;
-    bool ErrorsFound = false;
+    std::string const compName{ "DXAC Heat Pump 1" };
+    bool constexpr zoneEquipment{ true };
+    bool ErrorsFound{ false };
     UnitarySystems::UnitarySys::factory(*state, HVAC::UnitarySysType::Unitary_AnyCoilType, compName, zoneEquipment, 0);
     UnitarySystems::UnitarySys* thisSys = &state->dataUnitarySystems->unitarySys[0];
 
@@ -6943,19 +6758,17 @@ TEST_F(EnergyPlusFixture, VSCoilUnitary_NoNegativeCapacity)
     OutputReportPredefined::SetPredefinedTables(*state);
 
     state->dataSize->CurSysNum = 1;
-    state->dataSize->SysSizingRunDone = true;
-    state->dataSize->SysSizInput(1).AirLoopNum = 1;
 
     // run coil init
-    HVAC::FanOp constexpr fanOp = HVAC::FanOp::Continuous;
-    int DXCoilNum = 1;
-    int constexpr SpeedCal = 1;
-    Real64 constexpr SensLoad = 0.0;
-    Real64 constexpr LatentLoad = 0.0;
-    Real64 constexpr OnOffAirFlowRatio = 1.0;
-    Real64 constexpr SpeedRatio = 0.0;
+    int constexpr DXCoilNum{ 1 };
+    Real64 constexpr SensLoad{ 0.0 };
+    Real64 constexpr LatentLoad{ 0.0 };
+    HVAC::FanOp constexpr fanOp{ HVAC::FanOp::Continuous };
+    Real64 constexpr OnOffAirFlowRatio{ 1.0 };
+    Real64 constexpr SpeedRatio{ 0.0 };
+    int constexpr SpeedCal{ 1 };
     VariableSpeedCoils::InitVarSpeedCoil(*state, DXCoilNum, SensLoad, LatentLoad, fanOp, OnOffAirFlowRatio, SpeedRatio, SpeedCal);
-    compare_err_stream_substring("entering air temperature is less than design outlet air temperature");
+    EXPECT_TRUE(compare_err_stream_substring("entering air temperature is less than design outlet air temperature", true));
 }
 
 TEST_F(EnergyPlusFixture, UnitarySystemModel_SetOnOffMassFlowRateTest)

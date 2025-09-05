@@ -3763,13 +3763,14 @@ namespace HeatBalanceManager {
         }
         ++FileLineCount;
         if (!has_prefixi(NextLine.data, "WINDOW NAME")) {
+            // Berkeley Lab WINDOW 7 has been found to include extra blank lines after the "WINDOW5" line, so find the line that begins with "WINDOW NAME"
             goto Label10;
         } else {
             // Get window name
             W5Name = std::string{NextLine.data.substr(19)};
             WindowNameInW5DataFile = Util::makeUPPER(W5Name);
 
-            // Get description
+            // Get description (currently not used)
             NextLine = W5DataFile.readLine();
             if (NextLine.eof) {
                 goto Label1000;

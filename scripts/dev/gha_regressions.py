@@ -66,6 +66,24 @@ from zoneinfo import ZoneInfo
 from energyplus_regressions.builds.base import BuildTree
 from energyplus_regressions.runtests import SuiteRunner
 from energyplus_regressions.structures import TextDifferences, TestEntry, EndErrSummary
+import os
+
+def run_single_entry(idf_name: str, base_testfiles_dir: Path, mod_testfiles_dir: Path, threshold_file: Path) -> TestEntry:
+    # print(f"[Worker {os.getpid()}] Running {idf_name}", flush=True)
+    # print(f"  Base dir: {base_testfiles_dir}", flush=True)
+    # print(f"  Mod dir: {mod_testfiles_dir}", flush=True)
+    # print(f"  Threshold file: {threshold_file}", flush=True)
+    b1 = BuildTree()
+    b1.build_dir = base_testfiles_dir / idf_name
+    b2 = BuildTree()
+    b2.build_dir = mod_testfiles_dir / idf_name
+    entry = TestEntry(idf_name, "")
+    entry, _ = SuiteRunner.process_diffs_for_one_case(
+        entry, b1, b2, "", str(threshold_file), ci_mode=True
+    )  # returns an updated entry
+    # print(entry.table_diffs)
+
+    return entry
 
 
 class RegressionManager:
@@ -82,21 +100,12 @@ class RegressionManager:
         import energyplus_regressions
         self.threshold_file = str(Path(energyplus_regressions.__file__).parent / 'diffs' / 'math_diff.config')
 
-    def single_file_regressions(self, baseline: Path, modified: Path) -> [TestEntry, bool]:
+    def process_single_file_regressions(self, idf_name: str, entry: TestEntry) -> [TestEntry, bool]:
 
-        idf = baseline.name
         self.num_idf_inspected += 1
         this_file_diffs = []
 
-        entry = TestEntry(idf, "")
-        b1 = BuildTree()
-        b1.build_dir = baseline
-        b2 = BuildTree()
-        b2.build_dir = modified
-        entry, message = SuiteRunner.process_diffs_for_one_case(
-            entry, b1, b2,"", self.threshold_file, ci_mode=True
-        )  # returns an updated entry
-        self.summary_results[idf] = entry.summary_result
+        self.summary_results[idf_name] = entry.summary_result
 
         has_diffs = False
 
@@ -132,8 +141,8 @@ class RegressionManager:
             if diffs.diff_type != TextDifferences.EQUAL:
                 has_diffs = True
                 this_file_diffs.append(diff_type)
-                self.diffs_by_type[diff_type].append(idf)
-                self.diffs_by_idf[idf].append(diff_type)
+                self.diffs_by_type[diff_type].append(idf_name)
+                self.diffs_by_idf[idf_name].append(diff_type)
 
         numeric_diff_results = {
             "ESO": entry.eso_diffs,
@@ -148,30 +157,30 @@ class RegressionManager:
             if diffs.diff_type == 'Big Diffs':
                 has_diffs = True
                 this_file_diffs.append(f"{diff_type} Big Diffs")
-                self.diffs_by_type[f"{diff_type} Big Diffs"].append(idf)
-                self.diffs_by_idf[idf].append(f"{diff_type} Big Diffs")
+                self.diffs_by_type[f"{diff_type} Big Diffs"].append(idf_name)
+                self.diffs_by_idf[idf_name].append(f"{diff_type} Big Diffs")
             elif diffs.diff_type == 'Small Diffs':
                 has_diffs = True
                 this_file_diffs.append(f"{diff_type} Small Diffs")
-                self.diffs_by_type[f"{diff_type} Small Diffs"].append(idf)
-                self.diffs_by_idf[idf].append(f"{diff_type} Small Diffs")
+                self.diffs_by_type[f"{diff_type} Small Diffs"].append(idf_name)
+                self.diffs_by_idf[idf_name].append(f"{diff_type} Small Diffs")
 
         if entry.table_diffs:
             if entry.table_diffs.big_diff_count > 0:
                 has_diffs = True
                 this_file_diffs.append("Table Big Diffs")
-                self.diffs_by_type["Table Big Diffs"].append(idf)
-                self.diffs_by_idf[idf].append("Table Big Diffs")
+                self.diffs_by_type["Table Big Diffs"].append(idf_name)
+                self.diffs_by_idf[idf_name].append("Table Big Diffs")
             elif entry.table_diffs.small_diff_count > 0:
                 has_diffs = True
                 this_file_diffs.append("Table Small Diffs")
-                self.diffs_by_type["Table Small Diffs"].append(idf)
-                self.diffs_by_idf[idf].append("Table Small Diffs")
+                self.diffs_by_type["Table Small Diffs"].append(idf_name)
+                self.diffs_by_idf[idf_name].append("Table Small Diffs")
             if entry.table_diffs.string_diff_count > 1:  # There's always one...the time stamp
                 has_diffs = True
                 this_file_diffs.append("Table String Diffs")
-                self.diffs_by_type["Table String Diffs"].append(idf)
-                self.diffs_by_idf[idf].append("Table String Diffs")
+                self.diffs_by_type["Table String Diffs"].append(idf_name)
+                self.diffs_by_idf[idf_name].append("Table String Diffs")
 
         return entry, has_diffs
 
@@ -296,7 +305,7 @@ class RegressionManager:
                 base_time = summary.run_time_seconds_case1
             else:
                 base_time = "N/A"
-            if case_1_success:
+            if case_2_success:
                 branch_time = summary.run_time_seconds_case2
             else:
                 branch_time = "N/A"
@@ -319,9 +328,9 @@ class RegressionManager:
  </head>
  <body>
   <div class="container-fluid">
- 
+
    <h1>EnergyPlus Regressions</h1>
-  
+
    <div class="panel-group" id="accordion_header">
     <div class="panel panel-default">
      <div class="panel-heading">
@@ -340,9 +349,9 @@ class RegressionManager:
    </div>
 
    <hr>
-  
+
    <h2>Summary by File</h1>
-   
+
    <div class="panel-group">
     <div class="panel panel-default">
      <div class="panel-heading">
@@ -359,7 +368,7 @@ class RegressionManager:
      </div>
     </div>
    </div>
-  
+
    <div class="panel-group">
     <div class="panel panel-default">
      <div class="panel-heading">
@@ -376,8 +385,8 @@ class RegressionManager:
      </div>
     </div>
    </div>
- 
- 
+
+
    <div class="panel-group">
     <div class="panel panel-default">
      <div class="panel-heading">
@@ -394,11 +403,11 @@ class RegressionManager:
      </div>
     </div>
    </div>
- 
+
    <hr>
-  
+
    <h2>Summary by Diff Type</h1>
-   
+
    <div class="panel-group">
     <div class="panel panel-default">
      <div class="panel-heading">
@@ -415,11 +424,11 @@ class RegressionManager:
      </div>
     </div>
    </div>
-  
+
    <hr>
-  
+
    <h2>Run Times</h2>
-  
+
    <div class="panel-group">
     <div class="panel panel-default">
      <div class="panel-heading">
@@ -441,7 +450,7 @@ class RegressionManager:
      </div>
     </div>
    </div>
-   
+
   </div>
  </body>
 </html>
@@ -462,23 +471,28 @@ class RegressionManager:
     def check_all_regressions(self, base_testfiles: Path, mod_testfiles: Path, bundle_root: Path) -> bool:
         any_diffs = False
         bundle_root.mkdir(exist_ok=True)
-        entries = sorted(base_testfiles.iterdir())
+        idf_files = [baseline.name for baseline in sorted(base_testfiles.iterdir())]
+
         backtrace_shown = False
-        for entry_num, baseline in enumerate(entries):
+        for entry_num, idf_file in enumerate(idf_files):
+            baseline = base_testfiles / idf_file
             if not baseline.is_dir():
+                print(f"Baseline directory missing: '{baseline}'")
                 continue
-            if baseline.name == 'CMakeFiles':  # add more ignore dirs here
+            if idf_file == 'CMakeFiles':  # add more ignore dirs here
                 continue
-            modified = mod_testfiles / baseline.name
+            modified = mod_testfiles / idf_file
             if not modified.exists():
+                print(f"Modified directory missing: '{modified}'")
                 continue  # TODO: Should we warn that it is missing?
             try:
-                entry, diffs = self.single_file_regressions(baseline, modified)
+                entry = run_single_entry(idf_file, base_testfiles, mod_testfiles, Path(self.threshold_file))
+                entry, diffs = self.process_single_file_regressions(idf_file, entry)
                 if diffs:
-                    self.root_index_files_diffs.append(baseline.name)
+                    self.root_index_files_diffs.append(idf_file)
                     any_diffs = True
                     potential_diff_files = baseline.glob("*.*.*")  # TODO: Could try to get this from the regression tool
-                    target_dir_for_this_file_diffs = bundle_root / baseline.name
+                    target_dir_for_this_file_diffs = bundle_root / idf_file
                     if potential_diff_files:
                         if target_dir_for_this_file_diffs.exists():
                             rmtree(target_dir_for_this_file_diffs)
@@ -500,18 +514,18 @@ class RegressionManager:
                         index_this_file = self.single_test_case_html(index_contents_this_file)
                         index_file.write_text(index_this_file)
                 else:
-                    self.root_index_files_no_diff.append(baseline.name)
+                    self.root_index_files_no_diff.append(idf_file)
                 so_far = ' Diffs! ' if any_diffs else 'No diffs'
                 if entry_num % 40 == 0:
-                    print(f"On file #{entry_num}/{len(entries)} ({baseline.name}), Diff status so far: {so_far}")
+                    print(f"On file #{entry_num}/{len(idf_files)} ({idf_file}), Diff status so far: {so_far}")
             except Exception as e:
                 any_diffs = True
-                print(f"Regression run *failed* trying to process file: {baseline.name}; reason: {e}")
+                print(f"Regression run *failed* trying to process file: {idf_file}; reason: {e}")
                 if not backtrace_shown:
                     print("Traceback shown once:")
                     print_exc()
                     backtrace_shown = True
-                self.root_index_files_failed.append(baseline.name)
+                self.root_index_files_failed.append(idf_file)
         meta_data = [
             f"Regression time stamp in UTC: {datetime.now(UTC)}",
             f"Regression time stamp in Central Time: {datetime.now(ZoneInfo('America/Chicago'))}",

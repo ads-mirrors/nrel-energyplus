@@ -1565,6 +1565,8 @@ namespace Avail {
                             state, orp->pdchAvlMgrSchSchNm, loopName, asd->SchedOffData[num - 1].availSched->Name);
                     }
                 } break;
+                default:
+                    break;
                 }
             }
         }

@@ -3269,6 +3269,8 @@ void SizePlantLoop(EnergyPlusData &state,
             case DataSizing::TypeOfPlantLoop::Condenser: {
                 returnTemp = loopSizData.ExitTemp + loopSizData.DeltaT;
             } break;
+            default:
+                break;
             }
             OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchPLCLSupTemp, loop.Name, loopSizData.ExitTemp);
             OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchPLCLRetTemp, loop.Name, returnTemp);

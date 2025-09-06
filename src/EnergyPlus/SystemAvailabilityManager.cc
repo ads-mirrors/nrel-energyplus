@@ -443,7 +443,7 @@ namespace Avail {
                 SetupOutputVariable(state,
                                     "Availability Manager Scheduled Control Status",
                                     Constant::Units::None,
-                                    (int &)schedMgr.availStatus,
+                                    schedMgr.availStatus,
                                     OutputProcessor::TimeStepType::System,
                                     OutputProcessor::StoreType::Average,
                                     schedMgr.Name);
@@ -489,7 +489,7 @@ namespace Avail {
                 SetupOutputVariable(state,
                                     "Availability Manager Scheduled On Control Status",
                                     Constant::Units::None,
-                                    (int &)schedOnMgr.availStatus,
+                                    schedOnMgr.availStatus,
                                     OutputProcessor::TimeStepType::System,
                                     OutputProcessor::StoreType::Average,
                                     schedOnMgr.Name);
@@ -535,7 +535,7 @@ namespace Avail {
                 SetupOutputVariable(state,
                                     "Availability Manager Scheduled Off Control Status",
                                     Constant::Units::None,
-                                    (int &)schedOffMgr.availStatus,
+                                    schedOffMgr.availStatus,
                                     OutputProcessor::TimeStepType::System,
                                     OutputProcessor::StoreType::Average,
                                     schedOffMgr.Name);
@@ -710,7 +710,7 @@ namespace Avail {
                 SetupOutputVariable(state,
                                     "Availability Manager Night Cycle Control Status",
                                     Constant::Units::None,
-                                    (int &)nightCycleMgr.availStatus,
+                                    nightCycleMgr.availStatus,
                                     OutputProcessor::TimeStepType::System,
                                     OutputProcessor::StoreType::Average,
                                     nightCycleMgr.Name);
@@ -824,7 +824,7 @@ namespace Avail {
                 SetupOutputVariable(state,
                                     "Availability Manager Optimum Start Control Status",
                                     Constant::Units::None,
-                                    (int &)optimumStartMgr.availStatus,
+                                    optimumStartMgr.availStatus,
                                     OutputProcessor::TimeStepType::System,
                                     OutputProcessor::StoreType::Average,
                                     optimumStartMgr.Name);
@@ -923,7 +923,7 @@ namespace Avail {
                 SetupOutputVariable(state,
                                     "Availability Manager Differential Thermostat Control Status",
                                     Constant::Units::None,
-                                    (int &)diffThermoMgr.availStatus,
+                                    diffThermoMgr.availStatus,
                                     OutputProcessor::TimeStepType::System,
                                     OutputProcessor::StoreType::Average,
                                     diffThermoMgr.Name);
@@ -976,7 +976,7 @@ namespace Avail {
                 SetupOutputVariable(state,
                                     "Availability Manager High Temperature Turn Off Control Status",
                                     Constant::Units::None,
-                                    (int &)hiTurnOffMgr.availStatus,
+                                    hiTurnOffMgr.availStatus,
                                     OutputProcessor::TimeStepType::System,
                                     OutputProcessor::StoreType::Average,
                                     hiTurnOffMgr.Name);
@@ -1029,7 +1029,7 @@ namespace Avail {
                 SetupOutputVariable(state,
                                     "Availability Manager High Temperature Turn On Control Status",
                                     Constant::Units::None,
-                                    (int &)hiTurnOnMgr.availStatus,
+                                    hiTurnOnMgr.availStatus,
                                     OutputProcessor::TimeStepType::System,
                                     OutputProcessor::StoreType::Average,
                                     hiTurnOnMgr.Name);
@@ -1089,7 +1089,7 @@ namespace Avail {
                 SetupOutputVariable(state,
                                     "Availability Manager Low Temperature Turn Off Control Status",
                                     Constant::Units::None,
-                                    (int &)loTurnOffMgr.availStatus,
+                                    loTurnOffMgr.availStatus,
                                     OutputProcessor::TimeStepType::System,
                                     OutputProcessor::StoreType::Average,
                                     loTurnOffMgr.Name);
@@ -1143,7 +1143,7 @@ namespace Avail {
                 SetupOutputVariable(state,
                                     "Availability Manager Low Temperature Turn On Control Status",
                                     Constant::Units::None,
-                                    (int &)loTurnOnMgr.availStatus,
+                                    loTurnOnMgr.availStatus,
                                     OutputProcessor::TimeStepType::System,
                                     OutputProcessor::StoreType::Average,
                                     loTurnOnMgr.Name);
@@ -1215,7 +1215,7 @@ namespace Avail {
                 SetupOutputVariable(state,
                                     "Availability Manager Night Ventilation Control Status",
                                     Constant::Units::None,
-                                    (int &)nightVentMgr.availStatus,
+                                    nightVentMgr.availStatus,
                                     OutputProcessor::TimeStepType::System,
                                     OutputProcessor::StoreType::Average,
                                     nightVentMgr.Name);
@@ -1705,7 +1705,7 @@ namespace Avail {
         // Loop over all the System Availability Managers and invoke the correct
         // System Availability Manager algorithm.
 
-        Status availStatus;
+        Status availStatus = Status::Invalid;
 
         switch (type) {
         case ManagerType::Scheduled: { // 'AvailabilityManager:Scheduled'
@@ -2324,7 +2324,7 @@ namespace Avail {
         Real64 NumHoursBeforeOccupancy; // Variable to store the number of hours before occupancy in optimum start period
         bool exitLoop;                  // exit loop on found data
 
-        Status availStatus;
+        Status availStatus = Status::Invalid;
 
         auto &OptStartMgr = state.dataAvail->OptimumStartData(SysAvailNum);
 
@@ -4222,14 +4222,14 @@ namespace Avail {
                 SetupOutputVariable(state,
                                     "Availability Manager Hybrid Ventilation Control Status",
                                     Constant::Units::None,
-                                    (int &)state.dataAvail->HybridVentData(SysAvailNum).ctrlStatus,
+                                    state.dataAvail->HybridVentData(SysAvailNum).ctrlStatus,
                                     OutputProcessor::TimeStepType::System,
                                     OutputProcessor::StoreType::Average,
                                     state.dataAvail->HybridVentData(SysAvailNum).AirLoopName);
                 SetupOutputVariable(state,
                                     "Availability Manager Hybrid Ventilation Control Mode",
                                     Constant::Units::None,
-                                    (int &)state.dataAvail->HybridVentData(SysAvailNum).ctrlType,
+                                    state.dataAvail->HybridVentData(SysAvailNum).ctrlType,
                                     OutputProcessor::TimeStepType::System,
                                     OutputProcessor::StoreType::Average,
                                     state.dataAvail->HybridVentData(SysAvailNum).AirLoopName);
@@ -4237,14 +4237,14 @@ namespace Avail {
                 SetupOutputVariable(state,
                                     "Availability Manager Hybrid Ventilation Control Status",
                                     Constant::Units::None,
-                                    (int &)state.dataAvail->HybridVentData(SysAvailNum).ctrlStatus,
+                                    state.dataAvail->HybridVentData(SysAvailNum).ctrlStatus,
                                     OutputProcessor::TimeStepType::System,
                                     OutputProcessor::StoreType::Average,
                                     state.dataAvail->HybridVentData(SysAvailNum).ControlZoneName);
                 SetupOutputVariable(state,
                                     "Availability Manager Hybrid Ventilation Control Mode",
                                     Constant::Units::None,
-                                    (int &)state.dataAvail->HybridVentData(SysAvailNum).ctrlType,
+                                    state.dataAvail->HybridVentData(SysAvailNum).ctrlType,
                                     OutputProcessor::TimeStepType::System,
                                     OutputProcessor::StoreType::Average,
                                     state.dataAvail->HybridVentData(SysAvailNum).ControlZoneName);

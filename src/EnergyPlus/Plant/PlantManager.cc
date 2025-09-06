@@ -3260,13 +3260,17 @@ void SizePlantLoop(EnergyPlusData &state,
         Real64 returnTemp = -999.0;
         if (PlantSizNum > 0) {
             auto &loopSizData = state.dataSize->PlantSizData(PlantSizNum);
-            if (loopSizData.LoopType == DataSizing::TypeOfPlantLoop::Heating) {
+            switch (loopSizData.LoopType) {
+            case DataSizing::TypeOfPlantLoop::Heating:
+            case DataSizing::TypeOfPlantLoop::Steam: {
                 returnTemp = loopSizData.ExitTemp - loopSizData.DeltaT;
-            } else {
+            } break;
+            case DataSizing::TypeOfPlantLoop::Cooling:
+            case DataSizing::TypeOfPlantLoop::Condenser: {
                 returnTemp = loopSizData.ExitTemp + loopSizData.DeltaT;
+            } break;
             }
-            OutputReportPredefined::PreDefTableEntry(
-                state, state.dataOutRptPredefined->pdchPLCLSupTemp, loop.Name, state.dataSize->PlantSizData(PlantSizNum).ExitTemp);
+            OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchPLCLSupTemp, loop.Name, loopSizData.ExitTemp);
             OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchPLCLRetTemp, loop.Name, returnTemp);
         } else {
             OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchPLCLSupTemp, loop.Name, "N/A");

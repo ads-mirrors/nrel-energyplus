@@ -18523,7 +18523,7 @@ std::string stringJoinDelimiter(const std::vector<std::string> &in_strings, cons
         return "";
     }
     std::string result = in_strings[0];
-    for (int i = 1; i < in_strings.size(); ++i) {
+    for (size_t i = 1; i < in_strings.size(); ++i) {
         result += delimiter + in_strings[i];
     }
     return result;

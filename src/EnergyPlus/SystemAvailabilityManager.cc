@@ -1546,6 +1546,8 @@ namespace Avail {
                     OutputReportPredefined::PreDefTableEntry(state, orp->pdchAvlMgrSchType, loopName, managerTypeNames[(int)availMgrType]);
                     OutputReportPredefined::PreDefTableEntry(state, orp->pdchAvlMgrSchAvailNm, loopName, availMgrName);
                 } break;
+                default:
+                    break;
                 }
                 switch (availMgrType) {
                 case ManagerType::Scheduled: {

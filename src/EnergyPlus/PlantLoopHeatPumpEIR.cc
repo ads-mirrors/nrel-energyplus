@@ -2754,7 +2754,7 @@ void HeatPumpAirToWater::oneTimeInit(EnergyPlusData &state)
         SetupOutputVariable(state,
                             "Heat Pump Crankcase Heater Electricity Energy",
                             Constant::Units::J,
-                            this->CrankcaseHeaterPower,
+                            this->CrankcaseHeaterEnergy,
                             OutputProcessor::TimeStepType::System,
                             OutputProcessor::StoreType::Sum,
                             this->name,
@@ -2832,6 +2832,14 @@ void EIRPlantLoopHeatPump::report(EnergyPlusData &state)
         PlantUtilities::SafeCopyPlantNode(state, this->heatRecoveryNodes.inlet, this->heatRecoveryNodes.outlet);
         state.dataLoopNodes->Node(this->heatRecoveryNodes.outlet).Temp = this->heatRecoveryOutletTemp;
     }
+}
+
+void HeatPumpAirToWater::report(EnergyPlusData &state)
+{
+    EIRPlantLoopHeatPump::report(state);
+    Real64 const reportingInterval = state.dataHVACGlobal->TimeStepSysSec;
+    // crankcase heater energy reporting
+    this->CrankcaseHeaterEnergy = this->CrankcaseHeaterPower * reportingInterval;
 }
 
 // From here on, the Fuel Fired Heat Pump module EIRFuelFiredHeatPump

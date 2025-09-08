@@ -4281,9 +4281,9 @@ void HeatPumpAirToWater::processInputForEIRPLHP(EnergyPlusData &state)
         }
     }
 }
-void EIRPlantLoopHeatPump::setUpEMS(EnergyPlusData &state)
+void EIRPlantLoopHeatPump::setUpEMS(EnergyPlusData &)
 {
-    // do nothing
+    // base implementation intentionally empty
 }
 
 void HeatPumpAirToWater::setUpEMS(EnergyPlusData &state)
@@ -4599,7 +4599,6 @@ void HeatPumpAirToWater::calcOpMode(EnergyPlus::EnergyPlusData &state, Real64 cu
         auto capacityModifierFuncTemp = Curve::CurveValue(state, curveIndex, this->loadSideOutletTemp, this->sourceSideInletTemp);
         auto availableCapacityOneUnit = this->referenceCapacityOneUnit * capacityModifierFuncTemp;
         auto &companionCoil = this->companionHeatPumpCoil;
-        auto companionCurveIndex = companionCoil->capFuncTempCurveIndex[this->numSpeeds - 1];
         auto companionCapacityModifierFuncTemp =
             Curve::CurveValue(state, curveIndex, companionCoil->loadSideOutletTemp, companionCoil->sourceSideInletTemp);
         auto companionAvailableCapacityOneUnit = companionCoil->referenceCapacityOneUnit * companionCapacityModifierFuncTemp;
@@ -4706,7 +4705,6 @@ void HeatPumpAirToWater::doPhysics(EnergyPlusData &state, Real64 currentLoad)
         return;
     }
     Real64 partLoadRatio = 0.0;
-    int speedLevel = 0;
 
     Real64 availableCapacity;
     this->calcAvailableCapacity(state, currentLoad, this->capFuncTempCurveIndex[this->numSpeeds - 1], availableCapacity, partLoadRatio);

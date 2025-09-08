@@ -1160,7 +1160,6 @@ TEST_F(EnergyPlusFixture, calcLoadSideHeatTransfer_AWHP)
     thisAWHP.loadSidePlantLoc.branchNum = 1;
     thisAWHP.loadSidePlantLoc.compNum = 1;
     PlantUtilities::SetPlantLocationLinks(*state, thisAWHP.loadSidePlantLoc);
-    bool errFlag = false;
     thisAWHP.loadSideNodes.outlet = 2;
     thisAWHP.loadSideNodes.inlet = 1;
     thisAWHP.loadSideMassFlowRate = 2;
@@ -4633,7 +4632,6 @@ TEST_F(EnergyPlusFixture, Test_DoPhysics_AWHP)
     state->dataPlnt->PlantLoop(5).LoopSide(DataPlant::LoopSideLocation::Supply).Branch.allocate(1);
     state->dataPlnt->PlantLoop(5).LoopSide(DataPlant::LoopSideLocation::Supply).Branch(1).TotalComponents = 1;
     state->dataPlnt->PlantLoop(5).LoopSide(DataPlant::LoopSideLocation::Supply).Branch(1).Comp.allocate(1);
-    auto &AWHPHeatPlantLoadSideLoop = state->dataPlnt->PlantLoop(5);
     auto &AWHPHeatPlantLoadSideComp = state->dataPlnt->PlantLoop(5).LoopSide(DataPlant::LoopSideLocation::Supply).Branch(1).Comp(1);
     AWHPHeatPlantLoadSideComp.Type = DataPlant::PlantEquipmentType::HeatPumpAirToWaterHeating;
 
@@ -4648,7 +4646,6 @@ TEST_F(EnergyPlusFixture, Test_DoPhysics_AWHP)
     HeatPumpAirToWater *thisCoolingAWHP = &state->dataHeatPumpAirToWater->heatPumps[0];
     EIRPlantLoopHeatPump *thisCoolingPLHP = &state->dataEIRPlantLoopHeatPump->heatPumps[0];
     HeatPumpAirToWater *thisHeatingAWHP = &state->dataHeatPumpAirToWater->heatPumps[1];
-    EIRPlantLoopHeatPump *thisHeatingPLHP = &state->dataEIRPlantLoopHeatPump->heatPumps[1];
     thisCoolingAWHP->companionHeatPumpCoil = thisHeatingAWHP;
     thisHeatingAWHP->companionHeatPumpCoil = thisCoolingAWHP;
 

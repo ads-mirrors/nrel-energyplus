@@ -787,12 +787,12 @@ TEST_F(EnergyPlusFixture, processInputForEIRPLHP_AWHP)
         ", !-  Normalized Cooling Capacity Function of Temperature Curve Name at Speed 5",
         ", !-  Cooling Energy Input Ratio Function of Temperature Curve Name at Speed 5",
         ", !-  Cooling Energy Input Ratio Function of PLR Curve Name at Speed 5",
-        ", !-  Booster Mode On Cooling",
-        ", !-  Rated Cooling Capacity in Booster Mode",
-        ", !-  Rated Cooling COP in Booster Mode",
-        ", !-  Normalized Cooling Capacity Function of Temperature Curve Name in Booster Mode",
-        ", !-  Cooling Energy Input Ratio Function of Temperature Curve Name in Booster Mode",
-        "; !-  Cooling Energy Input Ratio Function of PLR Curve Name in Booster Mode",
+        "Yes, !-  Booster Mode On Cooling",
+        "500, !-  Rated Cooling Capacity in Booster Mode",
+        "2.0, !-  Rated Cooling COP in Booster Mode",
+        "CapCurveFuncTemp, !-  Normalized Cooling Capacity Function of Temperature Curve Name in Booster Mode",
+        "EIRCurveFuncTemp, !-  Cooling Energy Input Ratio Function of Temperature Curve Name in Booster Mode",
+        "EIRCurveFuncPLR; !-  Cooling Energy Input Ratio Function of PLR Curve Name in Booster Mode",
 
         "HeatPump:AirToWater,",
         "test_AWHP_defaults, !- Name",
@@ -994,9 +994,9 @@ TEST_F(EnergyPlusFixture, processInputForEIRPLHP_AWHP)
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].sourceSideNodes.outlet, 4);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].heatPumpMultiplier, 1);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].controlType, HeatPumpAirToWater::CompressorControlType::FixedSpeed);
-    EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].boosterOn, false);
-    EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].numSpeeds, 2);
-    EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].referenceCapacity, 240);
+    EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].boosterOn, true);
+    EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].numSpeeds, 3);
+    EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].referenceCapacity, 500);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].ratedCapacity[0], 120);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].ratedCOP[0], 4);
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].capFuncTempCurveIndex[0], Curve::GetCurveIndex(*state, "CAPCURVEFUNCTEMP"));
@@ -1007,6 +1007,11 @@ TEST_F(EnergyPlusFixture, processInputForEIRPLHP_AWHP)
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].capFuncTempCurveIndex[1], Curve::GetCurveIndex(*state, "CAPCURVEFUNCTEMP"));
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].powerRatioFuncTempCurveIndex[1], Curve::GetCurveIndex(*state, "EIRCURVEFUNCTEMP"));
     EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].powerRatioFuncPLRCurveIndex[1], Curve::GetCurveIndex(*state, "EIRCURVEFUNCPLR"));
+    EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].ratedCapacity[2], 500);
+    EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].ratedCOP[2], 2.0);
+    EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].capFuncTempCurveIndex[2], Curve::GetCurveIndex(*state, "CAPCURVEFUNCTEMP"));
+    EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].powerRatioFuncTempCurveIndex[2], Curve::GetCurveIndex(*state, "EIRCURVEFUNCTEMP"));
+    EXPECT_EQ(state->dataHeatPumpAirToWater->heatPumps[0].powerRatioFuncPLRCurveIndex[2], Curve::GetCurveIndex(*state, "EIRCURVEFUNCPLR"));
     EXPECT_ENUM_EQ(state->dataHeatPumpAirToWater->heatPumps[0].operatingModeControlMethod, HeatPumpAirToWater::OperatingModeControlMethod::Load);
     EXPECT_ENUM_EQ(state->dataHeatPumpAirToWater->heatPumps[0].operatingModeControlOptionMultipleUnit,
                    HeatPumpAirToWater::OperatingModeControlOptionMultipleUnit::SingleMode);

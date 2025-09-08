@@ -3926,16 +3926,8 @@ void HeatPumpAirToWater::processInputForEIRPLHP(EnergyPlusData &state)
                 } else {
                     thisAWHP.sourceSideDesignInletTemp = 8.0;
                 }
-                try {
-                    auto &tmpFlowRate = fields.at(format("rated_air_flow_rate_in_{}_mode", modeKeyWord));
-                    if (tmpFlowRate == "Autosize") {
-                        thisAWHP.sourceSideDesignVolFlowRate = DataSizing::AutoSize;
-                        thisAWHP.sourceSideDesignVolFlowRateWasAutoSized = true;
-                    } else {
-                        thisAWHP.sourceSideDesignVolFlowRate = tmpFlowRate.get<Real64>();
-                    }
-                } catch (const std::exception &e) {
-                    thisAWHP.sourceSideDesignVolFlowRate = DataSizing::AutoSize;
+                thisAWHP.sourceSideDesignVolFlowRate = state.dataInputProcessing->inputProcessor->getRealFieldValue(fields, schemaProps, format("rated_air_flow_rate_in_{}_mode", modeKeyWord));
+                if (thisAWHP.sourceSideDesignVolFlowRate == DataSizing::AutoSize) {
                     thisAWHP.sourceSideDesignVolFlowRateWasAutoSized = true;
                 }
                 auto ratedLeavingWaterTemperature = fields.find(format("rated_leaving_water_temperature_in_{}_mode", modeKeyWord));
@@ -3945,16 +3937,8 @@ void HeatPumpAirToWater::processInputForEIRPLHP(EnergyPlusData &state)
                 } else {
                     thisAWHP.ratedLeavingWaterTemperature = 40.0;
                 }
-                try {
-                    auto &tmpFlowRate = fields.at(format("rated_water_flow_rate_in_{}_mode", modeKeyWord));
-                    if (tmpFlowRate == "Autosize") {
-                        thisAWHP.loadSideDesignVolFlowRate = DataSizing::AutoSize;
-                        thisAWHP.loadSideDesignVolFlowRateWasAutoSized = true;
-                    } else {
-                        thisAWHP.loadSideDesignVolFlowRate = tmpFlowRate.get<Real64>();
-                    }
-                } catch (const std::exception &e) {
-                    thisAWHP.loadSideDesignVolFlowRate = DataSizing::AutoSize;
+                thisAWHP.loadSideDesignVolFlowRate = state.dataInputProcessing->inputProcessor->getRealFieldValue(fields, schemaProps, format("rated_water_flow_rate_in_{}_mode", modeKeyWord));
+                if (thisAWHP.loadSideDesignVolFlowRate == DataSizing::AutoSize) {
                     thisAWHP.loadSideDesignVolFlowRateWasAutoSized = true;
                 }
                 auto minSourceTempLimit = fields.find(format("minimum_outdoor_air_temperature_in_{}_mode", modeKeyWord));
@@ -4162,19 +4146,8 @@ void HeatPumpAirToWater::processInputForEIRPLHP(EnergyPlusData &state)
                     }
                     std::string const capFtName = Util::makeUPPER(fields.at(capFtFieldName).get<std::string>());
                     if (i == 0) {
-                        try {
-                            auto tmpRefCapacity = fields.at(format("rated_{}_capacity_at_speed_1", modeKeyWord));
-                            if (tmpRefCapacity == "Autosize") {
-                                thisAWHP.ratedCapacity[0] = DataSizing::AutoSize;
-                                thisAWHP.referenceCapacity = DataSizing::AutoSize;
-                                thisAWHP.referenceCapacityWasAutoSized = true;
-                            } else {
-                                thisAWHP.ratedCapacity[0] = tmpRefCapacity.get<Real64>();
-                                thisAWHP.referenceCapacity = tmpRefCapacity.get<Real64>();
-                            }
-                        } catch (const std::exception &e) { // no user input, defaults to autosize
-                            thisAWHP.ratedCapacity[0] = DataSizing::AutoSize;
-                            thisAWHP.referenceCapacity = DataSizing::AutoSize;
+                        thisAWHP.referenceCapacity = thisAWHP.ratedCapacity[0] = state.dataInputProcessing->inputProcessor->getRealFieldValue(fields, schemaProps, format("rated_{}_capacity_at_speed_1", modeKeyWord));
+                        if (thisAWHP.ratedCapacity[0] == DataSizing::AutoSize) {
                             thisAWHP.referenceCapacityWasAutoSized = true;
                         }
                     } else {

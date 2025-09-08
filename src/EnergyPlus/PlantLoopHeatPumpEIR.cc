@@ -3959,7 +3959,7 @@ void HeatPumpAirToWater::processInputForEIRPLHP(EnergyPlusData &state)
                 }
                 auto minSourceTempLimit = fields.find(format("minimum_outdoor_air_temperature_in_{}_mode", modeKeyWord));
                 if (minSourceTempLimit == fields.end()) {
-                    thisAWHP.minSourceTempLimit = -100.0; // default value
+                    thisAWHP.minSourceTempLimit = -30.0; // default value
                 } else {
                     thisAWHP.minSourceTempLimit = state.dataInputProcessing->inputProcessor->getRealFieldValue(
                         fields, schemaProps, format("minimum_outdoor_air_temperature_in_{}_mode", modeKeyWord));

@@ -656,61 +656,53 @@
 
   Output:VariableDictionary,IDF;
 
-!-   Output:Variable,*,Plant Load Profile Mass Flow Rate in Heating Mode,detailed;
-   Output:Variable,*,Heat Pump Load Side Heat Transfer Rate in Heating Mode,detailed;
-   Output:Variable,*,Heat Pump Load Side Heat Transfer Energy in Heating Mode,detailed;
-   Output:Variable,*,Heat Pump Source Side Heat Transfer Rate in Heating Mode,detailed;
-   Output:Variable,*,Heat Pump Source Side Heat Transfer Energy in Heating Mode,detailed;
-!-   Output:Variable,*,Heat Pump Load Side Inlet Temperature in Heating Mode,detailed;
-!-   Output:Variable,*,Heat Pump Load Side Outlet Temperature in Heating Mode,detailed;
-!-   Output:Variable,*,Heat Pump Source Side Inlet Temperature in Heating Mode,detailed;
-!-   Output:Variable,*,Heat Pump Source Side Outlet Temperature in Heating Mode,detailed;
-!-   Output:Variable,*,Heat Pump Electricity Rate in Heating Mode,detailed;
-!-   Output:Variable,*,Heat Pump Electricity Energy in Heating Mode,detailed;
-!-   Output:Variable,*,Heat Pump Load Side Mass Flow Rate in Heating Mode,detailed;
-!-   Output:Variable,*,Heat Pump Source Side Mass Flow Rate in Heating Mode,detailed;
-
-!-   Output:Variable,*,Plant Load Profile Mass Flow Rate in Cooling Mode,detailed;
-   Output:Variable,*,Plant Load Profile Heat Transfer Rate in Cooling Mode,detailed;
-   Output:Variable,*,Heat Pump Load Side Heat Transfer Rate in Cooling Mode,detailed;
-   Output:Variable,*,Heat Pump Load Side Heat Transfer Energy in Cooling Mode,detailed;
-   Output:Variable,*,Heat Pump Source Side Heat Transfer Rate in Cooling Mode,detailed;
-   Output:Variable,*,Heat Pump Source Side Heat Transfer Energy in Cooling Mode,detailed;
-!-   Output:Variable,*,Heat Pump Load Side Inlet Temperature in Cooling Mode,detailed;
-!-   Output:Variable,*,Heat Pump Load Side Outlet Temperature in Cooling Mode,detailed;
-!-   Output:Variable,*,Heat Pump Source Side Inlet Temperature in Cooling Mode,detailed;
-!-   Output:Variable,*,Heat Pump Source Side Outlet Temperature in Cooling Mode,detailed;
-!-   Output:Variable,*,Heat Pump Electricity Rate in Cooling Mode,detailed;
-!-   Output:Variable,*,Heat Pump Electricity Energy in Cooling Mode,detailed;
-!-   Output:Variable,*,Heat Pump Load Side Mass Flow Rate in Cooling Mode,detailed;
-!-   Output:Variable,*,Heat Pump Source Side Mass Flow Rate in Cooling Mode,detailed;
+  Output:Variable,*,Heat Pump Load Side Heat Transfer Rate in Heating Mode,detailed;
+  Output:Variable,*,Heat Pump Load Side Heat Transfer Energy in Heating Mode,detailed;
+  Output:Variable,*,Heat Pump Source Side Heat Transfer Rate in Heating Mode,detailed;
+  Output:Variable,*,Heat Pump Source Side Heat Transfer Energy in Heating Mode,detailed;
+  Output:Variable,*,Heat Pump Load Side Inlet Temperature in Heating Mode,detailed;
+  Output:Variable,*,Heat Pump Load Side Outlet Temperature in Heating Mode,detailed;
+  Output:Variable,*,Heat Pump Source Side Inlet Temperature in Heating Mode,detailed;
+  Output:Variable,*,Heat Pump Source Side Outlet Temperature in Heating Mode,detailed;
+  Output:Variable,*,Heat Pump Electricity Rate in Heating Mode,detailed;
+  Output:Variable,*,Heat Pump Electricity Energy in Heating Mode,detailed;
+  Output:Variable,*,Heat Pump Load Side Mass Flow Rate in Heating Mode,detailed;
+  Output:Variable,*,Heat Pump Source Side Mass Flow Rate in Heating Mode,detailed;
+  Output:Variable,*,Heat Pump Load Side Heat Transfer Rate in Cooling Mode,detailed;
+  Output:Variable,*,Heat Pump Load Side Heat Transfer Energy in Cooling Mode,detailed;
+  Output:Variable,*,Heat Pump Source Side Heat Transfer Rate in Cooling Mode,detailed;
+  Output:Variable,*,Heat Pump Source Side Heat Transfer Energy in Cooling Mode,detailed;
+  Output:Variable,*,Heat Pump Load Side Inlet Temperature in Cooling Mode,detailed;
+  Output:Variable,*,Heat Pump Load Side Outlet Temperature in Cooling Mode,detailed;
+  Output:Variable,*,Heat Pump Source Side Inlet Temperature in Cooling Mode,detailed;
+  Output:Variable,*,Heat Pump Source Side Outlet Temperature in Cooling Mode,detailed;
+  Output:Variable,*,Heat Pump Electricity Rate in Cooling Mode,detailed;
+  Output:Variable,*,Heat Pump Electricity Energy in Cooling Mode,detailed;
+  Output:Variable,*,Heat Pump Load Side Mass Flow Rate in Cooling Mode,detailed;
+  Output:Variable,*,Heat Pump Source Side Mass Flow Rate in Cooling Mode,detailed;
   Output:Variable,*,Heat Pump Number Of Heating Unit On,detailed; !- HVAC Average []
   Output:Variable,*,Heat Pump Number Of Cooling Unit On,detailed; !- HVAC Average []
-
-!-   Output:Variable,*,Heat Pump Crankcase Heater Electricity Rate,detailed; !- HVAC Average [W]
-!-   Output:Variable,*,Heat Pump Crankcase Heater Electricity Energy,detailed; !- HVAC Sum [W]
-!-   Output:Variable,*,Heat Pump Heating COP,detailed; !- HVAC Average []
-Output:Variable,*,Heat Pump Total Heating Rate,detailed; !- HVAC Average []
-!-   Output:Variable,*,Heat Pump Cooling COP,detailed; !- HVAC Average []
-Output:Variable,*,Heat Pump Total Cooling Rate,detailed; !- HVAC Average []
-!-
-!-   Output:Variable,*,Site Outdoor Air Drybulb Temperature,detailed; !- Zone Average [C]
-  Output:Variable,*,Operating Model Output Heating,detailed;
-  Output:Variable,*,Operating Model Output Cooling,detailed;
-  Output:Variable,*,Entering Water Temperature in Heating Mode,detailed;
-  Output:Variable,*,Leaving Water Temperature in Heating Mode,detailed;
-  Output:Variable,*,Entering Water Temperature in Cooling Mode,detailed;
-  Output:Variable,*,Leaving Water Temperature in Cooling Mode,detailed;
-  !- Output:Variable,*,EMS Defrost Flag,detailed;
-  !- Output:Variable,*,Heat Pump Load Due To Defrost,detailed; !- HVAC Average [W]
-  !- Output:Variable,*,Heat Pump Fractioal Defrost Time,detailed; !- HVAC Average [W]
-  !- Output:Variable,*,Heat Pump Defrost Electricity Rate,detailed; !- HVAC Average [W]
-  !- Output:Variable,*,Outdoor Temp,detailed;
-  !- Output:Variable,*,DefrostOnInternal,detailed;
-  !- Output:Variable,*,DefrostTimerInternal,detailed;
+  Output:Variable,*,Heat Pump Crankcase Heater Electricity Rate,detailed; !- HVAC Average [W]
+  Output:Variable,*,Heat Pump Crankcase Heater Electricity Energy,detailed; !- HVAC Sum [W]
+  Output:Variable,*,Heat Pump Heating COP,detailed; !- HVAC Average []
+  Output:Variable,*,Heat Pump Total Heating Rate,detailed; !- HVAC Average []
+  Output:Variable,*,Heat Pump Cooling COP,detailed; !- HVAC Average []
+  Output:Variable,*,Heat Pump Total Cooling Rate,detailed; !- HVAC Average []
+  Output:Variable,*,Site Outdoor Air Drybulb Temperature,detailed; !- Zone Average [C]
+  Output:Variable,*,Heat Pump Defrost Electricity Rate,detailed; !- HVAC Average [W]
+  Output:Variable,*,Heat Pump Defrost Electricity Energy,detailed; !- HVAC Sum [J]
   Output:Variable,Cooling Coil Load Loop,Plant Supply Side Cooling Demand Rate,detailed; !- HVAC Average [W]
   Output:Variable,Heating Coil Load Loop,Plant Supply Side Heating Demand Rate,detailed; !- HVAC Average [W]
   Output:Variable,*,Plant Load Profile Heat Transfer Rate,detailed; !- HVAC Average [W]
+  !- EMS related output variables
+  !- Output:Variable,*,Outdoor Temp,detailed;
+  !- Output:Variable,*,DefrostOnInternal,detailed;
+  !- Output:Variable,*,DefrostTimerInternal,detailed;
+  !- Output:Variable,*,EMS Defrost Flag,detailed;
+  !- Output:Variable,*,Heat Pump Load Due To Defrost,detailed; !- HVAC Average [W]
+  !- Output:Variable,*,Heat Pump Fractioal Defrost Time,detailed; !- HVAC Average [W]
+  !- Output:Variable,*,Operating Mode Output Heating,detailed;
+  !- Output:Variable,*,Operating Mode Output Cooling,detailed;
 
   OutputControl:Table:Style,
     HTML;                    !- Column Separator
@@ -736,7 +728,7 @@ Output:Variable,*,Heat Pump Total Cooling Rate,detailed; !- HVAC Average []
   !-   Operation Mode;          !- Actuated Component Control Type
 
   !- EnergyManagementSystem:OutputVariable,
-  !-   Operating Model Output Heating,       !- Name
+  !-   Operating Mode Output Heating,       !- Name
   !-   opModeAct_heating,                    !- EMS Variable Name
   !-   Averaged,                !- Type of Data in Variable
   !-   SystemTimeStep,          !- Update Frequency
@@ -744,7 +736,7 @@ Output:Variable,*,Heat Pump Total Cooling Rate,detailed; !- HVAC Average []
   !-   ;                        !- Units
 
   !- EnergyManagementSystem:OutputVariable,
-  !-   Operating Model Output Cooling,       !- Name
+  !-   Operating Mode Output Cooling,       !- Name
   !-   opModeAct_cooling,                    !- EMS Variable Name
   !-   Averaged,                !- Type of Data in Variable
   !-   SystemTimeStep,          !- Update Frequency

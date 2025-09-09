@@ -270,6 +270,36 @@ namespace PlantManager {
         compare_eio_stream_substring(condenser_eio_output, true);
     }
 
+    TEST_F(EnergyPlusFixture, PlantManager_CheckPlantEquipmentCtrlType)
+    {
+        // Check size and alignment of DataPlant::PlantEquipmentCtrlType
+        // If this unit test fails, it likely means that a new equipment type was added to DataPlant::PlantEquipmentType (in Enums.hh) but
+        // a new element was not added in the corresponding place in array DataPlant::PlantEquipmentCtrlType (in Plant/Component.hh)
+
+        // Check size first - this will likely never fail since the size is set using DataPlant::PlantEquipmentType::Num
+        EXPECT_EQ(static_cast<int>(DataPlant::PlantEquipmentCtrlType.size()), static_cast<int>(DataPlant::PlantEquipmentType::Num));
+
+        // Check first equipment type
+        DataPlant::CtrlType ctrlType = DataPlant::PlantEquipmentCtrlType[static_cast<int>(DataPlant::PlantEquipmentType::Boiler_Simple)];
+        EXPECT_EQ(ctrlType, DataPlant::CtrlType::HeatingOp);
+        // Check last dew equipment types
+        ctrlType = DataPlant::PlantEquipmentCtrlType[static_cast<int>(DataPlant::PlantEquipmentType::CoolingPanel_Simple)];
+        EXPECT_EQ(ctrlType, DataPlant::CtrlType::Invalid);
+        ctrlType = DataPlant::PlantEquipmentCtrlType[static_cast<int>(DataPlant::PlantEquipmentType::HeatPumpEIRCooling)];
+        EXPECT_EQ(ctrlType, DataPlant::CtrlType::CoolingOp);
+        ctrlType = DataPlant::PlantEquipmentCtrlType[static_cast<int>(DataPlant::PlantEquipmentType::HeatPumpEIRHeating)];
+        EXPECT_EQ(ctrlType, DataPlant::CtrlType::HeatingOp);
+        ctrlType = DataPlant::PlantEquipmentCtrlType[static_cast<int>(DataPlant::PlantEquipmentType::PurchSteam)];
+        EXPECT_EQ(ctrlType, DataPlant::CtrlType::HeatingOp);
+        // Check random other types
+        ctrlType = DataPlant::PlantEquipmentCtrlType[static_cast<int>(DataPlant::PlantEquipmentType::FluidCooler_SingleSpd)];
+        EXPECT_EQ(ctrlType, DataPlant::CtrlType::CoolingOp);
+        ctrlType = DataPlant::PlantEquipmentCtrlType[static_cast<int>(DataPlant::PlantEquipmentType::GrndHtExchgSlinky)];
+        EXPECT_EQ(ctrlType, DataPlant::CtrlType::DualOp);
+        ctrlType = DataPlant::PlantEquipmentCtrlType[static_cast<int>(DataPlant::PlantEquipmentType::PurchHotWater)];
+        EXPECT_EQ(ctrlType, DataPlant::CtrlType::HeatingOp);
+    }
+
 } // namespace PlantManager
 
 namespace UserDefinedComponents {

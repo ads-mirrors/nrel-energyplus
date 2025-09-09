@@ -546,6 +546,9 @@ namespace OutputReportPredefined {
         s->pdchPLCLProvCool = newPreDefColumn(state, s->pdstPLCL, "Provides Cooling");
         s->pdchPLCLMaxLoopFlowRate = newPreDefColumn(state, s->pdstPLCL, "Maximum Loop Flow Rate [m3/s]");
         s->pdchPLCLMinLoopFlowRate = newPreDefColumn(state, s->pdstPLCL, "Minimum Loop Flow Rate [m3/s]");
+        s->pdchPLCLSupTemp = newPreDefColumn(state, s->pdstPLCL, "Design Supply Temperature [C]");
+        s->pdchPLCLRetTemp = newPreDefColumn(state, s->pdstPLCL, "Design Return Temperature [C]");
+        s->pdchPLCLDesCap = newPreDefColumn(state, s->pdstPLCL, "Design Capacity [W]");
 
         // Std 229 Air Terminal Table in Equipment Summary
         s->pdstAirTerm = newPreDefSubTable(state, s->pdrEquip, "Air Terminals");
@@ -1804,33 +1807,12 @@ namespace OutputReportPredefined {
         // SUBROUTINE INFORMATION:
         //       AUTHOR         Jason Glazer
         //       DATE WRITTEN   July 2007
-        //       MODIFIED
-        //       RE-ENGINEERED  na
 
         // PURPOSE OF THIS SUBROUTINE:
         //   Creates an entry for component size tables.
 
         // METHODOLOGY EMPLOYED:
         //   Simple assignments to public variables.
-
-        // REFERENCES:
-        // na
-
-        // USE STATEMENTS:
-
-        // Locals
-        // SUBROUTINE ARGUMENT DEFINITIONS:
-
-        // SUBROUTINE PARAMETER DEFINITIONS:
-        // na
-
-        // INTERFACE BLOCK SPECIFICATIONS:
-        // na
-
-        // DERIVED TYPE DEFINITIONS:
-        // na
-
-        // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
 
         if (!allocated(state.dataOutRptPredefined->CompSizeTableEntry)) {
             state.dataOutRptPredefined->CompSizeTableEntry.allocate(sizeIncrement);
@@ -1849,6 +1831,28 @@ namespace OutputReportPredefined {
         state.dataOutRptPredefined->CompSizeTableEntry(state.dataOutRptPredefined->numCompSizeTableEntry).nameField = FieldName;
         state.dataOutRptPredefined->CompSizeTableEntry(state.dataOutRptPredefined->numCompSizeTableEntry).description = FieldDescription;
         state.dataOutRptPredefined->CompSizeTableEntry(state.dataOutRptPredefined->numCompSizeTableEntry).valField = FieldValue;
+    }
+
+    void AddCompSizeTableStrEntry(
+        EnergyPlusData &state, std::string_view FieldType, std::string_view FieldName, std::string_view FieldDescription, std::string_view FieldValue)
+    {
+        if (!allocated(state.dataOutRptPredefined->CompSizeTableEntry)) {
+            state.dataOutRptPredefined->CompSizeTableEntry.allocate(sizeIncrement);
+            state.dataOutRptPredefined->sizeCompSizeTableEntry = sizeIncrement;
+            state.dataOutRptPredefined->numCompSizeTableEntry = 1;
+        } else {
+            ++state.dataOutRptPredefined->numCompSizeTableEntry;
+            // if larger than current size grow the array
+            if (state.dataOutRptPredefined->numCompSizeTableEntry > state.dataOutRptPredefined->sizeCompSizeTableEntry) {
+                state.dataOutRptPredefined->CompSizeTableEntry.redimension(
+                    state.dataOutRptPredefined->sizeCompSizeTableEntry *=
+                    2); // Tuned Changed += sizeIncrement to *= 2 for reduced heap allocations (at some space cost)
+            }
+        }
+        state.dataOutRptPredefined->CompSizeTableEntry(state.dataOutRptPredefined->numCompSizeTableEntry).typeField = FieldType;
+        state.dataOutRptPredefined->CompSizeTableEntry(state.dataOutRptPredefined->numCompSizeTableEntry).nameField = FieldName;
+        state.dataOutRptPredefined->CompSizeTableEntry(state.dataOutRptPredefined->numCompSizeTableEntry).description = FieldDescription;
+        state.dataOutRptPredefined->CompSizeTableEntry(state.dataOutRptPredefined->numCompSizeTableEntry).strField = FieldValue;
     }
 
     void AddShadowRelateTableEntry(EnergyPlusData &state, int const castingField, int const receivingField, int const receivingKind)

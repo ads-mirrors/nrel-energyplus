@@ -13961,7 +13961,6 @@ void WriteComponentSizing(EnergyPlusData &state)
     //       DATE WRITTEN   July 2007
     //       MODIFIED       January 2010, Kyle Benne
     //                      Added SQLite output
-    //       RE-ENGINEERED  na
 
     // PURPOSE OF THIS SUBROUTINE:
     //   Write out tables based on component sizing data originally
@@ -14144,26 +14143,30 @@ void WriteComponentSizing(EnergyPlusData &state)
                         }
                     }
                     if ((foundDesc >= 1) && (foundObj >= 1)) {
-                        state.dataOutRptTab->curValueSIWCS = state.dataOutRptPredefined->CompSizeTableEntry(iTableEntry).valField;
-                        if (unitsStyle_cur == UnitsStyle::InchPound) {
-                            if (colUnitConv(foundDesc) != 0) {
-                                state.dataOutRptTab->curValueWCS = ConvertIP(state, colUnitConv(foundDesc), state.dataOutRptTab->curValueSIWCS);
+                        if (!state.dataOutRptPredefined->CompSizeTableEntry(iTableEntry).strField.empty()) {
+                            tableBody(foundDesc, foundObj) = state.dataOutRptPredefined->CompSizeTableEntry(iTableEntry).strField;
+                        } else {
+                            state.dataOutRptTab->curValueSIWCS = state.dataOutRptPredefined->CompSizeTableEntry(iTableEntry).valField;
+                            if (unitsStyle_cur == UnitsStyle::InchPound) {
+                                if (colUnitConv(foundDesc) != 0) {
+                                    state.dataOutRptTab->curValueWCS = ConvertIP(state, colUnitConv(foundDesc), state.dataOutRptTab->curValueSIWCS);
+                                } else {
+                                    state.dataOutRptTab->curValueWCS = state.dataOutRptTab->curValueSIWCS;
+                                }
+                            } else if (unitsStyle_cur == UnitsStyle::InchPoundExceptElectricity) {
+                                if (colUnitConv(foundDesc) != 0) {
+                                    state.dataOutRptTab->curValueWCS = ConvertIP(state, colUnitConv(foundDesc), state.dataOutRptTab->curValueSIWCS);
+                                } else {
+                                    state.dataOutRptTab->curValueWCS = state.dataOutRptTab->curValueSIWCS;
+                                }
                             } else {
                                 state.dataOutRptTab->curValueWCS = state.dataOutRptTab->curValueSIWCS;
                             }
-                        } else if (unitsStyle_cur == UnitsStyle::InchPoundExceptElectricity) {
-                            if (colUnitConv(foundDesc) != 0) {
-                                state.dataOutRptTab->curValueWCS = ConvertIP(state, colUnitConv(foundDesc), state.dataOutRptTab->curValueSIWCS);
+                            if (std::abs(state.dataOutRptTab->curValueWCS) >= 1.0) {
+                                tableBody(foundDesc, foundObj) = RealToStr(state.dataOutRptTab->curValueWCS, 2);
                             } else {
-                                state.dataOutRptTab->curValueWCS = state.dataOutRptTab->curValueSIWCS;
+                                tableBody(foundDesc, foundObj) = RealToStr(state.dataOutRptTab->curValueWCS, 6);
                             }
-                        } else {
-                            state.dataOutRptTab->curValueWCS = state.dataOutRptTab->curValueSIWCS;
-                        }
-                        if (std::abs(state.dataOutRptTab->curValueWCS) >= 1.0) {
-                            tableBody(foundDesc, foundObj) = RealToStr(state.dataOutRptTab->curValueWCS, 2);
-                        } else {
-                            tableBody(foundDesc, foundObj) = RealToStr(state.dataOutRptTab->curValueWCS, 6);
                         }
                         state.dataOutRptPredefined->CompSizeTableEntry(iTableEntry).written = true;
                     }

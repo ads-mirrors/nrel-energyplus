@@ -1045,7 +1045,7 @@ namespace OutdoorAirUnit {
             SetupOutputVariable(state,
                                 "Zone Outdoor Air Unit Fan Availability Status",
                                 Constant::Units::None,
-                                (int &)thisOutAirUnit.availStatus,
+                                thisOutAirUnit.availStatus,
                                 OutputProcessor::TimeStepType::System,
                                 OutputProcessor::StoreType::Average,
                                 thisOutAirUnit.Name);

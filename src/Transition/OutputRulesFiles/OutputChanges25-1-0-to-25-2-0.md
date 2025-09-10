@@ -75,6 +75,11 @@ See Pull Request [#10998](https://github.com/NREL/EnergyPlus/pull/10998).
   
 See Pull Request [#10998](https://github.com/NREL/EnergyPlus/pull/10998).
 
+### Table Output, Equipment Summary Report, Fan Power Fractions subtable
+New table output showing fraction of full load fan power vs flow fraction.
+
+See Pull Request [#11153](https://github.com/NREL/EnergyPlus/pull/11153).
+
 ### EIO and HTML Table Output: Initialization Summary
 
 A number of changes related to finding duplicated HTML tables (based on FullName) have been made.

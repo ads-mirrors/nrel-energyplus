@@ -166,7 +166,7 @@
     DISCRETE;                !- Numeric Type
 
   ScheduleTypeLimits,
-    On/Off,                  !- Name
+    OnOff,                  !- Name
     0,                       !- Lower Limit Value
     1,                       !- Upper Limit Value
     DISCRETE;                !- Numeric Type
@@ -3269,23 +3269,35 @@
   PlantEquipmentOperationSchemes,
     CW Loop Operation,       !- Name
     PlantEquipmentOperation:ComponentSetpoint,  !- Control Scheme 1 Object Type
-    Chiller and Partial Ice Storage,  !- Control Scheme 1 Name
-    PlantOnSched;            !- Control Scheme 1 Schedule Name
+    Chiller and Partial Ice Storage,            !- Control Scheme 1 Name
+    OffPeakEnergy,                              !- Control Scheme 1 Schedule Name
+    PlantEquipmentOperation:ComponentSetpoint,  !- Control Scheme 2 Object Type
+    TES Only,                                   !- Control Scheme 2 Name
+    OnPeakEnergy;                               !- Control Scheme 2 Schedule Name
+
+  PlantEquipmentOperation:ComponentSetpoint, ! for Off-peak
+    TES Only,                         !- Name
+    ThermalStorage:Ice:Simple,        !- Equipment 1 Object Type
+    Ice Tank,                         !- Equipment 1 Name
+    Ice Tank Inlet Node,              !- Demand Calculation 1 Node Name
+    Ice Tank Outlet Node,             !- Setpoint 1 Node Name
+    0.013506,                         !- Component 1 Flow Rate {m3/s}
+    DUAL;                             !- Operation 1 Type
 
   PlantEquipmentOperation:ComponentSetpoint,
     Chiller and Partial Ice Storage,  !- Name
-    Chiller:Electric,        !- Equipment 1 Object Type
-    Central Chiller,         !- Equipment 1 Name
-    Central Chiller Inlet Node,  !- Demand Calculation 1 Node Name
-    Central Chiller Outlet Node,  !- Setpoint 1 Node Name
-    autosize,                !- Component 1 Flow Rate {m3/s}
-    COOLING,                 !- Operation 1 Type
-    ThermalStorage:Ice:Simple,  !- Equipment 2 Object Type
-    Ice Tank,                !- Equipment 2 Name
-    Ice Tank Inlet Node,     !- Demand Calculation 2 Node Name
-    Ice Tank Outlet Node,    !- Setpoint 2 Node Name
-    0.13506E-02,             !- Component 2 Flow Rate {m3/s}
-    DUAL;                    !- Operation 2 Type
+    Chiller:Electric, 		          !- Equipment 1 Object Type
+    Central Chiller,                  !- Equipment 1 Name
+    Central Chiller Inlet Node,       !- Demand Calculation 1 Node Name
+    Central Chiller Outlet Node,      !- Setpoint 1 Node Name
+    autosize,                         !- Component 1 Flow Rate {m3/s}
+    COOLING,                          !- Operation 1 Type
+    ThermalStorage:Ice:Simple,        !- Equipment 2 Object Type
+    Ice Tank,                         !- Equipment 2 Name
+    Ice Tank Inlet Node,              !- Demand Calculation 2 Node Name
+    Ice Tank Outlet Node,             !- Setpoint 2 Node Name
+    0.13506E-02,                      !- Component 2 Flow Rate {m3/s}
+    DUAL;                             !- Operation 2 Type
 
   SetpointManager:Scheduled,
     Ice Tank Setpoint Manager,  !- Name
@@ -3399,27 +3411,27 @@
 
   Schedule:Compact,
     OnPeakEnergy,            !- Name
-    Fraction,                !- Schedule Type Limits Name
+    OnOff,                   !- Schedule Type Limits Name
     Through: 12/31,          !- Field 1
     For: Weekdays SummerDesignDay, !- Field 2
-    Until: 09:00,0.0,        !- Field 3
-    Until: 22:00,1.0,        !- Field 5
-    Until: 24:00,0.0,        !- Field 7
-    For: AllOtherDays,       !- Field 9
-    Until: 24:00,0.0;        !- Field 10
+    Until: 09:00,0,                !- Field 3
+    Until: 22:00,1,                !- Field 5
+    Until: 24:00,0,                !- Field 7
+    For: AllOtherDays,             !- Field 9
+    Until: 24:00,0;                !- Field 10
 
 ! Off Peak Energy Period, all hours except 9 a.m. to 10 p.m., Weekdays (Chicago ComEd, Rate 6 TOU)
 
   Schedule:Compact,
     OffPeakEnergy,           !- Name
-    Fraction,                !- Schedule Type Limits Name
+    OnOff,                   !- Schedule Type Limits Name
     Through: 12/31,          !- Field 1
     For: Weekdays SummerDesignDay, !- Field 2
-    Until: 09:00,1.0,        !- Field 3
-    Until: 22:00,0.0,        !- Field 5
-    Until: 24:00,1.0,        !- Field 7
-    For: AllOtherDays,       !- Field 9
-    Until: 24:00,1.0;        !- Field 10
+    Until: 09:00,1,                !- Field 3
+    Until: 22:00,0,                !- Field 5
+    Until: 24:00,1,                !- Field 7
+    For: AllOtherDays,             !- Field 9
+    Until: 24:00,1;                !- Field 10
 
   CondenserLoop,
     Condenser Water Loop,    !- Name

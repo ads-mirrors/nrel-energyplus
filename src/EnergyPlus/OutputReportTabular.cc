@@ -6608,6 +6608,16 @@ void FillRemainingPredefinedEntries(EnergyPlusData &state)
             PreDefTableEntry(
                 state, state.dataOutRptPredefined->pdchOaAvFctEMS, thisPrimaryAirSys.Name, avgFlowRate(iSys, MixedAir::OALimitFactor::EMS), 4);
         }
+
+        // System Summary Fan Operation
+        PreDefTableEntry(state, state.dataOutRptPredefined->pdchFanOpOccHrs, thisPrimaryAirSys.Name, thisSysPreDefRep.TimeOccupiedTotal);
+        PreDefTableEntry(state, state.dataOutRptPredefined->pdchFanOpOccCont, thisPrimaryAirSys.Name, thisSysPreDefRep.TimeFanContTotalOcc);
+        PreDefTableEntry(state, state.dataOutRptPredefined->pdchFanOpOccCyc, thisPrimaryAirSys.Name, thisSysPreDefRep.TimeFanCycTotalOcc);
+        PreDefTableEntry(state, state.dataOutRptPredefined->pdchFanOpOccOff, thisPrimaryAirSys.Name, thisSysPreDefRep.TimeFanOffTotalOcc);
+        PreDefTableEntry(state, state.dataOutRptPredefined->pdchFanOpUnoccHrs, thisPrimaryAirSys.Name, thisSysPreDefRep.TimeUnoccupiedTotal);
+        PreDefTableEntry(state, state.dataOutRptPredefined->pdchFanOpUnoccCont, thisPrimaryAirSys.Name, thisSysPreDefRep.TimeFanContTotalUnocc);
+        PreDefTableEntry(state, state.dataOutRptPredefined->pdchFanOpUnoccCyc, thisPrimaryAirSys.Name, thisSysPreDefRep.TimeFanCycTotalUnocc);
+        PreDefTableEntry(state, state.dataOutRptPredefined->pdchFanOpUnoccOff, thisPrimaryAirSys.Name, thisSysPreDefRep.TimeFanOffTotalUnocc);
     }
     // add total rows for outdoor air details
     OutputReportPredefined::PreDefTableEntry(

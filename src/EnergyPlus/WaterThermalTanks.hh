@@ -997,7 +997,7 @@ namespace WaterThermalTanks {
 
     bool getWaterTankStratifiedInput(EnergyPlusData &state, std::string objectType);
 
-    bool GetWaterThermalTankInput(EnergyPlusData &state);
+    void GetWaterThermalTankInput(EnergyPlusData &state);
 
     void CalcWaterThermalTankZoneGains(EnergyPlusData &state);
 

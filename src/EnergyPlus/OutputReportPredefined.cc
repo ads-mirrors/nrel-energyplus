@@ -464,6 +464,24 @@ namespace OutputReportPredefined {
         s->pdchFanNumSpeeds = newPreDefColumn(state, s->pdstFan, "Number of Speeds");
         s->pdchFanAirLoopName = newPreDefColumn(state, s->pdstFan, "Airloop Name");
 
+        s->pdstFanPower = newPreDefSubTable(state, s->pdrEquip, "Fan Power Fractions");
+        s->pdchFanPowerType = newPreDefColumn(state, s->pdstFanPower, "Type");
+        s->pdchFanPower00 = newPreDefColumn(state, s->pdstFanPower, "Flow Frac 0.0");
+        s->pdchFanPower01 = newPreDefColumn(state, s->pdstFanPower, "Flow Frac 0.1");
+        s->pdchFanPower02 = newPreDefColumn(state, s->pdstFanPower, "Flow Frac 0.2");
+        s->pdchFanPower03 = newPreDefColumn(state, s->pdstFanPower, "Flow Frac 0.3");
+        s->pdchFanPower04 = newPreDefColumn(state, s->pdstFanPower, "Flow Frac 0.4");
+        s->pdchFanPower05 = newPreDefColumn(state, s->pdstFanPower, "Flow Frac 0.5");
+        s->pdchFanPower06 = newPreDefColumn(state, s->pdstFanPower, "Flow Frac 0.6");
+        s->pdchFanPower07 = newPreDefColumn(state, s->pdstFanPower, "Flow Frac 0.7");
+        s->pdchFanPower08 = newPreDefColumn(state, s->pdstFanPower, "Flow Frac 0.8");
+        s->pdchFanPower09 = newPreDefColumn(state, s->pdstFanPower, "Flow Frac 0.9");
+        s->pdchFanPower10 = newPreDefColumn(state, s->pdstFanPower, "Flow Frac 1.0");
+        addFootNoteSubTable(
+            state,
+            s->pdstFanPower,
+            "Values are the fraction of full-load power at each flow fraction including any part-load adjustments specified in the fan object.");
+
         s->pdstPump = newPreDefSubTable(state, s->pdrEquip, "Pumps");
         s->pdchPumpType = newPreDefColumn(state, s->pdstPump, "Type");
         s->pdchPumpControl = newPreDefColumn(state, s->pdstPump, "Control");

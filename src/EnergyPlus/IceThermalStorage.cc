@@ -273,7 +273,7 @@ namespace IceThermalStorage {
         this->RecordOutput(MyLoad2, RunFlag);
     }
 
-    void SimpleIceStorageData::onInitLoopEquip(EnergyPlusData &state, const PlantLocation &calledFromLocation)
+    void SimpleIceStorageData::onInitLoopEquip([[maybe_unused]] EnergyPlusData &state, [[maybe_unused]] const PlantLocation &calledFromLocation)
     {
         this->oneTimeInit(state); // Initialize detailed ice storage
 
@@ -305,7 +305,7 @@ namespace IceThermalStorage {
         this->ReportDetailedIceStorage(state); // Report detailed ice storage
     }
 
-    void DetailedIceStorageData::onInitLoopEquip(EnergyPlusData &state, const PlantLocation &calledFromLocation)
+    void DetailedIceStorageData::onInitLoopEquip([[maybe_unused]] EnergyPlusData &state, [[maybe_unused]] const PlantLocation &calledFromLocation)
     {
         this->oneTimeInit(state); // Initialize detailed ice storage
 
@@ -1480,14 +1480,10 @@ namespace IceThermalStorage {
         Real64 rho = plntLoop.glycol->getDensity(state, plntSizData.ExitTemp, callingRoutine);
         Real64 onPeakEnergy =
             onPeakSumWaterFlow * rho * Cp * plntSizData.DeltaT * Constant::rSecsInHour; // need Joules here, J = m3/s * kg/m3 * J/kg-C * C * sec
-        Real64 offPeakEnergy = offPeakSumWaterFlow * rho * Cp * plntSizData.DeltaT * Constant::rSecsInHour;
-        Real64 aveOnPeakLoad =
-            onPeakEnergy / (((endPeak - startPeak) / state.dataGlobal->TimeStepsInHour) * Constant::rSecsInHour); // need Watts here = avg J / s
-        Real64 aveOffPeakLoad = offPeakEnergy / (Real64((24 - ((endPeak - startPeak) / state.dataGlobal->TimeStepsInHour))) * Constant::rSecsInHour);
 
         // now apply the heat of fusion J/Kg and size tank
-        Real64 tankCapacityKg = onPeakEnergy * sizingFactor / tankHeatOfFusion;    // kg
-        Real64 tankCapacityM3 = tankCapacityKg / rho;                              // m3
+        // Real64 tankCapacityKg = onPeakEnergy * sizingFactor / tankHeatOfFusion;    // kg
+        // Real64 tankCapacityM3 = tankCapacityKg / rho;                              // m3
         Real64 tankCapacity = onPeakEnergy * sizingFactor / Constant::rSecsInHour; // kWh for detailed model
 
         if (this->NomCapacityWasAutoSized) {
@@ -1534,15 +1530,11 @@ namespace IceThermalStorage {
         Real64 rho = plntLoop.glycol->getDensity(state, plntSizData.ExitTemp, callingRoutine);
         Real64 onPeakEnergy =
             onPeakSumWaterFlow * rho * Cp * plntSizData.DeltaT * Constant::rSecsInHour; // need Joules here, J = m3/s * kg/m3 * J/kg-C * C * sec
-        Real64 offPeakEnergy = offPeakSumWaterFlow * rho * Cp * plntSizData.DeltaT * Constant::rSecsInHour;
-        Real64 aveOnPeakLoad =
-            onPeakEnergy / (((endPeak - startPeak) / state.dataGlobal->TimeStepsInHour) * Constant::rSecsInHour); // need Watts here = avg J / s
-        Real64 aveOffPeakLoad = offPeakEnergy / (Real64((24 - ((endPeak - startPeak) / state.dataGlobal->TimeStepsInHour))) * Constant::rSecsInHour);
 
         // now apply the heat of fusion J/Kg and size tank
-        Real64 tankCapacityKg = onPeakEnergy * sizingFactor / tankHeatOfFusion; // kg
-        Real64 tankCapacityM3 = tankCapacityKg / rho;                           // m3
-        Real64 tankCapacity = onPeakEnergy * sizingFactor;                      // J for simple model
+        // Real64 tankCapacityKg = onPeakEnergy * sizingFactor / tankHeatOfFusion; // kg
+        // Real64 tankCapacityM3 = tankCapacityKg / rho;                           // m3
+        Real64 tankCapacity = onPeakEnergy * sizingFactor; // J for simple model
 
         if (this->NomCapacityWasAutoSized) {
             this->ITSNomCap = std::max(1.0, tankCapacity);

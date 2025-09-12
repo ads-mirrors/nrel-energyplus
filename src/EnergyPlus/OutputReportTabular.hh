@@ -1114,6 +1114,7 @@ struct OutputReportTabularData : BaseGlobalStruct
         OutputReportTabular::maxNumStyles, OutputReportTabular::TableStyle::Invalid); // see list of parameters
 
     Real64 timeInYear = 0.0;
+    int defaultSigDigits = 2;
 
     // Flags for predefined tabular reports
     bool displayTabularBEPS = false;

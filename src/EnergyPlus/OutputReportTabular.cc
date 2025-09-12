@@ -230,7 +230,6 @@ void UpdateTabularReports(EnergyPlusData &state, OutputProcessor::TimeStepType t
         OutputReportTabularAnnual::GetInputTabularAnnual(state);
         OutputReportTabularAnnual::checkAggregationOrderForAnnual(state);
         GetInputTabularTimeBins(state);
-        GetInputTabularStyle(state);
         GetInputOutputTableSummaryReports(state);
         if (state.dataOutRptTab->displayThermalResilienceSummary) {
             // check whether multiple people have different threshold for a zone
@@ -1290,6 +1289,7 @@ void GetInputTabularStyle(EnergyPlusData &state)
         ort->TableStyle(1) = TableStyle::Comma;
         ort->del(1) = CharComma; // comma
         ort->unitsStyle = UnitsStyle::None;
+        ort->defaultSigDigits = 2;
     } else if (NumTabularStyle == 1) {
         state.dataInputProcessing->inputProcessor->getObjectItem(state,
                                                                  CurrentModuleObject,
@@ -1303,6 +1303,8 @@ void GetInputTabularStyle(EnergyPlusData &state)
                                                                  state.dataIPShortCut->lAlphaFieldBlanks,
                                                                  state.dataIPShortCut->cAlphaFieldNames,
                                                                  state.dataIPShortCut->cNumericFieldNames);
+        ort->defaultSigDigits = NumArray(1);
+
         // ColumnSeparator
         if (Util::SameString(AlphArray(1), "Comma")) {
             ort->numStyles = 1;
@@ -1390,6 +1392,7 @@ void GetInputTabularStyle(EnergyPlusData &state)
         AlphArray(1) = "COMMA";
         ort->unitsStyle = UnitsStyle::None;
         AlphArray(2) = "None";
+        ort->defaultSigDigits = NumArray(1);
     }
 
     if (ort->WriteTabularFiles) {
@@ -13961,8 +13964,12 @@ void WritePredefinedTables(EnergyPlusData &state)
                                     if (state.dataOutRptPredefined->tableEntry(lTableEntry).origEntryIsReal && (columnUnitConv != 0)) {
                                         Real64 const IPvalue =
                                             ConvertIP(state, columnUnitConv, state.dataOutRptPredefined->tableEntry(lTableEntry).origRealEntry);
-                                        tableBody(colCurrent, rowCurrent) =
-                                            RealToStr(IPvalue, state.dataOutRptPredefined->tableEntry(lTableEntry).significantDigits);
+                                        int const sigDigitCount = state.dataOutRptPredefined->tableEntry(lTableEntry).significantDigits;
+                                        if (sigDigitCount == 0) {
+                                            tableBody(colCurrent, rowCurrent) = format("{}", IPvalue);
+                                        } else {
+                                            tableBody(colCurrent, rowCurrent) = RealToStr(IPvalue, sigDigitCount);
+                                        }
                                     } else {
                                         tableBody(colCurrent, rowCurrent) = state.dataOutRptPredefined->tableEntry(lTableEntry).charEntry;
                                     }

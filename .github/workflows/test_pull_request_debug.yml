@@ -83,23 +83,29 @@ jobs:
           echo "::endgroup::"
         fi;
 
-    - name: Setup upterm session
-      uses: owenthereal/action-upterm@v1
+#    - name: Setup upterm session
+#      uses: owenthereal/action-upterm@v1
 
     - name: Prepare Initial Coverage Results
       shell: bash
       working-directory: ./build
-      run: lcov -c -d . -o ./lcov.output --no-external --base-directory ../src/EnergyPlus --ignore-errors source
+      run: lcov -c -d . -o lcov.raw.info --base-directory ../src/EnergyPlus --ignore-errors source,mismatch
+      #run: lcov -c -d . -o ./lcov.output --no-external --base-directory ../src/EnergyPlus --ignore-errors source
+
+    - name: Why does it have src/src/?
+      shell: bash
+      working-directory: ./build
+      run: sed -i 's#/src/src/#/src/#g' lcov.raw.info
 
     - name: Clean up Coverage Results
       shell: bash
       working-directory: ./build
-      run: lcov -r ./lcov.output `pwd`/\* -o ./lcov.output.filtered --ignore-errors source
+      run: lcov -e lcov.raw.info "*/EnergyPlus/src/EnergyPlus/*" -o lcov.filtered.info
 
     - name: Generate HTML Coverage Package
       shell: bash
       working-directory: ./build
-      run: genhtml ./lcov.output.filtered -o lcov-html --demangle-cpp --function-coverage --synthesize-missing
+      run: genhtml lcov.filtered.info -o lcov-html --title "EnergyPlus Coverage" --synthesize-missing --ignore-errors source
 
     - name: Upload folder as artifact
       uses: actions/upload-artifact@v4

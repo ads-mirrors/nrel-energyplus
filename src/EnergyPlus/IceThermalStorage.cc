@@ -1457,7 +1457,7 @@ namespace IceThermalStorage {
         }
         std::string_view const tankType = "ThermalStorage:Ice:Detailed";
         std::string_view const callingRoutine = "DetailedIceStorageData::size";
-        Real64 constexpr tankHeatOfFusion = 334000.0; // J/Kg
+        // Real64 constexpr tankHeatOfFusion = 334000.0; // J/Kg
         auto &plntLoop = state.dataPlnt->PlantLoop(this->plantLoc.loopNum);
         int PltSizNum = plntLoop.PlantSizNum;
         auto &plntSizData = state.dataSize->PlantSizData(PltSizNum);
@@ -1507,7 +1507,7 @@ namespace IceThermalStorage {
         }
         std::string_view const tankType = "ThermalStorage:Ice:Simple";
         std::string_view const callingRoutine = "SimpleIceStorageData::size";
-        Real64 constexpr tankHeatOfFusion = 334000.0; // J/Kg
+        // Real64 constexpr tankHeatOfFusion = 334000.0; // J/Kg
         auto &plntLoop = state.dataPlnt->PlantLoop(this->plantLoc.loopNum);
         int PltSizNum = plntLoop.PlantSizNum;
         auto &plntSizData = state.dataSize->PlantSizData(PltSizNum);

@@ -72,7 +72,7 @@ jobs:
         Green='\033[0;32m'
 
         begin_group "Running CTests"
-        if ctest -j ${{ env.NPROC }} -R 1ZoneUncontrolled; then
+        if ctest -j ${{ env.NPROC }} -E "integration\.HospitalLowEnergy|integration\.DirectIndirectEvapCoolersVSAS|integration\.HospitalBaselineReheatReportEMS|integration\.HospitalBaseline|integration\.ASHRAE901_ApartmentHighRise_STD2019_Denver|integration\.RefBldgOutPatientNew2004_Chicago|integration\.UnitarySystem_MultiSpeedDX_EconoStaging|integration\.ASHRAE901_OutPatientHealthCare_STD2019_Denver|integration\.UnitaryHybridAC_DedicatedOutsideAir|integration\.RefrigeratedWarehouse|integration\.RefBldgSecondarySchoolNew2004_Chicago|integration\.LgOffVAVusingBasement|integration\.EcoroofOrlando|integration\._5ZoneAirCooled_LeapYear_annual|integration\.EcoroofOrlando_NoSitePrec|integration\._5ZoneAirCooled_annual"; then
           echo "::endgroup::"
           echo -e "✅ ${Green}All tests passed${Color_Off}"
         else

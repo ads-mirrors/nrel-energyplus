@@ -2002,8 +2002,8 @@ void HeatExchangerStruct::oneTimeInit(EnergyPlusData &state)
 
 void HeatExchangerStruct::updateCompFlowData(EnergyPlusData &state)
 {
-    size_t demandArrayIndex = -1;
-    size_t supplyArrayIndex = -1;
+    int demandArrayIndex = -1;
+    int supplyArrayIndex = -1;
     auto &demandCompNames = state.dataPlnt->PlantLoop(this->DemandSideLoop.loopNum).plantCoilObjectNames;
     auto &demandCompTypes = state.dataPlnt->PlantLoop(this->DemandSideLoop.loopNum).plantCoilObjectTypes;
     auto &supplyCompNames = state.dataPlnt->PlantLoop(this->SupplySideLoop.loopNum).plantCoilObjectNames;
@@ -2031,7 +2031,7 @@ void HeatExchangerStruct::updateCompFlowData(EnergyPlusData &state)
     }
     if (supplyCompSize > 0) {
         for (size_t comp = 0; comp < supplyCoilData.size(); ++comp) {
-            if (comp == supplyArrayIndex) {
+            if (static_cast<int>(comp) == supplyArrayIndex) {
                 continue;
             }
             for (size_t ts = 0; ts < supplyCoilData[comp].tsDesWaterFlowRate.size(); ++ts) {
@@ -2059,7 +2059,7 @@ void HeatExchangerStruct::updateCompFlowData(EnergyPlusData &state)
         }
         if (demandCompSize > 0) {
             for (size_t comp = 0; comp < demandCoilData.size(); ++comp) {
-                if (comp == demandArrayIndex) {
+                if (static_cast<int>(comp) == demandArrayIndex) {
                     continue;
                 }
                 for (size_t ts = 0; ts < demandCoilData.size(); ++ts) {

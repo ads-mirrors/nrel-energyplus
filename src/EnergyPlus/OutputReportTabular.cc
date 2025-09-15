@@ -1267,6 +1267,7 @@ void GetInputTabularStyle(EnergyPlusData &state)
         ort->numStyles = 1;
         ort->TableStyle(1) = TableStyle::Comma;
         ort->del(1) = DataStringGlobals::CharComma; // comma
+        AlphArray(2) = "None";
         ort->unitsStyle = UnitsStyle::None;
         ort->defaultSigDigits = 2;
     } else if (NumTabularStyle == 1) {
@@ -1375,11 +1376,6 @@ void GetInputTabularStyle(EnergyPlusData &state)
     }
 
     print(state.files.eio, "! <Tabular Report>,Style,Unit Conversion, Default Significant Digits\n");
-    if (AlphArray(1) != "HTML") {
-        ConvertCaseToLower(AlphArray(1), AlphArray(2));
-        AlphArray(1).erase(1);
-        AlphArray(1) += AlphArray(2).substr(1);
-    }
     print(state.files.eio, "Tabular Report,{},{},{}\n", AlphArray(1), AlphArray(2), ort->defaultSigDigits);
 }
 

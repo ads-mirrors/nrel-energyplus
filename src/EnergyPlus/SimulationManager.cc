@@ -213,7 +213,7 @@ namespace SimulationManager {
         CheckForMisMatchedEnvironmentSpecifications(state);
         CheckForRequestedReporting(state);
         OutputReportPredefined::SetPredefinedTables(state);
-        OutputReportTabular::GetInputTabularStyle(state);
+        OutputReportTabular::GetInputTabularStyle(state); // need to get this early before sizing writes to table outputs
         SetPreConstructionInputParameters(state); // establish array bounds for constructions early
 
         OutputProcessor::SetupTimePointers(

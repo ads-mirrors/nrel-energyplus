@@ -1237,38 +1237,17 @@ void GetInputTabularStyle(EnergyPlusData &state)
     // SUBROUTINE INFORMATION:
     //       AUTHOR         Jason Glazer
     //       DATE WRITTEN   July 2003
-    //       MODIFIED       na
-    //       RE-ENGINEERED  na
 
     // PURPOSE OF THIS SUBROUTINE:
     //   This routine set a flag for the output format for
     //   all tabular reports. This is a "unique" object.
 
-    // METHODOLOGY EMPLOYED:
-    //   Uses get input structure similar to other objects
+    // using DataStringGlobals::CharComma;
+    // using DataStringGlobals::CharSpace;
+    // using DataStringGlobals::CharTab;
 
-    // REFERENCES:
-    // na
-
-    // Using/Aliasing
-    using DataStringGlobals::CharComma;
-    using DataStringGlobals::CharSpace;
-    using DataStringGlobals::CharTab;
-
-    // Locals
-    // SUBROUTINE ARGUMENT DEFINITIONS:
-    // na
-
-    // SUBROUTINE PARAMETER DEFINITIONS:
     static std::string const CurrentModuleObject("OutputControl:Table:Style");
 
-    // INTERFACE BLOCK SPECIFICATIONS:
-    // na
-
-    // DERIVED TYPE DEFINITIONS:
-    // na
-
-    // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
     int NumParams = 0;        // Number of elements combined
     int NumAlphas = 0;        // Number of elements in the alpha array
     int NumNums = 0;          // Number of elements in the numeric array
@@ -1287,7 +1266,7 @@ void GetInputTabularStyle(EnergyPlusData &state)
         AlphArray(1) = "COMMA";
         ort->numStyles = 1;
         ort->TableStyle(1) = TableStyle::Comma;
-        ort->del(1) = CharComma; // comma
+        ort->del(1) = DataStringGlobals::CharComma; // comma
         ort->unitsStyle = UnitsStyle::None;
         ort->defaultSigDigits = 2;
     } else if (NumTabularStyle == 1) {
@@ -1309,66 +1288,66 @@ void GetInputTabularStyle(EnergyPlusData &state)
         if (Util::SameString(AlphArray(1), "Comma")) {
             ort->numStyles = 1;
             ort->TableStyle(1) = TableStyle::Comma;
-            ort->del(1) = CharComma; // comma
+            ort->del(1) = DataStringGlobals::CharComma; // comma
         } else if (Util::SameString(AlphArray(1), "Tab")) {
             ort->numStyles = 1;
             ort->TableStyle(1) = TableStyle::Tab;
-            ort->del(1) = CharTab; // tab
+            ort->del(1) = DataStringGlobals::CharTab; // tab
         } else if (Util::SameString(AlphArray(1), "Fixed")) {
             ort->numStyles = 1;
             ort->TableStyle(1) = TableStyle::Fixed;
-            ort->del(1) = CharSpace; // space
+            ort->del(1) = DataStringGlobals::CharSpace; // space
         } else if (Util::SameString(AlphArray(1), "HTML")) {
             ort->numStyles = 1;
             ort->TableStyle(1) = TableStyle::HTML;
-            ort->del(1) = CharSpace; // space - this is not used much for HTML output
+            ort->del(1) = DataStringGlobals::CharSpace; // space - this is not used much for HTML output
         } else if (Util::SameString(AlphArray(1), "XML")) {
             ort->numStyles = 1;
             ort->TableStyle(1) = TableStyle::XML;
-            ort->del(1) = CharSpace; // space - this is not used much for XML output
+            ort->del(1) = DataStringGlobals::CharSpace; // space - this is not used much for XML output
         } else if (Util::SameString(AlphArray(1), "CommaAndHTML")) {
             ort->numStyles = 2;
             ort->TableStyle(1) = TableStyle::Comma;
-            ort->del(1) = CharComma; // comma
+            ort->del(1) = DataStringGlobals::CharComma; // comma
             ort->TableStyle(2) = TableStyle::HTML;
-            ort->del(2) = CharSpace; // space - this is not used much for HTML output
+            ort->del(2) = DataStringGlobals::CharSpace; // space - this is not used much for HTML output
         } else if (Util::SameString(AlphArray(1), "CommaAndXML")) {
             ort->numStyles = 2;
             ort->TableStyle(1) = TableStyle::Comma;
-            ort->del(1) = CharComma; // comma
+            ort->del(1) = DataStringGlobals::CharComma; // comma
             ort->TableStyle(2) = TableStyle::XML;
-            ort->del(2) = CharSpace; // space - this is not used much for XML output
+            ort->del(2) = DataStringGlobals::CharSpace; // space - this is not used much for XML output
         } else if (Util::SameString(AlphArray(1), "TabAndHTML")) {
             ort->numStyles = 2;
             ort->TableStyle(1) = TableStyle::Tab;
-            ort->del(1) = CharTab; // tab
+            ort->del(1) = DataStringGlobals::CharTab; // tab
             ort->TableStyle(2) = TableStyle::HTML;
-            ort->del(2) = CharSpace; // space - this is not used much for HTML output
+            ort->del(2) = DataStringGlobals::CharSpace; // space - this is not used much for HTML output
         } else if (Util::SameString(AlphArray(1), "XMLandHTML")) {
             ort->numStyles = 2;
             ort->TableStyle(1) = TableStyle::XML;
-            ort->del(1) = CharSpace; // space - this is not used much for XML output
+            ort->del(1) = DataStringGlobals::CharSpace; // space - this is not used much for XML output
             ort->TableStyle(2) = TableStyle::HTML;
-            ort->del(2) = CharSpace; // space - this is not used much for HTML output
+            ort->del(2) = DataStringGlobals::CharSpace; // space - this is not used much for HTML output
         } else if (Util::SameString(AlphArray(1), "All")) {
             ort->numStyles = 5;
             ort->TableStyle(1) = TableStyle::Comma;
-            ort->del(1) = CharComma; // comma
+            ort->del(1) = DataStringGlobals::CharComma; // comma
             ort->TableStyle(2) = TableStyle::Tab;
-            ort->del(2) = CharTab; // tab
+            ort->del(2) = DataStringGlobals::CharTab; // tab
             ort->TableStyle(3) = TableStyle::Fixed;
-            ort->del(3) = CharSpace; // space
+            ort->del(3) = DataStringGlobals::CharSpace; // space
             ort->TableStyle(4) = TableStyle::HTML;
-            ort->del(4) = CharSpace; // space - this is not used much for HTML output
+            ort->del(4) = DataStringGlobals::CharSpace; // space - this is not used much for HTML output
             ort->TableStyle(5) = TableStyle::XML;
-            ort->del(5) = CharSpace; // space - this is not used much for XML output
+            ort->del(5) = DataStringGlobals::CharSpace; // space - this is not used much for XML output
         } else {
             ShowWarningError(
                 state,
                 format("{}: Invalid {}=\"{}\". Commas will be used.", CurrentModuleObject, state.dataIPShortCut->cAlphaFieldNames(1), AlphArray(1)));
             ort->numStyles = 1;
             ort->TableStyle(1) = TableStyle::Comma;
-            ort->del(1) = CharComma; // comma
+            ort->del(1) = DataStringGlobals::CharComma; // comma
             AlphArray(1) = "COMMA";
         }
         // MonthlyUnitConversion
@@ -1388,22 +1367,20 @@ void GetInputTabularStyle(EnergyPlusData &state)
     } else if (NumTabularStyle > 1) {
         ShowWarningError(state, format("{}: Only one instance of this object is allowed. Commas will be used.", CurrentModuleObject));
         ort->TableStyle = TableStyle::Comma;
-        ort->del = std::string(1, CharComma); // comma
+        ort->del = std::string(1, DataStringGlobals::CharComma); // comma
         AlphArray(1) = "COMMA";
         ort->unitsStyle = UnitsStyle::None;
         AlphArray(2) = "None";
         ort->defaultSigDigits = NumArray(1);
     }
 
-    if (ort->WriteTabularFiles) {
-        print(state.files.eio, "! <Tabular Report>,Style,Unit Conversion\n");
-        if (AlphArray(1) != "HTML") {
-            ConvertCaseToLower(AlphArray(1), AlphArray(2));
-            AlphArray(1).erase(1);
-            AlphArray(1) += AlphArray(2).substr(1);
-        }
-        print(state.files.eio, "Tabular Report,{},{}\n", AlphArray(1), AlphArray(2));
+    print(state.files.eio, "! <Tabular Report>,Style,Unit Conversion, Default Significant Digits\n");
+    if (AlphArray(1) != "HTML") {
+        ConvertCaseToLower(AlphArray(1), AlphArray(2));
+        AlphArray(1).erase(1);
+        AlphArray(1) += AlphArray(2).substr(1);
     }
+    print(state.files.eio, "Tabular Report,{},{},{}\n", AlphArray(1), AlphArray(2), ort->defaultSigDigits);
 }
 
 UnitsStyle SetUnitsStyleFromString(std::string const &unitStringIn)

@@ -83,16 +83,18 @@ jobs:
           echo "::endgroup::"
         fi;
 
-#    - name: Setup upterm session
-#      uses: owenthereal/action-upterm@v1
+    # I fully acknowledge that there is a better way to get coverage results
+    # I tried running some of the tips from Julien, but could not get them to work fully
+    # The series of steps here are hacky, but pretty much works, so I'm leaving it.
+    # When the next person gets here to clean this up, don't forget to add a message to the GITHUB_STEP_SUMMARY
+    # And even better would be to post a message as a PR comment like we do for regressions.
 
     - name: Prepare Initial Coverage Results
       shell: bash
       working-directory: ./build
       run: lcov -c -d . -o lcov.raw.info --base-directory ../src/EnergyPlus --ignore-errors source,mismatch
-      #run: lcov -c -d . -o ./lcov.output --no-external --base-directory ../src/EnergyPlus --ignore-errors source
 
-    - name: Why does it have src/src/?
+    - name: Why does it have src/src/?  I don't know, but remove it!
       shell: bash
       working-directory: ./build
       run: sed -i 's#/src/src/#/src/#g' lcov.raw.info
@@ -101,6 +103,7 @@ jobs:
       shell: bash
       working-directory: ./build
       run: lcov -e lcov.raw.info "*/EnergyPlus/src/EnergyPlus/*" -o lcov.filtered.info
+      # could also run lcov -r to remove some of the generated files, like the embedded schema cc file
 
     - name: Generate HTML Coverage Package
       shell: bash

@@ -129,30 +129,30 @@ TEST_F(EnergyPlusFixture, OutputReportTabularTest_Basic)
 
 TEST_F(EnergyPlusFixture, OutputReportTabularTest_RealToStr)
 {
-    EXPECT_EQ("       0.001", RealToStr(0.0011, 3));
-    EXPECT_NE("       0.001", RealToStr(0.0019, 3));
+    EXPECT_EQ("       0.001", RealToStr(*state, 0.0011, 3));
+    EXPECT_NE("       0.001", RealToStr(*state, 0.0019, 3));
 
-    EXPECT_EQ("          1.", RealToStr(1.23456789, 0));
-    EXPECT_EQ("         1.2", RealToStr(1.23456789, 1));
-    EXPECT_EQ("        1.23", RealToStr(1.23456789, 2));
-    EXPECT_EQ("       1.235", RealToStr(1.23456789, 3));
-    EXPECT_EQ("      1.2346", RealToStr(1.23456789, 4));
-    EXPECT_EQ("     1.23457", RealToStr(1.23456789, 5));
-    EXPECT_EQ("    1.234568", RealToStr(1.23456789, 6));
-    EXPECT_EQ("   1.2345679", RealToStr(1.23456789, 7));
-    EXPECT_EQ("  1.23456789", RealToStr(1.23456789, 8));
+    EXPECT_EQ("          1.", RealToStr(*state, 1.23456789, 0));
+    EXPECT_EQ("         1.2", RealToStr(*state, 1.23456789, 1));
+    EXPECT_EQ("        1.23", RealToStr(*state, 1.23456789, 2));
+    EXPECT_EQ("       1.235", RealToStr(*state, 1.23456789, 3));
+    EXPECT_EQ("      1.2346", RealToStr(*state, 1.23456789, 4));
+    EXPECT_EQ("     1.23457", RealToStr(*state, 1.23456789, 5));
+    EXPECT_EQ("    1.234568", RealToStr(*state, 1.23456789, 6));
+    EXPECT_EQ("   1.2345679", RealToStr(*state, 1.23456789, 7));
+    EXPECT_EQ("  1.23456789", RealToStr(*state, 1.23456789, 8));
 
-    EXPECT_EQ("    1.234000", RealToStr(1.234, 6));
-    EXPECT_EQ("   1.2340000", RealToStr(1.234, 7));
-    EXPECT_EQ("  1.23400000", RealToStr(1.234, 8));
+    EXPECT_EQ("    1.234000", RealToStr(*state, 1.234, 6));
+    EXPECT_EQ("   1.2340000", RealToStr(*state, 1.234, 7));
+    EXPECT_EQ("  1.23400000", RealToStr(*state, 1.234, 8));
 
-    EXPECT_EQ("     123457.", RealToStr(123456.789, 0));
-    EXPECT_EQ("    123456.8", RealToStr(123456.789, 1));
-    EXPECT_EQ("   123456.79", RealToStr(123456.789, 2));
-    EXPECT_EQ("  123456.789", RealToStr(123456.789, 3));
-    EXPECT_EQ(" 123456.7890", RealToStr(123456.789, 4));
+    EXPECT_EQ("     123457.", RealToStr(*state, 123456.789, 0));
+    EXPECT_EQ("    123456.8", RealToStr(*state, 123456.789, 1));
+    EXPECT_EQ("   123456.79", RealToStr(*state, 123456.789, 2));
+    EXPECT_EQ("  123456.789", RealToStr(*state, 123456.789, 3));
+    EXPECT_EQ(" 123456.7890", RealToStr(*state, 123456.789, 4));
 
-    EXPECT_EQ("1.234568E+05", RealToStr(123456.789, 5));
+    EXPECT_EQ("1.234568E+05", RealToStr(*state, 123456.789, 5));
 }
 
 TEST_F(EnergyPlusFixture, OutputReportTabularTest_isNumber)
@@ -10406,15 +10406,15 @@ TEST_F(EnergyPlusFixture, OutputReportTabularTest_WriteResilienceBinsTableNonPre
         *state, tableName, columnHead, columnWidth, ptrHeatIndex, rowHead, tableBody, unitConvMultiplier);
     for (int zone_i = 1; zone_i <= numZone; zone_i++) {
         for (int j = 0; j < numColumnThermalTbl; j++) {
-            EXPECT_EQ(tableBody(j + 1, zone_i), RealToStr(std::pow(j, 2) * zone_i * 1.0, 2));
+            EXPECT_EQ(tableBody(j + 1, zone_i), RealToStr(*state, std::pow(j, 2) * zone_i * 1.0, 2));
         }
     }
 
     for (int j = 0; j < numColumnThermalTbl; j++) {
-        EXPECT_EQ(tableBody(j + 1, numZone + 1), RealToStr(std::pow(j, 2) * 1 * 1.0, 2));                                    // min
-        EXPECT_EQ(tableBody(j + 1, numZone + 2), RealToStr(std::pow(j, 2) * 2 * 1.0, 2));                                    // max
-        EXPECT_EQ(tableBody(j + 1, numZone + 3), RealToStr((std::pow(j, 2) * 1 * 1.0 + std::pow(j, 2) * 2 * 1.0) / 2.0, 2)); // mean
-        EXPECT_EQ(tableBody(j + 1, numZone + 4), RealToStr(std::pow(j, 2) * 1 * 1.0 + std::pow(j, 2) * 2 * 1.0, 2));         // sum
+        EXPECT_EQ(tableBody(j + 1, numZone + 1), RealToStr(*state, std::pow(j, 2) * 1 * 1.0, 2));                                    // min
+        EXPECT_EQ(tableBody(j + 1, numZone + 2), RealToStr(*state, std::pow(j, 2) * 2 * 1.0, 2));                                    // max
+        EXPECT_EQ(tableBody(j + 1, numZone + 3), RealToStr(*state, (std::pow(j, 2) * 1 * 1.0 + std::pow(j, 2) * 2 * 1.0) / 2.0, 2)); // mean
+        EXPECT_EQ(tableBody(j + 1, numZone + 4), RealToStr(*state, std::pow(j, 2) * 1 * 1.0 + std::pow(j, 2) * 2 * 1.0, 2));         // sum
     }
 }
 

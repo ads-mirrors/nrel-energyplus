@@ -4166,29 +4166,29 @@ void WriteTabularTariffReports(EnergyPlusData &state)
                         }
                     }
                 }
-                tableBody(1, 1) = OutputReportTabular::RealToStr(elecTotalCost, 2);
-                tableBody(2, 1) = OutputReportTabular::RealToStr(gasTotalCost, 2);
-                tableBody(3, 1) = OutputReportTabular::RealToStr(otherTotalCost, 2);
-                tableBody(4, 1) = OutputReportTabular::RealToStr(allTotalCost, 2);
+                tableBody(1, 1) = OutputReportTabular::RealToStr(state, elecTotalCost, 2);
+                tableBody(2, 1) = OutputReportTabular::RealToStr(state, gasTotalCost, 2);
+                tableBody(3, 1) = OutputReportTabular::RealToStr(state, otherTotalCost, 2);
+                tableBody(4, 1) = OutputReportTabular::RealToStr(state, allTotalCost, 2);
                 if (state.dataOutRptTab->buildingGrossFloorArea > 0.0) {
                     tableBody(1, 2) =
-                        OutputReportTabular::RealToStr((elecTotalCost / state.dataOutRptTab->buildingGrossFloorArea) * perAreaUnitConv, 2);
+                        OutputReportTabular::RealToStr(state, (elecTotalCost / state.dataOutRptTab->buildingGrossFloorArea) * perAreaUnitConv, 2);
                     tableBody(2, 2) =
-                        OutputReportTabular::RealToStr((gasTotalCost / state.dataOutRptTab->buildingGrossFloorArea) * perAreaUnitConv, 2);
+                        OutputReportTabular::RealToStr(state, (gasTotalCost / state.dataOutRptTab->buildingGrossFloorArea) * perAreaUnitConv, 2);
                     tableBody(3, 2) =
-                        OutputReportTabular::RealToStr((otherTotalCost / state.dataOutRptTab->buildingGrossFloorArea) * perAreaUnitConv, 2);
+                        OutputReportTabular::RealToStr(state, (otherTotalCost / state.dataOutRptTab->buildingGrossFloorArea) * perAreaUnitConv, 2);
                     tableBody(4, 2) =
-                        OutputReportTabular::RealToStr((allTotalCost / state.dataOutRptTab->buildingGrossFloorArea) * perAreaUnitConv, 2);
+                        OutputReportTabular::RealToStr(state, (allTotalCost / state.dataOutRptTab->buildingGrossFloorArea) * perAreaUnitConv, 2);
                 }
                 if (state.dataOutRptTab->buildingConditionedFloorArea > 0.0) {
-                    tableBody(1, 3) =
-                        OutputReportTabular::RealToStr((elecTotalCost / state.dataOutRptTab->buildingConditionedFloorArea) * perAreaUnitConv, 2);
-                    tableBody(2, 3) =
-                        OutputReportTabular::RealToStr((gasTotalCost / state.dataOutRptTab->buildingConditionedFloorArea) * perAreaUnitConv, 2);
-                    tableBody(3, 3) =
-                        OutputReportTabular::RealToStr((otherTotalCost / state.dataOutRptTab->buildingConditionedFloorArea) * perAreaUnitConv, 2);
-                    tableBody(4, 3) =
-                        OutputReportTabular::RealToStr((allTotalCost / state.dataOutRptTab->buildingConditionedFloorArea) * perAreaUnitConv, 2);
+                    tableBody(1, 3) = OutputReportTabular::RealToStr(
+                        state, (elecTotalCost / state.dataOutRptTab->buildingConditionedFloorArea) * perAreaUnitConv, 2);
+                    tableBody(2, 3) = OutputReportTabular::RealToStr(
+                        state, (gasTotalCost / state.dataOutRptTab->buildingConditionedFloorArea) * perAreaUnitConv, 2);
+                    tableBody(3, 3) = OutputReportTabular::RealToStr(
+                        state, (otherTotalCost / state.dataOutRptTab->buildingConditionedFloorArea) * perAreaUnitConv, 2);
+                    tableBody(4, 3) = OutputReportTabular::RealToStr(
+                        state, (allTotalCost / state.dataOutRptTab->buildingConditionedFloorArea) * perAreaUnitConv, 2);
                 }
                 columnWidth = 14; // array assignment - same for all columns
                 if (produceTabular) {
@@ -4245,7 +4245,7 @@ void WriteTabularTariffReports(EnergyPlusData &state)
                 } else {
                     tableBody(5, iTariff) = tariff.groupName;
                 }
-                tableBody(6, iTariff) = OutputReportTabular::RealToStr(tariff.totalAnnualCost, 2);
+                tableBody(6, iTariff) = OutputReportTabular::RealToStr(state, tariff.totalAnnualCost, 2);
             }
             columnWidth = 14; // array assignment - same for all columns
             OutputReportTabular::WriteSubtitle(state, "Tariff Summary");
@@ -4604,14 +4604,14 @@ void ReportEconomicVariable(
             for (jMonth = 1; jMonth <= 12; ++jMonth) { // note not all months get printed out if more than 12 are used.- need to fix this later
                 curVal = econVar(iVar).values(jMonth);
                 if ((curVal > 0) && (curVal < 1)) {
-                    tableBody(jMonth, nCntOfVar) = OutputReportTabular::RealToStr(curVal, 4);
+                    tableBody(jMonth, nCntOfVar) = OutputReportTabular::RealToStr(state, curVal, 4);
                 } else {
-                    tableBody(jMonth, nCntOfVar) = OutputReportTabular::RealToStr(curVal, 2);
+                    tableBody(jMonth, nCntOfVar) = OutputReportTabular::RealToStr(state, curVal, 2);
                 }
             }
             getMaxAndSum(state, iVar, sumVal, maximumVal);
-            tableBody(13, nCntOfVar) = OutputReportTabular::RealToStr(sumVal, 2);
-            tableBody(14, nCntOfVar) = OutputReportTabular::RealToStr(maximumVal, 2);
+            tableBody(13, nCntOfVar) = OutputReportTabular::RealToStr(state, sumVal, 2);
+            tableBody(14, nCntOfVar) = OutputReportTabular::RealToStr(state, maximumVal, 2);
             if (includeCategory) {
                 // first find category
                 curCategory = 0;

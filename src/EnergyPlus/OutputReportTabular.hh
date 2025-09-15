@@ -713,7 +713,8 @@ namespace OutputReportTabular {
 
     void WriteCompCostTable(EnergyPlusData &state);
 
-    void writeRowReportPeriodInputVeri(const std::string &reportType,
+    void writeRowReportPeriodInputVeri(EnergyPlusData &state,
+                                       const std::string &reportType,
                                        Array2D_string &tableBody,
                                        const int rowid,
                                        const int periodIdx,
@@ -1040,7 +1041,7 @@ namespace OutputReportTabular {
     //======================================================================================================================
     //======================================================================================================================
 
-    std::string RealToStr(Real64 const RealIn, int const numDigits);
+    std::string RealToStr(EnergyPlusData &state, Real64 const RealIn, int const numDigits);
 
     Real64 StrToReal(std::string_view stringIn);
 

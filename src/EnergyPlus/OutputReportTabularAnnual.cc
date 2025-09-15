@@ -761,7 +761,7 @@ void AnnualTable::writeTable(EnergyPlusData &state, OutputReportTabular::UnitsSt
                         curVal = (fldStIt->m_cell[row].result * curConversionFactor) + curConversionOffset;
                         sumVal += curVal;
                     }
-                    tableBody(columnRecount, row + 1) = OutputReportTabular::RealToStr(curVal, fldStIt->m_showDigits);
+                    tableBody(columnRecount, row + 1) = OutputReportTabular::RealToStr(state, curVal, fldStIt->m_showDigits);
                     if (curVal > maxVal) {
                         maxVal = curVal;
                     }
@@ -776,18 +776,18 @@ void AnnualTable::writeTable(EnergyPlusData &state, OutputReportTabular::UnitsSt
             // add the summary to bottom
             if (fldStIt->m_varAvgSum == OutputProcessor::StoreType::Average) { // if it is a average variable divide by duration
                 if (sumDuration > 0) {
-                    tableBody(columnRecount, rowSumAvg) = OutputReportTabular::RealToStr(sumVal / sumDuration, fldStIt->m_showDigits);
+                    tableBody(columnRecount, rowSumAvg) = OutputReportTabular::RealToStr(state, sumVal / sumDuration, fldStIt->m_showDigits);
                 } else {
                     tableBody(columnRecount, rowSumAvg) = "";
                 }
             } else {
-                tableBody(columnRecount, rowSumAvg) = OutputReportTabular::RealToStr(sumVal, fldStIt->m_showDigits);
+                tableBody(columnRecount, rowSumAvg) = OutputReportTabular::RealToStr(state, sumVal, fldStIt->m_showDigits);
             }
             if (minVal != storedMaxVal) {
-                tableBody(columnRecount, rowMax) = OutputReportTabular::RealToStr(minVal, fldStIt->m_showDigits);
+                tableBody(columnRecount, rowMax) = OutputReportTabular::RealToStr(state, minVal, fldStIt->m_showDigits);
             }
             if (maxVal != storedMinVal) {
-                tableBody(columnRecount, rowMin) = OutputReportTabular::RealToStr(maxVal, fldStIt->m_showDigits);
+                tableBody(columnRecount, rowMin) = OutputReportTabular::RealToStr(state, maxVal, fldStIt->m_showDigits);
             }
         } else if ((curAgg == AnnualFieldSet::AggregationKind::hoursZero) || (curAgg == AnnualFieldSet::AggregationKind::hoursNonZero) ||
                    (curAgg == AnnualFieldSet::AggregationKind::hoursPositive) || (curAgg == AnnualFieldSet::AggregationKind::hoursNonPositive) ||
@@ -800,7 +800,7 @@ void AnnualTable::writeTable(EnergyPlusData &state, OutputReportTabular::UnitsSt
             for (unsigned int row = 0; row != m_objectNames.size(); row++) { // loop through by row.
                 curVal = fldStIt->m_cell[row].result;
                 curVal = curVal * curConversionFactor + curConversionOffset;
-                tableBody(columnRecount, row + 1) = OutputReportTabular::RealToStr(curVal, fldStIt->m_showDigits);
+                tableBody(columnRecount, row + 1) = OutputReportTabular::RealToStr(state, curVal, fldStIt->m_showDigits);
                 sumVal += curVal;
                 if (curVal > maxVal) {
                     maxVal = curVal;
@@ -810,12 +810,12 @@ void AnnualTable::writeTable(EnergyPlusData &state, OutputReportTabular::UnitsSt
                 }
             } // row
             // add the summary to bottom
-            tableBody(columnRecount, rowSumAvg) = OutputReportTabular::RealToStr(sumVal, fldStIt->m_showDigits);
+            tableBody(columnRecount, rowSumAvg) = OutputReportTabular::RealToStr(state, sumVal, fldStIt->m_showDigits);
             if (minVal != storedMaxVal) {
-                tableBody(columnRecount, rowMax) = OutputReportTabular::RealToStr(minVal, fldStIt->m_showDigits);
+                tableBody(columnRecount, rowMax) = OutputReportTabular::RealToStr(state, minVal, fldStIt->m_showDigits);
             }
             if (maxVal != storedMinVal) {
-                tableBody(columnRecount, rowMin) = OutputReportTabular::RealToStr(maxVal, fldStIt->m_showDigits);
+                tableBody(columnRecount, rowMin) = OutputReportTabular::RealToStr(state, maxVal, fldStIt->m_showDigits);
             }
         } else if (curAgg == AnnualFieldSet::AggregationKind::valueWhenMaxMin) {
             if (fldStIt->m_varAvgSum == OutputProcessor::StoreType::Sum) {
@@ -828,7 +828,7 @@ void AnnualTable::writeTable(EnergyPlusData &state, OutputReportTabular::UnitsSt
             for (unsigned int row = 0; row != m_objectNames.size(); row++) { // loop through by row.
                 curVal = fldStIt->m_cell[row].result;
                 curVal = curVal * curConversionFactor + curConversionOffset;
-                tableBody(columnRecount, row + 1) = OutputReportTabular::RealToStr(curVal, fldStIt->m_showDigits);
+                tableBody(columnRecount, row + 1) = OutputReportTabular::RealToStr(state, curVal, fldStIt->m_showDigits);
                 if (curVal > maxVal) {
                     maxVal = curVal;
                 }
@@ -838,10 +838,10 @@ void AnnualTable::writeTable(EnergyPlusData &state, OutputReportTabular::UnitsSt
             } // row
             // add the summary to bottom
             if (minVal != storedMaxVal) {
-                tableBody(columnRecount, rowMin) = OutputReportTabular::RealToStr(minVal, fldStIt->m_showDigits);
+                tableBody(columnRecount, rowMin) = OutputReportTabular::RealToStr(state, minVal, fldStIt->m_showDigits);
             }
             if (maxVal != storedMinVal) {
-                tableBody(columnRecount, rowMax) = OutputReportTabular::RealToStr(maxVal, fldStIt->m_showDigits);
+                tableBody(columnRecount, rowMax) = OutputReportTabular::RealToStr(state, maxVal, fldStIt->m_showDigits);
             }
         } else if ((curAgg == AnnualFieldSet::AggregationKind::maximum) || (curAgg == AnnualFieldSet::AggregationKind::minimum) ||
                    (curAgg == AnnualFieldSet::AggregationKind::maximumDuringHoursShown) ||
@@ -869,7 +869,7 @@ void AnnualTable::writeTable(EnergyPlusData &state, OutputReportTabular::UnitsSt
                         minVal = curVal;
                     }
                     if (curVal < veryLarge && curVal > verySmall) {
-                        tableBody(columnRecount - 1, row + 1) = OutputReportTabular::RealToStr(curVal, fldStIt->m_showDigits);
+                        tableBody(columnRecount - 1, row + 1) = OutputReportTabular::RealToStr(state, curVal, fldStIt->m_showDigits);
                     } else {
                         tableBody(columnRecount - 1, row + 1) = "-";
                     }
@@ -882,12 +882,12 @@ void AnnualTable::writeTable(EnergyPlusData &state, OutputReportTabular::UnitsSt
             // add the summary to bottom
             // Don't include if the original min and max values are still present
             if (minVal < veryLarge) {
-                tableBody(columnRecount - 1, rowMin) = OutputReportTabular::RealToStr(minVal, fldStIt->m_showDigits);
+                tableBody(columnRecount - 1, rowMin) = OutputReportTabular::RealToStr(state, minVal, fldStIt->m_showDigits);
             } else {
                 tableBody(columnRecount - 1, rowMin) = "-";
             }
             if (maxVal > verySmall) {
-                tableBody(columnRecount - 1, rowMax) = OutputReportTabular::RealToStr(maxVal, fldStIt->m_showDigits);
+                tableBody(columnRecount - 1, rowMax) = OutputReportTabular::RealToStr(state, maxVal, fldStIt->m_showDigits);
             } else {
                 tableBody(columnRecount - 1, rowMax) = "-";
             }
@@ -902,10 +902,10 @@ void AnnualTable::writeTable(EnergyPlusData &state, OutputReportTabular::UnitsSt
                 columnHead(columnRecount - 9 + iBin) = fldStIt->m_colHead + curAggString + " BIN " + binIndicator;
                 for (unsigned int row = 0; row != m_objectNames.size(); row++) { // loop through by row.
                     tableBody(columnRecount - 9 + iBin, row + 1) =
-                        OutputReportTabular::RealToStr(fldStIt->m_cell[row].m_timeInBin[iBin], fldStIt->m_showDigits);
+                        OutputReportTabular::RealToStr(state, fldStIt->m_cell[row].m_timeInBin[iBin], fldStIt->m_showDigits);
                 }
                 tableBody(columnRecount - 9 + iBin, rowSumAvg) =
-                    OutputReportTabular::RealToStr(fldStIt->m_timeInBinTotal[iBin], fldStIt->m_showDigits);
+                    OutputReportTabular::RealToStr(state, fldStIt->m_timeInBinTotal[iBin], fldStIt->m_showDigits);
             }
             createBinRangeTable = true;
         } else if (curAgg == AnnualFieldSet::AggregationKind::hoursInTenBinsZeroToMax) {
@@ -919,17 +919,18 @@ void AnnualTable::writeTable(EnergyPlusData &state, OutputReportTabular::UnitsSt
                 columnHead(columnRecount - 9 + iBin) = fldStIt->m_colHead + curAggString + " BIN " + binIndicator;
                 for (unsigned int row = 0; row != m_objectNames.size(); row++) { // loop through by row.
                     tableBody(columnRecount - 9 + iBin, row + 1) =
-                        OutputReportTabular::RealToStr(fldStIt->m_cell[row].m_timeInBin[iBin], fldStIt->m_showDigits);
+                        OutputReportTabular::RealToStr(state, fldStIt->m_cell[row].m_timeInBin[iBin], fldStIt->m_showDigits);
                 }
                 tableBody(columnRecount - 9 + iBin, rowSumAvg) =
-                    OutputReportTabular::RealToStr(fldStIt->m_timeInBinTotal[iBin], fldStIt->m_showDigits);
+                    OutputReportTabular::RealToStr(state, fldStIt->m_timeInBinTotal[iBin], fldStIt->m_showDigits);
             }
             columnHead(columnRecount - 10) = fldStIt->m_colHead + curAggString + " LESS THAN BIN A";
             for (unsigned int row = 0; row != m_objectNames.size(); row++) { // loop through by row.
                 tableBody(columnRecount - 10, row + 1) =
-                    OutputReportTabular::RealToStr(fldStIt->m_cell[row].m_timeBelowBottomBin, fldStIt->m_showDigits);
+                    OutputReportTabular::RealToStr(state, fldStIt->m_cell[row].m_timeBelowBottomBin, fldStIt->m_showDigits);
             }
-            tableBody(columnRecount - 10, rowSumAvg) = OutputReportTabular::RealToStr(fldStIt->m_timeBelowBottomBinTotal, fldStIt->m_showDigits);
+            tableBody(columnRecount - 10, rowSumAvg) =
+                OutputReportTabular::RealToStr(state, fldStIt->m_timeBelowBottomBinTotal, fldStIt->m_showDigits);
             createBinRangeTable = true;
         } else if (curAgg == AnnualFieldSet::AggregationKind::hoursInTenBinsMinToZero) {
             // put in the name of the variable for the column
@@ -942,16 +943,17 @@ void AnnualTable::writeTable(EnergyPlusData &state, OutputReportTabular::UnitsSt
                 columnHead(columnRecount - 10 + iBin) = fldStIt->m_colHead + curAggString + " BIN " + binIndicator;
                 for (unsigned int row = 0; row != m_objectNames.size(); row++) { // loop through by row.
                     tableBody(columnRecount - 10 + iBin, row + 1) =
-                        OutputReportTabular::RealToStr(fldStIt->m_cell[row].m_timeInBin[iBin], fldStIt->m_showDigits);
+                        OutputReportTabular::RealToStr(state, fldStIt->m_cell[row].m_timeInBin[iBin], fldStIt->m_showDigits);
                 }
                 tableBody(columnRecount - 10 + iBin, rowSumAvg) =
-                    OutputReportTabular::RealToStr(fldStIt->m_timeInBinTotal[iBin], fldStIt->m_showDigits);
+                    OutputReportTabular::RealToStr(state, fldStIt->m_timeInBinTotal[iBin], fldStIt->m_showDigits);
             }
             columnHead(columnRecount) = fldStIt->m_colHead + curAggString + " MORE THAN BIN J";
             for (unsigned int row = 0; row != m_objectNames.size(); row++) { // loop through by row.
-                tableBody(columnRecount, row + 1) = OutputReportTabular::RealToStr(fldStIt->m_cell[row].m_timeAboveTopBin, fldStIt->m_showDigits);
+                tableBody(columnRecount, row + 1) =
+                    OutputReportTabular::RealToStr(state, fldStIt->m_cell[row].m_timeAboveTopBin, fldStIt->m_showDigits);
             }
-            tableBody(columnRecount, rowSumAvg) = OutputReportTabular::RealToStr(fldStIt->m_timeAboveTopBinTotal, fldStIt->m_showDigits);
+            tableBody(columnRecount, rowSumAvg) = OutputReportTabular::RealToStr(state, fldStIt->m_timeAboveTopBinTotal, fldStIt->m_showDigits);
             createBinRangeTable = true;
         } else if (curAgg == AnnualFieldSet::AggregationKind::hoursInTenPercentBins ||
                    curAgg == AnnualFieldSet::AggregationKind::hoursInTenBinsPlusMinusTwoStdDev ||
@@ -1006,8 +1008,10 @@ void AnnualTable::writeTable(EnergyPlusData &state, OutputReportTabular::UnitsSt
                 colHeadRange(10) = "BIN J";
                 for (int iBin = 0; iBin != 10; iBin++) {
                     // colHeadRange( iBin + 1 ) = "BIN " + ( char )( iBin + 65 ); // not sure why this does not work
-                    tableBodyRange(iBin + 1, 1) = OutputReportTabular::RealToStr(binBottom + float(iBin) * intervalSize, fldStIt->m_showDigits);
-                    tableBodyRange(iBin + 1, 2) = OutputReportTabular::RealToStr(binBottom + float(iBin + 1) * intervalSize, fldStIt->m_showDigits);
+                    tableBodyRange(iBin + 1, 1) =
+                        OutputReportTabular::RealToStr(state, binBottom + float(iBin) * intervalSize, fldStIt->m_showDigits);
+                    tableBodyRange(iBin + 1, 2) =
+                        OutputReportTabular::RealToStr(state, binBottom + float(iBin + 1) * intervalSize, fldStIt->m_showDigits);
                 }
                 if (produceTabular_para) {
                     OutputReportTabular::WriteSubtitle(state, "Bin Sizes for: " + fldStIt->m_colHead);

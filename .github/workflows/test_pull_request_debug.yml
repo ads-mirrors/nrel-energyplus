@@ -1,8 +1,12 @@
 name: Debug Build and Test
 
+# run this on all commits to the develop branch
+# once a large runner, or a self-hosted runner, is available, re-enable for all pull requests
 on:
-  pull_request:
-    branches: [ develop ]
+  #  pull_request:
+  #    branches: [ develop ]
+  push:
+    branches: [ develop, AddRWDBuildToGHA ]
 
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

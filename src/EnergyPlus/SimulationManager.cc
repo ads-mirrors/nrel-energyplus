@@ -214,7 +214,7 @@ namespace SimulationManager {
         CheckForRequestedReporting(state);
         OutputReportPredefined::SetPredefinedTables(state);
         OutputReportTabular::GetInputTabularStyle(state); // need to get this early before sizing writes to table outputs
-        SetPreConstructionInputParameters(state); // establish array bounds for constructions early
+        SetPreConstructionInputParameters(state);         // establish array bounds for constructions early
 
         OutputProcessor::SetupTimePointers(
             state, OutputProcessor::TimeStepType::Zone, state.dataGlobal->TimeStepZone); // Set up Time pointer for HB/Zone Simulation

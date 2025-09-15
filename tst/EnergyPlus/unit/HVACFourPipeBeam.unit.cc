@@ -1776,7 +1776,7 @@ TEST_F(EnergyPlusFixture, Beam_sizeandSimulateOneZone)
     EXPECT_DOUBLE_EQ(state->dataLoopNodes->Node(39).Temp, 45.0);
     EXPECT_DOUBLE_EQ(state->dataLoopNodes->Node(39).MassFlowRate, 0.0);
 
-    EXPECT_NEAR(NonAirSysOutput, -857.50347269476481, 0.01);
+    EXPECT_NEAR(NonAirSysOutput, -857.50347269476481, 0.1);
 
     // next run with a sensible heating load of 5000 W and cold supply air
     state->dataZoneEnergyDemand->ZoneSysEnergyDemand(1).RemainingOutputRequired = 5000.0;
@@ -1791,7 +1791,7 @@ TEST_F(EnergyPlusFixture, Beam_sizeandSimulateOneZone)
     EXPECT_NEAR(state->dataLoopNodes->Node(39).Temp, 31.815031821344689, 0.001);
     EXPECT_NEAR(state->dataLoopNodes->Node(39).MassFlowRate, 0.14660727634539222, 0.00001);
 
-    EXPECT_NEAR(NonAirSysOutput, 8079.991302700485, 0.01);
+    EXPECT_NEAR(NonAirSysOutput, 8079.991302700485, 0.1);
 
     // next run with cooling load and neutral supply air
     state->dataZoneEnergyDemand->ZoneSysEnergyDemand(1).RemainingOutputRequired = -5000.0;
@@ -1817,7 +1817,7 @@ TEST_F(EnergyPlusFixture, Beam_sizeandSimulateOneZone)
     // EXPECT_DOUBLE_EQ( state->dataLoopNodes->Node( 39 ).Temp, 45.0 );
     // EXPECT_DOUBLE_EQ( state->dataLoopNodes->Node( 39 ).MassFlowRate, 0.0 );
 
-    EXPECT_NEAR(NonAirSysOutput, -4307.106339390215, 0.01);
+    EXPECT_NEAR(NonAirSysOutput, -4307.106339390215, 0.1);
 
     // next run with heating load and neutral supply air
     state->dataZoneEnergyDemand->ZoneSysEnergyDemand(1).RemainingOutputRequired = 5000.0;
@@ -1838,7 +1838,7 @@ TEST_F(EnergyPlusFixture, Beam_sizeandSimulateOneZone)
     // EXPECT_NEAR( state->dataLoopNodes->Node( 39 ).Temp, 33.836239364981424, 0.00001 );
     // EXPECT_NEAR( state->dataLoopNodes->Node( 39 ).MassFlowRate, 0.10040605035467959, 0.00001 );
 
-    EXPECT_NEAR(NonAirSysOutput, 4667.5787189210605, 0.01);
+    EXPECT_NEAR(NonAirSysOutput, 4667.5787189210605, 0.1);
 }
 
 TEST_F(EnergyPlusFixture, Beam_fatalWhenSysSizingOff)

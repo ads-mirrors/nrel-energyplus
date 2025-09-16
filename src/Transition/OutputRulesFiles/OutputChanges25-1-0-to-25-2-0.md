@@ -20,8 +20,44 @@ This will eventually become a more structured file, but currently it isn't clear
     "Exhaust Airflow [kg/s]" --> "Exhaust Air Flow Rate [m3/s]
 
     "Outdoor Airflow [kg/s]" --> "Supply Air Flow Rate [m3/s]"
+    
+* Add more new columns:
+
+  - Heat Recovery Active ("WhenFansOn", "Scheduled", "WhenOutsideEconomizerLimits", "WhenMinimumOutdoorAir")
+  - Zone HVAC Name
+  - Airloop Name
+  - OA System Name
+  - OA Controller Name
 
 See Pull Request [#10995](https://github.com/NREL/EnergyPlus/pull/10995).
+See Pull Request [#11138](https://github.com/NREL/EnergyPlus/pull/11138).
+
+### Table Output, Equipment Summary Report, Air Terminals subtable
+Add two new columns:
+- PIU Heating Control Type
+- PIU Fan Control Type
+
+See Pull Request [#11138](https://github.com/NREL/EnergyPlus/pull/11138).
+
+### Table Output, Equipment Summary Report, Fans subtable
+Add two new columns:
+- Speed Control Method
+- Number of Speeds
+
+See Pull Request [#11138](https://github.com/NREL/EnergyPlus/pull/11138).
+
+### Table Output, System Summary Report, Fan Operation subtable
+New subtable with the following columns:
+- Occupied Time [hr]
+- Occupied Continuous Fan [hr]
+- Occupied Cycling Fan [hr]
+- Occupied Fan Off [hr]
+- Unoccupied Time [hr]
+- Unoccupied Continuous Fan [hr]
+- Unoccupied Cycling Fan [hr]
+- Unoccupied Fan Off [hr]
+
+See Pull Request [#11138](https://github.com/NREL/EnergyPlus/pull/11138).
 
 ### Component Sizing (eio and tables) for PlantLoop and CondenserLoop
 
@@ -38,6 +74,11 @@ See Pull Request [#10998](https://github.com/NREL/EnergyPlus/pull/10998).
 * Add columns for "Design Supply Temperature", "Design ReturnTemperature", and "Design Capacity".
   
 See Pull Request [#10998](https://github.com/NREL/EnergyPlus/pull/10998).
+
+### Table Output, Equipment Summary Report, Fan Power Fractions subtable
+New table output showing fraction of full load fan power vs flow fraction.
+
+See Pull Request [#11153](https://github.com/NREL/EnergyPlus/pull/11153).
 
 ### EIO and HTML Table Output: Initialization Summary
 

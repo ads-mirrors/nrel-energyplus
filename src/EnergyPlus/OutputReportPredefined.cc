@@ -460,7 +460,27 @@ namespace OutputReportPredefined {
         s->pdchFanMotorEff = newPreDefColumn(state, s->pdstFan, "Motor Efficiency");
         s->pdchFanMotorHeatToZoneFrac = newPreDefColumn(state, s->pdstFan, "Motor Heat to Zone Fraction");
         s->pdchFanMotorHeatZone = newPreDefColumn(state, s->pdstFan, "Motor Loss Zone Name");
+        s->pdchFanSpeedCtrlMethod = newPreDefColumn(state, s->pdstFan, "Speed Control Method");
+        s->pdchFanNumSpeeds = newPreDefColumn(state, s->pdstFan, "Number of Speeds");
         s->pdchFanAirLoopName = newPreDefColumn(state, s->pdstFan, "Airloop Name");
+
+        s->pdstFanPower = newPreDefSubTable(state, s->pdrEquip, "Fan Power Fractions");
+        s->pdchFanPowerType = newPreDefColumn(state, s->pdstFanPower, "Type");
+        s->pdchFanPower00 = newPreDefColumn(state, s->pdstFanPower, "Flow Frac 0.0");
+        s->pdchFanPower01 = newPreDefColumn(state, s->pdstFanPower, "Flow Frac 0.1");
+        s->pdchFanPower02 = newPreDefColumn(state, s->pdstFanPower, "Flow Frac 0.2");
+        s->pdchFanPower03 = newPreDefColumn(state, s->pdstFanPower, "Flow Frac 0.3");
+        s->pdchFanPower04 = newPreDefColumn(state, s->pdstFanPower, "Flow Frac 0.4");
+        s->pdchFanPower05 = newPreDefColumn(state, s->pdstFanPower, "Flow Frac 0.5");
+        s->pdchFanPower06 = newPreDefColumn(state, s->pdstFanPower, "Flow Frac 0.6");
+        s->pdchFanPower07 = newPreDefColumn(state, s->pdstFanPower, "Flow Frac 0.7");
+        s->pdchFanPower08 = newPreDefColumn(state, s->pdstFanPower, "Flow Frac 0.8");
+        s->pdchFanPower09 = newPreDefColumn(state, s->pdstFanPower, "Flow Frac 0.9");
+        s->pdchFanPower10 = newPreDefColumn(state, s->pdstFanPower, "Flow Frac 1.0");
+        addFootNoteSubTable(
+            state,
+            s->pdstFanPower,
+            "Values are the fraction of full-load power at each flow fraction including any part-load adjustments specified in the fan object.");
 
         s->pdstPump = newPreDefSubTable(state, s->pdrEquip, "Pumps");
         s->pdchPumpType = newPreDefColumn(state, s->pdstPump, "Type");
@@ -564,8 +584,10 @@ namespace OutputReportPredefined {
         s->pdchAirTermTypeInp = newPreDefColumn(state, s->pdstAirTerm, "Type of Input Object");
         s->pdchAirTermHeatCoilType = newPreDefColumn(state, s->pdstAirTerm, "Heat/Reheat Coil Object Type");
         s->pdchAirTermCoolCoilType = newPreDefColumn(state, s->pdstAirTerm, "Chilled Water Coil Object Type");
+        s->pdchAirTermPIUHeatCtrlType = newPreDefColumn(state, s->pdstAirTerm, "PIU Heating Control Type");
         s->pdchAirTermFanType = newPreDefColumn(state, s->pdstAirTerm, "Fan Object Type");
         s->pdchAirTermFanName = newPreDefColumn(state, s->pdstAirTerm, "Fan Name");
+        s->pdchAirTermFanCtrlType = newPreDefColumn(state, s->pdstAirTerm, "PIU Fan Control Type");
         s->pdchAirTermPrimFlow = newPreDefColumn(state, s->pdstAirTerm, "Primary Air Flow Rate [m3/s]");
         s->pdchAirTermSecdFlow = newPreDefColumn(state, s->pdstAirTerm, "Secondary Air Flow Rate [m3/s]");
         s->pdchAirTermMinFlowSch = newPreDefColumn(state, s->pdstAirTerm, "Minimum Flow Schedule Name");
@@ -577,12 +599,17 @@ namespace OutputReportPredefined {
 
         s->pdchAirHRInputObjType = newPreDefColumn(state, s->pdstAirHR, "Type");
         s->pdchAirHRPlateOrRotary = newPreDefColumn(state, s->pdstAirHR, "Plate/Rotary");
+        s->pdchAirHROperation = newPreDefColumn(state, s->pdstAirHR, "Heat Recovery Active");
         s->pdchAirHRSenEffAt100PerHeatAirFlow = newPreDefColumn(state, s->pdstAirHR, "Sensible Effectiveness at 100% Heating Air Flow");
         s->pdchAirHRSenEffAt100PerCoolAirFlow = newPreDefColumn(state, s->pdstAirHR, "Sensible Effectiveness at 100% Cooling Air Flow");
         s->pdchAirHRLatEffAt100PerHeatAirFlow = newPreDefColumn(state, s->pdstAirHR, "Latent Effectiveness at 100% Heating Air Flow");
         s->pdchAirHRLatEffAt100PerCoolAirFlow = newPreDefColumn(state, s->pdstAirHR, "Latent Effectiveness at 100% Cooling Air Flow");
         s->pdchAirHRSupplyAirflow = newPreDefColumn(state, s->pdstAirHR, "Supply Air Flow Rate [m3/s]");
         s->pdchAirHRExhaustAirflow = newPreDefColumn(state, s->pdstAirHR, "Exhaust Air Flow Rate [m3/s]");
+        s->pdchAirHRZoneHVACName = newPreDefColumn(state, s->pdstAirHR, "Zone HVAC Name");
+        s->pdchAirHRAirloopName = newPreDefColumn(state, s->pdstAirHR, "Airloop Name");
+        s->pdchAirHROASysName = newPreDefColumn(state, s->pdstAirHR, "OA System Name");
+        s->pdchAirHROAControllerName = newPreDefColumn(state, s->pdstAirHR, "OA Controller Name");
 
         // Sizing Report
 
@@ -944,6 +971,16 @@ namespace OutputReportPredefined {
         s->pdchStatSchdTypeName1 = newPreDefColumn(state, s->pdstStatSchd, "Control Type Name");
         s->pdchStatSchdHeatName = newPreDefColumn(state, s->pdstStatSchd, "Heating Schedule");
         s->pdchStatSchdCoolName = newPreDefColumn(state, s->pdstStatSchd, "Cooling Schedule");
+
+        s->pdstFanOper = newPreDefSubTable(state, s->pdrSystem, "Fan Operation");
+        s->pdchFanOpOccHrs = newPreDefColumn(state, s->pdstFanOper, "Occupied Time [hr]");
+        s->pdchFanOpOccCont = newPreDefColumn(state, s->pdstFanOper, "Occupied Continuous Fan [hr]");
+        s->pdchFanOpOccCyc = newPreDefColumn(state, s->pdstFanOper, "Occupied Cycling Fan [hr]");
+        s->pdchFanOpOccOff = newPreDefColumn(state, s->pdstFanOper, "Occupied Fan Off [hr]");
+        s->pdchFanOpUnoccHrs = newPreDefColumn(state, s->pdstFanOper, "Unoccupied Time [hr]");
+        s->pdchFanOpUnoccCont = newPreDefColumn(state, s->pdstFanOper, "Unoccupied Continuous Fan [hr]");
+        s->pdchFanOpUnoccCyc = newPreDefColumn(state, s->pdstFanOper, "Unoccupied Cycling Fan [hr]");
+        s->pdchFanOpUnoccOff = newPreDefColumn(state, s->pdstFanOper, "Unoccupied Fan Off [hr]");
 
         // HVAC Topology Report
         s->pdrTopology = newPreDefReport(state, "HVACTopology", "Top", "HVAC Topology");

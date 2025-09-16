@@ -1821,7 +1821,7 @@ void ScanPlantLoopsForNodeNum(EnergyPlusData &state,
                         plantLoc.loopNum = LoopCtr;
                         plantLoc.loopSideNum = LoopSideCtr;
                         plantLoc.branchNum = BranchCtr;
-                        CompNum = CompCtr; 
+                        CompNum = CompCtr;
                         plantLoc.loop = &this_loop;
                         plantLoc.side = &this_loop_side;
                         plantLoc.branch = &this_branch;
@@ -1869,7 +1869,6 @@ void ScanPlantLoopsForNodeNum(EnergyPlusData &state,
     int dummy = 0;
     ScanPlantLoopsForNodeNum(state, CallerName, NodeNum, plantLoc, dummy, reportError);
 }
-
 
 // Utility function, mostly for unit tests.
 void SetPlantLocationLinks(EnergyPlusData &state, PlantLocation &plantLoc)

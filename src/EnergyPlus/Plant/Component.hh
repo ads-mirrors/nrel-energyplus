@@ -223,6 +223,7 @@ namespace DataPlant {
         DataPlant::CtrlType::CoolingOp, //	"EvaporativeFluidCooler:TwoSpeed"
         DataPlant::CtrlType::CoolingOp, //	"ThermalStorage:ChilledWater:Mixed"
         DataPlant::CtrlType::CoolingOp, //	"ThermalStorage:ChilledWater:Stratified"
+        DataPlant::CtrlType::HeatingOp, //	"ThermalStorage:HotWater:Stratified"
         DataPlant::CtrlType::HeatingOp, //	"SolarCollector:FlatPlate:PhotovoltaicThermal"
         DataPlant::CtrlType::Invalid,   //	"ZoneHVAC:Baseboard:Convective:Water"
         DataPlant::CtrlType::Invalid,   //	"ZoneHVAC:Baseboard:RadiantConvective:Steam"

@@ -118,12 +118,12 @@ namespace Photovoltaics {
     constexpr std::array<std::string_view, (int)PVModel::Num> pvModelNamesUC = {
         "PHOTOVOLTAICPERFORMANCE:SIMPLE", "PHOTOVOLTAICPERFORMANCE:EQUIVALENTONE-DIODE", "PHOTOVOLTAICPERFORMANCE:SANDIA"};
 
-    constexpr std::array<std::string_view, (int)CellIntegration::Num> cellIntegrationNames = {"Decoupled",
-                                                                                              "DecoupledUllebergDynamic",
-                                                                                              "IntegratedSurfaceOutsideFace",
-                                                                                              "IntegratedTranspiredCollector",
-                                                                                              "IntegratedExteriorVentedCavity",
-                                                                                              "PhotovoltaicThermalSolarCollector"};
+    [[maybe_unused]] constexpr std::array<std::string_view, (int)CellIntegration::Num> cellIntegrationNames = {"Decoupled",
+                                                                                                               "DecoupledUllebergDynamic",
+                                                                                                               "IntegratedSurfaceOutsideFace",
+                                                                                                               "IntegratedTranspiredCollector",
+                                                                                                               "IntegratedExteriorVentedCavity",
+                                                                                                               "PhotovoltaicThermalSolarCollector"};
     constexpr std::array<std::string_view, (int)CellIntegration::Num> cellIntegrationNamesUC = {"DECOUPLED",
                                                                                                 "DECOUPLEDULLEBERGDYNAMIC",
                                                                                                 "INTEGRATEDSURFACEOUTSIDEFACE",
@@ -131,10 +131,10 @@ namespace Photovoltaics {
                                                                                                 "INTEGRATEDEXTERIORVENTEDCAVITY",
                                                                                                 "PHOTOVOLTAICTHERMALSOLARCOLLECTOR"};
 
-    constexpr std::array<std::string_view, (int)Efficiency::Num> efficiencyNames = {"Fixed", "Scheduled"};
+    [[maybe_unused]] constexpr std::array<std::string_view, (int)Efficiency::Num> efficiencyNames = {"Fixed", "Scheduled"};
     constexpr std::array<std::string_view, (int)Efficiency::Num> efficiencyNamesUC = {"FIXED", "SCHEDULED"};
 
-    constexpr std::array<std::string_view, (int)SiPVCells::Num> siPVCellsNames = {"CrystallineSilicon", "AmorphousSilicon"};
+    [[maybe_unused]] constexpr std::array<std::string_view, (int)SiPVCells::Num> siPVCellsNames = {"CrystallineSilicon", "AmorphousSilicon"};
     constexpr std::array<std::string_view, (int)SiPVCells::Num> siPVCellsNamesUC = {"CRYSTALLINESILICON", "AMORPHOUSSILICON"};
 
     void SimPVGenerator(EnergyPlusData &state,
@@ -309,7 +309,9 @@ namespace Photovoltaics {
             return;
         }
 
-        if (!allocated(state.dataPhotovoltaic->PVarray)) state.dataPhotovoltaic->PVarray.allocate(state.dataPhotovoltaic->NumPVs);
+        if (!allocated(state.dataPhotovoltaic->PVarray)) {
+            state.dataPhotovoltaic->PVarray.allocate(state.dataPhotovoltaic->NumPVs);
+        }
         state.dataPhotovoltaicState->CheckEquipName.dimension(state.dataPhotovoltaic->NumPVs, true);
 
         s_ipsc->cCurrentModuleObject = cPVGeneratorObjectName;
@@ -401,7 +403,9 @@ namespace Photovoltaics {
                 dupPtr = Util::FindItemInList(state.dataPhotovoltaic->PVarray(PVnum).SurfaceName,
                                               state.dataPhotovoltaic->PVarray({PVnum + 1, state.dataPhotovoltaic->NumPVs}),
                                               &PVArrayStruct::SurfaceName);
-                if (dupPtr != 0) dupPtr += PVnum; // to correct for shortened array in find item
+                if (dupPtr != 0) {
+                    dupPtr += PVnum; // to correct for shortened array in find item
+                }
                 if (dupPtr != 0) {
                     auto &thisPVarray = state.dataPhotovoltaic->PVarray(dupPtr);
                     if (thisPVarray.CellIntegrationMode == CellIntegration::SurfaceOutsideFace) {

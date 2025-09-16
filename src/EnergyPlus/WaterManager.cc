@@ -84,28 +84,28 @@ namespace WaterManager {
 
     using namespace DataWater;
 
-    constexpr std::array<std::string_view, (int)ControlSupplyType::Num> controlSupplyTypeNames = {
-        "None", "Mains", "GroundwaterWell", "GroundwaterWellMainsBackup", "OtherTank", "OtherTankMainsBackup"};
+    // constexpr std::array<std::string_view, (int)ControlSupplyType::Num> controlSupplyTypeNames = {
+    //     "None", "Mains", "GroundwaterWell", "GroundwaterWellMainsBackup", "OtherTank", "OtherTankMainsBackup"};
     constexpr std::array<std::string_view, (int)ControlSupplyType::Num> controlSupplyTypeNamesUC = {
         "NONE", "MAINS", "GROUNDWATERWELL", "GROUNDWATERWELLMAINSBACKUP", "OTHERTANK", "OTHERTANKMAINSBACKUP"};
 
-    constexpr std::array<std::string_view, (int)TankThermalMode::Num> tankThermalModeNames = {"ScheduledTemperature", "ThermalModel"};
+    // constexpr std::array<std::string_view, (int)TankThermalMode::Num> tankThermalModeNames = {"ScheduledTemperature", "ThermalModel"};
     constexpr std::array<std::string_view, (int)TankThermalMode::Num> tankThermalModeNamesUC = {"SCHEDULEDTEMPERATURE", "THERMALMODEL"};
 
-    constexpr std::array<std::string_view, (int)AmbientTempType::Num> ambientTempTypeNames = {"Schedule", "Zone", "Outdoors"};
+    // constexpr std::array<std::string_view, (int)AmbientTempType::Num> ambientTempTypeNames = {"Schedule", "Zone", "Outdoors"};
     constexpr std::array<std::string_view, (int)AmbientTempType::Num> ambientTempTypeNamesUC = {"SCHEDULE", "ZONE", "OUTDOORS"};
 
-    constexpr std::array<std::string_view, (int)RainLossFactor::Num> rainLossFactorNames = {"Constant", "Scheduled"};
+    // constexpr std::array<std::string_view, (int)RainLossFactor::Num> rainLossFactorNames = {"Constant", "Scheduled"};
     constexpr std::array<std::string_view, (int)RainLossFactor::Num> rainLossFactorNamesUC = {"CONSTANT", "SCHEDULED"};
 
-    constexpr std::array<std::string_view, (int)GroundWaterTable::Num> groundWaterTableNames = {"Constant", "Scheduled"};
+    // constexpr std::array<std::string_view, (int)GroundWaterTable::Num> groundWaterTableNames = {"Constant", "Scheduled"};
     constexpr std::array<std::string_view, (int)GroundWaterTable::Num> groundWaterTableNamesUC = {"CONSTANT", "SCHEDULED"};
 
-    constexpr std::array<std::string_view, (int)IrrigationMode::Num> irrigationModeNames = {"Schedule", "SmartSchedule"};
+    // constexpr std::array<std::string_view, (int)IrrigationMode::Num> irrigationModeNames = {"Schedule", "SmartSchedule"};
     constexpr std::array<std::string_view, (int)IrrigationMode::Num> irrigationModeNamesUC = {"SCHEDULE", "SMARTSCHEDULE"};
 
-    constexpr std::array<std::string_view, (int)RainfallMode::Num> rainfallModeNames = {"None", "ScheduleAndDesignLevel", "EPWPrecipitation"};
-    constexpr std::array<std::string_view, (int)RainfallMode::Num> rainfallModeNamesUC = {"NONE", "SCHEDULEANDDESIGNLEVEL", "EPWPRECIPITATION"};
+    // constexpr std::array<std::string_view, (int)RainfallMode::Num> rainfallModeNames = {"None", "ScheduleAndDesignLevel", "EPWPrecipitation"};
+    // constexpr std::array<std::string_view, (int)RainfallMode::Num> rainfallModeNamesUC = {"NONE", "SCHEDULEANDDESIGNLEVEL", "EPWPRECIPITATION"};
 
     void ManageWater(EnergyPlusData &state)
     {
@@ -144,7 +144,9 @@ namespace WaterManager {
             state.dataWaterManager->GetInputFlag = false;
         }
 
-        if (!(state.dataWaterData->AnyWaterSystemsInModel)) return;
+        if (!(state.dataWaterData->AnyWaterSystemsInModel)) {
+            return;
+        }
 
         // this is the main water manager
         // first call all the water storage tanks
@@ -169,7 +171,9 @@ namespace WaterManager {
 
     void ManageWaterInits(EnergyPlusData &state)
     {
-        if (!(state.dataWaterData->AnyWaterSystemsInModel)) return;
+        if (!(state.dataWaterData->AnyWaterSystemsInModel)) {
+            return;
+        }
 
         UpdateWaterManager(state);
         UpdateIrrigation(state);
@@ -244,8 +248,9 @@ namespace WaterManager {
             state.dataWaterData->NumWaterStorageTanks = state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, cCurrentModuleObject);
             if (state.dataWaterData->NumWaterStorageTanks > 0) {
                 state.dataWaterData->AnyWaterSystemsInModel = true;
-                if (!(allocated(state.dataWaterData->WaterStorage)))
+                if (!(allocated(state.dataWaterData->WaterStorage))) {
                     state.dataWaterData->WaterStorage.allocate(state.dataWaterData->NumWaterStorageTanks);
+                }
 
                 for (Item = 1; Item <= state.dataWaterData->NumWaterStorageTanks; ++Item) {
                     state.dataInputProcessing->inputProcessor->getObjectItem(state,
@@ -389,8 +394,9 @@ namespace WaterManager {
             cCurrentModuleObject = "WaterUse:RainCollector";
             state.dataWaterData->NumRainCollectors = state.dataInputProcessing->inputProcessor->getNumObjectsFound(state, cCurrentModuleObject);
             if (state.dataWaterData->NumRainCollectors > 0) {
-                if (!(allocated(state.dataWaterData->RainCollector)))
+                if (!(allocated(state.dataWaterData->RainCollector))) {
                     state.dataWaterData->RainCollector.allocate(state.dataWaterData->NumRainCollectors);
+                }
                 // allow extensible reference to surfaces.
                 state.dataWaterData->AnyWaterSystemsInModel = true;
 
@@ -462,8 +468,9 @@ namespace WaterManager {
                         }
                     }
                     state.dataWaterData->RainCollector(Item).MaxCollectRate = rNumericArgs(1);
-                    if (state.dataWaterData->RainCollector(Item).MaxCollectRate == 0.0)
+                    if (state.dataWaterData->RainCollector(Item).MaxCollectRate == 0.0) {
                         state.dataWaterData->RainCollector(Item).MaxCollectRate = 100000000000.0;
+                    }
 
                     // number of surfaces is extensible and = NumAlphas - alphaOffset
                     alphaOffset = 4; // update this if more alphas inserted ahead of extensible surface listing
@@ -541,8 +548,9 @@ namespace WaterManager {
                                                      state.dataWaterData->GroundwaterWell(Item).StorageTankID,
                                                      state.dataWaterData->GroundwaterWell(Item).StorageTankSupplyARRID);
 
-                    if (allocated(state.dataWaterData->WaterStorage))
+                    if (allocated(state.dataWaterData->WaterStorage)) {
                         state.dataWaterData->WaterStorage(state.dataWaterData->GroundwaterWell(Item).StorageTankID).GroundWellID = Item;
+                    }
 
                     state.dataWaterData->GroundwaterWell(Item).PumpDepth = rNumericArgs(1);
                     state.dataWaterData->GroundwaterWell(Item).PumpNomVolFlowRate = rNumericArgs(2);
@@ -1269,9 +1277,13 @@ namespace WaterManager {
         }
         oldNumSupply = state.dataWaterData->WaterStorage(TankIndex).NumWaterSupplies;
         if (oldNumSupply > 0) { // do array push
-            if (allocated(oldSupplyCompNames)) oldSupplyCompNames.deallocate();
+            if (allocated(oldSupplyCompNames)) {
+                oldSupplyCompNames.deallocate();
+            }
             oldSupplyCompNames.allocate(oldNumSupply);
-            if (allocated(oldSupplyCompTypes)) oldSupplyCompTypes.deallocate();
+            if (allocated(oldSupplyCompTypes)) {
+                oldSupplyCompTypes.deallocate();
+            }
             oldSupplyCompTypes.allocate(oldNumSupply);
             if (allocated(state.dataWaterData->WaterStorage(TankIndex).SupplyCompNames)) {
                 oldSupplyCompNames = state.dataWaterData->WaterStorage(TankIndex).SupplyCompNames;
@@ -1378,9 +1390,13 @@ namespace WaterManager {
         }
         oldNumDemand = state.dataWaterData->WaterStorage(TankIndex).NumWaterDemands;
         if (oldNumDemand > 0) { // do array push
-            if (allocated(oldDemandCompNames)) oldDemandCompNames.deallocate();
+            if (allocated(oldDemandCompNames)) {
+                oldDemandCompNames.deallocate();
+            }
             oldDemandCompNames.allocate(oldNumDemand);
-            if (allocated(oldDemandCompTypes)) oldDemandCompTypes.deallocate();
+            if (allocated(oldDemandCompTypes)) {
+                oldDemandCompTypes.deallocate();
+            }
             oldDemandCompTypes.allocate(oldNumDemand);
             if (allocated(state.dataWaterData->WaterStorage(TankIndex).DemandCompNames)) {
                 oldDemandCompNames = state.dataWaterData->WaterStorage(TankIndex).DemandCompNames;
@@ -1633,8 +1649,9 @@ namespace WaterManager {
             }
             if ((state.dataWaterData->WaterStorage(TankNum).ControlSupply == ControlSupplyType::WellFloatValve) ||
                 (state.dataWaterData->WaterStorage(TankNum).ControlSupply == ControlSupplyType::WellFloatMainsBackup)) {
-                if (allocated(state.dataWaterData->GroundwaterWell))
+                if (allocated(state.dataWaterData->GroundwaterWell)) {
                     state.dataWaterData->GroundwaterWell(state.dataWaterData->WaterStorage(TankNum).GroundWellID).VdotRequest = 0.0;
+                }
             }
         } // tank loop
 

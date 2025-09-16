@@ -3020,14 +3020,22 @@ void SingleDuctAirTerminal::SizeSys(EnergyPlusData &state)
             if (zoneNum > 0) {
                 int SizingInputNum =
                     Util::FindItemInList(state.dataHeatBal->Zone(zoneNum).Name, state.dataSize->ZoneSizingInput, &ZoneSizingInputData::ZoneName);
-                if (SizingInputNum == 0) SizingInputNum = 1;
+                if (SizingInputNum == 0) {
+                    SizingInputNum = 1;
+                }
                 if (state.dataSize->ZoneSizingInput.size() > 0 && state.dataSize->ZoneSizingInput(SizingInputNum).DesHeatMaxAirFlowFrac < 1.0) {
                     ShowContinueError(state,
-                                      format("Sizing:Zone Heating Maximum Air Flow Fraction = {:.5R} [m3/s]",
+                                      format("Sizing:Zone Heating Maximum Air Flow Fraction = {:.5R}",
                                              state.dataSize->ZoneSizingInput(SizingInputNum).DesHeatMaxAirFlowFrac));
+                    ShowContinueError(state,
+                                      format("Sizing:Zone Heating Maximum Air Flow per Zone Floor Area = {:.5R} [m3/s/m3]",
+                                             state.dataSize->ZoneSizingInput(SizingInputNum).DesHeatMaxAirFlowPerArea));
+                    ShowContinueError(state,
+                                      format("For reference the zone design maximum heating air flow rate is {:.5R} [m3/s]",
+                                             state.dataSize->TermUnitFinalZoneSizing(state.dataSize->CurTermUnitSizingNum).DesHeatVolFlowMax));
                 }
             }
-            ShowContinueError(state, "Check zone and equipment sizing inputs for proper design");
+            ShowContinueError(state, "Verify that the values entered are intended and are consistent with other components.");
         }
         if (TermUnitSizing(state.dataSize->CurTermUnitSizingNum).AirVolFlow > SmallAirVolFlow) {
             if (this->DamperHeatingAction == Action::ReverseWithLimits) {

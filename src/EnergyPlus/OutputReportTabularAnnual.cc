@@ -68,6 +68,7 @@
 #include <EnergyPlus/OutputReportData.hh>
 #include <EnergyPlus/OutputReportTabular.hh>
 #include <EnergyPlus/OutputReportTabularAnnual.hh>
+#include <EnergyPlus/ResultsFramework.hh>
 #include <EnergyPlus/SQLiteProcedures.hh>
 #include <EnergyPlus/ScheduleManager.hh>
 #include <EnergyPlus/UtilityRoutines.hh>
@@ -964,6 +965,10 @@ void AnnualTable::writeTable(EnergyPlusData &state, OutputReportTabular::UnitsSt
         OutputReportTabular::WriteReportHeaders(state, m_name, "Entire Facility", OutputProcessor::StoreType::Average);
         OutputReportTabular::WriteSubtitle(state, "Custom Annual Report");
         OutputReportTabular::WriteTable(state, tableBody, rowHead, columnHead, columnWidth, true); // transpose annual XML tables.
+        if (state.dataResultsFramework->resultsFramework->timeSeriesAndTabularEnabled()) {
+            state.dataResultsFramework->resultsFramework->TabularReportsCollection.addReportTable(
+                tableBody, rowHead, columnHead, m_name, "Entire Facility", "Custom Annual Report");
+        }
     }
     if (produceSQLite_para) {
         if (state.dataSQLiteProcedures->sqlite) {

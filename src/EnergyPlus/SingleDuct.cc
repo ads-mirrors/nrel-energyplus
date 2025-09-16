@@ -3028,7 +3028,7 @@ void SingleDuctAirTerminal::SizeSys(EnergyPlusData &state)
                                       format("Sizing:Zone Heating Maximum Air Flow Fraction = {:.5R}",
                                              state.dataSize->ZoneSizingInput(SizingInputNum).DesHeatMaxAirFlowFrac));
                     ShowContinueError(state,
-                                      format("Sizing:Zone Heating Maximum Air Flow per Zone Floor Area = {:.5R} [m3/s/m3]",
+                                      format("Sizing:Zone Heating Maximum Air Flow per Zone Floor Area = {:.5R} [m3/s/m2]",
                                              state.dataSize->ZoneSizingInput(SizingInputNum).DesHeatMaxAirFlowPerArea));
                     ShowContinueError(state,
                                       format("For reference the zone design maximum heating air flow rate is {:.5R} [m3/s]",

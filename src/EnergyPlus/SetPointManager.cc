@@ -1491,7 +1491,8 @@ void FillPredefinedTablesForSetPointManagers(EnergyPlusData &state)
             PlantLocation plantLoc;
             for (std::size_t i = 0; i < spm->ctrlNodeNums.size(); ++i) {
                 namesOfNodes.push_back(state.dataLoopNodes->NodeID(spm->ctrlNodeNums[i]));
-                PlantUtilities::ScanPlantLoopsForNodeNum(state, routineName, spm->ctrlNodeNums[i], plantLoc);
+                int dummy = 0;
+                PlantUtilities::ScanPlantLoopsForNodeNum(state, routineName, spm->ctrlNodeNums[i], plantLoc, dummy, false);
                 if (plantLoc.loopNum > 0) {
                     namesOfLoops.push_back(plantLoc.loop->Name);
                 }

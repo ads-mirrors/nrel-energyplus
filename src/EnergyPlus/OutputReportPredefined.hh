@@ -513,24 +513,24 @@ struct OutputReportPredefinedData : BaseGlobalStruct
 
     // Std 229 Air Terminal Table in Equipment Summary
     int pdstAirTerm = 0;
-    int pdchAirTermZoneName = 0;       // Zone Name
-    int pdchAirTermMinFlow = 0;        // Minimum Flow
-    int pdchAirTermMinOutdoorFlow = 0; // Minimum Outdoor Flow
-    int pdchAirTermSupCoolingSP = 0;   // Supply cooling setpoint
-    int pdchAirTermSupHeatingSP = 0;   // Supply heating setpoint
-    int pdchAirTermHeatingCap = 0;     // Heating capacity
-    int pdchAirTermCoolingCap = 0;     // Cooling capacity
-    int pdchAirTermTypeInp = 0;        // Type of Input Object
-    int pdchAirTermHeatCoilType = 0;   // Heat/Reheat Coil Object Type
-    int pdchAirTermCoolCoilType = 0;   // Chilled Water Coil Object Type
-    int pdchAirTermFanType = 0;        // Fan Object Type
-    int pdchAirTermFanName = 0;        // Fan Name
+    int pdchAirTermZoneName = 0;        // Zone Name
+    int pdchAirTermMinFlow = 0;         // Minimum Flow
+    int pdchAirTermMinOutdoorFlow = 0;  // Minimum Outdoor Flow
+    int pdchAirTermSupCoolingSP = 0;    // Supply cooling setpoint
+    int pdchAirTermSupHeatingSP = 0;    // Supply heating setpoint
+    int pdchAirTermHeatingCap = 0;      // Heating capacity
+    int pdchAirTermCoolingCap = 0;      // Cooling capacity
+    int pdchAirTermTypeInp = 0;         // Type of Input Object
+    int pdchAirTermHeatCoilType = 0;    // Heat/Reheat Coil Object Type
+    int pdchAirTermCoolCoilType = 0;    // Chilled Water Coil Object Type
+    int pdchAirTermFanType = 0;         // Fan Object Type
+    int pdchAirTermFanName = 0;         // Fan Name
     int pdchAirTermFanCtrlType = 0;     // Fan Control Type
-    int pdchAirTermPrimFlow = 0;       // Primary Air Flow Rate
-    int pdchAirTermSecdFlow = 0;       // Secondary Air Flow Rate
-    int pdchAirTermMinFlowSch = 0;     // Minimum Flow Schedule Name
-    int pdchAirTermMaxFlowReh = 0;     // Maximum Flow During Reheat
-    int pdchAirTermMinOAflowSch = 0;   // Minimum Outdoor Flow Schedule Name
+    int pdchAirTermPrimFlow = 0;        // Primary Air Flow Rate
+    int pdchAirTermSecdFlow = 0;        // Secondary Air Flow Rate
+    int pdchAirTermMinFlowSch = 0;      // Minimum Flow Schedule Name
+    int pdchAirTermMaxFlowReh = 0;      // Maximum Flow During Reheat
+    int pdchAirTermMinOAflowSch = 0;    // Minimum Outdoor Flow Schedule Name
     int pdchAirTermPIUHeatCtrlType = 0; // PIU Heating Control Type
 
     // Std 229 Air Heat Recovery

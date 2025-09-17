@@ -5278,6 +5278,7 @@ void setTabularReportStyles(EnergyPlusData &state)
 {
     OutputReportTabular::tabularReportStyles currentStyle;
     auto &ort = state.dataOutRptTab;
+    ort->tabularReportPasses.clear(); // In case this is called multiple times from unit tests
 
     // Set style for outputs controlled by OutputControl:Table:Style (Comma, Tab, Fixed, HTML, XML)
     currentStyle.unitsStyle = ort->unitsStyle_Tabular;

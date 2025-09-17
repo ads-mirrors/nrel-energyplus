@@ -570,6 +570,15 @@ namespace OutputReportTabular {
     {
         std::vector<compLoadsTimeStepEncl> ts;
     };
+    struct tabularReportStyles
+    {
+        UnitsStyle unitsStyle = UnitsStyle::None;
+        bool formatReals = true;
+        bool produceTabular = true;
+        bool produceSQLite = true;
+        bool produceJSON = true;
+    };
+
     // Functions
 
     std::ofstream &open_tbl_stream(EnergyPlusData &state, int const iStyle, fs::path const &filePath, bool output_to_file = true);
@@ -958,12 +967,7 @@ namespace OutputReportTabular {
                     bool transposeXML = false,
                     std::string_view const footnoteText = {});
 
-    bool produceDualUnitsFlags(int iUnit_Sys,
-                               EnergyPlus::OutputReportTabular::UnitsStyle unitsStyle_Tab,
-                               EnergyPlus::OutputReportTabular::UnitsStyle unitsStyle_Sql,
-                               UnitsStyle &unitsStyle_Cur,
-                               bool &produce_Tab,
-                               bool &produce_Sql);
+    void setTabularReportStyles(EnergyPlusData &state);
 
     std::string MakeAnchorName(std::string const &reportString, std::string const &objectString);
 
@@ -1078,13 +1082,15 @@ namespace OutputReportTabular {
 struct OutputReportTabularData : BaseGlobalStruct
 {
 
-    OutputReportTabular::UnitsStyle unitsStyle = OutputReportTabular::UnitsStyle::None;
+    OutputReportTabular::UnitsStyle unitsStyle_Tabular = OutputReportTabular::UnitsStyle::None;
+    OutputReportTabular::UnitsStyle unitsStyle_SQLite = OutputReportTabular::UnitsStyle::NotFound;
+    OutputReportTabular::UnitsStyle unitsStyle_JSON = OutputReportTabular::UnitsStyle::NotFound;
+
     bool ip() const
     {
-        return this->unitsStyle == OutputReportTabular::UnitsStyle::InchPound ||
-               this->unitsStyle == OutputReportTabular::UnitsStyle::InchPoundExceptElectricity;
+        return this->unitsStyle_Tabular == OutputReportTabular::UnitsStyle::InchPound ||
+               this->unitsStyle_Tabular == OutputReportTabular::UnitsStyle::InchPoundExceptElectricity;
     }
-    OutputReportTabular::UnitsStyle unitsStyle_SQLite = OutputReportTabular::UnitsStyle::NotFound;
     int OutputTableBinnedCount = 0;
     int BinResultsTableCount = 0;
     int BinResultsIntervalCount = 0;
@@ -1116,6 +1122,10 @@ struct OutputReportTabularData : BaseGlobalStruct
 
     Real64 timeInYear = 0.0;
     int defaultSigDigits = 2;
+    bool formatReals_Tabular = true;
+    bool formatReals_JSON = true;
+    bool formatReals_SQLite = true;
+    std::vector<OutputReportTabular::tabularReportStyles> tabularReportPasses; // unique combinations of units and real formatting
 
     // Flags for predefined tabular reports
     bool displayTabularBEPS = false;
@@ -1399,7 +1409,7 @@ struct OutputReportTabularData : BaseGlobalStruct
 
     void clear_state() override
     {
-        this->unitsStyle = OutputReportTabular::UnitsStyle::None;
+        this->unitsStyle_Tabular = OutputReportTabular::UnitsStyle::None;
         this->unitsStyle_SQLite = OutputReportTabular::UnitsStyle::NotFound;
         this->OutputTableBinnedCount = 0;
         this->BinResultsTableCount = 0;

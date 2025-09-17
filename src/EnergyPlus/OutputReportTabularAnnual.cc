@@ -632,25 +632,14 @@ Real64 AnnualTable::getSecondsInTimeStep(EnergyPlusData &state, OutputProcessor:
 void WriteAnnualTables(EnergyPlusData &state)
 {
     auto &annualTables = state.dataOutputReportTabularAnnual->annualTables;
-    for (int iUnitSystem = 0; iUnitSystem <= 1; iUnitSystem++) {
-        OutputReportTabular::UnitsStyle unitsStyle_cur = state.dataOutRptTab->unitsStyle;
-        bool produceTabular = true;
-        bool produceSQLite = false;
-        if (produceDualUnitsFlags(iUnitSystem,
-                                  state.dataOutRptTab->unitsStyle,
-                                  state.dataOutRptTab->unitsStyle_SQLite,
-                                  unitsStyle_cur,
-                                  produceTabular,
-                                  produceSQLite)) {
-            break;
-        }
+    for (auto &currentStyle : state.dataOutRptTab->tabularReportPasses) {
 
         // Jason Glazer, August 2015
         // This function is not part of the class but acts as an interface between procedural code and the class by
         // invoking the writeTable member function for each of the AnnualTable objects
         std::vector<AnnualTable>::iterator annualTableIt;
         for (annualTableIt = annualTables.begin(); annualTableIt != annualTables.end(); ++annualTableIt) {
-            annualTableIt->writeTable(state, unitsStyle_cur, produceTabular, produceSQLite);
+            annualTableIt->writeTable(state, currentStyle.unitsStyle, currentStyle.produceTabular, currentStyle.produceSQLite);
         }
     }
 }

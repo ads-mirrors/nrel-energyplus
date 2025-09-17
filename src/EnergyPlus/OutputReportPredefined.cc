@@ -1654,7 +1654,7 @@ namespace OutputReportPredefined {
             state.dataOutRptPredefined->tableEntry(state.dataOutRptPredefined->numTableEntry).charEntry = format("{}", tableEntryReal);
         } else {
 
-            if (present(numSigDigits)) {
+            if (present(numSigDigits) && sigDigitCount == 2) { // 2 is the default
                 if ((numSigDigits <= 9) && (numSigDigits >= 0)) {
                     sigDigitCount = numSigDigits;
                 }

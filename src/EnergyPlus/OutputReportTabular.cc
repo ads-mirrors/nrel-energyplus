@@ -1268,8 +1268,8 @@ void GetInputTabularStyle(EnergyPlusData &state)
         ort->TableStyle(1) = TableStyle::Comma;
         ort->del(1) = DataStringGlobals::CharComma; // comma
         AlphArray(2) = "None";
-        ort->unitsStyle = UnitsStyle::None;
-        ort->defaultSigDigits = 2;
+        ort->unitsStyle_Tabular = UnitsStyle::None;
+        ort->formatReals_Tabular = true;
     } else if (NumTabularStyle == 1) {
         state.dataInputProcessing->inputProcessor->getObjectItem(state,
                                                                  CurrentModuleObject,
@@ -1283,7 +1283,8 @@ void GetInputTabularStyle(EnergyPlusData &state)
                                                                  state.dataIPShortCut->lAlphaFieldBlanks,
                                                                  state.dataIPShortCut->cAlphaFieldNames,
                                                                  state.dataIPShortCut->cNumericFieldNames);
-        ort->defaultSigDigits = NumArray(1);
+
+        ort->formatReals_Tabular = (getYesNoValue(AlphArray(3)) == BooleanSwitch::Yes);
 
         // ColumnSeparator
         if (Util::SameString(AlphArray(1), "Comma")) {
@@ -1353,8 +1354,8 @@ void GetInputTabularStyle(EnergyPlusData &state)
         }
         // MonthlyUnitConversion
         if (NumAlphas >= 2) {
-            ort->unitsStyle = SetUnitsStyleFromString(AlphArray(2));
-            if (ort->unitsStyle == UnitsStyle::NotFound) {
+            ort->unitsStyle_Tabular = SetUnitsStyleFromString(AlphArray(2));
+            if (ort->unitsStyle_Tabular == UnitsStyle::NotFound) {
                 ShowWarningError(state,
                                  format("{}: Invalid {}=\"{}\". No unit conversion will be performed. Normal SI units will be shown.",
                                         CurrentModuleObject,
@@ -1362,7 +1363,7 @@ void GetInputTabularStyle(EnergyPlusData &state)
                                         AlphArray(2)));
             }
         } else {
-            ort->unitsStyle = UnitsStyle::None;
+            ort->unitsStyle_Tabular = UnitsStyle::None;
             AlphArray(2) = "None";
         }
     } else if (NumTabularStyle > 1) {
@@ -1370,13 +1371,13 @@ void GetInputTabularStyle(EnergyPlusData &state)
         ort->TableStyle = TableStyle::Comma;
         ort->del = std::string(1, DataStringGlobals::CharComma); // comma
         AlphArray(1) = "COMMA";
-        ort->unitsStyle = UnitsStyle::None;
+        ort->unitsStyle_Tabular = UnitsStyle::None;
         AlphArray(2) = "None";
-        ort->defaultSigDigits = NumArray(1);
+        ort->formatReals_Tabular = getYesNoValue(AlphArray(3)) == BooleanSwitch::Yes;
     }
 
-    print(state.files.eio, "! <Tabular Report>,Style,Unit Conversion, Default Significant Digits\n");
-    print(state.files.eio, "Tabular Report,{},{},{}\n", AlphArray(1), AlphArray(2), ort->defaultSigDigits);
+    print(state.files.eio, "! <Tabular Report>,Style,Unit Conversion, Format Reals\n");
+    print(state.files.eio, "Tabular Report,{},{},{}\n", AlphArray(1), AlphArray(2), ort->formatReals_Tabular ? "Yes" : "No");
 }
 
 UnitsStyle SetUnitsStyleFromString(std::string const &unitStringIn)
@@ -5192,12 +5193,18 @@ void WriteTabularReports(EnergyPlusData &state)
     auto &ort = state.dataOutRptTab;
 
     // Here to it is ready to assign ort->unitStyle_SQLite (not in SQLiteProcedures.cc)
+    // and ort->unitsStyle_JSON (not in ResultsFramework)
     // when ort->unitsStyle inputs should have been concretely processed and assigned.
     if (ort->unitsStyle_SQLite == UnitsStyle::NotFound) {
-        ort->unitsStyle_SQLite = ort->unitsStyle; // This is the default UseOutputControlTableStyles
+        ort->unitsStyle_SQLite = ort->unitsStyle_Tabular; // This is the default UseOutputControlTableStyles
+    }
+    if (ort->unitsStyle_JSON == UnitsStyle::NotFound) {
+        ort->unitsStyle_JSON = ort->unitsStyle_Tabular; // This is the default UseOutputControlTableStyles
     }
 
     if (ort->WriteTabularFiles) {
+        // Set up multiple passes if tabular, JSON, and or SQLite have differing options for units and real formatting
+        setTabularReportStyles(state);
 
         // call each type of report in turn
         WriteBEPSTable(state);
@@ -5267,44 +5274,70 @@ void WriteTabularReports(EnergyPlusData &state)
     print<variable_fmt_syntax>(state.files.audit, variable_fmt, "numCompSizeTableEntry", state.dataOutRptPredefined->numCompSizeTableEntry);
 }
 
-bool produceDualUnitsFlags(const int iUnit_Sys,
-                           const UnitsStyle unitsStyle_Tab,
-                           const UnitsStyle unitsStyle_Sql,
-                           UnitsStyle &unitsStyle_Cur,
-                           bool &produce_Tab,
-                           bool &produce_Sql)
+void setTabularReportStyles(EnergyPlusData &state)
 {
-    // January 2021:
-    // PURPOSE OF THIS SUBROUTINE:
-    // This routine sets the order and flags for tabular data and sqlite writing for a Dual-Unit reporting.
-    // It will set the unit styles to used, a flag for tabular data writing, and a flag for sqlite writing.
-    // The function will return a false flag if only a second round of (SQLite) writing is needed
-    // and will return a true flag if a second round SQLite writing is not needed.
+    OutputReportTabular::tabularReportStyles currentStyle;
+    auto &ort = state.dataOutRptTab;
 
-    bool brkflag(false);
+    // Set style for outputs controlled by OutputControl:Table:Style (Comma, Tab, Fixed, HTML, XML)
+    currentStyle.unitsStyle = ort->unitsStyle_Tabular;
+    currentStyle.formatReals = ort->formatReals_Tabular;
+    currentStyle.produceTabular = true;
+    currentStyle.produceJSON = false;
+    currentStyle.produceSQLite = false;
 
-    if (iUnit_Sys == 0) {
-        unitsStyle_Cur = unitsStyle_Tab;
-        produce_Tab = true;
-        if (unitsStyle_Sql == unitsStyle_Tab) {
-            produce_Sql = true;
+    bool needMoreForJSON = false;
+    bool needMoreForSQLite = false;
+
+    // Check if JSON output enabled and style matches tabular
+    if (state.dataResultsFramework->resultsFramework->timeSeriesAndTabularEnabled()) {
+        if ((ort->formatReals_JSON == ort->formatReals_Tabular) && (ort->unitsStyle_JSON == ort->unitsStyle_Tabular)) {
+            currentStyle.produceJSON = true;
+            needMoreForJSON = false;
         } else {
-            produce_Sql = false;
-        }
-    } else { // iUnit_Sys == 1
-        unitsStyle_Cur = unitsStyle_Sql;
-        produce_Tab = false;
-        produce_Sql = true;
-        if (unitsStyle_Sql == unitsStyle_Tab) {
-            // flag true if a separate SQLite round writing is not needed
-            brkflag = true;
-            produce_Sql = false;
+            needMoreForJSON = true;
         }
     }
 
-    // False if a separate sqlite round is needed;
-    // true if not
-    return brkflag;
+    // Check if SQLite output enabled and style matches tabular
+    if (state.dataSQLiteProcedures->sqlite) {
+        if ((ort->formatReals_SQLite == ort->formatReals_Tabular) && (ort->unitsStyle_SQLite == ort->unitsStyle_Tabular)) {
+            currentStyle.produceSQLite = true;
+            needMoreForSQLite = false;
+        } else {
+            needMoreForSQLite = true;
+        }
+    }
+    ort->tabularReportPasses.emplace_back(currentStyle);
+
+    if (needMoreForJSON) {
+        // Set current style for outputs controlled by Output:JSON (JSON, CBOR, MessagePack)
+        currentStyle.unitsStyle = ort->unitsStyle_JSON;
+        currentStyle.formatReals = ort->formatReals_JSON;
+        currentStyle.produceTabular = false;
+        currentStyle.produceJSON = true;
+        currentStyle.produceSQLite = false;
+        // Check if SQLite output enabled and style matches JSON
+        if (state.dataSQLiteProcedures->sqlite) {
+            if ((ort->formatReals_SQLite == ort->formatReals_JSON) && (ort->unitsStyle_SQLite == ort->unitsStyle_JSON)) {
+                currentStyle.produceSQLite = true;
+                needMoreForSQLite = false;
+            } else {
+                needMoreForSQLite = true;
+            }
+        }
+        ort->tabularReportPasses.emplace_back(currentStyle);
+    }
+
+    if (needMoreForSQLite) {
+        // Set current style for outputs controlled by Output:SQLite (JSON, CBOR, MessagePack)
+        currentStyle.unitsStyle = ort->unitsStyle_SQLite;
+        currentStyle.formatReals = ort->formatReals_SQLite;
+        currentStyle.produceTabular = false;
+        currentStyle.produceJSON = false;
+        currentStyle.produceSQLite = true;
+        ort->tabularReportPasses.emplace_back(currentStyle);
+    }
 }
 
 void parseStatLine(const std::string &lineIn,
@@ -7064,25 +7097,19 @@ void WriteMonthlyTables(EnergyPlusData &state)
 
     auto &ort = state.dataOutRptTab;
 
-    for (int iUnitSystem = 0; iUnitSystem <= 1; iUnitSystem++) {
-        UnitsStyle unitsStyle_cur = ort->unitsStyle;
-        bool produceTabular = true;
-        bool produceSQLite = false;
-        if (produceDualUnitsFlags(iUnitSystem, ort->unitsStyle, ort->unitsStyle_SQLite, unitsStyle_cur, produceTabular, produceSQLite)) {
-            break;
-        }
+    for (auto &currentStyle : ort->tabularReportPasses) {
 
         // set the unit conversion
-        if (unitsStyle_cur == UnitsStyle::None) {
+        if (currentStyle.unitsStyle == UnitsStyle::None) {
             energyUnitsString = "J";
             energyUnitsConversionFactor = 1.0;
-        } else if (unitsStyle_cur == UnitsStyle::JtoKWH) {
+        } else if (currentStyle.unitsStyle == UnitsStyle::JtoKWH) {
             energyUnitsString = "kWh";
             energyUnitsConversionFactor = 1.0 / 3600000.0;
-        } else if (unitsStyle_cur == UnitsStyle::JtoMJ) {
+        } else if (currentStyle.unitsStyle == UnitsStyle::JtoMJ) {
             energyUnitsString = "MJ";
             energyUnitsConversionFactor = 1.0 / 1000000.0;
-        } else if (unitsStyle_cur == UnitsStyle::JtoGJ) {
+        } else if (currentStyle.unitsStyle == UnitsStyle::JtoGJ) {
             energyUnitsString = "GJ";
             energyUnitsConversionFactor = 1.0 / 1000000000.0;
         } else { // Should never happen but assures compilers of initialization
@@ -7136,8 +7163,8 @@ void WriteMonthlyTables(EnergyPlusData &state)
                         curAggString = " {" + stripped(curAggString) + '}';
                     }
                     // do the unit conversions
-                    if (unitsStyle_cur == OutputReportTabular::UnitsStyle::InchPound ||
-                        unitsStyle_cur == OutputReportTabular::UnitsStyle::InchPoundExceptElectricity) {
+                    if (currentStyle.unitsStyle == OutputReportTabular::UnitsStyle::InchPound ||
+                        currentStyle.unitsStyle == OutputReportTabular::UnitsStyle::InchPoundExceptElectricity) {
                         varNameWithUnits =
                             format("{} [{}]", ort->MonthlyColumns(curCol).varName, Constant::unitNames[(int)ort->MonthlyColumns(curCol).units]);
                         LookupSItoIP(state, varNameWithUnits, indexUnitConv, curUnits);
@@ -7389,13 +7416,13 @@ void WriteMonthlyTables(EnergyPlusData &state)
                         break;
                     }
                 } // KColumn
-                if (produceTabular) {
+                if (currentStyle.produceTabular) {
                     WriteReportHeaders(
                         state, ort->MonthlyInput(iInput).name, ort->MonthlyTables(curTable).keyValue, OutputProcessor::StoreType::Average);
                     WriteSubtitle(state, "Custom Monthly Report");
                     WriteTable(state, tableBody, rowHead, columnHead, columnWidth, true); // transpose monthly XML tables.
                 }
-                if (produceSQLite) {
+                if (currentStyle.produceSQLite) {
                     if (state.dataSQLiteProcedures->sqlite) {
                         state.dataSQLiteProcedures->sqlite->createSQLiteTabularDataRecords(tableBody,
                                                                                            rowHead,
@@ -7405,7 +7432,7 @@ void WriteMonthlyTables(EnergyPlusData &state)
                                                                                            "Custom Monthly Report");
                     }
                 }
-                if (produceTabular) {
+                if (currentStyle.produceTabular) {
                     if (state.dataResultsFramework->resultsFramework->timeSeriesAndTabularEnabled()) {
                         state.dataResultsFramework->resultsFramework->TabularReportsCollection.addReportTable(tableBody,
                                                                                                               rowHead,
@@ -7455,13 +7482,7 @@ void WriteTimeBinTables(EnergyPlusData &state)
 
     auto &ort = state.dataOutRptTab;
 
-    for (int iUnitSystem = 0; iUnitSystem <= 1; iUnitSystem++) {
-        UnitsStyle unitsStyle_cur = ort->unitsStyle;
-        bool produceTabular = true;
-        bool produceSQLite = false;
-        if (produceDualUnitsFlags(iUnitSystem, ort->unitsStyle, ort->unitsStyle_SQLite, unitsStyle_cur, produceTabular, produceSQLite)) {
-            break;
-        }
+    for (auto &currentStyle : ort->tabularReportPasses) {
 
         rowHead(1) = "Interval Start";
         rowHead(2) = "Interval End";
@@ -7510,11 +7531,11 @@ void WriteTimeBinTables(EnergyPlusData &state)
             Real64 curIntervalStart;
             Real64 curIntervalSize;
             int indexUnitConv = -1;
-            if (unitsStyle_cur == UnitsStyle::InchPound) {
+            if (currentStyle.unitsStyle == UnitsStyle::InchPound) {
                 LookupSItoIP(state, curNameWithSIUnits, indexUnitConv, curNameAndUnits);
                 curIntervalStart = ConvertIP(state, indexUnitConv, ort->OutputTableBinned(iInObj).intervalStart);
                 curIntervalSize = ConvertIPdelta(state, indexUnitConv, ort->OutputTableBinned(iInObj).intervalSize);
-            } else if (unitsStyle_cur == UnitsStyle::InchPoundExceptElectricity) {
+            } else if (currentStyle.unitsStyle == UnitsStyle::InchPoundExceptElectricity) {
                 LookupSItoIP(state, curNameWithSIUnits, indexUnitConv, curNameAndUnits);
                 curIntervalStart = ConvertIP(state, indexUnitConv, ort->OutputTableBinned(iInObj).intervalStart);
                 curIntervalSize = ConvertIPdelta(state, indexUnitConv, ort->OutputTableBinned(iInObj).intervalSize);
@@ -7560,7 +7581,7 @@ void WriteTimeBinTables(EnergyPlusData &state)
                 } else {
                     repNameWithUnitsandscheduleName = curNameAndUnits + " [" + ort->OutputTableBinned(iInObj).sched->Name + ']';
                 }
-                if (produceTabular) {
+                if (currentStyle.produceTabular) {
                     WriteReportHeaders(
                         state, repNameWithUnitsandscheduleName, ort->BinObjVarID(repIndex).namesOfObj, ort->OutputTableBinned(iInObj).avgSum);
                 }
@@ -7605,13 +7626,13 @@ void WriteTimeBinTables(EnergyPlusData &state)
                 tableBody(1, 39) = RealToStr(state, belowTotal, 2);
                 tableBody(curIntervalCount + 2, 39) = RealToStr(state, aboveTotal, 2);
                 tableBody(numCols, 39) = RealToStr(state, tableTotal, 2);
-                if (produceTabular) {
+                if (currentStyle.produceTabular) {
                     WriteTextLine(state, "Values in table are in hours.");
                     WriteTextLine(state, "");
                     WriteSubtitle(state, "Time Bin Results");
                     WriteTable(state, tableBody, rowHead, columnHead, columnWidth, true); // transpose XML tables
                 }
-                if (produceSQLite) {
+                if (currentStyle.produceSQLite) {
                     if (state.dataSQLiteProcedures->sqlite) {
                         state.dataSQLiteProcedures->sqlite->createSQLiteTabularDataRecords(tableBody,
                                                                                            rowHead,
@@ -7621,7 +7642,7 @@ void WriteTimeBinTables(EnergyPlusData &state)
                                                                                            "Time Bin Results");
                     }
                 }
-                if (produceTabular) {
+                if (currentStyle.produceTabular) {
                     if (state.dataResultsFramework->resultsFramework->timeSeriesAndTabularEnabled()) {
                         state.dataResultsFramework->resultsFramework->TabularReportsCollection.addReportTable(tableBody,
                                                                                                               rowHead,
@@ -7656,8 +7677,8 @@ void WriteTimeBinTables(EnergyPlusData &state)
                     repMean = ort->BinStatistics(repIndex).sum / ort->BinStatistics(repIndex).n;
                 }
 
-                if (unitsStyle_cur == OutputReportTabular::UnitsStyle::InchPound ||
-                    unitsStyle_cur == OutputReportTabular::UnitsStyle::InchPoundExceptElectricity) {
+                if (currentStyle.unitsStyle == OutputReportTabular::UnitsStyle::InchPound ||
+                    currentStyle.unitsStyle == OutputReportTabular::UnitsStyle::InchPoundExceptElectricity) {
                     tableBodyStat(1, 1) = RealToStr(state, ConvertIP(state, indexUnitConv, ort->BinStatistics(repIndex).minimum), 2);
                     tableBodyStat(1, 2) = RealToStr(state, ConvertIP(state, indexUnitConv, repMean - 2 * repStDev), 2);
                     tableBodyStat(1, 3) = RealToStr(state, ConvertIP(state, indexUnitConv, repMean), 2);
@@ -7672,17 +7693,17 @@ void WriteTimeBinTables(EnergyPlusData &state)
                     tableBodyStat(1, 5) = RealToStr(state, ort->BinStatistics(repIndex).maximum, 2);
                     tableBodyStat(1, 6) = RealToStr(state, repStDev, 2);
                 }
-                if (produceTabular) {
+                if (currentStyle.produceTabular) {
                     WriteSubtitle(state, "Statistics");
                     WriteTable(state, tableBodyStat, rowHeadStat, columnHeadStat, columnWidthStat, true); // transpose XML table
                 }
-                if (produceSQLite) {
+                if (currentStyle.produceSQLite) {
                     if (state.dataSQLiteProcedures->sqlite) {
                         state.dataSQLiteProcedures->sqlite->createSQLiteTabularDataRecords(
                             tableBody, rowHead, columnHead, repNameWithUnitsandscheduleName, ort->BinObjVarID(repIndex).namesOfObj, "Statistics");
                     }
                 }
-                if (produceTabular) {
+                if (currentStyle.produceTabular) {
                     if (state.dataResultsFramework->resultsFramework->timeSeriesAndTabularEnabled()) {
                         state.dataResultsFramework->resultsFramework->TabularReportsCollection.addReportTable(
                             tableBody, rowHead, columnHead, repNameWithUnitsandscheduleName, ort->BinObjVarID(repIndex).namesOfObj, "Statistics");
@@ -7777,13 +7798,8 @@ void WriteBEPSTable(EnergyPlusData &state)
         WriteTextLine(state, "", true);
     }
 
-    for (int iUnitSystem = 0; iUnitSystem <= 1; iUnitSystem++) {
-        UnitsStyle unitsStyle_cur = ort->unitsStyle;
-        bool produceTabular = true;
-        bool produceSQLite = false;
-        if (produceDualUnitsFlags(iUnitSystem, ort->unitsStyle, ort->unitsStyle_SQLite, unitsStyle_cur, produceTabular, produceSQLite)) {
-            break;
-        }
+    bool firstStyle = true; // Flag for saving or restoring results
+    for (auto &currentStyle : ort->tabularReportPasses) {
 
         // determine building floor areas
         DetermineBuildingFloorArea(state);
@@ -7820,7 +7836,7 @@ void WriteBEPSTable(EnergyPlusData &state)
         collapsedTotal(13) = ort->gatherTotalsBEPS(5);  // district heating steam  <- purchased heating
         collapsedTotal(14) = ort->gatherTotalsBEPS(7);  // water
 
-        if (produceTabular) {
+        if (currentStyle.produceTabular) {
             if (state.dataGlobal->createPerfLog) {
                 Util::appendPerfLog(state, "Electricity ABUPS Total [J]", format("{:.3R}", collapsedTotal(1)));
                 Util::appendPerfLog(state, "Natural Gas ABUPS Total [J]", format("{:.3R}", collapsedTotal(2)));
@@ -7894,7 +7910,7 @@ void WriteBEPSTable(EnergyPlusData &state)
         Real64 waterConversionFactor;
         Real64 areaConversionFactor;
         Real64 ipElectricityConversionFactor = 1.0;
-        switch (unitsStyle_cur) {
+        switch (currentStyle.unitsStyle) {
         case UnitsStyle::JtoKWH: {
             largeConversionFactor = 3600000.0;
             kConversionFactor = 1.0;
@@ -7949,7 +7965,7 @@ void WriteBEPSTable(EnergyPlusData &state)
 
         collapsedTotal(14) = WaterConversionFunct(collapsedTotal(14), waterConversionFactor);
 
-        if (iUnitSystem == 0) {
+        if (firstStyle) {
             gtPowerFuelFireGen = ort->gatherPowerFuelFireGen;
             gtPowerPV = ort->gatherPowerPV;
             gtPowerWind = ort->gatherPowerWind;
@@ -7958,7 +7974,7 @@ void WriteBEPSTable(EnergyPlusData &state)
             gtElecProduced = ort->gatherElecProduced;
             gtElecPUrchased = ort->gatherElecPurchased;
             gtElecSurplusSold = ort->gatherElecSurplusSold;
-        } else { // if(iUnitSystem == 1)
+        } else { // Second or later style
             ort->gatherPowerFuelFireGen = gtPowerFuelFireGen;
             ort->gatherPowerPV = gtPowerPV;
             ort->gatherPowerWind = gtPowerWind;
@@ -8006,7 +8022,7 @@ void WriteBEPSTable(EnergyPlusData &state)
         columnWidth = 14; // array assignment - same for all columns
         tableBody.allocate(3, 4);
 
-        switch (unitsStyle_cur) {
+        switch (currentStyle.unitsStyle) {
         case UnitsStyle::JtoKWH: {
             columnHead(1) = "Total Energy [kWh]";
             columnHead(2) = "Energy Per Total Building Area [kWh/m2]";
@@ -8233,17 +8249,17 @@ void WriteBEPSTable(EnergyPlusData &state)
 
         // heading for the entire sub-table
         if (ort->displayTabularBEPS) {
-            if (produceTabular) {
+            if (currentStyle.produceTabular) {
                 WriteSubtitle(state, "Site and Source Energy");
                 WriteTable(state, tableBody, rowHead, columnHead, columnWidth);
             }
-            if (produceSQLite) {
+            if (currentStyle.produceSQLite) {
                 if (state.dataSQLiteProcedures->sqlite) {
                     state.dataSQLiteProcedures->sqlite->createSQLiteTabularDataRecords(
                         tableBody, rowHead, columnHead, "AnnualBuildingUtilityPerformanceSummary", "Entire Facility", "Site and Source Energy");
                 }
             }
-            if (produceTabular) {
+            if (currentStyle.produceTabular) {
                 if (state.dataResultsFramework->resultsFramework->timeSeriesAndTabularEnabled()) {
                     state.dataResultsFramework->resultsFramework->TabularReportsCollection.addReportTable(
                         tableBody, rowHead, columnHead, "AnnualBuildingUtilityPerformanceSummary", "Entire Facility", "Site and Source Energy");
@@ -8388,11 +8404,11 @@ void WriteBEPSTable(EnergyPlusData &state)
 
         // heading for the entire sub-table
         if (ort->displayTabularBEPS) {
-            if (produceTabular) {
+            if (currentStyle.produceTabular) {
                 WriteSubtitle(state, "Site to Source Energy Conversion Factors");
                 WriteTable(state, tableBody, rowHead, columnHead, columnWidth);
             }
-            if (produceSQLite) {
+            if (currentStyle.produceSQLite) {
                 if (state.dataSQLiteProcedures->sqlite) {
                     state.dataSQLiteProcedures->sqlite->createSQLiteTabularDataRecords(tableBody,
                                                                                        rowHead,
@@ -8402,7 +8418,7 @@ void WriteBEPSTable(EnergyPlusData &state)
                                                                                        "Site to Source Energy Conversion Factors");
                 }
             }
-            if (produceTabular) {
+            if (currentStyle.produceTabular) {
                 if (state.dataResultsFramework->resultsFramework->timeSeriesAndTabularEnabled()) {
                     state.dataResultsFramework->resultsFramework->TabularReportsCollection.addReportTable(tableBody,
                                                                                                           rowHead,
@@ -8421,7 +8437,7 @@ void WriteBEPSTable(EnergyPlusData &state)
         columnWidth = 14; // array assignment - same for all columns
         tableBody.allocate(1, 3);
 
-        switch (unitsStyle_cur) {
+        switch (currentStyle.unitsStyle) {
         case UnitsStyle::JtoKWH: {
             columnHead(1) = "Area [m2]";
         } break;
@@ -8443,14 +8459,14 @@ void WriteBEPSTable(EnergyPlusData &state)
         tableBody = "";
         tableBody(1, 1) = RealToStr(state, convBldgGrossFloorArea, 2);
 
-        if (unitsStyle_cur == OutputReportTabular::UnitsStyle::InchPound ||
-            unitsStyle_cur == OutputReportTabular::UnitsStyle::InchPoundExceptElectricity) {
-            if (produceTabular) {
+        if (currentStyle.unitsStyle == OutputReportTabular::UnitsStyle::InchPound ||
+            currentStyle.unitsStyle == OutputReportTabular::UnitsStyle::InchPoundExceptElectricity) {
+            if (currentStyle.produceTabular) {
                 PreDefTableEntry(
                     state, state.dataOutRptPredefined->pdchLeedGenData, "Total gross floor area [ft2]", RealToStr(state, convBldgGrossFloorArea, 2));
             }
         } else {
-            if (produceTabular) {
+            if (currentStyle.produceTabular) {
                 PreDefTableEntry(
                     state, state.dataOutRptPredefined->pdchLeedGenData, "Total gross floor area [m2]", RealToStr(state, convBldgGrossFloorArea, 2));
             }
@@ -8461,17 +8477,17 @@ void WriteBEPSTable(EnergyPlusData &state)
 
         // heading for the entire sub-table
         if (ort->displayTabularBEPS) {
-            if (produceTabular) {
+            if (currentStyle.produceTabular) {
                 WriteSubtitle(state, "Building Area");
                 WriteTable(state, tableBody, rowHead, columnHead, columnWidth);
             }
-            if (produceSQLite) {
+            if (currentStyle.produceSQLite) {
                 if (state.dataSQLiteProcedures->sqlite) {
                     state.dataSQLiteProcedures->sqlite->createSQLiteTabularDataRecords(
                         tableBody, rowHead, columnHead, "AnnualBuildingUtilityPerformanceSummary", "Entire Facility", "Building Area");
                 }
             }
-            if (produceTabular) {
+            if (currentStyle.produceTabular) {
                 if (state.dataResultsFramework->resultsFramework->timeSeriesAndTabularEnabled()) {
                     state.dataResultsFramework->resultsFramework->TabularReportsCollection.addReportTable(
                         tableBody, rowHead, columnHead, "AnnualBuildingUtilityPerformanceSummary", "Entire Facility", "Building Area");
@@ -8509,7 +8525,7 @@ void WriteBEPSTable(EnergyPlusData &state)
         rowHead(15) = "";
         rowHead(16) = "Total End Uses";
 
-        switch (unitsStyle_cur) {
+        switch (currentStyle.unitsStyle) {
         case UnitsStyle::JtoKWH: {
             columnHead(1) = "Electricity [kWh]";
             columnHead(2) = "Natural Gas [kWh]";
@@ -8600,7 +8616,7 @@ void WriteBEPSTable(EnergyPlusData &state)
 
         //  Energy Use Intensities - Electricity
         if (ort->buildingGrossFloorArea > 0) {
-            if (produceTabular) {
+            if (currentStyle.produceTabular) {
                 PreDefTableEntry(state,
                                  state.dataOutRptPredefined->pdchLeedEuiElec,
                                  "Interior Lighting (All)",
@@ -8644,7 +8660,7 @@ void WriteBEPSTable(EnergyPlusData &state)
             }
         }
 
-        if (produceTabular) {
+        if (currentStyle.produceTabular) {
             PreDefTableEntry(
                 state, state.dataOutRptPredefined->pdchLeedEusTotal, "Electricity", unconvert_ipExceptElec * useVal(colElectricity, 15), 2);
             PreDefTableEntry(state,
@@ -8659,7 +8675,7 @@ void WriteBEPSTable(EnergyPlusData &state)
             Real64 const processFraction = (useVal(colElectricity, 5) + useVal(colElectricity, 13)) / useVal(colElectricity, 15);
             processElecCost = state.dataOutRptPredefined->LEEDelecCostTotal * processFraction;
         }
-        if (produceTabular) {
+        if (currentStyle.produceTabular) {
             PreDefTableEntry(state, state.dataOutRptPredefined->pdchLeedEcsProc, "Electricity", processElecCost, 2);
             addFootNoteSubTable(
                 state, state.dataOutRptPredefined->pdstLeedEneCostSum, "Process energy cost based on ratio of process to total energy.");
@@ -8667,7 +8683,7 @@ void WriteBEPSTable(EnergyPlusData &state)
 
         //  Energy Use Intensities- Natural Gas
         if (ort->buildingGrossFloorArea > 0) {
-            if (produceTabular) {
+            if (currentStyle.produceTabular) {
                 PreDefTableEntry(state,
                                  state.dataOutRptPredefined->pdchLeedEuiNatG,
                                  "Space Heating",
@@ -8690,7 +8706,7 @@ void WriteBEPSTable(EnergyPlusData &state)
                                  2);
             }
         }
-        if (produceTabular) {
+        if (currentStyle.produceTabular) {
             PreDefTableEntry(state, state.dataOutRptPredefined->pdchLeedEusTotal, "Natural Gas", unconvert * useVal(colGas, 15), 2);
             PreDefTableEntry(
                 state, state.dataOutRptPredefined->pdchLeedEusProc, "Natural Gas", unconvert * (useVal(colGas, 5) + useVal(colGas, 13)), 2);
@@ -8701,7 +8717,7 @@ void WriteBEPSTable(EnergyPlusData &state)
             Real64 const processFraction = (useVal(colGas, 5) + useVal(colGas, 13)) / useVal(colGas, 15);
             processGasCost = state.dataOutRptPredefined->LEEDgasCostTotal * processFraction;
         }
-        if (produceTabular) {
+        if (currentStyle.produceTabular) {
             PreDefTableEntry(state, state.dataOutRptPredefined->pdchLeedEcsProc, "Natural Gas", processGasCost, 2);
         }
         //  Energy Use Intensities  - Additional Fuel
@@ -8712,7 +8728,7 @@ void WriteBEPSTable(EnergyPlusData &state)
         Real64 const useValColAddFuel13 =
             useVal(3, 13) + useVal(4, 13) + useVal(5, 13) + useVal(6, 13) + useVal(7, 13) + useVal(8, 13) + useVal(9, 13) + useVal(10, 13);
         if (ort->buildingGrossFloorArea > 0) {
-            if (produceTabular) {
+            if (currentStyle.produceTabular) {
                 PreDefTableEntry(state,
                                  state.dataOutRptPredefined->pdchLeedEuiOthr,
                                  "Miscellaneous",
@@ -8725,7 +8741,7 @@ void WriteBEPSTable(EnergyPlusData &state)
                                  2);
             }
         }
-        if (produceTabular) {
+        if (currentStyle.produceTabular) {
             PreDefTableEntry(state,
                              state.dataOutRptPredefined->pdchLeedEusTotal,
                              "Additional",
@@ -8748,7 +8764,7 @@ void WriteBEPSTable(EnergyPlusData &state)
                 (useValColAddFuel15 + useVal(colPurchCool, 15) + useVal(colPurchHeatWtr, 15) + useVal(colPurchHeatSt, 15));
             processOthrCost = state.dataOutRptPredefined->LEEDothrCostTotal * processFraction;
         }
-        if (produceTabular) {
+        if (currentStyle.produceTabular) {
             PreDefTableEntry(state, state.dataOutRptPredefined->pdchLeedEcsProc, "Additional", processOthrCost, 2);
             PreDefTableEntry(state, state.dataOutRptPredefined->pdchLeedEcsProc, "Total", processElecCost + processGasCost + processOthrCost, 2);
         }
@@ -8770,7 +8786,7 @@ void WriteBEPSTable(EnergyPlusData &state)
             state.dataOutRptTab->leedSiteTotal += useVal(iResource, 15);
         }
         if (state.dataOutRptTab->leedSiteTotal != 0) {
-            if (produceTabular) {
+            if (currentStyle.produceTabular) {
                 PreDefTableEntry(state,
                                  state.dataOutRptPredefined->pdchLeedEupPerc,
                                  "Interior Lighting (All)",
@@ -8814,7 +8830,7 @@ void WriteBEPSTable(EnergyPlusData &state)
             }
         }
         // totals across energy source
-        if (produceTabular) {
+        if (currentStyle.produceTabular) {
             PreDefTableEntry(state,
                              state.dataOutRptPredefined->pdchLeedEusTotal,
                              "Total",
@@ -8835,13 +8851,13 @@ void WriteBEPSTable(EnergyPlusData &state)
         std::string footnote;
         switch (resourcePrimaryHeating) {
         case colElectricity: {
-            if (produceTabular) {
+            if (currentStyle.produceTabular) {
                 footnote = "Note: Electricity appears to be the principal heating source based on energy usage.";
                 PreDefTableEntry(state, state.dataOutRptPredefined->pdchLeedGenData, "Principal Heating Source", "Electricity");
             }
         } break;
         case colGas: {
-            if (produceTabular) {
+            if (currentStyle.produceTabular) {
                 footnote = "Note: Natural gas appears to be the principal heating source based on energy usage.";
                 PreDefTableEntry(state, state.dataOutRptPredefined->pdchLeedGenData, "Principal Heating Source", "Natural Gas");
             }
@@ -8854,19 +8870,19 @@ void WriteBEPSTable(EnergyPlusData &state)
         case colPropane:
         case colOtherFuel1:
         case colOtherFuel2: {
-            if (produceTabular) {
+            if (currentStyle.produceTabular) {
                 footnote = "Note: Additional fuel appears to be the principal heating source based on energy usage.";
                 PreDefTableEntry(state, state.dataOutRptPredefined->pdchLeedGenData, "Principal Heating Source", "Additional Fuel");
             }
         } break;
         case colPurchHeatWtr: {
-            if (produceTabular) {
+            if (currentStyle.produceTabular) {
                 footnote = "Note: District heating water appears to be the principal heating source based on energy usage.";
                 PreDefTableEntry(state, state.dataOutRptPredefined->pdchLeedGenData, "Principal Heating Source", "District Heating Water");
             }
         } break;
         case colPurchHeatSt: {
-            if (produceTabular) {
+            if (currentStyle.produceTabular) {
                 footnote = "Note: District heating steam appears to be the principal heating source based on energy usage.";
                 PreDefTableEntry(state, state.dataOutRptPredefined->pdchLeedGenData, "Principal Heating Source", "District Heating steam");
             }
@@ -8874,17 +8890,17 @@ void WriteBEPSTable(EnergyPlusData &state)
         }
         // heading for the entire sub-table
         if (ort->displayTabularBEPS) {
-            if (produceTabular) {
+            if (currentStyle.produceTabular) {
                 WriteSubtitle(state, "End Uses");
                 WriteTable(state, tableBody, rowHead, columnHead, columnWidth, false, footnote);
             }
-            if (produceSQLite) {
+            if (currentStyle.produceSQLite) {
                 if (state.dataSQLiteProcedures->sqlite) {
                     state.dataSQLiteProcedures->sqlite->createSQLiteTabularDataRecords(
                         tableBody, rowHead, columnHead, "AnnualBuildingUtilityPerformanceSummary", "Entire Facility", "End Uses");
                 }
             }
-            if (produceTabular) {
+            if (currentStyle.produceTabular) {
                 if (state.dataResultsFramework->resultsFramework->timeSeriesAndTabularEnabled()) {
                     state.dataResultsFramework->resultsFramework->TabularReportsCollection.addReportTable(
                         tableBody, rowHead, columnHead, "AnnualBuildingUtilityPerformanceSummary", "Entire Facility", "End Uses");
@@ -8899,9 +8915,9 @@ void WriteBEPSTable(EnergyPlusData &state)
                                            collapsedEndUse,
                                            collapsedEndUseSub,
                                            ort->needOtherRowLEED45,
-                                           unitsStyle_cur,
-                                           produceTabular,
-                                           produceSQLite);
+                                           currentStyle.unitsStyle,
+                                           currentStyle.produceTabular,
+                                           currentStyle.produceSQLite);
 
         writeBEPSEndUseBySubCatOrSpaceType(state,
                                            EndUseSubTableType::BySpaceType,
@@ -8909,9 +8925,9 @@ void WriteBEPSTable(EnergyPlusData &state)
                                            collapsedEndUse,
                                            collapsedEndUseSpType,
                                            ort->needOtherRowEndUse,
-                                           unitsStyle_cur,
-                                           produceTabular,
-                                           produceSQLite);
+                                           currentStyle.unitsStyle,
+                                           currentStyle.produceTabular,
+                                           currentStyle.produceSQLite);
 
         // EAp2-4/5. Performance Rating Method Compliance
         // repeat some of the code for the end use subcategory table but only looping over the energy resources and not including water
@@ -8938,7 +8954,7 @@ void WriteBEPSTable(EnergyPlusData &state)
             for (int jEndUse = 1; jEndUse <= static_cast<int>(Constant::EndUse::Num); ++jEndUse) {
                 if (op->EndUseCategory(jEndUse).NumSubcategories > 0) {
                     for (int kEndUseSub = 1; kEndUseSub <= op->EndUseCategory(jEndUse).NumSubcategories; ++kEndUseSub) {
-                        if (produceTabular) {
+                        if (currentStyle.produceTabular) {
                             PreDefTableEntry(state,
                                              resource_entry_map(iResource),
                                              op->EndUseCategory(jEndUse).DisplayName + " -- " +
@@ -8949,7 +8965,7 @@ void WriteBEPSTable(EnergyPlusData &state)
                     }
                     // put other
                     if (ort->needOtherRowLEED45(jEndUse)) {
-                        if (produceTabular) {
+                        if (currentStyle.produceTabular) {
                             PreDefTableEntry(state,
                                              resource_entry_map(iResource),
                                              op->EndUseCategory(jEndUse).DisplayName + " -- Other",
@@ -8958,7 +8974,7 @@ void WriteBEPSTable(EnergyPlusData &state)
                         ++i;
                     }
                 } else {
-                    if (produceTabular) {
+                    if (currentStyle.produceTabular) {
                         PreDefTableEntry(state,
                                          resource_entry_map(iResource),
                                          op->EndUseCategory(jEndUse).DisplayName + " -- Not Subdivided",
@@ -9012,7 +9028,7 @@ void WriteBEPSTable(EnergyPlusData &state)
         rowHead(3) = "Other";
         rowHead(4) = "Total";
 
-        switch (unitsStyle_cur) {
+        switch (currentStyle.unitsStyle) {
         case UnitsStyle::JtoKWH: {
             columnHead(1) = "Electricity Intensity [kWh/m2]";
             columnHead(2) = "Natural Gas Intensity [kWh/m2]";
@@ -9079,7 +9095,7 @@ void WriteBEPSTable(EnergyPlusData &state)
         } break;
         }
 
-        if (produceTabular) {
+        if (currentStyle.produceTabular) {
             WriteTextLine(state, "Normalized Metrics", true);
         }
 
@@ -9094,11 +9110,11 @@ void WriteBEPSTable(EnergyPlusData &state)
         }
         // heading for the entire sub-table
         if (ort->displayTabularBEPS) {
-            if (produceTabular) {
+            if (currentStyle.produceTabular) {
                 WriteSubtitle(state, "Utility Use Per Conditioned Floor Area");
                 WriteTable(state, tableBody, rowHead, columnHead, columnWidth);
             }
-            if (produceSQLite) {
+            if (currentStyle.produceSQLite) {
                 if (state.dataSQLiteProcedures->sqlite) {
                     state.dataSQLiteProcedures->sqlite->createSQLiteTabularDataRecords(tableBody,
                                                                                        rowHead,
@@ -9108,7 +9124,7 @@ void WriteBEPSTable(EnergyPlusData &state)
                                                                                        "Utility Use Per Conditioned Floor Area");
                 }
             }
-            if (produceTabular) {
+            if (currentStyle.produceTabular) {
                 if (state.dataResultsFramework->resultsFramework->timeSeriesAndTabularEnabled()) {
                     state.dataResultsFramework->resultsFramework->TabularReportsCollection.addReportTable(tableBody,
                                                                                                           rowHead,
@@ -9130,11 +9146,11 @@ void WriteBEPSTable(EnergyPlusData &state)
         }
         // heading for the entire sub-table
         if (ort->displayTabularBEPS) {
-            if (produceTabular) {
+            if (currentStyle.produceTabular) {
                 WriteSubtitle(state, "Utility Use Per Total Floor Area");
                 WriteTable(state, tableBody, rowHead, columnHead, columnWidth);
             }
-            if (produceSQLite) {
+            if (currentStyle.produceSQLite) {
                 if (state.dataSQLiteProcedures->sqlite) {
                     state.dataSQLiteProcedures->sqlite->createSQLiteTabularDataRecords(tableBody,
                                                                                        rowHead,
@@ -9144,7 +9160,7 @@ void WriteBEPSTable(EnergyPlusData &state)
                                                                                        "Utility Use Per Total Floor Area");
                 }
             }
-            if (produceTabular) {
+            if (currentStyle.produceTabular) {
                 if (state.dataResultsFramework->resultsFramework->timeSeriesAndTabularEnabled()) {
                     state.dataResultsFramework->resultsFramework->TabularReportsCollection.addReportTable(tableBody,
                                                                                                           rowHead,
@@ -9163,7 +9179,7 @@ void WriteBEPSTable(EnergyPlusData &state)
         columnWidth = 14; // array assignment - same for all columns
         tableBody.allocate(2, 14);
 
-        switch (unitsStyle_cur) {
+        switch (currentStyle.unitsStyle) {
         case UnitsStyle::JtoKWH: {
             columnHead(1) = "Electricity [kWh]";
         } break;
@@ -9200,11 +9216,11 @@ void WriteBEPSTable(EnergyPlusData &state)
         tableBody(1, 1) = RealToStr(state, ort->gatherPowerFuelFireGen, 3);
         tableBody(1, 2) = RealToStr(state, ort->gatherPowerHTGeothermal, 3);
         tableBody(1, 3) = RealToStr(state, ort->gatherPowerPV, 3);
-        if (produceTabular) {
+        if (currentStyle.produceTabular) {
             PreDefTableEntry(state, state.dataOutRptPredefined->pdchLeedRenAnGen, "Photovoltaic", unconvert_ipExceptElec * ort->gatherPowerPV, 2);
         }
         tableBody(1, 4) = RealToStr(state, ort->gatherPowerWind, 3);
-        if (produceTabular) {
+        if (currentStyle.produceTabular) {
             PreDefTableEntry(state, state.dataOutRptPredefined->pdchLeedRenAnGen, "Wind", unconvert_ipExceptElec * ort->gatherPowerWind, 2);
         }
         tableBody(1, 5) = RealToStr(state, ort->gatherPowerConversion, 3);
@@ -9235,17 +9251,17 @@ void WriteBEPSTable(EnergyPlusData &state)
 
         // heading for the entire sub-table
         if (ort->displayTabularBEPS) {
-            if (produceTabular) {
+            if (currentStyle.produceTabular) {
                 WriteSubtitle(state, "Electric Loads Satisfied");
                 WriteTable(state, tableBody, rowHead, columnHead, columnWidth);
             }
-            if (produceSQLite) {
+            if (currentStyle.produceSQLite) {
                 if (state.dataSQLiteProcedures->sqlite) {
                     state.dataSQLiteProcedures->sqlite->createSQLiteTabularDataRecords(
                         tableBody, rowHead, columnHead, "AnnualBuildingUtilityPerformanceSummary", "Entire Facility", "Electric Loads Satisfied");
                 }
             }
-            if (produceTabular) {
+            if (currentStyle.produceTabular) {
                 if (state.dataResultsFramework->resultsFramework->timeSeriesAndTabularEnabled()) {
                     state.dataResultsFramework->resultsFramework->TabularReportsCollection.addReportTable(
                         tableBody, rowHead, columnHead, "AnnualBuildingUtilityPerformanceSummary", "Entire Facility", "Electric Loads Satisfied");
@@ -9260,7 +9276,7 @@ void WriteBEPSTable(EnergyPlusData &state)
         columnWidth = 14; // array assignment - same for all columns
         tableBody.allocate(2, 7);
 
-        switch (unitsStyle_cur) {
+        switch (currentStyle.unitsStyle) {
         case UnitsStyle::JtoKWH: {
             columnHead(1) = "Heat [kWh]";
         } break;
@@ -9287,7 +9303,7 @@ void WriteBEPSTable(EnergyPlusData &state)
 
         tableBody = "";
 
-        if (iUnitSystem == 0) {
+        if (firstStyle) {
             gtWaterHeatRecovery = ort->gatherWaterHeatRecovery;
             gtAirHeatRecoveryCool = ort->gatherAirHeatRecoveryCool;
             gtAirHeatRecoveryHeat = ort->gatherAirHeatRecoveryHeat;
@@ -9336,17 +9352,17 @@ void WriteBEPSTable(EnergyPlusData &state)
 
         // heading for the entire sub-table
         if (ort->displayTabularBEPS) {
-            if (produceTabular) {
+            if (currentStyle.produceTabular) {
                 WriteSubtitle(state, "On-Site Thermal Sources");
                 WriteTable(state, tableBody, rowHead, columnHead, columnWidth);
             }
-            if (produceSQLite) {
+            if (currentStyle.produceSQLite) {
                 if (state.dataSQLiteProcedures->sqlite) {
                     state.dataSQLiteProcedures->sqlite->createSQLiteTabularDataRecords(
                         tableBody, rowHead, columnHead, "AnnualBuildingUtilityPerformanceSummary", "Entire Facility", "On-Site Thermal Sources");
                 }
             }
-            if (produceTabular) {
+            if (currentStyle.produceTabular) {
                 if (state.dataResultsFramework->resultsFramework->timeSeriesAndTabularEnabled()) {
                     state.dataResultsFramework->resultsFramework->TabularReportsCollection.addReportTable(
                         tableBody, rowHead, columnHead, "AnnualBuildingUtilityPerformanceSummary", "Entire Facility", "On-Site Thermal Sources");
@@ -9367,7 +9383,7 @@ void WriteBEPSTable(EnergyPlusData &state)
         columnWidth.allocate(2);
         columnWidth = 14; // array assignment - same for all columns
         tableBody.allocate(2, 13);
-        switch (unitsStyle_cur) {
+        switch (currentStyle.unitsStyle) {
         case UnitsStyle::JtoKWH: {
             columnHead(1) = "Water [m3]";
         } break;
@@ -9441,17 +9457,17 @@ void WriteBEPSTable(EnergyPlusData &state)
 
         //  ! heading for the entire sub-table
         if (ort->displayTabularBEPS) {
-            if (produceTabular) {
+            if (currentStyle.produceTabular) {
                 WriteSubtitle(state, "Water Source Summary");
                 WriteTable(state, tableBody, rowHead, columnHead, columnWidth);
             }
-            if (produceSQLite) {
+            if (currentStyle.produceSQLite) {
                 if (state.dataSQLiteProcedures->sqlite) {
                     state.dataSQLiteProcedures->sqlite->createSQLiteTabularDataRecords(
                         tableBody, rowHead, columnHead, "AnnualBuildingUtilityPerformanceSummary", "Entire Facility", "Water Source Summary");
                 }
             }
-            if (produceTabular) {
+            if (currentStyle.produceTabular) {
                 if (state.dataResultsFramework->resultsFramework->timeSeriesAndTabularEnabled()) {
                     state.dataResultsFramework->resultsFramework->TabularReportsCollection.addReportTable(
                         tableBody, rowHead, columnHead, "AnnualBuildingUtilityPerformanceSummary", "Entire Facility", "Water Source Summary");
@@ -9465,13 +9481,13 @@ void WriteBEPSTable(EnergyPlusData &state)
             columnWidth = 14; // array assignment - same for all columns
             tableBody.allocate(1, 2);
 
-            if (produceTabular) {
+            if (currentStyle.produceTabular) {
                 WriteSubtitle(state, "Setpoint Not Met Criteria");
             }
 
             std::string const curNameWithSIUnits = "Degrees [deltaC]";
-            if (unitsStyle_cur == OutputReportTabular::UnitsStyle::InchPound ||
-                unitsStyle_cur == OutputReportTabular::UnitsStyle::InchPoundExceptElectricity) {
+            if (currentStyle.unitsStyle == OutputReportTabular::UnitsStyle::InchPound ||
+                currentStyle.unitsStyle == OutputReportTabular::UnitsStyle::InchPoundExceptElectricity) {
                 int indexUnitConv = -1;
                 std::string curNameAndUnits;
                 LookupSItoIP(state, curNameWithSIUnits, indexUnitConv, curNameAndUnits);
@@ -9483,8 +9499,8 @@ void WriteBEPSTable(EnergyPlusData &state)
             rowHead(1) = "Tolerance for Zone Heating Setpoint Not Met Time";
             rowHead(2) = "Tolerance for Zone Cooling Setpoint Not Met Time";
 
-            if (!(unitsStyle_cur == OutputReportTabular::UnitsStyle::InchPound ||
-                  unitsStyle_cur == OutputReportTabular::UnitsStyle::InchPoundExceptElectricity)) {
+            if (!(currentStyle.unitsStyle == OutputReportTabular::UnitsStyle::InchPound ||
+                  currentStyle.unitsStyle == OutputReportTabular::UnitsStyle::InchPoundExceptElectricity)) {
                 tableBody(1, 1) = RealToStr(state, std::abs(state.dataHVACGlobal->deviationFromSetPtThresholdHtg), 2);
                 tableBody(1, 2) = RealToStr(state, state.dataHVACGlobal->deviationFromSetPtThresholdClg, 2);
             } else {
@@ -9496,16 +9512,16 @@ void WriteBEPSTable(EnergyPlusData &state)
                 tableBody(1, 2) = RealToStr(state, ConvertIPdelta(state, indexUnitConv, state.dataHVACGlobal->deviationFromSetPtThresholdClg), 2);
             }
 
-            if (produceTabular) {
+            if (currentStyle.produceTabular) {
                 WriteTable(state, tableBody, rowHead, columnHead, columnWidth);
             }
-            if (produceSQLite) {
+            if (currentStyle.produceSQLite) {
                 if (state.dataSQLiteProcedures->sqlite) {
                     state.dataSQLiteProcedures->sqlite->createSQLiteTabularDataRecords(
                         tableBody, rowHead, columnHead, "AnnualBuildingUtilityPerformanceSummary", "Entire Facility", "Setpoint Not Met Criteria");
                 }
             }
-            if (produceTabular) {
+            if (currentStyle.produceTabular) {
                 if (state.dataResultsFramework->resultsFramework->timeSeriesAndTabularEnabled()) {
                     state.dataResultsFramework->resultsFramework->TabularReportsCollection.addReportTable(
                         tableBody, rowHead, columnHead, "AnnualBuildingUtilityPerformanceSummary", "Entire Facility", "Setpoint Not Met Criteria");
@@ -9520,7 +9536,7 @@ void WriteBEPSTable(EnergyPlusData &state)
         tableBody.allocate(1, 3);
 
         if (ort->displayTabularBEPS) {
-            if (produceTabular) {
+            if (currentStyle.produceTabular) {
                 WriteSubtitle(state, "Comfort and Setpoint Not Met Summary");
             }
         }
@@ -9533,7 +9549,7 @@ void WriteBEPSTable(EnergyPlusData &state)
 
         tableBody(1, 1) = RealToStr(state, state.dataOutRptPredefined->TotalNotMetHeatingOccupiedForABUPS, 2);
         tableBody(1, 2) = RealToStr(state, state.dataOutRptPredefined->TotalNotMetCoolingOccupiedForABUPS, 2);
-        if (produceTabular) {
+        if (currentStyle.produceTabular) {
             PreDefTableEntry(state,
                              state.dataOutRptPredefined->pdchLeedAmData,
                              "Number of hours heating loads not met",
@@ -9550,10 +9566,10 @@ void WriteBEPSTable(EnergyPlusData &state)
         tableBody(1, 3) = RealToStr(state, state.dataOutRptPredefined->TotalTimeNotSimpleASH55EitherForABUPS, 2);
 
         if (ort->displayTabularBEPS) {
-            if (produceTabular) {
+            if (currentStyle.produceTabular) {
                 WriteTable(state, tableBody, rowHead, columnHead, columnWidth);
             }
-            if (produceSQLite) {
+            if (currentStyle.produceSQLite) {
                 if (state.dataSQLiteProcedures->sqlite) {
                     state.dataSQLiteProcedures->sqlite->createSQLiteTabularDataRecords(tableBody,
                                                                                        rowHead,
@@ -9563,7 +9579,7 @@ void WriteBEPSTable(EnergyPlusData &state)
                                                                                        "Comfort and Setpoint Not Met Summary");
                 }
             }
-            if (produceTabular) {
+            if (currentStyle.produceTabular) {
                 if (state.dataResultsFramework->resultsFramework->timeSeriesAndTabularEnabled()) {
                     state.dataResultsFramework->resultsFramework->TabularReportsCollection.addReportTable(tableBody,
                                                                                                           rowHead,
@@ -9574,6 +9590,7 @@ void WriteBEPSTable(EnergyPlusData &state)
                 }
             }
         }
+        firstStyle = false;
     }
     //---- Control Summary Sub-Table
 
@@ -9894,13 +9911,7 @@ void WriteSourceEnergyEndUseSummary(EnergyPlusData &state)
     // determine building floor areas
     DetermineBuildingFloorArea(state);
 
-    for (int iUnitSystem = 0; iUnitSystem <= 1; iUnitSystem++) {
-        UnitsStyle unitsStyle_cur = ort->unitsStyle;
-        bool produceTabular = true;
-        bool produceSQLite = false;
-        if (produceDualUnitsFlags(iUnitSystem, ort->unitsStyle, ort->unitsStyle_SQLite, unitsStyle_cur, produceTabular, produceSQLite)) {
-            break;
-        }
+    for (auto &currentStyle : ort->tabularReportPasses) {
 
         // collapse the gatherEndUseBEPS array to the resource groups displayed
         for (int jEndUse = 1; jEndUse <= static_cast<int>(Constant::EndUse::Num); ++jEndUse) {
@@ -9939,7 +9950,7 @@ void WriteSourceEnergyEndUseSummary(EnergyPlusData &state)
         Real64 largeConversionFactor;
         Real64 areaConversionFactor;
         Real64 ipElectricityConversionFactor = 1.0;
-        switch (unitsStyle_cur) {
+        switch (currentStyle.unitsStyle) {
         case UnitsStyle::JtoKWH: {
             largeConversionFactor = 3600000.0;
             areaConversionFactor = 1.0;
@@ -9999,7 +10010,7 @@ void WriteSourceEnergyEndUseSummary(EnergyPlusData &state)
 
         largeConversionFactor = 1.0;
 
-        switch (unitsStyle_cur) {
+        switch (currentStyle.unitsStyle) {
         case UnitsStyle::JtoKWH: {
             columnHead(1) = "Source Electricity [kWh]";
             columnHead(2) = "Source Natural Gas [kWh]";
@@ -10074,11 +10085,11 @@ void WriteSourceEnergyEndUseSummary(EnergyPlusData &state)
         }
 
         // heading for the entire sub-table
-        if (produceTabular) {
+        if (currentStyle.produceTabular) {
             WriteSubtitle(state, "Source Energy End Use Components Summary");
             WriteTable(state, tableBody, rowHead, columnHead, columnWidth);
         }
-        if (produceSQLite) {
+        if (currentStyle.produceSQLite) {
             if (state.dataSQLiteProcedures->sqlite) {
                 state.dataSQLiteProcedures->sqlite->createSQLiteTabularDataRecords(tableBody,
                                                                                    rowHead,
@@ -10088,7 +10099,7 @@ void WriteSourceEnergyEndUseSummary(EnergyPlusData &state)
                                                                                    "Source Energy End Use Components Summary");
             }
         }
-        if (produceTabular) {
+        if (currentStyle.produceTabular) {
             if (state.dataResultsFramework->resultsFramework->timeSeriesAndTabularEnabled()) {
                 state.dataResultsFramework->resultsFramework->TabularReportsCollection.addReportTable(tableBody,
                                                                                                       rowHead,
@@ -10101,7 +10112,7 @@ void WriteSourceEnergyEndUseSummary(EnergyPlusData &state)
 
         // Normalized by Area tables
 
-        switch (unitsStyle_cur) {
+        switch (currentStyle.unitsStyle) {
         case UnitsStyle::JtoKWH: {
             columnHead(1) = "Source Electricity [kWh/m2]";
             columnHead(2) = "Source Natural Gas [kWh/m2]";
@@ -10178,14 +10189,14 @@ void WriteSourceEnergyEndUseSummary(EnergyPlusData &state)
                 }
             }
 
-            if (produceTabular) {
+            if (currentStyle.produceTabular) {
                 WriteTextLine(state, "Normalized Metrics", true);
 
                 // heading for the entire sub-table
                 WriteSubtitle(state, "Source Energy End Use Components Per Conditioned Floor Area");
                 WriteTable(state, tableBody, rowHead, columnHead, columnWidth);
             }
-            if (produceSQLite) {
+            if (currentStyle.produceSQLite) {
                 if (state.dataSQLiteProcedures->sqlite) {
                     state.dataSQLiteProcedures->sqlite->createSQLiteTabularDataRecords(tableBody,
                                                                                        rowHead,
@@ -10195,7 +10206,7 @@ void WriteSourceEnergyEndUseSummary(EnergyPlusData &state)
                                                                                        "Source Energy End Use Components Per Conditioned Floor Area");
                 }
             }
-            if (produceTabular) {
+            if (currentStyle.produceTabular) {
                 if (state.dataResultsFramework->resultsFramework->timeSeriesAndTabularEnabled()) {
                     state.dataResultsFramework->resultsFramework->TabularReportsCollection.addReportTable(
                         tableBody,
@@ -10223,11 +10234,11 @@ void WriteSourceEnergyEndUseSummary(EnergyPlusData &state)
             }
 
             // heading for the entire sub-table
-            if (produceTabular) {
+            if (currentStyle.produceTabular) {
                 WriteSubtitle(state, "Source Energy End Use Components Per Total Floor Area");
                 WriteTable(state, tableBody, rowHead, columnHead, columnWidth);
             }
-            if (produceSQLite) {
+            if (currentStyle.produceSQLite) {
                 if (state.dataSQLiteProcedures->sqlite) {
                     state.dataSQLiteProcedures->sqlite->createSQLiteTabularDataRecords(tableBody,
                                                                                        rowHead,
@@ -10237,7 +10248,7 @@ void WriteSourceEnergyEndUseSummary(EnergyPlusData &state)
                                                                                        "Source Energy End Use Components Per Total Floor Area");
                 }
             }
-            if (produceTabular) {
+            if (currentStyle.produceTabular) {
                 if (state.dataResultsFramework->resultsFramework->timeSeriesAndTabularEnabled()) {
                     state.dataResultsFramework->resultsFramework->TabularReportsCollection.addReportTable(
                         tableBody,
@@ -10297,13 +10308,7 @@ void WriteDemandEndUseSummary(EnergyPlusData &state)
     WriteReportHeaders(state, "Demand End Use Components Summary", "Entire Facility", OutputProcessor::StoreType::Average);
 
     Real64 ipElectricityConversion = 1.0; // declare here so that last one used is correct for LEED section
-    for (int iUnitSystem = 0; iUnitSystem <= 1; iUnitSystem++) {
-        UnitsStyle unitsStyle_cur = ort->unitsStyle;
-        bool produceTabular = true;
-        bool produceSQLite = false;
-        if (produceDualUnitsFlags(iUnitSystem, ort->unitsStyle, ort->unitsStyle_SQLite, unitsStyle_cur, produceTabular, produceSQLite)) {
-            break;
-        }
+    for (auto &currentStyle : ort->tabularReportPasses) {
 
         // totals - select which additional fuel to display
         collapsedTotal = 0.0;
@@ -10341,10 +10346,10 @@ void WriteDemandEndUseSummary(EnergyPlusData &state)
         ipElectricityConversion = 1.0;
 
         // establish unit conversion factors
-        if (unitsStyle_cur == UnitsStyle::InchPound) {
+        if (currentStyle.unitsStyle == UnitsStyle::InchPound) {
             powerConversion = getSpecificUnitMultiplier(state, "W", "kBtuh");
             flowConversion = getSpecificUnitMultiplier(state, "m3/s", "gal/min");
-        } else if (unitsStyle_cur == UnitsStyle::InchPoundExceptElectricity) {
+        } else if (currentStyle.unitsStyle == UnitsStyle::InchPoundExceptElectricity) {
             powerConversion = getSpecificUnitMultiplier(state, "W", "kBtuh");
             flowConversion = getSpecificUnitMultiplier(state, "m3/s", "gal/min");
             ipElectricityConversion = powerConversion * 1000.0; // W to kW adjustment
@@ -10475,7 +10480,7 @@ void WriteDemandEndUseSummary(EnergyPlusData &state)
         rowHead(16) = "";
         rowHead(17) = "Total End Uses";
 
-        if (unitsStyle_cur == UnitsStyle::InchPound) {
+        if (currentStyle.unitsStyle == UnitsStyle::InchPound) {
             columnHead(1) = "Electricity [kBtuh]";
             columnHead(2) = "Natural Gas [kBtuh]";
             columnHead(3) = "Gasoline [kBtuh]";
@@ -10490,7 +10495,7 @@ void WriteDemandEndUseSummary(EnergyPlusData &state)
             columnHead(12) = "District Heating Water [kBtuh]";
             columnHead(13) = "District Heating Steam [kBtuh]";
             columnHead(14) = "Water [gal/min]";
-        } else if (unitsStyle_cur == UnitsStyle::InchPoundExceptElectricity) {
+        } else if (currentStyle.unitsStyle == UnitsStyle::InchPoundExceptElectricity) {
             columnHead(1) = "Electricity [kW]";
             columnHead(2) = "Natural Gas [kBtuh]";
             columnHead(3) = "Gasoline [kBtuh]";
@@ -10533,17 +10538,17 @@ void WriteDemandEndUseSummary(EnergyPlusData &state)
 
         // complete the LEED end use table using the same values
 
-        if (produceTabular) {
+        if (currentStyle.produceTabular) {
             WriteSubtitle(state, "End Uses");
             WriteTable(state, tableBody, rowHead, columnHead, columnWidth, false, state.dataOutRptTab->footnote);
         }
-        if (produceSQLite) {
+        if (currentStyle.produceSQLite) {
             if (state.dataSQLiteProcedures->sqlite) {
                 state.dataSQLiteProcedures->sqlite->createSQLiteTabularDataRecords(
                     tableBody, rowHead, columnHead, "DemandEndUseComponentsSummary", "Entire Facility", "End Uses");
             }
         }
-        if (produceTabular) {
+        if (currentStyle.produceTabular) {
             if (state.dataResultsFramework->resultsFramework->timeSeriesAndTabularEnabled()) {
                 state.dataResultsFramework->resultsFramework->TabularReportsCollection.addReportTable(
                     tableBody, rowHead, columnHead, "DemandEndUseComponentsSummary", "Entire Facility", "End Uses");
@@ -10588,7 +10593,7 @@ void WriteDemandEndUseSummary(EnergyPlusData &state)
             }
         }
 
-        if (unitsStyle_cur == UnitsStyle::InchPound) {
+        if (currentStyle.unitsStyle == UnitsStyle::InchPound) {
             columnHead(1) = "Subcategory";
             columnHead(2) = "Electricity [kBtuh]";
             columnHead(3) = "Natural Gas [kBtuh]";
@@ -10604,7 +10609,7 @@ void WriteDemandEndUseSummary(EnergyPlusData &state)
             columnHead(13) = "District Heating Water [kBtuh]";
             columnHead(14) = "District Heating Steam [kBtuh]";
             columnHead(15) = "Water [gal/min]";
-        } else if (unitsStyle_cur == UnitsStyle::InchPoundExceptElectricity) {
+        } else if (currentStyle.unitsStyle == UnitsStyle::InchPoundExceptElectricity) {
             columnHead(1) = "Subcategory";
             columnHead(2) = "Electricity [kW]";
             columnHead(3) = "Natural Gas [kBtuh]";
@@ -10654,7 +10659,7 @@ void WriteDemandEndUseSummary(EnergyPlusData &state)
         }
 
         // heading for the entire sub-table
-        if (produceTabular) {
+        if (currentStyle.produceTabular) {
             WriteSubtitle(state, "End Uses By Subcategory");
             WriteTable(state, tableBody, rowHead, columnHead, columnWidth, false, state.dataOutRptTab->footnote);
         }
@@ -10672,14 +10677,14 @@ void WriteDemandEndUseSummary(EnergyPlusData &state)
         Array2D_string tableBodyTemp(tableBody({2, _, _}, {_, _, _}));
         Array1D_string columnHeadTemp(columnHead({2, _, _}));
 
-        if (produceSQLite) {
+        if (currentStyle.produceSQLite) {
             if (state.dataSQLiteProcedures->sqlite) {
                 state.dataSQLiteProcedures->sqlite->createSQLiteTabularDataRecords(
                     tableBodyTemp, rowHeadTemp, columnHeadTemp, "DemandEndUseComponentsSummary", "Entire Facility", "End Uses By Subcategory");
             }
         }
 
-        if (produceTabular) {
+        if (currentStyle.produceTabular) {
             if (state.dataResultsFramework->resultsFramework->timeSeriesAndTabularEnabled()) {
                 state.dataResultsFramework->resultsFramework->TabularReportsCollection.addReportTable(
                     tableBodyTemp, rowHeadTemp, columnHeadTemp, "DemandEndUseComponentsSummary", "Entire Facility", "End Uses By Subcategory");
@@ -10811,13 +10816,7 @@ void WriteCompCostTable(EnergyPlusData &state)
         DetermineBuildingFloorArea(state);
     }
 
-    for (int iUnitSystem = 0; iUnitSystem <= 1; iUnitSystem++) {
-        UnitsStyle unitsStyle_cur = ort->unitsStyle;
-        bool produceTabular = true;
-        bool produceSQLite = false;
-        if (produceDualUnitsFlags(iUnitSystem, ort->unitsStyle, ort->unitsStyle_SQLite, unitsStyle_cur, produceTabular, produceSQLite)) {
-            break;
-        }
+    for (auto &currentStyle : ort->tabularReportPasses) {
 
         // 1st sub-table with total Costs and normalized with area
         rowHead.allocate(10);
@@ -10839,8 +10838,8 @@ void WriteCompCostTable(EnergyPlusData &state)
         rowHead(7) = "Permits, Bonds, Insurance (~~$~~)";
         rowHead(8) = "Commissioning (~~$~~)";
         rowHead(9) = "Cost Estimate Total (~~$~~)";
-        if (unitsStyle_cur == OutputReportTabular::UnitsStyle::InchPound ||
-            unitsStyle_cur == OutputReportTabular::UnitsStyle::InchPoundExceptElectricity) {
+        if (currentStyle.unitsStyle == OutputReportTabular::UnitsStyle::InchPound ||
+            currentStyle.unitsStyle == OutputReportTabular::UnitsStyle::InchPoundExceptElectricity) {
             std::string const SIunit = "[m2]";
             std::string m2_unitName;
             LookupSItoIP(state, SIunit, state.dataOutRptTab->unitConvIndexWCCT, m2_unitName);
@@ -10936,17 +10935,17 @@ void WriteCompCostTable(EnergyPlusData &state)
         tableBody(3, 9) = RealToStr(state, TableBodyData(3, 9), 2);
         tableBody(3, 10) = RealToStr(state, TableBodyData(3, 10), 2);
 
-        if (produceTabular) {
+        if (currentStyle.produceTabular) {
             WriteSubtitle(state, "Construction Cost Estimate Summary");
             WriteTable(state, tableBody, rowHead, columnHead, columnWidth);
         }
-        if (produceSQLite) {
+        if (currentStyle.produceSQLite) {
             if (state.dataSQLiteProcedures->sqlite) {
                 state.dataSQLiteProcedures->sqlite->createSQLiteTabularDataRecords(
                     tableBody, rowHead, columnHead, "Construction Cost Estimate Summary", "Entire Facility", "Construction Cost Estimate Summary");
             }
         }
-        if (produceTabular) {
+        if (currentStyle.produceTabular) {
             if (state.dataResultsFramework->resultsFramework->timeSeriesAndTabularEnabled()) {
                 state.dataResultsFramework->resultsFramework->TabularReportsCollection.addReportTable(
                     tableBody, rowHead, columnHead, "Construction Cost Estimate Summary", "Entire Facility", "Construction Cost Estimate Summary");
@@ -10975,8 +10974,8 @@ void WriteCompCostTable(EnergyPlusData &state)
         for (int item = 1; item <= (int)state.dataCostEstimateManager->CostLineItem.size(); ++item) {
             tableBody(1, item) = fmt::to_string(state.dataCostEstimateManager->CostLineItem(item).LineNumber);
             tableBody(2, item) = state.dataCostEstimateManager->CostLineItem(item).LineName;
-            if (unitsStyle_cur == OutputReportTabular::UnitsStyle::InchPound ||
-                unitsStyle_cur == OutputReportTabular::UnitsStyle::InchPoundExceptElectricity) {
+            if (currentStyle.unitsStyle == OutputReportTabular::UnitsStyle::InchPound ||
+                currentStyle.unitsStyle == OutputReportTabular::UnitsStyle::InchPoundExceptElectricity) {
                 std::string IPunitName;
                 LookupSItoIP(state, state.dataCostEstimateManager->CostLineItem(item).Units, state.dataOutRptTab->unitConvIndexWCCT, IPunitName);
                 if (state.dataOutRptTab->unitConvIndexWCCT != 0) {
@@ -11002,17 +11001,17 @@ void WriteCompCostTable(EnergyPlusData &state)
             tableBody(6, item) = RealToStr(state, state.dataCostEstimateManager->CostLineItem(item).LineSubTotal, 2);
         }
         tableBody(6, NumRows) = RealToStr(state, state.dataCostEstimateManager->CurntBldg.LineItemTot, 2);
-        if (produceTabular) {
+        if (currentStyle.produceTabular) {
             WriteSubtitle(state, "Cost Line Item Details"); //: '//TRIM(RealToStr(state, CostEstimateTotal, 2)))
             WriteTable(state, tableBody, rowHead, columnHead, columnWidth);
         }
-        if (produceSQLite) {
+        if (currentStyle.produceSQLite) {
             if (state.dataSQLiteProcedures->sqlite) {
                 state.dataSQLiteProcedures->sqlite->createSQLiteTabularDataRecords(
                     tableBody, rowHead, columnHead, "Construction Cost Estimate Summary", "Entire Facility", "Cost Line Item Details");
             }
         }
-        if (produceTabular) {
+        if (currentStyle.produceTabular) {
             if (state.dataResultsFramework->resultsFramework->timeSeriesAndTabularEnabled()) {
                 state.dataResultsFramework->resultsFramework->TabularReportsCollection.addReportTable(
                     tableBody, rowHead, columnHead, "Construction Cost Estimate Summary", "Entire Facility", "Cost Line Item Details");
@@ -11104,16 +11103,10 @@ void WriteVeriSumTable(EnergyPlusData &state)
     zoneGlassArea.allocate(state.dataGlobal->NumOfZones);
     // zoneGlassArea = 0.0;
 
-    for (int iUnitSystem = 0; iUnitSystem <= 1; iUnitSystem++) {
-        UnitsStyle unitsStyle_cur = ort->unitsStyle;
-        bool produceTabular = true;
-        bool produceSQLite = false;
-        if (produceDualUnitsFlags(iUnitSystem, ort->unitsStyle, ort->unitsStyle_SQLite, unitsStyle_cur, produceTabular, produceSQLite)) {
-            break;
-        }
+    for (auto &currentStyle : ort->tabularReportPasses) {
 
         // show the headers of the report
-        if (produceTabular) {
+        if (currentStyle.produceTabular) {
             WriteReportHeaders(state, "Input Verification and Results Summary", "Entire Facility", OutputProcessor::StoreType::Average);
         }
 
@@ -11132,7 +11125,7 @@ void WriteVeriSumTable(EnergyPlusData &state)
         zoneGlassArea = 0.0;
 
         // do unit conversions if necessary
-        if (unitsStyle_cur == UnitsStyle::InchPound) {
+        if (currentStyle.unitsStyle == UnitsStyle::InchPound) {
             std::string SIunit;
             SIunit = "[m]";
             LookupSItoIP(state, SIunit, state.dataOutRptTab->unitConvIndexWVST, state.dataOutRptTab->m_unitName);
@@ -11146,7 +11139,7 @@ void WriteVeriSumTable(EnergyPlusData &state)
             SIunit = "[W/m2]";
             LookupSItoIP(state, SIunit, state.dataOutRptTab->unitConvIndexWVST, state.dataOutRptTab->Wm2_unitName);
             state.dataOutRptTab->Wm2_unitConv = ConvertIP(state, state.dataOutRptTab->unitConvIndexWVST, 1.0);
-        } else if (unitsStyle_cur == UnitsStyle::InchPoundExceptElectricity) {
+        } else if (currentStyle.unitsStyle == UnitsStyle::InchPoundExceptElectricity) {
             std::string SIunit;
             SIunit = "[m]";
             LookupSItoIP(state, SIunit, state.dataOutRptTab->unitConvIndexWVST, state.dataOutRptTab->m_unitName);
@@ -11208,17 +11201,17 @@ void WriteVeriSumTable(EnergyPlusData &state)
         tableBody(1, 10) = RealToStr(state, ort->gatherElapsedTimeBEPS, 2);                                  // hours simulated
         //  tableBody(9,1) = TRIM(fmt::to_string(numTableEntry)) !number of table entries for predefined tables
 
-        if (produceTabular) {
+        if (currentStyle.produceTabular) {
             WriteSubtitle(state, "General");
             WriteTable(state, tableBody, rowHead, columnHead, columnWidth);
         }
-        if (produceSQLite) {
+        if (currentStyle.produceSQLite) {
             if (state.dataSQLiteProcedures->sqlite) {
                 state.dataSQLiteProcedures->sqlite->createSQLiteTabularDataRecords(
                     tableBody, rowHead, columnHead, "InputVerificationandResultsSummary", "Entire Facility", "General");
             }
         }
-        if (produceTabular) {
+        if (currentStyle.produceTabular) {
             if (state.dataResultsFramework->resultsFramework->timeSeriesAndTabularEnabled()) {
                 state.dataResultsFramework->resultsFramework->TabularReportsCollection.addReportTable(
                     tableBody, rowHead, columnHead, "InputVerificationandResultsSummary", "Entire Facility", "General");
@@ -11277,7 +11270,7 @@ void WriteVeriSumTable(EnergyPlusData &state)
 
         bool DetailedWWR = (state.dataInputProcessing->inputProcessor->getNumSectionsFound("DETAILEDWWR_DEBUG") > 0);
         if (DetailedWWR) {
-            if (produceTabular) {
+            if (currentStyle.produceTabular) {
                 print(state.files.debug, "{}\n", "======90.1 Classification [>=60 & <=120] tilt = wall==================");
                 print(state.files.debug, "{}\n", "SurfName,Class,Area,Tilt");
             }
@@ -11359,7 +11352,7 @@ void WriteVeriSumTable(EnergyPlusData &state)
                             }
                         }
                         if (DetailedWWR) {
-                            if (produceTabular) {
+                            if (currentStyle.produceTabular) {
                                 print(state.files.debug, "{},Wall,{:.1R},{:.1R}\n", thisSurf.Name, curArea * mult, thisSurf.Tilt);
                             }
                         }
@@ -11392,7 +11385,7 @@ void WriteVeriSumTable(EnergyPlusData &state)
                         zoneOpeningArea(zonePt) += curArea * thisSurf.Multiplier; // total window opening area for each zone (glass plus frame area)
                         zoneGlassArea(zonePt) += thisSurf.GrossArea * thisSurf.Multiplier;
                         if (DetailedWWR) {
-                            if (produceTabular) {
+                            if (currentStyle.produceTabular) {
                                 print(state.files.debug, "{},Window,{:.1R},{:.1R}\n", thisSurf.Name, curArea * mult, thisSurf.Tilt);
                             }
                         }
@@ -11409,7 +11402,7 @@ void WriteVeriSumTable(EnergyPlusData &state)
                         Real64 const mult = thisZone.Multiplier * thisZone.ListMultiplier;
                         roofArea += curArea * mult;
                         if (DetailedWWR) {
-                            if (produceTabular) {
+                            if (currentStyle.produceTabular) {
                                 print(state.files.debug, "{},Roof,{:.1R},{:.1R}\n", thisSurf.Name, curArea * mult, thisSurf.Tilt);
                             }
                         }
@@ -11420,7 +11413,7 @@ void WriteVeriSumTable(EnergyPlusData &state)
                         Real64 const mult = thisZone.Multiplier * thisZone.ListMultiplier * thisSurf.Multiplier;
                         skylightArea += curArea * mult;
                         if (DetailedWWR) {
-                            if (produceTabular) {
+                            if (currentStyle.produceTabular) {
                                 print(state.files.debug, "{},Skylight,{:.1R},{:.1R}\n", thisSurf.Name, curArea * mult, thisSurf.Tilt);
                             }
                         }
@@ -11438,7 +11431,7 @@ void WriteVeriSumTable(EnergyPlusData &state)
         Real64 TotalAboveGroundWallArea = aboveGroundWallAreaN + aboveGroundWallAreaS + aboveGroundWallAreaE + aboveGroundWallAreaW;
         Real64 TotalWindowArea = windowAreaN + windowAreaS + windowAreaE + windowAreaW;
         if (DetailedWWR) {
-            if (produceTabular) {
+            if (currentStyle.produceTabular) {
                 print(state.files.debug, "{}\n", "========================");
                 print(state.files.debug, "{}\n", "TotalWallArea,WallAreaN,WallAreaS,WallAreaE,WallAreaW");
                 print(state.files.debug, "{}\n", "TotalWindowArea,WindowAreaN,WindowAreaS,WindowAreaE,WindowAreaW");
@@ -11479,17 +11472,17 @@ void WriteVeriSumTable(EnergyPlusData &state)
         tableBody(wwrcWest, wwrrAbvGndWWR) = RealToStr(state, 100.0 * SafeDivide(windowAreaW, aboveGroundWallAreaW), 2);
         tableBody(wwrcTotal, wwrrAbvGndWWR) = RealToStr(state, 100.0 * SafeDivide(TotalWindowArea, TotalAboveGroundWallArea), 2);
 
-        if (produceTabular) {
+        if (currentStyle.produceTabular) {
             WriteSubtitle(state, "Window-Wall Ratio");
             WriteTable(state, tableBody, rowHead, columnHead, columnWidth);
         }
-        if (produceSQLite) {
+        if (currentStyle.produceSQLite) {
             if (state.dataSQLiteProcedures->sqlite) {
                 state.dataSQLiteProcedures->sqlite->createSQLiteTabularDataRecords(
                     tableBody, rowHead, columnHead, "InputVerificationandResultsSummary", "Entire Facility", "Window-Wall Ratio");
             }
         }
-        if (produceTabular) {
+        if (currentStyle.produceTabular) {
             if (state.dataResultsFramework->resultsFramework->timeSeriesAndTabularEnabled()) {
                 state.dataResultsFramework->resultsFramework->TabularReportsCollection.addReportTable(
                     tableBody, rowHead, columnHead, "InputVerificationandResultsSummary", "Entire Facility", "Window-Wall Ratio");
@@ -11553,17 +11546,17 @@ void WriteVeriSumTable(EnergyPlusData &state)
         tableBody(wwrcWest, wwrrAbvGndWWR) = RealToStr(state, 100.0 * SafeDivide(windowAreaWcond, aboveGroundWallAreaWcond), 2);
         tableBody(wwrcTotal, wwrrAbvGndWWR) = RealToStr(state, 100.0 * SafeDivide(TotalWindowArea, TotalAboveGroundWallArea), 2);
 
-        if (produceTabular) {
+        if (currentStyle.produceTabular) {
             WriteSubtitle(state, "Conditioned Window-Wall Ratio");
             WriteTable(state, tableBody, rowHead, columnHead, columnWidth);
         }
-        if (produceSQLite) {
+        if (currentStyle.produceSQLite) {
             if (state.dataSQLiteProcedures->sqlite) {
                 state.dataSQLiteProcedures->sqlite->createSQLiteTabularDataRecords(
                     tableBody, rowHead, columnHead, "InputVerificationandResultsSummary", "Entire Facility", "Conditioned Window-Wall Ratio");
             }
         }
-        if (produceTabular) {
+        if (currentStyle.produceTabular) {
             if (state.dataResultsFramework->resultsFramework->timeSeriesAndTabularEnabled()) {
                 state.dataResultsFramework->resultsFramework->TabularReportsCollection.addReportTable(
                     tableBody, rowHead, columnHead, "InputVerificationandResultsSummary", "Entire Facility", "Conditioned Window-Wall Ratio");
@@ -11584,7 +11577,7 @@ void WriteVeriSumTable(EnergyPlusData &state)
         rowHead(3) = "Skylight-Roof Ratio [%]";
 
         if (DetailedWWR) {
-            if (produceTabular) {
+            if (currentStyle.produceTabular) {
                 print(state.files.debug, "{}\n", "========================");
                 print(state.files.debug, "{}\n", "TotalRoofArea,SkylightArea");
                 print(state.files.debug, "{:.2R},{:.2R}\n", roofArea, skylightArea);
@@ -11595,17 +11588,17 @@ void WriteVeriSumTable(EnergyPlusData &state)
         tableBody(1, 2) = RealToStr(state, skylightArea * state.dataOutRptTab->m2_unitConvWVST, 2);
         tableBody(1, 3) = RealToStr(state, 100.0 * SafeDivide(skylightArea, roofArea), 2);
 
-        if (produceTabular) {
+        if (currentStyle.produceTabular) {
             WriteSubtitle(state, "Skylight-Roof Ratio");
             WriteTable(state, tableBody, rowHead, columnHead, columnWidth);
         }
-        if (produceSQLite) {
+        if (currentStyle.produceSQLite) {
             if (state.dataSQLiteProcedures->sqlite) {
                 state.dataSQLiteProcedures->sqlite->createSQLiteTabularDataRecords(
                     tableBody, rowHead, columnHead, "InputVerificationandResultsSummary", "Entire Facility", "Skylight-Roof Ratio");
             }
         }
-        if (produceTabular) {
+        if (currentStyle.produceTabular) {
             if (state.dataResultsFramework->resultsFramework->timeSeriesAndTabularEnabled()) {
                 state.dataResultsFramework->resultsFramework->TabularReportsCollection.addReportTable(
                     tableBody, rowHead, columnHead, "InputVerificationandResultsSummary", "Entire Facility", "Skylight-Roof Ratio");
@@ -11639,11 +11632,11 @@ void WriteVeriSumTable(EnergyPlusData &state)
                 tableBody(2, iZone) = RealToStr(state, thisZone.ZoneVolCapMultpSensHMAverage, 2);
             }
 
-            if (produceTabular) {
+            if (currentStyle.produceTabular) {
                 WriteSubtitle(state, "Hybrid Model: Internal Thermal Mass");
                 WriteTable(state, tableBody, rowHead, columnHead, columnWidth);
             }
-            if (produceSQLite) {
+            if (currentStyle.produceSQLite) {
                 if (state.dataSQLiteProcedures->sqlite) {
                     state.dataSQLiteProcedures->sqlite->createSQLiteTabularDataRecords(tableBody,
                                                                                        rowHead,
@@ -11662,7 +11655,7 @@ void WriteVeriSumTable(EnergyPlusData &state)
                 std::abs((wallAreaN + wallAreaS + wallAreaE + wallAreaW) - (totExtGrossWallArea_Multiplied + totExtGrossGroundWallArea_Multiplied)) /
                 (totExtGrossWallArea_Multiplied + totExtGrossGroundWallArea_Multiplied);
             if (pdiff > 0.019) {
-                if (produceTabular) {
+                if (currentStyle.produceTabular) {
                     ShowWarningError(
                         state, "WriteVeriSumTable: InputVerificationsAndResultsSummary: Wall area based on [>=60,<=120] degrees (tilt) as walls");
                     ShowContinueError(state,
@@ -11687,7 +11680,7 @@ void WriteVeriSumTable(EnergyPlusData &state)
             }
         }
         //---- Space Summary Sub-Table
-        if (produceTabular) {
+        if (currentStyle.produceTabular) {
             WriteTextLine(state, "PERFORMANCE", true);
         }
 
@@ -11747,16 +11740,16 @@ void WriteVeriSumTable(EnergyPlusData &state)
             tableBody(1, iZone) = RealToStr(state, thisZone.FloorArea * state.dataOutRptTab->m2_unitConvWVST, 2);
             tableBody(4, iZone) = RealToStr(state, thisZone.Volume * state.dataOutRptTab->m3_unitConv, 2);
             // no unit conversion necessary since done automatically
-            if (produceTabular) {
+            if (currentStyle.produceTabular) {
                 PreDefTableEntry(state, state.dataOutRptPredefined->pdchLeedSutSpArea, thisZone.Name, thisZone.FloorArea, 2);
             }
             if (zoneIsCond) {
-                if (produceTabular) {
+                if (currentStyle.produceTabular) {
                     PreDefTableEntry(state, state.dataOutRptPredefined->pdchLeedSutOcArea, thisZone.Name, thisZone.FloorArea, 2);
                     PreDefTableEntry(state, state.dataOutRptPredefined->pdchLeedSutUnArea, thisZone.Name, "0.00");
                 }
             } else {
-                if (produceTabular) {
+                if (currentStyle.produceTabular) {
                     PreDefTableEntry(state, state.dataOutRptPredefined->pdchLeedSutOcArea, thisZone.Name, "0.00");
                     PreDefTableEntry(state, state.dataOutRptPredefined->pdchLeedSutUnArea, thisZone.Name, thisZone.FloorArea, 2);
                 }
@@ -11880,7 +11873,7 @@ void WriteVeriSumTable(EnergyPlusData &state)
                     state, state.dataOutRptTab->zstArea(iTotal) * state.dataOutRptTab->m2_unitConvWVST / state.dataOutRptTab->zstPeople(iTotal), 2);
             }
         }
-        if (produceTabular) {
+        if (currentStyle.produceTabular) {
             PreDefTableEntry(
                 state, state.dataOutRptPredefined->pdchLeedSutSpArea, "Totals", state.dataOutRptTab->zstArea(state.dataOutRptTab->grandTotal), 2);
             PreDefTableEntry(
@@ -11891,20 +11884,20 @@ void WriteVeriSumTable(EnergyPlusData &state)
             WriteSubtitle(state, "Zone Summary");
             WriteTable(state, tableBody, rowHead, columnHead, columnWidth);
         }
-        if (produceSQLite) {
+        if (currentStyle.produceSQLite) {
             if (state.dataSQLiteProcedures->sqlite) {
                 state.dataSQLiteProcedures->sqlite->createSQLiteTabularDataRecords(
                     tableBody, rowHead, columnHead, "InputVerificationandResultsSummary", "Entire Facility", "Zone Summary");
             }
         }
-        if (produceTabular) {
+        if (currentStyle.produceTabular) {
             if (state.dataResultsFramework->resultsFramework->timeSeriesAndTabularEnabled()) {
                 state.dataResultsFramework->resultsFramework->TabularReportsCollection.addReportTable(
                     tableBody, rowHead, columnHead, "InputVerificationandResultsSummary", "Entire Facility", "Zone Summary");
             }
         }
 
-        writeVeriSumSpaceTables(state, produceTabular, produceSQLite);
+        writeVeriSumSpaceTables(state, currentStyle.produceTabular, currentStyle.produceSQLite);
     }
 }
 
@@ -12468,7 +12461,7 @@ void WriteThermalResilienceTablesRepPeriod(EnergyPlusData &state, int const peri
     }
 
     Real64 degreeHourConversion;
-    UnitsStyle unitsStyle_cur = ort->unitsStyle;
+    UnitsStyle unitsStyle_cur = ort->unitsStyle_Tabular;
 
     if (unitsStyle_cur == OutputReportTabular::UnitsStyle::InchPound ||
         unitsStyle_cur == OutputReportTabular::UnitsStyle::InchPoundExceptElectricity) {
@@ -13274,7 +13267,7 @@ void WriteThermalResilienceTables(EnergyPlusData &state)
     }
 
     Real64 degreeHourConversion;
-    UnitsStyle unitsStyle_cur = ort->unitsStyle;
+    UnitsStyle unitsStyle_cur = ort->unitsStyle_Tabular;
     if (unitsStyle_cur == OutputReportTabular::UnitsStyle::InchPound ||
         unitsStyle_cur == OutputReportTabular::UnitsStyle::InchPoundExceptElectricity) {
         degreeHourConversion = getSpecificUnitMultiplier(state, "°C·hr", "°F·hr");
@@ -13685,15 +13678,9 @@ void WriteHeatEmissionTable(EnergyPlusData &state)
 
     if (state.dataOutRptTab->displayHeatEmissionsSummary) {
 
-        for (int iUnitSystem = 0; iUnitSystem <= 1; iUnitSystem++) {
-            UnitsStyle unitsStyle_cur = ort->unitsStyle;
-            bool produceTabular = true;
-            bool produceSQLite = false;
-            if (produceDualUnitsFlags(iUnitSystem, ort->unitsStyle, ort->unitsStyle_SQLite, unitsStyle_cur, produceTabular, produceSQLite)) {
-                break;
-            }
+        for (auto &currentStyle : ort->tabularReportPasses) {
 
-            if (produceTabular) {
+            if (currentStyle.produceTabular) {
                 WriteReportHeaders(state, "Annual Heat Emissions Report", "Entire Facility", OutputProcessor::StoreType::Average);
                 WriteSubtitle(state, "Annual Heat Emissions Summary");
             }
@@ -13705,20 +13692,20 @@ void WriteHeatEmissionTable(EnergyPlusData &state)
             tableBody.allocate(6, 1);
 
             Real64 energyconversion = 1.0;
-            if (unitsStyle_cur == OutputReportTabular::UnitsStyle::InchPound ||
-                unitsStyle_cur == OutputReportTabular::UnitsStyle::InchPoundExceptElectricity) {
+            if (currentStyle.unitsStyle == OutputReportTabular::UnitsStyle::InchPound ||
+                currentStyle.unitsStyle == OutputReportTabular::UnitsStyle::InchPoundExceptElectricity) {
                 rowHead(1) = "Heat Emissions [kBtu]";
                 energyconversion = 1.0 / getSpecificUnitDivider(state, "GJ", "kBtu"); // 1054351.84 J to kBtu
-            } else if (unitsStyle_cur == UnitsStyle::JtoGJ) {
+            } else if (currentStyle.unitsStyle == UnitsStyle::JtoGJ) {
                 rowHead(1) = "Heat Emissions [GJ]";
                 energyconversion = 1.0;
-            } else if (unitsStyle_cur == UnitsStyle::JtoKWH) {
+            } else if (currentStyle.unitsStyle == UnitsStyle::JtoKWH) {
                 rowHead(1) = "Heat Emissions [kWh]";
                 energyconversion = 1.0e3 / 3.6;
-            } else if (unitsStyle_cur == UnitsStyle::JtoMJ) {
+            } else if (currentStyle.unitsStyle == UnitsStyle::JtoMJ) {
                 rowHead(1) = "Heat Emissions [MJ]";
                 energyconversion = 1.0e3;
-            } else if (unitsStyle_cur == UnitsStyle::None) {
+            } else if (currentStyle.unitsStyle == UnitsStyle::None) {
                 rowHead(1) = "Heat Emissions [GJ]";
                 energyconversion = 1.0;
             } else {
@@ -13741,14 +13728,14 @@ void WriteHeatEmissionTable(EnergyPlusData &state)
             tableBody(5, 1) = RealToStr(state, state.dataHeatBal->BuildingPreDefRep.emiHVACReject * energyconversion, 2);
             tableBody(6, 1) = RealToStr(state, state.dataHeatBal->BuildingPreDefRep.emiTotHeat * energyconversion, 2);
 
-            if (produceTabular) {
+            if (currentStyle.produceTabular) {
                 WriteTable(state, tableBody, rowHead, columnHead, columnWidth);
                 if (state.dataResultsFramework->resultsFramework->timeSeriesAndTabularEnabled()) {
                     state.dataResultsFramework->resultsFramework->TabularReportsCollection.addReportTable(
                         tableBody, rowHead, columnHead, "AnnualHeatEmissionsReport", "Entire Facility", "Annual Heat Emissions Summary");
                 }
             }
-            if (produceSQLite) {
+            if (currentStyle.produceSQLite) {
                 if (state.dataSQLiteProcedures->sqlite) {
                     state.dataSQLiteProcedures->sqlite->createSQLiteTabularDataRecords(
                         tableBody, rowHead, columnHead, "AnnualHeatEmissionsReport", "Entire Facility", "Annual Heat Emissions Summary");
@@ -13795,13 +13782,7 @@ void WritePredefinedTables(EnergyPlusData &state)
     Array1D_int colUnitConv;
     auto const &ort = state.dataOutRptTab;
 
-    for (int iUnitSystem = 0; iUnitSystem <= 1; iUnitSystem++) {
-        UnitsStyle unitsStyle_cur = ort->unitsStyle;
-        bool produceTabular = true;
-        bool produceSQLite = false;
-        if (produceDualUnitsFlags(iUnitSystem, ort->unitsStyle, ort->unitsStyle_SQLite, unitsStyle_cur, produceTabular, produceSQLite)) {
-            break;
-        }
+    for (auto &currentStyle : ort->tabularReportPasses) {
 
         // loop through the entries and associate them with the subtable and create
         // list of unique object names
@@ -13838,7 +13819,7 @@ void WritePredefinedTables(EnergyPlusData &state)
         // loop through all reports and include those that have been flagged as 'show'
         for (int iReportName = 1; iReportName <= state.dataOutRptPredefined->numReportName; ++iReportName) {
             if (state.dataOutRptPredefined->reportName(iReportName).show) {
-                if (produceTabular) {
+                if (currentStyle.produceTabular || currentStyle.produceJSON) {
                     WriteReportHeaders(state,
                                        state.dataOutRptPredefined->reportName(iReportName).namewithspaces,
                                        "Entire Facility",
@@ -13903,13 +13884,13 @@ void WritePredefinedTables(EnergyPlusData &state)
                                 std::string const &colTagWithSI = state.dataOutRptPredefined->columnTag(kColumnTag).heading;
                                 int indexUnitConv;
                                 std::string curColTag;
-                                if (unitsStyle_cur == UnitsStyle::InchPound) {
+                                if (currentStyle.unitsStyle == UnitsStyle::InchPound) {
                                     LookupSItoIP(state, colTagWithSI, indexUnitConv, curColTag);
                                     colUnitConv(countColumn) = indexUnitConv;
-                                } else if (unitsStyle_cur == UnitsStyle::InchPoundExceptElectricity) {
+                                } else if (currentStyle.unitsStyle == UnitsStyle::InchPoundExceptElectricity) {
                                     LookupSItoIP(state, colTagWithSI, indexUnitConv, curColTag);
                                     colUnitConv(countColumn) = indexUnitConv;
-                                } else if (unitsStyle_cur == UnitsStyle::JtoKWH) {
+                                } else if (currentStyle.unitsStyle == UnitsStyle::JtoKWH) {
                                     LookupJtokWH(state, colTagWithSI, indexUnitConv, curColTag);
                                     colUnitConv(countColumn) = indexUnitConv;
                                 } else {
@@ -13941,13 +13922,13 @@ void WritePredefinedTables(EnergyPlusData &state)
                                     }
                                 }
                                 // finally assign the entry to the place in the table body
-                                if (unitsStyle_cur == OutputReportTabular::UnitsStyle::InchPound ||
-                                    unitsStyle_cur == OutputReportTabular::UnitsStyle::InchPoundExceptElectricity ||
-                                    unitsStyle_cur == UnitsStyle::JtoKWH) {
+                                if (currentStyle.unitsStyle == OutputReportTabular::UnitsStyle::InchPound ||
+                                    currentStyle.unitsStyle == OutputReportTabular::UnitsStyle::InchPoundExceptElectricity ||
+                                    currentStyle.unitsStyle == UnitsStyle::JtoKWH || !currentStyle.formatReals) {
                                     int columnUnitConv = colUnitConv(colCurrent);
                                     if (Util::SameString(state.dataOutRptPredefined->subTable(jSubTable).name, "SizingPeriod:DesignDay") &&
-                                        (unitsStyle_cur == OutputReportTabular::UnitsStyle::InchPound ||
-                                         unitsStyle_cur == OutputReportTabular::UnitsStyle::InchPoundExceptElectricity)) {
+                                        (currentStyle.unitsStyle == OutputReportTabular::UnitsStyle::InchPound ||
+                                         currentStyle.unitsStyle == OutputReportTabular::UnitsStyle::InchPoundExceptElectricity)) {
                                         if (Util::SameString(columnHead(colCurrent), "Humidity Value")) {
                                             std::string repTableTag;
                                             LookupSItoIP(state,
@@ -13957,14 +13938,17 @@ void WritePredefinedTables(EnergyPlusData &state)
                                             state.dataOutRptPredefined->tableEntry(lTableEntry + 1).charEntry = repTableTag;
                                         }
                                     }
-                                    if (state.dataOutRptPredefined->tableEntry(lTableEntry).origEntryIsReal && (columnUnitConv != 0)) {
-                                        Real64 const IPvalue =
-                                            ConvertIP(state, columnUnitConv, state.dataOutRptPredefined->tableEntry(lTableEntry).origRealEntry);
-                                        int const sigDigitCount = state.dataOutRptPredefined->tableEntry(lTableEntry).significantDigits;
-                                        if (sigDigitCount == 0) {
-                                            tableBody(colCurrent, rowCurrent) = format("{}", IPvalue);
+                                    if (state.dataOutRptPredefined->tableEntry(lTableEntry).origEntryIsReal) {
+                                        //  && )
+                                        Real64 value = state.dataOutRptPredefined->tableEntry(lTableEntry).origRealEntry;
+                                        if (columnUnitConv != 0) {
+                                            value = ConvertIP(state, columnUnitConv, value);
+                                        }
+                                        if (currentStyle.formatReals) {
+                                            tableBody(colCurrent, rowCurrent) =
+                                                RealToStr(state, value, state.dataOutRptPredefined->tableEntry(lTableEntry).significantDigits);
                                         } else {
-                                            tableBody(colCurrent, rowCurrent) = RealToStr(state, IPvalue, sigDigitCount);
+                                            tableBody(colCurrent, rowCurrent) = format("{}", value);
                                         }
                                     } else {
                                         tableBody(colCurrent, rowCurrent) = state.dataOutRptPredefined->tableEntry(lTableEntry).charEntry;
@@ -13975,12 +13959,12 @@ void WritePredefinedTables(EnergyPlusData &state)
                             }
                         }
                         // create the actual output table
-                        if (produceTabular) {
+                        if (currentStyle.produceTabular || currentStyle.produceJSON) {
                             WriteSubtitle(state, state.dataOutRptPredefined->subTable(jSubTable).name);
                             WriteTable(
                                 state, tableBody, rowHead, columnHead, columnWidth, false, state.dataOutRptPredefined->subTable(jSubTable).footnote);
                         }
-                        if (produceSQLite) {
+                        if (currentStyle.produceSQLite) {
                             if (state.dataSQLiteProcedures->sqlite) {
                                 state.dataSQLiteProcedures->sqlite->createSQLiteTabularDataRecords(
                                     tableBody,
@@ -13991,7 +13975,7 @@ void WritePredefinedTables(EnergyPlusData &state)
                                     state.dataOutRptPredefined->subTable(jSubTable).name);
                             }
                         }
-                        if (produceTabular) {
+                        if (currentStyle.produceJSON) {
                             if (state.dataResultsFramework->resultsFramework->timeSeriesAndTabularEnabled()) {
                                 state.dataResultsFramework->resultsFramework->TabularReportsCollection.addReportTable(
                                     tableBody,
@@ -14055,13 +14039,7 @@ void WriteComponentSizing(EnergyPlusData &state)
 
     WriteReportHeaders(state, "Component Sizing Summary", "Entire Facility", OutputProcessor::StoreType::Average);
 
-    for (int iUnitSystem = 0; iUnitSystem <= 1; iUnitSystem++) {
-        UnitsStyle unitsStyle_cur = ort->unitsStyle;
-        bool produceTabular = true;
-        bool produceSQLite = false;
-        if (produceDualUnitsFlags(iUnitSystem, ort->unitsStyle, ort->unitsStyle_SQLite, unitsStyle_cur, produceTabular, produceSQLite)) {
-            break;
-        }
+    for (auto &currentStyle : ort->tabularReportPasses) {
 
         // The arrays that look for unique headers are dimensioned in the
         // running program since the size of the number of entries is
@@ -14160,11 +14138,11 @@ void WriteComponentSizing(EnergyPlusData &state)
             for (jUnique = 1; jUnique <= numUniqueDesc; ++jUnique) {
                 // do the unit conversions
                 state.dataOutRptTab->curColHeadWithSI = uniqueDesc(jUnique);
-                if (unitsStyle_cur == UnitsStyle::InchPound) {
+                if (currentStyle.unitsStyle == UnitsStyle::InchPound) {
                     LookupSItoIP(
                         state, state.dataOutRptTab->curColHeadWithSI, state.dataOutRptTab->indexUnitConvWCS, state.dataOutRptTab->curColHead);
                     colUnitConv(jUnique) = state.dataOutRptTab->indexUnitConvWCS;
-                } else if (unitsStyle_cur == UnitsStyle::InchPoundExceptElectricity) {
+                } else if (currentStyle.unitsStyle == UnitsStyle::InchPoundExceptElectricity) {
                     LookupSItoIP(
                         state, state.dataOutRptTab->curColHeadWithSI, state.dataOutRptTab->indexUnitConvWCS, state.dataOutRptTab->curColHead);
                     colUnitConv(jUnique) = state.dataOutRptTab->indexUnitConvWCS;
@@ -14202,13 +14180,13 @@ void WriteComponentSizing(EnergyPlusData &state)
                             tableBody(foundDesc, foundObj) = state.dataOutRptPredefined->CompSizeTableEntry(iTableEntry).strField;
                         } else {
                             state.dataOutRptTab->curValueSIWCS = state.dataOutRptPredefined->CompSizeTableEntry(iTableEntry).valField;
-                            if (unitsStyle_cur == UnitsStyle::InchPound) {
+                            if (currentStyle.unitsStyle == UnitsStyle::InchPound) {
                                 if (colUnitConv(foundDesc) != 0) {
                                     state.dataOutRptTab->curValueWCS = ConvertIP(state, colUnitConv(foundDesc), state.dataOutRptTab->curValueSIWCS);
                                 } else {
                                     state.dataOutRptTab->curValueWCS = state.dataOutRptTab->curValueSIWCS;
                                 }
-                            } else if (unitsStyle_cur == UnitsStyle::InchPoundExceptElectricity) {
+                            } else if (currentStyle.unitsStyle == UnitsStyle::InchPoundExceptElectricity) {
                                 if (colUnitConv(foundDesc) != 0) {
                                     state.dataOutRptTab->curValueWCS = ConvertIP(state, colUnitConv(foundDesc), state.dataOutRptTab->curValueSIWCS);
                                 } else {
@@ -14228,13 +14206,13 @@ void WriteComponentSizing(EnergyPlusData &state)
                 }
             }
             // write the table
-            if (produceTabular) {
+            if (currentStyle.produceTabular) {
                 WriteSubtitle(state, state.dataOutRptPredefined->CompSizeTableEntry(foundEntry).typeField);
             }
 
             if (state.dataOutRptPredefined->CompSizeTableEntry(foundEntry).typeField == "AirTerminal:SingleDuct:VAV:Reheat" ||
                 state.dataOutRptPredefined->CompSizeTableEntry(foundEntry).typeField == "AirTerminal:SingleDuct:VAV:NoReheat") {
-                if (produceTabular) {
+                if (currentStyle.produceTabular) {
                     WriteTable(state,
                                tableBody,
                                rowHead,
@@ -14246,7 +14224,7 @@ void WriteComponentSizing(EnergyPlusData &state)
                                "values may be derived from alternate User-Specified values.");
                 }
             } else {
-                if (produceTabular) {
+                if (currentStyle.produceTabular) {
                     WriteTable(state,
                                tableBody,
                                rowHead,
@@ -14257,7 +14235,7 @@ void WriteComponentSizing(EnergyPlusData &state)
                 }
             }
 
-            if (produceSQLite) {
+            if (currentStyle.produceSQLite) {
                 if (state.dataSQLiteProcedures->sqlite) {
                     state.dataSQLiteProcedures->sqlite->createSQLiteTabularDataRecords(
                         tableBody,
@@ -14268,7 +14246,7 @@ void WriteComponentSizing(EnergyPlusData &state)
                         state.dataOutRptPredefined->CompSizeTableEntry(foundEntry).typeField);
                 }
             }
-            if (produceTabular) {
+            if (currentStyle.produceTabular) {
                 if (state.dataResultsFramework->resultsFramework->timeSeriesAndTabularEnabled()) {
                     state.dataResultsFramework->resultsFramework->TabularReportsCollection.addReportTable(
                         tableBody,
@@ -14465,13 +14443,7 @@ void WriteEioTables(EnergyPlusData &state)
         }
     }
 
-    for (int iUnitSystem = 0; iUnitSystem <= 1; iUnitSystem++) {
-        UnitsStyle unitsStyle_cur = ort->unitsStyle;
-        bool produceTabular = true;
-        bool produceSQLite = false;
-        if (produceDualUnitsFlags(iUnitSystem, ort->unitsStyle, ort->unitsStyle_SQLite, unitsStyle_cur, produceTabular, produceSQLite)) {
-            break;
-        }
+    for (auto &currentStyle : ort->tabularReportPasses) {
 
         // now go through each header and create a report for each one
         for (std::string const &headerLine : headerLines) {
@@ -14506,7 +14478,7 @@ void WriteEioTables(EnergyPlusData &state)
                     // set the unit conversions
                     // colUnitConv(iCol) = unitsFromHeading(state, columnHead(iCol));
                     // Jan 2021: use overloaded version for dual units
-                    colUnitConv(iCol) = unitsFromHeading(state, columnHead(iCol), unitsStyle_cur);
+                    colUnitConv(iCol) = unitsFromHeading(state, columnHead(iCol), currentStyle.unitsStyle);
                 }
                 // look for data lines
                 int rowNum = 0;
@@ -14521,9 +14493,9 @@ void WriteEioTables(EnergyPlusData &state)
                             std::vector<std::string> dataFields = splitCommaString(bodyLine);
                             rowHead(rowNum) = fmt::to_string(rowNum);
                             for (int iCol = 1; iCol <= numCols && iCol < int(dataFields.size()); ++iCol) {
-                                if (unitsStyle_cur == OutputReportTabular::UnitsStyle::InchPound ||
-                                    unitsStyle_cur == OutputReportTabular::UnitsStyle::InchPoundExceptElectricity ||
-                                    unitsStyle_cur == UnitsStyle::JtoKWH) {
+                                if (currentStyle.unitsStyle == OutputReportTabular::UnitsStyle::InchPound ||
+                                    currentStyle.unitsStyle == OutputReportTabular::UnitsStyle::InchPoundExceptElectricity ||
+                                    currentStyle.unitsStyle == UnitsStyle::JtoKWH) {
                                     if (isNumber(dataFields[iCol]) && colUnitConv(iCol) > 0) { // if it is a number that has a conversion
                                         int numDecimalDigits = digitsAferDecimal(dataFields[iCol]);
                                         Real64 convertedVal = ConvertIP(state, colUnitConv(iCol), StrToReal(dataFields[iCol]));
@@ -14534,8 +14506,8 @@ void WriteEioTables(EnergyPlusData &state)
                                         // int indexUnitConv =
                                         //    unitsFromHeading(state, tableBody(iCol - 1, rowNum)); // base units on previous column
                                         // Jan 2021: use overloaded version for dual units
-                                        int indexUnitConv =
-                                            unitsFromHeading(state, tableBody(iCol - 1, rowNum), unitsStyle_cur); // base units on previous column
+                                        int indexUnitConv = unitsFromHeading(
+                                            state, tableBody(iCol - 1, rowNum), currentStyle.unitsStyle); // base units on previous column
 
                                         int numDecimalDigits = digitsAferDecimal(dataFields[iCol]);
                                         Real64 convertedVal = ConvertIP(state, indexUnitConv, StrToReal(dataFields[iCol]));
@@ -14551,7 +14523,7 @@ void WriteEioTables(EnergyPlusData &state)
                     }
                 }
 
-                if (produceTabular) {
+                if (currentStyle.produceTabular) {
                     WriteSubtitle(state, tableName);
                     std::string footnote;
                     WriteTable(state, tableBody, rowHead, columnHead, columnWidth, false, footnote);
@@ -14560,7 +14532,7 @@ void WriteEioTables(EnergyPlusData &state)
                             tableBody, rowHead, columnHead, "InitializationSummary", "Entire Facility", tableName);
                     }
                 }
-                if (produceSQLite) {
+                if (currentStyle.produceSQLite) {
                     if (state.dataSQLiteProcedures->sqlite) {
                         state.dataSQLiteProcedures->sqlite->createSQLiteTabularDataRecords(
                             tableBody, rowHead, columnHead, "InitializationSummary", "Entire Facility", tableName);
@@ -14581,11 +14553,11 @@ int unitsFromHeading(EnergyPlusData &state, std::string &heading)
 
     std::string curHeading;
     int unitConv = 0;
-    if (ort->unitsStyle == UnitsStyle::InchPound) {
+    if (ort->unitsStyle_Tabular == UnitsStyle::InchPound) {
         LookupSItoIP(state, heading, unitConv, curHeading);
-    } else if (ort->unitsStyle == UnitsStyle::InchPoundExceptElectricity) {
+    } else if (ort->unitsStyle_Tabular == UnitsStyle::InchPoundExceptElectricity) {
         LookupSItoIP(state, heading, unitConv, curHeading);
-    } else if (ort->unitsStyle == UnitsStyle::JtoKWH) {
+    } else if (ort->unitsStyle_Tabular == UnitsStyle::JtoKWH) {
         LookupJtokWH(state, heading, unitConv, curHeading);
     } else {
         curHeading = heading;
@@ -15118,13 +15090,7 @@ void WriteLoadComponentSummaryTables(EnergyPlusData &state)
     // Jan 2021: The following variable is redundant in the original code, deleting the line
     // CompLoadTablesType curCompLoadTable; // active component load table
 
-    for (int iUnitSystem = 0; iUnitSystem <= 1; iUnitSystem++) {
-        UnitsStyle unitsStyle_cur = ort->unitsStyle;
-        bool produceTabular = true;
-        bool produceSQLite = false;
-        if (produceDualUnitsFlags(iUnitSystem, ort->unitsStyle, ort->unitsStyle_SQLite, unitsStyle_cur, produceTabular, produceSQLite)) {
-            break;
-        }
+    for (auto &currentStyle : ort->tabularReportPasses) {
 
         Real64 timeStepsInDay = state.dataGlobal->TimeStepsInHour * Constant::rHoursInDay;
 
@@ -15506,11 +15472,17 @@ void WriteLoadComponentSummaryTables(EnergyPlusData &state)
                 CreateListOfZonesForAirLoop(state, airLoopCoolTable, zoneToAirLoopCool, iAirLoop);
                 CreateListOfZonesForAirLoop(state, airLoopHeatTable, zoneToAirLoopHeat, iAirLoop);
 
-                LoadSummaryUnitConversion(state, airLoopCoolTable, unitsStyle_cur);
-                LoadSummaryUnitConversion(state, airLoopHeatTable, unitsStyle_cur);
+                LoadSummaryUnitConversion(state, airLoopCoolTable, currentStyle.unitsStyle);
+                LoadSummaryUnitConversion(state, airLoopHeatTable, currentStyle.unitsStyle);
 
-                OutputCompLoadSummary(
-                    state, OutputType::AirLoop, airLoopCoolTable, airLoopHeatTable, iAirLoop, unitsStyle_cur, produceTabular, produceSQLite);
+                OutputCompLoadSummary(state,
+                                      OutputType::AirLoop,
+                                      airLoopCoolTable,
+                                      airLoopHeatTable,
+                                      iAirLoop,
+                                      currentStyle.unitsStyle,
+                                      currentStyle.produceTabular,
+                                      currentStyle.produceSQLite);
             }
         }
 
@@ -15641,17 +15613,17 @@ void WriteLoadComponentSummaryTables(EnergyPlusData &state)
             ComputePeakDifference(FacilityCoolCompLoadTables);
             ComputePeakDifference(FacilityHeatCompLoadTables);
 
-            LoadSummaryUnitConversion(state, FacilityCoolCompLoadTables, unitsStyle_cur);
-            LoadSummaryUnitConversion(state, FacilityHeatCompLoadTables, unitsStyle_cur);
+            LoadSummaryUnitConversion(state, FacilityCoolCompLoadTables, currentStyle.unitsStyle);
+            LoadSummaryUnitConversion(state, FacilityHeatCompLoadTables, currentStyle.unitsStyle);
 
             OutputCompLoadSummary(state,
                                   OutputType::Facility,
                                   FacilityCoolCompLoadTables,
                                   FacilityHeatCompLoadTables,
                                   0,
-                                  unitsStyle_cur,
-                                  produceTabular,
-                                  produceSQLite);
+                                  currentStyle.unitsStyle,
+                                  currentStyle.produceTabular,
+                                  currentStyle.produceSQLite);
         }
 
         // SpaceComponentLoadSummary: Now we convert and Display
@@ -15663,17 +15635,17 @@ void WriteLoadComponentSummaryTables(EnergyPlusData &state)
                         continue;
                     }
                     if (allocated(state.dataSize->CalcFinalSpaceSizing)) {
-                        LoadSummaryUnitConversion(state, SpaceCoolCompLoadTables(iSpace), unitsStyle_cur);
-                        LoadSummaryUnitConversion(state, SpaceHeatCompLoadTables(iSpace), unitsStyle_cur);
+                        LoadSummaryUnitConversion(state, SpaceCoolCompLoadTables(iSpace), currentStyle.unitsStyle);
+                        LoadSummaryUnitConversion(state, SpaceHeatCompLoadTables(iSpace), currentStyle.unitsStyle);
 
                         OutputCompLoadSummary(state,
                                               OutputType::Space,
                                               SpaceCoolCompLoadTables(iSpace),
                                               SpaceHeatCompLoadTables(iSpace),
                                               iSpace,
-                                              unitsStyle_cur,
-                                              produceTabular,
-                                              produceSQLite);
+                                              currentStyle.unitsStyle,
+                                              currentStyle.produceTabular,
+                                              currentStyle.produceSQLite);
                     }
                 }
             }
@@ -15688,17 +15660,17 @@ void WriteLoadComponentSummaryTables(EnergyPlusData &state)
                     continue;
                 }
                 if (allocated(state.dataSize->CalcFinalZoneSizing)) {
-                    LoadSummaryUnitConversion(state, ZoneCoolCompLoadTables(iZone), unitsStyle_cur);
-                    LoadSummaryUnitConversion(state, ZoneHeatCompLoadTables(iZone), unitsStyle_cur);
+                    LoadSummaryUnitConversion(state, ZoneCoolCompLoadTables(iZone), currentStyle.unitsStyle);
+                    LoadSummaryUnitConversion(state, ZoneHeatCompLoadTables(iZone), currentStyle.unitsStyle);
 
                     OutputCompLoadSummary(state,
                                           OutputType::Zone,
                                           ZoneCoolCompLoadTables(iZone),
                                           ZoneHeatCompLoadTables(iZone),
                                           iZone,
-                                          unitsStyle_cur,
-                                          produceTabular,
-                                          produceSQLite);
+                                          currentStyle.unitsStyle,
+                                          currentStyle.produceTabular,
+                                          currentStyle.produceSQLite);
                 }
             }
         }

@@ -4080,13 +4080,6 @@ void WriteTabularTariffReports(EnergyPlusData &state)
 
     auto &s_econ = state.dataEconTariff;
 
-    // Here to it is ready to assign ort->unitStyle_SQLite (not in SQLiteProcedures.cc)
-    // when ort->unitsStyle inputs should have been concretely processed and assigned.
-    // Included this here to make sure the units specifications are correctly updated.
-    if (state.dataOutRptTab->unitsStyle_SQLite == OutputReportTabular::UnitsStyle::NotFound) {
-        state.dataOutRptTab->unitsStyle_SQLite = state.dataOutRptTab->unitsStyle; // This is the default UseOutputControlTableStyles
-    }
-
     // compute floor area if no ABUPS
     if (state.dataOutRptTab->buildingConditionedFloorArea == 0.0) {
         OutputReportTabular::DetermineBuildingFloorArea(state);
@@ -4107,23 +4100,12 @@ void WriteTabularTariffReports(EnergyPlusData &state)
             OutputReportTabular::WriteReportHeaders(
                 state, "Economics Results Summary Report", "Entire Facility", OutputProcessor::StoreType::Average);
 
-            for (int iUnitSystem = 0; iUnitSystem <= 1; iUnitSystem++) {
-                OutputReportTabular::UnitsStyle unitsStyle_cur = state.dataOutRptTab->unitsStyle;
-                bool produceTabular = true;
-                bool produceSQLite = false;
-                if (produceDualUnitsFlags(iUnitSystem,
-                                          state.dataOutRptTab->unitsStyle,
-                                          state.dataOutRptTab->unitsStyle_SQLite,
-                                          unitsStyle_cur,
-                                          produceTabular,
-                                          produceSQLite)) {
-                    break;
-                }
+            for (auto &currentStyle : state.dataOutRptTab->tabularReportPasses) {
 
                 // do unit conversions if necessary
                 std::string perAreaUnitName;
-                if ((unitsStyle_cur == OutputReportTabular::UnitsStyle::InchPound) ||
-                    (unitsStyle_cur == OutputReportTabular::UnitsStyle::InchPoundExceptElectricity)) {
+                if ((currentStyle.unitsStyle == OutputReportTabular::UnitsStyle::InchPound) ||
+                    (currentStyle.unitsStyle == OutputReportTabular::UnitsStyle::InchPoundExceptElectricity)) {
                     int unitConvIndex = 0;
                     std::string SIunit = "[~~$~~/m2]";
                     OutputReportTabular::LookupSItoIP(state, SIunit, unitConvIndex, perAreaUnitName);
@@ -4191,17 +4173,17 @@ void WriteTabularTariffReports(EnergyPlusData &state)
                         state, (allTotalCost / state.dataOutRptTab->buildingConditionedFloorArea) * perAreaUnitConv, 2);
                 }
                 columnWidth = 14; // array assignment - same for all columns
-                if (produceTabular) {
+                if (currentStyle.produceTabular) {
                     OutputReportTabular::WriteSubtitle(state, "Annual Cost");
                     OutputReportTabular::WriteTable(state, tableBody, rowHead, columnHead, columnWidth);
                 }
-                if (produceSQLite) {
+                if (currentStyle.produceSQLite) {
                     if (state.dataSQLiteProcedures->sqlite) {
                         state.dataSQLiteProcedures->sqlite->createSQLiteTabularDataRecords(
                             tableBody, rowHead, columnHead, "Economics Results Summary Report", "Entire Facility", "Annual Cost");
                     }
                 }
-                if (produceTabular) {
+                if (currentStyle.produceTabular) {
                     if (state.dataResultsFramework->resultsFramework->timeSeriesAndTabularEnabled()) {
                         state.dataResultsFramework->resultsFramework->TabularReportsCollection.addReportTable(
                             tableBody, rowHead, columnHead, "Economics Results Summary Report", "Entire Facility", "Annual Cost");

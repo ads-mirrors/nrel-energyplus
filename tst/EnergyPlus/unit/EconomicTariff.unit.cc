@@ -1430,7 +1430,7 @@ TEST_F(SQLiteFixture, WriteEconomicTariffTable_DualUnits)
     state->dataOutRptTab->WriteTabularFiles = true;
 
     OutputReportTabular::SetupUnitConversions(*state);
-    state->dataOutRptTab->unitsStyle = OutputReportTabular::UnitsStyle::JtoKWH;
+    state->dataOutRptTab->unitsStyle_Tabular = OutputReportTabular::UnitsStyle::JtoKWH;
     state->dataOutRptTab->unitsStyle_SQLite = OutputReportTabular::UnitsStyle::JtoKWH;
     Real64 enerConv = OutputReportTabular::getSpecificUnitDivider(*state, "m2", "ft2");
     EXPECT_NEAR(enerConv, 0.092903, 0.001); // 0.092893973326981863
@@ -1508,7 +1508,7 @@ TEST_F(SQLiteFixture, WriteEconomicTariffTable_DualUnits)
     }
 
     // Second case dual-unit:
-    state->dataOutRptTab->unitsStyle = OutputReportTabular::UnitsStyle::JtoKWH;
+    state->dataOutRptTab->unitsStyle_Tabular = OutputReportTabular::UnitsStyle::JtoKWH;
     state->dataOutRptTab->unitsStyle_SQLite = OutputReportTabular::UnitsStyle::InchPound;
 
     EconomicTariff::WriteTabularTariffReports(*state);

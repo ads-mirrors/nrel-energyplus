@@ -549,7 +549,7 @@ nlohmann::json GLHEVert::getCommonGHEDesignerInputs(EnergyPlusData &state) const
     gheDesignerInputs["version"] = 2; // If you update GHEDesigner, you may need to use a new input version here
     gheDesignerInputs["topology"] = {{{"type", "ground_heat_exchanger"}, {"name", "ghe1"}}};
 
-    std::string const p = fmt::format("[GHEDesigner Calculation for GHE Named: {}] ", this->name);
+    std::string const p = fmt::format("[G-Function Calculation for GHE Named: {}] ", this->name);
 
     // set up the fluid to use in GHEDesigner, note that the concentration is more restrictive than in EnergyPlus
     nlohmann::json fluidObject;

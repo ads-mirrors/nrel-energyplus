@@ -45,6 +45,7 @@
 // OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+#include <EnergyPlus/Autosizing/Base.hh>
 #include <EnergyPlus/BranchNodeConnections.hh>
 #include <EnergyPlus/Data/EnergyPlusData.hh>
 #include <EnergyPlus/DataLoopNode.hh>
@@ -774,6 +775,13 @@ void GLHEVert::performBoreholeFieldDesignAndSizingWithGHEDesigner(EnergyPlusData
     } catch (const nlohmann::json::exception &) {
         ShowFatalError(state, "GHEDesigner completed, and output file found, but could not parse JSON");
     }
+
+    // TODO: Make sure x and y are the same size, although I doubt they ever won't be.
+    std::ostringstream oss;
+    for (std::size_t i = 0; i < x.size(); ++i) {
+        oss << " (" << x[i] << " " << y[i] << ")";
+    }
+    BaseSizer::reportSizerStrOutput(state, "GroundHeatExchanger:System", this->name, "Borehole Field Locations (x1 y1) (x2 y2) ...", oss.str());
 }
 
 void GLHEVert::calcUniformBHWallTempGFunctionsWithGHEDesigner(EnergyPlusData &state) const

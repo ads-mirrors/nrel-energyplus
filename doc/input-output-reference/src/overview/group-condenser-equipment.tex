@@ -2978,12 +2978,13 @@ The heat exchanger response is defined by a g-function which is a non-dimensiona
   GFNC\emph{i} is the g-function value
 \end{itemize}
 
-The g-function is different for each borehole field configuration (i.e.~a 4 $\times$ 4 field has a different response than a 80 $\times$ 80 field). It is also dependent on the ratio of borehole spacing to depth. g-function values, for accurate simulation, have to be computed for each specific heat exchanger design. The GroundHeatExchanger:System object will accept three different types of input in order to define the g-functions necessary for the ground heat exchanger calculations.
+The g-function is different for each borehole field configuration (i.e.~a 4 $\times$ 4 field has a different response than a 80 $\times$ 80 field). It is also dependent on the ratio of borehole spacing to depth. g-function values, for accurate simulation, have to be computed for each specific heat exchanger design. The GroundHeatExchanger:System object will accept four different types of input in order to define the g-functions necessary for the ground heat exchanger calculations.
 
 \begin{enumerate}
     \item Use the \hyperref[groundheatexchangerverticalarray]{GroundHeatExchanger:Vertical:Array} object to define a rectangular borehole field.
     \item Use one or more \hyperref[groundheatexchangerverticalsingle]{GroundHeatExchanger:Vertical:Single} objects to define a vertical borehole field with the boreholes located arbitrarily.
     \item Use a third-party tool, such as GLHEPro, to compute the g-functions and pass them to EnergyPlus using the \hyperref[groundheatexchangerresponsefactors]{GroundHeatExchanger:ResponseFactors} object.
+    \item Request borehole field design and sizing by providing a single \hyperref[groundheatexchangerverticalsingle]{GroundHeatExchanger:Vertical:Single} object and also a \hyperref[groundheatexchangerverticalsizing]{GroundHeatExchanger:Vertical:Sizing} object.
 \end{enumerate}
 
 A small number of reference datasets containing example input data for 1 $\times$ 2, 4 $\times$ 4 and 8 $\times$ 8 configurations and for both standard and thermally enhanced grout are provided as well.
@@ -3036,7 +3037,17 @@ The unique name of the \hyperref[groundheatexchangerresponsefactors]{GroundHeatE
 
 \paragraph{Field: g-Function Calculation Method}
 
-If the GHE:ResponseFactors object is not provided, this input will be relevant to the calculation method used to generate the g-function values. There are two options for this input: ``UHFcalc" or ``UBHWTcalc". The default is UHFcalc, where a g-function is computed with the uniform heat flux boundary condition. The UBHWTcalc option computes the g-function with a uniform borehole wall temperature boundary condition. The g-function computed with a uniform borehole wall temperature boundary condition is expected to be a better approximation of the borehole physics and is also expected to be faster to compute.
+If the GHE:ResponseFactors object is not provided, this input will be relevant to the calculation method used to generate the g-function values.
+There are three options for this input: ``UHFcalc'',  ``UBHWTcalc'', or ``FullDesign''.
+The default is UHFcalc, where a g-function is computed with the uniform heat flux boundary condition.
+The UBHWTcalc option computes the g-function with a uniform borehole wall temperature boundary condition.
+The g-function computed with a uniform borehole wall temperature boundary condition is expected to be a better approximation of the borehole physics and is also expected to be faster to compute.
+The final option of FullDesign allows a borehole field to be designed and sized based on loads and design parameters.
+For a designed borehole field, the input file should include a GHE:Vertical:Sizing object matching the next field in this object, a full annual weather file sizing period to allow a year of loads to be generated, and finally hvac sizing enabled in the simulation control object.
+
+\paragraph{Field: GHE:Vertical:Sizing object name}
+
+For borehole field design and sizing calculations, this should be the name of an object specifying design parameters for the borehole field.  See the full documentation for \hyperref[groundheatexchangerverticalsizing]{GroundHeatExchanger:Vertical:Sizing}.
 
 \paragraph{Field: GHE:Vertical:Array object name}
 

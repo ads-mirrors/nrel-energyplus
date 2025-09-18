@@ -200,6 +200,7 @@ TEST_F(EnergyPlusFixture, GroundHeatExchangerTest_System_calcGFunction_UBHWT)
                           "    2.343E+06,          !- Ground Thermal Heat Capacity {J/m3-K}",
                           "    ,                   !- Response Factors Object Name",
                           "    UBHWTCalc,          !- g-Function Calculation Method",
+                          "    ,                   !- GHE Sizing Object Name",
                           "    ,                   !- GHE Array Object Name",
                           "    GHE-1,              !- GHE Borehole Definition 1",
                           "    GHE-2,              !- GHE Borehole Definition 2",
@@ -593,6 +594,7 @@ TEST_F(EnergyPlusFixture, GroundHeatExchangerTest_System_calc_pipe_conduction_re
                           "    2.343E+06,          !- Ground Thermal Heat Capacity {J/m3-K}",
                           "    ,                   !- Response Factors Object Name",
                           "    UHFCalc,            !- g-Function Calculation Method",
+                          "    ,                   !- GHE Sizing Object Name",
                           "    GHE-Array;          !- GHE Array Object Name"});
 
     ASSERT_TRUE(process_idf(idf_objects));
@@ -652,6 +654,7 @@ TEST_F(EnergyPlusFixture, GroundHeatExchangerTest_System_friction_factor)
                           "    2.343E+06,          !- Ground Thermal Heat Capacity {J/m3-K}",
                           "    ,                   !- Response Factors Object Name",
                           "    UHFCalc,            !- g-Function Calculation Method",
+                          "    ,                   !- GHE Sizing Object Name",
                           "    GHE-Array;          !- GHE Array Object Name"});
 
     // Setup
@@ -742,6 +745,7 @@ TEST_F(EnergyPlusFixture, GroundHeatExchangerTest_System_calc_pipe_convection_re
                           "    2.343E+06,          !- Ground Thermal Heat Capacity {J/m3-K}",
                           "    ,                   !- Response Factors Object Name",
                           "    UHFCalc,            !- g-Function Calculation Method",
+                          "    ,                   !- GHE Sizing Object Name",
                           "    GHE-Array;          !- GHE Array Object Name",
 
                           "Branch,",
@@ -1044,6 +1048,7 @@ TEST_F(EnergyPlusFixture, GroundHeatExchangerTest_System_calc_pipe_resistance)
                           "    2.343E+06,          !- Ground Thermal Heat Capacity {J/m3-K}",
                           "    ,                   !- Response Factors Object Name",
                           "    UHFCalc,            !- g-Function Calculation Method",
+                          "    ,                   !- GHE Sizing Object Name",
                           "    GHE-Array;          !- GHE Array Object Name",
 
                           "Branch,",
@@ -1562,6 +1567,7 @@ TEST_F(EnergyPlusFixture, GroundHeatExchangerTest_System_calcBHGroutResistance_1
         "    2.4957E+06,         !- Ground Thermal Heat Capacity {J/m3-K}",
         "    ,                   !- Response Factors Object Name",
         "    UHFCalc,            !- g-Function Calculation Method",
+        "    ,                   !- GHE Sizing Object Name",
         "    GHE-Array;          !- GHE Array Object Name"});
 
     // Setup
@@ -1858,6 +1864,7 @@ TEST_F(EnergyPlusFixture, GroundHeatExchangerTest_System_calcBHGroutResistance_2
         "    2.4957E+06,         !- Ground Thermal Heat Capacity {J/m3-K}",
         "    ,                   !- Response Factors Object Name",
         "    UHFCalc,            !- g-Function Calculation Method",
+        "    ,                   !- GHE Sizing Object Name",
         "    GHE-Array;          !- GHE Array Object Name"});
 
     // Setup
@@ -2153,6 +2160,7 @@ TEST_F(EnergyPlusFixture, GroundHeatExchangerTest_System_calcBHGroutResistance_3
         "    2.4957E+06,         !- Ground Thermal Heat Capacity {J/m3-K}",
         "    ,                   !- Response Factors Object Name",
         "    UHFCalc,            !- g-Function Calculation Method",
+        "    ,                   !- GHE Sizing Object Name",
         "    GHE-Array;          !- GHE Array Object Name"});
 
     // Setup
@@ -2449,6 +2457,7 @@ TEST_F(EnergyPlusFixture, GroundHeatExchangerTest_System_calcBHTotalInternalResi
         "    2.4957E+06,         !- Ground Thermal Heat Capacity {J/m3-K}",
         "    ,                   !- Response Factors Object Name",
         "    UHFCalc,            !- g-Function Calculation Method",
+        "    ,                   !- GHE Sizing Object Name",
         "    GHE-Array;          !- GHE Array Object Name"});
 
     // Setup
@@ -2744,6 +2753,7 @@ TEST_F(EnergyPlusFixture, GroundHeatExchangerTest_System_calcBHTotalInternalResi
         "    2.4957E+06,         !- Ground Thermal Heat Capacity {J/m3-K}",
         "    ,                   !- Response Factors Object Name",
         "    UHFCalc,            !- g-Function Calculation Method",
+        "    ,                   !- GHE Sizing Object Name",
         "    GHE-Array;          !- GHE Array Object Name"});
 
     // Setup
@@ -3039,6 +3049,7 @@ TEST_F(EnergyPlusFixture, GroundHeatExchangerTest_System_calcBHTotalInternalResi
         "    2.4957E+06,         !- Ground Thermal Heat Capacity {J/m3-K}",
         "    ,                   !- Response Factors Object Name",
         "    UHFCalc,            !- g-Function Calculation Method",
+        "    ,                   !- GHE Sizing Object Name",
         "    GHE-Array;          !- GHE Array Object Name"});
 
     // Setup

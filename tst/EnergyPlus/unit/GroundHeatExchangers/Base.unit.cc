@@ -676,6 +676,7 @@ TEST_F(EnergyPlusFixture, GroundHeatExchangerTest_System_Given_Array_IDF_Check)
                           "    2.343E+06,          !- Ground Thermal Heat Capacity {J/m3-K}",
                           "    ,                   !- Response Factors Object Name",
                           "    UHFCalc,            !- g-Function Calculation Method",
+                          "    ,                   !- GHE Sizing Object Name",
                           "    GHE-Array;          !- GHE Array Object Name"});
 
     ASSERT_TRUE(process_idf(idf_objects));
@@ -770,6 +771,7 @@ TEST_F(EnergyPlusFixture, GroundHeatExchangerTest_System_Given_Single_BHs_IDF_Ch
                           "    2.343E+06,          !- Ground Thermal Heat Capacity {J/m3-K}",
                           "    ,                   !- Response Factors Object Name",
                           "    UHFCalc,            !- g-Function Calculation Method",
+                          "    ,                   !- GHE Sizing Object Name",
                           "    ,                   !- GHE Array Object Name",
                           "    GHE-1,              !- GHE Borehole Definition 1",
                           "    GHE-2,              !- GHE Borehole Definition 2",
@@ -863,6 +865,7 @@ TEST_F(EnergyPlusFixture, GroundHeatExchangerTest_System_calcGFunction_UHF)
                           "    2.343E+06,          !- Ground Thermal Heat Capacity {J/m3-K}",
                           "    ,                   !- Response Factors Object Name",
                           "    UHFCalc,            !- g-Function Calculation Method",
+                          "    ,                   !- GHE Sizing Object Name",
                           "    ,                   !- GHE Array Object Name",
                           "    GHE-1,              !- GHE Borehole Definition 1",
                           "    GHE-2,              !- GHE Borehole Definition 2",

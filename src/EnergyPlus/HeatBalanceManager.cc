@@ -3763,7 +3763,8 @@ namespace HeatBalanceManager {
         }
         ++FileLineCount;
         if (!has_prefixi(NextLine.data, "WINDOW NAME")) {
-            // Berkeley Lab WINDOW 7 has been found to include extra blank lines after the "WINDOW5" line, so find the line that begins with "WINDOW NAME"
+            // Berkeley Lab WINDOW 7 has been found to include extra blank lines after the "WINDOW5" line
+            // so find the line that begins with "WINDOW NAME"
             goto Label10;
         } else {
             // Get window name

@@ -3057,7 +3057,7 @@ The unique name of the \hyperref[groundheatexchangerverticalarray]{GroundHeatExc
 
 The unique names of all single, vertical GLHE objects which are used to define and arbitrarily shaped GHE array. This field is extensible.
 
-The following is are example inputs corresponding to the input variations allowed which were described previously. The first example uses the \hyperref[groundheatexchangerverticalarray]{GroundHeatExchanger:Vertical:Array} object. The g-functions will be generated automatically by EnergyPlus.
+The following are example inputs corresponding to the input variations allowed which were described previously. The first example uses the \hyperref[groundheatexchangerverticalarray]{GroundHeatExchanger:Vertical:Array} object. The g-functions will be generated automatically by EnergyPlus.
 
 \begin{lstlisting}
   GroundHeatExchanger:System,
@@ -3071,6 +3071,7 @@ The following is are example inputs corresponding to the input variations allowe
     2.5E+06,            !- Ground Thermal Heat Capacity {J/m3-K}
     ,                   !- Response Factors Object Name
     UBHWTcalc,          !- g-Function Calculation Method
+    ,                   !- GHE:Vertical:Sizing Object Name
     GHE-Array;          !- GHE:Vertical:Array Object Name
 
   GroundHeatExchanger:Vertical:Properties,
@@ -3108,6 +3109,7 @@ The second example uses the \hyperref[groundheatexchangerverticalsingle]{GroundH
     2.5E+06,            !- Ground Thermal Heat Capacity {J/m3-K}
     ,                   !- Response Factors Object Name
     UBHWTcalc,          !- g-Function Calculation Method
+    ,                   !- GHE:Vertical:Sizing Object Name
     ,                   !- GHE Array Object Name
     GHE-1,              !- GHE Borehole Definition 1
     GHE-2,              !- GHE Borehole Definition 2
@@ -3247,6 +3249,85 @@ This is the average temperature of the working fluid inside the heat exchanger.
 \paragraph{Ground Heat Exchanger Farfield Ground Temperature}
 
 This is the farfield temperature used by the object which is provided by the undisturbed ground temperature object. The temperature is the average of the 5 evenly spaced points between the top of the borehole and the bottom of the borehole.
+
+\subsection{GroundHeatExchanger:Vertical:Sizing}\label{groundheatexchangerverticalsizing}
+
+The ground loop heat exchanger can be designed and sized using the packaged GHEDesigner library.
+Currently the design is limited to rectangular borehole fields, with future enhancements expected to allow more flexible field design.
+To achieve the design, several design parameters are required, and are supplied in this object.
+
+\subsubsection{Inputs}
+
+\paragraph{Field: Name}
+
+This alpha field contains the identifying name for the ground heat exchanger sizing object.
+This name will be referenced in a GroundHeatExchanger:System object.
+
+\paragraph{Field: Borehole Field Geometry Type}
+
+This alpha field contains the borehole field geometry.
+As of now, the only possible input here is Rectangle, which will try to design the best borehole field in a rectangular space.
+GHEDesigner supports other field geometry, so it is expected that future versions of EnergyPlus will allow more diverse field types.
+
+\paragraph{Field: Available Borehole Field Length}
+
+This is the available borehole field length, in meters, as looking down from above.
+
+\paragraph{Field: Available Borehole Field Width}
+
+This is the available borehole field width, in meters, as looking down from above.
+
+\paragraph{Field: Maximum Number of Boreholes}
+
+This is the maximum number of boreholes available for the design.
+
+\paragraph{Field: Minimum Borehole Spacing}
+
+This is the minimum borehole-to-borehole spacing, in meters.
+
+\paragraph{Field: Maximum Borehole Spacing}
+
+This is the maximum borehole-to-borehole spacing, in meters.
+
+\paragraph{Field: Minimum Borehole Vertical Length}
+
+This is the minimum vertical height, or total borehole ``length'', to be used when designing the borehole field.
+
+\paragraph{Field: Maximum Borehole Vertical Length}
+
+This is the maximum vertical height, or total borehole ``length'', to be used when designing the borehole field.
+
+\paragraph{Field: Minimum Exiting Fluid Temperature for Sizing}
+
+This is the minimum allowable exiting fluid temperature for the borehole heat exchanger when designing the borehole field.
+
+\paragraph{Field: Maximum Exiting Fluid Temperature for Sizing}
+
+This is the maximum allowable exiting fluid temperature for the borehole heat exchanger when designing the borehole field.
+
+\subsubsection{Example Inputs}
+
+This is an example input object for the sizing parameters:
+
+\begin{lstlisting}
+  GroundHeatExchanger:Vertical:Sizing,
+    GHE-1-Sizing,            !- Name
+    Rectangle,               !- Borehole Field Geometry Type
+    100.0,                   !- Available Borehole Field Length
+    100.0,                   !- Available Borehole Field Width
+    200.0,                   !- Maximum Number of Boreholes
+    3.0,                     !- Minimum Borehole Spacing
+    10.0,                    !- Maximum Borehole Spacing
+    60.0,                    !- Minimum Borehole Vertical Length
+    135.0,                   !- Maximum Borehole Vertical Length
+    5.0,                     !- Minimum Exiting Fluid Temperature for Sizing
+    35.0;                    !- Maximum Exiting Fluid Temperature for Sizing
+\end{lstlisting}
+
+\subsubsection{Outputs}
+
+This object does not have any specific output variables.
+However, by using the full design approach, there may be additional output files or sizing outputs available in the EIO.
 
 \subsection{GroundHeatExchanger:Vertical:Properties}\label{groundheatexchangerverticalproperties}
 

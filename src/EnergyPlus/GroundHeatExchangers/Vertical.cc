@@ -138,6 +138,9 @@ GLHEVert::GLHEVert(EnergyPlusData &state, std::string const &objName, nlohmann::
 
         // get borehole data from array or individual borehole instance objects
         if (this->gFuncCalcMethod == GFuncCalcMethod::FullDesign) {
+#ifndef PYTHON_CLI
+            ShowFatalError(state, "Attempted to use borehole field design in a build without PYTHON_CLI, which is invalid");
+#endif
             // g-functions won't be calculated until after sizing is complete
             // TODO: Need to check to make sure run is set up properly -- need 1 annual sizing period, and sizing periods enabled
             bool foundSizing = false;
@@ -331,11 +334,10 @@ void GLHEVert::simulate(EnergyPlusData &state,
                     std::vector<Real64> hourlyValues;
                     hourlyValues.reserve(8760);
                     unsigned int const numPerHour = timeStepValues.size() / 8760;
-                    for (std::size_t i = 0; i < timeStepValues.size(); i += numPerHour) {
-                        Real64 sum = std::accumulate(timeStepValues.begin() + i, timeStepValues.begin() + i + numPerHour, 0.0);
+                    for (std::ptrdiff_t i = 0; i < static_cast<std::ptrdiff_t>(timeStepValues.size()); i += numPerHour) {
+                        const Real64 sum = std::accumulate(timeStepValues.begin() + i, timeStepValues.begin() + i + numPerHour, 0.0);
                         hourlyValues.push_back(sum / static_cast<double>(numPerHour));
                     }
-
                     this->performBoreholeFieldDesignAndSizingWithGHEDesigner(state, hourlyValues);
                 }
             } else { // if load accrual is not started yet, just do nothing until the hvac sizing simulation has begun

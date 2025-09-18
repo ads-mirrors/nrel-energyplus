@@ -1,7 +1,7 @@
 VERSION 5.00
-Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "ComDlg32.OCX"
-Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.1#0"; "MSCOMCTL.OCX"
 Object = "{48E59290-9880-11CF-9754-00AA00C00908}#1.0#0"; "MSINET.OCX"
+Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.1#0"; "MSCOMCTL.OCX"
+Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "ComDlg32.OCX"
 Begin VB.Form eplUI 
    BorderStyle     =   1  'Fixed Single
    Caption         =   "EP-Launch"
@@ -1485,7 +1485,7 @@ Private Type utilProgType
     includeExtensionInCall As Boolean 'if the extension should be included when the file is passed to the application
     waitUntilUtilityExits As Boolean 'true if EP-Launch should wait until the called program is done
 End Type
-Const numUtilProg = 10
+Const numUtilProg = 9
 Dim utilProg(numUtilProg) As utilProgType
 
 Private Type SimQueueType
@@ -6098,7 +6098,7 @@ utilProg(7).outExt3Alt = "-GAVGTable.htm"
 utilProg(7).outExt4 = "-AppGErr.txt"
 utilProg(7).outExt5 = ""
 utilProg(7).outExt6 = ""
-utilProg(7).applicationFile = "PostProcess\AppGPostProcess\appgpostprocess.exe"
+utilProg(7).applicationFile = "PostProcess\AppGPostProcess.exe"
 utilProg(7).appIsSpreadsheet = False
 utilProg(7).batchFile = ""
 utilProg(7).useInputAsExeArgument = True
@@ -6149,32 +6149,31 @@ utilProg(9).useInputAsExeArgument = False
 utilProg(9).fileSuffix = ""
 utilProg(9).includeExtensionInCall = False
 utilProg(9).waitUntilUtilityExits = False
-'
-utilProg(10).name = "EP-Compare"
-utilProg(10).about = "Graphs the values from the tabular report for multiple simulations side by side."
-utilProg(10).enableInput = False
-utilProg(10).enableWthr = False
-utilProg(10).enableInTextEdit = True
-utilProg(10).IDFEdOpt = ""
-utilProg(10).inExt = ""
-utilProg(10).outExt1 = ""
-utilProg(10).outExt2 = ""
-utilProg(10).outExt3 = ""
-utilProg(10).outExt4 = ""
-utilProg(10).outExt5 = ""
-utilProg(10).outExt6 = ""
-utilProg(10).applicationFile = "PostProcess\EP-Compare\EP-Compare.exe"
-utilProg(10).appIsSpreadsheet = False
-utilProg(10).batchFile = ""
-utilProg(10).useInputAsExeArgument = False
-utilProg(10).fileSuffix = ""
-utilProg(10).includeExtensionInCall = False
-utilProg(10).waitUntilUtilityExits = False
-
-
 
 '
 ' NOT SUPPORTED
+'
+'utilProg(10).name = "EP-Compare"
+'utilProg(10).about = "Graphs the values from the tabular report for multiple simulations side by side."
+'utilProg(10).enableInput = False
+'utilProg(10).enableWthr = False
+'utilProg(10).enableInTextEdit = True
+'utilProg(10).IDFEdOpt = ""
+'utilProg(10).inExt = ""
+'utilProg(10).outExt1 = ""
+'utilProg(10).outExt2 = ""
+'utilProg(10).outExt3 = ""
+'utilProg(10).outExt4 = ""
+'utilProg(10).outExt5 = ""
+'utilProg(10).outExt6 = ""
+'utilProg(10).applicationFile = "PostProcess\EP-Compare\EP-Compare.exe"
+'utilProg(10).appIsSpreadsheet = False
+'utilProg(10).batchFile = ""
+'utilProg(10).useInputAsExeArgument = False
+'utilProg(10).fileSuffix = ""
+'utilProg(10).includeExtensionInCall = False
+'utilProg(10).waitUntilUtilityExits = False
+'
 'utilProg(8).name = "View3D"
 'utilProg(8).about = "EnergyPlus has the capability of accepting user defined view factors for special research " & _
 '"situations. This option is not recommended for general use. However, when a user desires to supply view " & _

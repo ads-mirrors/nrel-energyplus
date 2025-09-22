@@ -742,6 +742,18 @@ namespace IceThermalStorage {
             state.dataIceThermalStorage->ThermalStorageSizing(sizingNum).onPeakStart = state.dataIPShortCut->rNumericArgs(1);
             state.dataIceThermalStorage->ThermalStorageSizing(sizingNum).onPeakEnd = state.dataIPShortCut->rNumericArgs(2);
             state.dataIceThermalStorage->ThermalStorageSizing(sizingNum).sizingFactor = state.dataIPShortCut->rNumericArgs(3);
+            if (state.dataIceThermalStorage->ThermalStorageSizing(sizingNum).onPeakEnd <=
+                    state.dataIceThermalStorage->ThermalStorageSizing(sizingNum).onPeakStart) {
+                ShowSevereError(state,
+                                format("{}{}=\"{}\"",
+                                       routineName,
+                                       state.dataIPShortCut->cCurrentModuleObject,
+                                       state.dataIceThermalStorage->ThermalStorageSizing(sizingNum).name));
+                ShowContinueError(state,
+                                  format("Invalid start {} and end times {}. End time must be greater than start time.",
+                                         state.dataIceThermalStorage->ThermalStorageSizing(sizingNum).onPeakStart,
+                                         state.dataIceThermalStorage->ThermalStorageSizing(sizingNum).onPeakEnd));
+            }
         }
 
         // Allocate SimpleIceStorage based on NumOfIceStorage
@@ -1464,22 +1476,22 @@ namespace IceThermalStorage {
 
         int startPeak = state.dataIceThermalStorage->ThermalStorageSizing(TESSizingIndex).onPeakStart * state.dataGlobal->TimeStepsInHour;
         int endPeak = state.dataIceThermalStorage->ThermalStorageSizing(TESSizingIndex).onPeakEnd * state.dataGlobal->TimeStepsInHour;
+        Real64 onPeakTimeSteps = endPeak - startPeak;
+        Real64 onPeakHours = onPeakTimeSteps / state.dataGlobal->TimeStepsInHour;
         Real64 sizingFactor = state.dataIceThermalStorage->ThermalStorageSizing(TESSizingIndex).sizingFactor;
         Real64 onPeakSumWaterFlow = 0.0;
-        Real64 offPeakSumWaterFlow = 0.0;
         if (!plntLoop.plantDesWaterFlowRate.empty()) {
             for (int ts = 0; ts < 24 * state.dataGlobal->TimeStepsInHour; ++ts) {
                 if (ts > startPeak && ts <= endPeak) {
-                    onPeakSumWaterFlow += plntLoop.plantDesWaterFlowRate[ts] / state.dataGlobal->TimeStepsInHour;
-                } else {
-                    offPeakSumWaterFlow += plntLoop.plantDesWaterFlowRate[ts] / state.dataGlobal->TimeStepsInHour;
+                    onPeakSumWaterFlow += plntLoop.plantDesWaterFlowRate[ts];
                 }
             }
+            onPeakSumWaterFlow /= onPeakTimeSteps;
         }
         Real64 Cp = plntLoop.glycol->getSpecificHeat(state, plntSizData.ExitTemp, callingRoutine);
         Real64 rho = plntLoop.glycol->getDensity(state, plntSizData.ExitTemp, callingRoutine);
-        Real64 onPeakEnergy =
-            onPeakSumWaterFlow * rho * Cp * plntSizData.DeltaT * Constant::rSecsInHour; // need Joules here, J = m3/s * kg/m3 * J/kg-C * C * sec
+        Real64 onPeakEnergy = onPeakSumWaterFlow * rho * Cp * plntSizData.DeltaT * Constant::rSecsInHour *
+                              onPeakHours; // need Joules here, J = m3/s * kg/m3 * J/kg-C * C * sec/hr * hr
 
         // now apply the heat of fusion J/Kg and size tank
         // Real64 tankCapacityKg = onPeakEnergy * sizingFactor / tankHeatOfFusion;    // kg
@@ -1512,24 +1524,26 @@ namespace IceThermalStorage {
         int PltSizNum = plntLoop.PlantSizNum;
         auto &plntSizData = state.dataSize->PlantSizData(PltSizNum);
 
-        int startPeak = state.dataIceThermalStorage->ThermalStorageSizing(TESSizingIndex).onPeakStart * state.dataGlobal->TimeStepsInHour;
-        int endPeak = state.dataIceThermalStorage->ThermalStorageSizing(TESSizingIndex).onPeakEnd * state.dataGlobal->TimeStepsInHour;
+        Real64 startPeak = state.dataIceThermalStorage->ThermalStorageSizing(TESSizingIndex).onPeakStart * state.dataGlobal->TimeStepsInHour;
+        Real64 endPeak = state.dataIceThermalStorage->ThermalStorageSizing(TESSizingIndex).onPeakEnd * state.dataGlobal->TimeStepsInHour;
+        Real64 onPeakTimeSteps = endPeak - startPeak;
+        Real64 onPeakHours = onPeakTimeSteps / state.dataGlobal->TimeStepsInHour;
         Real64 sizingFactor = state.dataIceThermalStorage->ThermalStorageSizing(TESSizingIndex).sizingFactor;
         Real64 onPeakSumWaterFlow = 0.0;
-        Real64 offPeakSumWaterFlow = 0.0;
         if (!plntLoop.plantDesWaterFlowRate.empty()) {
             for (int ts = 0; ts < 24 * state.dataGlobal->TimeStepsInHour; ++ts) {
                 if (ts > startPeak && ts <= endPeak) {
-                    onPeakSumWaterFlow += plntLoop.plantDesWaterFlowRate[ts] / state.dataGlobal->TimeStepsInHour;
-                } else {
-                    offPeakSumWaterFlow += plntLoop.plantDesWaterFlowRate[ts] / state.dataGlobal->TimeStepsInHour;
+                    onPeakSumWaterFlow += plntLoop.plantDesWaterFlowRate[ts];
                 }
             }
+            onPeakSumWaterFlow /= onPeakTimeSteps; // average m3/s
         }
         Real64 Cp = plntLoop.glycol->getSpecificHeat(state, plntSizData.ExitTemp, callingRoutine);
         Real64 rho = plntLoop.glycol->getDensity(state, plntSizData.ExitTemp, callingRoutine);
-        Real64 onPeakEnergy =
-            onPeakSumWaterFlow * rho * Cp * plntSizData.DeltaT * Constant::rSecsInHour; // need Joules here, J = m3/s * kg/m3 * J/kg-C * C * sec
+        // Real64 onPeakEnergy2 = onPeakSumWaterFlow * rho * Constant::rSecsInHour * onPeakHours *
+        //                        tankHeatOfFusion; // need Joules here, J = m3/s * kg/m3 * sec/hr * hr * J/kg
+        Real64 onPeakEnergy = onPeakSumWaterFlow * rho * Cp * plntSizData.DeltaT * Constant::rSecsInHour *
+                              onPeakHours; // need Joules here, J = m3/s * kg/m3 * J/kg-C * C * sec/hr * hr
 
         // now apply the heat of fusion J/Kg and size tank
         // Real64 tankCapacityKg = onPeakEnergy * sizingFactor / tankHeatOfFusion; // kg

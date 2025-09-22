@@ -743,7 +743,7 @@ namespace IceThermalStorage {
             state.dataIceThermalStorage->ThermalStorageSizing(sizingNum).onPeakEnd = state.dataIPShortCut->rNumericArgs(2);
             state.dataIceThermalStorage->ThermalStorageSizing(sizingNum).sizingFactor = state.dataIPShortCut->rNumericArgs(3);
             if (state.dataIceThermalStorage->ThermalStorageSizing(sizingNum).onPeakEnd <=
-                    state.dataIceThermalStorage->ThermalStorageSizing(sizingNum).onPeakStart) {
+                state.dataIceThermalStorage->ThermalStorageSizing(sizingNum).onPeakStart) {
                 ShowSevereError(state,
                                 format("{}{}=\"{}\"",
                                        routineName,

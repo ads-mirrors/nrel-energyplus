@@ -230,6 +230,7 @@ void UpdateTabularReports(EnergyPlusData &state, OutputProcessor::TimeStepType t
         OutputReportTabularAnnual::GetInputTabularAnnual(state);
         OutputReportTabularAnnual::checkAggregationOrderForAnnual(state);
         GetInputTabularTimeBins(state);
+        OutputReportTabular::GetInputTabularStyle(state); // need to get this early before sizing writes to table outputs
         GetInputOutputTableSummaryReports(state);
         if (state.dataOutRptTab->displayThermalResilienceSummary) {
             // check whether multiple people have different threshold for a zone
@@ -1376,8 +1377,15 @@ void GetInputTabularStyle(EnergyPlusData &state)
         ort->formatReals_Tabular = getYesNoValue(AlphArray(3)) == BooleanSwitch::Yes;
     }
 
-    print(state.files.eio, "! <Tabular Report>,Style,Unit Conversion, Format Reals\n");
-    print(state.files.eio, "Tabular Report,{},{},{}\n", AlphArray(1), AlphArray(2), ort->formatReals_Tabular ? "Yes" : "No");
+    if (ort->WriteTabularFiles) {
+        print(state.files.eio, "! <Tabular Report>,Style,Unit Conversion\n");
+        if (AlphArray(1) != "HTML") {
+            ConvertCaseToLower(AlphArray(1), AlphArray(2));
+            AlphArray(1).erase(1);
+            AlphArray(1) += AlphArray(2).substr(1);
+        }
+        print(state.files.eio, "Tabular Report,{},{}\n", AlphArray(1), AlphArray(2));
+    }
 }
 
 UnitsStyle SetUnitsStyleFromString(std::string const &unitStringIn)

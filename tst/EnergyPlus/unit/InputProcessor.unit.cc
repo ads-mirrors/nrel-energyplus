@@ -2094,7 +2094,8 @@ TEST_F(InputProcessorFixture, getObjectItem_json1)
                                                               cNumericFields);
 
     EXPECT_TRUE(compare_containers(std::vector<std::string>({"SIMPLEANDTABULAR", "USEOUTPUTCONTROLTABLESTYLE", "YES"}), Alphas));
-    EXPECT_TRUE(compare_containers(std::vector<std::string>({"Option Type", "Unit Conversion for Tabular Data", "Format Numeric Values for Tabular Data"}), cAlphaFields));
+    EXPECT_TRUE(compare_containers(
+        std::vector<std::string>({"Option Type", "Unit Conversion for Tabular Data", "Format Numeric Values for Tabular Data"}), cAlphaFields));
     EXPECT_TRUE(compare_containers(std::vector<std::string>({}), cNumericFields));
     EXPECT_TRUE(compare_containers(std::vector<bool>({}), lNumericBlanks));
     EXPECT_TRUE(compare_containers(std::vector<bool>({false, true, true}), lAlphaBlanks));

@@ -10707,6 +10707,7 @@ TEST_F(SQLiteFixture, WriteVeriSumSpaceTables_Test)
     // WriteVeriSumTable(*state);
     bool produceTabular = true;
     bool produceSQLite = true;
+    bool produceJSON = true;
     state->dataGlobal->numSpaces = 2;
 
     state->dataOutRptTab->m_unitName = "[m]";
@@ -10760,7 +10761,7 @@ TEST_F(SQLiteFixture, WriteVeriSumSpaceTables_Test)
     state->dataHeatBal->space(1).FloorArea = 100.0;
     state->dataHeatBal->space(2).FloorArea = 100.0;
 
-    OutputReportTabular::writeVeriSumSpaceTables(*state, produceTabular, produceSQLite);
+    OutputReportTabular::writeVeriSumSpaceTables(*state, produceTabular, produceSQLite, produceJSON);
 
     auto tabularData = queryResult("SELECT * FROM TabularData;", "TabularData");
     auto strings = queryResult("SELECT * FROM Strings;", "Strings");

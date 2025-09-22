@@ -710,7 +710,8 @@ namespace OutputReportTabular {
                                             Array1D_bool &needOtherRow,
                                             const UnitsStyle unitsStyle_cur,
                                             const bool produceTabular,
-                                            const bool produceSQLite);
+                                            const bool produceSQLite,
+                                            const bool produceJSON);
 
     std::string ResourceWarningMessage(std::string const &resource);
 
@@ -731,7 +732,7 @@ namespace OutputReportTabular {
 
     void WriteVeriSumTable(EnergyPlusData &state);
 
-    void writeVeriSumSpaceTables(EnergyPlusData &state, bool produceTabular, bool produceSQLite);
+    void writeVeriSumSpaceTables(EnergyPlusData &state, bool produceTabular, bool produceSQLite, bool produceJSON);
 
     void WriteAdaptiveComfortTable(EnergyPlusData &state);
 
@@ -948,7 +949,8 @@ namespace OutputReportTabular {
                                int zoneOrAirLoopIndex,
                                UnitsStyle unitsStyle_para,
                                bool produceTabular_para,
-                               bool produceSQLite_para);
+                               bool produceSQLite_para,
+                               bool produceJSON_para);
 
     void WriteReportHeaders(EnergyPlusData &state,
                             std::string const &reportName,

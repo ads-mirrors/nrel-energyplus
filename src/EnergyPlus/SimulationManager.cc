@@ -213,7 +213,7 @@ namespace SimulationManager {
         CheckForMisMatchedEnvironmentSpecifications(state);
         CheckForRequestedReporting(state);
         OutputReportPredefined::SetPredefinedTables(state);
-        SetPreConstructionInputParameters(state);         // establish array bounds for constructions early
+        SetPreConstructionInputParameters(state); // establish array bounds for constructions early
 
         OutputProcessor::SetupTimePointers(
             state, OutputProcessor::TimeStepType::Zone, state.dataGlobal->TimeStepZone); // Set up Time pointer for HB/Zone Simulation

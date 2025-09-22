@@ -6133,6 +6133,7 @@ TEST_F(SQLiteFixture, WriteVeriSumTableAreasTest)
     state->dataHeatBal->Zone(1).ExteriorTotalGroundSurfArea = 0;
     state->dataHeatBal->Zone(1).ExtWindowArea = state->dataSurface->Surface(3).GrossArea + state->dataSurface->Surface(4).GrossArea;
 
+    OutputReportTabular::setTabularReportStyles(*state);
     WriteVeriSumTable(*state);
 
     auto tabularData = queryResult("SELECT * FROM TabularData;", "TabularData");
@@ -6332,6 +6333,7 @@ TEST_F(SQLiteFixture, WriteVeriSumTable_TestNotPartOfTotal)
     state->dataHeatBal->Zone(3).ExteriorTotalGroundSurfArea = 0;
     state->dataHeatBal->Zone(3).ExtWindowArea = 0.0;
 
+    OutputReportTabular::setTabularReportStyles(*state);
     WriteVeriSumTable(*state);
 
     // Check Yes/No flag

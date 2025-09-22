@@ -127,7 +127,7 @@ bool ParseSQLiteInput(EnergyPlusData &state, bool &writeOutputToSQLite, bool &wr
             // This will be updated again and got concretely assigned first thing in OutputReportTabular::WriteTabularReports().
             sql_ort->unitsStyle_SQLite = OutputReportTabular::SetUnitsStyleFromString(tabularDataUnitConversion);
         }
-        sql_ort->formatReals_SQLite = (getYesNoValue(find_input(fields, "format_real_values_for_tabular_data")) == BooleanSwitch::Yes);
+        sql_ort->formatReals_SQLite = (getYesNoValue(find_input(fields, "format_numeric_values_for_tabular_data")) == BooleanSwitch::Yes);
 
         return true;
     }

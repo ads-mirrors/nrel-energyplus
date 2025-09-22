@@ -260,22 +260,23 @@ namespace UserDefinedComponents {
         // Default Constructor
         UserAirComponentStruct()
             : ErlSimProgramMngr(0), ErlInitProgramMngr(0), initPluginLocation(-1), simPluginLocation(-1), NumPlantConnections(0),
-            RemainingOutputToHeatingSP(0.0), RemainingOutputToCoolingSP(0.0), RemainingOutputReqToHumidSP(0.0), RemainingOutputReqToDehumidSP(0.0),
-            myOneTimeFlag(true)
+              RemainingOutputToHeatingSP(0.0), RemainingOutputToCoolingSP(0.0), RemainingOutputReqToHumidSP(0.0), RemainingOutputReqToDehumidSP(0.0),
+              myOneTimeFlag(true)
         {
         }
 
         virtual ~UserAirComponentStruct() = default;
 
-        virtual void initialize(EnergyPlusData& state, int ZoneNum) = 0;
+        virtual void initialize(EnergyPlusData &state, int ZoneNum) = 0;
 
-        virtual void report(EnergyPlusData& state) = 0;
+        virtual void report(EnergyPlusData &state) = 0;
     };
-
 
     struct UserZoneHVACForcedAirComponentStruct : public UserAirComponentStruct
     {
-        UserZoneHVACForcedAirComponentStruct() : UserAirComponentStruct() {}
+        UserZoneHVACForcedAirComponentStruct() : UserAirComponentStruct()
+        {
+        }
 
         void initialize(EnergyPlusData &state, int ZoneNum) override;
 
@@ -285,7 +286,7 @@ namespace UserDefinedComponents {
     struct UserAirTerminalComponentStruct : public UserAirComponentStruct
     {
         int ActualCtrlZoneNum;
-        int ADUNum;                 // index of corresponding air distribution unit
+        int ADUNum; // index of corresponding air distribution unit
 
         UserAirTerminalComponentStruct() : UserAirComponentStruct(), ActualCtrlZoneNum(0), ADUNum(0)
         {
@@ -318,7 +319,7 @@ namespace UserDefinedComponents {
 
     void GetUserDefinedComponents(EnergyPlusData &state);
 
-    void GetUserDefinedAirTerminal(EnergyPlusData& state);
+    void GetUserDefinedAirTerminal(EnergyPlusData &state);
 
     void GetUserDefinedCoilIndex(
         EnergyPlusData &state, std::string const &CoilName, int &CoilIndex, bool &ErrorsFound, std::string const &CurrentModuleObject);

@@ -13955,11 +13955,12 @@ void WritePredefinedTables(EnergyPlusData &state)
                                             state.dataOutRptPredefined->tableEntry(lTableEntry + 1).charEntry = repTableTag;
                                         }
                                     }
-                                    if (state.dataOutRptPredefined->tableEntry(lTableEntry).origEntryIsReal) {
-                                        //  && )
+                                    if (state.dataOutRptPredefined->tableEntry(lTableEntry).origEntryIsReal &&
+                                        ((columnUnitConv != 0) || !currentStyle.formatReals)) {
                                         Real64 value = state.dataOutRptPredefined->tableEntry(lTableEntry).origRealEntry;
                                         if (columnUnitConv != 0) {
-                                            value = ConvertIP(state, columnUnitConv, value);
+                                            value =
+                                                ConvertIP(state, columnUnitConv, state.dataOutRptPredefined->tableEntry(lTableEntry).origRealEntry);
                                         }
                                         if (currentStyle.formatReals) {
                                             tableBody(colCurrent, rowCurrent) =

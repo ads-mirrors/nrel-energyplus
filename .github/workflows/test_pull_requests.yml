@@ -240,8 +240,7 @@ jobs:
       if: always() && matrix.run_regressions && steps.regressions.outcome == 'failure'
       run: >
         python ./scripts/dev/build_regression_summary.py
-        ${{ github.workspace }}/regressions/summary.md
-        ${{ github.workspace }}/regressions/summary.js
+        ${{ github.workspace }}
         ${{ matrix.os }}
         ${{ github.sha }}
         ${{ github.run_id }}
@@ -251,8 +250,10 @@ jobs:
       if: always() && matrix.run_regressions && steps.regressions.outcome == 'failure' && github.event.pull_request.head.repo.full_name == 'NREL/EnergyPlus'
       with:
         script: |
-          const script = require('${{ github.workspace }}/regressions/summary.js')
-          console.log(script({github, context}))
+          const path = require('path');
+          const summaryPath = path.join('${{ github.workspace }}', 'regressions', 'summary.js');
+          const script = require(summaryPath);
+          console.log(script({ github, context }));
 
     # - uses: lhotari/action-upterm@v1
 

@@ -13742,8 +13742,10 @@ void WriteHeatEmissionTable(EnergyPlusData &state)
             tableBody(5, 1) = RealToStr(state, state.dataHeatBal->BuildingPreDefRep.emiHVACReject * energyconversion, 2);
             tableBody(6, 1) = RealToStr(state, state.dataHeatBal->BuildingPreDefRep.emiTotHeat * energyconversion, 2);
 
-            if (currentStyle.produceJSON) {
+            if (currentStyle.produceTabular) {
                 WriteTable(state, tableBody, rowHead, columnHead, columnWidth);
+            }
+            if (currentStyle.produceJSON) {
                 if (state.dataResultsFramework->resultsFramework->timeSeriesAndTabularEnabled()) {
                     state.dataResultsFramework->resultsFramework->TabularReportsCollection.addReportTable(
                         tableBody, rowHead, columnHead, "AnnualHeatEmissionsReport", "Entire Facility", "Annual Heat Emissions Summary");

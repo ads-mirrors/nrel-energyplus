@@ -11228,7 +11228,8 @@ void WriteVeriSumTable(EnergyPlusData &state)
                 state.dataResultsFramework->resultsFramework->TabularReportsCollection.addReportTable(
                     tableBody, rowHead, columnHead, "InputVerificationandResultsSummary", "Entire Facility", "General");
             }
-
+        }
+        if (currentStyle.produceTabular) {
             //---- Window Wall Ratio Sub-Table
             WriteTextLine(state, "ENVELOPE", true);
         }

@@ -1639,6 +1639,8 @@ namespace OutputReportPredefined {
         // SUBROUTINE INFORMATION:
         //       AUTHOR         Jason Glazer
         //       DATE WRITTEN   August 2006
+        //       MODIFIED
+        //       RE-ENGINEERED  na
 
         // PURPOSE OF THIS SUBROUTINE:
         //   Creates an entry for predefined tables when the entry
@@ -1647,37 +1649,49 @@ namespace OutputReportPredefined {
         // METHODOLOGY EMPLOYED:
         //   Simple assignments to public variables.
 
+        // REFERENCES:
+        // na
+
+        // USE STATEMENTS:
+
+        // Locals
+        // SUBROUTINE ARGUMENT DEFINITIONS:
+
+        // SUBROUTINE PARAMETER DEFINITIONS:
+
+        // INTERFACE BLOCK SPECIFICATIONS:
+        // na
+
+        // DERIVED TYPE DEFINITIONS:
+        // na
+
+        // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
         incrementTableEntry(state);
-        int sigDigitCount = state.dataOutRptTab->defaultSigDigits;
-        if (sigDigitCount == 0) {
-            // Output raw number without formatting
-            state.dataOutRptPredefined->tableEntry(state.dataOutRptPredefined->numTableEntry).charEntry = format("{}", tableEntryReal);
+        int sigDigitCount = 2;
+        // check for number of significant digits
+        if (present(numSigDigits)) {
+            if ((numSigDigits <= 9) && (numSigDigits >= 0)) {
+                sigDigitCount = numSigDigits;
+            }
+        }
+
+        if (std::abs(tableEntryReal) < 1e8) { // change from 1e10 for more robust entry writing
+            // something changed in FMT 7.x and "{:#12.{}F}" now outputs 13. So changing it to 11.{}F to maintain existing functionality. Likely
+            // related to https://github.com/fmtlib/fmt/issues/1893
+            state.dataOutRptPredefined->tableEntry(state.dataOutRptPredefined->numTableEntry).charEntry =
+                format("{:#11.{}F}", tableEntryReal, sigDigitCount);
         } else {
-
-            if (present(numSigDigits) && sigDigitCount == 2) { // 2 is the default
-                if ((numSigDigits <= 9) && (numSigDigits >= 0)) {
-                    sigDigitCount = numSigDigits;
-                }
+            // Formatting in scientific notation, zero sigDigits makes zero sense.
+            // **for something greater than 1E+08**, one sigDigits is very unhelpful (you're having an accuracy of 0.5E+07 at best)
+            if (sigDigitCount < 2) {
+                sigDigitCount = 2;
             }
+            state.dataOutRptPredefined->tableEntry(state.dataOutRptPredefined->numTableEntry).charEntry =
+                format("{:12.{}E}", tableEntryReal, sigDigitCount);
+        }
 
-            if (std::abs(tableEntryReal) < 1e8) { // change from 1e10 for more robust entry writing
-                // something changed in FMT 7.x and "{:#12.{}F}" now outputs 13. So changing it to 11.{}F to maintain existing functionality. Likely
-                // related to https://github.com/fmtlib/fmt/issues/1893
-                state.dataOutRptPredefined->tableEntry(state.dataOutRptPredefined->numTableEntry).charEntry =
-                    format("{:#11.{}F}", tableEntryReal, sigDigitCount);
-            } else {
-                // Formatting in scientific notation, zero sigDigits makes zero sense.
-                // **for something greater than 1E+08**, one sigDigits is very unhelpful (you're having an accuracy of 0.5E+07 at best)
-                if (sigDigitCount < 2) {
-                    sigDigitCount = 2;
-                }
-                state.dataOutRptPredefined->tableEntry(state.dataOutRptPredefined->numTableEntry).charEntry =
-                    format("{:12.{}E}", tableEntryReal, sigDigitCount);
-            }
-
-            if (state.dataOutRptPredefined->tableEntry(state.dataOutRptPredefined->numTableEntry).charEntry.size() > 12) {
-                state.dataOutRptPredefined->tableEntry(state.dataOutRptPredefined->numTableEntry).charEntry = "  Too Big";
-            }
+        if (state.dataOutRptPredefined->tableEntry(state.dataOutRptPredefined->numTableEntry).charEntry.size() > 12) {
+            state.dataOutRptPredefined->tableEntry(state.dataOutRptPredefined->numTableEntry).charEntry = "  Too Big";
         }
 
         state.dataOutRptPredefined->tableEntry(state.dataOutRptPredefined->numTableEntry).objectName = objName;

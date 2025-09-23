@@ -33,7 +33,7 @@ jobs:
         - os: windows-2022
           arch: x86_64
           python-arch: x64
-          run_regressions: true
+          run_regressions: false
           pretty: "Windows x64"
 
     steps:

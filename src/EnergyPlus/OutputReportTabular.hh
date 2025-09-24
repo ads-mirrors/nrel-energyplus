@@ -720,8 +720,7 @@ namespace OutputReportTabular {
 
     void WriteCompCostTable(EnergyPlusData &state);
 
-    void writeRowReportPeriodInputVeri(EnergyPlusData &state,
-                                       const std::string &reportType,
+    void writeRowReportPeriodInputVeri(const std::string &reportType,
                                        Array2D_string &tableBody,
                                        const int rowid,
                                        const int periodIdx,

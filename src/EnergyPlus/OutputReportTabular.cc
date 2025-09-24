@@ -11043,8 +11043,7 @@ void WriteCompCostTable(EnergyPlusData &state)
 }
 
 // modify the ith row in the reportingperiod input verification table
-void writeRowReportPeriodInputVeri(EnergyPlusData &state,
-                                   const std::string &reportType,
+void writeRowReportPeriodInputVeri(const std::string &reportType,
                                    Array2D_string &tableBody,
                                    const int rowid,
                                    const int periodIdx,
@@ -12470,15 +12469,15 @@ void WriteReportPeriodTimeConsumption(EnergyPlusData &state)
     // loop through rows
     int rowid = 1;
     for (int periodIdx = 1; periodIdx <= state.dataWeather->TotThermalReportPers; periodIdx++) {
-        writeRowReportPeriodInputVeri(state, "Thermal", tableBody, rowid, periodIdx, state.dataWeather->ThermalReportPeriodInput);
+        writeRowReportPeriodInputVeri("Thermal", tableBody, rowid, periodIdx, state.dataWeather->ThermalReportPeriodInput);
         rowid += 1;
     }
     for (int periodIdx = 1; periodIdx <= state.dataWeather->TotCO2ReportPers; periodIdx++) {
-        writeRowReportPeriodInputVeri(state, "CO2", tableBody, rowid, periodIdx, state.dataWeather->CO2ReportPeriodInput);
+        writeRowReportPeriodInputVeri("CO2", tableBody, rowid, periodIdx, state.dataWeather->CO2ReportPeriodInput);
         rowid += 1;
     }
     for (int periodIdx = 1; periodIdx <= state.dataWeather->TotVisualReportPers; periodIdx++) {
-        writeRowReportPeriodInputVeri(state, "Visual", tableBody, rowid, periodIdx, state.dataWeather->VisualReportPeriodInput);
+        writeRowReportPeriodInputVeri("Visual", tableBody, rowid, periodIdx, state.dataWeather->VisualReportPeriodInput);
         rowid += 1;
     }
 

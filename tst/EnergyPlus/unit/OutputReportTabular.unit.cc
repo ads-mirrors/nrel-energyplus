@@ -13755,7 +13755,7 @@ TEST_F(EnergyPlusFixture, OutputReportTabularMonthly_HandleMultipleDuringHoursSh
     }
 }
 
-TEST_F(SQLiteFixture, LEEDSummary_RenewableEnergySourceSummary)
+TEST_F(EnergyPlusFixture, LEEDSummary_RenewableEnergySourceSummary)
 {
     // Test for #11224
     std::string const idf_objects_1 = R"IDF(

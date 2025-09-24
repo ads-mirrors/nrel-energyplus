@@ -735,7 +735,6 @@ Real64 OARequirementsData::floorArea(EnergyPlusData &state, int const zoneNum,
     } else {
         // This is a DesignSpecification:OutdoorAir:SpaceList
         for (int dsoaCount = 1; dsoaCount <= this->numDSOA; ++dsoaCount) {
-            auto const &thisDSOA = state.dataSize->OARequirements(this->dsoaIndexes(dsoaCount));
             int const dsoaSpaceNum = this->dsoaSpaceIndexes(dsoaCount);
             if ((spaceNum == 0) || (spaceNum == dsoaSpaceNum)) {
                 Real64 spaceArea = state.dataHeatBal->space(this->dsoaSpaceIndexes(dsoaCount)).FloorArea;
@@ -851,7 +850,6 @@ Real64 OARequirementsData::people(EnergyPlusData &state,
     } else {
         // This is a DesignSpecification:OutdoorAir:SpaceList
         for (int dsoaCount = 1; dsoaCount <= this->numDSOA; ++dsoaCount) {
-            auto const &thisDSOA = state.dataSize->OARequirements(this->dsoaIndexes(dsoaCount));
             int const dsoaSpaceNum = this->dsoaSpaceIndexes(dsoaCount);
             if ((spaceNum == 0) || (spaceNum == dsoaSpaceNum)) {
                 Real64 spacePeople = 0.0;
@@ -891,7 +889,7 @@ Real64 OARequirementsData::desFlowPerZonePerson(EnergyPlusData &state, int const
     return desFlowPP;
 }
 
-Real64 OARequirementsData::desFlowPerZone(EnergyPlusData &state, int const zoneNum, int const spaceNum)
+Real64 OARequirementsData::desFlowPerZone(EnergyPlusData &state, int const spaceNum)
 {
     Real64 desFlowPZ = 0.0; // [m3/s]
     if (this->numDSOA == 0) {
@@ -916,7 +914,7 @@ Real64 OARequirementsData::desFlowPerZone(EnergyPlusData &state, int const zoneN
     return desFlowPZ;
 }
 
-Real64 OARequirementsData::desFlowPerACH(EnergyPlusData &state, int const zoneNum, int const spaceNum)
+Real64 OARequirementsData::desFlowPerACH(EnergyPlusData &state, int const spaceNum)
 {
     Real64 desFlowPACH = 0.0; // [1/hr]
     if (this->numDSOA == 0) {

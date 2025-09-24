@@ -1617,8 +1617,7 @@ void GetOAControllerInputs(EnergyPlusData &state)
                     }
                 }
                 if (thisVentilationMechanical.SystemOAMethod == DataSizing::SysOAMethod::ProportionalControlSchOcc) {
-                    if (curOARequirements.desFlowPerACH(state, thisVentMechZone.zoneNum) > 0.0 ||
-                        curOARequirements.desFlowPerZone(state, thisVentMechZone.zoneNum) > 0.0) {
+                    if (curOARequirements.desFlowPerACH(state) > 0.0 || curOARequirements.desFlowPerZone(state) > 0.0) {
                         ShowWarningError(state,
                                          format("{}=\"{}\", inappropriate outdoor air method", CurrentModuleObject, thisVentilationMechanical.Name));
                         ShowContinueError(
@@ -1630,8 +1629,7 @@ void GetOAControllerInputs(EnergyPlusData &state)
                     }
                 }
                 if (thisVentilationMechanical.SystemOAMethod == DataSizing::SysOAMethod::ProportionalControlDesOcc) {
-                    if (curOARequirements.desFlowPerACH(state, thisVentMechZone.zoneNum) > 0.0 ||
-                        curOARequirements.desFlowPerZone(state, thisVentMechZone.zoneNum) > 0.0) {
+                    if (curOARequirements.desFlowPerACH(state) > 0.0 || curOARequirements.desFlowPerZone(state) > 0.0) {
                         ShowWarningError(state,
                                          format("{}=\"{}\", inappropriate outdoor air method", CurrentModuleObject, thisVentilationMechanical.Name));
                         ShowContinueError(

@@ -1436,8 +1436,8 @@ TEST_F(EnergyPlusFixture, MissingDesignOccupancyTest)
     int zoneNum1 = state->dataMixedAir->VentilationMechanical(1).VentMechZone(1).zoneNum;
     Real64 expectedOAPerPerson1 = oaReq1.desFlowPerZonePerson(*state, zoneNum1);
     Real64 expectedOAPerArea1 = oaReq1.desFlowPerZoneArea(*state, zoneNum1);
-    Real64 expectedOAPerZone1 = oaReq1.desFlowPerZone(*state, zoneNum1);
-    Real64 expectedOAPerACH1 = oaReq1.desFlowPerACH(*state, zoneNum1);
+    Real64 expectedOAPerZone1 = oaReq1.desFlowPerZone(*state);
+    Real64 expectedOAPerACH1 = oaReq1.desFlowPerACH(*state);
     EXPECT_EQ(0.00944, expectedOAPerPerson1);
     EXPECT_EQ(0.00, expectedOAPerArea1);
     EXPECT_EQ(0.00, expectedOAPerZone1);

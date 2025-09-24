@@ -1145,9 +1145,9 @@ namespace DataSizing {
 
         Real64 desFlowPerZonePerson(EnergyPlusData &state, int const zoneNum, int const spaceNum = 0);
 
-        Real64 desFlowPerZone(EnergyPlusData &state, int const zoneNum, int const spaceNum = 0);
+        Real64 desFlowPerZone(EnergyPlusData &state, int const spaceNum = 0);
 
-        Real64 desFlowPerACH(EnergyPlusData &state, int const zoneNum, int const spaceNum = 0);
+        Real64 desFlowPerACH(EnergyPlusData &state, int const spaceNum = 0);
 
         Real64 calcOAFlowRate(EnergyPlusData &state,
                               int ActualZoneNum,               // Zone index

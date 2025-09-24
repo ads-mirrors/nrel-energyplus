@@ -46,35 +46,20 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 // C++ Headers
-#include <cmath>
 #include <string>
-
-// ObjexxFCL Headers
-#include <ObjexxFCL/Array.functions.hh>
-#include <ObjexxFCL/Fmath.hh>
 
 // EnergyPlus Headers
 #include <AirflowNetwork/Solver.hpp>
 #include <EnergyPlus/Autosizing/Base.hh>
-#include <EnergyPlus/BranchNodeConnections.hh>
 #include <EnergyPlus/Data/EnergyPlusData.hh>
 #include <EnergyPlus/DataContaminantBalance.hh>
-#include <EnergyPlus/DataConvergParams.hh>
 #include <EnergyPlus/DataDefineEquip.hh>
-#include <EnergyPlus/DataEnvironment.hh>
-#include <EnergyPlus/DataHVACGlobals.hh>
-#include <EnergyPlus/DataHeatBalFanSys.hh>
 #include <EnergyPlus/DataHeatBalance.hh>
 #include <EnergyPlus/DataLoopNode.hh>
-#include <EnergyPlus/DataSizing.hh>
-#include <EnergyPlus/DataZoneEnergyDemands.hh>
 #include <EnergyPlus/DataZoneEquipment.hh>
 #include <EnergyPlus/DuctLoss.hh>
-#include <EnergyPlus/GeneralRoutines.hh>
-#include <EnergyPlus/GlobalNames.hh>
 #include <EnergyPlus/InputProcessing/InputProcessor.hh>
 #include <EnergyPlus/MixerComponent.hh>
-#include <EnergyPlus/NodeInputManager.hh>
 #include <EnergyPlus/OutputProcessor.hh>
 #include <EnergyPlus/Psychrometrics.hh>
 #include <EnergyPlus/ScheduleManager.hh>
@@ -241,7 +226,6 @@ namespace DuctLoss {
 
         auto instances = state.dataInputProcessing->inputProcessor->epJSON.find(CurrentModuleObject);
         if (instances != state.dataInputProcessing->inputProcessor->epJSON.end()) {
-            bool errorsFound(false);
             std::string cFieldName;
             int DuctLossCondNum = 0;
             auto &instancesValue = instances.value();
@@ -307,7 +291,6 @@ namespace DuctLoss {
 
         instances = state.dataInputProcessing->inputProcessor->epJSON.find(CurrentModuleObject);
         if (instances != state.dataInputProcessing->inputProcessor->epJSON.end()) {
-            bool errorsFound(false);
             std::string cFieldName;
             int DuctLossLeakNum = 0;
             auto &instancesValue = instances.value();
@@ -345,7 +328,6 @@ namespace DuctLoss {
 
         instances = state.dataInputProcessing->inputProcessor->epJSON.find(CurrentModuleObject);
         if (instances != state.dataInputProcessing->inputProcessor->epJSON.end()) {
-            bool errorsFound(false);
             std::string cFieldName;
             int DuctLossMakeNum = 0;
             auto &instancesValue = instances.value();
@@ -490,7 +472,6 @@ namespace DuctLoss {
         Real64 Tout;
         Real64 Win;
         Real64 Wout;
-        Real64 UA;
         Real64 CpAir;
         Real64 enthalpy;
         int NodeNum1;
@@ -611,15 +592,12 @@ namespace DuctLoss {
         Real64 MassFlowRate;
         Real64 Tin;
         Real64 Tout;
-        Real64 Tzone;
         Real64 Win;
         Real64 Wout;
-        Real64 Wzone;
         Real64 CpAir;
         int NodeNum1;
         int NodeNum2;
         int NodeNum;
-        int ZoneNodeNum;
         NodeNum1 = state.afn->AirflowNetworkLinkageData(this->LinkageNum).NodeNums[0];
         NodeNum2 = state.afn->AirflowNetworkLinkageData(this->LinkageNum).NodeNums[1];
 
@@ -709,9 +687,6 @@ namespace DuctLoss {
     {
         int NodeNum1;
         int NodeNum2;
-        int NodeNum;
-        int ZoneNodeNum;
-        Real64 MassFlowRate;
         Real64 Tin;
         Real64 Win;
         Real64 CpAir;

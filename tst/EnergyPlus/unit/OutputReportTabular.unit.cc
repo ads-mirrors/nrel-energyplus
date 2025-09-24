@@ -129,30 +129,30 @@ TEST_F(EnergyPlusFixture, OutputReportTabularTest_Basic)
 
 TEST_F(EnergyPlusFixture, OutputReportTabularTest_RealToStr)
 {
-    EXPECT_EQ("       0.001", RealToStr(*state, 0.0011, 3));
-    EXPECT_NE("       0.001", RealToStr(*state, 0.0019, 3));
+    EXPECT_EQ("       0.001", RealToStr(true, 0.0011, 3));
+    EXPECT_NE("       0.001", RealToStr(true, 0.0019, 3));
 
-    EXPECT_EQ("          1.", RealToStr(*state, 1.23456789, 0));
-    EXPECT_EQ("         1.2", RealToStr(*state, 1.23456789, 1));
-    EXPECT_EQ("        1.23", RealToStr(*state, 1.23456789, 2));
-    EXPECT_EQ("       1.235", RealToStr(*state, 1.23456789, 3));
-    EXPECT_EQ("      1.2346", RealToStr(*state, 1.23456789, 4));
-    EXPECT_EQ("     1.23457", RealToStr(*state, 1.23456789, 5));
-    EXPECT_EQ("    1.234568", RealToStr(*state, 1.23456789, 6));
-    EXPECT_EQ("   1.2345679", RealToStr(*state, 1.23456789, 7));
-    EXPECT_EQ("  1.23456789", RealToStr(*state, 1.23456789, 8));
+    EXPECT_EQ("          1.", RealToStr(true, 1.23456789, 0));
+    EXPECT_EQ("         1.2", RealToStr(true, 1.23456789, 1));
+    EXPECT_EQ("        1.23", RealToStr(true, 1.23456789, 2));
+    EXPECT_EQ("       1.235", RealToStr(true, 1.23456789, 3));
+    EXPECT_EQ("      1.2346", RealToStr(true, 1.23456789, 4));
+    EXPECT_EQ("     1.23457", RealToStr(true, 1.23456789, 5));
+    EXPECT_EQ("    1.234568", RealToStr(true, 1.23456789, 6));
+    EXPECT_EQ("   1.2345679", RealToStr(true, 1.23456789, 7));
+    EXPECT_EQ("  1.23456789", RealToStr(true, 1.23456789, 8));
 
-    EXPECT_EQ("    1.234000", RealToStr(*state, 1.234, 6));
-    EXPECT_EQ("   1.2340000", RealToStr(*state, 1.234, 7));
-    EXPECT_EQ("  1.23400000", RealToStr(*state, 1.234, 8));
+    EXPECT_EQ("    1.234000", RealToStr(true, 1.234, 6));
+    EXPECT_EQ("   1.2340000", RealToStr(true, 1.234, 7));
+    EXPECT_EQ("  1.23400000", RealToStr(true, 1.234, 8));
 
-    EXPECT_EQ("     123457.", RealToStr(*state, 123456.789, 0));
-    EXPECT_EQ("    123456.8", RealToStr(*state, 123456.789, 1));
-    EXPECT_EQ("   123456.79", RealToStr(*state, 123456.789, 2));
-    EXPECT_EQ("  123456.789", RealToStr(*state, 123456.789, 3));
-    EXPECT_EQ(" 123456.7890", RealToStr(*state, 123456.789, 4));
+    EXPECT_EQ("     123457.", RealToStr(true, 123456.789, 0));
+    EXPECT_EQ("    123456.8", RealToStr(true, 123456.789, 1));
+    EXPECT_EQ("   123456.79", RealToStr(true, 123456.789, 2));
+    EXPECT_EQ("  123456.789", RealToStr(true, 123456.789, 3));
+    EXPECT_EQ(" 123456.7890", RealToStr(true, 123456.789, 4));
 
-    EXPECT_EQ("1.234568E+05", RealToStr(*state, 123456.789, 5));
+    EXPECT_EQ("1.234568E+05", RealToStr(true, 123456.789, 5));
 }
 
 TEST_F(EnergyPlusFixture, OutputReportTabularTest_isNumber)
@@ -10213,6 +10213,8 @@ TEST_F(EnergyPlusFixture, OutputReportTabularTest_WriteSETHoursTableReportingPer
     state->dataHeatBal->Zone.allocate(state->dataGlobal->NumOfZones);
     state->dataHeatBal->Resilience.allocate(state->dataGlobal->NumOfZones);
     state->dataHeatBal->Zone(1).Name = "Test";
+    OutputReportTabular::setTabularReportStyles(*state);
+    OutputReportTabular::tabularReportStyle const &style = state->dataOutRptTab->tabularReportPasses[0];
 
     int columnNum = 5;
 
@@ -10260,6 +10262,7 @@ TEST_F(EnergyPlusFixture, OutputReportTabularTest_WriteSETHoursTableReportingPer
                                       state->dataHeatBalFanSys->ZoneLowSETHoursRepPeriod,
                                       rowHead,
                                       tableBody,
+                                      style,
                                       degreeHourConversion);
 
     EXPECT_EQ("0.00", RetrieveEntryFromTableBody(tableBody, 1, 1));
@@ -10279,6 +10282,7 @@ TEST_F(EnergyPlusFixture, OutputReportTabularTest_WriteSETHoursTableReportingPer
                                       state->dataHeatBalFanSys->ZoneLowSETHoursRepPeriod,
                                       rowHead,
                                       tableBody,
+                                      style,
                                       degreeHourConversion);
 
     EXPECT_EQ("0.00", RetrieveEntryFromTableBody(tableBody, 1, 1));
@@ -10295,6 +10299,8 @@ TEST_F(EnergyPlusFixture, OutputReportTabularTest_UnmetDegreeHourRepPeriodUnitCo
     state->dataGlobal->NumOfZones = 1;
     state->dataHeatBal->Zone.allocate(state->dataGlobal->NumOfZones);
     state->dataHeatBal->Zone(1).Name = "Test";
+    OutputReportTabular::setTabularReportStyles(*state);
+    OutputReportTabular::tabularReportStyle const &style = state->dataOutRptTab->tabularReportPasses[0];
 
     int columnNumUnmetDegHr = 6;
     Array1D_string columnHeadUnmetDegHr(6);
@@ -10340,6 +10346,7 @@ TEST_F(EnergyPlusFixture, OutputReportTabularTest_UnmetDegreeHourRepPeriodUnitCo
                                             state->dataHeatBalFanSys->ZoneUnmetDegreeHourBinsRepPeriod,
                                             rowHead,
                                             tableBody,
+                                            style,
                                             degreeHourConversion);
 
     EXPECT_EQ("0.00", RetrieveEntryFromTableBody(tableBody, 1, 1));
@@ -10360,6 +10367,7 @@ TEST_F(EnergyPlusFixture, OutputReportTabularTest_UnmetDegreeHourRepPeriodUnitCo
                                             state->dataHeatBalFanSys->ZoneUnmetDegreeHourBinsRepPeriod,
                                             rowHead,
                                             tableBody,
+                                            style,
                                             degreeHourConversion);
 
     EXPECT_EQ("0.00", RetrieveEntryFromTableBody(tableBody, 2, 1));
@@ -10420,20 +10428,23 @@ TEST_F(EnergyPlusFixture, OutputReportTabularTest_WriteResilienceBinsTableNonPre
         }
     }
 
+    OutputReportTabular::setTabularReportStyles(*state);
+    OutputReportTabular::tabularReportStyle const &style = state->dataOutRptTab->tabularReportPasses[0];
+
     std::array<Real64, numColumnThermalTbl> DataHeatBalance::ZoneResilience::*ptrHeatIndex = &DataHeatBalance::ZoneResilience::ZoneHeatIndexHourBins;
     WriteResilienceBinsTableNonPreDefUseZoneData<numColumnThermalTbl>(
-        *state, tableName, columnHead, columnWidth, ptrHeatIndex, rowHead, tableBody, unitConvMultiplier);
+        *state, tableName, columnHead, columnWidth, ptrHeatIndex, rowHead, tableBody, style, unitConvMultiplier);
     for (int zone_i = 1; zone_i <= numZone; zone_i++) {
         for (int j = 0; j < numColumnThermalTbl; j++) {
-            EXPECT_EQ(tableBody(j + 1, zone_i), RealToStr(*state, std::pow(j, 2) * zone_i * 1.0, 2));
+            EXPECT_EQ(tableBody(j + 1, zone_i), RealToStr(true, std::pow(j, 2) * zone_i * 1.0, 2));
         }
     }
 
     for (int j = 0; j < numColumnThermalTbl; j++) {
-        EXPECT_EQ(tableBody(j + 1, numZone + 1), RealToStr(*state, std::pow(j, 2) * 1 * 1.0, 2));                                    // min
-        EXPECT_EQ(tableBody(j + 1, numZone + 2), RealToStr(*state, std::pow(j, 2) * 2 * 1.0, 2));                                    // max
-        EXPECT_EQ(tableBody(j + 1, numZone + 3), RealToStr(*state, (std::pow(j, 2) * 1 * 1.0 + std::pow(j, 2) * 2 * 1.0) / 2.0, 2)); // mean
-        EXPECT_EQ(tableBody(j + 1, numZone + 4), RealToStr(*state, std::pow(j, 2) * 1 * 1.0 + std::pow(j, 2) * 2 * 1.0, 2));         // sum
+        EXPECT_EQ(tableBody(j + 1, numZone + 1), RealToStr(true, std::pow(j, 2) * 1 * 1.0, 2));                                    // min
+        EXPECT_EQ(tableBody(j + 1, numZone + 2), RealToStr(true, std::pow(j, 2) * 2 * 1.0, 2));                                    // max
+        EXPECT_EQ(tableBody(j + 1, numZone + 3), RealToStr(true, (std::pow(j, 2) * 1 * 1.0 + std::pow(j, 2) * 2 * 1.0) / 2.0, 2)); // mean
+        EXPECT_EQ(tableBody(j + 1, numZone + 4), RealToStr(true, std::pow(j, 2) * 1 * 1.0 + std::pow(j, 2) * 2 * 1.0, 2));         // sum
     }
 }
 
@@ -10460,6 +10471,8 @@ TEST_F(EnergyPlusFixture, OutputReportTabularTest_WriteSETHoursTableNonPreDef)
     state->dataHeatBal->Zone(2).Name = "Zone 2";
 
     state->dataHeatBal->Zone.allocate(numZone);
+    OutputReportTabular::setTabularReportStyles(*state);
+    OutputReportTabular::tabularReportStyle const &style = state->dataOutRptTab->tabularReportPasses[0];
 
     int encodedMonDayHrMin;
     for (int zone_i = 1; zone_i <= numZone; zone_i++) {
@@ -10478,7 +10491,7 @@ TEST_F(EnergyPlusFixture, OutputReportTabularTest_WriteSETHoursTableNonPreDef)
 
     std::array<Real64, numColumnThermalTbl> DataHeatBalance::ZoneResilience::*ptrZoneLowSETHours = &DataHeatBalance::ZoneResilience::ZoneLowSETHours;
     WriteSETHoursTableNonPreDefUseZoneData(
-        *state, numColumnThermalTbl, tableName, columnHead, columnWidth, ptrZoneLowSETHours, rowHead, tableBody, unitConvMultiplier);
+        *state, numColumnThermalTbl, tableName, columnHead, columnWidth, ptrZoneLowSETHours, rowHead, tableBody, style, unitConvMultiplier);
 
     EXPECT_EQ("0.00", RetrieveEntryFromTableBody(tableBody, 1, 1));
     EXPECT_EQ("-1.0", RetrieveEntryFromTableBody(tableBody, 1, 2));
@@ -10493,7 +10506,7 @@ TEST_F(EnergyPlusFixture, OutputReportTabularTest_WriteSETHoursTableNonPreDef)
 
     unitConvMultiplier = 1.8;
     WriteSETHoursTableNonPreDefUseZoneData(
-        *state, numColumnThermalTbl, tableName, columnHead, columnWidth, ptrZoneLowSETHours, rowHead, tableBody, unitConvMultiplier);
+        *state, numColumnThermalTbl, tableName, columnHead, columnWidth, ptrZoneLowSETHours, rowHead, tableBody, style, unitConvMultiplier);
 
     EXPECT_EQ("0.00", RetrieveEntryFromTableBody(tableBody, 1, 1));
     EXPECT_EQ("-1.8", RetrieveEntryFromTableBody(tableBody, 1, 2));
@@ -10533,6 +10546,8 @@ TEST_F(EnergyPlusFixture, OutputReportTabularTest_WriteHourOfSafetyTableNonPreDe
     columnHead(4) = "Safe Temperature Exceedance OccupantHours [hr]";
     columnHead(5) = "Safe Temperature Exceedance OccupiedHours [hr]";
 
+    OutputReportTabular::setTabularReportStyles(*state);
+    OutputReportTabular::tabularReportStyle const &style = state->dataOutRptTab->tabularReportPasses[0];
     state->dataHeatBal->Zone.allocate(numZone);
     int timeColumnIdx = 2;
     int encodedMonDayHrMin;
@@ -10547,7 +10562,7 @@ TEST_F(EnergyPlusFixture, OutputReportTabularTest_WriteHourOfSafetyTableNonPreDe
     std::array<Real64, numColumnThermalTbl> DataHeatBalance::ZoneResilience::*ptrColdHourOfSafetyBins =
         &DataHeatBalance::ZoneResilience::ZoneColdHourOfSafetyBins;
     WriteHourOfSafetyTableNonPreDefUseZoneData(
-        *state, numColumnThermalTbl, tableName, columnHead, columnWidth, ptrColdHourOfSafetyBins, rowHead, tableBody, timeColumnIdx);
+        *state, numColumnThermalTbl, tableName, columnHead, columnWidth, ptrColdHourOfSafetyBins, rowHead, tableBody, timeColumnIdx, style);
 
     EXPECT_EQ("0.00", RetrieveEntryFromTableBody(tableBody, 1, 1));
     EXPECT_EQ("01-JAN-04:30", RetrieveEntryFromTableBody(tableBody, 1, 2));
@@ -10705,9 +10720,12 @@ TEST_F(SQLiteFixture, WriteVeriSumSpaceTables_Test)
     // Real64 volConv = getSpecificUnitDivider(*state, "m3", "ft3");
 
     // WriteVeriSumTable(*state);
-    bool produceTabular = true;
-    bool produceSQLite = true;
-    bool produceJSON = true;
+    OutputReportTabular::tabularReportStyle style;
+    style.produceTabular = true;
+    style.produceSQLite = true;
+    style.produceJSON = true;
+    style.unitsStyle = OutputReportTabular::UnitsStyle::None;
+    style.formatReals = true;
     state->dataGlobal->numSpaces = 2;
 
     state->dataOutRptTab->m_unitName = "[m]";
@@ -10761,7 +10779,7 @@ TEST_F(SQLiteFixture, WriteVeriSumSpaceTables_Test)
     state->dataHeatBal->space(1).FloorArea = 100.0;
     state->dataHeatBal->space(2).FloorArea = 100.0;
 
-    OutputReportTabular::writeVeriSumSpaceTables(*state, produceTabular, produceSQLite, produceJSON);
+    OutputReportTabular::writeVeriSumSpaceTables(*state, style);
 
     auto tabularData = queryResult("SELECT * FROM TabularData;", "TabularData");
     auto strings = queryResult("SELECT * FROM Strings;", "Strings");

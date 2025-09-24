@@ -570,7 +570,7 @@ namespace OutputReportTabular {
     {
         std::vector<compLoadsTimeStepEncl> ts;
     };
-    struct tabularReportStyles
+    struct tabularReportStyle
     {
         UnitsStyle unitsStyle = UnitsStyle::None;
         bool formatReals = true;
@@ -708,10 +708,7 @@ namespace OutputReportTabular {
                                             Array2D<Real64> &collapsedEndUse,
                                             Array3D<Real64> &collapsedEndUseSub,
                                             Array1D_bool &needOtherRow,
-                                            const UnitsStyle unitsStyle_cur,
-                                            const bool produceTabular,
-                                            const bool produceSQLite,
-                                            const bool produceJSON);
+                                            const tabularReportStyle &currentStyle);
 
     std::string ResourceWarningMessage(std::string const &resource);
 
@@ -732,7 +729,7 @@ namespace OutputReportTabular {
 
     void WriteVeriSumTable(EnergyPlusData &state);
 
-    void writeVeriSumSpaceTables(EnergyPlusData &state, bool produceTabular, bool produceSQLite, bool produceJSON);
+    void writeVeriSumSpaceTables(EnergyPlusData &state, const tabularReportStyle &style);
 
     void WriteAdaptiveComfortTable(EnergyPlusData &state);
 
@@ -771,6 +768,7 @@ namespace OutputReportTabular {
                                                       const std::array<Real64, columnNum> DataHeatBalance::ZoneResilience::*memberPtr,
                                                       Array1D_string &rowHead,
                                                       Array2D_string &tableBody,
+                                                      tabularReportStyle const &style,
                                                       Real64 const unitConvMultiplier = 1.0);
 
     void WriteResilienceBinsTableReportingPeriod(EnergyPlusData &state,
@@ -784,6 +782,7 @@ namespace OutputReportTabular {
                                                  Array2D<std::vector<Real64>> const &ZoneBins,
                                                  Array1D_string &rowHead,
                                                  Array2D_string &tableBody,
+                                                 tabularReportStyle const &style,
                                                  Real64 const unitConvMultiplier = 1.0);
 
     void WriteSETHoursTableNonPreDefUseZoneData(EnergyPlusData &state,
@@ -794,6 +793,7 @@ namespace OutputReportTabular {
                                                 const std::array<Real64, 5> DataHeatBalance::ZoneResilience::*memberPtr,
                                                 Array1D_string &rowHead,
                                                 Array2D_string &tableBody,
+                                                tabularReportStyle const &style,
                                                 Real64 const unitConvMultiplier = 1.0);
 
     void WriteSETHoursTableReportingPeriod(EnergyPlusData &state,
@@ -806,6 +806,7 @@ namespace OutputReportTabular {
                                            Array2D<std::vector<Real64>> const &ZoneBins,
                                            Array1D_string &rowHead,
                                            Array2D_string &tableBody,
+                                           tabularReportStyle const &style,
                                            Real64 const unitConvMultiplier = 1.0);
 
     // return the table entry of the rowIndex-th row and columnIndex-th col
@@ -815,7 +816,8 @@ namespace OutputReportTabular {
                                 int const columnNum,
                                 std::vector<int> const &columnHead,
                                 Array1D<std::vector<Real64>> const &ZoneBins,
-                                int const dateColIdx);
+                                int const dateColIdx,
+                                tabularReportStyle const &style);
 
     void WriteHourOfSafetyTableNonPreDefUseZoneData(EnergyPlusData &state,
                                                     int const columnNum,
@@ -825,7 +827,8 @@ namespace OutputReportTabular {
                                                     const std::array<Real64, 5> DataHeatBalance::ZoneResilience::*memberPtr,
                                                     Array1D_string &rowHead,
                                                     Array2D_string &tableBody,
-                                                    int const dateColIdx);
+                                                    int const dateColIdx,
+                                                    tabularReportStyle const &style);
 
     void WriteHourOfSafetyTableReportingPeriod(EnergyPlusData &state,
                                                int const columnNum,
@@ -837,7 +840,8 @@ namespace OutputReportTabular {
                                                Array2D<std::vector<Real64>> const &ZoneBins,
                                                Array1D_string &rowHead,
                                                Array2D_string &tableBody,
-                                               int const dateColIdx);
+                                               int const dateColIdx,
+                                               tabularReportStyle const &style);
 
     void WriteHeatEmissionTable(EnergyPlusData &state);
 
@@ -947,10 +951,7 @@ namespace OutputReportTabular {
                                CompLoadTablesType const &compLoadCool,
                                CompLoadTablesType const &compLoadHeat,
                                int zoneOrAirLoopIndex,
-                               UnitsStyle unitsStyle_para,
-                               bool produceTabular_para,
-                               bool produceSQLite_para,
-                               bool produceJSON_para);
+                               tabularReportStyle const &style);
 
     void WriteReportHeaders(EnergyPlusData &state,
                             std::string const &reportName,
@@ -1047,7 +1048,7 @@ namespace OutputReportTabular {
     //======================================================================================================================
     //======================================================================================================================
 
-    std::string RealToStr(EnergyPlusData &state, Real64 const RealIn, int const numDigits);
+    std::string RealToStr(bool const formatReals, Real64 const RealIn, int const numDigits);
 
     Real64 StrToReal(std::string_view stringIn);
 
@@ -1127,7 +1128,7 @@ struct OutputReportTabularData : BaseGlobalStruct
     bool formatReals_Tabular = true;
     bool formatReals_JSON = true;
     bool formatReals_SQLite = true;
-    std::vector<OutputReportTabular::tabularReportStyles> tabularReportPasses; // unique combinations of units and real formatting
+    std::vector<OutputReportTabular::tabularReportStyle> tabularReportPasses; // unique combinations of units and real formatting
 
     // Flags for predefined tabular reports
     bool displayTabularBEPS = false;

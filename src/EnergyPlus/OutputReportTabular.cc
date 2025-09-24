@@ -5284,7 +5284,7 @@ void WriteTabularReports(EnergyPlusData &state)
 
 void setTabularReportStyles(EnergyPlusData &state)
 {
-    OutputReportTabular::tabularReportStyles currentStyle;
+    OutputReportTabular::tabularReportStyle currentStyle;
     auto &ort = state.dataOutRptTab;
     ort->tabularReportPasses.clear(); // In case this is called multiple times from unit tests
 
@@ -5492,6 +5492,7 @@ void FillWeatherPredefinedEntries(EnergyPlusData &state)
     bool insideLiquidPrecipitation = false;
     std::string storeASHRAEHDD;
     std::string storeASHRAECDD;
+    bool const formatReals = true;
 
     auto statFile = state.files.inStatFilePath.open(state, "FillWeatherPredefinedEntries");
     while (statFile.good()) { // end of file, or error
@@ -5552,7 +5553,7 @@ void FillWeatherPredefinedEntries(EnergyPlusData &state)
                     PreDefTableEntry(state,
                                      state.dataOutRptPredefined->pdchWthrVal,
                                      curNameAndUnits,
-                                     RealToStr(state, ConvertIP(state, indexUnitConv, StrToReal(lineIn.substr(12, lnPtr))), 1));
+                                     RealToStr(formatReals, ConvertIP(state, indexUnitConv, StrToReal(lineIn.substr(12, lnPtr))), 1));
                 } else {
                     PreDefTableEntry(state, state.dataOutRptPredefined->pdchWthrVal, curNameWithSIUnits, lineIn.substr(12, lnPtr));
                 }
@@ -5604,12 +5605,12 @@ void FillWeatherPredefinedEntries(EnergyPlusData &state)
                             PreDefTableEntry(state,
                                              state.dataOutRptPredefined->pdchWthrVal,
                                              curNameAndUnits,
-                                             RealToStr(state, ConvertIP(state, indexUnitConv, StrToReal(GetColumnUsingTabs(lineIn, 2))), 1) +
+                                             RealToStr(formatReals, ConvertIP(state, indexUnitConv, StrToReal(GetColumnUsingTabs(lineIn, 2))), 1) +
                                                  degChar);
                             PreDefTableEntry(state,
                                              state.dataOutRptPredefined->pdchWthrVal,
                                              "Heating Design Temperature 99% (F)",
-                                             RealToStr(state, ConvertIP(state, indexUnitConv, StrToReal(GetColumnUsingTabs(lineIn, 3))), 1) +
+                                             RealToStr(formatReals, ConvertIP(state, indexUnitConv, StrToReal(GetColumnUsingTabs(lineIn, 3))), 1) +
                                                  degChar);
                         } else {
                             PreDefTableEntry(state,
@@ -5628,12 +5629,12 @@ void FillWeatherPredefinedEntries(EnergyPlusData &state)
                             PreDefTableEntry(state,
                                              state.dataOutRptPredefined->pdchWthrVal,
                                              curNameAndUnits,
-                                             RealToStr(state, ConvertIP(state, indexUnitConv, StrToReal(GetColumnUsingTabs(lineIn, 4))), 1) +
+                                             RealToStr(formatReals, ConvertIP(state, indexUnitConv, StrToReal(GetColumnUsingTabs(lineIn, 4))), 1) +
                                                  degChar);
                             PreDefTableEntry(state,
                                              state.dataOutRptPredefined->pdchWthrVal,
                                              "Heating Design Temperature 99% (F)",
-                                             RealToStr(state, ConvertIP(state, indexUnitConv, StrToReal(GetColumnUsingTabs(lineIn, 5))), 1) +
+                                             RealToStr(formatReals, ConvertIP(state, indexUnitConv, StrToReal(GetColumnUsingTabs(lineIn, 5))), 1) +
                                                  degChar);
                         } else {
                             PreDefTableEntry(state,
@@ -5660,11 +5661,13 @@ void FillWeatherPredefinedEntries(EnergyPlusData &state)
                         PreDefTableEntry(state,
                                          state.dataOutRptPredefined->pdchWthrVal,
                                          curNameAndUnits,
-                                         RealToStr(state, ConvertIP(state, indexUnitConv, StrToReal(GetColumnUsingTabs(lineIn, col1))), 1) + degChar);
+                                         RealToStr(formatReals, ConvertIP(state, indexUnitConv, StrToReal(GetColumnUsingTabs(lineIn, col1))), 1) +
+                                             degChar);
                         PreDefTableEntry(state,
                                          state.dataOutRptPredefined->pdchWthrVal,
                                          "Heating Design Temperature 99% (F)",
-                                         RealToStr(state, ConvertIP(state, indexUnitConv, StrToReal(GetColumnUsingTabs(lineIn, col2))), 1) + degChar);
+                                         RealToStr(formatReals, ConvertIP(state, indexUnitConv, StrToReal(GetColumnUsingTabs(lineIn, col2))), 1) +
+                                             degChar);
                     } else {
                         PreDefTableEntry(state,
                                          state.dataOutRptPredefined->pdchWthrVal,
@@ -5688,17 +5691,17 @@ void FillWeatherPredefinedEntries(EnergyPlusData &state)
                             PreDefTableEntry(state,
                                              state.dataOutRptPredefined->pdchWthrVal,
                                              curNameAndUnits,
-                                             RealToStr(state, ConvertIP(state, indexUnitConv, StrToReal(GetColumnUsingTabs(lineIn, 2))), 1) +
+                                             RealToStr(formatReals, ConvertIP(state, indexUnitConv, StrToReal(GetColumnUsingTabs(lineIn, 2))), 1) +
                                                  degChar);
                             PreDefTableEntry(state,
                                              state.dataOutRptPredefined->pdchWthrVal,
                                              "Cooling Design Temperature 1% (F)",
-                                             RealToStr(state, ConvertIP(state, indexUnitConv, StrToReal(GetColumnUsingTabs(lineIn, 4))), 1) +
+                                             RealToStr(formatReals, ConvertIP(state, indexUnitConv, StrToReal(GetColumnUsingTabs(lineIn, 4))), 1) +
                                                  degChar);
                             PreDefTableEntry(state,
                                              state.dataOutRptPredefined->pdchWthrVal,
                                              "Cooling Design Temperature 2% (F)",
-                                             RealToStr(state, ConvertIP(state, indexUnitConv, StrToReal(GetColumnUsingTabs(lineIn, 6))), 1) +
+                                             RealToStr(formatReals, ConvertIP(state, indexUnitConv, StrToReal(GetColumnUsingTabs(lineIn, 6))), 1) +
                                                  degChar);
                         } else {
                             PreDefTableEntry(state,
@@ -5721,17 +5724,17 @@ void FillWeatherPredefinedEntries(EnergyPlusData &state)
                             PreDefTableEntry(state,
                                              state.dataOutRptPredefined->pdchWthrVal,
                                              curNameAndUnits,
-                                             RealToStr(state, ConvertIP(state, indexUnitConv, StrToReal(GetColumnUsingTabs(lineIn, 5))), 1) +
+                                             RealToStr(formatReals, ConvertIP(state, indexUnitConv, StrToReal(GetColumnUsingTabs(lineIn, 5))), 1) +
                                                  degChar);
                             PreDefTableEntry(state,
                                              state.dataOutRptPredefined->pdchWthrVal,
                                              "Cooling Design Temperature 1% (F)",
-                                             RealToStr(state, ConvertIP(state, indexUnitConv, StrToReal(GetColumnUsingTabs(lineIn, 7))), 1) +
+                                             RealToStr(formatReals, ConvertIP(state, indexUnitConv, StrToReal(GetColumnUsingTabs(lineIn, 7))), 1) +
                                                  degChar);
                             PreDefTableEntry(state,
                                              state.dataOutRptPredefined->pdchWthrVal,
                                              "Cooling Design Temperature 2% (F)",
-                                             RealToStr(state, ConvertIP(state, indexUnitConv, StrToReal(GetColumnUsingTabs(lineIn, 9))), 1) +
+                                             RealToStr(formatReals, ConvertIP(state, indexUnitConv, StrToReal(GetColumnUsingTabs(lineIn, 9))), 1) +
                                                  degChar);
                         } else {
                             PreDefTableEntry(state,
@@ -5764,15 +5767,18 @@ void FillWeatherPredefinedEntries(EnergyPlusData &state)
                         PreDefTableEntry(state,
                                          state.dataOutRptPredefined->pdchWthrVal,
                                          curNameAndUnits,
-                                         RealToStr(state, ConvertIP(state, indexUnitConv, StrToReal(GetColumnUsingTabs(lineIn, col1))), 1) + degChar);
+                                         RealToStr(formatReals, ConvertIP(state, indexUnitConv, StrToReal(GetColumnUsingTabs(lineIn, col1))), 1) +
+                                             degChar);
                         PreDefTableEntry(state,
                                          state.dataOutRptPredefined->pdchWthrVal,
                                          "Cooling Design Temperature 1% (F)",
-                                         RealToStr(state, ConvertIP(state, indexUnitConv, StrToReal(GetColumnUsingTabs(lineIn, col2))), 1) + degChar);
+                                         RealToStr(formatReals, ConvertIP(state, indexUnitConv, StrToReal(GetColumnUsingTabs(lineIn, col2))), 1) +
+                                             degChar);
                         PreDefTableEntry(state,
                                          state.dataOutRptPredefined->pdchWthrVal,
                                          "Cooling Design Temperature 2% (F)",
-                                         RealToStr(state, ConvertIP(state, indexUnitConv, StrToReal(GetColumnUsingTabs(lineIn, col3))), 1) + degChar);
+                                         RealToStr(formatReals, ConvertIP(state, indexUnitConv, StrToReal(GetColumnUsingTabs(lineIn, col3))), 1) +
+                                             degChar);
                     } else {
                         PreDefTableEntry(state,
                                          state.dataOutRptPredefined->pdchWthrVal,
@@ -5810,11 +5816,11 @@ void FillWeatherPredefinedEntries(EnergyPlusData &state)
                 if (ort->ip()) {
                     curNameWithSIUnits = "Maximum Dry Bulb Temperature (C)";
                     LookupSItoIP(state, curNameWithSIUnits, indexUnitConv, curNameAndUnits);
-                    PreDefTableEntry(state,
-                                     state.dataOutRptPredefined->pdchWthrVal,
-                                     curNameAndUnits,
-                                     RealToStr(state, ConvertIP(state, indexUnitConv, StrToReal(lineIn.substr(sposlt, eposlt - sposlt + 1))), 1) +
-                                         degChar);
+                    PreDefTableEntry(
+                        state,
+                        state.dataOutRptPredefined->pdchWthrVal,
+                        curNameAndUnits,
+                        RealToStr(formatReals, ConvertIP(state, indexUnitConv, StrToReal(lineIn.substr(sposlt, eposlt - sposlt + 1))), 1) + degChar);
                 } else {
                     PreDefTableEntry(state,
                                      state.dataOutRptPredefined->pdchWthrVal,
@@ -5846,11 +5852,11 @@ void FillWeatherPredefinedEntries(EnergyPlusData &state)
                 if (ort->ip()) {
                     curNameWithSIUnits = "Minimum Dry Bulb Temperature (C)";
                     LookupSItoIP(state, curNameWithSIUnits, indexUnitConv, curNameAndUnits);
-                    PreDefTableEntry(state,
-                                     state.dataOutRptPredefined->pdchWthrVal,
-                                     curNameAndUnits,
-                                     RealToStr(state, ConvertIP(state, indexUnitConv, StrToReal(lineIn.substr(sposlt, eposlt - sposlt + 1))), 1) +
-                                         degChar);
+                    PreDefTableEntry(
+                        state,
+                        state.dataOutRptPredefined->pdchWthrVal,
+                        curNameAndUnits,
+                        RealToStr(formatReals, ConvertIP(state, indexUnitConv, StrToReal(lineIn.substr(sposlt, eposlt - sposlt + 1))), 1) + degChar);
                 } else {
                     PreDefTableEntry(state,
                                      state.dataOutRptPredefined->pdchWthrVal,
@@ -5882,11 +5888,11 @@ void FillWeatherPredefinedEntries(EnergyPlusData &state)
                 if (ort->ip()) {
                     curNameWithSIUnits = "Maximum Dew Point Temperature (C)";
                     LookupSItoIP(state, curNameWithSIUnits, indexUnitConv, curNameAndUnits);
-                    PreDefTableEntry(state,
-                                     state.dataOutRptPredefined->pdchWthrVal,
-                                     curNameAndUnits,
-                                     RealToStr(state, ConvertIP(state, indexUnitConv, StrToReal(lineIn.substr(sposlt, eposlt - sposlt + 1))), 1) +
-                                         degChar);
+                    PreDefTableEntry(
+                        state,
+                        state.dataOutRptPredefined->pdchWthrVal,
+                        curNameAndUnits,
+                        RealToStr(formatReals, ConvertIP(state, indexUnitConv, StrToReal(lineIn.substr(sposlt, eposlt - sposlt + 1))), 1) + degChar);
                 } else {
                     PreDefTableEntry(state,
                                      state.dataOutRptPredefined->pdchWthrVal,
@@ -5918,11 +5924,11 @@ void FillWeatherPredefinedEntries(EnergyPlusData &state)
                 if (ort->ip()) {
                     curNameWithSIUnits = "Minimum Dew Point Temperature (C)";
                     LookupSItoIP(state, curNameWithSIUnits, indexUnitConv, curNameAndUnits);
-                    PreDefTableEntry(state,
-                                     state.dataOutRptPredefined->pdchWthrVal,
-                                     curNameAndUnits,
-                                     RealToStr(state, ConvertIP(state, indexUnitConv, StrToReal(lineIn.substr(sposlt, eposlt - sposlt + 1))), 1) +
-                                         degChar);
+                    PreDefTableEntry(
+                        state,
+                        state.dataOutRptPredefined->pdchWthrVal,
+                        curNameAndUnits,
+                        RealToStr(formatReals, ConvertIP(state, indexUnitConv, StrToReal(lineIn.substr(sposlt, eposlt - sposlt + 1))), 1) + degChar);
                 } else {
                     PreDefTableEntry(state,
                                      state.dataOutRptPredefined->pdchWthrVal,
@@ -5991,7 +5997,7 @@ void FillWeatherPredefinedEntries(EnergyPlusData &state)
                     PreDefTableEntry(state,
                                      state.dataOutRptPredefined->pdchWthrVal,
                                      curNameAndUnits,
-                                     RealToStr(state, ConvertIPdelta(state, indexUnitConv, StrToReal(storeASHRAEHDD)), 1));
+                                     RealToStr(formatReals, ConvertIPdelta(state, indexUnitConv, StrToReal(storeASHRAEHDD)), 1));
                 } else {
                     PreDefTableEntry(
                         state, state.dataOutRptPredefined->pdchWthrVal, "ASHRAE Handbook 2009 Heating Degree-Days (base 18.3°C)", storeASHRAEHDD);
@@ -6011,11 +6017,11 @@ void FillWeatherPredefinedEntries(EnergyPlusData &state)
                 PreDefTableEntry(state,
                                  state.dataOutRptPredefined->pdchWthrVal,
                                  curNameAndUnits,
-                                 RealToStr(state, ConvertIPdelta(state, indexUnitConv, StrToReal(lineIn.substr(2, 4))), 1));
+                                 RealToStr(formatReals, ConvertIPdelta(state, indexUnitConv, StrToReal(lineIn.substr(2, 4))), 1));
                 PreDefTableEntry(state,
                                  state.dataOutRptPredefined->pdchLeedGenData,
                                  "Heating Degree Days",
-                                 RealToStr(state, ConvertIPdelta(state, indexUnitConv, StrToReal(lineIn.substr(2, 4))), 1));
+                                 RealToStr(formatReals, ConvertIPdelta(state, indexUnitConv, StrToReal(lineIn.substr(2, 4))), 1));
             } else {
                 PreDefTableEntry(state, state.dataOutRptPredefined->pdchWthrVal, "Weather File Heating Degree-Days (base 18°C)", lineIn.substr(2, 4));
                 PreDefTableEntry(state, state.dataOutRptPredefined->pdchLeedGenData, "Heating Degree Days", lineIn.substr(2, 4));
@@ -6030,7 +6036,7 @@ void FillWeatherPredefinedEntries(EnergyPlusData &state)
                     PreDefTableEntry(state,
                                      state.dataOutRptPredefined->pdchWthrVal,
                                      curNameAndUnits,
-                                     RealToStr(state, ConvertIPdelta(state, indexUnitConv, StrToReal(storeASHRAECDD)), 1));
+                                     RealToStr(formatReals, ConvertIPdelta(state, indexUnitConv, StrToReal(storeASHRAECDD)), 1));
                 } else {
                     PreDefTableEntry(
                         state, state.dataOutRptPredefined->pdchWthrVal, "ASHRAE Handbook 2009  Cooling Degree-Days (base 10°C)", storeASHRAECDD);
@@ -6050,11 +6056,11 @@ void FillWeatherPredefinedEntries(EnergyPlusData &state)
                 PreDefTableEntry(state,
                                  state.dataOutRptPredefined->pdchWthrVal,
                                  curNameAndUnits,
-                                 RealToStr(state, ConvertIPdelta(state, indexUnitConv, StrToReal(lineIn.substr(2, 4))), 1));
+                                 RealToStr(formatReals, ConvertIPdelta(state, indexUnitConv, StrToReal(lineIn.substr(2, 4))), 1));
                 PreDefTableEntry(state,
                                  state.dataOutRptPredefined->pdchLeedGenData,
                                  "Cooling Degree Days",
-                                 RealToStr(state, ConvertIPdelta(state, indexUnitConv, StrToReal(lineIn.substr(2, 4))), 1));
+                                 RealToStr(formatReals, ConvertIPdelta(state, indexUnitConv, StrToReal(lineIn.substr(2, 4))), 1));
             } else {
                 PreDefTableEntry(state, state.dataOutRptPredefined->pdchWthrVal, "Weather File Cooling Degree-Days (base 10°C)", lineIn.substr(2, 4));
                 PreDefTableEntry(state, state.dataOutRptPredefined->pdchLeedGenData, "Cooling Degree Days", lineIn.substr(2, 4));
@@ -7215,7 +7221,7 @@ void WriteMonthlyTables(EnergyPlusData &state)
                                 sumVal += curVal;
                             }
                             if (ort->IsMonthGathered(lMonth)) {
-                                tableBody(columnRecount, lMonth) = RealToStr(state, curVal, digitsShown);
+                                tableBody(columnRecount, lMonth) = RealToStr(currentStyle.formatReals, curVal, digitsShown);
                                 if (curVal > maxVal) {
                                     maxVal = curVal;
                                 }
@@ -7230,18 +7236,18 @@ void WriteMonthlyTables(EnergyPlusData &state)
                         if (ort->MonthlyColumns(curCol).avgSum ==
                             OutputProcessor::StoreType::Average) { // if it is a average variable divide by duration
                             if (sumDuration > 0) {
-                                tableBody(columnRecount, 14) = RealToStr(state, sumVal / sumDuration, digitsShown);
+                                tableBody(columnRecount, 14) = RealToStr(currentStyle.formatReals, sumVal / sumDuration, digitsShown);
                             } else {
                                 tableBody(columnRecount, 14) = "";
                             }
                         } else {
-                            tableBody(columnRecount, 14) = RealToStr(state, sumVal, digitsShown);
+                            tableBody(columnRecount, 14) = RealToStr(currentStyle.formatReals, sumVal, digitsShown);
                         }
                         if (minVal != storedMaxVal) {
-                            tableBody(columnRecount, 15) = RealToStr(state, minVal, digitsShown);
+                            tableBody(columnRecount, 15) = RealToStr(currentStyle.formatReals, minVal, digitsShown);
                         }
                         if (maxVal != storedMinVal) {
-                            tableBody(columnRecount, 16) = RealToStr(state, maxVal, digitsShown);
+                            tableBody(columnRecount, 16) = RealToStr(currentStyle.formatReals, maxVal, digitsShown);
                         }
                     } break;
                     case AggType::HoursZero:
@@ -7259,7 +7265,7 @@ void WriteMonthlyTables(EnergyPlusData &state)
                         for (lMonth = 1; lMonth <= 12; ++lMonth) {
                             curVal = ort->MonthlyColumns(curCol).reslt(lMonth);
                             if (ort->IsMonthGathered(lMonth)) {
-                                tableBody(columnRecount, lMonth) = RealToStr(state, curVal, digitsShown);
+                                tableBody(columnRecount, lMonth) = RealToStr(currentStyle.formatReals, curVal, digitsShown);
                                 sumVal += curVal;
                                 if (curVal > maxVal) {
                                     maxVal = curVal;
@@ -7272,12 +7278,12 @@ void WriteMonthlyTables(EnergyPlusData &state)
                             }
                         } // lMonth
                         // add the summary to bottom
-                        tableBody(columnRecount, 14) = RealToStr(state, sumVal, digitsShown);
+                        tableBody(columnRecount, 14) = RealToStr(currentStyle.formatReals, sumVal, digitsShown);
                         if (minVal != storedMaxVal) {
-                            tableBody(columnRecount, 15) = RealToStr(state, minVal, digitsShown);
+                            tableBody(columnRecount, 15) = RealToStr(currentStyle.formatReals, minVal, digitsShown);
                         }
                         if (maxVal != storedMinVal) {
-                            tableBody(columnRecount, 16) = RealToStr(state, maxVal, digitsShown);
+                            tableBody(columnRecount, 16) = RealToStr(currentStyle.formatReals, maxVal, digitsShown);
                         }
                     } break;
                     case AggType::ValueWhenMaxMin: {
@@ -7319,7 +7325,7 @@ void WriteMonthlyTables(EnergyPlusData &state)
                         for (lMonth = 1; lMonth <= 12; ++lMonth) {
                             curVal = ort->MonthlyColumns(curCol).reslt(lMonth) * curConversionFactor + state.dataOutRptTab->curConversionOffset;
                             if (ort->IsMonthGathered(lMonth)) {
-                                tableBody(columnRecount, lMonth) = RealToStr(state, curVal, digitsShown);
+                                tableBody(columnRecount, lMonth) = RealToStr(currentStyle.formatReals, curVal, digitsShown);
                                 if (curVal > maxVal) {
                                     maxVal = curVal;
                                 }
@@ -7332,10 +7338,10 @@ void WriteMonthlyTables(EnergyPlusData &state)
                         } // lMonth
                         // add the summary to bottom
                         if (minVal != storedMaxVal) {
-                            tableBody(columnRecount, 15) = RealToStr(state, minVal, digitsShown);
+                            tableBody(columnRecount, 15) = RealToStr(currentStyle.formatReals, minVal, digitsShown);
                         }
                         if (maxVal != storedMinVal) {
-                            tableBody(columnRecount, 16) = RealToStr(state, maxVal, digitsShown);
+                            tableBody(columnRecount, 16) = RealToStr(currentStyle.formatReals, maxVal, digitsShown);
                         }
                     } break;
                     case AggType::Maximum:
@@ -7394,7 +7400,7 @@ void WriteMonthlyTables(EnergyPlusData &state)
                                         minVal = curVal;
                                     }
                                     if (curVal < veryLarge && curVal > verySmall) {
-                                        tableBody(columnRecount - 1, lMonth) = RealToStr(state, curVal, digitsShown);
+                                        tableBody(columnRecount - 1, lMonth) = RealToStr(currentStyle.formatReals, curVal, digitsShown);
                                     } else {
                                         tableBody(columnRecount - 1, lMonth) = "-";
                                     }
@@ -7411,12 +7417,12 @@ void WriteMonthlyTables(EnergyPlusData &state)
                         // add the summary to bottom
                         // Don't include if the original min and max values are still present
                         if (minVal < veryLarge) {
-                            tableBody(columnRecount - 1, 15) = RealToStr(state, minVal, digitsShown);
+                            tableBody(columnRecount - 1, 15) = RealToStr(currentStyle.formatReals, minVal, digitsShown);
                         } else {
                             tableBody(columnRecount - 1, 15) = "-";
                         }
                         if (maxVal > verySmall) {
-                            tableBody(columnRecount - 1, 16) = RealToStr(state, maxVal, digitsShown);
+                            tableBody(columnRecount - 1, 16) = RealToStr(currentStyle.formatReals, maxVal, digitsShown);
                         } else {
                             tableBody(columnRecount - 1, 15) = "-";
                         }
@@ -7571,16 +7577,17 @@ void WriteTimeBinTables(EnergyPlusData &state)
             tableBody = "";
             columnHead = "- [hr]";
             tableBody(1, 1) = "less than";
-            tableBody(1, 2) = RealToStr(state, curIntervalStart, numIntervalDigits);
+            tableBody(1, 2) = RealToStr(currentStyle.formatReals, curIntervalStart, numIntervalDigits);
             for (int nCol = 1; nCol <= curIntervalCount; ++nCol) {
                 columnHead(nCol + 1) = fmt::format("{} [hr]", nCol);
                 // beginning of interval
-                tableBody(nCol + 1, 1) = RealToStr(state, curIntervalStart + (nCol - 1) * curIntervalSize, numIntervalDigits) + "<=";
+                tableBody(nCol + 1, 1) =
+                    RealToStr(currentStyle.formatReals, curIntervalStart + (nCol - 1) * curIntervalSize, numIntervalDigits) + "<=";
                 // end of interval
-                tableBody(nCol + 1, 2) = RealToStr(state, curIntervalStart + nCol * curIntervalSize, numIntervalDigits) + '>';
+                tableBody(nCol + 1, 2) = RealToStr(currentStyle.formatReals, curIntervalStart + nCol * curIntervalSize, numIntervalDigits) + '>';
             }
             tableBody(curIntervalCount + 2, 1) = "equal to or more than";
-            tableBody(curIntervalCount + 2, 2) = RealToStr(state, topValue, numIntervalDigits);
+            tableBody(curIntervalCount + 2, 2) = RealToStr(currentStyle.formatReals, topValue, numIntervalDigits);
             tableBody(numCols, 1) = "Row";
             tableBody(numCols, 2) = "Total";
             for (int iTable = 1; iTable <= curNumTables; ++iTable) {
@@ -7595,27 +7602,27 @@ void WriteTimeBinTables(EnergyPlusData &state)
                         state, repNameWithUnitsandscheduleName, ort->BinObjVarID(repIndex).namesOfObj, ort->OutputTableBinned(iInObj).avgSum);
                 }
                 for (int kHour = 1; kHour <= 24; ++kHour) {
-                    tableBody(1, 14 + kHour) = RealToStr(state, ort->BinResultsBelow(repIndex).hrly(kHour), 2);
-                    tableBody(curIntervalCount + 2, 14 + kHour) = RealToStr(state, ort->BinResultsAbove(repIndex).hrly(kHour), 2);
+                    tableBody(1, 14 + kHour) = RealToStr(currentStyle.formatReals, ort->BinResultsBelow(repIndex).hrly(kHour), 2);
+                    tableBody(curIntervalCount + 2, 14 + kHour) = RealToStr(currentStyle.formatReals, ort->BinResultsAbove(repIndex).hrly(kHour), 2);
                     Real64 rowTotal = ort->BinResultsBelow(repIndex).hrly(kHour) + ort->BinResultsAbove(repIndex).hrly(kHour);
                     for (int nCol = 1; nCol <= curIntervalCount; ++nCol) {
-                        tableBody(nCol + 1, 14 + kHour) = RealToStr(state, ort->BinResults(nCol, repIndex).hrly(kHour), 2);
+                        tableBody(nCol + 1, 14 + kHour) = RealToStr(currentStyle.formatReals, ort->BinResults(nCol, repIndex).hrly(kHour), 2);
                         // sum the total for all columns
                         rowTotal += ort->BinResults(nCol, repIndex).hrly(kHour);
                     }
-                    tableBody(numCols, 14 + kHour) = RealToStr(state, rowTotal, 2);
+                    tableBody(numCols, 14 + kHour) = RealToStr(currentStyle.formatReals, rowTotal, 2);
                 }
                 Real64 tableTotal = 0.0;
                 for (int kMonth = 1; kMonth <= 12; ++kMonth) {
-                    tableBody(1, 2 + kMonth) = RealToStr(state, ort->BinResultsBelow(repIndex).mnth(kMonth), 2);
-                    tableBody(curIntervalCount + 2, 2 + kMonth) = RealToStr(state, ort->BinResultsAbove(repIndex).mnth(kMonth), 2);
+                    tableBody(1, 2 + kMonth) = RealToStr(currentStyle.formatReals, ort->BinResultsBelow(repIndex).mnth(kMonth), 2);
+                    tableBody(curIntervalCount + 2, 2 + kMonth) = RealToStr(currentStyle.formatReals, ort->BinResultsAbove(repIndex).mnth(kMonth), 2);
                     Real64 rowTotal = ort->BinResultsBelow(repIndex).mnth(kMonth) + ort->BinResultsAbove(repIndex).mnth(kMonth);
                     for (int nCol = 1; nCol <= curIntervalCount; ++nCol) {
-                        tableBody(nCol + 1, 2 + kMonth) = RealToStr(state, ort->BinResults(nCol, repIndex).mnth(kMonth), 2);
+                        tableBody(nCol + 1, 2 + kMonth) = RealToStr(currentStyle.formatReals, ort->BinResults(nCol, repIndex).mnth(kMonth), 2);
                         // sum the total for all columns
                         rowTotal += ort->BinResults(nCol, repIndex).mnth(kMonth);
                     }
-                    tableBody(numCols, 2 + kMonth) = RealToStr(state, rowTotal, 2);
+                    tableBody(numCols, 2 + kMonth) = RealToStr(currentStyle.formatReals, rowTotal, 2);
                     tableTotal += rowTotal;
                 }
                 // compute total row
@@ -7624,7 +7631,7 @@ void WriteTimeBinTables(EnergyPlusData &state)
                     for (int kMonth = 1; kMonth <= 12; ++kMonth) {
                         colTotal += ort->BinResults(nCol, repIndex).mnth(kMonth);
                     }
-                    tableBody(nCol + 1, 39) = RealToStr(state, colTotal, 2);
+                    tableBody(nCol + 1, 39) = RealToStr(currentStyle.formatReals, colTotal, 2);
                 }
                 Real64 aboveTotal = 0.0;
                 Real64 belowTotal = 0.0;
@@ -7632,9 +7639,9 @@ void WriteTimeBinTables(EnergyPlusData &state)
                     aboveTotal += ort->BinResultsAbove(repIndex).mnth(kMonth);
                     belowTotal += ort->BinResultsBelow(repIndex).mnth(kMonth);
                 }
-                tableBody(1, 39) = RealToStr(state, belowTotal, 2);
-                tableBody(curIntervalCount + 2, 39) = RealToStr(state, aboveTotal, 2);
-                tableBody(numCols, 39) = RealToStr(state, tableTotal, 2);
+                tableBody(1, 39) = RealToStr(currentStyle.formatReals, belowTotal, 2);
+                tableBody(curIntervalCount + 2, 39) = RealToStr(currentStyle.formatReals, aboveTotal, 2);
+                tableBody(numCols, 39) = RealToStr(currentStyle.formatReals, tableTotal, 2);
                 if (currentStyle.produceTabular) {
                     WriteTextLine(state, "Values in table are in hours.");
                     WriteTextLine(state, "");
@@ -7688,19 +7695,21 @@ void WriteTimeBinTables(EnergyPlusData &state)
 
                 if (currentStyle.unitsStyle == OutputReportTabular::UnitsStyle::InchPound ||
                     currentStyle.unitsStyle == OutputReportTabular::UnitsStyle::InchPoundExceptElectricity) {
-                    tableBodyStat(1, 1) = RealToStr(state, ConvertIP(state, indexUnitConv, ort->BinStatistics(repIndex).minimum), 2);
-                    tableBodyStat(1, 2) = RealToStr(state, ConvertIP(state, indexUnitConv, repMean - 2 * repStDev), 2);
-                    tableBodyStat(1, 3) = RealToStr(state, ConvertIP(state, indexUnitConv, repMean), 2);
-                    tableBodyStat(1, 4) = RealToStr(state, ConvertIP(state, indexUnitConv, repMean + 2 * repStDev), 2);
-                    tableBodyStat(1, 5) = RealToStr(state, ConvertIP(state, indexUnitConv, ort->BinStatistics(repIndex).maximum), 2);
-                    tableBodyStat(1, 6) = RealToStr(state, ConvertIPdelta(state, indexUnitConv, repStDev), 2);
+                    tableBodyStat(1, 1) =
+                        RealToStr(currentStyle.formatReals, ConvertIP(state, indexUnitConv, ort->BinStatistics(repIndex).minimum), 2);
+                    tableBodyStat(1, 2) = RealToStr(currentStyle.formatReals, ConvertIP(state, indexUnitConv, repMean - 2 * repStDev), 2);
+                    tableBodyStat(1, 3) = RealToStr(currentStyle.formatReals, ConvertIP(state, indexUnitConv, repMean), 2);
+                    tableBodyStat(1, 4) = RealToStr(currentStyle.formatReals, ConvertIP(state, indexUnitConv, repMean + 2 * repStDev), 2);
+                    tableBodyStat(1, 5) =
+                        RealToStr(currentStyle.formatReals, ConvertIP(state, indexUnitConv, ort->BinStatistics(repIndex).maximum), 2);
+                    tableBodyStat(1, 6) = RealToStr(currentStyle.formatReals, ConvertIPdelta(state, indexUnitConv, repStDev), 2);
                 } else {
-                    tableBodyStat(1, 1) = RealToStr(state, ort->BinStatistics(repIndex).minimum, 2);
-                    tableBodyStat(1, 2) = RealToStr(state, repMean - 2 * repStDev, 2);
-                    tableBodyStat(1, 3) = RealToStr(state, repMean, 2);
-                    tableBodyStat(1, 4) = RealToStr(state, repMean + 2 * repStDev, 2);
-                    tableBodyStat(1, 5) = RealToStr(state, ort->BinStatistics(repIndex).maximum, 2);
-                    tableBodyStat(1, 6) = RealToStr(state, repStDev, 2);
+                    tableBodyStat(1, 1) = RealToStr(currentStyle.formatReals, ort->BinStatistics(repIndex).minimum, 2);
+                    tableBodyStat(1, 2) = RealToStr(currentStyle.formatReals, repMean - 2 * repStDev, 2);
+                    tableBodyStat(1, 3) = RealToStr(currentStyle.formatReals, repMean, 2);
+                    tableBodyStat(1, 4) = RealToStr(currentStyle.formatReals, repMean + 2 * repStDev, 2);
+                    tableBodyStat(1, 5) = RealToStr(currentStyle.formatReals, ort->BinStatistics(repIndex).maximum, 2);
+                    tableBodyStat(1, 6) = RealToStr(currentStyle.formatReals, repStDev, 2);
                 }
                 if (currentStyle.produceTabular) {
                     WriteSubtitle(state, "Statistics");
@@ -7800,7 +7809,7 @@ void WriteBEPSTable(EnergyPlusData &state)
     if (ort->displayTabularBEPS) {
         WriteReportHeaders(state, "Annual Building Utility Performance Summary", "Entire Facility", OutputProcessor::StoreType::Average);
         // show the number of hours that the table applies to
-        WriteTextLine(state, "Values gathered over " + RealToStr(state, ort->gatherElapsedTimeBEPS, 2) + " hours", true);
+        WriteTextLine(state, "Values gathered over " + RealToStr(true, ort->gatherElapsedTimeBEPS, 2) + " hours", true);
         if (ort->gatherElapsedTimeBEPS < 8759.0) { // might not add up to 8760 exactly but can't be more than 1 hour diff.
             WriteTextLine(state, "WARNING: THE REPORT DOES NOT REPRESENT A FULL ANNUAL SIMULATION.", true);
         }
@@ -8232,10 +8241,10 @@ void WriteBEPSTable(EnergyPlusData &state)
                                    // steam
 
         // show annual values
-        tableBody(1, 1) = RealToStr(state, totalSiteEnergyUse, 2);
-        tableBody(1, 2) = RealToStr(state, netSiteEnergyUse, 2);
-        tableBody(1, 3) = RealToStr(state, totalSourceEnergyUse, 2);
-        tableBody(1, 4) = RealToStr(state, netSourceEnergyUse, 2);
+        tableBody(1, 1) = RealToStr(currentStyle.formatReals, totalSiteEnergyUse, 2);
+        tableBody(1, 2) = RealToStr(currentStyle.formatReals, netSiteEnergyUse, 2);
+        tableBody(1, 3) = RealToStr(currentStyle.formatReals, totalSourceEnergyUse, 2);
+        tableBody(1, 4) = RealToStr(currentStyle.formatReals, netSourceEnergyUse, 2);
 
         // convert floor areas
         Real64 const convBldgGrossFloorArea = ort->buildingGrossFloorArea / areaConversionFactor;
@@ -8243,17 +8252,17 @@ void WriteBEPSTable(EnergyPlusData &state)
 
         // show  per building area
         if (convBldgGrossFloorArea > 0) {
-            tableBody(2, 1) = RealToStr(state, totalSiteEnergyUse * kConversionFactor / convBldgGrossFloorArea, 2);
-            tableBody(2, 2) = RealToStr(state, netSiteEnergyUse * kConversionFactor / convBldgGrossFloorArea, 2);
-            tableBody(2, 3) = RealToStr(state, totalSourceEnergyUse * kConversionFactor / convBldgGrossFloorArea, 2);
-            tableBody(2, 4) = RealToStr(state, netSourceEnergyUse * kConversionFactor / convBldgGrossFloorArea, 2);
+            tableBody(2, 1) = RealToStr(currentStyle.formatReals, totalSiteEnergyUse * kConversionFactor / convBldgGrossFloorArea, 2);
+            tableBody(2, 2) = RealToStr(currentStyle.formatReals, netSiteEnergyUse * kConversionFactor / convBldgGrossFloorArea, 2);
+            tableBody(2, 3) = RealToStr(currentStyle.formatReals, totalSourceEnergyUse * kConversionFactor / convBldgGrossFloorArea, 2);
+            tableBody(2, 4) = RealToStr(currentStyle.formatReals, netSourceEnergyUse * kConversionFactor / convBldgGrossFloorArea, 2);
         }
         // show  per conditioned building area
         if (convBldgCondFloorArea > 0) {
-            tableBody(3, 1) = RealToStr(state, totalSiteEnergyUse * kConversionFactor / convBldgCondFloorArea, 2);
-            tableBody(3, 2) = RealToStr(state, netSiteEnergyUse * kConversionFactor / convBldgCondFloorArea, 2);
-            tableBody(3, 3) = RealToStr(state, totalSourceEnergyUse * kConversionFactor / convBldgCondFloorArea, 2);
-            tableBody(3, 4) = RealToStr(state, netSourceEnergyUse * kConversionFactor / convBldgCondFloorArea, 2);
+            tableBody(3, 1) = RealToStr(currentStyle.formatReals, totalSiteEnergyUse * kConversionFactor / convBldgCondFloorArea, 2);
+            tableBody(3, 2) = RealToStr(currentStyle.formatReals, netSiteEnergyUse * kConversionFactor / convBldgCondFloorArea, 2);
+            tableBody(3, 3) = RealToStr(currentStyle.formatReals, totalSourceEnergyUse * kConversionFactor / convBldgCondFloorArea, 2);
+            tableBody(3, 4) = RealToStr(currentStyle.formatReals, netSourceEnergyUse * kConversionFactor / convBldgCondFloorArea, 2);
         }
 
         // heading for the entire sub-table
@@ -8303,110 +8312,121 @@ void WriteBEPSTable(EnergyPlusData &state)
 
         // set columns to conversion factors
         // show values
-        //  tableBody(1,1)  = TRIM(RealToStr(state, sourceFactorElectric,3))
-        //  tableBody(2,1)  = TRIM(RealToStr(state, sourceFactorNaturalGas, 3))
-        //  tableBody(3,1)  = TRIM(RealToStr(state, sourceFactorElectric/ efficiencyDistrictCooling,3))
-        //  tableBody(4,1)  = TRIM(RealToStr(state, sourceFactorNaturalGas/ efficiencyDistrictHeating ,3))
-        //  tableBody(5,1)  = TRIM(RealToStr(state, sourceFactorSteam ,3))
-        //  tableBody(6,1)  = TRIM(RealToStr(state, sourceFactorGasoline ,3))
-        //  tableBody(7,1)  = TRIM(RealToStr(state, sourceFactorDiesel ,3))
-        //  tableBody(8,1)  = TRIM(RealToStr(state, sourceFactorCoal ,3))
-        //  tableBody(9,1)  = TRIM(RealToStr(state, sourceFactorFuelOil1 ,3))
-        //  tableBody(10,1) = TRIM(RealToStr(state, sourceFactorFuelOil2 ,3))
-        //  tableBody(11,1) = TRIM(RealToStr(state, sourceFactorPropane ,3))
+        //  tableBody(1,1)  = TRIM(RealToStr(currentStyle.formatReals, sourceFactorElectric,3))
+        //  tableBody(2,1)  = TRIM(RealToStr(currentStyle.formatReals, sourceFactorNaturalGas, 3))
+        //  tableBody(3,1)  = TRIM(RealToStr(currentStyle.formatReals, sourceFactorElectric/ efficiencyDistrictCooling,3))
+        //  tableBody(4,1)  = TRIM(RealToStr(currentStyle.formatReals, sourceFactorNaturalGas/ efficiencyDistrictHeating ,3))
+        //  tableBody(5,1)  = TRIM(RealToStr(currentStyle.formatReals, sourceFactorSteam ,3))
+        //  tableBody(6,1)  = TRIM(RealToStr(currentStyle.formatReals, sourceFactorGasoline ,3))
+        //  tableBody(7,1)  = TRIM(RealToStr(currentStyle.formatReals, sourceFactorDiesel ,3))
+        //  tableBody(8,1)  = TRIM(RealToStr(currentStyle.formatReals, sourceFactorCoal ,3))
+        //  tableBody(9,1)  = TRIM(RealToStr(currentStyle.formatReals, sourceFactorFuelOil1 ,3))
+        //  tableBody(10,1) = TRIM(RealToStr(currentStyle.formatReals, sourceFactorFuelOil2 ,3))
+        //  tableBody(11,1) = TRIM(RealToStr(currentStyle.formatReals, sourceFactorPropane ,3))
 
         if (!ort->ffSchedUsed(1)) {
-            tableBody(1, 1) = RealToStr(state, ort->sourceFactorElectric, 3);
+            tableBody(1, 1) = RealToStr(currentStyle.formatReals, ort->sourceFactorElectric, 3);
         } else if (ort->gatherTotalsBEPS(1) > SmallValue) {
-            tableBody(1, 1) = "Effective Factor = " + RealToStr(state, ort->gatherTotalsBySourceBEPS(1) / ort->gatherTotalsBEPS(1), 3) +
-                              " (calculated using schedule \"" + ort->ffScheds(1)->Name + "\")";
+            tableBody(1, 1) =
+                "Effective Factor = " + RealToStr(currentStyle.formatReals, ort->gatherTotalsBySourceBEPS(1) / ort->gatherTotalsBEPS(1), 3) +
+                " (calculated using schedule \"" + ort->ffScheds(1)->Name + "\")";
         } else {
             tableBody(1, 1) = "N/A";
         }
 
         if (!ort->ffSchedUsed(2)) {
-            tableBody(1, 2) = RealToStr(state, ort->sourceFactorNaturalGas, 3);
+            tableBody(1, 2) = RealToStr(currentStyle.formatReals, ort->sourceFactorNaturalGas, 3);
         } else if (ort->gatherTotalsBEPS(2) > SmallValue) {
-            tableBody(1, 2) = "Effective Factor = " + RealToStr(state, ort->gatherTotalsBySourceBEPS(2) / ort->gatherTotalsBEPS(2), 3) +
-                              " (calculated using schedule \"" + ort->ffScheds(2)->Name + "\")";
+            tableBody(1, 2) =
+                "Effective Factor = " + RealToStr(currentStyle.formatReals, ort->gatherTotalsBySourceBEPS(2) / ort->gatherTotalsBEPS(2), 3) +
+                " (calculated using schedule \"" + ort->ffScheds(2)->Name + "\")";
         } else {
             tableBody(1, 2) = "N/A";
         }
 
-        tableBody(1, 3) = RealToStr(state, ort->sourceFactorElectric / ort->efficiencyDistrictCooling, 3); // District Cooling
+        tableBody(1, 3) = RealToStr(currentStyle.formatReals, ort->sourceFactorElectric / ort->efficiencyDistrictCooling, 3); // District Cooling
 
-        tableBody(1, 4) = RealToStr(state, ort->sourceFactorNaturalGas / ort->efficiencyDistrictHeatingWater, 3); // District Heating Water
+        tableBody(1, 4) =
+            RealToStr(currentStyle.formatReals, ort->sourceFactorNaturalGas / ort->efficiencyDistrictHeatingWater, 3); // District Heating Water
 
-        tableBody(1, 5) = RealToStr(state, ort->sourceFactorDistrictHeatingSteam, 3); // District Heating Steam
+        tableBody(1, 5) = RealToStr(currentStyle.formatReals, ort->sourceFactorDistrictHeatingSteam, 3); // District Heating Steam
 
         if (!ort->ffSchedUsed(6)) {
-            tableBody(1, 6) = RealToStr(state, ort->sourceFactorGasoline, 3);
+            tableBody(1, 6) = RealToStr(currentStyle.formatReals, ort->sourceFactorGasoline, 3);
         } else if (ort->gatherTotalsBEPS(6) > SmallValue) {
-            tableBody(1, 6) = "Effective Factor = " + RealToStr(state, ort->gatherTotalsBySourceBEPS(6) / ort->gatherTotalsBEPS(6), 3) +
-                              " (calculated using schedule \"" + ort->ffScheds(6)->Name + "\")";
+            tableBody(1, 6) =
+                "Effective Factor = " + RealToStr(currentStyle.formatReals, ort->gatherTotalsBySourceBEPS(6) / ort->gatherTotalsBEPS(6), 3) +
+                " (calculated using schedule \"" + ort->ffScheds(6)->Name + "\")";
         } else {
             tableBody(1, 6) = "N/A";
         }
 
         if (!ort->ffSchedUsed(8)) {
-            tableBody(1, 7) = RealToStr(state, ort->sourceFactorDiesel, 3);
+            tableBody(1, 7) = RealToStr(currentStyle.formatReals, ort->sourceFactorDiesel, 3);
         } else if (ort->gatherTotalsBEPS(8) > SmallValue) {
-            tableBody(1, 7) = "Effective Factor = " + RealToStr(state, ort->gatherTotalsBySourceBEPS(8) / ort->gatherTotalsBEPS(8), 3) +
-                              " (calculated using schedule \"" + ort->ffScheds(8)->Name + "\")";
+            tableBody(1, 7) =
+                "Effective Factor = " + RealToStr(currentStyle.formatReals, ort->gatherTotalsBySourceBEPS(8) / ort->gatherTotalsBEPS(8), 3) +
+                " (calculated using schedule \"" + ort->ffScheds(8)->Name + "\")";
         } else {
             tableBody(1, 7) = "N/A";
         }
 
         if (!ort->ffSchedUsed(9)) {
-            tableBody(1, 8) = RealToStr(state, ort->sourceFactorCoal, 3);
+            tableBody(1, 8) = RealToStr(currentStyle.formatReals, ort->sourceFactorCoal, 3);
         } else if (ort->gatherTotalsBEPS(9) > SmallValue) {
-            tableBody(1, 8) = "Effective Factor = " + RealToStr(state, ort->gatherTotalsBySourceBEPS(9) / ort->gatherTotalsBEPS(9), 3) +
-                              " (calculated using schedule \"" + ort->ffScheds(9)->Name + "\")";
+            tableBody(1, 8) =
+                "Effective Factor = " + RealToStr(currentStyle.formatReals, ort->gatherTotalsBySourceBEPS(9) / ort->gatherTotalsBEPS(9), 3) +
+                " (calculated using schedule \"" + ort->ffScheds(9)->Name + "\")";
         } else {
             tableBody(1, 8) = "N/A";
         }
 
         if (!ort->ffSchedUsed(10)) {
-            tableBody(1, 9) = RealToStr(state, ort->sourceFactorFuelOil1, 3);
+            tableBody(1, 9) = RealToStr(currentStyle.formatReals, ort->sourceFactorFuelOil1, 3);
         } else if (ort->gatherTotalsBEPS(10) > SmallValue) {
-            tableBody(1, 9) = "Effective Factor = " + RealToStr(state, ort->gatherTotalsBySourceBEPS(10) / ort->gatherTotalsBEPS(10), 3) +
-                              " (calculated using schedule \"" + ort->ffScheds(10)->Name + "\")";
+            tableBody(1, 9) =
+                "Effective Factor = " + RealToStr(currentStyle.formatReals, ort->gatherTotalsBySourceBEPS(10) / ort->gatherTotalsBEPS(10), 3) +
+                " (calculated using schedule \"" + ort->ffScheds(10)->Name + "\")";
         } else {
             tableBody(1, 9) = "N/A";
         }
 
         if (!ort->ffSchedUsed(11)) {
-            tableBody(1, 10) = RealToStr(state, ort->sourceFactorFuelOil2, 3);
+            tableBody(1, 10) = RealToStr(currentStyle.formatReals, ort->sourceFactorFuelOil2, 3);
         } else if (ort->gatherTotalsBEPS(11) > SmallValue) {
-            tableBody(1, 10) = "Effective Factor = " + RealToStr(state, ort->gatherTotalsBySourceBEPS(11) / ort->gatherTotalsBEPS(11), 3) +
-                               " (calculated using schedule \"" + ort->ffScheds(11)->Name + "\")";
+            tableBody(1, 10) =
+                "Effective Factor = " + RealToStr(currentStyle.formatReals, ort->gatherTotalsBySourceBEPS(11) / ort->gatherTotalsBEPS(11), 3) +
+                " (calculated using schedule \"" + ort->ffScheds(11)->Name + "\")";
         } else {
             tableBody(1, 10) = "N/A";
         }
 
         if (!ort->ffSchedUsed(12)) {
-            tableBody(1, 11) = RealToStr(state, ort->sourceFactorPropane, 3);
+            tableBody(1, 11) = RealToStr(currentStyle.formatReals, ort->sourceFactorPropane, 3);
         } else if (ort->gatherTotalsBEPS(12) > SmallValue) {
-            tableBody(1, 11) = "Effective Factor = " + RealToStr(state, ort->gatherTotalsBySourceBEPS(12) / ort->gatherTotalsBEPS(12), 3) +
-                               " (calculated using schedule \"" + ort->ffScheds(12)->Name + "\")";
+            tableBody(1, 11) =
+                "Effective Factor = " + RealToStr(currentStyle.formatReals, ort->gatherTotalsBySourceBEPS(12) / ort->gatherTotalsBEPS(12), 3) +
+                " (calculated using schedule \"" + ort->ffScheds(12)->Name + "\")";
         } else {
             tableBody(1, 11) = "N/A";
         }
 
         if (!ort->ffSchedUsed(13)) {
-            tableBody(1, 12) = RealToStr(state, ort->sourceFactorOtherFuel1, 3);
+            tableBody(1, 12) = RealToStr(currentStyle.formatReals, ort->sourceFactorOtherFuel1, 3);
         } else if (ort->gatherTotalsBEPS(13) > SmallValue) {
-            tableBody(1, 12) = "Effective Factor = " + RealToStr(state, ort->gatherTotalsBySourceBEPS(13) / ort->gatherTotalsBEPS(13), 3) +
-                               " (calculated using schedule \"" + ort->ffScheds(13)->Name + "\")";
+            tableBody(1, 12) =
+                "Effective Factor = " + RealToStr(currentStyle.formatReals, ort->gatherTotalsBySourceBEPS(13) / ort->gatherTotalsBEPS(13), 3) +
+                " (calculated using schedule \"" + ort->ffScheds(13)->Name + "\")";
         } else {
             tableBody(1, 12) = "N/A";
         }
 
         if (!ort->ffSchedUsed(14)) {
-            tableBody(1, 13) = RealToStr(state, ort->sourceFactorOtherFuel2, 3);
+            tableBody(1, 13) = RealToStr(currentStyle.formatReals, ort->sourceFactorOtherFuel2, 3);
         } else if (ort->gatherTotalsBEPS(14) > SmallValue) {
-            tableBody(1, 13) = "Effective Factor = " + RealToStr(state, ort->gatherTotalsBySourceBEPS(14) / ort->gatherTotalsBEPS(14), 3) +
-                               " (calculated using schedule \"" + ort->ffScheds(14)->Name + "\")";
+            tableBody(1, 13) =
+                "Effective Factor = " + RealToStr(currentStyle.formatReals, ort->gatherTotalsBySourceBEPS(14) / ort->gatherTotalsBEPS(14), 3) +
+                " (calculated using schedule \"" + ort->ffScheds(14)->Name + "\")";
         } else {
             tableBody(1, 13) = "N/A";
         }
@@ -8466,23 +8486,27 @@ void WriteBEPSTable(EnergyPlusData &state)
         rowHead(3) = "Unconditioned Building Area";
 
         tableBody = "";
-        tableBody(1, 1) = RealToStr(state, convBldgGrossFloorArea, 2);
+        tableBody(1, 1) = RealToStr(currentStyle.formatReals, convBldgGrossFloorArea, 2);
 
         if (currentStyle.unitsStyle == OutputReportTabular::UnitsStyle::InchPound ||
             currentStyle.unitsStyle == OutputReportTabular::UnitsStyle::InchPoundExceptElectricity) {
             if (currentStyle.produceTabular) {
-                PreDefTableEntry(
-                    state, state.dataOutRptPredefined->pdchLeedGenData, "Total gross floor area [ft2]", RealToStr(state, convBldgGrossFloorArea, 2));
+                PreDefTableEntry(state,
+                                 state.dataOutRptPredefined->pdchLeedGenData,
+                                 "Total gross floor area [ft2]",
+                                 RealToStr(currentStyle.formatReals, convBldgGrossFloorArea, 2));
             }
         } else {
             if (currentStyle.produceTabular) {
-                PreDefTableEntry(
-                    state, state.dataOutRptPredefined->pdchLeedGenData, "Total gross floor area [m2]", RealToStr(state, convBldgGrossFloorArea, 2));
+                PreDefTableEntry(state,
+                                 state.dataOutRptPredefined->pdchLeedGenData,
+                                 "Total gross floor area [m2]",
+                                 RealToStr(currentStyle.formatReals, convBldgGrossFloorArea, 2));
             }
         }
 
-        tableBody(1, 2) = RealToStr(state, convBldgCondFloorArea, 2);
-        tableBody(1, 3) = RealToStr(state, convBldgGrossFloorArea - convBldgCondFloorArea, 2);
+        tableBody(1, 2) = RealToStr(currentStyle.formatReals, convBldgCondFloorArea, 2);
+        tableBody(1, 3) = RealToStr(currentStyle.formatReals, convBldgGrossFloorArea - convBldgCondFloorArea, 2);
 
         // heading for the entire sub-table
         if (ort->displayTabularBEPS) {
@@ -8604,9 +8628,9 @@ void WriteBEPSTable(EnergyPlusData &state)
         tableBody = "";
         for (int iResource = 1; iResource <= 14; ++iResource) {
             for (int jEndUse = 1; jEndUse <= 14; ++jEndUse) {
-                tableBody(iResource, jEndUse) = RealToStr(state, useVal(iResource, jEndUse), 2);
+                tableBody(iResource, jEndUse) = RealToStr(currentStyle.formatReals, useVal(iResource, jEndUse), 2);
             }
-            tableBody(iResource, 16) = RealToStr(state, useVal(iResource, 15), 2);
+            tableBody(iResource, 16) = RealToStr(currentStyle.formatReals, useVal(iResource, 15), 2);
         }
         // add warning message if end use values do not add up to total
         for (int iResource = 1; iResource <= 14; ++iResource) {
@@ -8918,27 +8942,11 @@ void WriteBEPSTable(EnergyPlusData &state)
         }
 
         //---- End Uses By Subcategory Sub-Table
-        writeBEPSEndUseBySubCatOrSpaceType(state,
-                                           EndUseSubTableType::BySubCategory,
-                                           endUseSubOther,
-                                           collapsedEndUse,
-                                           collapsedEndUseSub,
-                                           ort->needOtherRowLEED45,
-                                           currentStyle.unitsStyle,
-                                           currentStyle.produceTabular,
-                                           currentStyle.produceSQLite,
-                                           currentStyle.produceJSON);
+        writeBEPSEndUseBySubCatOrSpaceType(
+            state, EndUseSubTableType::BySubCategory, endUseSubOther, collapsedEndUse, collapsedEndUseSub, ort->needOtherRowLEED45, currentStyle);
 
-        writeBEPSEndUseBySubCatOrSpaceType(state,
-                                           EndUseSubTableType::BySpaceType,
-                                           endUseSubOther,
-                                           collapsedEndUse,
-                                           collapsedEndUseSpType,
-                                           ort->needOtherRowEndUse,
-                                           currentStyle.unitsStyle,
-                                           currentStyle.produceTabular,
-                                           currentStyle.produceSQLite,
-                                           currentStyle.produceJSON);
+        writeBEPSEndUseBySubCatOrSpaceType(
+            state, EndUseSubTableType::BySpaceType, endUseSubOther, collapsedEndUse, collapsedEndUseSpType, ort->needOtherRowEndUse, currentStyle);
 
         // EAp2-4/5. Performance Rating Method Compliance
         // repeat some of the code for the end use subcategory table but only looping over the energy resources and not including water
@@ -9115,7 +9123,7 @@ void WriteBEPSTable(EnergyPlusData &state)
         if (convBldgCondFloorArea > 0) {
             for (int iResource = 1; iResource <= 14; ++iResource) {
                 for (int jEndUse = 1; jEndUse <= 4; ++jEndUse) {
-                    tableBody(iResource, jEndUse) = RealToStr(state, normalVal(iResource, jEndUse) / convBldgCondFloorArea, 2);
+                    tableBody(iResource, jEndUse) = RealToStr(currentStyle.formatReals, normalVal(iResource, jEndUse) / convBldgCondFloorArea, 2);
                 }
             }
         }
@@ -9151,7 +9159,7 @@ void WriteBEPSTable(EnergyPlusData &state)
         if (convBldgGrossFloorArea > 0) {
             for (int iResource = 1; iResource <= 13; ++iResource) {
                 for (int jEndUse = 1; jEndUse <= 4; ++jEndUse) {
-                    tableBody(iResource, jEndUse) = RealToStr(state, normalVal(iResource, jEndUse) / convBldgGrossFloorArea, 2);
+                    tableBody(iResource, jEndUse) = RealToStr(currentStyle.formatReals, normalVal(iResource, jEndUse) / convBldgGrossFloorArea, 2);
                 }
             }
         }
@@ -9224,40 +9232,43 @@ void WriteBEPSTable(EnergyPlusData &state)
         tableBody = "";
 
         // show annual values
-        tableBody(1, 1) = RealToStr(state, ort->gatherPowerFuelFireGen, 3);
-        tableBody(1, 2) = RealToStr(state, ort->gatherPowerHTGeothermal, 3);
-        tableBody(1, 3) = RealToStr(state, ort->gatherPowerPV, 3);
+        tableBody(1, 1) = RealToStr(currentStyle.formatReals, ort->gatherPowerFuelFireGen, 3);
+        tableBody(1, 2) = RealToStr(currentStyle.formatReals, ort->gatherPowerHTGeothermal, 3);
+        tableBody(1, 3) = RealToStr(currentStyle.formatReals, ort->gatherPowerPV, 3);
         if (currentStyle.produceTabular) {
             PreDefTableEntry(state, state.dataOutRptPredefined->pdchLeedRenAnGen, "Photovoltaic", unconvert_ipExceptElec * ort->gatherPowerPV, 2);
         }
-        tableBody(1, 4) = RealToStr(state, ort->gatherPowerWind, 3);
+        tableBody(1, 4) = RealToStr(currentStyle.formatReals, ort->gatherPowerWind, 3);
         if (currentStyle.produceTabular) {
             PreDefTableEntry(state, state.dataOutRptPredefined->pdchLeedRenAnGen, "Wind", unconvert_ipExceptElec * ort->gatherPowerWind, 2);
         }
-        tableBody(1, 5) = RealToStr(state, ort->gatherPowerConversion, 3);
-        tableBody(1, 6) = RealToStr(state, ort->OverallNetEnergyFromStorage, 3);
-        tableBody(1, 7) = RealToStr(state, ort->gatherElecProduced, 3);
-        tableBody(1, 9) = RealToStr(state, ort->gatherElecPurchased, 3);
-        tableBody(1, 10) = RealToStr(state, ort->gatherElecSurplusSold, 3);
-        tableBody(1, 11) = RealToStr(state, ort->gatherElecPurchased - ort->gatherElecSurplusSold, 3);
-        tableBody(1, 13) = RealToStr(state, ort->gatherElecProduced + (ort->gatherElecPurchased - ort->gatherElecSurplusSold), 3);
-        tableBody(1, 14) = RealToStr(state, collapsedTotal(1), 3);
+        tableBody(1, 5) = RealToStr(currentStyle.formatReals, ort->gatherPowerConversion, 3);
+        tableBody(1, 6) = RealToStr(currentStyle.formatReals, ort->OverallNetEnergyFromStorage, 3);
+        tableBody(1, 7) = RealToStr(currentStyle.formatReals, ort->gatherElecProduced, 3);
+        tableBody(1, 9) = RealToStr(currentStyle.formatReals, ort->gatherElecPurchased, 3);
+        tableBody(1, 10) = RealToStr(currentStyle.formatReals, ort->gatherElecSurplusSold, 3);
+        tableBody(1, 11) = RealToStr(currentStyle.formatReals, ort->gatherElecPurchased - ort->gatherElecSurplusSold, 3);
+        tableBody(1, 13) = RealToStr(currentStyle.formatReals, ort->gatherElecProduced + (ort->gatherElecPurchased - ort->gatherElecSurplusSold), 3);
+        tableBody(1, 14) = RealToStr(currentStyle.formatReals, collapsedTotal(1), 3);
 
         // show annual percentages
         if (collapsedTotal(1) > 0) {
-            tableBody(2, 1) = RealToStr(state, 100.0 * ort->gatherPowerFuelFireGen / collapsedTotal(1), 2);
-            tableBody(2, 2) = RealToStr(state, 100.0 * ort->gatherPowerHTGeothermal / collapsedTotal(1), 2);
-            tableBody(2, 3) = RealToStr(state, 100.0 * ort->gatherPowerPV / collapsedTotal(1), 2);
-            tableBody(2, 4) = RealToStr(state, 100.0 * ort->gatherPowerWind / collapsedTotal(1), 2);
-            tableBody(2, 5) = RealToStr(state, 100.0 * ort->gatherPowerConversion / collapsedTotal(1), 2);
-            tableBody(2, 6) = RealToStr(state, 100.0 * ort->OverallNetEnergyFromStorage / collapsedTotal(1), 2);
-            tableBody(2, 7) = RealToStr(state, 100.0 * ort->gatherElecProduced / collapsedTotal(1), 2);
-            tableBody(2, 9) = RealToStr(state, 100.0 * ort->gatherElecPurchased / collapsedTotal(1), 2);
-            tableBody(2, 10) = RealToStr(state, 100.0 * ort->gatherElecSurplusSold / collapsedTotal(1), 2);
-            tableBody(2, 11) = RealToStr(state, 100.0 * (ort->gatherElecPurchased - ort->gatherElecSurplusSold) / collapsedTotal(1), 2);
+            tableBody(2, 1) = RealToStr(currentStyle.formatReals, 100.0 * ort->gatherPowerFuelFireGen / collapsedTotal(1), 2);
+            tableBody(2, 2) = RealToStr(currentStyle.formatReals, 100.0 * ort->gatherPowerHTGeothermal / collapsedTotal(1), 2);
+            tableBody(2, 3) = RealToStr(currentStyle.formatReals, 100.0 * ort->gatherPowerPV / collapsedTotal(1), 2);
+            tableBody(2, 4) = RealToStr(currentStyle.formatReals, 100.0 * ort->gatherPowerWind / collapsedTotal(1), 2);
+            tableBody(2, 5) = RealToStr(currentStyle.formatReals, 100.0 * ort->gatherPowerConversion / collapsedTotal(1), 2);
+            tableBody(2, 6) = RealToStr(currentStyle.formatReals, 100.0 * ort->OverallNetEnergyFromStorage / collapsedTotal(1), 2);
+            tableBody(2, 7) = RealToStr(currentStyle.formatReals, 100.0 * ort->gatherElecProduced / collapsedTotal(1), 2);
+            tableBody(2, 9) = RealToStr(currentStyle.formatReals, 100.0 * ort->gatherElecPurchased / collapsedTotal(1), 2);
+            tableBody(2, 10) = RealToStr(currentStyle.formatReals, 100.0 * ort->gatherElecSurplusSold / collapsedTotal(1), 2);
+            tableBody(2, 11) =
+                RealToStr(currentStyle.formatReals, 100.0 * (ort->gatherElecPurchased - ort->gatherElecSurplusSold) / collapsedTotal(1), 2);
             tableBody(2, 13) =
-                RealToStr(state, 100.0 * (ort->gatherElecProduced + (ort->gatherElecPurchased - ort->gatherElecSurplusSold)) / collapsedTotal(1), 2);
-            tableBody(2, 14) = RealToStr(state, 100.0, 2);
+                RealToStr(currentStyle.formatReals,
+                          100.0 * (ort->gatherElecProduced + (ort->gatherElecPurchased - ort->gatherElecSurplusSold)) / collapsedTotal(1),
+                          2);
+            tableBody(2, 14) = RealToStr(currentStyle.formatReals, 100.0, 2);
         }
 
         // heading for the entire sub-table
@@ -9343,22 +9354,22 @@ void WriteBEPSTable(EnergyPlusData &state)
                                        ort->gatherHeatHTGeothermal + ort->gatherHeatSolarWater + ort->gatherHeatSolarAir;
 
         // show annual values
-        tableBody(1, 1) = RealToStr(state, ort->gatherWaterHeatRecovery, 2);
-        tableBody(1, 2) = RealToStr(state, ort->gatherAirHeatRecoveryCool, 2);
-        tableBody(1, 3) = RealToStr(state, ort->gatherAirHeatRecoveryHeat, 2);
-        tableBody(1, 4) = RealToStr(state, ort->gatherHeatHTGeothermal, 2);
-        tableBody(1, 5) = RealToStr(state, ort->gatherHeatSolarWater, 2);
-        tableBody(1, 6) = RealToStr(state, ort->gatherHeatSolarAir, 2);
-        tableBody(1, 7) = RealToStr(state, totalOnsiteHeat, 2);
+        tableBody(1, 1) = RealToStr(currentStyle.formatReals, ort->gatherWaterHeatRecovery, 2);
+        tableBody(1, 2) = RealToStr(currentStyle.formatReals, ort->gatherAirHeatRecoveryCool, 2);
+        tableBody(1, 3) = RealToStr(currentStyle.formatReals, ort->gatherAirHeatRecoveryHeat, 2);
+        tableBody(1, 4) = RealToStr(currentStyle.formatReals, ort->gatherHeatHTGeothermal, 2);
+        tableBody(1, 5) = RealToStr(currentStyle.formatReals, ort->gatherHeatSolarWater, 2);
+        tableBody(1, 6) = RealToStr(currentStyle.formatReals, ort->gatherHeatSolarAir, 2);
+        tableBody(1, 7) = RealToStr(currentStyle.formatReals, totalOnsiteHeat, 2);
 
         if (totalOnsiteHeat > 0) {
-            tableBody(2, 1) = RealToStr(state, 100.0 * ort->gatherWaterHeatRecovery / totalOnsiteHeat, 2);
-            tableBody(2, 2) = RealToStr(state, 100.0 * ort->gatherAirHeatRecoveryCool / totalOnsiteHeat, 2);
-            tableBody(2, 3) = RealToStr(state, 100.0 * ort->gatherAirHeatRecoveryHeat / totalOnsiteHeat, 2);
-            tableBody(2, 4) = RealToStr(state, 100.0 * ort->gatherHeatHTGeothermal / totalOnsiteHeat, 2);
-            tableBody(2, 5) = RealToStr(state, 100.0 * ort->gatherHeatSolarWater / totalOnsiteHeat, 2);
-            tableBody(2, 6) = RealToStr(state, 100.0 * ort->gatherHeatSolarAir / totalOnsiteHeat, 2);
-            tableBody(2, 7) = RealToStr(state, 100.0, 2);
+            tableBody(2, 1) = RealToStr(currentStyle.formatReals, 100.0 * ort->gatherWaterHeatRecovery / totalOnsiteHeat, 2);
+            tableBody(2, 2) = RealToStr(currentStyle.formatReals, 100.0 * ort->gatherAirHeatRecoveryCool / totalOnsiteHeat, 2);
+            tableBody(2, 3) = RealToStr(currentStyle.formatReals, 100.0 * ort->gatherAirHeatRecoveryHeat / totalOnsiteHeat, 2);
+            tableBody(2, 4) = RealToStr(currentStyle.formatReals, 100.0 * ort->gatherHeatHTGeothermal / totalOnsiteHeat, 2);
+            tableBody(2, 5) = RealToStr(currentStyle.formatReals, 100.0 * ort->gatherHeatSolarWater / totalOnsiteHeat, 2);
+            tableBody(2, 6) = RealToStr(currentStyle.formatReals, 100.0 * ort->gatherHeatSolarAir / totalOnsiteHeat, 2);
+            tableBody(2, 7) = RealToStr(currentStyle.formatReals, 100.0, 2);
         }
 
         // heading for the entire sub-table
@@ -9428,10 +9439,10 @@ void WriteBEPSTable(EnergyPlusData &state)
         Real64 const totalOnsiteWater = ort->gatherRainWater + ort->gatherCondensate + ort->gatherWellwater;
 
         //  ! show annual values
-        tableBody(1, 1) = RealToStr(state, ort->gatherRainWater / waterConversionFactor, 2);
-        tableBody(1, 2) = RealToStr(state, ort->gatherCondensate / waterConversionFactor, 2);
-        tableBody(1, 3) = RealToStr(state, ort->gatherWellwater / waterConversionFactor, 2);
-        tableBody(1, 4) = RealToStr(state, totalOnsiteWater / waterConversionFactor, 2);
+        tableBody(1, 1) = RealToStr(currentStyle.formatReals, ort->gatherRainWater / waterConversionFactor, 2);
+        tableBody(1, 2) = RealToStr(currentStyle.formatReals, ort->gatherCondensate / waterConversionFactor, 2);
+        tableBody(1, 3) = RealToStr(currentStyle.formatReals, ort->gatherWellwater / waterConversionFactor, 2);
+        tableBody(1, 4) = RealToStr(currentStyle.formatReals, totalOnsiteWater / waterConversionFactor, 2);
 
         Real64 initialStorage = 0.0;
         Real64 finalStorage = 0.0;
@@ -9441,29 +9452,29 @@ void WriteBEPSTable(EnergyPlusData &state)
             finalStorage = sum(state.dataWaterData->WaterStorage, &DataWater::StorageTankDataStruct::ThisTimeStepVolume);
             StorageChange = initialStorage - finalStorage;
         }
-        tableBody(1, 6) = RealToStr(state, initialStorage / waterConversionFactor, 2);
-        tableBody(1, 7) = RealToStr(state, finalStorage / waterConversionFactor, 2);
-        tableBody(1, 8) = RealToStr(state, StorageChange / waterConversionFactor, 2);
+        tableBody(1, 6) = RealToStr(currentStyle.formatReals, initialStorage / waterConversionFactor, 2);
+        tableBody(1, 7) = RealToStr(currentStyle.formatReals, finalStorage / waterConversionFactor, 2);
+        tableBody(1, 8) = RealToStr(currentStyle.formatReals, StorageChange / waterConversionFactor, 2);
 
         Real64 const totalWater = totalOnsiteWater + ort->gatherMains + StorageChange;
 
-        tableBody(1, 10) = RealToStr(state, ort->gatherMains / waterConversionFactor, 2);
-        tableBody(1, 12) = RealToStr(state, totalWater / waterConversionFactor, 2);
-        tableBody(1, 13) = RealToStr(state, ort->gatherWaterEndUseTotal / waterConversionFactor, 2);
+        tableBody(1, 10) = RealToStr(currentStyle.formatReals, ort->gatherMains / waterConversionFactor, 2);
+        tableBody(1, 12) = RealToStr(currentStyle.formatReals, totalWater / waterConversionFactor, 2);
+        tableBody(1, 13) = RealToStr(currentStyle.formatReals, ort->gatherWaterEndUseTotal / waterConversionFactor, 2);
 
         if (ort->gatherWaterEndUseTotal > 0) {
-            tableBody(2, 1) = RealToStr(state, 100.0 * ort->gatherRainWater / ort->gatherWaterEndUseTotal, 2);
-            tableBody(2, 2) = RealToStr(state, 100.0 * ort->gatherCondensate / ort->gatherWaterEndUseTotal, 2);
-            tableBody(2, 3) = RealToStr(state, 100.0 * ort->gatherWellwater / ort->gatherWaterEndUseTotal, 2);
-            tableBody(2, 4) = RealToStr(state, 100.0 * totalOnsiteWater / ort->gatherWaterEndUseTotal, 2);
-            tableBody(2, 6) = RealToStr(state, 100.0 * initialStorage / ort->gatherWaterEndUseTotal, 2);
-            tableBody(2, 7) = RealToStr(state, 100.0 * finalStorage / ort->gatherWaterEndUseTotal, 2);
-            tableBody(2, 8) = RealToStr(state, 100.0 * StorageChange / ort->gatherWaterEndUseTotal, 2);
+            tableBody(2, 1) = RealToStr(currentStyle.formatReals, 100.0 * ort->gatherRainWater / ort->gatherWaterEndUseTotal, 2);
+            tableBody(2, 2) = RealToStr(currentStyle.formatReals, 100.0 * ort->gatherCondensate / ort->gatherWaterEndUseTotal, 2);
+            tableBody(2, 3) = RealToStr(currentStyle.formatReals, 100.0 * ort->gatherWellwater / ort->gatherWaterEndUseTotal, 2);
+            tableBody(2, 4) = RealToStr(currentStyle.formatReals, 100.0 * totalOnsiteWater / ort->gatherWaterEndUseTotal, 2);
+            tableBody(2, 6) = RealToStr(currentStyle.formatReals, 100.0 * initialStorage / ort->gatherWaterEndUseTotal, 2);
+            tableBody(2, 7) = RealToStr(currentStyle.formatReals, 100.0 * finalStorage / ort->gatherWaterEndUseTotal, 2);
+            tableBody(2, 8) = RealToStr(currentStyle.formatReals, 100.0 * StorageChange / ort->gatherWaterEndUseTotal, 2);
 
-            tableBody(2, 10) = RealToStr(state, 100.0 * ort->gatherMains / ort->gatherWaterEndUseTotal, 2);
+            tableBody(2, 10) = RealToStr(currentStyle.formatReals, 100.0 * ort->gatherMains / ort->gatherWaterEndUseTotal, 2);
 
-            tableBody(2, 12) = RealToStr(state, 100.0 * totalWater / ort->gatherWaterEndUseTotal, 2);
-            tableBody(2, 13) = RealToStr(state, 100.0, 2);
+            tableBody(2, 12) = RealToStr(currentStyle.formatReals, 100.0 * totalWater / ort->gatherWaterEndUseTotal, 2);
+            tableBody(2, 13) = RealToStr(currentStyle.formatReals, 100.0, 2);
         }
 
         //  ! heading for the entire sub-table
@@ -9512,15 +9523,17 @@ void WriteBEPSTable(EnergyPlusData &state)
 
             if (!(currentStyle.unitsStyle == OutputReportTabular::UnitsStyle::InchPound ||
                   currentStyle.unitsStyle == OutputReportTabular::UnitsStyle::InchPoundExceptElectricity)) {
-                tableBody(1, 1) = RealToStr(state, std::abs(state.dataHVACGlobal->deviationFromSetPtThresholdHtg), 2);
-                tableBody(1, 2) = RealToStr(state, state.dataHVACGlobal->deviationFromSetPtThresholdClg, 2);
+                tableBody(1, 1) = RealToStr(currentStyle.formatReals, std::abs(state.dataHVACGlobal->deviationFromSetPtThresholdHtg), 2);
+                tableBody(1, 2) = RealToStr(currentStyle.formatReals, state.dataHVACGlobal->deviationFromSetPtThresholdClg, 2);
             } else {
                 int indexUnitConv = -1;
                 std::string curNameAndUnits;
                 LookupSItoIP(state, curNameWithSIUnits, indexUnitConv, curNameAndUnits);
-                tableBody(1, 1) =
-                    RealToStr(state, ConvertIPdelta(state, indexUnitConv, std::abs(state.dataHVACGlobal->deviationFromSetPtThresholdHtg)), 2);
-                tableBody(1, 2) = RealToStr(state, ConvertIPdelta(state, indexUnitConv, state.dataHVACGlobal->deviationFromSetPtThresholdClg), 2);
+                tableBody(1, 1) = RealToStr(currentStyle.formatReals,
+                                            ConvertIPdelta(state, indexUnitConv, std::abs(state.dataHVACGlobal->deviationFromSetPtThresholdHtg)),
+                                            2);
+                tableBody(1, 2) = RealToStr(
+                    currentStyle.formatReals, ConvertIPdelta(state, indexUnitConv, state.dataHVACGlobal->deviationFromSetPtThresholdClg), 2);
             }
 
             if (currentStyle.produceTabular) {
@@ -9558,23 +9571,23 @@ void WriteBEPSTable(EnergyPlusData &state)
         rowHead(2) = "Time Setpoint Not Met During Occupied Cooling";
         rowHead(3) = "Time Not Comfortable Based on Simple ASHRAE 55-2004";
 
-        tableBody(1, 1) = RealToStr(state, state.dataOutRptPredefined->TotalNotMetHeatingOccupiedForABUPS, 2);
-        tableBody(1, 2) = RealToStr(state, state.dataOutRptPredefined->TotalNotMetCoolingOccupiedForABUPS, 2);
+        tableBody(1, 1) = RealToStr(currentStyle.formatReals, state.dataOutRptPredefined->TotalNotMetHeatingOccupiedForABUPS, 2);
+        tableBody(1, 2) = RealToStr(currentStyle.formatReals, state.dataOutRptPredefined->TotalNotMetCoolingOccupiedForABUPS, 2);
         if (currentStyle.produceTabular) {
             PreDefTableEntry(state,
                              state.dataOutRptPredefined->pdchLeedAmData,
                              "Number of hours heating loads not met",
-                             RealToStr(state, state.dataOutRptPredefined->TotalNotMetHeatingOccupiedForABUPS, 2));
+                             RealToStr(currentStyle.formatReals, state.dataOutRptPredefined->TotalNotMetHeatingOccupiedForABUPS, 2));
             PreDefTableEntry(state,
                              state.dataOutRptPredefined->pdchLeedAmData,
                              "Number of hours cooling loads not met",
-                             RealToStr(state, state.dataOutRptPredefined->TotalNotMetCoolingOccupiedForABUPS, 2));
+                             RealToStr(currentStyle.formatReals, state.dataOutRptPredefined->TotalNotMetCoolingOccupiedForABUPS, 2));
             PreDefTableEntry(state,
                              state.dataOutRptPredefined->pdchLeedAmData,
                              "Number of hours not met",
-                             RealToStr(state, state.dataOutRptPredefined->TotalNotMetOccupiedForABUPS, 2));
+                             RealToStr(currentStyle.formatReals, state.dataOutRptPredefined->TotalNotMetOccupiedForABUPS, 2));
         }
-        tableBody(1, 3) = RealToStr(state, state.dataOutRptPredefined->TotalTimeNotSimpleASH55EitherForABUPS, 2);
+        tableBody(1, 3) = RealToStr(currentStyle.formatReals, state.dataOutRptPredefined->TotalTimeNotSimpleASH55EitherForABUPS, 2);
 
         if (ort->displayTabularBEPS) {
             if (currentStyle.produceTabular) {
@@ -9627,10 +9640,7 @@ void writeBEPSEndUseBySubCatOrSpaceType(EnergyPlusData &state,
                                         Array2D<Real64> &collapsedEndUse,
                                         Array3D<Real64> &collapsedEndUseSubTable,
                                         Array1D_bool &needOtherRow,
-                                        const UnitsStyle unitsStyle_cur,
-                                        const bool produceTabular,
-                                        const bool produceSQLite,
-                                        const bool produceJSON)
+                                        const tabularReportStyle &style)
 {
     auto const &ort = state.dataOutRptTab;
     auto &op = state.dataOutputProcessor;
@@ -9642,7 +9652,7 @@ void writeBEPSEndUseBySubCatOrSpaceType(EnergyPlusData &state,
     for (int col = 1; col <= numCol; ++col) {
         columnWidth(col) = 10; // array assignment - same for all columns
     }
-    switch (unitsStyle_cur) {
+    switch (style.unitsStyle) {
     case UnitsStyle::JtoKWH: {
         columnHead(2) = "Electricity [kWh]";
         columnHead(3) = "Natural Gas [kWh]";
@@ -9822,16 +9832,16 @@ void writeBEPSEndUseBySubCatOrSpaceType(EnergyPlusData &state,
             }
             if (numSubCatOrTypes > 0) {
                 for (int kEndUseSub = 1; kEndUseSub <= numSubCatOrTypes; ++kEndUseSub) {
-                    tableBody(iResource + 1, i) = RealToStr(state, collapsedEndUseSubTable(kEndUseSub, jEndUse, iResource), 2);
+                    tableBody(iResource + 1, i) = RealToStr(style.formatReals, collapsedEndUseSubTable(kEndUseSub, jEndUse, iResource), 2);
                     ++i;
                 }
                 // put other
                 if (needOtherRow(jEndUse)) {
-                    tableBody(iResource + 1, i) = RealToStr(state, endUseSubOther(iResource, jEndUse), 2);
+                    tableBody(iResource + 1, i) = RealToStr(style.formatReals, endUseSubOther(iResource, jEndUse), 2);
                     ++i;
                 }
             } else {
-                tableBody(iResource + 1, i) = RealToStr(state, collapsedEndUse(iResource, jEndUse), 2);
+                tableBody(iResource + 1, i) = RealToStr(style.formatReals, collapsedEndUse(iResource, jEndUse), 2);
                 ++i;
             }
         }
@@ -9845,7 +9855,7 @@ void writeBEPSEndUseBySubCatOrSpaceType(EnergyPlusData &state,
         } else if (tableType == EndUseSubTableType::BySpaceType) {
             subTableTitle = "End Uses By Space Type";
         }
-        if (produceTabular) {
+        if (style.produceTabular) {
             WriteSubtitle(state, subTableTitle);
             WriteTable(state, tableBody, rowHead, columnHead, columnWidth);
         }
@@ -9861,13 +9871,13 @@ void writeBEPSEndUseBySubCatOrSpaceType(EnergyPlusData &state,
         // Erase the SubCategory (first column), using slicing
         Array2D_string tableBodyTemp(tableBody({2, _, _}, {_, _, _}));
         Array1D_string columnHeadTemp(columnHead({2, _, _}));
-        if (produceSQLite) {
+        if (style.produceSQLite) {
             if (state.dataSQLiteProcedures->sqlite) {
                 state.dataSQLiteProcedures->sqlite->createSQLiteTabularDataRecords(
                     tableBodyTemp, rowHeadTemp, columnHeadTemp, "AnnualBuildingUtilityPerformanceSummary", "Entire Facility", subTableTitle);
             }
         }
-        if (produceJSON) {
+        if (style.produceJSON) {
             if (state.dataResultsFramework->resultsFramework->timeSeriesAndTabularEnabled()) {
                 state.dataResultsFramework->resultsFramework->TabularReportsCollection.addReportTable(
                     tableBodyTemp, rowHeadTemp, columnHeadTemp, "AnnualBuildingUtilityPerformanceSummary", "Entire Facility", subTableTitle);
@@ -9914,7 +9924,7 @@ void WriteSourceEnergyEndUseSummary(EnergyPlusData &state)
     // show the headers of the report
     WriteReportHeaders(state, "Source Energy End Use Components Summary", "Entire Facility", OutputProcessor::StoreType::Average);
     // show the number of hours that the table applies to
-    WriteTextLine(state, "Values gathered over " + RealToStr(state, ort->gatherElapsedTimeBEPS, 2) + " hours", true);
+    WriteTextLine(state, "Values gathered over " + RealToStr(true, ort->gatherElapsedTimeBEPS, 2) + " hours", true);
     if (ort->gatherElapsedTimeBEPS < 8759.0) { // might not add up to 8760 exactly but can't be more than 1 hour diff.
         WriteTextLine(state, "WARNING: THE REPORT DOES NOT REPRESENT A FULL ANNUAL SIMULATION.", true);
     }
@@ -10091,9 +10101,9 @@ void WriteSourceEnergyEndUseSummary(EnergyPlusData &state)
         tableBody = "";
         for (int iResource = 1; iResource <= 13; ++iResource) {
             for (int jEndUse = 1; jEndUse <= static_cast<int>(Constant::EndUse::Num); ++jEndUse) {
-                tableBody(iResource, jEndUse) = RealToStr(state, useVal(iResource, jEndUse) / largeConversionFactor, 2);
+                tableBody(iResource, jEndUse) = RealToStr(currentStyle.formatReals, useVal(iResource, jEndUse) / largeConversionFactor, 2);
             }
-            tableBody(iResource, 16) = RealToStr(state, useVal(iResource, 15) / largeConversionFactor, 2);
+            tableBody(iResource, 16) = RealToStr(currentStyle.formatReals, useVal(iResource, 15) / largeConversionFactor, 2);
         }
 
         // heading for the entire sub-table
@@ -10195,9 +10205,9 @@ void WriteSourceEnergyEndUseSummary(EnergyPlusData &state)
             if (convBldgCondFloorArea > 0) {
                 for (int iResource = 1; iResource <= 13; ++iResource) {
                     for (int jEndUse = 1; jEndUse <= static_cast<int>(Constant::EndUse::Num); ++jEndUse) {
-                        tableBody(iResource, jEndUse) = RealToStr(state, useVal(iResource, jEndUse) / convBldgCondFloorArea, 2);
+                        tableBody(iResource, jEndUse) = RealToStr(currentStyle.formatReals, useVal(iResource, jEndUse) / convBldgCondFloorArea, 2);
                     }
-                    tableBody(iResource, 16) = RealToStr(state, useVal(iResource, 15) / convBldgCondFloorArea, 2);
+                    tableBody(iResource, 16) = RealToStr(currentStyle.formatReals, useVal(iResource, 15) / convBldgCondFloorArea, 2);
                 }
             }
 
@@ -10239,9 +10249,9 @@ void WriteSourceEnergyEndUseSummary(EnergyPlusData &state)
             if (convBldgGrossFloorArea > 0) {
                 for (int iResource = 1; iResource <= 13; ++iResource) {
                     for (int jEndUse = 1; jEndUse <= static_cast<int>(Constant::EndUse::Num); ++jEndUse) {
-                        tableBody(iResource, jEndUse) = RealToStr(state, useVal(iResource, jEndUse) / convBldgGrossFloorArea, 2);
+                        tableBody(iResource, jEndUse) = RealToStr(currentStyle.formatReals, useVal(iResource, jEndUse) / convBldgGrossFloorArea, 2);
                     }
-                    tableBody(iResource, 16) = RealToStr(state, useVal(iResource, 15) / convBldgGrossFloorArea, 2);
+                    tableBody(iResource, 16) = RealToStr(currentStyle.formatReals, useVal(iResource, 15) / convBldgGrossFloorArea, 2);
                 }
             }
 
@@ -10542,10 +10552,10 @@ void WriteDemandEndUseSummary(EnergyPlusData &state)
         tableBody = "";
         for (int iResource = 1; iResource <= 14; ++iResource) {
             for (int jEndUse = 1; jEndUse <= static_cast<int>(Constant::EndUse::Num); ++jEndUse) {
-                tableBody(iResource, 1 + jEndUse) = RealToStr(state, useVal(iResource, jEndUse), 2);
+                tableBody(iResource, 1 + jEndUse) = RealToStr(currentStyle.formatReals, useVal(iResource, jEndUse), 2);
             }
             tableBody(iResource, 1) = DateToString(collapsedTimeStep(iResource));
-            tableBody(iResource, 17) = RealToStr(state, collapsedTotal(iResource), 2);
+            tableBody(iResource, 17) = RealToStr(currentStyle.formatReals, collapsedTotal(iResource), 2);
         }
 
         // complete the LEED end use table using the same values
@@ -10660,11 +10670,11 @@ void WriteDemandEndUseSummary(EnergyPlusData &state)
             for (int jEndUse = 1; jEndUse <= static_cast<int>(Constant::EndUse::Num); ++jEndUse) {
                 if (op->EndUseCategory(jEndUse).NumSubcategories > 0) {
                     for (int kEndUseSub = 1; kEndUseSub <= op->EndUseCategory(jEndUse).NumSubcategories; ++kEndUseSub) {
-                        tableBody(iResource + 1, i) = RealToStr(state, collapsedEndUseSub(kEndUseSub, jEndUse, iResource), 2);
+                        tableBody(iResource + 1, i) = RealToStr(currentStyle.formatReals, collapsedEndUseSub(kEndUseSub, jEndUse, iResource), 2);
                         ++i;
                     }
                 } else {
-                    tableBody(iResource + 1, i) = RealToStr(state, collapsedEndUse(iResource, jEndUse), 2);
+                    tableBody(iResource + 1, i) = RealToStr(currentStyle.formatReals, collapsedEndUse(iResource, jEndUse), 2);
                     ++i;
                 }
             }
@@ -10865,9 +10875,9 @@ void WriteCompCostTable(EnergyPlusData &state)
         tableBody = "";
 
         TableBodyData(1, 1) = state.dataCostEstimateManager->RefrncBldg.LineItemTot;
-        tableBody(1, 1) = RealToStr(state, TableBodyData(1, 1), 2);
+        tableBody(1, 1) = RealToStr(currentStyle.formatReals, TableBodyData(1, 1), 2);
         TableBodyData(1, 2) = state.dataCostEstimateManager->RefrncBldg.MiscCostperSqMeter * ort->buildingConditionedFloorArea;
-        tableBody(1, 2) = RealToStr(state, TableBodyData(1, 2), 2);
+        tableBody(1, 2) = RealToStr(currentStyle.formatReals, TableBodyData(1, 2), 2);
 
         if (state.dataCostEstimateManager->RefrncBldg.RegionalModifier != 1.0) {
             TableBodyData(1, 3) = (state.dataCostEstimateManager->RefrncBldg.LineItemTot +
@@ -10880,29 +10890,29 @@ void WriteCompCostTable(EnergyPlusData &state)
         // holds interim value for construction component costs: reference bldg.
         Real64 const RefBldgConstCost = sum(TableBodyData(1, {1, 3}));
 
-        tableBody(1, 3) = RealToStr(state, TableBodyData(1, 3), 2);
+        tableBody(1, 3) = RealToStr(currentStyle.formatReals, TableBodyData(1, 3), 2);
         TableBodyData(1, 4) = RefBldgConstCost * state.dataCostEstimateManager->RefrncBldg.DesignFeeFrac;
-        tableBody(1, 4) = RealToStr(state, TableBodyData(1, 4), 2);
+        tableBody(1, 4) = RealToStr(currentStyle.formatReals, TableBodyData(1, 4), 2);
         TableBodyData(1, 5) = RefBldgConstCost * state.dataCostEstimateManager->RefrncBldg.ContractorFeeFrac;
-        tableBody(1, 5) = RealToStr(state, TableBodyData(1, 5), 2);
+        tableBody(1, 5) = RealToStr(currentStyle.formatReals, TableBodyData(1, 5), 2);
         TableBodyData(1, 6) = RefBldgConstCost * state.dataCostEstimateManager->RefrncBldg.ContingencyFrac;
-        tableBody(1, 6) = RealToStr(state, TableBodyData(1, 6), 2);
+        tableBody(1, 6) = RealToStr(currentStyle.formatReals, TableBodyData(1, 6), 2);
         TableBodyData(1, 7) = RefBldgConstCost * state.dataCostEstimateManager->RefrncBldg.BondCostFrac;
-        tableBody(1, 7) = RealToStr(state, TableBodyData(1, 7), 2);
+        tableBody(1, 7) = RealToStr(currentStyle.formatReals, TableBodyData(1, 7), 2);
         TableBodyData(1, 8) = RefBldgConstCost * state.dataCostEstimateManager->RefrncBldg.CommissioningFrac;
-        tableBody(1, 8) = RealToStr(state, TableBodyData(1, 8), 2);
+        tableBody(1, 8) = RealToStr(currentStyle.formatReals, TableBodyData(1, 8), 2);
         state.dataCostEstimateManager->RefrncBldg.GrandTotal = sum(TableBodyData(1, {1, 8}));
         TableBodyData(1, 9) = state.dataCostEstimateManager->RefrncBldg.GrandTotal;
-        tableBody(1, 9) = RealToStr(state, TableBodyData(1, 9), 2);
+        tableBody(1, 9) = RealToStr(currentStyle.formatReals, TableBodyData(1, 9), 2);
         if (ort->buildingConditionedFloorArea > 0.0) {
             TableBodyData(1, 10) = TableBodyData(1, 9) / (ort->buildingConditionedFloorArea * state.dataOutRptTab->m2_unitConv);
         }
-        tableBody(1, 10) = RealToStr(state, TableBodyData(1, 10), 2);
+        tableBody(1, 10) = RealToStr(currentStyle.formatReals, TableBodyData(1, 10), 2);
 
         TableBodyData(2, 1) = state.dataCostEstimateManager->CurntBldg.LineItemTot;
-        tableBody(2, 1) = RealToStr(state, TableBodyData(2, 1), 2);
+        tableBody(2, 1) = RealToStr(currentStyle.formatReals, TableBodyData(2, 1), 2);
         TableBodyData(2, 2) = state.dataCostEstimateManager->CurntBldg.MiscCostperSqMeter * ort->buildingConditionedFloorArea;
-        tableBody(2, 2) = RealToStr(state, TableBodyData(2, 2), 2);
+        tableBody(2, 2) = RealToStr(currentStyle.formatReals, TableBodyData(2, 2), 2);
         if (state.dataCostEstimateManager->CurntBldg.RegionalModifier != 1.0) {
             TableBodyData(2, 3) = (state.dataCostEstimateManager->CurntBldg.LineItemTot +
                                    state.dataCostEstimateManager->CurntBldg.MiscCostperSqMeter * ort->buildingConditionedFloorArea) *
@@ -10910,42 +10920,42 @@ void WriteCompCostTable(EnergyPlusData &state)
         } else {
             TableBodyData(2, 3) = 0.0;
         }
-        tableBody(2, 3) = RealToStr(state, TableBodyData(2, 3), 2);
+        tableBody(2, 3) = RealToStr(currentStyle.formatReals, TableBodyData(2, 3), 2);
 
         // holds interim value for construction component costs: current bldg.
         Real64 const CurntBldgConstCost = sum(TableBodyData(2, {1, 3}));
 
         TableBodyData(2, 4) = CurntBldgConstCost * state.dataCostEstimateManager->CurntBldg.DesignFeeFrac;
-        tableBody(2, 4) = RealToStr(state, TableBodyData(2, 4), 2);
+        tableBody(2, 4) = RealToStr(currentStyle.formatReals, TableBodyData(2, 4), 2);
 
         TableBodyData(2, 5) = CurntBldgConstCost * state.dataCostEstimateManager->CurntBldg.ContractorFeeFrac;
-        tableBody(2, 5) = RealToStr(state, TableBodyData(2, 5), 2);
+        tableBody(2, 5) = RealToStr(currentStyle.formatReals, TableBodyData(2, 5), 2);
         TableBodyData(2, 6) = CurntBldgConstCost * state.dataCostEstimateManager->CurntBldg.ContingencyFrac;
-        tableBody(2, 6) = RealToStr(state, TableBodyData(2, 6), 2);
+        tableBody(2, 6) = RealToStr(currentStyle.formatReals, TableBodyData(2, 6), 2);
         TableBodyData(2, 7) = CurntBldgConstCost * state.dataCostEstimateManager->CurntBldg.BondCostFrac;
-        tableBody(2, 7) = RealToStr(state, TableBodyData(2, 7), 2);
+        tableBody(2, 7) = RealToStr(currentStyle.formatReals, TableBodyData(2, 7), 2);
         TableBodyData(2, 8) = CurntBldgConstCost * state.dataCostEstimateManager->CurntBldg.CommissioningFrac;
-        tableBody(2, 8) = RealToStr(state, TableBodyData(2, 8), 2);
+        tableBody(2, 8) = RealToStr(currentStyle.formatReals, TableBodyData(2, 8), 2);
 
         state.dataCostEstimateManager->CurntBldg.GrandTotal = sum(TableBodyData(2, {1, 8}));
         TableBodyData(2, 9) = state.dataCostEstimateManager->CurntBldg.GrandTotal;
-        tableBody(2, 9) = RealToStr(state, TableBodyData(2, 9), 2);
+        tableBody(2, 9) = RealToStr(currentStyle.formatReals, TableBodyData(2, 9), 2);
         if (ort->buildingConditionedFloorArea > 0) {
             TableBodyData(2, 10) = TableBodyData(2, 9) / (ort->buildingConditionedFloorArea * state.dataOutRptTab->m2_unitConv);
         }
-        tableBody(2, 10) = RealToStr(state, TableBodyData(2, 10), 2);
+        tableBody(2, 10) = RealToStr(currentStyle.formatReals, TableBodyData(2, 10), 2);
 
         TableBodyData(3, {1, 10}) = TableBodyData(2, {1, 10}) - TableBodyData(1, {1, 10});
-        tableBody(3, 1) = RealToStr(state, TableBodyData(3, 1), 2);
-        tableBody(3, 2) = RealToStr(state, TableBodyData(3, 2), 2);
-        tableBody(3, 3) = RealToStr(state, TableBodyData(3, 3), 2);
-        tableBody(3, 4) = RealToStr(state, TableBodyData(3, 4), 2);
-        tableBody(3, 5) = RealToStr(state, TableBodyData(3, 5), 2);
-        tableBody(3, 6) = RealToStr(state, TableBodyData(3, 6), 2);
-        tableBody(3, 7) = RealToStr(state, TableBodyData(3, 7), 2);
-        tableBody(3, 8) = RealToStr(state, TableBodyData(3, 8), 2);
-        tableBody(3, 9) = RealToStr(state, TableBodyData(3, 9), 2);
-        tableBody(3, 10) = RealToStr(state, TableBodyData(3, 10), 2);
+        tableBody(3, 1) = RealToStr(currentStyle.formatReals, TableBodyData(3, 1), 2);
+        tableBody(3, 2) = RealToStr(currentStyle.formatReals, TableBodyData(3, 2), 2);
+        tableBody(3, 3) = RealToStr(currentStyle.formatReals, TableBodyData(3, 3), 2);
+        tableBody(3, 4) = RealToStr(currentStyle.formatReals, TableBodyData(3, 4), 2);
+        tableBody(3, 5) = RealToStr(currentStyle.formatReals, TableBodyData(3, 5), 2);
+        tableBody(3, 6) = RealToStr(currentStyle.formatReals, TableBodyData(3, 6), 2);
+        tableBody(3, 7) = RealToStr(currentStyle.formatReals, TableBodyData(3, 7), 2);
+        tableBody(3, 8) = RealToStr(currentStyle.formatReals, TableBodyData(3, 8), 2);
+        tableBody(3, 9) = RealToStr(currentStyle.formatReals, TableBodyData(3, 9), 2);
+        tableBody(3, 10) = RealToStr(currentStyle.formatReals, TableBodyData(3, 10), 2);
 
         if (currentStyle.produceTabular) {
             WriteSubtitle(state, "Construction Cost Estimate Summary");
@@ -10993,28 +11003,28 @@ void WriteCompCostTable(EnergyPlusData &state)
                 if (state.dataOutRptTab->unitConvIndexWCCT != 0) {
                     Real64 const IPqty =
                         ConvertIP(state, state.dataOutRptTab->unitConvIndexWCCT, state.dataCostEstimateManager->CostLineItem(item).Qty);
-                    tableBody(3, item) = RealToStr(state, IPqty, 2);
+                    tableBody(3, item) = RealToStr(currentStyle.formatReals, IPqty, 2);
                     tableBody(4, item) = IPunitName;
                     Real64 const IPsingleValue = ConvertIP(state, state.dataOutRptTab->unitConvIndexWCCT, 1.0);
                     if (IPsingleValue != 0.0) {
                         Real64 const IPvaluePer = state.dataCostEstimateManager->CostLineItem(item).ValuePer / IPsingleValue;
-                        tableBody(5, item) = RealToStr(state, IPvaluePer, 2);
+                        tableBody(5, item) = RealToStr(currentStyle.formatReals, IPvaluePer, 2);
                     }
                 } else {
-                    tableBody(3, item) = RealToStr(state, state.dataCostEstimateManager->CostLineItem(item).Qty, 2);
+                    tableBody(3, item) = RealToStr(currentStyle.formatReals, state.dataCostEstimateManager->CostLineItem(item).Qty, 2);
                     tableBody(4, item) = state.dataCostEstimateManager->CostLineItem(item).Units;
-                    tableBody(5, item) = RealToStr(state, state.dataCostEstimateManager->CostLineItem(item).ValuePer, 2);
+                    tableBody(5, item) = RealToStr(currentStyle.formatReals, state.dataCostEstimateManager->CostLineItem(item).ValuePer, 2);
                 }
             } else {
-                tableBody(3, item) = RealToStr(state, state.dataCostEstimateManager->CostLineItem(item).Qty, 2);
+                tableBody(3, item) = RealToStr(currentStyle.formatReals, state.dataCostEstimateManager->CostLineItem(item).Qty, 2);
                 tableBody(4, item) = state.dataCostEstimateManager->CostLineItem(item).Units;
-                tableBody(5, item) = RealToStr(state, state.dataCostEstimateManager->CostLineItem(item).ValuePer, 2);
+                tableBody(5, item) = RealToStr(currentStyle.formatReals, state.dataCostEstimateManager->CostLineItem(item).ValuePer, 2);
             }
-            tableBody(6, item) = RealToStr(state, state.dataCostEstimateManager->CostLineItem(item).LineSubTotal, 2);
+            tableBody(6, item) = RealToStr(currentStyle.formatReals, state.dataCostEstimateManager->CostLineItem(item).LineSubTotal, 2);
         }
-        tableBody(6, NumRows) = RealToStr(state, state.dataCostEstimateManager->CurntBldg.LineItemTot, 2);
+        tableBody(6, NumRows) = RealToStr(currentStyle.formatReals, state.dataCostEstimateManager->CurntBldg.LineItemTot, 2);
         if (currentStyle.produceTabular) {
-            WriteSubtitle(state, "Cost Line Item Details"); //: '//TRIM(RealToStr(state, CostEstimateTotal, 2)))
+            WriteSubtitle(state, "Cost Line Item Details"); //: '//TRIM(RealToStr(currentStyle.formatReals, CostEstimateTotal, 2)))
             WriteTable(state, tableBody, rowHead, columnHead, columnWidth);
         }
         if (currentStyle.produceSQLite) {
@@ -11051,7 +11061,7 @@ void writeRowReportPeriodInputVeri(EnergyPlusData &state,
                                                       ReportPeriodInputData(periodIdx).endMonth,
                                                       ReportPeriodInputData(periodIdx).endDay,
                                                       ReportPeriodInputData(periodIdx).endHour);
-    tableBody(6, rowid) = RealToStr(state, ReportPeriodInputData(periodIdx).totalElectricityUse / 3600000.0, 2);
+    tableBody(6, rowid) = RealToStr(true, ReportPeriodInputData(periodIdx).totalElectricityUse / 3600000.0, 2);
 }
 
 void WriteVeriSumTable(EnergyPlusData &state)
@@ -11201,16 +11211,16 @@ void WriteVeriSumTable(EnergyPlusData &state)
 
         tableBody = "";
 
-        tableBody(1, 1) = state.dataStrGlobals->VerStringVar;                                                // program
-        tableBody(1, 2) = state.dataEnvrn->EnvironmentName;                                                  // runperiod name
-        tableBody(1, 3) = state.dataEnvrn->WeatherFileLocationTitle;                                         // weather
-        tableBody(1, 4) = RealToStr(state, state.dataEnvrn->Latitude, 2);                                    // latitude
-        tableBody(1, 5) = RealToStr(state, state.dataEnvrn->Longitude, 2);                                   // longitude
-        tableBody(1, 6) = RealToStr(state, state.dataEnvrn->Elevation * state.dataOutRptTab->m_unitConv, 2); // Elevation
-        tableBody(1, 7) = RealToStr(state, state.dataEnvrn->TimeZoneNumber, 2);                              // Time Zone
-        tableBody(1, 8) = RealToStr(state, state.dataHeatBal->BuildingAzimuth, 2);                           // north axis angle
-        tableBody(1, 9) = RealToStr(state, state.dataHeatBal->BuildingRotationAppendixG, 2);                 // Rotation for Appendix G
-        tableBody(1, 10) = RealToStr(state, ort->gatherElapsedTimeBEPS, 2);                                  // hours simulated
+        tableBody(1, 1) = state.dataStrGlobals->VerStringVar;                                                                   // program
+        tableBody(1, 2) = state.dataEnvrn->EnvironmentName;                                                                     // runperiod name
+        tableBody(1, 3) = state.dataEnvrn->WeatherFileLocationTitle;                                                            // weather
+        tableBody(1, 4) = RealToStr(currentStyle.formatReals, state.dataEnvrn->Latitude, 2);                                    // latitude
+        tableBody(1, 5) = RealToStr(currentStyle.formatReals, state.dataEnvrn->Longitude, 2);                                   // longitude
+        tableBody(1, 6) = RealToStr(currentStyle.formatReals, state.dataEnvrn->Elevation * state.dataOutRptTab->m_unitConv, 2); // Elevation
+        tableBody(1, 7) = RealToStr(currentStyle.formatReals, state.dataEnvrn->TimeZoneNumber, 2);                              // Time Zone
+        tableBody(1, 8) = RealToStr(currentStyle.formatReals, state.dataHeatBal->BuildingAzimuth, 2);                           // north axis angle
+        tableBody(1, 9) = RealToStr(currentStyle.formatReals, state.dataHeatBal->BuildingRotationAppendixG, 2); // Rotation for Appendix G
+        tableBody(1, 10) = RealToStr(currentStyle.formatReals, ort->gatherElapsedTimeBEPS, 2);                  // hours simulated
         //  tableBody(9,1) = TRIM(fmt::to_string(numTableEntry)) !number of table entries for predefined tables
 
         if (currentStyle.produceTabular) {
@@ -11455,35 +11465,36 @@ void WriteVeriSumTable(EnergyPlusData &state)
 
         tableBody = "";
 
-        tableBody(wwrcNorth, wwrrWall) = RealToStr(state, wallAreaN * state.dataOutRptTab->m2_unitConvWVST, 2);
-        tableBody(wwrcSouth, wwrrWall) = RealToStr(state, wallAreaS * state.dataOutRptTab->m2_unitConvWVST, 2);
-        tableBody(wwrcEast, wwrrWall) = RealToStr(state, wallAreaE * state.dataOutRptTab->m2_unitConvWVST, 2);
-        tableBody(wwrcWest, wwrrWall) = RealToStr(state, wallAreaW * state.dataOutRptTab->m2_unitConvWVST, 2);
-        tableBody(wwrcTotal, wwrrWall) = RealToStr(state, TotalWallArea * state.dataOutRptTab->m2_unitConvWVST, 2);
+        tableBody(wwrcNorth, wwrrWall) = RealToStr(currentStyle.formatReals, wallAreaN * state.dataOutRptTab->m2_unitConvWVST, 2);
+        tableBody(wwrcSouth, wwrrWall) = RealToStr(currentStyle.formatReals, wallAreaS * state.dataOutRptTab->m2_unitConvWVST, 2);
+        tableBody(wwrcEast, wwrrWall) = RealToStr(currentStyle.formatReals, wallAreaE * state.dataOutRptTab->m2_unitConvWVST, 2);
+        tableBody(wwrcWest, wwrrWall) = RealToStr(currentStyle.formatReals, wallAreaW * state.dataOutRptTab->m2_unitConvWVST, 2);
+        tableBody(wwrcTotal, wwrrWall) = RealToStr(currentStyle.formatReals, TotalWallArea * state.dataOutRptTab->m2_unitConvWVST, 2);
 
-        tableBody(wwrcNorth, wwrrAbvGndWall) = RealToStr(state, aboveGroundWallAreaN * state.dataOutRptTab->m2_unitConvWVST, 2);
-        tableBody(wwrcSouth, wwrrAbvGndWall) = RealToStr(state, aboveGroundWallAreaS * state.dataOutRptTab->m2_unitConvWVST, 2);
-        tableBody(wwrcEast, wwrrAbvGndWall) = RealToStr(state, aboveGroundWallAreaE * state.dataOutRptTab->m2_unitConvWVST, 2);
-        tableBody(wwrcWest, wwrrAbvGndWall) = RealToStr(state, aboveGroundWallAreaW * state.dataOutRptTab->m2_unitConvWVST, 2);
-        tableBody(wwrcTotal, wwrrAbvGndWall) = RealToStr(state, TotalAboveGroundWallArea * state.dataOutRptTab->m2_unitConvWVST, 2);
+        tableBody(wwrcNorth, wwrrAbvGndWall) = RealToStr(currentStyle.formatReals, aboveGroundWallAreaN * state.dataOutRptTab->m2_unitConvWVST, 2);
+        tableBody(wwrcSouth, wwrrAbvGndWall) = RealToStr(currentStyle.formatReals, aboveGroundWallAreaS * state.dataOutRptTab->m2_unitConvWVST, 2);
+        tableBody(wwrcEast, wwrrAbvGndWall) = RealToStr(currentStyle.formatReals, aboveGroundWallAreaE * state.dataOutRptTab->m2_unitConvWVST, 2);
+        tableBody(wwrcWest, wwrrAbvGndWall) = RealToStr(currentStyle.formatReals, aboveGroundWallAreaW * state.dataOutRptTab->m2_unitConvWVST, 2);
+        tableBody(wwrcTotal, wwrrAbvGndWall) =
+            RealToStr(currentStyle.formatReals, TotalAboveGroundWallArea * state.dataOutRptTab->m2_unitConvWVST, 2);
 
-        tableBody(wwrcNorth, wwrrWindow) = RealToStr(state, windowAreaN * state.dataOutRptTab->m2_unitConvWVST, 2);
-        tableBody(wwrcSouth, wwrrWindow) = RealToStr(state, windowAreaS * state.dataOutRptTab->m2_unitConvWVST, 2);
-        tableBody(wwrcEast, wwrrWindow) = RealToStr(state, windowAreaE * state.dataOutRptTab->m2_unitConvWVST, 2);
-        tableBody(wwrcWest, wwrrWindow) = RealToStr(state, windowAreaW * state.dataOutRptTab->m2_unitConvWVST, 2);
-        tableBody(wwrcTotal, wwrrWindow) = RealToStr(state, TotalWindowArea * state.dataOutRptTab->m2_unitConvWVST, 2);
+        tableBody(wwrcNorth, wwrrWindow) = RealToStr(currentStyle.formatReals, windowAreaN * state.dataOutRptTab->m2_unitConvWVST, 2);
+        tableBody(wwrcSouth, wwrrWindow) = RealToStr(currentStyle.formatReals, windowAreaS * state.dataOutRptTab->m2_unitConvWVST, 2);
+        tableBody(wwrcEast, wwrrWindow) = RealToStr(currentStyle.formatReals, windowAreaE * state.dataOutRptTab->m2_unitConvWVST, 2);
+        tableBody(wwrcWest, wwrrWindow) = RealToStr(currentStyle.formatReals, windowAreaW * state.dataOutRptTab->m2_unitConvWVST, 2);
+        tableBody(wwrcTotal, wwrrWindow) = RealToStr(currentStyle.formatReals, TotalWindowArea * state.dataOutRptTab->m2_unitConvWVST, 2);
 
-        tableBody(wwrcNorth, wwrrWWR) = RealToStr(state, 100.0 * SafeDivide(windowAreaN, wallAreaN), 2);
-        tableBody(wwrcSouth, wwrrWWR) = RealToStr(state, 100.0 * SafeDivide(windowAreaS, wallAreaS), 2);
-        tableBody(wwrcEast, wwrrWWR) = RealToStr(state, 100.0 * SafeDivide(windowAreaE, wallAreaE), 2);
-        tableBody(wwrcWest, wwrrWWR) = RealToStr(state, 100.0 * SafeDivide(windowAreaW, wallAreaW), 2);
-        tableBody(wwrcTotal, wwrrWWR) = RealToStr(state, 100.0 * SafeDivide(TotalWindowArea, TotalWallArea), 2);
+        tableBody(wwrcNorth, wwrrWWR) = RealToStr(currentStyle.formatReals, 100.0 * SafeDivide(windowAreaN, wallAreaN), 2);
+        tableBody(wwrcSouth, wwrrWWR) = RealToStr(currentStyle.formatReals, 100.0 * SafeDivide(windowAreaS, wallAreaS), 2);
+        tableBody(wwrcEast, wwrrWWR) = RealToStr(currentStyle.formatReals, 100.0 * SafeDivide(windowAreaE, wallAreaE), 2);
+        tableBody(wwrcWest, wwrrWWR) = RealToStr(currentStyle.formatReals, 100.0 * SafeDivide(windowAreaW, wallAreaW), 2);
+        tableBody(wwrcTotal, wwrrWWR) = RealToStr(currentStyle.formatReals, 100.0 * SafeDivide(TotalWindowArea, TotalWallArea), 2);
 
-        tableBody(wwrcNorth, wwrrAbvGndWWR) = RealToStr(state, 100.0 * SafeDivide(windowAreaN, aboveGroundWallAreaN), 2);
-        tableBody(wwrcSouth, wwrrAbvGndWWR) = RealToStr(state, 100.0 * SafeDivide(windowAreaS, aboveGroundWallAreaS), 2);
-        tableBody(wwrcEast, wwrrAbvGndWWR) = RealToStr(state, 100.0 * SafeDivide(windowAreaE, aboveGroundWallAreaE), 2);
-        tableBody(wwrcWest, wwrrAbvGndWWR) = RealToStr(state, 100.0 * SafeDivide(windowAreaW, aboveGroundWallAreaW), 2);
-        tableBody(wwrcTotal, wwrrAbvGndWWR) = RealToStr(state, 100.0 * SafeDivide(TotalWindowArea, TotalAboveGroundWallArea), 2);
+        tableBody(wwrcNorth, wwrrAbvGndWWR) = RealToStr(currentStyle.formatReals, 100.0 * SafeDivide(windowAreaN, aboveGroundWallAreaN), 2);
+        tableBody(wwrcSouth, wwrrAbvGndWWR) = RealToStr(currentStyle.formatReals, 100.0 * SafeDivide(windowAreaS, aboveGroundWallAreaS), 2);
+        tableBody(wwrcEast, wwrrAbvGndWWR) = RealToStr(currentStyle.formatReals, 100.0 * SafeDivide(windowAreaE, aboveGroundWallAreaE), 2);
+        tableBody(wwrcWest, wwrrAbvGndWWR) = RealToStr(currentStyle.formatReals, 100.0 * SafeDivide(windowAreaW, aboveGroundWallAreaW), 2);
+        tableBody(wwrcTotal, wwrrAbvGndWWR) = RealToStr(currentStyle.formatReals, 100.0 * SafeDivide(TotalWindowArea, TotalAboveGroundWallArea), 2);
 
         if (currentStyle.produceTabular) {
             WriteSubtitle(state, "Window-Wall Ratio");
@@ -11529,35 +11540,38 @@ void WriteVeriSumTable(EnergyPlusData &state)
 
         tableBody = "";
 
-        tableBody(wwrcNorth, wwrrWall) = RealToStr(state, wallAreaNcond * state.dataOutRptTab->m2_unitConvWVST, 2);
-        tableBody(wwrcSouth, wwrrWall) = RealToStr(state, wallAreaScond * state.dataOutRptTab->m2_unitConvWVST, 2);
-        tableBody(wwrcEast, wwrrWall) = RealToStr(state, wallAreaEcond * state.dataOutRptTab->m2_unitConvWVST, 2);
-        tableBody(wwrcWest, wwrrWall) = RealToStr(state, wallAreaWcond * state.dataOutRptTab->m2_unitConvWVST, 2);
-        tableBody(wwrcTotal, wwrrWall) = RealToStr(state, TotalWallArea * state.dataOutRptTab->m2_unitConvWVST, 2);
+        tableBody(wwrcNorth, wwrrWall) = RealToStr(currentStyle.formatReals, wallAreaNcond * state.dataOutRptTab->m2_unitConvWVST, 2);
+        tableBody(wwrcSouth, wwrrWall) = RealToStr(currentStyle.formatReals, wallAreaScond * state.dataOutRptTab->m2_unitConvWVST, 2);
+        tableBody(wwrcEast, wwrrWall) = RealToStr(currentStyle.formatReals, wallAreaEcond * state.dataOutRptTab->m2_unitConvWVST, 2);
+        tableBody(wwrcWest, wwrrWall) = RealToStr(currentStyle.formatReals, wallAreaWcond * state.dataOutRptTab->m2_unitConvWVST, 2);
+        tableBody(wwrcTotal, wwrrWall) = RealToStr(currentStyle.formatReals, TotalWallArea * state.dataOutRptTab->m2_unitConvWVST, 2);
 
-        tableBody(wwrcNorth, wwrrAbvGndWall) = RealToStr(state, aboveGroundWallAreaNcond * state.dataOutRptTab->m2_unitConvWVST, 2);
-        tableBody(wwrcSouth, wwrrAbvGndWall) = RealToStr(state, aboveGroundWallAreaScond * state.dataOutRptTab->m2_unitConvWVST, 2);
-        tableBody(wwrcEast, wwrrAbvGndWall) = RealToStr(state, aboveGroundWallAreaEcond * state.dataOutRptTab->m2_unitConvWVST, 2);
-        tableBody(wwrcWest, wwrrAbvGndWall) = RealToStr(state, aboveGroundWallAreaWcond * state.dataOutRptTab->m2_unitConvWVST, 2);
-        tableBody(wwrcTotal, wwrrAbvGndWall) = RealToStr(state, TotalAboveGroundWallArea * state.dataOutRptTab->m2_unitConvWVST, 2);
+        tableBody(wwrcNorth, wwrrAbvGndWall) =
+            RealToStr(currentStyle.formatReals, aboveGroundWallAreaNcond * state.dataOutRptTab->m2_unitConvWVST, 2);
+        tableBody(wwrcSouth, wwrrAbvGndWall) =
+            RealToStr(currentStyle.formatReals, aboveGroundWallAreaScond * state.dataOutRptTab->m2_unitConvWVST, 2);
+        tableBody(wwrcEast, wwrrAbvGndWall) = RealToStr(currentStyle.formatReals, aboveGroundWallAreaEcond * state.dataOutRptTab->m2_unitConvWVST, 2);
+        tableBody(wwrcWest, wwrrAbvGndWall) = RealToStr(currentStyle.formatReals, aboveGroundWallAreaWcond * state.dataOutRptTab->m2_unitConvWVST, 2);
+        tableBody(wwrcTotal, wwrrAbvGndWall) =
+            RealToStr(currentStyle.formatReals, TotalAboveGroundWallArea * state.dataOutRptTab->m2_unitConvWVST, 2);
 
-        tableBody(wwrcNorth, wwrrWindow) = RealToStr(state, windowAreaNcond * state.dataOutRptTab->m2_unitConvWVST, 2);
-        tableBody(wwrcSouth, wwrrWindow) = RealToStr(state, windowAreaScond * state.dataOutRptTab->m2_unitConvWVST, 2);
-        tableBody(wwrcEast, wwrrWindow) = RealToStr(state, windowAreaEcond * state.dataOutRptTab->m2_unitConvWVST, 2);
-        tableBody(wwrcWest, wwrrWindow) = RealToStr(state, windowAreaWcond * state.dataOutRptTab->m2_unitConvWVST, 2);
-        tableBody(wwrcTotal, wwrrWindow) = RealToStr(state, TotalWindowArea * state.dataOutRptTab->m2_unitConvWVST, 2);
+        tableBody(wwrcNorth, wwrrWindow) = RealToStr(currentStyle.formatReals, windowAreaNcond * state.dataOutRptTab->m2_unitConvWVST, 2);
+        tableBody(wwrcSouth, wwrrWindow) = RealToStr(currentStyle.formatReals, windowAreaScond * state.dataOutRptTab->m2_unitConvWVST, 2);
+        tableBody(wwrcEast, wwrrWindow) = RealToStr(currentStyle.formatReals, windowAreaEcond * state.dataOutRptTab->m2_unitConvWVST, 2);
+        tableBody(wwrcWest, wwrrWindow) = RealToStr(currentStyle.formatReals, windowAreaWcond * state.dataOutRptTab->m2_unitConvWVST, 2);
+        tableBody(wwrcTotal, wwrrWindow) = RealToStr(currentStyle.formatReals, TotalWindowArea * state.dataOutRptTab->m2_unitConvWVST, 2);
 
-        tableBody(wwrcNorth, wwrrWWR) = RealToStr(state, 100.0 * SafeDivide(windowAreaNcond, wallAreaNcond), 2);
-        tableBody(wwrcSouth, wwrrWWR) = RealToStr(state, 100.0 * SafeDivide(windowAreaScond, wallAreaScond), 2);
-        tableBody(wwrcEast, wwrrWWR) = RealToStr(state, 100.0 * SafeDivide(windowAreaEcond, wallAreaEcond), 2);
-        tableBody(wwrcWest, wwrrWWR) = RealToStr(state, 100.0 * SafeDivide(windowAreaWcond, wallAreaWcond), 2);
-        tableBody(wwrcTotal, wwrrWWR) = RealToStr(state, 100.0 * SafeDivide(TotalWindowArea, TotalWallArea), 2);
+        tableBody(wwrcNorth, wwrrWWR) = RealToStr(currentStyle.formatReals, 100.0 * SafeDivide(windowAreaNcond, wallAreaNcond), 2);
+        tableBody(wwrcSouth, wwrrWWR) = RealToStr(currentStyle.formatReals, 100.0 * SafeDivide(windowAreaScond, wallAreaScond), 2);
+        tableBody(wwrcEast, wwrrWWR) = RealToStr(currentStyle.formatReals, 100.0 * SafeDivide(windowAreaEcond, wallAreaEcond), 2);
+        tableBody(wwrcWest, wwrrWWR) = RealToStr(currentStyle.formatReals, 100.0 * SafeDivide(windowAreaWcond, wallAreaWcond), 2);
+        tableBody(wwrcTotal, wwrrWWR) = RealToStr(currentStyle.formatReals, 100.0 * SafeDivide(TotalWindowArea, TotalWallArea), 2);
 
-        tableBody(wwrcNorth, wwrrAbvGndWWR) = RealToStr(state, 100.0 * SafeDivide(windowAreaNcond, aboveGroundWallAreaNcond), 2);
-        tableBody(wwrcSouth, wwrrAbvGndWWR) = RealToStr(state, 100.0 * SafeDivide(windowAreaScond, aboveGroundWallAreaScond), 2);
-        tableBody(wwrcEast, wwrrAbvGndWWR) = RealToStr(state, 100.0 * SafeDivide(windowAreaEcond, aboveGroundWallAreaEcond), 2);
-        tableBody(wwrcWest, wwrrAbvGndWWR) = RealToStr(state, 100.0 * SafeDivide(windowAreaWcond, aboveGroundWallAreaWcond), 2);
-        tableBody(wwrcTotal, wwrrAbvGndWWR) = RealToStr(state, 100.0 * SafeDivide(TotalWindowArea, TotalAboveGroundWallArea), 2);
+        tableBody(wwrcNorth, wwrrAbvGndWWR) = RealToStr(currentStyle.formatReals, 100.0 * SafeDivide(windowAreaNcond, aboveGroundWallAreaNcond), 2);
+        tableBody(wwrcSouth, wwrrAbvGndWWR) = RealToStr(currentStyle.formatReals, 100.0 * SafeDivide(windowAreaScond, aboveGroundWallAreaScond), 2);
+        tableBody(wwrcEast, wwrrAbvGndWWR) = RealToStr(currentStyle.formatReals, 100.0 * SafeDivide(windowAreaEcond, aboveGroundWallAreaEcond), 2);
+        tableBody(wwrcWest, wwrrAbvGndWWR) = RealToStr(currentStyle.formatReals, 100.0 * SafeDivide(windowAreaWcond, aboveGroundWallAreaWcond), 2);
+        tableBody(wwrcTotal, wwrrAbvGndWWR) = RealToStr(currentStyle.formatReals, 100.0 * SafeDivide(TotalWindowArea, TotalAboveGroundWallArea), 2);
 
         if (currentStyle.produceTabular) {
             WriteSubtitle(state, "Conditioned Window-Wall Ratio");
@@ -11597,9 +11611,9 @@ void WriteVeriSumTable(EnergyPlusData &state)
             }
         }
 
-        tableBody(1, 1) = RealToStr(state, roofArea * state.dataOutRptTab->m2_unitConvWVST, 2);
-        tableBody(1, 2) = RealToStr(state, skylightArea * state.dataOutRptTab->m2_unitConvWVST, 2);
-        tableBody(1, 3) = RealToStr(state, 100.0 * SafeDivide(skylightArea, roofArea), 2);
+        tableBody(1, 1) = RealToStr(currentStyle.formatReals, roofArea * state.dataOutRptTab->m2_unitConvWVST, 2);
+        tableBody(1, 2) = RealToStr(currentStyle.formatReals, skylightArea * state.dataOutRptTab->m2_unitConvWVST, 2);
+        tableBody(1, 3) = RealToStr(currentStyle.formatReals, 100.0 * SafeDivide(skylightArea, roofArea), 2);
 
         if (currentStyle.produceTabular) {
             WriteSubtitle(state, "Skylight-Roof Ratio");
@@ -11642,7 +11656,7 @@ void WriteVeriSumTable(EnergyPlusData &state)
                 } else {
                     tableBody(1, iZone) = "No";
                 }
-                tableBody(2, iZone) = RealToStr(state, thisZone.ZoneVolCapMultpSensHMAverage, 2);
+                tableBody(2, iZone) = RealToStr(currentStyle.formatReals, thisZone.ZoneVolCapMultpSensHMAverage, 2);
             }
 
             if (currentStyle.produceTabular) {
@@ -11676,19 +11690,19 @@ void WriteVeriSumTable(EnergyPlusData &state)
                                              "90.1 wall definitions.",
                                              pdiff * 100.0));
                     //      CALL ShowContinueError(state, format("Calculated based on degrees=[{}{}{}{}{}{}] m2, Calculated from user entered Wall
-                    //      class surfaces=[{}{}{}{}{}{}", //, &, //, TRIM(ADJUSTL(RealToStr(state, (wallAreaN + wallAreaS + wallAreaE +
-                    //      wallAreaW),3)))//, &, //, //, &, //,
-                    //      TRIM(ADJUSTL(RealToStr(state, SUM(Zone(1:NumOfZones)%ExtGrossWallArea_Multiplied),3)))//', m2.'), ShowContinueError(state,
-                    //      "Check classes of surfaces and tilts for discrepancies."));
+                    //      class surfaces=[{}{}{}{}{}{}", //, &, //, TRIM(ADJUSTL(RealToStr(currentStyle.formatReals, (wallAreaN + wallAreaS +
+                    //      wallAreaE + wallAreaW),3)))//, &, //, //, &, //, TRIM(ADJUSTL(RealToStr(currentStyle.formatReals,
+                    //      SUM(Zone(1:NumOfZones)%ExtGrossWallArea_Multiplied),3)))//', m2.'), ShowContinueError(state, "Check classes of surfaces
+                    //      and tilts for discrepancies."));
                     ShowContinueError(state,
                                       format("Total wall area by ASHRAE 90.1 definition={} m2.",
-                                             stripped(RealToStr(state, (wallAreaN + wallAreaS + wallAreaE + wallAreaW), 3))));
+                                             stripped(RealToStr(currentStyle.formatReals, (wallAreaN + wallAreaS + wallAreaE + wallAreaW), 3))));
                     ShowContinueError(state,
                                       format("Total exterior wall area from user entered classes={} m2.",
-                                             stripped(RealToStr(state, totExtGrossWallArea_Multiplied, 3))));
+                                             stripped(RealToStr(currentStyle.formatReals, totExtGrossWallArea_Multiplied, 3))));
                     ShowContinueError(state,
                                       format("Total ground contact wall area from user entered classes={} m2.",
-                                             stripped(RealToStr(state, totExtGrossGroundWallArea_Multiplied, 3))));
+                                             stripped(RealToStr(currentStyle.formatReals, totExtGrossGroundWallArea_Multiplied, 3))));
                 }
             }
         }
@@ -11750,8 +11764,8 @@ void WriteVeriSumTable(EnergyPlusData &state)
                 tableBody(3, iZone) = "No";
                 usezoneFloorArea = false;
             }
-            tableBody(1, iZone) = RealToStr(state, thisZone.FloorArea * state.dataOutRptTab->m2_unitConvWVST, 2);
-            tableBody(4, iZone) = RealToStr(state, thisZone.Volume * state.dataOutRptTab->m3_unitConv, 2);
+            tableBody(1, iZone) = RealToStr(currentStyle.formatReals, thisZone.FloorArea * state.dataOutRptTab->m2_unitConvWVST, 2);
+            tableBody(4, iZone) = RealToStr(currentStyle.formatReals, thisZone.Volume * state.dataOutRptTab->m3_unitConv, 2);
             // no unit conversion necessary since done automatically
             if (currentStyle.produceTabular) {
                 PreDefTableEntry(state, state.dataOutRptPredefined->pdchLeedSutSpArea, thisZone.Name, thisZone.FloorArea, 2);
@@ -11767,11 +11781,11 @@ void WriteVeriSumTable(EnergyPlusData &state)
                     PreDefTableEntry(state, state.dataOutRptPredefined->pdchLeedSutUnArea, thisZone.Name, thisZone.FloorArea, 2);
                 }
             }
-            tableBody(5, iZone) = RealToStr(state, mult, 2);
-            tableBody(6, iZone) = RealToStr(state, thisZone.ExtGrossWallArea * state.dataOutRptTab->m2_unitConvWVST, 2);
-            tableBody(7, iZone) = RealToStr(state, thisZone.ExtGrossGroundWallArea * state.dataOutRptTab->m2_unitConvWVST, 2);
-            tableBody(8, iZone) = RealToStr(state, zoneGlassArea(iZone) * state.dataOutRptTab->m2_unitConvWVST, 2);
-            tableBody(9, iZone) = RealToStr(state, zoneOpeningArea(iZone) * state.dataOutRptTab->m2_unitConvWVST, 2);
+            tableBody(5, iZone) = RealToStr(currentStyle.formatReals, mult, 2);
+            tableBody(6, iZone) = RealToStr(currentStyle.formatReals, thisZone.ExtGrossWallArea * state.dataOutRptTab->m2_unitConvWVST, 2);
+            tableBody(7, iZone) = RealToStr(currentStyle.formatReals, thisZone.ExtGrossGroundWallArea * state.dataOutRptTab->m2_unitConvWVST, 2);
+            tableBody(8, iZone) = RealToStr(currentStyle.formatReals, zoneGlassArea(iZone) * state.dataOutRptTab->m2_unitConvWVST, 2);
+            tableBody(9, iZone) = RealToStr(currentStyle.formatReals, zoneOpeningArea(iZone) * state.dataOutRptTab->m2_unitConvWVST, 2);
             // lighting density
             Real64 totLightPower = 0.0;
             for (int iLight = 1; iLight <= state.dataHeatBal->TotLights; ++iLight) {
@@ -11780,7 +11794,7 @@ void WriteVeriSumTable(EnergyPlusData &state)
                 }
             }
             if (thisZone.FloorArea > 0) {
-                tableBody(10, iZone) = RealToStr(state, state.dataOutRptTab->Wm2_unitConv * totLightPower / thisZone.FloorArea, 4);
+                tableBody(10, iZone) = RealToStr(currentStyle.formatReals, state.dataOutRptTab->Wm2_unitConv * totLightPower / thisZone.FloorArea, 4);
             }
             // people density
             Real64 totNumPeople = 0.0;
@@ -11790,7 +11804,8 @@ void WriteVeriSumTable(EnergyPlusData &state)
                 }
             }
             if (totNumPeople > 0) {
-                tableBody(11, iZone) = RealToStr(state, thisZone.FloorArea * state.dataOutRptTab->m2_unitConvWVST / totNumPeople, 2);
+                tableBody(11, iZone) =
+                    RealToStr(currentStyle.formatReals, thisZone.FloorArea * state.dataOutRptTab->m2_unitConvWVST / totNumPeople, 2);
             }
             // plug and process density
             Real64 totPlugProcess = 0.0;
@@ -11820,7 +11835,8 @@ void WriteVeriSumTable(EnergyPlusData &state)
                 }
             }
             if (thisZone.FloorArea > 0) {
-                tableBody(12, iZone) = RealToStr(state, totPlugProcess * state.dataOutRptTab->Wm2_unitConv / thisZone.FloorArea, 4);
+                tableBody(12, iZone) =
+                    RealToStr(currentStyle.formatReals, totPlugProcess * state.dataOutRptTab->Wm2_unitConv / thisZone.FloorArea, 4);
             }
 
             // total rows for Total / Not Part of Total
@@ -11864,26 +11880,32 @@ void WriteVeriSumTable(EnergyPlusData &state)
         }
         for (int iTotal = 1; iTotal <= 4; ++iTotal) {
             tableBody(1, state.dataGlobal->NumOfZones + iTotal) =
-                RealToStr(state, state.dataOutRptTab->zstArea(iTotal) * state.dataOutRptTab->m2_unitConvWVST, 2);
+                RealToStr(currentStyle.formatReals, state.dataOutRptTab->zstArea(iTotal) * state.dataOutRptTab->m2_unitConvWVST, 2);
             tableBody(4, state.dataGlobal->NumOfZones + iTotal) =
-                RealToStr(state, state.dataOutRptTab->zstVolume(iTotal) * state.dataOutRptTab->m3_unitConv, 2);
+                RealToStr(currentStyle.formatReals, state.dataOutRptTab->zstVolume(iTotal) * state.dataOutRptTab->m3_unitConv, 2);
             tableBody(6, state.dataGlobal->NumOfZones + iTotal) =
-                RealToStr(state, state.dataOutRptTab->zstWallArea(iTotal) * state.dataOutRptTab->m2_unitConvWVST, 2);
+                RealToStr(currentStyle.formatReals, state.dataOutRptTab->zstWallArea(iTotal) * state.dataOutRptTab->m2_unitConvWVST, 2);
             tableBody(7, state.dataGlobal->NumOfZones + iTotal) =
-                RealToStr(state, state.dataOutRptTab->zstUndWallArea(iTotal) * state.dataOutRptTab->m2_unitConvWVST, 2);
+                RealToStr(currentStyle.formatReals, state.dataOutRptTab->zstUndWallArea(iTotal) * state.dataOutRptTab->m2_unitConvWVST, 2);
             tableBody(8, state.dataGlobal->NumOfZones + iTotal) =
-                RealToStr(state, state.dataOutRptTab->zstWindowArea(iTotal) * state.dataOutRptTab->m2_unitConvWVST, 2);
+                RealToStr(currentStyle.formatReals, state.dataOutRptTab->zstWindowArea(iTotal) * state.dataOutRptTab->m2_unitConvWVST, 2);
             tableBody(9, state.dataGlobal->NumOfZones + iTotal) =
-                RealToStr(state, state.dataOutRptTab->zstOpeningArea(iTotal) * state.dataOutRptTab->m2_unitConvWVST, 2);
+                RealToStr(currentStyle.formatReals, state.dataOutRptTab->zstOpeningArea(iTotal) * state.dataOutRptTab->m2_unitConvWVST, 2);
             if (state.dataOutRptTab->zstArea(iTotal) != 0) {
-                tableBody(10, state.dataGlobal->NumOfZones + iTotal) = RealToStr(
-                    state, state.dataOutRptTab->zstLight(iTotal) * state.dataOutRptTab->Wm2_unitConv / state.dataOutRptTab->zstArea(iTotal), 4);
-                tableBody(12, state.dataGlobal->NumOfZones + iTotal) = RealToStr(
-                    state, state.dataOutRptTab->zstPlug(iTotal) * state.dataOutRptTab->Wm2_unitConv / state.dataOutRptTab->zstArea(iTotal), 4);
+                tableBody(10, state.dataGlobal->NumOfZones + iTotal) =
+                    RealToStr(currentStyle.formatReals,
+                              state.dataOutRptTab->zstLight(iTotal) * state.dataOutRptTab->Wm2_unitConv / state.dataOutRptTab->zstArea(iTotal),
+                              4);
+                tableBody(12, state.dataGlobal->NumOfZones + iTotal) =
+                    RealToStr(currentStyle.formatReals,
+                              state.dataOutRptTab->zstPlug(iTotal) * state.dataOutRptTab->Wm2_unitConv / state.dataOutRptTab->zstArea(iTotal),
+                              4);
             }
             if (state.dataOutRptTab->zstPeople(iTotal) != 0) {
-                tableBody(11, state.dataGlobal->NumOfZones + iTotal) = RealToStr(
-                    state, state.dataOutRptTab->zstArea(iTotal) * state.dataOutRptTab->m2_unitConvWVST / state.dataOutRptTab->zstPeople(iTotal), 2);
+                tableBody(11, state.dataGlobal->NumOfZones + iTotal) =
+                    RealToStr(currentStyle.formatReals,
+                              state.dataOutRptTab->zstArea(iTotal) * state.dataOutRptTab->m2_unitConvWVST / state.dataOutRptTab->zstPeople(iTotal),
+                              2);
             }
         }
         if (currentStyle.produceTabular) {
@@ -11910,11 +11932,11 @@ void WriteVeriSumTable(EnergyPlusData &state)
             }
         }
 
-        writeVeriSumSpaceTables(state, currentStyle.produceTabular, currentStyle.produceSQLite, currentStyle.produceJSON);
+        writeVeriSumSpaceTables(state, currentStyle);
     }
 }
 
-void writeVeriSumSpaceTables(EnergyPlusData &state, bool produceTabular, bool produceSQLite, bool produceJSON)
+void writeVeriSumSpaceTables(EnergyPlusData &state, const tabularReportStyle &style)
 {
 
     // Write Space and SpaceType sub-tables for Input Verification and Results Summary
@@ -12107,7 +12129,8 @@ void writeVeriSumSpaceTables(EnergyPlusData &state, bool produceTabular, bool pr
             spaceTableBody(colZoneName, spaceTableRowNum) = curZone.Name;
             spaceTableBody(colSpaceType, spaceTableRowNum) = curSpace.spaceType;
             spaceTableBody(colEnclName, spaceTableRowNum) = state.dataViewFactor->EnclSolInfo(curSpace.solarEnclosureNum).Name;
-            spaceTableBody(colSpaceArea, spaceTableRowNum) = RealToStr(state, curSpace.FloorArea * state.dataOutRptTab->m2_unitConvWVST, 2);
+            spaceTableBody(colSpaceArea, spaceTableRowNum) =
+                RealToStr(style.formatReals, curSpace.FloorArea * state.dataOutRptTab->m2_unitConvWVST, 2);
             // Conditioned or not
             if (curZone.SystemZoneNodeNumber > 0) {
                 spaceTableBody(colConditioned, spaceTableRowNum) = "Yes";
@@ -12125,26 +12148,26 @@ void writeVeriSumSpaceTables(EnergyPlusData &state, bool produceTabular, bool pr
                 useSpaceFloorArea = false;
             }
             // lighting density
-            spaceTableBody(colMultipliers, spaceTableRowNum) = RealToStr(state, mult, 2);
+            spaceTableBody(colMultipliers, spaceTableRowNum) = RealToStr(style.formatReals, mult, 2);
             if (curSpace.FloorArea > 0) {
                 spaceTableBody(colSpaceLighting, spaceTableRowNum) =
-                    RealToStr(state, state.dataOutRptTab->Wm2_unitConv * spaceTotLighting(spaceNum) / curSpace.FloorArea, 4);
+                    RealToStr(style.formatReals, state.dataOutRptTab->Wm2_unitConv * spaceTotLighting(spaceNum) / curSpace.FloorArea, 4);
             } else {
-                spaceTableBody(colSpaceLighting, spaceTableRowNum) = RealToStr(state, 0.0, 4);
+                spaceTableBody(colSpaceLighting, spaceTableRowNum) = RealToStr(style.formatReals, 0.0, 4);
             }
             // people density
             if (spaceTotPeople(spaceNum) > 0) {
                 spaceTableBody(colSpacePeople, spaceTableRowNum) =
-                    RealToStr(state, curSpace.FloorArea * state.dataOutRptTab->m2_unitConvWVST / spaceTotPeople(spaceNum), 2);
+                    RealToStr(style.formatReals, curSpace.FloorArea * state.dataOutRptTab->m2_unitConvWVST / spaceTotPeople(spaceNum), 2);
             } else {
-                spaceTableBody(colSpacePeople, spaceTableRowNum) = RealToStr(state, 0.0, 2);
+                spaceTableBody(colSpacePeople, spaceTableRowNum) = RealToStr(style.formatReals, 0.0, 2);
             }
             // plug and process density
             if (curSpace.FloorArea > 0) {
                 spaceTableBody(colSpacePlugProcess, spaceTableRowNum) =
-                    RealToStr(state, spaceTotPlugProcess(spaceNum) * state.dataOutRptTab->Wm2_unitConv / curSpace.FloorArea, 4);
+                    RealToStr(style.formatReals, spaceTotPlugProcess(spaceNum) * state.dataOutRptTab->Wm2_unitConv / curSpace.FloorArea, 4);
             } else {
-                spaceTableBody(colSpacePlugProcess, spaceTableRowNum) = RealToStr(state, 0.0, 4);
+                spaceTableBody(colSpacePlugProcess, spaceTableRowNum) = RealToStr(style.formatReals, 0.0, 4);
             }
 
             spaceTableBody(colSpaceTags, spaceTableRowNum) = fmt::format("{}", fmt::join(curSpace.tags, ", "));
@@ -12185,21 +12208,27 @@ void writeVeriSumSpaceTables(EnergyPlusData &state, bool produceTabular, bool pr
     // In "Total": break between conditioned/unconditioned
     for (int iTotal = 1; iTotal <= 4; ++iTotal) {
         spaceTableBody(colSpaceArea, state.dataGlobal->numSpaces + iTotal) =
-            RealToStr(state, state.dataOutRptTab->zstArea(iTotal) * state.dataOutRptTab->m2_unitConvWVST, 2);
+            RealToStr(style.formatReals, state.dataOutRptTab->zstArea(iTotal) * state.dataOutRptTab->m2_unitConvWVST, 2);
         if (state.dataOutRptTab->zstArea(iTotal) != 0) {
             spaceTableBody(colSpaceLighting, state.dataGlobal->numSpaces + iTotal) =
-                RealToStr(state, state.dataOutRptTab->zstLight(iTotal) * state.dataOutRptTab->Wm2_unitConv / state.dataOutRptTab->zstArea(iTotal), 4);
+                RealToStr(style.formatReals,
+                          state.dataOutRptTab->zstLight(iTotal) * state.dataOutRptTab->Wm2_unitConv / state.dataOutRptTab->zstArea(iTotal),
+                          4);
             spaceTableBody(colSpacePlugProcess, state.dataGlobal->numSpaces + iTotal) =
-                RealToStr(state, state.dataOutRptTab->zstPlug(iTotal) * state.dataOutRptTab->Wm2_unitConv / state.dataOutRptTab->zstArea(iTotal), 4);
+                RealToStr(style.formatReals,
+                          state.dataOutRptTab->zstPlug(iTotal) * state.dataOutRptTab->Wm2_unitConv / state.dataOutRptTab->zstArea(iTotal),
+                          4);
         } else {
-            spaceTableBody(colSpaceLighting, state.dataGlobal->numSpaces + iTotal) = RealToStr(state, 0.0, 4);
-            spaceTableBody(colSpacePlugProcess, state.dataGlobal->numSpaces + iTotal) = RealToStr(state, 0.0, 4);
+            spaceTableBody(colSpaceLighting, state.dataGlobal->numSpaces + iTotal) = RealToStr(style.formatReals, 0.0, 4);
+            spaceTableBody(colSpacePlugProcess, state.dataGlobal->numSpaces + iTotal) = RealToStr(style.formatReals, 0.0, 4);
         }
         if (state.dataOutRptTab->zstPeople(iTotal) != 0) {
-            spaceTableBody(colSpacePeople, state.dataGlobal->numSpaces + iTotal) = RealToStr(
-                state, state.dataOutRptTab->zstArea(iTotal) * state.dataOutRptTab->m2_unitConvWVST / state.dataOutRptTab->zstPeople(iTotal), 2);
+            spaceTableBody(colSpacePeople, state.dataGlobal->numSpaces + iTotal) =
+                RealToStr(style.formatReals,
+                          state.dataOutRptTab->zstArea(iTotal) * state.dataOutRptTab->m2_unitConvWVST / state.dataOutRptTab->zstPeople(iTotal),
+                          2);
         } else {
-            spaceTableBody(colSpacePeople, state.dataGlobal->numSpaces + iTotal) = RealToStr(state, 0.0, 2);
+            spaceTableBody(colSpacePeople, state.dataGlobal->numSpaces + iTotal) = RealToStr(style.formatReals, 0.0, 2);
         }
     }
 
@@ -12210,13 +12239,13 @@ void writeVeriSumSpaceTables(EnergyPlusData &state, bool produceTabular, bool pr
     for (int iSpaceType = 1; iSpaceType <= state.dataGlobal->numSpaceTypes; ++iSpaceType) {
         spaceTypeRowHead(iSpaceType) = state.dataHeatBal->spaceTypes(iSpaceType);
         spaceTypeTableBody(colSpaceTypeTotArea, iSpaceType) =
-            RealToStr(state, spaceTypeTotArea(iSpaceType) * state.dataOutRptTab->m2_unitConvWVST, 2);
+            RealToStr(style.formatReals, spaceTypeTotArea(iSpaceType) * state.dataOutRptTab->m2_unitConvWVST, 2);
         spaceTypeTableBody(colSpaceTypeCondArea, iSpaceType) =
-            RealToStr(state, spaceTypeCondArea(iSpaceType) * state.dataOutRptTab->m2_unitConvWVST, 2);
+            RealToStr(style.formatReals, spaceTypeCondArea(iSpaceType) * state.dataOutRptTab->m2_unitConvWVST, 2);
         spaceTypeTableBody(colSpaceTypeUncondArea, iSpaceType) =
-            RealToStr(state, spaceTypeUncondArea(iSpaceType) * state.dataOutRptTab->m2_unitConvWVST, 2);
+            RealToStr(style.formatReals, spaceTypeUncondArea(iSpaceType) * state.dataOutRptTab->m2_unitConvWVST, 2);
         spaceTypeTableBody(colSpaceTypeNotTotArea, iSpaceType) =
-            RealToStr(state, spaceTypeNotTotArea(iSpaceType) * state.dataOutRptTab->m2_unitConvWVST, 2);
+            RealToStr(style.formatReals, spaceTypeNotTotArea(iSpaceType) * state.dataOutRptTab->m2_unitConvWVST, 2);
         totalArea += spaceTypeTotArea(iSpaceType);
         condArea += spaceTypeCondArea(iSpaceType);
         uncondArea += spaceTypeUncondArea(iSpaceType);
@@ -12224,44 +12253,43 @@ void writeVeriSumSpaceTables(EnergyPlusData &state, bool produceTabular, bool pr
         // lighting density
         if (spaceTypeTotArea(iSpaceType) > 0) {
             spaceTypeTableBody(colSpaceTypeLighting, iSpaceType) =
-                RealToStr(state, state.dataOutRptTab->Wm2_unitConv * spaceTypeTotLighting(iSpaceType) / spaceTypeTotArea(iSpaceType), 4);
+                RealToStr(style.formatReals, state.dataOutRptTab->Wm2_unitConv * spaceTypeTotLighting(iSpaceType) / spaceTypeTotArea(iSpaceType), 4);
         } else {
-            spaceTypeTableBody(colSpaceTypeLighting, iSpaceType) = RealToStr(state, 0.0, 4);
+            spaceTypeTableBody(colSpaceTypeLighting, iSpaceType) = RealToStr(style.formatReals, 0.0, 4);
         }
         // people density
         if (spaceTypeTotPeople(iSpaceType) > 0) {
             spaceTypeTableBody(colSpaceTypePeople, iSpaceType) =
-                RealToStr(state, spaceTypeTotArea(iSpaceType) * state.dataOutRptTab->m2_unitConvWVST / spaceTypeTotPeople(iSpaceType), 2);
+                RealToStr(style.formatReals, spaceTypeTotArea(iSpaceType) * state.dataOutRptTab->m2_unitConvWVST / spaceTypeTotPeople(iSpaceType), 2);
         } else {
-            spaceTypeTableBody(colSpaceTypePeople, iSpaceType) = RealToStr(state, 0.0, 2);
+            spaceTypeTableBody(colSpaceTypePeople, iSpaceType) = RealToStr(style.formatReals, 0.0, 2);
         }
         // plug and process density
         if (spaceTypeTotArea(iSpaceType) > 0) {
-            spaceTypeTableBody(colSpaceTypePlugProcess, iSpaceType) =
-                RealToStr(state, spaceTypeTotPlugProcess(iSpaceType) * state.dataOutRptTab->Wm2_unitConv / spaceTypeTotArea(iSpaceType), 4);
+            spaceTypeTableBody(colSpaceTypePlugProcess, iSpaceType) = RealToStr(
+                style.formatReals, spaceTypeTotPlugProcess(iSpaceType) * state.dataOutRptTab->Wm2_unitConv / spaceTypeTotArea(iSpaceType), 4);
         } else {
-            spaceTypeTableBody(colSpaceTypePlugProcess, iSpaceType) = RealToStr(state, 0.0, 4);
+            spaceTypeTableBody(colSpaceTypePlugProcess, iSpaceType) = RealToStr(style.formatReals, 0.0, 4);
         }
     }
     // Total Area
     spaceTypeTableBody(colSpaceTypeTotArea, state.dataGlobal->numSpaceTypes + 1) =
-        RealToStr(state, totalArea * state.dataOutRptTab->m2_unitConvWVST, 2);
+        RealToStr(style.formatReals, totalArea * state.dataOutRptTab->m2_unitConvWVST, 2);
     spaceTypeTableBody(colSpaceTypeCondArea, state.dataGlobal->numSpaceTypes + 1) =
-        RealToStr(state, condArea * state.dataOutRptTab->m2_unitConvWVST, 2);
+        RealToStr(style.formatReals, condArea * state.dataOutRptTab->m2_unitConvWVST, 2);
     spaceTypeTableBody(colSpaceTypeUncondArea, state.dataGlobal->numSpaceTypes + 1) =
-        RealToStr(state, uncondArea * state.dataOutRptTab->m2_unitConvWVST, 2);
+        RealToStr(style.formatReals, uncondArea * state.dataOutRptTab->m2_unitConvWVST, 2);
     spaceTypeTableBody(colSpaceTypeNotTotArea, state.dataGlobal->numSpaceTypes + 1) =
-        RealToStr(state, notTotalArea * state.dataOutRptTab->m2_unitConvWVST, 2);
+        RealToStr(style.formatReals, notTotalArea * state.dataOutRptTab->m2_unitConvWVST, 2);
 
-    if (produceTabular) {
+    if (style.produceTabular) {
         WriteSubtitle(state, "Space Summary");
         WriteTable(state, spaceTableBody, spaceRowHead, spaceColumnHead, spaceColumnWidth);
 
         WriteSubtitle(state, "Space Type Summary");
         WriteTable(state, spaceTypeTableBody, spaceTypeRowHead, spaceTypeColumnHead, spaceTypeColumnWidth);
     }
-    if (produceJSON) {
-
+    if (style.produceJSON) {
         if (state.dataResultsFramework->resultsFramework->timeSeriesAndTabularEnabled()) {
             state.dataResultsFramework->resultsFramework->TabularReportsCollection.addReportTable(
                 spaceTableBody, spaceRowHead, spaceColumnHead, "InputVerificationandResultsSummary", "Entire Facility", "Space Summary");
@@ -12275,7 +12303,7 @@ void writeVeriSumSpaceTables(EnergyPlusData &state, bool produceTabular, bool pr
         }
     }
 
-    if (produceSQLite) {
+    if (style.produceSQLite) {
         if (state.dataSQLiteProcedures->sqlite) {
             state.dataSQLiteProcedures->sqlite->createSQLiteTabularDataRecords(
                 spaceTableBody, spaceRowHead, spaceColumnHead, "InputVerificationandResultsSummary", "Entire Facility", "Space Summary");
@@ -12343,13 +12371,13 @@ void WriteAdaptiveComfortTable(EnergyPlusData &state)
     for (int i = 1; i <= ort->numPeopleAdaptive; ++i) {
         rowHead(i) = state.dataHeatBal->People(i).Name;
         if (state.dataHeatBal->People(i).AdaptiveASH55) {
-            tableBody(1, i) = RealToStr(state, state.dataHeatBal->People(peopleInd(i)).TimeNotMetASH5590, 2);
-            tableBody(2, i) = RealToStr(state, state.dataHeatBal->People(peopleInd(i)).TimeNotMetASH5580, 2);
+            tableBody(1, i) = RealToStr(true, state.dataHeatBal->People(peopleInd(i)).TimeNotMetASH5590, 2);
+            tableBody(2, i) = RealToStr(true, state.dataHeatBal->People(peopleInd(i)).TimeNotMetASH5580, 2);
         }
         if (state.dataHeatBal->People(i).AdaptiveCEN15251) {
-            tableBody(3, i) = RealToStr(state, state.dataHeatBal->People(peopleInd(i)).TimeNotMetCEN15251CatI, 2);
-            tableBody(4, i) = RealToStr(state, state.dataHeatBal->People(peopleInd(i)).TimeNotMetCEN15251CatII, 2);
-            tableBody(5, i) = RealToStr(state, state.dataHeatBal->People(peopleInd(i)).TimeNotMetCEN15251CatIII, 2);
+            tableBody(3, i) = RealToStr(true, state.dataHeatBal->People(peopleInd(i)).TimeNotMetCEN15251CatI, 2);
+            tableBody(4, i) = RealToStr(true, state.dataHeatBal->People(peopleInd(i)).TimeNotMetCEN15251CatII, 2);
+            tableBody(5, i) = RealToStr(true, state.dataHeatBal->People(peopleInd(i)).TimeNotMetCEN15251CatIII, 2);
         }
     }
 
@@ -12476,331 +12504,345 @@ void WriteThermalResilienceTablesRepPeriod(EnergyPlusData &state, int const peri
     }
 
     Real64 degreeHourConversion;
-    UnitsStyle unitsStyle_cur = ort->unitsStyle_Tabular;
+    for (auto &currentStyle : state.dataOutRptTab->tabularReportPasses) {
 
-    if (unitsStyle_cur == OutputReportTabular::UnitsStyle::InchPound ||
-        unitsStyle_cur == OutputReportTabular::UnitsStyle::InchPoundExceptElectricity) {
-        degreeHourConversion = getSpecificUnitMultiplier(state, "°C·hr", "°F·hr");
-    } else {
-        degreeHourConversion = 1.0;
-    }
-
-    std::string tableType = "Thermal";
-    WriteReportHeaderReportingPeriod(state, tableType, periodIdx, state.dataWeather->ThermalReportPeriodInput);
-    std::string periodTitle = state.dataWeather->ThermalReportPeriodInput(periodIdx).title;
-
-    int columnNum = 5;
-    Array1D_int columnWidth;
-    columnWidth.allocate(columnNum);
-    columnWidth = 10;
-    Array1D_string columnHead(5);
-    if (unitsStyle_cur == OutputReportTabular::UnitsStyle::InchPound ||
-        unitsStyle_cur == OutputReportTabular::UnitsStyle::InchPoundExceptElectricity) {
-        columnHead(1) = "Safe (≤ 80.1°F) [hr]";
-        columnHead(2) = "Caution (> 80.1°F, ≤ 90.0°F) [hr]";
-        columnHead(3) = "Extreme Caution (> 90.0°F, ≤ 102.9°F) [hr]";
-        columnHead(4) = "Danger (> 102.9, ≤ 125.1°F) [hr]";
-        columnHead(5) = "Extreme Danger (> 125.1°F) [hr]";
-    } else {
-        columnHead(1) = "Safe (≤ 26.7°C) [hr]";
-        columnHead(2) = "Caution (> 26.7°C, ≤ 32.2°C) [hr]";
-        columnHead(3) = "Extreme Caution (> 32.2°C, ≤ 39.4°C) [hr]";
-        columnHead(4) = "Danger (> 39.4°C, ≤ 51.7°C) [hr]";
-        columnHead(5) = "Extreme Danger (> 51.7°C) [hr]";
-    }
-
-    Array1D_string rowHead;
-    Array2D_string tableBody;
-    rowHead.allocate(state.dataGlobal->NumOfZones + 4);
-    tableBody.allocate(columnNum, state.dataGlobal->NumOfZones + 4);
-
-    std::string tableName = "Heat Index Hours";
-    WriteResilienceBinsTableReportingPeriod(state,
-                                            tableType,
-                                            columnNum,
-                                            periodIdx,
-                                            periodTitle,
-                                            tableName,
-                                            columnHead,
-                                            columnWidth,
-                                            state.dataHeatBalFanSys->ZoneHeatIndexHourBinsRepPeriod,
-                                            rowHead,
-                                            tableBody);
-
-    tableName = "Heat Index OccupantHours";
-    WriteResilienceBinsTableReportingPeriod(state,
-                                            tableType,
-                                            columnNum,
-                                            periodIdx,
-                                            periodTitle,
-                                            tableName,
-                                            columnHead,
-                                            columnWidth,
-                                            state.dataHeatBalFanSys->ZoneHeatIndexOccuHourBinsRepPeriod,
-                                            rowHead,
-                                            tableBody);
-
-    tableName = "Heat Index OccupiedHours";
-    WriteResilienceBinsTableReportingPeriod(state,
-                                            tableType,
-                                            columnNum,
-                                            periodIdx,
-                                            periodTitle,
-                                            tableName,
-                                            columnHead,
-                                            columnWidth,
-                                            state.dataHeatBalFanSys->ZoneHeatIndexOccupiedHourBinsRepPeriod,
-                                            rowHead,
-                                            tableBody);
-
-    columnHead(1) = "Little to no Discomfort (≤ 29) [hr]";
-    columnHead(2) = "Some Discomfort (> 29, ≤ 40) [hr]";
-    columnHead(3) = "Great Discomfort; Avoid Exertion (> 40, ≤ 45) [hr]";
-    columnHead(4) = "Dangerous (> 45, ≤ 50) [hr]";
-    columnHead(5) = "Heat Stroke Quite Possible (> 50) [hr]";
-    tableName = "Humidex Hours";
-    WriteResilienceBinsTableReportingPeriod(state,
-                                            tableType,
-                                            columnNum,
-                                            periodIdx,
-                                            periodTitle,
-                                            tableName,
-                                            columnHead,
-                                            columnWidth,
-                                            state.dataHeatBalFanSys->ZoneHumidexHourBinsRepPeriod,
-                                            rowHead,
-                                            tableBody);
-
-    tableName = "Humidex OccupantHours";
-    WriteResilienceBinsTableReportingPeriod(state,
-                                            tableType,
-                                            columnNum,
-                                            periodIdx,
-                                            periodTitle,
-                                            tableName,
-                                            columnHead,
-                                            columnWidth,
-                                            state.dataHeatBalFanSys->ZoneHumidexOccuHourBinsRepPeriod,
-                                            rowHead,
-                                            tableBody);
-
-    tableName = "Humidex OccupiedHours";
-    WriteResilienceBinsTableReportingPeriod(state,
-                                            tableType,
-                                            columnNum,
-                                            periodIdx,
-                                            periodTitle,
-                                            tableName,
-                                            columnHead,
-                                            columnWidth,
-                                            state.dataHeatBalFanSys->ZoneHumidexOccupiedHourBinsRepPeriod,
-                                            rowHead,
-                                            tableBody);
-
-    bool hasPierceSET = true;
-    if (state.dataHeatBal->TotPeople == 0) {
-        hasPierceSET = false;
-        if (ort->displayThermalResilienceSummaryExplicitly) {
-            ShowWarningError(state,
-                             "Writing Reporting Period Thermal Resilience Summary - SET Degree-Hours reports: "
-                             "Zone Thermal Comfort Pierce Model Standard Effective Temperature is required, "
-                             "but no People object is defined.");
+        if (currentStyle.unitsStyle == OutputReportTabular::UnitsStyle::InchPound ||
+            currentStyle.unitsStyle == OutputReportTabular::UnitsStyle::InchPoundExceptElectricity) {
+            degreeHourConversion = getSpecificUnitMultiplier(state, "°C·hr", "°F·hr");
+        } else {
+            degreeHourConversion = 1.0;
         }
-    }
-    for (int iPeople = 1; iPeople <= state.dataHeatBal->TotPeople; ++iPeople) {
-        if (!state.dataHeatBal->People(iPeople).Pierce) {
+
+        std::string tableType = "Thermal";
+        WriteReportHeaderReportingPeriod(state, tableType, periodIdx, state.dataWeather->ThermalReportPeriodInput);
+        std::string periodTitle = state.dataWeather->ThermalReportPeriodInput(periodIdx).title;
+
+        int columnNum = 5;
+        Array1D_int columnWidth;
+        columnWidth.allocate(columnNum);
+        columnWidth = 10;
+        Array1D_string columnHead(5);
+        if (currentStyle.unitsStyle == OutputReportTabular::UnitsStyle::InchPound ||
+            currentStyle.unitsStyle == OutputReportTabular::UnitsStyle::InchPoundExceptElectricity) {
+            columnHead(1) = "Safe (≤ 80.1°F) [hr]";
+            columnHead(2) = "Caution (> 80.1°F, ≤ 90.0°F) [hr]";
+            columnHead(3) = "Extreme Caution (> 90.0°F, ≤ 102.9°F) [hr]";
+            columnHead(4) = "Danger (> 102.9, ≤ 125.1°F) [hr]";
+            columnHead(5) = "Extreme Danger (> 125.1°F) [hr]";
+        } else {
+            columnHead(1) = "Safe (≤ 26.7°C) [hr]";
+            columnHead(2) = "Caution (> 26.7°C, ≤ 32.2°C) [hr]";
+            columnHead(3) = "Extreme Caution (> 32.2°C, ≤ 39.4°C) [hr]";
+            columnHead(4) = "Danger (> 39.4°C, ≤ 51.7°C) [hr]";
+            columnHead(5) = "Extreme Danger (> 51.7°C) [hr]";
+        }
+
+        Array1D_string rowHead;
+        Array2D_string tableBody;
+        rowHead.allocate(state.dataGlobal->NumOfZones + 4);
+        tableBody.allocate(columnNum, state.dataGlobal->NumOfZones + 4);
+
+        std::string tableName = "Heat Index Hours";
+        WriteResilienceBinsTableReportingPeriod(state,
+                                                tableType,
+                                                columnNum,
+                                                periodIdx,
+                                                periodTitle,
+                                                tableName,
+                                                columnHead,
+                                                columnWidth,
+                                                state.dataHeatBalFanSys->ZoneHeatIndexHourBinsRepPeriod,
+                                                rowHead,
+                                                tableBody,
+                                                currentStyle);
+
+        tableName = "Heat Index OccupantHours";
+        WriteResilienceBinsTableReportingPeriod(state,
+                                                tableType,
+                                                columnNum,
+                                                periodIdx,
+                                                periodTitle,
+                                                tableName,
+                                                columnHead,
+                                                columnWidth,
+                                                state.dataHeatBalFanSys->ZoneHeatIndexOccuHourBinsRepPeriod,
+                                                rowHead,
+                                                tableBody,
+                                                currentStyle);
+
+        tableName = "Heat Index OccupiedHours";
+        WriteResilienceBinsTableReportingPeriod(state,
+                                                tableType,
+                                                columnNum,
+                                                periodIdx,
+                                                periodTitle,
+                                                tableName,
+                                                columnHead,
+                                                columnWidth,
+                                                state.dataHeatBalFanSys->ZoneHeatIndexOccupiedHourBinsRepPeriod,
+                                                rowHead,
+                                                tableBody,
+                                                currentStyle);
+
+        columnHead(1) = "Little to no Discomfort (≤ 29) [hr]";
+        columnHead(2) = "Some Discomfort (> 29, ≤ 40) [hr]";
+        columnHead(3) = "Great Discomfort; Avoid Exertion (> 40, ≤ 45) [hr]";
+        columnHead(4) = "Dangerous (> 45, ≤ 50) [hr]";
+        columnHead(5) = "Heat Stroke Quite Possible (> 50) [hr]";
+        tableName = "Humidex Hours";
+        WriteResilienceBinsTableReportingPeriod(state,
+                                                tableType,
+                                                columnNum,
+                                                periodIdx,
+                                                periodTitle,
+                                                tableName,
+                                                columnHead,
+                                                columnWidth,
+                                                state.dataHeatBalFanSys->ZoneHumidexHourBinsRepPeriod,
+                                                rowHead,
+                                                tableBody,
+                                                currentStyle);
+
+        tableName = "Humidex OccupantHours";
+        WriteResilienceBinsTableReportingPeriod(state,
+                                                tableType,
+                                                columnNum,
+                                                periodIdx,
+                                                periodTitle,
+                                                tableName,
+                                                columnHead,
+                                                columnWidth,
+                                                state.dataHeatBalFanSys->ZoneHumidexOccuHourBinsRepPeriod,
+                                                rowHead,
+                                                tableBody,
+                                                currentStyle);
+
+        tableName = "Humidex OccupiedHours";
+        WriteResilienceBinsTableReportingPeriod(state,
+                                                tableType,
+                                                columnNum,
+                                                periodIdx,
+                                                periodTitle,
+                                                tableName,
+                                                columnHead,
+                                                columnWidth,
+                                                state.dataHeatBalFanSys->ZoneHumidexOccupiedHourBinsRepPeriod,
+                                                rowHead,
+                                                tableBody,
+                                                currentStyle);
+
+        bool hasPierceSET = true;
+        if (state.dataHeatBal->TotPeople == 0) {
             hasPierceSET = false;
             if (ort->displayThermalResilienceSummaryExplicitly) {
                 ShowWarningError(state,
-                                 format("Writing Reporting Period Thermal Resilience Summary - SET Degree-Hours reports: Zone Thermal Comfort "
-                                        "Pierce Model Standard Effective Temperature is required, but no Pierce model is defined in {} object.",
-                                        state.dataHeatBal->People(iPeople).Name));
+                                 "Writing Reporting Period Thermal Resilience Summary - SET Degree-Hours reports: "
+                                 "Zone Thermal Comfort Pierce Model Standard Effective Temperature is required, "
+                                 "but no People object is defined.");
             }
         }
-    }
+        for (int iPeople = 1; iPeople <= state.dataHeatBal->TotPeople; ++iPeople) {
+            if (!state.dataHeatBal->People(iPeople).Pierce) {
+                hasPierceSET = false;
+                if (ort->displayThermalResilienceSummaryExplicitly) {
+                    ShowWarningError(state,
+                                     format("Writing Reporting Period Thermal Resilience Summary - SET Degree-Hours reports: Zone Thermal Comfort "
+                                            "Pierce Model Standard Effective Temperature is required, but no Pierce model is defined in {} object.",
+                                            state.dataHeatBal->People(iPeople).Name));
+                }
+            }
+        }
 
-    if (hasPierceSET) {
-        columnHead(1) = "SET ≤ 12.2°C Degree-Hours [°C·hr]";
-        columnHead(2) = "SET ≤ 12.2°C Occupant-Weighted Degree-Hours [°C·hr]";
-        columnHead(3) = "SET ≤ 12.2°C Occupied Degree-Hours [°C·hr]";
-        columnHead(4) = "Longest SET ≤ 12.2°C Duration for Occupied Period [hr]";
-        columnHead(5) = "Start Time of the Longest SET ≤ 12.2°C Duration for Occupied Period ";
-
-        if (unitsStyle_cur == OutputReportTabular::UnitsStyle::InchPound ||
-            unitsStyle_cur == OutputReportTabular::UnitsStyle::InchPoundExceptElectricity) {
-            columnHead(1) = "SET ≤ 54.0°F Degree-Hours [°F·hr]";
-            columnHead(2) = "SET ≤ 54.0°F Occupant-Weighted Degree-Hours [°F·hr]";
-            columnHead(3) = "SET ≤ 54.0°F Occupied Degree-Hours [°F·hr]";
-            columnHead(4) = "Longest SET ≤ 54.0°F Duration for Occupied Period [hr]";
-            columnHead(5) = "Start Time of the Longest SET ≤ 54.0°F Duration for Occupied Period ";
-        } else {
+        if (hasPierceSET) {
             columnHead(1) = "SET ≤ 12.2°C Degree-Hours [°C·hr]";
             columnHead(2) = "SET ≤ 12.2°C Occupant-Weighted Degree-Hours [°C·hr]";
             columnHead(3) = "SET ≤ 12.2°C Occupied Degree-Hours [°C·hr]";
             columnHead(4) = "Longest SET ≤ 12.2°C Duration for Occupied Period [hr]";
             columnHead(5) = "Start Time of the Longest SET ≤ 12.2°C Duration for Occupied Period ";
+
+            if (currentStyle.unitsStyle == OutputReportTabular::UnitsStyle::InchPound ||
+                currentStyle.unitsStyle == OutputReportTabular::UnitsStyle::InchPoundExceptElectricity) {
+                columnHead(1) = "SET ≤ 54.0°F Degree-Hours [°F·hr]";
+                columnHead(2) = "SET ≤ 54.0°F Occupant-Weighted Degree-Hours [°F·hr]";
+                columnHead(3) = "SET ≤ 54.0°F Occupied Degree-Hours [°F·hr]";
+                columnHead(4) = "Longest SET ≤ 54.0°F Duration for Occupied Period [hr]";
+                columnHead(5) = "Start Time of the Longest SET ≤ 54.0°F Duration for Occupied Period ";
+            } else {
+                columnHead(1) = "SET ≤ 12.2°C Degree-Hours [°C·hr]";
+                columnHead(2) = "SET ≤ 12.2°C Occupant-Weighted Degree-Hours [°C·hr]";
+                columnHead(3) = "SET ≤ 12.2°C Occupied Degree-Hours [°C·hr]";
+                columnHead(4) = "Longest SET ≤ 12.2°C Duration for Occupied Period [hr]";
+                columnHead(5) = "Start Time of the Longest SET ≤ 12.2°C Duration for Occupied Period ";
+            }
+
+            tableName = "Heating SET Degree-Hours";
+            Array1D_string rowHeadSET;
+            Array2D_string tableBodySET;
+            rowHeadSET.allocate(state.dataGlobal->NumOfZones + 3);
+            tableBodySET.allocate(columnNum, state.dataGlobal->NumOfZones + 3);
+            WriteSETHoursTableReportingPeriod(state,
+                                              columnNum,
+                                              periodIdx,
+                                              periodTitle,
+                                              tableName,
+                                              columnHead,
+                                              columnWidth,
+                                              state.dataHeatBalFanSys->ZoneLowSETHoursRepPeriod,
+                                              rowHeadSET,
+                                              tableBodySET,
+                                              currentStyle,
+                                              degreeHourConversion);
+
+            if (currentStyle.unitsStyle == OutputReportTabular::UnitsStyle::InchPound ||
+                currentStyle.unitsStyle == OutputReportTabular::UnitsStyle::InchPoundExceptElectricity) {
+                columnHead(1) = "SET > 86°F Degree-Hours [°F·hr]";
+                columnHead(2) = "SET > 86°F Occupant-Weighted Degree-Hours [°F·hr]";
+                columnHead(3) = "SET > 86°F Occupied Degree-Hours [°F·hr]";
+                columnHead(4) = "Longest SET > 86°F Duration for Occupied Period [hr]";
+                columnHead(5) = "Start Time of the Longest SET > 86°F Duration for Occupied Period";
+            } else {
+                columnHead(1) = "SET > 30°C Degree-Hours [°C·hr]";
+                columnHead(2) = "SET > 30°C Occupant-Weighted Degree-Hours [°C·hr]";
+                columnHead(3) = "SET > 30°C Occupied Degree-Hours [°C·hr]";
+                columnHead(4) = "Longest SET > 30°C Duration for Occupied Period [hr]";
+                columnHead(5) = "Start Time of the Longest SET > 30°C Duration for Occupied Period";
+            }
+
+            tableName = "Cooling SET Degree-Hours";
+            WriteSETHoursTableReportingPeriod(state,
+                                              columnNum,
+                                              periodIdx,
+                                              periodTitle,
+                                              tableName,
+                                              columnHead,
+                                              columnWidth,
+                                              state.dataHeatBalFanSys->ZoneHighSETHoursRepPeriod,
+                                              rowHeadSET,
+                                              tableBodySET,
+                                              currentStyle,
+                                              degreeHourConversion);
         }
 
-        tableName = "Heating SET Degree-Hours";
-        Array1D_string rowHeadSET;
-        Array2D_string tableBodySET;
-        rowHeadSET.allocate(state.dataGlobal->NumOfZones + 3);
-        tableBodySET.allocate(columnNum, state.dataGlobal->NumOfZones + 3);
-        WriteSETHoursTableReportingPeriod(state,
-                                          columnNum,
-                                          periodIdx,
-                                          periodTitle,
-                                          tableName,
-                                          columnHead,
-                                          columnWidth,
-                                          state.dataHeatBalFanSys->ZoneLowSETHoursRepPeriod,
-                                          rowHeadSET,
-                                          tableBodySET,
-                                          degreeHourConversion);
+        columnHead(1) = "Hours of Safety [hr]";
+        columnHead(2) = "End Time of the Safety Duration";
+        columnHead(3) = "Safe Temperature Exceedance Hours [hr]";
+        columnHead(4) = "Safe Temperature Exceedance OccupantHours [hr]";
+        columnHead(5) = "Safe Temperature Exceedance OccupiedHours [hr]";
+        tableName = "Hours of Safety for Cold Events";
+        WriteHourOfSafetyTableReportingPeriod(state,
+                                              columnNum,
+                                              periodIdx,
+                                              periodTitle,
+                                              tableName,
+                                              columnHead,
+                                              columnWidth,
+                                              state.dataHeatBalFanSys->ZoneColdHourOfSafetyBinsRepPeriod,
+                                              rowHead,
+                                              tableBody,
+                                              2,
+                                              currentStyle);
 
-        if (unitsStyle_cur == OutputReportTabular::UnitsStyle::InchPound ||
-            unitsStyle_cur == OutputReportTabular::UnitsStyle::InchPoundExceptElectricity) {
-            columnHead(1) = "SET > 86°F Degree-Hours [°F·hr]";
-            columnHead(2) = "SET > 86°F Occupant-Weighted Degree-Hours [°F·hr]";
-            columnHead(3) = "SET > 86°F Occupied Degree-Hours [°F·hr]";
-            columnHead(4) = "Longest SET > 86°F Duration for Occupied Period [hr]";
-            columnHead(5) = "Start Time of the Longest SET > 86°F Duration for Occupied Period";
-        } else {
-            columnHead(1) = "SET > 30°C Degree-Hours [°C·hr]";
-            columnHead(2) = "SET > 30°C Occupant-Weighted Degree-Hours [°C·hr]";
-            columnHead(3) = "SET > 30°C Occupied Degree-Hours [°C·hr]";
-            columnHead(4) = "Longest SET > 30°C Duration for Occupied Period [hr]";
-            columnHead(5) = "Start Time of the Longest SET > 30°C Duration for Occupied Period";
+        tableName = "Hours of Safety for Heat Events";
+        WriteHourOfSafetyTableReportingPeriod(state,
+                                              columnNum,
+                                              periodIdx,
+                                              periodTitle,
+                                              tableName,
+                                              columnHead,
+                                              columnWidth,
+                                              state.dataHeatBalFanSys->ZoneHeatHourOfSafetyBinsRepPeriod,
+                                              rowHead,
+                                              tableBody,
+                                              2,
+                                              currentStyle);
+
+        int columnNumUnmetDegHr = 6;
+        Array1D_string columnHeadUnmetDegHr(6);
+        // must initialize this otherwise it will only output 5 columns
+        Array1D_int columnWidthUnmetDegHr;
+        columnWidthUnmetDegHr.allocate(columnNumUnmetDegHr);
+        columnWidthUnmetDegHr = 10;
+        columnHeadUnmetDegHr(1) = "Cooling Setpoint Unmet Degree-Hours [°C·hr]";
+        columnHeadUnmetDegHr(2) = "Cooling Setpoint Unmet Occupant-Weighted Degree-Hours [°C·hr]";
+        columnHeadUnmetDegHr(3) = "Cooling Setpoint Unmet Occupied Degree-Hours [°C·hr]";
+        columnHeadUnmetDegHr(4) = "Heating Setpoint Unmet Degree-Hours [°C·hr]";
+        columnHeadUnmetDegHr(5) = "Heating Setpoint Unmet Occupant-Weighted Degree-Hours [°C·hr]";
+        columnHeadUnmetDegHr(6) = "Heating Setpoint Unmet Occupied Degree-Hours [°C·hr]";
+        tableName = "Unmet Degree-Hours";
+
+        if (currentStyle.unitsStyle == OutputReportTabular::UnitsStyle::InchPound ||
+            currentStyle.unitsStyle == OutputReportTabular::UnitsStyle::InchPoundExceptElectricity) {
+            int indexUnitConv;
+            std::string curUnits;
+            for (int i = 1; i < columnNumUnmetDegHr; i++) {
+                LookupSItoIP(state, columnHeadUnmetDegHr(i), indexUnitConv, curUnits);
+                columnHeadUnmetDegHr(i) = curUnits;
+            }
         }
 
-        tableName = "Cooling SET Degree-Hours";
-        WriteSETHoursTableReportingPeriod(state,
-                                          columnNum,
-                                          periodIdx,
-                                          periodTitle,
-                                          tableName,
-                                          columnHead,
-                                          columnWidth,
-                                          state.dataHeatBalFanSys->ZoneHighSETHoursRepPeriod,
-                                          rowHeadSET,
-                                          tableBodySET,
-                                          degreeHourConversion);
+        Array2D_string tableBodyUnmetDegHr;
+        tableBodyUnmetDegHr.allocate(columnNumUnmetDegHr, state.dataGlobal->NumOfZones + 4);
+        WriteResilienceBinsTableReportingPeriod(state,
+                                                tableType,
+                                                columnNumUnmetDegHr,
+                                                periodIdx,
+                                                periodTitle,
+                                                tableName,
+                                                columnHeadUnmetDegHr,
+                                                columnWidthUnmetDegHr,
+                                                state.dataHeatBalFanSys->ZoneUnmetDegreeHourBinsRepPeriod,
+                                                rowHead,
+                                                tableBodyUnmetDegHr,
+                                                currentStyle,
+                                                degreeHourConversion);
+
+        int columnNumDiscomfortWt = 4;
+        Array1D_string columnHeadDiscomfortWt(columnNumDiscomfortWt);
+        columnHeadDiscomfortWt(1) = "Very-cold Exceedance OccupiedHours [hr]";
+        columnHeadDiscomfortWt(2) = "Cool Exceedance OccupiedHours [hr]";
+        columnHeadDiscomfortWt(3) = "Warm Exceedance OccupiedHours [hr]";
+        columnHeadDiscomfortWt(4) = "Very-hot Exceedance OccupiedHours [hr]";
+        tableName = "Discomfort-weighted Exceedance OccupantHours";
+        Array1D_int columnWidthDiscomfortWt;
+        columnWidthDiscomfortWt.allocate(columnNumDiscomfortWt);
+        columnWidth = 10;
+        Array2D_string tableBodyDiscomfortWt;
+        tableBodyDiscomfortWt.allocate(columnNumDiscomfortWt, state.dataGlobal->NumOfZones + 4);
+        WriteResilienceBinsTableReportingPeriod(state,
+                                                tableType,
+                                                columnNumDiscomfortWt,
+                                                periodIdx,
+                                                periodTitle,
+                                                tableName,
+                                                columnHeadDiscomfortWt,
+                                                columnWidthDiscomfortWt,
+                                                state.dataHeatBalFanSys->ZoneDiscomfortWtExceedOccuHourBinsRepPeriod,
+                                                rowHead,
+                                                tableBodyDiscomfortWt,
+                                                currentStyle);
+        tableName = "Discomfort-weighted Exceedance OccupiedHours";
+        WriteResilienceBinsTableReportingPeriod(state,
+                                                tableType,
+                                                columnNumDiscomfortWt,
+                                                periodIdx,
+                                                periodTitle,
+                                                tableName,
+                                                columnHeadDiscomfortWt,
+                                                columnWidthDiscomfortWt,
+                                                state.dataHeatBalFanSys->ZoneDiscomfortWtExceedOccupiedHourBinsRepPeriod,
+                                                rowHead,
+                                                tableBodyDiscomfortWt,
+                                                currentStyle);
+        columnHead.deallocate();
+        columnWidth.deallocate();
+        tableBody.deallocate();
+        columnHeadUnmetDegHr.deallocate();
+        columnWidthUnmetDegHr.deallocate();
+        tableBodyUnmetDegHr.deallocate();
+        columnHeadDiscomfortWt.deallocate();
+        columnWidthDiscomfortWt.deallocate();
+        tableBodyDiscomfortWt.deallocate();
     }
-
-    columnHead(1) = "Hours of Safety [hr]";
-    columnHead(2) = "End Time of the Safety Duration";
-    columnHead(3) = "Safe Temperature Exceedance Hours [hr]";
-    columnHead(4) = "Safe Temperature Exceedance OccupantHours [hr]";
-    columnHead(5) = "Safe Temperature Exceedance OccupiedHours [hr]";
-    tableName = "Hours of Safety for Cold Events";
-    WriteHourOfSafetyTableReportingPeriod(state,
-                                          columnNum,
-                                          periodIdx,
-                                          periodTitle,
-                                          tableName,
-                                          columnHead,
-                                          columnWidth,
-                                          state.dataHeatBalFanSys->ZoneColdHourOfSafetyBinsRepPeriod,
-                                          rowHead,
-                                          tableBody,
-                                          2);
-
-    tableName = "Hours of Safety for Heat Events";
-    WriteHourOfSafetyTableReportingPeriod(state,
-                                          columnNum,
-                                          periodIdx,
-                                          periodTitle,
-                                          tableName,
-                                          columnHead,
-                                          columnWidth,
-                                          state.dataHeatBalFanSys->ZoneHeatHourOfSafetyBinsRepPeriod,
-                                          rowHead,
-                                          tableBody,
-                                          2);
-
-    int columnNumUnmetDegHr = 6;
-    Array1D_string columnHeadUnmetDegHr(6);
-    // must initialize this otherwise it will only output 5 columns
-    Array1D_int columnWidthUnmetDegHr;
-    columnWidthUnmetDegHr.allocate(columnNumUnmetDegHr);
-    columnWidthUnmetDegHr = 10;
-    columnHeadUnmetDegHr(1) = "Cooling Setpoint Unmet Degree-Hours [°C·hr]";
-    columnHeadUnmetDegHr(2) = "Cooling Setpoint Unmet Occupant-Weighted Degree-Hours [°C·hr]";
-    columnHeadUnmetDegHr(3) = "Cooling Setpoint Unmet Occupied Degree-Hours [°C·hr]";
-    columnHeadUnmetDegHr(4) = "Heating Setpoint Unmet Degree-Hours [°C·hr]";
-    columnHeadUnmetDegHr(5) = "Heating Setpoint Unmet Occupant-Weighted Degree-Hours [°C·hr]";
-    columnHeadUnmetDegHr(6) = "Heating Setpoint Unmet Occupied Degree-Hours [°C·hr]";
-    tableName = "Unmet Degree-Hours";
-
-    if (unitsStyle_cur == OutputReportTabular::UnitsStyle::InchPound ||
-        unitsStyle_cur == OutputReportTabular::UnitsStyle::InchPoundExceptElectricity) {
-        int indexUnitConv;
-        std::string curUnits;
-        for (int i = 1; i < columnNumUnmetDegHr; i++) {
-            LookupSItoIP(state, columnHeadUnmetDegHr(i), indexUnitConv, curUnits);
-            columnHeadUnmetDegHr(i) = curUnits;
-        }
-    }
-
-    Array2D_string tableBodyUnmetDegHr;
-    tableBodyUnmetDegHr.allocate(columnNumUnmetDegHr, state.dataGlobal->NumOfZones + 4);
-    WriteResilienceBinsTableReportingPeriod(state,
-                                            tableType,
-                                            columnNumUnmetDegHr,
-                                            periodIdx,
-                                            periodTitle,
-                                            tableName,
-                                            columnHeadUnmetDegHr,
-                                            columnWidthUnmetDegHr,
-                                            state.dataHeatBalFanSys->ZoneUnmetDegreeHourBinsRepPeriod,
-                                            rowHead,
-                                            tableBodyUnmetDegHr,
-                                            degreeHourConversion);
-
-    int columnNumDiscomfortWt = 4;
-    Array1D_string columnHeadDiscomfortWt(columnNumDiscomfortWt);
-    columnHeadDiscomfortWt(1) = "Very-cold Exceedance OccupiedHours [hr]";
-    columnHeadDiscomfortWt(2) = "Cool Exceedance OccupiedHours [hr]";
-    columnHeadDiscomfortWt(3) = "Warm Exceedance OccupiedHours [hr]";
-    columnHeadDiscomfortWt(4) = "Very-hot Exceedance OccupiedHours [hr]";
-    tableName = "Discomfort-weighted Exceedance OccupantHours";
-    Array1D_int columnWidthDiscomfortWt;
-    columnWidthDiscomfortWt.allocate(columnNumDiscomfortWt);
-    columnWidth = 10;
-    Array2D_string tableBodyDiscomfortWt;
-    tableBodyDiscomfortWt.allocate(columnNumDiscomfortWt, state.dataGlobal->NumOfZones + 4);
-    WriteResilienceBinsTableReportingPeriod(state,
-                                            tableType,
-                                            columnNumDiscomfortWt,
-                                            periodIdx,
-                                            periodTitle,
-                                            tableName,
-                                            columnHeadDiscomfortWt,
-                                            columnWidthDiscomfortWt,
-                                            state.dataHeatBalFanSys->ZoneDiscomfortWtExceedOccuHourBinsRepPeriod,
-                                            rowHead,
-                                            tableBodyDiscomfortWt);
-    tableName = "Discomfort-weighted Exceedance OccupiedHours";
-    WriteResilienceBinsTableReportingPeriod(state,
-                                            tableType,
-                                            columnNumDiscomfortWt,
-                                            periodIdx,
-                                            periodTitle,
-                                            tableName,
-                                            columnHeadDiscomfortWt,
-                                            columnWidthDiscomfortWt,
-                                            state.dataHeatBalFanSys->ZoneDiscomfortWtExceedOccupiedHourBinsRepPeriod,
-                                            rowHead,
-                                            tableBodyDiscomfortWt);
-    columnHead.deallocate();
-    columnWidth.deallocate();
-    tableBody.deallocate();
-    columnHeadUnmetDegHr.deallocate();
-    columnWidthUnmetDegHr.deallocate();
-    tableBodyUnmetDegHr.deallocate();
-    columnHeadDiscomfortWt.deallocate();
-    columnWidthDiscomfortWt.deallocate();
-    tableBodyDiscomfortWt.deallocate();
 }
 
 template <int columnNum>
@@ -12826,14 +12868,14 @@ void WriteResilienceBinsTable(EnergyPlusData &state,
                 columnMin[j] = curValue;
             }
             columnSum[j] += curValue;
-            PreDefTableEntry(state, columnHead[j], ZoneName, RealToStr(state, curValue, 2));
+            PreDefTableEntry(state, columnHead[j], ZoneName, curValue, 2);
         }
     }
     for (int j = 0; j < columnNum; j++) {
-        PreDefTableEntry(state, columnHead[j], "Min", RealToStr(state, columnMin[j], 2));
-        PreDefTableEntry(state, columnHead[j], "Max", RealToStr(state, columnMax[j], 2));
-        PreDefTableEntry(state, columnHead[j], "Average", RealToStr(state, columnSum[j] / state.dataGlobal->NumOfZones, 2));
-        PreDefTableEntry(state, columnHead[j], "Sum", RealToStr(state, columnSum[j], 2));
+        PreDefTableEntry(state, columnHead[j], "Min", columnMin[j], 2);
+        PreDefTableEntry(state, columnHead[j], "Max", columnMax[j], 2);
+        PreDefTableEntry(state, columnHead[j], "Average", columnSum[j] / state.dataGlobal->NumOfZones, 2);
+        PreDefTableEntry(state, columnHead[j], "Sum", columnSum[j], 2);
     }
 }
 
@@ -12845,6 +12887,7 @@ void WriteResilienceBinsTableNonPreDefUseZoneData(EnergyPlusData &state,
                                                   const std::array<Real64, columnNum> DataHeatBalance::ZoneResilience::*memberPtr,
                                                   Array1D_string &rowHead,
                                                   Array2D_string &tableBody,
+                                                  tabularReportStyle const &style,
                                                   Real64 const unitConvMultiplier)
 {
     WriteSubtitle(state, tableName);
@@ -12868,7 +12911,7 @@ void WriteResilienceBinsTableNonPreDefUseZoneData(EnergyPlusData &state,
                 columnMin.at(j) = curValue;
             }
             columnSum.at(j) += curValue;
-            tableBody(j + 1, ZoneNum) = RealToStr(state, curValue, 2);
+            tableBody(j + 1, ZoneNum) = RealToStr(style.formatReals, curValue, 2);
         }
     }
 
@@ -12878,20 +12921,26 @@ void WriteResilienceBinsTableNonPreDefUseZoneData(EnergyPlusData &state,
     rowHead(state.dataGlobal->NumOfZones + 4) = "Sum";
 
     for (int j = 0; j < columnNum; j++) {
-        tableBody(j + 1, state.dataGlobal->NumOfZones + 1) = RealToStr(state, columnMin.at(j), 2);
-        tableBody(j + 1, state.dataGlobal->NumOfZones + 2) = RealToStr(state, columnMax.at(j), 2);
-        tableBody(j + 1, state.dataGlobal->NumOfZones + 3) = RealToStr(state, columnSum.at(j) / state.dataGlobal->NumOfZones, 2);
-        tableBody(j + 1, state.dataGlobal->NumOfZones + 4) = RealToStr(state, columnSum.at(j), 2);
+        tableBody(j + 1, state.dataGlobal->NumOfZones + 1) = RealToStr(style.formatReals, columnMin.at(j), 2);
+        tableBody(j + 1, state.dataGlobal->NumOfZones + 2) = RealToStr(style.formatReals, columnMax.at(j), 2);
+        tableBody(j + 1, state.dataGlobal->NumOfZones + 3) = RealToStr(style.formatReals, columnSum.at(j) / state.dataGlobal->NumOfZones, 2);
+        tableBody(j + 1, state.dataGlobal->NumOfZones + 4) = RealToStr(style.formatReals, columnSum.at(j), 2);
     }
 
-    WriteTable(state, tableBody, rowHead, columnHead, columnWidth);
-    if (state.dataSQLiteProcedures->sqlite) {
-        state.dataSQLiteProcedures->sqlite->createSQLiteTabularDataRecords(
-            tableBody, rowHead, columnHead, "AnnualThermalResilienceSummary", "Entire Facility", tableName);
+    if (style.produceTabular) {
+        WriteTable(state, tableBody, rowHead, columnHead, columnWidth);
     }
-    if (state.dataResultsFramework->resultsFramework->timeSeriesAndTabularEnabled()) {
-        state.dataResultsFramework->resultsFramework->TabularReportsCollection.addReportTable(
-            tableBody, rowHead, columnHead, "AnnualThermalResilienceSummary", "Entire Facility", tableName);
+    if (style.produceSQLite) {
+        if (state.dataSQLiteProcedures->sqlite) {
+            state.dataSQLiteProcedures->sqlite->createSQLiteTabularDataRecords(
+                tableBody, rowHead, columnHead, "AnnualThermalResilienceSummary", "Entire Facility", tableName);
+        }
+    }
+    if (style.produceJSON) {
+        if (state.dataResultsFramework->resultsFramework->timeSeriesAndTabularEnabled()) {
+            state.dataResultsFramework->resultsFramework->TabularReportsCollection.addReportTable(
+                tableBody, rowHead, columnHead, "AnnualThermalResilienceSummary", "Entire Facility", tableName);
+        }
     }
 }
 
@@ -12906,6 +12955,7 @@ void WriteResilienceBinsTableReportingPeriod(EnergyPlusData &state,
                                              Array2D<std::vector<Real64>> const &ZoneBins,
                                              Array1D_string &rowHead,
                                              Array2D_string &tableBody,
+                                             tabularReportStyle const &style,
                                              Real64 const unitConvMultiplier)
 {
     WriteSubtitle(state, tableName);
@@ -12929,7 +12979,7 @@ void WriteResilienceBinsTableReportingPeriod(EnergyPlusData &state,
                 columnMin.at(j) = curValue;
             }
             columnSum.at(j) += curValue;
-            tableBody(j + 1, ZoneNum) = RealToStr(state, curValue, 2);
+            tableBody(j + 1, ZoneNum) = RealToStr(style.formatReals, curValue, 2);
         }
     }
 
@@ -12939,20 +12989,37 @@ void WriteResilienceBinsTableReportingPeriod(EnergyPlusData &state,
     rowHead(state.dataGlobal->NumOfZones + 4) = "Sum";
 
     for (int j = 0; j < columnNum; j++) {
-        tableBody(j + 1, state.dataGlobal->NumOfZones + 1) = RealToStr(state, columnMin.at(j), 2);
-        tableBody(j + 1, state.dataGlobal->NumOfZones + 2) = RealToStr(state, columnMax.at(j), 2);
-        tableBody(j + 1, state.dataGlobal->NumOfZones + 3) = RealToStr(state, columnSum.at(j) / state.dataGlobal->NumOfZones, 2);
-        tableBody(j + 1, state.dataGlobal->NumOfZones + 4) = RealToStr(state, columnSum.at(j), 2);
+        tableBody(j + 1, state.dataGlobal->NumOfZones + 1) = RealToStr(style.formatReals, columnMin.at(j), 2);
+        tableBody(j + 1, state.dataGlobal->NumOfZones + 2) = RealToStr(style.formatReals, columnMax.at(j), 2);
+        tableBody(j + 1, state.dataGlobal->NumOfZones + 3) = RealToStr(style.formatReals, columnSum.at(j) / state.dataGlobal->NumOfZones, 2);
+        tableBody(j + 1, state.dataGlobal->NumOfZones + 4) = RealToStr(style.formatReals, columnSum.at(j), 2);
     }
 
-    WriteTable(state, tableBody, rowHead, columnHead, columnWidth);
-    if (state.dataSQLiteProcedures->sqlite) {
-        state.dataSQLiteProcedures->sqlite->createSQLiteTabularDataRecords(
-            tableBody, rowHead, columnHead, "ReportingPeriod-" + periodTitle + "-" + tableType + "ResilienceSummary", "Entire Facility", tableName);
+    if (style.produceTabular) {
+        WriteTable(state, tableBody, rowHead, columnHead, columnWidth);
     }
-    if (state.dataResultsFramework->resultsFramework->timeSeriesAndTabularEnabled()) {
-        state.dataResultsFramework->resultsFramework->TabularReportsCollection.addReportTable(
-            tableBody, rowHead, columnHead, "ReportingPeriod-" + periodTitle + "-" + tableType + "ResilienceSummary", "Entire Facility", tableName);
+
+    if (style.produceSQLite) {
+        if (state.dataSQLiteProcedures->sqlite) {
+            state.dataSQLiteProcedures->sqlite->createSQLiteTabularDataRecords(tableBody,
+                                                                               rowHead,
+                                                                               columnHead,
+                                                                               "ReportingPeriod-" + periodTitle + "-" + tableType +
+                                                                                   "ResilienceSummary",
+                                                                               "Entire Facility",
+                                                                               tableName);
+        }
+    }
+    if (style.produceJSON) {
+        if (state.dataResultsFramework->resultsFramework->timeSeriesAndTabularEnabled()) {
+            state.dataResultsFramework->resultsFramework->TabularReportsCollection.addReportTable(tableBody,
+                                                                                                  rowHead,
+                                                                                                  columnHead,
+                                                                                                  "ReportingPeriod-" + periodTitle + "-" + tableType +
+                                                                                                      "ResilienceSummary",
+                                                                                                  "Entire Facility",
+                                                                                                  tableName);
+        }
     }
 }
 
@@ -12964,6 +13031,7 @@ void WriteSETHoursTableNonPreDefUseZoneData(EnergyPlusData &state,
                                             const std::array<Real64, 5> DataHeatBalance::ZoneResilience::*memberPtr,
                                             Array1D_string &rowHead,
                                             Array2D_string &tableBody,
+                                            tabularReportStyle const &style,
                                             Real64 const unitConvMultiplier)
 {
 
@@ -12990,7 +13058,7 @@ void WriteSETHoursTableNonPreDefUseZoneData(EnergyPlusData &state,
                 columnMin.at(j) = curValue;
             }
             columnSum.at(j) += curValue;
-            tableBody(j + 1, ZoneNum) = RealToStr(state, curValue, 2);
+            tableBody(j + 1, ZoneNum) = RealToStr(style.formatReals, curValue, 2);
         }
         tableBody(columnNum, ZoneNum) = DateToString((state.dataHeatBal->Resilience(ZoneNum).*memberPtr).at(columnNum - 1));
     }
@@ -13000,9 +13068,9 @@ void WriteSETHoursTableNonPreDefUseZoneData(EnergyPlusData &state,
     rowHead(state.dataGlobal->NumOfZones + 3) = "Average";
 
     for (int j = 0; j < columnNum - 1; j++) {
-        tableBody(j + 1, state.dataGlobal->NumOfZones + 1) = RealToStr(state, columnMin.at(j), 2);
-        tableBody(j + 1, state.dataGlobal->NumOfZones + 2) = RealToStr(state, columnMax.at(j), 2);
-        tableBody(j + 1, state.dataGlobal->NumOfZones + 3) = RealToStr(state, columnSum.at(j) / state.dataGlobal->NumOfZones, 2);
+        tableBody(j + 1, state.dataGlobal->NumOfZones + 1) = RealToStr(style.formatReals, columnMin.at(j), 2);
+        tableBody(j + 1, state.dataGlobal->NumOfZones + 2) = RealToStr(style.formatReals, columnMax.at(j), 2);
+        tableBody(j + 1, state.dataGlobal->NumOfZones + 3) = RealToStr(style.formatReals, columnSum.at(j) / state.dataGlobal->NumOfZones, 2);
     }
     tableBody(columnNum, state.dataGlobal->NumOfZones + 1) = "-";
     tableBody(columnNum, state.dataGlobal->NumOfZones + 2) = "-";
@@ -13029,6 +13097,7 @@ void WriteSETHoursTableReportingPeriod(EnergyPlusData &state,
                                        Array2D<std::vector<Real64>> const &ZoneBins,
                                        Array1D_string &rowHead,
                                        Array2D_string &tableBody,
+                                       tabularReportStyle const &style,
                                        Real64 const unitConvMultiplier)
 {
 
@@ -13055,7 +13124,7 @@ void WriteSETHoursTableReportingPeriod(EnergyPlusData &state,
                 columnMin.at(j) = curValue;
             }
             columnSum.at(j) += curValue;
-            tableBody(j + 1, ZoneNum) = RealToStr(state, curValue, 2);
+            tableBody(j + 1, ZoneNum) = RealToStr(style.formatReals, curValue, 2);
         }
         tableBody(columnNum, ZoneNum) = DateToString(ZoneBins(ZoneNum, periodIdx)[columnNum - 1]);
     }
@@ -13065,9 +13134,9 @@ void WriteSETHoursTableReportingPeriod(EnergyPlusData &state,
     rowHead(state.dataGlobal->NumOfZones + 3) = "Average";
 
     for (int j = 0; j < columnNum - 1; j++) {
-        tableBody(j + 1, state.dataGlobal->NumOfZones + 1) = RealToStr(state, columnMin.at(j), 2);
-        tableBody(j + 1, state.dataGlobal->NumOfZones + 2) = RealToStr(state, columnMax.at(j), 2);
-        tableBody(j + 1, state.dataGlobal->NumOfZones + 3) = RealToStr(state, columnSum.at(j) / state.dataGlobal->NumOfZones, 2);
+        tableBody(j + 1, state.dataGlobal->NumOfZones + 1) = RealToStr(style.formatReals, columnMin.at(j), 2);
+        tableBody(j + 1, state.dataGlobal->NumOfZones + 2) = RealToStr(style.formatReals, columnMax.at(j), 2);
+        tableBody(j + 1, state.dataGlobal->NumOfZones + 3) = RealToStr(style.formatReals, columnSum.at(j) / state.dataGlobal->NumOfZones, 2);
     }
     tableBody(columnNum, state.dataGlobal->NumOfZones + 1) = "-";
     tableBody(columnNum, state.dataGlobal->NumOfZones + 2) = "-";
@@ -13097,14 +13166,15 @@ void WriteHourOfSafetyTableNonPreDefUseZoneData(EnergyPlusData &state,
                                                 const std::array<Real64, 5> DataHeatBalance::ZoneResilience::*memberPtr,
                                                 Array1D_string &rowHead,
                                                 Array2D_string &tableBody,
-                                                int const dateColIdx)
+                                                int const dateColIdx,
+                                                tabularReportStyle const &style)
 {
 
     WriteSubtitle(state, tableName);
     for (int ZoneNum = 1; ZoneNum <= state.dataGlobal->NumOfZones; ++ZoneNum) {
         rowHead(ZoneNum) = state.dataHeatBal->Zone(ZoneNum).Name;
         for (int j = 1; j <= columnNum; j++) {
-            tableBody(j, ZoneNum) = RealToStr(state, (state.dataHeatBal->Resilience(ZoneNum).*memberPtr).at(j - 1), 2);
+            tableBody(j, ZoneNum) = RealToStr(style.formatReals, (state.dataHeatBal->Resilience(ZoneNum).*memberPtr).at(j - 1), 2);
         }
         tableBody(dateColIdx, ZoneNum) = DateToString((state.dataHeatBal->Resilience(ZoneNum).*memberPtr).at(dateColIdx - 1));
     }
@@ -13135,10 +13205,10 @@ void WriteHourOfSafetyTableNonPreDefUseZoneData(EnergyPlusData &state,
     rowHead(state.dataGlobal->NumOfZones + 4) = "Sum";
 
     for (int j = 0; j < columnNum; j++) {
-        tableBody(j + 1, state.dataGlobal->NumOfZones + 1) = RealToStr(state, columnMin.at(j), 2);
-        tableBody(j + 1, state.dataGlobal->NumOfZones + 2) = RealToStr(state, columnMax.at(j), 2);
-        tableBody(j + 1, state.dataGlobal->NumOfZones + 3) = RealToStr(state, columnSum.at(j) / state.dataGlobal->NumOfZones, 2);
-        tableBody(j + 1, state.dataGlobal->NumOfZones + 4) = RealToStr(state, columnSum.at(j), 2);
+        tableBody(j + 1, state.dataGlobal->NumOfZones + 1) = RealToStr(style.formatReals, columnMin.at(j), 2);
+        tableBody(j + 1, state.dataGlobal->NumOfZones + 2) = RealToStr(style.formatReals, columnMax.at(j), 2);
+        tableBody(j + 1, state.dataGlobal->NumOfZones + 3) = RealToStr(style.formatReals, columnSum.at(j) / state.dataGlobal->NumOfZones, 2);
+        tableBody(j + 1, state.dataGlobal->NumOfZones + 4) = RealToStr(style.formatReals, columnSum.at(j), 2);
     }
 
     for (int i = 1; i < 5; i++) {
@@ -13166,14 +13236,15 @@ void WriteHourOfSafetyTableReportingPeriod(EnergyPlusData &state,
                                            Array2D<std::vector<Real64>> const &ZoneBins,
                                            Array1D_string &rowHead,
                                            Array2D_string &tableBody,
-                                           int const dateColIdx)
+                                           int const dateColIdx,
+                                           tabularReportStyle const &style)
 {
 
     WriteSubtitle(state, tableName);
     for (int ZoneNum = 1; ZoneNum <= state.dataGlobal->NumOfZones; ++ZoneNum) {
         rowHead(ZoneNum) = state.dataHeatBal->Zone(ZoneNum).Name;
         for (int j = 1; j <= columnNum; j++) {
-            tableBody(j, ZoneNum) = RealToStr(state, ZoneBins(ZoneNum, periodIdx).at(j - 1), 2);
+            tableBody(j, ZoneNum) = RealToStr(style.formatReals, ZoneBins(ZoneNum, periodIdx).at(j - 1), 2);
         }
         tableBody(dateColIdx, ZoneNum) = DateToString(ZoneBins(ZoneNum, periodIdx).at(dateColIdx - 1));
     }
@@ -13204,10 +13275,10 @@ void WriteHourOfSafetyTableReportingPeriod(EnergyPlusData &state,
     rowHead(state.dataGlobal->NumOfZones + 4) = "Sum";
 
     for (int j = 0; j < columnNum; j++) {
-        tableBody(j + 1, state.dataGlobal->NumOfZones + 1) = RealToStr(state, columnMin.at(j), 2);
-        tableBody(j + 1, state.dataGlobal->NumOfZones + 2) = RealToStr(state, columnMax.at(j), 2);
-        tableBody(j + 1, state.dataGlobal->NumOfZones + 3) = RealToStr(state, columnSum.at(j) / state.dataGlobal->NumOfZones, 2);
-        tableBody(j + 1, state.dataGlobal->NumOfZones + 4) = RealToStr(state, columnSum.at(j), 2);
+        tableBody(j + 1, state.dataGlobal->NumOfZones + 1) = RealToStr(style.formatReals, columnMin.at(j), 2);
+        tableBody(j + 1, state.dataGlobal->NumOfZones + 2) = RealToStr(style.formatReals, columnMax.at(j), 2);
+        tableBody(j + 1, state.dataGlobal->NumOfZones + 3) = RealToStr(style.formatReals, columnSum.at(j) / state.dataGlobal->NumOfZones, 2);
+        tableBody(j + 1, state.dataGlobal->NumOfZones + 4) = RealToStr(style.formatReals, columnSum.at(j), 2);
     }
 
     for (int i = 1; i < 5; i++) {
@@ -13229,7 +13300,8 @@ void WriteHourOfSafetyTable(EnergyPlusData &state,
                             int const columnNum,
                             std::vector<int> const &columnHead,
                             Array1D<std::vector<Real64>> const &ZoneBins,
-                            int const dateColIdx)
+                            int const dateColIdx,
+                            tabularReportStyle const &style)
 {
     std::vector<Real64> columnMax(columnNum, 0);
     std::vector<Real64> columnMin(columnNum, 0);
@@ -13252,7 +13324,7 @@ void WriteHourOfSafetyTable(EnergyPlusData &state,
                     columnMin[j] = curValue;
                 }
                 columnSum[j] += curValue;
-                PreDefTableEntry(state, columnHead[j], thisZone.Name, RealToStr(state, curValue, 2));
+                PreDefTableEntry(state, columnHead[j], thisZone.Name, RealToStr(style.formatReals, curValue, 2));
             }
         }
     }
@@ -13263,18 +13335,16 @@ void WriteHourOfSafetyTable(EnergyPlusData &state,
             PreDefTableEntry(state, columnHead[j], "Average", "-");
             PreDefTableEntry(state, columnHead[j], "Sum", "-");
         } else {
-            PreDefTableEntry(state, columnHead[j], "Min", RealToStr(state, columnMin[j], 2));
-            PreDefTableEntry(state, columnHead[j], "Max", RealToStr(state, columnMax[j], 2));
-            PreDefTableEntry(state, columnHead[j], "Average", RealToStr(state, columnSum[j] / state.dataGlobal->NumOfZones, 2));
-            PreDefTableEntry(state, columnHead[j], "Sum", RealToStr(state, columnSum[j], 2));
+            PreDefTableEntry(state, columnHead[j], "Min", RealToStr(style.formatReals, columnMin[j], 2));
+            PreDefTableEntry(state, columnHead[j], "Max", RealToStr(style.formatReals, columnMax[j], 2));
+            PreDefTableEntry(state, columnHead[j], "Average", RealToStr(style.formatReals, columnSum[j] / state.dataGlobal->NumOfZones, 2));
+            PreDefTableEntry(state, columnHead[j], "Sum", RealToStr(style.formatReals, columnSum[j], 2));
         }
     }
 }
 
 void WriteThermalResilienceTables(EnergyPlusData &state)
 {
-
-    // Using/Aliasing
     auto const &ort = state.dataOutRptTab;
 
     if (state.dataGlobal->NumOfZones <= 0) {
@@ -13282,205 +13352,233 @@ void WriteThermalResilienceTables(EnergyPlusData &state)
     }
 
     Real64 degreeHourConversion;
-    UnitsStyle unitsStyle_cur = ort->unitsStyle_Tabular;
-    if (unitsStyle_cur == OutputReportTabular::UnitsStyle::InchPound ||
-        unitsStyle_cur == OutputReportTabular::UnitsStyle::InchPoundExceptElectricity) {
-        degreeHourConversion = getSpecificUnitMultiplier(state, "°C·hr", "°F·hr");
-    } else {
-        degreeHourConversion = 1.0;
-    }
-
-    WriteReportHeaders(state, "Annual Thermal Resilience Summary", "Entire Facility", OutputProcessor::StoreType::Average);
-
-    Array1D_int columnWidth;
-    columnWidth.allocate(numColumnThermalTbl);
-    columnWidth = 10;
-    Array1D_string rowHead;
-    Array2D_string tableBody;
-    rowHead.allocate(state.dataGlobal->NumOfZones + 4);
-    tableBody.allocate(numColumnThermalTbl, state.dataGlobal->NumOfZones + 4);
-    Array1D_string columnHeadStr(numColumnThermalTbl);
-
-    if (unitsStyle_cur == OutputReportTabular::UnitsStyle::InchPound ||
-        unitsStyle_cur == OutputReportTabular::UnitsStyle::InchPoundExceptElectricity) {
-        columnHeadStr(1) = "Safe (≤ 80.1°F) [hr]";
-        columnHeadStr(2) = "Caution (> 80.1°F, ≤ 90.0°F) [hr]";
-        columnHeadStr(3) = "Extreme Caution (> 90.0°F, ≤ 102.9°F) [hr]";
-        columnHeadStr(4) = "Danger (> 102.9, ≤ 125.1°F) [hr]";
-        columnHeadStr(5) = "Extreme Danger (> 125.1°F) [hr]";
-    } else {
-        columnHeadStr(1) = "Safe (≤ 26.7°C) [hr]";
-        columnHeadStr(2) = "Caution (> 26.7°C, ≤ 32.2°C) [hr]";
-        columnHeadStr(3) = "Extreme Caution (> 32.2°C, ≤ 39.4°C) [hr]";
-        columnHeadStr(4) = "Danger (> 39.4°C, ≤ 51.7°C) [hr]";
-        columnHeadStr(5) = "Extreme Danger (> 51.7°C) [hr]";
-    }
-
-    std::array<Real64, numColumnThermalTbl> DataHeatBalance::ZoneResilience::*ptrHeatIndex = &DataHeatBalance::ZoneResilience::ZoneHeatIndexHourBins;
-    std::array<Real64, numColumnThermalTbl> DataHeatBalance::ZoneResilience::*ptrHeatIndexOccuHour =
-        &DataHeatBalance::ZoneResilience::ZoneHeatIndexOccuHourBins;
-    std::array<Real64, numColumnThermalTbl> DataHeatBalance::ZoneResilience::*ptrHeatIndexOccupiedHour =
-        &DataHeatBalance::ZoneResilience::ZoneHeatIndexOccupiedHourBins;
-    std::string tableName = "Heat Index Hours";
-    WriteResilienceBinsTableNonPreDefUseZoneData<numColumnThermalTbl>(state, tableName, columnHeadStr, columnWidth, ptrHeatIndex, rowHead, tableBody);
-    tableName = "Heat Index OccupantHours";
-    WriteResilienceBinsTableNonPreDefUseZoneData<numColumnThermalTbl>(
-        state, tableName, columnHeadStr, columnWidth, ptrHeatIndexOccuHour, rowHead, tableBody);
-    tableName = "Heat Index OccupiedHours";
-    WriteResilienceBinsTableNonPreDefUseZoneData<numColumnThermalTbl>(
-        state, tableName, columnHeadStr, columnWidth, ptrHeatIndexOccupiedHour, rowHead, tableBody);
-
-    columnHeadStr(1) = "Little to no Discomfort (≤ 29) [hr]";
-    columnHeadStr(2) = "Some Discomfort (> 29, ≤ 40) [hr]";
-    columnHeadStr(3) = "Great Discomfort; Avoid Exertion (> 40, ≤ 45) [hr]";
-    columnHeadStr(4) = "Dangerous (> 45, ≤ 50) [hr]";
-    columnHeadStr(5) = "Heat Stroke Quite Possible (> 50) [hr]";
-
-    std::array<Real64, numColumnThermalTbl> DataHeatBalance::ZoneResilience::*ptrHumidex = &DataHeatBalance::ZoneResilience::ZoneHumidexHourBins;
-    std::array<Real64, numColumnThermalTbl> DataHeatBalance::ZoneResilience::*ptrHumidexOccuHour =
-        &DataHeatBalance::ZoneResilience::ZoneHumidexOccuHourBins;
-    std::array<Real64, numColumnThermalTbl> DataHeatBalance::ZoneResilience::*ptrHumidexOccupiedHour =
-        &DataHeatBalance::ZoneResilience::ZoneHumidexOccupiedHourBins;
-    tableName = "Humidex Hours";
-    WriteResilienceBinsTableNonPreDefUseZoneData<numColumnThermalTbl>(state, tableName, columnHeadStr, columnWidth, ptrHumidex, rowHead, tableBody);
-    tableName = "Humidex OccupantHours";
-    WriteResilienceBinsTableNonPreDefUseZoneData<numColumnThermalTbl>(
-        state, tableName, columnHeadStr, columnWidth, ptrHumidexOccuHour, rowHead, tableBody);
-    tableName = "Humidex OccupiedHours";
-    WriteResilienceBinsTableNonPreDefUseZoneData<numColumnThermalTbl>(
-        state, tableName, columnHeadStr, columnWidth, ptrHumidexOccupiedHour, rowHead, tableBody);
-
-    bool hasPierceSET = true;
-    if (state.dataHeatBal->TotPeople == 0) {
-        hasPierceSET = false;
-        if (ort->displayThermalResilienceSummaryExplicitly) {
-            ShowWarningError(state,
-                             "Writing Annual Thermal Resilience Summary - SET Degree-Hours reports: "
-                             "Zone Thermal Comfort Pierce Model Standard Effective Temperature is required, "
-                             "but no People object is defined.");
+    for (auto &currentStyle : state.dataOutRptTab->tabularReportPasses) {
+        if (currentStyle.unitsStyle == OutputReportTabular::UnitsStyle::InchPound ||
+            currentStyle.unitsStyle == OutputReportTabular::UnitsStyle::InchPoundExceptElectricity) {
+            degreeHourConversion = getSpecificUnitMultiplier(state, "°C·hr", "°F·hr");
+        } else {
+            degreeHourConversion = 1.0;
         }
-    }
-    for (int iPeople = 1; iPeople <= state.dataHeatBal->TotPeople; ++iPeople) {
-        if (!state.dataHeatBal->People(iPeople).Pierce) {
+
+        WriteReportHeaders(state, "Annual Thermal Resilience Summary", "Entire Facility", OutputProcessor::StoreType::Average);
+
+        Array1D_int columnWidth;
+        columnWidth.allocate(numColumnThermalTbl);
+        columnWidth = 10;
+        Array1D_string rowHead;
+        Array2D_string tableBody;
+        rowHead.allocate(state.dataGlobal->NumOfZones + 4);
+        tableBody.allocate(numColumnThermalTbl, state.dataGlobal->NumOfZones + 4);
+        Array1D_string columnHeadStr(numColumnThermalTbl);
+
+        if (currentStyle.unitsStyle == OutputReportTabular::UnitsStyle::InchPound ||
+            currentStyle.unitsStyle == OutputReportTabular::UnitsStyle::InchPoundExceptElectricity) {
+            columnHeadStr(1) = "Safe (≤ 80.1°F) [hr]";
+            columnHeadStr(2) = "Caution (> 80.1°F, ≤ 90.0°F) [hr]";
+            columnHeadStr(3) = "Extreme Caution (> 90.0°F, ≤ 102.9°F) [hr]";
+            columnHeadStr(4) = "Danger (> 102.9, ≤ 125.1°F) [hr]";
+            columnHeadStr(5) = "Extreme Danger (> 125.1°F) [hr]";
+        } else {
+            columnHeadStr(1) = "Safe (≤ 26.7°C) [hr]";
+            columnHeadStr(2) = "Caution (> 26.7°C, ≤ 32.2°C) [hr]";
+            columnHeadStr(3) = "Extreme Caution (> 32.2°C, ≤ 39.4°C) [hr]";
+            columnHeadStr(4) = "Danger (> 39.4°C, ≤ 51.7°C) [hr]";
+            columnHeadStr(5) = "Extreme Danger (> 51.7°C) [hr]";
+        }
+
+        std::array<Real64, numColumnThermalTbl> DataHeatBalance::ZoneResilience::*ptrHeatIndex =
+            &DataHeatBalance::ZoneResilience::ZoneHeatIndexHourBins;
+        std::array<Real64, numColumnThermalTbl> DataHeatBalance::ZoneResilience::*ptrHeatIndexOccuHour =
+            &DataHeatBalance::ZoneResilience::ZoneHeatIndexOccuHourBins;
+        std::array<Real64, numColumnThermalTbl> DataHeatBalance::ZoneResilience::*ptrHeatIndexOccupiedHour =
+            &DataHeatBalance::ZoneResilience::ZoneHeatIndexOccupiedHourBins;
+        std::string tableName = "Heat Index Hours";
+        WriteResilienceBinsTableNonPreDefUseZoneData<numColumnThermalTbl>(
+            state, tableName, columnHeadStr, columnWidth, ptrHeatIndex, rowHead, tableBody, currentStyle);
+        tableName = "Heat Index OccupantHours";
+        WriteResilienceBinsTableNonPreDefUseZoneData<numColumnThermalTbl>(
+            state, tableName, columnHeadStr, columnWidth, ptrHeatIndexOccuHour, rowHead, tableBody, currentStyle);
+        tableName = "Heat Index OccupiedHours";
+        WriteResilienceBinsTableNonPreDefUseZoneData<numColumnThermalTbl>(
+            state, tableName, columnHeadStr, columnWidth, ptrHeatIndexOccupiedHour, rowHead, tableBody, currentStyle);
+
+        columnHeadStr(1) = "Little to no Discomfort (≤ 29) [hr]";
+        columnHeadStr(2) = "Some Discomfort (> 29, ≤ 40) [hr]";
+        columnHeadStr(3) = "Great Discomfort; Avoid Exertion (> 40, ≤ 45) [hr]";
+        columnHeadStr(4) = "Dangerous (> 45, ≤ 50) [hr]";
+        columnHeadStr(5) = "Heat Stroke Quite Possible (> 50) [hr]";
+
+        std::array<Real64, numColumnThermalTbl> DataHeatBalance::ZoneResilience::*ptrHumidex = &DataHeatBalance::ZoneResilience::ZoneHumidexHourBins;
+        std::array<Real64, numColumnThermalTbl> DataHeatBalance::ZoneResilience::*ptrHumidexOccuHour =
+            &DataHeatBalance::ZoneResilience::ZoneHumidexOccuHourBins;
+        std::array<Real64, numColumnThermalTbl> DataHeatBalance::ZoneResilience::*ptrHumidexOccupiedHour =
+            &DataHeatBalance::ZoneResilience::ZoneHumidexOccupiedHourBins;
+        tableName = "Humidex Hours";
+        WriteResilienceBinsTableNonPreDefUseZoneData<numColumnThermalTbl>(
+            state, tableName, columnHeadStr, columnWidth, ptrHumidex, rowHead, tableBody, currentStyle);
+        tableName = "Humidex OccupantHours";
+        WriteResilienceBinsTableNonPreDefUseZoneData<numColumnThermalTbl>(
+            state, tableName, columnHeadStr, columnWidth, ptrHumidexOccuHour, rowHead, tableBody, currentStyle);
+        tableName = "Humidex OccupiedHours";
+        WriteResilienceBinsTableNonPreDefUseZoneData<numColumnThermalTbl>(
+            state, tableName, columnHeadStr, columnWidth, ptrHumidexOccupiedHour, rowHead, tableBody, currentStyle);
+
+        bool hasPierceSET = true;
+        if (state.dataHeatBal->TotPeople == 0) {
             hasPierceSET = false;
             if (ort->displayThermalResilienceSummaryExplicitly) {
                 ShowWarningError(state,
-                                 format("Writing Annual Thermal Resilience Summary - SET Degree-Hours reports: Zone Thermal Comfort Pierce Model "
-                                        "Standard Effective Temperature is required, but no Pierce model is defined in {} object.",
-                                        state.dataHeatBal->People(iPeople).Name));
+                                 "Writing Annual Thermal Resilience Summary - SET Degree-Hours reports: "
+                                 "Zone Thermal Comfort Pierce Model Standard Effective Temperature is required, "
+                                 "but no People object is defined.");
             }
         }
-    }
-
-    if (hasPierceSET) {
-        if (unitsStyle_cur == OutputReportTabular::UnitsStyle::InchPound ||
-            unitsStyle_cur == OutputReportTabular::UnitsStyle::InchPoundExceptElectricity) {
-            columnHeadStr(1) = "SET > 86°F Degree-Hours [°F·hr]";
-            columnHeadStr(2) = "SET > 86°F Occupant-Weighted Degree-Hours [°F·hr]";
-            columnHeadStr(3) = "SET > 86°F Occupied Degree-Hours [°F·hr]";
-            columnHeadStr(4) = "Longest SET > 86°F Duration for Occupied Period [hr]";
-            columnHeadStr(5) = "Start Time of the Longest SET > 86°F Duration for Occupied Period";
-        } else {
-            columnHeadStr(1) = "SET > 30°C Degree-Hours [°C·hr]";
-            columnHeadStr(2) = "SET > 30°C Occupant-Weighted Degree-Hours [°C·hr]";
-            columnHeadStr(3) = "SET > 30°C Occupied Degree-Hours [°C·hr]";
-            columnHeadStr(4) = "Longest SET > 30°C Duration for Occupied Period [hr]";
-            columnHeadStr(5) = "Start Time of the Longest SET > 30°C Duration for Occupied Period";
+        for (int iPeople = 1; iPeople <= state.dataHeatBal->TotPeople; ++iPeople) {
+            if (!state.dataHeatBal->People(iPeople).Pierce) {
+                hasPierceSET = false;
+                if (ort->displayThermalResilienceSummaryExplicitly) {
+                    ShowWarningError(state,
+                                     format("Writing Annual Thermal Resilience Summary - SET Degree-Hours reports: Zone Thermal Comfort Pierce Model "
+                                            "Standard Effective Temperature is required, but no Pierce model is defined in {} object.",
+                                            state.dataHeatBal->People(iPeople).Name));
+                }
+            }
         }
 
-        std::array<Real64, numColumnThermalTbl> DataHeatBalance::ZoneResilience::*ptrLowSETHours = &DataHeatBalance::ZoneResilience::ZoneLowSETHours;
-        std::array<Real64, numColumnThermalTbl> DataHeatBalance::ZoneResilience::*ptrHighSETHours =
-            &DataHeatBalance::ZoneResilience::ZoneHighSETHours;
-        Array1D_string rowHeadSET;
-        Array2D_string tableBodySET;
-        rowHeadSET.allocate(state.dataGlobal->NumOfZones + 3);
-        tableBodySET.allocate(numColumnThermalTbl, state.dataGlobal->NumOfZones + 3);
-        tableName = "Heating SET Degree-Hours";
-        WriteSETHoursTableNonPreDefUseZoneData(
-            state, numColumnThermalTbl, tableName, columnHeadStr, columnWidth, ptrLowSETHours, rowHeadSET, tableBodySET, degreeHourConversion);
-        tableName = "Cooling SET Degree-Hours";
-        WriteSETHoursTableNonPreDefUseZoneData(
-            state, numColumnThermalTbl, tableName, columnHeadStr, columnWidth, ptrHighSETHours, rowHeadSET, tableBodySET, degreeHourConversion);
-    }
+        if (hasPierceSET) {
+            if (currentStyle.unitsStyle == OutputReportTabular::UnitsStyle::InchPound ||
+                currentStyle.unitsStyle == OutputReportTabular::UnitsStyle::InchPoundExceptElectricity) {
+                columnHeadStr(1) = "SET > 86°F Degree-Hours [°F·hr]";
+                columnHeadStr(2) = "SET > 86°F Occupant-Weighted Degree-Hours [°F·hr]";
+                columnHeadStr(3) = "SET > 86°F Occupied Degree-Hours [°F·hr]";
+                columnHeadStr(4) = "Longest SET > 86°F Duration for Occupied Period [hr]";
+                columnHeadStr(5) = "Start Time of the Longest SET > 86°F Duration for Occupied Period";
+            } else {
+                columnHeadStr(1) = "SET > 30°C Degree-Hours [°C·hr]";
+                columnHeadStr(2) = "SET > 30°C Occupant-Weighted Degree-Hours [°C·hr]";
+                columnHeadStr(3) = "SET > 30°C Occupied Degree-Hours [°C·hr]";
+                columnHeadStr(4) = "Longest SET > 30°C Duration for Occupied Period [hr]";
+                columnHeadStr(5) = "Start Time of the Longest SET > 30°C Duration for Occupied Period";
+            }
 
-    std::array<Real64, numColumnThermalTbl> DataHeatBalance::ZoneResilience::*ptrColdHourOfSafetyBins =
-        &DataHeatBalance::ZoneResilience::ZoneColdHourOfSafetyBins;
-    std::array<Real64, numColumnThermalTbl> DataHeatBalance::ZoneResilience::*ptrHeatHourOfSafetyBins =
-        &DataHeatBalance::ZoneResilience::ZoneHeatHourOfSafetyBins;
-    tableName = "Hours of Safety for Cold Events";
-    columnHeadStr(1) = "Hours of Safety [hr]";
-    columnHeadStr(2) = "End Time of the Safety Duration";
-    columnHeadStr(3) = "Safe Temperature Exceedance Hours [hr]";
-    columnHeadStr(4) = "Safe Temperature Exceedance OccupantHours [hr]";
-    columnHeadStr(5) = "Safe Temperature Exceedance OccupiedHours [hr]";
-    WriteHourOfSafetyTableNonPreDefUseZoneData(
-        state, numColumnThermalTbl, tableName, columnHeadStr, columnWidth, ptrColdHourOfSafetyBins, rowHead, tableBody, 2);
-    tableName = "Hours of Safety for Heat Events";
-    WriteHourOfSafetyTableNonPreDefUseZoneData(
-        state, numColumnThermalTbl, tableName, columnHeadStr, columnWidth, ptrHeatHourOfSafetyBins, rowHead, tableBody, 2);
-
-    Array1D_int columnWidthUnmetDegHr;
-    columnWidthUnmetDegHr.allocate(numColumnUnmetDegreeHourTbl);
-    columnWidthUnmetDegHr = 10;
-    Array1D_string columnHeadUnmetDegHr;
-    columnHeadUnmetDegHr.allocate(numColumnUnmetDegreeHourTbl);
-    Array2D_string tableBodyUnmetDegHr;
-    tableBodyUnmetDegHr.allocate(numColumnUnmetDegreeHourTbl, state.dataGlobal->NumOfZones + 4);
-    tableName = "Unmet Degree-Hours";
-    columnHeadUnmetDegHr(1) = "Cooling Setpoint Unmet Degree-Hours [°C·hr]";
-    columnHeadUnmetDegHr(2) = "Cooling Setpoint Unmet Occupant-Weighted Degree-Hours [°C·hr]";
-    columnHeadUnmetDegHr(3) = "Cooling Setpoint Unmet Occupied Degree-Hours [°C·hr]";
-    columnHeadUnmetDegHr(4) = "Heating Setpoint Unmet Degree-Hours [°C·hr]";
-    columnHeadUnmetDegHr(5) = "Heating Setpoint Unmet Occupant-Weighted Degree-Hours [°C·hr]";
-    columnHeadUnmetDegHr(6) = "Heating Setpoint Unmet Occupied Degree-Hours [°C·hr]";
-
-    if (unitsStyle_cur == UnitsStyle::InchPound) {
-        int indexUnitConv;
-        std::string curUnits;
-        for (int i = 1; i < numColumnUnmetDegreeHourTbl; i++) {
-            LookupSItoIP(state, columnHeadUnmetDegHr(i), indexUnitConv, curUnits);
-            columnHeadUnmetDegHr(i) = curUnits;
+            std::array<Real64, numColumnThermalTbl> DataHeatBalance::ZoneResilience::*ptrLowSETHours =
+                &DataHeatBalance::ZoneResilience::ZoneLowSETHours;
+            std::array<Real64, numColumnThermalTbl> DataHeatBalance::ZoneResilience::*ptrHighSETHours =
+                &DataHeatBalance::ZoneResilience::ZoneHighSETHours;
+            Array1D_string rowHeadSET;
+            Array2D_string tableBodySET;
+            rowHeadSET.allocate(state.dataGlobal->NumOfZones + 3);
+            tableBodySET.allocate(numColumnThermalTbl, state.dataGlobal->NumOfZones + 3);
+            tableName = "Heating SET Degree-Hours";
+            WriteSETHoursTableNonPreDefUseZoneData(state,
+                                                   numColumnThermalTbl,
+                                                   tableName,
+                                                   columnHeadStr,
+                                                   columnWidth,
+                                                   ptrLowSETHours,
+                                                   rowHeadSET,
+                                                   tableBodySET,
+                                                   currentStyle,
+                                                   degreeHourConversion);
+            tableName = "Cooling SET Degree-Hours";
+            WriteSETHoursTableNonPreDefUseZoneData(state,
+                                                   numColumnThermalTbl,
+                                                   tableName,
+                                                   columnHeadStr,
+                                                   columnWidth,
+                                                   ptrHighSETHours,
+                                                   rowHeadSET,
+                                                   tableBodySET,
+                                                   currentStyle,
+                                                   degreeHourConversion);
         }
-    } else if (unitsStyle_cur == UnitsStyle::InchPoundExceptElectricity) {
-        int indexUnitConv;
-        std::string curUnits;
-        for (int i = 1; i < numColumnUnmetDegreeHourTbl; i++) {
-            LookupSItoIP(state, columnHeadUnmetDegHr(i), indexUnitConv, curUnits);
-            columnHeadUnmetDegHr(i) = curUnits;
+
+        std::array<Real64, numColumnThermalTbl> DataHeatBalance::ZoneResilience::*ptrColdHourOfSafetyBins =
+            &DataHeatBalance::ZoneResilience::ZoneColdHourOfSafetyBins;
+        std::array<Real64, numColumnThermalTbl> DataHeatBalance::ZoneResilience::*ptrHeatHourOfSafetyBins =
+            &DataHeatBalance::ZoneResilience::ZoneHeatHourOfSafetyBins;
+        tableName = "Hours of Safety for Cold Events";
+        columnHeadStr(1) = "Hours of Safety [hr]";
+        columnHeadStr(2) = "End Time of the Safety Duration";
+        columnHeadStr(3) = "Safe Temperature Exceedance Hours [hr]";
+        columnHeadStr(4) = "Safe Temperature Exceedance OccupantHours [hr]";
+        columnHeadStr(5) = "Safe Temperature Exceedance OccupiedHours [hr]";
+        WriteHourOfSafetyTableNonPreDefUseZoneData(
+            state, numColumnThermalTbl, tableName, columnHeadStr, columnWidth, ptrColdHourOfSafetyBins, rowHead, tableBody, 2, currentStyle);
+        tableName = "Hours of Safety for Heat Events";
+        WriteHourOfSafetyTableNonPreDefUseZoneData(
+            state, numColumnThermalTbl, tableName, columnHeadStr, columnWidth, ptrHeatHourOfSafetyBins, rowHead, tableBody, 2, currentStyle);
+
+        Array1D_int columnWidthUnmetDegHr;
+        columnWidthUnmetDegHr.allocate(numColumnUnmetDegreeHourTbl);
+        columnWidthUnmetDegHr = 10;
+        Array1D_string columnHeadUnmetDegHr;
+        columnHeadUnmetDegHr.allocate(numColumnUnmetDegreeHourTbl);
+        Array2D_string tableBodyUnmetDegHr;
+        tableBodyUnmetDegHr.allocate(numColumnUnmetDegreeHourTbl, state.dataGlobal->NumOfZones + 4);
+        tableName = "Unmet Degree-Hours";
+        columnHeadUnmetDegHr(1) = "Cooling Setpoint Unmet Degree-Hours [°C·hr]";
+        columnHeadUnmetDegHr(2) = "Cooling Setpoint Unmet Occupant-Weighted Degree-Hours [°C·hr]";
+        columnHeadUnmetDegHr(3) = "Cooling Setpoint Unmet Occupied Degree-Hours [°C·hr]";
+        columnHeadUnmetDegHr(4) = "Heating Setpoint Unmet Degree-Hours [°C·hr]";
+        columnHeadUnmetDegHr(5) = "Heating Setpoint Unmet Occupant-Weighted Degree-Hours [°C·hr]";
+        columnHeadUnmetDegHr(6) = "Heating Setpoint Unmet Occupied Degree-Hours [°C·hr]";
+
+        if (currentStyle.unitsStyle == UnitsStyle::InchPound) {
+            int indexUnitConv;
+            std::string curUnits;
+            for (int i = 1; i < numColumnUnmetDegreeHourTbl; i++) {
+                LookupSItoIP(state, columnHeadUnmetDegHr(i), indexUnitConv, curUnits);
+                columnHeadUnmetDegHr(i) = curUnits;
+            }
+        } else if (currentStyle.unitsStyle == UnitsStyle::InchPoundExceptElectricity) {
+            int indexUnitConv;
+            std::string curUnits;
+            for (int i = 1; i < numColumnUnmetDegreeHourTbl; i++) {
+                LookupSItoIP(state, columnHeadUnmetDegHr(i), indexUnitConv, curUnits);
+                columnHeadUnmetDegHr(i) = curUnits;
+            }
         }
+
+        std::array<Real64, numColumnUnmetDegreeHourTbl> DataHeatBalance::ZoneResilience::*ptrUnmetDegreeHourBins =
+            &DataHeatBalance::ZoneResilience::ZoneUnmetDegreeHourBins;
+        WriteResilienceBinsTableNonPreDefUseZoneData<numColumnUnmetDegreeHourTbl>(state,
+                                                                                  tableName,
+                                                                                  columnHeadUnmetDegHr,
+                                                                                  columnWidthUnmetDegHr,
+                                                                                  ptrUnmetDegreeHourBins,
+                                                                                  rowHead,
+                                                                                  tableBodyUnmetDegHr,
+                                                                                  currentStyle,
+                                                                                  degreeHourConversion);
+
+        columnHeadStr.allocate(numColumnDiscomfortWtExceedHourTbl);
+        columnWidth.allocate(numColumnDiscomfortWtExceedHourTbl);
+        columnWidth = 10;
+        tableBody.allocate(numColumnDiscomfortWtExceedHourTbl, state.dataGlobal->NumOfZones + 4);
+        columnHeadStr(1) = "Very-cold Exceedance OccupantHours [hr]";
+        columnHeadStr(2) = "Cool Exceedance OccupantHours [hr]";
+        columnHeadStr(3) = "Warm Exceedance OccupantHours [hr]";
+        columnHeadStr(4) = "Very-hot Exceedance OccupantHours [hr]";
+
+        std::array<Real64, numColumnDiscomfortWtExceedHourTbl> DataHeatBalance::ZoneResilience::*ptrDiscomfortWtExceedOccuHourBins =
+            &DataHeatBalance::ZoneResilience::ZoneDiscomfortWtExceedOccuHourBins;
+        std::array<Real64, numColumnDiscomfortWtExceedHourTbl> DataHeatBalance::ZoneResilience::*ptrDiscomfortWtExceedOccupiedHourBins =
+            &DataHeatBalance::ZoneResilience::ZoneDiscomfortWtExceedOccupiedHourBins;
+        tableName = "Discomfort-weighted Exceedance OccupantHours";
+        WriteResilienceBinsTableNonPreDefUseZoneData<numColumnDiscomfortWtExceedHourTbl>(
+            state, tableName, columnHeadStr, columnWidth, ptrDiscomfortWtExceedOccuHourBins, rowHead, tableBody, currentStyle);
+        tableName = "Discomfort-weighted Exceedance OccupiedHours";
+        WriteResilienceBinsTableNonPreDefUseZoneData<numColumnDiscomfortWtExceedHourTbl>(
+            state, tableName, columnHeadStr, columnWidth, ptrDiscomfortWtExceedOccupiedHourBins, rowHead, tableBody, currentStyle);
+        rowHead.deallocate();
+        columnHeadStr.deallocate();
+        tableBody.deallocate();
+        tableBodyUnmetDegHr.deallocate();
+        columnWidth.deallocate();
+        columnHeadUnmetDegHr.deallocate();
+        columnWidthUnmetDegHr.deallocate();
     }
-
-    std::array<Real64, numColumnUnmetDegreeHourTbl> DataHeatBalance::ZoneResilience::*ptrUnmetDegreeHourBins =
-        &DataHeatBalance::ZoneResilience::ZoneUnmetDegreeHourBins;
-    WriteResilienceBinsTableNonPreDefUseZoneData<numColumnUnmetDegreeHourTbl>(
-        state, tableName, columnHeadUnmetDegHr, columnWidthUnmetDegHr, ptrUnmetDegreeHourBins, rowHead, tableBodyUnmetDegHr, degreeHourConversion);
-
-    columnHeadStr.allocate(numColumnDiscomfortWtExceedHourTbl);
-    columnWidth.allocate(numColumnDiscomfortWtExceedHourTbl);
-    columnWidth = 10;
-    tableBody.allocate(numColumnDiscomfortWtExceedHourTbl, state.dataGlobal->NumOfZones + 4);
-    columnHeadStr(1) = "Very-cold Exceedance OccupantHours [hr]";
-    columnHeadStr(2) = "Cool Exceedance OccupantHours [hr]";
-    columnHeadStr(3) = "Warm Exceedance OccupantHours [hr]";
-    columnHeadStr(4) = "Very-hot Exceedance OccupantHours [hr]";
-
-    std::array<Real64, numColumnDiscomfortWtExceedHourTbl> DataHeatBalance::ZoneResilience::*ptrDiscomfortWtExceedOccuHourBins =
-        &DataHeatBalance::ZoneResilience::ZoneDiscomfortWtExceedOccuHourBins;
-    std::array<Real64, numColumnDiscomfortWtExceedHourTbl> DataHeatBalance::ZoneResilience::*ptrDiscomfortWtExceedOccupiedHourBins =
-        &DataHeatBalance::ZoneResilience::ZoneDiscomfortWtExceedOccupiedHourBins;
-    tableName = "Discomfort-weighted Exceedance OccupantHours";
-    WriteResilienceBinsTableNonPreDefUseZoneData<numColumnDiscomfortWtExceedHourTbl>(
-        state, tableName, columnHeadStr, columnWidth, ptrDiscomfortWtExceedOccuHourBins, rowHead, tableBody);
-    tableName = "Discomfort-weighted Exceedance OccupiedHours";
-    WriteResilienceBinsTableNonPreDefUseZoneData<numColumnDiscomfortWtExceedHourTbl>(
-        state, tableName, columnHeadStr, columnWidth, ptrDiscomfortWtExceedOccupiedHourBins, rowHead, tableBody);
-    rowHead.deallocate();
-    columnHeadStr.deallocate();
-    tableBody.deallocate();
-    tableBodyUnmetDegHr.deallocate();
-    columnWidth.deallocate();
-    columnHeadUnmetDegHr.deallocate();
-    columnWidthUnmetDegHr.deallocate();
 }
 
 void WriteCO2ResilienceTables(EnergyPlusData &state)
@@ -13518,61 +13616,66 @@ void WriteCO2ResilienceTablesRepPeriod(EnergyPlusData &state, const int periodId
     if (ort->WriteTabularFiles) {
         return;
     }
-    WriteReportHeaderReportingPeriod(state, "CO2", periodIdx, state.dataWeather->CO2ReportPeriodInput);
-    std::string periodTitle = state.dataWeather->CO2ReportPeriodInput(periodIdx).title;
+    for (auto &currentStyle : state.dataOutRptTab->tabularReportPasses) {
+        WriteReportHeaderReportingPeriod(state, "CO2", periodIdx, state.dataWeather->CO2ReportPeriodInput);
+        std::string periodTitle = state.dataWeather->CO2ReportPeriodInput(periodIdx).title;
 
-    Array1D_int columnWidth;
-    columnWidth.allocate(numColumnCO2Tbl);
-    columnWidth = 10;
-    Array1D_string columnHead(numColumnCO2Tbl);
-    columnHead(1) = "Safe (<= 1000 ppm) [hr]";
-    columnHead(2) = "Caution (> 1000, <= 5000 ppm) [hr]";
-    columnHead(3) = "Hazard (> 5000 ppm) [hr]";
+        Array1D_int columnWidth;
+        columnWidth.allocate(numColumnCO2Tbl);
+        columnWidth = 10;
+        Array1D_string columnHead(numColumnCO2Tbl);
+        columnHead(1) = "Safe (<= 1000 ppm) [hr]";
+        columnHead(2) = "Caution (> 1000, <= 5000 ppm) [hr]";
+        columnHead(3) = "Hazard (> 5000 ppm) [hr]";
 
-    Array1D_string rowHead;
-    Array2D_string tableBody;
-    rowHead.allocate(state.dataGlobal->NumOfZones + 4);
-    tableBody.allocate(numColumnCO2Tbl, state.dataGlobal->NumOfZones + 4);
+        Array1D_string rowHead;
+        Array2D_string tableBody;
+        rowHead.allocate(state.dataGlobal->NumOfZones + 4);
+        tableBody.allocate(numColumnCO2Tbl, state.dataGlobal->NumOfZones + 4);
 
-    std::string tableName = "CO2 Level Hours";
-    std::string tableType = "CO2";
-    WriteResilienceBinsTableReportingPeriod(state,
-                                            tableType,
-                                            numColumnCO2Tbl,
-                                            periodIdx,
-                                            periodTitle,
-                                            tableName,
-                                            columnHead,
-                                            columnWidth,
-                                            state.dataHeatBalFanSys->ZoneCO2LevelHourBinsRepPeriod,
-                                            rowHead,
-                                            tableBody);
+        std::string tableName = "CO2 Level Hours";
+        std::string tableType = "CO2";
+        WriteResilienceBinsTableReportingPeriod(state,
+                                                tableType,
+                                                numColumnCO2Tbl,
+                                                periodIdx,
+                                                periodTitle,
+                                                tableName,
+                                                columnHead,
+                                                columnWidth,
+                                                state.dataHeatBalFanSys->ZoneCO2LevelHourBinsRepPeriod,
+                                                rowHead,
+                                                tableBody,
+                                                currentStyle);
 
-    tableName = "CO2 Level OccupantHours";
-    WriteResilienceBinsTableReportingPeriod(state,
-                                            tableType,
-                                            numColumnCO2Tbl,
-                                            periodIdx,
-                                            periodTitle,
-                                            tableName,
-                                            columnHead,
-                                            columnWidth,
-                                            state.dataHeatBalFanSys->ZoneCO2LevelOccuHourBinsRepPeriod,
-                                            rowHead,
-                                            tableBody);
+        tableName = "CO2 Level OccupantHours";
+        WriteResilienceBinsTableReportingPeriod(state,
+                                                tableType,
+                                                numColumnCO2Tbl,
+                                                periodIdx,
+                                                periodTitle,
+                                                tableName,
+                                                columnHead,
+                                                columnWidth,
+                                                state.dataHeatBalFanSys->ZoneCO2LevelOccuHourBinsRepPeriod,
+                                                rowHead,
+                                                tableBody,
+                                                currentStyle);
 
-    tableName = "CO2 Level OccupiedHours";
-    WriteResilienceBinsTableReportingPeriod(state,
-                                            tableType,
-                                            numColumnCO2Tbl,
-                                            periodIdx,
-                                            periodTitle,
-                                            tableName,
-                                            columnHead,
-                                            columnWidth,
-                                            state.dataHeatBalFanSys->ZoneCO2LevelOccupiedHourBinsRepPeriod,
-                                            rowHead,
-                                            tableBody);
+        tableName = "CO2 Level OccupiedHours";
+        WriteResilienceBinsTableReportingPeriod(state,
+                                                tableType,
+                                                numColumnCO2Tbl,
+                                                periodIdx,
+                                                periodTitle,
+                                                tableName,
+                                                columnHead,
+                                                columnWidth,
+                                                state.dataHeatBalFanSys->ZoneCO2LevelOccupiedHourBinsRepPeriod,
+                                                rowHead,
+                                                tableBody,
+                                                currentStyle);
+    }
 }
 
 void WriteVisualResilienceTables(EnergyPlusData &state)
@@ -13624,62 +13727,67 @@ void WriteVisualResilienceTablesRepPeriod(EnergyPlusData &state, const int perio
         return;
     }
 
-    WriteReportHeaderReportingPeriod(state, "Visual", periodIdx, state.dataWeather->VisualReportPeriodInput);
-    std::string periodTitle = state.dataWeather->VisualReportPeriodInput(periodIdx).title;
+    for (auto &currentStyle : state.dataOutRptTab->tabularReportPasses) {
+        WriteReportHeaderReportingPeriod(state, "Visual", periodIdx, state.dataWeather->VisualReportPeriodInput);
+        std::string periodTitle = state.dataWeather->VisualReportPeriodInput(periodIdx).title;
 
-    Array1D_int columnWidth;
-    columnWidth.allocate(numColumnVisualTbl);
-    columnWidth = 10;
-    Array1D_string columnHead(numColumnVisualTbl);
-    columnHead(1) = "A Bit Dark (<= 100 lux) [hr]";
-    columnHead(2) = "Dim (> 100, <= 300 lux) [hr]";
-    columnHead(3) = "Adequate (> 300, <= 500 lux) [hr]";
-    columnHead(4) = "Bright (>500 lux) [hr]";
+        Array1D_int columnWidth;
+        columnWidth.allocate(numColumnVisualTbl);
+        columnWidth = 10;
+        Array1D_string columnHead(numColumnVisualTbl);
+        columnHead(1) = "A Bit Dark (<= 100 lux) [hr]";
+        columnHead(2) = "Dim (> 100, <= 300 lux) [hr]";
+        columnHead(3) = "Adequate (> 300, <= 500 lux) [hr]";
+        columnHead(4) = "Bright (>500 lux) [hr]";
 
-    Array1D_string rowHead;
-    Array2D_string tableBody;
-    rowHead.allocate(state.dataGlobal->NumOfZones + 4);
-    tableBody.allocate(numColumnVisualTbl, state.dataGlobal->NumOfZones + 4);
+        Array1D_string rowHead;
+        Array2D_string tableBody;
+        rowHead.allocate(state.dataGlobal->NumOfZones + 4);
+        tableBody.allocate(numColumnVisualTbl, state.dataGlobal->NumOfZones + 4);
 
-    std::string tableName = "Illuminance Level Hours";
-    std::string tableType = "Visual";
-    WriteResilienceBinsTableReportingPeriod(state,
-                                            tableType,
-                                            numColumnVisualTbl,
-                                            periodIdx,
-                                            periodTitle,
-                                            tableName,
-                                            columnHead,
-                                            columnWidth,
-                                            state.dataHeatBalFanSys->ZoneLightingLevelHourBinsRepPeriod,
-                                            rowHead,
-                                            tableBody);
+        std::string tableName = "Illuminance Level Hours";
+        std::string tableType = "Visual";
+        WriteResilienceBinsTableReportingPeriod(state,
+                                                tableType,
+                                                numColumnVisualTbl,
+                                                periodIdx,
+                                                periodTitle,
+                                                tableName,
+                                                columnHead,
+                                                columnWidth,
+                                                state.dataHeatBalFanSys->ZoneLightingLevelHourBinsRepPeriod,
+                                                rowHead,
+                                                tableBody,
+                                                currentStyle);
 
-    tableName = "Illuminance Level OccupantHours";
-    WriteResilienceBinsTableReportingPeriod(state,
-                                            tableType,
-                                            numColumnVisualTbl,
-                                            periodIdx,
-                                            periodTitle,
-                                            tableName,
-                                            columnHead,
-                                            columnWidth,
-                                            state.dataHeatBalFanSys->ZoneLightingLevelOccuHourBinsRepPeriod,
-                                            rowHead,
-                                            tableBody);
+        tableName = "Illuminance Level OccupantHours";
+        WriteResilienceBinsTableReportingPeriod(state,
+                                                tableType,
+                                                numColumnVisualTbl,
+                                                periodIdx,
+                                                periodTitle,
+                                                tableName,
+                                                columnHead,
+                                                columnWidth,
+                                                state.dataHeatBalFanSys->ZoneLightingLevelOccuHourBinsRepPeriod,
+                                                rowHead,
+                                                tableBody,
+                                                currentStyle);
 
-    tableName = "Illuminance Level OccupiedHours";
-    WriteResilienceBinsTableReportingPeriod(state,
-                                            tableType,
-                                            numColumnVisualTbl,
-                                            periodIdx,
-                                            periodTitle,
-                                            tableName,
-                                            columnHead,
-                                            columnWidth,
-                                            state.dataHeatBalFanSys->ZoneLightingLevelOccupiedHourBinsRepPeriod,
-                                            rowHead,
-                                            tableBody);
+        tableName = "Illuminance Level OccupiedHours";
+        WriteResilienceBinsTableReportingPeriod(state,
+                                                tableType,
+                                                numColumnVisualTbl,
+                                                periodIdx,
+                                                periodTitle,
+                                                tableName,
+                                                columnHead,
+                                                columnWidth,
+                                                state.dataHeatBalFanSys->ZoneLightingLevelOccupiedHourBinsRepPeriod,
+                                                rowHead,
+                                                tableBody,
+                                                currentStyle);
+    }
 }
 
 void WriteHeatEmissionTable(EnergyPlusData &state)
@@ -13736,12 +13844,12 @@ void WriteHeatEmissionTable(EnergyPlusData &state)
             columnHead(6) = "Total";
 
             tableBody = "";
-            tableBody(1, 1) = RealToStr(state, state.dataHeatBal->BuildingPreDefRep.emiEnvelopConv * energyconversion, 2);
-            tableBody(2, 1) = RealToStr(state, state.dataHeatBal->BuildingPreDefRep.emiZoneExfiltration * energyconversion, 2);
-            tableBody(3, 1) = RealToStr(state, state.dataHeatBal->BuildingPreDefRep.emiZoneExhaust * energyconversion, 2);
-            tableBody(4, 1) = RealToStr(state, state.dataHeatBal->BuildingPreDefRep.emiHVACRelief * energyconversion, 2);
-            tableBody(5, 1) = RealToStr(state, state.dataHeatBal->BuildingPreDefRep.emiHVACReject * energyconversion, 2);
-            tableBody(6, 1) = RealToStr(state, state.dataHeatBal->BuildingPreDefRep.emiTotHeat * energyconversion, 2);
+            tableBody(1, 1) = RealToStr(currentStyle.formatReals, state.dataHeatBal->BuildingPreDefRep.emiEnvelopConv * energyconversion, 2);
+            tableBody(2, 1) = RealToStr(currentStyle.formatReals, state.dataHeatBal->BuildingPreDefRep.emiZoneExfiltration * energyconversion, 2);
+            tableBody(3, 1) = RealToStr(currentStyle.formatReals, state.dataHeatBal->BuildingPreDefRep.emiZoneExhaust * energyconversion, 2);
+            tableBody(4, 1) = RealToStr(currentStyle.formatReals, state.dataHeatBal->BuildingPreDefRep.emiHVACRelief * energyconversion, 2);
+            tableBody(5, 1) = RealToStr(currentStyle.formatReals, state.dataHeatBal->BuildingPreDefRep.emiHVACReject * energyconversion, 2);
+            tableBody(6, 1) = RealToStr(currentStyle.formatReals, state.dataHeatBal->BuildingPreDefRep.emiTotHeat * energyconversion, 2);
 
             if (currentStyle.produceTabular) {
                 WriteTable(state, tableBody, rowHead, columnHead, columnWidth);
@@ -13964,7 +14072,9 @@ void WritePredefinedTables(EnergyPlusData &state)
                                         }
                                         if (currentStyle.formatReals) {
                                             tableBody(colCurrent, rowCurrent) =
-                                                RealToStr(state, value, state.dataOutRptPredefined->tableEntry(lTableEntry).significantDigits);
+                                                RealToStr(currentStyle.formatReals,
+                                                          value,
+                                                          state.dataOutRptPredefined->tableEntry(lTableEntry).significantDigits);
                                         } else {
                                             tableBody(colCurrent, rowCurrent) = format("{}", value);
                                         }
@@ -14214,9 +14324,9 @@ void WriteComponentSizing(EnergyPlusData &state)
                                 state.dataOutRptTab->curValueWCS = state.dataOutRptTab->curValueSIWCS;
                             }
                             if (std::abs(state.dataOutRptTab->curValueWCS) >= 1.0) {
-                                tableBody(foundDesc, foundObj) = RealToStr(state, state.dataOutRptTab->curValueWCS, 2);
+                                tableBody(foundDesc, foundObj) = RealToStr(currentStyle.formatReals, state.dataOutRptTab->curValueWCS, 2);
                             } else {
-                                tableBody(foundDesc, foundObj) = RealToStr(state, state.dataOutRptTab->curValueWCS, 6);
+                                tableBody(foundDesc, foundObj) = RealToStr(currentStyle.formatReals, state.dataOutRptTab->curValueWCS, 6);
                             }
                         }
                         state.dataOutRptPredefined->CompSizeTableEntry(iTableEntry).written = true;
@@ -14517,7 +14627,7 @@ void WriteEioTables(EnergyPlusData &state)
                                     if (isNumber(dataFields[iCol]) && colUnitConv(iCol) > 0) { // if it is a number that has a conversion
                                         int numDecimalDigits = digitsAferDecimal(dataFields[iCol]);
                                         Real64 convertedVal = ConvertIP(state, colUnitConv(iCol), StrToReal(dataFields[iCol]));
-                                        tableBody(iCol, rowNum) = RealToStr(state, convertedVal, numDecimalDigits);
+                                        tableBody(iCol, rowNum) = RealToStr(currentStyle.formatReals, convertedVal, numDecimalDigits);
                                     } else if (iCol == numCols && columnHead(iCol) == "Value" && iCol > 1) { // if it is the last column and the
                                                                                                              // header is Value then treat the
                                                                                                              // previous column as source of units
@@ -14529,7 +14639,7 @@ void WriteEioTables(EnergyPlusData &state)
 
                                         int numDecimalDigits = digitsAferDecimal(dataFields[iCol]);
                                         Real64 convertedVal = ConvertIP(state, indexUnitConv, StrToReal(dataFields[iCol]));
-                                        tableBody(iCol, rowNum) = RealToStr(state, convertedVal, numDecimalDigits);
+                                        tableBody(iCol, rowNum) = RealToStr(currentStyle.formatReals, convertedVal, numDecimalDigits);
                                     } else {
                                         tableBody(iCol, rowNum) = dataFields[iCol];
                                     }
@@ -15495,15 +15605,7 @@ void WriteLoadComponentSummaryTables(EnergyPlusData &state)
                 LoadSummaryUnitConversion(state, airLoopCoolTable, currentStyle.unitsStyle);
                 LoadSummaryUnitConversion(state, airLoopHeatTable, currentStyle.unitsStyle);
 
-                OutputCompLoadSummary(state,
-                                      OutputType::AirLoop,
-                                      airLoopCoolTable,
-                                      airLoopHeatTable,
-                                      iAirLoop,
-                                      currentStyle.unitsStyle,
-                                      currentStyle.produceTabular,
-                                      currentStyle.produceSQLite,
-                                      currentStyle.produceJSON);
+                OutputCompLoadSummary(state, OutputType::AirLoop, airLoopCoolTable, airLoopHeatTable, iAirLoop, currentStyle);
             }
         }
 
@@ -15637,15 +15739,7 @@ void WriteLoadComponentSummaryTables(EnergyPlusData &state)
             LoadSummaryUnitConversion(state, FacilityCoolCompLoadTables, currentStyle.unitsStyle);
             LoadSummaryUnitConversion(state, FacilityHeatCompLoadTables, currentStyle.unitsStyle);
 
-            OutputCompLoadSummary(state,
-                                  OutputType::Facility,
-                                  FacilityCoolCompLoadTables,
-                                  FacilityHeatCompLoadTables,
-                                  0,
-                                  currentStyle.unitsStyle,
-                                  currentStyle.produceTabular,
-                                  currentStyle.produceSQLite,
-                                  currentStyle.produceJSON);
+            OutputCompLoadSummary(state, OutputType::Facility, FacilityCoolCompLoadTables, FacilityHeatCompLoadTables, 0, currentStyle);
         }
 
         // SpaceComponentLoadSummary: Now we convert and Display
@@ -15660,15 +15754,8 @@ void WriteLoadComponentSummaryTables(EnergyPlusData &state)
                         LoadSummaryUnitConversion(state, SpaceCoolCompLoadTables(iSpace), currentStyle.unitsStyle);
                         LoadSummaryUnitConversion(state, SpaceHeatCompLoadTables(iSpace), currentStyle.unitsStyle);
 
-                        OutputCompLoadSummary(state,
-                                              OutputType::Space,
-                                              SpaceCoolCompLoadTables(iSpace),
-                                              SpaceHeatCompLoadTables(iSpace),
-                                              iSpace,
-                                              currentStyle.unitsStyle,
-                                              currentStyle.produceTabular,
-                                              currentStyle.produceSQLite,
-                                              currentStyle.produceJSON);
+                        OutputCompLoadSummary(
+                            state, OutputType::Space, SpaceCoolCompLoadTables(iSpace), SpaceHeatCompLoadTables(iSpace), iSpace, currentStyle);
                     }
                 }
             }
@@ -15686,15 +15773,7 @@ void WriteLoadComponentSummaryTables(EnergyPlusData &state)
                     LoadSummaryUnitConversion(state, ZoneCoolCompLoadTables(iZone), currentStyle.unitsStyle);
                     LoadSummaryUnitConversion(state, ZoneHeatCompLoadTables(iZone), currentStyle.unitsStyle);
 
-                    OutputCompLoadSummary(state,
-                                          OutputType::Zone,
-                                          ZoneCoolCompLoadTables(iZone),
-                                          ZoneHeatCompLoadTables(iZone),
-                                          iZone,
-                                          currentStyle.unitsStyle,
-                                          currentStyle.produceTabular,
-                                          currentStyle.produceSQLite,
-                                          currentStyle.produceJSON);
+                    OutputCompLoadSummary(state, OutputType::Zone, ZoneCoolCompLoadTables(iZone), ZoneHeatCompLoadTables(iZone), iZone, currentStyle);
                 }
             }
         }
@@ -16812,10 +16891,7 @@ void OutputCompLoadSummary(EnergyPlusData &state,
                            CompLoadTablesType const &compLoadCool,
                            CompLoadTablesType const &compLoadHeat,
                            int const zoneOrAirLoopIndex,
-                           UnitsStyle unitsStyle_para,
-                           bool produceTabular_para,
-                           bool produceSQLite_para,
-                           bool produceJSON_para)
+                           tabularReportStyle const &style)
 {
 
     auto const &ort = state.dataOutRptTab;
@@ -16854,7 +16930,7 @@ void OutputCompLoadSummary(EnergyPlusData &state,
     Array1D_string rowHead;
     Array2D_string tableBody; //(row, column)
 
-    if (produceTabular_para) {
+    if (style.produceTabular) {
         WriteReportHeaders(state, reportName, zoneAirLoopFacilityName, OutputProcessor::StoreType::Average);
     }
     std::string peakLoadCompName;
@@ -16881,7 +16957,7 @@ void OutputCompLoadSummary(EnergyPlusData &state,
         for (int c = 1; c <= LoadCompCol::PerArea; ++c) {
             for (int r = 1; r <= LoadCompRow::GrdTot; ++r) { // to last row before total
                 if (curCompLoad.cellUsed(c, r)) {
-                    tableBody(c, r) = RealToStr(state, curCompLoad.cells(c, r), 2);
+                    tableBody(c, r) = RealToStr(style.formatReals, curCompLoad.cells(c, r), 2);
                 }
             }
         }
@@ -16919,8 +16995,8 @@ void OutputCompLoadSummary(EnergyPlusData &state,
         rowHead(LoadCompRow::GrdTot) = "Grand Total";
 
         columnHead.allocate(LoadCompCol::PerArea);
-        if (!(unitsStyle_para == OutputReportTabular::UnitsStyle::InchPound ||
-              unitsStyle_para == OutputReportTabular::UnitsStyle::InchPoundExceptElectricity)) {
+        if (!(style.unitsStyle == OutputReportTabular::UnitsStyle::InchPound ||
+              style.unitsStyle == OutputReportTabular::UnitsStyle::InchPoundExceptElectricity)) {
             columnHead(LoadCompCol::SensInst) = "Sensible - Instant [W]";
             columnHead(LoadCompCol::SensDelay) = "Sensible - Delayed [W]";
             columnHead(LoadCompCol::SensRA) = "Sensible - Return Air [W]";
@@ -16941,17 +17017,17 @@ void OutputCompLoadSummary(EnergyPlusData &state,
         }
         columnWidth.dimension(LoadCompCol::PerArea, 14); // array assignment - same for all columns
 
-        if (produceTabular_para) {
+        if (style.produceTabular) {
             WriteSubtitle(state, peakLoadCompName);
             WriteTable(state, tableBody, rowHead, columnHead, columnWidth);
         }
-        if (produceSQLite_para) {
+        if (style.produceSQLite) {
             if (state.dataSQLiteProcedures->sqlite) {
                 state.dataSQLiteProcedures->sqlite->createSQLiteTabularDataRecords(
                     tableBody, rowHead, columnHead, reportName, zoneAirLoopFacilityName, peakLoadCompName);
             }
         }
-        if (produceJSON_para) {
+        if (style.produceJSON) {
             if (state.dataResultsFramework->resultsFramework->timeSeriesAndTabularEnabled()) {
                 state.dataResultsFramework->resultsFramework->TabularReportsCollection.addReportTable(
                     tableBody, rowHead, columnHead, reportName, zoneAirLoopFacilityName, peakLoadCompName);
@@ -16969,8 +17045,8 @@ void OutputCompLoadSummary(EnergyPlusData &state,
         tableBody = "";
 
         columnHead(1) = "Value";
-        if (!(unitsStyle_para == OutputReportTabular::UnitsStyle::InchPound ||
-              unitsStyle_para == OutputReportTabular::UnitsStyle::InchPoundExceptElectricity)) {
+        if (!(style.unitsStyle == OutputReportTabular::UnitsStyle::InchPound ||
+              style.unitsStyle == OutputReportTabular::UnitsStyle::InchPoundExceptElectricity)) {
             rowHead(1) = "Time of Peak Load";
             rowHead(2) = "Outside Dry Bulb Temperature [C]";
             rowHead(3) = "Outside Wet Bulb Temperature [C]";
@@ -17011,37 +17087,37 @@ void OutputCompLoadSummary(EnergyPlusData &state,
         }
 
         if (curCompLoad.timeStepMax != 0) {
-            tableBody(1, 1) = curCompLoad.peakDateHrMin;                         // Time of Peak Load
-            tableBody(1, 2) = RealToStr(state, curCompLoad.outsideDryBulb, 2);   // Outside Dry Bulb Temperature
-            tableBody(1, 3) = RealToStr(state, curCompLoad.outsideWetBulb, 2);   // Outside Wet Bulb Temperature
-            tableBody(1, 4) = RealToStr(state, curCompLoad.outsideHumRatio, 5);  // Outside Humidity Ratio at Peak
-            tableBody(1, 5) = RealToStr(state, curCompLoad.zoneDryBulb, 2);      // Zone Dry Bulb Temperature
-            tableBody(1, 6) = RealToStr(state, 100 * curCompLoad.zoneRelHum, 2); // Zone Relative Humidity
-            tableBody(1, 7) = RealToStr(state, curCompLoad.zoneHumRatio, 5);     // Zone Humidity Ratio at Peak
+            tableBody(1, 1) = curCompLoad.peakDateHrMin;                                     // Time of Peak Load
+            tableBody(1, 2) = RealToStr(style.formatReals, curCompLoad.outsideDryBulb, 2);   // Outside Dry Bulb Temperature
+            tableBody(1, 3) = RealToStr(style.formatReals, curCompLoad.outsideWetBulb, 2);   // Outside Wet Bulb Temperature
+            tableBody(1, 4) = RealToStr(style.formatReals, curCompLoad.outsideHumRatio, 5);  // Outside Humidity Ratio at Peak
+            tableBody(1, 5) = RealToStr(style.formatReals, curCompLoad.zoneDryBulb, 2);      // Zone Dry Bulb Temperature
+            tableBody(1, 6) = RealToStr(style.formatReals, 100 * curCompLoad.zoneRelHum, 2); // Zone Relative Humidity
+            tableBody(1, 7) = RealToStr(style.formatReals, curCompLoad.zoneHumRatio, 5);     // Zone Humidity Ratio at Peak
         }
-        tableBody(1, 8) = RealToStr(state, curCompLoad.supAirTemp, 2); // supply air temperature
+        tableBody(1, 8) = RealToStr(style.formatReals, curCompLoad.supAirTemp, 2); // supply air temperature
         if (kind == OutputType::AirLoop) {
-            tableBody(1, 9) = RealToStr(state, curCompLoad.mixAirTemp, 2); // mixed air temperature - not for zone or facility
+            tableBody(1, 9) = RealToStr(style.formatReals, curCompLoad.mixAirTemp, 2); // mixed air temperature - not for zone or facility
         }
-        tableBody(1, 10) = RealToStr(state, curCompLoad.mainFanAirFlow, 4);     // main fan air flow
-        tableBody(1, 11) = RealToStr(state, curCompLoad.outsideAirFlow, 4);     // outside air flow
-        tableBody(1, 12) = RealToStr(state, curCompLoad.designPeakLoad, 2);     // design peak load
-        tableBody(1, 13) = RealToStr(state, curCompLoad.diffDesignPeak, 2);     // difference between Design and Peak Load
-        tableBody(1, 14) = RealToStr(state, curCompLoad.peakDesSensLoad, 2);    // Peak Design Sensible Load
-        tableBody(1, 15) = RealToStr(state, curCompLoad.estInstDelSensLoad, 2); // Estimated Instant + Delayed Sensible Load
-        tableBody(1, 16) = RealToStr(state, curCompLoad.diffPeakEst, 2);        // Difference
+        tableBody(1, 10) = RealToStr(style.formatReals, curCompLoad.mainFanAirFlow, 4);     // main fan air flow
+        tableBody(1, 11) = RealToStr(style.formatReals, curCompLoad.outsideAirFlow, 4);     // outside air flow
+        tableBody(1, 12) = RealToStr(style.formatReals, curCompLoad.designPeakLoad, 2);     // design peak load
+        tableBody(1, 13) = RealToStr(style.formatReals, curCompLoad.diffDesignPeak, 2);     // difference between Design and Peak Load
+        tableBody(1, 14) = RealToStr(style.formatReals, curCompLoad.peakDesSensLoad, 2);    // Peak Design Sensible Load
+        tableBody(1, 15) = RealToStr(style.formatReals, curCompLoad.estInstDelSensLoad, 2); // Estimated Instant + Delayed Sensible Load
+        tableBody(1, 16) = RealToStr(style.formatReals, curCompLoad.diffPeakEst, 2);        // Difference
 
-        if (produceTabular_para) {
+        if (style.produceTabular) {
             WriteSubtitle(state, peakCondName);
             WriteTable(state, tableBody, rowHead, columnHead, columnWidth);
         }
-        if (produceSQLite_para) {
+        if (style.produceSQLite) {
             if (state.dataSQLiteProcedures->sqlite) {
                 state.dataSQLiteProcedures->sqlite->createSQLiteTabularDataRecords(
                     tableBody, rowHead, columnHead, reportName, zoneAirLoopFacilityName, peakCondName);
             }
         }
-        if (produceJSON_para) {
+        if (style.produceJSON) {
             if (state.dataResultsFramework->resultsFramework->timeSeriesAndTabularEnabled()) {
                 state.dataResultsFramework->resultsFramework->TabularReportsCollection.addReportTable(
                     tableBody, rowHead, columnHead, reportName, zoneAirLoopFacilityName, peakCondName);
@@ -17059,8 +17135,8 @@ void OutputCompLoadSummary(EnergyPlusData &state,
         tableBody = "";
 
         columnHead(1) = "Value";
-        if (!(unitsStyle_para == OutputReportTabular::UnitsStyle::InchPound ||
-              unitsStyle_para == OutputReportTabular::UnitsStyle::InchPoundExceptElectricity)) {
+        if (!(style.unitsStyle == OutputReportTabular::UnitsStyle::InchPound ||
+              style.unitsStyle == OutputReportTabular::UnitsStyle::InchPoundExceptElectricity)) {
             rowHead(1) = "Outside Air Fraction [fraction]";
             rowHead(2) = "Airflow per Floor Area [m3/s-m2]";
             rowHead(3) = "Airflow per Total Capacity [m3/s-W]";
@@ -17087,17 +17163,17 @@ void OutputCompLoadSummary(EnergyPlusData &state,
         tableBody(1, 5) = fmt::format("{:0.3E}", curCompLoad.totCapPerArea);      // total capacity per area
         tableBody(1, 6) = fmt::format("{:.{}f}", curCompLoad.numPeople, 1);       // number of people
 
-        if (produceTabular_para) {
+        if (style.produceTabular) {
             WriteSubtitle(state, engineeringCheckName);
             WriteTable(state, tableBody, rowHead, columnHead, columnWidth);
         }
-        if (produceSQLite_para) {
+        if (style.produceSQLite) {
             if (state.dataSQLiteProcedures->sqlite) {
                 state.dataSQLiteProcedures->sqlite->createSQLiteTabularDataRecords(
                     tableBody, rowHead, columnHead, reportName, zoneAirLoopFacilityName, engineeringCheckName);
             }
         }
-        if (produceJSON_para) {
+        if (style.produceJSON) {
             if (state.dataResultsFramework->resultsFramework->timeSeriesAndTabularEnabled()) {
                 state.dataResultsFramework->resultsFramework->TabularReportsCollection.addReportTable(
                     tableBody, rowHead, columnHead, reportName, zoneAirLoopFacilityName, engineeringCheckName);
@@ -17128,17 +17204,17 @@ void OutputCompLoadSummary(EnergyPlusData &state,
                 }
             }
 
-            if (produceTabular_para) {
+            if (style.produceTabular) {
                 WriteSubtitle(state, zonesIncludedName);
                 WriteTable(state, tableBody, rowHead, columnHead, columnWidth);
             }
-            if (produceSQLite_para) {
+            if (style.produceSQLite) {
                 if (state.dataSQLiteProcedures->sqlite) {
                     state.dataSQLiteProcedures->sqlite->createSQLiteTabularDataRecords(
                         tableBody, rowHead, columnHead, reportName, zoneAirLoopFacilityName, zonesIncludedName);
                 }
             }
-            if (produceJSON_para) {
+            if (style.produceJSON) {
                 if (state.dataResultsFramework->resultsFramework->timeSeriesAndTabularEnabled()) {
                     state.dataResultsFramework->resultsFramework->TabularReportsCollection.addReportTable(
                         tableBody, rowHead, columnHead, reportName, zoneAirLoopFacilityName, zonesIncludedName);
@@ -18421,7 +18497,7 @@ bool isInQuadrilateral(Real64 const qx,
 //======================================================================================================================
 //======================================================================================================================
 
-std::string RealToStr(EnergyPlusData &state, Real64 const RealIn, int const numDigits)
+std::string RealToStr(bool const formatReals, Real64 const RealIn, int const numDigits)
 {
     // FUNCTION INFORMATION:
     //       AUTHOR         Jason Glazer
@@ -18440,7 +18516,7 @@ std::string RealToStr(EnergyPlusData &state, Real64 const RealIn, int const numD
 
     // FUNCTION LOCAL VARIABLE DECLARATIONS:
 
-    if (state.dataOutRptTab->defaultSigDigits == 0) {
+    if (!formatReals) {
         // No rounding
         return format("{}", RealIn);
     }

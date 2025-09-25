@@ -73,6 +73,7 @@
 #include <EnergyPlus/DataSurfaces.hh>
 #include <EnergyPlus/DataZoneEquipment.hh>
 #include <EnergyPlus/DisplayRoutines.hh>
+#include <EnergyPlus/DuctLoss.hh>
 #include <EnergyPlus/EMSManager.hh>
 #include <EnergyPlus/EarthTube.hh>
 #include <EnergyPlus/ElectricBaseboardRadiator.hh>
@@ -4135,6 +4136,10 @@ void SimZoneEquipment(EnergyPlusData &state, bool const FirstHVACIteration, bool
                                                           FirstCall,
                                                           SupPathInletChanged,
                                                           state.dataZoneEquip->SupplyAirPath(SupplyAirPathNum).ComponentIndex(CompNum));
+                    if (state.dataDuctLoss->DuctLossSimu) {
+                        DuctLoss::SimulateDuctLoss(
+                            state, DuctLoss::AirPath::Supply, state.dataZoneEquip->SupplyAirPath(SupplyAirPathNum).ComponentIndex(CompNum));
+                    }
                 }
             } break;
             case DataZoneEquipment::AirLoopHVACZone::SupplyPlenum: { // 'AirLoopHVAC:SupplyPlenum'
@@ -4171,6 +4176,8 @@ void SimZoneEquipment(EnergyPlusData &state, bool const FirstHVACIteration, bool
     CalcZoneMassBalance(state, FirstHVACIteration);
 
     CalcZoneLeavingConditions(state, FirstHVACIteration);
+
+    DuctLoss::SimulateDuctLoss(state);
 
     ReturnAirPathManager::SimReturnAirPath(state);
 }
@@ -4350,10 +4357,20 @@ void initOutputRequired(EnergyPlusData &state,
             energy.SequencedOutputRequired(1) = energy.TotalOutputRequired;
             energy.SequencedOutputRequiredToHeatingSP(1) = energy.OutputRequiredToHeatingSP;
             energy.SequencedOutputRequiredToCoolingSP(1) = energy.OutputRequiredToCoolingSP;
+            if (state.dataDuctLoss->DuctLossSimu) {
+                energy.SequencedOutputRequired(1) += state.dataDuctLoss->SysSen;
+                energy.SequencedOutputRequiredToHeatingSP(1) += state.dataDuctLoss->SysSen; // array assignment
+                energy.SequencedOutputRequiredToCoolingSP(1) += state.dataDuctLoss->SysSen; // array assignment
+            }
             // init first sequenced moisture demand to the full output
             moisture.SequencedOutputRequired(1) = moisture.TotalOutputRequired;
             moisture.SequencedOutputRequiredToHumidSP(1) = moisture.OutputRequiredToHumidifyingSP;
             moisture.SequencedOutputRequiredToDehumidSP(1) = moisture.OutputRequiredToDehumidifyingSP;
+            if (state.dataDuctLoss->DuctLossSimu) {
+                moisture.SequencedOutputRequired(1) += state.dataDuctLoss->SysLat;
+                moisture.SequencedOutputRequiredToHumidSP(1) += state.dataDuctLoss->SysLat;
+                moisture.SequencedOutputRequiredToDehumidSP(1) += state.dataDuctLoss->SysLat;
+            }
         }
     }
 
@@ -4420,6 +4437,11 @@ void distributeOutputRequired(EnergyPlusData &state,
             energy.SequencedOutputRequired(priorityNum) = energy.TotalOutputRequired * loadRatio;
             energy.SequencedOutputRequiredToHeatingSP(priorityNum) = energy.OutputRequiredToHeatingSP * loadRatio;
             energy.SequencedOutputRequiredToCoolingSP(priorityNum) = energy.OutputRequiredToCoolingSP * loadRatio;
+            if (state.dataDuctLoss->DuctLossSimu) {
+                energy.SequencedOutputRequired(priorityNum) += state.dataDuctLoss->SysSen * loadRatio;
+                energy.SequencedOutputRequiredToHeatingSP(priorityNum) += state.dataDuctLoss->SysSen * loadRatio; // array assignment
+                energy.SequencedOutputRequiredToCoolingSP(priorityNum) += state.dataDuctLoss->SysSen * loadRatio; // array assignment
+            }
             energy.RemainingOutputRequired = energy.SequencedOutputRequired(priorityNum);
             energy.RemainingOutputReqToHeatSP = energy.SequencedOutputRequiredToHeatingSP(priorityNum);
             energy.RemainingOutputReqToCoolSP = energy.SequencedOutputRequiredToCoolingSP(priorityNum);
@@ -4428,6 +4450,11 @@ void distributeOutputRequired(EnergyPlusData &state,
             moisture.SequencedOutputRequired(priorityNum) = moisture.TotalOutputRequired * loadRatio;
             moisture.SequencedOutputRequiredToHumidSP(priorityNum) = moisture.OutputRequiredToHumidifyingSP * loadRatio;
             moisture.SequencedOutputRequiredToDehumidSP(priorityNum) = moisture.OutputRequiredToDehumidifyingSP * loadRatio;
+            if (state.dataDuctLoss->DuctLossSimu) {
+                moisture.SequencedOutputRequired(priorityNum) += state.dataDuctLoss->SysLat * loadRatio;
+                moisture.SequencedOutputRequiredToHumidSP(priorityNum) += state.dataDuctLoss->SysLat * loadRatio;
+                moisture.SequencedOutputRequiredToDehumidSP(priorityNum) += state.dataDuctLoss->SysLat * loadRatio;
+            }
             moisture.RemainingOutputRequired = moisture.SequencedOutputRequired(priorityNum);
             moisture.RemainingOutputReqToHumidSP = moisture.SequencedOutputRequiredToHumidSP(priorityNum);
             moisture.RemainingOutputReqToDehumidSP = moisture.SequencedOutputRequiredToDehumidSP(priorityNum);

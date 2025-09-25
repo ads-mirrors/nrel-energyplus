@@ -7695,7 +7695,6 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
                 state.dataSize->DataCapacityUsedForSizing = thisDXCoil.RatedTotCap(Mode);
                 state.dataSize->DataEMSOverrideON = thisDXCoil.RatedSHREMSOverrideOn(Mode);
                 state.dataSize->DataEMSOverride = thisDXCoil.RatedSHREMSOverrideValue(Mode);
-                bool ErrorsFound = false;
                 sizerCoolingSHR.initializeWithinEP(state, CompType, CompName, PrintFlag, RoutineName);
                 thisDXCoil.RatedSHR(Mode) = sizerCoolingSHR.size(state, TempSize, ErrorsFound);
                 state.dataSize->DataDXSpeedNum = 0;
@@ -7946,7 +7945,6 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
                 state.dataSize->DataConstantUsedForSizing = thisDXCoil.RatedSHR(Mode);
                 state.dataSize->DataFractionUsedForSizing = 1.0;
                 state.dataSize->DataDXSpeedNum = 2; // refers to low speed in sizer
-                bool ErrorsFound = false;
                 TempSize = thisDXCoil.RatedSHR2;
                 sizerCoolingSHR.initializeWithinEP(state, CompType, CompName, PrintFlag, RoutineName);
                 thisDXCoil.RatedSHR2 = sizerCoolingSHR.size(state, TempSize, ErrorsFound);
@@ -8166,7 +8164,6 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
                 state.dataSize->DataCapacityUsedForSizing = MSRatedTotCapDesAtMaxSpeed;
                 state.dataSize->DataEMSOverrideON = thisDXCoil.RatedSHREMSOverrideOn(Mode);
                 state.dataSize->DataEMSOverride = thisDXCoil.RatedSHREMSOverrideValue(Mode);
-                bool ErrorsFound = false;
                 state.dataSize->DataDXSpeedNum = Mode;
                 sizerCoolingSHR.initializeWithinEP(state, CompType, CompName, PrintFlag, RoutineName);
                 thisDXCoil.MSRatedSHR(Mode) = sizerCoolingSHR.size(state, TempSize, ErrorsFound);
@@ -8178,7 +8175,6 @@ void SizeDXCoil(EnergyPlusData &state, int const DXCoilNum)
                 MSRatedSHRDes = thisDXCoil.MSRatedSHR(Mode);
             } else {
                 TempSize = thisDXCoil.MSRatedSHR(Mode);
-                bool ErrorsFound = false;
                 state.dataSize->DataDXSpeedNum = Mode;
                 state.dataSize->DataFractionUsedForSizing = MSRatedSHRDes;
                 state.dataSize->DataConstantUsedForSizing = 1.0;

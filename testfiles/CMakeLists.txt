@@ -266,6 +266,7 @@ add_simulation_test(IDF_FILE DualDuctConstVolDamper.idf EPW_FILE USA_IL_Chicago-
 add_simulation_test(IDF_FILE DualDuctConstVolGasHC.idf EPW_FILE USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw)
 add_simulation_test(IDF_FILE DualDuctVarVolDamper.idf EPW_FILE USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw)
 add_simulation_test(IDF_FILE DualDuctWaterCoils.idf EPW_FILE USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw)
+add_simulation_test(IDF_FILE DuctLoss_House.idf EPW_FILE USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw)
 add_simulation_test(IDF_FILE DynamicClothing.idf EPW_FILE USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw)
 add_simulation_test(IDF_FILE EMPD5ZoneWaterCooled_HighRHControl.idf EPW_FILE USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw)
 add_simulation_test(IDF_FILE EMSAirflowNetworkOpeningControlByHumidity.idf EPW_FILE USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw)
@@ -797,16 +798,21 @@ add_simulation_test(IDF_FILE BasicsFiles/Exercise1C-Solution.idf EPW_FILE USA_IL
 add_simulation_test(IDF_FILE BasicsFiles/Exercise1D-Solution.idf EPW_FILE USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw)
 add_simulation_test(IDF_FILE BasicsFiles/Exercise2.idf EPW_FILE USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw)
 
-# Macro files
-add_simulation_test(IDF_FILE AbsorptionChiller_Macro.imf EPW_FILE USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw ENERGYPLUS_FLAGS -m)
-
 add_api_simulation_test(PYTHON_FILE user_defined_equipment.py)
 
 # External interface files -- note they don't work on Mac, and they only exchange data for runperiods
-if (NOT APPLE)
+# And we don't have arm64 binaries
+include(../cmake/TargetArch.cmake)
+target_architecture(TARGET_ARCH)
+if (NOT (APPLE OR (TARGET_ARCH MATCHES "arm64")))
     add_simulation_test(IDF_FILE _ExternalInterface-functionalmockupunit-to-actuator.idf EPW_FILE USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw ANNUAL_SIMULATION)
     add_simulation_test(IDF_FILE _ExternalInterface-functionalmockupunit-to-schedule.idf EPW_FILE USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw ANNUAL_SIMULATION)
     add_simulation_test(IDF_FILE _ExternalInterface-functionalmockupunit-to-variable.idf EPW_FILE USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw ANNUAL_SIMULATION)
+endif ()
+
+# Macro files -- note that we don't have arm64 binaries for EPMacro
+if (NOT (TARGET_ARCH MATCHES "arm64"))
+  add_simulation_test(IDF_FILE AbsorptionChiller_Macro.imf EPW_FILE USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw ENERGYPLUS_FLAGS -m)
 endif ()
 
 if (BUILD_FORTRAN)

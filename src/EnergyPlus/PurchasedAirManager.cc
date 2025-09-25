@@ -956,7 +956,7 @@ void GetPurchasedAir(EnergyPlusData &state)
         SetupOutputVariable(state,
                             "Zone Ideal Loads Hybrid Ventilation Available Status",
                             Constant::Units::None,
-                            (int &)PurchAir.availStatus,
+                            PurchAir.availStatus,
                             OutputProcessor::TimeStepType::System,
                             OutputProcessor::StoreType::Average,
                             PurchAir.Name);

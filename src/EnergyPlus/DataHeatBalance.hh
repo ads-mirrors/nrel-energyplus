@@ -158,6 +158,11 @@ namespace DataHeatBalance {
         Num
     };
 
+    constexpr std::array<std::string_view, (int)RefrigCondenserType::Num> refrigCondenserTypeNames = {
+        "AirCooled", "EvaporativelyCooled", "WaterCooled", "Cascade", "WaterHeater"}; // Are the last two used?
+    constexpr std::array<std::string_view, (int)RefrigCondenserType::Num> refrigCondenserTypeNamesUC = {
+        "AIRCOOLED", "EVAPORATIVELYCOOLED", "WATERCOOLED", "CASCADE", "WATERHEATER"}; // Are the last two used?
+
     // Parameters for type of infiltration model
     enum class InfiltrationModelType
     {
@@ -1918,8 +1923,8 @@ struct HeatBalanceData : BaseGlobalStruct
     Array1D<Real64> ZoneDifSolFrIntWinsRepEnergy;   // Energy of ZoneDifSolFrIntWinsRep [J]
     Array1D<Real64> ZnOpqSurfInsFaceCondGnRepEnrg;  // Energy of ZoneOpaqSurfInsFaceCondGainRep [J]
     Array1D<Real64> ZnOpqSurfInsFaceCondLsRepEnrg;  // Energy of ZoneOpaqSurfInsFaceCondLossRep [J]
-    Array1D<Real64> ZnOpqSurfExtFaceCondGnRepEnrg;  // Energy of ZoneOpaqSurfInsFaceCondGainRep [J]
-    Array1D<Real64> ZnOpqSurfExtFaceCondLsRepEnrg;  // Energy of ZoneOpaqSurfInsFaceCondLossRep [J]
+    Array1D<Real64> ZnOpqSurfExtFaceCondGnRepEnrg;  // Energy of ZoneOpaqSurfExtFaceCondGainRep [J]
+    Array1D<Real64> ZnOpqSurfExtFaceCondLsRepEnrg;  // Energy of ZoneOpaqSurfExtFaceCondLossRep [J]
 
     Array1D<Real64> SurfQdotRadIntGainsInPerArea;       // Thermal radiation absorbed on inside surfaces
     Array1D<Real64> SurfQRadSWOutIncident;              // Exterior beam plus diffuse solar incident on surface (W/m2)

@@ -366,90 +366,11 @@ void GetPurchasedAir(EnergyPlusData &state)
             cAlphaFieldName = "Heating Limit";
             fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "heating_limit");
             PurchAir.HeatingLimit = static_cast<LimitType>(getEnumValue(limitTypeNamesUC, Util::makeUPPER(fieldValue)));
-            switch (PurchAir.HeatingLimit) {
-
-            case LimitType::None: {
-            } break;
-
-            case LimitType::FlowRate: {
-                if (fields.find("maximum_heating_air_flow_rate") == fields.end()) {
-                    PurchAir.HeatingLimit = LimitType::None;
-                } else {
-                    PurchAir.HeatingLimit = LimitType::FlowRate;
-                }
-            } break;
-
-            case LimitType::Capacity: {
-                if (fields.find("maximum_sensible_heating_capacity") == fields.end()) {
-                    PurchAir.HeatingLimit = LimitType::None;
-                } else {
-                    PurchAir.HeatingLimit = LimitType::Capacity;
-                }
-            } break;
-
-            case LimitType::FlowRateAndCapacity: {
-                if ((fields.find("maximum_heating_air_flow_rate") == fields.end()) &&
-                    (fields.find("maximum_sensible_heating_capacity") == fields.end())) {
-                    PurchAir.HeatingLimit = LimitType::None;
-                } else if (fields.find("maximum_heating_air_flow_rate") == fields.end()) {
-                    PurchAir.HeatingLimit = LimitType::Capacity;
-                } else if (fields.find("maximum_sensible_heating_capacity") == fields.end()) {
-                    PurchAir.HeatingLimit = LimitType::FlowRate;
-                } else {
-                    PurchAir.HeatingLimit = LimitType::FlowRateAndCapacity;
-                }
-            } break;
-
-            default: {
-                ShowSevereInvalidKey(state, eoh, cAlphaFieldName, fieldValue, "Valid entries are None, FlowRate, Capacity, or FlowRateAndCapacity.");
-                ErrorsFound = true;
-            } break;
-            }
-
             PurchAir.MaxHeatVolFlowRate = s_ip->getRealFieldValue(fields, schemaProps, "maximum_heating_air_flow_rate");
             PurchAir.MaxHeatSensCap = s_ip->getRealFieldValue(fields, schemaProps, "maximum_sensible_heating_capacity");
             cAlphaFieldName = "Cooling Limit";
             fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "cooling_limit");
             PurchAir.CoolingLimit = static_cast<LimitType>(getEnumValue(limitTypeNamesUC, Util::makeUPPER(fieldValue)));
-            switch (PurchAir.CoolingLimit) {
-
-            case LimitType::None: {
-            } break;
-
-            case LimitType::FlowRate: {
-                if (fields.find("maximum_cooling_air_flow_rate") == fields.end()) {
-                    PurchAir.CoolingLimit = LimitType::None;
-                } else {
-                    PurchAir.CoolingLimit = LimitType::FlowRate;
-                }
-            } break;
-
-            case LimitType::Capacity: {
-                if (fields.find("maximum_total_cooling_capacity") == fields.end()) {
-                    PurchAir.CoolingLimit = LimitType::None;
-                } else {
-                    PurchAir.CoolingLimit = LimitType::Capacity;
-                }
-            } break;
-
-            case LimitType::FlowRateAndCapacity: {
-                if ((fields.find("maximum_cooling_air_flow_rate") == fields.end()) &&
-                    (fields.find("maximum_total_cooling_capacity") == fields.end())) {
-                    PurchAir.CoolingLimit = LimitType::None;
-                } else if (fields.find("maximum_cooling_air_flow_rate") == fields.end()) {
-                    PurchAir.CoolingLimit = LimitType::Capacity;
-                } else if (fields.find("maximum_total_cooling_capacity") == fields.end()) {
-                    PurchAir.CoolingLimit = LimitType::FlowRate;
-                } else {
-                    PurchAir.CoolingLimit = LimitType::FlowRateAndCapacity;
-                }
-            } break;
-
-            default: {
-                ShowSevereInvalidKey(state, eoh, cAlphaFieldName, fieldValue, "Valid entries are None, FlowRate, Capacity, or FlowRateAndCapacity.");
-                ErrorsFound = true;
-            } break;
-            }
             PurchAir.MaxCoolVolFlowRate = s_ip->getRealFieldValue(fields, schemaProps, "maximum_cooling_air_flow_rate");
             PurchAir.MaxCoolTotCap = s_ip->getRealFieldValue(fields, schemaProps, "maximum_total_cooling_capacity");
             // get optional heating availability schedule
@@ -474,24 +395,12 @@ void GetPurchasedAir(EnergyPlusData &state)
             cAlphaFieldName = "Dehumidification Control Type";
             fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "dehumidification_control_type");
             PurchAir.DehumidCtrlType = static_cast<HumControl>(getEnumValue(humControlNamesUC, Util::makeUPPER(fieldValue)));
-            if (PurchAir.DehumidCtrlType == HumControl::Invalid) {
-                ShowSevereInvalidKey(state,
-                                     eoh,
-                                     cAlphaFieldName,
-                                     fieldValue,
-                                     "Valid entries are ConstantSensibleHeatRatio, Humidistat, or ConstantSupplyHumidityRatio.");
-                ErrorsFound = true;
-            }
             PurchAir.CoolSHR = s_ip->getRealFieldValue(fields, schemaProps, "cooling_sensible_heat_ratio");
             // get Humidification control type
             cAlphaFieldName = "Humidification Control Type";
             fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "humidification_control_type");
             PurchAir.HumidCtrlType = static_cast<HumControl>(getEnumValue(humControlNamesUC, Util::makeUPPER(fieldValue)));
-            if (PurchAir.HumidCtrlType == HumControl::Invalid) {
-                ShowSevereInvalidKey(state, eoh, cAlphaFieldName, fieldValue, "Valid entries are None, Humidistat, or ConstantSupplyHumidityRatio.");
-                ErrorsFound = true;
-            }
-            // get Design specification outdoor air object
+            //  get Design specification outdoor air object
             cAlphaFieldName = "Design Specification Outdoor Air Object Name";
             fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "design_specification_outdoor_air_object_name");
             if (!fieldValue.empty()) {
@@ -557,29 +466,15 @@ void GetPurchasedAir(EnergyPlusData &state)
                                           "To activate CO2 simulation, use ZoneAirContaminantBalance object and specify \"Carbon Dioxide "
                                           "Concentration\"=\"Yes\".");
                     }
-                } else if (PurchAir.DCVType == DCV::Invalid) {
-                    ShowSevereInvalidKey(state, eoh, cAlphaFieldName, fieldValue, "Valid entries are None, OccupancySchedule, or CO2Setpoint.");
-                    ErrorsFound = true;
                 }
-
                 // get Outdoor air economizer type
                 cAlphaFieldName = "Outdoor Air Economizer Type";
                 fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "outdoor_air_economizer_type");
                 PurchAir.EconomizerType = static_cast<Econ>(getEnumValue(econNamesUC, Util::makeUPPER(fieldValue)));
-                if (PurchAir.EconomizerType == Econ::Invalid) {
-                    ShowSevereInvalidKey(
-                        state, eoh, cAlphaFieldName, fieldValue, "Valid entries are NoEconomizer, DifferentialDryBulb, or DifferentialEnthalpy.");
-                    ErrorsFound = true;
-                }
-
                 // get Outdoor air heat recovery type and effectiveness
                 cAlphaFieldName = "Heat Recovery Type";
                 fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "heat_recovery_type");
                 PurchAir.HtRecType = static_cast<HeatRecovery>(getEnumValue(heatRecoveryNamesUC, Util::makeUPPER(fieldValue)));
-                if (PurchAir.HtRecType == HeatRecovery::Invalid) {
-                    ShowSevereInvalidKey(state, eoh, cAlphaFieldName, fieldValue, "Valid entries are None, Sensible, or Enthalpy.");
-                    ErrorsFound = true;
-                }
             } else { // No outdoorair
                 PurchAir.DCVType = DCV::None;
                 PurchAir.EconomizerType = Econ::NoEconomizer;
@@ -620,18 +515,7 @@ void GetPurchasedAir(EnergyPlusData &state)
             cAlphaFieldName = "Heating Fuel Type";
             fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "heating_fuel_type");
             PurchAir.heatingFuelType = static_cast<Constant::eFuel>(getEnumValue(Constant::eFuelNamesUC, Util::makeUPPER(fieldValue)));
-            if (PurchAir.heatingFuelType == Constant::eFuel::Invalid) {
-                ShowSevereInvalidKey(
-                    state,
-                    eoh,
-                    cAlphaFieldName,
-                    fieldValue,
-                    "Valid entries are Electricity, NaturalGas, Propane, Coal, Diesel, Gasoline, FuelOilNo1, FuelOilNo2, OtherFuel1, "
-                    "OtherFuel2, DistrictCooling, DistrictHeatingWater, or DistrictHeatingSteam.");
-                ShowContinueError(state, "Heating fuel type is set to DistrictHeatingWater and the simulation continues.");
-                PurchAir.heatingFuelType = static_cast<Constant::eFuel>(getEnumValue(Constant::eFuelNamesUC, "DISTRICTHEATINGWATER"));
-            }
-            // get optional cooling fuel efficiency schedule name
+            //  get optional cooling fuel efficiency schedule name
             cAlphaFieldName = "Cooling Fuel Efficiency Schedule Name";
             std::string const coolFuelEfficiencySchedName = s_ip->getAlphaFieldValue(fields, schemaProps, "cooling_fuel_efficiency_schedule_name");
             if (coolFuelEfficiencySchedName.empty()) {
@@ -644,17 +528,6 @@ void GetPurchasedAir(EnergyPlusData &state)
             cAlphaFieldName = "Cooling Fuel Type";
             fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "cooling_fuel_type");
             PurchAir.coolingFuelType = static_cast<Constant::eFuel>(getEnumValue(Constant::eFuelNamesUC, Util::makeUPPER(fieldValue)));
-            if (PurchAir.coolingFuelType == Constant::eFuel::Invalid) {
-                ShowSevereInvalidKey(
-                    state,
-                    eoh,
-                    cAlphaFieldName,
-                    fieldValue,
-                    "Valid entries are Electricity, NaturalGas, Propane, Coal, Diesel, Gasoline, FuelOilNo1, FuelOilNo2, OtherFuel1, "
-                    "OtherFuel2, DistrictCooling, DistrictHeatingWater, or DistrictHeatingSteam.");
-                ShowContinueError(state, "Cooling fuel type is set to DistrictCooling and the simulation continues.");
-                PurchAir.coolingFuelType = static_cast<Constant::eFuel>(getEnumValue(Constant::eFuelNamesUC, "DISTRICTCOOLING"));
-            }
         }
         EndUniqueNodeCheck(state, s_ipsc->cCurrentModuleObject);
     }

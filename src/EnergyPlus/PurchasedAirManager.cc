@@ -497,7 +497,8 @@ void GetPurchasedAir(EnergyPlusData &state)
             cAlphaFieldName = "Design Specification ZoneHVAC Sizing Object Name";
             fieldValue = s_ip->getAlphaFieldValue(fields, schemaProps, "design_specification_zonehvac_sizing_object_name");
             if (!fieldValue.empty()) {
-                if (PurchAir.HVACSizingIndex = Util::FindItemInList(fieldValue, state.dataSize->ZoneHVACSizing) == 0) {
+                PurchAir.HVACSizingIndex = Util::FindItemInList(fieldValue, state.dataSize->ZoneHVACSizing);
+                if (PurchAir.HVACSizingIndex == 0) {
                     ShowSevereItemNotFound(state, eoh, cAlphaFieldName, fieldValue);
                     ErrorsFound = true;
                 }

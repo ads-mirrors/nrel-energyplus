@@ -12889,7 +12889,9 @@ void WriteResilienceBinsTableNonPreDefUseZoneData(EnergyPlusData &state,
                                                   tabularReportStyle const &style,
                                                   Real64 const unitConvMultiplier)
 {
-    WriteSubtitle(state, tableName);
+    if (style.produceTabular) {
+        WriteSubtitle(state, tableName);
+    }
 
     std::array<Real64, columnNum> columnMax = {0.0};
     std::array<Real64, columnNum> columnMin = {0.0};
@@ -12957,7 +12959,9 @@ void WriteResilienceBinsTableReportingPeriod(EnergyPlusData &state,
                                              tabularReportStyle const &style,
                                              Real64 const unitConvMultiplier)
 {
-    WriteSubtitle(state, tableName);
+    if (style.produceTabular) {
+        WriteSubtitle(state, tableName);
+    }
 
     std::vector<Real64> columnMax(columnNum, 0);
     std::vector<Real64> columnMin(columnNum, 0);
@@ -13034,7 +13038,9 @@ void WriteSETHoursTableNonPreDefUseZoneData(EnergyPlusData &state,
                                             Real64 const unitConvMultiplier)
 {
 
-    WriteSubtitle(state, tableName);
+    if (style.produceTabular) {
+        WriteSubtitle(state, tableName);
+    }
 
     std::vector<Real64> columnMax(columnNum - 1, 0);
     std::vector<Real64> columnMin(columnNum - 1, 0);
@@ -13075,14 +13081,20 @@ void WriteSETHoursTableNonPreDefUseZoneData(EnergyPlusData &state,
     tableBody(columnNum, state.dataGlobal->NumOfZones + 2) = "-";
     tableBody(columnNum, state.dataGlobal->NumOfZones + 3) = "-";
 
-    WriteTable(state, tableBody, rowHead, columnHead, columnWidth);
-    if (state.dataSQLiteProcedures->sqlite) {
-        state.dataSQLiteProcedures->sqlite->createSQLiteTabularDataRecords(
-            tableBody, rowHead, columnHead, "AnnualThermalResilienceSummary", "Entire Facility", tableName);
+    if (style.produceTabular) {
+        WriteTable(state, tableBody, rowHead, columnHead, columnWidth);
     }
-    if (state.dataResultsFramework->resultsFramework->timeSeriesAndTabularEnabled()) {
-        state.dataResultsFramework->resultsFramework->TabularReportsCollection.addReportTable(
-            tableBody, rowHead, columnHead, "AnnualThermalResilienceSummary", "Entire Facility", tableName);
+    if (style.produceSQLite) {
+        if (state.dataSQLiteProcedures->sqlite) {
+            state.dataSQLiteProcedures->sqlite->createSQLiteTabularDataRecords(
+                tableBody, rowHead, columnHead, "AnnualThermalResilienceSummary", "Entire Facility", tableName);
+        }
+    }
+    if (style.produceJSON) {
+        if (state.dataResultsFramework->resultsFramework->timeSeriesAndTabularEnabled()) {
+            state.dataResultsFramework->resultsFramework->TabularReportsCollection.addReportTable(
+                tableBody, rowHead, columnHead, "AnnualThermalResilienceSummary", "Entire Facility", tableName);
+        }
     }
 }
 
@@ -13100,7 +13112,9 @@ void WriteSETHoursTableReportingPeriod(EnergyPlusData &state,
                                        Real64 const unitConvMultiplier)
 {
 
-    WriteSubtitle(state, tableName);
+    if (style.produceTabular) {
+        WriteSubtitle(state, tableName);
+    }
 
     std::vector<Real64> columnMax(columnNum - 1, 0);
     std::vector<Real64> columnMin(columnNum - 1, 0);
@@ -13141,14 +13155,20 @@ void WriteSETHoursTableReportingPeriod(EnergyPlusData &state,
     tableBody(columnNum, state.dataGlobal->NumOfZones + 2) = "-";
     tableBody(columnNum, state.dataGlobal->NumOfZones + 3) = "-";
 
-    WriteTable(state, tableBody, rowHead, columnHead, columnWidth);
-    if (state.dataSQLiteProcedures->sqlite) {
-        state.dataSQLiteProcedures->sqlite->createSQLiteTabularDataRecords(
-            tableBody, rowHead, columnHead, "ReportingPeriod-" + periodTitle + "-ThermalResilienceSummary", "Entire Facility", tableName);
+    if (style.produceTabular) {
+        WriteTable(state, tableBody, rowHead, columnHead, columnWidth);
     }
-    if (state.dataResultsFramework->resultsFramework->timeSeriesAndTabularEnabled()) {
-        state.dataResultsFramework->resultsFramework->TabularReportsCollection.addReportTable(
-            tableBody, rowHead, columnHead, "ReportingPeriod-" + periodTitle + "-ThermalResilienceSummary", "Entire Facility", tableName);
+    if (style.produceSQLite) {
+        if (state.dataSQLiteProcedures->sqlite) {
+            state.dataSQLiteProcedures->sqlite->createSQLiteTabularDataRecords(
+                tableBody, rowHead, columnHead, "ReportingPeriod-" + periodTitle + "-ThermalResilienceSummary", "Entire Facility", tableName);
+        }
+    }
+    if (style.produceJSON) {
+        if (state.dataResultsFramework->resultsFramework->timeSeriesAndTabularEnabled()) {
+            state.dataResultsFramework->resultsFramework->TabularReportsCollection.addReportTable(
+                tableBody, rowHead, columnHead, "ReportingPeriod-" + periodTitle + "-ThermalResilienceSummary", "Entire Facility", tableName);
+        }
     }
 }
 
@@ -13169,7 +13189,9 @@ void WriteHourOfSafetyTableNonPreDefUseZoneData(EnergyPlusData &state,
                                                 tabularReportStyle const &style)
 {
 
-    WriteSubtitle(state, tableName);
+    if (style.produceTabular) {
+        WriteSubtitle(state, tableName);
+    }
     for (int ZoneNum = 1; ZoneNum <= state.dataGlobal->NumOfZones; ++ZoneNum) {
         rowHead(ZoneNum) = state.dataHeatBal->Zone(ZoneNum).Name;
         for (int j = 1; j <= columnNum; j++) {
@@ -13214,14 +13236,20 @@ void WriteHourOfSafetyTableNonPreDefUseZoneData(EnergyPlusData &state,
         tableBody(dateColIdx, state.dataGlobal->NumOfZones + i) = "-";
     }
 
-    WriteTable(state, tableBody, rowHead, columnHead, columnWidth);
-    if (state.dataSQLiteProcedures->sqlite) {
-        state.dataSQLiteProcedures->sqlite->createSQLiteTabularDataRecords(
-            tableBody, rowHead, columnHead, "AnnualThermalResilienceSummary", "Entire Facility", tableName);
+    if (style.produceTabular) {
+        WriteTable(state, tableBody, rowHead, columnHead, columnWidth);
     }
-    if (state.dataResultsFramework->resultsFramework->timeSeriesAndTabularEnabled()) {
-        state.dataResultsFramework->resultsFramework->TabularReportsCollection.addReportTable(
-            tableBody, rowHead, columnHead, "AnnualThermalResilienceSummary", "Entire Facility", tableName);
+    if (style.produceSQLite) {
+        if (state.dataSQLiteProcedures->sqlite) {
+            state.dataSQLiteProcedures->sqlite->createSQLiteTabularDataRecords(
+                tableBody, rowHead, columnHead, "AnnualThermalResilienceSummary", "Entire Facility", tableName);
+        }
+    }
+    if (style.produceJSON) {
+        if (state.dataResultsFramework->resultsFramework->timeSeriesAndTabularEnabled()) {
+            state.dataResultsFramework->resultsFramework->TabularReportsCollection.addReportTable(
+                tableBody, rowHead, columnHead, "AnnualThermalResilienceSummary", "Entire Facility", tableName);
+        }
     }
 }
 
@@ -13239,7 +13267,9 @@ void WriteHourOfSafetyTableReportingPeriod(EnergyPlusData &state,
                                            tabularReportStyle const &style)
 {
 
-    WriteSubtitle(state, tableName);
+    if (style.produceTabular) {
+        WriteSubtitle(state, tableName);
+    }
     for (int ZoneNum = 1; ZoneNum <= state.dataGlobal->NumOfZones; ++ZoneNum) {
         rowHead(ZoneNum) = state.dataHeatBal->Zone(ZoneNum).Name;
         for (int j = 1; j <= columnNum; j++) {
@@ -13284,14 +13314,20 @@ void WriteHourOfSafetyTableReportingPeriod(EnergyPlusData &state,
         tableBody(dateColIdx, state.dataGlobal->NumOfZones + i) = "-";
     }
 
-    WriteTable(state, tableBody, rowHead, columnHead, columnWidth);
-    if (state.dataSQLiteProcedures->sqlite) {
-        state.dataSQLiteProcedures->sqlite->createSQLiteTabularDataRecords(
-            tableBody, rowHead, columnHead, "ReportingPeriod-" + periodTitle + "-ThermalResilienceSummary", "Entire Facility", tableName);
+    if (style.produceTabular) {
+        WriteTable(state, tableBody, rowHead, columnHead, columnWidth);
     }
-    if (state.dataResultsFramework->resultsFramework->timeSeriesAndTabularEnabled()) {
-        state.dataResultsFramework->resultsFramework->TabularReportsCollection.addReportTable(
-            tableBody, rowHead, columnHead, "ReportingPeriod-" + periodTitle + "-ThermalResilienceSummary", "Entire Facility", tableName);
+    if (style.produceSQLite) {
+        if (state.dataSQLiteProcedures->sqlite) {
+            state.dataSQLiteProcedures->sqlite->createSQLiteTabularDataRecords(
+                tableBody, rowHead, columnHead, "ReportingPeriod-" + periodTitle + "-ThermalResilienceSummary", "Entire Facility", tableName);
+        }
+    }
+    if (style.produceJSON) {
+        if (state.dataResultsFramework->resultsFramework->timeSeriesAndTabularEnabled()) {
+            state.dataResultsFramework->resultsFramework->TabularReportsCollection.addReportTable(
+                tableBody, rowHead, columnHead, "ReportingPeriod-" + periodTitle + "-ThermalResilienceSummary", "Entire Facility", tableName);
+        }
     }
 }
 
@@ -13359,7 +13395,9 @@ void WriteThermalResilienceTables(EnergyPlusData &state)
             degreeHourConversion = 1.0;
         }
 
-        WriteReportHeaders(state, "Annual Thermal Resilience Summary", "Entire Facility", OutputProcessor::StoreType::Average);
+        if (currentStyle.produceTabular) {
+            WriteReportHeaders(state, "Annual Thermal Resilience Summary", "Entire Facility", OutputProcessor::StoreType::Average);
+        }
 
         Array1D_int columnWidth;
         columnWidth.allocate(numColumnThermalTbl);

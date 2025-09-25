@@ -574,8 +574,9 @@ TEST_F(EnergyPlusFixture, MixedAir_HXBypassOptionTest)
             Psychrometrics::PsyHFnTdbW(state->dataMixedAir->OAController(OAControllerNum).RetTemp, 0.0); // Return air nodes, dry air
         state->dataLoopNodes->Node(OAControllerNum * 4 - 3).TempSetPoint =
             state->dataMixedAir->OAController(OAControllerNum).MixSetTemp; // Mixed air nodes
-        if (OAControllerNum == 5)
+        if (OAControllerNum == 5) {
             state->dataLoopNodes->Node(18).TempSetPoint = state->dataMixedAir->OAController(OAControllerNum).MixSetTemp + 1.0; // Mixed air nodes
+        }
         state->dataLoopNodes->Node(OAControllerNum * 4 - 2).Temp =
             state->dataMixedAir->OAController(OAControllerNum).OATemp; // OA inlet (actuated) air nodes, dry air
         state->dataLoopNodes->Node(OAControllerNum * 4 - 2).Enthalpy =
@@ -6618,7 +6619,7 @@ TEST_F(EnergyPlusFixture, CO2ControlDesignOARateTest)
         "   **   ~~~   ** This may be overriding desired ventilation controls. Check inputs for Minimum Outdoor Air Flow Rate, Minimum Outdoor Air "
         "Schedule Name and Controller:MechanicalVentilation",
         "   **   ~~~   ** Minimum OA fraction = 2.9412E-003, Mech Vent OA fraction = 1.5603E-003",
-        "   **   ~~~   **  Environment=, at Simulation time= 00:00 - 00:00",
+        "   **   ~~~   **  Environment=, at Simulation time= 00:00 - 00:15",
     });
 
     EXPECT_TRUE(compare_err_stream_substring(error_string, true));

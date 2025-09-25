@@ -101,6 +101,7 @@
 #include <EnergyPlus/ElectricPowerServiceManager.hh>
 #include <EnergyPlus/EvaporativeCoolers.hh>
 #include <EnergyPlus/EvaporativeFluidCoolers.hh>
+#include <EnergyPlus/Fans.hh>
 #include <EnergyPlus/FileSystem.hh>
 #include <EnergyPlus/FluidCoolers.hh>
 #include <EnergyPlus/General.hh>
@@ -937,8 +938,8 @@ void InitializeTabularMonthly(EnergyPlusData &state)
                 //     DEALLOCATE(IndexesForKeyVar)
                 // #endif
             } // ColNum
-        }     // kUniqueKey
-    }         // TabNum the end of the loop through the inputs objects
+        } // kUniqueKey
+    } // TabNum the end of the loop through the inputs objects
 
     // #ifdef ITM_KEYCACHE
     //  DEALLOCATE(NamesOfKeys)
@@ -963,7 +964,9 @@ bool isInvalidAggregationOrder(EnergyPlusData &state)
             // test if the aggregation types are in the correct order
             for (int kColumn = 1; kColumn <= ort->MonthlyTables(curTable).numColumns; ++kColumn) {
                 int curCol = kColumn + ort->MonthlyTables(curTable).firstColumn - 1;
-                if (ort->MonthlyColumns(curCol).varNum == 0) break; // if no variable was ever found than stop checking
+                if (ort->MonthlyColumns(curCol).varNum == 0) {
+                    break; // if no variable was ever found than stop checking
+                }
                 AggType curAggType = ort->MonthlyColumns(curCol).aggType;
                 if ((curAggType == AggType::Maximum) || (curAggType == AggType::Minimum)) {
                     foundMinOrMax = true;
@@ -3379,8 +3382,7 @@ void WriteTableOfContents(EnergyPlusData &state)
 
             if (state.dataWeather->TotReportPers > 0) {
                 std::string ReportPeriodSummary = "Reporting Period Summary";
-                tbl_stream << "<br><a href=\"#" << MakeAnchorName(ReportPeriodSummary, Entire_Facility) << "\">"
-                           << "Reporting Period Summary"
+                tbl_stream << "<br><a href=\"#" << MakeAnchorName(ReportPeriodSummary, Entire_Facility) << "\">" << "Reporting Period Summary"
                            << "</a>\n";
                 AddTOCReportPeriod(state.dataWeather->TotThermalReportPers, "Thermal", state.dataWeather->ThermalReportPeriodInput, tbl_stream);
                 AddTOCReportPeriod(state.dataWeather->TotCO2ReportPers, "CO2", state.dataWeather->CO2ReportPeriodInput, tbl_stream);
@@ -4534,8 +4536,9 @@ void GatherHeatGainReport(EnergyPlusData &state, OutputProcessor::TimeStepType t
         return;
     }
 
-    if (!state.dataOutRptPredefined->reportName(state.dataOutRptPredefined->pdrSensibleGain).show)
+    if (!state.dataOutRptPredefined->reportName(state.dataOutRptPredefined->pdrSensibleGain).show) {
         return; // don't gather data if report isn't requested
+    }
 
     if (t_timeStepType == OutputProcessor::TimeStepType::Zone) {
         return; // only add values over the HVAC timestep basis
@@ -5234,13 +5237,18 @@ void WriteTabularReports(EnergyPlusData &state)
         WriteLoadComponentSummaryTables(state);
         WriteHeatEmissionTable(state);
 
-        if (ort->displayThermalResilienceSummary && !state.dataGlobal->DoPureLoadCalc) // code will crash if pure load calc
-            WriteThermalResilienceTables(state);                                       // code will crash if pure load calc
-        if (ort->displayCO2ResilienceSummary && !state.dataGlobal->DoPureLoadCalc)     // code will crash if pure load calc
-            WriteCO2ResilienceTables(state);                                           // code will crash if pure load calc
-        if (ort->displayVisualResilienceSummary && !state.dataGlobal->DoPureLoadCalc)  // code will crash if pure load calc
-            WriteVisualResilienceTables(state);                                        // code will crash if pure load calc
-        if (state.dataWeather->TotReportPers > 0) WriteReportPeriodTimeConsumption(state);
+        if (ort->displayThermalResilienceSummary && !state.dataGlobal->DoPureLoadCalc) { // code will crash if pure load calc
+            WriteThermalResilienceTables(state);                                         // code will crash if pure load calc
+        }
+        if (ort->displayCO2ResilienceSummary && !state.dataGlobal->DoPureLoadCalc) { // code will crash if pure load calc
+            WriteCO2ResilienceTables(state);                                         // code will crash if pure load calc
+        }
+        if (ort->displayVisualResilienceSummary && !state.dataGlobal->DoPureLoadCalc) { // code will crash if pure load calc
+            WriteVisualResilienceTables(state);                                         // code will crash if pure load calc
+        }
+        if (state.dataWeather->TotReportPers > 0) {
+            WriteReportPeriodTimeConsumption(state);
+        }
         for (int i = 1; i <= state.dataWeather->TotThermalReportPers; i++) {
             WriteThermalResilienceTablesRepPeriod(state, i);
         }
@@ -5389,13 +5397,27 @@ void parseStatLine(const std::string &lineIn,
     }
 
     // these not part of big if/else because sequential
-    if (lineType == StatLineType::KoppenDes1Line && isKoppen) lineType = StatLineType::KoppenDes2Line;
-    if (lineType == StatLineType::KoppenLine && isKoppen) lineType = StatLineType::KoppenDes1Line;
-    if (has(lineIn, "ppen classification)")) lineType = StatLineType::KoppenLine;
-    if (lineType == StatLineType::AshStdDes2Line) lineType = StatLineType::AshStdDes3Line;
-    if (lineType == StatLineType::AshStdDes1Line) lineType = StatLineType::AshStdDes2Line;
-    if (lineType == StatLineType::AshStdLine) lineType = StatLineType::AshStdDes1Line;
-    if (has(lineIn, "ASHRAE Standard")) lineType = StatLineType::AshStdLine;
+    if (lineType == StatLineType::KoppenDes1Line && isKoppen) {
+        lineType = StatLineType::KoppenDes2Line;
+    }
+    if (lineType == StatLineType::KoppenLine && isKoppen) {
+        lineType = StatLineType::KoppenDes1Line;
+    }
+    if (has(lineIn, "ppen classification)")) {
+        lineType = StatLineType::KoppenLine;
+    }
+    if (lineType == StatLineType::AshStdDes2Line) {
+        lineType = StatLineType::AshStdDes3Line;
+    }
+    if (lineType == StatLineType::AshStdDes1Line) {
+        lineType = StatLineType::AshStdDes2Line;
+    }
+    if (lineType == StatLineType::AshStdLine) {
+        lineType = StatLineType::AshStdDes1Line;
+    }
+    if (has(lineIn, "ASHRAE Standard")) {
+        lineType = StatLineType::AshStdLine;
+    }
 }
 
 void FillWeatherPredefinedEntries(EnergyPlusData &state)
@@ -6044,7 +6066,9 @@ void FillWeatherPredefinedEntries(EnergyPlusData &state)
             //  - Climate type "1A" (ASHRAE Standards 90.1-2004 and 90.2-2004 Climate Zone)**
             if (has(lineIn, "Standard")) {
                 ashZone = lineIn.substr(16, 2);
-                if (ashZone[1] == '"') ashZone[1] = ' ';
+                if (ashZone[1] == '"') {
+                    ashZone[1] = ' ';
+                }
                 PreDefTableEntry(state, state.dataOutRptPredefined->pdchWthrVal, "ASHRAE Climate Zone", ashZone);
                 PreDefTableEntry(state, state.dataOutRptPredefined->pdchLeedGenData, "Climate Zone", ashZone);
                 if (ashZone == "1A") {
@@ -6089,13 +6113,27 @@ void FillWeatherPredefinedEntries(EnergyPlusData &state)
         }
         lineIn = "";
         lineTypeinterim = StatLineType::Initialized;
-        if (lineType == StatLineType::AshStdDes3Line) lineTypeinterim = StatLineType::Initialized;
-        if (lineType == StatLineType::AshStdDes2Line) lineTypeinterim = StatLineType::AshStdDes2Line;
-        if (lineType == StatLineType::AshStdDes1Line) lineTypeinterim = StatLineType::AshStdDes1Line;
-        if (lineType == StatLineType::AshStdLine) lineTypeinterim = StatLineType::AshStdLine;
-        if (lineType == StatLineType::KoppenDes2Line) lineTypeinterim = StatLineType::Initialized;
-        if (lineType == StatLineType::KoppenDes1Line) lineTypeinterim = StatLineType::KoppenDes1Line;
-        if (lineType == StatLineType::KoppenLine) lineTypeinterim = StatLineType::KoppenLine;
+        if (lineType == StatLineType::AshStdDes3Line) {
+            lineTypeinterim = StatLineType::Initialized;
+        }
+        if (lineType == StatLineType::AshStdDes2Line) {
+            lineTypeinterim = StatLineType::AshStdDes2Line;
+        }
+        if (lineType == StatLineType::AshStdDes1Line) {
+            lineTypeinterim = StatLineType::AshStdDes1Line;
+        }
+        if (lineType == StatLineType::AshStdLine) {
+            lineTypeinterim = StatLineType::AshStdLine;
+        }
+        if (lineType == StatLineType::KoppenDes2Line) {
+            lineTypeinterim = StatLineType::Initialized;
+        }
+        if (lineType == StatLineType::KoppenDes1Line) {
+            lineTypeinterim = StatLineType::KoppenDes1Line;
+        }
+        if (lineType == StatLineType::KoppenLine) {
+            lineTypeinterim = StatLineType::KoppenLine;
+        }
     }
 }
 
@@ -6122,20 +6160,30 @@ std::string GetColumnUsingTabs(std::string const &inString, // Input String
 
     size_t endPos = inString.find_first_of(tb);
     if (colNum == 1) {
-        if (endPos == std::string::npos) return inString;
+        if (endPos == std::string::npos) {
+            return inString;
+        }
         return inString.substr(startPos, endPos - startPos);
     }
-    if (endPos == std::string::npos) return "";
+    if (endPos == std::string::npos) {
+        return "";
+    }
 
     int numCols = 1;
     while (numCols < colNum) {
         startPos = endPos + 1;
         endPos = inString.find_first_of(tb, startPos);
         ++numCols;
-        if (endPos == std::string::npos) break;
+        if (endPos == std::string::npos) {
+            break;
+        }
     }
-    if (colNum > numCols) return "";
-    if (endPos == std::string::npos) endPos = inString.size();
+    if (colNum > numCols) {
+        return "";
+    }
+    if (endPos == std::string::npos) {
+        endPos = inString.size();
+    }
     return inString.substr(startPos, endPos - startPos);
 }
 
@@ -6561,6 +6609,16 @@ void FillRemainingPredefinedEntries(EnergyPlusData &state)
             PreDefTableEntry(
                 state, state.dataOutRptPredefined->pdchOaAvFctEMS, thisPrimaryAirSys.Name, avgFlowRate(iSys, MixedAir::OALimitFactor::EMS), 4);
         }
+
+        // System Summary Fan Operation
+        PreDefTableEntry(state, state.dataOutRptPredefined->pdchFanOpOccHrs, thisPrimaryAirSys.Name, thisSysPreDefRep.TimeOccupiedTotal);
+        PreDefTableEntry(state, state.dataOutRptPredefined->pdchFanOpOccCont, thisPrimaryAirSys.Name, thisSysPreDefRep.TimeFanContTotalOcc);
+        PreDefTableEntry(state, state.dataOutRptPredefined->pdchFanOpOccCyc, thisPrimaryAirSys.Name, thisSysPreDefRep.TimeFanCycTotalOcc);
+        PreDefTableEntry(state, state.dataOutRptPredefined->pdchFanOpOccOff, thisPrimaryAirSys.Name, thisSysPreDefRep.TimeFanOffTotalOcc);
+        PreDefTableEntry(state, state.dataOutRptPredefined->pdchFanOpUnoccHrs, thisPrimaryAirSys.Name, thisSysPreDefRep.TimeUnoccupiedTotal);
+        PreDefTableEntry(state, state.dataOutRptPredefined->pdchFanOpUnoccCont, thisPrimaryAirSys.Name, thisSysPreDefRep.TimeFanContTotalUnocc);
+        PreDefTableEntry(state, state.dataOutRptPredefined->pdchFanOpUnoccCyc, thisPrimaryAirSys.Name, thisSysPreDefRep.TimeFanCycTotalUnocc);
+        PreDefTableEntry(state, state.dataOutRptPredefined->pdchFanOpUnoccOff, thisPrimaryAirSys.Name, thisSysPreDefRep.TimeFanOffTotalUnocc);
     }
     // add total rows for outdoor air details
     OutputReportPredefined::PreDefTableEntry(
@@ -6861,8 +6919,12 @@ void FillRemainingPredefinedEntries(EnergyPlusData &state)
     }
     // LEED schedule sub table
     for (auto *sched : state.dataSched->schedules) {
-        if (sched->schedTypeNum == -1) continue;
-        if (!Util::SameString(state.dataSched->scheduleTypes[sched->schedTypeNum]->Name, "FRACTION")) continue;
+        if (sched->schedTypeNum == -1) {
+            continue;
+        }
+        if (!Util::SameString(state.dataSched->scheduleTypes[sched->schedTypeNum]->Name, "FRACTION")) {
+            continue;
+        }
 
         PreDefTableEntry(state,
                          state.dataOutRptPredefined->pdchLeedEflhEflh,
@@ -6879,6 +6941,47 @@ void FillRemainingPredefinedEntries(EnergyPlusData &state)
     // fill the LEED setpoint table
     ZoneTempPredictorCorrector::FillPredefinedTableOnThermostatSetpoints(state);
     ZoneTempPredictorCorrector::FillPredefinedTableOnThermostatSchedules(state);
+
+    // Fan Operating Points
+    constexpr std::array<Real64, 10> flowFrac = {0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9};
+    bool const saveNightVentOn = state.dataHVACGlobal->NightVentOn;
+    bool const saveTurnFansOn = state.dataHVACGlobal->TurnFansOn;
+    state.dataHVACGlobal->NightVentOn = false;
+    state.dataHVACGlobal->TurnFansOn = true;
+
+    for (auto *fan : state.dataFans->fans) {
+        OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchFanPowerType, fan->Name, HVAC::fanTypeNames[(int)fan->type]);
+        // Save node data to restore later
+        auto &outletNode = state.dataLoopNodes->Node(fan->outletNodeNum);
+        auto &inletNode = state.dataLoopNodes->Node(fan->inletNodeNum);
+        auto const saveOutletNode = outletNode;
+        auto const saveInletNode = inletNode;
+        // Set some node values so the fan init function works as expected
+        outletNode.MassFlowRateMax = inletNode.MassFlowRateMaxAvail = fan->maxAirMassFlowRate;
+        outletNode.MassFlowRateMin = inletNode.MassFlowRateMinAvail = 0.0;
+        inletNode.MassFlowRate = fan->maxAirMassFlowRate;
+        fan->simulate(state, false);
+        Real64 const fullLoadPower = fan->totalPower;
+        OutputReportPredefined::PreDefTableEntry(state, state.dataOutRptPredefined->pdchFanPower10, fan->Name, 1.0);
+
+        int columnIndex = state.dataOutRptPredefined->pdchFanPower00;
+        for (Real64 frac : flowFrac) {
+            Real64 fanPowerFrac = 0.0;
+            if (fullLoadPower > 0.0) {
+                inletNode.MassFlowRate = frac * fan->maxAirMassFlowRate;
+                fan->simulate(state, false);
+                fanPowerFrac = fan->totalPower / fullLoadPower;
+            }
+            PreDefTableEntry(state, columnIndex, fan->Name, fanPowerFrac);
+            ++columnIndex;
+        }
+        // Restore Nodes
+        outletNode = saveOutletNode;
+        inletNode = saveInletNode;
+    }
+    // Restore flags
+    state.dataHVACGlobal->NightVentOn = saveNightVentOn;
+    state.dataHVACGlobal->TurnFansOn = saveTurnFansOn;
 }
 
 void WriteMonthlyTables(EnergyPlusData &state)
@@ -6975,7 +7078,9 @@ void WriteMonthlyTables(EnergyPlusData &state)
         UnitsStyle unitsStyle_cur = ort->unitsStyle;
         bool produceTabular = true;
         bool produceSQLite = false;
-        if (produceDualUnitsFlags(iUnitSystem, ort->unitsStyle, ort->unitsStyle_SQLite, unitsStyle_cur, produceTabular, produceSQLite)) break;
+        if (produceDualUnitsFlags(iUnitSystem, ort->unitsStyle, ort->unitsStyle_SQLite, unitsStyle_cur, produceTabular, produceSQLite)) {
+            break;
+        }
 
         // set the unit conversion
         if (unitsStyle_cur == UnitsStyle::None) {
@@ -7085,8 +7190,12 @@ void WriteMonthlyTables(EnergyPlusData &state)
                             }
                             if (ort->IsMonthGathered(lMonth)) {
                                 tableBody(columnRecount, lMonth) = RealToStr(curVal, digitsShown);
-                                if (curVal > maxVal) maxVal = curVal;
-                                if (curVal < minVal) minVal = curVal;
+                                if (curVal > maxVal) {
+                                    maxVal = curVal;
+                                }
+                                if (curVal < minVal) {
+                                    minVal = curVal;
+                                }
                             } else {
                                 tableBody(columnRecount, lMonth) = "-";
                             }
@@ -7126,8 +7235,12 @@ void WriteMonthlyTables(EnergyPlusData &state)
                             if (ort->IsMonthGathered(lMonth)) {
                                 tableBody(columnRecount, lMonth) = RealToStr(curVal, digitsShown);
                                 sumVal += curVal;
-                                if (curVal > maxVal) maxVal = curVal;
-                                if (curVal < minVal) minVal = curVal;
+                                if (curVal > maxVal) {
+                                    maxVal = curVal;
+                                }
+                                if (curVal < minVal) {
+                                    minVal = curVal;
+                                }
                             } else {
                                 tableBody(columnRecount, lMonth) = "-";
                             }
@@ -7181,8 +7294,12 @@ void WriteMonthlyTables(EnergyPlusData &state)
                             curVal = ort->MonthlyColumns(curCol).reslt(lMonth) * curConversionFactor + state.dataOutRptTab->curConversionOffset;
                             if (ort->IsMonthGathered(lMonth)) {
                                 tableBody(columnRecount, lMonth) = RealToStr(curVal, digitsShown);
-                                if (curVal > maxVal) maxVal = curVal;
-                                if (curVal < minVal) minVal = curVal;
+                                if (curVal > maxVal) {
+                                    maxVal = curVal;
+                                }
+                                if (curVal < minVal) {
+                                    minVal = curVal;
+                                }
                             } else {
                                 tableBody(columnRecount, lMonth) = "-";
                             }
@@ -7244,8 +7361,12 @@ void WriteMonthlyTables(EnergyPlusData &state)
                                 // restructured the following lines to hide showing HUGE and -HUGE values in output table CR8154 Glazer
                                 if ((curVal < veryLarge) && (curVal > verySmall)) {
                                     curVal = curVal * curConversionFactor + state.dataOutRptTab->curConversionOffset;
-                                    if (curVal > maxVal) maxVal = curVal;
-                                    if (curVal < minVal) minVal = curVal;
+                                    if (curVal > maxVal) {
+                                        maxVal = curVal;
+                                    }
+                                    if (curVal < minVal) {
+                                        minVal = curVal;
+                                    }
                                     if (curVal < veryLarge && curVal > verySmall) {
                                         tableBody(columnRecount - 1, lMonth) = RealToStr(curVal, digitsShown);
                                     } else {
@@ -7305,7 +7426,7 @@ void WriteMonthlyTables(EnergyPlusData &state)
                     }
                 }
             } // jTables
-        }     // iInput
+        } // iInput
     }
 }
 
@@ -7348,7 +7469,9 @@ void WriteTimeBinTables(EnergyPlusData &state)
         UnitsStyle unitsStyle_cur = ort->unitsStyle;
         bool produceTabular = true;
         bool produceSQLite = false;
-        if (produceDualUnitsFlags(iUnitSystem, ort->unitsStyle, ort->unitsStyle_SQLite, unitsStyle_cur, produceTabular, produceSQLite)) break;
+        if (produceDualUnitsFlags(iUnitSystem, ort->unitsStyle, ort->unitsStyle_SQLite, unitsStyle_cur, produceTabular, produceSQLite)) {
+            break;
+        }
 
         rowHead(1) = "Interval Start";
         rowHead(2) = "Interval End";
@@ -7668,7 +7791,9 @@ void WriteBEPSTable(EnergyPlusData &state)
         UnitsStyle unitsStyle_cur = ort->unitsStyle;
         bool produceTabular = true;
         bool produceSQLite = false;
-        if (produceDualUnitsFlags(iUnitSystem, ort->unitsStyle, ort->unitsStyle_SQLite, unitsStyle_cur, produceTabular, produceSQLite)) break;
+        if (produceDualUnitsFlags(iUnitSystem, ort->unitsStyle, ort->unitsStyle_SQLite, unitsStyle_cur, produceTabular, produceSQLite)) {
+            break;
+        }
 
         // determine building floor areas
         DetermineBuildingFloorArea(state);
@@ -7944,8 +8069,12 @@ void WriteBEPSTable(EnergyPlusData &state)
                                                               // district heating water | district heating steam | gasoline | diesel | coal | Fuel Oil
                                                               // No1 | Fuel Oil No2 | propane | otherfuel1 | otherfuel2
 
-        if (ort->efficiencyDistrictCooling == 0) ort->efficiencyDistrictCooling = 1.0;
-        if (ort->efficiencyDistrictHeatingWater == 0) ort->efficiencyDistrictHeatingWater = 1.0;
+        if (ort->efficiencyDistrictCooling == 0) {
+            ort->efficiencyDistrictCooling = 1.0;
+        }
+        if (ort->efficiencyDistrictHeatingWater == 0) {
+            ort->efficiencyDistrictHeatingWater = 1.0;
+        }
 
         // source emissions already have the source factors included in the calcs.
         Real64 totalSourceEnergyUse = 0.0;
@@ -9778,7 +9907,9 @@ void WriteSourceEnergyEndUseSummary(EnergyPlusData &state)
         UnitsStyle unitsStyle_cur = ort->unitsStyle;
         bool produceTabular = true;
         bool produceSQLite = false;
-        if (produceDualUnitsFlags(iUnitSystem, ort->unitsStyle, ort->unitsStyle_SQLite, unitsStyle_cur, produceTabular, produceSQLite)) break;
+        if (produceDualUnitsFlags(iUnitSystem, ort->unitsStyle, ort->unitsStyle_SQLite, unitsStyle_cur, produceTabular, produceSQLite)) {
+            break;
+        }
 
         // collapse the gatherEndUseBEPS array to the resource groups displayed
         for (int jEndUse = 1; jEndUse <= static_cast<int>(Constant::EndUse::Num); ++jEndUse) {
@@ -10127,7 +10258,7 @@ void WriteSourceEnergyEndUseSummary(EnergyPlusData &state)
                 }
             }
         } // End of Normalized by Total Area
-    }     // End of Dual Units reporting
+    } // End of Dual Units reporting
 }
 
 void WriteDemandEndUseSummary(EnergyPlusData &state)
@@ -10179,7 +10310,9 @@ void WriteDemandEndUseSummary(EnergyPlusData &state)
         UnitsStyle unitsStyle_cur = ort->unitsStyle;
         bool produceTabular = true;
         bool produceSQLite = false;
-        if (produceDualUnitsFlags(iUnitSystem, ort->unitsStyle, ort->unitsStyle_SQLite, unitsStyle_cur, produceTabular, produceSQLite)) break;
+        if (produceDualUnitsFlags(iUnitSystem, ort->unitsStyle, ort->unitsStyle_SQLite, unitsStyle_cur, produceTabular, produceSQLite)) {
+            break;
+        }
 
         // totals - select which additional fuel to display
         collapsedTotal = 0.0;
@@ -10691,7 +10824,9 @@ void WriteCompCostTable(EnergyPlusData &state)
         UnitsStyle unitsStyle_cur = ort->unitsStyle;
         bool produceTabular = true;
         bool produceSQLite = false;
-        if (produceDualUnitsFlags(iUnitSystem, ort->unitsStyle, ort->unitsStyle_SQLite, unitsStyle_cur, produceTabular, produceSQLite)) break;
+        if (produceDualUnitsFlags(iUnitSystem, ort->unitsStyle, ort->unitsStyle_SQLite, unitsStyle_cur, produceTabular, produceSQLite)) {
+            break;
+        }
 
         // 1st sub-table with total Costs and normalized with area
         rowHead.allocate(10);
@@ -10981,7 +11116,9 @@ void WriteVeriSumTable(EnergyPlusData &state)
         UnitsStyle unitsStyle_cur = ort->unitsStyle;
         bool produceTabular = true;
         bool produceSQLite = false;
-        if (produceDualUnitsFlags(iUnitSystem, ort->unitsStyle, ort->unitsStyle_SQLite, unitsStyle_cur, produceTabular, produceSQLite)) break;
+        if (produceDualUnitsFlags(iUnitSystem, ort->unitsStyle, ort->unitsStyle_SQLite, unitsStyle_cur, produceTabular, produceSQLite)) {
+            break;
+        }
 
         // show the headers of the report
         if (produceTabular) {
@@ -11157,7 +11294,9 @@ void WriteVeriSumTable(EnergyPlusData &state)
         for (int iSurf = 1; iSurf <= state.dataSurface->TotSurfaces; ++iSurf) {
             // only exterior surfaces including underground
             auto const &thisSurf = state.dataSurface->Surface(iSurf);
-            if (!thisSurf.HeatTransSurf) continue;
+            if (!thisSurf.HeatTransSurf) {
+                continue;
+            }
             bool const isAboveGround = (thisSurf.ExtBoundCond == ExternalEnvironment) || (thisSurf.ExtBoundCond == OtherSideCondModeledExt);
             if (isAboveGround || (thisSurf.ExtBoundCond == Ground) || (thisSurf.ExtBoundCond == GroundFCfactorMethod) ||
                 (thisSurf.ExtBoundCond == KivaFoundation)) {
@@ -11184,31 +11323,47 @@ void WriteVeriSumTable(EnergyPlusData &state)
                         Real64 const mult = thisZone.Multiplier * thisZone.ListMultiplier;
                         if ((curAzimuth >= 315.0) || (curAzimuth < 45.0)) {
                             wallAreaN += curArea * mult;
-                            if (isConditioned) wallAreaNcond += curArea * mult;
+                            if (isConditioned) {
+                                wallAreaNcond += curArea * mult;
+                            }
                             if (isAboveGround) {
                                 aboveGroundWallAreaN += curArea * mult;
-                                if (isConditioned) aboveGroundWallAreaNcond += curArea * mult;
+                                if (isConditioned) {
+                                    aboveGroundWallAreaNcond += curArea * mult;
+                                }
                             }
                         } else if ((curAzimuth >= 45.0) && (curAzimuth < 135.0)) {
                             wallAreaE += curArea * mult;
-                            if (isConditioned) wallAreaEcond += curArea * mult;
+                            if (isConditioned) {
+                                wallAreaEcond += curArea * mult;
+                            }
                             if (isAboveGround) {
                                 aboveGroundWallAreaE += curArea * mult;
-                                if (isConditioned) aboveGroundWallAreaEcond += curArea * mult;
+                                if (isConditioned) {
+                                    aboveGroundWallAreaEcond += curArea * mult;
+                                }
                             }
                         } else if ((curAzimuth >= 135.0) && (curAzimuth < 225.0)) {
                             wallAreaS += curArea * mult;
-                            if (isConditioned) wallAreaScond += curArea * mult;
+                            if (isConditioned) {
+                                wallAreaScond += curArea * mult;
+                            }
                             if (isAboveGround) {
                                 aboveGroundWallAreaS += curArea * mult;
-                                if (isConditioned) aboveGroundWallAreaScond += curArea * mult;
+                                if (isConditioned) {
+                                    aboveGroundWallAreaScond += curArea * mult;
+                                }
                             }
                         } else if ((curAzimuth >= 225.0) && (curAzimuth < 315.0)) {
                             wallAreaW += curArea * mult;
-                            if (isConditioned) wallAreaWcond += curArea * mult;
+                            if (isConditioned) {
+                                wallAreaWcond += curArea * mult;
+                            }
                             if (isAboveGround) {
                                 aboveGroundWallAreaW += curArea * mult;
-                                if (isConditioned) aboveGroundWallAreaWcond += curArea * mult;
+                                if (isConditioned) {
+                                    aboveGroundWallAreaWcond += curArea * mult;
+                                }
                             }
                         }
                         if (DetailedWWR) {
@@ -11223,16 +11378,24 @@ void WriteVeriSumTable(EnergyPlusData &state)
                         Real64 const mult = thisZone.Multiplier * thisZone.ListMultiplier * thisSurf.Multiplier;
                         if ((curAzimuth >= 315.0) || (curAzimuth < 45.0)) {
                             windowAreaN += curArea * mult;
-                            if (isConditioned) windowAreaNcond += curArea * mult;
+                            if (isConditioned) {
+                                windowAreaNcond += curArea * mult;
+                            }
                         } else if ((curAzimuth >= 45.0) && (curAzimuth < 135.0)) {
                             windowAreaE += curArea * mult;
-                            if (isConditioned) windowAreaEcond += curArea * mult;
+                            if (isConditioned) {
+                                windowAreaEcond += curArea * mult;
+                            }
                         } else if ((curAzimuth >= 135.0) && (curAzimuth < 225.0)) {
                             windowAreaS += curArea * mult;
-                            if (isConditioned) windowAreaScond += curArea * mult;
+                            if (isConditioned) {
+                                windowAreaScond += curArea * mult;
+                            }
                         } else if ((curAzimuth >= 225.0) && (curAzimuth < 315.0)) {
                             windowAreaW += curArea * mult;
-                            if (isConditioned) windowAreaWcond += curArea * mult;
+                            if (isConditioned) {
+                                windowAreaWcond += curArea * mult;
+                            }
                         }
                         zoneOpeningArea(zonePt) += curArea * thisSurf.Multiplier; // total window opening area for each zone (glass plus frame area)
                         zoneGlassArea(zonePt) += thisSurf.GrossArea * thisSurf.Multiplier;
@@ -12649,8 +12812,12 @@ void WriteResilienceBinsTable(EnergyPlusData &state,
         const std::string &ZoneName = state.dataHeatBal->Zone(i).Name;
         for (int j = 0; j < columnNum; j++) {
             Real64 curValue = (state.dataHeatBal->Resilience(i).*memberPtr)[j] * unitConvMultiplier;
-            if (curValue > columnMax[j]) columnMax[j] = curValue;
-            if (curValue < columnMin[j]) columnMin[j] = curValue;
+            if (curValue > columnMax[j]) {
+                columnMax[j] = curValue;
+            }
+            if (curValue < columnMin[j]) {
+                columnMin[j] = curValue;
+            }
             columnSum[j] += curValue;
             PreDefTableEntry(state, columnHead[j], ZoneName, RealToStr(curValue, 2));
         }
@@ -12687,8 +12854,12 @@ void WriteResilienceBinsTableNonPreDefUseZoneData(EnergyPlusData &state,
         rowHead(ZoneNum) = ZoneName;
         for (int j = 0; j < columnNum; j++) {
             Real64 curValue = (state.dataHeatBal->Resilience(ZoneNum).*memberPtr).at(j) * unitConvMultiplier;
-            if (curValue > columnMax.at(j)) columnMax.at(j) = curValue;
-            if (curValue < columnMin.at(j)) columnMin.at(j) = curValue;
+            if (curValue > columnMax.at(j)) {
+                columnMax.at(j) = curValue;
+            }
+            if (curValue < columnMin.at(j)) {
+                columnMin.at(j) = curValue;
+            }
             columnSum.at(j) += curValue;
             tableBody(j + 1, ZoneNum) = RealToStr(curValue, 2);
         }
@@ -12744,8 +12915,12 @@ void WriteResilienceBinsTableReportingPeriod(EnergyPlusData &state,
         rowHead(ZoneNum) = ZoneName;
         for (int j = 0; j < columnNum; j++) {
             Real64 curValue = ZoneBins(ZoneNum, periodIdx).at(j) * unitConvMultiplier;
-            if (curValue > columnMax.at(j)) columnMax.at(j) = curValue;
-            if (curValue < columnMin.at(j)) columnMin.at(j) = curValue;
+            if (curValue > columnMax.at(j)) {
+                columnMax.at(j) = curValue;
+            }
+            if (curValue < columnMin.at(j)) {
+                columnMin.at(j) = curValue;
+            }
             columnSum.at(j) += curValue;
             tableBody(j + 1, ZoneNum) = RealToStr(curValue, 2);
         }
@@ -12801,8 +12976,12 @@ void WriteSETHoursTableNonPreDefUseZoneData(EnergyPlusData &state,
         rowHead(ZoneNum) = ZoneName;
         for (int j = 0; j < columnNum - 1; j++) {
             Real64 curValue = (state.dataHeatBal->Resilience(ZoneNum).*memberPtr).at(j) * multiplier.at(j);
-            if (curValue > columnMax.at(j)) columnMax.at(j) = curValue;
-            if (curValue < columnMin.at(j)) columnMin.at(j) = curValue;
+            if (curValue > columnMax.at(j)) {
+                columnMax.at(j) = curValue;
+            }
+            if (curValue < columnMin.at(j)) {
+                columnMin.at(j) = curValue;
+            }
             columnSum.at(j) += curValue;
             tableBody(j + 1, ZoneNum) = RealToStr(curValue, 2);
         }
@@ -12862,8 +13041,12 @@ void WriteSETHoursTableReportingPeriod(EnergyPlusData &state,
         rowHead(ZoneNum) = ZoneName;
         for (int j = 0; j < columnNum - 1; j++) {
             Real64 curValue = ZoneBins(ZoneNum, periodIdx).at(j) * multiplier.at(j);
-            if (curValue > columnMax.at(j)) columnMax.at(j) = curValue;
-            if (curValue < columnMin.at(j)) columnMin.at(j) = curValue;
+            if (curValue > columnMax.at(j)) {
+                columnMax.at(j) = curValue;
+            }
+            if (curValue < columnMin.at(j)) {
+                columnMin.at(j) = curValue;
+            }
             columnSum.at(j) += curValue;
             tableBody(j + 1, ZoneNum) = RealToStr(curValue, 2);
         }
@@ -12929,8 +13112,12 @@ void WriteHourOfSafetyTableNonPreDefUseZoneData(EnergyPlusData &state,
     for (int ZoneNum = 1; ZoneNum <= state.dataGlobal->NumOfZones; ++ZoneNum) {
         for (int j = 0; j < columnNum; j++) {
             Real64 curValue = (state.dataHeatBal->Resilience(ZoneNum).*memberPtr).at(j);
-            if (curValue > columnMax.at(j)) columnMax.at(j) = curValue;
-            if (curValue < columnMin.at(j)) columnMin.at(j) = curValue;
+            if (curValue > columnMax.at(j)) {
+                columnMax.at(j) = curValue;
+            }
+            if (curValue < columnMin.at(j)) {
+                columnMin.at(j) = curValue;
+            }
             columnSum.at(j) += curValue;
         }
     }
@@ -12994,8 +13181,12 @@ void WriteHourOfSafetyTableReportingPeriod(EnergyPlusData &state,
     for (int i = 1; i <= state.dataGlobal->NumOfZones; ++i) {
         for (int j = 0; j < columnNum; j++) {
             Real64 curValue = ZoneBins(i, periodIdx).at(j);
-            if (curValue > columnMax.at(j)) columnMax.at(j) = curValue;
-            if (curValue < columnMin.at(j)) columnMin.at(j) = curValue;
+            if (curValue > columnMax.at(j)) {
+                columnMax.at(j) = curValue;
+            }
+            if (curValue < columnMin.at(j)) {
+                columnMin.at(j) = curValue;
+            }
             columnSum.at(j) += curValue;
         }
     }
@@ -13047,8 +13238,12 @@ void WriteHourOfSafetyTable(EnergyPlusData &state,
                 PreDefTableEntry(state, columnHead[dateColIdx], thisZone.Name, startDateTime);
             } else {
                 Real64 curValue = ZoneBins(i)[j];
-                if (curValue > columnMax[j]) columnMax[j] = curValue;
-                if (curValue < columnMin[j]) columnMin[j] = curValue;
+                if (curValue > columnMax[j]) {
+                    columnMax[j] = curValue;
+                }
+                if (curValue < columnMin[j]) {
+                    columnMin[j] = curValue;
+                }
                 columnSum[j] += curValue;
                 PreDefTableEntry(state, columnHead[j], thisZone.Name, RealToStr(curValue, 2));
             }
@@ -13386,7 +13581,9 @@ void WriteVisualResilienceTables(EnergyPlusData &state)
         }
     }
 
-    if (state.dataGlobal->NumOfZones <= 0) return;
+    if (state.dataGlobal->NumOfZones <= 0) {
+        return;
+    }
     std::array<int, numColumnVisualTbl> columnHead = {state.dataOutRptPredefined->pdchIllumHourDark,
                                                       state.dataOutRptPredefined->pdchIllumHourDim,
                                                       state.dataOutRptPredefined->pdchIllumHourAdequate,
@@ -13493,7 +13690,9 @@ void WriteHeatEmissionTable(EnergyPlusData &state)
             UnitsStyle unitsStyle_cur = ort->unitsStyle;
             bool produceTabular = true;
             bool produceSQLite = false;
-            if (produceDualUnitsFlags(iUnitSystem, ort->unitsStyle, ort->unitsStyle_SQLite, unitsStyle_cur, produceTabular, produceSQLite)) break;
+            if (produceDualUnitsFlags(iUnitSystem, ort->unitsStyle, ort->unitsStyle_SQLite, unitsStyle_cur, produceTabular, produceSQLite)) {
+                break;
+            }
 
             if (produceTabular) {
                 WriteReportHeaders(state, "Annual Heat Emissions Report", "Entire Facility", OutputProcessor::StoreType::Average);
@@ -13670,7 +13869,9 @@ void WritePredefinedTables(EnergyPlusData &state)
                                 ++curNumRows;
                             }
                         }
-                        if (curNumRows == 0) curNumRows = 1;
+                        if (curNumRows == 0) {
+                            curNumRows = 1;
+                        }
                         // now create the arrays that are filled with values
                         rowHead.allocate(curNumRows);
                         columnHead.allocate(curNumColumns);
@@ -13812,7 +14013,6 @@ void WriteComponentSizing(EnergyPlusData &state)
     //       DATE WRITTEN   July 2007
     //       MODIFIED       January 2010, Kyle Benne
     //                      Added SQLite output
-    //       RE-ENGINEERED  na
 
     // PURPOSE OF THIS SUBROUTINE:
     //   Write out tables based on component sizing data originally
@@ -13856,7 +14056,9 @@ void WriteComponentSizing(EnergyPlusData &state)
         UnitsStyle unitsStyle_cur = ort->unitsStyle;
         bool produceTabular = true;
         bool produceSQLite = false;
-        if (produceDualUnitsFlags(iUnitSystem, ort->unitsStyle, ort->unitsStyle_SQLite, unitsStyle_cur, produceTabular, produceSQLite)) break;
+        if (produceDualUnitsFlags(iUnitSystem, ort->unitsStyle, ort->unitsStyle_SQLite, unitsStyle_cur, produceTabular, produceSQLite)) {
+            break;
+        }
 
         // The arrays that look for unique headers are dimensioned in the
         // running program since the size of the number of entries is
@@ -13880,10 +14082,13 @@ void WriteComponentSizing(EnergyPlusData &state)
                     break;
                 }
             }
-            if (foundEntry == 0) break; // leave main loop - all items put into tables
+            if (foundEntry == 0) {
+                break; // leave main loop - all items put into tables
+            }
             // clear active items
-            for (auto &e : state.dataOutRptPredefined->CompSizeTableEntry)
+            for (auto &e : state.dataOutRptPredefined->CompSizeTableEntry) {
                 e.active = false;
+            }
             // make an unwritten item that is of the same type active - these will be the
             // entries for the particular subtable.
             for (iTableEntry = 1; iTableEntry <= state.dataOutRptPredefined->numCompSizeTableEntry; ++iTableEntry) {
@@ -13933,8 +14138,12 @@ void WriteComponentSizing(EnergyPlusData &state)
                 }
             }
             // make sure the table has at least one row and columns
-            if (numUniqueDesc == 0) numUniqueDesc = 1;
-            if (numUniqueObj == 0) numUniqueObj = 1;
+            if (numUniqueDesc == 0) {
+                numUniqueDesc = 1;
+            }
+            if (numUniqueObj == 0) {
+                numUniqueObj = 1;
+            }
             // now that the unique row and column headers are known the array
             // sizes can be set for the table arrays
             rowHead.allocate(numUniqueObj);
@@ -13986,26 +14195,30 @@ void WriteComponentSizing(EnergyPlusData &state)
                         }
                     }
                     if ((foundDesc >= 1) && (foundObj >= 1)) {
-                        state.dataOutRptTab->curValueSIWCS = state.dataOutRptPredefined->CompSizeTableEntry(iTableEntry).valField;
-                        if (unitsStyle_cur == UnitsStyle::InchPound) {
-                            if (colUnitConv(foundDesc) != 0) {
-                                state.dataOutRptTab->curValueWCS = ConvertIP(state, colUnitConv(foundDesc), state.dataOutRptTab->curValueSIWCS);
+                        if (!state.dataOutRptPredefined->CompSizeTableEntry(iTableEntry).strField.empty()) {
+                            tableBody(foundDesc, foundObj) = state.dataOutRptPredefined->CompSizeTableEntry(iTableEntry).strField;
+                        } else {
+                            state.dataOutRptTab->curValueSIWCS = state.dataOutRptPredefined->CompSizeTableEntry(iTableEntry).valField;
+                            if (unitsStyle_cur == UnitsStyle::InchPound) {
+                                if (colUnitConv(foundDesc) != 0) {
+                                    state.dataOutRptTab->curValueWCS = ConvertIP(state, colUnitConv(foundDesc), state.dataOutRptTab->curValueSIWCS);
+                                } else {
+                                    state.dataOutRptTab->curValueWCS = state.dataOutRptTab->curValueSIWCS;
+                                }
+                            } else if (unitsStyle_cur == UnitsStyle::InchPoundExceptElectricity) {
+                                if (colUnitConv(foundDesc) != 0) {
+                                    state.dataOutRptTab->curValueWCS = ConvertIP(state, colUnitConv(foundDesc), state.dataOutRptTab->curValueSIWCS);
+                                } else {
+                                    state.dataOutRptTab->curValueWCS = state.dataOutRptTab->curValueSIWCS;
+                                }
                             } else {
                                 state.dataOutRptTab->curValueWCS = state.dataOutRptTab->curValueSIWCS;
                             }
-                        } else if (unitsStyle_cur == UnitsStyle::InchPoundExceptElectricity) {
-                            if (colUnitConv(foundDesc) != 0) {
-                                state.dataOutRptTab->curValueWCS = ConvertIP(state, colUnitConv(foundDesc), state.dataOutRptTab->curValueSIWCS);
+                            if (std::abs(state.dataOutRptTab->curValueWCS) >= 1.0) {
+                                tableBody(foundDesc, foundObj) = RealToStr(state.dataOutRptTab->curValueWCS, 2);
                             } else {
-                                state.dataOutRptTab->curValueWCS = state.dataOutRptTab->curValueSIWCS;
+                                tableBody(foundDesc, foundObj) = RealToStr(state.dataOutRptTab->curValueWCS, 6);
                             }
-                        } else {
-                            state.dataOutRptTab->curValueWCS = state.dataOutRptTab->curValueSIWCS;
-                        }
-                        if (std::abs(state.dataOutRptTab->curValueWCS) >= 1.0) {
-                            tableBody(foundDesc, foundObj) = RealToStr(state.dataOutRptTab->curValueWCS, 2);
-                        } else {
-                            tableBody(foundDesc, foundObj) = RealToStr(state.dataOutRptTab->curValueWCS, 6);
                         }
                         state.dataOutRptPredefined->CompSizeTableEntry(iTableEntry).written = true;
                     }
@@ -14253,7 +14466,9 @@ void WriteEioTables(EnergyPlusData &state)
         UnitsStyle unitsStyle_cur = ort->unitsStyle;
         bool produceTabular = true;
         bool produceSQLite = false;
-        if (produceDualUnitsFlags(iUnitSystem, ort->unitsStyle, ort->unitsStyle_SQLite, unitsStyle_cur, produceTabular, produceSQLite)) break;
+        if (produceDualUnitsFlags(iUnitSystem, ort->unitsStyle, ort->unitsStyle_SQLite, unitsStyle_cur, produceTabular, produceSQLite)) {
+            break;
+        }
 
         // now go through each header and create a report for each one
         for (std::string const &headerLine : headerLines) {
@@ -14297,7 +14512,9 @@ void WriteEioTables(EnergyPlusData &state)
                         if (bodyLine.substr(0, tableName.size() + 1) ==
                             tableName + ",") { // this needs to match the test used in the original counting
                             ++rowNum;
-                            if (rowNum > countOfMatchingLines) break; // should never happen since same test as original could
+                            if (rowNum > countOfMatchingLines) {
+                                break; // should never happen since same test as original could
+                            }
                             std::vector<std::string> dataFields = splitCommaString(bodyLine);
                             rowHead(rowNum) = fmt::to_string(rowNum);
                             for (int iCol = 1; iCol <= numCols && iCol < int(dataFields.size()); ++iCol) {
@@ -14428,12 +14645,16 @@ void AddTOCLoadComponentTableSummaries(EnergyPlusData &state)
         if (ort->displayZoneComponentLoadSummary) {
             if (state.dataHeatBal->doSpaceHeatBalanceSizing) {
                 for (int iSpace = 1; iSpace <= state.dataGlobal->NumOfZones; ++iSpace) {
-                    if (!state.dataZoneEquip->ZoneEquipConfig(state.dataHeatBal->space(iSpace).zoneNum).IsControlled) continue;
+                    if (!state.dataZoneEquip->ZoneEquipConfig(state.dataHeatBal->space(iSpace).zoneNum).IsControlled) {
+                        continue;
+                    }
                     AddTOCEntry(state, "Space Component Load Summary", state.dataHeatBal->space(iSpace).Name);
                 }
             }
             for (int iZone = 1; iZone <= state.dataGlobal->NumOfZones; ++iZone) {
-                if (!state.dataZoneEquip->ZoneEquipConfig(iZone).IsControlled) continue;
+                if (!state.dataZoneEquip->ZoneEquipConfig(iZone).IsControlled) {
+                    continue;
+                }
                 AddTOCEntry(state, "Zone Component Load Summary", state.dataHeatBal->Zone(iZone).Name);
             }
         }
@@ -14547,9 +14768,12 @@ void ComputeLoadComponentDecayCurve(EnergyPlusData &state)
 
     for (int surfNum = 1; surfNum <= state.dataSurface->TotSurfaces; ++surfNum) {
         int const zoneNum = state.dataSurface->Surface(surfNum).Zone;
-        if (zoneNum == 0) continue;
-        if (!state.dataZoneEquip->ZoneEquipConfig(zoneNum).IsControlled) continue;
-        int const spaceNum = state.dataSurface->Surface(surfNum).spaceNum;
+        if (zoneNum == 0) {
+            continue;
+        }
+        if (!state.dataZoneEquip->ZoneEquipConfig(zoneNum).IsControlled) {
+            continue;
+        }
         int coolDesSelected = state.dataSize->CalcFinalZoneSizing(zoneNum).CoolDDNum;
         // loop over timesteps after pulse occurred
         if (coolDesSelected != 0) {
@@ -14561,10 +14785,14 @@ void ComputeLoadComponentDecayCurve(EnergyPlusData &state)
             if (timeOfPulse == 0) {
                 for (int i = coolDesSelected; i >= 1; --i) {
                     timeOfPulse = ort->radiantPulseTimestep(i, zoneNum);
-                    if (timeOfPulse != 0) break;
+                    if (timeOfPulse != 0) {
+                        break;
+                    }
                 }
             }
-            if (timeOfPulse == 0) timeOfPulse = 1;
+            if (timeOfPulse == 0) {
+                timeOfPulse = 1;
+            }
             for (int timeStep = timeOfPulse; timeStep <= state.dataGlobal->TimeStepsInHour * Constant::rHoursInDay; ++timeStep) {
                 if (ort->radiantPulseReceived(coolDesSelected, surfNum) != 0.0) {
                     auto &surfClDayTS = surfCLClDay.ts[timeStep - 1].surf[surfNum - 1];
@@ -14583,10 +14811,14 @@ void ComputeLoadComponentDecayCurve(EnergyPlusData &state)
             if (timeOfPulse == 0) {
                 for (int i = heatDesSelected; i >= 1; --i) {
                     timeOfPulse = ort->radiantPulseTimestep(i, zoneNum);
-                    if (timeOfPulse != 0) break;
+                    if (timeOfPulse != 0) {
+                        break;
+                    }
                 }
             }
-            if (timeOfPulse == 0) timeOfPulse = 1;
+            if (timeOfPulse == 0) {
+                timeOfPulse = 1;
+            }
             for (int timeStep = timeOfPulse; timeStep <= state.dataGlobal->TimeStepsInHour * Constant::rHoursInDay; ++timeStep) {
                 if (ort->radiantPulseReceived(heatDesSelected, surfNum) != 0.0) {
                     auto &surfHtDayTS = surfCLHtDay.ts[timeStep - 1].surf[surfNum - 1];
@@ -14611,7 +14843,9 @@ void ComputeLoadComponentDecayCurve(EnergyPlusData &state)
         for (int iZone = 1; iZone <= state.dataGlobal->NumOfZones; ++iZone) {
             auto &thisZone = state.dataHeatBal->Zone(iZone);
             for (int kSurf : state.dataSurface->AllSurfaceListReportOrder) {
-                if (state.dataSurface->Surface(kSurf).Zone != iZone) continue;
+                if (state.dataSurface->Surface(kSurf).Zone != iZone) {
+                    continue;
+                }
                 print(state.files.eio,
                       "{},{},{}",
                       "Radiant to Convective Decay Curves for Cooling",
@@ -14625,7 +14859,9 @@ void ComputeLoadComponentDecayCurve(EnergyPlusData &state)
             }
 
             for (int kSurf : state.dataSurface->AllSurfaceListReportOrder) {
-                if (state.dataSurface->Surface(kSurf).Zone != iZone) continue;
+                if (state.dataSurface->Surface(kSurf).Zone != iZone) {
+                    continue;
+                }
                 print(state.files.eio,
                       "{},{},{}",
                       "Radiant to Convective Decay Curves for Heating",
@@ -14670,8 +14906,12 @@ void GatherComponentLoadsSurface(EnergyPlusData &state)
         }
         for (int iSurfGCLS = 1; iSurfGCLS <= state.dataSurface->TotSurfaces; ++iSurfGCLS) {
             int zoneNumGCLS = state.dataSurface->Surface(iSurfGCLS).Zone;
-            if (zoneNumGCLS == 0) continue;
-            if (state.dataSurface->Surface(iSurfGCLS).Class != DataSurfaces::SurfaceClass::Window) continue;
+            if (zoneNumGCLS == 0) {
+                continue;
+            }
+            if (state.dataSurface->Surface(iSurfGCLS).Class != DataSurfaces::SurfaceClass::Window) {
+                continue;
+            }
             // IF (.not. ZoneEquipConfig(ZoneNum)%IsControlled) CYCLE
             Real64 surfCond = state.dataSurface->SurfWinGainConvGlazToZoneRep(iSurfGCLS) + state.dataSurface->SurfWinConvHeatFlowNatural(iSurfGCLS) +
                               state.dataSurface->SurfWinGainConvShadeToZoneRep(iSurfGCLS) +
@@ -14879,7 +15119,9 @@ void WriteLoadComponentSummaryTables(EnergyPlusData &state)
         UnitsStyle unitsStyle_cur = ort->unitsStyle;
         bool produceTabular = true;
         bool produceSQLite = false;
-        if (produceDualUnitsFlags(iUnitSystem, ort->unitsStyle, ort->unitsStyle_SQLite, unitsStyle_cur, produceTabular, produceSQLite)) break;
+        if (produceDualUnitsFlags(iUnitSystem, ort->unitsStyle, ort->unitsStyle_SQLite, unitsStyle_cur, produceTabular, produceSQLite)) {
+            break;
+        }
 
         Real64 timeStepsInDay = state.dataGlobal->TimeStepsInHour * Constant::rHoursInDay;
 
@@ -15008,7 +15250,9 @@ void WriteLoadComponentSummaryTables(EnergyPlusData &state)
                 for (int iSpace = 1; iSpace <= state.dataGlobal->numSpaces; ++iSpace) {
                     // Yes, check if the zone is controlled, not the space for this
                     int zoneNum = state.dataHeatBal->space(iSpace).zoneNum;
-                    if (!state.dataZoneEquip->ZoneEquipConfig(zoneNum).IsControlled) continue;
+                    if (!state.dataZoneEquip->ZoneEquipConfig(zoneNum).IsControlled) {
+                        continue;
+                    }
                     if (allocated(state.dataSize->CalcFinalSpaceSizing)) {
                         computeSpaceZoneCompLoads(state,
                                                   state.dataSize->CalcFinalSpaceSizing(iSpace),
@@ -15029,7 +15273,9 @@ void WriteLoadComponentSummaryTables(EnergyPlusData &state)
                 }
             }
             for (int iZone = 1; iZone <= state.dataGlobal->NumOfZones; ++iZone) {
-                if (!state.dataZoneEquip->ZoneEquipConfig(iZone).IsControlled) continue;
+                if (!state.dataZoneEquip->ZoneEquipConfig(iZone).IsControlled) {
+                    continue;
+                }
                 if (allocated(state.dataSize->CalcFinalZoneSizing)) {
                     computeSpaceZoneCompLoads(state,
                                               state.dataSize->CalcFinalZoneSizing(iZone),
@@ -15119,7 +15365,9 @@ void WriteLoadComponentSummaryTables(EnergyPlusData &state)
                 // now go through the zones and if design day and time of max match the previously calculated zone results use those otherwise
                 // compute them for specific design day and time of max
                 for (int iZone = 1; iZone <= state.dataGlobal->NumOfZones; ++iZone) {
-                    if (!state.dataZoneEquip->ZoneEquipConfig(iZone).IsControlled) continue;
+                    if (!state.dataZoneEquip->ZoneEquipConfig(iZone).IsControlled) {
+                        continue;
+                    }
                     auto &airLoopZonesCoolCompLoadTables = AirLoopZonesCoolCompLoadTables(iZone);
                     auto &airLoopZonesHeatCompLoadTables = AirLoopZonesHeatCompLoadTables(iZone);
                     // The ZoneCoolCompLoadTables already hasn't gotten a potential IP conversion yet, so we won't convert it twice.
@@ -15221,7 +15469,9 @@ void WriteLoadComponentSummaryTables(EnergyPlusData &state)
                     }
                 }
                 for (int SysSizIndex = 1; SysSizIndex <= state.dataSize->NumSysSizInput; ++SysSizIndex) {
-                    if (state.dataSize->SysSizInput(SysSizIndex).AirLoopNum != iAirLoop) continue;
+                    if (state.dataSize->SysSizInput(SysSizIndex).AirLoopNum != iAirLoop) {
+                        continue;
+                    }
                     if (state.dataSize->SysSizInput(SysSizIndex).SizingOption == DataSizing::SizingConcurrence::Coincident) {
                         airLoopCoolTable.peakDesSensLoad = finalSysSizing.SysCoolCoinSpaceSens;
                         airLoopCoolTable.designPeakLoad = finalSysSizing.SysDesCoolLoad;
@@ -15271,7 +15521,9 @@ void WriteLoadComponentSummaryTables(EnergyPlusData &state)
             timeHeatMax = CalcFinalFacilitySizing.TimeStepNumAtHeatMax;
 
             for (int iZone = 1; iZone <= state.dataGlobal->NumOfZones; ++iZone) {
-                if (!state.dataZoneEquip->ZoneEquipConfig(iZone).IsControlled) continue;
+                if (!state.dataZoneEquip->ZoneEquipConfig(iZone).IsControlled) {
+                    continue;
+                }
                 auto &facilityZonesCoolCompLoadTables = FacilityZonesCoolCompLoadTables(iZone);
                 auto &facilityZonesHeatCompLoadTables = FacilityZonesHeatCompLoadTables(iZone);
                 auto const &thisZone = state.dataHeatBal->Zone(iZone);
@@ -15404,7 +15656,9 @@ void WriteLoadComponentSummaryTables(EnergyPlusData &state)
             if (ort->displayZoneComponentLoadSummary) {
                 for (int iSpace = 1; iSpace <= state.dataGlobal->numSpaces; ++iSpace) {
                     // Test if *zone* is controlled, not space, for sizing
-                    if (!state.dataZoneEquip->ZoneEquipConfig(state.dataHeatBal->space(iSpace).zoneNum).IsControlled) continue;
+                    if (!state.dataZoneEquip->ZoneEquipConfig(state.dataHeatBal->space(iSpace).zoneNum).IsControlled) {
+                        continue;
+                    }
                     if (allocated(state.dataSize->CalcFinalSpaceSizing)) {
                         LoadSummaryUnitConversion(state, SpaceCoolCompLoadTables(iSpace), unitsStyle_cur);
                         LoadSummaryUnitConversion(state, SpaceHeatCompLoadTables(iSpace), unitsStyle_cur);
@@ -15427,7 +15681,9 @@ void WriteLoadComponentSummaryTables(EnergyPlusData &state)
         // ZoneComponentLoadSummary: Now we convert and Display
         if (ort->displayZoneComponentLoadSummary) {
             for (int iZone = 1; iZone <= state.dataGlobal->NumOfZones; ++iZone) {
-                if (!state.dataZoneEquip->ZoneEquipConfig(iZone).IsControlled) continue;
+                if (!state.dataZoneEquip->ZoneEquipConfig(iZone).IsControlled) {
+                    continue;
+                }
                 if (allocated(state.dataSize->CalcFinalZoneSizing)) {
                     LoadSummaryUnitConversion(state, ZoneCoolCompLoadTables(iZone), unitsStyle_cur);
                     LoadSummaryUnitConversion(state, ZoneHeatCompLoadTables(iZone), unitsStyle_cur);
@@ -15617,7 +15873,9 @@ void GetDelaySequences(EnergyPlusData &state,
 
             // code from ComputeDelayedComponents starts
             for (int spaceNum : state.dataHeatBal->Zone(zoneIndex).spaceIndexes) {
-                if ((iSpace > 0) && (spaceNum != iSpace)) continue;
+                if ((iSpace > 0) && (spaceNum != iSpace)) {
+                    continue;
+                }
                 auto const &thisSpace = state.dataHeatBal->space(spaceNum);
                 for (int jSurf = thisSpace.HTSurfaceFirst; jSurf <= thisSpace.HTSurfaceLast; ++jSurf) {
                     int const radEnclosureNum = state.dataSurface->Surface(jSurf).RadEnclIndex;
@@ -15632,7 +15890,7 @@ void GetDelaySequences(EnergyPlusData &state,
 
                     for (int mStepBack = 1; mStepBack <= kTimeStep; ++mStepBack) {
                         int sourceStep = kTimeStep - mStepBack + 1;
-                        auto &compLoadTS = szCLDay.ts[sourceStep - 1].spacezone[szNumMinus1];
+                        // auto &compLoadTS = szCLDay.ts[sourceStep - 1].spacezone[szNumMinus1];
                         auto const &surfCLDayTS = surfCLDay.ts[sourceStep - 1].surf[jSurf - 1];
                         auto const &enclCLDayTS = enclCLDay.ts[sourceStep - 1].encl[radEnclosureNum - 1];
                         Real64 thisQRadThermInAbsMult =
@@ -16008,7 +16266,9 @@ void CollectPeakZoneConditions(EnergyPlusData &state,
             (spaceIndex == 0) ? state.dataSize->CalcFinalZoneSizing(zoneIndex) : state.dataSize->CalcFinalSpaceSizing(spaceIndex);
         auto const &szFinalSizing = (spaceIndex == 0) ? state.dataSize->FinalZoneSizing(zoneIndex) : state.dataSize->FinalSpaceSizing(spaceIndex);
 
-        if (mult == 0.0) mult = 1.0;
+        if (mult == 0.0) {
+            mult = 1.0;
+        }
 
         if (isCooling) {
             // Time of Peak Load
@@ -16198,7 +16458,9 @@ void GetZoneComponentAreas(EnergyPlusData &state, Array1D<ZompComponentAreasType
 
     bool isZone = true;
     for (auto const &curSurface : state.dataSurface->Surface) {
-        if (!curSurface.HeatTransSurf) continue;
+        if (!curSurface.HeatTransSurf) {
+            continue;
+        }
         addSurfaceArea(curSurface, znAreas, isZone);
     }
     if (state.dataHeatBal->doSpaceHeatBalanceSizing) {
@@ -16214,6 +16476,7 @@ void addSurfaceArea(DataSurfaces::SurfaceData const &surf, Array1D<ZompComponent
     bool isTouchingGround = surf.ExtBoundCond == DataSurfaces::Ground || surf.ExtBoundCond == DataSurfaces::GroundFCfactorMethod ||
                             surf.ExtBoundCond == DataSurfaces::KivaFoundation;
     int curIndex = (isZone) ? surf.Zone : surf.spaceNum;
+
     switch (surf.Class) {
     case DataSurfaces::SurfaceClass::Wall: {
         if (isExterior) {
@@ -16248,6 +16511,8 @@ void addSurfaceArea(DataSurfaces::SurfaceData const &surf, Array1D<ZompComponent
     case DataSurfaces::SurfaceClass::GlassDoor: {
         areas(curIndex).door += surf.GrossArea;
     } break;
+    default:
+        break;
     }
 }
 
@@ -16461,7 +16726,7 @@ void LoadSummaryUnitConversion(EnergyPlusData &state, CompLoadTablesType &compLo
 
     compLoadTotal.airflowPerFlrArea *= airFlowPerAreaConversion;
     if (powerConversion != 0.) {
-        compLoadTotal.airflowPerTotCap = compLoadTotal.airflowPerTotCap * airFlowPerAreaConversion / powerConversion;
+        compLoadTotal.airflowPerTotCap = compLoadTotal.airflowPerTotCap * airFlowConversion / powerConversion;
         compLoadTotal.areaPerTotCap = compLoadTotal.areaPerTotCap * areaConversion / powerConversion;
     }
     if (areaConversion != 0.) {
@@ -16518,7 +16783,7 @@ void LoadSummaryUnitConversion(EnergyPlusData &state, CompLoadTablesType &compLo
 
         compLoadTotal.airflowPerFlrArea *= airFlowPerAreaConversion;
         if (powerConversion != 0.) {
-            compLoadTotal.airflowPerTotCap = compLoadTotal.airflowPerTotCap * airFlowPerAreaConversion / powerConversion;
+            compLoadTotal.airflowPerTotCap = compLoadTotal.airflowPerTotCap * airFlowConversion / powerConversion;
             compLoadTotal.areaPerTotCap = compLoadTotal.areaPerTotCap * areaConversion / powerConversion;
         }
         if (areaConversion != 0.) {
@@ -17267,7 +17532,9 @@ void WriteTable(EnergyPlusData &state,
                         break;
                     }
                 }
-                if (!isTableBlank) break;
+                if (!isTableBlank) {
+                    break;
+                }
             }
             // if non-blank cells in the table body were found create the table.
             if (!isTableBlank) {
@@ -17547,7 +17814,9 @@ std::string ConvertToElementTag(std::string const &inString) // Input String
             foundOther = false;
         } else if ((curCharVal >= 48) && (curCharVal <= 57)) { // 0-9 numbers
             // if first character is a number then prepend with the letter "t"
-            if (outString.length() == 0) outString += 't';
+            if (outString.length() == 0) {
+                outString += 't';
+            }
             outString += c;
             foundOther = false;
         } else if (curCharVal == 91) { // [ bracket
@@ -18171,12 +18440,18 @@ std::string RealToStr(Real64 const RealIn, int const numDigits)
 
     // FUNCTION LOCAL VARIABLE DECLARATIONS:
     int nDigits = numDigits;
-    if (RealIn < 0.0) --nDigits;
-    if (nDigits > 9) nDigits = 9;
-    if (nDigits < 0) nDigits = 0;
+    if (RealIn < 0.0) {
+        --nDigits;
+    }
+    if (nDigits > 9) {
+        nDigits = 9;
+    }
+    if (nDigits < 0) {
+        nDigits = 0;
+    }
 
     if (std::abs(RealIn) > maxvalDigitsA.at(nDigits)) {
-        return format("{:12.6Z}", RealIn);
+        return format("{:12.6E}", RealIn);
     } else {
         return format<FormatSyntax::FMT>(formDigitsA.at(nDigits), RealIn);
     }
@@ -18253,8 +18528,9 @@ bool isNumber(std::string const &s)
 {
     char *p;
     strtod(s.c_str(), &p);
-    for (; isspace(*p); ++p)
+    for (; isspace(*p); ++p) {
         ; // handle trailing whitespace
+    }
     return *p == 0;
 }
 
@@ -18268,7 +18544,9 @@ int digitsAferDecimal(std::string const &s)
         numDigits = 0;
     } else {
         std::size_t epos = s.find('E');
-        if (epos == s.npos) epos = s.find('e');
+        if (epos == s.npos) {
+            epos = s.find('e');
+        }
         if (epos == s.npos) {
             numDigits = s.length() - (decimalpos + 1);
         } else {
@@ -18901,8 +19179,12 @@ void LookupSItoIP(EnergyPlusData &state, std::string const &stringInWithSI, int 
     for (int iUnit = 1; iUnit <= ort->UnitConvSize; ++iUnit) {
         if (Util::SameString(ort->UnitConv(iUnit).siName, unitSIOnly)) {
             if (ort->UnitConv(iUnit).several) {
-                if (firstOfSeveral == 0) firstOfSeveral = iUnit;
-                if (ort->UnitConv(iUnit).is_default) defaultConv = iUnit;
+                if (firstOfSeveral == 0) {
+                    firstOfSeveral = iUnit;
+                }
+                if (ort->UnitConv(iUnit).is_default) {
+                    defaultConv = iUnit;
+                }
                 // look for the hint string
                 if (len(ort->UnitConv(iUnit).hint) > 0) {
                     if (has(stringInUpper, ort->UnitConv(iUnit).hint)) {

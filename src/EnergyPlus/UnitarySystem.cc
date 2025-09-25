@@ -1206,16 +1206,16 @@ namespace UnitarySystems {
                     cCoilName = thisCoil.name;
                     coilSHR = thisCoil.performance->grossRatedSHR(state);
                 } else {
-                    if (!state.dataDXCoils->DXCoil.empty()) {
+                    if (!state.dataDXCoils->DXCoil.empty() && this->m_CoolingCoilIndex <= state.dataDXCoils->DXCoil.size()) {
                         auto const &thisCoil = state.dataDXCoils->DXCoil(this->m_CoolingCoilIndex);
                         cCoilName = thisCoil.Name;
                         coilSHR = (thisCoil.NumOfSpeeds == 0) ? thisCoil.RatedSHR(1) : thisCoil.RatedSHR(thisCoil.NumOfSpeeds);
                     } else {
-                        ShowSevereError(state,
-                                        format("Developer Error in Heat Pump ACCA Sizing: cooling coil not found for {}:{} with coil type = {}.",
-                                               this->UnitType,
-                                               this->Name,
-                                               HVAC::cAllCoilTypes(this->m_CoolingCoilType_Num)));
+                        ShowWarningError(state,
+                                         format("Developer Error in Heat Pump ACCA Sizing: cooling coil not found for {}:{} with coil type = {}.",
+                                                this->UnitType,
+                                                this->Name,
+                                                HVAC::cAllCoilTypes(this->m_CoolingCoilType_Num)));
                     }
                 }
                 if (this->m_HeatingCoilType_Num == HVAC::Coil_HeatingWaterToAirHPSimple) {

@@ -911,4 +911,11 @@ TEST_F(EnergyPlusFixture, ZoneExhaustCtrl_Test_CalcZoneHVACExhaustControl_Call)
     EXPECT_NEAR(thisExhOutlet.MassFlowRate, 0.1, 1e-5);
     EXPECT_NEAR(thisExhCtrl1.BalancedFlow, 0.0, 1e-5);
     EXPECT_NEAR(thisExhCtrl1.UnbalancedFlow, 0.1, 1e-5);
+
+    state->dataZoneEquip->ZoneExhaustControlSystem(1).exhaustFlowFractionSched = NULL; // delete exhaust flow schedule
+    ExhaustAirSystemManager::CalcZoneHVACExhaustControl(*state, ExhaustControlNum);
+    EXPECT_NEAR(thisExhInlet.MassFlowRate, 0.1, 1e-5); // matches design flow rate for fan 1
+    EXPECT_NEAR(thisExhOutlet.MassFlowRate, 0.1, 1e-5);
+    EXPECT_NEAR(thisExhCtrl1.BalancedFlow, 0.0, 1e-5);
+    EXPECT_NEAR(thisExhCtrl1.UnbalancedFlow, 0.1, 1e-5);
 }

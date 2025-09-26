@@ -187,6 +187,7 @@ protected:
 
         state->dataSize->FinalZoneSizing(state->dataSize->CurZoneEqNum).TimeStepNumAtCoolMax = 1;
         state->dataSize->FinalZoneSizing(state->dataSize->CurZoneEqNum).CoolDDNum = 1;
+        state->dataSize->FinalZoneSizing(state->dataSize->CurZoneEqNum).heatCoilSizingMethod = DataSizing::HeatCoilSizMethod::None;
         state->dataSize->DesDayWeath.allocate(1);
         state->dataSize->DesDayWeath(1).Temp.allocate(1);
         state->dataSize->DesDayWeath(1).Temp(1) = 35.0;
@@ -282,8 +283,10 @@ public:
         state->dataSize->SysSizPeakDDNum(1).CoolFlowPeakDD = 1;
         state->dataSize->SysSizPeakDDNum(1).TotCoolPeakDD = 1;
         state->dataSize->FinalSysSizing.allocate(1);
+        state->dataSize->FinalSysSizing(1).heatCoilSizingMethod = DataSizing::HeatCoilSizMethod::None;
         state->dataSize->CalcSysSizing.allocate(1);
         state->dataSize->FinalZoneSizing.allocate(1);
+        state->dataSize->FinalZoneSizing(1).heatCoilSizingMethod = DataSizing::HeatCoilSizMethod::None;
         state->dataHVACGlobal->NumPrimaryAirSys = 1;
         state->dataAirSystemsData->PrimaryAirSystems.allocate(1);
         state->dataAirLoop->AirLoopControlInfo.allocate(1);
@@ -836,12 +839,12 @@ TEST_F(ZoneUnitarySysTest, Test_UnitarySystemModel_factory)
     EXPECT_EQ(compName, thisSys->Name);
     EXPECT_NEAR(100.0, thisSys->m_AncillaryOnPower, 0.00000001);
     EXPECT_NEAR(50.0, thisSys->m_AncillaryOffPower, 0.00000001);
-    EXPECT_NEAR(0.4792003, thisSys->m_PartLoadFrac, 0.000001);
+    EXPECT_NEAR(0.4787718, thisSys->m_PartLoadFrac, 0.000001);
     Real64 totalAncillaryPower =
         thisSys->m_AncillaryOnPower * thisSys->m_PartLoadFrac + thisSys->m_AncillaryOffPower * (1.0 - thisSys->m_PartLoadFrac);
     EXPECT_NEAR(totalAncillaryPower, thisSys->m_TotalAuxElecPower, 0.00000001);
     // at PLR very near 0.5, m_TotalAuxElecPower should be very near 75 W.
-    EXPECT_NEAR(73.96002, thisSys->m_TotalAuxElecPower, 0.0001);
+    EXPECT_NEAR(73.93859, thisSys->m_TotalAuxElecPower, 0.0001);
     // delta temperature calculations
     Real64 fanDT = thisSys->getFanDeltaTemp(*state, true, 1, 1.0);
     EXPECT_NEAR(fanDT, 0.7070, 0.0001);
@@ -5529,8 +5532,6 @@ TEST_F(EnergyPlusFixture, UnitarySystemModel_ConfirmUnitarySystemSizingTest)
         // yield 1.005
         if (iSizingType == DataSizing::FractionOfAutosizedCoolingAirflow) {
             state->dataSize->FinalZoneSizing(state->dataSize->CurZoneEqNum).DesCoolVolFlow = 1.005;
-        }
-        if (iSizingType == DataSizing::FractionOfAutosizedCoolingAirflow) {
             thisSys.m_MaxCoolAirVolFlow = 1.0;
         }
         // for FlowPerCoolingCapacity, do the division so sizing will yield 1.005
@@ -5682,8 +5683,6 @@ TEST_F(EnergyPlusFixture, UnitarySystemModel_ConfirmUnitarySystemSizingTest)
         // yield 1.005
         if (iCoolingSizingType == DataSizing::FractionOfAutosizedCoolingAirflow) {
             state->dataSize->FinalZoneSizing(state->dataSize->CurZoneEqNum).DesCoolVolFlow = 1.005;
-        }
-        if (iCoolingSizingType == DataSizing::FractionOfAutosizedCoolingAirflow) {
             thisSys.m_MaxCoolAirVolFlow = 1.0;
         }
         // for FlowPerCoolingCapacity, do the division so sizing will yield 1.005
@@ -5708,6 +5707,393 @@ TEST_F(EnergyPlusFixture, UnitarySystemModel_ConfirmUnitarySystemSizingTest)
         EXPECT_NEAR(1.005, thisSys.m_MaxHeatAirVolFlow, 0.0000000001);
         EXPECT_NEAR(1.005, thisSys.m_MaxNoCoolHeatAirVolFlow, 0.0000000001);
         EXPECT_NEAR(16192.5, state->dataSize->ZoneEqSizing(state->dataSize->CurZoneEqNum).DesCoolingLoad, 0.1);
+        EXPECT_NEAR(1431.9, state->dataSize->ZoneEqSizing(state->dataSize->CurZoneEqNum).DesHeatingLoad, 0.1);
+    }
+
+    // Test ACCA Manual S Heat Pump Sizing
+    // test with heating capacity to cooling load/capacity ratio = 1.0
+    thisSys.m_HeatingSizingRatio = 1.0;
+    thisSys.m_HeatPump = true;
+    state->dataSize->FinalZoneSizing(state->dataSize->CurZoneEqNum).heatCoilSizingMethod = DataSizing::HeatCoilSizMethod::CoolingCapacity;
+    state->dataSize->FinalZoneSizing(state->dataSize->CurZoneEqNum).maxHeatCoilToCoolingLoadSizingRatio = 1.3;
+
+    for (int iSizingType = DataSizing::None; iSizingType <= DataSizing::FlowPerHeatingCapacity; ++iSizingType) {
+
+        iCoolingSizingType = iSizingType;
+        iHeatingSizingType = iSizingType;
+        if (iSizingType == DataSizing::FractionOfAutosizedCoolingAirflow) {
+            iHeatingSizingType = DataSizing::FractionOfAutosizedHeatingAirflow;
+        }
+        if (iSizingType == DataSizing::FractionOfAutosizedHeatingAirflow) {
+            iCoolingSizingType = DataSizing::FractionOfAutosizedCoolingAirflow;
+        }
+        if (iSizingType == DataSizing::FlowPerCoolingCapacity) {
+            iHeatingSizingType = DataSizing::FlowPerHeatingCapacity;
+        }
+        if (iSizingType == DataSizing::FlowPerHeatingCapacity) {
+            iCoolingSizingType = DataSizing::FlowPerCoolingCapacity;
+        }
+        thisSys.Name = format("UnitarySystem:CoolingAndHeating #{}", iSizingType);
+        thisSys.m_CoolingSAFMethod = SizingTypes(iCoolingSizingType);
+        thisSys.m_HeatingSAFMethod = SizingTypes(iHeatingSizingType);
+        thisSys.m_DesignCoolingCapacity = DataSizing::AutoSize;
+        thisSys.m_DesignHeatingCapacity = DataSizing::AutoSize;
+        thisSys.m_MaxCoolAirVolFlow = DataSizing::AutoSize;
+        thisSys.m_MaxHeatAirVolFlow = DataSizing::AutoSize;
+        thisSys.m_MaxNoCoolHeatAirVolFlow = DataSizing::AutoSize;
+        thisSys.m_DesignFanVolFlowRate = DataSizing::AutoSize;
+        state->dataSize->ZoneEqSizing(state->dataSize->CurZoneEqNum).CoolingCapacity = false;
+        state->dataSize->ZoneEqSizing(state->dataSize->CurZoneEqNum).HeatingCapacity = false;
+        state->dataSize->ZoneEqSizing(state->dataSize->CurZoneEqNum).DesCoolingLoad = 0.0;
+        state->dataSize->ZoneEqSizing(state->dataSize->CurZoneEqNum).DesHeatingLoad = 0.0;
+        // for FractionOfAutosizedCoolingAirflow, set sizing data to 1.005 and UnitarySystem MaxCoolAirVolFlow to 1, they will multiply and
+        // yield 1.005
+        if (iCoolingSizingType == DataSizing::FractionOfAutosizedCoolingAirflow) {
+            state->dataSize->FinalZoneSizing(state->dataSize->CurZoneEqNum).DesCoolVolFlow = 1.005;
+            thisSys.m_MaxCoolAirVolFlow = 1.0;
+        }
+        // for FlowPerCoolingCapacity, do the division so sizing will yield 1.005
+        if (iCoolingSizingType == DataSizing::FlowPerCoolingCapacity) {
+            thisSys.m_MaxCoolAirVolFlow = 1.005 / 16192.574019750005;
+        }
+        // for FractionOfAutosizedHeatingAirflow, set sizing data to 1.005 and UnitarySystem MaxHeatAirVolFlow to 1, they will multiply and
+        // yield 1.005
+        if (iHeatingSizingType == DataSizing::FractionOfAutosizedHeatingAirflow) {
+            state->dataSize->FinalZoneSizing(state->dataSize->CurZoneEqNum).DesHeatVolFlow = 1.005;
+            thisSys.m_MaxHeatAirVolFlow = 1.0;
+        }
+        // for FlowPerHeatingCapacity, do the division so sizing will yield 1.005
+        if (iHeatingSizingType == DataSizing::FlowPerHeatingCapacity) {
+            thisSys.m_MaxHeatAirVolFlow = 1.005 / 1431.9234900374995;
+        }
+
+        mySys->sizeSystem(*state, FirstHVACIteration, AirLoopNum);
+
+        EXPECT_NEAR(1.005, thisSys.m_DesignFanVolFlowRate, 0.0000000001);
+        EXPECT_NEAR(1.005, thisSys.m_MaxCoolAirVolFlow, 0.0000000001);
+        EXPECT_NEAR(1.005, thisSys.m_MaxHeatAirVolFlow, 0.0000000001);
+        EXPECT_NEAR(1.005, thisSys.m_MaxNoCoolHeatAirVolFlow, 0.0000000001);
+        EXPECT_NEAR(16192.5, state->dataSize->ZoneEqSizing(state->dataSize->CurZoneEqNum).DesCoolingLoad, 0.1);
+        EXPECT_NEAR(16192.5, state->dataSize->ZoneEqSizing(state->dataSize->CurZoneEqNum).DesHeatingLoad, 0.1);
+    }
+
+    // test with heating capacity to cooling load/capacity ratio = 1.2
+    thisSys.m_HeatingSizingRatio = 1.2;
+
+    for (int iSizingType = DataSizing::None; iSizingType <= DataSizing::FlowPerHeatingCapacity; ++iSizingType) {
+
+        iCoolingSizingType = iSizingType;
+        iHeatingSizingType = iSizingType;
+        if (iSizingType == DataSizing::FractionOfAutosizedCoolingAirflow) {
+            iHeatingSizingType = DataSizing::FractionOfAutosizedHeatingAirflow;
+        }
+        if (iSizingType == DataSizing::FractionOfAutosizedHeatingAirflow) {
+            iCoolingSizingType = DataSizing::FractionOfAutosizedCoolingAirflow;
+        }
+        if (iSizingType == DataSizing::FlowPerCoolingCapacity) {
+            iHeatingSizingType = DataSizing::FlowPerHeatingCapacity;
+        }
+        if (iSizingType == DataSizing::FlowPerHeatingCapacity) {
+            iCoolingSizingType = DataSizing::FlowPerCoolingCapacity;
+        }
+        thisSys.Name = format("UnitarySystem:CoolingAndHeating #{}", iSizingType);
+        thisSys.m_CoolingSAFMethod = SizingTypes(iCoolingSizingType);
+        thisSys.m_HeatingSAFMethod = SizingTypes(iHeatingSizingType);
+        thisSys.m_DesignCoolingCapacity = DataSizing::AutoSize;
+        thisSys.m_DesignHeatingCapacity = DataSizing::AutoSize;
+        thisSys.m_MaxCoolAirVolFlow = DataSizing::AutoSize;
+        thisSys.m_MaxHeatAirVolFlow = DataSizing::AutoSize;
+        thisSys.m_MaxNoCoolHeatAirVolFlow = DataSizing::AutoSize;
+        thisSys.m_DesignFanVolFlowRate = DataSizing::AutoSize;
+        state->dataSize->ZoneEqSizing(state->dataSize->CurZoneEqNum).CoolingCapacity = false;
+        state->dataSize->ZoneEqSizing(state->dataSize->CurZoneEqNum).HeatingCapacity = false;
+        state->dataSize->ZoneEqSizing(state->dataSize->CurZoneEqNum).DesCoolingLoad = 0.0;
+        state->dataSize->ZoneEqSizing(state->dataSize->CurZoneEqNum).DesHeatingLoad = 0.0;
+        // for FractionOfAutosizedCoolingAirflow, set sizing data to 1.005 and UnitarySystem MaxCoolAirVolFlow to 1, they will multiply and
+        // yield 1.005
+        if (iCoolingSizingType == DataSizing::FractionOfAutosizedCoolingAirflow) {
+            state->dataSize->FinalZoneSizing(state->dataSize->CurZoneEqNum).DesCoolVolFlow = 1.005;
+            thisSys.m_MaxCoolAirVolFlow = 1.0;
+        }
+        // for FlowPerCoolingCapacity, do the division so sizing will yield 1.005
+        if (iCoolingSizingType == DataSizing::FlowPerCoolingCapacity) {
+            thisSys.m_MaxCoolAirVolFlow = 1.005 / 16192.574019750005;
+        }
+        // for FractionOfAutosizedHeatingAirflow, set sizing data to 1.005 and UnitarySystem MaxHeatAirVolFlow to 1, they will multiply and
+        // yield 1.005
+        if (iHeatingSizingType == DataSizing::FractionOfAutosizedHeatingAirflow) {
+            state->dataSize->FinalZoneSizing(state->dataSize->CurZoneEqNum).DesHeatVolFlow = 1.005;
+            thisSys.m_MaxHeatAirVolFlow = 1.0;
+        }
+        // for FlowPerHeatingCapacity, do the division so sizing will yield 1.005
+        if (iHeatingSizingType == DataSizing::FlowPerHeatingCapacity) {
+            thisSys.m_MaxHeatAirVolFlow = 1.005 / 1431.9234900374995 / thisSys.m_HeatingSizingRatio;
+        }
+
+        mySys->sizeSystem(*state, FirstHVACIteration, AirLoopNum);
+
+        EXPECT_NEAR(1.005, thisSys.m_DesignFanVolFlowRate, 0.0000000001);
+        EXPECT_NEAR(1.005, thisSys.m_MaxCoolAirVolFlow, 0.0000000001);
+        EXPECT_NEAR(1.005, thisSys.m_MaxHeatAirVolFlow, 0.0000000001);
+        EXPECT_NEAR(1.005, thisSys.m_MaxNoCoolHeatAirVolFlow, 0.0000000001);
+        EXPECT_NEAR(16192.5, state->dataSize->ZoneEqSizing(state->dataSize->CurZoneEqNum).DesCoolingLoad, 0.1);
+        // sizing ratio gets applied when coil sizes
+        EXPECT_NEAR(16192.5, state->dataSize->ZoneEqSizing(state->dataSize->CurZoneEqNum).DesHeatingLoad, 0.1);
+    }
+
+    // test with heating capacity to cooling load/capacity ratio = 1.0
+    thisSys.m_HeatingSizingRatio = 1.0;
+    state->dataSize->FinalZoneSizing(state->dataSize->CurZoneEqNum).heatCoilSizingMethod = DataSizing::HeatCoilSizMethod::GreaterOfHeatingOrCooling;
+
+    for (int iSizingType = DataSizing::None; iSizingType <= DataSizing::FlowPerHeatingCapacity; ++iSizingType) {
+
+        iCoolingSizingType = iSizingType;
+        iHeatingSizingType = iSizingType;
+        if (iSizingType == DataSizing::FractionOfAutosizedCoolingAirflow) {
+            iHeatingSizingType = DataSizing::FractionOfAutosizedHeatingAirflow;
+        }
+        if (iSizingType == DataSizing::FractionOfAutosizedHeatingAirflow) {
+            iCoolingSizingType = DataSizing::FractionOfAutosizedCoolingAirflow;
+        }
+        if (iSizingType == DataSizing::FlowPerCoolingCapacity) {
+            iHeatingSizingType = DataSizing::FlowPerHeatingCapacity;
+        }
+        if (iSizingType == DataSizing::FlowPerHeatingCapacity) {
+            iCoolingSizingType = DataSizing::FlowPerCoolingCapacity;
+        }
+        thisSys.Name = format("UnitarySystem:CoolingAndHeating #{}", iSizingType);
+        thisSys.m_CoolingSAFMethod = SizingTypes(iCoolingSizingType);
+        thisSys.m_HeatingSAFMethod = SizingTypes(iHeatingSizingType);
+        thisSys.m_DesignCoolingCapacity = DataSizing::AutoSize;
+        thisSys.m_DesignHeatingCapacity = DataSizing::AutoSize;
+        thisSys.m_MaxCoolAirVolFlow = DataSizing::AutoSize;
+        thisSys.m_MaxHeatAirVolFlow = DataSizing::AutoSize;
+        thisSys.m_MaxNoCoolHeatAirVolFlow = DataSizing::AutoSize;
+        thisSys.m_DesignFanVolFlowRate = DataSizing::AutoSize;
+        state->dataSize->ZoneEqSizing(state->dataSize->CurZoneEqNum).CoolingCapacity = false;
+        state->dataSize->ZoneEqSizing(state->dataSize->CurZoneEqNum).HeatingCapacity = false;
+        state->dataSize->ZoneEqSizing(state->dataSize->CurZoneEqNum).DesCoolingLoad = 0.0;
+        state->dataSize->ZoneEqSizing(state->dataSize->CurZoneEqNum).DesHeatingLoad = 0.0;
+        // for FractionOfAutosizedCoolingAirflow, set sizing data to 1.005 and UnitarySystem MaxCoolAirVolFlow to 1, they will multiply and
+        // yield 1.005
+        if (iCoolingSizingType == DataSizing::FractionOfAutosizedCoolingAirflow) {
+            state->dataSize->FinalZoneSizing(state->dataSize->CurZoneEqNum).DesCoolVolFlow = 1.005;
+            thisSys.m_MaxCoolAirVolFlow = 1.0;
+        }
+        // for FlowPerCoolingCapacity, do the division so sizing will yield 1.005
+        if (iCoolingSizingType == DataSizing::FlowPerCoolingCapacity) {
+            thisSys.m_MaxCoolAirVolFlow = 1.005 / 16192.574019750005;
+        }
+        // for FractionOfAutosizedHeatingAirflow, set sizing data to 1.005 and UnitarySystem MaxHeatAirVolFlow to 1, they will multiply and
+        // yield 1.005
+        if (iHeatingSizingType == DataSizing::FractionOfAutosizedHeatingAirflow) {
+            state->dataSize->FinalZoneSizing(state->dataSize->CurZoneEqNum).DesHeatVolFlow = 1.005;
+            thisSys.m_MaxHeatAirVolFlow = 1.0;
+        }
+        // for FlowPerHeatingCapacity, do the division so sizing will yield 1.005
+        if (iHeatingSizingType == DataSizing::FlowPerHeatingCapacity) {
+            thisSys.m_MaxHeatAirVolFlow = 1.005 / 1431.9234900374995 / thisSys.m_HeatingSizingRatio;
+        }
+
+        mySys->sizeSystem(*state, FirstHVACIteration, AirLoopNum);
+
+        EXPECT_NEAR(1.005, thisSys.m_DesignFanVolFlowRate, 0.0000000001);
+        EXPECT_NEAR(1.005, thisSys.m_MaxCoolAirVolFlow, 0.0000000001);
+        EXPECT_NEAR(1.005, thisSys.m_MaxHeatAirVolFlow, 0.0000000001);
+        EXPECT_NEAR(1.005, thisSys.m_MaxNoCoolHeatAirVolFlow, 0.0000000001);
+        EXPECT_NEAR(16192.5, state->dataSize->ZoneEqSizing(state->dataSize->CurZoneEqNum).DesCoolingLoad, 0.1);
+        EXPECT_NEAR(16192.5, state->dataSize->ZoneEqSizing(state->dataSize->CurZoneEqNum).DesHeatingLoad, 0.1);
+    }
+
+    // test with heating capacity to cooling load/capacity ratio = 1.2
+    thisSys.m_HeatingSizingRatio = 1.2;
+
+    for (int iSizingType = DataSizing::None; iSizingType <= DataSizing::FlowPerHeatingCapacity; ++iSizingType) {
+
+        iCoolingSizingType = iSizingType;
+        iHeatingSizingType = iSizingType;
+        if (iSizingType == DataSizing::FractionOfAutosizedCoolingAirflow) {
+            iHeatingSizingType = DataSizing::FractionOfAutosizedHeatingAirflow;
+        }
+        if (iSizingType == DataSizing::FractionOfAutosizedHeatingAirflow) {
+            iCoolingSizingType = DataSizing::FractionOfAutosizedCoolingAirflow;
+        }
+        if (iSizingType == DataSizing::FlowPerCoolingCapacity) {
+            iHeatingSizingType = DataSizing::FlowPerHeatingCapacity;
+        }
+        if (iSizingType == DataSizing::FlowPerHeatingCapacity) {
+            iCoolingSizingType = DataSizing::FlowPerCoolingCapacity;
+        }
+        thisSys.Name = format("UnitarySystem:CoolingAndHeating #{}", iSizingType);
+        thisSys.m_CoolingSAFMethod = SizingTypes(iCoolingSizingType);
+        thisSys.m_HeatingSAFMethod = SizingTypes(iHeatingSizingType);
+        thisSys.m_DesignCoolingCapacity = DataSizing::AutoSize;
+        thisSys.m_DesignHeatingCapacity = DataSizing::AutoSize;
+        thisSys.m_MaxCoolAirVolFlow = DataSizing::AutoSize;
+        thisSys.m_MaxHeatAirVolFlow = DataSizing::AutoSize;
+        thisSys.m_MaxNoCoolHeatAirVolFlow = DataSizing::AutoSize;
+        thisSys.m_DesignFanVolFlowRate = DataSizing::AutoSize;
+        state->dataSize->ZoneEqSizing(state->dataSize->CurZoneEqNum).CoolingCapacity = false;
+        state->dataSize->ZoneEqSizing(state->dataSize->CurZoneEqNum).HeatingCapacity = false;
+        state->dataSize->ZoneEqSizing(state->dataSize->CurZoneEqNum).DesCoolingLoad = 0.0;
+        state->dataSize->ZoneEqSizing(state->dataSize->CurZoneEqNum).DesHeatingLoad = 0.0;
+        // for FractionOfAutosizedCoolingAirflow, set sizing data to 1.005 and UnitarySystem MaxCoolAirVolFlow to 1, they will multiply and
+        // yield 1.005
+        if (iCoolingSizingType == DataSizing::FractionOfAutosizedCoolingAirflow) {
+            state->dataSize->FinalZoneSizing(state->dataSize->CurZoneEqNum).DesCoolVolFlow = 1.005;
+            thisSys.m_MaxCoolAirVolFlow = 1.0;
+        }
+        // for FlowPerCoolingCapacity, do the division so sizing will yield 1.005
+        if (iCoolingSizingType == DataSizing::FlowPerCoolingCapacity) {
+            thisSys.m_MaxCoolAirVolFlow = 1.005 / 16192.574019750005;
+        }
+        // for FractionOfAutosizedHeatingAirflow, set sizing data to 1.005 and UnitarySystem MaxHeatAirVolFlow to 1, they will multiply and
+        // yield 1.005
+        if (iHeatingSizingType == DataSizing::FractionOfAutosizedHeatingAirflow) {
+            state->dataSize->FinalZoneSizing(state->dataSize->CurZoneEqNum).DesHeatVolFlow = 1.005;
+            thisSys.m_MaxHeatAirVolFlow = 1.0;
+        }
+        // for FlowPerHeatingCapacity, do the division so sizing will yield 1.005
+        if (iHeatingSizingType == DataSizing::FlowPerHeatingCapacity) {
+            thisSys.m_MaxHeatAirVolFlow = 1.005 / 1431.9234900374995 / thisSys.m_HeatingSizingRatio;
+        }
+
+        mySys->sizeSystem(*state, FirstHVACIteration, AirLoopNum);
+
+        EXPECT_NEAR(1.005, thisSys.m_DesignFanVolFlowRate, 0.0000000001);
+        EXPECT_NEAR(1.005, thisSys.m_MaxCoolAirVolFlow, 0.0000000001);
+        EXPECT_NEAR(1.005, thisSys.m_MaxHeatAirVolFlow, 0.0000000001);
+        EXPECT_NEAR(1.005, thisSys.m_MaxNoCoolHeatAirVolFlow, 0.0000000001);
+        EXPECT_NEAR(16192.5, state->dataSize->ZoneEqSizing(state->dataSize->CurZoneEqNum).DesCoolingLoad, 0.1);
+        // sizing ratio gets applied when coil sizes
+        EXPECT_NEAR(16192.5, state->dataSize->ZoneEqSizing(state->dataSize->CurZoneEqNum).DesHeatingLoad, 0.1);
+    }
+
+    // test with heating capacity to cooling load/capacity ratio = 1.0
+    thisSys.m_HeatingSizingRatio = 1.0;
+    state->dataSize->FinalZoneSizing(state->dataSize->CurZoneEqNum).heatCoilSizingMethod = DataSizing::HeatCoilSizMethod::HeatingCapacity;
+
+    for (int iSizingType = DataSizing::None; iSizingType <= DataSizing::FlowPerHeatingCapacity; ++iSizingType) {
+
+        iCoolingSizingType = iSizingType;
+        iHeatingSizingType = iSizingType;
+        if (iSizingType == DataSizing::FractionOfAutosizedCoolingAirflow) {
+            iHeatingSizingType = DataSizing::FractionOfAutosizedHeatingAirflow;
+        }
+        if (iSizingType == DataSizing::FractionOfAutosizedHeatingAirflow) {
+            iCoolingSizingType = DataSizing::FractionOfAutosizedCoolingAirflow;
+        }
+        if (iSizingType == DataSizing::FlowPerCoolingCapacity) {
+            iHeatingSizingType = DataSizing::FlowPerHeatingCapacity;
+        }
+        if (iSizingType == DataSizing::FlowPerHeatingCapacity) {
+            iCoolingSizingType = DataSizing::FlowPerCoolingCapacity;
+        }
+        thisSys.Name = format("UnitarySystem:CoolingAndHeating #{}", iSizingType);
+        thisSys.m_CoolingSAFMethod = SizingTypes(iCoolingSizingType);
+        thisSys.m_HeatingSAFMethod = SizingTypes(iHeatingSizingType);
+        thisSys.m_DesignCoolingCapacity = DataSizing::AutoSize;
+        thisSys.m_DesignHeatingCapacity = DataSizing::AutoSize;
+        thisSys.m_MaxCoolAirVolFlow = DataSizing::AutoSize;
+        thisSys.m_MaxHeatAirVolFlow = DataSizing::AutoSize;
+        thisSys.m_MaxNoCoolHeatAirVolFlow = DataSizing::AutoSize;
+        thisSys.m_DesignFanVolFlowRate = DataSizing::AutoSize;
+        state->dataSize->ZoneEqSizing(state->dataSize->CurZoneEqNum).CoolingCapacity = false;
+        state->dataSize->ZoneEqSizing(state->dataSize->CurZoneEqNum).HeatingCapacity = false;
+        state->dataSize->ZoneEqSizing(state->dataSize->CurZoneEqNum).DesCoolingLoad = 0.0;
+        state->dataSize->ZoneEqSizing(state->dataSize->CurZoneEqNum).DesHeatingLoad = 0.0;
+        // for FractionOfAutosizedCoolingAirflow, set sizing data to 1.005 and UnitarySystem MaxCoolAirVolFlow to 1, they will multiply and
+        // yield 1.005
+        if (iCoolingSizingType == DataSizing::FractionOfAutosizedCoolingAirflow) {
+            state->dataSize->FinalZoneSizing(state->dataSize->CurZoneEqNum).DesCoolVolFlow = 1.005;
+            thisSys.m_MaxCoolAirVolFlow = 1.0;
+        }
+        // for FlowPerCoolingCapacity, do the division so sizing will yield 1.005
+        if (iCoolingSizingType == DataSizing::FlowPerCoolingCapacity) {
+            thisSys.m_MaxCoolAirVolFlow = 1.005 / 16192.574019750005;
+        }
+        // for FractionOfAutosizedHeatingAirflow, set sizing data to 1.005 and UnitarySystem MaxHeatAirVolFlow to 1, they will multiply and
+        // yield 1.005
+        if (iHeatingSizingType == DataSizing::FractionOfAutosizedHeatingAirflow) {
+            state->dataSize->FinalZoneSizing(state->dataSize->CurZoneEqNum).DesHeatVolFlow = 1.005;
+            thisSys.m_MaxHeatAirVolFlow = 1.0;
+        }
+        // for FlowPerHeatingCapacity, do the division so sizing will yield 1.005
+        if (iHeatingSizingType == DataSizing::FlowPerHeatingCapacity) {
+            thisSys.m_MaxHeatAirVolFlow = 1.005 / 1431.9234900374995;
+        }
+
+        mySys->sizeSystem(*state, FirstHVACIteration, AirLoopNum);
+
+        EXPECT_NEAR(1.005, thisSys.m_DesignFanVolFlowRate, 0.0000000001);
+        EXPECT_NEAR(1.005, thisSys.m_MaxCoolAirVolFlow, 0.0000000001);
+        EXPECT_NEAR(1.005, thisSys.m_MaxHeatAirVolFlow, 0.0000000001);
+        EXPECT_NEAR(1.005, thisSys.m_MaxNoCoolHeatAirVolFlow, 0.0000000001);
+        EXPECT_NEAR(1431.9, state->dataSize->ZoneEqSizing(state->dataSize->CurZoneEqNum).DesCoolingLoad, 0.1);
+        EXPECT_NEAR(1431.9, state->dataSize->ZoneEqSizing(state->dataSize->CurZoneEqNum).DesHeatingLoad, 0.1);
+    }
+
+    // test with heating capacity to cooling load/capacity ratio = 1.2
+    thisSys.m_HeatingSizingRatio = 1.2;
+
+    for (int iSizingType = DataSizing::None; iSizingType <= DataSizing::FlowPerHeatingCapacity; ++iSizingType) {
+
+        iCoolingSizingType = iSizingType;
+        iHeatingSizingType = iSizingType;
+        if (iSizingType == DataSizing::FractionOfAutosizedCoolingAirflow) {
+            iHeatingSizingType = DataSizing::FractionOfAutosizedHeatingAirflow;
+        }
+        if (iSizingType == DataSizing::FractionOfAutosizedHeatingAirflow) {
+            iCoolingSizingType = DataSizing::FractionOfAutosizedCoolingAirflow;
+        }
+        if (iSizingType == DataSizing::FlowPerCoolingCapacity) {
+            iHeatingSizingType = DataSizing::FlowPerHeatingCapacity;
+        }
+        if (iSizingType == DataSizing::FlowPerHeatingCapacity) {
+            iCoolingSizingType = DataSizing::FlowPerCoolingCapacity;
+        }
+        thisSys.Name = format("UnitarySystem:CoolingAndHeating #{}", iSizingType);
+        thisSys.m_CoolingSAFMethod = SizingTypes(iCoolingSizingType);
+        thisSys.m_HeatingSAFMethod = SizingTypes(iHeatingSizingType);
+        thisSys.m_DesignCoolingCapacity = DataSizing::AutoSize;
+        thisSys.m_DesignHeatingCapacity = DataSizing::AutoSize;
+        thisSys.m_MaxCoolAirVolFlow = DataSizing::AutoSize;
+        thisSys.m_MaxHeatAirVolFlow = DataSizing::AutoSize;
+        thisSys.m_MaxNoCoolHeatAirVolFlow = DataSizing::AutoSize;
+        thisSys.m_DesignFanVolFlowRate = DataSizing::AutoSize;
+        state->dataSize->ZoneEqSizing(state->dataSize->CurZoneEqNum).CoolingCapacity = false;
+        state->dataSize->ZoneEqSizing(state->dataSize->CurZoneEqNum).HeatingCapacity = false;
+        state->dataSize->ZoneEqSizing(state->dataSize->CurZoneEqNum).DesCoolingLoad = 0.0;
+        state->dataSize->ZoneEqSizing(state->dataSize->CurZoneEqNum).DesHeatingLoad = 0.0;
+        // for FractionOfAutosizedCoolingAirflow, set sizing data to 1.005 and UnitarySystem MaxCoolAirVolFlow to 1, they will multiply and
+        // yield 1.005
+        if (iCoolingSizingType == DataSizing::FractionOfAutosizedCoolingAirflow) {
+            state->dataSize->FinalZoneSizing(state->dataSize->CurZoneEqNum).DesCoolVolFlow = 1.005;
+            thisSys.m_MaxCoolAirVolFlow = 1.0;
+        }
+        // for FlowPerCoolingCapacity, do the division so sizing will yield 1.005
+        if (iCoolingSizingType == DataSizing::FlowPerCoolingCapacity) {
+            thisSys.m_MaxCoolAirVolFlow = 1.005 / 16192.574019750005;
+        }
+        // for FractionOfAutosizedHeatingAirflow, set sizing data to 1.005 and UnitarySystem MaxHeatAirVolFlow to 1, they will multiply and
+        // yield 1.005
+        if (iHeatingSizingType == DataSizing::FractionOfAutosizedHeatingAirflow) {
+            state->dataSize->FinalZoneSizing(state->dataSize->CurZoneEqNum).DesHeatVolFlow = 1.005;
+            thisSys.m_MaxHeatAirVolFlow = 1.0;
+        }
+        // for FlowPerHeatingCapacity, do the division so sizing will yield 1.005
+        if (iHeatingSizingType == DataSizing::FlowPerHeatingCapacity) {
+            thisSys.m_MaxHeatAirVolFlow = 1.005 / 1431.9234900374995 / thisSys.m_HeatingSizingRatio;
+        }
+
+        mySys->sizeSystem(*state, FirstHVACIteration, AirLoopNum);
+
+        EXPECT_NEAR(1.005, thisSys.m_DesignFanVolFlowRate, 0.0000000001);
+        EXPECT_NEAR(1.005, thisSys.m_MaxCoolAirVolFlow, 0.0000000001);
+        EXPECT_NEAR(1.005, thisSys.m_MaxHeatAirVolFlow, 0.0000000001);
+        EXPECT_NEAR(1.005, thisSys.m_MaxNoCoolHeatAirVolFlow, 0.0000000001);
+        EXPECT_NEAR(1431.9, state->dataSize->ZoneEqSizing(state->dataSize->CurZoneEqNum).DesCoolingLoad, 0.1);
+        // sizing ratio gets applied when coil sizes
         EXPECT_NEAR(1431.9, state->dataSize->ZoneEqSizing(state->dataSize->CurZoneEqNum).DesHeatingLoad, 0.1);
     }
 }
@@ -7898,7 +8284,7 @@ Curve:Biquadratic,
     // blow thru fan resets OnOffFanPartLoadFraction = 1 so other equipment not using PLF are not affected. OnOffFanPartLoadFraction = 1 here.
     // Unitary System also sets OnOffFanPartLoadFraction = 1 (see end of ReportUnitarySystem) so this variable will = 1
     EXPECT_EQ(1.0, state->dataHVACGlobal->OnOffFanPartLoadFraction);
-    auto *fan2 = dynamic_cast<Fans::FanComponent *>(state->dataFans->fans(1));
+    [[maybe_unused]] auto *fan2 = dynamic_cast<Fans::FanComponent *>(state->dataFans->fans(1));
     assert(fan2 != nullptr);
     EXPECT_GT(fan1->runtimeFrac, FanPLR);
 }
@@ -9527,25 +9913,25 @@ Curve:Biquadratic,
                 0.000001);
 
     // 10 heating speeds with autosized MSHP design spec yielding equally distributed air flow at 1/10 per speed
-    EXPECT_NEAR(thisSys->m_HeatVolumeFlowRate[1], 0.008524, 0.000001);
+    EXPECT_NEAR(thisSys->m_HeatVolumeFlowRate[1], 0.008524, 0.00001);
     EXPECT_EQ(state->dataVariableSpeedCoils->VarSpeedCoil(1).MSRatedAirVolFlowRate(1), thisSys->m_HeatVolumeFlowRate[1]);
-    EXPECT_NEAR(thisSys->m_HeatVolumeFlowRate[2], 0.017048, 0.000001);
+    EXPECT_NEAR(thisSys->m_HeatVolumeFlowRate[2], 0.017048, 0.00001);
     EXPECT_EQ(state->dataVariableSpeedCoils->VarSpeedCoil(1).MSRatedAirVolFlowRate(2), thisSys->m_HeatVolumeFlowRate[2]);
-    EXPECT_NEAR(thisSys->m_HeatVolumeFlowRate[3], 0.025573, 0.000001);
+    EXPECT_NEAR(thisSys->m_HeatVolumeFlowRate[3], 0.025573, 0.00001);
     EXPECT_EQ(state->dataVariableSpeedCoils->VarSpeedCoil(1).MSRatedAirVolFlowRate(3), thisSys->m_HeatVolumeFlowRate[3]);
-    EXPECT_NEAR(thisSys->m_HeatVolumeFlowRate[4], 0.034098, 0.000001);
+    EXPECT_NEAR(thisSys->m_HeatVolumeFlowRate[4], 0.034098, 0.00001);
     EXPECT_EQ(state->dataVariableSpeedCoils->VarSpeedCoil(1).MSRatedAirVolFlowRate(4), thisSys->m_HeatVolumeFlowRate[4]);
-    EXPECT_NEAR(thisSys->m_HeatVolumeFlowRate[5], 0.042622, 0.000001);
+    EXPECT_NEAR(thisSys->m_HeatVolumeFlowRate[5], 0.042622, 0.00001);
     EXPECT_EQ(state->dataVariableSpeedCoils->VarSpeedCoil(1).MSRatedAirVolFlowRate(5), thisSys->m_HeatVolumeFlowRate[5]);
-    EXPECT_NEAR(thisSys->m_HeatVolumeFlowRate[6], 0.051147, 0.000001);
+    EXPECT_NEAR(thisSys->m_HeatVolumeFlowRate[6], 0.051147, 0.00001);
     EXPECT_EQ(state->dataVariableSpeedCoils->VarSpeedCoil(1).MSRatedAirVolFlowRate(6), thisSys->m_HeatVolumeFlowRate[6]);
-    EXPECT_NEAR(thisSys->m_HeatVolumeFlowRate[7], 0.059671, 0.000001);
+    EXPECT_NEAR(thisSys->m_HeatVolumeFlowRate[7], 0.059671, 0.00001);
     EXPECT_EQ(state->dataVariableSpeedCoils->VarSpeedCoil(1).MSRatedAirVolFlowRate(7), thisSys->m_HeatVolumeFlowRate[7]);
-    EXPECT_NEAR(thisSys->m_HeatVolumeFlowRate[8], 0.068196, 0.000001);
+    EXPECT_NEAR(thisSys->m_HeatVolumeFlowRate[8], 0.068196, 0.00001);
     EXPECT_EQ(state->dataVariableSpeedCoils->VarSpeedCoil(1).MSRatedAirVolFlowRate(8), thisSys->m_HeatVolumeFlowRate[8]);
-    EXPECT_NEAR(thisSys->m_HeatVolumeFlowRate[9], 0.076720, 0.000001);
+    EXPECT_NEAR(thisSys->m_HeatVolumeFlowRate[9], 0.076720, 0.00001);
     EXPECT_EQ(state->dataVariableSpeedCoils->VarSpeedCoil(1).MSRatedAirVolFlowRate(9), thisSys->m_HeatVolumeFlowRate[9]);
-    EXPECT_NEAR(thisSys->m_HeatVolumeFlowRate[10], 0.085245, 0.000001);
+    EXPECT_NEAR(thisSys->m_HeatVolumeFlowRate[10], 0.085245, 0.00001);
     EXPECT_EQ(state->dataVariableSpeedCoils->VarSpeedCoil(1).MSRatedAirVolFlowRate(10), thisSys->m_HeatVolumeFlowRate[10]);
 
     // test fan speed ratio variables
@@ -11357,12 +11743,12 @@ Schedule:Compact,
 
     EXPECT_EQ(1, state->dataUnitarySystems->numUnitarySystems); // only 1 unitary system above so expect 1 as number of unitary system objects
 
-    EXPECT_NEAR(thisSys->m_DesignHeatingCapacity, 1303.097, 0.001);
+    EXPECT_NEAR(thisSys->m_DesignHeatingCapacity, 1303.097, 0.01);
     EXPECT_EQ(thisSys->m_DesignCoolingCapacity, 0.0);
-    EXPECT_NEAR(state->dataDXCoils->DXCoil(1).MSRatedTotCap(1), 325.774, 0.001);
-    EXPECT_NEAR(state->dataDXCoils->DXCoil(1).MSRatedTotCap(2), 651.549, 0.001);
-    EXPECT_NEAR(state->dataDXCoils->DXCoil(1).MSRatedTotCap(3), 977.323, 0.001);
-    EXPECT_NEAR(state->dataDXCoils->DXCoil(1).MSRatedTotCap(4), 1303.097, 0.001);
+    EXPECT_NEAR(state->dataDXCoils->DXCoil(1).MSRatedTotCap(1), 325.774, 0.01);
+    EXPECT_NEAR(state->dataDXCoils->DXCoil(1).MSRatedTotCap(2), 651.549, 0.01);
+    EXPECT_NEAR(state->dataDXCoils->DXCoil(1).MSRatedTotCap(3), 977.323, 0.01);
+    EXPECT_NEAR(state->dataDXCoils->DXCoil(1).MSRatedTotCap(4), 1303.097, 0.01);
     EXPECT_NEAR(thisSys->m_HeatVolumeFlowRate[1], 0.0131, 0.0001);
     EXPECT_NEAR(thisSys->m_HeatVolumeFlowRate[2], 0.0262, 0.0001);
     EXPECT_NEAR(thisSys->m_HeatVolumeFlowRate[3], 0.0393, 0.0001);

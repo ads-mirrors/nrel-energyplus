@@ -136,18 +136,22 @@ The user specifies some or all of the following data for each ZoneHVAC:IdealLoad
   \item Calculate the heating and cooling fuel energy rates from the respective loads and user specified fuel efficiencies:
 
     \begin{equation}
-      {E_{heat}} = {\dot Q_{load_heat}}/(eff_{heat})
-	  {E_{cool}} = {\dot Q_(load_cool}}/(eff_{cool})
+     E_{\text{heat}} = \frac{\dot{Q}_{\text{heat}}}{\eta_{\text{heat}}}
     \end{equation}
-	
-    \begin{itemize}
-      \item {E_{heat}} = total heating fuel energy comsumption rate (W)
-	  \item {E_{cool}} = total cooling fuel energy comsumption rate (W)
-	  \item {\dot Q_{load_heat}} = zone total heating load (W)
-	  \item {\dot Q_{load_cool}} = zone total cooling load (W)
-	  \item {eff_{heat}} = heating fuel efficiency (-)
-	  \item {eff_{cool}} = cooling fuel efficiency (-)	  
-    \end{itemize} 	
-	
-\end{itemize}
 
+    \begin{equation}
+     E_{\text{cool}} = \frac{\dot{Q}_{\text{cool}}}{\eta_{\text{cool}}}
+    \end{equation}
+
+    where,
+ 
+    \begin{itemize}
+      \item \( E_{\text{heat}} \) = total heating fuel energy consumption rate (W)
+      \item \( E_{\text{cool}} \) = total cooling fuel energy consumption rate (W)
+      \item \( \dot{Q}_{\text{heat}} \) = zone total heating load (W)
+      \item \( \dot{Q}_{\text{cool}} \) = zone total cooling load (W)
+      \item \( \eta_{\text{heat}} \) = heating fuel efficiency (-)
+      \item \( \eta_{\text{cool}} \) = cooling fuel efficiency (-)
+    \end{itemize}
+
+  \end{itemize}

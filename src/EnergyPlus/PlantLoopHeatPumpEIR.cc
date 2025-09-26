@@ -4713,6 +4713,12 @@ void HeatPumpAirToWater::calcOpMode(EnergyPlus::EnergyPlusData &state, Real64 cu
             }
             this->operatingMode = min(this->heatPumpMultiplier, this->operatingMode);
             companionCoil->operatingMode = min(companionCoil->heatPumpMultiplier, companionCoil->operatingMode);
+            if (this->companionHeatPumpCoil->operatingMode == 0) {
+                this->companionHeatPumpCoil->loadSideHeatTransfer = 0.0;
+                this->companionHeatPumpCoil->sourceSideHeatTransfer = 0.0;
+                this->companionHeatPumpCoil->loadSideMassFlowRate = 0.0;
+                this->companionHeatPumpCoil->sourceSideMassFlowRate = 0.0;
+            }
         }
     }
 }

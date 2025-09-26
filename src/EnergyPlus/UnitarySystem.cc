@@ -1206,7 +1206,7 @@ namespace UnitarySystems {
                     cCoilName = thisCoil.name;
                     coilSHR = thisCoil.performance->grossRatedSHR(state);
                 } else {
-                    if (!state.dataDXCoils->DXCoil.empty() && this->m_CoolingCoilIndex <= state.dataDXCoils->DXCoil.size()) {
+                    if (!state.dataDXCoils->DXCoil.empty() && this->m_CoolingCoilIndex <= static_cast<int>(state.dataDXCoils->DXCoil.size())) {
                         auto const &thisCoil = state.dataDXCoils->DXCoil(this->m_CoolingCoilIndex);
                         cCoilName = thisCoil.Name;
                         coilSHR = (thisCoil.NumOfSpeeds == 0) ? thisCoil.RatedSHR(1) : thisCoil.RatedSHR(thisCoil.NumOfSpeeds);

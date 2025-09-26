@@ -5906,13 +5906,13 @@ namespace Furnaces {
 
             if (thisFurnace.CoolingCoilType_Num == HVAC::Coil_CoolingWaterToAirHPSimple) {
                 // auto const &thisCoil = state.dataWaterToAirHeatPumpSimple->SimpleWatertoAirHP(thisFurnace.CoolingCoilIndex);
-                state.dataSize->DataTotCapCurveIndex = 0; // this model uses a pointer, disregard impact of CapFT for now
+                state.dataSize->DataTotCapCurveIndex = 0; // this model uses a non-standard CapFT curve, disregard CapFT for now
             } else if (thisFurnace.CoolingCoilType_Num == HVAC::Coil_CoolingWaterToAirHPVSEquationFit ||
                        thisFurnace.CoolingCoilType_Num == HVAC::Coil_CoolingAirToAirVariableSpeed) {
                 auto const &thisCoil = state.dataVariableSpeedCoils->VarSpeedCoil(thisFurnace.CoolingCoilIndex);
                 state.dataSize->DataTotCapCurveIndex = thisCoil.MSCCapFTemp(thisCoil.NumOfSpeeds);
             } else {
-                if (!state.dataDXCoils->DXCoil.empty() && thisFurnace.CoolingCoilIndex <= state.dataDXCoils->DXCoil.size()) {
+                if (!state.dataDXCoils->DXCoil.empty() && thisFurnace.CoolingCoilIndex <= static_cast<int>(state.dataDXCoils->DXCoil.size())) {
                     auto const &thisCoil = state.dataDXCoils->DXCoil(thisFurnace.CoolingCoilIndex);
                     state.dataSize->DataTotCapCurveIndex = thisCoil.CCapFTemp(thisCoil.NumCapacityStages);
                 } else {

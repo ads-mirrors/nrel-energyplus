@@ -123,7 +123,7 @@ struct CoilCoolingDXCurveFitPerformance : public CoilCoolingDXPerformanceBase
 
     void setOperMode(EnergyPlusData &state, CoilCoolingDXCurveFitOperatingMode &currentMode, int const mode);
 
-    void oneTimeMinOATSetup(EnergyPlusData &state);
+    void oneTimeMinOATSetup();
 
     Real64 ratedCBF(EnergyPlusData &) override
     {

@@ -403,7 +403,7 @@ void CoilCoolingDXCurveFitPerformance::size(EnergyPlus::EnergyPlusData &state)
         }
         this->mySizeFlag = false;
     }
-    this->oneTimeMinOATSetup(state);
+    this->oneTimeMinOATSetup();
 }
 
 void CoilCoolingDXCurveFitPerformance::calculate(EnergyPlus::EnergyPlusData &state,
@@ -677,7 +677,7 @@ void CoilCoolingDXCurveFitPerformance::setOperMode(EnergyPlus::EnergyPlusData &s
                               this->object_name));
     }
 }
-void CoilCoolingDXCurveFitPerformance::oneTimeMinOATSetup(EnergyPlus::EnergyPlusData &state)
+void CoilCoolingDXCurveFitPerformance::oneTimeMinOATSetup()
 {
     if (this->myOneTimeMinOATFlag) {
         // set the minimum OA temperature for compressor operation for each mode

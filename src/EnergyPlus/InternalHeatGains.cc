@@ -188,9 +188,6 @@ namespace InternalHeatGains {
         DataHeatBalance::IntGainType::DaylightingDeviceTubular,
         DataHeatBalance::IntGainType::ZoneContaminantSourceAndSinkGenericContam};
 
-    static constexpr std::array<std::string_view, static_cast<int>(DesignLevelMethod::Num)> DesignLevelMethodNames = {
-        "People", "People/Area", "Area/Person", "LightingLevel", "EquipmentLevel", "Watts/Area", "Watts/Person", "Power/Area", "Power/Person"};
-
     static constexpr std::array<std::string_view, static_cast<int>(DesignLevelMethod::Num)> DesignLevelMethodNamesUC = {
         "PEOPLE", "PEOPLE/AREA", "AREA/PERSON", "LIGHTINGLEVEL", "EQUIPMENTLEVEL", "WATTS/AREA", "WATTS/PERSON", "POWER/AREA", "POWER/PERSON"};
 

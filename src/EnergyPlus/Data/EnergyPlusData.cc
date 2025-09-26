@@ -98,6 +98,7 @@ EnergyPlusData::EnergyPlusData()
     this->dataDesiccantDehumidifiers = std::make_unique<DesiccantDehumidifiersData>();
     this->dataDispVentMgr = std::make_unique<DisplacementVentMgrData>();
     this->dataDualDuct = std::make_unique<DualDuctData>();
+    this->dataDuctLoss = std::make_unique<DuctLossData>();
     this->dataEIRFuelFiredHeatPump = std::make_unique<EIRFuelFiredHeatPumpsData>();
     this->dataEIRPlantLoopHeatPump = std::make_unique<EIRPlantLoopHeatPumpsData>();
     this->dataEMSMgr = std::make_unique<EMSManagerData>();
@@ -355,6 +356,7 @@ void EnergyPlusData::clear_state()
     this->dataDesiccantDehumidifiers->clear_state();
     this->dataDispVentMgr->clear_state();
     this->dataDualDuct->clear_state();
+    this->dataDuctLoss->clear_state();
     this->dataEIRFuelFiredHeatPump->clear_state();
     this->dataEIRPlantLoopHeatPump->clear_state();
     this->dataEMSMgr->clear_state();
@@ -585,6 +587,7 @@ void EnergyPlusData::init_constant_state(EnergyPlusData &state)
     this->dataPsychrometrics->init_constant_state(state);
     this->dataFluid->init_constant_state(state);
     this->dataSched->init_constant_state(state);
+    this->dataCurveManager->init_constant_state(state);
 
     this->dataAirLoop->init_constant_state(state);
     this->dataAirLoopHVACDOAS->init_constant_state(state);
@@ -619,7 +622,6 @@ void EnergyPlusData::init_constant_state(EnergyPlusData &state)
     this->dataCoolTower->init_constant_state(state);
     this->dataCostEstimateManager->init_constant_state(state);
     this->dataCrossVentMgr->init_constant_state(state);
-    this->dataCurveManager->init_constant_state(state);
     this->dataDXCoils->init_constant_state(state);
     this->dataDXFEarClipping->init_constant_state(state);
     this->dataDaylightingDevices->init_constant_state(state);
@@ -848,6 +850,7 @@ void EnergyPlusData::init_state(EnergyPlusData &state)
     this->dataPsychrometrics->init_state(state);    // InitializePsychRoutines
     this->dataFluid->init_state(state);             // GetFluidPropertiesData
     this->dataSched->init_state(state);             // GetScheduleData
+    this->dataCurveManager->init_state(state);      // GetCurveInput
 
     this->dataAirLoop->init_state(state);
     this->dataAirLoopHVACDOAS->init_state(state);
@@ -882,7 +885,6 @@ void EnergyPlusData::init_state(EnergyPlusData &state)
     this->dataCoolTower->init_state(state);
     this->dataCostEstimateManager->init_state(state);
     this->dataCrossVentMgr->init_state(state);
-    this->dataCurveManager->init_state(state);
     this->dataDXCoils->init_state(state);
     this->dataDXFEarClipping->init_state(state);
     this->dataDaylightingDevices->init_state(state);

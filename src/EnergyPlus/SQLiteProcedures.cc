@@ -1023,11 +1023,11 @@ void SQLite::initializeSystemSizingTable()
 void SQLite::initializeComponentSizingTable()
 {
     constexpr std::string_view componentSizesTableSQL = "CREATE TABLE ComponentSizes (ComponentSizesIndex INTEGER PRIMARY KEY, "
-                                                        "CompType TEXT, CompName TEXT, Description TEXT, Value REAL, Units TEXT);";
+                                                        "CompType TEXT, CompName TEXT, Description TEXT, Value REAL, Units TEXT, StrValue TEXT);";
 
     sqliteExecuteCommand(componentSizesTableSQL);
 
-    constexpr std::string_view componentSizingInsertSQL = "INSERT INTO ComponentSizes VALUES (?,?,?,?,?,?);";
+    constexpr std::string_view componentSizingInsertSQL = "INSERT INTO ComponentSizes VALUES (?,?,?,?,?,?,?);";
 
     sqlitePrepareStatement(m_componentSizingInsertStmt, componentSizingInsertSQL);
 }
@@ -1557,8 +1557,8 @@ void SQLite::createSQLiteReportDataRecord(int const recordIndex,
                 sqliteWriteMessage(ss.str());
             } break;
             } // switch (reportFreq)
-        }     // if (minutesPerTimeStep != -1)
-    }         // if (minDataValue != 0)
+        } // if (minutesPerTimeStep != -1)
+    } // if (minDataValue != 0)
 } // SQLite::createSQLiteReportDataRecord()
 
 void SQLite::createSQLiteTimeIndexRecord(OutputProcessor::ReportFreq const reportFreq,
@@ -1836,6 +1836,25 @@ void SQLite::addSQLiteComponentSizingRecord(std::string_view compType, // the ty
         sqliteBindText(m_componentSizingInsertStmt, 4, description);
         sqliteBindDouble(m_componentSizingInsertStmt, 5, varValue);
         sqliteBindText(m_componentSizingInsertStmt, 6, units);
+
+        sqliteStepCommand(m_componentSizingInsertStmt);
+        sqliteResetCommand(m_componentSizingInsertStmt);
+    }
+}
+
+void SQLite::addSQLiteComponentSizingStrRecord(std::string_view compType, // the type of the component
+                                               std::string_view compName, // the name of the component
+                                               std::string_view varDesc,  // the description of the input variable
+                                               std::string_view varValue  // the value from the sizing calculation
+)
+{
+    if (m_writeOutputToSQLite) {
+        ++m_componentSizingIndex;
+        sqliteBindInteger(m_componentSizingInsertStmt, 1, m_componentSizingIndex);
+        sqliteBindText(m_componentSizingInsertStmt, 2, compType);
+        sqliteBindText(m_componentSizingInsertStmt, 3, compName);
+        sqliteBindText(m_componentSizingInsertStmt, 4, varDesc);
+        sqliteBindText(m_componentSizingInsertStmt, 7, varValue);
 
         sqliteStepCommand(m_componentSizingInsertStmt);
         sqliteResetCommand(m_componentSizingInsertStmt);
@@ -2270,12 +2289,16 @@ bool SQLite::Construction::insertIntoSQLite(sqlite3_stmt *insertStmt)
 bool SQLite::Construction::insertIntoSQLite(sqlite3_stmt *insertStmt, sqlite3_stmt *subInsertStmt)
 {
     bool constructionInsertValid = insertIntoSQLite(insertStmt);
-    if (!constructionInsertValid) return false;
+    if (!constructionInsertValid) {
+        return false;
+    }
 
     bool valid = true;
     for (auto const &constructionLayer : constructionLayers) {
         bool validInsert = constructionLayer->insertIntoSQLite(subInsertStmt);
-        if (valid && !validInsert) valid = false;
+        if (valid && !validInsert) {
+            valid = false;
+        }
     }
     return valid;
 }
@@ -2529,7 +2552,9 @@ bool SQLite::ZoneList::insertIntoSQLite(sqlite3_stmt *insertStmt)
 bool SQLite::ZoneList::insertIntoSQLite(sqlite3_stmt *insertStmt, sqlite3_stmt *subInsertStmt)
 {
     bool zoneListInsertValid = insertIntoSQLite(insertStmt);
-    if (!zoneListInsertValid) return false;
+    if (!zoneListInsertValid) {
+        return false;
+    }
     bool valid = true;
     for (size_t i = 1; i <= zones.size(); ++i) {
         sqliteBindForeignKey(subInsertStmt, 1, number);
@@ -2537,7 +2562,9 @@ bool SQLite::ZoneList::insertIntoSQLite(sqlite3_stmt *insertStmt, sqlite3_stmt *
         int rc = sqliteStepCommand(subInsertStmt);
         bool validInsert = sqliteStepValidity(rc);
         sqliteResetCommand(subInsertStmt);
-        if (valid && !validInsert) valid = false;
+        if (valid && !validInsert) {
+            valid = false;
+        }
     }
     return valid;
 }

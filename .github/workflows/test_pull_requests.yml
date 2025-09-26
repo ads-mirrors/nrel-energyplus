@@ -161,6 +161,13 @@ jobs:
       run: |
         ctest -R integration -j ${{ env.NPROC }} --output-on-failure
 
+    - name: Save Baseline Results
+      if: matrix.run_regressions && steps.cachebaselineregression.outputs.cache-hit != 'true'
+      working-directory: ./build
+      shell: bash
+      run: |
+        mv testfiles/ testfiles-develop/
+
     - name: Checkout Branch again
       if: matrix.run_regressions && steps.cachebaselineregression.outputs.cache-hit != 'true'
       uses: actions/checkout@v5

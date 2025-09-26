@@ -3458,6 +3458,9 @@ namespace InternalHeatGains {
                 ErrorsFound = true;
             }
         } break;
+        default: {
+            assert(false);
+        } break;
         }
         if (ErrorsFound) {
             return designLevel;
@@ -3534,6 +3537,9 @@ namespace InternalHeatGains {
                                             objectType));
                 }
             }
+        } break;
+        default: {
+            assert(false);
         } break;
         }
 

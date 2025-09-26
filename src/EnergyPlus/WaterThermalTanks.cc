@@ -4041,7 +4041,7 @@ bool getWaterTankStratifiedInput(EnergyPlusData &state)
     return ErrorsFound;
 }
 
-bool GetWaterThermalTankInput(EnergyPlusData &state)
+void GetWaterThermalTankInput(EnergyPlusData &state)
 {
 
     // SUBROUTINE INFORMATION:
@@ -4105,7 +4105,7 @@ bool GetWaterThermalTankInput(EnergyPlusData &state)
             if (state.dataWaterThermalTanks->numWaterHeaterStratified > 0) {
                 print(state.files.eio, Format_722);
             }
-            if (state.dataWaterThermalTanks->numChilledWaterMixed > 0) {
+            if ((state.dataWaterThermalTanks->numChilledWaterMixed > 0) || (state.dataWaterThermalTanks->numChilledWaterStratified > 0)) {
                 print(state.files.eio, Format_725);
             }
             if (state.dataWaterThermalTanks->numChilledWaterStratified > 0) {
@@ -4902,7 +4902,9 @@ bool GetWaterThermalTankInput(EnergyPlusData &state)
         }
     } // get input flag
 
-    return ErrorsFound;
+    if (ErrorsFound) {
+        ShowFatalError(state, "GetWaterThermalTankInput: Errors found in processing Water Thermal Tank input.");
+    }
 }
 
 void WaterThermalTankData::setupOutputVars(EnergyPlusData &state)

@@ -2016,10 +2016,10 @@ namespace UnitarySystems {
         // STEP 4: set heat pump coil capacities equal to greater of cooling or heating capacity
         // ACCA Manual S sizing
         if (this->m_HeatPump &&
-                (state.dataSize->CurSysNum > 0 && !state.dataSize->FinalSysSizing.empty() &&
-                 state.dataSize->FinalSysSizing(state.dataSize->CurSysNum).heatCoilSizingMethod != DataSizing::HeatCoilSizMethod::None) ||
-            (state.dataSize->CurZoneEqNum > 0 && !state.dataSize->FinalZoneSizing.empty() &&
-             state.dataSize->FinalZoneSizing(state.dataSize->CurZoneEqNum).heatCoilSizingMethod != DataSizing::HeatCoilSizMethod::None)) {
+            ((state.dataSize->CurSysNum > 0 && !state.dataSize->FinalSysSizing.empty() &&
+              state.dataSize->FinalSysSizing(state.dataSize->CurSysNum).heatCoilSizingMethod != DataSizing::HeatCoilSizMethod::None) ||
+             (state.dataSize->CurZoneEqNum > 0 && !state.dataSize->FinalZoneSizing.empty() &&
+              state.dataSize->FinalZoneSizing(state.dataSize->CurZoneEqNum).heatCoilSizingMethod != DataSizing::HeatCoilSizMethod::None))) {
             EqSizing.DesHeatingLoad /= this->m_HeatingSizingRatio;
             DataSizing::setHeatPumpSize(state, EqSizing.DesCoolingLoad, EqSizing.DesHeatingLoad, this->m_HeatingSizingRatio);
             this->reportACCAManualS = true;

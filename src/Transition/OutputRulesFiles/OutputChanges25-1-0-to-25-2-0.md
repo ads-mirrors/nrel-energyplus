@@ -7,6 +7,11 @@ This file documents the structural changes on the output of EnergyPlus that coul
 
 This will eventually become a more structured file, but currently it isn't clear what format is best. As an intermediate solution, and to allow the form to be formed organically, this plain text file is being used. Entries should be clearly delimited. It isn't expected that there will be but maybe a couple each release at most. Entries should also include some reference back to the repo. At least a PR number or whatever.
 
+### System Summary table report, Demand Controlled Ventilation using Controller:MechanicalVentilation" Subtable
+In the first column use ZoneName for zones with a simple DSOA reference (same as before), and use ZoneName:SpaceName for the spaces in a DSOA:SpaceList.
+
+See Pull Request [#11051](https://github.com/NREL/EnergyPlus/pull/11051).
+
 ### Table Output, Equipment Summary Report, Air Heat Recovery subtable
 
 * Delete "Name" column.
@@ -85,6 +90,17 @@ See Pull Request [#11153](https://github.com/NREL/EnergyPlus/pull/11153).
 A number of changes related to finding duplicated HTML tables (based on FullName) have been made.
 
 See Pull Request [#11106](https://github.com/NREL/EnergyPlus/pull/11106).
+
+### Table Output, DX Heating Coils
+* Add column Heating to Cooling Capacity Sizing Ratio
+
+See Pull Request [#11130](https://github.com/NREL/EnergyPlus/pull/11130).
+
+### Table Output, Heat Pump ACCA Manual S Report
+* New Table added.
+* Columns: Heat Pump Name, Heat Pump Type, Heat Pump Coil Type, Sizing Method, Total Load, Sensible Load, Total Capacity, Sensible Capacity, Total Capacity Sizing Factor, Sensible Capacity Sizing Factor, Latent Capacity Sizing Factor
+
+See Pull Request [#11130](https://github.com/NREL/EnergyPlus/pull/11130).
 
 #### Schedules
 

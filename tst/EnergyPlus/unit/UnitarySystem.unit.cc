@@ -5713,6 +5713,7 @@ TEST_F(EnergyPlusFixture, UnitarySystemModel_ConfirmUnitarySystemSizingTest)
     // Test ACCA Manual S Heat Pump Sizing
     // test with heating capacity to cooling load/capacity ratio = 1.0
     thisSys.m_HeatingSizingRatio = 1.0;
+    thisSys.m_HeatPump = true;
     state->dataSize->FinalZoneSizing(state->dataSize->CurZoneEqNum).heatCoilSizingMethod = DataSizing::HeatCoilSizMethod::CoolingCapacity;
     state->dataSize->FinalZoneSizing(state->dataSize->CurZoneEqNum).maxHeatCoilToCoolingLoadSizingRatio = 1.3;
 

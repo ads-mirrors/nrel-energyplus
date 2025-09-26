@@ -3285,6 +3285,9 @@ void GetZoneSizingInput(EnergyPlusData &state)
                                                  state.dataIPShortCut->cAlphaArgs(13)));
                     }
                 }
+                zoneSizingIndex.heatCoilSizingMethod = static_cast<DataSizing::HeatCoilSizMethod>(
+                    getEnumValue(DataSizing::HeatCoilSizMethodNamesUC, state.dataIPShortCut->cAlphaArgs(16)));
+                zoneSizingIndex.maxHeatCoilToCoolingLoadSizingRatio = state.dataIPShortCut->rNumericArgs(23);
             }
         }
     }
@@ -3455,7 +3458,9 @@ void GetSystemSizingInput(EnergyPlusData &state)
     constexpr int iHeatDesignCapacityNumericNum(24);          // N24, \field Heating Design Capacity {W}
     constexpr int iHeatCapacityPerFloorAreaNumericNum(25);    // N25, \field Heating Design Capacity Per Floor Area {W/m2}
     constexpr int iHeatFracOfAutosizedCapacityNumericNum(26); // N26, \field Fraction of Autosized Cooling Design Capacity {-}
-    constexpr int iOccupantDiversity = 27;                    // N26, \field Occupant Diversity
+    constexpr int iOccupantDiversity = 27;                    // N27, \field Occupant Diversity
+    constexpr int iHeatCoilSizingMethodAlphaNum = 12;         // A12, \field Heating Coil Sizing Method
+    constexpr int iHeatToCoolSizingRatioNumericNum = 28;      // N28, \field Maximum Heating Capacity To Cooling Load Sizing Ratio
 
     // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
     int SysSizIndex;         // loop index
@@ -3962,6 +3967,10 @@ void GetSystemSizingInput(EnergyPlusData &state)
         } else {
             SysSizInput(SysSizIndex).OccupantDiversity = state.dataIPShortCut->rNumericArgs(iOccupantDiversity);
         }
+
+        SysSizInput(SysSizIndex).heatCoilSizingMethod = static_cast<DataSizing::HeatCoilSizMethod>(
+            getEnumValue(DataSizing::HeatCoilSizMethodNamesUC, state.dataIPShortCut->cAlphaArgs(iHeatCoilSizingMethodAlphaNum)));
+        SysSizInput(SysSizIndex).maxHeatCoilToCoolingLoadSizingRatio = state.dataIPShortCut->rNumericArgs(iHeatToCoolSizingRatioNumericNum);
     }
 
     if (ErrorsFound) {

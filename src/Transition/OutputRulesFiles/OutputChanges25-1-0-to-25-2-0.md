@@ -91,6 +91,17 @@ A number of changes related to finding duplicated HTML tables (based on FullName
 
 See Pull Request [#11106](https://github.com/NREL/EnergyPlus/pull/11106).
 
+### Table Output, DX Heating Coils
+* Add column Heating to Cooling Capacity Sizing Ratio
+
+See Pull Request [#11130](https://github.com/NREL/EnergyPlus/pull/11130).
+
+### Table Output, Heat Pump ACCA Manual S Report
+* New Table added.
+* Columns: Heat Pump Name, Heat Pump Type, Heat Pump Coil Type, Sizing Method, Total Load, Sensible Load, Total Capacity, Sensible Capacity, Total Capacity Sizing Factor, Sensible Capacity Sizing Factor, Latent Capacity Sizing Factor
+
+See Pull Request [#11130](https://github.com/NREL/EnergyPlus/pull/11130).
+
 #### Schedules
 
 The `Output:Schedules` object controls whether the schedules are reported to the EIO, which would end up in the Initialization Summary report of the HTML if the `Output:Table:SummaryReports` asks for it.

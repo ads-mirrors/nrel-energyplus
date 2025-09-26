@@ -671,6 +671,61 @@ calcDesignSpecificationOutdoorAir(EnergyPlusData &state,
     }
 }
 
+void setHeatPumpSize(EnergyPlusData &state, Real64 &coolingCap, Real64 &heatingCap, Real64 const sizingRatio)
+{
+    state.dataSize->DataHeatSizeRatio = sizingRatio;
+    if (state.dataSize->CurSysNum > 0) {
+        auto const &finalSysSizing = state.dataSize->FinalSysSizing(state.dataSize->CurSysNum);
+        if (finalSysSizing.heatCoilSizingMethod == DataSizing::HeatCoilSizMethod::HeatingCapacity) {
+            if (heatingCap > coolingCap * finalSysSizing.maxHeatCoilToCoolingLoadSizingRatio) {
+                heatingCap = (coolingCap * finalSysSizing.maxHeatCoilToCoolingLoadSizingRatio) / sizingRatio;
+                coolingCap = heatingCap;
+            } else {
+                coolingCap = heatingCap; // sizing ratio gets applied when coil sizes
+            }
+        } else if (finalSysSizing.heatCoilSizingMethod == DataSizing::HeatCoilSizMethod::GreaterOfHeatingOrCooling) {
+            if (heatingCap > coolingCap * finalSysSizing.maxHeatCoilToCoolingLoadSizingRatio) {
+                coolingCap = heatingCap / finalSysSizing.maxHeatCoilToCoolingLoadSizingRatio;
+            } else if (heatingCap > coolingCap * sizingRatio) {
+                coolingCap = heatingCap; // sizing ratio gets applied when coil sizes
+            } else {
+                heatingCap = coolingCap; // sizing ratio gets applied when coil sizes
+            }
+        } else if (finalSysSizing.heatCoilSizingMethod == DataSizing::HeatCoilSizMethod::CoolingCapacity) {
+            if (heatingCap > coolingCap * finalSysSizing.maxHeatCoilToCoolingLoadSizingRatio) {
+                heatingCap = (coolingCap * finalSysSizing.maxHeatCoilToCoolingLoadSizingRatio) / sizingRatio;
+            } else {
+                heatingCap = coolingCap; // sizing ratio gets applied when coil sizes
+            }
+        }
+    } else if (state.dataSize->CurZoneEqNum > 0) {
+        auto const &finalZoneSizing = state.dataSize->FinalZoneSizing(state.dataSize->CurZoneEqNum);
+        if (finalZoneSizing.heatCoilSizingMethod == DataSizing::HeatCoilSizMethod::HeatingCapacity) {
+            if (heatingCap > coolingCap * finalZoneSizing.maxHeatCoilToCoolingLoadSizingRatio) {
+                heatingCap = (coolingCap * finalZoneSizing.maxHeatCoilToCoolingLoadSizingRatio) / sizingRatio;
+                coolingCap = heatingCap;
+            } else {
+                coolingCap = heatingCap; // sizing ratio gets applied when coil sizes
+            }
+        } else if (finalZoneSizing.heatCoilSizingMethod == DataSizing::HeatCoilSizMethod::GreaterOfHeatingOrCooling) {
+            if (heatingCap > coolingCap * finalZoneSizing.maxHeatCoilToCoolingLoadSizingRatio) {
+                coolingCap = heatingCap / finalZoneSizing.maxHeatCoilToCoolingLoadSizingRatio;
+            } else if (heatingCap > coolingCap * sizingRatio) {
+                coolingCap = heatingCap / sizingRatio;
+            } else {
+                heatingCap = coolingCap; // sizing ratio gets applied when coil sizes
+            }
+        } else if (finalZoneSizing.heatCoilSizingMethod == DataSizing::HeatCoilSizMethod::CoolingCapacity) {
+            if (heatingCap > coolingCap * finalZoneSizing.maxHeatCoilToCoolingLoadSizingRatio) {
+                heatingCap = (coolingCap * finalZoneSizing.maxHeatCoilToCoolingLoadSizingRatio) / sizingRatio;
+            } else if (heatingCap < coolingCap) {
+                heatingCap = coolingCap; // sizing ratio gets applied when coil sizes
+            }
+        }
+    }
+}
+
+Real64 OARequirementsData::desFlowPerZoneArea(EnergyPlusData &state, int const zoneNum, int const spaceNum)
 int getDefaultOAReq(EnergyPlusData &state)
 {
     if (state.dataSize->OARequirements_Default == 0) {

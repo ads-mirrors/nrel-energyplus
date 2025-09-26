@@ -725,7 +725,6 @@ void setHeatPumpSize(EnergyPlusData &state, Real64 &coolingCap, Real64 &heatingC
     }
 }
 
-Real64 OARequirementsData::desFlowPerZoneArea(EnergyPlusData &state, int const zoneNum, int const spaceNum)
 int getDefaultOAReq(EnergyPlusData &state)
 {
     if (state.dataSize->OARequirements_Default == 0) {

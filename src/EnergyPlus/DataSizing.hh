@@ -222,8 +222,8 @@ namespace DataSizing {
         ProportionalControlDesOcc, // Use ASHRAE Standard 62.1-2004 or Trane Engineer's newsletter (volume 34-5) to calculate the system level outdoor
                                    // air flow rates based on design occupancy
         ProportionalControlDesOARate, // Calculate the system level outdoor air flow rates based on design OA rate
-        SP,   // Use the ASHRAE Standard 62.1 Simplified Procedure to calculate the system level outdoor air flow rates considering the zone air
-              // distribution effectiveness and the system ventilation efficiency
+        SP, // Use the ASHRAE Standard 62.1 Simplified Procedure to calculate the system level outdoor air flow rates considering the zone air
+            // distribution effectiveness and the system ventilation efficiency
         VRPL, // Use ASHRAE Standard 62.1-2007 to calculate the system level outdoor air flow rates
         Num
     };
@@ -304,6 +304,18 @@ namespace DataSizing {
     constexpr std::array<std::string_view, static_cast<int>(ZoneSizing::Num)> ZoneSizingMethodNamesUC{
         "SENSIBLE LOAD", "LATENT LOAD", "SENSIBLE AND LATENT LOAD", "SENSIBLE LOAD ONLY NO LATENT LOAD"};
 
+    enum class HeatCoilSizMethod
+    {
+        Invalid = -1,
+        None,
+        CoolingCapacity,
+        HeatingCapacity,
+        GreaterOfHeatingOrCooling,
+        Num
+    };
+    constexpr std::array<std::string_view, static_cast<int>(HeatCoilSizMethod::Num)> HeatCoilSizMethodNamesUC{
+        "NONE", "COOLINGCAPACITY", "HEATINGCAPACITY", "GREATEROFHEATINGORCOOLING"};
+
     // Types
 
     struct ZoneSizingInputData
@@ -363,6 +375,8 @@ namespace DataSizing {
         Sched::Schedule *zoneRHDehumidifySched = nullptr;  // zone RH dehumidifying schedule used for zone sizing
         Sched::Schedule *zoneRHHumidifySched = nullptr;    // zone RH humidifying schedule used for zone sizing
         ZoneSizing zoneSizingMethod = ZoneSizing::Invalid; // load to sizing on: sensible, latent, sensibleandlatent, sensibleonlynolatent
+        HeatCoilSizMethod heatCoilSizingMethod = HeatCoilSizMethod::Invalid; // Used for sizing heat pumps
+        Real64 maxHeatCoilToCoolingLoadSizingRatio = 0.0; // Used for sizing heat pumps, max size of heating coil to cooling load sizing ratio
     };
 
     // based on ZoneSizingData but only member variables that are actually used by terminal unit sizing
@@ -630,6 +644,8 @@ namespace DataSizing {
         std::string HeatPeakDateHrMin;                     // date:hr:min of heating peak
         std::string LatCoolPeakDateHrMin;                  // date:hr:min of latent cooling peak
         std::string LatHeatPeakDateHrMin;                  // date:hr:min of latent heating peak
+        HeatCoilSizMethod heatCoilSizingMethod = HeatCoilSizMethod::Invalid; // Used for sizing heat pumps
+        Real64 maxHeatCoilToCoolingLoadSizingRatio = 0.0;                    // Used for sizing heat pumps
 
         void zeroMemberData();
         void allocateMemberArrays(int numOfTimeStepInDay);
@@ -773,6 +789,8 @@ namespace DataSizing {
         Real64 ScaledCoolingCapacity;   // - scaled maximum cooling capacity of zone HVAC equipment, W
         Real64 ScaledHeatingCapacity;   // - scaled maximum heating capacity of zone HVAC equipment, W
         bool RequestAutoSize;           // - true if autosizing is requested
+        HeatCoilSizMethod heatCoilSizingMethod = HeatCoilSizMethod::Invalid; // Used for sizing heat pumps
+        Real64 maxHeatCoilToCoolingLoadSizingRatio = 0.0;                    // Used for sizing heat pumps
 
         // Default Constructor
         ZoneHVACSizingData()
@@ -849,6 +867,8 @@ namespace DataSizing {
         PeakLoad coolingPeakLoad = PeakLoad::Invalid;              // Type of peak to size cooling coils on SensibleCooling or TotalCooling
         CapacityControl CoolCapControl = CapacityControl::Invalid; // type of control of cooling coil  VAV, Bypass, VT, OnOff
         Real64 OccupantDiversity = 0.0;                            // occupant diversity
+        HeatCoilSizMethod heatCoilSizingMethod = HeatCoilSizMethod::Invalid; // Used for sizing heat pumps
+        Real64 maxHeatCoilToCoolingLoadSizingRatio = 0.0;                    // Used for sizing heat pumps
     };
 
     struct SystemSizingData // Contains data for system sizing
@@ -998,12 +1018,14 @@ namespace DataSizing {
         int HeatDDNum = 0;             // index of design day for heating
         int CoolDDNum = 0;             // index of design day for cooling
 
-        Real64 SysCoolCoinSpaceSens = 0.0; // sum of zone space sensible cooling loads at coincident peak
-        Real64 SysHeatCoinSpaceSens = 0.0; //  sum of zone space sensible heating loads at coincident peak
-        Real64 SysDesCoolLoad = 0.0;       // system peak load with coincident
-        int SysCoolLoadTimeStepPk = 0;     // timestep in day of cooling load peak
-        Real64 SysDesHeatLoad = 0.0;       // system peak load with coincident
-        int SysHeatLoadTimeStepPk = 0;     // timestep in day of cooling load peak
+        Real64 SysCoolCoinSpaceSens = 0.0;                                   // sum of zone space sensible cooling loads at coincident peak
+        Real64 SysHeatCoinSpaceSens = 0.0;                                   //  sum of zone space sensible heating loads at coincident peak
+        Real64 SysDesCoolLoad = 0.0;                                         // system peak load with coincident
+        int SysCoolLoadTimeStepPk = 0;                                       // timestep in day of cooling load peak
+        Real64 SysDesHeatLoad = 0.0;                                         // system peak load with coincident
+        int SysHeatLoadTimeStepPk = 0;                                       // timestep in day of cooling load peak
+        HeatCoilSizMethod heatCoilSizingMethod = HeatCoilSizMethod::Invalid; // Used for sizing heat pumps
+        Real64 maxHeatCoilToCoolingLoadSizingRatio = 0.0;                    // Used for sizing heat pumps
     };
 
     struct SysSizPeakDDNumData
@@ -1184,6 +1206,7 @@ namespace DataSizing {
                                              bool const MaxOAVolFlowFlag = false, // TRUE when calculation uses occupancy schedule  (e.g., dual duct)
                                              int const spaceNum = 0);
 
+    void setHeatPumpSize(EnergyPlusData &state, Real64 &coolingCap, Real64 &heatingCap, Real64 const sizingRatio);
 } // namespace DataSizing
 
 struct SizingData : BaseGlobalStruct

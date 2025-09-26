@@ -395,6 +395,20 @@ namespace OutputReportPredefined {
         s->pdchDXCoolCoilNetCapSID = newPreDefColumn(state, s->pdstDXCoolCoil2, "Rated Net Cooling Capacity Test D [W]");
         s->pdchDXCoolCoilElecPowerD = newPreDefColumn(state, s->pdstDXCoolCoil2, "Rated Electric Power Test D [W]");
 
+        // ACCA Manual S report
+        s->pdstACCAMS = newPreDefSubTable(state, s->pdrEquip, "Heat Pump ACCA Manual S Report");
+        s->pdchMSHPName = newPreDefColumn(state, s->pdstACCAMS, "Heat Pump Name");
+        s->pdchMSHPType = newPreDefColumn(state, s->pdstACCAMS, "Heat Pump Type");
+        s->pdchMSCoilType = newPreDefColumn(state, s->pdstACCAMS, "Heat Pump Coil Type");
+        s->pdchMSSizMethod = newPreDefColumn(state, s->pdstACCAMS, "Sizing Method");
+        s->pdchMSTotLoad = newPreDefColumn(state, s->pdstACCAMS, "Total Load");
+        s->pdchMSSensLoad = newPreDefColumn(state, s->pdstACCAMS, "Sensible Load");
+        s->pdchMSTotCapacity = newPreDefColumn(state, s->pdstACCAMS, "Total Capacity");
+        s->pdchMSSensCapacity = newPreDefColumn(state, s->pdstACCAMS, "Sensible Capacity");
+        s->pdchMSTotRatio = newPreDefColumn(state, s->pdstACCAMS, "Total Capacity Sizing Factor");
+        s->pdchMSSensRatio = newPreDefColumn(state, s->pdstACCAMS, "Sensible Capacity Sizing Factor");
+        s->pdchMSLatRatio = newPreDefColumn(state, s->pdstACCAMS, "Latent Capacity Sizing Factor");
+
         // Water-to-Air HP report
         s->pdstWAHP = newPreDefSubTable(state, s->pdrEquip, "Water-to-Air Heat Pumps at Rated Temperatures Report");
         s->pdchWAHPType = newPreDefColumn(state, s->pdstWAHP, "Coil Type");
@@ -409,6 +423,7 @@ namespace OutputReportPredefined {
 
         s->pdstDXHeatCoil = newPreDefSubTable(state, s->pdrEquip, "DX Heating Coils");
         s->pdchDXHeatCoilType = newPreDefColumn(state, s->pdstDXHeatCoil, "DX Heating Coil Type");
+        s->pdchDXHeatCoilSizingRatio = newPreDefColumn(state, s->pdstDXHeatCoil, "Heating to Cooling Capacity Sizing Ratio");
         s->pdchDXHeatCoilHighCap = newPreDefColumn(state, s->pdstDXHeatCoil, "High Temperature Heating (net) Rating Capacity [W]");
         s->pdchDXHeatCoilLowCap = newPreDefColumn(state, s->pdstDXHeatCoil, "Low Temperature Heating (net) Rating Capacity [W]");
         s->pdchDXHeatCoilHSPFIP = newPreDefColumn(state, s->pdstDXHeatCoil, "HSPF [Btu/W-h]");

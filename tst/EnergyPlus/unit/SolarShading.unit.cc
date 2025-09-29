@@ -4144,6 +4144,8 @@ TEST_F(EnergyPlusFixture, ShadowCalculation_CSV)
     state->dataSurface->Surface(2).Class = DataSurfaces::SurfaceClass::Wall;
     state->dataSurface->Surface(2).Construction = 1;
 
+    state->dataSurface->SurfaceWindow.allocate(state->dataSurface->TotSurfaces);
+
     state->files.shade.open_as_stringstream();
 
     HeatBalanceManager::OpenShadingFile(*state);

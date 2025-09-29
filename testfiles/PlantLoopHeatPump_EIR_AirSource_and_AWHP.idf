@@ -694,6 +694,10 @@
   Output:Variable,Cooling Coil Load Loop,Plant Supply Side Cooling Demand Rate,detailed; !- HVAC Average [W]
   Output:Variable,Heating Coil Load Loop,Plant Supply Side Heating Demand Rate,detailed; !- HVAC Average [W]
   Output:Variable,*,Plant Load Profile Heat Transfer Rate,detailed; !- HVAC Average [W]
+  Output:Variable,*,Heat Pump Speed Level in Heating Mode,detailed !- HVAC Average []
+  Output:Variable,*,Heat Pump Speed Ratio in Heating Mode,detailed !- HVAC Average []
+  Output:Variable,*,Heat Pump Speed Level in Cooling Mode,detailed !- HVAC Average []
+  Output:Variable,*,Heat Pump Speed Ratio in Cooling Mode,detailed !- HVAC Average []
   !- EMS related output variables
   !- Output:Variable,*,Outdoor Temp,detailed;
   !- Output:Variable,*,DefrostOnInternal,detailed;

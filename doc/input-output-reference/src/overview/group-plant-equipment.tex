@@ -6640,6 +6640,7 @@ Mode} This field is the cooling energy input ratio function of part load ratio
 \item Heat Pump Total Heating Rate {[}W{]}
 \item Heat Pump Number Of Heating Unit On {[}{]}
 \item Heat Pump Speed Level in Heating Mode {[}{]}
+\item Heat Pump Speed Ratio in Heating Mode {[}{]}
 \item Heat Pump Air Flow Rate in Heating Mode {[}m3/s{]}
 \item Heat Pump Inlet Air Temperature in Heating Mode {[}C{]}
 \item Heat Pump Outlet Air Temperature in Heating Mode {[}C{]}
@@ -6666,6 +6667,7 @@ Mode} This field is the cooling energy input ratio function of part load ratio
 \item Heat Pump Total Cooling Rate {[}W{]}
 \item Heat Pump Number Of Cooling Unit On {[}{]}
 \item Heat Pump Speed Level in Cooling Mode {[}{]}
+\item Heat Pump Speed Ratio in Cooling Mode {[}{]}
 \item Heat Pump Air Flow Rate in Cooling Mode {[}m3/s{]}
 \item Heat Pump Inlet Air Temperature in Cooling Mode {[}C{]}
 \item Heat Pump Outlet Air Temperature in Cooling Mode {[}C{]}
@@ -6739,6 +6741,12 @@ heat pump in heating mode. It is the current speed level of the compressor. For
 fixed-speed heat pumps, this value is integers. For variable-speed heat pumps,
 this value is a continuous non-negative value. When the speed level is 0,
 the heat pump used for cooling is turned off.
+\paragraph{Heat Pump Speed Ratio in Heating Mode {[}{]}} For a multi-speed heat pump, the speed ratio
+indicates how far the current operating speed is between the two adjacent discrete speed levels. 
+When the load is between the capacity of speed level n and speed level n-1, the speed ratio is calculated as: 
+speed ratio = (load - capacity at speed n-1) / (capacity at speed n - capacity at speed n-1).
+For a variable-speed heat pump, the speed ratio equals the part load ratio.
+When the heat pump is cycling, the speed ratio is 0, and the proportion of time that it is on is reported in cycling ratio. 
 \paragraph{Heat Pump Air Flow Rate in Heating Mode {[}m3/s{]}}
 The air flow rate of the heat pump in heating mode in m3/s.
 \paragraph{Heat Pump Inlet Air Temperature in Heating Mode {[}C{]}}
@@ -6811,14 +6819,20 @@ heat pump in cooling mode. It is the current speed level of the compressor. For
 fixed-speed heat pumps, this value is integers. For variable-speed heat pumps,
 this value is a continuous non-negative value. When the speed level is 0,
 the heat pump used for cooling is turned off.
+\paragraph{Heat Pump Speed Ratio in Cooling Mode {[}{]}} For a multi-speed heat pump, the speed ratio
+indicates how far the current operating speed is between the two adjacent discrete speed levels. 
+When the load is between the capacity of speed level n and speed level n-1, the speed ratio is calculated as: 
+speed ratio = (load - capacity at speed n-1) / (capacity at speed n - capacity at speed n-1).
+For a variable-speed heat pump, the speed ratio equals the part load ratio.
+When the heat pump is cycling, the speed ratio is 0, and the proportion of time that it is on is reported in cycling ratio. 
 \paragraph{Heat Pump Air Flow Rate in Cooling Mode {[}m3/s{]}}
-The air flow rate of the heat pump in heating mode in m3/s.
+The air flow rate of the heat pump in cooling mode in m3/s.
 \paragraph{Heat Pump Inlet Air Temperature in Cooling Mode {[}C{]}}
-The inlet air dry-bulb temperature of the heat pump in heating mode.
+The inlet air dry-bulb temperature of the heat pump in cooling mode.
 \paragraph{Heat Pump Outlet Air Temperature in Cooling Mode {[}C{]}}
-The outlet air dry-bulb temperature of the heat pump in heating mode.
+The outlet air dry-bulb temperature of the heat pump in cooling mode.
 \paragraph{Heat Pump Capacity Temperature Modifier in Cooling Mode {[}{]}}
-The capacity temperature modifier function value of the heat pump in heating
+The capacity temperature modifier function value of the heat pump in cooling
 mode. When the load is between the capacity of two speed levels, if the heat
 pump is fixed-speed, this value is the capacity temperature modifier curve value
 at the higher speed level; if the heat pump is variable-speed, this value is the

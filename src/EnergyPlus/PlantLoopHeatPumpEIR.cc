@@ -706,14 +706,17 @@ void HeatPumpAirToWater::calcPowerUsage(EnergyPlusData &state, Real64 availableC
     if (speedLevel == 0) {
         this->speedLevel = 0;
         this->cyclingRatio = interpRatio;
+        this->speedRatio = 0.0;
     } else {
         if (this->controlType == CompressorControlType::FixedSpeed) {
             this->speedLevel = speedLevel;
+            this->speedRatio = interpRatio;
             this->capFuncTempCurveValue = capacityModifierFuncTempHigh;
             this->eirFuncTempCurveValue = eirModifierFuncTempHigh;
             this->eirFuncPLRModifierValue = eirModifierFuncPLRHigh;
         } else {
             this->speedLevel = (1 - interpRatio) * (speedLevel - 1) + interpRatio * speedLevel;
+            this->speedRatio = this->partLoadRatio;
             this->capFuncTempCurveValue = (1 - interpRatio) * capacityModifierFuncTempLow + interpRatio * capacityModifierFuncTempHigh;
             this->eirFuncTempCurveValue = (1 - interpRatio) * eirModifierFuncTempLow + interpRatio * eirModifierFuncTempHigh;
             this->eirFuncPLRModifierValue = (1 - interpRatio) * eirModifierFuncPLRLow + interpRatio * eirModifierFuncPLRHigh;
@@ -2691,11 +2694,18 @@ void HeatPumpAirToWater::oneTimeInit(EnergyPlusData &state)
                             OutputProcessor::TimeStepType::System,
                             OutputProcessor::StoreType::Average,
                             this->name);
-        // note this is 0-indexed
+        // note this is 1-indexed
         SetupOutputVariable(state,
                             format("Heat Pump Speed Level in {} Mode", mode_keyword),
                             Constant::Units::None,
                             this->speedLevel,
+                            OutputProcessor::TimeStepType::System,
+                            OutputProcessor::StoreType::Average,
+                            this->name);
+        SetupOutputVariable(state,
+                            format("Heat Pump Speed Ratio in {} Mode", mode_keyword),
+                            Constant::Units::None,
+                            this->speedRatio,
                             OutputProcessor::TimeStepType::System,
                             OutputProcessor::StoreType::Average,
                             this->name);

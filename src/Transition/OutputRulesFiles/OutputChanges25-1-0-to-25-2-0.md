@@ -167,3 +167,37 @@ The `Output:Constructions` has two possible keys: `Materials` and `Constructions
 
 When using `Generator:FuelSupply`, the header was written twice in the EIO Initialization Summary as `! <Fuel Supply>,...` leading to two identical tables in the HTML report.
 
+### ZoneHVAC:IdealLoadsAirSystem
+ 
+* Added eight new report variables for ZoneHVAC:IdealLoadsAirSystem object:
+
+```
+   (1) * Zone Ideal Loads Zone Heating Fuel Energy Rate [W] *
+   (2) * Zone Ideal Loads Zone Cooling Fuel Energy Rate [W]            
+   (3) * Zone Ideal Loads Zone Heating Fuel Energy [J]
+   (4) * Zone Ideal Loads Zone Cooling Fuel Energy [J]
+   (5) * Zone Ideal Loads Supply Air Total Heating Fuel Energy Rate [W] *
+   (6) * Zone Ideal Loads Supply Air Total Cooling Fuel Energy Rate [W] *
+   (7) * Zone Ideal Loads Supply Air Total Heating Fuel Energy [J] *
+   (8) * Zone Ideal Loads Supply Air Total Cooling Fuel Energy [J] *
+```
+
+See pull request [#10971] https://github.com/NREL/EnergyPlus/pull/10971
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+>>>>>>> .theirs

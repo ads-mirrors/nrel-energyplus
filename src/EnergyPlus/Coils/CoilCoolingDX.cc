@@ -431,7 +431,7 @@ void CoilCoolingDX::oneTimeInit(EnergyPlusData &state)
     SetupOutputVariable(state,
                         "Cooling Coil Dehumidification Mode",
                         Constant::Units::None,
-                        (int &)this->dehumidificationMode,
+                        this->dehumidificationMode,
                         OutputProcessor::TimeStepType::System,
                         OutputProcessor::StoreType::Average,
                         this->name);

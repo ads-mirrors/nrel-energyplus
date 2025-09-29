@@ -983,7 +983,7 @@ namespace WaterThermalTanks {
 
     bool getWaterTankStratifiedInput(EnergyPlusData &state);
 
-    bool GetWaterThermalTankInput(EnergyPlusData &state);
+    void GetWaterThermalTankInput(EnergyPlusData &state);
 
     void CalcWaterThermalTankZoneGains(EnergyPlusData &state);
 

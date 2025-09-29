@@ -244,7 +244,7 @@ constexpr std::array<std::string_view, (int)DataEnvironment::GroundTempType::Num
     "SITE:GROUNDTEMPERATURE:DEEP",
     "SITE:GROUNDTEMPERATURE:FCFACTORMETHOD"};
 
-constexpr std::array<std::string_view, (int)ReturnTempType::Num> returnTempTypeNames = {"Scheduled", "Constant", "RetrunTemperatureSetpoint"};
+constexpr std::array<std::string_view, (int)ReturnTempType::Num> returnTempTypeNames = {"Scheduled", "Constant", "ReturnTemperatureSetpoint"};
 constexpr std::array<std::string_view, (int)ReturnTempType::Num> returnTempTypeNamesUC = {"SCHEDULED", "CONSTANT", "RETURNTEMPERATURESETPOINT"};
 
 void ManageSetPoints(EnergyPlusData &state)

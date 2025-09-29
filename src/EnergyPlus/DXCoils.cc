@@ -746,7 +746,6 @@ void GetDXCoils(EnergyPlusData &state)
     int NumNumbers2;                 // Number of numeric items in input for performance object
     int IOStatus;                    // Input status returned from GetObjectItem
     bool ErrorsFound(false);         // Set to true if errors in input, fatal at end of routine
-    int DXHPWaterHeaterCoilNum;      // Loop index for 1,NumDXHeatPumpWaterHeaterCoils
     int CapacityStageNum;            // Loop index for 1,Number of capacity stages
     int DehumidModeNum;              // Loop index for 1,Number of enhanced dehumidification modes
     int PerfModeNum;                 // Performance mode index

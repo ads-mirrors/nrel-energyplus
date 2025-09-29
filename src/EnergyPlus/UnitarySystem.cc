@@ -14125,6 +14125,7 @@ namespace UnitarySystems {
                                     };
                                     General::SolveRoot(state, HumRatAcc, MaxIte, SolFla, SpeedRatio, f, 0.0, 1.0);
                                 }
+                                PartLoadFrac = SpeedRatio;
                             } else {
                                 if (this->m_CoolingSpeedNum == 1) {
                                     CycRatio = 1.0;

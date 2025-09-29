@@ -3928,7 +3928,8 @@ void HeatPumpAirToWater::processInputForEIRPLHP(EnergyPlusData &state)
                 } else {
                     thisAWHP.sourceSideDesignInletTemp = 8.0;
                 }
-                thisAWHP.sourceSideDesignVolFlowRate = state.dataInputProcessing->inputProcessor->getRealFieldValue(fields, schemaProps, format("rated_air_flow_rate_in_{}_mode", modeKeyWord));
+                thisAWHP.sourceSideDesignVolFlowRate = state.dataInputProcessing->inputProcessor->getRealFieldValue(
+                    fields, schemaProps, format("rated_air_flow_rate_in_{}_mode", modeKeyWord));
                 if (thisAWHP.sourceSideDesignVolFlowRate == DataSizing::AutoSize) {
                     thisAWHP.sourceSideDesignVolFlowRateWasAutoSized = true;
                 }
@@ -3939,7 +3940,8 @@ void HeatPumpAirToWater::processInputForEIRPLHP(EnergyPlusData &state)
                 } else {
                     thisAWHP.ratedLeavingWaterTemperature = 40.0;
                 }
-                thisAWHP.loadSideDesignVolFlowRate = state.dataInputProcessing->inputProcessor->getRealFieldValue(fields, schemaProps, format("rated_water_flow_rate_in_{}_mode", modeKeyWord));
+                thisAWHP.loadSideDesignVolFlowRate = state.dataInputProcessing->inputProcessor->getRealFieldValue(
+                    fields, schemaProps, format("rated_water_flow_rate_in_{}_mode", modeKeyWord));
                 if (thisAWHP.loadSideDesignVolFlowRate == DataSizing::AutoSize) {
                     thisAWHP.loadSideDesignVolFlowRateWasAutoSized = true;
                 }
@@ -4148,7 +4150,8 @@ void HeatPumpAirToWater::processInputForEIRPLHP(EnergyPlusData &state)
                     }
                     std::string const capFtName = Util::makeUPPER(fields.at(capFtFieldName).get<std::string>());
                     if (i == 0) {
-                        thisAWHP.referenceCapacity = thisAWHP.ratedCapacity[0] = state.dataInputProcessing->inputProcessor->getRealFieldValue(fields, schemaProps, format("rated_{}_capacity_at_speed_1", modeKeyWord));
+                        thisAWHP.referenceCapacity = thisAWHP.ratedCapacity[0] = state.dataInputProcessing->inputProcessor->getRealFieldValue(
+                            fields, schemaProps, format("rated_{}_capacity_at_speed_1", modeKeyWord));
                         if (thisAWHP.ratedCapacity[0] == DataSizing::AutoSize) {
                             thisAWHP.referenceCapacityWasAutoSized = true;
                         }

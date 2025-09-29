@@ -14168,7 +14168,6 @@ TEST_F(EnergyPlusFixture, ExteriorFenestrationShadedStateTest)
     auto &dHB = state->dataHeatBal;
     auto &dCon = state->dataConstruction;
     auto &dSurf = state->dataSurface;
-    auto &dMat = state->dataMaterial;
     dHB->space.allocate(1);
     dHB->Zone.allocate(1);
     dHB->Zone(1).ListMultiplier = 1;

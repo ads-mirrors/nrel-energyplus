@@ -205,10 +205,6 @@ namespace DataSizing {
     // parameter for (time-of-peak) sizing format
     static constexpr std::string_view PeakHrMinFmt("{:02}:{:02}:00");
 
-    // Zone Outdoor Air Method
-    constexpr int ZOAM_ProportionalControlDesOcc(9); // Use ASHRAE Standard 62.1-2004 or Trane Engineer's newsletter (volume 34-5)
-    // to calculate the zone level outdoor air flow rates based on design occupancy
-
     enum class SysOAMethod
     {
         Invalid = -1,
@@ -1149,18 +1145,45 @@ namespace DataSizing {
         int CO2GainErrorIndex = 0; // Index for recurring error message when CO2 generation from people is zero for SOAM_ProportionalControlSchOcc
         bool myEnvrnFlag = true;
 
+        Real64 oaFlowArea(EnergyPlusData &state,
+                          int const zoneNum,
+                          bool const useMinOASchFlag = true, // Use min OA schedule in DesignSpecification:OutdoorAir object
+                          int const spaceNum = 0);           // Space index (if applicable)
+
+        Real64 floorArea(EnergyPlusData &state, int const zoneNum, int const spaceNum = 0);
+
         Real64 desFlowPerZoneArea(EnergyPlusData &state, int const zoneNum, int const spaceNum = 0);
 
-        Real64 desFlowPerZonePerson(EnergyPlusData &state, int const actualZoneNum, int const spaceNum = 0);
+        Real64 oaFlowPeople(EnergyPlusData &state,
+                            int const zoneNum,                 // Zone index
+                            bool const useOccSchFlag = true,   // Use occupancy schedule
+                            bool const useMinOASchFlag = true, // Use min OA schedule in DesignSpecification:OutdoorAir object
+                            int const spaceNum = 0);           // Space index (if applicable)
+
+        Real64 people(EnergyPlusData &state,
+                      int const zoneNum,               // Zone index
+                      bool const useOccSchFlag = true, // Use occupancy schedule
+                      int const spaceNum = 0);         // Space index (if applicable)
+
+        Real64 desFlowPerZonePerson(EnergyPlusData &state, int const zoneNum, int const spaceNum = 0);
+
+        Real64 desFlowPerZone(EnergyPlusData &state, int const spaceNum = 0);
+
+        Real64 desFlowPerACH(EnergyPlusData &state, int const spaceNum = 0);
 
         Real64 calcOAFlowRate(EnergyPlusData &state,
-                              int ActualZoneNum,           // Zone index
-                              bool UseOccSchFlag,          // Zone occupancy schedule will be used instead of using total zone occupancy
-                              bool UseMinOASchFlag,        // Use min OA schedule in DesignSpecification:OutdoorAir object
-                              bool const PerPersonNotSet,  // when calculation should not include occupants (e.g., dual duct)
-                              bool const MaxOAVolFlowFlag, // TRUE when calculation uses occupancy schedule  (e.g., dual duct)
-                              int const spaceNum = 0       // Space index (if applicable)
+                              int ActualZoneNum,               // Zone index
+                              bool UseOccSchFlag,              // Zone occupancy schedule will be used instead of using total zone occupancy
+                              bool UseMinOASchFlag,            // Use min OA schedule in DesignSpecification:OutdoorAir object
+                              bool const PerPersonNotSet,      // when calculation should not include occupants (e.g., dual duct)
+                              bool const MaxOAVolFlowFlag,     // TRUE when calculation uses occupancy schedule  (e.g., dual duct)
+                              int const spaceNum = 0,          // Space index (if applicable)
+                              bool const calcIAQMethods = true // For IAQProcedure, PCOccSch, and PCDesOcc, calculate if true, return zero if false
         );
+
+        Sched::Schedule *getZoneFlowFracSched(EnergyPlusData &state, bool notAllSame);
+
+        Sched::Schedule *getZonePropCtlMinRateSched(EnergyPlusData &state, bool notAllSame);
     };
 
     struct ZoneAirDistributionData
@@ -1197,14 +1220,18 @@ namespace DataSizing {
                          Real64 &DesExitHumRat // returned design coil exit humidity ratio [kg/kg]
     );
 
-    Real64 calcDesignSpecificationOutdoorAir(EnergyPlusData &state,
-                                             int const DSOAPtr,          // Pointer to DesignSpecification:OutdoorAir object
-                                             int const ActualZoneNum,    // Zone index
-                                             bool const UseOccSchFlag,   // Zone occupancy schedule will be used instead of using total zone occupancy
-                                             bool const UseMinOASchFlag, // Use min OA schedule in DesignSpecification:OutdoorAir object
-                                             bool const PerPersonNotSet = false,  // when calculation should not include occupants (e.g., dual duct)
-                                             bool const MaxOAVolFlowFlag = false, // TRUE when calculation uses occupancy schedule  (e.g., dual duct)
-                                             int const spaceNum = 0);
+    Real64 calcDesignSpecificationOutdoorAir(
+        EnergyPlusData &state,
+        int const DSOAPtr,                   // Pointer to DesignSpecification:OutdoorAir object
+        int const ActualZoneNum,             // Zone index
+        bool const UseOccSchFlag,            // Zone occupancy schedule will be used instead of using total zone occupancy
+        bool const UseMinOASchFlag,          // Use min OA schedule in DesignSpecification:OutdoorAir object
+        bool const PerPersonNotSet = false,  // when calculation should not include occupants (e.g., dual duct)
+        bool const MaxOAVolFlowFlag = false, // TRUE when calculation uses occupancy schedule  (e.g., dual duct)
+        int const spaceNum = 0,              // Space index (if applicable)
+        bool const calcIAQMethods = true);   // For IAQProcedure, PCOccSch, and PCDesOcc, calculate if true, return zero if false
+
+    int getDefaultOAReq(EnergyPlusData &state); // get index to default OA requirements - used by Controller:MechanicalVentilation
 
     void setHeatPumpSize(EnergyPlusData &state, Real64 &coolingCap, Real64 &heatingCap, Real64 const sizingRatio);
 } // namespace DataSizing
@@ -1212,6 +1239,7 @@ namespace DataSizing {
 struct SizingData : BaseGlobalStruct
 {
     int NumOARequirements = 0;                                  // Number of OA Requirements objects
+    int OARequirements_Default = 0;                             // Index to default DesignSpecification:OutdoorAir
     int NumZoneAirDistribution = 0;                             // Number of zone air distribution objects
     int NumZoneSizingInput = 0;                                 // Number of Zone Sizing objects
     int NumSysSizInput = 0;                                     // Number of System Sizing objects

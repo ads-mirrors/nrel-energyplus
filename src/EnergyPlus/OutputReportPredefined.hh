@@ -328,6 +328,20 @@ struct OutputReportPredefinedData : BaseGlobalStruct
     int pdchDXCoolCoilNetCapSID = 0;  // Standard Rated (Net) Cooling Capacity [W], Test D
     int pdchDXCoolCoilElecPowerD = 0; // Standard Rated Electric Power [W], Test D
 
+    // ACCA Manual S report
+    int pdstACCAMS = 0;
+    int pdchMSHPName = 0;
+    int pdchMSHPType = 0;
+    int pdchMSCoilType = 0;
+    int pdchMSSizMethod = 0;
+    int pdchMSTotLoad = 0;
+    int pdchMSSensLoad = 0;
+    int pdchMSTotCapacity = 0;
+    int pdchMSSensCapacity = 0;
+    int pdchMSTotRatio = 0;
+    int pdchMSSensRatio = 0;
+    int pdchMSLatRatio = 0;
+
     // Water-to-Air HP report
     int pdstWAHP = 0;
     int pdchWAHPType = 0;
@@ -362,6 +376,7 @@ struct OutputReportPredefinedData : BaseGlobalStruct
     // DX Heating Coil subtable
     int pdstDXHeatCoil = 0;
     int pdchDXHeatCoilType = 0; // DX Heating coil type
+    int pdchDXHeatCoilSizingRatio = 0;
     int pdchDXHeatCoilHighCap = 0;
     int pdchDXHeatCoilLowCap = 0;
     int pdchDXHeatCoilHSPFSI = 0;    // HSPF value in SI unit at AHRI std. 340/360 conditions [W/W]

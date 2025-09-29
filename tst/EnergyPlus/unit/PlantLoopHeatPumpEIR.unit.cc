@@ -1302,28 +1302,28 @@ TEST_F(EnergyPlusFixture, calcPowerUsage_AWHP)
     // when COP = 1, power usage should equal heat transfer
     thisAWHP.loadSideHeatTransfer = 500;
     thisAWHP.calcPowerUsage(*state, availableCapacityBeforeMultiplier);
-    EXPECT_EQ(thisAWHP.speedLevel, 0);
+    EXPECT_EQ(thisAWHP.speedLevel, 1);
     EXPECT_EQ(thisAWHP.powerUsage, 500);
     EXPECT_EQ(thisAWHP.cyclingRatio, 500.0 / 600.0);
     EXPECT_EQ(thisAWHP.numUnitUsed, 1);
     thisAWHP.loadSideHeatTransfer = 1000;
     thisAWHP.cyclingRatio = 1.0; // reset cycling ratio back to 1
     thisAWHP.calcPowerUsage(*state, availableCapacityBeforeMultiplier);
-    EXPECT_EQ(thisAWHP.speedLevel, 1);
+    EXPECT_EQ(thisAWHP.speedLevel, 2);
     EXPECT_EQ(thisAWHP.powerUsage, 1000);
     EXPECT_EQ(thisAWHP.cyclingRatio, 1.0);
     EXPECT_EQ(thisAWHP.numUnitUsed, 1);
     thisAWHP.loadSideHeatTransfer = 1500;
     thisAWHP.cyclingRatio = 1.0; // reset cycling ratio back to 1
     thisAWHP.calcPowerUsage(*state, availableCapacityBeforeMultiplier);
-    EXPECT_EQ(thisAWHP.speedLevel, 0);
+    EXPECT_EQ(thisAWHP.speedLevel, 1);
     EXPECT_EQ(thisAWHP.powerUsage, 1500);
     EXPECT_EQ(thisAWHP.numUnitUsed, 2);
     EXPECT_EQ(thisAWHP.cyclingRatio, 300.0 / 600.0);
     thisAWHP.loadSideHeatTransfer = 2000;
     thisAWHP.cyclingRatio = 1.0; // reset cycling ratio back to 1
     thisAWHP.calcPowerUsage(*state, availableCapacityBeforeMultiplier);
-    EXPECT_EQ(thisAWHP.speedLevel, 1);
+    EXPECT_EQ(thisAWHP.speedLevel, 2);
     EXPECT_EQ(thisAWHP.powerUsage, 2000);
     EXPECT_EQ(thisAWHP.numUnitUsed, 2);
     EXPECT_EQ(thisAWHP.cyclingRatio, 1.0);

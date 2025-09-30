@@ -221,11 +221,11 @@ TEST_F(EnergyPlusFixture, Boiler_HotWater_ZeroNominalCapacity)
     EXPECT_FALSE(process_idf(idf_objects, false));
 
     std::string const expected_error = delimited_string(
-        {"   ** Severe  ** <root>[Boiler:HotWater][Central Boiler][nominal_capacity] - \"0\" - Expected number greater than 0.000000",
+        {"   ** Severe  ** <root>[Boiler:HotWater][Central Boiler][nominal_capacity] - \"0.000000\" - Expected number greater than 0.000000",
          "   ** Severe  ** <root>[Boiler:HotWater][Central Boiler][nominal_capacity] - Failed to validate against child schema #0.",
-         "   ** Severe  ** <root>[Boiler:HotWater][Central Boiler][nominal_capacity] - Value type \"number\" for input \"0\" not permitted by 'type' "
-         "constraint.",
-         "   ** Severe  ** <root>[Boiler:HotWater][Central Boiler][nominal_capacity] - \"0\" - Failed to match against any enum values.",
+         "   ** Severe  ** <root>[Boiler:HotWater][Central Boiler][nominal_capacity] - Value type \"number\" for input \"0.000000\" not permitted by "
+         "'type' constraint.",
+         "   ** Severe  ** <root>[Boiler:HotWater][Central Boiler][nominal_capacity] - \"0.000000\" - Failed to match against any enum values.",
          "   ** Severe  ** <root>[Boiler:HotWater][Central Boiler][nominal_capacity] - Failed to validate against child schema #1.",
          "   ** Severe  ** <root>[Boiler:HotWater][Central Boiler][nominal_capacity] - Failed to validate against any schemas allowed by anyOf "
          "constraint."});

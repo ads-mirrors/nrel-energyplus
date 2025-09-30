@@ -283,6 +283,7 @@ namespace VariableSpeedCoils {
         // end variables for HPWH
         bool reportCoilFinalSizes; // one time report of sizes to coil selection report
         Real64 capModFacTotal;     // coil  TotCapTempModFac * TotCapAirFFModFac * TotCapWaterFFModFac, for result for simulation peak reporting
+        int AirLoopNum;
 
         // default constructor
         VariableSpeedCoilData()
@@ -519,6 +520,8 @@ namespace VariableSpeedCoils {
     );
 
     Real64 getVarSpeedPartLoadRatio(EnergyPlusData &state, int const DXCoilNum); // the number of the DX coil to mined for current PLR
+
+    void SetVarSpeedDXCoilAirLoopNumber(EnergyPlusData &state, std::string const &CoilName, int const AirLoopNum);
 
     void setVarSpeedHPWHFanType(EnergyPlusData &state, int const dXCoilNum, HVAC::FanType fanType);
 

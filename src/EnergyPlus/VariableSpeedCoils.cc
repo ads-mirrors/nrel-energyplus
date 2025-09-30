@@ -8542,6 +8542,23 @@ namespace VariableSpeedCoils {
         return state.dataVariableSpeedCoils->VarSpeedCoil(DXCoilNum).PartLoadRatio;
     }
 
+    void SetVarSpeedDXCoilAirLoopNumber(EnergyPlusData &state, std::string const &CoilName, int const AirLoopNum)
+    {
+        int WhichCoil;
+
+        if (state.dataVariableSpeedCoils->GetCoilsInputFlag) {
+            GetVarSpeedCoilInput(state);
+            state.dataVariableSpeedCoils->GetCoilsInputFlag = false;
+        }
+
+        WhichCoil = Util::FindItemInList(CoilName, state.dataVariableSpeedCoils->VarSpeedCoil);
+        if (WhichCoil != 0) {
+            state.dataVariableSpeedCoils->VarSpeedCoil(WhichCoil).AirLoopNum = AirLoopNum;
+        } else {
+            ShowSevereError(state, format("SetVarSpeedDXCoilAirLoopNumber: Could not find Coil \"Name=\"{}\"", CoilName));
+        }
+    }
+
 } // namespace VariableSpeedCoils
 
 } // namespace EnergyPlus

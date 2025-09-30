@@ -10251,6 +10251,7 @@ namespace AirflowNetwork {
         using SplitterComponent::GetSplitterNodeNumbers;
         using SplitterComponent::GetSplitterOutletNumber;
         using UnitarySystems::getUnitarySystemNodeNumber;
+        using VariableSpeedCoils::SetVarSpeedDXCoilAirLoopNumber;
         using WaterThermalTanks::GetHeatPumpWaterHeaterNodeNumber;
         using WindowAC::getWindowACNodeNumber;
         using ZoneDehumidifier::GetZoneDehumidifierNodeNumber;
@@ -10779,7 +10780,7 @@ namespace AirflowNetwork {
                     if (IsNotOK) {
                         ErrorsFound = true;
                     } else {
-                        SetDXCoilAirLoopNumber(m_state, DisSysCompCoilData(i).name, DisSysCompCoilData(i).AirLoopNum);
+                        SetVarSpeedDXCoilAirLoopNumber(m_state, DisSysCompCoilData(i).name, DisSysCompCoilData(i).AirLoopNum);
                     }
 
                 } else if (SELECT_CASE_var == "COIL:HEATING:DX:VARIABLESPEED") {
@@ -10789,7 +10790,7 @@ namespace AirflowNetwork {
                     if (IsNotOK) {
                         ErrorsFound = true;
                     } else {
-                        SetDXCoilAirLoopNumber(m_state, DisSysCompCoilData(i).name, DisSysCompCoilData(i).AirLoopNum);
+                        SetVarSpeedDXCoilAirLoopNumber(m_state, DisSysCompCoilData(i).name, DisSysCompCoilData(i).AirLoopNum);
                     }
                 } else if (SELECT_CASE_var == "COIL:COOLING:WATERTOAIRHEATPUMP:EQUATIONFIT") {
                     ValidateComponent(m_state,

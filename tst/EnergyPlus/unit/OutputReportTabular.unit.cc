@@ -204,6 +204,20 @@ TEST_F(EnergyPlusFixture, OutputReportTabularTest_splitCommaString)
     EXPECT_EQ(actual, splitCommaString(" part1 , part2 , part3 "));
 }
 
+TEST_F(EnergyPlusFixture, OutputReportTabularTest_stringJoinDelimiter)
+{
+    std::vector<std::string> original;
+    EXPECT_EQ("", stringJoinDelimiter(original, ";"));
+    original.push_back("part1");
+    EXPECT_EQ("part1", stringJoinDelimiter(original, ";"));
+    original.push_back("part2");
+    EXPECT_EQ("part1;part2", stringJoinDelimiter(original, ";"));
+    EXPECT_EQ("part1 ; part2", stringJoinDelimiter(original, " ; "));
+    original.push_back("part3");
+    EXPECT_EQ("part1;part2;part3", stringJoinDelimiter(original, ";"));
+    EXPECT_EQ("part1 ; part2 ; part3", stringJoinDelimiter(original, " ; "));
+}
+
 TEST_F(EnergyPlusFixture, OutputReportTabularTest_unitsFromHeading)
 {
     std::string unitString;
@@ -7469,10 +7483,10 @@ TEST_F(SQLiteFixture, OutputReportTabularTest_PredefinedTableCoilHumRat)
     PreDefTableEntry(*state, state->dataOutRptPredefined->pdchCoilLvgHumRatIdealPeak, CompName, 0.006, 8);
 
     // We enable the reports we care about, making sure we have the right ones
-    EXPECT_EQ("HVACSizingSummary", state->dataOutRptPredefined->reportName(6).name);
-    state->dataOutRptPredefined->reportName(6).show = true;
-    EXPECT_EQ("CoilSizingDetails", state->dataOutRptPredefined->reportName(7).name);
+    EXPECT_EQ("HVACSizingSummary", state->dataOutRptPredefined->reportName(7).name);
     state->dataOutRptPredefined->reportName(7).show = true;
+    EXPECT_EQ("CoilSizingDetails", state->dataOutRptPredefined->reportName(8).name);
+    state->dataOutRptPredefined->reportName(8).show = true;
 
     WritePredefinedTables(*state);
     state->dataSQLiteProcedures->sqlite->initializeIndexes();
@@ -9805,8 +9819,8 @@ TEST_F(SQLiteFixture, OutputReportTabularTest_EscapeHTML)
                      "My Design Day where it's >= 8\u00B0"); // this is >= 8 degree sign
 
     // We enable the reports we care about, making sure we have the right ones
-    EXPECT_EQ("HVACSizingSummary", state->dataOutRptPredefined->reportName(6).name);
-    state->dataOutRptPredefined->reportName(6).show = true;
+    EXPECT_EQ("HVACSizingSummary", state->dataOutRptPredefined->reportName(7).name);
+    state->dataOutRptPredefined->reportName(7).show = true;
 
     OutputReportTabular::OpenOutputTabularFile(*state);
 

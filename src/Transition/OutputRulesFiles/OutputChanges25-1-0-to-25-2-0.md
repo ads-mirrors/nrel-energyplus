@@ -167,6 +167,7 @@ The `Output:Constructions` has two possible keys: `Materials` and `Constructions
 
 When using `Generator:FuelSupply`, the header was written twice in the EIO Initialization Summary as `! <Fuel Supply>,...` leading to two identical tables in the HTML report.
 
+#
 ### ZoneHVAC:IdealLoadsAirSystem
  
 * Added eight new report variables for ZoneHVAC:IdealLoadsAirSystem object:
@@ -187,17 +188,105 @@ See pull request [#10971] https://github.com/NREL/EnergyPlus/pull/10971
 
 
 
+### EIO and HTML Table Output - Schedule-Hourly/Schedule-Timestep
 
+Change header to the EIO table to make more compatible with the parsing that the Initialization Summary so that columns for more
+that the first Until Date/WeekSchedule are shown. Made explicit for the first 9 pairs of Until's. The use of 9 pairs of columns is preferred to a report that has a flexible number of columns.
 
+Previous
+```
+! <Schedule - Hourly>,Name,ScheduleType,{Until Date,WeekSchedule}** Repeated until Dec 31
+``` 
 
+Changed
+```
+! <Schedule - Hourly>,Name,ScheduleType,Until Date 1,WeekSchedule 1,Until Date 2,WeekSchedule 2,Until Date 3,WeekSchedule 3,Until Date 4,WeekSchedule 4,Until Date 5,WeekSchedule 5,Until Date 6,WeekSchedule 6,Until Date 7,WeekSchedule 7,Until Date 8,WeekSchedule 8,Until Date 9,WeekSchedule 9,
+```
 
+#### EIO and HTML Table Output - Airflow Stats Nominal
 
+The EIO tables related to Airflow Stats Nominal and the Initialization Summary which include:
 
+- ZoneInfiltration Airflow Stats Nominal
+- ZoneVentilation Airflow Stats Nominal
+- Mixing Airflow Stats Nominal
+- CrossMixing Airflow Stats Nominal
 
+Have been updated to add the input object name. This was done to identify the type of algorithm used.
 
+#### EquipmentSummary Service Water Heating - Additional Columns
 
+Several new columns were added to the Service Water Heating table:
 
+- Fuel Type
+- Set Point Schedule Name for Heater 1
+- Set Point at 11am First Wednesday for Heater 1
+- Days with Same 11am Value for Heater 1
+- Month Assumed for Heater 1
+- Set Point Schedule Name for Heater 2
+- Set Point at 11am First Wednesday for Heater 2
+- Days with Same 11am Value for Heater 2
+- Month Assumed for Heater 2
+- Peak Use Water Flow Rate
+- Use Flow Rate Fraction Schedule Name
+- Ambient Temperature Zone Name
 
+#### SystemSummary Economizer - Additional Column
 
+A new column was added to the System Summary Economizer table:
 
->>>>>>> .theirs
+- AirLoopHVAC:OutdoorAirSystem Name
+
+#### Control Summary - SetpointManager:OutdoorAirReset
+
+This is entirely new table
+
+- Setpoint Nodes
+- Setpoint Node PlantLoop Name
+- Control Type
+- Setpoint at Outdoor Low Temperature
+- Setpoint at Outdoor High Temperature
+- Outdoor Low Temperature
+- Outdoor High Temperature
+- Schedule Name
+- Setpoint at Outdoor Low Temperature 2
+- Setpoint at Outdoor High Temperature 2
+- Outdoor Low Temperature 2
+- Outdoor High Temperature 2
+
+#### Control Summary - SetpointManager:ReturnTemperature
+
+This is entirely new table
+
+- Type
+- Plant Loop Supply Outlet Node
+- Plant Loop Supply Inlet Node
+- PlantLoop Name
+- Minimum Supply Temperature Setpoint [C]
+- Maximum Supply Temperature Setpoint [C]
+- Return Temperature Setpoint Input Type
+- Return Temperature Setpoint [C]
+- Return Temperature Setpoint Schedule Name
+
+#### Control Summary - AvailabilityManager:Scheduled
+
+This is entirely new table
+
+- AirLoop Name
+- AvailabilityManager Name
+- Type
+- Schedule Name
+
+#### Control Summary -  PlantEquipmentOperation Load Based
+
+This is entirely new table
+
+- Plant Loop Name
+- Name
+- Type
+- Schedule Name
+- Index
+- Lower Limit [W]
+- Upper Limit [W]
+- Equipment List Name
+- Equipment

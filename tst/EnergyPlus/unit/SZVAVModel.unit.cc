@@ -1239,6 +1239,7 @@ TEST_F(EnergyPlusFixture, SZVAV_UnitarySys_VarSpeed_Testing)
     state->dataSize->FinalZoneSizing(state->dataSize->CurZoneEqNum).ZoneHumRatAtCoolPeak = 0.009;
     state->dataSize->FinalZoneSizing(state->dataSize->CurZoneEqNum).CoolDesTemp = 15.0;
     state->dataSize->FinalZoneSizing(state->dataSize->CurZoneEqNum).CoolDesHumRat = 0.006;
+    state->dataSize->FinalZoneSizing(state->dataSize->CurZoneEqNum).heatCoilSizingMethod = DataSizing::HeatCoilSizMethod::CoolingCapacity;
 
     state->dataSize->FinalZoneSizing(state->dataSize->CurZoneEqNum).DesHeatCoilInTemp = 20.0;
     state->dataSize->FinalZoneSizing(state->dataSize->CurZoneEqNum).ZoneTempAtHeatPeak = 20.0;

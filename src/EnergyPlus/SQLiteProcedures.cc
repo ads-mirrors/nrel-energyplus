@@ -127,7 +127,11 @@ bool ParseSQLiteInput(EnergyPlusData &state, bool &writeOutputToSQLite, bool &wr
             // This will be updated again and got concretely assigned first thing in OutputReportTabular::WriteTabularReports().
             sql_ort->unitsStyle_SQLite = OutputReportTabular::SetUnitsStyleFromString(tabularDataUnitConversion);
         }
-        sql_ort->formatReals_SQLite = (getYesNoValue(find_input(fields, "format_numeric_values_for_tabular_data")) == BooleanSwitch::Yes);
+        sql_ort->formatReals_SQLite = true;
+        if (auto found = fields.find("format_numeric_values_for_tabular_data"); found != fields.end()) {
+            std::string formatNumerics = Util::makeUPPER(found.value().get<std::string>());
+            sql_ort->formatReals_SQLite = (getYesNoValue(formatNumerics) == BooleanSwitch::Yes);
+        }
 
         return true;
     }

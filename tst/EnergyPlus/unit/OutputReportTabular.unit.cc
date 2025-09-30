@@ -9529,22 +9529,30 @@ TEST_F(SQLiteFixture, ORT_EndUseBySubcategorySQL_DualUnits)
 
     // activate JSON output
     std::string const idf_objects = delimited_string({
+        "Output:SQLite,",
+        "SimpleAndTabular,    !- Option Type",
+        "InchPound,   !- Unit Conversion for Tabular Data",
+        "Yes;      !- Format Numeric Values for Tabular Data",
         "Output:JSON,",
         "TimeSeriesAndTabular,    !- Option Type",
         "Yes,                     !- Output JSON",
         "No,                      !- Output CBOR",
         "No,                      !- Output MessagePack",
         "None,   !- Unit Conversion for Tabular Data",
-        "No;      !- Format Real Values for Tabular Data",
+        "No;      !- Format Numeric Values for Tabular Data",
     });
 
     ASSERT_TRUE(process_idf(idf_objects));
     state->files.outputControl.getInput(*state);
     state->dataResultsFramework->resultsFramework->setupOutputOptions(*state);
+    bool writeOutputToSQLite = false;
+    bool writeTabularDataToSQLite = false;
+    bool parsedSQLite = ParseSQLiteInput(*state, writeOutputToSQLite, writeTabularDataToSQLite);
+    EXPECT_EQ(state->dataOutRptTab->unitsStyle_SQLite,OutputReportTabular::UnitsStyle::InchPound);
+    EXPECT_TRUE(state->dataOutRptTab->formatReals_SQLite);
 
     SetupUnitConversions(*state);
-    state->dataOutRptTab->unitsStyle_Tabular = OutputReportTabular::UnitsStyle::JtoKWH;
-    state->dataOutRptTab->unitsStyle_SQLite = OutputReportTabular::UnitsStyle::InchPound;
+    state->dataOutRptTab->unitsStyle_Tabular, OutputReportTabular::UnitsStyle::JtoKWH;
 
     setTabularReportStyles(*state);
     Real64 enerConv = getSpecificUnitDivider(*state, "GJ", "kBtu"); // 948.45
@@ -9885,6 +9893,10 @@ TEST_F(SQLiteFixture, ORT_EndUseBySubcategorySQL_DualUnits2)
 
     // activate JSON output
     std::string const idf_objects = delimited_string({
+        "Output:SQLite,",
+        "SimpleAndTabular,    !- Option Type",
+        "None,     !- Unit Conversion for Tabular Data",
+        "Yes;      !- Format Numeric Values for Tabular Data",
         "Output:JSON,",
         "TimeSeriesAndTabular,    !- Option Type",
         "Yes,                     !- Output JSON",
@@ -9897,10 +9909,14 @@ TEST_F(SQLiteFixture, ORT_EndUseBySubcategorySQL_DualUnits2)
     ASSERT_TRUE(process_idf(idf_objects));
     state->files.outputControl.getInput(*state);
     state->dataResultsFramework->resultsFramework->setupOutputOptions(*state);
+    bool writeOutputToSQLite = false;
+    bool writeTabularDataToSQLite = false;
+    bool parsedSQLite = ParseSQLiteInput(*state, writeOutputToSQLite, writeTabularDataToSQLite);
+    EXPECT_EQ(state->dataOutRptTab->unitsStyle_SQLite, OutputReportTabular::UnitsStyle::None);
+    EXPECT_TRUE(state->dataOutRptTab->formatReals_SQLite);
 
     SetupUnitConversions(*state);
     state->dataOutRptTab->unitsStyle_Tabular = OutputReportTabular::UnitsStyle::JtoKWH;
-    state->dataOutRptTab->unitsStyle_SQLite = OutputReportTabular::UnitsStyle::None;
 
     setTabularReportStyles(*state);
     Real64 enerConv = getSpecificUnitDivider(*state, "GJ", "kBtu"); // 948.45

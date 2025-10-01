@@ -1336,7 +1336,7 @@ TEST_F(EnergyPlusFixture, SZVAV_UnitarySys_VarSpeed_Testing)
                       ZoneEquipment,
                       sensOut,
                       latOut);
-    EXPECT_TRUE((thisSys->m_MaxHeatAirVolFlow * state->dataEnvrn->StdRhoAir > state->dataLoopNodes->Node(thisSys->AirOutNode).MassFlowRate) &
+    EXPECT_TRUE((thisSys->m_MaxHeatAirVolFlow * state->dataEnvrn->StdRhoAir > state->dataLoopNodes->Node(thisSys->AirOutNode).MassFlowRate) &&
                 (state->dataLoopNodes->Node(thisSys->AirOutNode).MassFlowRate > thisSys->MaxNoCoolHeatAirMassFlow));
     EXPECT_NEAR(state->dataLoopNodes->Node(thisSys->AirOutNode).Temp, thisSys->DesignMaxOutletTemp, 0.1);
 

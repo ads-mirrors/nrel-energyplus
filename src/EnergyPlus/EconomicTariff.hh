@@ -57,8 +57,8 @@
 #include <EnergyPlus/DataGlobals.hh>
 #include <EnergyPlus/EPVector.hh>
 #include <EnergyPlus/EnergyPlus.hh>
-#include <EnergyPlus/ScheduleManager.hh>
 #include <EnergyPlus/OutputReportTabular.hh>
+#include <EnergyPlus/ScheduleManager.hh>
 
 namespace EnergyPlus {
 

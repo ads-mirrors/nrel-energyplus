@@ -9548,7 +9548,7 @@ TEST_F(SQLiteFixture, ORT_EndUseBySubcategorySQL_DualUnits)
     bool writeOutputToSQLite = false;
     bool writeTabularDataToSQLite = false;
     bool parsedSQLite = ParseSQLiteInput(*state, writeOutputToSQLite, writeTabularDataToSQLite);
-    EXPECT_EQ(state->dataOutRptTab->unitsStyle_SQLite,OutputReportTabular::UnitsStyle::InchPound);
+    EXPECT_EQ(state->dataOutRptTab->unitsStyle_SQLite, OutputReportTabular::UnitsStyle::InchPound);
     EXPECT_TRUE(state->dataOutRptTab->formatReals_SQLite);
 
     SetupUnitConversions(*state);

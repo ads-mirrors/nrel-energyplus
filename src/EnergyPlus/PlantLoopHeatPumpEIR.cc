@@ -2461,7 +2461,7 @@ void EIRPlantLoopHeatPump::oneTimeInit(EnergyPlusData &state)
                                     OutputProcessor::StoreType::Average,
                                     this->name);
                 SetupOutputVariable(state,
-                                    "Heat Pump Fractioal Defrost Time",
+                                    "Heat Pump Fractional Defrost Time",
                                     Constant::Units::W,
                                     this->fractionalDefrostTime,
                                     OutputProcessor::TimeStepType::System,

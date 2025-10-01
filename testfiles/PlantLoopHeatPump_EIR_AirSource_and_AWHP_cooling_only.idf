@@ -2,7 +2,7 @@
 !
 ! Basic file description:
 ! The EIR formulated air-to-water heat pump is demonstrated using a simple collection of plant loops.  Building loads
-!  are represented using Plant Load Profile objects
+! are represented using Plant Load Profile objects
 ! Run:      1 design day.
 ! Building: None.
 ! System:   None.
@@ -16,7 +16,7 @@
     Suburbs,                 !- Terrain
     0.04,                    !- Loads Convergence Tolerance Value {W}
     0.04,                    !- Temperature Convergence Tolerance Value {deltaC}
-    FullInteriorAndExterior, !- Solar Distribution
+    FullInteriorAndExterior,  !- Solar Distribution
     25,                      !- Maximum Number of Warmup Days
     6;                       !- Minimum Number of Warmup Days
 
@@ -112,9 +112,9 @@
 
   Schedule:Constant,AlwaysOnSchedule,On/Off,1;
 
-  ! Simulate a winter time, overnight hours load, but the pump is always running in that season
+! Simulate a winter time, overnight hours load, but the pump is always running in that season
 
-  ! Simulate a summer time, daytime hours load, but the pump is always running in that season
+! Simulate a summer time, daytime hours load, but the pump is always running in that season
 
   Schedule:Compact,
     Cooling Coil Load Profile Load Schedule,  !- Name
@@ -145,111 +145,111 @@
     UNTIL: 24:00,0.0;        !- Field 11
 
   HeatPump:AirToWater,
-    test_AWHP, !- Name
-    , !- Availability Schedule Name Heating
-    , !- Availability Schedule Name Cooling
-    Load , !- Operating Mode Control Method
-    SingleMode, !- Operating Mode Control Option for Multiple Unit
-    , !- Operating Mode Control Schedule Name
-    , !-  Rated Inlet Air Temperature in Heating Mode
-    , !-  Rated Air Flow Rate in Heating Mode
-    , !-  Rated Leaving Water Temperature in Heating Mode
-    , !-  Rated Water Flow Rate in Heating Mode
-    , !-  Minimum Outdoor Air Temperature in Heating Mode
-    , !-  Maximum Outdoor Air Temperature in Heating Mode
-    , !- Minimum Leaving Water Temperature Curve Name in Heating Mode
-    , !- Maximum Leaving Water Temperature Curve Name in Heating Mode
-    , !- Minimum Part Load Ratio
-    , !-  Sizing Factor for Heating
-    25, !-  Rated Inlet Air Temperature in Cooling Mode
-    20 , !-  Rated Air Flow Rate in Cooling Mode
-    22 , !-  Rated Leaving Water Temperature in Cooling Mode
-    autosize , !-  Rated Water Flow Rate in Cooling Mode
-    18 , !-  Minimum Outdoor Air Temperature in Cooling Mode
-    40, !-  Maximum Outdoor Air Temperature in Cooling Mode
-    , !- Minimum Leaving Water Temperature Curve Name in Cooling Mode
-    , !- Maximum Leaving Water Temperature Curve Name in Cooling Mode
-    0.9, !-  Sizing Factor for Cooling
-    Outdoor Air Inlet Node , !-  Air Inlet Node Name
-    Outdoor Air Outlet Node, !-  Air Outlet Node Name
-    , !-  Hot Water Inlet Node Name
-    , !-  Hot Water Outlet Node Name
-    Cooling Coil Load Loop Intermediate Node , !-  Chilled Water Inlet Node Name
-    Cooling Coil Load Loop Supply Outlet Node , !-  Chilled Water Outlet Node Name
-    , !- Maximum Outdoor Dry Bulb Temperature For Defrost Operation
-    , !-  Heat Pump Defrost Control
-    , !-  Heat Pump Defrost Time Period Fraction
-    , !-  Resistive Defrost Heater Capacity
-    , !-  Defrost Energy Input Ratio Function of Temperature Curve Name
-    2 , !- Heat Pump Multiplier
-    FixedSpeed , !- Control Type
-    , !- Crankcase Heater Capacity
-    , !- Crankcase Heater Capacity Function of Temperature Curve Name
-    , !- Maximum Ambient Temperature for Crankcase Heater Operation
-    , !- Number of Speeds for Heating
-    , !-  Rated Heating Capacity at Speed 1
-    , !-  Rated COP for Heating at Speed 1
-    , !-  Normalized Heating Capacity Function of Temperature Curve Name at Speed 1
-    , !-  Heating Energy Input Ratio Function of Temperature Curve Name at Speed 1
-    , !-  Heating Energy Input Ratio Function of PLR Curve Name at Speed 1
-    , !-  Rated Heating Capacity at Speed 2
-    , !-  Rated COP for Heating at Speed 2
-    , !-  Normalized Heating Capacity Function of Temperature Curve Name at Speed 2
-    , !-  Heating Energy Input Ratio Function of Temperature Curve Name at Speed 2
-    ,  !-  Heating Energy Input Ratio Function of PLR Curve Name at Speed 2
-    , !-  Rated Heating Capacity at Speed 3
-    , !-  Rated COP for Heating at Speed 3
-    , !-  Normalized Heating Capacity Function of Temperature Curve Name at Speed 3
-    , !-  Heating Energy Input Ratio Function of Temperature Curve Name at Speed 3
-    , !-  Heating Energy Input Ratio Function of PLR Curve Name at Speed 3
-    , !-  Rated Heating Capacity at Speed 4
-    , !-  Rated COP for Heating at Speed 4
-    , !-  Normalized Heating Capacity Function of Temperature Curve Name at Speed 4
-    , !-  Heating Energy Input Ratio Function of Temperature Curve Name at Speed 4
-    , !-  Heating Energy Input Ratio Function of PLR Curve Name at Speed 4
-    , !-  Rated Heating Capacity at Speed 5
-    , !-  Rated COP for Heating at Speed 5
-    , !-  Normalized Heating Capacity Function of Temperature Curve Name at Speed 5
-    , !-  Heating Energy Input Ratio Function of Temperature Curve Name at Speed 5
-    , !-  Heating Energy Input Ratio Function of PLR Curve Name at Speed 5
-    , !-  Booster Mode On Heating
-    , !-  Rated Heating Capacity in Booster Mode
-    , !-  Rated Heating COP in Booster Mode
-    , !-  Normalized Heating Capacity Function of Temperature Curve Name in Booster Mode
-    , !-  Heating Energy Input Ratio Function of Temperature Curve Name in Booster Mode
-    , !-  Heating Energy Input Ratio Function of PLR Curve Name in Booster Mode
-    2, !-  Number of Speeds for Cooling
-    200000, !-  Rated Cooling Capacity at Speed 1
-    3.5, !-  Rated COP for Cooling at Speed 1
-    CapCurveFuncTemp, !-  Normalized Cooling Capacity Function of Temperature Curve Name at Speed 1
-    EIRCurveFuncTemp, !-  Cooling Energy Input Ratio Function of Temperature Curve Name at Speed 1
-    EIRCurveFuncPLR, !-  Cooling Energy Input Ratio Function of PLR Curve Name at Speed 1
-    400000, !-  Rated Cooling Capacity at Speed 2
-    3.5, !-  Rated COP for Cooling at Speed 2
-    CapCurveFuncTemp2, !-  Normalized Cooling Capacity Function of Temperature Curve Name at Speed 2
-    EIRCurveFuncTemp2, !-  Cooling Energy Input Ratio Function of Temperature Curve Name at Speed 2
-    EIRCurveFuncPLR2,  !-  Cooling Energy Input Ratio Function of PLR Curve Name at Speed 2
-    , !-  Rated Cooling Capacity at Speed 3
-    , !-  Rated COP for Cooling at Speed 3
-    , !-  Normalized Cooling Capacity Function of Temperature Curve Name at Speed 3
-    , !-  Cooling Energy Input Ratio Function of Temperature Curve Name at Speed 3
-    , !-  Cooling Energy Input Ratio Function of PLR Curve Name at Speed 3
-    , !-  Rated Cooling Capacity at Speed 4
-    , !-  Rated COP for Cooling at Speed 4
-    , !-  Normalized Cooling Capacity Function of Temperature Curve Name at Speed 4
-    , !-  Cooling Energy Input Ratio Function of Temperature Curve Name at Speed 4
-    , !-  Cooling Energy Input Ratio Function of PLR Curve Name at Speed 4
-    , !-  Rated Cooling Capacity at Speed 5
-    , !-  Rated COP for Cooling at Speed 5
-    , !-  Normalized Cooling Capacity Function of Temperature Curve Name at Speed 5
-    , !-  Cooling Energy Input Ratio Function of Temperature Curve Name at Speed 5
-    , !-  Cooling Energy Input Ratio Function of PLR Curve Name at Speed 5
-    , !-  Booster Mode On Cooling
-    , !-  Rated Cooling Capacity in Booster Mode
-    , !-  Rated Cooling COP in Booster Mode
-    , !-  Normalized Cooling Capacity Function of Temperature Curve Name in Booster Mode
-    , !-  Cooling Energy Input Ratio Function of Temperature Curve Name in Booster Mode
-    ; !-  Cooling Energy Input Ratio Function of PLR Curve Name in Booster Mode
+    test_AWHP,               !- Name
+    ,                        !- Availability Schedule Name Heating
+    ,                        !- Availability Schedule Name Cooling
+    Load ,                   !- Operating Mode Control Method
+    SingleMode,              !- Operating Mode Control Option for Multiple Unit
+    ,                        !- Operating Mode Control Schedule Name
+    ,                        !- Rated Inlet Air Temperature in Heating Mode
+    ,                        !- Rated Air Flow Rate in Heating Mode
+    ,                        !- Rated Leaving Water Temperature in Heating Mode
+    ,                        !- Rated Water Flow Rate in Heating Mode
+    ,                        !- Minimum Outdoor Air Temperature in Heating Mode
+    ,                        !- Maximum Outdoor Air Temperature in Heating Mode
+    ,                        !- Minimum Leaving Water Temperature Curve Name in Heating Mode
+    ,                        !- Maximum Leaving Water Temperature Curve Name in Heating Mode
+    ,                        !- Minimum Part Load Ratio
+    ,                        !- Sizing Factor for Heating
+    25,                      !- Rated Inlet Air Temperature in Cooling Mode
+    20 ,                     !- Rated Air Flow Rate in Cooling Mode
+    22 ,                     !- Rated Leaving Water Temperature in Cooling Mode
+    autosize ,               !- Rated Water Flow Rate in Cooling Mode
+    18 ,                     !- Minimum Outdoor Air Temperature in Cooling Mode
+    40,                      !- Maximum Outdoor Air Temperature in Cooling Mode
+    ,                        !- Minimum Leaving Water Temperature Curve Name in Cooling Mode
+    ,                        !- Maximum Leaving Water Temperature Curve Name in Cooling Mode
+    0.9,                     !- Sizing Factor for Cooling
+    Outdoor Air Inlet Node ,  !- Air Inlet Node Name
+    Outdoor Air Outlet Node,  !- Air Outlet Node Name
+    ,                        !- Hot Water Inlet Node Name
+    ,                        !- Hot Water Outlet Node Name
+    Cooling Coil Load Loop Intermediate Node ,  !- Chilled Water Inlet Node Name
+    Cooling Coil Load Loop Supply Outlet Node ,  !- Chilled Water Outlet Node Name
+    ,                        !- Maximum Outdoor Dry Bulb Temperature For Defrost Operation
+    ,                        !- Heat Pump Defrost Control
+    ,                        !- Heat Pump Defrost Time Period Fraction
+    ,                        !- Resistive Defrost Heater Capacity
+    ,                        !- Defrost Energy Input Ratio Function of Temperature Curve Name
+    2 ,                      !- Heat Pump Multiplier
+    FixedSpeed ,             !- Control Type
+    ,                        !- Crankcase Heater Capacity
+    ,                        !- Crankcase Heater Capacity Function of Temperature Curve Name
+    ,                        !- Maximum Ambient Temperature for Crankcase Heater Operation
+    ,                        !- Number of Speeds for Heating
+    ,                        !- Rated Heating Capacity at Speed 1
+    ,                        !- Rated COP for Heating at Speed 1
+    ,                        !- Normalized Heating Capacity Function of Temperature Curve Name at Speed 1
+    ,                        !- Heating Energy Input Ratio Function of Temperature Curve Name at Speed 1
+    ,                        !- Heating Energy Input Ratio Function of PLR Curve Name at Speed 1
+    ,                        !- Rated Heating Capacity at Speed 2
+    ,                        !- Rated COP for Heating at Speed 2
+    ,                        !- Normalized Heating Capacity Function of Temperature Curve Name at Speed 2
+    ,                        !- Heating Energy Input Ratio Function of Temperature Curve Name at Speed 2
+    ,                        !- Heating Energy Input Ratio Function of PLR Curve Name at Speed 2
+    ,                        !- Rated Heating Capacity at Speed 3
+    ,                        !- Rated COP for Heating at Speed 3
+    ,                        !- Normalized Heating Capacity Function of Temperature Curve Name at Speed 3
+    ,                        !- Heating Energy Input Ratio Function of Temperature Curve Name at Speed 3
+    ,                        !- Heating Energy Input Ratio Function of PLR Curve Name at Speed 3
+    ,                        !- Rated Heating Capacity at Speed 4
+    ,                        !- Rated COP for Heating at Speed 4
+    ,                        !- Normalized Heating Capacity Function of Temperature Curve Name at Speed 4
+    ,                        !- Heating Energy Input Ratio Function of Temperature Curve Name at Speed 4
+    ,                        !- Heating Energy Input Ratio Function of PLR Curve Name at Speed 4
+    ,                        !- Rated Heating Capacity at Speed 5
+    ,                        !- Rated COP for Heating at Speed 5
+    ,                        !- Normalized Heating Capacity Function of Temperature Curve Name at Speed 5
+    ,                        !- Heating Energy Input Ratio Function of Temperature Curve Name at Speed 5
+    ,                        !- Heating Energy Input Ratio Function of PLR Curve Name at Speed 5
+    ,                        !- Booster Mode On Heating
+    ,                        !- Rated Heating Capacity in Booster Mode
+    ,                        !- Rated Heating COP in Booster Mode
+    ,                        !- Normalized Heating Capacity Function of Temperature Curve Name in Booster Mode
+    ,                        !- Heating Energy Input Ratio Function of Temperature Curve Name in Booster Mode
+    ,                        !- Heating Energy Input Ratio Function of PLR Curve Name in Booster Mode
+    2,                       !- Number of Speeds for Cooling
+    200000,                  !- Rated Cooling Capacity at Speed 1
+    3.5,                     !- Rated COP for Cooling at Speed 1
+    CapCurveFuncTemp,        !- Normalized Cooling Capacity Function of Temperature Curve Name at Speed 1
+    EIRCurveFuncTemp,        !- Cooling Energy Input Ratio Function of Temperature Curve Name at Speed 1
+    EIRCurveFuncPLR,         !- Cooling Energy Input Ratio Function of PLR Curve Name at Speed 1
+    400000,                  !- Rated Cooling Capacity at Speed 2
+    3.5,                     !- Rated COP for Cooling at Speed 2
+    CapCurveFuncTemp2,       !- Normalized Cooling Capacity Function of Temperature Curve Name at Speed 2
+    EIRCurveFuncTemp2,       !- Cooling Energy Input Ratio Function of Temperature Curve Name at Speed 2
+    EIRCurveFuncPLR2,        !- Cooling Energy Input Ratio Function of PLR Curve Name at Speed 2
+    ,                        !- Rated Cooling Capacity at Speed 3
+    ,                        !- Rated COP for Cooling at Speed 3
+    ,                        !- Normalized Cooling Capacity Function of Temperature Curve Name at Speed 3
+    ,                        !- Cooling Energy Input Ratio Function of Temperature Curve Name at Speed 3
+    ,                        !- Cooling Energy Input Ratio Function of PLR Curve Name at Speed 3
+    ,                        !- Rated Cooling Capacity at Speed 4
+    ,                        !- Rated COP for Cooling at Speed 4
+    ,                        !- Normalized Cooling Capacity Function of Temperature Curve Name at Speed 4
+    ,                        !- Cooling Energy Input Ratio Function of Temperature Curve Name at Speed 4
+    ,                        !- Cooling Energy Input Ratio Function of PLR Curve Name at Speed 4
+    ,                        !- Rated Cooling Capacity at Speed 5
+    ,                        !- Rated COP for Cooling at Speed 5
+    ,                        !- Normalized Cooling Capacity Function of Temperature Curve Name at Speed 5
+    ,                        !- Cooling Energy Input Ratio Function of Temperature Curve Name at Speed 5
+    ,                        !- Cooling Energy Input Ratio Function of PLR Curve Name at Speed 5
+    ,                        !- Booster Mode On Cooling
+    ,                        !- Rated Cooling Capacity in Booster Mode
+    ,                        !- Rated Cooling COP in Booster Mode
+    ,                        !- Normalized Cooling Capacity Function of Temperature Curve Name in Booster Mode
+    ,                        !- Cooling Energy Input Ratio Function of Temperature Curve Name in Booster Mode
+    ;                        !- Cooling Energy Input Ratio Function of PLR Curve Name in Booster Mode
 
   Curve:Biquadratic,
     CapCurveFuncTemp,        !- Name
@@ -298,7 +298,7 @@
 ! *** Cooling coil loop
 
   Sizing:Plant,
-    Cooling Coil Load Loop,      !- Plant or Condenser Loop Name
+    Cooling Coil Load Loop,  !- Plant or Condenser Loop Name
     cooling,                 !- Loop Type
     7.00,                    !- Design Loop Exit Temperature {C}
     4.00;                    !- Loop Design Temperature Difference {deltaC}
@@ -313,7 +313,7 @@
     3,                       !- Minimum Loop Temperature {C}
     0.005,                   !- Maximum Loop Flow Rate {m3/s}
     0,                       !- Minimum Loop Flow Rate {m3/s}
-    15,                       !- Plant Loop Volume {m3}
+    15,                      !- Plant Loop Volume {m3}
     Cooling Coil Load Loop Supply Inlet Node,  !- Plant Side Inlet Node Name
     Cooling Coil Load Loop Supply Outlet Node,  !- Plant Side Outlet Node Name
     Cooling Coil Load Loop Supply Branches,  !- Plant Side Branch List Name
@@ -350,8 +350,8 @@
 
   PlantEquipmentList,
     Cooling Coil Load Loop Cooling Equipment,  !- Name
-    HeatPump:AirToWater,  !- Equipment 1 Object Type
-    test_AWHP;            !- Equipment 1 Name
+    HeatPump:AirToWater,     !- Equipment 1 Object Type
+    test_AWHP;               !- Equipment 1 Name
 
   BranchList,
     Cooling Coil Load Loop Supply Branches,  !- Name
@@ -365,7 +365,7 @@
     Cooling Coil Load Loop Supply Inlet Node,  !- Component 1 Inlet Node Name
     Cooling Coil Load Loop Intermediate Node,  !- Component 1 Outlet Node Name
     HeatPump:AirToWater:Cooling,  !- Component 2 Object Type
-    test_AWHP,            !- Component 2 Name
+    test_AWHP,               !- Component 2 Name
     Cooling Coil Load Loop Intermediate Node,  !- Component 2 Inlet Node Name
     Cooling Coil Load Loop Supply Outlet Node;  !- Component 2 Outlet Node Name
 
@@ -388,7 +388,7 @@
   Curve:Biquadratic,
     CapCurveFuncTemp2,       !- Name
     0.8,                     !- Coefficient1 Constant
-    0.02,                     !- Coefficient2 x
+    0.02,                    !- Coefficient2 x
     0.0,                     !- Coefficient3 x**2
     0.0,                     !- Coefficient4 y
     0.0,                     !- Coefficient5 y**2
@@ -454,26 +454,7 @@
 
   Output:VariableDictionary,IDF;
 
-!-   Output:Variable,*,Plant Load Profile Mass Flow Rate in Cooling Mode,Hourly;
-!-   Output:Variable,*,Plant Load Profile Heat Transfer Rate in Cooling Mode,Hourly;
-!-   Output:Variable,*,Heat Pump Load Side Heat Transfer Rate in Cooling Mode,Hourly;
-!-   Output:Variable,*,Heat Pump Load Side Heat Transfer Energy in Cooling Mode,Hourly;
-!-   Output:Variable,*,Heat Pump Source Side Heat Transfer Rate in Cooling Mode,Hourly;
-!-   Output:Variable,*,Heat Pump Source Side Heat Transfer Energy in Cooling Mode,Hourly;
-!-   Output:Variable,*,Heat Pump Load Side Inlet Temperature in Cooling Mode,Hourly;
-!-   Output:Variable,*,Heat Pump Load Side Outlet Temperature in Cooling Mode,Hourly;
-!-   Output:Variable,*,Heat Pump Source Side Inlet Temperature in Cooling Mode,Hourly;
-!-   Output:Variable,*,Heat Pump Source Side Outlet Temperature in Cooling Mode,Hourly;
-!-   Output:Variable,*,Heat Pump Electricity Rate in Cooling Mode,Hourly;
-!-   Output:Variable,*,Heat Pump Electricity Energy in Cooling Mode,Hourly;
-!-   Output:Variable,*,Heat Pump Load Side Mass Flow Rate in Cooling Mode,Hourly;
-!-   Output:Variable,*,Heat Pump Source Side Mass Flow Rate in Cooling Mode,Hourly;
-  Output:Variable,*,Heat Pump Operating Mode is Cooling,detailed; !- HVAC Average []
-
-!-   Output:Variable,*,Heat Pump Cooling COP,hourly; !- HVAC Average []
-!-   Output:Variable,*,Heat Pump Total Cooling Rate,hourly; !- HVAC Average []
-!-
-!-   Output:Variable,*,Site Outdoor Air Drybulb Temperature,hourly; !- Zone Average [C]
+  Output:Variable,*,Heat Pump Operating Mode is Cooling,detailed;  !- HVAC Average []
   Output:Variable,*,Operating Model Output Cooling,detailed;
   Output:Variable,*,Outdoor Temp,detailed;
 
@@ -489,14 +470,14 @@
     Verbose;                 !- EMS Runtime Language Debug Output Level
 
   EnergyManagementSystem:Actuator,
-    opModeAct_cooling,               !- Name
+    opModeAct_cooling,       !- Name
     test_AWHP,               !- Actuated Component Unique Name
-    HeatPump:AirToWater:Cooling,     !- Actuated Component Type
+    HeatPump:AirToWater:Cooling,  !- Actuated Component Type
     Operating Mode;          !- Actuated Component Control Type
 
   EnergyManagementSystem:OutputVariable,
-    Operating Model Output Cooling,       !- Name
-    opModeAct_cooling,                    !- EMS Variable Name
+    Operating Model Output Cooling,  !- Name
+    opModeAct_cooling,       !- EMS Variable Name
     Averaged,                !- Type of Data in Variable
     SystemTimeStep,          !- Update Frequency
     ,                        !- EMS Program or Subroutine Name
@@ -509,7 +490,7 @@
 
   EnergyManagementSystem:Program,
     Change_OpMode_EMS_Program,  !- Name
-    IF (Hour <= 12),  !- Program Line 2
+    IF (Hour <= 12),         !- Program Line 2
     SET opModeAct_cooling = 0,  !- <none>
     ELSE,                    !- <none>
     SET opModeAct_cooling = 1,  !- <none>

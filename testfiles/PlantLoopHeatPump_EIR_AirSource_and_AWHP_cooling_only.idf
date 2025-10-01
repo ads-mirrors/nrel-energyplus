@@ -8,7 +8,7 @@
 ! System:   None.
 ! Plant:    PLANT LOAD PROFILE with District Heating and Cooling as necessary.
 
-  Version,25.1;
+  Version,25.2;
 
   Building,
     Plant Load Profile Example,  !- Name
@@ -302,7 +302,7 @@
     cooling,                 !- Loop Type
     7.00,                    !- Design Loop Exit Temperature {C}
     4.00;                    !- Loop Design Temperature Difference {deltaC}
-    
+
   PlantLoop,
     Cooling Coil Load Loop,  !- Name
     WATER,                   !- Fluid Type

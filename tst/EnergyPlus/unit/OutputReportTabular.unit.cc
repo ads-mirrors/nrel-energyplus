@@ -9548,11 +9548,12 @@ TEST_F(SQLiteFixture, ORT_EndUseBySubcategorySQL_DualUnits)
     bool writeOutputToSQLite = false;
     bool writeTabularDataToSQLite = false;
     bool parsedSQLite = ParseSQLiteInput(*state, writeOutputToSQLite, writeTabularDataToSQLite);
-    EXPECT_EQ(state->dataOutRptTab->unitsStyle_SQLite, OutputReportTabular::UnitsStyle::InchPound);
+    EXPECT_TRUE(parsedSQLite);
+    EXPECT_ENUM_EQ(state->dataOutRptTab->unitsStyle_SQLite, OutputReportTabular::UnitsStyle::InchPound);
     EXPECT_TRUE(state->dataOutRptTab->formatReals_SQLite);
 
     SetupUnitConversions(*state);
-    state->dataOutRptTab->unitsStyle_Tabular, OutputReportTabular::UnitsStyle::JtoKWH;
+    state->dataOutRptTab->unitsStyle_Tabular = OutputReportTabular::UnitsStyle::JtoKWH;
 
     setTabularReportStyles(*state);
     Real64 enerConv = getSpecificUnitDivider(*state, "GJ", "kBtu"); // 948.45
@@ -9912,6 +9913,7 @@ TEST_F(SQLiteFixture, ORT_EndUseBySubcategorySQL_DualUnits2)
     bool writeOutputToSQLite = false;
     bool writeTabularDataToSQLite = false;
     bool parsedSQLite = ParseSQLiteInput(*state, writeOutputToSQLite, writeTabularDataToSQLite);
+    EXPECT_TRUE(parsedSQLite);
     EXPECT_EQ(state->dataOutRptTab->unitsStyle_SQLite, OutputReportTabular::UnitsStyle::None);
     EXPECT_TRUE(state->dataOutRptTab->formatReals_SQLite);
 

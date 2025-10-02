@@ -178,46 +178,56 @@ int assembleBuffer(int flag, int nDbl, int nInt, int nBoo, double curSimTim, dou
   // Set up how many values will be in buffer
   // This is an internally used version number to make update
   // of the format possible later without braking old versions
-  sprintf(temCha, "%d ", MAINVERSION);
+  retVal = snprintf(temCha, sizeof temCha, "%d ", MAINVERSION);
+  if (retVal < 0) return -1;
   retVal = save_append(buffer, temCha, bufLen);
   if (retVal != 0) return retVal;
-  sprintf(temCha, "%d ", flag);
+  retVal = snprintf(temCha, sizeof temCha, "%d ", flag);
+  if (retVal < 0) return -1;
   retVal = save_append(buffer, temCha, bufLen);
   if (retVal != 0) return retVal;
   if (flag == 0) {
     // Only process data if the flag is zero.
-    sprintf(temCha, "%d ", nDbl);
+    retVal = snprintf(temCha, sizeof temCha, "%d ", nDbl);
+    if (retVal < 0) return -1;
     retVal = save_append(buffer, temCha, bufLen);
     if (retVal != 0) return retVal;
-    sprintf(temCha, "%d ", nInt);
+    retVal = snprintf(temCha, sizeof temCha, "%d ", nInt);
+    if (retVal < 0) return -1;
     retVal = save_append(buffer, temCha, bufLen);
     if (retVal != 0) return retVal;
-    sprintf(temCha, "%d ", nBoo);
+    retVal = snprintf(temCha, sizeof temCha, "%d ", nBoo);
+    if (retVal < 0) return -1;
     retVal = save_append(buffer, temCha, bufLen);
     if (retVal != 0) return retVal;
-    sprintf(temCha, "%20.15e ", curSimTim);
+    retVal = snprintf(temCha, sizeof temCha, "%20.15e ", curSimTim);
+    if (retVal < 0) return -1;
     retVal = save_append(buffer, temCha, bufLen);
     if (retVal != 0) return retVal;
     // add values to buffer
     for (i = 0; i < nDbl; i++) {
-      sprintf(temCha, "%20.15e ", dblVal[i]);
+      retVal = snprintf(temCha, sizeof temCha, "%20.15e ", dblVal[i]);
+      if (retVal < 0) return -1;
       retVal = save_append(buffer, temCha, bufLen);
       if (retVal != 0) return retVal;
     }
     for (i = 0; i < nInt; i++) {
-      sprintf(temCha, "%d ", intVal[i]);
+      retVal = snprintf(temCha, sizeof temCha, "%d ", intVal[i]);
+      if (retVal < 0) return -1;
       retVal = save_append(buffer, temCha, bufLen);
       if (retVal != 0) return retVal;
     }
     for (i = 0; i < nBoo; i++) {
-      sprintf(temCha, "%d ", booVal[i]);
+      retVal = snprintf(temCha, sizeof temCha, "%d ", booVal[i]);
+      if (retVal < 0) return -1;
       retVal = save_append(buffer, temCha, bufLen);
       if (retVal != 0) return retVal;
     }
   }
   // For the Java server to read the line, the line
   // needs to be terminated with '\n'
-  sprintf(temCha, "\n");
+  retVal = snprintf(temCha, sizeof temCha, "\n");
+  if (retVal < 0) return -1;
   retVal = save_append(buffer, temCha, bufLen);
   if (retVal != 0) return retVal;
   // No error, return 0

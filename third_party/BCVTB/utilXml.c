@@ -848,10 +848,7 @@ int getxmlvalue(char const* const fileName, char const* const exp, char* const s
 ////////////////////////////////////////////////////////////////
 int check_variable_cfg_Validate(char const* const fileName) {
 
-  char *BCVTB_HOME, *dtdFileName;
-  char* command;
-  FILE* dtdF;
-  int ret;
+  char const* const dtdName = "variables.dtd";
 #ifdef _MSC_VER /************* Windows specific code ********/
   char const* const xmlPath = "\\lib\\xml\\";
   char const* const jarPath = "\\lib\\xml\\build\\jar\\DTDValidator.jar";
@@ -860,51 +857,72 @@ int check_variable_cfg_Validate(char const* const fileName) {
   char const* const jarPath = "/lib/xml/build/jar/DTDValidator.jar";
 #endif
 
-  BCVTB_HOME = getenv("BCVTB_HOME");
-  if (NULL == BCVTB_HOME) {
+  char const* const BCVTB_HOME = getenv("BCVTB_HOME");
+  if (BCVTB_HOME == NULL) {
     fprintf(stderr, "Error: Cannot get environment variable: BCVTB_HOME.\n");
     return -1;
   }
-  command = (char*)malloc(sizeof(char) * (strlen(BCVTB_HOME) + strlen(fileName) + strlen("variables.dtd") + 20) * 3);
-  if (NULL == command) {
-    fprintf(stderr,
-            "Error: Memory allocation failed in"
-            "       check_variable_cfg_Validate"
-            "       when parsing file '%s'.\n"
-            "       Program aborting.\n",
-            fileName);
-    return -1;
-  }
-  dtdFileName = (char*)malloc(sizeof(char) * (strlen(BCVTB_HOME) + 30));
-  if (NULL == command) {
-    fprintf(stderr,
-            "Error: Memory allocation failed in"
-            "       check_variable_cfg_Validate"
-            "       when parsing file '%s'. \n"
-            "       Program aborting.\n",
-            fileName);
+
+  size_t n_BCVTB_HOME = strlen(BCVTB_HOME);
+  size_t n_fileName = strlen(fileName);
+  size_t n_xmlPath = strlen(xmlPath);  // 9
+  size_t n_jarPath = strlen(jarPath);  // 35
+  size_t n_dtdName = strlen(dtdName);  // 13
+
+  // Verify that variables.dtd exists and is readable
+  {
+    // Add 1 for the null terminator
+    size_t n_needed = n_BCVTB_HOME + n_xmlPath + n_dtdName + 1;
+
+    char* dtdFileName = (char*)malloc(sizeof(char) * n_needed);
+    if (!dtdFileName) {
+      fprintf(stderr,
+              "Error: Memory allocation for 'dtdFileName' failed in check_variable_cfg_Validate when parsing file '%s'. \n"
+              "       Program aborting.\n",
+              fileName);
+      // free(dtdFileName);
+      return -1;
+    }
+
+    snprintf(dtdFileName, n_needed, "%s%s%s", BCVTB_HOME, xmlPath, dtdName);
+    FILE* dtdF = fopen(dtdFileName, "r");
+    if (!dtdF) {
+      fprintf(stderr, "Error: Cannot open '%s'.\n", dtdFileName);
+      free(dtdFileName);
+      return -1;
+    } else {
+      fclose(dtdF);
+    }
     free(dtdFileName);
-    return -1;
   }
 
-  sprintf(dtdFileName, "%s%s%s", BCVTB_HOME, xmlPath, "variables.dtd");
-  dtdF = fopen(dtdFileName, "r");
-  if (NULL == dtdF) {
-    fprintf(stderr, "Error: Cannot open '%s'.\n", dtdFileName);
-    free(command);
-    free(dtdFileName);
-    return -1;
-  } else
-    fclose(dtdF);
-  sprintf(command, "java -jar \"%s%s\" \"%s\" \"%s%s\"", BCVTB_HOME, jarPath, fileName, BCVTB_HOME, xmlPath);
-  ret = system(command);
+  char* command = NULL;
+  {
+    char const* const cmd_fmt = "java -jar \"%s%s\" \"%s\" \"%s%s\"";
+
+    // Add 1 for the null terminator
+    size_t n_needed = 18 + 2 * n_BCVTB_HOME + n_jarPath + n_xmlPath + n_fileName + 1;
+    // int n_needed = snprintf(NULL, 0, cmd_fmt, BCVTB_HOME, jarPath, fileName, BCVTB_HOME, xmlPath) + 1;
+    command = (char*)malloc(sizeof(char) * n_needed);
+    if (!command) {
+      fprintf(stderr,
+              "Error: Memory allocation for command failed in check_variable_cfg_Validate when parsing file '%s'. \n"
+              "       Program aborting.\n",
+              fileName);
+      // free(command);
+      return -1;
+    }
+
+    snprintf(command, n_needed, cmd_fmt, BCVTB_HOME, jarPath, fileName, BCVTB_HOME, xmlPath);
+  }
+
+  // printf("command=%s\n", command);
+  int const ret = system(command);
+  free(command);
+
   if (ret != 0) {
-    free(command);
-    free(dtdFileName);
     return -1;
   } else {
-    free(command);
-    free(dtdFileName);
     return 0;
   }
 }
